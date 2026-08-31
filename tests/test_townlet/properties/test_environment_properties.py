@@ -29,13 +29,12 @@ class TestEnvironmentBoundaryProperties:
     )
     @settings(max_examples=50, deadline=None)  # Reduce examples for faster tests, disable deadline for VFS overhead
     def test_agents_never_leave_grid_bounds(self, action_sequence):
-        """Property: Agent positions always in [0, grid_size) after ANY action sequence.
+        """Property: Agent positions remain inside each substrate axis after any action sequence.
 
         This tests the fundamental spatial constraint that agents cannot move
         outside the grid boundaries, regardless of action sequence.
 
-        NOTE: After TASK-002A, grid_size comes from substrate.yaml (8×8),
-              not from the grid_size parameter.
+        The substrate is the sole shape authority.
         """
         env = make_vectorized_env_from_pack(
             Path("configs/default_curriculum"),
@@ -48,8 +47,8 @@ class TestEnvironmentBoundaryProperties:
         obs = env.reset()
         assert obs.shape[0] == 1  # Single agent
 
-        # Get actual grid_size from substrate (not parameter)
-        actual_grid_size = env.grid_size  # Loaded from substrate.yaml
+        width = env.substrate.width
+        height = env.substrate.height
 
         # Execute action sequence
         for action in action_sequence:
@@ -58,9 +57,9 @@ class TestEnvironmentBoundaryProperties:
             # PROPERTY: Positions always in bounds
             positions = env.positions
             assert torch.all(positions[:, 0] >= 0), f"X position {positions[0, 0]} < 0"
-            assert torch.all(positions[:, 0] < actual_grid_size), f"X position {positions[0, 0]} >= {actual_grid_size}"
+            assert torch.all(positions[:, 0] < width), f"X position {positions[0, 0]} >= {width}"
             assert torch.all(positions[:, 1] >= 0), f"Y position {positions[0, 1]} < 0"
-            assert torch.all(positions[:, 1] < actual_grid_size), f"Y position {positions[0, 1]} >= {actual_grid_size}"
+            assert torch.all(positions[:, 1] < height), f"Y position {positions[0, 1]} >= {height}"
 
             # Stop if agent dies (no more actions possible)
             if dones[0]:

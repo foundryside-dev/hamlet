@@ -218,7 +218,7 @@ def test_unknown_symbol_rejected_at_compile_time() -> None:
     rule = ItemAppearanceRuleConfig(
         item_type="apple",
         spawn_count=1,
-        spawn_position="random",
+        placement={"mode": "random"},
         when="vfs.unknown_flag",
     )
 
@@ -233,7 +233,7 @@ def test_missing_ast_raises_runtime_error() -> None:
             ItemAppearanceRuleConfig(
                 item_type="apple",
                 spawn_count=1,
-                spawn_position="random",
+                placement={"mode": "random"},
                 when="bar.energy > 0.5",
             )
         ]

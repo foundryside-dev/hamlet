@@ -37,7 +37,7 @@ class TestWorldCompilerPipeline:
         # Verify compilation succeeded
         assert universe is not None
         assert universe.metadata is not None
-        assert universe.optimization_data is not None
+        assert universe.get_level(PRIMARY_LEVEL).optimization_data is not None
 
         # Verify levels loaded (default_curriculum has 5 levels)
         assert universe.all_levels is not None
@@ -54,8 +54,9 @@ class TestWorldCompilerPipeline:
         assert hasattr(universe.metadata, "action_count")
 
         # Check optimization data
-        assert not hasattr(universe.optimization_data, "action_mask_table")
-        assert hasattr(universe.optimization_data, "modulation_data")
+        optimization_data = universe.get_level(PRIMARY_LEVEL).optimization_data
+        assert not hasattr(optimization_data, "action_mask_table")
+        assert hasattr(optimization_data, "modulation_data")
 
         # Check level structure
         level = universe.get_level("L0_0_minimal")

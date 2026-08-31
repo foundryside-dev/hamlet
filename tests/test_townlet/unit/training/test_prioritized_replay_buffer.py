@@ -391,8 +391,21 @@ def test_prioritized_replay_buffer_legacy_format_rejected():
         # No format_version - implies version 1
     }
 
-    with pytest.raises(ValueError, match="format_version < 3"):
+    with pytest.raises(ValueError, match="exact current format_version is 3"):
         buffer.load_from_serialized(legacy_state)
+
+
+def test_prioritized_replay_buffer_future_format_rejected():
+    buffer = PrioritizedReplayBuffer(
+        capacity=50,
+        alpha=0.6,
+        beta=0.4,
+        beta_annealing=False,
+        device=torch.device("cpu"),
+    )
+
+    with pytest.raises(ValueError, match="exact current format_version is 3"):
+        buffer.load_from_serialized({"format_version": 4})
 
 
 class TestPrioritizedReplayBufferClearAPI:

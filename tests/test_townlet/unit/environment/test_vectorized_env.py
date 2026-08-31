@@ -19,6 +19,7 @@ Testing Strategy:
 from __future__ import annotations
 
 import shutil
+from copy import deepcopy
 from dataclasses import replace
 from pathlib import Path
 
@@ -121,14 +122,10 @@ def _with_runtime_action_surface(
         transition_graph_hash=transition_graph_hash,
         vfs_hash=vfs_hash,
     )
-    all_levels = dict(universe.all_levels or {})
+    all_levels = dict(universe.all_levels)
     all_levels[level_name] = patched_level
     return replace(
         universe,
-        runtime_action_space=runtime_action_space,
-        transition_schedule=transition_schedule,
-        transition_graph_hash=transition_graph_hash,
-        vfs_hash=vfs_hash,
         all_levels=all_levels,
         compiled_vfs_profiles=None if disable_vfs_profiles else universe.compiled_vfs_profiles,
         vfs_evaluation_marks=None if disable_vfs_profiles else universe.vfs_evaluation_marks,
@@ -268,7 +265,8 @@ class TestVectorizedHamletEnvReset:
         env = cpu_env_factory(num_agents=5)
         env.reset()
         assert torch.all(env.positions >= 0)
-        assert torch.all(env.positions < env.grid_size)
+        bounds = torch.tensor((env.substrate.width, env.substrate.height), device=env.device)
+        assert torch.all(env.positions < bounds)
 
     def test_reset_temporal_mechanics_initializes_time(self, env_factory, cpu_device):
         env = env_factory(
@@ -1163,6 +1161,28 @@ class TestGetAffordancePositions:
         for name, pos in checkpoint_data["positions"].items():
             assert isinstance(pos, list)
 
+    def test_get_affordance_positions_uses_exact_deployed_subset(self, cpu_env_factory):
+        env = cpu_env_factory()
+        env.reset()
+        deployed_name = next(iter(env.affordances))
+        env.affordances = {deployed_name: env.affordances[deployed_name]}
+
+        checkpoint_data = env.get_affordance_positions()
+
+        assert checkpoint_data["ordering"] == [deployed_name]
+        assert set(checkpoint_data["positions"]) == {deployed_name}
+        env.validate_affordance_positions(checkpoint_data)
+
+    def test_get_affordance_positions_preserves_continuous_coordinates(self, continuous1d_env):
+        continuous1d_env.reset()
+        deployed_name = next(iter(continuous1d_env.affordances))
+        continuous1d_env.affordances[deployed_name] = torch.tensor([3.25], device=continuous1d_env.device)
+
+        checkpoint_data = continuous1d_env.get_affordance_positions()
+
+        assert checkpoint_data["positions"][deployed_name] == [3.25]
+        continuous1d_env.validate_affordance_positions(checkpoint_data)
+
 
 class TestSetAffordancePositions:
     """Test VectorizedHamletEnv.set_affordance_positions()."""
@@ -1200,6 +1220,92 @@ class TestSetAffordancePositions:
         with pytest.raises(ValueError, match="position_dim mismatch"):
             env.set_affordance_positions(invalid_checkpoint)
 
+    def test_validate_affordance_positions_requires_exact_layout_keys(self, cpu_env_factory):
+        env = cpu_env_factory()
+        env.reset()
+        checkpoint = env.get_affordance_positions()
+
+        missing = deepcopy(checkpoint)
+        missing.pop("ordering")
+        with pytest.raises(ValueError, match="exactly"):
+            env.validate_affordance_positions(missing)
+
+        unknown = deepcopy(checkpoint)
+        unknown["extra"] = None
+        with pytest.raises(ValueError, match="exactly"):
+            env.validate_affordance_positions(unknown)
+
+    def test_validate_affordance_positions_requires_exact_affordance_identity(self, cpu_env_factory):
+        env = cpu_env_factory()
+        env.reset()
+        checkpoint = env.get_affordance_positions()
+        assert len(checkpoint["ordering"]) >= 2
+
+        duplicate_ordering = deepcopy(checkpoint)
+        duplicate_ordering["ordering"][-1] = duplicate_ordering["ordering"][0]
+        with pytest.raises(ValueError, match="duplicates"):
+            env.validate_affordance_positions(duplicate_ordering)
+
+        reordered = deepcopy(checkpoint)
+        reordered["ordering"] = list(reversed(reordered["ordering"]))
+        with pytest.raises(ValueError, match="ordering"):
+            env.validate_affordance_positions(reordered)
+
+        missing_position = deepcopy(checkpoint)
+        missing_position["positions"].pop(missing_position["ordering"][-1])
+        with pytest.raises(ValueError, match="position names"):
+            env.validate_affordance_positions(missing_position)
+
+        unknown_position = deepcopy(checkpoint)
+        unknown_position["positions"]["unknown"] = [0] * env.substrate.position_dim
+        with pytest.raises(ValueError, match="position names"):
+            env.validate_affordance_positions(unknown_position)
+
+    @pytest.mark.parametrize(
+        ("position", "error_match"),
+        [
+            ([0], "coordinate sequence"),
+            (["bad", 0], "numeric"),
+            ([True, 0], "numeric"),
+            ([0.5, 0], "integer-compatible"),
+            ([-1, 0], "bounds"),
+            ([10_000, 0], "bounds"),
+        ],
+    )
+    def test_validate_affordance_positions_rejects_malformed_coordinates(self, cpu_env_factory, position, error_match):
+        env = cpu_env_factory()
+        env.reset()
+        checkpoint = env.get_affordance_positions()
+        checkpoint["positions"][checkpoint["ordering"][0]] = position
+
+        with pytest.raises(ValueError, match=error_match):
+            env.validate_affordance_positions(checkpoint)
+
+    def test_bad_late_position_causes_zero_state_mutation(self, cpu_env_factory):
+        env = cpu_env_factory()
+        env.reset()
+        checkpoint = env.get_affordance_positions()
+        ordering = checkpoint["ordering"]
+        assert len(ordering) >= 2
+
+        valid_positions = env.substrate.get_all_positions()
+        first_name = ordering[0]
+        last_name = ordering[-1]
+        replacement = next(position for position in valid_positions if position != checkpoint["positions"][first_name])
+        checkpoint["positions"][first_name] = replacement
+        checkpoint["positions"][last_name] = [max(position[0] for position in valid_positions) + 1, 0]
+
+        before_positions = {name: position.clone() for name, position in env.affordances.items()}
+        before_ordering = list(env.affordance_names)
+        before_count = env.num_affordance_types
+
+        with pytest.raises(ValueError, match="bounds"):
+            env.set_affordance_positions(checkpoint)
+
+        assert env.affordance_names == before_ordering
+        assert env.num_affordance_types == before_count
+        assert all(torch.equal(env.affordances[name], before_positions[name]) for name in before_positions)
+
 
 class TestRandomizeAffordancePositions:
     """Test VectorizedHamletEnv.randomize_affordance_positions()."""
@@ -1236,15 +1342,15 @@ class TestRandomizeAffordancePositions:
     def test_randomize_affordance_positions_stays_in_bounds(self, cpu_env_factory):
         """Should keep all positions within grid bounds."""
         env = cpu_env_factory()
-        grid_size = env.grid_size
+        bounds = torch.tensor((env.substrate.width, env.substrate.height), device=env.device)
         env.reset()
 
         env.randomize_affordance_positions()
 
-        # All positions should be within [0, grid_size)
+        # All positions should be within the substrate's per-axis bounds.
         for affordance_pos in env.affordances.values():
             assert torch.all(affordance_pos >= 0).item()
-            assert torch.all(affordance_pos < grid_size).item()
+            assert torch.all(affordance_pos < bounds).item()
 
     def test_static_affordance_positions_respected_when_randomization_disabled(
         self,

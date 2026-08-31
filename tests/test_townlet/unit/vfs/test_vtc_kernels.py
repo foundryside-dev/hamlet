@@ -1,6 +1,8 @@
-"""Tests for scripted VTC transition kernels."""
+"""Tests for eager VTC transition kernels."""
 
 from __future__ import annotations
+
+import inspect
 
 import torch
 
@@ -8,16 +10,23 @@ from townlet.config.affordances_v2_config import ModulationParamConfig
 from townlet.vfs import vtc, vtc_kernels
 
 
-def test_vtc_hot_transition_kernels_are_torchscript() -> None:
-    """Hot generated transition kernels should be TorchScript functions."""
-    assert hasattr(vtc_kernels.apply_passive_depletion, "graph")
-    assert hasattr(vtc_kernels.apply_threshold_cascade, "graph")
-    assert hasattr(vtc_kernels.apply_modulation_multiplier, "graph")
-    assert hasattr(vtc_kernels.apply_terminal_condition, "graph")
+def test_vtc_hot_transition_kernels_are_plain_eager_functions() -> None:
+    """Generated transition kernels should have one plain eager implementation."""
+    kernels = (
+        vtc_kernels.apply_masked_candidate,
+        vtc_kernels.apply_passive_depletion,
+        vtc_kernels.apply_threshold_cascade,
+        vtc_kernels.apply_modulation_multiplier,
+        vtc_kernels.apply_terminal_condition,
+    )
+
+    for kernel in kernels:
+        assert inspect.isfunction(kernel)
+        assert not hasattr(kernel, "graph")
 
 
 def test_vtc_generated_hot_paths_do_not_call_expression_interpreter(monkeypatch) -> None:
-    """Generated fixed-shape rules should execute through scripted tensor kernels."""
+    """Generated fixed-shape rules should execute through direct tensor kernels."""
 
     def _raise_if_interpreted(*args: object, **kwargs: object) -> torch.Tensor:
         raise AssertionError("generated VTC hot path called the expression interpreter")
@@ -112,14 +121,14 @@ def test_generated_vtc_programs_do_not_keep_interpreter_fallback_helpers() -> No
         assert leaked_helpers == [], f"{program_cls.__name__} still exposes interpreter fallback helpers: {leaked_helpers}"
 
 
-def test_scripted_vtc_kernels_match_hardcoded_tensor_baselines() -> None:
-    """Scripted kernels should preserve the direct hardcoded tensor equations."""
+def test_eager_vtc_kernels_match_hardcoded_tensor_baselines() -> None:
+    """Eager kernels should preserve the direct hardcoded tensor equations."""
     device = torch.device("cpu")
     active_mask = torch.tensor([True, True, False, True], device=device)
     energy = torch.tensor([0.5, 0.05, 0.9, 1.0], device=device)
 
     hardcoded_passive = torch.where(active_mask, torch.clamp(energy - (0.1 * 2.0), min=0.0, max=1.0), energy)
-    scripted_passive = vtc_kernels.apply_passive_depletion(
+    eager_passive = vtc_kernels.apply_passive_depletion(
         energy,
         active_mask,
         passive_rate=0.1,
@@ -127,13 +136,13 @@ def test_scripted_vtc_kernels_match_hardcoded_tensor_baselines() -> None:
         clamp_low=0.0,
         clamp_high=1.0,
     )
-    assert torch.allclose(scripted_passive, hardcoded_passive)
+    assert torch.allclose(eager_passive, hardcoded_passive)
 
     satiation = torch.tensor([0.15, 0.5, 0.15, 0.0], device=device)
     hardcoded_delta = -0.006 * ((0.3 - satiation) / 0.3)
     hardcoded_candidate = torch.clamp(energy + hardcoded_delta, min=0.0, max=1.0)
     hardcoded_cascade = torch.where(active_mask & (satiation < 0.3), hardcoded_candidate, energy)
-    scripted_cascade = vtc_kernels.apply_threshold_cascade(
+    eager_cascade = vtc_kernels.apply_threshold_cascade(
         satiation,
         energy,
         active_mask,
@@ -143,4 +152,4 @@ def test_scripted_vtc_kernels_match_hardcoded_tensor_baselines() -> None:
         clamp_low=0.0,
         clamp_high=1.0,
     )
-    assert torch.allclose(scripted_cascade, hardcoded_cascade)
+    assert torch.allclose(eager_cascade, hardcoded_cascade)

@@ -124,11 +124,10 @@ def test_compiler_surfaces_variable_schema_hash(tmp_path: Path) -> None:
     (experiment_dir / "vfs_profiles.yaml").write_text(yaml.dump(profiles))
 
     compiled = UniverseCompiler().compile(experiment_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
+    level = compiled.get_level(PRIMARY_LEVEL_NAME)
 
-    assert compiled.variable_schema_hash == compute_variable_schema_hash(compiled.vfs_variables)
-    assert compiled.all_levels is not None
-    assert compiled.all_levels[PRIMARY_LEVEL_NAME].variable_schema_hash == compiled.variable_schema_hash
-    assert compiled.to_dict()["variable_schema_hash"] == compiled.variable_schema_hash
+    assert level.variable_schema_hash == compute_variable_schema_hash(level.vfs_variables)
+    assert compiled.to_dict()["all_levels"][PRIMARY_LEVEL_NAME]["variable_schema_hash"] == level.variable_schema_hash
 
 
 def test_compiler_surfaces_observation_schema_hash(tmp_path: Path) -> None:
@@ -136,11 +135,10 @@ def test_compiler_surfaces_observation_schema_hash(tmp_path: Path) -> None:
     experiment_dir = prepare_config_dir(tmp_path, name="experiment")
 
     compiled = UniverseCompiler().compile(experiment_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
+    level = compiled.get_level(PRIMARY_LEVEL_NAME)
 
-    assert compiled.observation_schema_hash == compute_observation_schema_hash(compiled.token_spec)
-    assert compiled.all_levels is not None
-    assert compiled.all_levels[PRIMARY_LEVEL_NAME].observation_schema_hash == compiled.observation_schema_hash
-    assert compiled.to_dict()["observation_schema_hash"] == compiled.observation_schema_hash
+    assert level.observation_schema_hash == compute_observation_schema_hash(level.token_spec)
+    assert compiled.to_dict()["all_levels"][PRIMARY_LEVEL_NAME]["observation_schema_hash"] == level.observation_schema_hash
 
 
 def test_canonical_action_schema_uses_action_abi_fields() -> None:
@@ -235,11 +233,10 @@ def test_compiler_surfaces_action_schema_hash(tmp_path: Path) -> None:
     experiment_dir = prepare_config_dir(tmp_path, name="experiment")
 
     compiled = UniverseCompiler().compile(experiment_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
+    level = compiled.get_level(PRIMARY_LEVEL_NAME)
 
-    assert compiled.action_schema_hash == compute_action_schema_hash(compiled.runtime_action_space.actions)
-    assert compiled.all_levels is not None
-    assert compiled.all_levels[PRIMARY_LEVEL_NAME].action_schema_hash == compiled.action_schema_hash
-    assert compiled.to_dict()["action_schema_hash"] == compiled.action_schema_hash
+    assert level.action_schema_hash == compute_action_schema_hash(level.runtime_action_space.actions)
+    assert compiled.to_dict()["all_levels"][PRIMARY_LEVEL_NAME]["action_schema_hash"] == level.action_schema_hash
 
 
 def test_transition_graph_hash_binds_phases_and_compiled_rule_fields() -> None:
@@ -682,18 +679,19 @@ def test_compiler_surfaces_vfs_hash(tmp_path: Path) -> None:
     experiment_dir = prepare_config_dir(tmp_path, name="experiment")
 
     compiled = UniverseCompiler().compile(experiment_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
+    level = compiled.get_level(PRIMARY_LEVEL_NAME)
     phase_graph = TransitionPhaseGraph.default()
     expected = compute_vfs_hash(
-        compiled.variable_schema_hash,
-        compiled.observation_schema_hash,
-        compiled.action_schema_hash,
-        compiled.transition_graph_hash,
+        level.variable_schema_hash,
+        level.observation_schema_hash,
+        level.action_schema_hash,
+        level.transition_graph_hash,
     )
 
-    assert compiled.transition_graph_hash != ""
-    assert compiled.transition_graph_hash == compute_transition_graph_hash(
+    assert level.transition_graph_hash != ""
+    assert level.transition_graph_hash == compute_transition_graph_hash(
         phase_graph,
-        compile_vtc_action_writes_with_phase_graph(compiled.runtime_action_space.actions, phase_graph),
+        compile_vtc_action_writes_with_phase_graph(level.runtime_action_space.actions, phase_graph),
         affordance_gate_program=vtc.compile_vtc_affordance_gates_with_phase_graph(
             compiled.get_level(PRIMARY_LEVEL_NAME).affordances.affordances,
             phase_graph,
@@ -728,9 +726,7 @@ def test_compiler_surfaces_vfs_hash(tmp_path: Path) -> None:
             phase_graph,
         ),
     )
-    assert compiled.vfs_hash == expected
-    assert compiled.all_levels is not None
-    assert compiled.all_levels[PRIMARY_LEVEL_NAME].transition_graph_hash == compiled.transition_graph_hash
-    assert compiled.all_levels[PRIMARY_LEVEL_NAME].vfs_hash == compiled.vfs_hash
-    assert compiled.to_dict()["transition_graph_hash"] == compiled.transition_graph_hash
-    assert compiled.to_dict()["vfs_hash"] == compiled.vfs_hash
+    assert level.vfs_hash == expected
+    level_payload = compiled.to_dict()["all_levels"][PRIMARY_LEVEL_NAME]
+    assert level_payload["transition_graph_hash"] == level.transition_graph_hash
+    assert level_payload["vfs_hash"] == level.vfs_hash

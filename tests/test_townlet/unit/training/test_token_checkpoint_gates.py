@@ -46,7 +46,13 @@ from townlet.training.checkpoint_utils import (
     load_token_network_state_by_type,
 )
 from townlet.universe.compiler import UniverseCompiler
-from townlet.universe.dto.token_spec import SlotBinding, TokenSpec, build_token_type
+from townlet.universe.dto.token_spec import (
+    AFFORDANCE_SIGNATURE_WIDTH,
+    METER_SIGNATURE_WIDTH,
+    SlotBinding,
+    TokenSpec,
+    build_token_type,
+)
 
 
 @pytest.fixture(scope="module")
@@ -61,8 +67,11 @@ def checkpoint(compiled_universe) -> dict[str, object]:
     return payload
 
 
-def _static(count: int, prefix: str) -> tuple[SlotBinding, ...]:
-    return tuple(SlotBinding(slot_index=i, filler_kind="static", filler_ref=f"{prefix}:{i}") for i in range(count))
+def _static(count: int, prefix: str, *, signature_width: int | None = None) -> tuple[SlotBinding, ...]:
+    signature = None if signature_width is None else (0.0,) * signature_width
+    return tuple(
+        SlotBinding(slot_index=i, filler_kind="static", filler_ref=f"{prefix}:{i}", static_signature=signature) for i in range(count)
+    )
 
 
 def _dynamic(count: int, prefix: str) -> tuple[SlotBinding, ...]:
@@ -73,8 +82,8 @@ def spec_with_affordances() -> TokenSpec:
     return TokenSpec(
         types=(
             build_token_type("self", _static(1, "self")),
-            build_token_type("meter", _static(2, "meter")),
-            build_token_type("affordance", _static(2, "aff")),
+            build_token_type("meter", _static(2, "meter", signature_width=METER_SIGNATURE_WIDTH)),
+            build_token_type("affordance", _static(2, "aff", signature_width=AFFORDANCE_SIGNATURE_WIDTH)),
         )
     )
 
@@ -83,7 +92,7 @@ def spec_with_items() -> TokenSpec:
     return TokenSpec(
         types=(
             build_token_type("self", _static(1, "self")),
-            build_token_type("meter", _static(3, "meter")),
+            build_token_type("meter", _static(3, "meter", signature_width=METER_SIGNATURE_WIDTH)),
             build_token_type("item", _dynamic(2, "item")),
         )
     )
@@ -102,8 +111,9 @@ def make_net(spec: TokenSpec, *, action_dim: int = 5) -> TokenSetQNetwork:
 
 class TestAttachStampsTokenHashes:
     def test_both_hashes_stamped(self, checkpoint, compiled_universe) -> None:
-        assert checkpoint["token_type_schema_hash"] == compiled_universe.token_type_schema_hash
-        assert checkpoint["layout_hash"] == compiled_universe.layout_hash
+        level = compiled_universe.get_level(compiled_universe.metadata.primary_level)
+        assert checkpoint["token_type_schema_hash"] == level.token_type_schema_hash
+        assert checkpoint["layout_hash"] == level.layout_hash
 
     def test_the_provenance_fields_all_stay(self, checkpoint, compiled_universe) -> None:
         """Everything but the two ObservationSpec-derived fields survives the cut."""

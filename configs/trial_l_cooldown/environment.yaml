@@ -6,22 +6,22 @@ environment:
       description: Energy
       range_type:
         kind: minmax
-        clip: false
+        clip: true
     - name: health
       description: Health
       range_type:
         kind: minmax
-        clip: false
+        clip: true
     - name: since_bed
       description: "Ticks since BED was last used (cooldown timer, advances 1/tick, reset on use)"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
     - name: since_food
       description: "Ticks since FOOD was last used (cooldown timer, advances 1/tick, reset on use)"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
 
   cascade_graph: []
   modulation_graph: []

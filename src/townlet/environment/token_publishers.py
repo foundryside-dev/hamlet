@@ -40,12 +40,16 @@ import torch
 
 from townlet.substrate.base import SpatialSubstrate
 from townlet.universe.dto.token_spec import (
+    AFFORDANCE_DURATION_FEATURES,
+    AFFORDANCE_EFFECT_ENTRY_WIDTH,
+    AFFORDANCE_SIGNATURE_WIDTH,
     DESCRIPTOR_BLOCK_WIDTH,
     EFFECT_STATIC_FEATURES,
     EFFECT_SUMMARY_K,
     INTERACTION_TYPE_VOCABULARY,
     MAX_POSITION_RANK,
     METER_SIGNATURE_WIDTH,
+    OPENING_HOURS_FEATURES,
     SCOPE_VOCABULARY,
     VALUE_BLOCK_WIDTH,
     EffectDeclaration,
@@ -53,17 +57,14 @@ from townlet.universe.dto.token_spec import (
     SlotBinding,
     TokenTypeSchema,
     effect_static_payload,
-    effect_summary,
     meter_signature,
     require_exposure_normalization,
-    saturate,
     value_block_width_used,
 )
 from townlet.vfs.registry import VariableRegistry
 from townlet.vfs.schema import NormalizationSpec, VariableDef, VariableScope
 
 __all__ = [
-    "AffordanceTokenDeclaration",
     "AffordanceTokenPublisher",
     "AgentSlotBatch",
     "AgentTokenPublisher",
@@ -210,6 +211,8 @@ class CompiledValueNormalizer:
     def __init__(self, specs: Sequence[tuple[str, NormalizationSpec, int, int]], device: torch.device) -> None:
         """specs: per element (variable id for errors, spec, element_index, element_count)."""
         n = len(specs)
+        self._value_ids = tuple(var_id for var_id, _spec, _element_index, _element_count in specs)
+        self._kinds = tuple(spec.kind for _var_id, spec, _element_index, _element_count in specs)
         lo = torch.zeros(n, dtype=torch.float32, device=device)
         hi = torch.ones(n, dtype=torch.float32, device=device)
         scale = torch.ones(n, dtype=torch.float32, device=device)
@@ -245,7 +248,12 @@ class CompiledValueNormalizer:
 
     def apply(self, values: torch.Tensor) -> torch.Tensor:
         """[..., n] raw values -> [..., n, VALUE_BLOCK_WIDTH] value lanes, batched."""
-        span = (self._hi - self._lo).clamp(min=torch.finfo(torch.float32).tiny)
+        finite_inputs = torch.isfinite(values)
+        if not bool(finite_inputs.all()):
+            bad_columns = torch.nonzero(~finite_inputs, as_tuple=False)[:, -1].unique().tolist()
+            offenders = ", ".join(f"{self._value_ids[index]} ({self._kinds[index]})" for index in bad_columns)
+            raise ValueError(f"CompiledValueNormalizer received non-finite live values for: {offenders}")
+        span = self._hi - self._lo
         clamped = values.clamp(min=self._lo, max=self._hi)
         lane0 = torch.zeros_like(values)
         lane1 = torch.zeros_like(values)
@@ -263,7 +271,13 @@ class CompiledValueNormalizer:
         binary = self._masks["binary"]
         if bool(binary.any()):
             lane0 = torch.where(binary, (values > self._scale).to(dtype=values.dtype), lane0)
-        return torch.stack((lane0, lane1), dim=-1)
+        normalized = torch.stack((lane0, lane1), dim=-1)
+        finite_outputs = torch.isfinite(normalized)
+        if not bool(finite_outputs.all()):
+            bad_columns = torch.nonzero(~finite_outputs, as_tuple=False)[:, -2].unique().tolist()
+            offenders = ", ".join(f"{self._value_ids[index]} ({self._kinds[index]})" for index in bad_columns)
+            raise ValueError(f"CompiledValueNormalizer produced non-finite normalized values for: {offenders}")
+        return normalized
 
 
 def _lane(schema: TokenTypeSchema, feature: str) -> int:
@@ -320,6 +334,7 @@ class EffectSlotBatch:
     slot_indices: torch.Tensor  # [K] long — compiled slots this batch writes
     effect_indices: torch.Tensor  # [N, K] long — index into the declared effect catalog order
     remaining_fraction: torch.Tensor  # [N, K] float in [0, 1]
+    intensity: torch.Tensor  # [N, K] finite live spawn intensity
     active: torch.Tensor  # [N, K] bool — is this slot occupied in this world
     owner_slot: torch.Tensor  # [K] long; -1 = not applicable
     source: str = "effect_manager"
@@ -401,11 +416,9 @@ class MeterTokenPublisher:
     """`meter` (static, one slot per declared meter): value block + declared-parameter
     signature.
 
-    Value normalization ruling (Task 8): the value lane is the meter's position within
-    its DECLARED [min, max] range, clamped — the same declaration-derived semantics as
-    `meter_signature`'s `initial` feature. The old observation path's per-meter
-    `environment.yaml` normalization may declare width-changing kinds (`one_hot`) that
-    tokens refuse; the token payload is derived from the bars declaration alone.
+    `environment.yaml` range_type is the sole value-transform authority (PDR-0134).
+    Its same-kind NormalizationSpec drives the shared compiled normalizer, while the
+    static signature carries the kind and parameters presented to the network.
     """
 
     type_name = "meter"
@@ -418,10 +431,15 @@ class MeterTokenPublisher:
         device: torch.device,
     ) -> None:
         self._schema = _require_type(schema, "meter")
+        names = [meter.name for meter in meters]
+        duplicates = sorted({name for name in names if names.count(name) > 1})
+        if duplicates:
+            raise ValueError(f"Meter token input has duplicate meter declaration(s): {duplicates}")
+        if len(meters) != schema.capacity:
+            raise ValueError(f"Meter declaration count {len(meters)} does not match compiled meter token capacity {schema.capacity}")
         by_name = {meter.name: meter for meter in meters}
         columns: list[int] = []
-        lows: list[float] = []
-        spans: list[float] = []
+        normalizations: list[tuple[str, NormalizationSpec, int, int]] = []
         signatures: list[tuple[float, ...]] = []
         for binding in schema.slot_bindings:
             meter = by_name.get(binding.filler_ref)
@@ -430,12 +448,18 @@ class MeterTokenPublisher:
             if binding.filler_ref not in meter_columns:
                 raise ValueError(f"Meter {binding.filler_ref!r} has no column in the runtime meter state tensor")
             columns.append(meter_columns[binding.filler_ref])
-            lows.append(meter.min)
-            spans.append(meter.max - meter.min)
-            signatures.append(meter_signature(meter))
+            normalizations.append((f"meter:{meter.name}", meter.normalization, 0, 1))
+            computed_signature = meter_signature(meter)
+            if binding.static_signature is None:
+                raise ValueError(f"Meter token slot {binding.slot_index} has no compiled static signature")
+            if tuple(binding.static_signature) != computed_signature:
+                raise ValueError(
+                    f"Meter token slot {binding.slot_index} compiled identity disagrees with runtime declaration "
+                    f"for {meter.name!r}; recompile the config pack"
+                )
+            signatures.append(tuple(binding.static_signature))
         self._columns = torch.tensor(columns, dtype=torch.long, device=device)
-        self._low = torch.tensor(lows, dtype=torch.float32, device=device)
-        self._span = torch.tensor(spans, dtype=torch.float32, device=device)
+        self._normalizer = CompiledValueNormalizer(normalizations, device)
         self._signatures = torch.tensor(signatures, dtype=torch.float32, device=device).view(-1, METER_SIGNATURE_WIDTH)
         self._value0 = _lane(schema, "value_0")
         self._value_width = _lane(schema, "value_width_used")
@@ -447,20 +471,11 @@ class MeterTokenPublisher:
         _require_input(ctx.meters, "MeterTokenPublisher", "meters")
         assert ctx.meters is not None
         values = ctx.meters.to(dtype=torch.float32).index_select(1, self._columns)  # [N, C]
+        normalized = self._normalizer.apply(values)
         rows[:, :, 0] = 1.0
-        rows[:, :, self._value0] = ((values - self._low) / self._span).clamp(0.0, 1.0)
-        rows[:, :, self._value_width] = 1.0 / VALUE_BLOCK_WIDTH
+        rows[:, :, self._value0 : self._value0 + VALUE_BLOCK_WIDTH] = normalized
+        rows[:, :, self._value_width] = self._normalizer.width_used / VALUE_BLOCK_WIDTH
         rows[:, :, self._sig0 : self._sig0 + METER_SIGNATURE_WIDTH] = self._signatures
-
-
-@dataclass(frozen=True)
-class AffordanceTokenDeclaration:
-    """One placed affordance instance's declared identity (spec §1: identity = declared
-    payload, applied recursively)."""
-
-    id: str
-    interaction_type: str
-    effect_deltas: Mapping[str, float]
 
 
 class AffordanceTokenPublisher:
@@ -474,43 +489,48 @@ class AffordanceTokenPublisher:
         self,
         schema: TokenTypeSchema,
         substrate: SpatialSubstrate,
-        declarations: Sequence[AffordanceTokenDeclaration],
-        meters: Mapping[str, MeterDeclaration],
         device: torch.device,
     ) -> None:
         self._schema = _require_type(schema, "affordance")
         self._substrate = substrate
-        by_id = {declaration.id: declaration for declaration in declarations}
         interaction_rows: list[list[float]] = []
+        duration_rows: list[tuple[float, ...]] = []
+        opening_rows: list[tuple[float, ...]] = []
         summary_rows: list[tuple[float, ...]] = []
         counts: list[float] = []
-        self._slot_refs: list[str] = []
         for binding in schema.slot_bindings:
-            declaration = by_id.get(binding.filler_ref)
-            if declaration is None:
-                raise ValueError(f"Affordance token slot {binding.slot_index} is bound to undeclared affordance {binding.filler_ref!r}")
-            if declaration.interaction_type not in INTERACTION_TYPE_VOCABULARY:
+            if binding.static_signature is None:
+                raise ValueError(f"Affordance token slot {binding.slot_index} has no compiled static signature")
+            if len(binding.static_signature) != AFFORDANCE_SIGNATURE_WIDTH:
                 raise ValueError(
-                    f"Affordance {declaration.id!r}: interaction_type {declaration.interaction_type!r} is not in "
-                    f"{INTERACTION_TYPE_VOCABULARY}"
+                    f"Affordance token slot {binding.slot_index} static signature has "
+                    f"{len(binding.static_signature)} features, expected {AFFORDANCE_SIGNATURE_WIDTH}"
                 )
-            interaction_rows.append([1.0 if member == declaration.interaction_type else 0.0 for member in INTERACTION_TYPE_VOCABULARY])
-            summary_rows.append(effect_summary(dict(declaration.effect_deltas), dict(meters)))
-            # Bounded count feature: saturate(x) = x/(1+x), the engine's scale-free map.
-            counts.append(saturate(float(len(declaration.effect_deltas))))
-            self._slot_refs.append(binding.filler_ref)
+            n_interactions = len(INTERACTION_TYPE_VOCABULARY)
+            signature = tuple(binding.static_signature)
+            interaction_rows.append(list(signature[:n_interactions]))
+            duration_end = n_interactions + len(AFFORDANCE_DURATION_FEATURES)
+            opening_end = duration_end + len(OPENING_HOURS_FEATURES)
+            duration_rows.append(signature[n_interactions:duration_end])
+            opening_rows.append(signature[duration_end:opening_end])
+            summary_rows.append(signature[opening_end:-1])
+            counts.append(signature[-1])
         capacity = schema.capacity
-        summary_width = EFFECT_SUMMARY_K * (3 + METER_SIGNATURE_WIDTH)
+        summary_width = EFFECT_SUMMARY_K * AFFORDANCE_EFFECT_ENTRY_WIDTH
         self._interactions = torch.tensor(interaction_rows, dtype=torch.float32, device=device).view(
             capacity, len(INTERACTION_TYPE_VOCABULARY)
         )
+        self._durations = torch.tensor(duration_rows, dtype=torch.float32, device=device).view(capacity, len(AFFORDANCE_DURATION_FEATURES))
+        self._opening_hours = torch.tensor(opening_rows, dtype=torch.float32, device=device).view(capacity, len(OPENING_HOURS_FEATURES))
         self._summaries = torch.tensor(summary_rows, dtype=torch.float32, device=device).view(capacity, summary_width)
         self._counts = torch.tensor(counts, dtype=torch.float32, device=device)
         self._interaction0 = _lane(schema, f"interaction_type_{INTERACTION_TYPE_VOCABULARY[0]}")
+        self._duration0 = _lane(schema, AFFORDANCE_DURATION_FEATURES[0])
+        self._opening0 = _lane(schema, OPENING_HOURS_FEATURES[0])
         self._pos0 = _lane(schema, "position_0")
         self._pos_rank = _lane(schema, "position_rank")
         self._ego0 = _lane(schema, "egocentric_0")
-        self._summary0 = _lane(schema, "effect_0_present")
+        self._summary0 = _lane(schema, "effect_0_form")
         self._count_lane = _lane(schema, "effect_count")
 
     def publish(self, rows: torch.Tensor, ctx: TokenPublishContext) -> None:
@@ -538,6 +558,8 @@ class AffordanceTokenPublisher:
                 )
         n_interactions = len(INTERACTION_TYPE_VOCABULARY)
         rows[:, :, self._interaction0 : self._interaction0 + n_interactions] = self._interactions
+        rows[:, :, self._duration0 : self._duration0 + len(AFFORDANCE_DURATION_FEATURES)] = self._durations
+        rows[:, :, self._opening0 : self._opening0 + len(OPENING_HOURS_FEATURES)] = self._opening_hours
         rows[:, :, self._pos_rank] = dim / MAX_POSITION_RANK
         summary_width = self._summaries.shape[1]
         rows[:, :, self._summary0 : self._summary0 + summary_width] = self._summaries
@@ -683,6 +705,7 @@ class EffectTokenPublisher:
             self._static = torch.zeros((0, static_width), dtype=torch.float32, device=device)
         self._static0 = _lane(schema, EFFECT_STATIC_FEATURES[0])
         self._remaining = _lane(schema, "remaining_fraction")
+        self._intensity = _lane(schema, "live_intensity")
         self._owner_slot = _lane(schema, "owner_slot")
         self._owner_applicable = _lane(schema, "owner_slot_applicable")
 
@@ -704,6 +727,12 @@ class EffectTokenPublisher:
         payload = torch.zeros((num_worlds, n_slots, rows.shape[2]), dtype=rows.dtype, device=rows.device)
         payload[:, :, self._static0 : self._static0 + width] = static
         payload[:, :, self._remaining] = batch.remaining_fraction.to(dtype=rows.dtype).clamp(0.0, 1.0)
+        intensity = batch.intensity.to(device=rows.device, dtype=rows.dtype)
+        if tuple(intensity.shape) != (num_worlds, n_slots):
+            raise ValueError(f"EffectTokenPublisher: intensity must be [{num_worlds}, {n_slots}], got {tuple(intensity.shape)}")
+        if not torch.isfinite(intensity).all():
+            raise ValueError("EffectTokenPublisher: live intensity must be finite")
+        payload[:, :, self._intensity] = intensity / (1.0 + intensity.abs())
         applicable = batch.owner_slot >= 0
         payload[:, :, self._owner_slot] = (batch.owner_slot.clamp(min=0).to(dtype=rows.dtype) / self._owner_slot_capacity) * applicable.to(
             dtype=rows.dtype

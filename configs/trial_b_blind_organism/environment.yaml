@@ -6,12 +6,12 @@ environment:
       description: Organism vitality
       range_type:
         kind: minmax
-        clip: false
+        clip: true
     - name: biomass
       description: Accumulated food drawn from the warehouse
       range_type:
         kind: minmax
-        clip: false
+        clip: true
 
   cascade_graph: []
   modulation_graph: []

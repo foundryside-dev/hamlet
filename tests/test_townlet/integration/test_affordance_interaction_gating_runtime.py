@@ -170,19 +170,14 @@ def test_multi_tick_without_temporal_mechanics_is_rejected_at_compile_time(tmp_p
         UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)
 
 
-def test_dual_interaction_type_still_compiles_without_temporal_mechanics(tmp_path: Path) -> None:
-    """Sibling control: the predicate is ``== "multi_tick"`` only.
-
-    A ``dual`` affordance has an instant path, so it remains legal. Without this,
-    the natural over-broad predicate (``in {"multi_tick", "dual"}``) would pass the
-    test above and silently break every dual affordance.
-    """
-    pack = _pack(tmp_path, "dual")
+def test_instant_interaction_type_compiles_without_temporal_mechanics(tmp_path: Path) -> None:
+    """Sibling control: only multi-tick interactions require temporal mechanics."""
+    pack = _pack(tmp_path, "instant")
     path = pack / "levels" / LEVEL / "affordances.yaml"
     doc = yaml.safe_load(path.read_text())
     sleep = next(a for a in doc["affordances"]["affordances"] if a["name"] == "SLEEP")
-    sleep["interaction_type"] = "dual"
-    sleep["duration_ticks"] = 3
+    sleep["interaction_type"] = "instant"
+    sleep.pop("duration_ticks", None)
     path.write_text(yaml.safe_dump(doc, sort_keys=False))
 
     universe = UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)

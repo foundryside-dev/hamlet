@@ -229,17 +229,16 @@ none of them live in the `architecture` block. Of the optional pack-root files,
 
 Three declarations are worth knowing about because older docs predate them. Each meter's
 observation type is declared per meter as `range_type` in `environment.yaml` — a closed,
-parameterized vocabulary of nine normalization kinds (`minmax`, `log_scaled`, `zscore`, …); the
-shipped pack uses `minmax` with `clip: false` for all eight. ⚠️ **`range_type` no longer
-reaches the observation** (unit-3 token cut, 2026-08-26): a meter token's value lane is the
-meter's clamped position within its `bars.yaml` `[min, max]`, derived from the bars declaration
-alone, so declaring `cyclical_sin_cos` on a clock meter or `one_hot` on a categorical one now
-changes nothing an agent sees. The declaration still parses and still feeds the compiled
-normalization spec. That is a designer-facing capability that silently stopped working, filed
-as `hamlet-1e335e0363` and not accepted as final — either the meter token carries the declared
-normalization, or the surface is retired with a superseding record. Each `environment.yaml` variable
+parameterized vocabulary of four bounded, fixed-two-lane transforms: clipped `minmax`, clipped
+`log_scaled`, `cyclical_sin_cos`, and `binary`. The declaration drives both the live meter-token
+value and its static identity; range bounds come from the matching `bars.yaml` meter rather than
+being restated. The five VFS kinds that cannot truthfully fit the bounded two-lane ABI are rejected
+at parse time, not mapped or retained as compatibility aliases (`PDR-0134`). Each `environment.yaml` variable
 declares a `semantic_type` from a closed vocabulary, and each affordance declares its
-`interaction_type` (`instant`, `multi_tick` or `dual`) — required, no default. And a pack may carry
+`interaction_type` (`instant` or `multi_tick`) — required, no default. `instant` has no duration
+and admits only immediate costs/`on_start` writes; `multi_tick` requires duration and admits only
+per-tick costs/`per_tick`/`on_completion` writes. The old `dual` spelling is deleted because it
+never executed both behaviours (`PDR-0135`). And a pack may carry
 an optional `presentation.yaml` at its root: the live-inference server reads it to render meters and
 affordances (labels, colours, icons, plain/percent/currency formats), the compiler never does, so it enters no hash and
 cannot change behaviour (`src/townlet/demo/presentation.py`,
@@ -583,12 +582,18 @@ point runs end to end, writing a run directory whose `training.log` records *Tra
 normally* beside a `config_snapshot/` of the pack that produced it.
 
 One measurement the cut left open was ruled, not hidden: the token design (`PDR-0114`) carried
-a reversal trigger at 8× the pre-cut observation width, and L1 compiles to `total_dims` 1132
-against a pre-cut 120 — **9.43×**, 82% of it the affordance block. The trigger fired, was
-escalated with three levers drilled and refuted (`PDR-0124`), and on 2026-08-29 the owner
-ruled **option 4**: the 8× cap and the engine constants stay unchanged, and the 9.43× reading
-is carried as recorded debt into migration unit 5, to be re-measured after the pack migration
-moves the census.
+a reversal trigger at 8× the pre-cut observation width, and the historical L1 artifact compiled
+to `total_dims` 1132 against a pre-cut 120 — **9.43×**, costing 863.6 MiB per 100,000 replay
+observation pairs. `PDR-0131` supersedes the earlier carry-debt ruling in `PDR-0126`: immutable
+declaration context leaves replay before unit 4 rather than waiting for pack migration. The later
+1,580-float / 1,205.4-MiB meter-only reading was intermediate. Exact five-entry executable
+affordance/effect identity and the exposed-initializer correction make the current full L1
+serialization 4,090 floats. At 100,000 float32 observation pairs that is 3,272,000,000 bytes, or
+3,120.4 MiB. The current census contains zero `variable_element` tokens: expression-backed
+exposure is refused until milestone 3 static context can encode its executable initializer identity,
+while the pack's time variable remains live but unexposed. That added width is immutable compiler
+context, not a relaxation of the compact replay target; the live/static split is remeasured at
+milestone-2 acceptance.
 
 Intent, not yet built — stated plainly because older docs blur the line:
 
@@ -688,15 +693,16 @@ Intent, not yet built — stated plainly because older docs blur the line:
     variables. Trial L (`docs/product/trials/0001/L-20260818.md`) demonstrated the counter
     mechanic is authorable without them: a bar with a negative passive rate advances per tick,
     an `on_start` `modify` resets it on use.
-- **Nine defects landed open with the token cut** (`PDR-0124`). Two are
-  inline above — the deleted `observation_encoding` surface (`hamlet-6a4a6596bd`, P1) and `range_type`
-  reaching nothing (`hamlet-1e335e0363`, P1). The rest: item tokens carry no declared identity
+- **Nine defects landed open with the token cut** (`PDR-0124`); the two semantic regressions are
+  now closed by deletion/wiring (`PDR-0133`, `PDR-0134`, `PDR-0135`). The remaining defects include: item tokens carry no declared identity
   (`hamlet-559cc74246`, P1); the indistinguishability refusal has no declared-parameter escape
   hatch (`hamlet-2aca57c0f0`, P1); effects survive `env.reset()` (`hamlet-d76684f549`, P1);
-  affordance tokens skip the indistinguishability check and drop costs, hours and non-`on_start`
-  interactions (`hamlet-81bf807963`, P2); effect slots migrate columns on expiry and
-  over-capacity items drop silently (`hamlet-4538ba909f`, P2); every `variable_element` slot in
-  the fleet is an inert declaration (`hamlet-aba6171ff7`, P2); and the `reference/model_pack`
+  affordance tokens still skip the indistinguishability check (`hamlet-81bf807963`, P2), while
+  their executable costs, hours, lifecycle writes and spawned-effect identity are now compiled;
+  effect slots migrate columns on expiry and
+  over-capacity items drop silently (`hamlet-4538ba909f`, P2); exposed initializer identity cannot
+  yet enter static context, so the current L1 census has zero `variable_element` slots and keeps its
+  live time variable unexposed (`hamlet-aba6171ff7`, P2); and the `reference/model_pack`
   env-construction crash above (`hamlet-5a87550adb`, P2). A tenth — L3 unobservable after the
   cut — blocked and was fixed first, by declaration (`9563dc45`).
 - **Documentation outside `docs/product/` and `docs/oracle/` is being reconciled, and the

@@ -6,22 +6,22 @@ environment:
       description: Energy
       range_type:
         kind: minmax
-        clip: false
+        clip: true
     - name: health
       description: Health
       range_type:
         kind: minmax
-        clip: false
+        clip: true
     - name: rooted
       description: "1.0 once this agent has joined the organism by touching the root at A (0 = free-floating)"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
     - name: biomass
       description: "Food absorbed from the warehouse by this growth tip"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
 
   cascade_graph: []
   modulation_graph: []

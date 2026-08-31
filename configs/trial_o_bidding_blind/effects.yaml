@@ -9,7 +9,6 @@ effect_definitions:
     description: "Collect all agents' bids, compare, award the contested item to the highest bidder, charge them the clearing price."
     scope: global
     duration: 100000
-    intensity: 1.0
     reapply_policy: renew
     observable: false
 

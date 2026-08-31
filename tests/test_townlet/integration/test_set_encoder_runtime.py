@@ -50,7 +50,7 @@ def _build(level: str):
         vision_window_size=1,
     )
     population.reset()
-    return universe, env, population
+    return env, population
 
 
 @pytest.fixture
@@ -63,28 +63,28 @@ def attention_setup():
     return _build("L1_attention")
 
 
-def _element_type_slice(universe) -> slice:
+def _element_type_slice(env) -> slice:
     """Serialization slice of the `variable_element` block — this pack's exposed vars."""
     from townlet.agent.network_factory import NetworkFactory
 
-    return NetworkFactory.token_block_slices(universe.token_spec)["variable_element"]
+    return NetworkFactory.token_block_slices(env.token_spec)["variable_element"]
 
 
 def test_config_builds_a_token_set_network(setup) -> None:
-    universe, env, population = setup
+    env, population = setup
     net = population.q_network
     assert isinstance(net, TokenSetQNetwork)
     # The roster is COMPILED: one encoder per token type with capacity, keyed by NAME
     # (an nn.ModuleDict, never a list indexed by roster position).
-    assert set(net.token_type_names) <= {t.type_name for t in universe.token_spec.types}
-    assert net.obs_dim == universe.token_spec.total_dims == env.observation_dim
+    assert set(net.token_type_names) <= {t.type_name for t in env.token_spec.types}
+    assert net.obs_dim == env.token_spec.total_dims == env.observation_dim
     assert net.aggregator_type == "mean"
 
 
 def test_tokens_reach_the_network_and_change_its_output(setup) -> None:
-    universe, env, population = setup
+    env, population = setup
     net = population.q_network
-    element_slice = _element_type_slice(universe)
+    element_slice = _element_type_slice(env)
 
     obs_zero = env._get_observations()
     q_zero = net(obs_zero)
@@ -101,10 +101,10 @@ def test_tokens_reach_the_network_and_change_its_output(setup) -> None:
 
 
 def test_token_rows_pool_as_a_set_not_a_sequence(setup) -> None:
-    universe, env, population = setup
+    env, population = setup
     net = population.q_network
-    element_type = universe.token_spec.get_type("variable_element")
-    element_slice = _element_type_slice(universe)
+    element_type = env.token_spec.get_type("variable_element")
+    element_slice = _element_type_slice(env)
 
     env.vfs_registry.set("need_tokens", torch.rand(NUM_AGENTS, 4, 3) + 0.1, writer="engine")
     obs = env._get_observations()
@@ -121,7 +121,7 @@ def test_token_rows_pool_as_a_set_not_a_sequence(setup) -> None:
 
 
 def test_gradients_flow_into_the_per_type_encoders(setup) -> None:
-    universe, env, population = setup
+    env, population = setup
     net = population.q_network
     env.vfs_registry.set("need_tokens", torch.rand(NUM_AGENTS, 4, 3) + 0.1, writer="engine")
     obs = env._get_observations()
@@ -134,7 +134,7 @@ def test_gradients_flow_into_the_per_type_encoders(setup) -> None:
 
 def test_declared_attention_reaches_the_built_network(attention_setup) -> None:
     """The aggregator declaration is config-in/behaviour-out, not declared-but-inert."""
-    universe, env, population = attention_setup
+    _env, population = attention_setup
     net = population.q_network
     assert isinstance(net, TokenSetQNetwork)
     assert net.aggregator_type == "attention"
@@ -143,10 +143,10 @@ def test_declared_attention_reaches_the_built_network(attention_setup) -> None:
 
 
 def test_attention_level_stays_permutation_invariant_end_to_end(attention_setup) -> None:
-    universe, env, population = attention_setup
+    env, population = attention_setup
     net = population.q_network
-    element_type = universe.token_spec.get_type("variable_element")
-    element_slice = _element_type_slice(universe)
+    element_type = env.token_spec.get_type("variable_element")
+    element_slice = _element_type_slice(env)
 
     env.vfs_registry.set("need_tokens", torch.rand(NUM_AGENTS, 4, 3) + 0.1, writer="engine")
     obs = env._get_observations()
@@ -163,7 +163,7 @@ def test_attention_level_stays_permutation_invariant_end_to_end(attention_setup)
 
 
 def test_attention_level_gradients_reach_the_attention_weights(attention_setup) -> None:
-    universe, env, population = attention_setup
+    env, population = attention_setup
     net = population.q_network
     env.vfs_registry.set("need_tokens", torch.rand(NUM_AGENTS, 4, 3) + 0.1, writer="engine")
     obs = env._get_observations()

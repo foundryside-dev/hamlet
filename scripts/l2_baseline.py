@@ -72,9 +72,7 @@ def rewrite_seed(pack_src: Path, pack_dst: Path, seed: int, level: str = LEVEL) 
         raise ValueError(f"expected exactly one seed line in {cfg}, found {hits}")
     cfg.write_text("".join(new_lines))
     rel = str(cfg.relative_to(pack_dst))
-    return "".join(
-        difflib.unified_diff(old_lines, new_lines, fromfile=f"a/{rel}", tofile=f"b/{rel}")
-    )
+    return "".join(difflib.unified_diff(old_lines, new_lines, fromfile=f"a/{rel}", tofile=f"b/{rel}"))
 
 
 def iqm(values: list[float] | list[int]) -> float:
@@ -97,9 +95,7 @@ def iqm(values: list[float] | list[int]) -> float:
 
 
 def _git(*args: str) -> str:
-    return subprocess.run(
-        ["git", *args], cwd=REPO_ROOT, capture_output=True, text=True, check=True
-    ).stdout.strip()
+    return subprocess.run(["git", *args], cwd=REPO_ROOT, capture_output=True, text=True, check=True).stdout.strip()
 
 
 def cmd_train(args: argparse.Namespace) -> None:
@@ -130,9 +126,7 @@ def cmd_train(args: argparse.Namespace) -> None:
 
     diff = rewrite_seed(PACK, run_dir / "pack", seed=args.seed)
     (run_dir / "pack.diff").write_text(diff)
-    (run_dir / "meta.json").write_text(
-        json.dumps({"seed": args.seed, "episodes": args.episodes, "pin": head, "level": LEVEL}, indent=2)
-    )
+    (run_dir / "meta.json").write_text(json.dumps({"seed": args.seed, "episodes": args.episodes, "pin": head, "level": LEVEL}, indent=2))
 
     from townlet.demo.runner import DemoRunner
 
@@ -240,9 +234,7 @@ def cmd_curves(args: argparse.Namespace) -> None:
     run_dir = Path(args.run_dir)
     conn = sqlite3.connect(run_dir / "demo.db")
     try:
-        rows = conn.execute(
-            "SELECT episode_id, survival_time, epsilon, intrinsic_weight FROM episodes ORDER BY episode_id"
-        ).fetchall()
+        rows = conn.execute("SELECT episode_id, survival_time, epsilon, intrinsic_weight FROM episodes ORDER BY episode_id").fetchall()
     finally:
         conn.close()
 

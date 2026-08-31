@@ -290,3 +290,13 @@ def test_item_custom_commands_schema_and_naming():
     )
     assert interactions.local_commands[0].name == "OPEN_UMBRELLA"
     assert build_item_command_action_name("umbrella", "OPEN_UMBRELLA", "local") == "ITEM_LOCAL_UMBRELLA_OPEN_UMBRELLA"
+
+
+def test_item_interactions_reject_distribution_alias():
+    with pytest.raises(ValidationError, match="Command must have one of"):
+        ItemInteractionsConfig(on_pickup=[{"distribution": "uniform"}], on_use=[], on_drop=[])
+
+
+def test_item_custom_commands_reject_distribution_alias():
+    with pytest.raises(ValidationError, match="Effect command must include one of"):
+        ItemCustomCommand(name="ROLL", effects=[{"distribution": "uniform"}])

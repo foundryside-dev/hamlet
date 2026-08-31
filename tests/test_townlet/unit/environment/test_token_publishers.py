@@ -14,12 +14,15 @@ today, so their wiring is pinned against constructed TokenTypeSchemas. The pins:
 - replay aliasing: two consecutive encoded ticks never share storage.
 """
 
+from types import SimpleNamespace
+
 import pytest
 import torch
 
-from townlet.environment.observation_encoder import TokenObservationEncoder
+from townlet.config.affordances_v2_config import AffordanceParamConfig, DeploymentConfig, OpeningHoursConfig
+from townlet.effects.affordance_identity import AffordanceMeterWrite
+from townlet.environment.observation_encoder import TokenObservationEncoder, build_token_observation_encoder
 from townlet.environment.token_publishers import (
-    AffordanceTokenDeclaration,
     AffordanceTokenPublisher,
     AgentSlotBatch,
     AgentTokenPublisher,
@@ -50,7 +53,9 @@ from townlet.universe.dto.token_spec import (
     MeterDeclaration,
     SlotBinding,
     TokenSpec,
+    affordance_signature,
     build_token_type,
+    meter_signature,
 )
 from townlet.vfs.registry import VariableRegistry
 from townlet.vfs.schema import NormalizationSpec, VariableDef
@@ -62,8 +67,16 @@ def _substrate(boundary: str = "clamp") -> Grid2DSubstrate:
     return Grid2DSubstrate(width=8, height=8, boundary=boundary, distance_metric="manhattan")
 
 
-def _static_type(type_name: str, refs: list[str]):
-    return build_token_type(type_name, tuple(SlotBinding(slot_index=i, filler_kind="static", filler_ref=ref) for i, ref in enumerate(refs)))
+def _static_type(type_name: str, refs: list[str], signatures: list[tuple[float, ...] | None] | None = None):
+    if signatures is None:
+        signatures = [None] * len(refs)
+    assert len(signatures) == len(refs)
+    return build_token_type(
+        type_name,
+        tuple(
+            SlotBinding(slot_index=i, filler_kind="static", filler_ref=ref, static_signature=signatures[i]) for i, ref in enumerate(refs)
+        ),
+    )
 
 
 def _dynamic_type(type_name: str, capacity: int):
@@ -85,6 +98,7 @@ def _lane(type_name: str, feature: str) -> int:
 _METERS = [
     MeterDeclaration(
         name="energy",
+        normalization=NormalizationSpec(kind="minmax", min=0.0, max=1.0, clip=True),
         initial=0.8,
         min=0.0,
         max=1.0,
@@ -97,6 +111,7 @@ _METERS = [
     ),
     MeterDeclaration(
         name="money",
+        normalization=NormalizationSpec(kind="minmax", min=0.0, max=100.0, clip=True),
         initial=50.0,
         min=0.0,
         max=100.0,
@@ -110,6 +125,10 @@ _METERS = [
 ]
 _METER_COLUMNS = {"energy": 0, "money": 1}
 _BOUNDED = NormalizationSpec(kind="minmax", min=0.0, max=1.0, clip=True)
+
+
+def _meter_type(meters: list[MeterDeclaration]):
+    return _static_type("meter", [meter.name for meter in meters], [meter_signature(meter) for meter in meters])
 
 
 def _sig(seed: float) -> tuple[float, ...]:
@@ -222,7 +241,7 @@ class TestSelfTokenPublisher:
 
 class TestMeterTokenPublisher:
     def _publisher(self):
-        schema = _static_type("meter", ["energy", "money"])
+        schema = _meter_type(_METERS)
         return MeterTokenPublisher(schema, _METERS, _METER_COLUMNS, DEVICE)
 
     def test_declare_then_that_row_moves(self):
@@ -246,22 +265,197 @@ class TestMeterTokenPublisher:
         assert rows[0, 0, sig0:].tolist() != rows[0, 1, sig0:].tolist()
 
     def test_unbound_meter_refuses_at_construction(self):
-        schema = _static_type("meter", ["energy", "ghost"])
+        schema = _static_type("meter", ["energy", "ghost"], [meter_signature(_METERS[0]), meter_signature(_METERS[1])])
         with pytest.raises(ValueError, match="undeclared meter 'ghost'"):
             MeterTokenPublisher(schema, _METERS, _METER_COLUMNS, DEVICE)
 
+    def test_duplicate_meter_declaration_refuses_before_dictionary_collapse(self):
+        duplicate = [_METERS[0], _METERS[0]]
+        with pytest.raises(ValueError, match="duplicate meter declaration.*energy"):
+            MeterTokenPublisher(_meter_type(duplicate), duplicate, {"energy": 0}, DEVICE)
 
-_AFFORDANCES = [
-    AffordanceTokenDeclaration(id="EAT", interaction_type="instant", effect_deltas={"energy": 0.3}),
-    AffordanceTokenDeclaration(id="SLEEP", interaction_type="multi_tick", effect_deltas={"energy": 0.5, "money": -10.0}),
-]
+    def test_meter_declaration_count_must_equal_compiled_capacity(self):
+        with pytest.raises(ValueError, match="declaration count.*capacity"):
+            MeterTokenPublisher(_meter_type([_METERS[0]]), _METERS, _METER_COLUMNS, DEVICE)
+
+    def test_declared_range_type_drives_both_value_lanes_and_identity(self):
+        common = {
+            "initial": 0.0,
+            "min": 0.0,
+            "max": 99.0,
+            "lethal_min": False,
+            "lethal_max": False,
+            "passive_depletion": 0.0,
+            "move_depletion": 0.0,
+            "interact_depletion": 0.0,
+            "natural_recovery": 0.0,
+        }
+        meters = [
+            MeterDeclaration(name="linear", normalization=NormalizationSpec(kind="minmax", min=0.0, max=99.0, clip=True), **common),
+            MeterDeclaration(name="log", normalization=NormalizationSpec(kind="log_scaled", min=0.0, max=99.0, clip=True), **common),
+            MeterDeclaration(name="clock", normalization=NormalizationSpec(kind="cyclical_sin_cos", period=24.0), **common),
+            MeterDeclaration(name="switch", normalization=NormalizationSpec(kind="binary", threshold=0.5), **common),
+        ]
+        schema = _meter_type(meters)
+        columns = {meter.name: index for index, meter in enumerate(meters)}
+        rows = _rows(4, "meter", batch=1)
+
+        MeterTokenPublisher(schema, meters, columns, DEVICE).publish(
+            rows,
+            TokenPublishContext(meters=torch.tensor([[49.5, 9.0, 6.0, 0.5]])),
+        )
+
+        value0 = _lane("meter", "value_0")
+        value1 = _lane("meter", "value_1")
+        width = _lane("meter", "value_width_used")
+        assert rows[0, 0, value0 : value1 + 1].tolist() == pytest.approx([0.5, 0.0])
+        assert rows[0, 1, value0 : value1 + 1].tolist() == pytest.approx([0.5, 0.0])
+        assert rows[0, 2, value0 : value1 + 1].tolist() == pytest.approx([1.0, 0.0], abs=1e-6)
+        assert rows[0, 3, value0 : value1 + 1].tolist() == [0.0, 0.0]
+        assert rows[0, :, width].tolist() == [0.5, 0.5, 1.0, 0.5]
+
+        signature = _lane("meter", "initial")
+        assert len({tuple(rows[0, index, signature:].tolist()) for index in range(4)}) == 4
+
+    @pytest.mark.parametrize(
+        ("meter_index", "kind"),
+        (
+            (0, "minmax"),
+            (1, "log_scaled"),
+            (2, "cyclical_sin_cos"),
+            (3, "binary"),
+        ),
+    )
+    @pytest.mark.parametrize(
+        "bad_value",
+        (
+            pytest.param(float("nan"), id="nan"),
+            pytest.param(float("inf"), id="positive_inf"),
+            pytest.param(float("-inf"), id="negative_inf"),
+        ),
+    )
+    def test_non_finite_live_meter_value_refuses_before_mutating_rows(self, meter_index: int, kind: str, bad_value: float):
+        common = {
+            "initial": 0.0,
+            "min": 0.0,
+            "max": 99.0,
+            "lethal_min": False,
+            "lethal_max": False,
+            "passive_depletion": 0.0,
+            "move_depletion": 0.0,
+            "interact_depletion": 0.0,
+            "natural_recovery": 0.0,
+        }
+        meters = [
+            MeterDeclaration(name="linear", normalization=NormalizationSpec(kind="minmax", min=0.0, max=99.0, clip=True), **common),
+            MeterDeclaration(name="log", normalization=NormalizationSpec(kind="log_scaled", min=0.0, max=99.0, clip=True), **common),
+            MeterDeclaration(name="clock", normalization=NormalizationSpec(kind="cyclical_sin_cos", period=24.0), **common),
+            MeterDeclaration(name="switch", normalization=NormalizationSpec(kind="binary", threshold=0.5), **common),
+        ]
+        rows = _rows(4, "meter", batch=1)
+        before = rows.clone()
+        values = [49.5, 9.0, 6.0, 1.0]
+        values[meter_index] = bad_value
+
+        with pytest.raises(ValueError, match=rf"non-finite live values.*{kind}"):
+            MeterTokenPublisher(
+                _meter_type(meters),
+                meters,
+                {meter.name: index for index, meter in enumerate(meters)},
+                DEVICE,
+            ).publish(rows, TokenPublishContext(meters=torch.tensor([values])))
+
+        assert torch.equal(rows, before)
+
+    def test_cyclical_factor_that_would_be_non_finite_refuses_at_declaration(self):
+        with pytest.raises(ValueError, match="cyclical.*float32"):
+            MeterDeclaration(
+                name="clock",
+                normalization=NormalizationSpec(kind="cyclical_sin_cos", period=1e-320),
+                initial=0.0,
+                min=0.0,
+                max=1.0,
+                lethal_min=False,
+                lethal_max=False,
+                passive_depletion=0.0,
+                move_depletion=0.0,
+                interact_depletion=0.0,
+                natural_recovery=0.0,
+            )
+
+    def test_encoder_builds_meter_publisher_from_compiled_level_declarations(self):
+        meter = MeterDeclaration(
+            name="clock",
+            initial=6.0,
+            normalization=NormalizationSpec(kind="cyclical_sin_cos", period=24.0),
+            min=0.0,
+            max=24.0,
+            lethal_min=False,
+            lethal_max=False,
+            passive_depletion=0.0,
+            move_depletion=0.0,
+            interact_depletion=0.0,
+            natural_recovery=0.0,
+        )
+        env = SimpleNamespace(
+            token_spec=TokenSpec(types=(_meter_type([meter]),)),
+            level=SimpleNamespace(meter_declarations=(meter,)),
+            meter_name_to_index={"clock": 0},
+            device=DEVICE,
+        )
+
+        encoder = build_token_observation_encoder(env)
+        observation = encoder.encode(1, TokenPublishContext(meters=torch.tensor([[6.0]])))
+
+        value0 = _lane("meter", "value_0")
+        value1 = _lane("meter", "value_1")
+        assert observation[0, value0 : value1 + 1].tolist() == pytest.approx([1.0, 0.0], abs=1e-6)
+
+
 _METERS_BY_NAME = {meter.name: meter for meter in _METERS}
+
+
+def _affordance(name: str, interaction_type: str, duration_ticks: int | None = None) -> AffordanceParamConfig:
+    return AffordanceParamConfig(
+        name=name,
+        interaction_type=interaction_type,  # type: ignore[arg-type]
+        duration_ticks=duration_ticks,
+        costs={},
+        costs_per_tick={},
+        interactions={"on_start": [], "per_tick": [], "on_completion": [], "on_early_exit": [], "on_failure": []},
+        opening_hours=OpeningHoursConfig(enabled=False),
+        deployment=DeploymentConfig(type="fixed", positions=[[0, 0]]),
+    )
+
+
+def _write(meter_name: str, delta: float) -> AffordanceMeterWrite:
+    return AffordanceMeterWrite(meter_name, 1, delta, "on_start", "interaction", "target", None)
+
+
+_AFFORDANCE_SIGNATURES = [
+    affordance_signature(
+        affordance=_affordance("EAT", "instant"),
+        effect_deltas=(_write("energy", 0.3),),
+        meters=_METERS_BY_NAME,
+    ),
+    affordance_signature(
+        affordance=_affordance("SLEEP", "multi_tick", 3),
+        effect_deltas=(
+            _write("energy", 0.5),
+            _write("money", -10.0),
+        ),
+        meters=_METERS_BY_NAME,
+    ),
+]
+
+
+def _affordance_type():
+    return _static_type("affordance", ["EAT", "SLEEP"], _AFFORDANCE_SIGNATURES)
 
 
 class TestAffordanceTokenPublisher:
     def _publisher(self, boundary: str = "clamp"):
-        schema = _static_type("affordance", ["EAT", "SLEEP"])
-        return AffordanceTokenPublisher(schema, _substrate(boundary), _AFFORDANCES, _METERS_BY_NAME, DEVICE)
+        return AffordanceTokenPublisher(_affordance_type(), _substrate(boundary), DEVICE)
 
     def _ctx(self, positions, vision_range=None):
         return TokenPublishContext(
@@ -280,9 +474,9 @@ class TestAffordanceTokenPublisher:
         it_multi = _lane("affordance", "interaction_type_multi_tick")
         assert rows[0, 0, it_instant].item() == 1.0 and rows[0, 0, it_multi].item() == 0.0
         assert rows[0, 1, it_multi].item() == 1.0
-        # effect summary present-flags: EAT has one delta, SLEEP two.
-        p0 = _lane("affordance", "effect_0_present")
-        p1 = _lane("affordance", "effect_1_present")
+        # effect summary forms: +1 is an unconditional direct literal delta; 0 is absent.
+        p0 = _lane("affordance", "effect_0_form")
+        p1 = _lane("affordance", "effect_1_form")
         assert rows[0, 0, p0].item() == 1.0 and rows[0, 0, p1].item() == 0.0
         assert rows[0, 1, p0].item() == 1.0 and rows[0, 1, p1].item() == 1.0
 
@@ -423,8 +617,8 @@ class TestItemTokenPublisher:
 
 class TestEffectTokenPublisher:
     _DECLARATIONS = [
-        EffectDeclaration(id="regen", scope="agent", duration=10, intensity=0.4, reapply_policy="renew"),
-        EffectDeclaration(id="poison", scope="agent", duration=5, intensity=-0.2, reapply_policy="stack"),
+        EffectDeclaration(id="regen", scope="agent", duration=10, reapply_policy="renew"),
+        EffectDeclaration(id="poison", scope="agent", duration=5, reapply_policy="stack"),
     ]
 
     def _publisher(self, capacity: int = 2):
@@ -437,13 +631,14 @@ class TestEffectTokenPublisher:
             slot_indices=torch.tensor([0]),
             effect_indices=torch.tensor([[1]]),
             remaining_fraction=torch.tensor([[0.6]]),
+            intensity=torch.tensor([[2.0]]),
             active=torch.tensor([[True]]),
             owner_slot=torch.tensor([2]),
         )
         publisher.publish(rows, TokenPublishContext(effect_slots=batch))
         assert rows[0, 0, 0].item() == 1.0
         assert rows[0, 0, _lane("effect", "remaining_fraction")].item() == pytest.approx(0.6)
-        assert rows[0, 0, _lane("effect", "intensity")].item() < 0.0  # poison's signed intensity
+        assert rows[0, 0, _lane("effect", "live_intensity")].item() == pytest.approx(2.0 / 3.0)
         assert rows[0, 0, _lane("effect", "reapply_stack")].item() == 1.0
         assert rows[0, 0, _lane("effect", "owner_slot")].item() == pytest.approx(0.5)
         assert rows[0, 1, 0].item() == 0.0
@@ -454,11 +649,29 @@ class TestEffectTokenPublisher:
             slot_indices=torch.tensor([0, 1]),
             effect_indices=torch.tensor([[0, 1]]),
             remaining_fraction=torch.ones((1, 2)),
+            intensity=torch.ones((1, 2)),
             active=torch.ones((1, 2), dtype=torch.bool),
             owner_slot=torch.tensor([-1, -1]),
         )
         with pytest.raises(TokenCapacityError, match="effect_manager"):
             publisher.publish(_rows(1, "effect", batch=1), TokenPublishContext(effect_slots=batch))
+
+    def test_command_intensity_changes_dynamic_effect_observation(self):
+        publisher = self._publisher(capacity=1)
+        rows = []
+        for intensity in (0.5, 2.0):
+            output = _rows(1, "effect", batch=1)
+            batch = EffectSlotBatch(
+                slot_indices=torch.tensor([0]),
+                effect_indices=torch.tensor([[0]]),
+                remaining_fraction=torch.tensor([[1.0]]),
+                intensity=torch.tensor([[intensity]]),
+                active=torch.tensor([[True]]),
+                owner_slot=torch.tensor([-1]),
+            )
+            publisher.publish(output, TokenPublishContext(effect_slots=batch))
+            rows.append(output)
+        assert not torch.equal(rows[0], rows[1])
 
 
 def _registry(extra_vars: list[VariableDef] | None = None, num_agents: int = 2) -> VariableRegistry:
@@ -565,11 +778,9 @@ class TestRegistryVariableElementPublisher:
             RegistryVariableElementPublisher(schema, registry, bindings, DEVICE)
 
     def test_missing_static_signature_refuses(self):
-        registry = _registry()
         bindings = [SlotBinding(slot_index=0, filler_kind="static", filler_ref="temp")]
-        schema = build_token_type("variable_element", bindings)
         with pytest.raises(ValueError, match="static_signature"):
-            RegistryVariableElementPublisher(schema, registry, bindings, DEVICE)
+            build_token_type("variable_element", bindings)
 
 
 def _item_profile_registry() -> VariableRegistry:
@@ -662,9 +873,9 @@ def _full_spec(registry: VariableRegistry, element_refs: list[str]) -> TokenSpec
         if type_name == "self":
             types.append(_static_type("self", ["self"]))
         elif type_name == "meter":
-            types.append(_static_type("meter", ["energy", "money"]))
+            types.append(_meter_type(_METERS))
         elif type_name == "affordance":
-            types.append(_static_type("affordance", ["EAT", "SLEEP"]))
+            types.append(_affordance_type())
         elif type_name == "item":
             types.append(_dynamic_type("item", 2))
         elif type_name == "variable_element":
@@ -681,7 +892,7 @@ def _encoder(registry: VariableRegistry, spec: TokenSpec) -> TokenObservationEnc
     publishers = [
         SelfTokenPublisher(spec.get_type("self"), substrate),
         MeterTokenPublisher(spec.get_type("meter"), _METERS, _METER_COLUMNS, DEVICE),
-        AffordanceTokenPublisher(spec.get_type("affordance"), substrate, _AFFORDANCES, _METERS_BY_NAME, DEVICE),
+        AffordanceTokenPublisher(spec.get_type("affordance"), substrate, DEVICE),
         AgentTokenPublisher(spec.get_type("agent"), substrate),
         ItemTokenPublisher(spec.get_type("item"), substrate, owner_slot_capacity=2),
         EffectTokenPublisher(spec.get_type("effect"), [], owner_slot_capacity=1, device=DEVICE),

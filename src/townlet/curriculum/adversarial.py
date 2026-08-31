@@ -479,35 +479,46 @@ class AdversarialCurriculum(CurriculumManager):
     def load_state(self, state: dict[str, Any]) -> None:
         """Restore curriculum manager from checkpoint.
 
-        Strict schema: any missing tracker field raises ``KeyError``, and a
-        size mismatch against the current population raises ``ValueError``.
-        Old checkpoints predating the full schema must be regenerated.
+        The exact schema and live-population shape are validated before mutation.
         """
-        if self.tracker is None:
-            raise RuntimeError("Must initialize_population before loading state")
+        self.validate_checkpoint_state(state)
+        assert self.tracker is not None
+        for field in self._TRACKER_FIELDS:
+            tensor = state[field]
+            setattr(self.tracker, field, tensor.to(self.device))
 
-        missing = [f for f in self._TRACKER_FIELDS if f not in state]
-        if missing:
-            raise KeyError(
-                f"Checkpoint missing required curriculum tracker fields: {missing}. "
-                "This checkpoint predates the full adversarial-curriculum schema; "
-                "regenerate it with the current Townlet version."
-            )
+    def validate_checkpoint_state(self, state: dict[str, Any]) -> None:
+        """Validate exact tracker state without mutating the live curriculum."""
+        if self.tracker is None:
+            raise RuntimeError("Must initialize_population before validating state")
+        if not isinstance(state, dict):
+            raise ValueError(f"Adversarial curriculum checkpoint must be a dictionary; got {type(state).__name__}.")
+
+        expected_keys = set(self._TRACKER_FIELDS)
+        state_keys = set(state)
+        if state_keys != expected_keys:
+            missing = sorted(expected_keys - state_keys)
+            unknown = sorted(state_keys - expected_keys)
+            raise ValueError(f"Adversarial curriculum checkpoint key set mismatch: missing={missing}, unknown={unknown}.")
 
         num_agents = self.tracker.num_agents
         for field in self._TRACKER_FIELDS:
             tensor = state[field]
-            if tensor.shape[0] != num_agents:
+            if not isinstance(tensor, torch.Tensor):
+                raise ValueError(f"Adversarial curriculum checkpoint {field} must be a tensor; got {type(tensor).__name__}.")
+            current = getattr(self.tracker, field)
+            if tensor.shape != (num_agents,):
                 raise ValueError(
                     f"Checkpoint curriculum tracker field {field!r} has shape "
                     f"{tuple(tensor.shape)} but current tracker num_agents={num_agents}. "
                     "Resuming into a differently-sized population is not supported."
                 )
-            setattr(self.tracker, field, tensor.to(self.device))
-
-    def load_checkpoint_state(self, state: dict[str, Any]) -> None:
-        """Alias for load_state() for API consistency."""
-        self.load_state(state)
+            if tensor.dtype != current.dtype:
+                raise ValueError(
+                    f"Adversarial curriculum checkpoint {field} dtype mismatch: " f"checkpoint={tensor.dtype}, current={current.dtype}."
+                )
+            if tensor.is_floating_point() and not torch.isfinite(tensor).all().item():
+                raise ValueError(f"Adversarial curriculum checkpoint {field} must contain only finite values.")
 
     def get_stage_info(self, agent_idx: int = 0) -> dict:
         """Get detailed stage information for an agent.
@@ -552,11 +563,3 @@ class AdversarialCurriculum(CurriculumManager):
             "survival_rate": survival_rate,
             "likely_transition_soon": likely_transition,
         }
-
-    def state_dict(self) -> dict[str, Any]:
-        """PyTorch-style alias for checkpoint_state() for API consistency."""
-        return self.checkpoint_state()
-
-    def load_state_dict(self, state: dict[str, Any]) -> None:
-        """PyTorch-style alias for load_state() for API consistency."""
-        self.load_state(state)

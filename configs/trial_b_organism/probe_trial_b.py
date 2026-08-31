@@ -82,11 +82,7 @@ def park(e: VectorizedHamletEnv, agent: int, pos: tuple) -> None:
 
 
 def creep_cells(e: VectorizedHamletEnv) -> set:
-    return {
-        tuple(int(c) for c in inst.position)
-        for inst in e.item_manager.active_items.values()
-        if inst.item_type_id == "creep"
-    }
+    return {tuple(int(c) for c in inst.position) for inst in e.item_manager.active_items.values() if inst.item_type_id == "creep"}
 
 
 def member_cells(e: VectorizedHamletEnv) -> set:
@@ -106,14 +102,11 @@ def step_all(e: VectorizedHamletEnv, acts: list):
 print("== BLOCKED demonstrations: every declarative route to a durable cell ==")
 print("  (1) trail deposit — organism_footprint declared exactly as effects.md")
 print("      documents (spawn_item, position: self, in on_tick); compiles; step:")
-from townlet.effects.schema import EffectScope  # noqa: E402
 
 tmp = fresh_env()
 tmp.effect_manager.spawn_effect(
     effect_id="organism_footprint",
     target_entity_id=0,
-    scope=EffectScope.AGENT,
-    duration=1000,
     intensity=1.0,
     current_step=0,
 )
@@ -258,12 +251,7 @@ obs_r2 = env._get_observations()
 org_r2 = [round(obs_r2[i, ORG_OFF].item(), 6) for i in range(4)]
 print(f"  after 3 WAIT ticks post-reset: creep_cells={len(creep_cells(env))} organism_size_obs={org_r2}")
 reset_clean = (
-    rooted_r == [0.0] * 4
-    and biomass_r == [0.0] * 4
-    and not creep_r
-    and org_r == [0.0] * 4
-    and org_r2 == [0.0] * 4
-    and n_leaked == 0
+    rooted_r == [0.0] * 4 and biomass_r == [0.0] * 4 and not creep_r and org_r == [0.0] * 4 and org_r2 == [0.0] * 4 and n_leaked == 0
 )
 print(f"  double-reset clean: {reset_clean}")
 

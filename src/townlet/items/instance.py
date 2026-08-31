@@ -38,11 +38,3 @@ class ItemInstance:
     def is_expired(self) -> bool:
         """Check if item should despawn."""
         return self.duration_remaining is not None and self.duration_remaining <= 0
-
-    @property
-    def holder_agent_id(self) -> int | None:
-        """Return an arbitrary holder (for compatibility with single-holder APIs)."""
-
-        if not self.holder_agent_ids:
-            return None
-        return next(iter(self.holder_agent_ids))

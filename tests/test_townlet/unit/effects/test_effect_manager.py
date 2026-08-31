@@ -3,8 +3,9 @@
 import pytest
 
 from townlet.config.effects_config import CommandConfig, EffectDefinitionConfig, EffectsConfig, EffectScope, ReapplyPolicy
-from townlet.effects.catalog import EffectCatalog
+from townlet.effects.catalog import CompiledEffect, EffectCatalog
 from townlet.effects.manager import ActiveEffect, EffectManager
+from townlet.effects.schema import CommandNode, CommandType
 
 
 def test_active_effect_initialization():
@@ -19,6 +20,7 @@ def test_active_effect_initialization():
         duration_remaining=100,
         elapsed_ticks=0,
         spawn_step=1000,
+        observable=True,
     )
 
     assert effect.effect_id == "regen"
@@ -41,6 +43,7 @@ def test_active_effect_tracks_multiple_targets():
         duration_remaining=50,
         elapsed_ticks=0,
         spawn_step=100,
+        observable=True,
     )
 
     effect2 = ActiveEffect(
@@ -53,6 +56,7 @@ def test_active_effect_tracks_multiple_targets():
         duration_remaining=30,
         elapsed_ticks=20,
         spawn_step=100,
+        observable=True,
     )
 
     assert effect1.target_entity_id != effect2.target_entity_id
@@ -71,7 +75,6 @@ def catalog_fixture():
                 id="regen",
                 scope=EffectScope.AGENT,
                 duration=100,
-                intensity=1.0,
                 reapply_policy=ReapplyPolicy.STACK,
                 observable=True,
                 on_spawn=[],
@@ -91,8 +94,6 @@ def test_spawn_effect_creates_active_instance(catalog_fixture):
     effect = manager.spawn_effect(
         effect_id="regen",
         target_entity_id=5,
-        scope=EffectScope.AGENT,
-        duration=100,
         intensity=1.0,
         current_step=1000,
     )
@@ -109,12 +110,34 @@ def test_spawn_effect_creates_active_instance(catalog_fixture):
     assert effect in manager.agent_effects[5]
 
 
+def test_spawn_effect_derives_scope_and_duration_only_from_catalog(catalog_fixture):
+    catalog_fixture.effects["item_decay"] = CompiledEffect(
+        id="item_decay",
+        scope="item",
+        duration=7,
+        reapply_policy="stack",
+        observable=True,
+        on_spawn=[],
+        on_tick=[],
+        on_despawn=[],
+        on_interrupt=[],
+    )
+    manager = EffectManager(catalog=catalog_fixture, device="cpu")
+
+    effect = manager.spawn_effect("item_decay", 42, intensity=2.0, current_step=3)
+
+    assert effect.scope == EffectScope.ITEM
+    assert effect.duration_total == 7
+    assert effect.duration_remaining == 7
+    assert effect in manager.item_effects[42]
+
+
 def test_spawn_effect_stack_policy_allows_multiple(catalog_fixture):
     """Stack policy allows multiple instances of same effect."""
     manager = EffectManager(catalog=catalog_fixture, device="cpu")
 
-    effect1 = manager.spawn_effect("regen", 3, EffectScope.AGENT, 50, 1.0, 100)
-    effect2 = manager.spawn_effect("regen", 3, EffectScope.AGENT, 50, 1.5, 110)
+    effect1 = manager.spawn_effect("regen", 3, 1.0, 100)
+    effect2 = manager.spawn_effect("regen", 3, 1.5, 110)
 
     assert len(manager.agent_effects[3]) == 2
     assert effect1.instance_id != effect2.instance_id
@@ -127,7 +150,7 @@ def test_tick_updates_elapsed_and_remaining(catalog_fixture):
     import torch
 
     manager = EffectManager(catalog=catalog_fixture, device="cpu")
-    effect = manager.spawn_effect("regen", 1, EffectScope.AGENT, 100, 1.0, 500)
+    effect = manager.spawn_effect("regen", 1, 1.0, 500)
 
     # Initial state
     assert effect.elapsed_ticks == 0
@@ -146,7 +169,8 @@ def test_tick_despawns_expired_effects(catalog_fixture):
     import torch
 
     manager = EffectManager(catalog=catalog_fixture, device="cpu")
-    _ = manager.spawn_effect("regen", 2, EffectScope.AGENT, 3, 1.0, 100)
+    catalog_fixture.effects["regen"].duration = 3
+    _ = manager.spawn_effect("regen", 2, 1.0, 100)
 
     bars = {"health": torch.tensor([1.0, 0.8, 0.9])}
     manager.tick(bars=bars, vfs_registry=None, current_step=101)  # remaining=2
@@ -156,6 +180,111 @@ def test_tick_despawns_expired_effects(catalog_fixture):
     manager.tick(bars=bars, vfs_registry=None, current_step=103)  # remaining=0, despawn
 
     assert 2 not in manager.agent_effects or len(manager.agent_effects[2]) == 0
+
+
+def test_tick_and_natural_despawn_execute_for_all_effect_scopes():
+    """Every admitted effect scope owns the same executable lifecycle."""
+
+    class RecordingExecutor:
+        def __init__(self) -> None:
+            self.calls = []
+
+        def execute(self, command, context) -> None:
+            self.calls.append((command.path, context.self_index, context.target_index, context.self_is_item))
+
+    effects = {}
+    for scope in EffectScope:
+        effects[scope.value] = catalog_effect = CompiledEffect(
+            id=scope.value,
+            scope=scope.value,
+            duration=1,
+            reapply_policy="stack",
+            observable=True,
+            on_spawn=[],
+            on_tick=[CommandNode(type=CommandType.MODIFY, path=f"tick.{scope.value}", value_expr="0")],
+            on_despawn=[CommandNode(type=CommandType.MODIFY, path=f"despawn.{scope.value}", value_expr="0")],
+            on_interrupt=[],
+        )
+        assert catalog_effect.scope == scope.value
+    executor = RecordingExecutor()
+    manager = EffectManager(
+        catalog=EffectCatalog(
+            effects=effects,
+            max_active_effects={"global": 8, "agent": 8, "item": 8, "affordance": 8},
+        ),
+        device="cpu",
+        command_executor=executor,
+    )
+    entity_ids = {
+        EffectScope.GLOBAL: 10,
+        EffectScope.AGENT: 11,
+        EffectScope.ITEM: 12,
+        EffectScope.AFFORDANCE: 13,
+    }
+    for scope, entity_id in entity_ids.items():
+        manager.spawn_effect(scope.value, entity_id, 1.0, 0)
+
+    manager.tick(bars={}, vfs_registry=None, current_step=1)
+
+    expected = []
+    for scope, entity_id in entity_ids.items():
+        self_index = entity_id if scope in {EffectScope.AGENT, EffectScope.ITEM} else None
+        is_item = scope == EffectScope.ITEM
+        expected.extend(
+            (
+                (f"tick.{scope.value}", self_index, entity_id, is_item),
+                (f"despawn.{scope.value}", self_index, entity_id, is_item),
+            )
+        )
+    assert sorted(executor.calls) == sorted(expected)
+    assert manager.get_all_active_effects() == []
+
+
+def test_item_scope_context_is_authoritative_across_spawn_merge_and_cancel():
+    class RecordingExecutor:
+        def __init__(self) -> None:
+            self.calls = []
+
+        def execute(self, command, context) -> None:
+            self.calls.append(
+                (
+                    command.path,
+                    context.self_index,
+                    context.target_index,
+                    context.self_is_item,
+                    context.target_is_item,
+                )
+            )
+
+    effect = CompiledEffect(
+        id="item_effect",
+        scope="item",
+        duration=3,
+        reapply_policy="merge",
+        observable=True,
+        on_spawn=[CommandNode(type=CommandType.MODIFY, path="spawn", value_expr="0")],
+        on_tick=[],
+        on_despawn=[],
+        on_interrupt=[CommandNode(type=CommandType.MODIFY, path="interrupt", value_expr="0")],
+    )
+    executor = RecordingExecutor()
+    manager = EffectManager(
+        catalog=EffectCatalog(
+            effects={effect.id: effect},
+            max_active_effects={"global": 0, "agent": 0, "item": 1, "affordance": 0},
+        ),
+        command_executor=executor,  # type: ignore[arg-type]
+    )
+
+    active = manager.spawn_effect("item_effect", 42, 1.0, 0, bars={})
+    manager.spawn_effect("item_effect", 42, 0.5, 1, bars={})
+    manager.cancel_effect(active.instance_id, bars={}, vfs_registry=None, current_step=2)
+
+    assert executor.calls == [
+        ("spawn", 42, 42, True, True),
+        ("interrupt", 42, 42, True, True),
+        ("interrupt", 42, 42, True, True),
+    ]
 
 
 def test_tick_handles_multiple_scopes(catalog_fixture):
@@ -169,7 +298,6 @@ def test_tick_handles_multiple_scopes(catalog_fixture):
         id="day_cycle",
         scope=EffectScope.GLOBAL,
         duration=200,
-        intensity=1.0,
         reapply_policy=ReapplyPolicy.STACK,
         observable=True,
         on_spawn=[],
@@ -178,8 +306,8 @@ def test_tick_handles_multiple_scopes(catalog_fixture):
         on_interrupt=[],
     )
 
-    global_effect = manager.spawn_effect("day_cycle", 0, EffectScope.GLOBAL, 200, 1.0, 10)
-    agent_effect = manager.spawn_effect("regen", 5, EffectScope.AGENT, 50, 1.0, 10)
+    global_effect = manager.spawn_effect("day_cycle", 0, 1.0, 10)
+    agent_effect = manager.spawn_effect("regen", 5, 1.0, 10)
 
     bars = {"health": torch.tensor([1.0] * 6)}
     manager.tick(bars=bars, vfs_registry=None, current_step=11)
@@ -229,7 +357,6 @@ def catalog_with_commands():
                 id="regen",
                 scope=EffectScope.AGENT,
                 duration=50,
-                intensity=1.0,
                 reapply_policy=ReapplyPolicy.STACK,
                 observable=True,
                 on_spawn=[],
@@ -241,7 +368,6 @@ def catalog_with_commands():
                 id="buff",
                 scope=EffectScope.AGENT,
                 duration=2,
-                intensity=1.0,
                 reapply_policy=ReapplyPolicy.STACK,
                 observable=True,
                 on_spawn=[],
@@ -267,7 +393,7 @@ def test_tick_executes_on_tick_commands(catalog_with_commands, mock_executor):
     manager = EffectManager(catalog=catalog_with_commands, device="cpu")
     manager.command_executor = mock_executor  # Inject mock
 
-    _ = manager.spawn_effect("regen", 3, EffectScope.AGENT, 50, 1.0, 100)
+    _ = manager.spawn_effect("regen", 3, 1.0, 100)
 
     bars = {"energy": torch.tensor([1.0] * 4)}
     manager.tick(bars=bars, vfs_registry=None, current_step=101)
@@ -284,7 +410,7 @@ def test_tick_executes_on_despawn_before_removal(catalog_with_commands, mock_exe
     manager = EffectManager(catalog=catalog_with_commands, device="cpu")
     manager.command_executor = mock_executor
 
-    _ = manager.spawn_effect("buff", 5, EffectScope.AGENT, 2, 1.0, 200)
+    _ = manager.spawn_effect("buff", 5, 1.0, 200)
 
     bars = {"health": torch.tensor([1.0] * 6)}
     manager.tick(bars=bars, vfs_registry=None, current_step=201)  # remaining=1
@@ -311,7 +437,6 @@ def test_spawn_effect_executes_on_spawn():
                 id="poisoned",
                 scope=EffectScope.AGENT,
                 duration=30,
-                intensity=1.0,
                 reapply_policy=ReapplyPolicy.STACK,
                 observable=True,
                 on_spawn=[CommandConfig(modify="target.bar.health", value="target.bar.health - 5.0")],
@@ -332,8 +457,6 @@ def test_spawn_effect_executes_on_spawn():
     effect = manager.spawn_effect(
         effect_id="poisoned",
         target_entity_id=1,
-        scope=EffectScope.AGENT,
-        duration=30,
         intensity=1.0,
         current_step=100,
         bars=bars,
@@ -365,7 +488,6 @@ def test_spawn_effect_skips_on_spawn_without_bars():
                 id="poisoned",
                 scope=EffectScope.AGENT,
                 duration=30,
-                intensity=1.0,
                 reapply_policy=ReapplyPolicy.STACK,
                 observable=True,
                 on_spawn=[CommandConfig(modify="target.bar.health", value="target.bar.health - 5.0")],
@@ -385,8 +507,6 @@ def test_spawn_effect_skips_on_spawn_without_bars():
     effect = manager.spawn_effect(
         effect_id="poisoned",
         target_entity_id=2,
-        scope=EffectScope.AGENT,
-        duration=30,
         intensity=1.0,
         current_step=100,
     )
@@ -439,7 +559,6 @@ def test_spawn_effect_item_scope(catalog_fixture):
         id="item_decay",
         scope=EffectScope.ITEM,
         duration=100,
-        intensity=1.0,
         reapply_policy="stack",
         observable=True,
         on_spawn=[],
@@ -453,8 +572,6 @@ def test_spawn_effect_item_scope(catalog_fixture):
     effect = manager.spawn_effect(
         effect_id="item_decay",
         target_entity_id=42,  # Item ID
-        scope=EffectScope.ITEM,
-        duration=100,
         intensity=1.0,
         current_step=0,
     )
@@ -471,7 +588,6 @@ def test_spawn_effect_affordance_scope(catalog_fixture):
         id="depleted",
         scope=EffectScope.AFFORDANCE,
         duration=100,
-        intensity=1.0,
         reapply_policy="stack",
         observable=True,
         on_spawn=[],
@@ -485,8 +601,6 @@ def test_spawn_effect_affordance_scope(catalog_fixture):
     effect = manager.spawn_effect(
         effect_id="depleted",
         target_entity_id=7,  # Affordance index
-        scope=EffectScope.AFFORDANCE,
-        duration=100,
         intensity=1.0,
         current_step=0,
     )
@@ -503,7 +617,6 @@ def test_get_all_active_effects_includes_all_scopes(catalog_fixture):
         id="item_decay",
         scope=EffectScope.ITEM,
         duration=100,
-        intensity=1.0,
         reapply_policy="stack",
         observable=True,
         on_spawn=[],
@@ -515,7 +628,6 @@ def test_get_all_active_effects_includes_all_scopes(catalog_fixture):
         id="depleted",
         scope=EffectScope.AFFORDANCE,
         duration=100,
-        intensity=1.0,
         reapply_policy="stack",
         observable=True,
         on_spawn=[],
@@ -527,7 +639,6 @@ def test_get_all_active_effects_includes_all_scopes(catalog_fixture):
         id="global_buff",
         scope=EffectScope.GLOBAL,
         duration=100,
-        intensity=1.0,
         reapply_policy="stack",
         observable=True,
         on_spawn=[],
@@ -539,10 +650,10 @@ def test_get_all_active_effects_includes_all_scopes(catalog_fixture):
     manager = EffectManager(catalog=catalog_fixture, device="cpu")
 
     # Spawn effects in different scopes
-    global_eff = manager.spawn_effect("global_buff", 0, EffectScope.GLOBAL, 100, 1.0, 0)
-    agent_eff = manager.spawn_effect("regen", 1, EffectScope.AGENT, 100, 1.0, 0)
-    item_eff = manager.spawn_effect("item_decay", 42, EffectScope.ITEM, 100, 1.0, 0)
-    aff_eff = manager.spawn_effect("depleted", 7, EffectScope.AFFORDANCE, 100, 1.0, 0)
+    global_eff = manager.spawn_effect("global_buff", 0, 1.0, 0)
+    agent_eff = manager.spawn_effect("regen", 1, 1.0, 0)
+    item_eff = manager.spawn_effect("item_decay", 42, 1.0, 0)
+    aff_eff = manager.spawn_effect("depleted", 7, 1.0, 0)
 
     all_effects = manager.get_all_active_effects()
 
@@ -561,7 +672,7 @@ def test_cancel_effect_agent_scope(catalog_fixture):
     import torch
 
     manager = EffectManager(catalog=catalog_fixture, device="cpu")
-    effect = manager.spawn_effect("regen", 3, EffectScope.AGENT, 100, 1.0, 0)
+    effect = manager.spawn_effect("regen", 3, 1.0, 0)
 
     bars = {"health": torch.tensor([1.0] * 4)}
     manager.cancel_effect(effect.instance_id, bars, None, current_step=10)
@@ -578,7 +689,6 @@ def test_cancel_effect_global_scope(catalog_fixture):
         id="global_buff",
         scope=EffectScope.GLOBAL,
         duration=100,
-        intensity=1.0,
         reapply_policy="stack",
         observable=True,
         on_spawn=[],
@@ -588,7 +698,7 @@ def test_cancel_effect_global_scope(catalog_fixture):
     )
 
     manager = EffectManager(catalog=catalog_fixture, device="cpu")
-    effect = manager.spawn_effect("global_buff", 0, EffectScope.GLOBAL, 100, 1.0, 0)
+    effect = manager.spawn_effect("global_buff", 0, 1.0, 0)
 
     bars = {"health": torch.tensor([1.0])}
     manager.cancel_effect(effect.instance_id, bars, None, current_step=10)
@@ -605,7 +715,6 @@ def test_cancel_effect_item_scope(catalog_fixture):
         id="item_decay",
         scope=EffectScope.ITEM,
         duration=100,
-        intensity=1.0,
         reapply_policy="stack",
         observable=True,
         on_spawn=[],
@@ -615,7 +724,7 @@ def test_cancel_effect_item_scope(catalog_fixture):
     )
 
     manager = EffectManager(catalog=catalog_fixture, device="cpu")
-    effect = manager.spawn_effect("item_decay", 42, EffectScope.ITEM, 100, 1.0, 0)
+    effect = manager.spawn_effect("item_decay", 42, 1.0, 0)
 
     bars = {"health": torch.tensor([1.0])}
     manager.cancel_effect(effect.instance_id, bars, None, current_step=10)
@@ -632,7 +741,6 @@ def test_cancel_effect_affordance_scope(catalog_fixture):
         id="depleted",
         scope=EffectScope.AFFORDANCE,
         duration=100,
-        intensity=1.0,
         reapply_policy="stack",
         observable=True,
         on_spawn=[],
@@ -642,7 +750,7 @@ def test_cancel_effect_affordance_scope(catalog_fixture):
     )
 
     manager = EffectManager(catalog=catalog_fixture, device="cpu")
-    effect = manager.spawn_effect("depleted", 7, EffectScope.AFFORDANCE, 100, 1.0, 0)
+    effect = manager.spawn_effect("depleted", 7, 1.0, 0)
 
     bars = {"health": torch.tensor([1.0])}
     manager.cancel_effect(effect.instance_id, bars, None, current_step=10)

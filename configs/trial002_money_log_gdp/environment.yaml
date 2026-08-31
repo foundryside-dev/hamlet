@@ -6,12 +6,12 @@ environment:
       description: "Physical energy for movement and actions"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
     - name: health
       description: "Basic well-being; recover at doctor"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
     - name: money
       description: "Aggregate economic output, log-scaled, cycling with the business cycle"
       # THE POINT OF THIS PACK (hamlet-3d3039f340). With bounds [1, 1e6] and a linear
@@ -27,7 +27,7 @@ environment:
       description: "Food and nutrition for maintaining energy"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
 
   cascade_graph: []
 

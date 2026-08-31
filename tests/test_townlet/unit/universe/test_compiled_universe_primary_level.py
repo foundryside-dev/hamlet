@@ -43,10 +43,12 @@ def test_the_collision_this_guard_exists_for_is_real(tmp_path: Path) -> None:
     """
     a = _compile(tmp_path, "L0_5_dual_resource")
     b = _compile(tmp_path, "L1_full_observability")
+    a_level = a.get_level(a.metadata.primary_level)
+    b_level = b.get_level(b.metadata.primary_level)
 
-    assert a.vfs_hash == b.vfs_hash
-    assert a.transition_graph_hash == b.transition_graph_hash
-    assert a.action_schema_hash == b.action_schema_hash
+    assert a_level.vfs_hash == b_level.vfs_hash
+    assert a_level.transition_graph_hash == b_level.transition_graph_hash
+    assert a_level.action_schema_hash == b_level.action_schema_hash
     assert a.metadata.primary_level != b.metadata.primary_level, "primary_level is the ONLY field separating these two projections"
 
 
@@ -55,10 +57,12 @@ def test_from_dict_round_trips_the_declared_primary_level(tmp_path: Path) -> Non
     universe = _compile(tmp_path, "L1_full_observability")
 
     restored = CompiledUniverse.from_dict(universe.to_dict())
+    restored_level = restored.get_level(restored.metadata.primary_level)
+    universe_level = universe.get_level(universe.metadata.primary_level)
 
     assert restored.metadata.primary_level == "L1_full_observability"
-    assert restored.vfs_hash == universe.vfs_hash
-    assert restored.transition_graph_hash == universe.transition_graph_hash
+    assert restored_level.vfs_hash == universe_level.vfs_hash
+    assert restored_level.transition_graph_hash == universe_level.transition_graph_hash
 
 
 def test_from_dict_rejects_a_payload_whose_declared_primary_level_is_absent(tmp_path: Path) -> None:

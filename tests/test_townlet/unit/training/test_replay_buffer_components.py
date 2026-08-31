@@ -250,7 +250,7 @@ class TestLegacyFormatRejection:
             "dones": torch.rand(5) > 0.5,
         }
 
-        with pytest.raises(ValueError, match="format_version < 3"):
+        with pytest.raises(ValueError, match="exact current format_version is 3"):
             buffer.load_from_serialized(old_format)
 
     def test_load_format_version_1_raises_error(self):
@@ -270,7 +270,7 @@ class TestLegacyFormatRejection:
             "dones": torch.rand(5) > 0.5,
         }
 
-        with pytest.raises(ValueError, match="format_version < 3"):
+        with pytest.raises(ValueError, match="exact current format_version is 3"):
             buffer.load_from_serialized(legacy_format)
 
     def test_load_missing_format_version_raises_error(self):
@@ -289,8 +289,14 @@ class TestLegacyFormatRejection:
             "dones": torch.rand(5) > 0.5,
         }
 
-        with pytest.raises(ValueError, match="format_version < 3"):
+        with pytest.raises(ValueError, match="exact current format_version is 3"):
             buffer.load_from_serialized(old_format)
+
+    def test_load_unknown_future_format_version_raises_error(self):
+        buffer = ReplayBuffer(capacity=10, device=CPU)
+
+        with pytest.raises(ValueError, match="exact current format_version is 3"):
+            buffer.load_from_serialized({"format_version": 4})
 
 
 class TestClearAndStatsWithComponents:

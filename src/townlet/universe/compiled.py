@@ -35,10 +35,24 @@ from townlet.universe.dto import (
     RuntimeActionSpace,
     UniverseMetadata,
 )
-from townlet.universe.dto.token_spec import SlotBinding, TokenSpec, TokenTypeSchema
+from townlet.universe.dto.token_spec import (
+    EFFECT_SCOPE_VOCABULARY,
+    TOKEN_TYPE_ROSTER,
+    MeterDeclaration,
+    SlotBinding,
+    TokenSpec,
+    TokenTypeSchema,
+    canonical_token_bindings,
+)
 from townlet.universe.optimization import OptimizationData
+from townlet.universe.token_hashes import (
+    compute_observation_schema_hash,
+    compute_token_layout_hash,
+    compute_token_type_schema_hash,
+)
 from townlet.vfs.profiles import CompiledGlobalProfile
-from townlet.vfs.schema import VariableDef
+from townlet.vfs.schema import NormalizationSpec, VariableDef
+from townlet.vfs.schema_hashes import compute_vfs_hash
 from townlet.vfs.transition_schedule import (
     VTCTransitionSchedule,
     build_vtc_transition_schedule,
@@ -79,23 +93,23 @@ from townlet.vfs.transition_schedule import (
 # `vfs_hash` moves on every pack (registered as DIV-008). A 1.21 cache describes an entirely
 # different observation ABI whose stored hashes would silently mis-gate a checkpoint; the bump
 # makes it the "recompile the config pack" error.
-COMPILED_SCHEMA_VERSION = "1.22"
+# 1.23: meter token payloads replace their hard-coded minmax identity with the meter's required
+# bounded two-lane normalization contract. The meter payload schema and every recursive effect
+# target signature therefore change. A 1.22 cache describes a different token row width and
+# normalization identity; refuse it as a stale artifact instead of attempting to interpret it.
+# 1.24: each level persists the compiler-owned meter declarations consumed by the live
+# publisher, and the compiled effect catalog persists its exact per-scope active-effect
+# budget. A 1.23 cache would force runtime token binding authority to be reconstructed by
+# joining source configs again; refuse it instead of retaining a second source of truth.
+# 1.25: per-level compiled products exist only in `all_levels`. The duplicate top-level
+# primary-level projection is deleted, including its token/action/VFS products, metadata,
+# optimization data, advisories, and level-config hashes. A 1.24 artifact carries two
+# independently mutable authorities, so it must be refused rather than translated.
+COMPILED_SCHEMA_VERSION = "1.25"
 
 REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "compiled_schema_version",
     "metadata",
-    "observation_schema_hash",
-    "vfs_variables",
-    "variable_schema_hash",
-    "action_space_metadata",
-    "runtime_action_space",
-    "action_schema_hash",
-    "transition_graph_hash",
-    "transition_schedule",
-    "vfs_hash",
-    "meter_metadata",
-    "affordance_metadata",
-    "optimization_data_raw",
     "experiment",
     "stratum",
     "environment",
@@ -108,16 +122,7 @@ REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "vfs_expression_schema",
     "vfs_history_spec",
     "vfs_evaluation_marks",
-    "token_spec",
-    "token_type_schema_hash",
-    "layout_hash",
-    "token_advisories",
     "experiment_dir",
-    "drive_hash",
-    "curriculum_hash",
-    "bars_hash",
-    "affordances_hash",
-    "training_hash",
     "brain_hash",
     "pack_brain_hash",
     "experiment_hash",
@@ -151,34 +156,9 @@ class CompiledVFSProfiles:
 class CompiledUniverse:
     """Compiled universe representation with multi-level support."""
 
-    # Primary (per-primary-level) metadata
+    # Public summary of the selected level. The complete compiled products live only
+    # in `all_levels[metadata.primary_level]`.
     metadata: UniverseMetadata
-    # The token observation artifact IS the compiler's observation product (unit-3
-    # Task-10 cut). The ObservationSpec / ObservationActivity / VFS-mirror family it
-    # replaced is deleted, not carried.
-    token_spec: TokenSpec
-    # Transfer contract: hash of the TokenSpec type schemas (per-type payload feature
-    # names + filler kinds + encoding version); equal hashes mean per-type encoder
-    # weights are exchangeable.
-    token_type_schema_hash: str
-    # Flat-net contract: hash of the serialization layout (type order, capacities, slot
-    # bindings, total_dims); equal hashes mean a flat reader sees identical dim meanings.
-    layout_hash: str
-    # Type schema + slot-binding CONTENT over the TokenSpec (token-obs spec §5). Slot 2
-    # of the unchanged four-term `compute_vfs_hash` composition — which is why `vfs_hash`
-    # moved on every pack at the cut (DIV-008).
-    observation_schema_hash: str
-    vfs_variables: tuple[VariableDef, ...]
-    variable_schema_hash: str
-    action_space_metadata: ActionSpaceMetadata
-    runtime_action_space: RuntimeActionSpace
-    action_schema_hash: str
-    transition_graph_hash: str
-    transition_schedule: VTCTransitionSchedule
-    vfs_hash: str
-    meter_metadata: MeterMetadata
-    affordance_metadata: AffordanceMetadata
-    optimization_data: OptimizationData
 
     # Shared experiment-level configs (v2.1)
     experiment: ExperimentConfig
@@ -186,6 +166,10 @@ class CompiledUniverse:
     environment: EnvironmentConfig
     actions: ActionsConfig
     brain: BrainConfig
+
+    # Every compiled level product, including the selected level's products.
+    all_levels: dict[str, CompiledUniverse.LevelMetadata]
+
     items_catalog: ItemsCatalogConfig | None = None
 
     # Compiled VFS profiles (experiment-level artifact)
@@ -207,18 +191,8 @@ class CompiledUniverse:
     vfs_evaluation_marks: dict[str, set[str]] | None = None
     # Format: {"global": {"day_count", "is_night"}, "agent": {"motivation"}}
 
-    # Compile-time token advisories. Exposure-rule and effect-budget failures are
-    # compile REFUSALS since the unit-3 cut; what remains here is the mean-aggregator
-    # census advisory (an instrument, not a gate).
-    token_advisories: tuple[str, ...] = ()
-
     # Provenance
     experiment_dir: Path | None = None
-    drive_hash: str | None = None
-    curriculum_hash: str | None = None
-    bars_hash: str | None = None
-    affordances_hash: str | None = None
-    training_hash: str | None = None
     # brain_hash is the SHA256 of the PRIMARY LEVEL's EFFECTIVE brain config —
     # brain.yaml merged with that level's training.yaml overrides via
     # apply_training_overrides — not of brain.yaml. It is level-scoped, like drive_hash.
@@ -231,9 +205,6 @@ class CompiledUniverse:
     environment_hash: str | None = None
     actions_hash: str | None = None
     items_hash: str | None = None
-
-    # Multi-level support
-    all_levels: dict[str, CompiledUniverse.LevelMetadata] | None = None
 
     @property
     def brain_forked(self) -> bool:
@@ -250,8 +221,7 @@ class CompiledUniverse:
         drive: DriveAsCodeConfig
         curriculum: CurriculumConfig
         training: TrainingV2Config
-        # The token observation artifact — see the CompiledUniverse fields of the same
-        # names for the contracts.
+        # The token observation artifact and its transfer/layout contracts.
         token_spec: TokenSpec
         token_type_schema_hash: str
         layout_hash: str
@@ -262,6 +232,7 @@ class CompiledUniverse:
         transition_schedule: VTCTransitionSchedule
         vfs_hash: str
         meter_metadata: MeterMetadata
+        meter_declarations: tuple[MeterDeclaration, ...]
         affordance_metadata: AffordanceMetadata
         optimization_data: OptimizationData
         observation_schema_hash: str
@@ -276,22 +247,16 @@ class CompiledUniverse:
         token_advisories: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
-        object.__setattr__(self, "token_advisories", tuple(self.token_advisories))
-        if self.all_levels is not None and len(self.all_levels) == 0:
-            raise ValueError("all_levels must be None or a non-empty dict of LevelMetadata")
+        if not self.all_levels:
+            raise ValueError("all_levels must be a non-empty dict of LevelMetadata")
+        if self.metadata.primary_level not in self.all_levels:
+            raise ValueError(f"primary_level {self.metadata.primary_level!r} is absent from all_levels")
 
     @property
     def available_levels(self) -> list[str]:
-        if self.all_levels is None:
-            return []
         return sorted(self.all_levels.keys())
 
     def get_level(self, level_name: str) -> CompiledUniverse.LevelMetadata:
-        if self.all_levels is None:
-            raise ValueError(
-                "This CompiledUniverse was not compiled with multi-level support. "
-                "Compile with primary_level and ensure all_levels is populated."
-            )
         if level_name not in self.all_levels:
             raise ValueError(f"Level '{level_name}' not found. Available: {list(self.all_levels.keys())}")
         return self.all_levels[level_name]
@@ -337,27 +302,12 @@ class CompiledUniverse:
         """Clone the compiled universe."""
         return CompiledUniverse(
             metadata=deepcopy(self.metadata),
-            # Frozen, tuple-carrying dataclass: safe to share.
-            token_spec=self.token_spec,
-            token_type_schema_hash=self.token_type_schema_hash,
-            layout_hash=self.layout_hash,
-            observation_schema_hash=self.observation_schema_hash,
-            vfs_variables=tuple(deepcopy(self.vfs_variables)),
-            variable_schema_hash=self.variable_schema_hash,
-            action_space_metadata=deepcopy(self.action_space_metadata),
-            runtime_action_space=deepcopy(self.runtime_action_space),
-            action_schema_hash=self.action_schema_hash,
-            transition_graph_hash=self.transition_graph_hash,
-            transition_schedule=deepcopy(self.transition_schedule),
-            vfs_hash=self.vfs_hash,
-            meter_metadata=deepcopy(self.meter_metadata),
-            affordance_metadata=deepcopy(self.affordance_metadata),
-            optimization_data=deepcopy(self.optimization_data),
             experiment=deepcopy(self.experiment),
             stratum=deepcopy(self.stratum),
             environment=deepcopy(self.environment),
             actions=deepcopy(self.actions),
             brain=deepcopy(self.brain),
+            all_levels=deepcopy(self.all_levels),
             items_catalog=deepcopy(self.items_catalog) if self.items_catalog is not None else None,
             compiled_vfs_profiles=deepcopy(self.compiled_vfs_profiles) if self.compiled_vfs_profiles is not None else None,
             compiled_effect_catalog=deepcopy(self.compiled_effect_catalog) if self.compiled_effect_catalog is not None else None,
@@ -365,13 +315,7 @@ class CompiledUniverse:
             vfs_expression_schema=deepcopy(self.vfs_expression_schema) if self.vfs_expression_schema is not None else None,
             vfs_history_spec=deepcopy(self.vfs_history_spec) if self.vfs_history_spec is not None else None,
             vfs_evaluation_marks=deepcopy(self.vfs_evaluation_marks) if self.vfs_evaluation_marks is not None else None,
-            token_advisories=self.token_advisories,
             experiment_dir=self.experiment_dir,
-            drive_hash=self.drive_hash,
-            curriculum_hash=self.curriculum_hash,
-            bars_hash=self.bars_hash,
-            affordances_hash=self.affordances_hash,
-            training_hash=self.training_hash,
             brain_hash=self.brain_hash,
             pack_brain_hash=self.pack_brain_hash,
             experiment_hash=self.experiment_hash,
@@ -379,7 +323,6 @@ class CompiledUniverse:
             environment_hash=self.environment_hash,
             actions_hash=self.actions_hash,
             items_hash=self.items_hash,
-            all_levels=deepcopy(self.all_levels),
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -387,25 +330,6 @@ class CompiledUniverse:
         return {
             "compiled_schema_version": COMPILED_SCHEMA_VERSION,
             "metadata": _dataclass_to_plain(self.metadata),
-            "token_spec": _serialize_token_spec(self.token_spec),
-            "token_type_schema_hash": self.token_type_schema_hash,
-            "layout_hash": self.layout_hash,
-            "observation_schema_hash": self.observation_schema_hash,
-            "vfs_variables": [var.model_dump() for var in getattr(self, "vfs_variables", ())],
-            "variable_schema_hash": self.variable_schema_hash,
-            "action_space_metadata": _dataclass_to_plain(self.action_space_metadata),
-            "runtime_action_space": _dataclass_to_plain(self.runtime_action_space),
-            "action_schema_hash": self.action_schema_hash,
-            "transition_graph_hash": self.transition_graph_hash,
-            "transition_schedule": serialize_vtc_transition_schedule(self.transition_schedule),
-            "vfs_hash": self.vfs_hash,
-            "meter_metadata": _dataclass_to_plain(self.meter_metadata),
-            "affordance_metadata": _dataclass_to_plain(self.affordance_metadata),
-            "optimization_data_raw": {
-                "cascade_data": self.optimization_data.cascade_data,
-                "modulation_data": self.optimization_data.modulation_data,
-                "affordance_position_map": _serialize_affordance_positions(self.optimization_data.affordance_position_map),
-            },
             "experiment": self.experiment.model_dump(),
             "stratum": self.stratum.model_dump(),
             "environment": self.environment.model_dump(),
@@ -424,13 +348,7 @@ class CompiledUniverse:
             "vfs_evaluation_marks": (
                 {k: list(v) for k, v in self.vfs_evaluation_marks.items()} if self.vfs_evaluation_marks is not None else None
             ),  # Convert sets to lists for JSON serialization
-            "token_advisories": list(self.token_advisories),
             "experiment_dir": None if self.experiment_dir is None else str(self.experiment_dir),
-            "drive_hash": self.drive_hash,
-            "curriculum_hash": self.curriculum_hash,
-            "bars_hash": self.bars_hash,
-            "affordances_hash": self.affordances_hash,
-            "training_hash": self.training_hash,
             "brain_hash": self.brain_hash,
             "pack_brain_hash": self.pack_brain_hash,
             "experiment_hash": self.experiment_hash,
@@ -438,46 +356,43 @@ class CompiledUniverse:
             "environment_hash": self.environment_hash,
             "actions_hash": self.actions_hash,
             "items_hash": self.items_hash,
-            "all_levels": (
-                None
-                if self.all_levels is None
-                else {
-                    name: {
-                        "level_name": meta.level_name,
-                        "bars": meta.bars.model_dump(),
-                        "affordances": meta.affordances.model_dump(by_alias=True),
-                        "drive": meta.drive.model_dump(),
-                        "drive_hash": meta.drive_hash,
-                        "curriculum_hash": meta.curriculum_hash,
-                        "bars_hash": meta.bars_hash,
-                        "affordances_hash": meta.affordances_hash,
-                        "training_hash": meta.training_hash,
-                        "curriculum": meta.curriculum.model_dump(),
-                        "training": meta.training.model_dump(),
-                        "token_spec": _serialize_token_spec(meta.token_spec),
-                        "token_type_schema_hash": meta.token_type_schema_hash,
-                        "layout_hash": meta.layout_hash,
-                        "action_metadata": _dataclass_to_plain(meta.action_metadata),
-                        "runtime_action_space": _dataclass_to_plain(meta.runtime_action_space),
-                        "action_schema_hash": meta.action_schema_hash,
-                        "transition_graph_hash": meta.transition_graph_hash,
-                        "transition_schedule": serialize_vtc_transition_schedule(meta.transition_schedule),
-                        "vfs_hash": meta.vfs_hash,
-                        "meter_metadata": _dataclass_to_plain(meta.meter_metadata),
-                        "affordance_metadata": _dataclass_to_plain(meta.affordance_metadata),
-                        "optimization_data_raw": {
-                            "cascade_data": meta.optimization_data.cascade_data,
-                            "modulation_data": meta.optimization_data.modulation_data,
-                            "affordance_position_map": _serialize_affordance_positions(meta.optimization_data.affordance_position_map),
-                        },
-                        "observation_schema_hash": meta.observation_schema_hash,
-                        "vfs_variables": [var.model_dump() for var in meta.vfs_variables],
-                        "variable_schema_hash": meta.variable_schema_hash,
-                        "token_advisories": list(meta.token_advisories),
-                    }
-                    for name, meta in self.all_levels.items()
+            "all_levels": {
+                name: {
+                    "level_name": meta.level_name,
+                    "bars": meta.bars.model_dump(),
+                    "affordances": meta.affordances.model_dump(by_alias=True),
+                    "drive": meta.drive.model_dump(),
+                    "drive_hash": meta.drive_hash,
+                    "curriculum_hash": meta.curriculum_hash,
+                    "bars_hash": meta.bars_hash,
+                    "affordances_hash": meta.affordances_hash,
+                    "training_hash": meta.training_hash,
+                    "curriculum": meta.curriculum.model_dump(),
+                    "training": meta.training.model_dump(),
+                    "token_spec": _serialize_token_spec(meta.token_spec),
+                    "token_type_schema_hash": meta.token_type_schema_hash,
+                    "layout_hash": meta.layout_hash,
+                    "action_metadata": _dataclass_to_plain(meta.action_metadata),
+                    "runtime_action_space": _dataclass_to_plain(meta.runtime_action_space),
+                    "action_schema_hash": meta.action_schema_hash,
+                    "transition_graph_hash": meta.transition_graph_hash,
+                    "transition_schedule": serialize_vtc_transition_schedule(meta.transition_schedule),
+                    "vfs_hash": meta.vfs_hash,
+                    "meter_metadata": _dataclass_to_plain(meta.meter_metadata),
+                    "meter_declarations": [_serialize_meter_declaration(meter) for meter in meta.meter_declarations],
+                    "affordance_metadata": _dataclass_to_plain(meta.affordance_metadata),
+                    "optimization_data_raw": {
+                        "cascade_data": meta.optimization_data.cascade_data,
+                        "modulation_data": meta.optimization_data.modulation_data,
+                        "affordance_position_map": _serialize_affordance_positions(meta.optimization_data.affordance_position_map),
+                    },
+                    "observation_schema_hash": meta.observation_schema_hash,
+                    "vfs_variables": [var.model_dump() for var in meta.vfs_variables],
+                    "variable_schema_hash": meta.variable_schema_hash,
+                    "token_advisories": list(meta.token_advisories),
                 }
-            ),
+                for name, meta in self.all_levels.items()
+            },
         }
 
     @classmethod
@@ -486,136 +401,85 @@ class CompiledUniverse:
         for field_name in REQUIRED_COMPILED_UNIVERSE_FIELDS:
             _required_field(payload, field_name)
 
-        opt_payload = _required_mapping(payload, "optimization_data_raw")
-        affordance_position_map = _deserialize_affordance_positions(
-            _required_field(opt_payload, "optimization_data_raw.affordance_position_map")
-        )
-
-        all_levels = None
-        raw_levels = _required_field(payload, "all_levels")
-        if raw_levels is not None:
-            all_levels = {}
-            for name, meta in raw_levels.items():
-                level_opt_payload = _required_mapping(meta, f"all_levels.{name}.optimization_data_raw")
-                level_affordance_position_map = _deserialize_affordance_positions(
-                    _required_field(level_opt_payload, f"all_levels.{name}.optimization_data_raw.affordance_position_map")
-                )
-                level_bars = BarsV2Config.model_validate(meta["bars"])
-                level_affordances = AffordancesV2Config.model_validate(meta["affordances"])
-                level_drive = DriveAsCodeConfig.model_validate(meta["drive"])
-                level_curriculum = CurriculumConfig.model_validate(meta["curriculum"])
-                level_training = TrainingV2Config.model_validate(meta["training"])
-                level_runtime_action_space = _runtime_action_space_from_plain(
-                    _required_mapping(meta, f"all_levels.{name}.runtime_action_space"),
-                    f"all_levels.{name}.runtime_action_space",
-                )
-                level_vfs_variables = tuple(VariableDef(**var) for var in _required_field(meta, f"all_levels.{name}.vfs_variables"))
-                level_transition_payload = _required_mapping(meta, f"all_levels.{name}.transition_schedule")
-                level_schedule = build_vtc_transition_schedule(
-                    runtime_action_space=level_runtime_action_space,
-                    level=_SerializedLevel(
-                        bars=level_bars,
-                        affordances=level_affordances,
-                        drive=level_drive,
-                    ),
-                    social_residue_rules=social_rules_from_transition_payload(
-                        level_transition_payload,
-                        field_name=f"all_levels.{name}.transition_schedule",
-                    ),
-                    vfs_variables=level_vfs_variables,
-                )
-                all_levels[name] = CompiledUniverse.LevelMetadata(
-                    level_name=meta["level_name"],
+        all_levels: dict[str, CompiledUniverse.LevelMetadata] = {}
+        raw_levels = _required_mapping(payload, "all_levels")
+        for name, meta in raw_levels.items():
+            meta = _required_mapping(raw_levels, f"all_levels.{name}")
+            level_field = f"all_levels.{name}"
+            level_opt_payload = _required_mapping(meta, f"all_levels.{name}.optimization_data_raw")
+            level_affordance_position_map = _deserialize_affordance_positions(
+                _required_field(level_opt_payload, f"all_levels.{name}.optimization_data_raw.affordance_position_map")
+            )
+            level_bars = BarsV2Config.model_validate(_required_field(meta, f"{level_field}.bars"))
+            level_affordances = AffordancesV2Config.model_validate(_required_field(meta, f"{level_field}.affordances"))
+            level_drive = DriveAsCodeConfig.model_validate(_required_field(meta, f"{level_field}.drive"))
+            level_curriculum = CurriculumConfig.model_validate(_required_field(meta, f"{level_field}.curriculum"))
+            level_training = TrainingV2Config.model_validate(_required_field(meta, f"{level_field}.training"))
+            level_runtime_action_space = _runtime_action_space_from_plain(
+                _required_mapping(meta, f"all_levels.{name}.runtime_action_space"),
+                f"all_levels.{name}.runtime_action_space",
+            )
+            level_vfs_variables = tuple(VariableDef(**var) for var in _required_field(meta, f"all_levels.{name}.vfs_variables"))
+            level_transition_payload = _required_mapping(meta, f"all_levels.{name}.transition_schedule")
+            level_schedule = build_vtc_transition_schedule(
+                runtime_action_space=level_runtime_action_space,
+                level=_SerializedLevel(
                     bars=level_bars,
                     affordances=level_affordances,
                     drive=level_drive,
-                    drive_hash=_required_field(meta, f"all_levels.{name}.drive_hash"),
-                    curriculum_hash=_required_field(meta, f"all_levels.{name}.curriculum_hash"),
-                    bars_hash=_required_field(meta, f"all_levels.{name}.bars_hash"),
-                    affordances_hash=_required_field(meta, f"all_levels.{name}.affordances_hash"),
-                    training_hash=_required_field(meta, f"all_levels.{name}.training_hash"),
-                    curriculum=level_curriculum,
-                    training=level_training,
-                    token_spec=_token_spec_from_plain(_required_field(meta, f"all_levels.{name}.token_spec")),
-                    token_type_schema_hash=_required_field(meta, f"all_levels.{name}.token_type_schema_hash"),
-                    layout_hash=_required_field(meta, f"all_levels.{name}.layout_hash"),
-                    action_metadata=_action_space_metadata_from_plain(meta["action_metadata"], f"all_levels.{name}.action_metadata"),
-                    runtime_action_space=level_runtime_action_space,
-                    action_schema_hash=_required_field(meta, f"all_levels.{name}.action_schema_hash"),
-                    transition_graph_hash=_required_field(meta, f"all_levels.{name}.transition_graph_hash"),
-                    transition_schedule=level_schedule,
-                    vfs_hash=_required_field(meta, f"all_levels.{name}.vfs_hash"),
-                    meter_metadata=_meter_metadata_from_plain(meta["meter_metadata"], f"all_levels.{name}.meter_metadata"),
-                    affordance_metadata=_affordance_metadata_from_plain(
-                        meta["affordance_metadata"], f"all_levels.{name}.affordance_metadata"
-                    ),
-                    optimization_data=OptimizationData(
-                        cascade_data=_required_field(level_opt_payload, f"all_levels.{name}.optimization_data_raw.cascade_data"),
-                        modulation_data=_required_field(level_opt_payload, f"all_levels.{name}.optimization_data_raw.modulation_data"),
-                        affordance_position_map=level_affordance_position_map,
-                    ),
-                    observation_schema_hash=_required_field(meta, f"all_levels.{name}.observation_schema_hash"),
-                    vfs_variables=level_vfs_variables,
-                    variable_schema_hash=_required_field(meta, f"all_levels.{name}.variable_schema_hash"),
-                    token_advisories=tuple(_required_field(meta, f"all_levels.{name}.token_advisories")),
-                )
+                ),
+                social_residue_rules=social_rules_from_transition_payload(
+                    level_transition_payload,
+                    field_name=f"all_levels.{name}.transition_schedule",
+                ),
+                vfs_variables=level_vfs_variables,
+            )
+            all_levels[name] = CompiledUniverse.LevelMetadata(
+                level_name=_required_field(meta, f"{level_field}.level_name"),
+                bars=level_bars,
+                affordances=level_affordances,
+                drive=level_drive,
+                drive_hash=_required_field(meta, f"all_levels.{name}.drive_hash"),
+                curriculum_hash=_required_field(meta, f"all_levels.{name}.curriculum_hash"),
+                bars_hash=_required_field(meta, f"all_levels.{name}.bars_hash"),
+                affordances_hash=_required_field(meta, f"all_levels.{name}.affordances_hash"),
+                training_hash=_required_field(meta, f"all_levels.{name}.training_hash"),
+                curriculum=level_curriculum,
+                training=level_training,
+                token_spec=_token_spec_from_plain(_required_field(meta, f"all_levels.{name}.token_spec")),
+                token_type_schema_hash=_required_field(meta, f"all_levels.{name}.token_type_schema_hash"),
+                layout_hash=_required_field(meta, f"all_levels.{name}.layout_hash"),
+                action_metadata=_action_space_metadata_from_plain(
+                    _required_field(meta, f"{level_field}.action_metadata"), f"{level_field}.action_metadata"
+                ),
+                runtime_action_space=level_runtime_action_space,
+                action_schema_hash=_required_field(meta, f"all_levels.{name}.action_schema_hash"),
+                transition_graph_hash=_required_field(meta, f"all_levels.{name}.transition_graph_hash"),
+                transition_schedule=level_schedule,
+                vfs_hash=_required_field(meta, f"all_levels.{name}.vfs_hash"),
+                meter_metadata=_meter_metadata_from_plain(
+                    _required_field(meta, f"{level_field}.meter_metadata"), f"{level_field}.meter_metadata"
+                ),
+                meter_declarations=_meter_declarations_from_plain(
+                    _required_field(meta, f"all_levels.{name}.meter_declarations"),
+                    f"all_levels.{name}.meter_declarations",
+                ),
+                affordance_metadata=_affordance_metadata_from_plain(
+                    _required_field(meta, f"{level_field}.affordance_metadata"), f"{level_field}.affordance_metadata"
+                ),
+                optimization_data=OptimizationData(
+                    cascade_data=_required_field(level_opt_payload, f"all_levels.{name}.optimization_data_raw.cascade_data"),
+                    modulation_data=_required_field(level_opt_payload, f"all_levels.{name}.optimization_data_raw.modulation_data"),
+                    affordance_position_map=level_affordance_position_map,
+                ),
+                observation_schema_hash=_required_field(meta, f"all_levels.{name}.observation_schema_hash"),
+                vfs_variables=level_vfs_variables,
+                variable_schema_hash=_required_field(meta, f"all_levels.{name}.variable_schema_hash"),
+                token_advisories=tuple(_required_field(meta, f"all_levels.{name}.token_advisories")),
+            )
 
-        top_runtime_action_space = _runtime_action_space_from_plain(_required_mapping(payload, "runtime_action_space"))
-        top_vfs_variables = tuple(VariableDef(**var) for var in _required_field(payload, "vfs_variables"))
-        top_bars = None
-        top_affordances = None
-        top_drive = None
-        if all_levels is not None:
-            # Look the primary level up BY NAME. The previous implementation scanned
-            # for the first level matching (transition_graph_hash, vfs_hash,
-            # action_schema_hash), which is sound only if that triple is unique —
-            # and it is not: L0_5_dual_resource and L1_full_observability collide on
-            # all three in the shipped pack, so popping L1 out silently rebuilt the
-            # projection from L0_5's bars with no raise.
-            declared_primary = _required_field(_required_mapping(payload, "metadata"), "primary_level")
-            level_meta = all_levels.get(declared_primary)
-            if level_meta is None:
-                raise ValueError(
-                    f"Compiled universe declares primary_level '{declared_primary}' but all_levels "
-                    f"contains {sorted(all_levels)}; recompile the config pack."
-                )
-            top_bars = level_meta.bars
-            top_affordances = level_meta.affordances
-            top_drive = level_meta.drive
-        if top_bars is None or top_affordances is None or top_drive is None:
-            raise ValueError("Compiled universe cache cannot resolve primary transition level; recompile the config pack.")
-        top_transition_payload = _required_mapping(payload, "transition_schedule")
-        top_transition_schedule = build_vtc_transition_schedule(
-            runtime_action_space=top_runtime_action_space,
-            level=_SerializedLevel(bars=top_bars, affordances=top_affordances, drive=top_drive),
-            social_residue_rules=social_rules_from_transition_payload(
-                top_transition_payload,
-                field_name="transition_schedule",
-            ),
-            vfs_variables=top_vfs_variables,
-        )
-
-        return CompiledUniverse(
-            metadata=UniverseMetadata(**payload["metadata"]),
-            token_spec=_token_spec_from_plain(_required_field(payload, "token_spec")),
-            token_type_schema_hash=_required_field(payload, "token_type_schema_hash"),
-            layout_hash=_required_field(payload, "layout_hash"),
-            observation_schema_hash=_required_field(payload, "observation_schema_hash"),
-            vfs_variables=top_vfs_variables,
-            variable_schema_hash=_required_field(payload, "variable_schema_hash"),
-            action_space_metadata=_action_space_metadata_from_plain(payload["action_space_metadata"]),
-            runtime_action_space=top_runtime_action_space,
-            action_schema_hash=_required_field(payload, "action_schema_hash"),
-            transition_graph_hash=_required_field(payload, "transition_graph_hash"),
-            transition_schedule=top_transition_schedule,
-            vfs_hash=_required_field(payload, "vfs_hash"),
-            meter_metadata=_meter_metadata_from_plain(payload["meter_metadata"]),
-            affordance_metadata=_affordance_metadata_from_plain(payload["affordance_metadata"]),
-            optimization_data=OptimizationData(
-                cascade_data=_required_field(opt_payload, "optimization_data_raw.cascade_data"),
-                modulation_data=_required_field(opt_payload, "optimization_data_raw.modulation_data"),
-                affordance_position_map=affordance_position_map,
-            ),
+        compiled = CompiledUniverse(
+            metadata=UniverseMetadata(**_required_mapping(payload, "metadata")),
             experiment=ExperimentConfig.model_validate(payload["experiment"]),
             stratum=StratumConfig.model_validate(payload["stratum"]),
             environment=EnvironmentConfig.model_validate(payload["environment"]),
@@ -644,13 +508,7 @@ class CompiledUniverse:
                 if _required_field(payload, "vfs_evaluation_marks") is not None
                 else None
             ),  # Convert lists back to sets
-            token_advisories=tuple(_required_field(payload, "token_advisories")),
             experiment_dir=None if _required_field(payload, "experiment_dir") is None else Path(payload["experiment_dir"]),
-            drive_hash=_required_field(payload, "drive_hash"),
-            curriculum_hash=_required_field(payload, "curriculum_hash"),
-            bars_hash=_required_field(payload, "bars_hash"),
-            affordances_hash=_required_field(payload, "affordances_hash"),
-            training_hash=_required_field(payload, "training_hash"),
             brain_hash=_required_field(payload, "brain_hash"),
             pack_brain_hash=_required_field(payload, "pack_brain_hash"),
             experiment_hash=_required_field(payload, "experiment_hash"),
@@ -660,6 +518,8 @@ class CompiledUniverse:
             items_hash=_required_field(payload, "items_hash"),
             all_levels=all_levels,
         )
+        _validate_compiled_token_coherence(compiled)
+        return compiled
 
     def save_to_cache(self, path: Path) -> None:
         """Serialize compiled universe to MessagePack file."""
@@ -755,6 +615,59 @@ def _required_mapping(payload: Mapping[str, Any], field_name: str) -> Mapping[st
     return value
 
 
+def _validate_compiled_token_coherence(compiled: CompiledUniverse) -> None:
+    """Refuse a deserialized artifact whose derived token products disagree."""
+    for level_name, level in compiled.all_levels.items():
+        actual_roster = tuple(token_type.type_name for token_type in level.token_spec.types)
+        if actual_roster != TOKEN_TYPE_ROSTER:
+            raise _token_coherence_error(
+                level_name,
+                f"TokenSpec types {actual_roster!r} do not match the exact engine roster {TOKEN_TYPE_ROSTER!r}",
+            )
+
+        expected_bindings = canonical_token_bindings(
+            meter_declarations=level.meter_declarations,
+            affordances=level.affordances,
+            items_catalog=compiled.items_catalog,
+            compiled_effect_catalog=compiled.compiled_effect_catalog,
+            environment=compiled.environment,
+            compiled_vfs_profiles=compiled.compiled_vfs_profiles,
+            vfs_variables=level.vfs_variables,
+        )
+        for type_name, canonical_bindings in expected_bindings:
+            token_type = level.token_spec.get_type(type_name)
+            if token_type is None:
+                raise _token_coherence_error(level_name, f"TokenSpec has no {type_name} type")
+            if token_type.slot_bindings != canonical_bindings:
+                raise _token_coherence_error(
+                    level_name,
+                    f"{type_name} slot bindings do not match canonical bindings derived from persisted declarations",
+                )
+
+        computed_hashes = {
+            "token_type_schema_hash": compute_token_type_schema_hash(level.token_spec),
+            "layout_hash": compute_token_layout_hash(level.token_spec),
+            "observation_schema_hash": compute_observation_schema_hash(level.token_spec),
+        }
+        computed_hashes["vfs_hash"] = compute_vfs_hash(
+            level.variable_schema_hash,
+            computed_hashes["observation_schema_hash"],
+            level.action_schema_hash,
+            level.transition_graph_hash,
+        )
+        for field_name, computed_value in computed_hashes.items():
+            stored_value = getattr(level, field_name)
+            if stored_value != computed_value:
+                raise _token_coherence_error(
+                    level_name,
+                    f"stored {field_name} {stored_value!r} does not match recomputed value {computed_value!r}",
+                )
+
+
+def _token_coherence_error(level_name: str, detail: str) -> ValueError:
+    return ValueError(f"Compiled universe cache token coherence failure for level {level_name!r}: {detail}; recompile the config pack.")
+
+
 def _serialize_affordance_positions(position_map: dict[str, torch.Tensor | None]) -> dict[str, Any]:
     serialized: dict[str, Any] = {}
     for key, value in position_map.items():
@@ -797,6 +710,52 @@ def _runtime_action_space_from_plain(payload: Mapping[str, Any], field_name: str
 
 def _meter_metadata_from_plain(payload: Mapping[str, Any], field_name: str = "meter_metadata") -> MeterMetadata:
     return MeterMetadata(meters=tuple(MeterInfo(**entry) for entry in _required_field(payload, f"{field_name}.meters")))
+
+
+def _serialize_meter_declaration(meter: MeterDeclaration) -> dict[str, Any]:
+    """Serialize the compiler-owned declaration consumed by the live meter publisher."""
+    return {
+        "name": meter.name,
+        "normalization": meter.normalization.model_dump(mode="json"),
+        "initial": meter.initial,
+        "min": meter.min,
+        "max": meter.max,
+        "lethal_min": meter.lethal_min,
+        "lethal_max": meter.lethal_max,
+        "passive_depletion": meter.passive_depletion,
+        "move_depletion": meter.move_depletion,
+        "interact_depletion": meter.interact_depletion,
+        "natural_recovery": meter.natural_recovery,
+    }
+
+
+def _meter_declarations_from_plain(payload: Any, field_name: str) -> tuple[MeterDeclaration, ...]:
+    """Deserialize required per-level meter declarations without reconstructing them."""
+    if not isinstance(payload, list):
+        raise ValueError(f"Compiled universe cache field '{field_name}' must be a list; recompile the config pack.")
+
+    declarations: list[MeterDeclaration] = []
+    for index, raw_declaration in enumerate(payload):
+        declaration_name = f"{field_name}.{index}"
+        if not isinstance(raw_declaration, Mapping):
+            raise ValueError(f"Compiled universe cache field '{declaration_name}' must be a mapping; recompile the config pack.")
+        normalization_payload = _required_mapping(raw_declaration, f"{declaration_name}.normalization")
+        declarations.append(
+            MeterDeclaration(
+                name=_required_field(raw_declaration, f"{declaration_name}.name"),
+                normalization=NormalizationSpec.model_validate(normalization_payload),
+                initial=_required_field(raw_declaration, f"{declaration_name}.initial"),
+                min=_required_field(raw_declaration, f"{declaration_name}.min"),
+                max=_required_field(raw_declaration, f"{declaration_name}.max"),
+                lethal_min=_required_field(raw_declaration, f"{declaration_name}.lethal_min"),
+                lethal_max=_required_field(raw_declaration, f"{declaration_name}.lethal_max"),
+                passive_depletion=_required_field(raw_declaration, f"{declaration_name}.passive_depletion"),
+                move_depletion=_required_field(raw_declaration, f"{declaration_name}.move_depletion"),
+                interact_depletion=_required_field(raw_declaration, f"{declaration_name}.interact_depletion"),
+                natural_recovery=_required_field(raw_declaration, f"{declaration_name}.natural_recovery"),
+            )
+        )
+    return tuple(declarations)
 
 
 def _affordance_metadata_from_plain(payload: Mapping[str, Any], field_name: str = "affordance_metadata") -> AffordanceMetadata:
@@ -911,40 +870,42 @@ def _serialize_vfs_profiles(profiles: CompiledVFSProfiles) -> dict[str, Any]:
     return result
 
 
-def _deserialize_compiled_variable(var: dict[str, Any]) -> Any:
+def _deserialize_compiled_variable(var: dict[str, Any], *, field_name: str) -> Any:
     """Rebuild one CompiledVariable, reconstructing its expression AST."""
     from townlet.vfs.profiles import CompiledVariable
     from townlet.vfs.schema import NormalizationSpec
     from townlet.world.expression import ExpressionParser
 
-    raw_normalization = var.get("normalization")
+    expression = _required_field(var, f"{field_name}.expression")
+    raw_normalization = _required_field(var, f"{field_name}.normalization")
     return CompiledVariable(
-        name=var["name"],
-        type=var["type"],
-        expression=var.get("expression"),
-        ast=ExpressionParser().parse(var["expression"]) if var.get("expression") else None,
-        initial_value=var.get("initial_value"),
-        result_type=var.get("result_type"),
-        # No fail-open default: an absent exposed_to in a cached artifact means UNEXPOSED
-        # (explicit exposure at the unit-3 cut, hamlet-d97b4d6b4a).
-        exposed_to=tuple(var.get("exposed_to") or ()),
-        shape=var.get("shape"),
-        initial_value_mode=var.get("initial_value_mode"),
-        initial_value_params=var.get("initial_value_params"),
-        dims=var.get("dims"),
-        semantic_type=var.get("semantic_type"),
+        name=_required_field(var, f"{field_name}.name"),
+        type=_required_field(var, f"{field_name}.type"),
+        expression=expression,
+        ast=ExpressionParser().parse(expression) if expression else None,
+        initial_value=_required_field(var, f"{field_name}.initial_value"),
+        result_type=_required_field(var, f"{field_name}.result_type"),
+        exposed_to=tuple(_required_field(var, f"{field_name}.exposed_to")),
+        shape=_required_field(var, f"{field_name}.shape"),
+        initial_value_mode=_required_field(var, f"{field_name}.initial_value_mode"),
+        initial_value_params=_required_field(var, f"{field_name}.initial_value_params"),
+        dims=_required_field(var, f"{field_name}.dims"),
+        semantic_type=_required_field(var, f"{field_name}.semantic_type"),
         normalization=None if raw_normalization is None else NormalizationSpec(**raw_normalization),
     )
 
 
-def _deserialize_profile(payload: dict[str, Any] | None) -> Any | None:
+def _deserialize_profile(payload: dict[str, Any] | None, *, field_name: str) -> Any | None:
     """Rebuild a CompiledGlobalProfile (used for both global and agent profiles)."""
     from townlet.vfs.profiles import CompiledGlobalProfile
 
     if payload is None:
         return None
-    variables = [_deserialize_compiled_variable(var) for var in payload["variables"]]
-    dependencies = {name: tuple(deps) for name, deps in payload.get("dependencies", {}).items()}
+    raw_variables = _required_field(payload, f"{field_name}.variables")
+    variables = [
+        _deserialize_compiled_variable(var, field_name=f"{field_name}.variables[{index}]") for index, var in enumerate(raw_variables)
+    ]
+    dependencies = {name: tuple(deps) for name, deps in _required_field(payload, f"{field_name}.dependencies").items()}
     return CompiledGlobalProfile(variables=variables, dependencies=dependencies)
 
 
@@ -953,18 +914,28 @@ def _deserialize_vfs_profiles(payload: dict[str, Any]) -> CompiledVFSProfiles:
     from townlet.vfs.profiles import CompiledItemProfile
 
     item_profiles = None
-    raw_items = payload.get("item_profiles")
-    if raw_items:
+    raw_items = _required_field(payload, "compiled_vfs_profiles.item_profiles")
+    if raw_items is not None:
         item_profiles = {}
         for name, profile in raw_items.items():
-            variables = [_deserialize_compiled_variable(var) for var in profile.get("variables", [])]
-            item_profiles[name] = CompiledItemProfile(profile_name=profile["profile_name"], variables=variables)
+            item_field = f"compiled_vfs_profiles.item_profiles.{name}"
+            raw_variables = _required_field(profile, f"{item_field}.variables")
+            variables = [
+                _deserialize_compiled_variable(var, field_name=f"{item_field}.variables[{index}]")
+                for index, var in enumerate(raw_variables)
+            ]
+            item_profiles[name] = CompiledItemProfile(
+                profile_name=_required_field(profile, f"{item_field}.profile_name"), variables=variables
+            )
+
+    global_profile_payload = _required_field(payload, "compiled_vfs_profiles.global_profile")
+    agent_profile_payload = _required_field(payload, "compiled_vfs_profiles.agent_profile")
 
     return CompiledVFSProfiles(
-        evaluation_mode=payload["evaluation_mode"],
-        debug_logging=payload["debug_logging"],
-        global_profile=_deserialize_profile(payload.get("global_profile")),
-        agent_profile=_deserialize_profile(payload.get("agent_profile")),
+        evaluation_mode=_required_field(payload, "compiled_vfs_profiles.evaluation_mode"),
+        debug_logging=_required_field(payload, "compiled_vfs_profiles.debug_logging"),
+        global_profile=_deserialize_profile(global_profile_payload, field_name="compiled_vfs_profiles.global_profile"),
+        agent_profile=_deserialize_profile(agent_profile_payload, field_name="compiled_vfs_profiles.agent_profile"),
         item_profiles=item_profiles,
     )
 
@@ -972,12 +943,12 @@ def _deserialize_vfs_profiles(payload: dict[str, Any]) -> CompiledVFSProfiles:
 def _serialize_effect_catalog(catalog: EffectCatalog) -> dict[str, Any]:
     """Serialize EffectCatalog to dict."""
     return {
+        "max_active_effects": None if catalog.max_active_effects is None else dict(catalog.max_active_effects),
         "effects": {
             effect_id: {
                 "id": effect.id,
                 "scope": effect.scope,
                 "duration": effect.duration,
-                "intensity": effect.intensity,
                 "reapply_policy": effect.reapply_policy,
                 "observable": effect.observable,
                 "on_spawn": _serialize_command_pipeline(effect.on_spawn),
@@ -986,7 +957,7 @@ def _serialize_effect_catalog(catalog: EffectCatalog) -> dict[str, Any]:
                 "on_interrupt": _serialize_command_pipeline(effect.on_interrupt),
             }
             for effect_id, effect in catalog.effects.items()
-        }
+        },
     }
 
 
@@ -994,23 +965,62 @@ def _deserialize_effect_catalog(payload: dict[str, Any]) -> EffectCatalog:
     """Deserialize EffectCatalog from dict."""
     from townlet.effects.catalog import CompiledEffect
 
-    effects = {
-        effect_id: CompiledEffect(
+    effects: dict[str, CompiledEffect] = {}
+    for effect_id, effect_data in payload["effects"].items():
+        effect_field = f"compiled_effect_catalog.effects.{effect_id}"
+        effects[effect_id] = CompiledEffect(
             id=effect_data["id"],
             scope=effect_data["scope"],
             duration=effect_data["duration"],
-            intensity=effect_data["intensity"],
             reapply_policy=effect_data["reapply_policy"],
             observable=effect_data["observable"],
-            on_spawn=_deserialize_command_pipeline(effect_data["on_spawn"]),
-            on_tick=_deserialize_command_pipeline(effect_data["on_tick"]),
-            on_despawn=_deserialize_command_pipeline(effect_data["on_despawn"]),
-            on_interrupt=_deserialize_command_pipeline(effect_data["on_interrupt"]),
+            on_spawn=_deserialize_command_pipeline(effect_data["on_spawn"], field_name=f"{effect_field}.on_spawn"),
+            on_tick=_deserialize_command_pipeline(effect_data["on_tick"], field_name=f"{effect_field}.on_tick"),
+            on_despawn=_deserialize_command_pipeline(effect_data["on_despawn"], field_name=f"{effect_field}.on_despawn"),
+            on_interrupt=_deserialize_command_pipeline(effect_data["on_interrupt"], field_name=f"{effect_field}.on_interrupt"),
         )
-        for effect_id, effect_data in payload["effects"].items()
-    }
 
-    return EffectCatalog(effects=effects)
+    max_active_effects = _effect_budget_from_plain(
+        _required_field(payload, "compiled_effect_catalog.max_active_effects"),
+        has_effects=bool(effects),
+    )
+    return EffectCatalog(effects=effects, max_active_effects=max_active_effects)
+
+
+def _effect_budget_from_plain(payload: Any, *, has_effects: bool) -> dict[str, int] | None:
+    field_name = "compiled_effect_catalog.max_active_effects"
+    if payload is None:
+        if has_effects:
+            raise ValueError(
+                f"Compiled universe cache field '{field_name}' must be a mapping when effects are present; " "recompile the config pack."
+            )
+        return None
+    if not isinstance(payload, Mapping):
+        raise ValueError(f"Compiled universe cache field '{field_name}' must be a mapping; recompile the config pack.")
+    if not has_effects:
+        raise ValueError(
+            f"Compiled universe cache field '{field_name}' must be null when no effects are present; recompile the config pack."
+        )
+
+    expected_scopes = set(EFFECT_SCOPE_VOCABULARY)
+    missing = [scope for scope in EFFECT_SCOPE_VOCABULARY if scope not in payload]
+    unknown = [key for key in payload if key not in expected_scopes]
+    if missing or unknown:
+        raise ValueError(
+            f"Compiled universe cache field '{field_name}' must contain exactly {EFFECT_SCOPE_VOCABULARY}; "
+            f"missing {missing}, unknown {unknown}; recompile the config pack."
+        )
+
+    budget: dict[str, int] = {}
+    for scope in EFFECT_SCOPE_VOCABULARY:
+        value = payload[scope]
+        if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+            raise ValueError(
+                f"Compiled universe cache field '{field_name}.{scope}' must be a non-negative integer, got {value!r}; "
+                "recompile the config pack."
+            )
+        budget[scope] = value
+    return budget
 
 
 def _serialize_command_pipeline(commands: list[CommandNode]) -> list[dict[str, Any]]:
@@ -1025,7 +1035,6 @@ def _serialize_command_node(command: CommandNode) -> dict[str, Any]:
         "effect_id": command.effect_id,
         "target": command.target,
         "target_expr": command.target_expr,
-        "duration": command.duration,
         "intensity": command.intensity,
         "item_type": command.item_type,
         "position": command.position,
@@ -1059,53 +1068,69 @@ def _serialize_command_node(command: CommandNode) -> dict[str, Any]:
     }
 
 
-def _deserialize_command_pipeline(payload: list[dict[str, Any]]) -> list[CommandNode]:
+def _deserialize_command_pipeline(payload: list[dict[str, Any]], *, field_name: str) -> list[CommandNode]:
     from townlet.world.expression import ExpressionParser
 
-    commands = [_deserialize_command_node(command_data) for command_data in payload]
+    commands = [_deserialize_command_node(command_data, field_name=f"{field_name}[{index}]") for index, command_data in enumerate(payload)]
     parser = ExpressionParser()
     for command in commands:
         _hydrate_command_asts(command, parser)
     return commands
 
 
-def _deserialize_command_node(payload: dict[str, Any]) -> CommandNode:
+def _deserialize_command_node(payload: dict[str, Any], *, field_name: str) -> CommandNode:
+    def required(name: str) -> Any:
+        return _required_field(payload, f"{field_name}.{name}")
+
+    def command_list(name: str) -> list[CommandNode]:
+        return [
+            _deserialize_command_node(command, field_name=f"{field_name}.{name}[{index}]") for index, command in enumerate(required(name))
+        ]
+
+    cases: list[tuple[str, list[CommandNode]]] = []
+    for case_index, case in enumerate(required("cases")):
+        case_field = f"{field_name}.cases[{case_index}]"
+        case_commands = [
+            _deserialize_command_node(command, field_name=f"{case_field}.commands[{command_index}]")
+            for command_index, command in enumerate(_required_field(case, f"{case_field}.commands"))
+        ]
+        cases.append((_required_field(case, f"{case_field}.when"), case_commands))
+
     return CommandNode(
-        type=CommandType(payload["type"]),
-        path=payload.get("path"),
-        value_expr=payload.get("value_expr"),
-        effect_id=payload.get("effect_id"),
-        target=payload.get("target"),
-        target_expr=payload.get("target_expr"),
-        duration=payload.get("duration"),
-        intensity=payload.get("intensity"),
-        item_type=payload.get("item_type"),
-        position=payload.get("position"),
-        position_expr=payload.get("position_expr"),
-        quantity=payload.get("quantity"),
-        initial_state=payload.get("initial_state"),
-        sample_distribution=payload.get("sample_distribution"),
-        sample_params=payload.get("sample_params"),
-        sample_store_path=payload.get("sample_store_path"),
-        condition_expr=payload.get("condition_expr"),
-        then_commands=[_deserialize_command_node(command) for command in payload["then_commands"]],
-        else_commands=[_deserialize_command_node(command) for command in payload["else_commands"]],
-        collection=payload.get("collection"),
-        collection_expr=payload.get("collection_expr"),
-        iterator=payload.get("iterator"),
-        body=[_deserialize_command_node(command) for command in payload["body"]],
-        radius=payload.get("radius"),
-        switch_expr=payload.get("switch_expr"),
-        cases=[(case["when"], [_deserialize_command_node(command) for command in case["commands"]]) for case in payload["cases"]],
-        default_commands=[_deserialize_command_node(command) for command in payload["default_commands"]],
-        reduce_expr=payload.get("reduce_expr"),
-        reduce_iterator=payload.get("reduce_iterator"),
-        reduce_init_expr=payload.get("reduce_init_expr"),
-        reduce_body_expr=payload.get("reduce_body_expr"),
-        reduce_target=payload.get("reduce_target"),
-        parallel_commands=[_deserialize_command_node(command) for command in payload["parallel_commands"]],
-        delay_ticks_expr=payload.get("delay_ticks_expr"),
-        delay_commands=[_deserialize_command_node(command) for command in payload["delay_commands"]],
+        type=CommandType(required("type")),
+        path=required("path"),
+        value_expr=required("value_expr"),
+        effect_id=required("effect_id"),
+        target=required("target"),
+        target_expr=required("target_expr"),
+        intensity=required("intensity"),
+        item_type=required("item_type"),
+        position=required("position"),
+        position_expr=required("position_expr"),
+        quantity=required("quantity"),
+        initial_state=required("initial_state"),
+        sample_distribution=required("sample_distribution"),
+        sample_params=required("sample_params"),
+        sample_store_path=required("sample_store_path"),
+        condition_expr=required("condition_expr"),
+        then_commands=command_list("then_commands"),
+        else_commands=command_list("else_commands"),
+        collection=required("collection"),
+        collection_expr=required("collection_expr"),
+        iterator=required("iterator"),
+        body=command_list("body"),
+        radius=required("radius"),
+        switch_expr=required("switch_expr"),
+        cases=cases,
+        default_commands=command_list("default_commands"),
+        reduce_expr=required("reduce_expr"),
+        reduce_iterator=required("reduce_iterator"),
+        reduce_init_expr=required("reduce_init_expr"),
+        reduce_body_expr=required("reduce_body_expr"),
+        reduce_target=required("reduce_target"),
+        parallel_commands=command_list("parallel_commands"),
+        delay_ticks_expr=required("delay_ticks_expr"),
+        delay_commands=command_list("delay_commands"),
     )
 
 

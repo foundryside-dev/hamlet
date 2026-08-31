@@ -7,7 +7,8 @@ environment with tensor operations [num_agents, ...].
 
 from __future__ import annotations
 
-from numbers import Number
+import math
+from numbers import Number, Real
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 
@@ -171,19 +172,11 @@ class VectorizedHamletEnv:
                 "Set experiment.experiment_name in your v2.1 experiment config and recompile."
             )
         self.experiment_batch_label = experiment_label
-        # The compiled token artifact IS the observation ABI (unit-3 Task-10 cut). It is
-        # pack-level, not level-level: POMDP does not change the TokenSpec, it changes
-        # the radius the substrate visibility filter is given (spec §3).
+        # The compiled token artifact IS the observation ABI (unit-3 Task-10 cut).
+        # Layout is stable across curriculum levels, while level-authored meter and
+        # affordance parameters can change compiled static identity. The encoder must
+        # therefore consume this selected level's spec, never the primary-level alias.
         self.token_spec = level.token_spec
-
-        # grid_size is the SQUARE display size legacy consumers expect; the
-        # metadata compiler derives it from the substrate instance (None for
-        # non-square and non-grid substrates). Nothing shape-bearing reads it
-        # any more — boundary masking asks the substrate per axis and the
-        # vision window asks the substrate directly (WS-7 first knockdown;
-        # the non-square guard that used to live here was DIV-003's third
-        # registered crash).
-        self.grid_size = self.metadata.grid_size
 
         # Observation/model metadata
         self.meter_count = self.metadata.meter_count
@@ -647,7 +640,7 @@ class VectorizedHamletEnv:
         ``self.device``, ``self.universe``.
         """
         universe = self.universe
-        self.vfs_variables: list[VariableDef] = list(universe.vfs_variables)
+        self.vfs_variables: list[VariableDef] = list(self.level.vfs_variables)
 
         max_items_in_world = universe.items_catalog.max_items_in_world if universe.items_catalog else 0
         item_profiles = None
@@ -688,7 +681,7 @@ class VectorizedHamletEnv:
         and ``runtime_registry``. Depends on ``vfs_registry`` from the VFS
         phase.
         """
-        bar_index_map = env_factory._build_bar_index_map(self.universe.meter_metadata)
+        bar_index_map = env_factory._build_bar_index_map(self.level.meter_metadata)
         self.dac_engine = DACEngine(
             dac_config=self.level.drive,
             vfs_registry=self.vfs_registry,
@@ -1011,11 +1004,11 @@ class VectorizedHamletEnv:
             scope = binding.filler_ref.split(":")[1]
             block_slots.setdefault(scope, []).append(binding.slot_index)
 
-        # per world: scope -> list of (slot, catalog index, remaining fraction)
-        occupied: dict[int, list[tuple[int, int, float]]] = {}
+        # per world: scope -> list of (slot, catalog index, remaining fraction, intensity)
+        occupied: dict[int, list[tuple[int, int, float, float]]] = {}
         for world in range(self.num_agents):
             cursor = dict.fromkeys(block_slots, 0)
-            rows: list[tuple[int, int, float]] = []
+            rows: list[tuple[int, int, float, float]] = []
             for effect in self._observable_effects_for_world(world):
                 scope = effect.scope.value if hasattr(effect.scope, "value") else str(effect.scope)
                 slots = block_slots.get(scope)
@@ -1030,27 +1023,30 @@ class VectorizedHamletEnv:
                     raise ValueError(f"Active effect {effect.effect_id!r} is not in the compiled effect catalog")
                 total = max(1, int(effect.duration_total))
                 remaining = max(0, int(effect.duration_remaining))
-                rows.append((slots[index], catalog_index, remaining / total))
+                rows.append((slots[index], catalog_index, remaining / total, float(effect.intensity)))
             occupied[world] = rows
 
-        used = sorted({slot for rows in occupied.values() for slot, _, _ in rows})
+        used = sorted({slot for rows in occupied.values() for slot, _, _, _ in rows})
         if not used:
             return None
         column_of = {slot: column for column, slot in enumerate(used)}
         k = len(used)
         effect_indices = torch.zeros((self.num_agents, k), dtype=torch.long, device=self.device)
         remaining_fraction = torch.zeros((self.num_agents, k), dtype=torch.float32, device=self.device)
+        intensity = torch.zeros((self.num_agents, k), dtype=torch.float32, device=self.device)
         active = torch.zeros((self.num_agents, k), dtype=torch.bool, device=self.device)
         for world, rows in occupied.items():
-            for slot, catalog_index, fraction in rows:
+            for slot, catalog_index, fraction, live_intensity in rows:
                 column = column_of[slot]
                 effect_indices[world, column] = catalog_index
                 remaining_fraction[world, column] = fraction
+                intensity[world, column] = live_intensity
                 active[world, column] = True
         return EffectSlotBatch(
             slot_indices=torch.tensor(used, dtype=torch.long, device=self.device),
             effect_indices=effect_indices,
             remaining_fraction=remaining_fraction,
+            intensity=intensity,
             active=active,
             owner_slot=torch.full((k,), -1, dtype=torch.long, device=self.device),
             source="effect_manager",
@@ -1067,11 +1063,11 @@ class VectorizedHamletEnv:
         """Every observable active effect this world's agent can see, any scope."""
         manager = self.effect_manager
         assert manager is not None
-        effects = [effect for effect in manager.global_effects if getattr(effect, "observable", False)]
+        effects = [effect for effect in manager.global_effects if effect.observable]
         effects.extend(manager.get_observable_agent_effects(world))
         for store in (manager.item_effects, manager.affordance_effects):
             for entries in store.values():
-                effects.extend(effect for effect in entries if getattr(effect, "observable", False))
+                effects.extend(effect for effect in entries if effect.observable)
         return effects
 
     def _encode_velocity_observation(self) -> torch.Tensor | None:
@@ -1258,7 +1254,7 @@ class VectorizedHamletEnv:
             # HIGH-01: Use global tick instead of agent 0
             # Age all items (expire items that reach duration limit)
             self.item_manager.tick(self.global_tick)
-            # Respawn items whose spawn_interval timer has expired
+            # Respawn items whose periodic schedule timer has expired.
             bars_dict_spawn = {name: self.meters[:, idx] for name, idx in self.meter_name_to_index.items()}
             temporal_context = {"tick": torch.tensor(self.global_tick, device=self.device)} if self.enable_temporal_mechanics else None
             self.item_manager.process_respawns(self.global_tick, bars=bars_dict_spawn, temporal=temporal_context)
@@ -1546,11 +1542,11 @@ class VectorizedHamletEnv:
             elif self.substrate.position_dim == 0:
                 pos = []
 
-            positions[name] = [int(x) for x in pos] if pos else []
+            positions[name] = list(pos) if pos else []
 
         return {
             "positions": positions,
-            "ordering": self.affordance_names,
+            "ordering": list(self.affordances),
             "position_dim": self.substrate.position_dim,  # For validation
         }
 
@@ -1561,38 +1557,74 @@ class VectorizedHamletEnv:
             checkpoint_data: Dictionary with 'positions', 'ordering', and 'position_dim'
 
         Raises:
-            ValueError: If checkpoint missing position_dim or incompatible with substrate
+            ValueError: If the checkpoint layout or any position is invalid.
         """
-        # Validate position_dim exists
-        if "position_dim" not in checkpoint_data:
-            raise ValueError(
-                "Checkpoint missing 'position_dim' field.\n"
-                "This checkpoint format is no longer supported.\n"
-                "\n"
-                "Action required:\n"
-                "  1. Delete old checkpoint directories\n"
-                "  2. Retrain models from scratch\n"
-            )
+        validated_positions = self.validate_affordance_positions(checkpoint_data)
+        for name in self.affordances:
+            self.affordances[name] = validated_positions[name]
+        self._affordance_layout_cache = None
 
-        # Validate compatibility
+    def validate_affordance_positions(self, checkpoint_data: dict) -> dict[str, torch.Tensor]:
+        """Validate checkpoint affordance positions without mutating environment state."""
+        expected_keys = {"positions", "ordering", "position_dim"}
+        if type(checkpoint_data) is not dict or set(checkpoint_data) != expected_keys:
+            raise ValueError(f"Affordance checkpoint keys must be exactly {sorted(expected_keys)}")
+
         checkpoint_position_dim = checkpoint_data["position_dim"]
+        if type(checkpoint_position_dim) is not int:
+            raise ValueError("Affordance checkpoint position_dim must be an integer")
         if checkpoint_position_dim != self.substrate.position_dim:
             raise ValueError(
                 f"Checkpoint position_dim mismatch: checkpoint has {checkpoint_position_dim}D, "
                 f"but current substrate requires {self.substrate.position_dim}D."
             )
 
-        # Load checkpoint data
-        positions = checkpoint_data["positions"]
         ordering = checkpoint_data["ordering"]
+        if type(ordering) is not list or not all(type(name) is str for name in ordering):
+            raise ValueError("Affordance checkpoint ordering must be a list of names")
+        if len(ordering) != len(set(ordering)):
+            raise ValueError("Affordance checkpoint ordering contains duplicates")
+        deployed_names = list(self.affordances)
+        if ordering != deployed_names:
+            raise ValueError("Affordance checkpoint ordering must exactly match the current affordance ordering")
 
-        self.affordance_names = ordering
-        self.num_affordance_types = len(self.affordance_names)
+        positions = checkpoint_data["positions"]
+        if type(positions) is not dict:
+            raise ValueError("Affordance checkpoint positions must be a dictionary")
+        if set(positions) != set(deployed_names):
+            raise ValueError("Affordance checkpoint position names must exactly match the current affordance names")
 
-        for name, pos in positions.items():
-            if name in self.affordances:
-                self.affordances[name] = torch.tensor(pos, device=self.device, dtype=self.substrate.position_dtype)
-        self._affordance_layout_cache = None
+        validated_positions: dict[str, torch.Tensor] = {}
+        for name in ordering:
+            position = positions[name]
+            if type(position) is not list or len(position) != checkpoint_position_dim:
+                raise ValueError(f"Affordance {name!r} coordinate sequence must contain exactly {checkpoint_position_dim} values")
+            if any(isinstance(coordinate, bool) or not isinstance(coordinate, Real) for coordinate in position):
+                raise ValueError(f"Affordance {name!r} coordinates must be numeric")
+            if any(not math.isfinite(float(coordinate)) for coordinate in position):
+                raise ValueError(f"Affordance {name!r} coordinates must be finite")
+            if not self.substrate.position_dtype.is_floating_point and any(not float(coordinate).is_integer() for coordinate in position):
+                raise ValueError(f"Affordance {name!r} coordinates must be integer-compatible")
+
+            try:
+                position_tensor = torch.tensor(position, device=self.device, dtype=self.substrate.position_dtype)
+                normalized = self.substrate.normalize_positions(position_tensor.unsqueeze(0))
+            except (OverflowError, RuntimeError, TypeError, ValueError) as exc:
+                raise ValueError(f"Affordance {name!r} coordinates are invalid for the current substrate") from exc
+
+            expected_shape = (1, checkpoint_position_dim)
+            if tuple(normalized.shape) != expected_shape:
+                raise ValueError(
+                    f"Affordance {name!r} substrate position shape mismatch: expected {expected_shape}, got {tuple(normalized.shape)}"
+                )
+            if not bool(torch.isfinite(normalized).all()):
+                raise ValueError(f"Affordance {name!r} coordinates are not finite in the current substrate dtype")
+            if not bool(((normalized >= 0) & (normalized <= 1)).all()):
+                raise ValueError(f"Affordance {name!r} coordinates are outside the current substrate bounds")
+
+            validated_positions[name] = position_tensor
+
+        return validated_positions
 
     def randomize_affordance_positions(self) -> torch.Tensor | None:
         """Randomize affordance positions and return agent spawn positions.

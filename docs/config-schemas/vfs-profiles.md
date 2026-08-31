@@ -32,9 +32,11 @@
 > `exposed_to` → `["agent"]` injection (**deleted** — empty means unexposed); "values are
 > observed raw, no normalization surface" (**normalization is now REQUIRED at exposure**, and
 > boundedness is certified there); and the `PDR-0075` per-variable `ObservationField` /
-> `obs_item_slots` emission (**gone** — an exposed profile variable compiles to a
+> `obs_item_slots` emission (**gone** — an admitted exposed profile variable compiles to a
 > `variable_element` token, and item-profile exposure is refused until the unit-5 pack
-> migration). Everything else in this document is still at its 2026-08-26 restoration state.
+> migration). Expression-backed exposure is also refused until milestone 3 static context can
+> encode executable initializer identity without erasing it. Everything else in this document is
+> still at its 2026-08-26 restoration state.
 >
 > Tracked as `hamlet-fd0eb2da2c`.
 >
@@ -504,15 +506,23 @@ kind, certified at exposure (`token_spec.require_exposure_normalization`):
 
 ### What the compiler emits
 
-An exposed global or agent profile variable compiles to a **`variable_element` token** in the
-compiled `TokenSpec`, one token per element (a tensor-shaped variable tokenizes per element;
-a scalar is the rank-0 case). Each token's payload is a padded position block, the two-lane
-value block, and the **descriptor block** — the variable's declared parameters, name-free:
+An exposed global or agent profile variable with a literal initializer compiles to a
+**`variable_element` token** in the compiled `TokenSpec`, one token per element (a tensor-shaped
+variable tokenizes per element; a scalar is the rank-0 case). Deterministic `zeros`, `ones`, and
+`eye` initializers are lowered losslessly to that literal default before token binding. Random
+initializers and expression-backed exposure are refused because their executable initializer
+identity cannot yet survive into static context; milestone 3 owns that representation. Each
+admitted token's payload is a padded position block, the two-lane value block, and the
+**descriptor block** — the variable's declared parameters, name-free:
 scope one-hot, `semantic_type` one-hot, normalization kind one-hot plus its canonical
 parameter vector, dtype flag, lifetime one-hot, normalized declared initial, log element
 count, and owner-slot coordinate. Identity is the declared payload (spec §1); two variables
 identical in every declared parameter are **refused at compile time** as
 indistinguishable.
+
+The current default curriculum therefore emits zero `variable_element` tokens. Its expression-
+driven time variable remains live in VFS but is deliberately unexposed until that initializer
+identity can be represented.
 
 > **Item-profile exposure does not compile yet.** The `obs_item_slots` feature this section
 > used to describe died with the `ObservationSpec` family. An exposed item-profile variable
@@ -523,15 +533,11 @@ indistinguishable.
 ```yaml
 global_profile:
   variables:
-    - name: time_of_day_phase   # → one `variable_element` token, sin/cos in value lanes 0-1
+    - name: time_of_day_phase   # live expression state; unexposed, so emits no token
       id: time_of_day_phase
       type: float
       semantic_type: temporal
       expression: tick
-      exposed_to: [agent]
-      normalization:
-        kind: cyclical_sin_cos  # bounded by itself: no clip, no min/max to justify
-        period: 24
 agent_profile:
   variables:
     - name: motivation          # → one `variable_element` token

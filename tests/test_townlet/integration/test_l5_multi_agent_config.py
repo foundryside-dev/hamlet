@@ -12,7 +12,7 @@ def test_l5_multi_agent_config_exercises_pair_and_affordance_scopes_end_to_end()
 
     compiled = UniverseCompiler().compile(config_dir, primary_level="L5_multi_agent", use_cache=False)
 
-    variables = {variable.id: variable for variable in compiled.vfs_variables}
+    variables = {variable.id: variable for variable in compiled.get_level("L5_multi_agent").vfs_variables}
     assert variables["trust"].scope == "pair"
     assert variables["trust"].type == "scalar"
     assert variables["occupied_by"].scope == "affordance"

@@ -15,7 +15,6 @@ from typing import TYPE_CHECKING
 import torch
 
 from townlet.environment.token_publishers import (
-    AffordanceTokenDeclaration,
     AffordanceTokenPublisher,
     AgentTokenPublisher,
     EffectTokenPublisher,
@@ -28,7 +27,6 @@ from townlet.environment.token_publishers import (
 )
 from townlet.universe.dto.token_spec import (
     EffectDeclaration,
-    MeterDeclaration,
     TokenSpec,
 )
 
@@ -45,7 +43,7 @@ def build_token_observation_encoder(env: VectorizedHamletEnv) -> TokenObservatio
     COMPILED artifact — capacities, slot bindings and their order — never from runtime
     counts.
     """
-    spec = env.universe.token_spec
+    spec = env.token_spec
     device = env.device
     publishers: list[TokenTypePublisher] = []
 
@@ -55,19 +53,11 @@ def build_token_observation_encoder(env: VectorizedHamletEnv) -> TokenObservatio
 
     meter_type = spec.get_type("meter")
     if meter_type is not None and meter_type.capacity > 0:
-        publishers.append(MeterTokenPublisher(meter_type, _meter_declarations(env), env.meter_name_to_index, device))
+        publishers.append(MeterTokenPublisher(meter_type, env.level.meter_declarations, env.meter_name_to_index, device))
 
     affordance_type = spec.get_type("affordance")
     if affordance_type is not None and affordance_type.capacity > 0:
-        publishers.append(
-            AffordanceTokenPublisher(
-                affordance_type,
-                env.substrate,
-                _affordance_declarations(env),
-                {meter.name: meter for meter in _meter_declarations(env)},
-                device,
-            )
-        )
+        publishers.append(AffordanceTokenPublisher(affordance_type, env.substrate, device))
 
     agent_type = spec.get_type("agent")
     if agent_type is not None and agent_type.capacity > 0:
@@ -95,46 +85,6 @@ def build_token_observation_encoder(env: VectorizedHamletEnv) -> TokenObservatio
     return TokenObservationEncoder(spec, publishers, device)
 
 
-def _meter_declarations(env: VectorizedHamletEnv) -> list[MeterDeclaration]:
-    """The level's bars.yaml declarations, in declaration order."""
-    return [
-        MeterDeclaration(
-            name=meter.name,
-            initial=meter.initial,
-            min=meter.bounds.min,
-            max=meter.bounds.max,
-            lethal_min=meter.bounds.lethal_min,
-            lethal_max=meter.bounds.lethal_max,
-            passive_depletion=meter.depletion.passive,
-            move_depletion=meter.depletion.move,
-            interact_depletion=meter.depletion.interact,
-            natural_recovery=meter.recovery.natural,
-        )
-        for meter in env.level.bars.meters
-    ]
-
-
-def _affordance_declarations(env: VectorizedHamletEnv) -> list[AffordanceTokenDeclaration]:
-    """Declared identity per compiled affordance slot (spec §1, applied recursively)."""
-    interaction_types = {affordance.name: affordance.interaction_type for affordance in env.level.affordances.affordances}
-    declarations: list[AffordanceTokenDeclaration] = []
-    for info in env.level.affordance_metadata.affordances:
-        interaction_type = interaction_types.get(info.id)
-        if interaction_type is None:
-            raise ValueError(
-                f"Affordance {info.id!r} is in the compiled affordance metadata but not in the level's "
-                "affordances.yaml; recompile the config pack."
-            )
-        declarations.append(
-            AffordanceTokenDeclaration(
-                id=info.id,
-                interaction_type=str(interaction_type),
-                effect_deltas=dict(info.effects),
-            )
-        )
-    return declarations
-
-
 def _effect_declarations(env: VectorizedHamletEnv) -> list[EffectDeclaration]:
     """Declared effect identity in CATALOG ORDER — `EffectSlotBatch.effect_indices`
     indexes this list, so the order is the compiled catalog's, not a runtime one."""
@@ -146,7 +96,6 @@ def _effect_declarations(env: VectorizedHamletEnv) -> list[EffectDeclaration]:
             id=effect.id,
             scope=effect.scope,
             duration=effect.duration,
-            intensity=effect.intensity,
             reapply_policy=effect.reapply_policy,
         )
         for effect in catalog.effects.values()

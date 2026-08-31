@@ -29,7 +29,6 @@ class TestEffectsCompilationPipeline:
                     "duration": 1,
                     "reapply_policy": "stack",
                     "observable": True,
-                    "intensity": 1.0,
                     "on_spawn": [
                         {
                             "modify": "target.bar.health",
@@ -49,6 +48,7 @@ class TestEffectsCompilationPipeline:
                         }
                     ],
                     "on_despawn": [],
+                    "on_interrupt": [],
                 }
             ],
         }
@@ -90,7 +90,6 @@ class TestEffectsCompilationPipeline:
                     "duration": 1,
                     "reapply_policy": "stack",
                     "observable": True,
-                    "intensity": 1.0,
                     "on_spawn": [
                         {
                             "modify": "target.bar.health",
@@ -99,6 +98,7 @@ class TestEffectsCompilationPipeline:
                     ],
                     "on_tick": [],
                     "on_despawn": [],
+                    "on_interrupt": [],
                 }
             ],
         }

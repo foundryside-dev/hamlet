@@ -15,7 +15,6 @@ effect_definitions:
   - id: "auction_house"
     scope: agent
     duration: 100000
-    intensity: 1.0
     reapply_policy: renew
     observable: true
 
@@ -60,6 +59,7 @@ effect_definitions:
         else: []
 
     on_despawn: []
+    on_interrupt: []
 
 # Per-scope budget of concurrently active effects (token-obs spec S2, required because
 # effects are declared). Values: one active instance per declared effect per scope

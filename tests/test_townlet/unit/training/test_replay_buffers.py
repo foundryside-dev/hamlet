@@ -769,7 +769,7 @@ class TestReplayBufferSerialization:
             "dones": torch.rand(5) > 0.5,
         }
 
-        with pytest.raises(ValueError, match="format_version < 3"):
+        with pytest.raises(ValueError, match="exact current format_version is 3"):
             buffer.load_from_serialized(legacy_state)
 
 

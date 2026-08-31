@@ -6,36 +6,57 @@ import pytest
 import torch
 
 from townlet.demo.runner import DemoRunner
-from townlet.training.checkpoint_utils import CHECKPOINT_FORMAT_VERSION, persist_checkpoint_digest
+from townlet.training.checkpoint_utils import (
+    CHECKPOINT_FORMAT_VERSION,
+    DEMO_CHECKPOINT_KEYS,
+    attach_universe_metadata,
+    persist_checkpoint_digest,
+)
+from townlet.universe.compiled import CompiledUniverse
 
 
-def _write_mismatched_checkpoint(checkpoint_dir: Path, *, write_digest: bool = True) -> Path:
+def _write_mismatched_checkpoint(
+    checkpoint_dir: Path,
+    universe: CompiledUniverse,
+    *,
+    write_digest: bool = True,
+) -> Path:
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
     checkpoint_path = checkpoint_dir / "checkpoint_ep00012.pt"
-    torch.save(
+    checkpoint = {key: None for key in DEMO_CHECKPOINT_KEYS}
+    checkpoint.update(
         {
             "version": CHECKPOINT_FORMAT_VERSION,
             "episode": 12,
             "timestamp": 1.0,
             "substrate_metadata": {"position_dim": 2, "substrate_type": "Grid2DSubstrate"},
-            "vfs_hash": "deadbeef" * 8,
-            # PDR-0027: surface_brain_lineage runs before the vfs leg and requires the
-            # lineage stamp; equal hashes = unforked, so the vfs mismatch stays the error.
-            "brain_hash": "cafef00d" * 8,
-            "pack_brain_hash": "cafef00d" * 8,
-        },
-        checkpoint_path,
+            "population_state": {},
+            "curriculum_state": {},
+            "affordance_layout": {},
+            "agent_ids": ["agent_0"],
+            "epsilon": 0.25,
+            "training_config": {},
+            "config_dir": "configs/test/model_config",
+        }
     )
+    attach_universe_metadata(checkpoint, universe)
+    checkpoint["vfs_hash"] = "deadbeef" * 8
+    torch.save(checkpoint, checkpoint_path)
     if write_digest:
         persist_checkpoint_digest(checkpoint_path)
     return checkpoint_path
 
 
+def _initialize_checkpoint_components(runner: DemoRunner) -> None:
+    # These tests stop at the VFS/digest gate, before any component API is used.
+    runner.env = object()  # type: ignore[assignment]
+    runner.population = object()  # type: ignore[assignment]
+    runner.curriculum = object()  # type: ignore[assignment]
+
+
 def test_runner_rejects_checkpoint_vfs_hash_mismatch(tmp_path: Path) -> None:
     """Resuming across a VFS ABI change should fail loudly."""
     checkpoint_dir = tmp_path / "checkpoints"
-    _write_mismatched_checkpoint(checkpoint_dir)
-
     runner = DemoRunner(
         config_dir=Path("configs/test/model_config"),
         db_path=tmp_path / "test.db",
@@ -43,6 +64,8 @@ def test_runner_rejects_checkpoint_vfs_hash_mismatch(tmp_path: Path) -> None:
         max_episodes=1,
         level_name="L0_test",
     )
+    _initialize_checkpoint_components(runner)
+    _write_mismatched_checkpoint(checkpoint_dir, runner.compiled)
 
     try:
         try:
@@ -59,8 +82,6 @@ def test_runner_rejects_checkpoint_vfs_hash_mismatch(tmp_path: Path) -> None:
 def test_runner_force_new_vfs_branches_without_loading_checkpoint(tmp_path: Path) -> None:
     """The explicit override should start fresh instead of loading incompatible state."""
     checkpoint_dir = tmp_path / "checkpoints"
-    _write_mismatched_checkpoint(checkpoint_dir)
-
     runner = DemoRunner(
         config_dir=Path("configs/test/model_config"),
         db_path=tmp_path / "test.db",
@@ -69,6 +90,8 @@ def test_runner_force_new_vfs_branches_without_loading_checkpoint(tmp_path: Path
         level_name="L0_test",
         force_new_vfs=True,
     )
+    _initialize_checkpoint_components(runner)
+    _write_mismatched_checkpoint(checkpoint_dir, runner.compiled)
 
     try:
         assert runner.load_checkpoint() is None
@@ -109,8 +132,6 @@ def test_both_checkpoint_consumers_call_the_shared_identity_guard() -> None:
 def test_runner_requires_checkpoint_digest_before_pickle_load(tmp_path: Path) -> None:
     """Demo checkpoint resume must verify a sidecar digest before unsafe pickle loading."""
     checkpoint_dir = tmp_path / "checkpoints"
-    _write_mismatched_checkpoint(checkpoint_dir, write_digest=False)
-
     runner = DemoRunner(
         config_dir=Path("configs/test/model_config"),
         db_path=tmp_path / "test.db",
@@ -118,6 +139,8 @@ def test_runner_requires_checkpoint_digest_before_pickle_load(tmp_path: Path) ->
         max_episodes=1,
         level_name="L0_test",
     )
+    _initialize_checkpoint_components(runner)
+    _write_mismatched_checkpoint(checkpoint_dir, runner.compiled, write_digest=False)
 
     try:
         with pytest.raises(FileNotFoundError, match="Missing checksum file"):

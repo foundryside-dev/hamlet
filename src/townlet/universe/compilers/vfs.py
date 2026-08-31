@@ -11,7 +11,7 @@ from townlet.config.items_config import ItemsAppearanceConfig, ItemsCatalogConfi
 from townlet.config.vfs_profiles_config import GlobalVFSProfileConfig, VFSProfilesConfig
 from townlet.universe.compiled import CompiledVFSProfiles
 from townlet.universe.validation.limits import MAX_VFS_PROFILES
-from townlet.vfs.profiles import CompiledItemProfile, VFSProfileCompiler
+from townlet.vfs.profiles import CompiledItemProfile, CompiledVariable, VFSProfileCompiler
 from townlet.vfs.schema import VariableDef
 from townlet.world.expression import ExpressionParser
 from townlet.world.expression.type_checker import TypeChecker, TypeCheckError
@@ -21,6 +21,26 @@ _RUNTIME_VFS_TYPES = frozenset(
 )
 
 _ENGINE_TICK_ID = "tick"
+
+_DETERMINISTIC_TENSOR_INITIALIZERS = frozenset({"zeros", "ones", "eye"})
+_RANDOM_TENSOR_INITIALIZERS = frozenset({"random_normal", "random_uniform"})
+
+
+def _literal_tensor_default(mode: str, shape: list[int], *, var_id: str) -> list[Any]:
+    """Lower one deterministic tensor initializer to its exact row-major literal."""
+    if mode == "eye":
+        if len(shape) != 2 or shape[0] != shape[1]:
+            raise ValueError(f"Exposed VFS variable '{var_id}' initial_value_mode 'eye' requires a square 2D shape; got {shape}")
+        return [[1.0 if row == column else 0.0 for column in range(shape[1])] for row in range(shape[0])]
+
+    fill = 0.0 if mode == "zeros" else 1.0
+
+    def filled(axis: int) -> list[Any]:
+        if axis == len(shape) - 1:
+            return [fill for _ in range(shape[axis])]
+        return [filled(axis + 1) for _ in range(shape[axis])]
+
+    return filled(0)
 
 
 def _engine_tick_variable_def() -> VariableDef:
@@ -293,13 +313,42 @@ class VFSCompiler:
 
     def _compiled_profile_var_to_variable_def(
         self,
-        compiled_var: Any,
+        compiled_var: CompiledVariable,
         *,
         scope: Literal["global", "agent", "agent_private", "item", "pair", "group", "affordance", "zone", "message"],
         lifetime: Literal["persistent", "episode"],
     ) -> VariableDef:
         raw_type = str(compiled_var.type)
-        if raw_type in ("agent_ref", "item_ref", "affordance_ref", "effect_ref"):
+        exposed = bool(compiled_var.exposed_to)
+        expression = compiled_var.expression
+        mode = compiled_var.initial_value_mode
+        params = compiled_var.initial_value_params
+        default_value: Any
+
+        if exposed and expression is not None:
+            raise ValueError(
+                f"Exposed VFS variable '{compiled_var.name}' uses expression initialization and cannot be exposed: "
+                "variable_element identity requires one exact declared default. Remove exposed_to and normalization."
+            )
+
+        if exposed and mode in _RANDOM_TENSOR_INITIALIZERS:
+            raise ValueError(
+                f"Exposed VFS variable '{compiled_var.name}' uses initial_value_mode '{mode}' and cannot be exposed: "
+                "a random sample has no exact declared variable_element default."
+            )
+
+        if exposed and mode in _DETERMINISTIC_TENSOR_INITIALIZERS:
+            if not raw_type.startswith("tensor"):
+                raise ValueError(
+                    f"Exposed VFS variable '{compiled_var.name}' uses tensor initial_value_mode '{mode}' with non-tensor type '{raw_type}'"
+                )
+            shape = compiled_var.shape
+            if not shape:
+                raise ValueError(f"Exposed VFS variable '{compiled_var.name}' uses initial_value_mode '{mode}' without a tensor shape")
+            default_value = _literal_tensor_default(mode, list(shape), var_id=str(compiled_var.name))
+            mode = None
+            params = None
+        elif raw_type in ("agent_ref", "item_ref", "affordance_ref", "effect_ref"):
             default_value = compiled_var.initial_value
         else:
             default_value = (
@@ -331,13 +380,16 @@ class VFSCompiler:
             readable_by=["agent", "engine"],
             writable_by=["engine"],
             description=f"{scope.title()} VFS variable from vfs_profiles.yaml",
-            shape=getattr(compiled_var, "shape", None),
-            dims=getattr(compiled_var, "dims", None),
-            initial_value_mode=getattr(compiled_var, "initial_value_mode", None),
-            initial_value_params=getattr(compiled_var, "initial_value_params", None),
+            shape=compiled_var.shape,
+            dims=compiled_var.dims,
+            initial_value_mode=cast(
+                Literal["zeros", "ones", "eye", "random_normal", "random_uniform"] | None,
+                mode,
+            ),
+            initial_value_params=params,
             # The declared normalization rides onto the runtime declaration so the token
             # publishers read exactly what the author declared (spec §2).
-            normalization=getattr(compiled_var, "normalization", None),
+            normalization=compiled_var.normalization,
         )
 
     @staticmethod

@@ -7,5 +7,3 @@ version: '1.0'
 items:
   - item_type: creep
     spawn_count: 0
-    spawn_interval: null
-    spawn_position: random

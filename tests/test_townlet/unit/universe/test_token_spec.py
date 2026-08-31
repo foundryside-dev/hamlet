@@ -13,8 +13,13 @@ import pytest
 
 from townlet.config.effects_config import EffectScope, ReapplyPolicy
 from townlet.config.interaction_type import InteractionType
+from townlet.effects.affordance_identity import AffordanceMeterWrite
 from townlet.universe.dto.token_spec import (
     _VARIABLE_TYPE_DTYPE,
+    AFFORDANCE_EFFECT_ENTRY_WIDTH,
+    AFFORDANCE_EFFECT_MAGNITUDE_OFFSET,
+    AFFORDANCE_EFFECT_METER_OFFSET,
+    AFFORDANCE_SIGNATURE_WIDTH,
     DESCRIPTOR_BLOCK_WIDTH,
     DTYPE_FLAG_WIDTH,
     DTYPE_VOCABULARY,
@@ -54,8 +59,10 @@ from townlet.universe.dto.token_spec import (
     mean_census_advisory,
     meter_capacity,
     meter_signature,
+    normalize_declared_scalar,
     require_exposure_normalization,
     require_position_rank,
+    saturate,
     self_capacity,
     static_payload_signature,
     value_block_width_used,
@@ -99,6 +106,7 @@ def _var(
 def _meter(name: str = "energy", initial: float = 1.0, lo: float = 0.0, hi: float = 1.0) -> MeterDeclaration:
     return MeterDeclaration(
         name=name,
+        normalization=NormalizationSpec(kind="minmax", min=lo, max=hi, clip=True),
         initial=initial,
         min=lo,
         max=hi,
@@ -111,12 +119,25 @@ def _meter(name: str = "energy", initial: float = 1.0, lo: float = 0.0, hi: floa
     )
 
 
-def _static_bindings(n: int, prefix: str) -> tuple[SlotBinding, ...]:
-    return tuple(SlotBinding(slot_index=i, filler_kind="static", filler_ref=f"{prefix}:{i}") for i in range(n))
+def _static_bindings(n: int, prefix: str, *, signature_width: int | None = None) -> tuple[SlotBinding, ...]:
+    signature = None if signature_width is None else (0.0,) * signature_width
+    return tuple(SlotBinding(slot_index=i, filler_kind="static", filler_ref=f"{prefix}:{i}", static_signature=signature) for i in range(n))
 
 
 def _dynamic_bindings(n: int, prefix: str) -> tuple[SlotBinding, ...]:
     return tuple(SlotBinding(slot_index=i, filler_kind="dynamic", filler_ref=f"{prefix}:{i}") for i in range(n))
+
+
+def _write(meter_name: str, form: int, delta: float | None) -> AffordanceMeterWrite:
+    return AffordanceMeterWrite(
+        meter_name=meter_name,
+        form=form,  # type: ignore[arg-type]
+        delta=delta,
+        stage="on_start",
+        source="interaction",
+        target="target",
+        spawned_effect=None,
+    )
 
 
 # --------------------------------------------------------------------------- roster
@@ -143,7 +164,7 @@ class TestRoster:
     def test_engine_constants(self):
         assert MAX_POSITION_RANK == 8
         assert VALUE_BLOCK_WIDTH == 2
-        assert EFFECT_SUMMARY_K == 4
+        assert EFFECT_SUMMARY_K == 5
         assert MEAN_CENSUS_ADVISORY == 64
 
 
@@ -194,7 +215,7 @@ class TestDescriptorBlock:
         # normalized declared initial = (5 - 0) / (10 - 0)
         assert block[-4] == pytest.approx(0.5)
         # element count log-scaled: log1p(1)
-        assert block[-3] == pytest.approx(math.log1p(1))
+        assert block[-3] == pytest.approx(saturate(math.log1p(1)))
         # no owner slot -> (0, applicable 0)
         assert block[-2:] == (0.0, 0.0)
 
@@ -229,6 +250,12 @@ class TestWidthRules:
     def test_scalar_kinds_use_lane_zero_only(self):
         assert value_block_width_used(_minmax()) == 1
         assert value_block_width_used(NormalizationSpec(kind="binary", threshold=0.5)) == 1
+
+    def test_binary_normalization_threshold_equality_is_zero(self):
+        spec = NormalizationSpec(kind="binary", threshold=0.5)
+
+        assert normalize_declared_scalar(0.5, spec, element_index=0, element_count=1) == 0.0
+        assert normalize_declared_scalar(0.5001, spec, element_index=0, element_count=1) == 1.0
 
     def test_one_hot_exposure_refuses(self):
         spec = NormalizationSpec(kind="one_hot", categories=4)
@@ -394,14 +421,15 @@ class TestPayloadSchemas:
         n_interaction = len(get_args(InteractionType))
         assert n_interaction >= 1  # size derives from the enum; the layout below is the contract
         assert [f for f in features if f.startswith("interaction_type_")] == [f"interaction_type_{t}" for t in get_args(InteractionType)]
+        assert "duration_applicable" in features
+        assert "duration_ticks" in features
         assert sum(f.startswith("position_") for f in features) == MAX_POSITION_RANK + 1
         assert sum(f.startswith("egocentric_") for f in features) == MAX_POSITION_RANK
-        # K entries of (present, magnitude, sign, target signature) + the count feature.
-        assert sum(f.startswith("effect_") for f in features) == EFFECT_SUMMARY_K * (3 + METER_SIGNATURE_WIDTH) + 1
+        assert sum(f.startswith("effect_") for f in features) == EFFECT_SUMMARY_K * AFFORDANCE_EFFECT_ENTRY_WIDTH + 1
         assert features[-1] == "effect_count"
         assert (
             len(features)
-            == n_interaction + (MAX_POSITION_RANK + 1) + MAX_POSITION_RANK + EFFECT_SUMMARY_K * (3 + METER_SIGNATURE_WIDTH) + 1
+            == n_interaction + 2 + 24 + (MAX_POSITION_RANK + 1) + MAX_POSITION_RANK + EFFECT_SUMMARY_K * AFFORDANCE_EFFECT_ENTRY_WIDTH + 1
         )
 
     def test_meter_payload_carries_value_block_and_signature(self):
@@ -411,9 +439,15 @@ class TestPayloadSchemas:
         assert len(sig) == METER_SIGNATURE_WIDTH
         assert sig[0] == pytest.approx(0.5)
 
+    def test_meter_signature_identifies_the_declared_normalization(self):
+        linear = _meter("linear", initial=0.5)
+        binary = MeterDeclaration(**{**linear.__dict__, "name": "binary", "normalization": NormalizationSpec(kind="binary", threshold=0.5)})
+        assert meter_signature(linear) != meter_signature(binary)
+
     def test_meter_signature_is_bounded_and_scale_free(self):
         money = MeterDeclaration(
             name="money",
+            normalization=NormalizationSpec(kind="minmax", min=0.0, max=999999.0, clip=True),
             initial=0.0,
             min=0.0,
             max=999999.0,
@@ -426,9 +460,11 @@ class TestPayloadSchemas:
         )
         sig = meter_signature(money)
         assert all(0.0 <= f <= 1.0 for f in sig)
-        # Same meter declared in other units → same signature (rates are range-relative).
+        # Same meter declared in other units → the scale-free behavioral portion is
+        # unchanged. Absolute range/normalization bounds deliberately carry unit identity.
         scaled = MeterDeclaration(
             name="money_k",
+            normalization=NormalizationSpec(kind="minmax", min=0.0, max=999.999, clip=True),
             initial=0.0,
             min=0.0,
             max=999.999,
@@ -439,13 +475,20 @@ class TestPayloadSchemas:
             interact_depletion=0.0,
             natural_recovery=5.0,
         )
-        assert meter_signature(scaled)[:-1] == pytest.approx(sig[:-1])
+        scaled_sig = meter_signature(scaled)
+        assert scaled_sig[:7] == pytest.approx(sig[:7])
+        assert scaled_sig[7] != sig[7]  # declared range
+        assert scaled_sig[8:12] == sig[8:12]  # normalization-kind one-hot
+        assert scaled_sig[12] == sig[12]  # min = 0 in both declarations
+        assert scaled_sig[13] != sig[13]  # absolute normalization max
+        assert scaled_sig[14] == sig[14] == 0.0  # no separate scale parameter on minmax
 
     def test_effect_summary_ranks_by_target_relative_magnitude(self):
         meters = {
             "energy": _meter("energy", lo=0.0, hi=1.0),
             "money": MeterDeclaration(
                 name="money",
+                normalization=NormalizationSpec(kind="minmax", min=0.0, max=1000.0, clip=True),
                 initial=0.0,
                 min=0.0,
                 max=1000.0,
@@ -458,23 +501,103 @@ class TestPayloadSchemas:
             ),
         }
         # +800 on a 0–1000 meter (0.8 of range) outranks +0.3 on a 0–1 meter, despite the ranges.
-        block = effect_summary({"energy": 0.3, "money": 800.0}, meters)
-        entry = 3 + METER_SIGNATURE_WIDTH
+        block = effect_summary(
+            (
+                _write("energy", 1, 0.3),
+                _write("money", 1, 800.0),
+            ),
+            meters,
+        )
+        entry = AFFORDANCE_EFFECT_ENTRY_WIDTH
         first, second = block[:entry], block[entry : 2 * entry]
-        assert first[:3] == (1.0, pytest.approx(0.8), 1.0)
-        assert second[:3] == (1.0, pytest.approx(0.3), 1.0)
-        assert first[3:] == pytest.approx(meter_signature(meters["money"]))
+        assert (first[0], first[AFFORDANCE_EFFECT_MAGNITUDE_OFFSET], first[AFFORDANCE_EFFECT_MAGNITUDE_OFFSET + 1]) == (
+            1.0,
+            pytest.approx(0.8),
+            1.0,
+        )
+        assert (second[0], second[AFFORDANCE_EFFECT_MAGNITUDE_OFFSET], second[AFFORDANCE_EFFECT_MAGNITUDE_OFFSET + 1]) == (
+            1.0,
+            pytest.approx(0.3),
+            1.0,
+        )
+        assert first[AFFORDANCE_EFFECT_METER_OFFSET:] == pytest.approx(meter_signature(meters["money"]))
         # Absent entries are zero-marked; every feature stays bounded.
-        assert block[2 * entry :] == (0.0,) * (2 * entry)
+        assert block[2 * entry :] == (0.0,) * ((EFFECT_SUMMARY_K - 2) * entry)
         assert all(-1.0 <= f <= 1.0 for f in block)
+
+    @pytest.mark.parametrize("delta", (float("nan"), float("inf"), float("-inf")))
+    def test_effect_summary_rejects_non_finite_declared_deltas(self, delta: float):
+        with pytest.raises(ValueError, match="finite"):
+            effect_summary(
+                (_write("energy", 1, delta),),
+                {"energy": _meter("energy", lo=0.0, hi=1.0)},
+            )
+
+    def test_effect_summary_ranks_only_unknown_magnitudes_first_then_all_known_by_magnitude(self):
+        meters = {"energy": _meter("energy"), "mood": _meter("mood")}
+        block = effect_summary(
+            (
+                _write("energy", -1, 0.1),
+                _write("mood", -1, None),
+                _write("energy", 1, 0.9),
+            ),
+            meters,
+        )
+        entry = AFFORDANCE_EFFECT_ENTRY_WIDTH
+
+        def values(index: int) -> tuple[float, float, float]:
+            start = index * entry
+            return (
+                block[start],
+                block[start + AFFORDANCE_EFFECT_MAGNITUDE_OFFSET],
+                block[start + AFFORDANCE_EFFECT_MAGNITUDE_OFFSET + 1],
+            )
+
+        assert values(0) == (-1.0, 0.0, 0.0)
+        assert values(1) == (1.0, pytest.approx(0.9), 1.0)
+        assert values(2) == (-1.0, pytest.approx(0.1), 1.0)
+
+    def test_effect_summary_keeps_unknown_magnitudes_then_ranks_all_known_writes(self):
+        meters = {"energy": _meter("energy")}
+        block = effect_summary(
+            (
+                _write("energy", -1, None),
+                _write("energy", 1, 0.9),
+                _write("energy", 1, 0.8),
+                _write("energy", 1, 0.7),
+                _write("energy", 1, 0.6),
+            ),
+            meters,
+        )
+        entry = AFFORDANCE_EFFECT_ENTRY_WIDTH
+
+        def values(index: int) -> tuple[float, float, float]:
+            start = index * entry
+            return (
+                block[start],
+                block[start + AFFORDANCE_EFFECT_MAGNITUDE_OFFSET],
+                block[start + AFFORDANCE_EFFECT_MAGNITUDE_OFFSET + 1],
+            )
+
+        assert values(0) == (-1.0, 0.0, 0.0)
+        assert values(1) == (1.0, pytest.approx(0.9), 1.0)
+        assert values(2) == (1.0, pytest.approx(0.8), 1.0)
+        assert values(3) == (1.0, pytest.approx(0.7), 1.0)
+        assert values(4) == (1.0, pytest.approx(0.6), 1.0)
+
+    def test_effect_summary_refuses_more_than_fixed_k_reachable_writes(self):
+        writes = tuple(_write("energy", 1, float(index)) for index in range(6))
+
+        with pytest.raises(ValueError, match=rf"EFFECT_SUMMARY_K|at most {EFFECT_SUMMARY_K}|{EFFECT_SUMMARY_K}.*writes"):
+            effect_summary(writes, {"energy": _meter("energy")})
 
     def test_effect_payload_carries_declared_duration_and_reapply_policy(self):
         features = PAYLOAD_SCHEMAS["effect"]
         assert features[: len(EFFECT_STATIC_FEATURES)] == EFFECT_STATIC_FEATURES
         assert [f for f in features if f.startswith("reapply_")] == [f"reapply_{p.value}" for p in ReapplyPolicy]
-        a = EffectDeclaration(id="a", scope="agent", duration=5, intensity=1.0, reapply_policy="renew")
-        b = EffectDeclaration(id="b", scope="agent", duration=50, intensity=1.0, reapply_policy="renew")
-        c = EffectDeclaration(id="c", scope="agent", duration=5, intensity=1.0, reapply_policy="stack")
+        a = EffectDeclaration(id="a", scope="agent", duration=5, reapply_policy="renew")
+        b = EffectDeclaration(id="b", scope="agent", duration=50, reapply_policy="renew")
+        c = EffectDeclaration(id="c", scope="agent", duration=5, reapply_policy="stack")
         pa, pb, pc = (effect_static_payload(e) for e in (a, b, c))
         assert len(pa) == len(EFFECT_STATIC_FEATURES)
         assert pa != pb and pa != pc
@@ -504,8 +627,11 @@ class TestTokenSpecArtifact:
         return TokenSpec(
             types=(
                 build_token_type("self", _static_bindings(1, "self")),
-                build_token_type("meter", _static_bindings(8, "meter")),
-                build_token_type("affordance", _static_bindings(14, "aff")),
+                build_token_type("meter", _static_bindings(8, "meter", signature_width=METER_SIGNATURE_WIDTH)),
+                build_token_type(
+                    "affordance",
+                    _static_bindings(14, "aff", signature_width=AFFORDANCE_SIGNATURE_WIDTH),
+                ),
                 build_token_type("agent", ()),
                 build_token_type("item", _dynamic_bindings(2, "item")),
                 build_token_type("effect", ()),
@@ -547,7 +673,10 @@ class TestTokenSpecArtifact:
     def test_capacity_must_equal_bindings(self):
         with pytest.raises(ValueError, match="capacity"):
             TokenTypeSchema(
-                type_name="meter", payload_features=PAYLOAD_SCHEMAS["meter"], capacity=3, slot_bindings=_static_bindings(2, "m")
+                type_name="meter",
+                payload_features=PAYLOAD_SCHEMAS["meter"],
+                capacity=3,
+                slot_bindings=_static_bindings(2, "m", signature_width=METER_SIGNATURE_WIDTH),
             )
 
     def test_payload_features_must_match_engine_schema(self):
@@ -559,8 +688,74 @@ class TestTokenSpecArtifact:
         with pytest.raises(ValueError, match="slot_index"):
             build_token_type("meter", bad)
 
+    @pytest.mark.parametrize(
+        ("type_name", "signature_width"),
+        (
+            pytest.param("meter", METER_SIGNATURE_WIDTH, id="meter"),
+            pytest.param("affordance", AFFORDANCE_SIGNATURE_WIDTH, id="affordance"),
+            pytest.param("variable_element", DESCRIPTOR_BLOCK_WIDTH, id="variable-element"),
+        ),
+    )
+    def test_compiled_static_slot_requires_per_type_signature(self, type_name: str, signature_width: int):
+        binding = SlotBinding(slot_index=0, filler_kind="static", filler_ref="decl")
+
+        with pytest.raises(ValueError, match=rf"{type_name}.*static_signature.*{signature_width}"):
+            build_token_type(type_name, (binding,))
+
+    @pytest.mark.parametrize(
+        ("type_name", "signature_width"),
+        (
+            pytest.param("meter", METER_SIGNATURE_WIDTH, id="meter"),
+            pytest.param("affordance", AFFORDANCE_SIGNATURE_WIDTH, id="affordance"),
+            pytest.param("variable_element", DESCRIPTOR_BLOCK_WIDTH, id="variable-element"),
+        ),
+    )
+    def test_compiled_static_slot_rejects_wrong_signature_width(self, type_name: str, signature_width: int):
+        binding = SlotBinding(
+            slot_index=0,
+            filler_kind="static",
+            filler_ref="decl",
+            static_signature=(0.0,) * (signature_width - 1),
+        )
+
+        with pytest.raises(ValueError, match=rf"{type_name}.*static_signature.*{signature_width}"):
+            build_token_type(type_name, (binding,))
+
+    @pytest.mark.parametrize(
+        ("type_name", "signature_width"),
+        (
+            pytest.param("meter", METER_SIGNATURE_WIDTH, id="meter"),
+            pytest.param("affordance", AFFORDANCE_SIGNATURE_WIDTH, id="affordance"),
+            pytest.param("variable_element", DESCRIPTOR_BLOCK_WIDTH, id="variable-element"),
+        ),
+    )
+    @pytest.mark.parametrize("non_finite", (float("nan"), float("inf"), float("-inf")))
+    def test_compiled_static_slot_rejects_non_finite_signature(
+        self,
+        type_name: str,
+        signature_width: int,
+        non_finite: float,
+    ):
+        binding = SlotBinding(
+            slot_index=0,
+            filler_kind="static",
+            filler_ref="decl",
+            static_signature=(non_finite,) + (0.0,) * (signature_width - 1),
+        )
+
+        with pytest.raises(ValueError, match=rf"{type_name}.*static_signature.*finite"):
+            build_token_type(type_name, (binding,))
+
+    @pytest.mark.parametrize("type_name", ("self", "agent", "item", "effect"))
+    def test_type_without_static_payload_rejects_signature(self, type_name: str):
+        filler_kind = "static" if type_name == "self" else "dynamic"
+        binding = SlotBinding(slot_index=0, filler_kind=filler_kind, filler_ref="decl", static_signature=(0.0,))
+
+        with pytest.raises(ValueError, match=rf"{type_name}.*must not.*static_signature"):
+            build_token_type(type_name, (binding,))
+
     def test_encoding_version(self):
-        assert self._spec().encoding_version == "token-1.0"
+        assert self._spec().encoding_version == "token-1.1"
 
 
 # --------------------------------------------------------------------------- census advisory
@@ -568,15 +763,36 @@ class TestTokenSpecArtifact:
 
 class TestCensusAdvisory:
     def test_no_advisory_at_or_below_threshold(self):
-        spec = TokenSpec(types=(build_token_type("affordance", _static_bindings(MEAN_CENSUS_ADVISORY, "a")),))
+        spec = TokenSpec(
+            types=(
+                build_token_type(
+                    "affordance",
+                    _static_bindings(MEAN_CENSUS_ADVISORY, "a", signature_width=AFFORDANCE_SIGNATURE_WIDTH),
+                ),
+            )
+        )
         assert mean_census_advisory(spec, aggregator="mean") is None
 
     def test_advisory_names_counts_when_any_type_exceeds(self):
-        spec = TokenSpec(types=(build_token_type("affordance", _static_bindings(MEAN_CENSUS_ADVISORY + 1, "a")),))
+        spec = TokenSpec(
+            types=(
+                build_token_type(
+                    "affordance",
+                    _static_bindings(MEAN_CENSUS_ADVISORY + 1, "a", signature_width=AFFORDANCE_SIGNATURE_WIDTH),
+                ),
+            )
+        )
         text = mean_census_advisory(spec, aggregator="mean")
         assert text is not None
         assert "affordance" in text and str(MEAN_CENSUS_ADVISORY + 1) in text and "64" in text
 
     def test_no_advisory_for_attention(self):
-        spec = TokenSpec(types=(build_token_type("affordance", _static_bindings(MEAN_CENSUS_ADVISORY + 1, "a")),))
+        spec = TokenSpec(
+            types=(
+                build_token_type(
+                    "affordance",
+                    _static_bindings(MEAN_CENSUS_ADVISORY + 1, "a", signature_width=AFFORDANCE_SIGNATURE_WIDTH),
+                ),
+            )
+        )
         assert mean_census_advisory(spec, aggregator="attention") is None

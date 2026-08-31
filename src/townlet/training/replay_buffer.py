@@ -19,16 +19,9 @@ class ReplayBuffer:
     """Circular buffer storing transitions with DAC-composed rewards.
 
     CRIT-07: Stores total rewards from RewardTensor, not separate components.
-    The intrinsic_weight parameter on sample() is deprecated (always 1.0 for DAC).
 
     Stores: (obs, action, reward_total, next_obs, done)
     Samples: Random mini-batches with pre-composed rewards
-
-    LOW-13 / ENH-02: Future optimization opportunities:
-        - Preallocate tensors with explicit dtype (e.g., float32 vs float64)
-        - Use pin_memory=True for CPU→GPU transfers with DataLoader pattern
-        - Consider torch.Tensor.share_memory_() for multiprocess training
-    These optimizations are deferred until performance profiling indicates bottlenecks.
     """
 
     def __init__(self, capacity: int, device: torch.device):
@@ -378,13 +371,14 @@ class ReplayBuffer:
             state: Dictionary from serialize()
 
         Raises:
-            ValueError: If loading legacy format (version < 3) or capacity mismatch
+            ValueError: If the checkpoint format version or capacity does not match exactly
         """
-        # Reject legacy format (per CLAUDE.md: zero backwards compatibility)
-        format_version = state.get("format_version", 1)
-        if format_version < 3:
+        # Only the exact current checkpoint format is executable.
+        format_version = state.get("format_version")
+        if format_version != 3:
             raise ValueError(
-                "Cannot load legacy replay buffer checkpoint (format_version < 3). " "Regenerate checkpoint with current Townlet version."
+                f"Cannot load replay buffer checkpoint with format_version {format_version!r}; "
+                "the exact current format_version is 3. Regenerate the checkpoint."
             )
 
         if state["observations"] is None:

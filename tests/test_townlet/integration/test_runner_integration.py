@@ -77,9 +77,9 @@ class TestRunnerRecordingIntegration:
             level_name=LEVEL_NAME,
         ) as runner:
             # Verify recording config is loaded
-            assert "recording" in runner.config
-            assert runner.config["recording"]["enabled"] is True
-            assert runner.config["recording"]["output_dir"] == "recordings"
+            assert runner.training_config.recording is not None
+            assert runner.training_config.recording.enabled is True
+            assert runner.training_config.recording.output_dir == "recordings"
 
 
 class TestRunnerOrchestration:
@@ -224,7 +224,8 @@ class TestRunnerOrchestration:
         assert total_reward is not None, "total_reward should be populated"
         assert curriculum_stage is not None, "curriculum_stage should be populated"
         assert epsilon is not None, "epsilon should be populated"
-        assert observation_schema_hash == runner.compiled.observation_schema_hash
+        level = runner.compiled.get_level(runner.compiled.metadata.primary_level)
+        assert observation_schema_hash == level.observation_schema_hash
 
         # Verify types are reasonable
         assert isinstance(survival_time, int), "survival_time should be integer"

@@ -16,7 +16,6 @@ effect_definitions:
   - id: organism
     scope: agent
     duration: 100000
-    intensity: 1.0
     reapply_policy: renew
     observable: true
 
@@ -35,6 +34,7 @@ effect_definitions:
             else: []
 
     on_despawn: []
+    on_interrupt: []
 
   # The deposit the Spec actually wants — the organism leaving a durable trail
   # under its moving growth tips. Declared here exactly as effects.md documents
@@ -48,7 +48,6 @@ effect_definitions:
   - id: organism_footprint
     scope: agent
     duration: 100000
-    intensity: 1.0
     reapply_policy: renew
     observable: true
 
@@ -59,6 +58,7 @@ effect_definitions:
         position: self
 
     on_despawn: []
+    on_interrupt: []
 
 # Per-scope budget of concurrently active effects (token-obs spec S2, required because
 # effects are declared). Values: one active instance per declared effect per scope

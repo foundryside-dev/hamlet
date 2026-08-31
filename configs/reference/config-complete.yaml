@@ -202,33 +202,26 @@ environment:
   # [CONFIG] Meters
   # [TAGS]   BREAKING, OBS_DIM
   # ---------------------------------------------------------------------------
-  # Each meter adds its DECLARED observed width to the observation space: 1 for most
-  # range_type kinds, 2 for cyclical_sin_cos, and `categories` for one_hot.
+  # Every meter token has a fixed two-lane value block. Scalar transforms use lane 0;
+  # cyclical_sin_cos uses both lanes. Entity count changes token count, never row width.
   meters:
     - name: energy
       description: "Physical energy for movement and actions"
       range_type:
         kind: minmax
-        clip: false
-      # range_type is the meter's COMPLETE observation type: it selects the
-      # normalization kind AND determines the meter's observed width. It is not a UI
-      # hint, and `normalized | unbounded | integer` are deleted — each was accepted,
-      # hashed, and drove nothing (PDR-0051, hamlet-365e996511).
+        clip: true
+      # range_type is the meter token's COMPLETE value transform. It is not a UI hint;
+      # unbounded, batch-coupled, and >2-lane kinds are rejected (PDR-0134).
       #
-      # Nine members, tagged by the VFS normalization kind's own name. Each carries its
-      # own REQUIRED parameters; omitting one is a compile error naming the meter.
+      # Four members, tagged by the VFS normalization kind's own name. Each carries its
+      # own REQUIRED finite parameters; omitting one is a compile error naming the meter.
       #
       # | kind             | parameters              | observed width |
       # |------------------|-------------------------|----------------|
-      # | none             | -                       | 1              |
-      # | minmax           | clip                    | 1              |
-      # | log_scaled       | clip                    | 1              |
-      # | zscore           | mean, std               | 1              |
+      # | minmax           | clip: true              | 1              |
+      # | log_scaled       | clip: true              | 1              |
       # | binary           | threshold               | 1              |
-      # | rank_scaled      | -                       | 1              |
-      # | masked_value     | mask_value, fill_value  | 1              |
       # | cyclical_sin_cos | period                  | 2              |
-      # | one_hot          | categories              | categories     |
       #
       # minmax and log_scaled take min/max from this meter's bars.yaml bounds — the
       # declaration that ceilings the runtime also scales the observation (PDR-0016).
@@ -237,19 +230,19 @@ environment:
       description: "Physical health, death at 0"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
 
     - name: satiation
       description: "Hunger level, affects health cascade"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
 
     - name: hygiene
       description: "Cleanliness, affects mood and social"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
 
     - name: money
       description: "Economic resource for purchasing"
@@ -264,24 +257,23 @@ environment:
       description: "Physical conditioning from exercise"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
 
     - name: mood
       description: "Mental state, affects energy cascade"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
 
     - name: social
       description: "Social connection level"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
 
-  # BREAKING: adding or removing a meter changes obs_dim, and so does changing an
-  # existing meter's range_type — a meter contributes its DECLARED observed width, not
-  # a fixed 1 (see the table above).
-  # Current: 7 meters at width 1 + money (log_scaled, width 1) = +8 dims
+  # BREAKING: adding or removing a meter changes token count. Changing range_type
+  # preserves the fixed row width but changes compiled static identity, observation hash,
+  # and live value semantics.
 
   # ---------------------------------------------------------------------------
   # [CONFIG] Cascade Graph
@@ -725,16 +717,16 @@ affordances:
   affordances:
     - name: EAT  # Must match environment.yaml affordance name
 
-      # Interaction semantics (single-tick vs multi-tick vs dual)
-      interaction_type: instant  # Options: instant, multi_tick, dual
-      # duration_ticks: 3        # Required when interaction_type: multi_tick or dual
+      # Interaction semantics (single-tick vs multi-tick)
+      interaction_type: instant  # Options: instant, multi_tick
+      # duration_ticks: 3        # Required when interaction_type: multi_tick
 
       # Costs (bar decreases when action executes instantly)
       costs:
         energy: 0.05    # Using EAT costs 5% energy
-        money: 5.0      # Costs $5 (can exceed 1.0 for unbounded meters)
+        money: 5.0      # Raw meter units may exceed 1.0; token observations remain bounded
 
-      # Per-tick costs for multi-tick/dual affordances (optional)
+      # Per-tick costs for multi-tick affordances (optional)
       costs_per_tick: {}
 
       # Canonical effect definition: use interactions (Effects commands).
@@ -769,8 +761,6 @@ affordances:
       duration_ticks: 5               # Requires 5 ticks to complete
 
       # SLEEP multi-tick cost: small per-tick energy cost (e.g., getting into bed)
-      costs:
-        energy: 0.0
       costs_per_tick:
         energy: 0.01
 
@@ -794,16 +784,10 @@ affordances:
         positions: [[0, 0], [7, 7]]
 
     - name: WORK
-      # Dual-mode: can be treated as instant (one-shot) or multi-tick with completion bonus.
-      interaction_type: dual
+      interaction_type: multi_tick
       duration_ticks: 4
 
-      # Instant costs (applied at start for instant interactions)
-      costs:
-        energy: 0.0
-        mood: 0.0
-
-      # Per-tick costs (applied each tick in multi-tick mode)
+      # Per-tick costs
       costs_per_tick:
         energy: 0.075  # 4 × 7.5% ≈ 30% energy cost
         mood: 0.025    # 4 × 2.5% ≈ 10% mood cost
@@ -1204,7 +1188,6 @@ effects:
     - id: ate_food
       scope: agent
       duration: 10
-      intensity: 1.0
       reapply_policy: stack  # Options: stack, renew, merge, replace
       observable: true       # Agent sees "ate_food: true" in VFS obs
 

@@ -1,6 +1,7 @@
 """Tests for VectorizedPopulation Double DQN configuration."""
 
 import pytest
+import torch
 
 from townlet.config.brain_config import (
     ArchitectureConfig,
@@ -12,7 +13,31 @@ from townlet.config.brain_config import (
     ReplayConfig,
     ScheduleConfig,
 )
+from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
+from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
+from townlet.exploration.rnd import RNDExploration
 from townlet.population.vectorized import VectorizedPopulation
+
+POPULATION_CHECKPOINT_KEYS = {
+    "version",
+    "q_network",
+    "optimizer",
+    "scheduler",
+    "total_steps",
+    "exploration_state",
+    "universe_metadata",
+    "target_network",
+    "training_step_counter",
+    "replay_buffer",
+}
+POPULATION_UNIVERSE_METADATA_KEYS = {
+    "meter_count",
+    "meter_names",
+    "version",
+    "obs_dim",
+    "observation_schema_hash",
+    "action_dim",
+}
 
 
 def _make_population(
@@ -1034,6 +1059,281 @@ class TestSchedulerIntegration:
         assert population2.scheduler.last_epoch == initial_step_count
 
 
+class TestPopulationCheckpointSchema:
+    """Exact current checkpoint schema and restoration contract."""
+
+    def test_producer_emits_exact_current_key_sets(
+        self,
+        basic_env,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ) -> None:
+        population = _make_population(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=epsilon_greedy_exploration,
+            device=cpu_device,
+            brain_config=minimal_brain_config,
+        )
+
+        checkpoint = population.get_checkpoint_state()
+
+        assert set(checkpoint) == POPULATION_CHECKPOINT_KEYS
+        assert set(checkpoint["universe_metadata"]) == POPULATION_UNIVERSE_METADATA_KEYS
+
+    def test_validator_is_public_non_mutating_and_refuses_network_shape_mismatch(
+        self,
+        basic_env,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ) -> None:
+        population = _make_population(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=epsilon_greedy_exploration,
+            device=cpu_device,
+            brain_config=minimal_brain_config,
+        )
+        checkpoint = population.get_checkpoint_state()
+        before = {key: value.clone() for key, value in population.q_network.state_dict().items()}
+        first_key = next(iter(checkpoint["q_network"]))
+        checkpoint["q_network"][first_key] = checkpoint["q_network"][first_key][:-1]
+
+        with pytest.raises(ValueError, match="q_network.*shape mismatch"):
+            population.validate_checkpoint_state(checkpoint)
+
+        after = population.q_network.state_dict()
+        assert all(torch.equal(before[key], after[key]) for key in before)
+
+    @pytest.mark.parametrize("missing_key", sorted(POPULATION_CHECKPOINT_KEYS))
+    def test_loader_refuses_every_missing_top_level_key(
+        self,
+        missing_key,
+        basic_env,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ) -> None:
+        population = _make_population(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=epsilon_greedy_exploration,
+            device=cpu_device,
+            brain_config=minimal_brain_config,
+        )
+        checkpoint = population.get_checkpoint_state()
+        checkpoint.pop(missing_key)
+
+        with pytest.raises(ValueError, match="Population checkpoint key set mismatch"):
+            population.load_checkpoint_state(checkpoint)
+
+    def test_loader_refuses_unknown_top_level_key(
+        self,
+        basic_env,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ) -> None:
+        population = _make_population(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=epsilon_greedy_exploration,
+            device=cpu_device,
+            brain_config=minimal_brain_config,
+        )
+        checkpoint = population.get_checkpoint_state()
+        checkpoint["removed_field"] = 1
+
+        with pytest.raises(ValueError, match="Population checkpoint key set mismatch"):
+            population.load_checkpoint_state(checkpoint)
+
+    @pytest.mark.parametrize("missing_key", sorted(POPULATION_UNIVERSE_METADATA_KEYS))
+    def test_loader_refuses_every_missing_universe_metadata_key(
+        self,
+        missing_key,
+        basic_env,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ) -> None:
+        population = _make_population(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=epsilon_greedy_exploration,
+            device=cpu_device,
+            brain_config=minimal_brain_config,
+        )
+        checkpoint = population.get_checkpoint_state()
+        checkpoint["universe_metadata"].pop(missing_key)
+
+        with pytest.raises(ValueError, match="Population universe_metadata key set mismatch"):
+            population.load_checkpoint_state(checkpoint)
+
+    def test_loader_refuses_unknown_universe_metadata_key(
+        self,
+        basic_env,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ) -> None:
+        population = _make_population(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=epsilon_greedy_exploration,
+            device=cpu_device,
+            brain_config=minimal_brain_config,
+        )
+        checkpoint = population.get_checkpoint_state()
+        checkpoint["universe_metadata"]["removed_field"] = 1
+
+        with pytest.raises(ValueError, match="Population universe_metadata key set mismatch"):
+            population.load_checkpoint_state(checkpoint)
+
+    @pytest.mark.parametrize(
+        ("field", "value", "message"),
+        (
+            pytest.param("meter_names", ("wrong",), "meter names mismatch", id="meter-names"),
+            pytest.param("version", "wrong", "bar config version mismatch", id="bar-version"),
+        ),
+    )
+    def test_loader_validates_every_universe_metadata_value(
+        self,
+        field,
+        value,
+        message,
+        basic_env,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ) -> None:
+        population = _make_population(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=epsilon_greedy_exploration,
+            device=cpu_device,
+            brain_config=minimal_brain_config,
+        )
+        checkpoint = population.get_checkpoint_state()
+        checkpoint["universe_metadata"][field] = value
+
+        with pytest.raises(ValueError, match=message):
+            population.load_checkpoint_state(checkpoint)
+
+    @pytest.mark.parametrize("state_key", ("target_network", "replay_buffer", "exploration_state"))
+    def test_loader_refuses_null_mandatory_state(
+        self,
+        state_key,
+        basic_env,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ) -> None:
+        population = _make_population(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=epsilon_greedy_exploration,
+            device=cpu_device,
+            brain_config=minimal_brain_config,
+        )
+        checkpoint = population.get_checkpoint_state()
+        checkpoint[state_key] = None
+
+        with pytest.raises(ValueError, match=f"{state_key} must contain state"):
+            population.load_checkpoint_state(checkpoint)
+
+    def test_loader_refuses_scheduler_state_when_current_scheduler_is_absent(
+        self,
+        basic_env,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ) -> None:
+        population = _make_population(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=epsilon_greedy_exploration,
+            device=cpu_device,
+            brain_config=minimal_brain_config,
+        )
+        checkpoint = population.get_checkpoint_state()
+        checkpoint["scheduler"] = {"last_epoch": 7}
+
+        with pytest.raises(ValueError, match="scheduler nullability mismatch"):
+            population.load_checkpoint_state(checkpoint)
+
+    def test_loader_refuses_null_scheduler_when_current_scheduler_exists(
+        self,
+        basic_env,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ) -> None:
+        optimizer = minimal_brain_config.optimizer.model_copy(
+            update={"schedule": ScheduleConfig(type="step_decay", step_size=10, gamma=0.5)}
+        )
+        brain_config = minimal_brain_config.model_copy(update={"optimizer": optimizer})
+        population = _make_population(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=epsilon_greedy_exploration,
+            device=cpu_device,
+            brain_config=brain_config,
+        )
+        checkpoint = population.get_checkpoint_state()
+        checkpoint["scheduler"] = None
+
+        with pytest.raises(ValueError, match="scheduler nullability mismatch"):
+            population.load_checkpoint_state(checkpoint)
+
+    def test_loader_restores_counters_and_exploration_exactly(
+        self,
+        basic_env,
+        adversarial_curriculum,
+        cpu_device,
+        minimal_brain_config,
+    ) -> None:
+        source_exploration = EpsilonGreedyExploration(epsilon=0.37, epsilon_decay=0.91, epsilon_min=0.07)
+        source = _make_population(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=source_exploration,
+            device=cpu_device,
+            brain_config=minimal_brain_config,
+        )
+        source.total_steps = 17
+        source.training_step_counter = 23
+        checkpoint = source.get_checkpoint_state()
+
+        target_exploration = EpsilonGreedyExploration(epsilon=1.0, epsilon_decay=0.5, epsilon_min=0.1)
+        target = _make_population(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=target_exploration,
+            device=cpu_device,
+            brain_config=minimal_brain_config,
+        )
+        target.total_steps = 999
+        target.training_step_counter = 999
+
+        target.load_checkpoint_state(checkpoint)
+
+        assert target.total_steps == 17
+        assert target.training_step_counter == 23
+        assert target.exploration.checkpoint_state() == checkpoint["exploration_state"]
+
+
 def test_brain_config_none_raises_valueerror(basic_env, adversarial_curriculum, epsilon_greedy_exploration, cpu_device):
     """VectorizedPopulation should reject brain_config=None per WP-C2."""
     import pytest
@@ -1176,6 +1476,67 @@ def test_device_mismatch_in_step_all_raises_runtime_error(
 
     with pytest.raises(RuntimeError, match="Observation tensor on"):
         population.step_population(action_mask)
+
+
+class TestPopulationExplorationTelemetry:
+    """Telemetry is defined only for the three production exploration strategies."""
+
+    def test_exact_values_for_all_supported_strategies(
+        self,
+        basic_env,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ) -> None:
+        population = _make_population(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=epsilon_greedy_exploration,
+            device=cpu_device,
+            brain_config=minimal_brain_config,
+        )
+
+        epsilon_greedy_exploration.epsilon = 0.31
+        assert population._get_current_epsilon_value() == 0.31
+        assert population._get_current_intrinsic_weight_value() == 0.0
+
+        rnd = RNDExploration(obs_dim=basic_env.observation_dim, epsilon_start=0.27, device=cpu_device)
+        population.exploration = rnd
+        assert population._get_current_epsilon_value() == 0.27
+        assert population._get_current_intrinsic_weight_value() == 0.0
+
+        adaptive = AdaptiveIntrinsicExploration(
+            obs_dim=basic_env.observation_dim,
+            epsilon_start=0.19,
+            initial_intrinsic_weight=0.43,
+            device=cpu_device,
+        )
+        population.exploration = adaptive
+        assert population._get_current_epsilon_value() == 0.19
+        assert population._get_current_intrinsic_weight_value() == 0.43
+
+    def test_unsupported_strategy_refuses_instead_of_falling_back(
+        self,
+        basic_env,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ) -> None:
+        population = _make_population(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=epsilon_greedy_exploration,
+            device=cpu_device,
+            brain_config=minimal_brain_config,
+        )
+        population.exploration = object()  # type: ignore[assignment]
+
+        with pytest.raises(TypeError, match="Unsupported exploration strategy"):
+            population._get_current_epsilon_value()
+        with pytest.raises(TypeError, match="Unsupported exploration strategy"):
+            population._get_current_intrinsic_weight_value()
 
 
 class TestRewardComponentWiring:

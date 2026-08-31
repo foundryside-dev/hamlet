@@ -8,6 +8,7 @@ Manages Q-networks, replay buffers, and training loops.
 from __future__ import annotations
 
 import logging
+from collections.abc import Mapping
 from typing import TYPE_CHECKING, cast
 
 import numpy as np
@@ -24,6 +25,7 @@ from townlet.curriculum.base import CurriculumManager
 from townlet.exploration.action_selection import epsilon_greedy_action_selection
 from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
 from townlet.exploration.base import ExplorationStrategy
+from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
 from townlet.exploration.rnd import RNDExploration
 from townlet.population.base import PopulationManager
 from townlet.population.runtime_registry import AgentRuntimeRegistry
@@ -31,12 +33,37 @@ from townlet.training.checkpoint_utils import TokenRosterReport, load_token_netw
 from townlet.training.replay_buffer import ReplayBuffer
 from townlet.training.sequential_replay_buffer import SequentialReplayBuffer
 from townlet.training.state import BatchedAgentState, CurriculumDecision, PopulationCheckpoint, RewardTensor
-from townlet.universe.token_hashes import compute_token_layout_hash
 
 if TYPE_CHECKING:
     from townlet.environment.vectorized_env import VectorizedHamletEnv
 
 _logger = logging.getLogger(__name__)
+
+POPULATION_CHECKPOINT_FORMAT_VERSION = 3
+POPULATION_CHECKPOINT_KEYS = frozenset(
+    {
+        "version",
+        "q_network",
+        "optimizer",
+        "scheduler",
+        "total_steps",
+        "exploration_state",
+        "universe_metadata",
+        "target_network",
+        "training_step_counter",
+        "replay_buffer",
+    }
+)
+POPULATION_UNIVERSE_METADATA_KEYS = frozenset(
+    {
+        "meter_count",
+        "meter_names",
+        "version",
+        "obs_dim",
+        "observation_schema_hash",
+        "action_dim",
+    }
+)
 
 EpisodeContainer = dict[str, list[torch.Tensor]]
 
@@ -91,11 +118,10 @@ class VectorizedPopulation(PopulationManager):
             max_episodes: Maximum training episodes (for PER beta annealing)
             max_steps_per_episode: Maximum steps per episode (for PER beta annealing)
         """
-        # ✅ WP-C2: Validate brain_config required (no legacy fallback)
+        # The compiled brain configuration is mandatory runtime input.
         if brain_config is None:
             raise ValueError(
-                "brain_config is required. Legacy initialization path removed in WP-C2. "
-                "Provide brain.yaml configuration for all training runs. "
+                "brain_config is required. Provide brain.yaml configuration for all training runs. "
                 "See docs/config-schemas/brain.md for examples."
             )
 
@@ -406,24 +432,10 @@ class VectorizedPopulation(PopulationManager):
             )
         elif arch.type == "token_set":
             assert arch.token_set is not None, "token_set config must be present"
-            token_spec = env.universe.token_spec
-            # IDENTITY, not width (task-9 review M3, discharged at the cut): the network
-            # reads the serialization positionally, so equal width with a different slot
-            # binding is a silently wrong net. `layout_hash` IS that identity.
-            env_layout_hash = compute_token_layout_hash(env.token_spec)
-            if env_layout_hash != compute_token_layout_hash(token_spec):
-                raise ValueError(
-                    "architecture.type='token_set' is bound to a different token layout than the "
-                    "environment serializes.\n"
-                    f"  environment layout_hash: {env_layout_hash}\n"
-                    f"  brain layout_hash:       {compute_token_layout_hash(token_spec)}\n"
-                    "  Rule: a flat reader's dims are positional — equal width with a re-bound slot "
-                    "changes what every dim MEANS. Recompile the pack so both come from one artifact."
-                )
             return NetworkFactory.build_token_set(
                 config=arch.token_set,
                 action_dim=action_dim,
-                token_spec=token_spec,
+                token_spec=env.token_spec,
             )
         else:
             raise ValueError(
@@ -504,18 +516,20 @@ class VectorizedPopulation(PopulationManager):
     # Telemetry synchronisation helpers
     # ------------------------------------------------------------------ #
     def _get_current_epsilon_value(self) -> float:
-        """Return current exploration epsilon (global for now)."""
+        """Return epsilon for the closed production exploration vocabulary."""
         if isinstance(self.exploration, AdaptiveIntrinsicExploration):
             return float(self.exploration.rnd.epsilon)
-        if hasattr(self.exploration, "epsilon"):
+        if isinstance(self.exploration, (EpsilonGreedyExploration, RNDExploration)):
             return float(self.exploration.epsilon)
-        return 0.0
+        raise TypeError(f"Unsupported exploration strategy: {type(self.exploration).__name__}.")
 
     def _get_current_intrinsic_weight_value(self) -> float:
-        """Return current intrinsic reward weight."""
-        if hasattr(self.exploration, "get_intrinsic_weight"):
+        """Return the exact strategy-defined intrinsic reward weight."""
+        if isinstance(self.exploration, AdaptiveIntrinsicExploration):
             return float(self.exploration.get_intrinsic_weight())
-        return 0.0
+        if isinstance(self.exploration, (EpsilonGreedyExploration, RNDExploration)):
+            return 0.0
+        raise TypeError(f"Unsupported exploration strategy: {type(self.exploration).__name__}.")
 
     def _sync_curriculum_metrics(self) -> None:
         """
@@ -1157,76 +1171,153 @@ class VectorizedPopulation(PopulationManager):
         Returns comprehensive state dict including:
         - Version number
         - Q-network weights
-        - Target network weights (if recurrent)
+        - Target network weights
         - Optimizer state
+        - Scheduler state or explicit null when no scheduler is configured
         - Training counters
         - Replay buffer contents
         - Exploration strategy state
-        - Curriculum state
-        - Universe metadata (meter count, names) for validation (TASK-001)
+        - Exact universe metadata for compatibility validation
 
         Returns:
             Complete checkpoint state dictionary
         """
-        checkpoint = {
-            "version": 2,  # Checkpoint format version
+        bars_config = self.env.bars_config
+        return {
+            "version": POPULATION_CHECKPOINT_FORMAT_VERSION,
             "q_network": self.q_network.state_dict(),
             "optimizer": self.optimizer.state_dict(),
             "scheduler": self.scheduler.state_dict() if self.scheduler is not None else None,
             "total_steps": self.total_steps,
             "exploration_state": self.exploration.checkpoint_state(),
+            "universe_metadata": {
+                "meter_count": bars_config.meter_count,
+                "meter_names": bars_config.meter_names,
+                "version": bars_config.version,
+                "obs_dim": self.env.observation_dim,
+                "observation_schema_hash": self.env.level.observation_schema_hash,
+                "action_dim": self.action_dim,
+            },
+            "target_network": self.target_network.state_dict(),
+            "training_step_counter": self.training_step_counter,
+            # All buffer types implement serialize(), but mypy doesn't infer it for unions.
+            "replay_buffer": self.replay_buffer.serialize(),  # type: ignore[union-attr]
         }
 
-        # Universe metadata for compatibility validation (TASK-001)
-        # This allows detecting meter count mismatches when loading checkpoints
-        bars_config = self.env.bars_config
-        checkpoint["universe_metadata"] = {
-            "meter_count": bars_config.meter_count,
-            "meter_names": bars_config.meter_names,
-            "version": bars_config.version,
-            "obs_dim": self.env.observation_dim,
-            "action_dim": self.action_dim,  # From environment action space (TASK-002B Phase 4.1)
-        }
+    @staticmethod
+    def _validate_network_checkpoint_state(
+        state_key: str,
+        incoming_state: object,
+        current_state: Mapping[str, torch.Tensor],
+    ) -> None:
+        if not isinstance(incoming_state, Mapping):
+            raise ValueError(f"Population checkpoint {state_key} must be a parameter mapping.")
 
-        # Target network (always initialized - POP-008 simplified)
-        checkpoint["target_network"] = self.target_network.state_dict()
-        checkpoint["training_step_counter"] = self.training_step_counter
+        incoming_keys = set(incoming_state)
+        current_keys = set(current_state)
+        if incoming_keys != current_keys:
+            missing = sorted(current_keys - incoming_keys)
+            unknown = sorted(incoming_keys - current_keys)
+            raise ValueError(f"Population checkpoint {state_key} key mismatch: missing={missing}, unknown={unknown}.")
 
-        # Replay buffer
-        # All buffer types implement serialize(), but mypy doesn't infer it for unions
-        checkpoint["replay_buffer"] = self.replay_buffer.serialize()  # type: ignore[union-attr]
+        for parameter_name, current_tensor in current_state.items():
+            incoming_tensor = incoming_state[parameter_name]
+            if not isinstance(incoming_tensor, torch.Tensor):
+                raise ValueError(
+                    f"Population checkpoint {state_key}.{parameter_name} must be a tensor; " f"got {type(incoming_tensor).__name__}."
+                )
+            if incoming_tensor.shape != current_tensor.shape:
+                raise ValueError(
+                    f"Population checkpoint {state_key} shape mismatch for {parameter_name}: "
+                    f"checkpoint={tuple(incoming_tensor.shape)}, current={tuple(current_tensor.shape)}."
+                )
 
-        return checkpoint
-
-    def load_checkpoint_state(self, checkpoint: dict) -> None:
+    def validate_checkpoint_state(self, checkpoint: dict) -> None:
         """
-        Restore population state from checkpoint (P1.1 complete checkpointing).
+        Validate a complete population checkpoint without mutating runtime state.
 
         Args:
             checkpoint: State dictionary from get_checkpoint_state()
 
         Raises:
-            ValueError: If checkpoint universe metadata doesn't match current environment
+            ValueError: If the payload or universe identity is not exactly current
         """
-        # Validate universe compatibility
-        if "universe_metadata" not in checkpoint:
+        if not isinstance(checkpoint, dict):
+            raise ValueError(f"Population checkpoint payload must be a dictionary; got {type(checkpoint).__name__}.")
+
+        checkpoint_keys = set(checkpoint)
+        if checkpoint_keys != POPULATION_CHECKPOINT_KEYS:
+            missing = sorted(POPULATION_CHECKPOINT_KEYS - checkpoint_keys)
+            unknown = sorted(checkpoint_keys - POPULATION_CHECKPOINT_KEYS)
             raise ValueError(
-                "Checkpoint missing 'universe_metadata' field.\n"
-                "This checkpoint format is no longer supported.\n"
-                "Please retrain from scratch."
+                "Population checkpoint key set mismatch: "
+                f"missing={missing}, unknown={unknown}. "
+                "This checkpoint payload is no longer supported; retrain from scratch."
+            )
+
+        checkpoint_version = checkpoint["version"]
+        if checkpoint_version != POPULATION_CHECKPOINT_FORMAT_VERSION:
+            raise ValueError(
+                "Unsupported population checkpoint version: "
+                f"checkpoint={checkpoint_version!r}, expected={POPULATION_CHECKPOINT_FORMAT_VERSION}. "
+                "Retrain from scratch with the current observation ABI."
             )
 
         metadata = checkpoint["universe_metadata"]
-        bars_config = self.env.bars_config
-        current_meter_count = bars_config.meter_count
+        if not isinstance(metadata, dict):
+            raise ValueError(
+                "Population universe_metadata must be a dictionary with the exact current key set; " f"got {type(metadata).__name__}."
+            )
 
-        # Validate meter count matches
-        checkpoint_meter_count = metadata.get("meter_count")
+        metadata_keys = set(metadata)
+        if metadata_keys != POPULATION_UNIVERSE_METADATA_KEYS:
+            missing = sorted(POPULATION_UNIVERSE_METADATA_KEYS - metadata_keys)
+            unknown = sorted(metadata_keys - POPULATION_UNIVERSE_METADATA_KEYS)
+            raise ValueError(
+                "Population universe_metadata key set mismatch: "
+                f"missing={missing}, unknown={unknown}. "
+                "This checkpoint payload is no longer supported; retrain from scratch."
+            )
+
+        # Validate universe compatibility before mutating any population state.
+        checkpoint_observation_hash = metadata["observation_schema_hash"]
+        current_observation_hash = self.env.level.observation_schema_hash
+        if checkpoint_observation_hash != current_observation_hash:
+            raise ValueError(
+                "Checkpoint observation_schema_hash mismatch: "
+                f"checkpoint={str(checkpoint_observation_hash)[:16]}..., "
+                f"current={current_observation_hash[:16]}.... "
+                "The selected level's observation semantics changed; retrain or load the exact compiled level."
+            )
+        checkpoint_action_dim = metadata["action_dim"]
+        if checkpoint_action_dim != self.action_dim:
+            raise ValueError(
+                "Checkpoint action_dim mismatch: "
+                f"checkpoint={checkpoint_action_dim!r}, current={self.action_dim}. "
+                "The action ABI changed; retrain or load the exact compiled level."
+            )
+        bars_config = self.env.bars_config
+        checkpoint_meter_count = metadata["meter_count"]
+        current_meter_count = bars_config.meter_count
         if checkpoint_meter_count != current_meter_count:
             raise ValueError(
                 f"Checkpoint meter count mismatch: checkpoint has {checkpoint_meter_count} meters, "
                 f"but current environment has {current_meter_count} meters. "
                 f"Cannot load checkpoint trained on different universe configuration."
+            )
+
+        checkpoint_meter_names = metadata["meter_names"]
+        if checkpoint_meter_names != bars_config.meter_names:
+            raise ValueError(
+                "Checkpoint meter names mismatch: "
+                f"checkpoint={checkpoint_meter_names!r}, current={bars_config.meter_names!r}. "
+                "Cannot load checkpoint trained on a different meter layout."
+            )
+
+        checkpoint_bars_version = metadata["version"]
+        if checkpoint_bars_version != bars_config.version:
+            raise ValueError(
+                "Checkpoint bar config version mismatch: " f"checkpoint={checkpoint_bars_version!r}, current={bars_config.version!r}."
             )
 
         # Validate obs_dim matches.
@@ -1237,50 +1328,55 @@ class VectorizedPopulation(PopulationManager):
         # recurrent net, whose encoders are sized per BLOCK) succeeds against a layout the
         # weights were never trained on.
         #
-        # PDR-0054 makes it sharper: meter count is no longer sufficient to characterise the
-        # observation, because a meter's declared range_type changes its observed width. So
-        # the count check above can pass while the layout differs entirely, and this is the
-        # check that actually catches it.
-        checkpoint_obs_dim = metadata.get("obs_dim")
+        # This is deliberately a narrow dimensional guard. The outer checkpoint-identity gate
+        # compares semantic hashes, including the compiled static identity changed by a meter's
+        # range_type. Every admitted meter normalization occupies the same fixed two-lane block,
+        # so changing range_type alone does not change obs_dim. The count check above can still
+        # pass while another token capacity or payload-width change alters the serialized tensor;
+        # this inner check catches only that shape mismatch.
+        checkpoint_obs_dim = metadata["obs_dim"]
         current_obs_dim = self.env.observation_dim
         if checkpoint_obs_dim != current_obs_dim:
             raise ValueError(
                 f"Checkpoint obs_dim mismatch: checkpoint has {checkpoint_obs_dim}, "
                 f"current env has {current_obs_dim}.\n"
-                "  Cause: grid size, observability mode, or a meter's declared range_type "
-                "differs from the universe this checkpoint was trained on.\n"
-                "  Rule: the observation layout is part of a checkpoint's identity. Retrain, "
-                "or load against the universe the checkpoint names."
+                "  Cause: compiled token capacity or payload width differs from the universe "
+                "this checkpoint was trained on.\n"
+                "  Rule: this inner guard checks serialized tensor dimensions only; the outer "
+                "checkpoint-identity gate handles semantic changes. Retrain, or load against "
+                "the universe the checkpoint names."
             )
 
-        # Restore Q-network
+        scheduler_state = checkpoint["scheduler"]
+        if (self.scheduler is None) != (scheduler_state is None):
+            raise ValueError(
+                "Population checkpoint scheduler nullability mismatch: "
+                f"checkpoint_has_scheduler={scheduler_state is not None}, "
+                f"current_has_scheduler={self.scheduler is not None}."
+            )
+
+        for state_key in ("q_network", "optimizer", "target_network", "replay_buffer", "exploration_state"):
+            if checkpoint[state_key] is None:
+                raise ValueError(f"Population checkpoint {state_key} must contain state, got null.")
+
+        self._validate_network_checkpoint_state("q_network", checkpoint["q_network"], self.q_network.state_dict())
+        self._validate_network_checkpoint_state("target_network", checkpoint["target_network"], self.target_network.state_dict())
+
+    def load_checkpoint_state(self, checkpoint: dict) -> None:
+        """Validate, then restore every field from the exact current payload."""
+        self.validate_checkpoint_state(checkpoint)
+
+        # Restore every producer-owned field from the exact current payload.
         self.q_network.load_state_dict(checkpoint["q_network"])
-
-        # Restore optimizer
         self.optimizer.load_state_dict(checkpoint["optimizer"])
-
-        # Restore scheduler state (if exists)
-        if "scheduler" in checkpoint and checkpoint["scheduler"] is not None:
-            if self.scheduler is not None:
-                self.scheduler.load_state_dict(checkpoint["scheduler"])
-
-        # Restore training counters
-        self.total_steps = checkpoint.get("total_steps", 0)
-
-        # Restore target network (if exists in checkpoint)
-        # POP-008: Removed redundant self.target_network is not None check - always initialized
-        if "target_network" in checkpoint and checkpoint["target_network"] is not None:
-            self.target_network.load_state_dict(checkpoint["target_network"])
-            self.training_step_counter = checkpoint.get("training_step_counter", 0)
-
-        # Restore replay buffer
-        if "replay_buffer" in checkpoint:
-            # All buffer types implement load_from_serialized(), but mypy doesn't infer it for unions
-            self.replay_buffer.load_from_serialized(checkpoint["replay_buffer"])  # type: ignore[union-attr]
-
-        # Restore exploration state
-        if "exploration_state" in checkpoint:
-            self.exploration.load_state(checkpoint["exploration_state"])
+        if self.scheduler is not None:
+            self.scheduler.load_state_dict(checkpoint["scheduler"])
+        self.total_steps = checkpoint["total_steps"]
+        self.target_network.load_state_dict(checkpoint["target_network"])
+        self.training_step_counter = checkpoint["training_step_counter"]
+        # All buffer types implement load_from_serialized(), but mypy doesn't infer it for unions.
+        self.replay_buffer.load_from_serialized(checkpoint["replay_buffer"])  # type: ignore[union-attr]
+        self.exploration.load_state(checkpoint["exploration_state"])
 
     # ------------------------------------------------------------------ #
     # Cross-universe token-net load (token-obs unit 3 Task 9)

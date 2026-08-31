@@ -6,27 +6,27 @@ environment:
       description: Energy
       range_type:
         kind: minmax
-        clip: false
+        clip: true
     - name: health
       description: Health
       range_type:
         kind: minmax
-        clip: false
+        clip: true
     - name: bid
       description: "The agent's standing bid in the current auction round (0 = no bid)"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
     - name: wins
       description: "Count of auction rounds this agent has won"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
     - name: credits
       description: "Currency: the winning bidder pays their bid from this"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
 
   cascade_graph: []
   modulation_graph: []

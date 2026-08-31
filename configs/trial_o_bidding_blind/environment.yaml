@@ -6,22 +6,22 @@ environment:
       description: "Physical energy for movement and actions"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
     - name: health
       description: "Basic well-being; recover at doctor"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
     - name: money
       description: "Economic resource for purchasing"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
     - name: sustenance
       description: "Food and nutrition for maintaining energy"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
 
   cascade_graph: []
 

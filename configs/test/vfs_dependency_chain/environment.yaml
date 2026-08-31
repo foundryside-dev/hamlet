@@ -6,7 +6,7 @@ environment:
       description: Energy
       range_type:
         kind: minmax
-        clip: false
+        clip: true
 
   cascade_graph: []
   modulation_graph: []

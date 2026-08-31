@@ -47,13 +47,10 @@ def test_environment_ticks_effects_each_step(compile_universe, effects_smoke_con
     env.reset()
 
     # Spawn effect manually (before affordance interactions work)
-    from townlet.config.effects_config import EffectScope
 
     effect = env.effect_manager.spawn_effect(
         effect_id="energy_regen",
         target_entity_id=0,
-        scope=EffectScope.AGENT,
-        duration=10,
         intensity=1.0,
         current_step=0,
     )
@@ -67,7 +64,7 @@ def test_environment_ticks_effects_each_step(compile_universe, effects_smoke_con
 
     # Verify effect ticked
     assert effect.elapsed_ticks == 1
-    assert effect.duration_remaining == 9
+    assert effect.duration_remaining == 19
 
 
 def test_effects_auto_despawn_after_duration(compile_universe, effects_smoke_config_path, cpu_device):
@@ -82,13 +79,9 @@ def test_effects_auto_despawn_after_duration(compile_universe, effects_smoke_con
 
     env.reset()
 
-    from townlet.config.effects_config import EffectScope
-
     effect = env.effect_manager.spawn_effect(
         effect_id="health_boost",
         target_entity_id=0,
-        scope=EffectScope.AGENT,
-        duration=3,
         intensity=1.0,
         current_step=0,
     )
@@ -123,13 +116,10 @@ def test_effect_modifies_bar_values(compile_universe, effects_smoke_config_path,
     initial_energy = env.meters[0, env.meter_name_to_index["energy"]].item()
 
     # Spawn energy_regen effect
-    from townlet.config.effects_config import EffectScope
 
     env.effect_manager.spawn_effect(
         effect_id="energy_regen",
         target_entity_id=0,
-        scope=EffectScope.AGENT,
-        duration=5,
         intensity=1.0,
         current_step=0,
     )
@@ -165,13 +155,10 @@ def test_on_spawn_commands_execute_immediately(compile_universe, effects_smoke_c
 
     # Spawn health_boost (on_spawn adds 0.2 health)
     # Build the command context explicitly so on_spawn runs immediately.
-    from townlet.config.effects_config import EffectScope
 
     effect = env.effect_manager.spawn_effect(
         effect_id="health_boost",
         target_entity_id=0,
-        scope=EffectScope.AGENT,
-        duration=1,
         intensity=1.0,
         current_step=0,
     )
@@ -200,36 +187,30 @@ def test_renew_policy_resets_duration_in_environment(compile_universe, effects_s
 
     env.reset()
 
-    from townlet.config.effects_config import EffectScope
-
-    # Spawn effect with duration=5
+    # Spawn effect with the catalog's declared duration (20).
     effect = env.effect_manager.spawn_effect(
         effect_id="energy_regen",  # Has RENEW policy
         target_entity_id=0,
-        scope=EffectScope.AGENT,
-        duration=5,
         intensity=1.0,
         current_step=0,
     )
 
-    # Step twice (duration should be 3)
+    # Step twice (duration should be 18)
     wait_action = env.action_space.get_action_by_name("WAIT")
     actions = torch.full((1,), wait_action.id, dtype=torch.long, device=cpu_device)
     env.step(actions)
     env.step(actions)
-    assert effect.duration_remaining == 3
+    assert effect.duration_remaining == 18
 
-    # Reapply (should reset to 5)
+    # Reapply (should reset to the catalog duration)
     env.effect_manager.spawn_effect(
         effect_id="energy_regen",
         target_entity_id=0,
-        scope=EffectScope.AGENT,
-        duration=5,
         intensity=1.0,
         current_step=2,
     )
 
-    assert effect.duration_remaining == 5  # Renewed
+    assert effect.duration_remaining == 20  # Renewed
 
 
 def test_merge_policy_stacks_intensity(compile_universe, effects_smoke_config_path, cpu_device):
@@ -244,13 +225,9 @@ def test_merge_policy_stacks_intensity(compile_universe, effects_smoke_config_pa
 
     env.reset()
 
-    from townlet.config.effects_config import EffectScope
-
     effect = env.effect_manager.spawn_effect(
         effect_id="poison",  # Has MERGE policy
         target_entity_id=0,
-        scope=EffectScope.AGENT,
-        duration=10,
         intensity=1.0,
         current_step=0,
     )
@@ -259,8 +236,6 @@ def test_merge_policy_stacks_intensity(compile_universe, effects_smoke_config_pa
     env.effect_manager.spawn_effect(
         effect_id="poison",
         target_entity_id=0,
-        scope=EffectScope.AGENT,
-        duration=10,
         intensity=0.5,
         current_step=1,
     )

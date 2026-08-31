@@ -24,7 +24,7 @@ from typing import Any, cast
 
 import torch
 
-from townlet.config.effects_config import CommandConfig
+from townlet.config.affordances_v2_config import AffordanceParamConfig
 from townlet.effects.compiler import CommandCompiler
 from townlet.effects.executor import CommandExecutor, ExecutionContext
 from townlet.effects.parser import CommandParser
@@ -53,7 +53,7 @@ class AffordanceEngine:
 
     def __init__(
         self,
-        affordance_config: tuple[Any, ...],
+        affordance_config: tuple[AffordanceParamConfig, ...],
         num_agents: int,
         device: torch.device,
         meter_name_to_idx: dict[str, int],
@@ -88,6 +88,11 @@ class AffordanceEngine:
         self.meter_bounds_min = meter_bounds_min
         self.meter_bounds_max = meter_bounds_max
 
+        invalid_affordance_types = sorted(
+            {type(affordance).__name__ for affordance in affordance_config if not isinstance(affordance, AffordanceParamConfig)}
+        )
+        if invalid_affordance_types:
+            raise TypeError("AffordanceEngine requires canonical AffordanceParamConfig entries; " f"received {invalid_affordance_types}.")
         self.affordances = affordance_config
 
         self.meter_name_to_idx = meter_name_to_idx
@@ -109,25 +114,22 @@ class AffordanceEngine:
             compiler = CommandCompiler(schema=effects_schema)
 
             for affordance in affordance_config:
-                # Check if affordance has interactions attribute
-                if hasattr(affordance, "interactions") and affordance.interactions is not None:
-                    compiled = CompiledAffordance(
-                        on_start=[],
-                        per_tick=[],
-                        on_completion=[],
-                        on_early_exit=[],
-                        on_failure=[],
-                    )
+                compiled = CompiledAffordance(
+                    on_start=[],
+                    per_tick=[],
+                    on_completion=[],
+                    on_early_exit=[],
+                    on_failure=[],
+                )
 
-                    for stage in ["on_start", "per_tick", "on_completion", "on_early_exit", "on_failure"]:
-                        commands = affordance.interactions.get(stage, [])
-                        if commands:
-                            command_configs = [CommandConfig(**cmd) if isinstance(cmd, dict) else cmd for cmd in commands]
-                            command_nodes = parser.parse_commands(command_configs)
-                            compiled_commands = compiler.compile_commands(command_nodes)
-                            setattr(compiled, stage, compiled_commands)
+                for stage in ["on_start", "per_tick", "on_completion", "on_early_exit", "on_failure"]:
+                    commands = affordance.interactions.get(stage, [])
+                    if commands:
+                        command_nodes = parser.parse_commands(commands)
+                        compiled_commands = compiler.compile_commands(command_nodes)
+                        setattr(compiled, stage, compiled_commands)
 
-                    self.compiled_affordances[affordance.name] = compiled
+                self.compiled_affordances[affordance.name] = compiled
 
         # Pre-compute tensors for common operations (future optimization)
         # For now, we compute on-the-fly for clarity
@@ -141,22 +143,12 @@ class AffordanceEngine:
         """
         # Map affordance name to index (order from config file)
         self.affordance_name_to_idx: dict[str, int] = {}
-        self.affordance_map_by_id: dict[str, Any] = {}
-        self.affordance_map: dict[str, Any] = {}
+        self.affordance_map: dict[str, AffordanceParamConfig] = {}
 
         for idx, aff in enumerate(self.affordances):
-            name = getattr(aff, "name", None)
-            if not name:
-                continue
+            name = aff.name
             self.affordance_name_to_idx[name] = idx
-            # Prefer explicit id when available; otherwise fall back to name.
-            aff_id = getattr(aff, "id", name)
-            self.affordance_map_by_id[aff_id] = aff
             self.affordance_map[name] = aff
-
-    def get_affordance(self, affordance_id: str):
-        """Get affordance config by ID."""
-        return self.affordance_map_by_id.get(affordance_id)
 
     def apply_instant_interaction(
         self,
@@ -193,10 +185,10 @@ class AffordanceEngine:
         if affordance is None:
             raise ValueError(f"Unknown affordance '{affordance_name}'. Known affordances: {sorted(self.affordance_map)}")
 
-        if affordance.interaction_type not in ["instant", "dual"]:
+        if affordance.interaction_type != "instant":
             raise ValueError(
                 f"Affordance '{affordance_name}' is {affordance.interaction_type}, "
-                f"not instant or dual. Use apply_vtc_multi_tick_effects instead."
+                "not instant. Use apply_vtc_multi_tick_effects instead."
             )
 
         # Clone meters to avoid modifying input
@@ -208,7 +200,7 @@ class AffordanceEngine:
             affordable = self.can_afford(affordance_name, meters, cost_mode="instant")
             offenders = torch.nonzero(agent_mask & ~affordable, as_tuple=False).flatten()
             if offenders.numel() > 0:
-                declared = {meter: amount for meter, amount in (self._cost_fields(c) for c in self._iter_costs(affordance.costs))}
+                declared = affordance.costs
                 raise ValueError(
                     f"Agents {offenders.tolist()} cannot pay for affordance '{affordance_name}'; "
                     f"declared costs {declared}. Gate on can_afford() before applying."
@@ -216,8 +208,7 @@ class AffordanceEngine:
 
         # Apply costs (modern dict format)
         multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
-        for cost in self._iter_costs(affordance.costs):
-            meter_name, amount = self._cost_fields(cost)
+        for meter_name, amount in affordance.costs.items():
             meter_idx = self._get_meter_idx(meter_name, f"affordance '{affordance_name}' cost")
             updated_meters[agent_mask, meter_idx] -= amount * multipliers[agent_mask]
 
@@ -285,10 +276,10 @@ class AffordanceEngine:
         if affordance is None:
             return meters
 
-        if affordance.interaction_type not in ["multi_tick", "dual"]:
+        if affordance.interaction_type != "multi_tick":
             raise ValueError(
                 f"Affordance '{affordance_name}' is {affordance.interaction_type}, "
-                f"not multi_tick or dual. Use apply_instant_interaction instead."
+                "not multi_tick. Use apply_instant_interaction instead."
             )
 
         if completion_mask.shape != agent_mask.shape:
@@ -308,8 +299,7 @@ class AffordanceEngine:
 
         # Apply per-tick costs (modern dict format)
         multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
-        for cost in self._iter_costs(affordance.costs_per_tick):
-            meter_name, amount = self._cost_fields(cost)
+        for meter_name, amount in affordance.costs_per_tick.items():
             meter_idx = self._get_meter_idx(meter_name, f"affordance '{affordance_name}' per-tick cost")
             updated_meters[agent_mask, meter_idx] -= amount * multipliers[agent_mask]
 
@@ -370,8 +360,7 @@ class AffordanceEngine:
         # the hottest path.
         affordable = torch.ones(meters.shape[0], dtype=torch.bool, device=meters.device)
 
-        for cost in self._iter_costs(costs):
-            meter, amount = self._cost_fields(cost)
+        for meter, amount in costs.items():
             # The context string is load-bearing: an existing test asserts the
             # resulting error message contains "affordance".
             meter_idx = self._get_meter_idx(meter, f"affordance '{affordance_name}' {cost_mode} cost")
@@ -410,32 +399,11 @@ class AffordanceEngine:
             Number of duration ticks (1 for instant affordances)
         """
         affordance = self.affordance_map.get(affordance_name)
-        if affordance is None or affordance.duration_ticks is None:
+        if affordance is None:
+            raise ValueError(f"Unknown affordance '{affordance_name}'. Known affordances: {sorted(self.affordance_map)}")
+        if affordance.duration_ticks is None:
             return 1
         return int(affordance.duration_ticks)
-
-    @staticmethod
-    def _iter_costs(costs) -> Any:
-        """Yield cost entries from either dict- or list-style configs."""
-        if isinstance(costs, dict):
-            return costs.items()
-        return costs
-
-    @staticmethod
-    def _cost_fields(cost) -> tuple[str, float]:
-        """Extract (meter, amount) from dict-style or DTO-style cost entries."""
-        if hasattr(cost, "meter"):
-            return cost.meter, float(cost.amount)
-        if isinstance(cost, tuple) and len(cost) == 2:
-            meter, amount = cost
-            return str(meter), float(amount)
-        if isinstance(cost, dict):
-            if "meter" in cost:
-                return cost["meter"], float(cost["amount"])
-            if cost:
-                meter, amount = next(iter(cost.items()))
-                return meter, float(amount)
-        raise ValueError(f"Unsupported cost format: {cost!r}")
 
     def _get_meter_idx(self, meter_name: str, context: str = "") -> int:
         """Get meter index with validation and helpful error messages.

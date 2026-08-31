@@ -12,6 +12,7 @@ import yaml
 import townlet.universe.compiler as compiler_module
 from townlet.universe.compiled import CompiledUniverse
 from townlet.universe.compiler import UniverseCompiler
+from townlet.universe.errors import CompilationError
 
 
 def _copy_experiment(tmp_path: Path, source: Path | None = None) -> Path:
@@ -161,46 +162,6 @@ def test_compile_recovers_from_corrupted_cache(tmp_path: Path, monkeypatch: pyte
 @pytest.mark.parametrize(
     "missing_field",
     [
-        "token_spec",
-        "token_type_schema_hash",
-        "layout_hash",
-        "vfs_variables",
-        "variable_schema_hash",
-        "observation_schema_hash",
-        "action_space_metadata",
-        "runtime_action_space",
-        "action_schema_hash",
-        "transition_graph_hash",
-        "transition_schedule",
-        "vfs_hash",
-        "optimization_data_raw",
-        # WS-1 task 4. The per-level copies are covered by the level-provenance test below;
-        # these are the TOP-LEVEL projections, which are what attach_universe_metadata stamps
-        # and assert_checkpoint_dimensions compares. Without these entries the whole
-        # REQUIRED_COMPILED_UNIVERSE_FIELDS half of task 4 reverts with no test signal.
-        "curriculum_hash",
-        "bars_hash",
-        "affordances_hash",
-        "training_hash",
-    ],
-)
-def test_direct_cache_load_rejects_missing_required_top_level_fields(tmp_path: Path, missing_field: str) -> None:
-    config_dir = _copy_experiment(tmp_path)
-    compiler = UniverseCompiler()
-    compiled = compiler.compile(config_dir, primary_level="L0_test", use_cache=True)
-
-    payload = compiled.to_dict()
-    payload.pop(missing_field)
-    stale_path = tmp_path / f"missing-{missing_field}.msgpack"
-    stale_path.write_bytes(msgpack.packb(payload, use_bin_type=True))
-
-    with pytest.raises(ValueError, match=f"missing required field '{missing_field}'"):
-        CompiledUniverse.load_from_cache(stale_path)
-
-
-@pytest.mark.parametrize(
-    "missing_field",
-    [
         "compiled_vfs_profiles",
         "compiled_effect_catalog",
         "effects_schema",
@@ -227,10 +188,10 @@ def test_direct_cache_load_rejects_missing_current_schema_optional_value_fields(
 @pytest.mark.parametrize(
     ("section", "missing_field"),
     [
-        ("action_space_metadata", "actions"),
-        ("action_space_metadata", "labels"),
-        ("action_space_metadata", "label_description"),
-        ("action_space_metadata", "label_domain"),
+        ("action_metadata", "actions"),
+        ("action_metadata", "labels"),
+        ("action_metadata", "label_description"),
+        ("action_metadata", "label_domain"),
         ("runtime_action_space", "actions"),
         ("runtime_action_space", "substrate_action_count"),
         ("runtime_action_space", "custom_action_count"),
@@ -246,11 +207,11 @@ def test_direct_cache_load_rejects_missing_metadata_collection_fields(tmp_path: 
     compiled = compiler.compile(config_dir, primary_level="L0_test", use_cache=True)
 
     payload = compiled.to_dict()
-    payload[section].pop(missing_field)
+    payload["all_levels"]["L0_test"][section].pop(missing_field)
     stale_path = tmp_path / f"missing-{section}-{missing_field}.msgpack"
     stale_path.write_bytes(msgpack.packb(payload, use_bin_type=True))
 
-    with pytest.raises(ValueError, match=f"missing required field '{section}.{missing_field}'"):
+    with pytest.raises(ValueError, match=f"missing required field 'all_levels.L0_test.{section}.{missing_field}'"):
         CompiledUniverse.load_from_cache(stale_path)
 
 
@@ -286,6 +247,7 @@ def test_direct_cache_load_rejects_missing_level_provenance_fields(tmp_path: Pat
         "transition_schedule",
         "vfs_hash",
         "optimization_data_raw",
+        "meter_declarations",
     ],
 )
 def test_direct_cache_load_rejects_missing_required_level_fields(tmp_path: Path, missing_field: str) -> None:
@@ -294,7 +256,7 @@ def test_direct_cache_load_rejects_missing_required_level_fields(tmp_path: Path,
     compiled = compiler.compile(config_dir, primary_level="L0_test", use_cache=True)
 
     payload = compiled.to_dict()
-    payload["all_levels"]["L0_test"].pop(missing_field)
+    payload["all_levels"]["L0_test"].pop(missing_field, None)
     stale_path = tmp_path / f"missing-level-{missing_field}.msgpack"
     stale_path.write_bytes(msgpack.packb(payload, use_bin_type=True))
 
@@ -324,24 +286,40 @@ def test_compile_cache_fast_path_recovers_from_missing_required_fields(tmp_path:
     compiled = compiler.compile(config_dir, primary_level="L0_test", use_cache=True)
 
     payload = compiled.to_dict()
-    payload.pop(missing_field)
+    payload["all_levels"]["L0_test"].pop(missing_field)
     compiler._cache_artifact_path(config_dir, "L0_test").write_bytes(msgpack.packb(payload, use_bin_type=True))
 
     recompiled = UniverseCompiler().compile(config_dir, primary_level="L0_test", use_cache=True)
 
     assert recompiled.metadata.universe_name == "Model Config (Test)"
-    assert recompiled.token_spec.total_dims > 0
+    assert recompiled.get_level("L0_test").token_spec.total_dims > 0
 
 
-def test_cache_handles_zero_affordances(tmp_path: Path) -> None:
-    """Ensure cache logic tolerates enabled_affordances=None in training config."""
+def test_compile_rejects_null_enabled_affordances_at_training_top_level(tmp_path: Path) -> None:
+    """Null is not an alias for all affordances; the required field is an exact list."""
     config_dir = _copy_experiment(tmp_path)
 
     training_path = config_dir / "levels" / "L0_test" / "training.yaml"
     training = yaml.safe_load(training_path.read_text())
-    training.setdefault("environment", {})["enabled_affordances"] = None
+    training["training"]["enabled_affordances"] = None
+    training_path.write_text(yaml.safe_dump(training))
+
+    with pytest.raises((CompilationError, ValueError), match="enabled_affordances"):
+        UniverseCompiler().compile(config_dir, primary_level="L0_test", use_cache=True)
+
+
+def test_cache_preserves_explicit_empty_enabled_affordances(tmp_path: Path) -> None:
+    """An explicit empty list means deploy no affordances on compile and cache load."""
+    config_dir = _copy_experiment(tmp_path)
+
+    training_path = config_dir / "levels" / "L0_test" / "training.yaml"
+    training = yaml.safe_load(training_path.read_text())
+    training["training"]["enabled_affordances"] = []
     training_path.write_text(yaml.safe_dump(training))
 
     compiler = UniverseCompiler()
-    compiler.compile(config_dir, primary_level="L0_test", use_cache=True)
-    compiler.compile(config_dir, primary_level="L0_test", use_cache=True)  # ensure cache load works
+    compiled = compiler.compile(config_dir, primary_level="L0_test", use_cache=True)
+    cached = compiler.compile(config_dir, primary_level="L0_test", use_cache=True)
+
+    assert compiled.get_level("L0_test").training.enabled_affordances == []
+    assert cached.get_level("L0_test").training.enabled_affordances == []

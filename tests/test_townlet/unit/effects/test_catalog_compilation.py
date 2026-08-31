@@ -19,8 +19,12 @@ def test_catalog_from_config():
                 "id": "ate_food",
                 "scope": "agent",
                 "duration": 10,
-                "intensity": 1.0,
                 "reapply_policy": "stack",
+                "observable": True,
+                "on_spawn": [],
+                "on_tick": [],
+                "on_despawn": [],
+                "on_interrupt": [],
             }
         ],
     )
@@ -30,6 +34,21 @@ def test_catalog_from_config():
     assert "ate_food" in catalog.effects
     assert catalog.effects["ate_food"].id == "ate_food"
     assert catalog.effects["ate_food"].duration == 10
+    assert catalog.max_active_effects == {"global": 8, "agent": 8, "item": 8, "affordance": 8}
+
+
+@pytest.mark.parametrize(
+    ("effects", "budget"),
+    (
+        ({"declared": object()}, None),
+        ({}, {"global": 0, "agent": 0, "item": 0, "affordance": 0}),
+        ({"declared": object()}, {"global": 0, "agent": 1, "item": 0}),
+        ({"declared": object()}, {"global": 0, "agent": -1, "item": 0, "affordance": 0}),
+    ),
+)
+def test_catalog_constructor_enforces_exact_capacity_contract(effects, budget):
+    with pytest.raises(ValueError, match="max_active_effects"):
+        EffectCatalog(effects=effects, max_active_effects=budget)
 
 
 def test_catalog_load_smoke_config():
@@ -55,7 +74,19 @@ def test_catalog_get_effect():
     config = EffectsConfig(
         max_active_effects={"global": 8, "agent": 8, "item": 8, "affordance": 8},
         version="1.0",
-        effect_definitions=[{"id": "ate_food", "scope": "agent", "duration": 10, "intensity": 1.0, "reapply_policy": "stack"}],
+        effect_definitions=[
+            {
+                "id": "ate_food",
+                "scope": "agent",
+                "duration": 10,
+                "reapply_policy": "stack",
+                "observable": True,
+                "on_spawn": [],
+                "on_tick": [],
+                "on_despawn": [],
+                "on_interrupt": [],
+            }
+        ],
     )
 
     catalog = EffectCatalog.from_config(config)
@@ -78,7 +109,19 @@ def test_catalog_contains():
     config = EffectsConfig(
         max_active_effects={"global": 8, "agent": 8, "item": 8, "affordance": 8},
         version="1.0",
-        effect_definitions=[{"id": "ate_food", "scope": "agent", "duration": 10, "intensity": 1.0, "reapply_policy": "stack"}],
+        effect_definitions=[
+            {
+                "id": "ate_food",
+                "scope": "agent",
+                "duration": 10,
+                "reapply_policy": "stack",
+                "observable": True,
+                "on_spawn": [],
+                "on_tick": [],
+                "on_despawn": [],
+                "on_interrupt": [],
+            }
+        ],
     )
 
     catalog = EffectCatalog.from_config(config)
@@ -93,8 +136,28 @@ def test_catalog_len():
         max_active_effects={"global": 8, "agent": 8, "item": 8, "affordance": 8},
         version="1.0",
         effect_definitions=[
-            {"id": "effect1", "scope": "agent", "duration": 10, "intensity": 1.0, "reapply_policy": "stack"},
-            {"id": "effect2", "scope": "agent", "duration": 20, "intensity": 1.0, "reapply_policy": "renew"},
+            {
+                "id": "effect1",
+                "scope": "agent",
+                "duration": 10,
+                "reapply_policy": "stack",
+                "observable": True,
+                "on_spawn": [],
+                "on_tick": [],
+                "on_despawn": [],
+                "on_interrupt": [],
+            },
+            {
+                "id": "effect2",
+                "scope": "agent",
+                "duration": 20,
+                "reapply_policy": "renew",
+                "observable": True,
+                "on_spawn": [],
+                "on_tick": [],
+                "on_despawn": [],
+                "on_interrupt": [],
+            },
         ],
     )
 

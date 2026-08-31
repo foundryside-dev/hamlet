@@ -1,7 +1,6 @@
 import pytest
 import torch
 
-from townlet.config.effects_config import EffectScope
 from townlet.effects.catalog import CompiledEffect, EffectCatalog
 from townlet.effects.executor import CommandExecutor
 from townlet.effects.manager import EffectManager
@@ -16,12 +15,12 @@ def test_on_interrupt_executes_when_replaced():
 
     # Create effect with on_interrupt hook
     catalog = EffectCatalog(
+        max_active_effects={"global": 8, "agent": 8, "item": 8, "affordance": 8},
         effects={
             "concentration": CompiledEffect(
                 id="concentration",
                 scope="agent",
                 duration=10,
-                intensity=1.0,
                 reapply_policy="replace",  # Reapplying replaces old effect
                 observable=True,
                 on_spawn=[],
@@ -35,7 +34,7 @@ def test_on_interrupt_executes_when_replaced():
                     )
                 ],
             ),
-        }
+        },
     )
 
     manager = EffectManager(catalog=catalog, device="cpu", command_executor=executor)
@@ -46,8 +45,6 @@ def test_on_interrupt_executes_when_replaced():
     manager.spawn_effect(
         effect_id="concentration",
         target_entity_id=0,
-        scope=EffectScope.AGENT,
-        duration=10,
         intensity=1.0,
         current_step=0,
         bars=bars,
@@ -61,8 +58,6 @@ def test_on_interrupt_executes_when_replaced():
     manager.spawn_effect(
         effect_id="concentration",
         target_entity_id=0,
-        scope=EffectScope.AGENT,
-        duration=10,
         intensity=1.0,
         current_step=1,
         bars=bars,
@@ -79,12 +74,12 @@ def test_on_interrupt_executes_on_merge():
     parser = ExpressionParser()
 
     catalog = EffectCatalog(
+        max_active_effects={"global": 8, "agent": 8, "item": 8, "affordance": 8},
         effects={
             "merge_buff": CompiledEffect(
                 id="merge_buff",
                 scope="agent",
                 duration=10,
-                intensity=1.0,
                 reapply_policy="merge",
                 observable=True,
                 on_spawn=[],
@@ -98,7 +93,7 @@ def test_on_interrupt_executes_on_merge():
                     )
                 ],
             ),
-        }
+        },
     )
 
     manager = EffectManager(catalog=catalog, device="cpu", command_executor=executor)
@@ -108,8 +103,6 @@ def test_on_interrupt_executes_on_merge():
     manager.spawn_effect(
         effect_id="merge_buff",
         target_entity_id=0,
-        scope=EffectScope.AGENT,
-        duration=10,
         intensity=1.0,
         current_step=0,
         bars=bars,
@@ -120,8 +113,6 @@ def test_on_interrupt_executes_on_merge():
     manager.spawn_effect(
         effect_id="merge_buff",
         target_entity_id=0,
-        scope=EffectScope.AGENT,
-        duration=10,
         intensity=2.0,
         current_step=1,
         bars=bars,
@@ -137,12 +128,12 @@ def test_on_interrupt_executes_on_manual_cancel():
     parser = ExpressionParser()
 
     catalog = EffectCatalog(
+        max_active_effects={"global": 8, "agent": 8, "item": 8, "affordance": 8},
         effects={
             "cancel_me": CompiledEffect(
                 id="cancel_me",
                 scope="agent",
                 duration=10,
-                intensity=1.0,
                 reapply_policy="stack",
                 observable=True,
                 on_spawn=[],
@@ -156,7 +147,7 @@ def test_on_interrupt_executes_on_manual_cancel():
                     )
                 ],
             ),
-        }
+        },
     )
 
     manager = EffectManager(catalog=catalog, device="cpu", command_executor=executor)
@@ -166,8 +157,6 @@ def test_on_interrupt_executes_on_manual_cancel():
     active = manager.spawn_effect(
         effect_id="cancel_me",
         target_entity_id=0,
-        scope=EffectScope.AGENT,
-        duration=10,
         intensity=1.0,
         current_step=0,
         bars=bars,
@@ -192,12 +181,12 @@ def test_on_interrupt_not_called_for_other_policies():
 
     # Test renew policy - should NOT call on_interrupt
     catalog = EffectCatalog(
+        max_active_effects={"global": 8, "agent": 8, "item": 8, "affordance": 8},
         effects={
             "buff": CompiledEffect(
                 id="buff",
                 scope="agent",
                 duration=10,
-                intensity=1.0,
                 reapply_policy="renew",  # Renew doesn't interrupt
                 observable=True,
                 on_spawn=[],
@@ -211,7 +200,7 @@ def test_on_interrupt_not_called_for_other_policies():
                     )
                 ],
             ),
-        }
+        },
     )
 
     manager = EffectManager(catalog=catalog, device="cpu", command_executor=executor)
@@ -221,8 +210,6 @@ def test_on_interrupt_not_called_for_other_policies():
     manager.spawn_effect(
         effect_id="buff",
         target_entity_id=0,
-        scope=EffectScope.AGENT,
-        duration=10,
         intensity=1.0,
         current_step=0,
         bars=bars,
@@ -233,8 +220,6 @@ def test_on_interrupt_not_called_for_other_policies():
     manager.spawn_effect(
         effect_id="buff",
         target_entity_id=0,
-        scope=EffectScope.AGENT,
-        duration=10,
         intensity=1.0,
         current_step=1,
         bars=bars,
@@ -252,12 +237,12 @@ def test_on_interrupt_skips_on_despawn():
 
     # Create effect with both on_interrupt and on_despawn
     catalog = EffectCatalog(
+        max_active_effects={"global": 8, "agent": 8, "item": 8, "affordance": 8},
         effects={
             "focus": CompiledEffect(
                 id="focus",
                 scope="agent",
                 duration=10,
-                intensity=1.0,
                 reapply_policy="replace",
                 observable=True,
                 on_spawn=[],
@@ -277,7 +262,7 @@ def test_on_interrupt_skips_on_despawn():
                     )
                 ],
             ),
-        }
+        },
     )
 
     manager = EffectManager(catalog=catalog, device="cpu", command_executor=executor)
@@ -287,8 +272,6 @@ def test_on_interrupt_skips_on_despawn():
     manager.spawn_effect(
         effect_id="focus",
         target_entity_id=0,
-        scope=EffectScope.AGENT,
-        duration=10,
         intensity=1.0,
         current_step=0,
         bars=bars,
@@ -299,8 +282,6 @@ def test_on_interrupt_skips_on_despawn():
     manager.spawn_effect(
         effect_id="focus",
         target_entity_id=0,
-        scope=EffectScope.AGENT,
-        duration=10,
         intensity=1.0,
         current_step=1,
         bars=bars,
@@ -330,12 +311,12 @@ def test_interrupt_reason_set_in_context():
     capturing_executor = CapturingExecutor()
 
     catalog = EffectCatalog(
+        max_active_effects={"global": 8, "agent": 8, "item": 8, "affordance": 8},
         effects={
             "shield": CompiledEffect(
                 id="shield",
                 scope="agent",
                 duration=10,
-                intensity=1.0,
                 reapply_policy="replace",
                 observable=True,
                 on_spawn=[],
@@ -349,7 +330,7 @@ def test_interrupt_reason_set_in_context():
                     )
                 ],
             ),
-        }
+        },
     )
 
     manager = EffectManager(catalog=catalog, device="cpu", command_executor=capturing_executor)
@@ -359,8 +340,6 @@ def test_interrupt_reason_set_in_context():
     manager.spawn_effect(
         effect_id="shield",
         target_entity_id=0,
-        scope=EffectScope.AGENT,
-        duration=10,
         intensity=1.0,
         current_step=0,
         bars=bars,
@@ -371,8 +350,6 @@ def test_interrupt_reason_set_in_context():
     manager.spawn_effect(
         effect_id="shield",
         target_entity_id=0,
-        scope=EffectScope.AGENT,
-        duration=10,
         intensity=1.0,
         current_step=1,
         bars=bars,
@@ -389,12 +366,12 @@ def test_on_interrupt_with_multiple_commands():
     parser = ExpressionParser()
 
     catalog = EffectCatalog(
+        max_active_effects={"global": 8, "agent": 8, "item": 8, "affordance": 8},
         effects={
             "multi": CompiledEffect(
                 id="multi",
                 scope="agent",
                 duration=10,
-                intensity=1.0,
                 reapply_policy="replace",
                 observable=True,
                 on_spawn=[],
@@ -413,7 +390,7 @@ def test_on_interrupt_with_multiple_commands():
                     ),
                 ],
             ),
-        }
+        },
     )
 
     manager = EffectManager(catalog=catalog, device="cpu", command_executor=executor)
@@ -423,8 +400,6 @@ def test_on_interrupt_with_multiple_commands():
     manager.spawn_effect(
         effect_id="multi",
         target_entity_id=0,
-        scope=EffectScope.AGENT,
-        duration=10,
         intensity=1.0,
         current_step=0,
         bars=bars,
@@ -435,8 +410,6 @@ def test_on_interrupt_with_multiple_commands():
     manager.spawn_effect(
         effect_id="multi",
         target_entity_id=0,
-        scope=EffectScope.AGENT,
-        duration=10,
         intensity=1.0,
         current_step=1,
         bars=bars,

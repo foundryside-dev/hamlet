@@ -2,7 +2,6 @@
 
 import torch
 
-from townlet.config.effects_config import EffectScope
 from townlet.config.items_config import (
     ItemInteractionsConfig,
     ItemsCatalogConfig,
@@ -116,8 +115,7 @@ def test_effect_on_despawn_spawns_item_with_real_itemmanager():
     compiled_effect = CompiledEffect(
         id="loot_drop_effect",
         scope="agent",
-        duration=5,
-        intensity=1.0,
+        duration=1,
         reapply_policy="stack",
         observable=True,
         on_spawn=[],
@@ -142,7 +140,10 @@ def test_effect_on_despawn_spawns_item_with_real_itemmanager():
     )
 
     # Create EffectCatalog and EffectManager
-    catalog = EffectCatalog(effects={"loot_drop_effect": compiled_effect})
+    catalog = EffectCatalog(
+        effects={"loot_drop_effect": compiled_effect},
+        max_active_effects={"global": 8, "agent": 8, "item": 8, "affordance": 8},
+    )
 
     executor = CommandExecutor()
 
@@ -161,8 +162,6 @@ def test_effect_on_despawn_spawns_item_with_real_itemmanager():
     effect_manager.spawn_effect(
         effect_id="loot_drop_effect",
         target_entity_id=1,
-        scope=EffectScope.AGENT,
-        duration=1,  # Very short duration - will expire after 1 tick
         intensity=1.0,
         current_step=0,
         bars=bars,

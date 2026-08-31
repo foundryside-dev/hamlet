@@ -18,14 +18,18 @@ from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.compilers.observation import ObservationCompiler
 from townlet.universe.dto.token_spec import (
     DESCRIPTOR_BLOCK_WIDTH,
+    METER_SIGNATURE_WIDTH,
     PAYLOAD_SCHEMAS,
     TOKEN_TYPE_ROSTER,
     SlotBinding,
     TokenSpec,
     TokenTypeSchema,
     build_token_type,
+    meter_signature,
+    variable_element_bindings,
 )
 from townlet.universe.token_hashes import (
+    compute_observation_schema_hash,
     compute_token_layout_hash,
     compute_token_type_schema_hash,
 )
@@ -44,43 +48,36 @@ def effects_universe() -> CompiledUniverse:
     return UniverseCompiler().compile(Path("configs/test/effects_smoke"), primary_level="L0_effects", use_cache=False)
 
 
+def _selected(universe: CompiledUniverse) -> CompiledUniverse.LevelMetadata:
+    return universe.get_level(universe.metadata.primary_level)
+
+
 class TestL1TokenEmission:
     """The compiled L1 artifact matches Task 6's measured worked table."""
 
     def test_census_matches_task6_worked_table(self, l1_universe):
-        assert l1_universe.token_spec is not None
-        assert l1_universe.token_spec.census == {
+        assert _selected(l1_universe).token_spec.census == {
             "self": 1,
             "meter": 8,
             "affordance": 14,
             "agent": 0,  # no shared-world declaration exists; never keyed on num_agents
             "item": 2,  # max_items_in_world 1 + max_items_per_agent 1 x 1 agent/world
             "effect": 0,
-            # 1 since hamlet-02684be106: the pack declares one exposed global,
-            # `time_of_day_phase`, in its root vfs_profiles.yaml. It is a PACK
-            # declaration, so it is allocated at every level of default_curriculum —
-            # that shared allocation is what keeps observation width constant across
-            # levels and lets a checkpoint transfer between them.
-            "variable_element": 1,
+            # The tick-derived expression is world state, not observable identity.
+            "variable_element": 0,
         }
 
     def test_total_dims_is_task6_measurement(self, l1_universe):
-        # Task 6's measured value was 1080, taken when the pack exposed no profile
-        # variables. It moved to 1132 at hamlet-02684be106, which declared
-        # `time_of_day_phase` to give L3 back its (deleted) temporal observation.
-        # The delta is stated as ONE variable_element row rather than folded into a
-        # new literal, so the next reader can see what moved the number and why.
-        variable_element_rows = l1_universe.token_spec.census["variable_element"]
-        row_width = l1_universe.token_spec.get_type("variable_element").row_width
-        assert variable_element_rows == 1
-        assert l1_universe.token_spec.total_dims == 1080 + variable_element_rows * row_width
-        assert l1_universe.token_spec.total_dims == 1132
+        # Current token-1.1 measurement after exact meter, opening-hours, duration,
+        # lifecycle/cost, and spawned-effect affordance identity landed.
+        assert _selected(l1_universe).token_spec.census["variable_element"] == 0
+        assert _selected(l1_universe).token_spec.total_dims == 4090
 
     def test_all_roster_types_present_in_engine_order(self, l1_universe):
-        assert tuple(t.type_name for t in l1_universe.token_spec.types) == TOKEN_TYPE_ROSTER
+        assert tuple(t.type_name for t in _selected(l1_universe).token_spec.types) == TOKEN_TYPE_ROSTER
 
     def test_meter_slots_bind_bars_declaration_order(self, l1_universe):
-        meter_type = l1_universe.token_spec.get_type("meter")
+        meter_type = _selected(l1_universe).token_spec.get_type("meter")
         bound = [b.filler_ref for b in meter_type.slot_bindings]
         declared = [m.name for m in l1_universe.get_level("L1_full_observability").bars.meters]
         assert bound == declared
@@ -88,32 +85,39 @@ class TestL1TokenEmission:
     def test_affordance_slots_bind_metadata_count_not_positions(self, l1_universe):
         # Ruling 3: capacity = metadata.affordance_count; deployment.positions are
         # per-instance payload inputs (L1 lists 2 EAT positions vs count 14).
-        affordance_type = l1_universe.token_spec.get_type("affordance")
+        affordance_type = _selected(l1_universe).token_spec.get_type("affordance")
         assert affordance_type.capacity == l1_universe.metadata.affordance_count == 14
         assert [b.filler_ref for b in affordance_type.slot_bindings] == list(l1_universe.metadata.affordance_ids)
 
     def test_dynamic_types_carry_dynamic_bindings(self, l1_universe):
-        item_type = l1_universe.token_spec.get_type("item")
+        item_type = _selected(l1_universe).token_spec.get_type("item")
         assert all(b.filler_kind == "dynamic" for b in item_type.slot_bindings)
 
     def test_no_advisories_for_default_curriculum(self, l1_universe):
-        # Empty effect catalog, and one exposed profile variable (`time_of_day_phase`,
-        # hamlet-02684be106) — was zero, and the count is no longer the reason this is
-        # empty. Advisories fire on a census exceeding MEAN_CENSUS_ADVISORY (64) tokens
-        # of one type; a single variable_element is nowhere near it.
-        assert l1_universe.token_advisories == ()
+        # Empty effect catalog and no exposed variable-element declarations. Advisories
+        # fire only when one token type exceeds MEAN_CENSUS_ADVISORY (64) rows.
+        assert _selected(l1_universe).token_advisories == ()
 
     def test_hashes_present_and_hex(self, l1_universe):
-        assert len(l1_universe.token_type_schema_hash) == _HEX64
-        assert len(l1_universe.layout_hash) == _HEX64
-        int(l1_universe.token_type_schema_hash, 16)
-        int(l1_universe.layout_hash, 16)
+        assert len(_selected(l1_universe).token_type_schema_hash) == _HEX64
+        assert len(_selected(l1_universe).layout_hash) == _HEX64
+        int(_selected(l1_universe).token_type_schema_hash, 16)
+        int(_selected(l1_universe).layout_hash, 16)
 
     def test_every_level_carries_token_spec(self, l1_universe):
         for name in l1_universe.available_levels:
             level = l1_universe.get_level(name)
             assert level.token_spec is not None, name
             assert level.token_type_schema_hash and level.layout_hash, name
+
+    def test_every_level_carries_meter_runtime_declarations_matching_its_token_slots(self, l1_universe):
+        for name in l1_universe.available_levels:
+            level = l1_universe.get_level(name)
+            bindings = level.token_spec.get_type("meter").slot_bindings
+            assert tuple(meter.name for meter in level.meter_declarations) == tuple(binding.filler_ref for binding in bindings), name
+            assert tuple(meter_signature(meter) for meter in level.meter_declarations) == tuple(
+                binding.static_signature for binding in bindings
+            ), name
 
     def test_byte_identical_levels_share_layout_hash(self, l1_universe):
         # L0_0/L0_5/L1 differ only in training hyperparameters (CLAUDE.md, verified by
@@ -130,10 +134,10 @@ class TestEffectCapacityFromDeclaredBudget:
     advisory is a REFUSAL since the cut."""
 
     def test_effects_smoke_capacity_comes_from_the_declared_budget(self, effects_universe):
-        assert effects_universe.token_spec.get_type("effect").capacity > 0
+        assert _selected(effects_universe).token_spec.get_type("effect").capacity > 0
 
     def test_no_budget_advisory_survives(self, effects_universe):
-        assert not any("max_active_effects" in a for a in effects_universe.token_advisories)
+        assert not any("max_active_effects" in a for a in _selected(effects_universe).token_advisories)
 
     def test_declaring_effects_without_a_budget_refuses(self, tmp_path):
         from townlet.config.effects_config import EffectsConfig
@@ -147,9 +151,12 @@ class TestEffectCapacityFromDeclaredBudget:
                             "id": "e",
                             "scope": "agent",
                             "duration": 1,
-                            "intensity": 1.0,
                             "reapply_policy": "renew",
                             "observable": True,
+                            "on_spawn": [],
+                            "on_tick": [],
+                            "on_despawn": [],
+                            "on_interrupt": [],
                         }
                     ],
                 }
@@ -168,7 +175,7 @@ class TestEffectCapacityFromDeclaredBudget:
             )
 
     def test_empty_catalog_has_zero_effect_capacity(self, l1_universe):
-        assert l1_universe.token_spec.get_type("effect").capacity == 0
+        assert _selected(l1_universe).token_spec.get_type("effect").capacity == 0
 
 
 class TestTransferContractAcrossPacks:
@@ -176,10 +183,10 @@ class TestTransferContractAcrossPacks:
         # The transfer contract hashes type SCHEMAS, not capacities: any two universes
         # compiled by this engine with the full roster share it (spec §1 first invariant —
         # entity variation goes into token count, never payload width).
-        assert l1_universe.token_type_schema_hash == effects_universe.token_type_schema_hash
+        assert _selected(l1_universe).token_type_schema_hash == _selected(effects_universe).token_type_schema_hash
 
     def test_layout_hash_is_universe_specific(self, l1_universe, effects_universe):
-        assert l1_universe.layout_hash != effects_universe.layout_hash
+        assert _selected(l1_universe).layout_hash != _selected(effects_universe).layout_hash
 
 
 def _spec_with(meter_refs: tuple[str, ...], *, item_capacity: int = 0) -> TokenSpec:
@@ -188,7 +195,15 @@ def _spec_with(meter_refs: tuple[str, ...], *, item_capacity: int = 0) -> TokenS
         if type_name == "self":
             bindings = (SlotBinding(slot_index=0, filler_kind="static", filler_ref="self"),)
         elif type_name == "meter":
-            bindings = tuple(SlotBinding(slot_index=i, filler_kind="static", filler_ref=ref) for i, ref in enumerate(meter_refs))
+            bindings = tuple(
+                SlotBinding(
+                    slot_index=i,
+                    filler_kind="static",
+                    filler_ref=ref,
+                    static_signature=(0.0,) * METER_SIGNATURE_WIDTH,
+                )
+                for i, ref in enumerate(meter_refs)
+            )
         elif type_name == "item":
             bindings = tuple(SlotBinding(slot_index=i, filler_kind="dynamic", filler_ref=f"item:{i}") for i in range(item_capacity))
         else:
@@ -219,25 +234,28 @@ class TestHashNarrowness:
         assert compute_token_type_schema_hash(a) == compute_token_type_schema_hash(b)
         assert compute_token_layout_hash(a) != compute_token_layout_hash(b)
 
-    def test_static_signature_moves_neither(self):
-        # Signature is slot CONTENT (what the descriptor publishes), not layout.
+    def test_static_signature_moves_observation_hash_only(self):
+        # Signature is slot CONTENT (what the descriptor publishes), not layout or type schema.
         base = _spec_with(())
-        signed_meter = TokenTypeSchema(
+        signature_a = (0.5,) + (0.0,) * (METER_SIGNATURE_WIDTH - 1)
+        signature_b = (0.0,) * METER_SIGNATURE_WIDTH
+        meter_a = TokenTypeSchema(
             type_name="meter",
             payload_features=PAYLOAD_SCHEMAS["meter"],
             capacity=1,
-            slot_bindings=(SlotBinding(slot_index=0, filler_kind="static", filler_ref="energy", static_signature=(0.5, 1.0)),),
+            slot_bindings=(SlotBinding(slot_index=0, filler_kind="static", filler_ref="energy", static_signature=signature_a),),
         )
-        unsigned_meter = TokenTypeSchema(
+        meter_b = TokenTypeSchema(
             type_name="meter",
             payload_features=PAYLOAD_SCHEMAS["meter"],
             capacity=1,
-            slot_bindings=(SlotBinding(slot_index=0, filler_kind="static", filler_ref="energy"),),
+            slot_bindings=(SlotBinding(slot_index=0, filler_kind="static", filler_ref="energy", static_signature=signature_b),),
         )
-        with_sig = TokenSpec(types=(base.types[0], signed_meter) + base.types[2:])
-        without_sig = TokenSpec(types=(base.types[0], unsigned_meter) + base.types[2:])
-        assert compute_token_layout_hash(with_sig) == compute_token_layout_hash(without_sig)
-        assert compute_token_type_schema_hash(with_sig) == compute_token_type_schema_hash(without_sig)
+        spec_a = TokenSpec(types=(base.types[0], meter_a) + base.types[2:])
+        spec_b = TokenSpec(types=(base.types[0], meter_b) + base.types[2:])
+        assert compute_token_layout_hash(spec_a) == compute_token_layout_hash(spec_b)
+        assert compute_token_type_schema_hash(spec_a) == compute_token_type_schema_hash(spec_b)
+        assert compute_observation_schema_hash(spec_a) != compute_observation_schema_hash(spec_b)
 
     def test_roster_subset_moves_type_schema(self):
         # A universe instantiating fewer types IS a different type schema.
@@ -246,11 +264,10 @@ class TestHashNarrowness:
         assert compute_token_type_schema_hash(full) != compute_token_type_schema_hash(subset)
         assert compute_token_layout_hash(full) != compute_token_layout_hash(subset)
 
-    def test_encoding_version_moves_both(self):
+    def test_noncanonical_encoding_version_refuses(self):
         a = _spec_with(())
-        b = TokenSpec(types=a.types, encoding_version="token-9.9-test")
-        assert compute_token_type_schema_hash(a) != compute_token_type_schema_hash(b)
-        assert compute_token_layout_hash(a) != compute_token_layout_hash(b)
+        with pytest.raises(ValueError, match="encoding_version"):
+            TokenSpec(types=a.types, encoding_version="token-9.9-test")
 
 
 class TestSerialization:
@@ -258,52 +275,64 @@ class TestSerialization:
         cache_path = tmp_path / "u.msgpack"
         effects_universe.save_to_cache(cache_path)
         restored = CompiledUniverse.load_from_cache(cache_path)
-        assert restored.token_spec == effects_universe.token_spec
-        assert restored.token_type_schema_hash == effects_universe.token_type_schema_hash
-        assert restored.layout_hash == effects_universe.layout_hash
-        assert restored.token_advisories == effects_universe.token_advisories
+        assert _selected(restored).token_spec == _selected(effects_universe).token_spec
+        assert _selected(restored).token_type_schema_hash == _selected(effects_universe).token_type_schema_hash
+        assert _selected(restored).layout_hash == _selected(effects_universe).layout_hash
+        assert _selected(restored).token_advisories == _selected(effects_universe).token_advisories
         for name in effects_universe.available_levels:
             assert restored.get_level(name).token_spec == effects_universe.get_level(name).token_spec
+            assert restored.get_level(name).meter_declarations == effects_universe.get_level(name).meter_declarations
 
     def test_round_trip_recomputes_identical_hashes(self, effects_universe, tmp_path):
         cache_path = tmp_path / "u.msgpack"
         effects_universe.save_to_cache(cache_path)
         restored = CompiledUniverse.load_from_cache(cache_path)
-        assert compute_token_type_schema_hash(restored.token_spec) == restored.token_type_schema_hash
-        assert compute_token_layout_hash(restored.token_spec) == restored.layout_hash
+        assert compute_token_type_schema_hash(_selected(restored).token_spec) == _selected(restored).token_type_schema_hash
+        assert compute_token_layout_hash(_selected(restored).token_spec) == _selected(restored).layout_hash
 
-    def test_stale_pre_cut_artifact_refuses(self, effects_universe, tmp_path):
+    def test_stale_previous_token_artifact_refuses(self, effects_universe, tmp_path):
         payload = effects_universe.to_dict()
-        payload["compiled_schema_version"] = "1.21"
+        payload["compiled_schema_version"] = "1.23"
         stale_path = tmp_path / "stale.msgpack"
         stale_path.write_bytes(msgpack.packb(payload, use_bin_type=True))
         with pytest.raises(ValueError, match="schema mismatch") as excinfo:
             CompiledUniverse.load_from_cache(stale_path)
-        assert "1.21" in str(excinfo.value)
+        assert "1.23" in str(excinfo.value)
         assert COMPILED_SCHEMA_VERSION in str(excinfo.value)
 
-    def test_missing_token_block_refuses(self, effects_universe):
+    def test_missing_level_token_block_refuses(self, effects_universe):
         payload = effects_universe.to_dict()
-        payload.pop("token_spec")
-        with pytest.raises(ValueError, match="missing required field 'token_spec'"):
+        primary_level = effects_universe.metadata.primary_level
+        payload["all_levels"][primary_level].pop("token_spec")
+        with pytest.raises(ValueError, match=f"missing required field 'all_levels.{primary_level}.token_spec'"):
             CompiledUniverse.from_dict(payload)
 
     def test_tampered_payload_schema_refuses(self, effects_universe):
         # The artifact is self-describing: a cache whose payload features disagree with
         # the running engine's schema refuses on load (spec §1 fixed-width invariant).
         payload = effects_universe.to_dict()
-        payload["token_spec"]["types"][1]["payload_features"] = ["not_the_engine_schema"]
+        payload["all_levels"][effects_universe.metadata.primary_level]["token_spec"]["types"][1]["payload_features"] = [
+            "not_the_engine_schema"
+        ]
         with pytest.raises(ValueError, match="does not match the engine constant"):
             CompiledUniverse.from_dict(payload)
 
 
 def _env_stub(*names_and_types: tuple[str, str]):
-    """Minimal EnvConfigV21 stand-in: `_variable_element_bindings` reads only
+    """Minimal EnvConfigV21 stand-in: `variable_element_bindings` reads only
     `environment.environment.variables[*].name / .semantic_type`."""
     return SimpleNamespace(environment=SimpleNamespace(variables=[SimpleNamespace(name=n, semantic_type=t) for n, t in names_and_types]))
 
 
-def _variable_def(name: str, *, dims: int | None = None, normalization: NormalizationSpec | None) -> VariableDef:
+def _variable_def(
+    name: str,
+    *,
+    dims: int | None = None,
+    normalization: NormalizationSpec | None,
+    default: object = 0.0,
+    initial_value_mode: str | None = None,
+    initial_value_params: dict[str, float] | None = None,
+) -> VariableDef:
     return VariableDef(
         id=name,
         scope="agent",
@@ -312,9 +341,11 @@ def _variable_def(name: str, *, dims: int | None = None, normalization: Normaliz
         lifetime="tick",
         readable_by=["agent", "engine"],
         writable_by=["engine"],
-        default=[0.0] * dims if dims and dims > 1 else 0.0,
+        default=[0.0] * dims if dims and dims > 1 and default == 0.0 else default,
         description=name,
         normalization=normalization,
+        initial_value_mode=initial_value_mode,
+        initial_value_params=initial_value_params,
     )
 
 
@@ -322,7 +353,7 @@ _BOUNDED = NormalizationSpec(kind="minmax", min=0.0, max=1.0, clip=True)
 
 
 class TestVariableElementBindings:
-    """Direct-call coverage of `_variable_element_bindings`. Every branch that ADVISED
+    """Direct-call coverage of `variable_element_bindings`. Every branch that ADVISED
     while the token path ran alongside the old one is a compile REFUSAL since the cut."""
 
     def test_passing_declarations_bind_slots_in_registry_order(self):
@@ -331,7 +362,7 @@ class TestVariableElementBindings:
             _variable_def("temp", normalization=_BOUNDED),
             _variable_def("wind", dims=3, normalization=NormalizationSpec(kind="minmax", min=0.0, max=10.0, clip=True)),
         )
-        bindings = ObservationCompiler._variable_element_bindings(env, None, defs)
+        bindings = variable_element_bindings(env, None, defs)
         assert [b.filler_ref for b in bindings] == ["temp", "wind[0]", "wind[1]", "wind[2]"]
         assert [b.slot_index for b in bindings] == [0, 1, 2, 3]
         assert all(b.filler_kind == "static" for b in bindings)
@@ -345,33 +376,66 @@ class TestVariableElementBindings:
         env = _env_stub(("raw_var", "custom"))
         defs = (_variable_def("raw_var", normalization=None),)
         with pytest.raises(ValueError, match="declares no normalization"):
-            ObservationCompiler._variable_element_bindings(env, None, defs)
+            variable_element_bindings(env, None, defs)
 
     def test_unbounded_kind_refuses_with_the_boundedness_rule(self):
         env = _env_stub(("z", "custom"))
         defs = (_variable_def("z", normalization=NormalizationSpec(kind="zscore", mean=0.0, std=1.0)),)
         with pytest.raises(ValueError, match="bounded normalization kind"):
-            ObservationCompiler._variable_element_bindings(env, None, defs)
+            variable_element_bindings(env, None, defs)
 
     def test_rank_scaled_refuses_at_exposure(self):
         env = _env_stub(("r", "custom"))
         defs = (_variable_def("r", normalization=NormalizationSpec(kind="rank_scaled")),)
         with pytest.raises(ValueError, match="rank_scaled"):
-            ObservationCompiler._variable_element_bindings(env, None, defs)
+            variable_element_bindings(env, None, defs)
 
     def test_indistinguishable_pair_refuses_naming_both(self):
         # Identical declarations apart from the id: identical static signatures.
         env = _env_stub(("twin_a", "custom"), ("twin_b", "custom"))
         defs = (_variable_def("twin_a", normalization=_BOUNDED), _variable_def("twin_b", normalization=_BOUNDED))
         with pytest.raises(ValueError, match="indistinguishable") as excinfo:
-            ObservationCompiler._variable_element_bindings(env, None, defs)
+            variable_element_bindings(env, None, defs)
         assert "twin_a" in str(excinfo.value) and "twin_b" in str(excinfo.value)
 
     def test_unexposed_variable_binds_nothing(self):
         # Explicit exposure: a registry variable no environment.yaml or profile exposure
         # names is UNEXPOSED and occupies no slot (the fail-open default is deleted).
         defs = (_variable_def("hidden", normalization=None),)
-        assert ObservationCompiler._variable_element_bindings(_env_stub(), None, defs) == ()
+        assert variable_element_bindings(_env_stub(), None, defs) == ()
+
+    def test_exposed_variable_without_explicit_default_refuses(self):
+        env = _env_stub(("implicit", "custom"))
+        defs = (_variable_def("implicit", normalization=_BOUNDED, default=None),)
+
+        with pytest.raises(ValueError, match=r"implicit.*explicit declared default"):
+            variable_element_bindings(env, None, defs)
+
+    @pytest.mark.parametrize(
+        ("mode", "params"),
+        (
+            ("zeros", None),
+            (None, {"unused": 1.0}),
+            ("ones", {"unused": 1.0}),
+        ),
+    )
+    def test_exposed_variable_with_residual_initializer_surface_refuses(
+        self,
+        mode: str | None,
+        params: dict[str, float] | None,
+    ):
+        env = _env_stub(("parallel_init", "custom"))
+        defs = (
+            _variable_def(
+                "parallel_init",
+                normalization=_BOUNDED,
+                initial_value_mode=mode,
+                initial_value_params=params,
+            ),
+        )
+
+        with pytest.raises(ValueError, match=r"parallel_init.*initial_value_mode.*initial_value_params"):
+            variable_element_bindings(env, None, defs)
 
 
 class TestMeanCensusAdvisoryWiring:
@@ -415,16 +479,34 @@ class TestMeanCensusAdvisoryWiring:
         return BrainConfig.model_validate(payload)
 
     def _build(self, l1_universe, bars, brain):
-        from townlet.universe.dto import AffordanceMetadata
+        from townlet.config.affordances_v2_config import AffordancesV2Config
+        from townlet.config.environment_config import MeterConfig as EnvironmentMeterConfig
 
-        return ObservationCompiler().build_token_spec(
+        environment = l1_universe.environment.model_copy(
+            update={
+                "environment": l1_universe.environment.environment.model_copy(
+                    update={
+                        "meters": [
+                            EnvironmentMeterConfig(
+                                name=meter.name,
+                                description=meter.name,
+                                range_type={"kind": "minmax", "clip": True},
+                            )
+                            for meter in bars.meters
+                        ]
+                    }
+                )
+            }
+        )
+        compiler = ObservationCompiler()
+        meter_declarations = compiler.compile_meter_declarations(environment, bars)
+        return compiler.build_token_spec(
             l1_universe.stratum,
-            bars,
-            AffordanceMetadata(affordances=()),
+            meter_declarations,
+            AffordancesV2Config(version="1.0", affordances=[], modulations=[]),
             None,
             None,
-            None,
-            l1_universe.environment,
+            environment,
             None,
             (),
             brain,
@@ -471,7 +553,7 @@ class TestInspectCensus:
         effects_universe.save_to_cache(artifact)
         assert main(["inspect", str(artifact), "--format", "json"]) == 0
         payload = json.loads(capsys.readouterr().out)
-        assert payload["token_census"] == effects_universe.token_spec.census
-        assert payload["token_total_dims"] == effects_universe.token_spec.total_dims
-        assert payload["token_type_schema_hash"] == effects_universe.token_type_schema_hash
-        assert payload["layout_hash"] == effects_universe.layout_hash
+        assert payload["token_census"] == _selected(effects_universe).token_spec.census
+        assert payload["token_total_dims"] == _selected(effects_universe).token_spec.total_dims
+        assert payload["token_type_schema_hash"] == _selected(effects_universe).token_type_schema_hash
+        assert payload["layout_hash"] == _selected(effects_universe).layout_hash

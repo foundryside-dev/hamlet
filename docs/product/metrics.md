@@ -1,4 +1,32 @@
-# Metrics — HAMLET / Townlet        Last read: 2026-08-31 · fiftieth checkpoint (`PDR-0133`)
+# Metrics — HAMLET / Townlet        Last read: 2026-08-31 · milestone-2 accepted (`PDR-0134`/`PDR-0135`)
+
+> **Milestone 2 engineering reading — 2026-08-31, `PDR-0134`:** meter `range_type` is no longer
+> declared-but-inert. Its current token surface admits exactly four bounded transformations:
+> `minmax` with `clip: true`, `log_scaled` with `clip: true`, `cyclical_sin_cos`, and `binary`.
+> The meter surface deletes `none`, `zscore`, `one_hot`, `rank_scaled` and `masked_value`; it does
+> not alias, translate or fall back to them. All 39 current config declarations (38 pack
+> `environment.yaml` files plus the complete reference) are updated. Frozen oracle fixtures retain
+> old declarations only as historical evidence. Compiled schema 1.25 and token encoding
+> `token-1.1` carry the new contract.
+>
+> Each level's compiled `TokenSpec` carries meter static signatures and the complete executable
+> affordance/effect identity ruled in `PDR-0135`. The selected environment, encoder, population and
+> token network consume that level's spec with no primary-level fallback. Artifact loading
+> reconstructs compiler-owned bindings rather than trusting a self-consistent stored hash chain.
+>
+> The former **1,580-float** line was an intermediate meter-only reading. The 34-positive-pack
+> census found two affordances with five executable writes, so the exact fixed summary is K=5.
+> After the exposed-initializer correction, the current full L1 serialization is **4,090 floats**:
+> **3,272,000,000 bytes = 3,120.4 MiB** per 100,000 float32 observation pairs. The current
+> `variable_element` count is **0**: expression-backed exposure is refused until milestone 3 static
+> context can encode executable initializer identity, while the time variable remains live but
+> unexposed. Milestone 3 owns the compact dynamic-state split and replay measurement; milestone 2
+> does not claim that downstream result early.
+>
+> **Acceptance reading:** 3,675 passed / 11 skipped / 84% coverage in the full default suite;
+> Ruff, Black (565 files), mypy (175 source files), no-defaults, compiler-pack validation and diff
+> integrity green. All current positive packs validate and the three negative VFS fixtures refuse
+> exactly as designed. Milestone 3 remains sequenced behind the accepted commit and tracker handoff.
 
 > **Milestone 1 engineering reading — 2026-08-31, `PDR-0133`:** one declared-but-inert config
 > field and all of its residual runtime branches are deleted. Current DTOs reject the old key;
@@ -36,7 +64,7 @@
 > ≤96,000,000 bytes for a 100,000-transition float32 observation pair, batch-size viability and
 > the existing 25% encoding guardrail. The original measurement,
 > retained as taken: measured on the compiled post-cut artifact, which is the
-> measurement `PDR-0123` brought forward to this checkpoint: `configs/default_curriculum` @
+> historical pre-milestone-2 measurement `PDR-0123` brought forward: `configs/default_curriculum` @
 > `L1_full_observability`, **`token_spec.total_dims` = 1132 = 9.43×** the pre-cut allocated
 > 120. (Not the 1080 / 9.0× read at design time — the L3 temporal declaration added one
 > `variable_element` token, 52 dims, uniformly on all five levels.) Census: `self` 1×18,

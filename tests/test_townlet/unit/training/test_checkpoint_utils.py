@@ -9,12 +9,15 @@ import torch
 
 from townlet.training.checkpoint_utils import (
     CHECKPOINT_FORMAT_VERSION,
+    DEMO_CHECKPOINT_KEYS,
     assert_checkpoint_dimensions,
     assert_checkpoint_identity,
     assert_checkpoint_vfs_hash,
     attach_universe_metadata,
     persist_checkpoint_digest,
     safe_torch_load,
+    validate_demo_checkpoint_payload,
+    validate_demo_checkpoint_runtime_fields,
     verify_checkpoint_digest,
 )
 from townlet.training.state import PopulationCheckpoint
@@ -27,19 +30,79 @@ def compiled_universe():
     return compiler.compile(Path("configs/test/model_config"), primary_level="L0_test")
 
 
+def test_demo_checkpoint_payload_requires_exact_current_key_set() -> None:
+    payload = {key: None for key in DEMO_CHECKPOINT_KEYS}
+    validate_demo_checkpoint_payload(payload)
+
+    missing = dict(payload)
+    missing.pop("population_state")
+    with pytest.raises(ValueError, match=r"missing=\['population_state'\], unknown=\[\]"):
+        validate_demo_checkpoint_payload(missing)
+
+    unknown = dict(payload)
+    unknown["legacy_epsilon"] = 0.5
+    with pytest.raises(ValueError, match=r"missing=\[\], unknown=\['legacy_epsilon'\]"):
+        validate_demo_checkpoint_payload(unknown)
+
+
+def test_demo_checkpoint_runtime_fields_require_exact_bound_values() -> None:
+    payload = {key: None for key in DEMO_CHECKPOINT_KEYS}
+    payload["substrate_metadata"] = {"position_dim": 2, "substrate_type": "Grid2DSubstrate"}
+    payload["agent_ids"] = ["agent_0"]
+    payload["epsilon"] = 0.25
+
+    validate_demo_checkpoint_runtime_fields(
+        payload,
+        position_dim=2,
+        substrate_type="Grid2DSubstrate",
+        num_agents=1,
+    )
+
+    nonfinite = dict(payload)
+    nonfinite["epsilon"] = float("nan")
+    with pytest.raises(ValueError, match="epsilon must be a finite number"):
+        validate_demo_checkpoint_runtime_fields(
+            nonfinite,
+            position_dim=2,
+            substrate_type="Grid2DSubstrate",
+            num_agents=1,
+        )
+
+    wrong_substrate = dict(payload)
+    wrong_substrate["substrate_metadata"] = {"position_dim": 3, "substrate_type": "Grid2DSubstrate"}
+    with pytest.raises(ValueError, match="position_dim mismatch"):
+        validate_demo_checkpoint_runtime_fields(
+            wrong_substrate,
+            position_dim=2,
+            substrate_type="Grid2DSubstrate",
+            num_agents=1,
+        )
+
+    wrong_agents = dict(payload)
+    wrong_agents["agent_ids"] = ["agent_0", "agent_1"]
+    with pytest.raises(ValueError, match="agent_ids length mismatch"):
+        validate_demo_checkpoint_runtime_fields(
+            wrong_agents,
+            position_dim=2,
+            substrate_type="Grid2DSubstrate",
+            num_agents=1,
+        )
+
+
 def test_attach_universe_metadata(compiled_universe) -> None:
     checkpoint: dict[str, object] = {}
     attach_universe_metadata(checkpoint, compiled_universe)
+    level = compiled_universe.get_level(compiled_universe.metadata.primary_level)
 
     assert checkpoint["config_hash"] == compiled_universe.metadata.config_hash
-    assert checkpoint["action_dim"] == compiled_universe.metadata.action_count
-    assert checkpoint["meter_count"] == compiled_universe.metadata.meter_count
-    assert checkpoint["observation_schema_hash"] == compiled_universe.observation_schema_hash
-    assert checkpoint["vfs_hash"] == compiled_universe.vfs_hash
+    assert checkpoint["action_dim"] == level.action_metadata.total_actions
+    assert checkpoint["meter_count"] == len(level.meter_metadata.meters)
+    assert checkpoint["observation_schema_hash"] == level.observation_schema_hash
+    assert checkpoint["vfs_hash"] == level.vfs_hash
     # The observation identity is the two TokenSpec hashes since the unit-3 cut;
     # `observation_dim` and `observation_field_uuids` died with the ObservationSpec.
-    assert checkpoint["token_type_schema_hash"] == compiled_universe.token_type_schema_hash
-    assert checkpoint["layout_hash"] == compiled_universe.layout_hash
+    assert checkpoint["token_type_schema_hash"] == level.token_type_schema_hash
+    assert checkpoint["layout_hash"] == level.layout_hash
     assert "observation_dim" not in checkpoint
     assert "observation_field_uuids" not in checkpoint
 
@@ -132,9 +195,10 @@ def test_attach_universe_metadata_includes_drive_hash(compiled_universe) -> None
     """attach_universe_metadata should include drive_hash."""
     checkpoint: dict[str, object] = {}
     attach_universe_metadata(checkpoint, compiled_universe)
+    level = compiled_universe.get_level(compiled_universe.metadata.primary_level)
 
     assert "drive_hash" in checkpoint
-    assert checkpoint["drive_hash"] == compiled_universe.drive_hash
+    assert checkpoint["drive_hash"] == level.drive_hash
     assert len(checkpoint["drive_hash"]) == 64  # SHA256 hex string
 
 

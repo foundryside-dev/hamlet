@@ -5,7 +5,6 @@ effect_definitions:
   - id: "wear_and_tear"
     scope: item
     duration: 10
-    intensity: 1.0
     reapply_policy: renew
     observable: true
 
@@ -16,12 +15,12 @@ effect_definitions:
         value: "self.vfs.durability - (1.0 * intensity)"
 
     on_despawn: []
+    on_interrupt: []
 
   # Effect that reads item VFS and triggers cascade
   - id: "item_degradation"
     scope: item
     duration: 5
-    intensity: 1.0
     reapply_policy: stack
     observable: true
 
@@ -32,12 +31,12 @@ effect_definitions:
     on_tick: []
 
     on_despawn: []
+    on_interrupt: []
 
   # Effect that spawns on item with low durability (cascade trigger)
   - id: "item_break"
     scope: item
     duration: 1
-    intensity: 1.0
     reapply_policy: replace
     observable: true
 
@@ -48,12 +47,12 @@ effect_definitions:
     on_tick: []
 
     on_despawn: []
+    on_interrupt: []
 
   # Effect that reads item freshness (food items)
   - id: "food_decay"
     scope: item
     duration: 15
-    intensity: 1.0
     reapply_policy: renew
     observable: true
 
@@ -64,6 +63,7 @@ effect_definitions:
         value: "self.vfs.freshness - (2.0 * intensity)"
 
     on_despawn: []
+    on_interrupt: []
 
 # Per-scope budget of concurrently active effects (token-obs spec S2, required because
 # effects are declared). Values: one active instance per declared effect per scope

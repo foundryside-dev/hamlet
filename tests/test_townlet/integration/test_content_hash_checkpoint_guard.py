@@ -12,7 +12,7 @@ collision test. The six-leg template applies to the config-edit tests only — p
 the `brain_hash` tests gives them no meaning.
 
 The six legs, in order: **runtime** (the edit changes behaviour, so the config is not inert)
-→ **blindness witness** (the hashes that exist today do NOT move, so nothing else catches it)
+→ **pre-existing hash witness** (pin exactly which older hashes move and which remain narrow)
 → **mover** (the target hash DOES move) → **stamp** (it reaches the checkpoint) → **negative
 control** (an unedited pack still resumes) → **guard** (the edit is rejected, by name).
 
@@ -82,17 +82,22 @@ def _affordance(data: dict, name: str) -> dict:
     return next(a for a in data["affordances"]["affordances"] if a["name"] == name)
 
 
-# The hashes that exist today and are already compared. A content edit that moves NONE of
-# these is exactly the blindness this task closes.
-#
-# NOTE: these equalities are EXPECTED TO FLIP when WS-1(ii) widens hash coverage. That is the
-# hash coverage improving, not a regression — do not "fix" this by deleting the witness.
+# Older identity hashes whose mover/narrowness contract remains independently pinned here.
+# A meter declaration now moves observation_schema_hash and therefore vfs_hash because its
+# compiled static signature is network-visible content; it must still leave the layout and
+# action/transition identities alone.
 _PRE_EXISTING = ("vfs_hash", "observation_schema_hash", "transition_graph_hash", "action_schema_hash")
 
 
-def _blindness_witness(base: CompiledUniverse, mutated: CompiledUniverse) -> None:
+def _preexisting_hash_witness(base: CompiledUniverse, mutated: CompiledUniverse, movers: frozenset[str]) -> None:
+    assert movers <= frozenset(_PRE_EXISTING)
+    base_level = base.get_level(base.metadata.primary_level)
+    mutated_level = mutated.get_level(mutated.metadata.primary_level)
     for field in _PRE_EXISTING:
-        assert getattr(base, field) == getattr(mutated, field), f"{field} moved — this edit is no longer a blindness witness"
+        if field in movers:
+            assert getattr(base_level, field) != getattr(mutated_level, field), f"{field} did not move"
+        else:
+            assert getattr(base_level, field) == getattr(mutated_level, field), f"{field} moved outside its identity contract"
 
 
 def _six_legs(
@@ -101,6 +106,7 @@ def _six_legs(
     filename: str,
     mutator: Callable[[dict], None],
     hash_field: str,
+    preexisting_movers: frozenset[str],
     runtime_leg: Callable[[VectorizedHamletEnv, VectorizedHamletEnv], None] | None,
 ) -> None:
     base_pack = _pack(tmp_path, "base")
@@ -109,6 +115,8 @@ def _six_legs(
 
     base = _compile(base_pack, level)
     mutated = _compile(mut_pack, level)
+    base_level = base.get_level(level)
+    mutated_level = mutated.get_level(level)
 
     # LEG 1 — runtime. The edit changes observable behaviour, so the config is not inert and
     # the hash is guarding something real.
@@ -119,17 +127,17 @@ def _six_legs(
         mut_env.reset()
         runtime_leg(base_env, mut_env)
 
-    # LEG 2 — blindness witness. Nothing that existed before this task catches it.
-    _blindness_witness(base, mutated)
+    # LEG 2 — pre-existing identity witness. Pin every older mover and non-mover.
+    _preexisting_hash_witness(base, mutated, preexisting_movers)
 
     # LEG 3 — mover. The target hash does move.
-    assert getattr(base, hash_field) is not None, f"{hash_field} is not stamped at all"
-    assert getattr(base, hash_field) != getattr(mutated, hash_field), f"{hash_field} did not move"
+    assert getattr(base_level, hash_field) is not None, f"{hash_field} is not stamped at all"
+    assert getattr(base_level, hash_field) != getattr(mutated_level, hash_field), f"{hash_field} did not move"
 
     # LEG 4 — stamp. It reaches the checkpoint.
     checkpoint: dict = {}
     attach_universe_metadata(checkpoint, base)
-    assert checkpoint[hash_field] == getattr(base, hash_field)
+    assert checkpoint[hash_field] == getattr(base_level, hash_field)
 
     # LEG 5 — negative control. An unedited pack still resumes.
     assert_checkpoint_dimensions(checkpoint, base)
@@ -140,14 +148,22 @@ def _six_legs(
 
 
 def test_bars_edit_is_caught(tmp_path: Path) -> None:
-    """`energy.initial 1.0 -> 0.5` on L1. Pinned BECAUSE it is vfs-invisible."""
+    """`energy.initial 1.0 -> 0.5` moves static identity and the bars guard."""
 
     def runtime(base_env: VectorizedHamletEnv, mut_env: VectorizedHamletEnv) -> None:
         idx = base_env.meter_name_to_index["energy"]
         assert base_env.meters[0, idx].item() == pytest.approx(1.0)
         assert mut_env.meters[0, idx].item() == pytest.approx(0.5)
 
-    _six_legs(tmp_path, L1, "bars.yaml", lambda d: _meter(d, "energy").__setitem__("initial", 0.5), "bars_hash", runtime)
+    _six_legs(
+        tmp_path,
+        L1,
+        "bars.yaml",
+        lambda d: _meter(d, "energy").__setitem__("initial", 0.5),
+        "bars_hash",
+        frozenset({"observation_schema_hash", "vfs_hash"}),
+        runtime,
+    )
 
 
 def test_affordances_edit_is_caught(tmp_path: Path) -> None:
@@ -169,7 +185,15 @@ def test_affordances_edit_is_caught(tmp_path: Path) -> None:
         assert bool(base_env.affordance_engine.can_afford("EAT", base_env.meters)[0].item()) is True
         assert bool(mut_env.affordance_engine.can_afford("EAT", mut_env.meters)[0].item()) is False
 
-    _six_legs(tmp_path, L1, "affordances.yaml", mutate, "affordances_hash", runtime)
+    _six_legs(
+        tmp_path,
+        L1,
+        "affordances.yaml",
+        mutate,
+        "affordances_hash",
+        frozenset({"observation_schema_hash", "vfs_hash"}),
+        runtime,
+    )
 
 
 def test_training_edit_is_caught(tmp_path: Path) -> None:
@@ -197,7 +221,7 @@ def test_training_edit_is_caught(tmp_path: Path) -> None:
         assert "DOCTOR" not in mut_env.affordances
         assert len(mut_env.affordances) == len(base_env.affordances) - 1
 
-    _six_legs(tmp_path, L1, "training.yaml", mutate, "training_hash", runtime)
+    _six_legs(tmp_path, L1, "training.yaml", mutate, "training_hash", frozenset(), runtime)
 
 
 def test_curriculum_edit_is_caught(tmp_path: Path) -> None:
@@ -208,7 +232,15 @@ def test_curriculum_edit_is_caught(tmp_path: Path) -> None:
         assert base_env.day_length == 24
         assert mut_env.day_length == 12
 
-    _six_legs(tmp_path, L3, "curriculum.yaml", lambda d: d["curriculum"].__setitem__("day_length", 12), "curriculum_hash", runtime)
+    _six_legs(
+        tmp_path,
+        L3,
+        "curriculum.yaml",
+        lambda d: d["curriculum"].__setitem__("day_length", 12),
+        "curriculum_hash",
+        frozenset(),
+        runtime,
+    )
 
 
 def test_brain_hash_covers_the_effective_training_config(tmp_path: Path) -> None:
@@ -303,13 +335,18 @@ def test_two_levels_collide_on_almost_every_identity_field(tmp_path: Path) -> No
     pack = _pack(tmp_path)
     a = _compile(pack, L0_5)
     b = _compile(pack, L1)
+    a_level = a.get_level(L0_5)
+    b_level = b.get_level(L1)
 
     for field in ("curriculum_hash", "bars_hash", "affordances_hash"):
-        assert getattr(a, field) == getattr(b, field), f"{field} unexpectedly differs — the collision this documents has changed"
-    for field in ("vfs_hash", "drive_hash", "brain_hash", "observation_schema_hash", "transition_graph_hash"):
-        assert getattr(a, field) == getattr(b, field), f"{field} unexpectedly differs"
+        assert getattr(a_level, field) == getattr(
+            b_level, field
+        ), f"{field} unexpectedly differs — the collision this documents has changed"
+    for field in ("vfs_hash", "drive_hash", "observation_schema_hash", "transition_graph_hash"):
+        assert getattr(a_level, field) == getattr(b_level, field), f"{field} unexpectedly differs"
+    assert a.brain_hash == b.brain_hash, "brain_hash unexpectedly differs"
 
-    assert a.training_hash != b.training_hash, "training_hash no longer differs — output_subdir was the only separator"
+    assert a_level.training_hash != b_level.training_hash, "training_hash no longer differs — output_subdir was the only separator"
     assert a.metadata.primary_level == L0_5
     assert b.metadata.primary_level == L1
 
@@ -336,12 +373,15 @@ def test_cross_level_resume_is_rejected_by_primary_level(tmp_path: Path) -> None
 
     a = _compile(pack, L0_5)
     b = _compile(pack, L1)
+    a_level = a.get_level(L0_5)
+    b_level = b.get_level(L1)
 
     # With output_subdir normalised, the collision is TOTAL across the identity hashes —
     # if any of these differs, primary_level is no longer the only separator and the
     # rejection below stops being evidence for D5.
-    for field in ("curriculum_hash", "bars_hash", "affordances_hash", "training_hash", "vfs_hash", "drive_hash", "brain_hash"):
-        assert getattr(a, field) == getattr(b, field), f"{field} differs — primary_level is not the lone separator any more"
+    for field in ("curriculum_hash", "bars_hash", "affordances_hash", "training_hash", "vfs_hash", "drive_hash"):
+        assert getattr(a_level, field) == getattr(b_level, field), f"{field} differs — primary_level is not the lone separator any more"
+    assert a.brain_hash == b.brain_hash, "brain_hash differs — primary_level is not the lone separator any more"
 
     checkpoint: dict = {"version": CHECKPOINT_FORMAT_VERSION, "episode": 1}
     attach_universe_metadata(checkpoint, a)

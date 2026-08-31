@@ -5,7 +5,6 @@ effect_definitions:
   - id: "energy_regen"
     scope: agent
     duration: 20
-    intensity: 1.0
     reapply_policy: renew
     observable: true
 
@@ -16,12 +15,12 @@ effect_definitions:
         value: "target.bar.energy + (0.05 * intensity)"
 
     on_despawn: []
+    on_interrupt: []
 
   # Instant health boost (STACK policy)
   - id: "health_boost"
     scope: agent
     duration: 1
-    intensity: 1.0
     reapply_policy: stack
     observable: true
 
@@ -32,12 +31,12 @@ effect_definitions:
     on_tick: []
 
     on_despawn: []
+    on_interrupt: []
 
   # Poison with merge policy
   - id: "poison"
     scope: agent
     duration: 20
-    intensity: 1.0
     reapply_policy: merge
     observable: true
 
@@ -48,18 +47,19 @@ effect_definitions:
         value: "target.bar.health - (0.02 * intensity)"
 
     on_despawn: []
+    on_interrupt: []
 
   # Buff with replace policy
   - id: "buff_replace"
     scope: agent
     duration: 15
-    intensity: 1.0
     reapply_policy: replace
     observable: true
 
     on_spawn: []
     on_tick: []
     on_despawn: []
+    on_interrupt: []
 
 # Per-scope budget of concurrently active effects (token-obs spec S2, required because
 # effects are declared). Values: one active instance per declared effect per scope

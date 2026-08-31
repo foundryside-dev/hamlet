@@ -1,17 +1,15 @@
-"""TorchScript kernels for generated VTC transition rules."""
+"""Eager tensor kernels for generated VTC transition rules."""
 
 from __future__ import annotations
 
 import torch
 
 
-@torch.jit.script
 def apply_masked_candidate(phase_value: torch.Tensor, candidate: torch.Tensor, write_mask: torch.Tensor) -> torch.Tensor:
     """Apply an already-computed candidate under a boolean write mask."""
     return torch.where(write_mask, candidate, phase_value)
 
 
-@torch.jit.script
 def apply_passive_depletion(
     phase_value: torch.Tensor,
     active_mask: torch.Tensor,
@@ -25,7 +23,6 @@ def apply_passive_depletion(
     return torch.where(active_mask, candidate, phase_value)
 
 
-@torch.jit.script
 def apply_threshold_cascade(
     source_value: torch.Tensor,
     target_value: torch.Tensor,
@@ -45,7 +42,6 @@ def apply_threshold_cascade(
     return torch.where(write_mask, candidate, target_value)
 
 
-@torch.jit.script
 def apply_modulation_multiplier(
     phase_multiplier: torch.Tensor,
     source_value: torch.Tensor,
@@ -64,7 +60,6 @@ def apply_modulation_multiplier(
     return torch.where(active_mask, candidate, phase_multiplier)
 
 
-@torch.jit.script
 def apply_terminal_condition(
     source_value: torch.Tensor,
     dones: torch.Tensor,

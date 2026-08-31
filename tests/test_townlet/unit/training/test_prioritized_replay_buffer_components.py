@@ -272,7 +272,7 @@ class TestLegacyFormatRejection:
             "size_current": 5,
         }
 
-        with pytest.raises(ValueError, match="format_version < 3"):
+        with pytest.raises(ValueError, match="exact current format_version is 3"):
             buffer.load_from_serialized(old_format)
 
     def test_load_format_version_1_raises_error(self):
@@ -304,7 +304,7 @@ class TestLegacyFormatRejection:
             "size_current": 5,
         }
 
-        with pytest.raises(ValueError, match="format_version < 3"):
+        with pytest.raises(ValueError, match="exact current format_version is 3"):
             buffer.load_from_serialized(legacy_format)
 
     def test_load_missing_format_version_raises_error(self):
@@ -335,7 +335,7 @@ class TestLegacyFormatRejection:
             "size_current": 5,
         }
 
-        with pytest.raises(ValueError, match="format_version < 3"):
+        with pytest.raises(ValueError, match="exact current format_version is 3"):
             buffer.load_from_serialized(old_format)
 
 

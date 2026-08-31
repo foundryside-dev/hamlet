@@ -383,13 +383,14 @@ class PrioritizedReplayBuffer:
             state: Dictionary from serialize()
 
         Raises:
-            ValueError: If loading legacy format (version < 3)
+            ValueError: If the checkpoint format version does not match exactly
         """
-        # Reject legacy format (per CLAUDE.md: zero backwards compatibility)
-        format_version = state.get("format_version", 1)
-        if format_version < 3:
+        # Only the exact current checkpoint format is executable.
+        format_version = state.get("format_version")
+        if format_version != 3:
             raise ValueError(
-                "Cannot load legacy PER checkpoint (format_version < 3). " "Regenerate checkpoint with current Townlet version."
+                f"Cannot load PER checkpoint with format_version {format_version!r}; "
+                "the exact current format_version is 3. Regenerate the checkpoint."
             )
 
         self.capacity = state["capacity"]

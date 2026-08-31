@@ -154,7 +154,7 @@ class TestRewardComponentFlow:
         }
 
         # Should raise ValueError for old format
-        with pytest.raises(ValueError, match="format_version < 3"):
+        with pytest.raises(ValueError, match="exact current format_version is 3"):
             buffer.load_from_serialized(old_format)
 
     def test_buffer_handles_missing_components(self, cpu_device):

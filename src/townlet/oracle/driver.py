@@ -47,14 +47,24 @@ from townlet.universe.compiler import UniverseCompiler
 TRACE_FORMAT_VERSION = 4
 
 
-def collect_provenance_hashes(universe: object) -> dict[str, str | None]:
-    """Every *_hash field on CompiledUniverse, by reflection.
+def collect_provenance_hashes(universe: object, level_metadata: object) -> dict[str, str | None]:
+    """Collect shared and selected-level ``*_hash`` provenance fields.
 
-    Reflection rather than a hardcoded list so the driver reports whatever
-    hash surface its OWN side actually has — a field added or removed by the
-    rebuild shows up as a key-set difference, which compare_traces flags.
+    Reflection rather than a hardcoded list lets each side report its own hash
+    surface. The selected level is authoritative for per-level hashes; shared
+    experiment hashes remain on the outer compiled universe.
     """
-    return {f.name: getattr(universe, f.name) for f in dataclasses.fields(universe) if f.name.endswith("_hash")}  # type: ignore[arg-type]
+    shared_hashes = {
+        field.name: getattr(universe, field.name)
+        for field in dataclasses.fields(universe)  # type: ignore[arg-type]
+        if field.name.endswith("_hash")
+    }
+    selected_level_hashes = {
+        field.name: getattr(level_metadata, field.name)
+        for field in dataclasses.fields(level_metadata)  # type: ignore[arg-type]
+        if field.name.endswith("_hash")
+    }
+    return shared_hashes | selected_level_hashes
 
 
 def run_trace(
@@ -83,6 +93,7 @@ def run_trace(
     # is this side's resolution root and is reported, never compared.
     resolved_pack = (Path(pack_root) / pack).resolve()
     universe = UniverseCompiler().compile(resolved_pack, primary_level=level, use_cache=False)
+    level_metadata = universe.get_level(level)
     seed_all(seed)
     env = VectorizedHamletEnv(universe=universe, level_name=level, num_agents=num_agents, device=torch.device(device))
 
@@ -129,7 +140,7 @@ def run_trace(
             "seed": seed,
             "device": device,
         },
-        "hashes": collect_provenance_hashes(universe),
+        "hashes": collect_provenance_hashes(universe, level_metadata),
         # The resolved src root this process actually imported townlet from —
         # derived from the imported package itself, NOT from __file__ of this
         # driver script (which is the same injected new-tree file on both

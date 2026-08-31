@@ -8,6 +8,16 @@ from townlet.population.vectorized import VectorizedPopulation
 from townlet.training.state import RewardTensor
 
 
+def _split_rewards(extrinsic: torch.Tensor, intrinsic: torch.Tensor) -> RewardTensor:
+    return RewardTensor(
+        total=extrinsic + intrinsic,
+        extrinsic=extrinsic,
+        intrinsic=intrinsic,
+        shaping=None,
+        is_composed=False,
+    )
+
+
 def _make_population(env, curriculum, exploration, brain_config, **overrides):
     """Helper to instantiate VectorizedPopulation with required params for tests."""
     params = {
@@ -62,7 +72,7 @@ class TestDoubleDQNFeedforward:
         for _ in range(10):
             actions = torch.randint(0, basic_env.action_dim, (1,))
             next_obs, rewards, dones, _ = basic_env.step(actions)
-            reward_tensor = RewardTensor.from_components(extrinsic=rewards, intrinsic=torch.zeros_like(rewards))
+            reward_tensor = _split_rewards(extrinsic=rewards, intrinsic=torch.zeros_like(rewards))
             population.replay_buffer.push(
                 observations=obs,
                 actions=actions,
@@ -116,7 +126,7 @@ class TestDoubleDQNFeedforward:
         for _ in range(10):
             actions = torch.randint(0, basic_env.action_dim, (1,))
             next_obs, rewards, dones, _ = basic_env.step(actions)
-            reward_tensor = RewardTensor.from_components(extrinsic=rewards, intrinsic=torch.zeros_like(rewards))
+            reward_tensor = _split_rewards(extrinsic=rewards, intrinsic=torch.zeros_like(rewards))
             population.replay_buffer.push(
                 observations=obs,
                 actions=actions,
@@ -185,7 +195,7 @@ class TestDoubleDQNFeedforward:
             actions = torch.randint(0, basic_env.action_dim, (1,))
             next_obs, rewards, dones, _ = basic_env.step(actions)
 
-            reward_tensor = RewardTensor.from_components(extrinsic=rewards, intrinsic=torch.zeros_like(rewards))
+            reward_tensor = _split_rewards(extrinsic=rewards, intrinsic=torch.zeros_like(rewards))
             pop_vanilla.replay_buffer.push(obs, actions, reward_tensor, next_obs, dones)
             pop_double.replay_buffer.push(obs, actions, reward_tensor, next_obs, dones)
             obs = next_obs

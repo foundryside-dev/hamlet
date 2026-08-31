@@ -41,9 +41,10 @@ def test_universe_metadata_round_trip() -> None:
     compiled = compiler.compile(config_dir, primary_level="L0_test", use_cache=False)
 
     metadata = compiled.metadata
-    action_meta = compiled.action_space_metadata
-    meter_meta = compiled.meter_metadata
-    affordance_meta = compiled.affordance_metadata
+    level = compiled.get_level(compiled.metadata.primary_level)
+    action_meta = level.action_metadata
+    meter_meta = level.meter_metadata
+    affordance_meta = level.affordance_metadata
 
     def _round_trip(dataclass_obj, factory):
         payload = json.loads(json.dumps(_to_plain(dataclass_obj)))
@@ -94,20 +95,23 @@ def test_compiled_universe_msgpack_round_trip(tmp_path: Path) -> None:
     artifact_path = tmp_path / "compiled.msgpack"
     compiled.save_to_cache(artifact_path)
     reconstructed = CompiledUniverse.load_from_cache(artifact_path)
+    compiled_level = compiled.get_level(compiled.metadata.primary_level)
+    reconstructed_level = reconstructed.get_level(reconstructed.metadata.primary_level)
 
     assert reconstructed.metadata == compiled.metadata
     # The TokenSpec is the artifact's observation product since the unit-3 cut, and it
     # must survive the msgpack round trip identically — hashes and slot bindings both.
-    assert reconstructed.token_spec == compiled.token_spec
-    assert reconstructed.token_type_schema_hash == compiled.token_type_schema_hash
-    assert reconstructed.layout_hash == compiled.layout_hash
-    assert reconstructed.observation_schema_hash == compiled.observation_schema_hash
-    assert reconstructed.action_space_metadata == compiled.action_space_metadata
-    assert reconstructed.meter_metadata == compiled.meter_metadata
-    assert reconstructed.affordance_metadata == compiled.affordance_metadata
-    assert "base_depletions" not in compiled.to_dict()["optimization_data_raw"]
-    assert "action_mask_table" not in compiled.to_dict()["optimization_data_raw"]
-    assert not hasattr(reconstructed.optimization_data, "action_mask_table")
+    assert reconstructed_level.token_spec == compiled_level.token_spec
+    assert reconstructed_level.token_type_schema_hash == compiled_level.token_type_schema_hash
+    assert reconstructed_level.layout_hash == compiled_level.layout_hash
+    assert reconstructed_level.observation_schema_hash == compiled_level.observation_schema_hash
+    assert reconstructed_level.action_metadata == compiled_level.action_metadata
+    assert reconstructed_level.meter_metadata == compiled_level.meter_metadata
+    assert reconstructed_level.affordance_metadata == compiled_level.affordance_metadata
+    level_payload = compiled.to_dict()["all_levels"][compiled.metadata.primary_level]
+    assert "base_depletions" not in level_payload["optimization_data_raw"]
+    assert "action_mask_table" not in level_payload["optimization_data_raw"]
+    assert not hasattr(reconstructed_level.optimization_data, "action_mask_table")
     with pytest.raises(FrozenInstanceError):
         reconstructed.metadata = None  # type: ignore[attr-defined]
 

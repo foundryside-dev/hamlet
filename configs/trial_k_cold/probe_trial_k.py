@@ -213,10 +213,22 @@ for scope_name, extent_attr in (("zone", "num_zones"), ("group", "num_groups"), 
     ok_s, _ = attempt(
         f"VariableRegistry with a {scope_name}-scoped variable (as vectorized_env constructs it)",
         lambda s=scope_name: VariableRegistry(
-            variables=[VariableDef(id=f"probe_{s}_var", scope=s, type="scalar", default=0.0,
-                                   lifetime="persistent", readable_by=["engine"], writable_by=["engine"],
-                                   description="probe")],
-            num_agents=N, device=torch.device("cpu"), max_items=0, num_affordances=2,
+            variables=[
+                VariableDef(
+                    id=f"probe_{s}_var",
+                    scope=s,
+                    type="scalar",
+                    default=0.0,
+                    lifetime="persistent",
+                    readable_by=["engine"],
+                    writable_by=["engine"],
+                    description="probe",
+                )
+            ],
+            num_agents=N,
+            device=torch.device("cpu"),
+            max_items=0,
+            num_affordances=2,
         ),
     )
     print(f"    scope={scope_name!r} usable with the env's own registry args: {ok_s}  (needs {extent_attr})")
@@ -269,14 +281,15 @@ print(f"    reward delta {r_post - r_pre:+.6f} against comfort delta {c_post - c
 
 print("  (2) double-reset: mechanic state must return to declared initial")
 env4.reset()
-print(f"    after reset: world_temp={gv(env4, 'world_temp'):.4f} (initial 1.0), "
-      f"season_clock={gv(env4, 'season_clock'):.1f} (initial 0.0), "
-      f"winter_ticks={gv(env4, 'winter_ticks'):.1f} (initial 0.0)")
+print(
+    f"    after reset: world_temp={gv(env4, 'world_temp'):.4f} (initial 1.0), "
+    f"season_clock={gv(env4, 'season_clock'):.1f} (initial 0.0), "
+    f"winter_ticks={gv(env4, 'winter_ticks'):.1f} (initial 0.0)"
+)
 print(f"    comfort={env4.meters[0, i_comfort].item():.4f} (initial 1.0)")
 obs_after_reset = env4._get_observations()[0] if hasattr(env4, "_get_observations") else None
 step_all(env4, [WAIT] * N)
-print(f"    one WAIT tick after reset: winter_ticks={gv(env4, 'winter_ticks'):.1f} "
-      f"(must stay 0.0 — a surviving effect would tick it)")
+print(f"    one WAIT tick after reset: winter_ticks={gv(env4, 'winter_ticks'):.1f} " f"(must stay 0.0 — a surviving effect would tick it)")
 
 print("  (3) obs-bounds loop: every component within its declared normalization range")
 env5 = fresh_env()
@@ -311,8 +324,10 @@ for ep in range(5):
             done_flag = True
             break
     finite = all(r == r and abs(r) != float("inf") for r in rews)
-    print(f"    ep{ep}: steps={steps} done={done_flag} finite={finite} "
-          f"non-constant={len(set(round(r, 6) for r in rews)) > 1} range=({min(rews):.4f},{max(rews):.4f})")
+    print(
+        f"    ep{ep}: steps={steps} done={done_flag} finite={finite} "
+        f"non-constant={len(set(round(r, 6) for r in rews)) > 1} range=({min(rews):.4f},{max(rews):.4f})"
+    )
 
 print("  (5) reward-relevance note: comfort IS a declared reward component (bar_bonuses, scale 0.5);")
 print("      world_temp is NOT — the world state is observable but not directly rewarded.")
@@ -328,6 +343,8 @@ for _ in range(7):
 envd.positions[0] = torch.tensor([1, 0], dtype=envd.positions.dtype)
 step_all(envd, [label_to_action["GET"]] + [WAIT] * (N - 1))
 inv = getattr(envd, "inventory", None)
+
+
 def inv_snapshot(e):
     iv = getattr(e, "inventory", None)
     if iv is None:
@@ -336,6 +353,8 @@ def inv_snapshot(e):
         if hasattr(iv, attr):
             return f"{attr}={getattr(iv, attr)}"
     return f"inventory obj={type(iv).__name__}"
+
+
 print(f"  after GET : insulation_worn={envd.meters[0, i_ins].item():.4f}  {inv_snapshot(envd)}")
 step_all(envd, [label_to_action["USE_SLOT_0"]] + [WAIT] * (N - 1))
 print(f"  after USE : insulation_worn={envd.meters[0, i_ins].item():.4f}  (on_use FIRED -> hook path works)")

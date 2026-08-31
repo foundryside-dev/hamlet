@@ -244,7 +244,7 @@ class TestSequentialReplayBufferRewardComponents:
             "capacity": 100,
         }
 
-        with pytest.raises(ValueError, match="format_version < 4"):  # type: ignore[name-defined]
+        with pytest.raises(ValueError, match="exact current format_version is 4"):  # type: ignore[name-defined]
             buffer.load_from_serialized(old_format_v3)
 
         # Format version 1
@@ -255,8 +255,11 @@ class TestSequentialReplayBufferRewardComponents:
             "capacity": 100,
         }
 
-        with pytest.raises(ValueError, match="format_version < 4"):  # type: ignore[name-defined]
+        with pytest.raises(ValueError, match="exact current format_version is 4"):  # type: ignore[name-defined]
             buffer.load_from_serialized(old_format_v1)
+
+        with pytest.raises(ValueError, match="exact current format_version is 4"):  # type: ignore[name-defined]
+            buffer.load_from_serialized({"format_version": 5})
 
     def test_round_trip_with_components(self):
         """Serialize and restore preserves component data."""

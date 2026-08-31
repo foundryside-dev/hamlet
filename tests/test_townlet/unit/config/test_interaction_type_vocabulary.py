@@ -32,8 +32,8 @@ def _payload(**overrides):
 
 
 class TestOneClosedVocabulary:
-    def test_the_vocabulary_is_exactly_these_three(self) -> None:
-        assert INTERACTION_TYPES == frozenset({"instant", "multi_tick", "dual"})
+    def test_the_vocabulary_is_exactly_instant_and_multi_tick(self) -> None:
+        assert INTERACTION_TYPES == frozenset({"instant", "multi_tick"})
         assert frozenset(get_args(InteractionType)) == INTERACTION_TYPES
         assert PROGRESS_INTERACTION_TYPES < INTERACTION_TYPES
 
@@ -44,6 +44,10 @@ class TestOneClosedVocabulary:
     def test_continuous_was_never_real_and_is_rejected(self) -> None:
         with pytest.raises(ValidationError, match="interaction_type"):
             AffordanceParamConfig(**_payload(interaction_type="continuous"))
+
+    def test_dual_has_no_distinct_runtime_behavior_and_is_rejected(self) -> None:
+        with pytest.raises(ValidationError, match="interaction_type"):
+            AffordanceParamConfig(**_payload(interaction_type="dual", duration_ticks=2))
 
     def test_the_second_vocabulary_module_is_gone(self) -> None:
         # `townlet.environment.affordance_config` had zero importers and admitted `continuous`.

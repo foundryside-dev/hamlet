@@ -103,8 +103,8 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path, source_map:
     # A multi_tick affordance needs a tick schedule to progress through. Without
     # active temporal mechanics its interaction can be started and never completes,
     # which is a config error the compiler should refuse rather than a runtime
-    # behaviour to debug. Predicate is == "multi_tick" ONLY: a "dual" affordance has
-    # an instant path and stays legal. No shipped pack is affected.
+    # behaviour to debug. The closed vocabulary has no hybrid fallback: every
+    # multi_tick declaration requires active temporal mechanics.
     for level_name, level in raw.levels.items():
         temporal_active = temporal_supported and level.curriculum.curriculum.active_temporal
         if temporal_active:
@@ -311,11 +311,7 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path, source_map:
                     location=locate(source_map, f"levels/{level_name}/affordances.yaml:{aff.name}", str(level_dir / "affordances.yaml")),
                 )
 
-        enabled_affordances = getattr(level.training, "enabled_affordances", None)
-        if enabled_affordances is None:
-            normalized_enabled = env_affordance_names
-        else:
-            normalized_enabled = {str(name) for name in enabled_affordances}
+        normalized_enabled = set(level.training.enabled_affordances)
         invalid_enabled = normalized_enabled - env_affordance_names
         if invalid_enabled:
             errors.add(
@@ -326,7 +322,7 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path, source_map:
 
         if grid_capacity is not None:
             deployed_count = len(normalized_enabled)
-            population_size = getattr(level.training.population, "size", 0)
+            population_size = level.training.population.size
             required_slots = deployed_count + population_size
             if required_slots > grid_capacity:
                 errors.add(

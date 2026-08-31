@@ -24,14 +24,25 @@ from townlet.agent.networks import TokenSetQNetwork
 from townlet.config.brain_config import SetAggregatorConfig, TokenSetConfig
 from townlet.universe.dto.token_spec import (
     PAYLOAD_SCHEMAS,
+    TOKEN_TYPE_STATIC_SIGNATURE_WIDTH,
     SlotBinding,
     TokenSpec,
     build_token_type,
 )
 
 
-def _static(count: int, prefix: str) -> tuple[SlotBinding, ...]:
-    return tuple(SlotBinding(slot_index=i, filler_kind="static", filler_ref=f"{prefix}:{i}") for i in range(count))
+def _static(count: int, type_name: str) -> tuple[SlotBinding, ...]:
+    signature_width = TOKEN_TYPE_STATIC_SIGNATURE_WIDTH.get(type_name)
+    signature = None if signature_width is None else (0.0,) * signature_width
+    return tuple(
+        SlotBinding(
+            slot_index=i,
+            filler_kind="static",
+            filler_ref=f"{type_name}:{i}",
+            static_signature=signature,
+        )
+        for i in range(count)
+    )
 
 
 def _dynamic(count: int, prefix: str) -> tuple[SlotBinding, ...]:
@@ -44,7 +55,7 @@ def make_spec(*, meters: int = 3, affordances: int = 2, items: int = 2) -> Token
         types=(
             build_token_type("self", _static(1, "self")),
             build_token_type("meter", _static(meters, "meter")),
-            build_token_type("affordance", _static(affordances, "aff")),
+            build_token_type("affordance", _static(affordances, "affordance")),
             build_token_type("agent", ()),
             build_token_type("item", _dynamic(items, "item")),
         )
@@ -139,9 +150,9 @@ class TestConstruction:
             net = make_network(spec, aggregator=aggregator, num_heads=heads)
             for module in net.modules():
                 if isinstance(module, nn.Linear):
-                    assert module.in_features < set_width
+                    assert module.in_features != set_width
                 if isinstance(module, nn.LayerNorm):
-                    assert module.normalized_shape[0] < set_width
+                    assert module.normalized_shape[0] != set_width
 
 
 @pytest.mark.parametrize(("aggregator", "num_heads"), [("mean", None), ("attention", 4)])

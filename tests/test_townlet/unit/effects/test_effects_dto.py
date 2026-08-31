@@ -69,6 +69,12 @@ def test_command_config_spawn_effect_requires_target_and_intensity():
         CommandConfig(spawn_effect="poisoned", target="self")
 
 
+@pytest.mark.parametrize("intensity", (float("nan"), float("inf"), float("-inf")))
+def test_command_config_spawn_effect_refuses_nonfinite_intensity(intensity: float):
+    with pytest.raises(ValidationError, match="finite number"):
+        CommandConfig(spawn_effect="poisoned", target="self", intensity=intensity)
+
+
 def test_command_config_sample_rejects_distribution_alias():
     """sample is the only accepted stochastic command key."""
     with pytest.raises(ValidationError, match="Extra inputs"):
@@ -129,16 +135,19 @@ def test_effect_definition_minimal():
         id="ate_food",
         scope="agent",
         duration=10,
-        intensity=1.0,
         reapply_policy="stack",
+        observable=True,
+        on_spawn=[],
+        on_tick=[],
+        on_despawn=[],
+        on_interrupt=[],
     )
 
     assert effect.id == "ate_food"
     assert effect.scope == EffectScope.AGENT
     assert effect.duration == 10
     assert effect.reapply_policy == ReapplyPolicy.STACK
-    assert effect.intensity == 1.0
-    assert effect.observable is True  # Default
+    assert effect.observable is True
     assert effect.on_spawn == []
     assert effect.on_tick == []
     assert effect.on_despawn == []
@@ -150,16 +159,15 @@ def test_effect_definition_with_commands():
         id="poisoned",
         scope="agent",
         duration=20,
-        intensity=0.5,
         reapply_policy="merge",
         observable=True,
         on_spawn=[{"modify": "target.vfs.is_poisoned", "value": "true"}],
         on_tick=[{"modify": "target.bar.health", "value": "target.bar.health - (0.1 * intensity)"}],
         on_despawn=[{"modify": "target.vfs.is_poisoned", "value": "false"}],
+        on_interrupt=[],
     )
 
     assert effect.id == "poisoned"
-    assert effect.intensity == 0.5
     assert effect.reapply_policy == ReapplyPolicy.MERGE
     assert len(effect.on_spawn) == 1
     assert len(effect.on_tick) == 1
@@ -173,8 +181,37 @@ def test_effect_definition_requires_duration():
             id="invalid",
             scope="agent",
             reapply_policy="stack",
+            observable=True,
             # Missing duration
         )
+
+
+def test_effect_definition_requires_observable():
+    with pytest.raises(ValidationError, match="observable"):
+        EffectDefinitionConfig(id="invalid", scope="agent", duration=1, reapply_policy="stack")
+
+
+@pytest.mark.parametrize("field", ("on_spawn", "on_tick", "on_despawn", "on_interrupt"))
+@pytest.mark.parametrize("mode", ("missing", "null"))
+def test_effect_definition_requires_explicit_nonnull_lifecycle_lists(field: str, mode: str):
+    payload = {
+        "id": "explicit",
+        "scope": "agent",
+        "duration": 1,
+        "reapply_policy": "stack",
+        "observable": True,
+        "on_spawn": [],
+        "on_tick": [],
+        "on_despawn": [],
+        "on_interrupt": [],
+    }
+    if mode == "missing":
+        del payload[field]
+    else:
+        payload[field] = None
+
+    with pytest.raises(ValidationError, match=field):
+        EffectDefinitionConfig.model_validate(payload)
 
 
 def test_effect_definition_requires_reapply_policy():
@@ -184,18 +221,8 @@ def test_effect_definition_requires_reapply_policy():
             id="invalid",
             scope="agent",
             duration=10,
+            observable=True,
             # Missing reapply_policy
-        )
-
-
-def test_effect_definition_requires_intensity():
-    """EffectDefinitionConfig requires intensity (no hidden default)."""
-    with pytest.raises(ValidationError, match="intensity"):
-        EffectDefinitionConfig(
-            id="invalid",
-            scope="agent",
-            duration=10,
-            reapply_policy="stack",
         )
 
 
@@ -211,8 +238,12 @@ def test_effects_config_minimal():
                 "id": "ate_food",
                 "scope": "agent",
                 "duration": 10,
-                "intensity": 1.0,
                 "reapply_policy": "stack",
+                "observable": True,
+                "on_spawn": [],
+                "on_tick": [],
+                "on_despawn": [],
+                "on_interrupt": [],
             }
         ],
     )
@@ -230,8 +261,28 @@ def test_effects_config_rejects_duplicate_ids():
         EffectsConfig(
             version="1.0",
             effect_definitions=[
-                {"id": "poisoned", "scope": "agent", "duration": 10, "intensity": 1.0, "reapply_policy": "stack"},
-                {"id": "poisoned", "scope": "agent", "duration": 20, "intensity": 1.0, "reapply_policy": "merge"},
+                {
+                    "id": "poisoned",
+                    "scope": "agent",
+                    "duration": 10,
+                    "reapply_policy": "stack",
+                    "observable": True,
+                    "on_spawn": [],
+                    "on_tick": [],
+                    "on_despawn": [],
+                    "on_interrupt": [],
+                },
+                {
+                    "id": "poisoned",
+                    "scope": "agent",
+                    "duration": 20,
+                    "reapply_policy": "merge",
+                    "observable": True,
+                    "on_spawn": [],
+                    "on_tick": [],
+                    "on_despawn": [],
+                    "on_interrupt": [],
+                },
             ],
         )
 
@@ -250,20 +301,26 @@ effect_definitions:
   - id: "ate_food"
     scope: agent
     duration: 10
-    intensity: 1.0
     reapply_policy: stack
+    observable: true
+    on_spawn: []
     on_tick:
       - modify: target.bar.energy
         value: target.bar.energy + 0.05
+    on_despawn: []
+    on_interrupt: []
 
   - id: "poisoned"
     scope: agent
     duration: 20
-    intensity: 0.5
     reapply_policy: merge
+    observable: true
+    on_spawn: []
     on_tick:
       - modify: target.bar.health
         value: target.bar.health - (0.1 * intensity)
+    on_despawn: []
+    on_interrupt: []
 """
 
     data = yaml.safe_load(yaml_content)

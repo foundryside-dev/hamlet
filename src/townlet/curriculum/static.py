@@ -7,6 +7,7 @@ and to validate the curriculum interface works.
 
 from __future__ import annotations
 
+import math
 from typing import Any
 
 import torch
@@ -22,6 +23,8 @@ class StaticCurriculum(CurriculumManager):
     Returns the same curriculum decision for all agents at all times.
     Useful for baseline experiments and interface validation.
     """
+
+    _CHECKPOINT_KEYS = frozenset({"difficulty_level", "reward_mode", "active_meters", "depletion_multiplier"})
 
     def __init__(
         self,
@@ -93,6 +96,27 @@ class StaticCurriculum(CurriculumManager):
             "depletion_multiplier": self.depletion_multiplier,
         }
 
+    def validate_checkpoint_state(self, state: dict[str, Any]) -> None:
+        """Validate the exact static-curriculum state without mutation."""
+        if not isinstance(state, dict):
+            raise ValueError(f"Static curriculum checkpoint must be a dictionary; got {type(state).__name__}.")
+
+        state_keys = set(state)
+        if state_keys != self._CHECKPOINT_KEYS:
+            missing = sorted(self._CHECKPOINT_KEYS - state_keys)
+            unknown = sorted(state_keys - self._CHECKPOINT_KEYS)
+            raise ValueError(f"Static curriculum checkpoint key set mismatch: missing={missing}, unknown={unknown}.")
+
+        for field in ("difficulty_level", "depletion_multiplier"):
+            value = state[field]
+            if isinstance(value, bool) or not isinstance(value, int | float) or not math.isfinite(float(value)):
+                raise ValueError(f"Static curriculum checkpoint {field} must be a finite number.")
+        if not isinstance(state["reward_mode"], str):
+            raise ValueError("Static curriculum checkpoint reward_mode must be a string.")
+        active_meters = state["active_meters"]
+        if not isinstance(active_meters, list) or any(not isinstance(name, str) for name in active_meters):
+            raise ValueError("Static curriculum checkpoint active_meters must be a list of strings.")
+
     def load_state(self, state: dict[str, Any]) -> None:
         """
         Restore from checkpoint.
@@ -100,18 +124,11 @@ class StaticCurriculum(CurriculumManager):
         Args:
             state: Dict from checkpoint_state()
         """
+        self.validate_checkpoint_state(state)
         self.difficulty_level = state["difficulty_level"]
         self.reward_mode = state["reward_mode"]
         self.active_meters = state["active_meters"]
         self.depletion_multiplier = state["depletion_multiplier"]
-
-    def state_dict(self) -> dict[str, Any]:
-        """PyTorch-style alias for checkpoint_state() for API consistency."""
-        return self.checkpoint_state()
-
-    def load_state_dict(self, state: dict[str, Any]) -> None:
-        """PyTorch-style alias for load_state() for API consistency."""
-        self.load_state(state)
 
 
 class _StaticTracker:

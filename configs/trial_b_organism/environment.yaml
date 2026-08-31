@@ -6,22 +6,22 @@ environment:
       description: Energy
       range_type:
         kind: minmax
-        clip: false
+        clip: true
     - name: health
       description: Health
       range_type:
         kind: minmax
-        clip: false
+        clip: true
     - name: rooted
       description: "Organism membership: 0 = free-floating, 1 = organism 1 (root A), 2 = organism 2 (contested level). Joining is exclusive and permanent."
       range_type:
         kind: minmax
-        clip: false
+        clip: true
     - name: biomass
       description: "Food absorbed from the warehouse by this growth tip"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
 
   cascade_graph: []
   modulation_graph: []

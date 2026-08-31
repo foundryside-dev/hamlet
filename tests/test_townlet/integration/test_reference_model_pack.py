@@ -22,10 +22,11 @@ PRIMARY_LEVEL = "L0_demo"
 def test_reference_model_pack_compiles() -> None:
     """configs/reference/model_pack compiles end-to-end (all seven UAC stages)."""
     compiled = UniverseCompiler().compile(CONFIG_DIR, primary_level=PRIMARY_LEVEL, use_cache=False)
+    level = compiled.get_level(PRIMARY_LEVEL)
 
-    assert compiled.token_spec.total_dims > 0
+    assert level.token_spec.total_dims > 0
 
-    variables = {variable.id: variable for variable in compiled.vfs_variables}
+    variables = {variable.id: variable for variable in level.vfs_variables}
     # ate_food (effects.yaml) writes target.vfs.is_digesting on spawn/despawn — the
     # variable this test exists to keep declared (task-5-review.md Critical Finding #1).
     assert variables["is_digesting"].scope == "agent"

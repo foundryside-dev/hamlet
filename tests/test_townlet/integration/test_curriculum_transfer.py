@@ -30,7 +30,7 @@ def test_l0_and_l1_have_same_action_dim():
 
 
 def test_l0_and_l1_share_global_vocabulary():
-    """L0 and L1 should share same action vocabulary (from global_actions.yaml)."""
+    """L0 and L1 should share the same compiled action vocabulary."""
     env_l0 = make_vectorized_env_from_pack(
         Path("configs/default_curriculum"),
         level_name="L0_0_minimal",
@@ -45,7 +45,7 @@ def test_l0_and_l1_share_global_vocabulary():
         device=torch.device("cpu"),
     )
 
-    # Both should have same custom actions from global_actions.yaml
+    # Both should have the same custom actions from their canonical actions configs.
     l0_action_names = {action.name for action in env_l0.action_space.actions}
     l1_action_names = {action.name for action in env_l1.action_space.actions}
 

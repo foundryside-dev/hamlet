@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from types import MappingProxyType
 
 
 @dataclass(frozen=True)
@@ -14,14 +13,12 @@ class AffordanceInfo:
     id: str
     name: str
     enabled: bool
-    effects: Mapping[str, float]
     cost: float
     category: str | None = None
     description: str = ""
     position: tuple[float, ...] | dict[str, float] | float | None = None
 
     def __post_init__(self) -> None:
-        object.__setattr__(self, "effects", MappingProxyType(dict(self.effects)))
         if isinstance(self.position, Sequence) and not isinstance(self.position, str | bytes | tuple):
             object.__setattr__(self, "position", tuple(self.position))
 

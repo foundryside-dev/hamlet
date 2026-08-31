@@ -2502,12 +2502,11 @@ def benchmark_transition_step(env, iterations=1000):
 Implemented guardrail:
 
 ```bash
-uv run pytest tests/test_townlet/performance/test_vtc_jit_kernels.py -q
+uv run pytest tests/test_townlet/performance/test_vtc_kernels.py -q
 ```
 
-This compares the scripted threshold-cascade kernel against the equivalent hardcoded tensor
-equation and fails if scripted execution exceeds the configured tolerance
-(`SCRIPTED_KERNEL_TOLERANCE = 1.50`).
+This compares the eager threshold-cascade kernel against the equivalent hardcoded tensor equation
+and fails if eager execution exceeds the configured tolerance (`EAGER_KERNEL_TOLERANCE = 1.50`).
 
 ---
 

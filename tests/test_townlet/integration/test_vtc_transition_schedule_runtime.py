@@ -55,11 +55,13 @@ def test_social_residue_rules_are_config_driven_runtime_transitions(tmp_path: Pa
     compiler = UniverseCompiler()
     baseline = compiler.compile(baseline_dir, primary_level=LEVEL_NAME, use_cache=False)
     social = compiler.compile(social_dir, primary_level=LEVEL_NAME, use_cache=False)
+    baseline_level = baseline.get_level(LEVEL_NAME)
+    social_level = social.get_level(LEVEL_NAME)
 
-    assert baseline.transition_graph_hash != social.transition_graph_hash
-    assert baseline.vfs_hash != social.vfs_hash
-    assert len(baseline.transition_schedule.social_residue_program.rules) == 0
-    assert len(social.transition_schedule.social_residue_program.rules) == 1
+    assert baseline_level.transition_graph_hash != social_level.transition_graph_hash
+    assert baseline_level.vfs_hash != social_level.vfs_hash
+    assert len(baseline_level.transition_schedule.social_residue_program.rules) == 0
+    assert len(social_level.transition_schedule.social_residue_program.rules) == 1
 
     baseline_env = baseline.create_environment(num_agents=3, level_name=LEVEL_NAME, device="cpu")
     social_env = social.create_environment(num_agents=3, level_name=LEVEL_NAME, device="cpu")

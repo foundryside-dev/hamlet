@@ -278,9 +278,9 @@ never through the observation. Its absence is an assertion, not an omission — 
 moves, the cut reached the transition graph and that is a finding.
 
 `observation_spec.total_dims` is **unchanged at 124** on every level, because every meter in
-`default_curriculum` declares a width-preserving `minmax`. A pack that declares
-`cyclical_sin_cos` or `one_hot` on a meter widens it by design, which is pinned by
-`test_a_widening_meter_kind_grows_the_observation_by_exactly_its_extra_dims`.
+`default_curriculum` declares a width-preserving `minmax`. This paragraph records the
+deleted pre-token ABI: `PDR-0134` supersedes it with a fixed two-lane value block and
+rejects `one_hot` on meters rather than widening the observation.
 
 **Harness adjudication.** Bound per-cell in `src/townlet/oracle/matrix.py` via
 `RegisteredHashDivergence("DIV-004", hash_fields=(...))` on every STANDING cell. A cell

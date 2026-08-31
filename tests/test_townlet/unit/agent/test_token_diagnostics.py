@@ -21,11 +21,14 @@ from townlet.agent.token_diagnostics import (
     presence_flip_count,
     token_diagnostic_metrics,
 )
-from townlet.universe.dto.token_spec import SlotBinding, TokenSpec, build_token_type
+from townlet.universe.dto.token_spec import METER_SIGNATURE_WIDTH, SlotBinding, TokenSpec, build_token_type
 
 
-def _static(count: int, prefix: str) -> tuple[SlotBinding, ...]:
-    return tuple(SlotBinding(slot_index=i, filler_kind="static", filler_ref=f"{prefix}:{i}") for i in range(count))
+def _static(count: int, prefix: str, *, signature_width: int | None = None) -> tuple[SlotBinding, ...]:
+    signature = None if signature_width is None else (0.0,) * signature_width
+    return tuple(
+        SlotBinding(slot_index=i, filler_kind="static", filler_ref=f"{prefix}:{i}", static_signature=signature) for i in range(count)
+    )
 
 
 def _dynamic(count: int, prefix: str) -> tuple[SlotBinding, ...]:
@@ -37,7 +40,7 @@ def spec() -> TokenSpec:
     return TokenSpec(
         types=(
             build_token_type("self", _static(1, "self")),
-            build_token_type("meter", _static(2, "meter")),
+            build_token_type("meter", _static(2, "meter", signature_width=METER_SIGNATURE_WIDTH)),
             build_token_type("item", _dynamic(2, "item")),
         )
     )

@@ -23,6 +23,8 @@ from townlet.training.checkpoint_utils import (
     attach_universe_metadata,
     persist_checkpoint_digest,
     safe_torch_load,
+    validate_demo_checkpoint_payload,
+    validate_demo_checkpoint_runtime_fields,
     verify_checkpoint_digest,
 )
 from townlet.training.state import BatchedAgentState
@@ -46,7 +48,6 @@ class DemoRunner:
         db_path: Path | str,
         checkpoint_dir: Path | str,
         max_episodes: int | None = None,
-        training_config_path: Path | str | None = None,
         *,
         level_name: str | None = None,
         force_new_vfs: bool = False,
@@ -60,18 +61,13 @@ class DemoRunner:
             db_path: Path to SQLite database
             checkpoint_dir: Directory for checkpoint files
             max_episodes: Maximum number of episodes to run (if None, reads from level training.yaml)
-            training_config_path: Deprecated; overrides are no longer supported.
             force_new_vfs: Start a fresh run branch instead of resuming an incompatible VFS checkpoint.
         """
         self.config_dir = Path(config_dir)
         # Resolve training config path:
         # - v2.1 packs: levels/<level_name>/training.yaml (mandatory)
-        if training_config_path is not None:
-            raise ValueError(
-                "training_config_path override is no longer supported; use levels/<level_name>/training.yaml with explicit level_name."
-            )
         if level_name is None:
-            raise ValueError("level_name is required for v2.1 config packs; legacy single-file training.yaml is no longer supported.")
+            raise ValueError("level_name is required; training configuration is owned by a level in the v2.1 config pack.")
         self.training_config_path = self.config_dir / "levels" / level_name / "training.yaml"
         if not self.training_config_path.exists():
             raise FileNotFoundError(f"Training config not found: {self.training_config_path}")
@@ -81,9 +77,6 @@ class DemoRunner:
 
         # Create directories
         self.checkpoint_dir.mkdir(parents=True, exist_ok=True)
-
-        # Pre-flight check: detect old checkpoints (Phase 4 breaking change)
-        self._validate_checkpoint_compatibility()
 
         # Initialize database
         self.db = DemoDatabase(self.db_path)
@@ -122,15 +115,6 @@ class DemoRunner:
         # Seed every RNG stream before anything random is constructed; the seed is
         # config-declared so the run is reproducible from its own checkpoint.
         seed_all(self.training_config.seed)
-        # Expose training config in the legacy dict shape for downstream callers/tests
-        self.config: dict[str, Any] = {
-            "training": self.training_config.model_dump(exclude_none=True),
-        }
-        if self.training_config.run_metadata is not None:
-            self.config["run_metadata"] = self.training_config.run_metadata.model_dump(exclude_none=True)
-        if self.training_config.recording is not None:
-            self.config["recording"] = self.training_config.recording.model_dump(exclude_none=True)
-
         # Set max_episodes: use provided value, otherwise read from curriculum training config
         if max_episodes is not None:
             self.max_episodes = max_episodes
@@ -156,51 +140,6 @@ class DemoRunner:
             # Running in a worker thread (e.g., unified server)
             # Signal handling will be done by the orchestrator
             pass
-
-    def _validate_checkpoint_compatibility(self) -> None:
-        """Validate checkpoint directory doesn't contain old checkpoints.
-
-        BREAKING CHANGE: Phase 4 changed checkpoint format.
-        Old checkpoints (Version 2) will not load.
-
-        Raises:
-            ValueError: If old checkpoints detected
-        """
-        if not self.checkpoint_dir.exists():
-            return  # No checkpoints yet (fresh start)
-
-        checkpoint_files = list(self.checkpoint_dir.glob("*.pt"))
-        if not checkpoint_files:
-            return  # Empty directory (fresh start)
-
-        # Check first checkpoint for substrate_metadata
-        first_checkpoint_path = checkpoint_files[0]
-
-        try:
-            verify_checkpoint_digest(first_checkpoint_path, required=True)
-            # Demo checkpoints embed trusted custom Python objects (population
-            # state, curriculum state, replay buffers). The digest above pins
-            # the file we are about to unpickle to one we produced ourselves.
-            checkpoint = safe_torch_load(first_checkpoint_path, allow_unsafe_pickle=True)
-
-            # Validate checkpoint has required metadata
-            if "substrate_metadata" not in checkpoint:
-                raise ValueError(
-                    f"Unsupported checkpoint format detected in {self.checkpoint_dir}.\n"
-                    "Checkpoint missing 'substrate_metadata' field.\n"
-                    "\n"
-                    "Action required:\n"
-                    f"  1. Delete checkpoint directory: {self.checkpoint_dir}\n"
-                    "  2. Retrain model from scratch\n"
-                    "\n"
-                    f"Detected checkpoint: {first_checkpoint_path.name}"
-                )
-        except Exception as e:
-            # If we can't load checkpoint, let the normal loading code handle it
-            # (might be corrupted, wrong format, etc.)
-            if "Unsupported checkpoint format" in str(e):
-                raise  # Re-raise our validation error
-            # Otherwise ignore (will fail later during actual load)
 
     def _handle_shutdown(self, signum, frame):
         """Handle shutdown signal gracefully."""
@@ -263,52 +202,53 @@ class DemoRunner:
 
     def save_checkpoint(self):
         """Save checkpoint at current episode."""
+        if self.env is None or self.population is None or self.curriculum is None:
+            raise RuntimeError("Checkpoint save requires initialized env, population, and curriculum components.")
+
+        env = self.env
+        population = self.population
+        curriculum = self.curriculum
+
         # P1.1 Phase 5: Flush all agents before checkpoint
         self.flush_all_agents()
 
         checkpoint_path = self.checkpoint_dir / f"checkpoint_ep{self.current_episode:05d}.pt"
+
+        population_state = population.get_checkpoint_state()
+        curriculum_state = curriculum.checkpoint_state()
+        affordance_layout = env.get_affordance_positions()
+        population.validate_checkpoint_state(population_state)
+        curriculum.validate_checkpoint_state(curriculum_state)
+        env.validate_affordance_positions(affordance_layout)
 
         # P1.1 Phase 2: Use population's complete checkpoint state
         checkpoint: dict[str, Any] = {
             "version": CHECKPOINT_FORMAT_VERSION,
             "episode": self.current_episode,
             "timestamp": time.time(),
+            "substrate_metadata": {
+                "position_dim": env.substrate.position_dim,
+                "substrate_type": type(env.substrate).__name__,
+            },
+            "population_state": population_state,
+            "curriculum_state": curriculum_state,
+            "affordance_layout": affordance_layout,
+            "agent_ids": population.agent_ids,
+            "epsilon": population._get_current_epsilon_value(),
+            "training_config": self.training_config.model_dump(),
+            "config_dir": str(self.config_dir),
         }
-
-        # Phase 5: Add substrate metadata for validation
-        if self.env:
-            checkpoint["substrate_metadata"] = {
-                "position_dim": self.env.substrate.position_dim,
-                "substrate_type": type(self.env.substrate).__name__,
-            }
-
-        # Add full population state (includes q_network, optimizer, replay_buffer, etc.)
-        if self.population:
-            checkpoint["population_state"] = self.population.get_checkpoint_state()
-
-        # P1.1 Phase 3: Add curriculum state (agent stages, performance trackers)
-        if self.curriculum:
-            checkpoint["curriculum_state"] = self.curriculum.state_dict()
-
-        # P1.1 Phase 4: Add affordance layout (grid positions)
-        if self.env:
-            checkpoint["affordance_layout"] = self.env.get_affordance_positions()
-
-        # P1.1 Phase 6: Add agent_ids for multi-agent coordination
-        if self.population:
-            checkpoint["agent_ids"] = self.population.agent_ids
-
-        # Add epsilon for inference server display (use population's epsilon getter for all exploration types)
-        if self.population:
-            checkpoint["epsilon"] = self.population._get_current_epsilon_value()
-
-        # Persist the training configuration for provenance
-        checkpoint["training_config"] = self.training_config.model_dump()
-        checkpoint["config_dir"] = str(self.config_dir)
 
         # WS-1 task 5: unconditional. The old `if universe is not None:` skip meant a
         # checkpoint could be written with ZERO provenance keys, making every guard vacuous.
         attach_universe_metadata(checkpoint, self.compiled)
+        validate_demo_checkpoint_payload(checkpoint)
+        validate_demo_checkpoint_runtime_fields(
+            checkpoint,
+            position_dim=env.substrate.position_dim,
+            substrate_type=type(env.substrate).__name__,
+            num_agents=population.num_agents,
+        )
 
         torch.save(checkpoint, checkpoint_path)
         persist_checkpoint_digest(checkpoint_path)
@@ -324,6 +264,13 @@ class DemoRunner:
             Episode number of loaded checkpoint, or None if no checkpoint
             (or when force-new-VFS explicitly branches instead of resuming)
         """
+        if self.env is None or self.population is None or self.curriculum is None:
+            raise RuntimeError("Checkpoint load requires initialized env, population, and curriculum components.")
+
+        env = self.env
+        population = self.population
+        curriculum = self.curriculum
+
         # Find latest checkpoint
         checkpoints = sorted(self.checkpoint_dir.glob("checkpoint_ep*.pt"))
         if not checkpoints:
@@ -334,31 +281,31 @@ class DemoRunner:
         logger.info(f"Loading checkpoint: {latest_checkpoint}")
 
         verify_checkpoint_digest(latest_checkpoint, required=True)
-        # See _detect_old_checkpoints above for the trust-boundary rationale.
+        # The verified digest pins the trusted Python payload we unpickle below.
         checkpoint = safe_torch_load(latest_checkpoint, allow_unsafe_pickle=True)
+        validate_demo_checkpoint_payload(checkpoint)
 
         # WS-1 task 5: the shared identity gate (format version, VFS ABI, dimensions,
         # content hashes, primary_level). The serving path runs the identical chain.
         if not assert_checkpoint_identity(checkpoint, self.compiled, force_new_vfs=self.force_new_vfs):
             return None
 
+        # Validate every outer and nested runtime-bound value before mutation.
+        validate_demo_checkpoint_runtime_fields(
+            checkpoint,
+            position_dim=env.substrate.position_dim,
+            substrate_type=type(env.substrate).__name__,
+            num_agents=population.num_agents,
+        )
+        population.validate_checkpoint_state(checkpoint["population_state"])
+        curriculum.validate_checkpoint_state(checkpoint["curriculum_state"])
+        env.validate_affordance_positions(checkpoint["affordance_layout"])
+
+        population.load_checkpoint_state(checkpoint["population_state"])
+        curriculum.load_state(checkpoint["curriculum_state"])
+        env.set_affordance_positions(checkpoint["affordance_layout"])
+        population.agent_ids = checkpoint["agent_ids"]
         self.current_episode = checkpoint["episode"]
-
-        # P1.1 Phase 2: Load full population state
-        if "population_state" in checkpoint and self.population:
-            self.population.load_checkpoint_state(checkpoint["population_state"])
-
-        # P1.1 Phase 3: Load curriculum state (agent stages, performance trackers)
-        if "curriculum_state" in checkpoint and self.curriculum:
-            self.curriculum.load_state_dict(checkpoint["curriculum_state"])
-
-        # P1.1 Phase 4: Load affordance layout (grid positions)
-        if "affordance_layout" in checkpoint and self.env:
-            self.env.set_affordance_positions(checkpoint["affordance_layout"])
-
-        # P1.1 Phase 6: Restore agent_ids for multi-agent coordination
-        if "agent_ids" in checkpoint and self.population:
-            self.population.agent_ids = checkpoint["agent_ids"]
 
         logger.info(f"Resumed from episode {self.current_episode}")
         return self.current_episode
@@ -375,16 +322,13 @@ class DemoRunner:
         # Initialize training components
         # v2.1: device is an infrastructure concern (no-defaults exemption).
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        device_str = str(device)
-        if device_str == "cuda" and not torch.cuda.is_available():
-            logger.warning("CUDA requested but not available, falling back to CPU")
 
         # Per-level metadata
         level_meta = self.compiled.get_level(self.level_name)
         # Extract config parameters from DTOs (all required, validated at load time)
         loop_cfg = self.training_config.training_loop
         num_agents = self.training_config.population.size
-        grid_size = self.compiled.metadata.grid_size
+        grid_cells = self.compiled.metadata.grid_cells
         partial_observability = level_meta.curriculum.curriculum.active_vision != "global"
         vision_range = level_meta.curriculum.curriculum.vision_range
         enable_temporal_mechanics = level_meta.curriculum.curriculum.active_temporal
@@ -505,14 +449,14 @@ class DemoRunner:
             "gamma": effective_brain_config.q_learning.gamma,
             "network_architecture": base_brain_config.architecture.type,  # 'feedforward' or 'recurrent'
             "replay_buffer_capacity": effective_brain_config.replay.capacity,
-            "grid_size": grid_size,
+            "grid_cells": grid_cells,
             "partial_observability": partial_observability,
             "vision_range": vision_range,
             "enable_temporal": enable_temporal_mechanics,
             "initial_intrinsic_weight": 1.0,
             "variance_threshold": self.training_config.intrinsic.annealing.threshold,
             "max_steps_per_episode": loop_cfg.max_steps_per_episode,
-            "observation_schema_hash": self.compiled.observation_schema_hash,
+            "observation_schema_hash": level_meta.observation_schema_hash,
         }
         # Note: final metrics will be logged at end of training
         self.tb_logger.log_hyperparameters(hparams=self.hparams, metrics={})
@@ -683,12 +627,8 @@ class DemoRunner:
                     if not last_agent_state.dones[agent_idx]:  # Agent survived to max_steps without dying
                         self.population.flush_episode(agent_idx=agent_idx)
 
-                epsilon_value = (
-                    self.exploration.rnd.epsilon if hasattr(self.exploration, "rnd") else getattr(self.exploration, "epsilon", 0.0)
-                )
-                intrinsic_weight_value = (
-                    self.exploration.get_intrinsic_weight() if hasattr(self.exploration, "get_intrinsic_weight") else 0.0
-                )
+                epsilon_value = self.population._get_current_epsilon_value()
+                intrinsic_weight_value = self.population._get_current_intrinsic_weight_value()
 
                 episode_reward_cpu = episode_reward.detach().cpu()
                 episode_extrinsic_cpu = episode_extrinsic_reward.detach().cpu()
@@ -708,7 +648,7 @@ class DemoRunner:
                     intrinsic_weight=intrinsic_weight_value,
                     curriculum_stage=int(stages_cpu[0].item()),
                     epsilon=epsilon_value,
-                    observation_schema_hash=self.compiled.observation_schema_hash,
+                    observation_schema_hash=level_meta.observation_schema_hash,
                 )
 
                 # NEW: Insert affordance transitions for agent 0
@@ -835,13 +775,9 @@ class DemoRunner:
                         summary_parts = []
                         for name, tick_count in affordance_visits[0].items():
                             # Get duration_ticks to calculate completed interactions
-                            try:
-                                duration = self.env.affordance_engine.get_duration_ticks(name)
-                                completed = tick_count // duration
-                                summary_parts.append(f"{name}: {tick_count} ({completed})")
-                            except Exception:
-                                # Fallback if duration lookup fails
-                                summary_parts.append(f"{name}: {tick_count}")
+                            duration = self.env.affordance_engine.get_duration_ticks(name)
+                            completed = tick_count // duration
+                            summary_parts.append(f"{name}: {tick_count} ({completed})")
                         affordance_summary = ", ".join(summary_parts)
                     else:
                         affordance_summary = "None"

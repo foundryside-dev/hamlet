@@ -122,7 +122,7 @@ class SpatialSubstrate(ABC):
         2. INTERACT (second-to-last position)
         3. WAIT (last position)
 
-        This ordering enables downstream systems (ActionSpaceBuilder, environment)
+        This ordering enables the action compiler and environment
         to consistently identify meta-actions by position:
         - actions[-2] is always INTERACT
         - actions[-1] is always WAIT
@@ -132,7 +132,7 @@ class SpatialSubstrate(ABC):
 
         Returns:
             List of ActionConfig instances with substrate-provided actions.
-            IDs are temporary (will be reassigned by ActionSpaceBuilder).
+            IDs are temporary (the action compiler assigns runtime IDs).
 
         Examples:
             Grid2D: [UP, DOWN, LEFT, RIGHT, UP_LEFT, UP_RIGHT, DOWN_LEFT, DOWN_RIGHT, INTERACT, WAIT]

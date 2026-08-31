@@ -16,7 +16,9 @@ def minimal_config_dir(tmp_path: Path) -> Path:
 
     config_dir = tmp_path / "config_pack"
     config_dir.mkdir()
-    training_yaml = config_dir / "training.yaml"
+    level_dir = config_dir / "levels" / "L1_full_observability"
+    level_dir.mkdir(parents=True)
+    training_yaml = level_dir / "training.yaml"
     training_yaml.write_text(
         "\n".join(
             [
@@ -83,7 +85,6 @@ def unified_server(minimal_config_dir: Path) -> UnifiedServer:
     return UnifiedServer(
         config_dir=str(minimal_config_dir),
         total_episodes=10,
-        training_config_path=str(minimal_config_dir / "training.yaml"),
         checkpoint_dir=str(minimal_config_dir / "checkpoints"),
     )
 
@@ -100,12 +101,13 @@ def test_persist_config_snapshot_is_idempotent(unified_server: UnifiedServer, tm
 
     unified_server._persist_config_snapshot(run_root)
     snapshot_dir = run_root / "config_snapshot"
-    assert (snapshot_dir / "training.yaml").exists()
+    snapshot_training = snapshot_dir / "levels" / "L1_full_observability" / "training.yaml"
+    assert snapshot_training.exists()
 
     # Second call should no-op (directory already exists)
-    snapshot_mtime = (snapshot_dir / "training.yaml").stat().st_mtime
+    snapshot_mtime = snapshot_training.stat().st_mtime
     unified_server._persist_config_snapshot(run_root)
-    assert (snapshot_dir / "training.yaml").stat().st_mtime == snapshot_mtime
+    assert snapshot_training.stat().st_mtime == snapshot_mtime
 
 
 def test_setup_file_logging_attaches_handler(unified_server: UnifiedServer, tmp_path: Path, caplog: pytest.LogCaptureFixture):

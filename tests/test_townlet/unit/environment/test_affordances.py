@@ -6,7 +6,7 @@ Coverage focuses on:
 - Opening hours (nested opening_hours schedule)
 - Affordability processing (costs vs meters)
 - Instant effects application on meters
-- Multi-tick/dual semantics vs instant mode equivalence
+- Multi-tick semantics vs instant mode equivalence
 """
 
 from __future__ import annotations
@@ -94,13 +94,13 @@ class TestOpeningHours:
         assert not env._is_affordance_open("ENTERTAINMENT", 5)
 
 
-class TestDualVsInstant:
-    def test_bed_dual_matches_instant_total(self, config_pack_factory, cpu_env_factory):
-        config_dir = config_pack_factory(name="bed_dual_vs_instant")
+class TestMultiTickVsInstant:
+    def test_bed_multi_tick_matches_instant_total(self, config_pack_factory, cpu_env_factory):
+        config_dir = config_pack_factory(name="bed_multi_tick_vs_instant")
         _set_global_vision(config_dir)
         _zero_bar_depletions(config_dir)
 
-        # Make SLEEP a dual interaction with per_tick + completion effects, and create an instant clone
+        # Make SLEEP a multi-tick interaction with per_tick + completion effects, and create an instant clone
         import yaml
 
         level_dir = config_dir / "levels" / "L0_test"
@@ -109,8 +109,9 @@ class TestDualVsInstant:
         aff_list = data["affordances"]["affordances"] if isinstance(data["affordances"], dict) else data["affordances"]
         for aff in aff_list:
             if aff["name"] == "SLEEP":
-                aff["interaction_type"] = "dual"
+                aff["interaction_type"] = "multi_tick"
                 aff["duration_ticks"] = 5
+                aff.pop("costs", None)
                 aff["costs_per_tick"] = {"money": 0.01}
                 aff["interactions"] = {
                     "on_start": [],
@@ -166,28 +167,28 @@ class TestDualVsInstant:
         curriculum_inst["curriculum"]["day_length"] = 24
         curriculum_path_inst.write_text(yaml.safe_dump(curriculum_inst, sort_keys=False))
 
-        env_dual = cpu_env_factory(config_dir=config_dir, level_name="L0_test", num_agents=1)
+        env_multi_tick = cpu_env_factory(config_dir=config_dir, level_name="L0_test", num_agents=1)
         env_inst = cpu_env_factory(config_dir=config_dir_instant, level_name="L0_test", num_agents=1)
 
-        env_dual.reset()
+        env_multi_tick.reset()
         env_inst.reset()
-        env_dual.positions[0] = env_dual.affordances["SLEEP"]
+        env_multi_tick.positions[0] = env_multi_tick.affordances["SLEEP"]
         env_inst.positions[0] = env_inst.affordances["SLEEP"]
-        env_dual.meters[0, 0] = 0.3
+        env_multi_tick.meters[0, 0] = 0.3
         env_inst.meters[0, 0] = 0.3
-        env_dual.meters[0, 3] = 0.5
+        env_multi_tick.meters[0, 3] = 0.5
         env_inst.meters[0, 3] = 0.5
-        money_idx = env_dual.meter_name_to_index.get("money")
+        money_idx = env_multi_tick.meter_name_to_index.get("money")
         if money_idx is not None:
-            env_dual.meters[0, money_idx] = 1.0
+            env_multi_tick.meters[0, money_idx] = 1.0
             env_inst.meters[0, money_idx] = 1.0
 
-        interact_id = env_dual.action_ids["INTERACT"]
+        interact_id = env_multi_tick.action_ids["INTERACT"]
         for _ in range(5):
-            env_dual.step(torch.tensor([interact_id], device=env_dual.device))
-        dual_gain = env_dual.meters[0, 0].item() - 0.3
+            env_multi_tick.step(torch.tensor([interact_id], device=env_multi_tick.device))
+        multi_tick_gain = env_multi_tick.meters[0, 0].item() - 0.3
 
         env_inst.step(torch.tensor([interact_id], device=env_inst.device))
         inst_gain = env_inst.meters[0, 0].item() - 0.3
 
-        assert pytest.approx(inst_gain, rel=0.05) == dual_gain
+        assert pytest.approx(inst_gain, rel=0.05) == multi_tick_gain

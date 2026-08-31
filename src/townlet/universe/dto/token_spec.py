@@ -29,13 +29,31 @@ from __future__ import annotations
 
 import math
 from collections.abc import Iterable, Iterator, Mapping, Sequence
-from dataclasses import dataclass
-from typing import Final, Literal, get_args
+from dataclasses import dataclass, replace
+from typing import TYPE_CHECKING, Final, Literal, cast, get_args
 
+from townlet.config.affordances_v2_config import AffordanceParamConfig
 from townlet.config.effects_config import EffectScope, ReapplyPolicy
 from townlet.config.interaction_type import InteractionType
+from townlet.effects.affordance_identity import (
+    AFFORDANCE_LIFECYCLE_STAGES,
+    AFFORDANCE_WRITE_SOURCES,
+    AFFORDANCE_WRITE_TARGETS,
+    SPAWN_EFFECT_TARGETS,
+    AffordanceMeterWrite,
+    extract_affordance_meter_writes,
+    opening_hours_signature,
+)
+from townlet.numeric import require_float32
 from townlet.vfs.schema import NormalizationSpec, VariableDef, VariableScope
 from townlet.vfs.semantic_type import SemanticType
+
+if TYPE_CHECKING:
+    from townlet.config.affordances_v2_config import AffordancesV2Config
+    from townlet.config.environment_config import EnvironmentConfig
+    from townlet.config.items_config import ItemsCatalogConfig
+    from townlet.effects.catalog import EffectCatalog
+    from townlet.universe.compiled import CompiledVFSProfiles
 
 # --------------------------------------------------------------------------- engine constants
 
@@ -47,8 +65,9 @@ MAX_POSITION_RANK: Final[int] = 8
 #: 0–1 of ONE token (spec §1 width rule). A width-used feature accompanies the lanes.
 VALUE_BLOCK_WIDTH: Final[int] = 2
 
-#: Affordance effect summary: the k largest declared deltas by normalized magnitude (spec §1).
-EFFECT_SUMMARY_K: Final[int] = 4
+#: Affordance effect summary capacity measured from the executable fleet census. Canonical
+#: ordering retains all five admitted entries; more than five refuses instead of truncating.
+EFFECT_SUMMARY_K: Final[int] = 5
 
 #: Compiling ``{type: mean}`` against a census where any one type exceeds this many tokens
 #: emits a loud compile-time advisory (spec §2, "token census").
@@ -78,7 +97,7 @@ TOKEN_TYPE_FILLER_KIND: Final[Mapping[str, FillerKind]] = {
     "variable_element": "static",
 }
 
-ENCODING_VERSION: Final[str] = "token-1.0"
+ENCODING_VERSION: Final[str] = "token-1.1"
 
 # --------------------------------------------------------------------------- vocabularies (read, not written)
 
@@ -146,36 +165,53 @@ DESCRIPTOR_BLOCK_WIDTH: Final[int] = len(DESCRIPTOR_BLOCK_FEATURES)
 
 # --------------------------------------------------------------------------- payload schemas
 
+#: The meter surface is deliberately narrower than the general VFS vocabulary: every
+#: member is bounded and fits VALUE_BLOCK_WIDTH (PDR-0134).
+METER_NORMALIZATION_KIND_VOCABULARY: Final[tuple[str, ...]] = (
+    "minmax",
+    "log_scaled",
+    "cyclical_sin_cos",
+    "binary",
+)
+
 #: Meter declared-parameter signature (spec §1 "identity = declared payload, applied
 #: recursively"): what an affordance effect entry carries for its TARGET, and what the meter
-#: token carries for itself. Built from bars.yaml's declared parameters, no names. Every
-#: feature is bounded into [0, 1] (spec §1 boundedness, applied to anything entering a
+#: token carries for itself. Built from bars.yaml + range_type declared parameters, no
+#: names. Every feature is bounded into [-1, 1] (spec §1 boundedness, applied to anything entering a
 #: payload): initial as position within the declared range, rates as range-relative
 #: fractions per tick saturated by x/(1+x), the range itself as a saturated log.
 METER_SIGNATURE_FEATURES: Final[tuple[str, ...]] = (
-    "initial",
-    "lethal_min",
-    "lethal_max",
-    "passive_depletion",
-    "move_depletion",
-    "interact_depletion",
-    "natural_recovery",
-    "range",
+    (
+        "initial",
+        "lethal_min",
+        "lethal_max",
+        "passive_depletion",
+        "move_depletion",
+        "interact_depletion",
+        "natural_recovery",
+        "range",
+    )
+    + tuple(f"normalization_kind_{kind}" for kind in METER_NORMALIZATION_KIND_VOCABULARY)
+    + (
+        "normalization_min",
+        "normalization_max",
+        "normalization_scale",
+    )
 )
 METER_SIGNATURE_WIDTH: Final[int] = len(METER_SIGNATURE_FEATURES)
 
 #: Effect static payload (declared identity of an `EffectDefinitionConfig`): scope one-hot,
-#: declared intensity (signed, saturated), declared duration (saturated log), reapply-policy
-#: one-hot. Two declared effects differing in any declared parameter are distinguishable.
+#: declared duration (saturated log), and reapply-policy one-hot. Spawn intensity is live
+#: instance state and therefore belongs in the dynamic effect-token payload.
 EFFECT_STATIC_FEATURES: Final[tuple[str, ...]] = (
-    tuple(f"scope_{s}" for s in EFFECT_SCOPE_VOCABULARY)
-    + ("intensity", "duration")
-    + tuple(f"reapply_{p}" for p in REAPPLY_POLICY_VOCABULARY)
+    tuple(f"scope_{s}" for s in EFFECT_SCOPE_VOCABULARY) + ("duration",) + tuple(f"reapply_{p}" for p in REAPPLY_POLICY_VOCABULARY)
 )
 
 
 def saturate(x: float) -> float:
     """Bounded, monotone, scale-free map of a non-negative magnitude into [0, 1): x / (1 + x)."""
+    if not math.isfinite(x):
+        raise ValueError(f"saturate expects a finite magnitude, got {x}")
     if x < 0:
         raise ValueError(f"saturate expects a non-negative magnitude, got {x}")
     return x / (1.0 + x)
@@ -184,6 +220,61 @@ def saturate(x: float) -> float:
 def saturate_signed(x: float) -> float:
     """Signed saturation into (−1, 1): sign(x) · |x| / (1 + |x|)."""
     return math.copysign(saturate(abs(x)), x) if x != 0 else 0.0
+
+
+def _float32_tuple(values: Iterable[float], *, field: str) -> tuple[float, ...]:
+    """Canonicalize a complete model-facing feature vector to its runtime dtype."""
+    return tuple(require_float32(value, field=f"{field} feature {index}") for index, value in enumerate(values))
+
+
+def _float32_range(low: float, high: float, *, field: str, logarithmic: bool) -> tuple[float, float, float]:
+    """Validate the arithmetic a float32 normalizer performs over an authored range."""
+    low32 = require_float32(low, field=f"{field}.min")
+    high32 = require_float32(high, field=f"{field}.max")
+    if not low32 < high32:
+        raise ValueError(
+            f"{field} bounds must remain strictly ordered in float32, got authored ({low!r}, {high!r}) "
+            f"and runtime ({low32!r}, {high32!r})"
+        )
+    span32 = require_float32(high32 - low32, field=f"{field} float32 span")
+    require_float32(1.0 / span32, field=f"{field} float32 reciprocal span")
+    if logarithmic:
+        log_span32 = require_float32(math.log1p(span32), field=f"{field} float32 log1p span")
+        require_float32(1.0 / log_span32, field=f"{field} float32 reciprocal log1p span")
+    return low32, high32, span32
+
+
+def _normalization_values(value: float | list[float] | None) -> list[float]:
+    if value is None:
+        return []
+    return [float(item) for item in value] if isinstance(value, list) else [float(value)]
+
+
+def _require_normalization_float32(var_id: str, spec: NormalizationSpec) -> None:
+    """Refuse exposure parameters whose float32 execution changes their semantics."""
+    if spec.kind in _RANGE_KINDS:
+        lows = _normalization_values(spec.min)
+        highs = _normalization_values(spec.max)
+        if len(lows) == 1 and len(highs) > 1:
+            lows *= len(highs)
+        if len(highs) == 1 and len(lows) > 1:
+            highs *= len(lows)
+        if len(lows) != len(highs):
+            raise ValueError(f"Variable '{var_id}': normalization bounds are not broadcast-compatible")
+        for index, (low, high) in enumerate(zip(lows, highs, strict=True)):
+            _float32_range(
+                low,
+                high,
+                field=f"Variable '{var_id}' normalization[{index}]",
+                logarithmic=spec.kind == "log_scaled",
+            )
+    elif spec.kind == "cyclical_sin_cos":
+        assert spec.period is not None
+        period32 = require_float32(spec.period, field=f"Variable '{var_id}' cyclical period")
+        require_float32(2.0 * math.pi / period32, field=f"Variable '{var_id}' cyclical float32 factor")
+    elif spec.kind == "binary":
+        assert spec.threshold is not None
+        require_float32(spec.threshold, field=f"Variable '{var_id}' binary threshold")
 
 
 def position_features(prefix: str, *, with_rank: bool) -> tuple[str, ...]:
@@ -198,11 +289,51 @@ VALUE_BLOCK_FEATURES: Final[tuple[str, ...]] = tuple(f"value_{i}" for i in range
 def _effect_summary_features() -> tuple[str, ...]:
     out: list[str] = []
     for k in range(EFFECT_SUMMARY_K):
-        out.append(f"effect_{k}_present")
+        out.append(f"effect_{k}_form")
+        out.extend(f"effect_{k}_stage_{stage}" for stage in AFFORDANCE_LIFECYCLE_STAGES)
+        out.extend(f"effect_{k}_source_{source}" for source in AFFORDANCE_WRITE_SOURCES)
+        out.extend(f"effect_{k}_write_target_{target}" for target in AFFORDANCE_WRITE_TARGETS)
+        out.extend(f"effect_{k}_{feature}" for feature in SPAWN_EFFECT_IDENTITY_FEATURES)
         out.append(f"effect_{k}_magnitude")
         out.append(f"effect_{k}_sign")
         out.extend(f"effect_{k}_target_{f}" for f in METER_SIGNATURE_FEATURES)
     return tuple(out)
+
+
+AFFORDANCE_DURATION_FEATURES: Final[tuple[str, ...]] = ("duration_applicable", "duration_ticks")
+OPENING_HOURS_FEATURES: Final[tuple[str, ...]] = tuple(f"open_hour_{hour}" for hour in range(24))
+SPAWN_EFFECT_IDENTITY_FEATURES: Final[tuple[str, ...]] = (
+    tuple(f"spawn_target_{target}" for target in SPAWN_EFFECT_TARGETS)
+    + ("spawn_intensity", "spawn_duration")
+    + tuple(f"spawn_scope_{scope}" for scope in EFFECT_SCOPE_VOCABULARY)
+    + tuple(f"spawn_reapply_{policy}" for policy in REAPPLY_POLICY_VOCABULARY)
+    + ("spawn_observable",)
+)
+AFFORDANCE_EFFECT_MAGNITUDE_OFFSET: Final[int] = (
+    1
+    + len(AFFORDANCE_LIFECYCLE_STAGES)
+    + len(AFFORDANCE_WRITE_SOURCES)
+    + len(AFFORDANCE_WRITE_TARGETS)
+    + len(SPAWN_EFFECT_IDENTITY_FEATURES)
+)
+AFFORDANCE_EFFECT_METER_OFFSET: Final[int] = AFFORDANCE_EFFECT_MAGNITUDE_OFFSET + 2
+AFFORDANCE_EFFECT_ENTRY_WIDTH: Final[int] = AFFORDANCE_EFFECT_METER_OFFSET + METER_SIGNATURE_WIDTH
+
+
+#: Immutable affordance identity stored on each compiled slot: interaction type,
+#: duration, exact opening-hours behavior, recursively declared meter-effect targets,
+#: and declared effect count. Positions and visibility are dynamic and excluded.
+AFFORDANCE_SIGNATURE_WIDTH: Final[int] = (
+    len(INTERACTION_TYPE_VOCABULARY) + len(AFFORDANCE_DURATION_FEATURES) + len(OPENING_HOURS_FEATURES) + len(_effect_summary_features()) + 1
+)
+
+#: Immutable compiler-owned content width for every token type that carries a
+#: per-slot static signature. Types absent from this map must not carry one.
+TOKEN_TYPE_STATIC_SIGNATURE_WIDTH: Final[Mapping[str, int]] = {
+    "meter": METER_SIGNATURE_WIDTH,
+    "affordance": AFFORDANCE_SIGNATURE_WIDTH,
+    "variable_element": DESCRIPTOR_BLOCK_WIDTH,
+}
 
 
 #: Per-type payload schema: feature names in order. Presence is NOT a payload feature — it
@@ -213,6 +344,8 @@ PAYLOAD_SCHEMAS: Final[Mapping[str, tuple[str, ...]]] = {
     "meter": VALUE_BLOCK_FEATURES + METER_SIGNATURE_FEATURES,
     "affordance": (
         tuple(f"interaction_type_{t}" for t in INTERACTION_TYPE_VOCABULARY)
+        + AFFORDANCE_DURATION_FEATURES
+        + OPENING_HOURS_FEATURES
         + position_features("position", with_rank=True)
         + position_features("egocentric", with_rank=False)
         + _effect_summary_features()
@@ -224,7 +357,7 @@ PAYLOAD_SCHEMAS: Final[Mapping[str, tuple[str, ...]]] = {
         + position_features("egocentric", with_rank=False)
         + ("carried", "owner_slot", "owner_slot_applicable")
     ),
-    "effect": EFFECT_STATIC_FEATURES + ("remaining_fraction", "owner_slot", "owner_slot_applicable"),
+    "effect": EFFECT_STATIC_FEATURES + ("remaining_fraction", "live_intensity", "owner_slot", "owner_slot_applicable"),
     "variable_element": position_features("position", with_rank=True) + VALUE_BLOCK_FEATURES + DESCRIPTOR_BLOCK_FEATURES,
 }
 
@@ -276,6 +409,7 @@ class MeterDeclaration:
     """A bars.yaml meter's declared parameters — the inputs to `meter_signature`."""
 
     name: str
+    normalization: NormalizationSpec
     initial: float
     min: float
     max: float
@@ -286,6 +420,71 @@ class MeterDeclaration:
     interact_depletion: float
     natural_recovery: float
 
+    def __post_init__(self) -> None:
+        authored_values = {
+            "initial": self.initial,
+            "min": self.min,
+            "max": self.max,
+            "passive_depletion": self.passive_depletion,
+            "move_depletion": self.move_depletion,
+            "interact_depletion": self.interact_depletion,
+            "natural_recovery": self.natural_recovery,
+        }
+        for field_name, value in (
+            ("initial", self.initial),
+            ("min", self.min),
+            ("max", self.max),
+            ("passive_depletion", self.passive_depletion),
+            ("move_depletion", self.move_depletion),
+            ("interact_depletion", self.interact_depletion),
+            ("natural_recovery", self.natural_recovery),
+        ):
+            runtime_value = require_float32(value, field=f"Meter '{self.name}' {field_name}")
+            object.__setattr__(self, field_name, runtime_value)
+
+        minimum, maximum, _span = _float32_range(
+            authored_values["min"],
+            authored_values["max"],
+            field=f"Meter '{self.name}' bounds",
+            logarithmic=False,
+        )
+        initial = self.initial
+        if not minimum <= initial <= maximum:
+            raise ValueError(f"Meter '{self.name}' initial must lie within its float32 bounds [{minimum}, {maximum}], got {initial}")
+        if authored_values["min"] < authored_values["initial"] < authored_values["max"] and not minimum < initial < maximum:
+            raise ValueError(
+                f"Meter '{self.name}' initial is strictly interior in the authored declaration but collapses "
+                f"to a bound in float32: {authored_values['initial']!r} -> {initial!r}"
+            )
+
+        spec = require_exposure_normalization(f"meter:{self.name}", self.normalization)
+        if spec.kind not in METER_NORMALIZATION_KIND_VOCABULARY:
+            raise ValueError(
+                f"Meter '{self.name}': normalization kind {spec.kind!r} is not in the bounded "
+                f"two-lane meter vocabulary {METER_NORMALIZATION_KIND_VOCABULARY}"
+            )
+        if spec.kind in _RANGE_KINDS:
+            if not isinstance(spec.min, float) or not isinstance(spec.max, float):
+                raise ValueError(f"Meter '{self.name}': range normalization bounds must be scalar floats")
+            normalized_min, normalized_max, _normalization_span = _float32_range(
+                spec.min,
+                spec.max,
+                field=f"Meter '{self.name}' normalization",
+                logarithmic=spec.kind == "log_scaled",
+            )
+            if normalized_min != self.min or normalized_max != self.max:
+                raise ValueError(
+                    f"Meter '{self.name}': normalization bounds ({spec.min}, {spec.max}) do not match "
+                    f"the declared bars bounds ({self.min}, {self.max})"
+                )
+        elif spec.kind == "cyclical_sin_cos":
+            assert spec.period is not None
+            period32 = require_float32(spec.period, field=f"Meter '{self.name}' cyclical period")
+            require_float32(2.0 * math.pi / period32, field=f"Meter '{self.name}' cyclical float32 factor")
+        elif spec.kind == "binary":
+            assert spec.threshold is not None
+            require_float32(spec.threshold, field=f"Meter '{self.name}' binary threshold")
+
 
 @dataclass(frozen=True)
 class EffectDeclaration:
@@ -294,7 +493,6 @@ class EffectDeclaration:
     id: str
     scope: str
     duration: int
-    intensity: float
     reapply_policy: str
 
     def __post_init__(self) -> None:
@@ -312,16 +510,15 @@ class EffectDeclaration:
 @dataclass(frozen=True)
 class SlotBinding:
     """One compiled slot: bound at compile time to its filler (spec §2). Binding order is
-    declaration order, stable, and hashed. `static_signature` is carried for
-    `variable_element` slots so the artifact records what the indistinguishability check saw.
+    declaration order, stable, and hashed. ``static_signature`` is the compiler-owned,
+    immutable per-slot content for token types listed in
+    ``TOKEN_TYPE_STATIC_SIGNATURE_WIDTH``; every other token type must leave it absent.
     """
 
     slot_index: int
     filler_kind: FillerKind
     filler_ref: str
-    # The DESCRIPTOR BLOCK for this slot: DESCRIPTOR_BLOCK_WIDTH floats, or None where the
-    # type has no static content. Typed concretely (it was `tuple[object, ...]`, which
-    # forced a cast at every consumer and hid the width contract).
+    # Per-type immutable content signature, or None where the type has no static content.
     static_signature: tuple[float, ...] | None = None
 
     def __post_init__(self) -> None:
@@ -364,6 +561,7 @@ class TokenTypeSchema:
             raise ValueError(f"Token type {self.type_name!r}: capacity must be >= 0")
         if len(self.slot_bindings) != self.capacity:
             raise ValueError(f"Token type {self.type_name!r}: capacity {self.capacity} but {len(self.slot_bindings)} slot bindings")
+        canonical_bindings: list[SlotBinding] = []
         for expected_index, binding in enumerate(self.slot_bindings):
             if binding.slot_index != expected_index:
                 raise ValueError(
@@ -375,6 +573,46 @@ class TokenTypeSchema:
                     f"Token type {self.type_name!r}: slot {binding.slot_index} is {binding.filler_kind!r} but the "
                     f"type's filler kind is {TOKEN_TYPE_FILLER_KIND[self.type_name]!r}"
                 )
+            signature_width = TOKEN_TYPE_STATIC_SIGNATURE_WIDTH.get(self.type_name)
+            if signature_width is None:
+                if binding.static_signature is not None:
+                    raise ValueError(f"Token type {self.type_name!r}: slot {binding.slot_index} must not carry a static_signature")
+                canonical_bindings.append(binding)
+                continue
+            if binding.static_signature is None:
+                raise ValueError(
+                    f"Token type {self.type_name!r}: slot {binding.slot_index} requires a static_signature "
+                    f"with {signature_width} features"
+                )
+            if len(binding.static_signature) != signature_width:
+                raise ValueError(
+                    f"Token type {self.type_name!r}: slot {binding.slot_index} static_signature has "
+                    f"{len(binding.static_signature)} features, expected {signature_width}"
+                )
+            for feature_index, feature in enumerate(binding.static_signature):
+                try:
+                    finite = math.isfinite(feature)
+                except TypeError as exc:
+                    raise ValueError(
+                        f"Token type {self.type_name!r}: slot {binding.slot_index} static_signature feature "
+                        f"{feature_index} must be a finite float, got {feature!r}"
+                    ) from exc
+                if not finite:
+                    raise ValueError(
+                        f"Token type {self.type_name!r}: slot {binding.slot_index} static_signature feature "
+                        f"{feature_index} must be finite, got {feature!r}"
+                    )
+                if not -1.0 <= feature <= 1.0:
+                    raise ValueError(
+                        f"Token type {self.type_name!r}: slot {binding.slot_index} static_signature feature "
+                        f"{feature_index} must be within [-1, 1], got {feature!r}"
+                    )
+            canonical_signature = _float32_tuple(
+                binding.static_signature,
+                field=f"Token type {self.type_name!r} slot {binding.slot_index} static_signature",
+            )
+            canonical_bindings.append(replace(binding, static_signature=canonical_signature))
+        object.__setattr__(self, "slot_bindings", tuple(canonical_bindings))
 
     @property
     def payload_width(self) -> int:
@@ -420,6 +658,11 @@ class TokenSpec:
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "types", tuple(self.types))
+        if self.encoding_version != ENCODING_VERSION:
+            raise ValueError(
+                f"TokenSpec encoding_version must be the engine's exact current version "
+                f"{ENCODING_VERSION!r}, got {self.encoding_version!r}"
+            )
         names = [t.type_name for t in self.types]
         if len(set(names)) != len(names):
             raise ValueError(f"TokenSpec has duplicate token types: {names}")
@@ -503,6 +746,7 @@ def require_exposure_normalization(var_id: str, spec: NormalizationSpec | None) 
             "(spec §1, boundedness is certified at exposure). Unbounded values saturate LayerNorm "
             "and read as perpetual novelty to RND (PDR-0016)."
         )
+    _require_normalization_float32(var_id, spec)
     return spec
 
 
@@ -539,14 +783,14 @@ def _element_param(value: float | list[float] | None, element_index: int, *, ele
         return None
     if isinstance(value, list):
         if len(value) == 1:
-            return float(value[0])
+            return require_float32(value[0], field=where)
         if len(value) != element_count:
             raise ValueError(
                 f"{where} lists {len(value)} values but the variable has {element_count} elements; "
                 "declare one value per element (row-major over the shape) or a single scalar"
             )
-        return float(value[element_index])
-    return float(value)
+        return require_float32(value[element_index], field=where)
+    return require_float32(value, field=where)
 
 
 def _flatten(value: object) -> Iterator[float]:
@@ -561,15 +805,15 @@ def _flatten(value: object) -> Iterator[float]:
         raise ValueError(f"Declared default contains a non-numeric entry {value!r}")
 
 
-def _element_default(default: object, element_index: int, element_count: int) -> float:
+def _element_default(default: object, element_index: int, element_count: int, *, where: str) -> float:
     """The declared initial of one element, flattened row-major; scalars broadcast."""
     if default is None:
         return 0.0
     flat = list(_flatten(default))
     if len(flat) == element_count:
-        return flat[element_index]
+        return require_float32(flat[element_index], field=where)
     if len(flat) == 1:
-        return flat[0]
+        return require_float32(flat[0], field=where)
     raise ValueError(f"Declared default has {len(flat)} elements but the variable has {element_count}")
 
 
@@ -577,6 +821,7 @@ def normalize_declared_scalar(value: float, spec: NormalizationSpec, *, element_
     """Apply a bounded normalization kind to one declared scalar (the descriptor's 'normalized
     declared initial'). For cyclical_sin_cos the descriptor carries the phase fraction, not the
     sin/cos pair — the pair is the value block's job."""
+    value = require_float32(value, field="declared initial")
     kind = spec.kind
     if kind == "minmax" or kind == "log_scaled":
         lo = _element_param(spec.min, element_index, element_count=element_count, where="normalization.min")
@@ -584,14 +829,18 @@ def normalize_declared_scalar(value: float, spec: NormalizationSpec, *, element_
         assert lo is not None and hi is not None
         v = min(max(value, lo), hi) if spec.clip else value
         if kind == "minmax":
-            return (v - lo) / (hi - lo)
-        return math.log1p(v - lo) / math.log1p(hi - lo)
+            normalized = (v - lo) / (hi - lo)
+        else:
+            normalized = math.log1p(v - lo) / math.log1p(hi - lo)
+        return require_float32(normalized, field="normalized declared initial")
     if kind == "cyclical_sin_cos":
         assert spec.period is not None
-        return (value % spec.period) / spec.period
+        period = require_float32(spec.period, field="normalization.period")
+        return require_float32((value % period) / period, field="normalized declared initial")
     if kind == "binary":
         assert spec.threshold is not None
-        return 1.0 if value >= spec.threshold else 0.0
+        threshold = require_float32(spec.threshold, field="normalization.threshold")
+        return 1.0 if value > threshold else 0.0
     raise ValueError(f"normalize_declared_scalar: kind {kind!r} is not an exposure-admitted kind")
 
 
@@ -615,7 +864,13 @@ def normalization_param_vector(spec: NormalizationSpec, *, element_index: int, e
         scale = None
     slots = (lo, hi, clip, scale)
     absent = any(s is None for s in slots)
-    return tuple(0.0 if s is None else float(s) for s in slots) + (1.0 if absent else 0.0,)
+    bounded = (
+        0.0 if lo is None else saturate_signed(lo),
+        0.0 if hi is None else saturate_signed(hi),
+        0.0 if clip is None else clip,
+        0.0 if scale is None else saturate_signed(float(scale)),
+    )
+    return _float32_tuple(bounded + (1.0 if absent else 0.0,), field="normalization descriptor")
 
 
 def describe_variable(var: ExposedVariable, *, element_index: int, owner_capacity: int | None) -> tuple[float, ...]:
@@ -625,11 +880,13 @@ def describe_variable(var: ExposedVariable, *, element_index: int, owner_capacit
     if var.owner_slot is not None:
         if owner_capacity is None or owner_capacity <= 0:
             raise ValueError(f"Variable '{var.id}' carries owner_slot {var.owner_slot} but no owner capacity was given")
+        if not 0 <= var.owner_slot < owner_capacity:
+            raise ValueError(f"Variable '{var.id}' owner_slot {var.owner_slot} must be within compiled capacity {owner_capacity}")
         owner = (var.owner_slot / owner_capacity, 1.0)
     else:
         owner = (0.0, 0.0)
     count = var.element_count
-    declared = _element_default(var.default, element_index, count)
+    declared = _element_default(var.default, element_index, count, where=f"Variable '{var.id}' default")
     initial = normalize_declared_scalar(declared, spec, element_index=element_index, element_count=count)
     block = (
         _one_hot(SCOPE_VOCABULARY, var.scope)
@@ -638,11 +895,14 @@ def describe_variable(var: ExposedVariable, *, element_index: int, owner_capacit
         + normalization_param_vector(spec, element_index=element_index, element_count=count)
         + _one_hot(DTYPE_VOCABULARY, _VARIABLE_TYPE_DTYPE[var.type])
         + _one_hot(LIFETIME_VOCABULARY, var.lifetime)
-        + (initial, math.log1p(var.element_count))
+        + (initial, saturate(math.log1p(var.element_count)))
         + owner
     )
     assert len(block) == DESCRIPTOR_BLOCK_WIDTH
-    return block
+    bounded_block = _float32_tuple(block, field=f"Variable '{var.id}' descriptor")
+    if any(not -1.0 <= feature <= 1.0 for feature in bounded_block):
+        raise ValueError(f"Variable '{var.id}' descriptor features must all be within [-1, 1]")
+    return bounded_block
 
 
 def static_payload_signature(var: ExposedVariable, *, owner_capacity: int | None) -> tuple[object, ...]:
@@ -676,61 +936,155 @@ def check_indistinguishability(variables: Iterable[ExposedVariable], *, owner_ca
 
 def meter_signature(meter: MeterDeclaration) -> tuple[float, ...]:
     """A meter's declared-parameter features (METER_SIGNATURE_WIDTH wide), every one bounded
-    into [0, 1]: the initial as its position within [min, max]; each declared rate (meter units
+    into [-1, 1]: the initial as its position within [min, max]; each declared rate (meter units
     per tick) as a fraction of the declared range, saturated by x/(1+x) so a money-scale rate
-    cannot blow up the token; the range itself as a saturated log1p. Every feature but `range`
-    is scale-free: a meter re-declared in different units gives the same signature except for
-    `range`, which deliberately carries the declared span (it is what tells a 0–1 meter from a
-    0–999999 one)."""
+    cannot blow up the token; the range itself as a saturated log1p. Absolute normalization
+    bounds/scale deliberately carry the declared units, while the behavioral-rate portion is
+    scale-free."""
     span = meter.max - meter.min
     if span <= 0:
         raise ValueError(f"Meter '{meter.name}': bounds must satisfy min < max")
     initial = min(max((meter.initial - meter.min) / span, 0.0), 1.0)
-    return (
+    spec = meter.normalization
+    if spec.kind in _RANGE_KINDS:
+        assert isinstance(spec.min, float) and isinstance(spec.max, float)
+        normalization_min = saturate_signed(spec.min)
+        normalization_max = saturate_signed(spec.max)
+    else:
+        normalization_min = 0.0
+        normalization_max = 0.0
+    if spec.kind == "cyclical_sin_cos":
+        assert spec.period is not None
+        normalization_scale = saturate(spec.period)
+    elif spec.kind == "binary":
+        assert spec.threshold is not None
+        normalization_scale = saturate_signed(spec.threshold)
+    else:
+        normalization_scale = 0.0
+    signature = (
         initial,
         1.0 if meter.lethal_min else 0.0,
         1.0 if meter.lethal_max else 0.0,
-        saturate(abs(meter.passive_depletion) / span),
-        saturate(abs(meter.move_depletion) / span),
-        saturate(abs(meter.interact_depletion) / span),
-        saturate(abs(meter.natural_recovery) / span),
+        saturate_signed(meter.passive_depletion / span),
+        saturate_signed(meter.move_depletion / span),
+        saturate_signed(meter.interact_depletion / span),
+        saturate_signed(meter.natural_recovery / span),
         saturate(math.log1p(span)),
+        *_one_hot(METER_NORMALIZATION_KIND_VOCABULARY, spec.kind),
+        normalization_min,
+        normalization_max,
+        normalization_scale,
     )
+    assert len(signature) == METER_SIGNATURE_WIDTH
+    return _float32_tuple(signature, field=f"Meter '{meter.name}' static signature")
+
+
+def affordance_signature(
+    *,
+    affordance: AffordanceParamConfig,
+    effect_deltas: Sequence[AffordanceMeterWrite],
+    meters: Mapping[str, MeterDeclaration],
+) -> tuple[float, ...]:
+    """Immutable compiled identity for one affordance slot."""
+    name = affordance.name
+    interaction_type = str(affordance.interaction_type)
+    if interaction_type not in INTERACTION_TYPE_VOCABULARY:
+        raise ValueError(f"Affordance {name!r}: interaction_type {interaction_type!r} is not in " f"{INTERACTION_TYPE_VOCABULARY}")
+    duration_applicable = affordance.duration_ticks is not None
+    if affordance.duration_ticks is not None:
+        duration = saturate(float(affordance.duration_ticks))
+    else:
+        duration = 0.0
+    signature = (
+        *_one_hot(INTERACTION_TYPE_VOCABULARY, interaction_type),
+        float(duration_applicable),
+        duration,
+        *opening_hours_signature(affordance.opening_hours),
+        *effect_summary(effect_deltas, meters),
+        saturate(float(len(effect_deltas))),
+    )
+    assert len(signature) == AFFORDANCE_SIGNATURE_WIDTH
+    return _float32_tuple(signature, field=f"Affordance {name!r} static signature")
 
 
 def effect_static_payload(effect: EffectDeclaration) -> tuple[float, ...]:
     """An effect's declared-identity features (len(EFFECT_STATIC_FEATURES) wide, all bounded):
-    scope one-hot, signed-saturated intensity, saturated log1p(duration), reapply-policy one-hot.
-    The runtime appends remaining_fraction and the owner coordinate at publish time."""
-    return (
+    scope one-hot, saturated log1p(duration), and reapply-policy one-hot. The runtime
+    appends remaining fraction, live spawn intensity, and owner coordinates."""
+    return _float32_tuple(
         _one_hot(EFFECT_SCOPE_VOCABULARY, effect.scope)
-        + (saturate_signed(effect.intensity), saturate(math.log1p(effect.duration)))
-        + _one_hot(REAPPLY_POLICY_VOCABULARY, effect.reapply_policy)
+        + (saturate(math.log1p(effect.duration)),)
+        + _one_hot(REAPPLY_POLICY_VOCABULARY, effect.reapply_policy),
+        field=f"Effect '{effect.id}' static payload",
     )
 
 
-def effect_summary(deltas: Mapping[str, float], meters: Mapping[str, MeterDeclaration]) -> tuple[float, ...]:
-    """The affordance effect summary (spec §1): the K largest declared deltas by NORMALIZED
-    magnitude — |delta| relative to the TARGET meter's declared range, so a +22.5 delta on a
-    0–999999 meter and a +0.3 delta on a 0–1 meter rank on comparable footing (2.25e-5 vs 0.3) —
-    each (present, magnitude, sign, target signature); fewer than K → absent-marked. Returns the
-    EFFECT_SUMMARY_K × (3 + METER_SIGNATURE_WIDTH) block; the count feature is appended by the
-    caller from `len(deltas)`."""
-    ranked: list[tuple[float, float, MeterDeclaration]] = []
-    for target, delta in deltas.items():
-        meter = meters.get(target)
+def effect_summary(deltas: Sequence[AffordanceMeterWrite], meters: Mapping[str, MeterDeclaration]) -> tuple[float, ...]:
+    """Encode the fixed-K affordance write summary.
+
+    Unknown magnitudes rank first in stable declaration order. Every known magnitude
+    follows in descending target-relative order, stable for ties. More than K reachable
+    writes refuse: silently omitting behavior would alias distinct affordances.
+    """
+    if len(deltas) > EFFECT_SUMMARY_K:
+        raise ValueError(
+            f"Affordance declares {len(deltas)} reachable meter writes; EFFECT_SUMMARY_K={EFFECT_SUMMARY_K} "
+            "permits at most that many without aliasing behavior"
+        )
+    unknown_entries: list[tuple[AffordanceMeterWrite, float, float, MeterDeclaration]] = []
+    known_entries: list[tuple[AffordanceMeterWrite, float, float, MeterDeclaration]] = []
+    for write in deltas:
+        meter = meters.get(write.meter_name)
         if meter is None:
-            raise ValueError(f"Effect targets meter '{target}' which is not declared")
-        magnitude = min(abs(delta) / (meter.max - meter.min), 1.0)
-        ranked.append((magnitude, math.copysign(1.0, delta) if delta != 0 else 0.0, meter))
-    ranked.sort(key=lambda r: r[0], reverse=True)
+            raise ValueError(f"Effect targets meter '{write.meter_name}' which is not declared")
+        if write.delta is None:
+            magnitude = 0.0
+            sign = 0.0
+        else:
+            if not math.isfinite(write.delta):
+                raise ValueError(f"Effect delta targeting meter '{write.meter_name}' must be finite, got {write.delta}")
+            magnitude = min(abs(write.delta) / (meter.max - meter.min), 1.0)
+            if write.delta != 0:
+                sign = math.copysign(1.0, write.delta)
+            else:
+                sign = 0.0
+        entry = (write, magnitude, sign, meter)
+        if write.delta is None:
+            unknown_entries.append(entry)
+        else:
+            known_entries.append(entry)
+    known_entries.sort(key=lambda entry: entry[1], reverse=True)
+    ranked = unknown_entries + known_entries
     out: list[float] = []
     for k in range(EFFECT_SUMMARY_K):
         if k < len(ranked):
-            magnitude, sign, meter = ranked[k]
-            out.extend((1.0, magnitude, sign, *meter_signature(meter)))
+            write, magnitude, sign, meter = ranked[k]
+            spawned = write.spawned_effect
+            if spawned is not None:
+                spawn_identity = (
+                    *_one_hot(SPAWN_EFFECT_TARGETS, spawned.target),
+                    saturate_signed(spawned.intensity),
+                    saturate(math.log1p(spawned.duration)),
+                    *_one_hot(EFFECT_SCOPE_VOCABULARY, spawned.scope),
+                    *_one_hot(REAPPLY_POLICY_VOCABULARY, spawned.reapply_policy),
+                    float(spawned.observable),
+                )
+            else:
+                spawn_identity = (0.0,) * len(SPAWN_EFFECT_IDENTITY_FEATURES)
+            out.extend(
+                (
+                    float(write.form),
+                    *_one_hot(AFFORDANCE_LIFECYCLE_STAGES, write.stage),
+                    *_one_hot(AFFORDANCE_WRITE_SOURCES, write.source),
+                    *_one_hot(AFFORDANCE_WRITE_TARGETS, write.target),
+                    *spawn_identity,
+                    magnitude,
+                    sign,
+                    *meter_signature(meter),
+                )
+            )
         else:
-            out.extend((0.0,) * (3 + METER_SIGNATURE_WIDTH))
+            out.extend((0.0,) * AFFORDANCE_EFFECT_ENTRY_WIDTH)
     return tuple(out)
 
 
@@ -838,6 +1192,236 @@ def variable_element_capacity(variables: Iterable[ExposedVariable]) -> int:
     return total
 
 
+# --------------------------------------------------------------------------- canonical slot bindings
+
+
+def variable_element_bindings(
+    environment: EnvironmentConfig,
+    compiled_vfs_profiles: CompiledVFSProfiles | None,
+    vfs_variables: tuple[VariableDef, ...],
+) -> tuple[SlotBinding, ...]:
+    """Derive complete variable-element bindings from persisted declarations.
+
+    Bindings follow registry declaration order. Environment variables are exposed by
+    declaration; global and agent profile variables require authored ``exposed_to``.
+    Item-profile exposure and overlay-only exposure refuse because neither has a compiled
+    semantic identity that can own a slot.
+    """
+    env_semantic = {var.name: str(var.semantic_type) for var in environment.environment.variables}
+
+    exposed_profile: dict[str, str] = {}
+    if compiled_vfs_profiles is not None:
+        for profile in (compiled_vfs_profiles.global_profile, compiled_vfs_profiles.agent_profile):
+            if profile is None:
+                continue
+            for compiled_var in profile.variables:
+                if compiled_var.exposed_to:
+                    exposed_profile[str(compiled_var.name)] = str(compiled_var.semantic_type)
+        for item_profile in (compiled_vfs_profiles.item_profiles or {}).values():
+            for compiled_var in item_profile.variables:
+                if compiled_var.exposed_to:
+                    raise ValueError(
+                        f"Item-profile variable '{item_profile.profile_name}.{compiled_var.name}' declares "
+                        f"exposed_to={list(compiled_var.exposed_to)}, but item-profile exposure has no compiled "
+                        "slot-binding surface yet.\n"
+                        "  Landing (token-obs spec §2 scope table): `variable_element` via the item-arena "
+                        "publisher with an owner/slot coordinate — the runtime publisher exists "
+                        "(environment/token_publishers.py, unit-3 Task 8); the compile emission lands with the "
+                        "unit-5 pack migration, which authors the first exposed item variable. Until then, "
+                        "remove the exposure."
+                    )
+
+    bindings: list[SlotBinding] = []
+    bound: list[ExposedVariable] = []
+    for var_def in vfs_variables:
+        var_id = var_def.id
+        if var_id in env_semantic:
+            semantic_type = env_semantic[var_id]
+        elif var_id in exposed_profile:
+            semantic_type = exposed_profile[var_id]
+        elif var_def.exposed_to:
+            raise ValueError(
+                f"Variable '{var_id}' (variables_reference.yaml overlay) declares exposed_to, but overlay "
+                "statics have no semantic_type surface and cannot bind variable_element slots yet. "
+                "Declare the variable in vfs_profiles.yaml to expose it."
+            )
+        else:
+            continue
+
+        if var_def.initial_value_mode is not None or var_def.initial_value_params is not None:
+            raise ValueError(
+                f"Exposed variable '{var_id}' reached variable_element binding with "
+                f"initial_value_mode={var_def.initial_value_mode!r} and initial_value_params={var_def.initial_value_params!r}; "
+                "the compiler must lower initialization to one explicit declared default"
+            )
+        if var_def.default is None:
+            raise ValueError(
+                f"Exposed variable '{var_id}' must have one explicit declared default before variable_element binding; got default=None"
+            )
+
+        if isinstance(var_def.scope, VariableScope):
+            scope = var_def.scope.value
+        else:
+            scope = str(var_def.scope)
+        if var_def.shape:
+            shape = tuple(var_def.shape)
+        elif var_def.dims is not None and var_def.dims > 1:
+            shape = (int(var_def.dims),)
+        else:
+            shape = ()
+        exposed = ExposedVariable(
+            var_id,
+            scope,
+            semantic_type,
+            var_def.type,
+            var_def.lifetime,
+            var_def.default,
+            shape,
+            var_def.normalization,
+        )
+        signature = static_payload_signature(exposed, owner_capacity=None)
+        bound.append(exposed)
+        descriptor_blocks = cast("tuple[tuple[float, ...], ...]", signature[2])
+        for element_index, descriptor_block in enumerate(descriptor_blocks):
+            if exposed.element_count == 1:
+                filler_ref = exposed.id
+            else:
+                filler_ref = f"{exposed.id}[{element_index}]"
+            bindings.append(
+                SlotBinding(
+                    slot_index=len(bindings),
+                    filler_kind="static",
+                    filler_ref=filler_ref,
+                    static_signature=tuple(descriptor_block),
+                )
+            )
+
+    check_indistinguishability(bound, owner_capacity=None)
+    return tuple(bindings)
+
+
+def effect_slot_refs(
+    *,
+    max_active_effects: Mapping[str, int] | None,
+    declared_agents_per_world: int | None,
+    item_capacity_value: int,
+    affordance_capacity_value: int,
+) -> tuple[str, ...]:
+    """Derive the exact scope-blocked effect slot references."""
+    if max_active_effects is None:
+        return ()
+    denominators = {
+        "global": 1,
+        "agent": _agents_per_world(declared_agents_per_world),
+        "item": item_capacity_value,
+        "affordance": affordance_capacity_value,
+    }
+    refs: list[str] = []
+    for scope in EFFECT_SCOPE_VOCABULARY:
+        block = max_active_effects[scope] * denominators[scope]
+        refs.extend(f"effect:{scope}:{i}" for i in range(block))
+    return tuple(refs)
+
+
+def canonical_token_bindings(
+    *,
+    meter_declarations: tuple[MeterDeclaration, ...],
+    affordances: AffordancesV2Config,
+    items_catalog: ItemsCatalogConfig | None,
+    compiled_effect_catalog: EffectCatalog | None,
+    environment: EnvironmentConfig,
+    compiled_vfs_profiles: CompiledVFSProfiles | None,
+    vfs_variables: tuple[VariableDef, ...],
+) -> tuple[tuple[TokenType, tuple[SlotBinding, ...]], ...]:
+    """Derive every token type's complete slot bindings from persisted authorities.
+
+    This is the single compiler/loader boundary for token capacity, binding order,
+    references, and static signatures. It never reads an existing ``TokenSpec``.
+    """
+    meter_names = [meter.name for meter in meter_declarations]
+    if len(set(meter_names)) != len(meter_names):
+        raise ValueError("meter declarations contain duplicate names; meter token identity must be unique")
+    meter_bindings = tuple(
+        SlotBinding(
+            slot_index=index,
+            filler_kind="static",
+            filler_ref=meter.name,
+            static_signature=meter_signature(meter),
+        )
+        for index, meter in enumerate(meter_declarations)
+    )
+
+    affordance_names = [affordance.name for affordance in affordances.affordances]
+    if len(set(affordance_names)) != len(affordance_names):
+        raise ValueError("affordances.yaml declares duplicate names; affordance token identity must be unique")
+    meters_by_name = {meter.name: meter for meter in meter_declarations}
+    affordance_bindings = tuple(
+        SlotBinding(
+            slot_index=index,
+            filler_kind="static",
+            filler_ref=affordance.name,
+            static_signature=affordance_signature(
+                affordance=affordance,
+                effect_deltas=extract_affordance_meter_writes(
+                    affordance,
+                    effect_catalog=compiled_effect_catalog,
+                ),
+                meters=meters_by_name,
+            ),
+        )
+        for index, affordance in enumerate(affordances.affordances)
+    )
+
+    if items_catalog is None:
+        item_capacity_value = 0
+    else:
+        item_capacity_value = item_capacity(
+            max_items_in_world=items_catalog.max_items_in_world,
+            max_items_per_agent=items_catalog.max_items_per_agent,
+            declared_agents_per_world=None,
+        )
+    item_bindings = tuple(
+        SlotBinding(slot_index=index, filler_kind="dynamic", filler_ref=f"item:{index}") for index in range(item_capacity_value)
+    )
+
+    if compiled_effect_catalog is not None:
+        declared_effect_count = len(compiled_effect_catalog.effects)
+        max_active_effects = compiled_effect_catalog.max_active_effects
+    else:
+        declared_effect_count = 0
+        max_active_effects = None
+    expected_effect_capacity = effect_capacity(
+        max_active_effects=max_active_effects,
+        declared_effect_count=declared_effect_count,
+        declared_agents_per_world=None,
+        item_capacity_value=item_capacity_value,
+        affordance_capacity_value=len(affordance_bindings),
+    )
+    effect_refs = effect_slot_refs(
+        max_active_effects=max_active_effects if declared_effect_count else None,
+        declared_agents_per_world=None,
+        item_capacity_value=item_capacity_value,
+        affordance_capacity_value=len(affordance_bindings),
+    )
+    if len(effect_refs) != expected_effect_capacity:
+        raise ValueError(
+            "Effect token slot layout disagrees with its declared capacity; canonical effect derivations must "
+            "consume the same persisted budget and denominators"
+        )
+    effect_bindings = tuple(SlotBinding(slot_index=index, filler_kind="dynamic", filler_ref=ref) for index, ref in enumerate(effect_refs))
+
+    by_type: Mapping[TokenType, tuple[SlotBinding, ...]] = {
+        "self": (SlotBinding(slot_index=0, filler_kind="static", filler_ref="self"),),
+        "meter": meter_bindings,
+        "affordance": affordance_bindings,
+        "agent": (),
+        "item": item_bindings,
+        "effect": effect_bindings,
+        "variable_element": variable_element_bindings(environment, compiled_vfs_profiles, vfs_variables),
+    }
+    return tuple((type_name, by_type[type_name]) for type_name in TOKEN_TYPE_ROSTER)
+
+
 # --------------------------------------------------------------------------- census advisory
 
 
@@ -858,6 +1442,11 @@ def mean_census_advisory(spec: TokenSpec, *, aggregator: str) -> str | None:
 
 
 __all__ = [
+    "AFFORDANCE_DURATION_FEATURES",
+    "AFFORDANCE_EFFECT_ENTRY_WIDTH",
+    "AFFORDANCE_EFFECT_MAGNITUDE_OFFSET",
+    "AFFORDANCE_EFFECT_METER_OFFSET",
+    "AFFORDANCE_SIGNATURE_WIDTH",
     "DESCRIPTOR_BLOCK_FEATURES",
     "DESCRIPTOR_BLOCK_WIDTH",
     "DTYPE_FLAG_WIDTH",
@@ -867,18 +1456,22 @@ __all__ = [
     "LIFETIME_ONE_HOT_WIDTH",
     "MAX_POSITION_RANK",
     "MEAN_CENSUS_ADVISORY",
+    "METER_NORMALIZATION_KIND_VOCABULARY",
     "METER_SIGNATURE_FEATURES",
     "METER_SIGNATURE_WIDTH",
     "NORMALIZATION_KIND_ONE_HOT_WIDTH",
     "NORMALIZATION_PARAM_VECTOR_WIDTH",
     "OWNER_SLOT_COORDINATE_WIDTH",
+    "OPENING_HOURS_FEATURES",
     "PAYLOAD_SCHEMAS",
     "REAPPLY_POLICY_VOCABULARY",
     "RESERVED_TOKEN_TYPE_NAMES",
+    "SPAWN_EFFECT_IDENTITY_FEATURES",
     "SCOPE_ONE_HOT_WIDTH",
     "SEMANTIC_TYPE_ONE_HOT_WIDTH",
     "TOKEN_TYPE_FILLER_KIND",
     "TOKEN_TYPE_ROSTER",
+    "TOKEN_TYPE_STATIC_SIGNATURE_WIDTH",
     "VALUE_BLOCK_WIDTH",
     "VARIABLE_TYPE_VOCABULARY",
     "EffectDeclaration",
@@ -889,11 +1482,14 @@ __all__ = [
     "TokenType",
     "TokenTypeSchema",
     "affordance_capacity",
+    "affordance_signature",
     "agent_capacity",
     "build_token_type",
+    "canonical_token_bindings",
     "check_indistinguishability",
     "describe_variable",
     "effect_capacity",
+    "effect_slot_refs",
     "effect_static_payload",
     "effect_summary",
     "item_capacity",
@@ -911,4 +1507,5 @@ __all__ = [
     "static_payload_signature",
     "value_block_width_used",
     "variable_element_capacity",
+    "variable_element_bindings",
 ]

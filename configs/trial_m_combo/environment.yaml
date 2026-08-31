@@ -6,22 +6,22 @@ environment:
       description: Energy
       range_type:
         kind: minmax
-        clip: false
+        clip: true
     - name: health
       description: Health
       range_type:
         kind: minmax
-        clip: false
+        clip: true
     - name: did_a
       description: "Progression trace: COMBO_A has been performed (0/1 event flag, unlocks COMBO_B)"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
     - name: did_b
       description: "Progression trace: COMBO_B has been performed (0/1 event flag, unlocks COMBO_C)"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
 
   cascade_graph: []
   modulation_graph: []

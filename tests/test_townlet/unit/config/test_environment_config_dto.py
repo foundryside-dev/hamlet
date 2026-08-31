@@ -73,7 +73,9 @@ environment:
   meters:
     - name: energy
       description: "Energy"
-      range_type: normalized
+      range_type:
+        kind: minmax
+        clip: true
       extra_field: "not allowed"
   cascade_graph: []
   modulation_graph: []
@@ -85,16 +87,67 @@ environment:
         with pytest.raises(ValidationError):
             EnvironmentConfig.from_yaml(env_yaml)
 
-    def test_variable_normalization_range_requires_two_values(self, tmp_path: Path):
-        """Normalization.range must contain exactly two values [min, max]."""
-        env_yaml = tmp_path / "environment.yaml"
-        env_yaml.write_text("""
+
+def test_meter_range_type_is_exactly_the_bounded_two_lane_vocabulary() -> None:
+    """The token ABI is fixed at two bounded value lanes; the meter DTO must not
+    continue accepting declarations that cannot truthfully enter that ABI."""
+    from townlet.config.environment_config import MeterConfig
+
+    admitted = (
+        {"kind": "minmax", "clip": True},
+        {"kind": "log_scaled", "clip": True},
+        {"kind": "cyclical_sin_cos", "period": 24.0},
+        {"kind": "binary", "threshold": 0.5},
+    )
+    assert [MeterConfig(name="m", description="d", range_type=spec).range_type.kind for spec in admitted] == [
+        "minmax",
+        "log_scaled",
+        "cyclical_sin_cos",
+        "binary",
+    ]
+
+    for deleted in (
+        {"kind": "none"},
+        {"kind": "zscore", "mean": 0.0, "std": 1.0},
+        {"kind": "one_hot", "categories": 4},
+        {"kind": "rank_scaled"},
+        {"kind": "masked_value", "mask_value": -1.0, "fill_value": 0.0},
+    ):
+        with pytest.raises(ValidationError):
+            MeterConfig(name="m", description="d", range_type=deleted)
+
+    for unclipped in ("minmax", "log_scaled"):
+        with pytest.raises(ValidationError):
+            MeterConfig(name="m", description="d", range_type={"kind": unclipped, "clip": False})
+
+
+@pytest.mark.parametrize(
+    "range_type",
+    (
+        {"kind": "binary", "threshold": float("nan")},
+        {"kind": "binary", "threshold": float("inf")},
+        {"kind": "cyclical_sin_cos", "period": float("inf")},
+    ),
+)
+def test_meter_range_type_rejects_non_finite_parameters(range_type: dict[str, object]) -> None:
+    from townlet.config.environment_config import MeterConfig
+
+    with pytest.raises(ValidationError):
+        MeterConfig(name="m", description="d", range_type=range_type)
+
+
+def test_variable_normalization_range_requires_two_values(tmp_path: Path):
+    """Normalization.range must contain exactly two values [min, max]."""
+    env_yaml = tmp_path / "environment.yaml"
+    env_yaml.write_text("""
 environment:
   version: "1.0"
   meters:
     - name: energy
       description: "Energy"
-      range_type: normalized
+      range_type:
+        kind: minmax
+        clip: true
   cascade_graph: []
   modulation_graph: []
   affordances: []
@@ -104,14 +157,16 @@ environment:
       dims: 1
       scope: agent
       description: "How far below target energy"
+      semantic_type: custom
       normalization:
         method: normalize
+        clip: true
         range: [0.0]
   cues: []
 """)
 
-        with pytest.raises(ValidationError):
-            EnvironmentConfig.from_yaml(env_yaml)
+    with pytest.raises(ValidationError):
+        EnvironmentConfig.from_yaml(env_yaml)
 
 
 # --- hamlet-1dba1910c0: the normalization vocabulary must be honest ----------

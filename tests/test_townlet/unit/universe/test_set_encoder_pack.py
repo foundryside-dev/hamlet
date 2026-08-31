@@ -24,9 +24,10 @@ def test_pack_drives_the_token_set_architecture() -> None:
     # The roster is COMPILED, never authored: nothing in the brain names a token type
     # or a capacity.
     assert not hasattr(token_set, "token_field_name")
-    assert universe.token_spec.total_dims > 0
+    token_spec = universe.get_level(LEVEL).token_spec
+    assert token_spec.total_dims > 0
     # This pack is the live `variable_element` exerciser — it authors exposed variables.
-    assert universe.token_spec.get_type("variable_element").capacity > 0
+    assert token_spec.get_type("variable_element").capacity > 0
 
 
 def test_pack_declares_the_mean_aggregator() -> None:

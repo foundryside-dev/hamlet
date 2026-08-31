@@ -1,7 +1,7 @@
 """Unit tests for checkpoint validation, action labels, and error handling.
 
 This module covers edge cases not exercised by integration tests:
-- Legacy checkpoint detection (missing position_dim)
+- Exact affordance-position checkpoint layout validation
 - Position dimension mismatch validation
 - Action labels flowing from compiler metadata (custom + preset) rather than runtime file loading
 """
@@ -33,15 +33,8 @@ def invalidate_compiled_cache(test_config_pack_path):
 class TestCheckpointValidation:
     """Test checkpoint validation and error handling."""
 
-    def test_legacy_checkpoint_rejected_missing_position_dim(self, cpu_device, test_config_pack_path):
-        """Should reject legacy checkpoints missing position_dim field.
-
-        This tests the breaking change in Phase 4 where position_dim became
-        required in checkpoint format. Legacy checkpoints should be rejected
-        with a clear error message.
-
-        Coverage target: lines 878-891 (legacy checkpoint detection)
-        """
+    def test_checkpoint_rejected_missing_position_dim(self, cpu_device, test_config_pack_path):
+        """Should reject checkpoints missing the required position_dim field."""
         env = make_vectorized_env_from_pack(
             test_config_pack_path,
             level_name="L0_test",
@@ -49,19 +42,11 @@ class TestCheckpointValidation:
             device=cpu_device,
         )
 
-        # Create legacy checkpoint data by removing position_dim from a valid payload
-        legacy_checkpoint = env.get_affordance_positions()
-        legacy_checkpoint.pop("position_dim", None)
+        checkpoint = env.get_affordance_positions()
+        checkpoint.pop("position_dim")
 
-        # Should raise ValueError with helpful message
-        with pytest.raises(ValueError) as exc_info:
-            env.set_affordance_positions(legacy_checkpoint)
-
-        # Verify error message provides clear guidance
-        error_msg = str(exc_info.value)
-        assert "position_dim" in error_msg.lower(), "Error should mention missing field"
-        assert "no longer supported" in error_msg.lower(), "Error should indicate format is obsolete"
-        assert "delete" in error_msg.lower() or "retrain" in error_msg.lower(), "Error should provide remediation steps"
+        with pytest.raises(ValueError, match="keys must be exactly.*position_dim"):
+            env.set_affordance_positions(checkpoint)
 
     def test_checkpoint_position_dim_mismatch_rejected(self, cpu_device, test_config_pack_path):
         """Should reject checkpoints with incompatible position dimensions.
@@ -154,7 +139,7 @@ class TestActionLabelLoading:
         )
 
         # Labels should be present in compiler metadata and exposed on the env.
-        compiled_labels = env.universe.action_space_metadata.labels
+        compiled_labels = env.level.action_metadata.labels
         assert env.action_labels is not None  # Rehydrated ActionLabels wrapper
         assert env.action_labels.labels == compiled_labels  # runtime view mirrors compiler metadata
         label_values = list(compiled_labels.values())
@@ -174,7 +159,7 @@ class TestActionLabelLoading:
         )
 
         # Verify default labels are embedded via compiler metadata and match runtime view
-        compiled_labels = env.universe.action_space_metadata.labels
+        compiled_labels = env.level.action_metadata.labels
         assert env.action_labels is not None
         assert env.action_labels.labels == compiled_labels
         # Default preset should cover canonical movement + meta actions (custom actions may extend the set)

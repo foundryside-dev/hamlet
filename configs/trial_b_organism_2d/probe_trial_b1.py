@@ -11,7 +11,6 @@ import torch
 from pydantic import ValidationError
 
 from townlet.config.items_config import SpawnPlacementConfig
-from townlet.effects.schema import EffectScope
 from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.universe.compiler import UniverseCompiler
 
@@ -42,8 +41,6 @@ print("== Localization check 1: the trail deposit refusal is substrate-independe
 env.effect_manager.spawn_effect(
     effect_id="organism_footprint",
     target_entity_id=0,
-    scope=EffectScope.AGENT,
-    duration=1000,
     intensity=1.0,
     current_step=0,
 )

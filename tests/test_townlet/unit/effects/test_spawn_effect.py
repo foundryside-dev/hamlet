@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from townlet.config.effects_config import CommandConfig
+from townlet.config.effects_config import CommandConfig, EffectScope
 from townlet.effects.catalog import CompiledEffect, EffectCatalog
 from townlet.effects.compiler import CommandCompiler
 from townlet.effects.context import ExecutionContext
@@ -16,16 +16,23 @@ class DummyItemManager:
         raise RuntimeError("spawn_item not supported in DummyItemManager")
 
 
-def test_spawn_effect_with_self_target():
-    """Test spawn_effect command spawns effect on self."""
-    # Create effect catalog with simple effect
+@pytest.mark.parametrize(
+    ("scope", "store_name", "store_key"),
+    (
+        (EffectScope.GLOBAL, "global_effects", None),
+        (EffectScope.AGENT, "agent_effects", 0),
+        (EffectScope.ITEM, "item_effects", 0),
+        (EffectScope.AFFORDANCE, "affordance_effects", "0"),
+    ),
+)
+def test_spawn_effect_definition_scope_is_runtime_authority(scope, store_name, store_key):
     catalog = EffectCatalog(
+        max_active_effects={"global": 8, "agent": 8, "item": 8, "affordance": 8},
         effects={
-            "poison": CompiledEffect(
-                id="poison",
-                scope="agent",
+            "scoped": CompiledEffect(
+                id="scoped",
+                scope=scope.value,
                 duration=10,
-                intensity=1.0,
                 reapply_policy="stack",
                 observable=True,
                 on_spawn=[],
@@ -33,7 +40,44 @@ def test_spawn_effect_with_self_target():
                 on_despawn=[],
                 on_interrupt=[],
             )
-        }
+        },
+    )
+    manager = EffectManager(catalog=catalog, device="cpu")
+    command = CommandNode(type=CommandType.SPAWN_EFFECT, effect_id="scoped", target="self", intensity=1.0)
+    context = ExecutionContext(
+        bars={},
+        vfs_registry=None,
+        self_index=0,
+        target_index=None,
+        effect_manager=manager,
+        item_manager=DummyItemManager(),
+    )
+
+    CommandExecutor().execute(command, context)
+
+    store = getattr(manager, store_name)
+    active = store[0] if store_key is None else store[store_key][0]
+    assert active.scope == scope
+
+
+def test_spawn_effect_with_self_target():
+    """Test spawn_effect command spawns effect on self."""
+    # Create effect catalog with simple effect
+    catalog = EffectCatalog(
+        max_active_effects={"global": 8, "agent": 8, "item": 8, "affordance": 8},
+        effects={
+            "poison": CompiledEffect(
+                id="poison",
+                scope="agent",
+                duration=10,
+                reapply_policy="stack",
+                observable=True,
+                on_spawn=[],
+                on_tick=[],
+                on_despawn=[],
+                on_interrupt=[],
+            )
+        },
     )
 
     manager = EffectManager(catalog=catalog, device="cpu")
@@ -44,7 +88,6 @@ def test_spawn_effect_with_self_target():
         type=CommandType.SPAWN_EFFECT,
         effect_id="poison",
         target="self",
-        duration=10,
         intensity=1.0,
     )
 
@@ -72,12 +115,12 @@ def test_spawn_effect_with_self_target():
 def test_spawn_effect_with_target():
     """Test spawn_effect command spawns effect on target."""
     catalog = EffectCatalog(
+        max_active_effects={"global": 8, "agent": 8, "item": 8, "affordance": 8},
         effects={
             "stun": CompiledEffect(
                 id="stun",
                 scope="agent",
                 duration=5,
-                intensity=1.0,
                 reapply_policy="replace",
                 observable=True,
                 on_spawn=[],
@@ -85,7 +128,7 @@ def test_spawn_effect_with_target():
                 on_despawn=[],
                 on_interrupt=[],
             )
-        }
+        },
     )
 
     manager = EffectManager(catalog=catalog, device="cpu")
@@ -95,7 +138,6 @@ def test_spawn_effect_with_target():
         type=CommandType.SPAWN_EFFECT,
         effect_id="stun",
         target="target",  # Target agent, not self
-        duration=5,
         intensity=1.0,
     )
 
@@ -120,12 +162,12 @@ def test_spawn_effect_with_target():
 def test_spawn_effect_cascade_depth_limit():
     """Test spawn_effect enforces max cascade depth."""
     catalog = EffectCatalog(
+        max_active_effects={"global": 8, "agent": 8, "item": 8, "affordance": 8},
         effects={
             "recursive": CompiledEffect(
                 id="recursive",
                 scope="agent",
                 duration=1,
-                intensity=1.0,
                 reapply_policy="stack",
                 observable=True,
                 on_spawn=[],
@@ -133,7 +175,7 @@ def test_spawn_effect_cascade_depth_limit():
                 on_despawn=[],
                 on_interrupt=[],
             )
-        }
+        },
     )
 
     manager = EffectManager(catalog=catalog, device="cpu")
@@ -143,7 +185,6 @@ def test_spawn_effect_cascade_depth_limit():
         type=CommandType.SPAWN_EFFECT,
         effect_id="recursive",
         target="self",
-        duration=1,
         intensity=1.0,
     )
 
@@ -171,7 +212,7 @@ def test_spawn_effect_passes_spawn_depth_unchanged():
         def __init__(self) -> None:
             self.last_spawn_depth: int | None = None
             self.current_step = 0
-            self.catalog = SimpleNamespace(get=lambda effect_id: SimpleNamespace(duration=1))
+            self.catalog = SimpleNamespace(get=lambda effect_id: SimpleNamespace(duration=1, scope="agent"))
 
         def spawn_effect(self, **kwargs):
             self.last_spawn_depth = kwargs.get("spawn_depth")
@@ -184,7 +225,6 @@ def test_spawn_effect_passes_spawn_depth_unchanged():
         type=CommandType.SPAWN_EFFECT,
         effect_id="any",
         target="self",
-        duration=1,
         intensity=1.0,
     )
 
@@ -204,15 +244,15 @@ def test_spawn_effect_passes_spawn_depth_unchanged():
     assert manager.last_spawn_depth == 3
 
 
-def test_spawn_effect_defaults_to_catalog_duration_when_not_overridden():
-    """spawn_effect should honor catalog duration if command duration is unset."""
+def test_spawn_effect_uses_catalog_duration():
+    """spawn_effect duration has exactly one authority: the catalog definition."""
     catalog = EffectCatalog(
+        max_active_effects={"global": 8, "agent": 8, "item": 8, "affordance": 8},
         effects={
             "slow": CompiledEffect(
                 id="slow",
                 scope="agent",
                 duration=50,  # catalog duration
-                intensity=1.0,
                 reapply_policy="stack",
                 observable=True,
                 on_spawn=[],
@@ -220,7 +260,7 @@ def test_spawn_effect_defaults_to_catalog_duration_when_not_overridden():
                 on_despawn=[],
                 on_interrupt=[],
             )
-        }
+        },
     )
 
     manager = EffectManager(catalog=catalog, device="cpu")
@@ -231,7 +271,6 @@ def test_spawn_effect_defaults_to_catalog_duration_when_not_overridden():
         effect_id="slow",
         target="self",
         intensity=1.0,
-        # duration intentionally omitted to rely on catalog value
     )
 
     bars = {"health": torch.tensor([1.0, 0.8])}
@@ -259,12 +298,12 @@ def test_spawn_effect_pipeline_requires_explicit_target_and_intensity():
     node = compiler.compile_command(parser.parse_command(config))
 
     catalog = EffectCatalog(
+        max_active_effects={"global": 8, "agent": 8, "item": 8, "affordance": 8},
         effects={
             "poison": CompiledEffect(
                 id="poison",
                 scope="agent",
                 duration=3,
-                intensity=1.0,
                 reapply_policy="stack",
                 observable=True,
                 on_spawn=[],
@@ -272,7 +311,7 @@ def test_spawn_effect_pipeline_requires_explicit_target_and_intensity():
                 on_despawn=[],
                 on_interrupt=[],
             )
-        }
+        },
     )
 
     manager = EffectManager(catalog=catalog, device="cpu")
@@ -302,12 +341,12 @@ def test_spawn_effect_evaluates_target_expression_when_not_literal():
     node = compiler.compile_command(parser.parse_command(config))
 
     catalog = EffectCatalog(
+        max_active_effects={"global": 8, "agent": 8, "item": 8, "affordance": 8},
         effects={
             "stun": CompiledEffect(
                 id="stun",
                 scope="agent",
                 duration=5,
-                intensity=1.0,
                 reapply_policy="stack",
                 observable=True,
                 on_spawn=[],
@@ -315,7 +354,7 @@ def test_spawn_effect_evaluates_target_expression_when_not_literal():
                 on_despawn=[],
                 on_interrupt=[],
             )
-        }
+        },
     )
 
     manager = EffectManager(catalog=catalog, device="cpu")

@@ -6,14 +6,15 @@ Provides step-by-step visualization at human-watchable speed.
 
 import asyncio
 import logging
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 
 import torch
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
-from townlet.agent.networks import RecurrentSpatialQNetwork
 from townlet.config.presentation_config import PresentationConfig
 from townlet.curriculum.adversarial import AdversarialCurriculum
 from townlet.curriculum.factory import build_curriculum
@@ -27,7 +28,13 @@ from townlet.substrate.continuous import ContinuousSubstrate
 from townlet.substrate.grid2d import Grid2DSubstrate
 from townlet.substrate.grid3d import Grid3DSubstrate
 from townlet.substrate.gridnd import GridNDSubstrate
-from townlet.training.checkpoint_utils import assert_checkpoint_identity, safe_torch_load, verify_checkpoint_digest
+from townlet.training.checkpoint_utils import (
+    assert_checkpoint_identity,
+    safe_torch_load,
+    validate_demo_checkpoint_payload,
+    validate_demo_checkpoint_runtime_fields,
+    verify_checkpoint_digest,
+)
 from townlet.universe.compiled import CompiledUniverse
 from townlet.universe.compiler import UniverseCompiler
 
@@ -65,7 +72,6 @@ class LiveInferenceServer:
         step_delay: float = 0.2,
         total_episodes: int = 5000,  # Expected total episodes in training run
         config_dir: Path | str | None = None,  # Config pack directory
-        training_config_path: Path | str | None = None,  # Deprecated training config override
         db_path: Path | str | None = None,  # Optional database path for replay
         recordings_dir: Path | str | None = None,  # Optional recordings directory for replay
     ):
@@ -78,7 +84,6 @@ class LiveInferenceServer:
             step_delay: Delay between steps in seconds (0.2 = 5 steps/sec)
             total_episodes: Expected total episodes for training run (for progress gauge)
             config_dir: Optional config pack directory
-            training_config_path: Optional path to training config YAML (for matching environment settings)
             db_path: Optional database path for replay mode
             recordings_dir: Optional recordings directory for replay mode
         """
@@ -93,7 +98,6 @@ class LiveInferenceServer:
         if config_dir is None:
             raise ValueError("LiveInferenceServer requires config_dir to compile the universe.")
         self.config_dir = Path(config_dir)
-        self.training_config_path: Path | None = Path(training_config_path) if training_config_path else None
         self.compiler = UniverseCompiler()
         self.compiled_universe: CompiledUniverse | None = None
         # Observer-only presentation (PDR-0025): None is the honest default.
@@ -129,22 +133,27 @@ class LiveInferenceServer:
         self.replay_manager: ReplayManager | None = None
         self.replay_playing: bool = False
 
-        # Initialize replay if database provided
-        if db_path and recordings_dir:
-            try:
-                database = DemoDatabase(Path(db_path))
-                self.replay_manager = ReplayManager(database, Path(recordings_dir))
-                logger.info(f"Replay mode initialized: db={db_path}, recordings={recordings_dir}")
-            except Exception as e:
-                logger.error(f"Failed to initialize replay manager: {e}")
-                self.replay_manager = None
+        if (db_path is None) != (recordings_dir is None):
+            raise ValueError("Replay mode requires both db_path and recordings_dir, or neither.")
+        if db_path is not None and recordings_dir is not None:
+            database = DemoDatabase(Path(db_path))
+            self.replay_manager = ReplayManager(database, Path(recordings_dir))
+            logger.info(f"Replay mode initialized: db={db_path}, recordings={recordings_dir}")
 
         # Q-value logging (auto-closed via shutdown / destructor)
         self._qvalue_log_path = Path("qvalues_inference.log")
         self._qvalue_log_file = self._open_qvalue_log()
 
+        @asynccontextmanager
+        async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+            await self.startup()
+            try:
+                yield
+            finally:
+                await self.shutdown()
+
         # FastAPI app
-        self.app = FastAPI(title="Hamlet Live Inference Server")
+        self.app = FastAPI(title="Hamlet Live Inference Server", lifespan=lifespan)
 
         # Enable CORS for frontend
         self.app.add_middleware(
@@ -158,8 +167,6 @@ class LiveInferenceServer:
         # Register routes
         self.app.websocket("/ws")(self.websocket_endpoint)
         self.app.websocket("/ws/training")(self.websocket_endpoint)  # Same endpoint, different name
-        self.app.on_event("startup")(self.startup)
-        self.app.on_event("shutdown")(self.shutdown)
 
     def _build_agent_telemetry(self) -> dict[str, Any]:
         """Return telemetry payload for current agent registry."""
@@ -253,9 +260,6 @@ class LiveInferenceServer:
         """Initialize environment and start checkpoint monitoring."""
         logger.info("Starting live inference server")
 
-        if self.training_config_path:
-            logger.info(f"Training config override provided: {self.training_config_path}")
-
         # Initialize environment and components
         self._initialize_components()
 
@@ -316,15 +320,16 @@ class LiveInferenceServer:
         vision_range = curriculum_cfg.vision_range
         enable_temporal_mechanics = curriculum_cfg.active_temporal
         vision_window_size = 2 * vision_range + 1
-        enabled_affordances = getattr(training_cfg, "enabled_affordances", None)
+        enabled_affordances = training_cfg.enabled_affordances
 
         logger.info(
-            "Environment config: grid=%s, POMDP=%s, vision=%s, temporal=%s, affordances=%s",
-            self.compiled_universe.metadata.grid_size,  # Read from substrate.yaml via metadata
+            "Environment config: substrate=%s, cells=%s, POMDP=%s, vision=%s, temporal=%s, affordances=%s",
+            self.compiled_universe.metadata.substrate_type,
+            self.compiled_universe.metadata.grid_cells,
             partial_observability,
             vision_range,
             enable_temporal_mechanics,
-            enabled_affordances if enabled_affordances else "all",
+            enabled_affordances,
         )
 
         self.env = VectorizedHamletEnv.from_universe(
@@ -418,13 +423,11 @@ class LiveInferenceServer:
             return False
 
         # Extract episode number from filename
+        episode_str = latest_checkpoint.stem.removeprefix("checkpoint_ep")
         try:
-            episode_str = latest_checkpoint.stem.split("_ep")[1]
             episode_num = int(episode_str)
-        except (IndexError, ValueError) as exc:
-            logger.error(f"Could not parse episode number from {latest_checkpoint.name}")
-            logger.debug("Checkpoint parsing error", exc_info=exc)
-            return False
+        except ValueError as exc:
+            raise ValueError(f"Invalid checkpoint filename episode: {latest_checkpoint.name!r}.") from exc
 
         # Load checkpoint
         logger.info(f"Loading checkpoint: {latest_checkpoint.name} (episode {episode_num})")
@@ -444,57 +447,36 @@ class LiveInferenceServer:
         # the silent skip this unit exists to delete (plan §3 H8).
         if self.compiled_universe is None:
             raise RuntimeError("compiled_universe is None: _initialize_components() must run before a checkpoint can be validated.")
+        if self.population is None:
+            raise RuntimeError("population is None: _initialize_components() must run before a checkpoint can be validated.")
+        if self.env is None:
+            raise RuntimeError("env is None: _initialize_components() must run before a checkpoint can be validated.")
+        if self.curriculum is None:
+            raise RuntimeError("curriculum is None: _initialize_components() must run before a checkpoint can be validated.")
+
+        validate_demo_checkpoint_payload(checkpoint)
+        payload_episode = checkpoint["episode"]
+        if payload_episode != episode_num:
+            raise ValueError(f"Checkpoint filename episode mismatch: filename={episode_num}, payload={payload_episode}.")
         assert_checkpoint_identity(checkpoint, self.compiled_universe, force_new_vfs=False)
 
-        # Load Q-network weights
-        if "population_state" in checkpoint:
-            assert self.population is not None, "Population must be initialized before loading checkpoint"
-            self.population.q_network.load_state_dict(checkpoint["population_state"]["q_network"])
-            logger.info("Loaded Q-network weights")
+        # Validate every outer and nested runtime-bound value before the serving
+        # path mutates anything, then apply only the online Q-network as designed.
+        validate_demo_checkpoint_runtime_fields(
+            checkpoint,
+            position_dim=self.env.substrate.position_dim,
+            substrate_type=type(self.env.substrate).__name__,
+            num_agents=self.population.num_agents,
+        )
+        population_state = checkpoint["population_state"]
+        self.population.validate_checkpoint_state(population_state)
+        self.curriculum.validate_checkpoint_state(checkpoint["curriculum_state"])
+        self.env.validate_affordance_positions(checkpoint["affordance_layout"])
+        self.population.q_network.load_state_dict(population_state["q_network"])
+        logger.info("Loaded Q-network weights")
 
-            # Debug: Check network output dimensions
-            with torch.no_grad():
-                dummy_obs = torch.zeros(1, self.population.current_obs.shape[1], device=self.device)
-                if self.population.is_recurrent:
-                    recurrent_network = cast(RecurrentSpatialQNetwork, self.population.q_network)
-                    dummy_output, _ = recurrent_network(dummy_obs, recurrent_network.initial_hidden(1, self.device))
-                else:
-                    dummy_output = self.population.q_network(dummy_obs)
-                assert self.env is not None, "Environment must be initialized before loading checkpoint"
-                if dummy_output.shape[1] != self.env.action_dim:
-                    logger.warning(
-                        f"Network action space mismatch: Network outputs {dummy_output.shape[1]} actions "
-                        f"but env has {self.env.action_dim} actions"
-                    )
-
-        # Load epsilon from checkpoint (nested in exploration_state)
-        epsilon = None
-
-        # Try to load from nested exploration_state (correct path)
-        if "population_state" in checkpoint and "exploration_state" in checkpoint["population_state"]:
-            exploration_state = checkpoint["population_state"]["exploration_state"]
-
-            # Check for epsilon directly in exploration_state (epsilon_greedy)
-            if "epsilon" in exploration_state:
-                epsilon = exploration_state["epsilon"]
-                logger.info(f"Loaded epsilon from exploration_state: {epsilon:.3f}")
-            # Check for epsilon in rnd_state (RND/adaptive strategies)
-            elif "rnd_state" in exploration_state and "epsilon" in exploration_state["rnd_state"]:
-                epsilon = exploration_state["rnd_state"]["epsilon"]
-                logger.info(f"Loaded epsilon from rnd_state: {epsilon:.3f}")
-
-        # Epsilon not found in checkpoint - estimate from training progress
-        # This handles checkpoints saved before epsilon tracking was added
-        if epsilon is None:
-            progress = episode_num / self.total_episodes if self.total_episodes > 0 else 0
-            epsilon = max(0.05, 1.0 - (progress * 0.95))  # Decay from 1.0 to 0.05
-            logger.info(
-                "Estimated epsilon from training progress: episode=%s, total=%s, progress=%.3f, epsilon=%.3f",
-                episode_num,
-                self.total_episodes,
-                progress,
-                epsilon,
-            )
+        epsilon = checkpoint["epsilon"]
+        logger.info("Loaded canonical checkpoint epsilon: %.3f", epsilon)
 
         # Update tracking
         self.current_checkpoint_path = latest_checkpoint
@@ -555,7 +537,9 @@ class LiveInferenceServer:
 
     async def _handle_command(self, websocket: WebSocket, data: dict):
         """Handle incoming WebSocket commands."""
-        command = data.get("command") or data.get("type")
+        command = data.get("command")
+        if not isinstance(command, str) or not command:
+            raise ValueError("WebSocket payload requires a non-empty string 'command' field.")
 
         # Replay mode commands
         if command == "load_replay":
@@ -628,9 +612,14 @@ class LiveInferenceServer:
             # Update step delay (convert speed multiplier to delay)
             # speed 1.0 = 0.2s delay (5 steps/sec)
             # speed 10.0 = 0.02s delay (50 steps/sec)
-            speed = data.get("speed", 1.0)
+            speed = data.get("speed")
+            if isinstance(speed, bool) or not isinstance(speed, int | float) or speed <= 0:
+                raise ValueError("set_speed requires an explicit positive numeric 'speed' field.")
             self.step_delay = 0.2 / speed  # Inverse relationship
             logger.info(f"Speed set to {speed}x (delay: {self.step_delay:.3f}s)")
+
+        else:
+            raise ValueError(f"Unknown WebSocket command {command!r}.")
 
     async def _run_inference_loop(self):
         """Main inference loop - runs episodes continuously."""
@@ -1190,7 +1179,6 @@ def run_server(
     total_episodes: int = 5000,
     config_dir: str | None = None,
     level_name: str | None = None,
-    training_config_path: str | None = None,
     db_path: str | None = None,
     recordings_dir: str | None = None,
 ):
@@ -1203,7 +1191,6 @@ def run_server(
         total_episodes: Expected total training episodes
         config_dir: Config directory (compiled universe source)
         level_name: Explicit curriculum level to run
-        training_config_path: Optional training config YAML
         db_path: Optional database path for replay mode
         recordings_dir: Optional recordings directory for replay mode
     """
@@ -1223,7 +1210,6 @@ def run_server(
         step_delay=step_delay,
         total_episodes=total_episodes,
         config_dir=config_dir,
-        training_config_path=training_config_path,
         db_path=db_path,
         recordings_dir=recordings_dir,
     )
@@ -1234,8 +1220,6 @@ def run_server(
     logger.info(f"Expected total training episodes: {total_episodes}")
     if config_dir:
         logger.info(f"Config directory: {config_dir}")
-    if training_config_path:
-        logger.info(f"Training config: {training_config_path}")
     logger.info(f"Connect Vue frontend to: ws://localhost:{port}/ws")
 
     uvicorn.run(server.app, host="0.0.0.0", port=port)
@@ -1248,18 +1232,7 @@ if __name__ == "__main__":
     port = int(sys.argv[2]) if len(sys.argv) > 2 else 8766
     step_delay = float(sys.argv[3]) if len(sys.argv) > 3 else 0.2
     total_episodes = int(sys.argv[4]) if len(sys.argv) > 4 else 5000
-    config_arg = sys.argv[5] if len(sys.argv) > 5 else None
+    config_dir = sys.argv[5] if len(sys.argv) > 5 else None
     level_name = sys.argv[6] if len(sys.argv) > 6 else None
-    config_dir = None
-    training_config = None
-    if config_arg:
-        candidate = Path(config_arg)
-        if candidate.is_dir():
-            config_dir = str(candidate)
-            training_candidate = candidate / "training.yaml"
-            training_config = str(training_candidate) if training_candidate.exists() else None
-        else:
-            config_dir = str(candidate.parent)
-            training_config = str(candidate)
 
-    run_server(checkpoint_dir, port, step_delay, total_episodes, config_dir, level_name, training_config)
+    run_server(checkpoint_dir, port, step_delay, total_episodes, config_dir, level_name)

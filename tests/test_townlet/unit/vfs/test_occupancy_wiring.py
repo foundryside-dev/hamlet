@@ -75,9 +75,10 @@ def test_claim_action_compiles_into_schedule_with_affordance_row(temp_config_pac
     _declare_claim_action(temp_config_pack)
 
     universe = UniverseCompiler().compile(temp_config_pack, primary_level=PRIMARY_LEVEL, use_cache=False)
+    level = universe.get_level(PRIMARY_LEVEL)
 
     sleep_index = universe.metadata.affordance_id_to_index["SLEEP"]
-    claim_writes = [w for w in universe.transition_schedule.action_write_program.writes if w.action_name == "CLAIM_BED"]
+    claim_writes = [w for w in level.transition_schedule.action_write_program.writes if w.action_name == "CLAIM_BED"]
     assert len(claim_writes) == 1
     write = claim_writes[0]
     assert write.source_affordance == "SLEEP"
@@ -100,7 +101,7 @@ def test_two_agents_contending_resolve_deterministically(temp_config_pack: Path)
     )
     env.reset()
 
-    claim_id = universe.runtime_action_space.action_ids["CLAIM_BED"]
+    claim_id = universe.get_level(PRIMARY_LEVEL).runtime_action_space.action_ids["CLAIM_BED"]
     env.step(torch.tensor([claim_id, claim_id]))
 
     occupied = env.vfs_registry.get("occupied_by", reader="engine")

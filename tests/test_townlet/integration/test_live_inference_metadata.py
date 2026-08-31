@@ -34,7 +34,6 @@ def test_metadata_includes_grid2d_topology():
         port=8766,
         step_delay=0.2,
         total_episodes=1,
-        training_config_path=None,
         config_dir=TEST_CONFIG_DIR,
         level_name=LEVEL_NAME,
     )
@@ -65,7 +64,6 @@ def test_metadata_includes_grid3d_topology():
         port=8766,
         step_delay=0.2,
         total_episodes=1,
-        training_config_path=None,
         config_dir=TEST_CONFIG_DIR,
         level_name=LEVEL_NAME,
     )
@@ -93,7 +91,6 @@ def test_metadata_includes_gridnd_topology():
         port=8766,
         step_delay=0.2,
         total_episodes=1,
-        training_config_path=None,
         config_dir=TEST_CONFIG_DIR,
         level_name=LEVEL_NAME,
     )
@@ -126,7 +123,6 @@ def test_metadata_omits_topology_for_continuous():
         port=8766,
         step_delay=0.2,
         total_episodes=1,
-        training_config_path=None,
         config_dir=TEST_CONFIG_DIR,
         level_name=LEVEL_NAME,
     )
@@ -148,7 +144,6 @@ def test_metadata_omits_topology_for_aspatial():
         port=8766,
         step_delay=0.2,
         total_episodes=1,
-        training_config_path=None,
         config_dir=TEST_CONFIG_DIR,
         level_name=LEVEL_NAME,
     )
@@ -177,7 +172,6 @@ def test_metadata_topology_respects_substrate_attribute():
         port=8766,
         step_delay=0.2,
         total_episodes=1,
-        training_config_path=None,
         config_dir=TEST_CONFIG_DIR,
         level_name=LEVEL_NAME,
     )

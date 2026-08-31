@@ -7,11 +7,11 @@ from townlet.items.manager import ItemManager
 
 
 def test_respawn_timer_initialized_on_despawn():
-    """When item despawns with spawn_interval configured, respawn timer is set."""
+    """When an item has a periodic schedule, despawning sets its respawn timer."""
     config_path = Path("configs/test/items_smoke/items.yaml")
     catalog = ItemsCatalogConfig.from_yaml(config_path)
 
-    # Load appearance config (has spawn_interval)
+    # Load appearance config with a periodic schedule.
     appearance_config = ItemsAppearanceConfig(
         version="1.0",
         items=[
@@ -42,11 +42,11 @@ def test_respawn_timer_initialized_on_despawn():
 
     # Verify respawn timer set
     assert "apple" in manager.respawn_timers
-    assert manager.respawn_timers["apple"] == 50 + 100  # current_tick + spawn_interval
+    assert manager.respawn_timers["apple"] == 50 + 100  # current_tick + schedule period
 
 
-def test_respawn_timer_not_set_without_spawn_interval():
-    """Items without spawn_interval don't get respawn timers."""
+def test_respawn_timer_not_set_without_periodic_schedule():
+    """Items without a periodic schedule don't get respawn timers."""
     config_path = Path("configs/test/items_smoke/items.yaml")
     catalog = ItemsCatalogConfig.from_yaml(config_path)
 
@@ -137,8 +137,8 @@ def test_process_respawns_respects_max_items_capacity():
             {
                 "item_type": "apple",
                 "spawn_count": 1,
-                "spawn_interval": 10,
-                "spawn_position": "random",
+                "placement": {"mode": "random"},
+                "schedule": {"type": "periodic", "period": 10},
             }
         ],
     )

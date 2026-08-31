@@ -8,6 +8,8 @@ agent_profile:
       semantic_type: custom
       type: tensor2d
       shape: [4, 3]
+      # The compiler losslessly lowers this deterministic mode to the sole explicit literal
+      # default carried by variable_element identity; no mode/params reach token binding.
       initial_value_mode: zeros
       exposed_to: [agent]
       # Required at exposure (token-obs spec S2): token feature lanes live in [0, 1];

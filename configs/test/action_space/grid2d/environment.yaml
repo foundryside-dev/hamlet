@@ -5,17 +5,17 @@ environment:
       description: "Energy"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
     - name: health
       description: "Health"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
     - name: money
       description: "Cash"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
   affordances:
     - name: Bed
       description: "Rest"

@@ -4,7 +4,6 @@ effect_definitions:
   - id: ate_food
     scope: agent
     duration: 10
-    intensity: 1.0
     reapply_policy: stack
     observable: true
     on_spawn:
@@ -16,6 +15,7 @@ effect_definitions:
     on_despawn:
       - modify: target.vfs.is_digesting
         value: "false"
+    on_interrupt: []
 
 # Per-scope budget of concurrently active effects (token-obs spec S2, required because
 # effects are declared). Values: one active instance per declared effect per scope

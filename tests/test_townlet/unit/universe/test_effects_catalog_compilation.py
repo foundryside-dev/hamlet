@@ -31,12 +31,12 @@ def test_compiler_compiles_effects_catalog_per_level(tmp_path: Path):
                 "id": "energy_regen",
                 "scope": "agent",
                 "duration": 1,
-                "intensity": 1.0,
                 "reapply_policy": "stack",
                 "observable": True,
                 "on_spawn": [{"modify": "target.bar.energy", "value": "target.bar.energy + 0.2"}],
                 "on_tick": [],
                 "on_despawn": [],
+                "on_interrupt": [],
             }
         ],
     }

@@ -41,7 +41,7 @@ def test_custom_item_verbs_flow_from_config_to_runtime(tmp_path):
 
     local_action = build_item_command_action_name("apple", "EAT_LOCAL", "local")
     inventory_action = build_item_command_action_name("apple", "EAT_HELD", "inventory")
-    action_names = {a.name for a in universe.action_space_metadata.actions}
+    action_names = {a.name for a in universe.get_level("L0_smoke").action_metadata.actions}
     assert local_action in action_names
     assert inventory_action in action_names
 
@@ -51,8 +51,9 @@ def test_custom_item_verbs_flow_from_config_to_runtime(tmp_path):
     occupied_positions = {
         tuple(int(coord) for coord in item.position) for item in env.item_manager.active_items.values() if item.position is not None
     }
-    assert env.grid_size is not None
-    spawn_position = next((x, y) for x in range(env.grid_size) for y in range(env.grid_size) if (x, y) not in occupied_positions)
+    spawn_position = next(
+        (x, y) for x in range(env.substrate.width) for y in range(env.substrate.height) if (x, y) not in occupied_positions
+    )
     env.positions[0] = torch.tensor(spawn_position, device=env.device)
 
     item = env.item_manager.spawn_item("apple", position=spawn_position, current_tick=0)

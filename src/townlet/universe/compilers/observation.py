@@ -10,10 +10,11 @@ compile refusal the spec names.
 
 from __future__ import annotations
 
-from typing import Any, cast
+from typing import Any
 
 import torch
 
+from townlet.config.affordances_v2_config import AffordancesV2Config
 from townlet.config.bars_v2_config import BarsV2Config
 from townlet.config.brain_config import BrainConfig
 from townlet.config.environment_config import (
@@ -24,21 +25,15 @@ from townlet.config.stratum_config import StratumConfig
 from townlet.effects.catalog import EffectCatalog
 from townlet.substrate.factory import SubstrateFactory
 from townlet.universe.compiled import CompiledVFSProfiles
-from townlet.universe.dto import AffordanceMetadata
 from townlet.universe.dto.token_spec import (
-    EFFECT_SCOPE_VOCABULARY,
-    ExposedVariable,
-    SlotBinding,
+    MeterDeclaration,
     TokenSpec,
     build_token_type,
-    check_indistinguishability,
-    effect_capacity,
-    item_capacity,
+    canonical_token_bindings,
     mean_census_advisory,
     require_position_rank,
-    static_payload_signature,
 )
-from townlet.vfs.schema import NormalizationSpec, VariableDef, VariableScope
+from townlet.vfs.schema import NormalizationSpec, VariableDef
 
 # The custom-typed Literal cast target for environment.yaml variable types.
 _VECTOR_TYPES = {"vecNi", "vecNf"}
@@ -51,11 +46,10 @@ class ObservationCompiler:
     def build_token_spec(
         self,
         stratum: StratumConfig,
-        bars: BarsV2Config,
-        affordance_metadata: AffordanceMetadata,
+        meter_declarations: tuple[MeterDeclaration, ...],
+        affordances: AffordancesV2Config,
         items_catalog: ItemsCatalogConfig | None,
         compiled_effect_catalog: EffectCatalog | None,
-        max_active_effects: dict[str, int] | None,
         environment: EnvConfigV21,
         compiled_vfs_profiles: CompiledVFSProfiles | None,
         vfs_variables: tuple[VariableDef, ...],
@@ -86,71 +80,16 @@ class ObservationCompiler:
         substrate_instance = SubstrateFactory.build(substrate_cfg, torch.device("cpu"))
         require_position_rank(substrate_instance.position_dim, substrate_type=substrate_cfg.type)
 
-        self_type = build_token_type("self", (SlotBinding(slot_index=0, filler_kind="static", filler_ref="self"),))
-        meter_type = build_token_type(
-            "meter",
-            tuple(SlotBinding(slot_index=i, filler_kind="static", filler_ref=meter.name) for i, meter in enumerate(bars.meters)),
+        bindings = canonical_token_bindings(
+            meter_declarations=meter_declarations,
+            affordances=affordances,
+            items_catalog=items_catalog,
+            compiled_effect_catalog=compiled_effect_catalog,
+            environment=environment,
+            compiled_vfs_profiles=compiled_vfs_profiles,
+            vfs_variables=vfs_variables,
         )
-        # Capacity is the metadata affordance COUNT (ruling: `deployment.positions` are
-        # per-instance payload inputs, not extra capacity — absent instances are padding).
-        affordance_type = build_token_type(
-            "affordance",
-            tuple(
-                SlotBinding(slot_index=i, filler_kind="static", filler_ref=affordance.id)
-                for i, affordance in enumerate(affordance_metadata.affordances)
-            ),
-        )
-        agent_type = build_token_type("agent", ())
-
-        if items_catalog is not None:
-            item_cap = item_capacity(
-                max_items_in_world=items_catalog.max_items_in_world,
-                max_items_per_agent=items_catalog.max_items_per_agent,
-                declared_agents_per_world=None,
-            )
-        else:
-            item_cap = 0
-        item_type = build_token_type(
-            "item",
-            tuple(SlotBinding(slot_index=i, filler_kind="dynamic", filler_ref=f"item:{i}") for i in range(item_cap)),
-        )
-
-        declared_effects = len(compiled_effect_catalog.effects) if compiled_effect_catalog is not None else 0
-        effect_cap = effect_capacity(
-            max_active_effects=max_active_effects,
-            declared_effect_count=declared_effects,
-            declared_agents_per_world=None,
-            item_capacity_value=item_cap,
-            affordance_capacity_value=affordance_type.capacity,
-        )
-        effect_type = build_token_type(
-            "effect",
-            tuple(
-                SlotBinding(slot_index=i, filler_kind="dynamic", filler_ref=ref)
-                for i, ref in enumerate(
-                    effect_slot_refs(
-                        max_active_effects=max_active_effects if declared_effects else None,
-                        declared_agents_per_world=None,
-                        item_capacity_value=item_cap,
-                        affordance_capacity_value=affordance_type.capacity,
-                    )
-                )
-            ),
-        )
-        if effect_type.capacity != effect_cap:
-            raise ValueError(
-                f"Effect token capacity disagrees with its derivation: slot layout produced "
-                f"{effect_type.capacity} slots, `effect_capacity` derived {effect_cap}. "
-                "`effect_slot_refs` and `effect_capacity` must read the same declared budget and the "
-                "same denominators; a divergence here is an engine bug, not an authoring error."
-            )
-
-        element_bindings = self._variable_element_bindings(environment, compiled_vfs_profiles, vfs_variables)
-        variable_element_type = build_token_type("variable_element", element_bindings)
-
-        spec = TokenSpec(
-            types=(self_type, meter_type, affordance_type, agent_type, item_type, effect_type, variable_element_type),
-        )
+        spec = TokenSpec(types=tuple(build_token_type(type_name, type_bindings) for type_name, type_bindings in bindings))
 
         architecture = brain.architecture
         aggregator_type: str | None = None
@@ -166,112 +105,37 @@ class ObservationCompiler:
         return spec, tuple(advisories)
 
     @staticmethod
-    def _variable_element_bindings(
-        environment: EnvConfigV21,
-        compiled_vfs_profiles: CompiledVFSProfiles | None,
-        vfs_variables: tuple[VariableDef, ...],
-    ) -> tuple[SlotBinding, ...]:
-        """Slot bindings for the `variable_element` type: one slot per element of each
-        EXPLICITLY exposed variable, in registry declaration order (the order
-        ``build_runtime_variables`` registers them — environment.yaml declaration order,
-        then each profile's compile order).
-
-        Exposure sources (explicit-exposure cut, spec §2):
-
-        - every ``environment.yaml`` variable — its declaration in the observation
-          config file IS the exposure, and its normalization is already required there;
-        - a global/agent profile variable with authored non-empty ``exposed_to``
-          (normalization required by the DTO at exposure);
-        - an ``exposed_to``-declaring item-profile variable REFUSES with the landing
-          named: the item-arena slot-binding emission lands with the unit-5 pack
-          migration (the runtime publisher exists — Task 8 — but no compile surface
-          drives it yet, and no shipped pack declares one).
-
-        Exposure-rule failures are compile refusals (ValueError from token_spec.py's
-        derivations, actionable messages carried verbatim); the compile-time
-        indistinguishability check refuses over the bound set (spec §1).
-        """
-        env_semantic: dict[str, str] = {}
-        for var in environment.environment.variables:
-            env_semantic[var.name] = str(var.semantic_type)
-
-        exposed_profile: dict[str, str] = {}
-        if compiled_vfs_profiles is not None:
-            for profile in (compiled_vfs_profiles.global_profile, compiled_vfs_profiles.agent_profile):
-                if profile is None:
-                    continue
-                for compiled_var in profile.variables:
-                    if compiled_var.exposed_to:
-                        exposed_profile[str(compiled_var.name)] = str(compiled_var.semantic_type)
-            for item_profile in (compiled_vfs_profiles.item_profiles or {}).values():
-                for compiled_var in item_profile.variables:
-                    if compiled_var.exposed_to:
-                        raise ValueError(
-                            f"Item-profile variable '{item_profile.profile_name}.{compiled_var.name}' declares "
-                            f"exposed_to={list(compiled_var.exposed_to)}, but item-profile exposure has no compiled "
-                            "slot-binding surface yet.\n"
-                            "  Landing (token-obs spec §2 scope table): `variable_element` via the item-arena "
-                            "publisher with an owner/slot coordinate — the runtime publisher exists "
-                            "(environment/token_publishers.py, unit-3 Task 8); the compile emission lands with the "
-                            "unit-5 pack migration, which authors the first exposed item variable. Until then, "
-                            "remove the exposure."
-                        )
-
-        bindings: list[SlotBinding] = []
-        bound: list[ExposedVariable] = []
-        for var_def in vfs_variables:
-            var_id = var_def.id
-            if var_id in env_semantic:
-                semantic_type = env_semantic[var_id]
-            elif var_id in exposed_profile:
-                semantic_type = exposed_profile[var_id]
-            elif var_def.exposed_to:
-                # A variables_reference.yaml overlay static declaring exposed_to directly
-                # on the VariableDef: no semantic_type surface exists there yet.
-                raise ValueError(
-                    f"Variable '{var_id}' (variables_reference.yaml overlay) declares exposed_to, but overlay "
-                    "statics have no semantic_type surface and cannot bind variable_element slots yet. "
-                    "Declare the variable in vfs_profiles.yaml to expose it."
-                )
-            else:
-                continue
-
-            scope = var_def.scope.value if isinstance(var_def.scope, VariableScope) else str(var_def.scope)
-            if var_def.shape:
-                shape = tuple(var_def.shape)
-            elif var_def.dims is not None and var_def.dims > 1:
-                shape = (int(var_def.dims),)
-            else:
-                shape = ()
-            exposed = ExposedVariable(
-                id=var_id,
-                scope=scope,
-                semantic_type=semantic_type,
-                type=var_def.type,
-                lifetime=var_def.lifetime,
-                default=var_def.default,
-                shape=shape,
-                normalization=var_def.normalization,
+    def compile_meter_declarations(environment: EnvConfigV21, bars: BarsV2Config) -> tuple[MeterDeclaration, ...]:
+        """Compile meter token identity from the two declarations that own it."""
+        environment_meters = environment.environment.meters
+        by_name = {meter.name: meter for meter in environment_meters}
+        if len(by_name) != len(environment_meters):
+            raise ValueError("environment.yaml declares duplicate meter names; meter token identity must be unique")
+        bar_names = {meter.name for meter in bars.meters}
+        if set(by_name) != bar_names:
+            raise ValueError(
+                "Meter vocabulary mismatch between environment.yaml and bars.yaml while compiling token declarations: "
+                f"environment-only={sorted(set(by_name) - bar_names)}, bars-only={sorted(bar_names - set(by_name))}"
             )
-            # No compiled variable carries an owner_slot yet (item/effect ownership is a
-            # publisher-side feature); describe_variable raises if that ever changes.
-            signature = static_payload_signature(exposed, owner_capacity=None)
-            bound.append(exposed)
-            # static_payload_signature returns (scope, shape, per-element descriptor blocks).
-            descriptor_blocks = cast("tuple[tuple[float, ...], ...]", signature[2])
-            for element_index, descriptor_block in enumerate(descriptor_blocks):
-                filler_ref = exposed.id if exposed.element_count == 1 else f"{exposed.id}[{element_index}]"
-                bindings.append(
-                    SlotBinding(
-                        slot_index=len(bindings),
-                        filler_kind="static",
-                        filler_ref=filler_ref,
-                        static_signature=tuple(descriptor_block),
-                    )
-                )
-
-        check_indistinguishability(bound, owner_capacity=None)
-        return tuple(bindings)
+        return tuple(
+            MeterDeclaration(
+                name=meter.name,
+                normalization=by_name[meter.name].token_normalization(
+                    minimum=meter.bounds.min,
+                    maximum=meter.bounds.max,
+                ),
+                initial=meter.initial,
+                min=meter.bounds.min,
+                max=meter.bounds.max,
+                lethal_min=meter.bounds.lethal_min,
+                lethal_max=meter.bounds.lethal_max,
+                passive_depletion=meter.depletion.passive,
+                move_depletion=meter.depletion.move,
+                interact_depletion=meter.depletion.interact,
+                natural_recovery=meter.recovery.natural,
+            )
+            for meter in bars.meters
+        )
 
     def build_vfs_variables(
         self,
@@ -377,32 +241,3 @@ class ObservationCompiler:
             return NormalizationSpec(kind="zscore", mean=mean, std=std)
 
         raise ValueError(f"Unsupported normalization method '{method}' for variable '{var_name}'. Use normalize | standardize.")
-
-
-def effect_slot_refs(
-    *,
-    max_active_effects: dict[str, int] | None,
-    declared_agents_per_world: int | None,
-    item_capacity_value: int,
-    affordance_capacity_value: int,
-) -> tuple[str, ...]:
-    """The effect token slot layout: scope-blocked, in EffectScope vocabulary order.
-
-    One block per scope, sized budget × denominator, refs ``effect:{scope}:{i}`` with
-    ``i`` dense within the scope block. This convention is shared with the runtime
-    wiring (the environment maps live effect instances into their scope's block), and
-    is part of the layout hash through the filler refs.
-    """
-    if max_active_effects is None:
-        return ()
-    denominators = {
-        "global": 1,
-        "agent": declared_agents_per_world if declared_agents_per_world is not None else 1,
-        "item": item_capacity_value,
-        "affordance": affordance_capacity_value,
-    }
-    refs: list[str] = []
-    for scope in EFFECT_SCOPE_VOCABULARY:
-        block = max_active_effects.get(scope, 0) * denominators[scope]
-        refs.extend(f"effect:{scope}:{i}" for i in range(block))
-    return tuple(refs)

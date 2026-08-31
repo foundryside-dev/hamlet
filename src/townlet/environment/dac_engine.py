@@ -1,4 +1,4 @@
-"""DACEngine — legacy-named drive/reward backend.
+"""DACEngine — drive/reward backend.
 
 The DACEngine compiles a level's ``drive.yaml`` (a
 :class:`~townlet.config.drive_as_code.DriveAsCodeConfig`) into GPU-native
@@ -446,11 +446,7 @@ class DACEngine:
 
             return compute_hybrid
 
-        # Fallback for unimplemented strategies
-        def placeholder(meters: torch.Tensor, dones: torch.Tensor) -> torch.Tensor:
-            return torch.zeros(self.num_agents, device=self.device)
-
-        return placeholder
+        raise ValueError(f"Unsupported extrinsic strategy: {strategy.type!r}")
 
     def _compile_shaping(self) -> list[Callable]:
         """Compile shaping bonuses into computation functions.
@@ -464,10 +460,9 @@ class DACEngine:
             if bonus_config.type == "approach_reward":
                 # Use closure factory to capture config correctly
                 def create_approach_reward_fn(config):
-                    # Agent.yaml uses 'target', DAC uses 'target_affordance'
-                    target_affordance = getattr(config, "target_affordance", None) or getattr(config, "target", None)
-                    weight = getattr(config, "weight", 0.0)
-                    max_distance = getattr(config, "max_distance", 1.0)
+                    target_affordance = config.target_affordance
+                    weight = config.weight
+                    max_distance = config.max_distance
 
                     def compute_approach_reward(**kwargs) -> torch.Tensor:
                         """Compute approach reward bonus for all agents."""
@@ -501,10 +496,7 @@ class DACEngine:
             elif bonus_config.type == "completion_bonus":
                 # Use closure factory to capture config correctly
                 def create_completion_bonus_fn(config):
-                    # Agent.yaml uses 'bonus' for magnitude; DAC uses 'weight'
-                    weight = getattr(config, "weight", None)
-                    if weight is None:
-                        weight = getattr(config, "bonus", 0.0)
+                    weight = config.weight
                     target_affordance = config.affordance
 
                     def compute_completion_bonus(**kwargs) -> torch.Tensor:

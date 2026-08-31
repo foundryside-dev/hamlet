@@ -90,7 +90,23 @@ def _action(env: VectorizedHamletEnv, name: str) -> int:
 
 
 def _park_on(env: VectorizedHamletEnv, affordance: str) -> None:
-    env.positions[:] = torch.tensor(env.affordances[affordance], device=env.device, dtype=env.positions.dtype)
+    env.positions[:] = env.affordances[affordance].to(device=env.device, dtype=env.positions.dtype)
+
+
+def _set_meter_range_type(pack: Path, meter_name: str, range_type: dict[str, object]) -> None:
+    environment_path = pack / "environment.yaml"
+    data = yaml.safe_load(environment_path.read_text())
+    meter = next(meter for meter in data["environment"]["meters"] if meter["name"] == meter_name)
+    meter["range_type"] = range_type
+    environment_path.write_text(yaml.safe_dump(data, sort_keys=False))
+
+
+def _meter_token_lane(env: VectorizedHamletEnv, meter_name: str, feature: str) -> int:
+    schema = env.token_spec.get_type("meter")
+    assert schema is not None
+    binding = next(binding for binding in schema.slot_bindings if binding.filler_ref == meter_name)
+    row = next(row for row in env.token_spec.row_layout() if row[0:2] == ("meter", binding.slot_index))
+    return row[2] + 1 + schema.payload_features.index(feature)
 
 
 # --------------------------------------------------------------------------------------
@@ -257,6 +273,46 @@ def test_meter_without_declared_bounds_is_fatal() -> None:
 # --------------------------------------------------------------------------------------
 
 
+def test_range_type_changes_the_live_meter_token_value_and_identity(tmp_path: Path) -> None:
+    """Config-in/behavior-out pin for PDR-0134 and hamlet-1e335e0363.
+
+    Before the repair both packs emitted the same bars-derived minmax value and the
+    token carried no declaration identity at all.
+    """
+    linear_pack = _pack(tmp_path / "linear", L1)
+    log_pack = _pack(tmp_path / "log", L1)
+    _set_meter_range_type(linear_pack, "money", {"kind": "minmax", "clip": True})
+    _set_meter_range_type(log_pack, "money", {"kind": "log_scaled", "clip": True})
+    linear = _env(linear_pack, L1)
+    logarithmic = _env(log_pack, L1)
+
+    for env in (linear, logarithmic):
+        env.meters[0, env.meter_name_to_index["money"]] = 1000.0
+
+    linear_observation = linear._get_observations()
+    log_observation = logarithmic._get_observations()
+    linear_value = linear_observation[0, _meter_token_lane(linear, "money", "value_0")].item()
+    log_value = log_observation[0, _meter_token_lane(logarithmic, "money", "value_0")].item()
+
+    assert linear_value == pytest.approx(1000.0 / 999999.0)
+    assert log_value == pytest.approx(torch.log1p(torch.tensor(1000.0)).item() / torch.log1p(torch.tensor(999999.0)).item())
+    assert log_value != pytest.approx(linear_value)
+    assert linear.level.layout_hash == logarithmic.level.layout_hash
+    assert linear.level.observation_schema_hash != logarithmic.level.observation_schema_hash
+    assert linear.level.vfs_hash != logarithmic.level.vfs_hash
+    linear_affordances = linear.token_spec.get_type("affordance")
+    log_affordances = logarithmic.token_spec.get_type("affordance")
+    assert linear_affordances is not None and log_affordances is not None
+    assert any(
+        left.static_signature != right.static_signature
+        for left, right in zip(linear_affordances.slot_bindings, log_affordances.slot_bindings, strict=True)
+    )
+    assert linear_observation[0, _meter_token_lane(linear, "money", "normalization_kind_minmax")].item() == 1.0
+    assert linear_observation[0, _meter_token_lane(linear, "money", "normalization_kind_log_scaled")].item() == 0.0
+    assert log_observation[0, _meter_token_lane(logarithmic, "money", "normalization_kind_minmax")].item() == 0.0
+    assert log_observation[0, _meter_token_lane(logarithmic, "money", "normalization_kind_log_scaled")].item() == 1.0
+
+
 # --------------------------------------------------------------------------------------
 # Per-meter normalization kinds (hamlet-3d3039f340, PDR-0054)
 # --------------------------------------------------------------------------------------
@@ -321,7 +377,7 @@ def test_clamp_and_validate_carries_compiled_bounds_rules(tmp_path: Path) -> Non
     a string in DEFAULT_TRANSITION_PHASES, with no rule family ever assigned to it.
     """
     universe = UniverseCompiler().compile(_pack(tmp_path, L1), primary_level=L1, use_cache=False)
-    schedule = universe.transition_schedule
+    schedule = universe.get_level(L1).transition_schedule
 
     bounds_rules = {rule.variable_id: rule for rule in schedule.bounds_clamp_program.rules}
     passive_rules = {rule.variable_id: rule for rule in schedule.passive_depletion_program.rules}

@@ -1,4 +1,4 @@
-"""Performance guardrails for scripted VTC kernels."""
+"""Performance guardrails for eager VTC kernels."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ import torch
 
 from townlet.vfs import vtc_kernels
 
-SCRIPTED_KERNEL_TOLERANCE = 1.50
+EAGER_KERNEL_TOLERANCE = 1.50
 
 
 def _measure(fn: Callable[[], torch.Tensor], *, iterations: int) -> float:
@@ -21,8 +21,8 @@ def _measure(fn: Callable[[], torch.Tensor], *, iterations: int) -> float:
     return (time.perf_counter() - start) / iterations
 
 
-def test_scripted_vtc_threshold_kernel_within_hardcoded_baseline_tolerance() -> None:
-    """Scripted hot path should stay close to the direct tensor equation it replaces."""
+def test_eager_vtc_threshold_kernel_within_hardcoded_baseline_tolerance() -> None:
+    """Eager hot path should stay close to the equivalent direct tensor equation."""
     source_value = torch.linspace(0.0, 1.0, steps=32768, dtype=torch.float32)
     target_value = torch.ones_like(source_value)
     active_mask = torch.ones_like(source_value, dtype=torch.bool)
@@ -32,7 +32,7 @@ def test_scripted_vtc_threshold_kernel_within_hardcoded_baseline_tolerance() -> 
         candidate = torch.clamp(target_value + delta, min=0.0, max=1.0)
         return torch.where(active_mask & (source_value < 0.3), candidate, target_value)
 
-    def scripted_vtc() -> torch.Tensor:
+    def eager_vtc() -> torch.Tensor:
         return vtc_kernels.apply_threshold_cascade(
             source_value,
             target_value,
@@ -44,12 +44,12 @@ def test_scripted_vtc_threshold_kernel_within_hardcoded_baseline_tolerance() -> 
             clamp_high=1.0,
         )
 
-    assert torch.allclose(scripted_vtc(), hardcoded_baseline())
+    assert torch.allclose(eager_vtc(), hardcoded_baseline())
 
     baseline_time = _measure(hardcoded_baseline, iterations=75)
-    scripted_time = _measure(scripted_vtc, iterations=75)
+    eager_time = _measure(eager_vtc, iterations=75)
 
-    assert scripted_time <= baseline_time * SCRIPTED_KERNEL_TOLERANCE, (
-        "Scripted VTC threshold kernel exceeded hardcoded baseline tolerance: "
-        f"scripted={scripted_time:.8f}s baseline={baseline_time:.8f}s tolerance={SCRIPTED_KERNEL_TOLERANCE:.2f}x"
+    assert eager_time <= baseline_time * EAGER_KERNEL_TOLERANCE, (
+        "Eager VTC threshold kernel exceeded hardcoded baseline tolerance: "
+        f"eager={eager_time:.8f}s baseline={baseline_time:.8f}s tolerance={EAGER_KERNEL_TOLERANCE:.2f}x"
     )

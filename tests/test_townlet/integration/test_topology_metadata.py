@@ -61,7 +61,6 @@ def test_topology_propagates_from_config_to_websocket_metadata_grid2d():
             port=8766,
             step_delay=0.2,
             total_episodes=1,
-            training_config_path=None,
             config_dir=TEST_CONFIG_DIR,
             level_name=LEVEL_NAME,
         )
@@ -109,7 +108,6 @@ def test_topology_propagates_from_config_to_websocket_metadata_gridnd():
             port=8766,
             step_delay=0.2,
             total_episodes=1,
-            training_config_path=None,
             config_dir=TEST_CONFIG_DIR,
             level_name=LEVEL_NAME,
         )
@@ -160,7 +158,6 @@ def test_continuous_substrate_has_no_topology_in_metadata():
             port=8766,
             step_delay=0.2,
             total_episodes=1,
-            training_config_path=None,
             config_dir=TEST_CONFIG_DIR,
             level_name=LEVEL_NAME,
         )

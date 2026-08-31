@@ -7,8 +7,6 @@ version: '1.0'
 items:
   - item_type: coat
     spawn_count: 1
-    spawn_interval: null
-    spawn_position: fixed
     placement:
       mode: fixed
       fixed_positions: [[1, 0]]

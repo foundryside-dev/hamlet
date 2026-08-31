@@ -117,7 +117,6 @@ def run_round(high_agent: int, low_agent: int, label: str):
     }
 
 
-
 # --- Facet O3, verified through the ACTION CHANNEL only -----------------------
 # No direct writes to env.positions anywhere in this round: the two bidders WALK to
 # their chosen bid tiles using movement action ids, then both INTERACT on one tick.
@@ -186,8 +185,11 @@ def run_walked_round(agent_hi: int, agent_lo: int, label: str, max_walk: int = 3
     print(f"  vfs.won_auction    : {read(env, 'won_auction').tolist()}")
     print(f"  money delta        : {(after - before).tolist()}")
     print(f"  energy after walk  : {env.meters[:, env.meter_name_to_index['energy']].tolist()}")
-    return {"last_bid": read(env, "last_bid").tolist(), "won": read(env, "won_auction").tolist(),
-            "holder": float(read(env, "prize_holder"))}
+    return {
+        "last_bid": read(env, "last_bid").tolist(),
+        "won": read(env, "won_auction").tolist(),
+        "holder": float(read(env, "prize_holder")),
+    }
 
 
 def main():
@@ -221,8 +223,7 @@ def main():
     print("round2 last_bid:", r2["last_bid"], "-> winner", r2["won"])
     print("clearing price identical:", r1["clearing_price"], r2["clearing_price"])
     print("prize_holder round1/round2:", r1["holder"], r2["holder"])
-    print("winner follows the HIGH BID, not the agent index / loop order:",
-          r1["won"].index(1.0) == 1 and r2["won"].index(1.0) == 0)
+    print("winner follows the HIGH BID, not the agent index / loop order:", r1["won"].index(1.0) == 1 and r2["won"].index(1.0) == 0)
     print()
     print("=== ROUND 0: facet O3 through the ACTION CHANNEL (no probe writes to env.positions) ===")
     w1 = run_walked_round(agent_hi=1, agent_lo=0, label="WALKED ROUND A (agent1 walks to BID_HIGH)")
@@ -242,19 +243,31 @@ def main():
     a = torch.full((env3.num_agents,), wait, dtype=torch.long, device=env3.device)
     a[2] = interact
     env3.step(a)
-    print("  tick 1 (agent2 bids 1.0): clearing_price", float(read(env3, "clearing_price")),
-          "prize_holder", float(read(env3, "prize_holder")),
-          "won", read(env3, "won_auction").tolist(),
-          "money", money(env3).tolist())
+    print(
+        "  tick 1 (agent2 bids 1.0): clearing_price",
+        float(read(env3, "clearing_price")),
+        "prize_holder",
+        float(read(env3, "prize_holder")),
+        "won",
+        read(env3, "won_auction").tolist(),
+        "money",
+        money(env3).tolist(),
+    )
     a_all_wait = torch.full((env3.num_agents,), wait, dtype=torch.long, device=env3.device)
     env3.step(a_all_wait)
-    print("  tick 2 (nobody bids)    : clearing_price", float(read(env3, "clearing_price")),
-          "prize_holder", float(read(env3, "prize_holder")),
-          "prize_available", float(read(env3, "prize_available")),
-          "won", read(env3, "won_auction").tolist(),
-          "money", money(env3).tolist())
-    print("  clearing effect still standing:",
-          {k: [x.effect_id for x in v] for k, v in env3.effect_manager.agent_effects.items()})
+    print(
+        "  tick 2 (nobody bids)    : clearing_price",
+        float(read(env3, "clearing_price")),
+        "prize_holder",
+        float(read(env3, "prize_holder")),
+        "prize_available",
+        float(read(env3, "prize_available")),
+        "won",
+        read(env3, "won_auction").tolist(),
+        "money",
+        money(env3).tolist(),
+    )
+    print("  clearing effect still standing:", {k: [x.effect_id for x in v] for k, v in env3.effect_manager.agent_effects.items()})
     print()
     print("=== ROUND 4: TIE — two agents bid the SAME amount (uniqueness of the award) ===")
     _, env4 = build()

@@ -7,6 +7,8 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from townlet.numeric import require_float32
+
 __all__ = [
     "CommandConfig",
     "EffectDefinitionConfig",
@@ -90,7 +92,7 @@ class CommandConfig(BaseModel):
     # spawn_effect command: Trigger another effect
     spawn_effect: str | None = None  # Effect ID
     target: str | None = None  # Expression: "self", "target", or path
-    intensity: float | None = None  # Strength multiplier
+    intensity: float | None = Field(default=None, allow_inf_nan=False)  # Strength multiplier
 
     # spawn_item command: Create item in world (Phase 4)
     spawn_item: str | None = None  # Item type ID
@@ -129,6 +131,14 @@ class CommandConfig(BaseModel):
     sample: str | None = None  # distribution name (e.g., "uniform")
     params: dict[str, Any] = Field(default_factory=dict)
     store_in: str | None = None
+
+    @field_validator("intensity")
+    @classmethod
+    def validate_spawn_intensity_float32(cls, intensity: float | None) -> float | None:
+        """Canonicalize authored spawn intensity at the float32 runtime boundary."""
+        if intensity is None:
+            return None
+        return require_float32(intensity, field="spawn_effect intensity")
 
     @model_validator(mode="after")
     def validate_exactly_one_command(self) -> CommandConfig:
@@ -224,30 +234,27 @@ class EffectDefinitionConfig(BaseModel):
 
     # Lifecycle parameters (REQUIRED - no defaults to prevent surprises)
     duration: int = Field(..., description="Ticks until auto-despawn", gt=0)
-    intensity: float = Field(..., description="Default strength multiplier")
 
     # Stacking policy (REQUIRED - must be explicit)
     reapply_policy: ReapplyPolicy = Field(..., description="Policy for multiple spawns")
 
     # Visibility
-    observable: bool = Field(default=True, description="Visible in agent observations")
+    observable: bool = Field(..., description="Visible in agent observations")
 
     # Authoring metadata only — never read at runtime. Same pattern as
     # ItemTypeConfig.description (items_config.py) — a sibling per-definition DTO.
     description: str | None = Field(default=None, description="Human-readable description (metadata only)")
 
     # Lifecycle command pipelines
-    on_spawn: list[CommandConfig] = Field(default=[], description="Commands on spawn")
-    on_tick: list[CommandConfig] = Field(default=[], description="Commands each tick")
-    on_despawn: list[CommandConfig] = Field(default=[], description="Commands on despawn")
-    on_interrupt: list[CommandConfig] = Field(default=[], description="Commands on forced removal")
+    on_spawn: list[CommandConfig] = Field(..., description="Commands on spawn")
+    on_tick: list[CommandConfig] = Field(..., description="Commands each tick")
+    on_despawn: list[CommandConfig] = Field(..., description="Commands on despawn")
+    on_interrupt: list[CommandConfig] = Field(..., description="Commands on forced removal")
 
     @field_validator("on_spawn", "on_tick", "on_despawn", "on_interrupt", mode="before")
     @classmethod
-    def parse_command_dicts(cls, v: list[dict[str, Any]] | list[CommandConfig] | None) -> list[CommandConfig]:
+    def parse_command_dicts(cls, v: list[dict[str, Any]] | list[CommandConfig]) -> list[CommandConfig]:
         """Convert list of dicts to list of CommandConfig."""
-        if v is None:
-            return []
         if isinstance(v, list):
             return [CommandConfig(**cmd) if isinstance(cmd, dict) else cmd for cmd in v]
         return v

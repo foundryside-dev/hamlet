@@ -328,20 +328,20 @@ class SequentialReplayBuffer:
         """
         Restore episode buffer from serialized state (P1.1).
 
-        Now requires format_version >= 4. Legacy formats not supported.
+        Requires exactly format_version 4. Every other schema is unsupported.
 
         Args:
             state: Dictionary from serialize()
 
         Raises:
-            ValueError: If loading legacy format (version < 4)
+            ValueError: If the checkpoint format version does not match exactly
         """
-        # Reject legacy format (per CLAUDE.md: zero backwards compatibility)
-        format_version = state.get("format_version", 1)
-        if format_version < 4:
+        # Only the exact current checkpoint format is executable.
+        format_version = state.get("format_version")
+        if format_version != 4:
             raise ValueError(
-                "Cannot load legacy sequential buffer checkpoint (format_version < 4). "
-                "Regenerate checkpoint with current Townlet version."
+                f"Cannot load sequential buffer checkpoint with format_version {format_version!r}; "
+                "the exact current format_version is 4. Regenerate the checkpoint."
             )
 
         self.num_transitions = state["num_transitions"]

@@ -1,12 +1,8 @@
-"""Action space builder for composable action spaces."""
-
-from pathlib import Path
+"""Runtime container for compiled composable action spaces."""
 
 import torch
-import yaml
 
 from townlet.environment.action_config import ActionConfig
-from townlet.substrate.base import SpatialSubstrate
 
 
 class ComposedActionSpace:
@@ -18,7 +14,7 @@ class ComposedActionSpace:
     Attributes:
         actions: Complete action list (substrate + custom + affordance)
         substrate_action_count: Number from substrate (6 for Grid2D, 8 for Grid3D)
-        custom_action_count: Number from global_actions.yaml
+        custom_action_count: Number of compiled custom actions
         affordance_action_count: Number from affordances (future)
         enabled_action_names: Set of action names enabled in this config
     """
@@ -96,134 +92,3 @@ class ComposedActionSpace:
                 mask[:, action_id] = False
 
         return mask
-
-
-class ActionSpaceBuilder:
-    """Composes action space from global vocabulary.
-
-    Action Space = Substrate Actions + Custom Actions (from global_actions.yaml)
-    Enabled Actions = Subset specified in training.yaml
-
-    CRITICAL: All curriculum levels share the SAME action vocabulary.
-    This enables checkpoint transfer (same action_dim across configs).
-
-    Examples:
-        Global: 6 substrate + 4 custom = 10 total actions (all configs)
-        L0: 7 enabled (UP/DOWN/LEFT/RIGHT/INTERACT/WAIT/REST)
-        L1: 10 enabled (all actions available)
-    """
-
-    def __init__(
-        self,
-        substrate: SpatialSubstrate,
-        global_actions_path: Path,
-        enabled_action_names: list[str] | None,  # NO DEFAULT: explicit None for "all enabled"
-    ):
-        """Initialize action space builder.
-
-        Args:
-            substrate: Spatial substrate (provides substrate actions)
-            global_actions_path: Path to configs/global_actions.yaml
-            enabled_action_names: List of action names to enable (from training.yaml)
-                                 If None, all actions are enabled.
-        """
-        self.substrate = substrate
-        self.global_actions_path = global_actions_path
-        # Convert list to set, or keep None (None = all actions enabled)
-        if enabled_action_names is not None:
-            self.enabled_action_names: set[str] | None = set(enabled_action_names)
-        else:
-            self.enabled_action_names = None  # Explicit: all actions enabled
-
-    def build(self) -> ComposedActionSpace:
-        """Build complete action space from global vocabulary."""
-        actions = []
-        action_id = 0
-
-        # === 1. SUBSTRATE ACTIONS (REQUIRED) ===
-        substrate_actions = self.substrate.get_default_actions()
-        for action in substrate_actions:
-            action.id = action_id
-            action.source = "substrate"
-            action.enabled = self._is_enabled(action.name)
-            actions.append(action)
-            action_id += 1
-
-        # === 2. CUSTOM ACTIONS (from global_actions.yaml) ===
-        custom_action_count = 0
-        if self.global_actions_path.exists():
-            custom_actions = self._load_global_custom_actions()
-            for action in custom_actions:
-                action.id = action_id
-                action.source = "custom"
-                action.enabled = self._is_enabled(action.name)
-                actions.append(action)
-                action_id += 1
-            custom_action_count = len(custom_actions)
-
-        # === 3. AFFORDANCE ACTIONS (FUTURE - Deferred to TASK-003) ===
-        # Will be added to global_actions.yaml when implemented
-
-        return ComposedActionSpace(
-            actions=actions,
-            substrate_action_count=len(substrate_actions),
-            custom_action_count=custom_action_count,
-            affordance_action_count=0,  # Future
-            enabled_action_names=self.enabled_action_names,
-        )
-
-    def _is_enabled(self, action_name: str) -> bool:
-        """Check if action is enabled in this config."""
-        if self.enabled_action_names is None:
-            return True  # All actions enabled if not specified
-        return action_name in self.enabled_action_names
-
-    def _load_global_custom_actions(self) -> list[ActionConfig]:
-        """Load custom actions from global_actions.yaml.
-
-        NO-DEFAULTS PRINCIPLE: Operators must explicitly specify all behavioral fields.
-        Parser will error if costs/effects are missing (no silent defaults).
-        """
-        with open(self.global_actions_path) as f:
-            data = yaml.safe_load(f)
-
-        # NO DEFAULT: Require explicit "custom_actions" key (fail if missing)
-        if "custom_actions" not in data:
-            raise ValueError(
-                f"Missing 'custom_actions' key in {self.global_actions_path}. "
-                "Global actions file must explicitly define custom_actions list (use [] for none)."
-            )
-
-        custom_action_data = data["custom_actions"]
-
-        # Parse into ActionConfig objects
-        actions = []
-        for action_dict in custom_action_data:
-            # Temporary ID (will be reassigned by build())
-            action_dict["id"] = 0
-
-            # enabled is INTERNAL (assigned by builder, not from YAML)
-            # Explicitly assign True - will be updated based on enabled_action_names
-            action_dict["enabled"] = True
-
-            # source is always "custom" for global_actions.yaml
-            action_dict["source"] = "custom"
-
-            # Explicitly set optional fields to None if not in YAML
-            # NO DEFAULTS: All fields must be explicit
-            if "delta" not in action_dict:
-                action_dict["delta"] = None
-            if "teleport_to" not in action_dict:
-                action_dict["teleport_to"] = None
-            if "description" not in action_dict:
-                action_dict["description"] = None
-            if "icon" not in action_dict:
-                action_dict["icon"] = None
-            if "source_affordance" not in action_dict:
-                action_dict["source_affordance"] = None
-
-            # NO DEFAULTS: Pydantic will error if costs/effects missing
-            # Operators must explicitly specify costs: {} or effects: {}
-            actions.append(ActionConfig(**action_dict))
-
-        return actions

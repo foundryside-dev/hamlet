@@ -58,7 +58,6 @@ class ItemCustomCommand(BaseModel):
             "delay",
             "for_each",
             "sample",
-            "distribution",  # alias for sample in some fixtures
         }
         for cmd in v:
             if not isinstance(cmd, dict):
@@ -123,7 +122,6 @@ class ItemInteractionsConfig(BaseModel):
             "delay",
             "for_each",
             "sample",
-            "distribution",
         }
         for cmd in v:
             if not isinstance(cmd, dict):
@@ -345,17 +343,6 @@ class ItemAppearanceRuleConfig(BaseModel):
     item_type: str = Field(..., description="Item type ID from catalog")
 
     spawn_count: int = Field(..., description="Number of items to spawn at level start", ge=0)
-
-    spawn_interval: int | None = Field(
-        default=None,
-        description="Ticks between spawns (None = only spawn at level start). Superseded by schedule when provided.",
-        ge=1,
-    )
-
-    spawn_position: Literal["random", "fixed"] = Field(
-        default="random",
-        description="How to choose spawn position (legacy). Superseded by placement when provided.",
-    )
 
     placement: SpawnPlacementConfig | None = Field(
         default=None,

@@ -1,4 +1,30 @@
-# Metrics — HAMLET / Townlet        Last read: 2026-08-31 · milestone 3 accepted (`PDR-0136`)
+# Metrics — HAMLET / Townlet        Last read: 2026-09-01 · milestone 4 partial reading (`PDR-0138`)
+
+> **Milestone 4 partial engineering reading — 2026-09-01, `PDR-0138`, implementation
+> `project-recovery-3@9d4e942f`.** This is a pause checkpoint, not M4 acceptance.
+>
+> | cell | parameters | realized / requested transitions | shortfall | raw greedy mean | state |
+> | --- | ---: | ---: | ---: | ---: | --- |
+> | feedforward / mean | 62,095 | 2,278,634 / 2,278,640 | 6 | **98.9925** | cell pass |
+> | feedforward / attention | 128,143 | 2,278,639 / 2,278,640 | 1 | **99.0** | cell pass |
+> | recurrent / mean | 194,191 | 1,181,395 / 2,278,640 | 1,097,245 | not run | paused, resumable |
+> | recurrent / attention | 260,239 | 1,204,116 / 2,278,640 | 1,074,524 | not run | paused, resumable |
+>
+> Both feedforward readings are the exact arithmetic mean of 800 raw agent outcomes under 100
+> episodes, eight agents, eval seed 12345 and cap 1000. They exceed the fixed
+> 79.19466666666668 floor. The recurrent rows have no evaluation artifact and make no score claim.
+> All four training rows have one attempt; a later recurrent continuation will truthfully append
+> `resume=true` rather than overwrite this pause.
+>
+> **Implementation gate:** 3,822 passed / 11 skipped in 1,235.60 seconds; Ruff and Black (570
+> files), mypy (176 source files), no-defaults (176 source files), compiler CLI validation and
+> `git diff --check` passed. The source commit is pushed and the working tree was clean at launch.
+>
+> **Evidence guardrail:** `completed_live_agent_steps` persisted in checkpoint/metadata is the
+> budget authority. The inherited TensorBoard curve totals overstate it (2,372,112 versus
+> 2,278,634 for feedforward/mean; 2,396,920 versus 2,278,639 for feedforward/attention) and are
+> diagnostic only. The direct-script curve import and misleading early-stop database status are
+> open M4 defects, not deferred debt. No qualification process remains active at this checkpoint.
 
 > **Milestone 3 engineering reading — 2026-08-31, `PDR-0136`, implementation
 > `project-recovery-3@d554fb7f`.** The current replay ABI is compact dynamic state; the fixed

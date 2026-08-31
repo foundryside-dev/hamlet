@@ -39,7 +39,9 @@ from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
 from townlet.exploration.rnd import RNDExploration
 from townlet.population.vectorized import VectorizedPopulation
 from townlet.training.checkpoint_utils import (
+    CHECKPOINT_FORMAT_VERSION,
     assert_checkpoint_dimensions,
+    assert_checkpoint_identity,
     assert_checkpoint_layout_hash,
     assert_checkpoint_token_type_schema_hash,
     attach_universe_metadata,
@@ -136,6 +138,15 @@ class TestAttachStampsTokenHashes:
         # Dropped with their producer at the unit-3 cut.
         assert "observation_dim" not in checkpoint
         assert "observation_field_uuids" not in checkpoint
+
+
+class TestCompactReplayArtifactCut:
+    def test_checkpoint_format_moves_past_the_full_payload_abi(self) -> None:
+        assert CHECKPOINT_FORMAT_VERSION == 5
+
+    def test_full_payload_v4_checkpoint_refuses_before_any_state_is_read(self, compiled_universe) -> None:
+        with pytest.raises(ValueError, match=r"Unsupported checkpoint version: 4\nExpected version 5"):
+            assert_checkpoint_identity({"version": 4}, compiled_universe, force_new_vfs=False)
 
 
 class TestTokenNetGate:

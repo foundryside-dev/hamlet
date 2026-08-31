@@ -1,4 +1,4 @@
-# Roadmap — HAMLET / Townlet        Updated: 2026-08-31 · milestone-2 accepted (`PDR-0134`/`PDR-0135`)
+# Roadmap — HAMLET / Townlet        Updated: 2026-08-31 · milestone 3 in progress (`hamlet-1b1caf552a`)
 
 > Sequencing, WSJF / cost-of-delay, and dated forecasts are produced by
 > /axiom-program-management. This file records bets as INTENT, not a delivery
@@ -19,11 +19,12 @@
 > of the Now bet.
 
 > **Current checkpoint — 2026-08-31, `PDR-0134`/`PDR-0135`:** no horizon change. Token milestone 2
-> is engineering-accepted: meter `range_type` is an exact four-kind bounded two-lane contract,
+> is closed at `project-recovery-3@c6c6b524`: meter `range_type` is an exact four-kind bounded
+> two-lane contract,
 > affordance/effect identity matches executable behaviour, and each selected level is the sole
 > authority for its compiled products. The checkpoint is green at 3,675 passed / 11 skipped / 84%
-> coverage plus all static and pack gates. Compact replay starts after the accepted commit closes
-> the tracker dependency.
+> coverage plus all static and pack gates. The tracker dependency is discharged and compact replay
+> is atomically claimed and `in_progress` as `hamlet-1b1caf552a`.
 
 ## Now  (committed, in-flight)
 
@@ -67,7 +68,8 @@
   · **Milestone 1 delivered (`PDR-0133`):** the old position selector, all mode branches and the
   vacuous `div003_scaled` cell are gone. Current config rejects the old key; positions are
   `[0,1]`, egocentric deltas `[-1,1]`, with no compatibility path.
-  · **Milestone 2 delivered (`PDR-0134`/`PDR-0135`):** meter `range_type` now reaches
+  · **Milestone 2 delivered and closed (`PDR-0134`/`PDR-0135`, `c6c6b524`):** meter `range_type`
+  now reaches
   both live token values and static identity through exactly four bounded transformations:
   `minmax` (`clip: true`), `log_scaled` (`clip: true`), `cyclical_sin_cos`, and `binary`. The meter
   surface deletes `none`, `zscore`, `one_hot`, `rank_scaled` and `masked_value`; all 39 current
@@ -82,7 +84,7 @@
   coverage; Ruff, Black, mypy, no-defaults, compiler-pack validation and diff integrity green.
   The former focused 181 / oracle-seam 158 / population 24 readings predate this expanded boundary
   and remain historical only.
-  · **Next implementation unit, after the tracker handoff:** reuse the compiled per-slot
+  · **Active implementation unit (`hamlet-1b1caf552a`, `in_progress`):** reuse the compiled per-slot
   descriptors, keep only compact live state in replay, and reconstruct the fixed schema at the
   network edge.
   · **Acceptance:** L1 dynamic replay ≤120 floats; 100k observation pair ≤96,000,000 float32
@@ -90,10 +92,11 @@
   visibility and reconstructed-input parity pinned. Unit 4's 79.19 IQM floor runs only after
   this ABI lands; unit 5 then migrates every shipped pack.
   · **Checkpointed sequence (`PDR-0132`):** canonical bounded positions
-  (`hamlet-6a4a6596bd`, complete) → meter `range_type` wiring (`hamlet-1e335e0363`, accepted) → compact ABI
-  (`hamlet-1b1caf552a`) → Unit 4 engineering regression (`hamlet-25fc3fb955`) → Unit 5 shipped-pack
-  migration (`hamlet-55b2826a02`). Compact waits on both semantic repairs even though those bugs
-  remain independently startable. Each milestone needs terminal tracker evidence and a committed
+  (`hamlet-6a4a6596bd`, complete) → meter `range_type` wiring (`hamlet-1e335e0363`, closed) →
+  compact ABI (`hamlet-1b1caf552a`, in progress) → Unit 4 engineering regression
+  (`hamlet-25fc3fb955`) → Unit 5 shipped-pack
+  migration (`hamlet-55b2826a02`). Both semantic repairs are terminal, so the compact milestone is
+  active. Each milestone needs terminal tracker evidence and a committed
   product checkpoint before its successor begins. Relational/message exposure and dynamic
   variables remain downstream, not silently folded into this unit.
   · metric: replay resident bytes, viable batch size, observation-encoding share, unit-4

@@ -1,4 +1,4 @@
-# Metrics — HAMLET / Townlet        Last read: 2026-08-31 · milestone-2 accepted (`PDR-0134`/`PDR-0135`)
+# Metrics — HAMLET / Townlet        Last read: 2026-08-31 · milestone 3 started (`hamlet-1b1caf552a`)
 
 > **Milestone 2 engineering reading — 2026-08-31, `PDR-0134`:** meter `range_type` is no longer
 > declared-but-inert. Its current token surface admits exactly four bounded transformations:
@@ -26,7 +26,8 @@
 > **Acceptance reading:** 3,675 passed / 11 skipped / 84% coverage in the full default suite;
 > Ruff, Black (565 files), mypy (175 source files), no-defaults, compiler-pack validation and diff
 > integrity green. All current positive packs validate and the three negative VFS fixtures refuse
-> exactly as designed. Milestone 3 remains sequenced behind the accepted commit and tracker handoff.
+> exactly as designed. Milestone 2 is closed at `project-recovery-3@c6c6b524`; milestone 3 is
+> atomically claimed and `in_progress`. Its dynamic-state measurements remain prospective.
 
 > **Milestone 1 engineering reading — 2026-08-31, `PDR-0133`:** one declared-but-inert config
 > field and all of its residual runtime branches are deleted. Current DTOs reject the old key;

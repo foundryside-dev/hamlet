@@ -1,10 +1,10 @@
-# Current State — HAMLET / Townlet        Checkpoint: 2026-08-31 · milestone-2 accepted (`PDR-0134`/`PDR-0135`: **declared token behaviour is executable identity**)
+# Current State — HAMLET / Townlet        Checkpoint: 2026-08-31 · milestone 3 active (`hamlet-1b1caf552a`: **compact dynamic replay and static compiled context**)
 
 ## The bets right now
 
 **1. Strangler rewrite behind the compiled-universe contract** (`PDR-0006`) — the Now bet.
 - `main` remains `9efadd3c` after the fourth merge; work continues on `project-recovery-3` at
-  `b7fc3951` before this checkpoint.
+  `c6c6b524` for the accepted milestone-2 implementation.
 - **WS-7 is closed** (`hamlet-e3af412673`). Its enabling stream delivered determinism, the pinned
   oracle, differential harness, divergence register and first seam cut. The only open child was
   standalone P3 CLI hardening (`hamlet-1073af4d4e`); it is preserved under the recovery milestone.
@@ -33,7 +33,8 @@
 - **Milestone 1 is complete:** `observation_encoding` is deleted from the current API and one
   bounded contract is canonical: positions `[0,1]`, egocentric deltas `[-1,1]`.
   `div003_scaled` is replaced by the real `boundary_wrap` differential cell.
-- **Milestone 2 is engineering-accepted** (`hamlet-1e335e0363`, `PDR-0134`, `PDR-0135`): meter
+- **Milestone 2 is closed** (`hamlet-1e335e0363`, `PDR-0134`, `PDR-0135`,
+  `project-recovery-3@c6c6b524`): meter
   `range_type` is now an exact bounded two-lane surface — `minmax` with `clip: true`,
   `log_scaled` with `clip: true`, `cyclical_sin_cos`, or `binary`. `none`, `zscore`, `one_hot`,
   `rank_scaled` and `masked_value` are deleted from the meter vocabulary with no alias, translation
@@ -52,8 +53,8 @@
   84% coverage**; Ruff, Black (565 files), mypy (175 source files), no-defaults, compiler-pack
   validation and `git diff --check` are green. The three compiler negative fixtures refuse exactly
   as designed. The prior 181/158/24 results predate `PDR-0135` and are retained only as history.
-  Milestone 3 starts only after this accepted checkpoint is committed and the tracker dependency is
-  discharged.
+  The accepted commit is pushed, the tracker dependency is discharged, and milestone 3 is now
+  atomically claimed and `in_progress` as `hamlet-1b1caf552a`.
 
 **3. Documentation truth** (`PDR-0125`) — recovery labelling is complete; source-generated
 rewrite remains gated on WS-4. Do not start `hamlet-7a52a63e0b` merely because it appears ready.
@@ -80,8 +81,8 @@ parked. The pack-disposition clock remains 2026-10-06.
   remain unchanged only to preserve historical differential evidence.
 - The compiled schema moves to 1.25 and the encoding remains `token-1.1`.
 - **Acceptance evidence:** default suite 3,675 passed / 11 skipped / 84% coverage; Ruff, Black,
-  mypy, no-defaults, compiler-pack validation and diff integrity all green. The checkpoint is ready
-  for commit, tracker closure and compact-replay handoff.
+  mypy, no-defaults, compiler-pack validation and diff integrity all green. Commit `c6c6b524` is
+  pushed, `hamlet-1e335e0363` is closed with that evidence, and compact replay is in progress.
 
 ## Standing gates & in-flight state
 
@@ -117,9 +118,9 @@ announcement, tags/releases, vision/strategy/grant changes, data deletion or ext
 
 ## Next session starts here
 
-1. Commit and push the accepted milestone-2 checkpoint, record its exact evidence on
-   `hamlet-1e335e0363`, and make that issue terminal.
-2. Atomically start `hamlet-1b1caf552a`, reuse the compiled static context, and implement the
-   compact 118-float replay ABI plus network-edge reconstruction.
+1. Resume `hamlet-1b1caf552a`: reuse the compiled static context, implement the compact 118-float
+   replay ABI, and reconstruct the fixed transfer schema at the network edge.
+2. Measure the milestone-3 acceptance contract directly: L1 width ≤120 floats, a 100,000-transition
+   observation pair ≤96,000,000 bytes, batch 256 viable, and encoding below 25% of `env.step`.
 3. Continue through `hamlet-25fc3fb955` → `hamlet-55b2826a02`, accepting
    and committing a product checkpoint at each boundary under `PDR-0132`.

@@ -1,4 +1,4 @@
-# Roadmap — HAMLET / Townlet        Updated: 2026-08-31 · milestone 3 in progress (`hamlet-1b1caf552a`)
+# Roadmap — HAMLET / Townlet        Updated: 2026-08-31 · milestone 3 accepted; milestone 4 next
 
 > Sequencing, WSJF / cost-of-delay, and dated forecasts are produced by
 > /axiom-program-management. This file records bets as INTENT, not a delivery
@@ -18,13 +18,13 @@
 > that predates the VFS/VTC/DAC era. This file does not supersede or edit it; retiring it is part
 > of the Now bet.
 
-> **Current checkpoint — 2026-08-31, `PDR-0134`/`PDR-0135`:** no horizon change. Token milestone 2
-> is closed at `project-recovery-3@c6c6b524`: meter `range_type` is an exact four-kind bounded
-> two-lane contract,
-> affordance/effect identity matches executable behaviour, and each selected level is the sole
-> authority for its compiled products. The checkpoint is green at 3,675 passed / 11 skipped / 84%
-> coverage plus all static and pack gates. The tracker dependency is discharged and compact replay
-> is atomically claimed and `in_progress` as `hamlet-1b1caf552a`.
+> **Current checkpoint — 2026-08-31, `PDR-0136`:** no horizon change. Token milestone 3 is
+> accepted at `project-recovery-3@d554fb7f`: L1 replay is 115 compact floats and exactly
+> 92,000,000 bytes per 100,000-transition observation pair, with fixed context attached per type
+> only at the token-network boundary. The clean-SHA encoding ratios are `0.1618647585026199` and
+> `0.16272129673268468`; the accepted maximum remains below 0.25. The checkpoint is green at
+> 3,824 passed / 11 skipped / 84% coverage plus every static and pack gate. Milestone 4's
+> token-native recurrent regression is next; its 79.19 IQM result has not yet been run.
 
 ## Now  (committed, in-flight)
 
@@ -54,18 +54,17 @@
 > sequencing consequence is the 2026-10-06 trial-pack disposition deadline before token unit 5.
 
 - **Token-based observation engineering — IN SCOPE, owner-directed** (`PDR-0108`,
-  `PDR-0114`, `PDR-0131`, `PDR-0132`, `PDR-0133`, `PDR-0134`, `PDR-0135`; `hamlet-fa6bb6da4a`). Phase A, the declared attention choice and
-  full token cut through unit 3 are landed. The open work is engineering the accepted
-  `token_set` path through compact replay, recurrent regression, and shipped-pack migration.
+  `PDR-0114`, `PDR-0131`, `PDR-0132`, `PDR-0133`, `PDR-0134`, `PDR-0135`, `PDR-0136`;
+  `hamlet-fa6bb6da4a`). Phase A, the declared attention choice, the full token cut and compact
+  replay are landed. The open work is the token-native recurrent regression and shipped-pack
+  migration.
   · **The 9.43× decision is re-ruled (`PDR-0131`, superseding `PDR-0126`).** At the default
   100,000-transition capacity, the historical 1,132-float serialization spent 863.6 MiB on
   observation pairs versus 91.6 MiB before the cut. The later 1,580-float line was an intermediate
   meter-only reading. Exact five-entry executable identity and the exposed-initializer correction
-  put the current full L1 serialization at 4,090 floats: 3,272,000,000 bytes, or 3,120.4 MiB, per
-  100,000 float32 observation pairs. The current `variable_element` count is zero because
-  expression-backed exposure is refused until milestone 3 static context can encode executable
-  initializer identity; the time variable remains live but unexposed. This is immutable compiler
-  context; the compact replay target remains unchanged.
+  put the fixed L1 projection boundary at 4,090 floats: 3,272,000,000 bytes, or 3,120.4 MiB, if it
+  were repeated in a 100,000-transition observation pair. `PDR-0136` removes that immutable
+  compiler context from transitions: current L1 replay is 115 floats and 92,000,000 bytes.
   · **Milestone 1 delivered (`PDR-0133`):** the old position selector, all mode branches and the
   vacuous `div003_scaled` cell are gone. Current config rejects the old key; positions are
   `[0,1]`, egocentric deltas `[-1,1]`, with no compatibility path.
@@ -85,24 +84,24 @@
   coverage; Ruff, Black, mypy, no-defaults, compiler-pack validation and diff integrity green.
   The former focused 181 / oracle-seam 158 / population 24 readings predate this expanded boundary
   and remain historical only.
-  · **Active implementation unit (`hamlet-1b1caf552a`, `in_progress`):** reuse the compiled per-slot
-  descriptors, keep only compact live state in replay, and reconstruct the fixed schema at the
-  network edge.
-  · **Acceptance:** L1 dynamic replay ≤120 floats; 100k observation pair ≤96,000,000 float32
-  bytes; batch 256 viable; encoding <25% of `env.step`; Grid2D/Grid3D/aspatial transfer,
-  visibility and reconstructed-input parity pinned. Unit 4's 79.19 IQM floor runs only after
-  this ABI lands; unit 5 then migrates every shipped pack.
+  · **Milestone 3 accepted (`PDR-0136`, `d554fb7f`):** Grid2D is `115 / 4,090`, Grid3D
+  `149 / 4,090`, and aspatial `19 / 394` compact/fixed. Batch-256 feedforward, dueling,
+  token-set mean/attention, RND and four-step recurrent BPTT execute; all three replay variants
+  round-trip and reject their previous versions. No whole fixed-observation runtime ABI remains.
+  Exact clean-SHA encoding ratios are `0.1618647585026199` and `0.16272129673268468`.
+  · **Next implementation unit (`hamlet-25fc3fb955`):** replace the current compact block reader
+  with the token-native recurrent variant and run the 79.19 IQM equal-step regression. Milestone 3
+  proves BPTT mechanics only; it does not claim that result early.
   · **Checkpointed sequence (`PDR-0132`):** canonical bounded positions
   (`hamlet-6a4a6596bd`, complete) → meter `range_type` wiring (`hamlet-1e335e0363`, closed) →
-  compact ABI (`hamlet-1b1caf552a`, in progress) → Unit 4 engineering regression
-  (`hamlet-25fc3fb955`) → Unit 5 shipped-pack
-  migration (`hamlet-55b2826a02`). Both semantic repairs are terminal, so the compact milestone is
-  active. Each milestone needs terminal tracker evidence and a committed
+  compact ABI (`hamlet-1b1caf552a`, accepted) → Unit 4 engineering regression
+  (`hamlet-25fc3fb955`, next) → Unit 5 shipped-pack migration (`hamlet-55b2826a02`). Each milestone
+  needs terminal tracker evidence and a committed
   product checkpoint before its successor begins. Relational/message exposure and dynamic
   variables remain downstream, not silently folded into this unit.
   · metric: replay resident bytes, viable batch size, observation-encoding share, unit-4
   regression floor
-  · Updated: 2026-08-31 (`PDR-0134`)
+  · Updated: 2026-08-31 (`PDR-0136`)
 
 ## Next (shaped, decreasing certainty)
 

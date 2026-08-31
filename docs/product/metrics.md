@@ -1,4 +1,102 @@
-# Metrics — HAMLET / Townlet        Last read: 2026-08-31 · milestone 3 started (`hamlet-1b1caf552a`)
+# Metrics — HAMLET / Townlet        Last read: 2026-08-31 · milestone 3 accepted (`PDR-0136`)
+
+> **Milestone 3 engineering reading — 2026-08-31, `PDR-0136`, implementation
+> `project-recovery-3@d554fb7f`.** The current replay ABI is compact dynamic state; the fixed
+> projection is compiler context attached one token type at a time inside `TokenSetQNetwork`.
+> There is no complete fixed-observation encoder, allocation, reconstruction callable, old-format
+> reader or compatibility path.
+>
+> | substrate | rank | compact floats | fixed projection floats |
+> | --- | ---: | ---: | ---: |
+> | Grid2D / `L1_full_observability` | 2 | **115** | **4,090** |
+> | Grid3D / `L2_partial_observability` | 3 | **149** | **4,090** |
+> | aspatial / `L0` | 0 | **19** | **394** |
+>
+> The ranks share one `token_type_schema_hash` and carry rank-specific `layout_hash` values.
+> Aspatial is true rank zero. At capacity 100,000 the L1 observation/next-observation pair is
+> exactly **92,000,000 bytes** of float32 storage. The earlier 118-float value is the one-scalar
+> target (94,400,000 bytes), not the current census. The historical 1,132/4,090 readings below
+> remain evidence for why the representation changed; they are not current replay widths.
+>
+> **Engineering matrix:** batch 256 forward/backward/update passes for feedforward, dueling,
+> token-set mean, token-set attention and RND. A real `[256,4,115]` recurrent BPTT run threads
+> hidden state, masks terminal boundaries, bootstraps from the final next observation and changes
+> LSTM parameters. Standard, prioritized and sequential replay push/store, sample, exact-current
+> round-trip and refuse the immediately previous version. Grid2D, Grid3D and aspatial compile,
+> artifact-round-trip, reset/step, preserve visibility/presence and reconstruct exact per-type
+> fixed rows at the network boundary.
+>
+> **Artifact versions:** compiled artifact `1.26`; projected schema `token-1.1`; transport
+> `compact-1`; outer checkpoint `5`; population `4`; standard replay `4`; prioritized replay `4`;
+> sequential replay `5`. Version type/value, replay kind, key/schema, tensor/config and nested
+> state are exact. Failed restore leaves network, optimizer, scheduler, counters, replay and
+> exploration byte-identical.
+>
+> **Pre-release hygiene:** the non-buildable public `set_encoder` architecture,
+> `SetEncoderQNetwork`, its production-dead dynamic-need helpers and tests are deleted. The
+> serializer that omitted absent `token_set` solely to preserve pre-cut `brain_hash` values is
+> deleted. Current dumps and artifacts have one exact schema. The whole-observation ABI guard
+> scans production references and traces compile → reset/step → replay → flat/token forward;
+> it permits only per-type fixed assembly.
+>
+> **Acceptance reading:** `uv run pytest` = **3,824 passed / 11 skipped / 84% coverage** in
+> 948.63 seconds on the final stable tree. Ruff passed; Black checked 568 files; mypy checked 176
+> source files; no-defaults checked 176 source files with 725 existing whitelist entries and no
+> new violations; compiler CLI validation and `git diff --check` passed. Import provenance was
+> `/home/john/hamlet/src/townlet/__init__.py`.
+>
+> **Clean pushed-SHA benchmark, run 1 (verbatim JSON):**
+>
+> ```json
+> {
+>   "agents": 4,
+>   "commit": "d554fb7fdda27ea5f6d2ca516dbc9bd0ab7b981c",
+>   "config": "configs/default_curriculum",
+>   "cpu": "x86_64",
+>   "denominator": 1079432.0,
+>   "dirty": false,
+>   "encoding_ratio": 0.1618647585026199,
+>   "iterations": 200,
+>   "level": "L1_full_observability",
+>   "median_observation_ns": 174722.0,
+>   "median_step_ns": 1079432.0,
+>   "numerator": 174722.0,
+>   "platform": "Linux-6.8.0-137-generic-x86_64-with-glibc2.39",
+>   "python_version": "3.13.1",
+>   "seed": 1337,
+>   "thread_count": 1,
+>   "torch_version": "2.11.0+cu130",
+>   "warmup": 20
+> }
+> ```
+>
+> **Clean pushed-SHA benchmark, run 2 (verbatim JSON):**
+>
+> ```json
+> {
+>   "agents": 4,
+>   "commit": "d554fb7fdda27ea5f6d2ca516dbc9bd0ab7b981c",
+>   "config": "configs/default_curriculum",
+>   "cpu": "x86_64",
+>   "denominator": 1016339.0,
+>   "dirty": false,
+>   "encoding_ratio": 0.16272129673268468,
+>   "iterations": 200,
+>   "level": "L1_full_observability",
+>   "median_observation_ns": 165380.0,
+>   "median_step_ns": 1016339.0,
+>   "numerator": 165380.0,
+>   "platform": "Linux-6.8.0-137-generic-x86_64-with-glibc2.39",
+>   "python_version": "3.13.1",
+>   "seed": 1337,
+>   "thread_count": 1,
+>   "torch_version": "2.11.0+cu130",
+>   "warmup": 20
+> }
+> ```
+>
+> Accepted performance reading: `max(run1, run2) = 0.16272129673268468 < 0.25`. This measures
+> observation encoding as a share of `env.step`; it is not the milestone-4 79.19 IQM result.
 
 > **Milestone 2 engineering reading — 2026-08-31, `PDR-0134`:** meter `range_type` is no longer
 > declared-but-inert. Its current token surface admits exactly four bounded transformations:

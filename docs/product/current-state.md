@@ -1,126 +1,89 @@
-# Current State — HAMLET / Townlet        Checkpoint: 2026-08-31 · milestone 3 active (`hamlet-1b1caf552a`: **compact dynamic replay and static compiled context**)
+# Current State — HAMLET / Townlet        Checkpoint: 2026-08-31 · milestone 3 accepted (`PDR-0136`)
 
 ## The bets right now
 
-**1. Strangler rewrite behind the compiled-universe contract** (`PDR-0006`) — the Now bet.
-- `main` remains `9efadd3c` after the fourth merge; work continues on `project-recovery-3` at
-  `c6c6b524` for the accepted milestone-2 implementation.
-- **WS-7 is closed** (`hamlet-e3af412673`). Its enabling stream delivered determinism, the pinned
-  oracle, differential harness, divergence register and first seam cut. The only open child was
-  standalone P3 CLI hardening (`hamlet-1073af4d4e`); it is preserved under the recovery milestone.
-- The critical path is now WS-6 → WS-2 → WS-3 → WS-4. Bet exit remains unmet: WS-3/WS-4 are open
-  and the oracle has not been retired.
+**1. Strangler rewrite behind the compiled-universe contract** (`PDR-0006`) remains the Now bet.
 
-**2. Token-observation engineering** (`PDR-0108`/`PDR-0114`/`PDR-0131`/`PDR-0132`/`PDR-0133`/`PDR-0134`/`PDR-0135`) ·
+- `main` remains at the fourth recovery merge; current work is pushed on
+  `project-recovery-3@d554fb7f`.
+- WS-7 is closed. The bet has not exited: WS-3/WS-4 remain open and the oracle is still required.
+- The critical path remains WS-6 → WS-2 → WS-3 → WS-4. The documentation rewrite remains gated
+  on source generation and WS-4.
+
+**2. Token-observation engineering** (`PDR-0108`, `PDR-0114`, `PDR-0131`–`PDR-0136`) ·
 `hamlet-fa6bb6da4a`.
-- Unit 3 is complete. `PDR-0126` is superseded: the 9.43× result is not debt to carry into pack
-  migration; it is a representation-layout defect to fix before unit 4.
-- The former 1,580-float / 1,205.4-MiB line was an intermediate meter-only reading. Exact
-  five-entry executable affordance/effect identity and the exposed-initializer correction make the
-  current full L1 serialization 4,090 floats: 3,272,000,000 bytes, or 3,120.4 MiB, per 100,000
-  float32 observation pairs. The current `variable_element` count is zero because expression-backed
-  exposure is refused until milestone 3 static context can encode executable initializer identity;
-  the time variable remains live but unexposed. Milestone 3 owns the compact dynamic-state
-  measurement. The historical 1,132-float reading remains evidence for the replay-layout defect.
-- The accepted design reuses static token context already carried by the compiled artifact, stores
-  only compact dynamic state in replay, and reconstructs the fixed transfer schema at the network
-  boundary. Milestone 3 will delete the current full-payload transition ABI; it will carry no
-  compatibility path.
-- The work now runs as five independently accepted milestones: bounded positions
-  (`hamlet-6a4a6596bd`), meter `range_type` wiring (`hamlet-1e335e0363`), compact replay
-  (`hamlet-1b1caf552a`), Unit 4 regression (`hamlet-25fc3fb955`), then Unit 5 migration
-  (`hamlet-55b2826a02`). The umbrella closes only after the final child is terminal.
-- **Milestone 1 is complete:** `observation_encoding` is deleted from the current API and one
-  bounded contract is canonical: positions `[0,1]`, egocentric deltas `[-1,1]`.
-  `div003_scaled` is replaced by the real `boundary_wrap` differential cell.
-- **Milestone 2 is closed** (`hamlet-1e335e0363`, `PDR-0134`, `PDR-0135`,
-  `project-recovery-3@c6c6b524`): meter
-  `range_type` is now an exact bounded two-lane surface — `minmax` with `clip: true`,
-  `log_scaled` with `clip: true`, `cyclical_sin_cos`, or `binary`. `none`, `zscore`, `one_hot`,
-  `rank_scaled` and `masked_value` are deleted from the meter vocabulary with no alias, translation
-  or fallback.
-- All 39 current config declarations (38 pack `environment.yaml` files plus the complete reference)
-  use the current contract. Frozen oracle fixtures retain their old
-  declarations only as inputs to the historical executable; they are not supported current packs.
-  The compiled artifact is schema 1.25 with token encoding `token-1.1`.
-- Each level's compiled `TokenSpec` now carries meter static signatures and recursive affordance
-  and spawned-effect identity. `dual`, dead definition intensity, inert lifecycle fields and
-  catalog-overridable scope/duration are deleted; effect scope is executable authority. The
-  environment, encoder, population and token network consume the selected level's spec; there is
-  no fallback to the compiled primary-level alias. Artifact loading reconstructs compiler-owned
-  token bindings instead of trusting stored hashes.
-- Acceptance is current and complete: the default suite passes **3,675 tests with 11 skips and
-  84% coverage**; Ruff, Black (565 files), mypy (175 source files), no-defaults, compiler-pack
-  validation and `git diff --check` are green. The three compiler negative fixtures refuse exactly
-  as designed. The prior 181/158/24 results predate `PDR-0135` and are retained only as history.
-  The accepted commit is pushed, the tracker dependency is discharged, and milestone 3 is now
-  atomically claimed and `in_progress` as `hamlet-1b1caf552a`.
 
-**3. Documentation truth** (`PDR-0125`) — recovery labelling is complete; source-generated
-rewrite remains gated on WS-4. Do not start `hamlet-7a52a63e0b` merely because it appears ready.
+- Milestone 1 is complete: `observation_encoding` is deleted; positions use `[0,1]`, egocentric
+  deltas `[-1,1]`, and `boundary_wrap` replaces the vacuous scaled oracle cell.
+- Milestone 2 is closed: meter `range_type` reaches live values and compiled identity through the
+  exact bounded two-lane vocabulary ruled by `PDR-0134`; affordance/effect identity matches
+  executable behaviour under `PDR-0135`.
+- **Milestone 3 is accepted at `d554fb7f` under `PDR-0136`.** `TokenSpec.total_dims` is the compact
+  environment/replay ABI. Fixed context is attached one token type at a time inside the token
+  network; no complete fixed-observation runtime surface or compatibility reader remains.
+- The current substrate census is Grid2D `115 / 4,090`, Grid3D `149 / 4,090`, and aspatial
+  `19 / 394` (compact / fixed). Rank zero is truly positionless. All ranks share the projected
+  type-schema hash and carry distinct compact layout hashes.
+- A 100,000-transition L1 observation pair is exactly **92,000,000 bytes**. The earlier 118-float
+  figure is the one-scalar target, not the current census.
+- Batch 256 is executed for feedforward, dueling, token-set mean/attention and RND. The current
+  recurrent reader executes four-step BPTT at batch 256 and changes LSTM parameters. Standard,
+  prioritized and sequential replay each round-trip and reject their previous format.
+- Compiled artifact `1.26`, projected schema `token-1.1`, transport `compact-1`, outer checkpoint
+  `5`, population `4`, standard/PER `4`, sequential `5`. All are exact one-way cuts.
+- The dead public `set_encoder` architecture and old-brain-hash preservation serializer are
+  deleted. `token_set` is the sole set architecture.
+- Clean-SHA encoding ratios are `0.1618647585026199` and `0.16272129673268468`; accepted maximum
+  `0.16272129673268468 < 0.25`.
+- Default acceptance: **3,824 passed, 11 skipped, 84% coverage**; Ruff, Black (568 files), mypy
+  (176 source files), no-defaults (176 files), compiler-pack validation and diff integrity green.
 
-**4. Measure the authoring claim** — retired as record (`PDR-0111`). Instrument redesign remains
-parked. The pack-disposition clock remains 2026-10-06.
+The checkpointed sequence is unchanged:
+
+1. bounded positions — complete;
+2. meter normalization — closed;
+3. compact replay/static context — accepted, tracker closure being recorded;
+4. token-native recurrent engineering regression — next (`hamlet-25fc3fb955`); and
+5. shipped-pack migration — after milestone 4 (`hamlet-55b2826a02`).
+
+**3. Documentation truth** (`PDR-0125`) — recovery labelling is complete; the source-derived
+rewrite remains gated on WS-4. Do not start `hamlet-7a52a63e0b` merely because it is ready.
+
+**4. Authoring-trial measurement** is retained as record (`PDR-0111`). Instrument redesign stays
+parked; the pack-disposition clock remains 2026-10-06.
 
 ## What this checkpoint did
 
-- `PDR-0134` reconciles the old nine-kind, variable-width meter promise with the fixed two-lane
-  token ABI. It admits exactly four bounded transformations and deletes the five shapes that are
-  unbounded, variable-width or batch-relative rather than translating them silently.
-- The runtime now applies the meter's declared transformation to its live token value. Each level's
-  compiled meter signature carries the same normalization identity, and recursive affordance target
-  signatures inherit it, so changing `range_type` changes both emitted dynamics and network-visible
-  identity. The selected environment and token network consume that level's `TokenSpec` directly;
-  they never fall back to the primary-level alias.
-- `PDR-0135` contracts interaction type to exact `instant | multi_tick`, makes affordance and
-  spawned-effect identity match executable lifecycle behaviour, and makes effect definition scope
-  and duration the sole runtime authority.
-- Non-finite or non-representable token inputs fail at validation or compilation rather than
-  entering a float32 tensor silently.
-- All 39 current config declarations were updated to the contracted surface. Frozen oracle fixtures
-  remain unchanged only to preserve historical differential evidence.
-- The compiled schema moves to 1.25 and the encoding remains `token-1.1`.
-- **Acceptance evidence:** default suite 3,675 passed / 11 skipped / 84% coverage; Ruff, Black,
-  mypy, no-defaults, compiler-pack validation and diff integrity all green. Commit `c6c6b524` is
-  pushed, `hamlet-1e335e0363` is closed with that evidence, and compact replay is in progress.
+- Moved immutable compiler context out of transitions without weakening fixed model identity.
+- Kept effect selection dynamic where scope-budget slots can differ by world.
+- Made environment output compact on first allocation and bounded replay to 92 MB at L1.
+- Made checkpoint/replay refusal atomic and exact across five artifact boundaries.
+- Proved current readers, replay variants, substrate ranks and rank-zero publishers against the
+  compact ABI.
+- Deleted the non-buildable `set_encoder` surface and the explicit old-hash compatibility shim.
+- Established a reproducible, provenance-bearing encoding benchmark at the clean pushed SHA.
 
-## Standing gates & in-flight state
+## Standing gates
 
-1. Local product-source gate remains CI-equivalent: `ruff check .`, `black --check .`, mypy,
-   `no_defaults_lint.py`, compiler-pack validation and the full default suite before this source
-   push (`PDR-0127`). All are green for the milestone-2 checkpoint.
-2. Dependabot #33 (torch) is a separate oracle-moving unit, not dependency housekeeping.
-3. The documentation rewrite remains gated on source generation and WS-4.
-4. `boundary_wrap` now exercises a real axis. `items_smoke` remains demoted as evidence; the §5
-   finding remains CPU-only.
+1. Product-source pushes use Ruff, Black, mypy, no-defaults, compiler-pack validation, the default
+   suite and diff integrity (`PDR-0127`). They are green for `d554fb7f`.
+2. Dependabot #33 (torch) remains a separate oracle-moving unit.
+3. `boundary_wrap` exercises a real axis; `items_smoke` remains demoted as evidence.
+4. No release, tag, announcement, 1.0 declaration or external coordination is authorized here.
 
 ## Decision checks
 
-- `PDR-0132`: if a milestone invalidates the next one's assumptions, stop at the checkpoint and
-  write the replacement call before continuing; never skip or combine milestones.
-- `PDR-0133`: a future position representation is one replacement ABI with measured constraints;
-  it does not revive the deleted selector or create a dual path.
-- `PDR-0134`: a new meter normalization must remain bounded, fit two value lanes and be independent
-  of other worlds; otherwise it requires a superseding representation PDR.
-- `PDR-0131`: if compact-flat state cannot preserve visibility and transfer while meeting the
-  byte budget, stop and choose one different token ABI; never retain both.
-- `PDR-0127`: a >3-push red streak under a green checkpoint means the reading rule failed and
-  must become mechanical.
-- `PDR-0114` trigger 1 is now an engineering regression check: token feedforward and recurrent
-  must each reach 79.19 IQM at equal environment steps in unit 4.
-- Pack-disposition clock: **2026-10-06**.
-
-## Blocked on / flagged for the owner
-
-Nothing from this reconciliation. The grant is confirmed and stamped; the 9.43× decision is
-resolved within strategy. Still owner-bound if promoted: instrument redesign, declaring 1.0,
-announcement, tags/releases, vision/strategy/grant changes, data deletion or external parties.
+- `PDR-0131`: if compact state cannot preserve visibility/transfer inside the byte budget, choose
+  one replacement ABI; never retain two. Milestone 3 met this check.
+- `PDR-0132`: accept and record every milestone before starting its successor.
+- `PDR-0134`: a new meter normalization must remain bounded, fixed-width and world-independent.
+- `PDR-0114` trigger 1 is now milestone 4's engineering check: token feedforward and the
+  token-native recurrent variant must each reach 79.19 IQM at equal environment steps.
 
 ## Next session starts here
 
-1. Resume `hamlet-1b1caf552a`: reuse the compiled static context, implement the compact 118-float
-   replay ABI, and reconstruct the fixed transfer schema at the network edge.
-2. Measure the milestone-3 acceptance contract directly: L1 width ≤120 floats, a 100,000-transition
-   observation pair ≤96,000,000 bytes, batch 256 viable, and encoding below 25% of `env.step`.
-3. Continue through `hamlet-25fc3fb955` → `hamlet-55b2826a02`, accepting
-   and committing a product checkpoint at each boundary under `PDR-0132`.
+1. Close `hamlet-1b1caf552a` with the implementation/product SHAs and exact evidence.
+2. Atomically start `hamlet-25fc3fb955`.
+3. Build the token-native recurrent variant and run the 79.19 IQM equal-step regression. Do not
+   treat milestone 3's current-reader BPTT check as that result.
+4. Checkpoint milestone 4 before beginning shipped-pack migration.

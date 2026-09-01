@@ -5,8 +5,9 @@ from pathlib import Path
 import pytest
 import torch
 import yaml
+from pydantic import ValidationError
 
-from townlet.config.stratum_config import AspatialConfig, GridConfig, GridNDConfig, SubstrateConfig
+from townlet.config.stratum_config import AspatialConfig, GridConfig, GridNDConfig, StratumConfig, SubstrateConfig
 from townlet.substrate.aspatial import AspatialSubstrate
 from townlet.substrate.factory import SubstrateFactory
 from townlet.substrate.grid2d import Grid2DSubstrate
@@ -332,3 +333,30 @@ grid:
 
     # Cleanup
     non_square_path.unlink()
+
+
+def test_observation_mode_is_no_longer_a_stratum_key():
+    """`observation_mode` had no consumer anywhere in src/townlet (PDR-0143); it is deleted, not deprecated."""
+    data = {
+        "stratum": {
+            "version": "1.0",
+            "substrate": {
+                "type": "grid",
+                "grid": {
+                    "topology": "square",
+                    "width": 8,
+                    "height": 8,
+                    "boundary": "clamp",
+                    "distance_metric": "manhattan",
+                    "diagonals": False,
+                },
+            },
+            "vision_support": "both",
+            "temporal_support": "enabled",
+            "observation_mode": {"mode": "full_auto"},
+        }
+    }
+    with pytest.raises(ValidationError, match="observation_mode"):
+        StratumConfig(**data)
+    del data["stratum"]["observation_mode"]
+    assert StratumConfig(**data).stratum.temporal_support == "enabled"

@@ -142,11 +142,6 @@ stratum:
   #   both    : Levels may declare either mode.
   #   none    : No level may activate a vision mode.
 
-  # Required observation-mode declaration. Token roster, capacities and compact
-  # serialization remain compiler-owned under every mode.
-  observation_mode:
-    mode: full_auto
-
   # ---------------------------------------------------------------------------
   # [CONFIG] Temporal Support
   # [TAGS]   BEHAVIOR

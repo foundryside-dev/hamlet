@@ -49,7 +49,6 @@ Principle.
   (`universe/validation/semantics.py:118-139`, error code `VISION_INCOMPATIBLE`).
 - `temporal_support` — `enabled | disabled`. Gates multi-tick affordances
   (`MULTI_TICK_REQUIRES_TEMPORAL`).
-- `observation_mode` — `full_auto | max_compact | full_manual` (§6.4).
 
 **Examples: read the shipped packs, not a template.** There is no `configs/templates/`
 directory — that path is dead.

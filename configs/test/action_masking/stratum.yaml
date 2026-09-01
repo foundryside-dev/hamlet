@@ -13,5 +13,3 @@ stratum:
 
   vision_support: global
   temporal_support: enabled
-  observation_mode:
-    mode: full_auto

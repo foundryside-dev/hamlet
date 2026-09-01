@@ -175,8 +175,7 @@ they are wrong, this one is the shipped pack.
 **Position encoding** (`stratum.yaml`): `observation_encoding` is deleted. There is one token
 position contract: substrate coordinates are normalized to `[0, 1]`; egocentric deltas use the
 same per-axis denominator and land in `[-1, 1]`; both are padded to `MAX_POSITION_RANK`. A config
-that still declares the old selector fails validation as an extra field. `observation_mode`
-belongs to the separate observation-layout surface.
+that still declares the old selector, or the deleted `observation_mode` key, fails validation as an extra field (PDR-0143).
 
 **Observation Dimensions** — the observation is **TOKENS**, not a raster:
 

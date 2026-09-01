@@ -112,14 +112,11 @@ stratum:
   vision_support: both
 
   temporal_support: enabled
-
-  observation_mode:
-    mode: full_auto
 ```
 
 Position encoding has no selector. Coordinates are normalized to `[0, 1]` and egocentric deltas
-to `[-1, 1]` on every spatial substrate; declaring the deleted `observation_encoding` key fails
-validation. `observation_mode` is the separate observation-layout surface.
+to `[-1, 1]` on every spatial substrate; declaring the deleted `observation_encoding` or `observation_mode`
+keys fails validation (PDR-0143).
 
 Nothing else defines the substrate. The grid is 8×8 for every level in the pack: `stratum.yaml`
 exists only at pack root, and the level loader reads no substrate file from a level directory.

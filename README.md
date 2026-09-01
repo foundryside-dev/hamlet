@@ -651,7 +651,9 @@ Intent, not yet built — stated plainly because older docs blur the line:
   `reference/model_pack`, three `differential/div003_*` harness packs, and eleven
   authoring-trial packs — two `trial002_*` and nine `trial_*`, the ninth the blind re-run pack
   `trial_b_blind_organism` — for the trials in `docs/product/trials/`. All 35 non-negative packs
-  validate clean at this commit. `reference/model_pack` validates and compiles, but its
+  validate clean at this commit. **Disposition 2026-09-02 (`PDR-0142`):** nine of the eleven
+  trial packs are deleted and `trial002_money_log_gdp` / `trial_k_cold` are promoted to
+  fixtures, so the census is now 29 directories, 26 non-negative packs, all validating. `reference/model_pack` validates and compiles, but its
   `items.yaml` declares a `spawn_effect` shape the runtime rejects, so env construction raises
   where the compiler passed — `hamlet-5a87550adb`, the same shape again.)
 - **The declarable surface exceeds the exercised surface.** Measured on 2026-08-20 by compiling
@@ -684,8 +686,8 @@ Intent, not yet built — stated plainly because older docs blur the line:
     `hamlet-9e1ae3b7a2` closed):** a pack declares an `extents:` block in
     `variables_reference.yaml`, the compiler carries it into the level metadata,
     `environment/vectorized_env.py` passes it to the registry, and a pack that declares one of
-    those scopes without extents is refused loudly. Two packs declare them (`L5_multi_agent`,
-    `trial_o_bidding_blind`).
+    those scopes without extents is refused loudly. One pack declares them (`L5_multi_agent`;
+    `trial_o_bidding_blind` was deleted 2026-09-02, `PDR-0142`).
   - The four VFS variables `configs/default_curriculum/environment.yaml` used to declare —
     `deficit_energy`, `deficit_satiation`, `time_since_last_eat`, `time_since_last_sleep` — were
     observed but written by nothing, so agents saw frozen zeros in slots the ABI claimed were

@@ -1,7 +1,0 @@
-actions:
-  version: "1.0"
-  substrate_actions:
-    inherit: true
-  custom_actions: []
-  labels:
-    preset: gaming

@@ -1,9 +1,0 @@
-# Trial B appearance: creep is never level-spawned (spawn_count: 0) — the only
-# routes that could create one are the effect-driven deposits, every form of
-# which is refused (see trial record). This file exists because a level-side
-# appearance config is what activates the items system at runtime; without it
-# the compiled universe carries no items catalog at all.
-version: '1.0'
-items:
-  - item_type: creep
-    spawn_count: 0

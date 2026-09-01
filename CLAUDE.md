@@ -670,17 +670,3 @@ does Y".
 
 Full reference: `loomweave-workflow` skill, `loomweave --help`, MCP schemas.
 <!-- /loomweave:instructions -->
-
-<!-- warpline:instructions:v1.3.0 -->
-## Warpline (temporal change-impact)
-
-`warpline` answers "if I touch X, what breaks, and what must I re-verify?".
-Prefer the MCP tools (`mcp__warpline__*`); fall back to the `warpline` CLI.
-
-Call `warpline_change_list` (shim: `changed`) for a rev range first, then follow
-its `next_actions` into `reverify` / `blast_radius`. A `completeness` of
-`NO_SNAPSHOT` means warpline cannot see, NOT that nothing is affected.
-
-Enrich-only, local-only, advisory: warpline never gates. The `warpline-workflow`
-skill carries the full tool set, the closed vocabularies, and the loop.
-<!-- /warpline:instructions -->

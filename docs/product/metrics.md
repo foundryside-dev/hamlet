@@ -1,4 +1,4 @@
-# Metrics — HAMLET / Townlet        Last read: 2026-09-01 · milestone 4 partial reading (`PDR-0138`)
+# Metrics — HAMLET / Townlet        Last read: 2026-09-02 · resume reading, no milestone change (`PDR-0139`)
 
 > **Milestone 4 partial engineering reading — 2026-09-01, `PDR-0138`, implementation
 > `project-recovery-3@9d4e942f`.** This is a pause checkpoint, not M4 acceptance.
@@ -25,6 +25,28 @@
 > 2,278,634 for feedforward/mean; 2,396,920 versus 2,278,639 for feedforward/attention) and are
 > diagnostic only. The direct-script curve import and misleading early-stop database status are
 > open M4 defects, not deferred debt. No qualification process remains active at this checkpoint.
+
+> **Resume reading — 2026-09-02, `PDR-0139`, branch tip `project-recovery-3@9318d86f`.** No
+> milestone moved. Readings taken:
+>
+> - **Gates green:** branch CI on the `PDR-0138` checkpoint commit `439e0cd1` — Lint ✅, Tests ✅
+>   (32m46s), Config Validation ✅ (run `33423733181`/`029`/`056`); scheduled Full Test Suite on
+>   `main@9efadd3c` ✅ 2026-09-01 (`33500458822`). Three commits pushed since (`dc92e8ba`,
+>   `b2a10f3e`, `9318d86f`); none touches `src/townlet/` or configs, so the `PDR-0127` local gate
+>   set was not re-run for them.
+> - **M4 evidence integrity (`PDR-0138`):** both paused recurrent checkpoints present on disk with
+>   sha256 sidecars, no later checkpoint in either cell, all four `meta.json` pin
+>   `git_sha 9d4e942f` with `resume: false` and the feedforward pair `budget_compliant: true`.
+>   Both GPUs idle. Nothing resumed since the pause.
+> - **Documentation truth:** +1 newly confirmed false claim, **unfixed**: `CLAUDE.md:116` still
+>   says no workflow has ever run on `project-recovery`; CI has run on every push since
+>   `PDR-0130`. Filed as observation for the gated rewrite. Count is now 1 known-open.
+> - **Weft tool federation (new, guardrail-adjacent, under Gates green):** loomweave→filigree
+>   link was DEAD (port 8766, nothing listening) since 2026-08-15 while both doctors reported
+>   healthy; fixed to 8749 and probed 200. Standing rule from `PDR-0139`: health = doctor clean
+>   **and** probe 200 **and** index fresh.
+> - **Authority-trial disposition clock:** 2026-10-06, 34 days out, unchanged (`PDR-0111`).
+
 
 > **Milestone 3 engineering reading — 2026-08-31, `PDR-0136`, implementation
 > `project-recovery-3@d554fb7f`.** The current replay ABI is compact dynamic state; the fixed

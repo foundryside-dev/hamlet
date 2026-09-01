@@ -40,7 +40,7 @@ The DTO is `StratumConfig` → `StratumConfigRoot` in `src/townlet/config/stratu
 cite it). Every field is required; `ConfigDict(extra="forbid")` throughout, per the No-Defaults
 Principle.
 
-`StratumConfigRoot` carries five declarations:
+`StratumConfigRoot` carries four declarations:
 
 - `version` — config schema version.
 - `substrate` — the `SubstrateConfig` block (§3–§4).

@@ -29,8 +29,6 @@ stratum:
   # substrate block omitted
   vision_support: both
   temporal_support: disabled
-  observation_mode:
-    mode: full_auto
 ```
 
 The level selects partial visibility and supplies the required normalized range:

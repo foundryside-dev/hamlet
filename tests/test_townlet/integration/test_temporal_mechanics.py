@@ -251,28 +251,41 @@ class TestTimeProgression:
         assert env.time_of_day == 0
 
 
-class TestTemporalExpressionIsolation:
-    """Expression-driven world state remains live but cannot masquerade as token identity."""
+class TestAuthoredDayPhase:
+    """L3 temporality is ONE authored cyclical token (PDR-0143): declared in vfs_profiles.yaml,
+    bound to a variable_element slot, sin and cos of the tick in one value block."""
 
-    TEMPORAL_VARIABLE = "time_of_day_phase"
+    VARIABLE = "day_phase"
+    PERIOD = 24
 
-    def test_tick_expression_remains_live_world_state(self, temporal_env):
+    def _lanes(self, env) -> tuple[int, int]:
+        bindings = env.token_spec.get_type("variable_element").slot_bindings
+        slot = [b.filler_ref for b in bindings].index(self.VARIABLE)
+        layout = env.token_spec.compact_layout().get_type("variable_element")
+        assert layout is not None
+        start = layout.start + slot * layout.compact_row_width
+        return start, start + layout.dynamic_features.index("value_0")
+
+    def test_day_phase_is_bound_and_present(self, temporal_env):
+        env = temporal_env
+        obs = env.reset()
+        row, v0 = self._lanes(env)
+        assert obs[0, row].item() == 1.0  # presence
+        assert obs[0, v0].item() == pytest.approx(0.0)  # sin(0)
+        assert obs[0, v0 + 1].item() == pytest.approx(1.0)  # cos(0)
+
+    def test_day_phase_follows_the_tick_as_sin_cos(self, temporal_env):
         env = temporal_env
         env.reset()
-        before = float(env.vfs_registry.get(self.TEMPORAL_VARIABLE, reader="engine").reshape(-1)[0])
-
         wait = env.action_dim - 1
-        for _ in range(3):
-            env.step(torch.tensor([wait], device=env.device))
-        after = float(env.vfs_registry.get(self.TEMPORAL_VARIABLE, reader="engine").reshape(-1)[0])
-
-        assert after > before
-        assert after == env.global_tick - 1
-
-    def test_tick_expression_has_no_variable_element_binding(self, temporal_env):
-        refs = [binding.filler_ref for binding in temporal_env.token_spec.get_type("variable_element").slot_bindings]
-
-        assert self.TEMPORAL_VARIABLE not in refs
+        obs = None
+        for _ in range(7):
+            obs, *_ = env.step(torch.tensor([wait], device=env.device))
+        # evaluation runs before the tick increments, so after 7 steps day_phase == 6
+        assert float(env.vfs_registry.get(self.VARIABLE, reader="engine").reshape(-1)[0]) == 6.0
+        _row, v0 = self._lanes(env)
+        assert obs[0, v0].item() == pytest.approx(1.0, abs=1e-6)  # sin(2π·6/24)
+        assert obs[0, v0 + 1].item() == pytest.approx(0.0, abs=1e-6)
 
 
 # =============================================================================

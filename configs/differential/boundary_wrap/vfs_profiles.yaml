@@ -3,15 +3,21 @@ evaluation_mode: mark_and_sweep
 debug_logging: false
 global_profile:
   variables:
-  # World-state clock derived from the engine's ambient tick. It remains unexposed because
-  # arbitrary expression identity is not representable by the fixed variable-element descriptor.
-  - name: time_of_day_phase
-    id: time_of_day_phase
+  # The authored day clock (PDR-0143, spec §6 unit 5): ONE cyclical token, sin and cos in the
+  # same value block. `period` mirrors L3's `day_length: 24`; levels without temporal
+  # mechanics still observe the clock — their worlds simply do not act on it.
+  - name: day_phase
+    id: day_phase
     type: float
     semantic_type: temporal
     expression: tick
+    initial_value: 0.0
+    exposed_to: [agent]
+    normalization:
+      kind: cyclical_sin_cos
+      period: 24
     description: >-
-      World-state clock derived from the ambient engine tick; intentionally unexposed.
+      Authored day clock derived from the ambient engine tick; exposed as one cyclical token.
 item_profiles:
 - profile_name: default_item
   variables: []

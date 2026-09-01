@@ -31,8 +31,8 @@ def test_l1_compact_vertical_trace() -> None:
 
     observations = env.reset()
     next_observations, rewards, dones, _ = env.step(torch.zeros(env.num_agents, dtype=torch.long))
-    assert observations.shape == next_observations.shape == (env.num_agents, 115)
-    assert env.token_spec.total_dims == env.observation_dim == 115
+    assert observations.shape == next_observations.shape == (env.num_agents, 118)
+    assert env.token_spec.total_dims == env.observation_dim == 118
 
     replay = ReplayBuffer(capacity=4, device=device)
     replay.push(
@@ -43,7 +43,7 @@ def test_l1_compact_vertical_trace() -> None:
         dones,
     )
     batch = replay.sample(batch_size=2)
-    assert batch["observations"].shape == (2, 115)
+    assert batch["observations"].shape == (2, 118)
 
     flat = NetworkFactory.build_feedforward(
         FeedforwardConfig(hidden_layers=[16], activation="relu", dropout=0.0, layer_norm=False),

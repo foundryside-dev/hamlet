@@ -171,11 +171,13 @@ def test_immutable_context_is_schema_owned_without_duplicating_non_effect_identi
             assert len(row.fixed_payload) == len(PAYLOAD_SCHEMAS[type_schema.type_name])
 
 
-def test_current_l1_dynamic_census_is_exactly_115_and_below_the_120_cap(l1_token_spec: TokenSpec) -> None:
-    """Current L1 has no exposed variable element: its authoritative width is 115.
+def test_current_l1_dynamic_census_is_exactly_118_and_below_the_120_cap(l1_token_spec: TokenSpec) -> None:
+    """Current L1 exposes ONE variable_element — the authored day_phase clock (PDR-0143) —
+    so its authoritative width is 118 (measured 2026-09-02), still below the 120 cap.
 
-    The accepted 118 target described the same census plus one rank-0 variable token;
-    that distinct target shape is pinned separately below.
+    This is the same shape the PDR's 118-float target described as a hypothetical 115 base
+    plus one rank-0 variable token; day_phase makes that shape the real, current census, not
+    a synthetic addition (see the rank-0 row-width test below).
     """
     layout = _compact_layout(l1_token_spec)
 
@@ -191,23 +193,20 @@ def test_current_l1_dynamic_census_is_exactly_115_and_below_the_120_cap(l1_token
         "agent": 0,
         "item": 2,
         "effect": 0,
-        "variable_element": 0,
+        "variable_element": 1,
     }
-    assert l1_token_spec.total_dims == layout.dynamic_total_dims == 5 + 24 + 70 + 16 == 115
-    assert l1_token_spec.fixed_total_dims == 4090
+    assert l1_token_spec.total_dims == layout.dynamic_total_dims == 5 + 24 + 70 + 16 + 3 == 118
+    assert l1_token_spec.fixed_total_dims == 4142
     assert l1_token_spec.row_layout()[-1][3] == l1_token_spec.total_dims
     assert l1_token_spec.fixed_row_layout()[-1][3] == l1_token_spec.fixed_total_dims
     assert l1_token_spec.total_dims <= 120
-    assert l1_token_spec.total_dims * 2 * 100_000 * torch.float32.itemsize == 92_000_000
+    assert l1_token_spec.total_dims * 2 * 100_000 * torch.float32.itemsize == 94_400_000
 
 
-def test_one_rank_zero_variable_preserves_the_118_target_shape(l1_token_spec: TokenSpec) -> None:
-    """The PDR's 118-float target is the current 115-float census plus one scalar.
-
-    This does not falsely claim that current L1 exposes that variable: the current
-    census assertion above remains zero and this synthetic rank-0 row is exactly three
-    floats (presence plus the two value lanes).
-    """
+def test_a_rank_zero_variable_element_row_is_exactly_three_floats() -> None:
+    """A single variable_element slot is presence plus two value lanes — three floats,
+    regardless of position_rank. This is the shape day_phase's real row in L1 shares
+    (verified above), pinned here independently of any one universe's census."""
     scalar_spec = _token_spec(
         position_rank=0,
         types=(
@@ -224,15 +223,12 @@ def test_one_rank_zero_variable_preserves_the_118_target_shape(l1_token_spec: To
             ),
         ),
     )
-    _compact_layout(l1_token_spec)
     scalar_layout = _compact_layout(scalar_spec)
 
     variable_layout = scalar_layout.get_type("variable_element")
     assert variable_layout is not None
     assert variable_layout.dynamic_features == ("presence", "value_0", "value_1")
     assert scalar_spec.total_dims == scalar_layout.dynamic_total_dims == 3
-    assert l1_token_spec.total_dims + scalar_spec.total_dims == 118
-    assert 118 * 2 * 100_000 * torch.float32.itemsize == 94_400_000
 
 
 def test_compact_l1_rows_exclude_descriptors_and_fixed_rank_padding(l1_token_spec: TokenSpec) -> None:

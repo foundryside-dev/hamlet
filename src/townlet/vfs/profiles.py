@@ -242,10 +242,12 @@ class VFSProfileCompiler:
         Raises:
             TypeCheckError: If expression has type error
         """
-        # Variable with a static init source. The DTO enforces exactly one of
-        # {initial_value, initial_value_mode, expression}; the first two are both static —
-        # initial_value_mode is how tensor variables initialize (zeros/ones/eye/random_*).
-        if var.initial_value is not None or getattr(var, "initial_value_mode", None) is not None:
+        # Variable with a static init source (no expression). The DTO enforces at least one of
+        # {initial_value, initial_value_mode, expression}; initial_value_mode is how tensor
+        # variables initialize (zeros/ones/eye/random_*). An expression variable may ALSO
+        # declare initial_value (PDR-0143) — handled in the expression branch below, which is
+        # why this branch is keyed on the absence of an expression, not the presence of a value.
+        if var.expression is None:
             return CompiledVariable(
                 name=var.name,
                 exposed_to=tuple(var.exposed_to),
@@ -280,7 +282,7 @@ class VFSProfileCompiler:
             type=var.type,
             expression=var.expression,
             ast=ast,
-            initial_value=None,
+            initial_value=var.initial_value,
             result_type=result_type,
             shape=getattr(var, "shape", None),
             initial_value_mode=getattr(var, "initial_value_mode", None),

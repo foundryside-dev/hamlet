@@ -77,8 +77,8 @@ class _SubstrateCase:
 
 
 SUBSTRATE_CASES = (
-    _SubstrateCase("grid2d", Path("configs/default_curriculum"), "L1_full_observability", 2, 115, 4090, 14),
-    _SubstrateCase("grid3d", Path("configs/differential/div003_cubic_partial"), "L2_partial_observability", 3, 149, 4090, 14),
+    _SubstrateCase("grid2d", Path("configs/default_curriculum"), "L1_full_observability", 2, 118, 4142, 14),
+    _SubstrateCase("grid3d", Path("configs/differential/div003_cubic_partial"), "L2_partial_observability", 3, 152, 4142, 14),
     _SubstrateCase("aspatial", Path("configs/aspatial_test"), "L0", 0, 19, 394, 1),
 )
 

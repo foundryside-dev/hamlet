@@ -53,7 +53,8 @@ def _selected(universe: CompiledUniverse) -> CompiledUniverse.LevelMetadata:
 
 
 class TestL1TokenEmission:
-    """The compiled L1 artifact matches Task 6's measured worked table."""
+    """The compiled L1 artifact matches the worked table measured 2026-09-02 after
+    `day_phase` (PDR-0143)."""
 
     def test_census_matches_task6_worked_table(self, l1_universe):
         assert _selected(l1_universe).token_spec.census == {
@@ -63,15 +64,15 @@ class TestL1TokenEmission:
             "agent": 0,  # no shared-world declaration exists; never keyed on num_agents
             "item": 2,  # max_items_in_world 1 + max_items_per_agent 1 x 1 agent/world
             "effect": 0,
-            # The tick-derived expression is world state, not observable identity.
-            "variable_element": 0,
+            # The authored day_phase clock is now ONE exposed cyclical token (PDR-0143).
+            "variable_element": 1,
         }
 
     def test_total_dims_is_task6_measurement(self, l1_universe):
         # Compact dynamic transport excludes immutable context and rank padding.
-        assert _selected(l1_universe).token_spec.census["variable_element"] == 0
-        assert _selected(l1_universe).token_spec.total_dims == 115
-        assert _selected(l1_universe).token_spec.fixed_total_dims == 4090
+        assert _selected(l1_universe).token_spec.census["variable_element"] == 1
+        assert _selected(l1_universe).token_spec.total_dims == 118
+        assert _selected(l1_universe).token_spec.fixed_total_dims == 4142
 
     def test_all_roster_types_present_in_engine_order(self, l1_universe):
         assert tuple(t.type_name for t in _selected(l1_universe).token_spec.types) == TOKEN_TYPE_ROSTER

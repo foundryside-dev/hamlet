@@ -57,16 +57,19 @@ def test_global_vfs_variable_requires_value_or_expression():
         )
 
 
-def test_global_vfs_variable_rejects_both():
-    """Cannot have both initial_value and expression."""
-    with pytest.raises(ValidationError, match="exactly one"):
-        GlobalVFSVariableConfig(
-            semantic_type="custom",
-            name="invalid",
-            type="int",
-            initial_value=5,
-            expression="bar.energy + 1",
-        )
+def test_global_vfs_variable_expression_may_declare_initial_value():
+    """An expression variable may ALSO declare initial_value — its exact value at episode
+    start, which is what exposure identity needs (PDR-0143)."""
+    config = GlobalVFSVariableConfig(
+        semantic_type="custom",
+        name="valid",
+        type="int",
+        initial_value=5,
+        expression="bar.energy + 1",
+    )
+
+    assert config.initial_value == 5
+    assert config.expression == "bar.energy + 1"
 
 
 def test_agent_vfs_variable_with_initial_value():

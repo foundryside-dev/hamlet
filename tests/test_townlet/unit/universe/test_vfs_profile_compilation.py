@@ -76,6 +76,14 @@ def test_compiler_allows_missing_vfs_profiles(tmp_path: Path):
 
 def test_compiler_refuses_exposed_expression_before_runtime_identity_is_erased(tmp_path: Path):
     experiment_dir = prepare_config_dir(tmp_path, name="experiment")
+    # The model_config fixture used by prepare_config_dir declares deficit_energy /
+    # time_since_last_eat under environment.yaml, and declaration there IS exposure
+    # (observation.py:67) — unrelated to this test's expression/initial_value question.
+    # Clear it so the slot_bindings assertion below reflects only what this test declares.
+    env_path = experiment_dir / "environment.yaml"
+    env_doc = yaml.safe_load(env_path.read_text())
+    env_doc["environment"]["variables"] = []
+    env_path.write_text(yaml.safe_dump(env_doc))
     profiles = {
         "version": "1.0",
         "evaluation_mode": "mark_and_sweep",
@@ -95,8 +103,16 @@ def test_compiler_refuses_exposed_expression_before_runtime_identity_is_erased(t
     }
     (experiment_dir / "vfs_profiles.yaml").write_text(yaml.safe_dump(profiles))
 
-    with pytest.raises(ValueError, match=r"phase.*expression.*cannot be exposed"):
+    with pytest.raises(ValueError, match=r"phase.*expression.*without a declared initial_value"):
         UniverseCompiler().compile(experiment_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
+
+    profiles["global_profile"]["variables"][0]["initial_value"] = 0.0
+    (experiment_dir / "vfs_profiles.yaml").write_text(yaml.safe_dump(profiles))
+    compiled = UniverseCompiler().compile(experiment_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
+    spec = compiled.get_level(PRIMARY_LEVEL_NAME).token_spec
+    assert [b.filler_ref for b in spec.get_type("variable_element").slot_bindings] == ["phase"]
+    declared = {v.id: v for v in compiled.get_level(PRIMARY_LEVEL_NAME).vfs_variables}["phase"]
+    assert declared.default == 0.0
 
 
 @pytest.mark.parametrize(

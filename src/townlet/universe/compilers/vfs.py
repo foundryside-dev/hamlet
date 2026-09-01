@@ -325,10 +325,11 @@ class VFSCompiler:
         params = compiled_var.initial_value_params
         default_value: Any
 
-        if exposed and expression is not None:
+        if exposed and expression is not None and compiled_var.initial_value is None:
             raise ValueError(
-                f"Exposed VFS variable '{compiled_var.name}' uses expression initialization and cannot be exposed: "
-                "variable_element identity requires one exact declared default. Remove exposed_to and normalization."
+                f"Exposed VFS variable '{compiled_var.name}' uses an expression without a declared initial_value and "
+                "cannot be exposed: variable_element identity requires the exact declared reset value. Declare "
+                "initial_value (the value at episode start) or remove exposed_to."
             )
 
         if exposed and mode in _RANDOM_TENSOR_INITIALIZERS:

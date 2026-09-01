@@ -93,17 +93,18 @@ class GlobalVFSVariableConfig(BaseModel):
 
     @model_validator(mode="after")
     def validate_value_xor_expression(self):
-        """Exactly one init source (initial_value or initial_value_mode) or expression must be set."""
+        """One static source (initial_value XOR initial_value_mode) or an expression; an
+        expression may ALSO declare initial_value — its exact value at episode start, which
+        is what exposure identity needs (PDR-0143)."""
         has_value = self.initial_value is not None
         has_mode = self.initial_value_mode is not None
         has_expr = self.expression is not None
-
-        provided = int(has_value) + int(has_mode) + int(has_expr)
-        if provided == 0:
+        if has_value and has_mode:
+            raise ValueError(f"Variable '{self.name}' must choose exactly one of initial_value or initial_value_mode")
+        if has_mode and has_expr:
+            raise ValueError(f"Variable '{self.name}' cannot combine initial_value_mode with an expression")
+        if not (has_value or has_mode or has_expr):
             raise ValueError(f"Variable '{self.name}' must provide exactly one of initial_value, initial_value_mode, or expression")
-        if provided > 1:
-            raise ValueError(f"Variable '{self.name}' must choose exactly one of initial_value, initial_value_mode, or expression")
-
         return self
 
     @model_validator(mode="after")
@@ -214,17 +215,18 @@ class AgentVFSVariableConfig(BaseModel):
 
     @model_validator(mode="after")
     def validate_value_xor_expression(self):
-        """Exactly one init source (initial_value or initial_value_mode) or expression must be set."""
+        """One static source (initial_value XOR initial_value_mode) or an expression; an
+        expression may ALSO declare initial_value — its exact value at episode start, which
+        is what exposure identity needs (PDR-0143)."""
         has_value = self.initial_value is not None
         has_mode = self.initial_value_mode is not None
         has_expr = self.expression is not None
-
-        provided = int(has_value) + int(has_mode) + int(has_expr)
-        if provided == 0:
+        if has_value and has_mode:
+            raise ValueError(f"Variable '{self.name}' must choose exactly one of initial_value or initial_value_mode")
+        if has_mode and has_expr:
+            raise ValueError(f"Variable '{self.name}' cannot combine initial_value_mode with an expression")
+        if not (has_value or has_mode or has_expr):
             raise ValueError(f"Variable '{self.name}' must provide exactly one of initial_value, initial_value_mode, or expression")
-        if provided > 1:
-            raise ValueError(f"Variable '{self.name}' must choose exactly one of initial_value, initial_value_mode, or expression")
-
         return self
 
     @model_validator(mode="after")
@@ -328,13 +330,13 @@ class ItemVFSVariableConfig(BaseModel):
 
     @model_validator(mode="after")
     def validate_value_xor_expression(self):
-        """Exactly one of initial_value or expression must be set."""
+        """One static source (initial_value; item variables have no initial_value_mode) or an
+        expression; an expression may ALSO declare initial_value — its exact value at episode
+        start, which is what exposure identity needs (PDR-0143)."""
         has_value = self.initial_value is not None
         has_expr = self.expression is not None
-
-        if has_value == has_expr:
-            raise ValueError(f"Variable '{self.name}' must have exactly one of initial_value or expression (not both, not neither)")
-
+        if not (has_value or has_expr):
+            raise ValueError(f"Variable '{self.name}' must provide exactly one of initial_value or expression")
         return self
 
     @model_validator(mode="after")

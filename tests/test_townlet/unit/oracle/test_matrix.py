@@ -181,7 +181,11 @@ def test_standing_and_differential_cells_bind_div010_and_div008_narrowly() -> No
     and `vfs_hash` — measured by two-worktree probe (11dee204 vs HEAD) and confirmed
     per-commit as the tick-injection commit's own movement. Every standing and differential
     cell binds this as a second, composing entry alongside DIV-009, and unit 3's token cut
-    (DIV-008) composes third — exactly three entries total on these sixteen cells.
+    (DIV-008) composes third — three entries total on the sixteen standing+differential
+    cells, plus a fourth (DIV-012) on the ten default_curriculum standing cells alone
+    (2026-09-02, unit 5 `day_phase`: `affordances_hash`, `brain_hash`, `environment_hash`,
+    `stratum_hash` — measured on default_curriculum only, not yet on differential; see
+    docs/oracle/known-divergences.md#div-012).
 
     DIV-011 is GONE from the binding: it retired into DIV-008 by its own pre-registered
     condition, and its two token hashes are declared under DIV-008 now (2026-08-26)."""
@@ -194,7 +198,19 @@ def test_standing_and_differential_cells_bind_div010_and_div008_narrowly() -> No
         assert not [
             d for d in c.hash_divergences if d.register_ref == "DIV-011"
         ], f"{c.cell_id} still binds DIV-011, which retired into DIV-008"
-        assert len(c.hash_divergences) == 3, f"{c.cell_id} should bind exactly DIV-009 + DIV-010 + DIV-008"
+        div012 = [d for d in c.hash_divergences if d.register_ref == "DIV-012"]
+        if c.params.pack == "configs/default_curriculum":
+            assert len(div012) == 1, f"{c.cell_id} does not bind exactly one DIV-012 entry"
+            assert div012[0].declared == {
+                "affordances_hash",
+                "brain_hash",
+                "environment_hash",
+                "stratum_hash",
+            }, f"{c.cell_id}: DIV-012 hash_fields do not match measurement"
+            assert len(c.hash_divergences) == 4, f"{c.cell_id} should bind exactly DIV-009 + DIV-010 + DIV-012 + DIV-008"
+        else:
+            assert not div012, f"{c.cell_id} is not default_curriculum and should not bind DIV-012 (unmeasured)"
+            assert len(c.hash_divergences) == 3, f"{c.cell_id} should bind exactly DIV-009 + DIV-010 + DIV-008"
 
 
 def test_every_cell_binds_div008_hash_and_stream_narrowly() -> None:

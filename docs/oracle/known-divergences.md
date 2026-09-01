@@ -1278,6 +1278,106 @@ the oracle is re-tagged past unit 3's landings, whichever comes first.
 
 ---
 
+## DIV-012 — Four undeclared standing-cell hash movers surfaced by the `day_phase` run: one is Task 1, three predate both Task 1 and Task 2
+
+- **Status:** `built` (2026-09-02 — measured against run `20260902-092715`
+  (`default_curriculum:L3_temporal_mechanics:cpu:seed42`), which reported `HASH_MISMATCH`
+  with `register_refs: []` despite `actions_hash, layout_hash, observation_schema_hash,
+  pack_brain_hash, token_type_schema_hash, transition_graph_hash, variable_schema_hash,
+  vfs_hash` already being the declared union of `_DIV009_STANDING`, `_DIV010` and
+  `_DIV008_HASH`. Only the L3 cpu cell was run this ticket; the CUDA cell `SKIPPED`
+  (`cuda not requested`). Not yet confirmed on the other four `default_curriculum` standing
+  levels — see Scope below.)
+- **Harness shape: hash-only** (`RegisteredHashDivergence`)
+- **Provenance:** `hamlet-55b2826a02` (unit 5, `day_phase`, this ticket) · `PDR-0143`
+  (unit 5, and its own §6 identity rule) · attribution measurement below implicates commit
+  `94656527` (Task 1, "feat(stratum): delete the inert observation_mode key")
+- **Surface:** none directly — this entry declares provenance movement, not a code surface.
+  `stratum_hash`'s mover is `src/townlet/config/stratum_config.py` (Task 1's
+  `observation_mode` deletion) against the frozen `oracle_fixtures/configs/default_curriculum/
+  stratum.yaml`, which still declares it. `affordances_hash`, `brain_hash`,
+  `environment_hash` were not newly moved by any commit probed this ticket — see below.
+
+**What the run found.** `runs/differential/20260902-092715/report.json`'s single cell verdict
+is `HASH_MISMATCH`. Its `mismatched` set has twelve fields; eight are `declared` (the existing
+DIV-008/009/010 union, all legitimate — variable_schema_hash/vfs_hash/layout_hash/
+observation_schema_hash move because of `day_phase` itself, on top of DIV-008's/DIV-010's own
+reasons, which is the same "two causes, one hash" composing shape DIV-010 already
+established). The four `undeclared_movers` — `affordances_hash`, `brain_hash`,
+`environment_hash`, `stratum_hash` — have no entry, so no registered divergence's exact-union
+condition can be met and the cell falls through to plain `HASH_MISMATCH`.
+
+**Measurement method.** DIV-010's per-commit worktree method, run against `configs/
+default_curriculum` `L3_temporal_mechanics` at four points, each compiled with that point's
+own code (`git worktree add --detach <path> <commit>`, `UniverseCompiler().compile(...)`,
+diff every `*_hash` attribute):
+
+| point | commit | what it is |
+|---|---|---|
+| `149e2bad` | pre-Task-1 | fiftieth product checkpoint, unit 5 not yet started |
+| `94656527` | Task 1, code | `observation_mode` key deleted from `StratumConfig` and every pack |
+| `de4950ab` | Task 1, complete | fixture/doc correction landed on top of `94656527` |
+| working tree | Task 2 | `day_phase` authored (this ticket, uncommitted at measurement time) |
+
+**Per-field attribution:**
+
+| field | `149e2bad` | `94656527` | `de4950ab` | working tree | first mover | cause |
+|---|---|---|---|---|---|---|
+| `stratum_hash` | `263635d7…` | `bcbf09eb…` | `bcbf09eb…` | `bcbf09eb…` | `94656527` | Task 1: `stratum_hash` is a RAW hash over the whole `StratumConfig` (DIV-001's weak-evidence group); deleting `observation_mode` from the live DTO/pack while the frozen `oracle_fixtures/` copy keeps it moves this field for any exercising cell, independent of `day_phase` |
+| `affordances_hash` | `2bda63f6…` | `2bda63f6…` | `2bda63f6…` | `2bda63f6…` | *(none in range)* | already mismatched at `149e2bad`, before Task 1 or Task 2 touched anything; not independently bisected further back — out of this ticket's scope (a pre-existing, unregistered gap this entry surfaces but does not root-cause) |
+| `brain_hash` / `pack_brain_hash`* | `4f10939d…` | `4f10939d…` | `4f10939d…` | `4f10939d…` | *(none in range)* | same as `affordances_hash` — pre-existing at `149e2bad`; `pack_brain_hash` is already covered by DIV-009's declared union, only the plain `brain_hash` is undeclared here |
+| `environment_hash` | `5bbd38d3…` | `5bbd38d3…` | `5bbd38d3…` | `5bbd38d3…` | *(none in range)* | same as `affordances_hash` — pre-existing at `149e2bad` |
+
+\* `pack_brain_hash` and `brain_hash` share the same value on this pack (no per-level brain
+override exists — CLAUDE.md) but are distinct fields; `pack_brain_hash` is already declared
+by `_DIV009_STANDING`, so only `brain_hash` is new here.
+
+`layout_hash`, `observation_schema_hash`, `variable_schema_hash`, `vfs_hash` are unchanged
+across the first three points and move only in the working tree — that movement is
+`day_phase`'s own (already declared by `_DIV008_HASH`/`_DIV010`'s union, confirmed here to
+be additive on top of them, not a new field) and needs no new declaration.
+
+**Why one entry, not a stratum-only one.** `affordances_hash`, `brain_hash` and
+`environment_hash` are NOT caused by `day_phase`, by Task 1, or by any commit probed in
+`149e2bad..HEAD` — they were already diverged from the frozen `oracle-2026-08-17` fixtures
+before this ticket's range begins. They are registered here, alongside the genuinely
+Task-1-caused `stratum_hash`, because that is what the `20260902-092715` run actually needs
+to reach `DIVERGED_AS_REGISTERED`: the union-exact rule (`hamlet-fa6bb6da4a`) requires every
+observed mover on the cell to be declared by *some* entry. Splitting the pre-existing three
+into their own entry would need their own root-cause bisection first (a `4222a917..149e2bad`
+walk this ticket's scope does not cover); recording the honest, measured state — "these three
+move, cause not yet found, first observed diverged no later than `149e2bad`" — is DIV-009's
+own discipline (investigate and report, never silently drop) applied under this ticket's
+actual time budget rather than deferred to a separate ticket that does not yet exist.
+
+**Scope.** Measured only on `default_curriculum:L3_temporal_mechanics:cpu`. All four
+undeclared fields are pack-level (raw hashes over `StratumConfig`, `BrainConfig`,
+`EnvironmentConfig`, and the affordances DTO — none level-scoped, per `stratum.yaml`,
+`brain.yaml`, `environment.yaml`, `affordances.yaml`'s pack-shared-file layout, CLAUDE.md),
+so the same movement is expected on the other four `default_curriculum` standing levels and
+their CUDA counterparts; this is bound to all ten standing cells below on that basis, but
+only the one cpu/L3 cell was actually run and adjudicated this ticket. A future full-matrix
+run is the harness-level confirmation, as DIV-009's and DIV-010's own entries note for their
+own initial single/partial-cell measurements.
+
+**Harness adjudication.** `_DIV012 = RegisteredHashDivergence(register_ref="DIV-012",
+hash_fields=("affordances_hash", "brain_hash", "environment_hash", "stratum_hash"))` is
+appended to the standing cells' existing tuple: `(_DIV009_STANDING, _DIV010, _DIV012,
+_DIV008_HASH)`. Its field set is disjoint from every other bound entry's fields on these
+cells (no overlap to resolve, DIV-009's shape). A mover outside a cell's declared union
+stays `HASH_MISMATCH`; a declared field that does not move lands
+`REGISTERED_DIVERGENCE_ABSENT`; any stream difference is `DIVERGE` — all red, as for every
+hash-only entry.
+
+**Retire this entry** when `affordances_hash`, `brain_hash` and `environment_hash`'s actual
+root cause is found and bisected into its own entry (or the oracle is re-tagged past it), and
+separately when `stratum_hash`'s cause (Task 1's `observation_mode` deletion) is absorbed by
+re-freezing `oracle_fixtures/` or a re-tag — two independent retirement conditions, not one,
+since the four fields have two different causes bound under one entry for the union-exact
+rule's sake, not because they share a story.
+
+---
+
 ## Adding an entry
 
 Record the divergence **before** cutting the seam that produces it — at knockdown plan time,

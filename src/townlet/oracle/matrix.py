@@ -308,6 +308,18 @@ _DIV010 = RegisteredHashDivergence(
     hash_fields=("variable_schema_hash", "vfs_hash"),
 )
 
+# DIV-012 (2026-09-02, unit 5 `day_phase`, hamlet-55b2826a02): four standing-cell hash
+# movers with no declared union — `stratum_hash` (Task 1's `observation_mode` deletion,
+# moved at 94656527: RAW hash over the whole StratumConfig, frozen fixture still declares
+# the key) plus `affordances_hash`, `brain_hash`, `environment_hash` (measured already
+# diverged before Task 1 or Task 2 touched anything — pre-existing, root cause not yet
+# bisected). Bound together under the union-exact rule, not because they share a cause; see
+# docs/oracle/known-divergences.md#div-012 for the four-point per-field attribution table.
+_DIV012 = RegisteredHashDivergence(
+    register_ref="DIV-012",
+    hash_fields=("affordances_hash", "brain_hash", "environment_hash", "stratum_hash"),
+)
+
 # DIV-011 is RETIRED into DIV-008 at the token cut (2026-08-26, unit 3 Task 11) — its own
 # entry pre-registered exactly that condition ("retire when DIV-008 lands … the token hashes
 # become part of that registered surface"). `token_type_schema_hash` and `layout_hash` are
@@ -435,21 +447,28 @@ def default_cells() -> tuple[Cell, ...]:
     first entry to carry both shapes under one register_ref, which
     `compare_traces` labels `"hash+stream"`.
 
-    Standing and differential cells bind `(_DIV009_STANDING, _DIV010,
-    _DIV008_HASH)`; profile cells bind `(_DIV009_PROFILE, _DIV010,
-    _DIV008_HASH)`. DIV-006 and DIV-011 are RETIRED into DIV-008 at this cut
-    (see their comments above) — DIV-006 because the new-side surface it
-    described was deleted, DIV-011 by its own pre-registered condition.
-    Overlapping fields between composing entries are legal where two causes
-    genuinely move one hash (`variable_schema_hash` under DIV-010 and DIV-008;
-    `vfs_hash` under DIV-009, DIV-010 and DIV-008); the union of every entry's
-    declared fields must still equal the observed movers EXACTLY, and each
-    entry's own fields must all move.
+    Standing cells additionally bind `_DIV012` (2026-09-02, unit 5 `day_phase`):
+    `stratum_hash` (Task 1's `observation_mode` deletion) plus `affordances_hash`,
+    `brain_hash`, `environment_hash` (measured already diverged before Task 1 or
+    Task 2 — pre-existing, root cause not yet bisected; see
+    docs/oracle/known-divergences.md#div-012). Not yet measured on differential
+    or profile cells, so it is bound to standing only.
+
+    Standing cells bind `(_DIV009_STANDING, _DIV010, _DIV012, _DIV008_HASH)`;
+    differential cells bind `(_DIV009_STANDING, _DIV010, _DIV008_HASH)`; profile
+    cells bind `(_DIV009_PROFILE, _DIV010, _DIV008_HASH)`. DIV-006 and DIV-011
+    are RETIRED into DIV-008 at this cut (see their comments above) — DIV-006
+    because the new-side surface it described was deleted, DIV-011 by its own
+    pre-registered condition. Overlapping fields between composing entries are
+    legal where two causes genuinely move one hash (`variable_schema_hash`
+    under DIV-010 and DIV-008; `vfs_hash` under DIV-009, DIV-010 and DIV-008);
+    the union of every entry's declared fields must still equal the observed
+    movers EXACTLY, and each entry's own fields must all move.
 
     Exit 0 now means "everything diverged exactly as registered", DIV-004's
     cost restated at this tag; see docs/oracle/known-divergences.md#div-008,
-    #div-009 and #div-010. Declarations return only when a register entry
-    needs them (PDR-0037 record-then-bind).
+    #div-009, #div-010 and #div-012. Declarations return only when a register
+    entry needs them (PDR-0037 record-then-bind).
     """
     standing = tuple(
         Cell(
@@ -462,7 +481,7 @@ def default_cells() -> tuple[Cell, ...]:
                 device=device,
             ),
             pack_divergence=_PACK_DIVERGENCE.get(_DEFAULT_PACK),
-            hash_divergences=(_DIV009_STANDING, _DIV010, _DIV008_HASH),
+            hash_divergences=(_DIV009_STANDING, _DIV010, _DIV012, _DIV008_HASH),
             stream_divergence=_DIV008_STREAM,
         )
         for device in ("cpu", "cuda")

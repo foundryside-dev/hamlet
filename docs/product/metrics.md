@@ -1,4 +1,41 @@
-# Metrics — HAMLET / Townlet        Last read: 2026-09-02 · resume reading, no milestone change (`PDR-0139`)
+# Metrics — HAMLET / Townlet        Last read: 2026-09-02 · M4 ACCEPTED, all four cells pass (`PDR-0141`)
+
+> **Milestone 4 accepted — 2026-09-02, `PDR-0141`, training source `project-recovery-3@9d4e942f`,
+> evidence harness `@e1615648`.** Both recurrent cells were resumed from the exact pinned snapshot
+> to the frozen budget and evaluated once under the frozen protocol; the repaired harness
+> re-validated all 3,200 raw outcomes and one cohort identity. `summary.json`
+> `all_cells_passed: true` (sha256 `5100097790007a9e`).
+>
+> | cell | parameters | realized / requested transitions | shortfall | raw greedy mean | verdict |
+> | --- | ---: | ---: | ---: | ---: | --- |
+> | feedforward / mean | 62,095 | 2,278,634 / 2,278,640 | 6 | **98.9925** | pass |
+> | feedforward / attention | 128,143 | 2,278,639 / 2,278,640 | 1 | **99.0** | pass |
+> | recurrent / mean | 194,191 | 2,278,638 / 2,278,640 | 2 | **97.315** | pass |
+> | recurrent / attention | 260,239 | 2,278,637 / 2,278,640 | 3 | **99.0** | pass |
+>
+> Floor 79.19466666666668; every mean is the exact arithmetic mean of 800 raw agent outcomes under
+> 100 episodes, eight agents, eval seed 12345, cap 1000. The **unit-4 regression floor** input
+> metric reads **4 of 4 cells pass**. The recurrent rows each carry two training attempts, the
+> second `resume: true`. Durable copies of `summary.json`, every `greedy_eval.json`, `meta.json`,
+> `curves.csv` and `transitions.csv` live under `docs/product/baselines/2026-09-m4-token-regression/`.
+>
+> **Evidence guardrail (`PDR-0140`):** the three `PDR-0138` defects are closed at `e1615648`.
+> `transitions.csv` is now derived only from the checkpoint-persisted `completed_live_agent_steps`
+> (digest-verified, monotone, ending at the realized count) and `summarize` refuses a cell
+> without it; `curves.csv` names the database column `batch_episode_steps`; the runner records
+> `failed` / `completed` / `interrupted`. The overstatement of the retired TensorBoard extractor
+> was measured at 402 → 93,478 transitions across feedforward/mean. Engine root cause
+> (`env.step_counts` unmasked for dead agents) filed as `hamlet-d6fc84d147`, P1 — not an M4 fix
+> because it feeds rewards and curriculum under the oracle.
+>
+> **Gates green** (guardrail, read on `project-recovery-3@e1615648`, the `PDR-0127` local set):
+> Ruff ✅, Black ✅ (557 files), mypy ✅ (176 source files), no-defaults ✅ (716 whitelisted),
+> compiler CLI validation ✅ (every shipped pack and level compiles), `git diff --check` ✅,
+> **3,837 passed / 11 skipped in 1,166.41 s**. Tool health per `PDR-0139` at resume: both doctors
+> clean, filigree probe 200, index fresh.
+>
+> **Pre-release hygiene:** the `9d4e942f` snapshot worktree was removed after use; no new
+> dead code. **Documentation truth:** unchanged (`CLAUDE.md:116` observation still pending).
 
 > **Milestone 4 partial engineering reading — 2026-09-01, `PDR-0138`, implementation
 > `project-recovery-3@9d4e942f`.** This is a pause checkpoint, not M4 acceptance.

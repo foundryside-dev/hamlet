@@ -1,4 +1,4 @@
-# Roadmap — HAMLET / Townlet        Updated: 2026-09-01 · milestone 4 paused in progress
+# Roadmap — HAMLET / Townlet        Updated: 2026-09-02 · milestone 4 accepted, unit 5 is the current unit
 
 > Sequencing, WSJF / cost-of-delay, and dated forecasts are produced by
 > /axiom-program-management. This file records bets as INTENT, not a delivery
@@ -18,12 +18,14 @@
 > that predates the VFS/VTC/DAC era. This file does not supersede or edit it; retiring it is part
 > of the Now bet.
 
-> **Current checkpoint — 2026-09-01, `PDR-0138`:** no horizon change. M4 implementation is pushed
-> at `project-recovery-3@9d4e942f` and green at 3,822 passed / 11 skipped plus every static and
-> pack gate. Both feedforward cells are budget-compliant under the frozen 0–7 terminal-shortfall
-> rule and pass the raw 79.1947 engineering floor at 98.9925 and 99.0. Both recurrent cells are paused at restart-safe
-> checkpoints around half-budget and remain unevaluated. M4 is not accepted; Unit 5 remains
-> blocked. The result is not an IQM or confidence claim.
+> **Current checkpoint — 2026-09-02, `PDR-0141`:** no horizon change. **M4 is accepted.** All four
+> token cells pass the raw 79.1947 engineering floor at the exact frozen seed-45 budget:
+> feedforward 98.9925 / 99.0, recurrent 97.315 / 99.0, shortfalls 6 / 1 / 2 / 3, one cohort identity
+> pinned at `9d4e942f`. The three evidence defects are closed at `e1615648` (`PDR-0140`); the engine
+> root cause is filed as `hamlet-d6fc84d147`. `hamlet-25fc3fb955` is closed. **Unit 5
+> (`hamlet-55b2826a02`) is the current unit** — owner-directed roll-in — and starts with the
+> 2026-10-06 trial-pack disposition ruling it requires. Still an engineering qualification, not an
+> IQM or confidence claim.
 
 ## Now  (committed, in-flight)
 
@@ -54,10 +56,10 @@
 
 - **Token-based observation engineering — IN SCOPE, owner-directed** (`PDR-0108`,
   `PDR-0114`, `PDR-0131`, `PDR-0132`, `PDR-0133`, `PDR-0134`, `PDR-0135`, `PDR-0136`,
-  `PDR-0137`, `PDR-0138`;
-  `hamlet-fa6bb6da4a`). Phase A, the declared attention choice, the full token cut and compact
-  replay are landed. The open work is the token-native recurrent regression and shipped-pack
-  migration.
+  `PDR-0137`, `PDR-0138`, `PDR-0140`, `PDR-0141`;
+  `hamlet-fa6bb6da4a`). Phase A, the declared attention choice, the full token cut, compact
+  replay and the four-cell recurrent/feedforward qualification are landed. The open work is
+  shipped-pack migration (unit 5).
   · **The 9.43× decision is re-ruled (`PDR-0131`, superseding `PDR-0126`).** At the default
   100,000-transition capacity, the historical 1,132-float serialization spent 863.6 MiB on
   observation pairs versus 91.6 MiB before the cut. The later 1,580-float line was an intermediate
@@ -89,22 +91,28 @@
   token-set mean/attention, RND and four-step recurrent BPTT execute; all three replay variants
   round-trip and reject their previous versions. No whole fixed-observation runtime ABI remains.
   Exact clean-SHA encoding ratios are `0.1618647585026199` and `0.16272129673268468`.
-  · **Current implementation unit (`hamlet-25fc3fb955`, paused in progress under `PDR-0138`):**
-  the token-native recurrent hard cut is pushed at `9d4e942f`. Feedforward mean/attention are
-  terminal and pass at 98.9925/99.0. Recurrent mean/attention are restart-safe at
-  1,181,395/1,204,116 of 2,278,640 transitions and remain unevaluated. The terminal curve import,
-  false legacy transition curve and misleading early-stop database status remain inside M4;
-  Unit 5 does not start around them.
+  · **Milestone 4 accepted (`PDR-0141`, training `9d4e942f`, evidence `e1615648`):** all four
+  seed-45 cells pass the 79.1947 floor at the exact frozen budget (feedforward mean/attention
+  98.9925/99.0, recurrent mean/attention 97.315/99.0), one cohort identity, raw 800-outcome arrays
+  re-validated by `summarize`; durable copies under `docs/product/baselines/2026-09-m4-token-regression/`.
+  Evidence path repaired under `PDR-0140`: transition accounting from the checkpoint-persisted
+  counter only, honest curve column, truthful terminal status. Engine survival-counter defect
+  filed as `hamlet-d6fc84d147`, deliberately outside M4.
+  · **Current implementation unit: Unit 5 (`hamlet-55b2826a02`).** Migrate every surviving shipped
+  pack to the accepted token ABI, config-in/behaviour-out exercise per live token type and scope,
+  re-author `set_encoder_smoke` and L3 authored temporality, delete every superseded surface.
+  Precondition inside the unit: rule the 2026-10-06 disposition (promote to fixture or delete) of
+  the retired-corpus trial packs before migrating anything.
   · **Checkpointed sequence (`PDR-0132`):** canonical bounded positions
   (`hamlet-6a4a6596bd`, complete) → meter `range_type` wiring (`hamlet-1e335e0363`, closed) →
   compact ABI (`hamlet-1b1caf552a`, accepted) → Unit 4 engineering regression
-  (`hamlet-25fc3fb955`, paused in progress) → Unit 5 shipped-pack migration (`hamlet-55b2826a02`). Each milestone
+  (`hamlet-25fc3fb955`, accepted `PDR-0141`) → Unit 5 shipped-pack migration (`hamlet-55b2826a02`, current). Each milestone
   needs terminal tracker evidence and a committed
   product checkpoint before its successor begins. Relational/message exposure and dynamic
   variables remain downstream, not silently folded into this unit.
   · metric: replay resident bytes, viable batch size, observation-encoding share, unit-4
   regression floor
-  · Updated: 2026-08-31 (`PDR-0136`)
+  · Updated: 2026-09-02 (`PDR-0141`)
 
 ## Next (shaped, decreasing certainty)
 

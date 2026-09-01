@@ -35,6 +35,23 @@ from townlet.universe.compiler import UniverseCompiler
 logger = logging.getLogger(__name__)
 
 
+def resolve_training_status(*, failed: bool, should_shutdown: bool, budget_reached: bool, episodes_reached: bool) -> str:
+    """Name how a training loop ended; a graceful stop short of its budget is not ``completed``.
+
+    A shutdown request truncates the episode it lands in, so it outranks the episode
+    limit: only a reached transition budget makes a shut-down run ``completed``.
+    """
+    if failed:
+        return "failed"
+    if budget_reached:
+        return "completed"
+    if should_shutdown:
+        return "interrupted"
+    if episodes_reached:
+        return "completed"
+    raise ValueError("training loop exited without a terminal cause")
+
+
 def decide_live_agent_budget(*, completed: int, live_agents: int, budget: int) -> tuple[bool, int]:
     """Decide whether one indivisible vector step fits a live-agent transition budget.
 
@@ -512,6 +529,7 @@ class DemoRunner:
             self.db.set_system_state("environment_step_budget_stop_rule", "stop_before_vector_step")
 
         # Training loop
+        failed = False
         try:
             while self.current_episode < self.max_episodes and not self.should_shutdown and not self.environment_step_budget_reached:
                 episode_start = time.time()
@@ -900,6 +918,9 @@ class DemoRunner:
 
                 self.current_episode += 1
 
+        except BaseException:
+            failed = True
+            raise
         finally:
             if self.max_environment_steps is not None:
                 shortfall = self.max_environment_steps - self.completed_live_agent_steps
@@ -925,7 +946,15 @@ class DemoRunner:
                 if hasattr(self, "hparams"):
                     self.tb_logger.log_hyperparameters(hparams=self.hparams, metrics=final_metrics)
 
-            self.db.set_system_state("training_status", "completed")
+            self.db.set_system_state(
+                "training_status",
+                resolve_training_status(
+                    failed=failed,
+                    should_shutdown=self.should_shutdown,
+                    budget_reached=self.environment_step_budget_reached,
+                    episodes_reached=self.current_episode >= self.max_episodes,
+                ),
+            )
 
             # Use extracted cleanup method
             self._cleanup()

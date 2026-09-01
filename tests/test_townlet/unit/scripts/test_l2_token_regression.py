@@ -126,6 +126,8 @@ def _write_cell_result(
             }
         )
     )
+    realized = {42: 3_322_056, 43: 3_112_832, 44: 3_314_536, 45: 2_278_640, 46: 2_286_816}[seed] - budget_shortfall
+    (run_dir / "transitions.csv").write_text(f"episode,completed_live_agent_steps\n0,{realized // 2}\n1,{realized}\n")
     total_survival_steps = round(mean * 800)
     base, remainder = divmod(total_survival_steps, 800)
     survival_steps = [base + (1 if index < remainder else 0) for index in range(800)]
@@ -529,3 +531,92 @@ class TestResume:
         (run_dir / "greedy_eval.json").write_text("{}")
         with pytest.raises(ValueError, match="greedy_eval"):
             regression.validate_resume_run(run_dir, **kwargs)
+
+
+def _write_checkpoint(checkpoint_dir: Path, *, episode: int, completed: int) -> Path:
+    from townlet.training.checkpoint_utils import persist_checkpoint_digest
+
+    torch = pytest.importorskip("torch")
+    checkpoint_dir.mkdir(parents=True, exist_ok=True)
+    path = checkpoint_dir / f"checkpoint_ep{episode:05d}.pt"
+    torch.save({"episode": episode, "completed_live_agent_steps": completed}, path)
+    persist_checkpoint_digest(path)
+    return path
+
+
+def _write_run_database(run_dir: Path, rows: list[tuple[int, int, float, float]]) -> None:
+    import sqlite3
+
+    run_dir.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(run_dir / "demo.db")
+    try:
+        conn.execute("CREATE TABLE episodes (episode_id INTEGER PRIMARY KEY, survival_time INTEGER, epsilon REAL, intrinsic_weight REAL)")
+        conn.executemany("INSERT INTO episodes VALUES (?, ?, ?, ?)", rows)
+        conn.commit()
+    finally:
+        conn.close()
+
+
+class TestTrainingCurves:
+    def test_harness_owns_its_curves_without_the_baseline_script(self):
+        # Direct script execution puts scripts/ (not the repo root) on sys.path, so
+        # `from scripts.l2_baseline import ...` fails after a completed train — and the
+        # baseline extractor's all-agent accounting overstates the persisted counter.
+        assert "l2_baseline" not in _SCRIPT.read_text()
+
+    def test_curves_and_transitions_come_from_database_and_verified_checkpoints(self, regression, tmp_path):
+        run_dir = tmp_path / "run"
+        _write_run_database(run_dir, [(0, 1000, 1.0, 0.1), (1, 640, 0.99, 0.1), (2, 1000, 0.98, 0.1)])
+        _write_checkpoint(run_dir / "checkpoints", episode=0, completed=350)
+        _write_checkpoint(run_dir / "checkpoints", episode=2, completed=1_200)
+        (run_dir / "meta.json").write_text(json.dumps({"realized_live_agent_steps": 1_200}))
+
+        regression.write_training_curves(run_dir)
+
+        assert (run_dir / "curves.csv").read_text() == (
+            "episode,batch_episode_steps,epsilon,intrinsic_weight\n"
+            "0,1000,1.000000,0.100000\n"
+            "1,640,0.990000,0.100000\n"
+            "2,1000,0.980000,0.100000\n"
+        )
+        assert (run_dir / "transitions.csv").read_text() == "episode,completed_live_agent_steps\n0,350\n2,1200\n"
+
+    def test_transitions_refuse_counter_regression_or_final_mismatch(self, regression, tmp_path):
+        run_dir = tmp_path / "run"
+        _write_run_database(run_dir, [(0, 10, 1.0, 0.1)])
+        _write_checkpoint(run_dir / "checkpoints", episode=0, completed=350)
+        _write_checkpoint(run_dir / "checkpoints", episode=1, completed=300)
+        (run_dir / "meta.json").write_text(json.dumps({"realized_live_agent_steps": 300}))
+        with pytest.raises(ValueError, match="monotone"):
+            regression.write_training_curves(run_dir)
+
+        (run_dir / "checkpoints" / "checkpoint_ep00001.pt").unlink()
+        (run_dir / "checkpoints" / "checkpoint_ep00001.pt.sha256").unlink()
+        (run_dir / "meta.json").write_text(json.dumps({"realized_live_agent_steps": 351}))
+        with pytest.raises(ValueError, match="realized_live_agent_steps"):
+            regression.write_training_curves(run_dir)
+
+    def test_transitions_refuse_checkpoint_without_digest(self, regression, tmp_path):
+        run_dir = tmp_path / "run"
+        _write_run_database(run_dir, [(0, 10, 1.0, 0.1)])
+        path = _write_checkpoint(run_dir / "checkpoints", episode=0, completed=350)
+        path.with_suffix(".pt.sha256").unlink()
+        (run_dir / "meta.json").write_text(json.dumps({"realized_live_agent_steps": 350}))
+        with pytest.raises(FileNotFoundError, match="checksum"):
+            regression.write_training_curves(run_dir)
+
+
+class TestSummaryTransitionArtifact:
+    def test_summary_refuses_missing_or_inconsistent_transition_artifact(self, regression, tmp_path):
+        root = tmp_path / "runs"
+        for architecture in regression.ARCHITECTURES:
+            for aggregator in regression.AGGREGATORS:
+                _write_cell_result(root, architecture=architecture, aggregator=aggregator, seed=45, mean=99.0)
+        broken = root / "token_recurrent-attention" / "seed_45" / "transitions.csv"
+        broken.unlink()
+        with pytest.raises(FileNotFoundError, match="transitions.csv"):
+            regression.summarize_results(root)
+
+        broken.write_text("episode,completed_live_agent_steps\n0,1\n")
+        with pytest.raises(ValueError, match="transitions.csv"):
+            regression.summarize_results(root)

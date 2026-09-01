@@ -23,6 +23,7 @@ import json
 import math
 import platform
 import shutil
+import sqlite3
 import subprocess
 import sys
 import time
@@ -41,6 +42,7 @@ MAX_STEPS_PER_EPISODE = 1000
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from townlet.determinism import seed_all  # noqa: E402
+from townlet.training.checkpoint_utils import safe_torch_load, verify_checkpoint_digest  # noqa: E402
 
 ARCHITECTURES = ("token_feedforward", "token_recurrent")
 AGGREGATORS = ("mean", "attention")
@@ -339,6 +341,69 @@ def finish_training_attempt(
         metadata.pop("training_finished_at", None)
 
 
+def _require_monotone_counters(rows: list[tuple[int, int]], *, context: str) -> None:
+    if not rows:
+        raise ValueError(f"{context}: no checkpoint rows")
+    for (previous_episode, previous_counter), (episode, counter) in zip(rows, rows[1:], strict=False):
+        if episode <= previous_episode or counter < previous_counter:
+            raise ValueError(f"{context}: completed_live_agent_steps must be monotone in episode order ({previous_episode}->{episode})")
+
+
+def read_transition_artifact(run_dir: Path) -> list[tuple[int, int]]:
+    """Read ``transitions.csv``: (episode, completed_live_agent_steps) rows, validated monotone."""
+    path = run_dir / "transitions.csv"
+    if not path.is_file():
+        raise FileNotFoundError(f"{path} is missing — run `curves --run-dir {run_dir}` to derive it from the checkpoints")
+    lines = path.read_text().splitlines()
+    if not lines or lines[0] != "episode,completed_live_agent_steps":
+        raise ValueError(f"{path}: unexpected header {lines[:1]!r}")
+    rows: list[tuple[int, int]] = []
+    for line in lines[1:]:
+        episode_text, counter_text = line.split(",")
+        rows.append((int(episode_text), int(counter_text)))
+    _require_monotone_counters(rows, context=str(path))
+    return rows
+
+
+def write_training_curves(run_dir: Path) -> None:
+    """Write the per-episode curve and the authoritative transition accounting for one run.
+
+    ``curves.csv`` carries what the run database actually records per episode: the
+    runner's ``survival_time`` is the environment's unmasked step counter, i.e. the
+    batch episode length, so it is written under that name. ``transitions.csv`` is the
+    only transition accounting: ``completed_live_agent_steps`` as persisted in every
+    digest-verified checkpoint, which must end exactly at the metadata's realized count.
+    """
+    conn = sqlite3.connect(run_dir / "demo.db")
+    try:
+        rows = conn.execute("SELECT episode_id, survival_time, epsilon, intrinsic_weight FROM episodes ORDER BY episode_id").fetchall()
+    finally:
+        conn.close()
+    with (run_dir / "curves.csv").open("w") as handle:
+        handle.write("episode,batch_episode_steps,epsilon,intrinsic_weight\n")
+        for episode_id, batch_steps, epsilon, intrinsic_weight in rows:
+            handle.write(f"{episode_id},{batch_steps},{epsilon:.6f},{intrinsic_weight:.6f}\n")
+
+    counters: list[tuple[int, int]] = []
+    for checkpoint_path in sorted((run_dir / "checkpoints").glob("checkpoint_ep*.pt")):
+        verify_checkpoint_digest(checkpoint_path, required=True)
+        checkpoint = safe_torch_load(checkpoint_path, map_location="cpu", allow_unsafe_pickle=True)
+        counters.append((int(checkpoint["episode"]), int(checkpoint["completed_live_agent_steps"])))
+    if not counters:
+        raise FileNotFoundError(f"no checkpoint under {run_dir / 'checkpoints'}")
+    _require_monotone_counters(counters, context=str(run_dir / "checkpoints"))
+    realized = json.loads((run_dir / "meta.json").read_text()).get("realized_live_agent_steps")
+    if counters[-1][1] != realized:
+        raise ValueError(
+            f"{run_dir}: latest checkpoint counter {counters[-1][1]} does not match meta.json realized_live_agent_steps={realized!r}"
+        )
+    with (run_dir / "transitions.csv").open("w") as handle:
+        handle.write("episode,completed_live_agent_steps\n")
+        for episode, counter in counters:
+            handle.write(f"{episode},{counter}\n")
+    print(f"[l2_token_regression] curves: {len(rows)} episodes; transitions: {len(counters)} checkpoints ending at {realized} -> {run_dir}")
+
+
 def require_budget_complete_for_eval(metadata: dict[str, Any], run_dir: Path) -> None:
     requested = metadata.get("requested_live_agent_steps")
     realized = metadata.get("realized_live_agent_steps")
@@ -402,15 +467,15 @@ def cmd_train(args: argparse.Namespace) -> None:
         )
         (run_dir / "meta.json").write_text(json.dumps(metadata, indent=2, sort_keys=True))
 
-    # The frozen artifact includes the per-episode curve and cumulative all-agent
-    # transition accounting. Reuse its exact extractor rather than fork the metric.
-    from scripts.l2_baseline import cmd_curves
-
-    cmd_curves(argparse.Namespace(run_dir=str(run_dir)))
+    write_training_curves(run_dir)
     print(
         f"[l2_token_regression] {args.architecture}/{args.aggregator} seed {args.seed}: "
         f"{realized}/{args.env_step_budget} live-agent steps -> {run_dir}"
     )
+
+
+def cmd_curves(args: argparse.Namespace) -> None:
+    write_training_curves(Path(args.run_dir))
 
 
 def cmd_eval(args: argparse.Namespace) -> None:
@@ -551,6 +616,9 @@ def _read_seed_result(run_root: Path, architecture: str, aggregator: str, seed: 
     for key in identity_keys:
         if not isinstance(metadata.get(key), str) or not metadata[key]:
             raise ValueError(f"{meta_path}: {key} must be a non-empty string")
+    transitions = read_transition_artifact(run_dir)
+    if transitions[-1][1] != realized:
+        raise ValueError(f"{run_dir / 'transitions.csv'}: final counter {transitions[-1][1]} != realized_live_agent_steps {realized}")
     shortfall = BASELINE_ENV_STEP_BUDGETS[seed] - realized
     # No partial vector steps: at eight agents, a compliant conservative stop
     # can leave at most seven transitions unused and can never overshoot.
@@ -660,6 +728,10 @@ def build_parser() -> argparse.ArgumentParser:
     evaluate.add_argument("--episodes", type=int, default=100)
     evaluate.add_argument("--eval-seed", type=int, default=12345)
     evaluate.set_defaults(function=cmd_eval)
+
+    curves = subparsers.add_parser("curves", help="write curves.csv and the checkpoint-derived transitions.csv for one run")
+    curves.add_argument("--run-dir", required=True)
+    curves.set_defaults(function=cmd_curves)
 
     summarize = subparsers.add_parser("summarize", help="summarize the four representative-seed engineering cells")
     summarize.add_argument("--run-root", default="runs/l2_token_regression")

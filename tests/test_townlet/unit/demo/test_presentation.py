@@ -141,8 +141,11 @@ def test_the_compiler_never_reads_presentation(universe, test_config_pack_path: 
         'version: "1.0"\nmeters: {}\naffordances:\n  EAT: {label: Eat, icon: "E"}\n',
     )
     with_file = UniverseCompiler().compile(pack, primary_level="L0_test")
+    assert with_file.environment_hash == universe.environment_hash
+
+    with_file_level = with_file.get_level(with_file.metadata.primary_level)
+    universe_level = universe.get_level(universe.metadata.primary_level)
     for field in (
-        "environment_hash",
         "bars_hash",
         "affordances_hash",
         "vfs_hash",
@@ -150,4 +153,4 @@ def test_the_compiler_never_reads_presentation(universe, test_config_pack_path: 
         "action_schema_hash",
         "transition_graph_hash",
     ):
-        assert getattr(with_file, field) == getattr(universe, field), field
+        assert getattr(with_file_level, field) == getattr(universe_level, field), field

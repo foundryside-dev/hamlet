@@ -1,7 +1,7 @@
 """The ONE closed vocabulary of affordance interaction types (PDR-0047, hamlet-45b35cfee5).
 
 An affordance's `interaction_type` is a behavioural parameter: it selects whether an INTERACT
-completes in one tick, accumulates progress over `duration_ticks`, or does both. It is
+completes in one tick or accumulates progress over `duration_ticks`. It is
 REQUIRED in `affordances.yaml` — there is no runtime coalesce to `instant` any more (that
 was a hidden default on a behavioural parameter, and its description said so out loud).
 
@@ -17,11 +17,11 @@ from __future__ import annotations
 
 from typing import Final, Literal, get_args
 
-InteractionType = Literal["instant", "multi_tick", "dual"]
+InteractionType = Literal["instant", "multi_tick"]
 
 INTERACTION_TYPES: Final[frozenset[str]] = frozenset(get_args(InteractionType))
 
 # The members that accumulate progress and therefore REQUIRE `duration_ticks`.
-PROGRESS_INTERACTION_TYPES: Final[frozenset[str]] = frozenset({"multi_tick", "dual"})
+PROGRESS_INTERACTION_TYPES: Final[frozenset[str]] = frozenset({"multi_tick"})
 
 __all__ = ["INTERACTION_TYPES", "PROGRESS_INTERACTION_TYPES", "InteractionType"]

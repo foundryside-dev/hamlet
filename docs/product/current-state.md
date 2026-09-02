@@ -1,88 +1,75 @@
-# Current State — HAMLET / Townlet        Checkpoint: 2026-08-29 · forty-sixth checkpoint (`PDR-0126`–`PDR-0129`: **trigger 3 RULED, the Lint gate RESTORED after 47 dark pushes, gate 2 DISCHARGED, and the fourth merge is owner-directed and in flight**)
+# Current State — HAMLET / Townlet        Checkpoint: 2026-09-02 (later) · M4 and unit 5 accepted, token umbrella closed (`PDR-0144`)
 
 ## The bets right now
 
-**1. Strangler rewrite behind the compiled-universe contract** (`PDR-0006`) — the Now bet.
-- **The fourth merge to `main` is in progress** (`PDR-0129`, owner-directed 2026-08-29): 143
-  commits / 921 files / 38 PDRs from `project-recovery-2` (tip `6fb148fd` + this checkpoint)
-  onto `main` `04062872`. **Gate 1 met** — Lint, Config Validation, Tests all green at
-  `b915139e` and `1065dbf0` (`PDR-0127`). **Gate 2 discharged** — README re-verified by method,
-  stamped at `1065dbf0` (`PDR-0128`). Merge commit through a PR, as the three before.
-- **This merge is the deciding test for `hamlet-83c8e3b50e`** (no per-push CI on `main`'s third
-  merge). Read `main`'s tip check-runs immediately after landing.
-- Bet exit (`PDR-0058`) unchanged and not met: oracle not retired, WS-3/WS-4 open.
+**1. Strangler rewrite behind the compiled-universe contract** (`PDR-0006`) remains the Now bet.
 
-**2. Token-observation encoding** (`PDR-0108`/`PDR-0114`) · `hamlet-fa6bb6da4a`. Unit 3 complete
-(`PDR-0124`). **Trigger 3 is RULED — option 4 (`PDR-0126`)**: cap and constants stay, 9.43×
-carried as debt into unit 5, re-measured there. **Unit 4/5 sequencing is no longer gated.**
-Nine post-cut defects open in `triage` (ids in `PDR-0124`; `hamlet-6a4a6596bd` and
-`hamlet-1e335e0363` are the two cheap ones and go first on the next branch).
+- `main` remains at the fourth recovery merge (`9efadd3c`). Active branch `project-recovery-3`,
+  tip `a07b889b` plus this checkpoint, pushed.
+- WS-7 closed; WS-3/WS-4 open; oracle still required. Critical path unchanged: WS-6
+  `hamlet-5e39fcccb0` → WS-2 `hamlet-337b9e80fb` → WS-3 `hamlet-1f89714685` → WS-4
+  `hamlet-15050f280a`. Docs rewrite `hamlet-7a52a63e0b` stays gated on WS-4 (`PDR-0125`).
 
-**3. Documentation truth** (`PDR-0125`) — recovery labelled, rewrite gated on WS-4. The README
-is re-verified as of this morning; `docs/product/` is consistent with it as of this checkpoint.
+**2. Token-observation engineering — COMPLETE.** `hamlet-fa6bb6da4a` closed with all five
+milestones terminal (`PDR-0133`–`0136`, `0141`, `0144`). This session accepted M4 (four cells
+pass the 79.1947 floor at the frozen budget) and unit 5 (every pack runs under one
+discovery-driven test; every live token type and scope exercised from a committed pack; L3 is one
+authored `day_phase` token; `observation_mode` and nine retired trial packs deleted). No horizon
+change: the next unit is the top of Next — the declaration-store compiler unit (`PDR-0117`) or the
+epistemic-access unit (`PDR-0120`) — and is a DECIDE for the next session, not preauthorised.
 
-**4. Measure the authoring claim** — retired as record (`PDR-0111`); its ticket
-`hamlet-5fa1f7bfc0` is now **closed**. Pack-disposition clock **2026-10-06** survives in
-`roadmap.md`.
+**3. Two P1 engine defects outside any unit:** `hamlet-d6fc84d147` (env step counter increments
+for dead agents; feeds rewards/curriculum under the oracle, needs its own differential run,
+`PDR-0140`) and `hamlet-4b931faaf4` (held/exclusive items invisible to the whole `item` token
+type; `layout_hash`-moving fix, `PDR-0144`). Both triage.
+
+**4. Documentation truth** (`PDR-0125`): schema docs realigned this session; `CLAUDE.md:116`
+false claim still an observation (`hamlet-obs-5f1ea6c254`, expires 2026-09-15); new observation
+`hamlet-obs-b959ce55c0` (dead-weight durability rows).
+
+**5. Weft tooling** (`PDR-0139`): held at resume (doctors clean, probe 200, index fresh). The
+loomweave index is now stale by 12 commits — re-analyse at next resume.
 
 ## What this checkpoint did
 
-- `PDR-0126` — trigger 3 ruled (owner): option 4, debt into unit 5. `PDR-0124` status → RESOLVED.
-- `PDR-0127` — Lint had been red 47 pushes (`7dc6f66c` → `8b733f3e`) under two "green"
-  checkpoints; restored at `237b0c38` (Black) + `b915139e` (no-defaults: three real defaults
-  made required, fifteen structural whitelisted with reasons). **New rule:** `Gates green` is
-  written only from every workflow's conclusion at the tip SHA.
-- `PDR-0128` — gate 2 for the fourth merge: 33 stale claims + 16 omissions in 143 commits; six
-  defects in the draft's own corrections caught adversarially; stamped `1065dbf0` (`6fb148fd`).
-- `PDR-0129` — merge now (fruit moves behind it; torch bump stays out), next branch is
-  **`project-recovery-3`**, not a release branch.
-- Metrics: `Gates green` and `Documentation truth` readings dated 2026-08-29; the trigger-3
-  block reads *fired → escalated → ruled*.
-- Tracker: `hamlet-5fa1f7bfc0` closed; comments on `hamlet-fa6bb6da4a` (276) and
-  `hamlet-83c8e3b50e` (277). Working tree clean apart from this checkpoint.
+- Owner directed *"lets finish M4"* and preauthorised the roll into M5. Grant re-confirmed
+  unchanged.
+- M4: resumed both recurrent cells on the pinned `9d4e942f` worktree, evaluated, repaired the
+  evidence path test-first (`PDR-0140`), accepted (`PDR-0141`), evidence versioned under
+  `docs/product/baselines/2026-09-m4-token-regression/`.
+- Unit 5: ruled the trial-pack disposition (`PDR-0142`) and unit scope (`PDR-0143`); executed a
+  five-task plan by subagent-driven development (fresh implementer + task review per task, whole-
+  branch review, one fix wave); accepted (`PDR-0144`). Eleven code commits `5973f79b`…`a07b889b`.
+- Closed `hamlet-25fc3fb955`, `hamlet-55b2826a02`, `hamlet-fa6bb6da4a`, `hamlet-5a87550adb`;
+  filed `hamlet-d6fc84d147`, `hamlet-4b931faaf4`, one observation.
 
-## Standing gates & in-flight state (read before acting)
+## Standing gates
 
-1. **Read `main`'s post-merge CI before anything else** — per-push runs at the merge SHA
-   (decides `hamlet-83c8e3b50e`) and the first nightly (`PDR-0128` trigger).
-2. **Local gate = CI gate**: `ruff check .`, `black --check src tests`,
-   `no_defaults_lint.py` — all three before any push of product source (`PDR-0127`).
-3. **Never take the torch bump (#33) as a dependency chore** — it can move the oracle
-   (`PDR-0074` precedent). It is a WS-7 unit with its own PDR.
-4. The doc rewrite stays blocked on `hamlet-ad2773718a` (prereq 2 = WS-4). Two matrix cells
-   (`div003_scaled`, `items_smoke`) stay demoted as evidence; §5 finding is CPU-only.
+1. `PDR-0127` gate set last executed on `a07b889b`: all static gates green; pytest 3,846 passed /
+   11 skipped (run as two foreground tiers — the host killed two background runs).
+2. Dependabot #33 (torch) and #34 (pytest) remain open since 2026-08-15.
+3. No release, tag, announcement, 1.0 declaration or external coordination is authorized here.
 
-## Reversal triggers — state
+## Open questions / blocked on owner
 
-- `PDR-0126` armed: unit-5 re-measurement ≥ 8× calls the debt (options 1–3 reopen).
-- `PDR-0127` armed: a >3-push red streak under a "green" checkpoint → the rule failed; make it
-  mechanical.
-- `PDR-0128`/`PDR-0129` armed on `main`'s first post-merge nightly and per-push CI.
-- `PDR-0114` trigger 1 (≥ 79.19 IQM at equal env-steps) still unread — unit 4's measurement.
-- Pack-disposition clock **2026-10-06** unchanged.
+- **Nothing escalated.** Every action (pushes, tracker closes, deletions of retired packs
+  already ruled by `PDR-0082`–`0085`/PRD-0001 §9, the `.filigree/`-style cleanups) is inside the
+  grant. Primary experimental evidence untouched.
+- **Merge to `main`:** autonomous under `PDR-0101` but owes the `PDR-0039` gate-2 README
+  re-verification by method. Not done this session; the branch is 13 commits ahead of `main`.
 
-## Blocked on / flagged for the owner
+## Decision checks
 
-1. **`vision.md` `Last reviewed` stamp** reads 2026-08-22; you re-confirmed the grant unchanged
-   on 2026-08-29 but no stamp touch was offered, so per the 2026-08-15 rule the debt is carried.
-   Approve the stamp correction at the next resume and it moves (the `PDR-0038` pattern).
-2. `hamlet-83c8e3b50e` — if the fourth merge is *also* CI-silent on `main`, this needs your
-   account-level view (`PDR-0103`); the agent will not widen its own token scope.
-3. Instrument redesign — promote or park (unchanged). WS-7 (`hamlet-e3af412673`, P0) — park or
-   schedule (unchanged). Dependabot #33 (torch) — see gate 3 above; #34 (pytest) goes with the
-   fruit.
-
-## Open questions
-
-- `hamlet-1e335e0363` (`range_type` inert post-cut): wire or retire — the framework's signature
-  defect in miniature, and the first real call on the next branch.
-- `hamlet-88578e629e`'s live `observable: bool = True` half stays open.
-- Gate-2 cost scales with commits-since-stamp (18 in 43; 33 in 143). Merging more often is the
-  cheaper discipline; nothing in the grant prevents it.
+- `PDR-0132`: each milestone accepted and checkpointed before its successor — held for M4→M5.
+- `PDR-0143` / `PDR-0144` reversal triggers armed: L2 four-cell floor on any post-unit-5 commit;
+  a shared-world declaration surface makes agent tokens live.
+- `PDR-0139`: tool health rule held at resume.
 
 ## Next session starts here
 
-**Post-merge reading first** (item 1 above), then on `project-recovery-3`: `hamlet-6a4a6596bd`
-(delete the inert `observation_mode`/`observation_encoding`), `hamlet-1e335e0363` (rule on
-`range_type`), Dependabot #34, then unit 4 (the `PDR-0114` trigger-1 probes) or WS-4 per the
-owner's steer — the width cap no longer gates either.
+1. `/own-product`: re-analyse the loomweave index; confirm the grant.
+2. DECIDE the next unit from Next: declaration-store compiler unit (`PDR-0117`; two inputs from
+   this session — `period`/`day_length` duplication, `filler_ref` string contract) versus
+   epistemic-access unit (`PDR-0120`). Or the merge to `main` with gate 2 first.
+3. Triage `hamlet-4b931faaf4` and `hamlet-d6fc84d147` — both are engine changes under the oracle
+   and need a register entry before landing.

@@ -6,12 +6,12 @@ environment:
       description: Energy
       range_type:
         kind: minmax
-        clip: false
+        clip: true
     - name: health
       description: Health
       range_type:
         kind: minmax
-        clip: false
+        clip: true
     # The meter the cold attacks. "comfort/health" in the corpus Spec is a
     # slash, not a conjunction (countersigner ruling) — comfort carries F3/F8
     # and cascades into health so that eating the cost has a real consequence.
@@ -19,20 +19,20 @@ environment:
       description: "Thermal comfort; the world drives this down while it is cold"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
     # Set from the coat's item-scoped `insulation` when the coat is worn.
     # Declared so the effect can read a per-agent view of an item-declared value.
     - name: insulation_worn
       description: "Insulation currently worn by this agent (sourced from the garment's item VFS)"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
     # Probe witness: how much cold actually landed on this agent last tick.
     - name: cold_bite
       description: "Magnitude of cold that landed on this agent on the last world tick"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
 
   cascade_graph: []
   modulation_graph: []

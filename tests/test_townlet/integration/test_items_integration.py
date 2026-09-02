@@ -286,7 +286,7 @@ def test_periodic_item_respawning():
         device="cpu",
     )
 
-    # Reset spawns initial items (1 medkit with duration=100, spawn_interval=200)
+    # Reset spawns initial items (1 medkit with duration=100, periodic schedule=200)
     env.reset()
 
     # Verify initial spawn (should have 1 medkit from appearance config)
@@ -295,7 +295,7 @@ def test_periodic_item_respawning():
 
     # Wait for medkit to expire in the world (duration=100 ticks)
     # Item spawned at tick 0, ticks down each step, expires at tick 101
-    # Then respawn_timer = despawn_tick + spawn_interval = 101 + 200 = 301
+    # Then respawn_timer = despawn_tick + schedule period = 101 + 200 = 301
     wait_action = env.action_space.get_action_by_name("WAIT")
     for _ in range(101):  # Wait for item to expire
         env.step(torch.tensor([wait_action.id]))
@@ -311,6 +311,6 @@ def test_periodic_item_respawning():
     for _ in range(200):
         env.step(torch.tensor([wait_action.id]))
 
-    # Verify medkit respawned after spawn_interval elapsed
+    # Verify medkit respawned after the schedule period elapsed
     respawned_medkits = [i for i in env.item_manager.active_items.values() if i.item_type == "medkit"]
-    assert len(respawned_medkits) == 1, f"Expected 1 medkit to respawn after spawn_interval, got {len(respawned_medkits)}"
+    assert len(respawned_medkits) == 1, f"Expected 1 medkit to respawn after the schedule period, got {len(respawned_medkits)}"

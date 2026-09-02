@@ -46,7 +46,7 @@ class RewardTensor:
     For DAC-composed rewards: is_composed=True, total contains the composed value,
     components are optional (for debugging/analysis).
 
-    For legacy split rewards: is_composed=False, total is computed from components.
+    Split component fixtures construct the total explicitly with is_composed=False.
 
     Attributes:
         total: Combined reward tensor [batch_size] - always present
@@ -107,30 +107,6 @@ class RewardTensor:
             intrinsic=intrinsic,
             shaping=shaping,
             is_composed=True,
-        )
-
-    @classmethod
-    def from_components(
-        cls,
-        extrinsic: torch.Tensor,
-        intrinsic: torch.Tensor,
-        intrinsic_weight: float = 1.0,
-    ) -> RewardTensor:
-        """
-        Create RewardTensor from separate components (legacy pattern).
-
-        Args:
-            extrinsic: Extrinsic reward tensor
-            intrinsic: Intrinsic reward tensor
-            intrinsic_weight: Weight for intrinsic rewards (0.0-1.0)
-        """
-        total = extrinsic + intrinsic * intrinsic_weight
-        return cls(
-            total=total,
-            extrinsic=extrinsic,
-            intrinsic=intrinsic,
-            shaping=None,
-            is_composed=False,
         )
 
     def to(self, device: torch.device) -> RewardTensor:

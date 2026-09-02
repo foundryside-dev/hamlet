@@ -25,7 +25,6 @@ def test_metadata_includes_grid2d_topology():
         height=8,
         boundary="clamp",
         distance_metric="manhattan",
-        observation_encoding="relative",
         topology="square",
     )
 
@@ -35,7 +34,6 @@ def test_metadata_includes_grid2d_topology():
         port=8766,
         step_delay=0.2,
         total_episodes=1,
-        training_config_path=None,
         config_dir=TEST_CONFIG_DIR,
         level_name=LEVEL_NAME,
     )
@@ -58,7 +56,6 @@ def test_metadata_includes_grid3d_topology():
         depth=3,
         boundary="clamp",
         distance_metric="manhattan",
-        observation_encoding="relative",
         topology="cubic",
     )
 
@@ -67,7 +64,6 @@ def test_metadata_includes_grid3d_topology():
         port=8766,
         step_delay=0.2,
         total_episodes=1,
-        training_config_path=None,
         config_dir=TEST_CONFIG_DIR,
         level_name=LEVEL_NAME,
     )
@@ -87,7 +83,6 @@ def test_metadata_includes_gridnd_topology():
         dimension_sizes=[5, 5, 5, 5, 5, 5, 5],
         boundary="clamp",
         distance_metric="manhattan",
-        observation_encoding="relative",
         topology="hypercube",
     )
 
@@ -96,7 +91,6 @@ def test_metadata_includes_gridnd_topology():
         port=8766,
         step_delay=0.2,
         total_episodes=1,
-        training_config_path=None,
         config_dir=TEST_CONFIG_DIR,
         level_name=LEVEL_NAME,
     )
@@ -122,7 +116,6 @@ def test_metadata_omits_topology_for_continuous():
         interaction_radius=0.8,
         action_discretization={"num_directions": 8, "num_magnitudes": 3},
         distance_metric="euclidean",
-        observation_encoding="relative",
     )
 
     server = LiveInferenceServer(
@@ -130,7 +123,6 @@ def test_metadata_omits_topology_for_continuous():
         port=8766,
         step_delay=0.2,
         total_episodes=1,
-        training_config_path=None,
         config_dir=TEST_CONFIG_DIR,
         level_name=LEVEL_NAME,
     )
@@ -152,7 +144,6 @@ def test_metadata_omits_topology_for_aspatial():
         port=8766,
         step_delay=0.2,
         total_episodes=1,
-        training_config_path=None,
         config_dir=TEST_CONFIG_DIR,
         level_name=LEVEL_NAME,
     )
@@ -173,7 +164,6 @@ def test_metadata_topology_respects_substrate_attribute():
         height=8,
         boundary="clamp",
         distance_metric="manhattan",
-        observation_encoding="relative",
         topology="square",  # Explicitly provided
     )
 
@@ -182,7 +172,6 @@ def test_metadata_topology_respects_substrate_attribute():
         port=8766,
         step_delay=0.2,
         total_episodes=1,
-        training_config_path=None,
         config_dir=TEST_CONFIG_DIR,
         level_name=LEVEL_NAME,
     )

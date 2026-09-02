@@ -2,6 +2,7 @@
 
 from pathlib import Path
 
+import pytest
 import torch
 
 from townlet.environment.vectorized_env import VectorizedHamletEnv
@@ -116,3 +117,77 @@ def test_spawn_and_pickup_helper_is_robust_to_colocated_items():
         f"Held apple's freshness should be the helper's custom value 42.0, got {held_freshness}. "
         "This indicates the pre-existing co-located apple was picked up instead."
     )
+
+
+def test_exposed_item_variable_publishes_through_the_item_arena():
+    """Config-in/behaviour-out for the item-arena `variable_element` scope: `durability` is
+    declared exposed on the `medical` profile, so a world-resident medkit's row carries its
+    normalized value and toggles absent when the item leaves the world.
+
+    Two deviations from the brief's literal test, both measured rather than assumed:
+
+    1. `items_smoke`'s `L0_smoke` level auto-spawns one medkit (and three apples) at reset
+       (`levels/L0_smoke/items.yaml`), so the medical-profile `durability` row is already
+       present before any test-driven spawn — the brief's "absent until spawn" assumption
+       doesn't hold for the committed pack. Asserted instead, by the same principle the
+       effects-smoke test above applies: the present-row count increases by exactly one
+       after a spawn, and the newly-present row carries the spawned item's own value.
+    2. The item-arena `variable_element` scope is fed by the SAME live-item batch as the
+       `item` token type (`VectorizedHamletEnv._item_slot_batch`), which is world-resident
+       items only (`ItemManager.get_all_items()` — `active_items`, not `held_items`). A
+       picked-up EXCLUSIVE item (medkit defaults `exclusive: true`) is lifted out of that
+       batch entirely on pickup (`ItemManager.lift_item`), so `spawn_and_pickup_item`'s own
+       pickup step makes its medkit disappear from every item-token-shaped observation, not
+       just this one — a pre-existing gap in the `item` token type's coverage of held
+       inventory, not something this task's item-arena wiring introduces or should paper
+       over. Demonstrated below (the row goes from present back to absent) rather than
+       worked around, so the gap is visible in-tree, not only in the task report. Filed as
+       hamlet-4b931faaf4.
+    """
+    universe = UniverseCompiler().compile(Path("configs/test/items_smoke"), primary_level="L0_smoke", use_cache=False)
+    env = VectorizedHamletEnv(universe=universe, level_name="L0_smoke", num_agents=1, device=torch.device("cpu"))
+    env.reset()
+    layout = env.token_spec.compact_layout().get_type("variable_element")
+    assert layout is not None and layout.capacity > 0
+    v0 = layout.dynamic_features.index("value_0")
+
+    def rows():
+        obs = env._get_observations()
+        return obs[0, layout.start : layout.start + layout.capacity * layout.compact_row_width].view(
+            layout.capacity, layout.compact_row_width
+        )
+
+    def present_count(r: torch.Tensor) -> int:
+        return int((r[:, 0] == 1.0).sum().item())
+
+    before = rows()
+    baseline = present_count(before)
+    # Pins the profile-match fix (token_publishers.py `ItemArenaVariableElementPublisher`):
+    # `L0_smoke` auto-spawns 3 apples (`food` profile) + 1 medkit (`medical` profile) at
+    # reset. Without the occupant-profile check, ANY live item in a compiled item-token
+    # slot would satisfy this `medical.durability` declaration — including the 3 apples,
+    # whose `food.freshness` shares column 0 with `medical.durability` in items_smoke —
+    # making baseline 4, not 1. Asserting the exact value (not just the later relative
+    # deltas) is what actually exercises the profile check: reverting it leaves every
+    # relative assertion below unchanged but flips this one from 1 to 4.
+    assert baseline == 1
+
+    # World-resident spawn (no pickup): proves presence toggling, per-instance value, and
+    # normalization for the item-arena scope on its own terms.
+    agent_pos = tuple(env.positions[0].tolist())
+    spawned = env.item_manager.spawn_item(item_type="medkit", position=agent_pos, current_tick=0, initial_state={"durability": 50.0})
+    assert spawned is not None
+    after_spawn = rows()
+    after_spawn_present = after_spawn[:, 0] == 1.0
+    assert present_count(after_spawn) == baseline + 1
+    newly_present = after_spawn_present & ~(before[:, 0] == 1.0)
+    assert newly_present.sum().item() == 1
+    assert after_spawn[newly_present][0, v0].item() == pytest.approx(0.5)  # minmax 0..100
+
+    # Documents the held-item gap named above (filed as hamlet-4b931faaf4): lifting the
+    # same instance (matching GET's exclusive-pickup semantics) removes it from
+    # `ItemManager.get_all_items()`, so its durability row goes back to absent even though
+    # the item and its VFS state still exist.
+    env.item_manager.lift_item(spawned.instance_id)
+    after_lift = rows()
+    assert present_count(after_lift) == baseline

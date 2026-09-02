@@ -1,434 +1,90 @@
-# POMDP Compatibility Matrix
+# POMDP token-visibility reference
 
-> ⚠️ **Recovered from archive 2026-08-26 — two rows are known WRONG. Read this first.**
->
-> Recovered because `src/townlet/environment/vectorized_env.py:626` raises a runtime error
-> that points the operator at this file, so it must resolve. The 2025-11 matrix below has
-> **not** been re-verified in full; two entries were checked and are false:
->
-> 1. **Aspatial is `⚠️ SPECIAL / EDGE CASE` below — that is wrong. Aspatial does NOT support
->    partial vision.** `substrate/aspatial.py:66` returns `supports_partial_vision = False`
->    and `get_vision_radius()` *raises* `ValueError`. It is a flat "not supported", not a
->    special case (corrected 2026-08-24).
-> 2. **"Grid3D requires `vision_range ≤ 2`" is a stale encoding.** `vision_range` is a
->    **normalized fraction of the longest axis**, constrained to `0.0–1.0`
->    (`config/curriculum_config.py:29`), not a cell radius — so "≤ 2" is vacuous. The real
->    gate is on the *implied window*: Grid3D on 8³ accepts `0.5` (window 5) and rejects
->    `0.75` (window 7).
->
-> Authority for POMDP support is `docs/architecture/STRATA.md` §7 (three independent gates)
-> and `tests/test_townlet/unit/environment/test_pomdp_validation.py`.
+Townlet implements partial observability by filtering typed spatial tokens. It does not build a
+grid raster or local window. A level with `active_vision: partial` keeps the compiled `TokenSpec`
+and flat observation width unchanged, then passes its normalized `vision_range` to the
+substrate's `visible()` method for every observation tick.
 
+## Compatibility matrix
 
-**Document Type**: Reference Manual
-**Version**: 1.0
-**Last Updated**: 2025-11-06
+| Substrate | Partial visibility | Radius conversion | Relative-position payload |
+| --- | --- | --- | --- |
+| Grid2D | Supported | `max(1, ceil(vision_range * longest_axis / 2))` cells | `egocentric_delta()` divided by `max(axis_size - 1, 1)` |
+| Grid3D | Supported | Same discrete formula | Same discrete normalization |
+| GridND | Supported | Same discrete formula for any supported rank | Same discrete normalization on every axis |
+| Continuous 1D–3D | Supported | `vision_range * longest_extent / 2` world units | `egocentric_delta()` divided by each axis extent |
+| ContinuousND | Supported | Same continuous formula | Same continuous normalization on every axis |
+| Aspatial | Pass-all | No radius; every entity is visible | Width-zero deltas |
 
-## Overview
+Every spatial substrate combines per-axis deltas with its declared distance metric. `wrap`
+uses the toroidal shortest path; clamp, bounce and sticky use ordinary in-bounds deltas.
 
-This document provides a comprehensive reference for Partial Observability (POMDP) support across different substrate types in the Townlet framework.
+## Configuration
 
-**Purpose**: Help operators understand which substrates support POMDP, limitations, and testing status.
-
----
-
-## Quick Reference Matrix
-
-| Substrate | POMDP Support | Window Size | Test Coverage | Status |
-|-----------|--------------|-------------|---------------|--------|
-| **Grid2D** | ✅ YES | 5×5 (25 cells) | ✅ Full | **PRODUCTION READY** |
-| **Grid3D** | ✅ YES* | 5×5×5 (125 cells max) | ✅ Unit Only | **SUPPORTED** |
-| **Continuous1D** | ❌ NO | N/A | ✅ Error Test | **NOT SUPPORTED** |
-| **Continuous2D** | ❌ NO | N/A | ✅ Error Test | **NOT SUPPORTED** |
-| **Continuous3D** | ❌ NO | N/A | ✅ Error Test | **NOT SUPPORTED** |
-| **GridND (N≥4)** | ❌ NO | N/A | ✅ Validation Test | **NOT SUPPORTED** |
-| **ContinuousND (N≥4)** | ❌ NO | N/A | ✅ Error Test | **NOT SUPPORTED** |
-| **Aspatial** | ⚠️ SPECIAL | Empty tensor | ✅ Unit Test | **EDGE CASE** |
-
-\* Grid3D requires `vision_range ≤ 2` (environment validation enforced)
-
----
-
-## Substrate-Specific Details
-
-### Grid2D ✅ FULLY SUPPORTED
-
-**Configuration**:
-```yaml
-type: "grid"
-grid:
-  topology: "square"
-  width: 8
-  height: 8
-  boundary: "clamp"
-  observation_encoding: "relative"  # Required for POMDP
-```
-
-**Environment Parameters**:
-```python
-VectorizedHamletEnv(
-    partial_observability=True,
-    vision_range=2,  # Produces 5×5 window
-    ...
-)
-```
-
-**Observation Dimensions**:
-- Local window: 25 cells (5×5)
-- Position: 2 dims (normalized x, y)
-- Meters: 8 dims
-- Affordance at position: 15 one-hot
-- Temporal features: 4 dims
-- **Total**: 54 dimensions
-
-**Test Coverage**:
-- ✅ Unit tests: `test_grid2d_encode_partial_observation()`
-- ✅ Unit tests: `test_grid2d_encode_partial_observation_edge()`
-- ✅ Integration tests: `test_partial_observation_uses_substrate()`
-- ✅ Integration tests: `test_partial_observation_dim_matches_actual()`
-
-**Network Type**: `RecurrentSpatialQNetwork` (LSTM for memory)
-
-**Status**: **Production ready** - Fully tested and documented
-
----
-
-### Grid3D ✅ SUPPORTED (with limitations)
-
-**Configuration**:
-```yaml
-type: "grid"
-grid:
-  topology: "cubic"
-  width: 8
-  height: 8
-  depth: 3
-  boundary: "clamp"
-  observation_encoding: "relative"  # Required for POMDP
-```
-
-**Environment Parameters**:
-```python
-VectorizedHamletEnv(
-    partial_observability=True,
-    vision_range=2,  # MAXIMUM ALLOWED (5×5×5 = 125 cells)
-    # vision_range=3 would be 7×7×7 = 343 cells (REJECTED)
-    ...
-)
-```
-
-**Observation Dimensions**:
-- Local window: 125 cells (5×5×5)
-- Position: 3 dims (normalized x, y, z)
-- Meters: 8 dims
-- Affordance at position: 15 one-hot
-- Temporal features: 4 dims
-- **Total**: 155 dimensions
-
-**Validation**:
-- Environment raises `ValueError` if `vision_range > 2`
-- Error message: "Grid3D POMDP with vision_range=3 requires 343 cells (...) which is excessive"
-
-**Test Coverage**:
-- ✅ Unit tests: `test_grid3d_encode_partial_observation()`
-- ✅ Unit tests: `test_grid3d_encode_partial_observation_edge()`
-- ✅ Validation tests: `test_grid3d_pomdp_accepts_vision_range_2()`
-- ✅ Validation tests: `test_grid3d_pomdp_rejects_vision_range_3()`
-- ✅ Validation tests: `test_grid3d_pomdp_rejects_vision_range_4()`
-- ❌ **Missing**: Integration test with RecurrentSpatialQNetwork
-
-**Network Type**: `RecurrentSpatialQNetwork` (LSTM for 3D memory)
-
-**Status**: **Supported** - Implementation complete, unit tests pass, integration test pending
-
----
-
-### Continuous1D/2D/3D ❌ NOT SUPPORTED
-
-**Rationale**: Continuous spaces have **infinite positions** in any local region, making the concept of a "local window" invalid.
-
-**Behavior**:
-```python
-substrate.encode_partial_observation(...)
-# Raises NotImplementedError:
-# "Continuous1DSubstrate does not support partial observability (POMDP).
-#  Continuous spaces have infinite positions in any local region, making
-#  local windows conceptually invalid. Use full observability
-#  (partial_observability=False) with 'relative' or 'scaled'
-#  observation_encoding for position-independent learning instead."
-```
-
-**Alternative**: Use **full observability** with `observation_encoding="relative"` for position-independent learning.
-
-**Test Coverage**:
-- ✅ Unit test: `test_continuous1d_encode_partial_observation_raises()`
-
-**Status**: **Not supported by design** - Conceptually incompatible with continuous spaces
-
----
-
-### GridND (N≥4) ❌ NOT SUPPORTED
-
-**Rationale**: Local window size grows **exponentially** with dimensionality:
-- 4D: (2×2+1)⁴ = 5⁴ = **625 cells**
-- 5D: 5⁵ = **3,125 cells**
-- 7D: 5⁷ = **78,125 cells** (impractical)
-
-**Behavior**:
-```python
-# Environment validation (vectorized_env.py:182-189)
-if partial_observability and substrate.position_dim >= 4:
-    raise ValueError(
-        "Partial observability (POMDP) is not supported for 4D substrates. "
-        "Local window size would be (2*2+1)^4 = 625 cells, which is impractical."
-    )
-```
-
-**Alternative**: Use **full observability** with `observation_encoding="relative"` or `"scaled"` for dimension-independent learning.
-
-**Test Coverage**:
-- ✅ Validation test: Environment rejects `partial_observability=True` for 4D+ grids
-- ✅ Unit test: `encode_partial_observation()` raises `NotImplementedError`
-
-**Status**: **Not supported by design** - Exponential complexity makes POMDP impractical
-
----
-
-### ContinuousND (N≥4) ❌ NOT SUPPORTED
-
-**Rationale**: Combines both continuous space issues (infinite positions) and high-dimensionality issues (exponential complexity).
-
-**Behavior**:
-```python
-substrate.encode_partial_observation(...)
-# Raises NotImplementedError (same as Continuous1D/2D/3D)
-```
-
-**Test Coverage**:
-- ✅ Unit test: `test_continuousnd_encode_partial_observation_raises()`
-
-**Status**: **Not supported by design**
-
----
-
-### Aspatial ⚠️ SPECIAL CASE
-
-**Behavior**: Returns **empty tensor** `[num_agents, 0]` (no position encoding)
-
-**Rationale**: Aspatial substrates have **no spatial dimension** (`position_dim=0`), so POMDP is conceptually invalid but technically handled.
-
-**Configuration**:
-```yaml
-type: "aspatial"
-aspatial: {}
-```
-
-**Observation Dimensions**:
-- Local window: 0 dims (no position)
-- Position: 0 dims (aspatial)
-- Meters: 8 dims
-- Affordance at position: 15 one-hot
-- Temporal features: 4 dims
-- **Total**: 27 dimensions (no spatial component)
-
-**Test Coverage**:
-- ✅ Unit test: `test_aspatial_encode_partial_observation()`
-
-**Status**: **Edge case** - Technically works but conceptually questionable (no spatial observability to limit)
-
----
-
-## General Requirements
-
-### POMDP Configuration Requirements
-
-All POMDP configurations **must** use:
+The stratum declares which vision modes its levels may select:
 
 ```yaml
-# substrate.yaml
-observation_encoding: "relative"  # Normalized positions required for LSTM
+stratum:
+  version: "1.0"
+  # substrate block omitted
+  vision_support: both
+  temporal_support: disabled
 ```
 
-**Other encoding modes are rejected**:
-- `observation_encoding="scaled"` → ValueError
-- `observation_encoding="absolute"` → ValueError
-
-**Rationale**: Recurrent networks (LSTM) require normalized positions for stable training.
-
-### Network Type
-
-POMDP **requires** recurrent networks for memory:
+The level selects partial visibility and supplies the required normalized range:
 
 ```yaml
-# training.yaml
-population:
-  network_type: recurrent  # Use RecurrentSpatialQNetwork (LSTM)
+curriculum:
+  version: "1.0"
+  active_vision: partial
+  vision_range: 0.5
+  active_temporal: false
+  day_length: null
 ```
 
-**Architecture** (`src/townlet/agent/networks.py:185-258`):
-- Vision encoder: CNN → 128 features
-- Position encoder: MLP → 32 features
-- Meter encoder: MLP → 32 features
-- LSTM: 192 input → 256 hidden (memory)
-- Q-head: 256 → 128 → action_dim
+`stratum.vision_support` must admit `curriculum.active_vision`. The compiler reports
+`VISION_INCOMPATIBLE` when the declarations disagree.
 
----
+At runtime:
 
-## Test Coverage Summary
+- Global visibility passes `None` to `visible()`, which admits every compiled entity slot that is
+  otherwise present.
+- Partial visibility passes `vision_range`. Publishers clear both presence and payload for each
+  out-of-range spatial token.
+- `egocentric_delta()` supplies bounded entity-minus-observer offsets using the same per-axis
+  denominator as normalized absolute positions.
+- The observer's `self` token remains present. Aspatial substrates expose no positional lanes.
 
-### Unit Tests
+## Network choice
 
-**Location**: `tests/test_townlet/unit/substrate/test_interface.py`
+Partial visibility does not impose a network type. `feedforward`, `dueling`, and `token_set`
+consume one observation frame and carry no memory. Use the token-native recurrent architecture
+when the policy must integrate information over time:
 
-| Test | Substrate | Coverage |
-|------|-----------|----------|
-| `test_grid2d_encode_partial_observation()` | Grid2D | ✅ Shape + affordance marking |
-| `test_grid2d_encode_partial_observation_edge()` | Grid2D | ✅ Boundary handling |
-| `test_grid3d_encode_partial_observation()` | Grid3D | ✅ Shape + affordance marking |
-| `test_grid3d_encode_partial_observation_edge()` | Grid3D | ✅ Boundary handling |
-| `test_aspatial_encode_partial_observation()` | Aspatial | ✅ Empty tensor |
-| `test_continuous1d_encode_partial_observation_raises()` | Continuous1D | ✅ NotImplementedError |
-
-**Location**: `tests/test_townlet/unit/substrate/test_continuousnd.py`
-
-| Test | Substrate | Coverage |
-|------|-----------|----------|
-| `test_continuousnd_encode_partial_observation_raises()` | ContinuousND | ✅ NotImplementedError |
-
-### Integration Tests
-
-**Location**: `tests/test_townlet/integration/test_substrate_observations.py`
-
-| Test | Substrate | Coverage |
-|------|-----------|----------|
-| `test_partial_observation_uses_substrate()` | Grid2D | ✅ Full pipeline |
-| `test_partial_observation_dim_matches_actual()` | Grid2D | ✅ Dimension consistency |
-
-### Validation Tests
-
-**Location**: `tests/test_townlet/unit/environment/test_pomdp_validation.py`
-
-| Test | Substrate | Coverage |
-|------|-----------|----------|
-| `test_grid3d_pomdp_accepts_vision_range_2()` | Grid3D | ✅ Valid config |
-| `test_grid3d_pomdp_rejects_vision_range_3()` | Grid3D | ✅ Rejection (343 cells) |
-| `test_grid3d_pomdp_rejects_vision_range_4()` | Grid3D | ✅ Rejection (729 cells) |
-
----
-
-## Known Gaps
-
-### Missing Tests
-
-1. **Grid3D Integration Test**: No test for `RecurrentSpatialQNetwork` with Grid3D POMDP
-   - **Impact**: Moderate - unit tests cover substrate behavior, but end-to-end pipeline untested
-   - **Recommendation**: Add integration test using L1_3D_house config
-
-2. **GridND Validation Test**: No test verifying environment rejects N≥4 POMDP
-   - **Impact**: Low - environment validation code exists but untested
-   - **Recommendation**: Add to `test_pomdp_validation.py`
-
----
-
-## Usage Examples
-
-### Grid2D POMDP (Standard)
-
-```python
-from townlet.environment.vectorized_env import VectorizedHamletEnv
-
-env = VectorizedHamletEnv(
-    num_agents=1,
-    grid_size=8,
-    partial_observability=True,
-    vision_range=2,  # 5×5 window
-    enable_temporal_mechanics=False,
-    move_energy_cost=0.005,
-    wait_energy_cost=0.001,
-    interact_energy_cost=0.003,
-    agent_lifespan=1000,
-    device=torch.device("cuda"),
-    config_pack_path="configs/L2_partial_observability",
-)
-
-obs = env.reset()
-print(obs.shape)  # torch.Size([1, 54])
+```yaml
+architecture:
+  type: recurrent
+  recurrent:
+    token_embed_dim: 128
+    q_head_hidden_dim: 128
+    aggregator:
+      type: attention
+      num_heads: 4
+    lstm:
+      hidden_size: 128
+      num_layers: 1
+      dropout: 0.0
 ```
 
-### Grid3D POMDP (Maximum Vision Range)
+`RecurrentTokenQNetwork` applies the shared token-set encoder to every frame, runs one LSTM call
+over the pooled sequence, and applies its Q-head to every recurrent output. The `mean` aggregator
+is also valid; it takes no `num_heads` key.
 
-```python
-env = VectorizedHamletEnv(
-    num_agents=1,
-    grid_size=8,  # Ignored (uses Grid3D dimensions)
-    partial_observability=True,
-    vision_range=2,  # MAXIMUM for Grid3D (5×5×5 = 125 cells)
-    enable_temporal_mechanics=False,
-    move_energy_cost=0.005,
-    wait_energy_cost=0.001,
-    interact_energy_cost=0.003,
-    agent_lifespan=1000,
-    device=torch.device("cuda"),
-    config_pack_path="configs/L1_3D_house",
-)
+## Authoritative implementation surfaces
 
-obs = env.reset()
-print(obs.shape)  # torch.Size([1, 155])
-```
-
-### Continuous1D (Full Observability Alternative)
-
-```python
-# WRONG: This will raise NotImplementedError
-# env = VectorizedHamletEnv(..., partial_observability=True, ...)
-
-# CORRECT: Use full observability with relative encoding
-env = VectorizedHamletEnv(
-    num_agents=1,
-    grid_size=10,  # Ignored
-    partial_observability=False,  # Full observability
-    vision_range=0,  # Ignored for full observability
-    enable_temporal_mechanics=False,
-    move_energy_cost=0.005,
-    wait_energy_cost=0.001,
-    interact_energy_cost=0.003,
-    agent_lifespan=1000,
-    device=torch.device("cuda"),
-    config_pack_path="configs/continuous1d_example",
-)
-
-obs = env.reset()
-# Observation includes normalized position (independent of absolute coords)
-```
-
----
-
-## Decision Tree
-
-```
-Do you need partial observability (POMDP)?
-│
-├─ YES → What substrate type?
-│  │
-│  ├─ Grid2D → ✅ Use partial_observability=True, vision_range=2
-│  ├─ Grid3D → ✅ Use partial_observability=True, vision_range ≤ 2
-│  ├─ Continuous (any dimension) → ❌ Use full observability with "relative" encoding
-│  ├─ GridND (N≥4) → ❌ Use full observability with "relative" or "scaled" encoding
-│  └─ Aspatial → ⚠️ Technically works but conceptually invalid
-│
-└─ NO → Use partial_observability=False (full observability)
-   └─ Set observation_encoding based on transfer learning needs:
-      ├─ "relative" → Grid-size independent (transfer learning)
-      ├─ "scaled" → Includes grid metadata (size-aware strategies)
-      └─ "absolute" → Raw coordinates (size-specific learning)
-```
-
----
-
-## References
-
-- **Code**: `src/townlet/environment/vectorized_env.py` (lines 182-216)
-- **Unit Tests**: `tests/test_townlet/unit/substrate/test_interface.py`
-- **Integration Tests**: `tests/test_townlet/integration/test_substrate_observations.py`
-- **Validation Tests**: `tests/test_townlet/unit/environment/test_pomdp_validation.py`
-- **Main Documentation**: `CLAUDE.md` (lines 278-297)
+- Token schema and serialization: `src/townlet/universe/dto/token_spec.py`
+- Token publishers: `src/townlet/environment/token_publishers.py`
+- Substrate visibility contract: `src/townlet/substrate/base.py`
+- Token-native networks: `src/townlet/agent/networks.py`
+- Brain schema: `docs/config-schemas/brain.md`
+- Stratum semantics: `docs/architecture/STRATA.md` §7

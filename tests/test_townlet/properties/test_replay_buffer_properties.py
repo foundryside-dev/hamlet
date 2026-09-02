@@ -18,6 +18,16 @@ from townlet.training.replay_buffer import ReplayBuffer
 from townlet.training.state import RewardTensor
 
 
+def _split_rewards(extrinsic: torch.Tensor, intrinsic: torch.Tensor, intrinsic_weight: float = 1.0) -> RewardTensor:
+    return RewardTensor(
+        total=extrinsic + intrinsic * intrinsic_weight,
+        extrinsic=extrinsic,
+        intrinsic=intrinsic,
+        shaping=None,
+        is_composed=False,
+    )
+
+
 class TestReplayBufferCapacityProperties:
     """Property tests for buffer capacity and FIFO behavior."""
 
@@ -44,7 +54,7 @@ class TestReplayBufferCapacityProperties:
 
             obs = torch.randn(current_batch, obs_dim)
             actions = torch.randint(0, 6, (current_batch,))
-            rewards = RewardTensor.from_components(extrinsic=torch.randn(current_batch), intrinsic=torch.randn(current_batch))
+            rewards = _split_rewards(extrinsic=torch.randn(current_batch), intrinsic=torch.randn(current_batch))
             next_obs = torch.randn(current_batch, obs_dim)
             dones = torch.rand(current_batch) > 0.8
 
@@ -80,7 +90,7 @@ class TestReplayBufferCapacityProperties:
             # Use observation value to track insertion order
             obs = torch.full((1, obs_dim), float(i))
             actions = torch.tensor([0])
-            rewards = RewardTensor.from_components(extrinsic=torch.tensor([0.0]), intrinsic=torch.tensor([0.0]))
+            rewards = _split_rewards(extrinsic=torch.tensor([0.0]), intrinsic=torch.tensor([0.0]))
             next_obs = torch.zeros(1, obs_dim)
             dones = torch.tensor([False])
 
@@ -139,7 +149,7 @@ class TestReplayBufferSamplingProperties:
             batch = min(10, effective_fill - transitions_pushed)
             obs = torch.randn(batch, obs_dim)
             actions = torch.randint(0, 6, (batch,))
-            rewards = RewardTensor.from_components(extrinsic=torch.randn(batch), intrinsic=torch.randn(batch))
+            rewards = _split_rewards(extrinsic=torch.randn(batch), intrinsic=torch.randn(batch))
             next_obs = torch.randn(batch, obs_dim)
             dones = torch.rand(batch) > 0.9
 
@@ -191,7 +201,7 @@ class TestReplayBufferSamplingProperties:
         dones = torch.zeros(num_transitions, dtype=torch.bool)
 
         # CRIT-07: Compute rewards using RewardTensor
-        rewards = RewardTensor.from_components(extrinsic=extrinsic_values, intrinsic=intrinsic_values, intrinsic_weight=intrinsic_weight)
+        rewards = _split_rewards(extrinsic=extrinsic_values, intrinsic=intrinsic_values, intrinsic_weight=intrinsic_weight)
 
         buffer.push(obs, actions, rewards, next_obs, dones)
 
@@ -232,7 +242,7 @@ class TestReplayBufferSamplingProperties:
                 # Push transitions
                 obs = torch.randn(count, obs_dim)
                 actions = torch.randint(0, 6, (count,))
-                rewards = RewardTensor.from_components(extrinsic=torch.randn(count), intrinsic=torch.randn(count))
+                rewards = _split_rewards(extrinsic=torch.randn(count), intrinsic=torch.randn(count))
                 next_obs = torch.randn(count, obs_dim)
                 dones = torch.rand(count) > 0.9
 
@@ -278,7 +288,7 @@ class TestReplayBufferSerializationProperties:
         num_to_push = min(num_transitions, capacity)
         obs = torch.randn(num_to_push, obs_dim)
         actions = torch.randint(0, 6, (num_to_push,))
-        rewards = RewardTensor.from_components(extrinsic=torch.randn(num_to_push), intrinsic=torch.randn(num_to_push))
+        rewards = _split_rewards(extrinsic=torch.randn(num_to_push), intrinsic=torch.randn(num_to_push))
         next_obs = torch.randn(num_to_push, obs_dim)
         dones = torch.rand(num_to_push) > 0.8
 

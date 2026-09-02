@@ -193,8 +193,10 @@ serialize. That was repaired the next day — commit `03764c6b` (2026-08-21,
 `hamlet-a141ab5db3` / `hamlet-cbb747a51e`): agent profiles now serialize
 (`compiled.py:_serialize_profile`), the field is typed `CompiledGlobalProfile | None`, and a
 failed cache write **fails the compile** instead of downgrading to a hidden log warning.
-Re-verified empirically 2026-08-24: `configs/trial_o_bidding_blind` (non-null `agent_profile`)
-compiles and writes `.compiled/universe-L5_multi_agent.msgpack`.
+Re-verified empirically 2026-08-24 on `configs/trial_o_bidding_blind` (non-null
+`agent_profile`), and again 2026-09-02 on `configs/test/vfs_bar_access` after that trial
+pack was deleted (`PDR-0142`): a non-null `agent_profile` compiles and writes
+`.compiled/universe-<level>.msgpack`.
 
 ---
 

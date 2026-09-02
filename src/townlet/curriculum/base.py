@@ -68,6 +68,11 @@ class CurriculumManager(ABC):
         pass
 
     @abstractmethod
+    def validate_checkpoint_state(self, state: dict[str, Any]) -> None:
+        """Validate checkpoint state without mutating the curriculum."""
+        pass
+
+    @abstractmethod
     def load_state(self, state: dict[str, Any]) -> None:
         """
         Restore curriculum manager from checkpoint.

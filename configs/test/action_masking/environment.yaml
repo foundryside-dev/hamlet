@@ -6,42 +6,42 @@ environment:
       description: "Energy reserve"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
     - name: health
       description: "Health"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
     - name: satiation
       description: "Hunger"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
     - name: hygiene
       description: "Cleanliness"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
     - name: money
       description: "Cash"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
     - name: mood
       description: "Mood"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
     - name: social
       description: "Social"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
     - name: fitness
       description: "Fitness"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
 
   affordances:
     - name: Bed

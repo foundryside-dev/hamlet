@@ -21,7 +21,6 @@ def test_factory_propagates_grid2d_topology():
             height=8,
             boundary="clamp",
             distance_metric="manhattan",
-            observation_encoding="relative",
             diagonals=True,
         ),
     )
@@ -41,7 +40,6 @@ def test_factory_propagates_grid3d_topology():
             depth=3,
             boundary="clamp",
             distance_metric="manhattan",
-            observation_encoding="relative",
             diagonals=True,
         ),
     )
@@ -58,7 +56,6 @@ def test_factory_propagates_gridnd_topology():
             dimension_sizes=[5, 5, 5, 5],
             boundary="clamp",
             distance_metric="manhattan",
-            observation_encoding="relative",
             topology="hypercube",
         ),
     )
@@ -75,7 +72,6 @@ def test_factory_sets_gridnd_topology_when_config_uses_default():
             dimension_sizes=[5, 5, 5, 5],
             boundary="clamp",
             distance_metric="manhattan",
-            observation_encoding="relative",
             topology="hypercube",
         ),
     )
@@ -95,7 +91,6 @@ def test_factory_continuous_substrates_have_no_topology():
             movement_delta=0.5,
             interaction_radius=0.8,
             distance_metric="euclidean",
-            observation_encoding="relative",
             action_discretization={"num_directions": 8, "num_magnitudes": 3},
         ),
     )

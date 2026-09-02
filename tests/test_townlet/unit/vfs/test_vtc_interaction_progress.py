@@ -53,7 +53,7 @@ def test_compile_vtc_interaction_progress_emits_progress_and_completion_rules() 
 def test_vtc_interaction_progress_tracks_continuation_completion_and_disengagement() -> None:
     program = vtc.compile_vtc_interaction_progress(
         [
-            _affordance("Bed", interaction_type="dual", duration_ticks=5),
+            _affordance("Bed", interaction_type="multi_tick", duration_ticks=5),
             _affordance("Job", interaction_type="multi_tick", duration_ticks=4),
         ]
     )

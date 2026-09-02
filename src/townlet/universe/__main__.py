@@ -87,14 +87,15 @@ def _cmd_compile(args: argparse.Namespace) -> int:
     compiler = UniverseCompiler()
     start = time.perf_counter()
     compiled = compiler.compile(config_dir, primary_level=args.primary_level, use_cache=not args.no_cache)
+    level = compiled.get_level(compiled.metadata.primary_level)
     elapsed_ms = (time.perf_counter() - start) * 1000.0
 
     _print_summary(compiled.metadata)
-    print(f"  VFS Hash : {compiled.vfs_hash[:16]}")
-    print(f"  Action Schema Hash : {compiled.action_schema_hash[:16]}")
-    print(f"  Observation Schema Hash : {compiled.observation_schema_hash[:16]}")
-    print(f"  Variable Schema Hash : {compiled.variable_schema_hash[:16]}")
-    print(f"  Transition Graph Hash : {_format_transition_hash(compiled.transition_graph_hash)}")
+    print(f"  VFS Hash : {level.vfs_hash[:16]}")
+    print(f"  Action Schema Hash : {level.action_schema_hash[:16]}")
+    print(f"  Observation Schema Hash : {level.observation_schema_hash[:16]}")
+    print(f"  Variable Schema Hash : {level.variable_schema_hash[:16]}")
+    print(f"  Transition Graph Hash : {_format_transition_hash(level.transition_graph_hash)}")
     print(f"Compilation succeeded in {elapsed_ms:.1f} ms")
 
     if not args.no_cache:
@@ -129,19 +130,24 @@ def _format_transition_hash(transition_graph_hash: str) -> str:
 
 def _print_token_census(compiled: CompiledUniverse) -> None:
     """The per-type token census (token-obs spec §2: published in the artifact and here)."""
-    spec = compiled.token_spec
-    if spec is None:
-        print("Token census: <absent from artifact>")
-        return
+    level = compiled.get_level(compiled.metadata.primary_level)
+    spec = level.token_spec
+    compact_layout = spec.compact_layout()
     print("Token census:")
     for token_type in spec.types:
-        print(f"  {token_type.type_name:<17}: {token_type.capacity:>4} slots x (1 + {token_type.payload_width}) dims")
-    print(f"  {'total_dims':<17}: {spec.total_dims}")
-    if compiled.token_type_schema_hash:
-        print(f"  Token Type Schema Hash : {compiled.token_type_schema_hash[:16]}")
-    if compiled.layout_hash:
-        print(f"  Layout Hash : {compiled.layout_hash[:16]}")
-    for advisory in compiled.token_advisories:
+        type_layout = compact_layout.get_type(token_type.type_name)
+        assert type_layout is not None
+        print(
+            f"  {token_type.type_name:<17}: {token_type.capacity:>4} slots x compact row "
+            f"{type_layout.compact_row_width} (fixed network boundary {type_layout.fixed_row_width})"
+        )
+    print(f"  {'compact total':<17}: {spec.total_dims}")
+    print(f"  {'fixed boundary':<17}: {spec.fixed_total_dims}")
+    if level.token_type_schema_hash:
+        print(f"  Token Type Schema Hash : {level.token_type_schema_hash[:16]}")
+    if level.layout_hash:
+        print(f"  Layout Hash : {level.layout_hash[:16]}")
+    for advisory in level.token_advisories:
         print(f"  ADVISORY: {advisory}")
 
 
@@ -161,29 +167,31 @@ def _cmd_inspect(args: argparse.Namespace) -> int:
         raise FileNotFoundError(f"Artifact not found: {artifact_path}")
 
     compiled = CompiledUniverse.load_from_cache(artifact_path)
+    level = compiled.get_level(compiled.metadata.primary_level)
     if args.format == "json":
         payload = {
             "artifact": str(artifact_path),
             "metadata": _metadata_to_dict(compiled.metadata),
-            "vfs_hash": compiled.vfs_hash,
-            "action_schema_hash": compiled.action_schema_hash,
-            "observation_schema_hash": compiled.observation_schema_hash,
-            "variable_schema_hash": compiled.variable_schema_hash,
-            "transition_graph_hash": compiled.transition_graph_hash,
-            "token_census": compiled.token_spec.census if compiled.token_spec is not None else None,
-            "token_total_dims": compiled.token_spec.total_dims if compiled.token_spec is not None else None,
-            "token_type_schema_hash": compiled.token_type_schema_hash,
-            "layout_hash": compiled.layout_hash,
-            "token_advisories": list(compiled.token_advisories),
+            "vfs_hash": level.vfs_hash,
+            "action_schema_hash": level.action_schema_hash,
+            "observation_schema_hash": level.observation_schema_hash,
+            "variable_schema_hash": level.variable_schema_hash,
+            "transition_graph_hash": level.transition_graph_hash,
+            "token_census": level.token_spec.census,
+            "token_compact_total_dims": level.token_spec.total_dims,
+            "token_fixed_boundary_total_dims": level.token_spec.fixed_total_dims,
+            "token_type_schema_hash": level.token_type_schema_hash,
+            "layout_hash": level.layout_hash,
+            "token_advisories": list(level.token_advisories),
         }
         print(json.dumps(payload, indent=2, sort_keys=True))
     else:
         _print_summary(compiled.metadata)
-        print(f"  VFS Hash : {compiled.vfs_hash[:16]}")
-        print(f"  Action Schema Hash : {compiled.action_schema_hash[:16]}")
-        print(f"  Observation Schema Hash : {compiled.observation_schema_hash[:16]}")
-        print(f"  Variable Schema Hash : {compiled.variable_schema_hash[:16]}")
-        print(f"  Transition Graph Hash : {_format_transition_hash(compiled.transition_graph_hash)}")
+        print(f"  VFS Hash : {level.vfs_hash[:16]}")
+        print(f"  Action Schema Hash : {level.action_schema_hash[:16]}")
+        print(f"  Observation Schema Hash : {level.observation_schema_hash[:16]}")
+        print(f"  Variable Schema Hash : {level.variable_schema_hash[:16]}")
+        print(f"  Transition Graph Hash : {_format_transition_hash(level.transition_graph_hash)}")
         _print_token_census(compiled)
         print(f"Artifact path: {artifact_path}")
     return 0

@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import torch
 
+from townlet.effects.catalog import CompiledEffect, EffectCatalog
 from townlet.effects.executor import CommandExecutor
 from townlet.effects.manager import EffectManager
-from townlet.effects.schema import EffectDefinition, EffectScope
 from townlet.vfs.evaluator import EvaluationMode, VFSEvaluator
 from townlet.vfs.registry import ScopedVariableRegistry
 
@@ -40,20 +40,23 @@ class TestEffectsBenchmarks:
 
     def test_effects_tick(self, benchmark):
         # Minimal catalog with one effect
-        effect_def = EffectDefinition(
+        effect_def = CompiledEffect(
             id="regen",
-            scope=EffectScope.AGENT,
+            scope="agent",
             duration=1,
             reapply_policy="stack",
             observable=True,
-            intensity=1.0,
             on_spawn=[],
             on_tick=[],
             on_despawn=[],
+            on_interrupt=[],
         )
 
         manager = EffectManager(
-            catalog={"regen": effect_def},
+            catalog=EffectCatalog(
+                effects={"regen": effect_def},
+                max_active_effects={"global": 0, "agent": 1, "item": 0, "affordance": 0},
+            ),
             command_executor=CommandExecutor(),
             device="cpu",
             time_enabled=False,

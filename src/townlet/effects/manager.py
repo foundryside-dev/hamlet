@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from townlet.effects.executor import CommandExecutor
 
 from townlet.config.effects_config import EffectScope
+from townlet.numeric import require_float32
 
 __all__ = [
     "ActiveEffect",
@@ -52,8 +53,11 @@ class ActiveEffect:
     duration_remaining: int  # Ticks until despawn
     elapsed_ticks: int  # How long active
     spawn_step: int  # When it was created
-    observable: bool = True  # Whether the effect is exposed in observations
+    observable: bool  # Whether the effect is exposed in observations
     effect_index: int = -1  # Stable integer ID for observation encoding
+
+    def __post_init__(self) -> None:
+        self.intensity = require_float32(self.intensity, field=f"active effect {self.effect_id!r} intensity")
 
 
 class EffectManager:
@@ -95,8 +99,6 @@ class EffectManager:
         self,
         effect_id: str,
         target_entity_id: int,
-        scope: EffectScope,
-        duration: int,
         intensity: float,
         current_step: int,
         bars: dict[str, torch.Tensor] | None = None,
@@ -110,8 +112,6 @@ class EffectManager:
         Args:
             effect_id: Effect definition ID from catalog
             target_entity_id: Entity to attach effect to (agent/item/affordance index)
-            scope: Effect scope (global/agent/item/affordance)
-            duration: Effect duration in ticks
             intensity: Effect intensity multiplier
             current_step: Current environment step
             bars: Current meter values (for on_spawn command execution)
@@ -124,8 +124,11 @@ class EffectManager:
         """
         # Get compiled effect definition (validates effect_id exists)
         effect_def = self.catalog.effects[effect_id]
+        scope = EffectScope(effect_def.scope)
+        duration = effect_def.duration
+        intensity = require_float32(intensity, field=f"effect {effect_id!r} intensity")
         effect_index = self.catalog.get_effect_index(effect_id)
-        observable = getattr(effect_def, "observable", False)
+        observable = effect_def.observable
 
         # Check for existing effect on same target
         existing = self._find_existing(effect_id, target_entity_id, scope)
@@ -139,24 +142,21 @@ class EffectManager:
 
             elif effect_def.reapply_policy == "merge":
                 # Accumulate intensity
-                existing.intensity += intensity
+                merged_intensity = require_float32(
+                    existing.intensity + intensity,
+                    field=f"merged effect intensity for {effect_id!r}",
+                )
+                existing.intensity = merged_intensity
                 if effect_def.on_interrupt and self.command_executor and bars is not None:
-                    from townlet.effects.context import ExecutionContext
-
-                    context = ExecutionContext(
+                    context = self._lifecycle_context(
+                        existing,
                         bars=bars,
                         vfs_registry=vfs_registry,
-                        self_index=target_entity_id,
-                        target_index=None,
-                        effect=existing,
-                        effect_manager=self,
                         item_manager=item_manager or NullItemManager(),
                         spawn_depth=spawn_depth,
                         agent_positions=agent_positions,
                         interrupt_reason="merged_by_effect",
                         current_tick=current_step,
-                        scheduler=self.scheduler,
-                        affordance_overrides=self.affordance_overrides,
                     )
 
                     for command in effect_def.on_interrupt:
@@ -169,22 +169,15 @@ class EffectManager:
 
                 # NEW: Execute on_interrupt before removing old effect
                 if effect_def.on_interrupt and self.command_executor and bars is not None:
-                    from townlet.effects.context import ExecutionContext
-
-                    context = ExecutionContext(
+                    context = self._lifecycle_context(
+                        existing,
                         bars=bars,
                         vfs_registry=vfs_registry,
-                        self_index=target_entity_id,
-                        target_index=None,
-                        effect=existing,
-                        effect_manager=self,
                         item_manager=item_manager or NullItemManager(),
                         spawn_depth=spawn_depth,
                         agent_positions=agent_positions,
                         interrupt_reason="replaced_by_effect",  # NEW
                         current_tick=current_step,  # NEW
-                        scheduler=self.scheduler,
-                        affordance_overrides=self.affordance_overrides,
                     )
 
                     for command in effect_def.on_interrupt:
@@ -217,27 +210,57 @@ class EffectManager:
 
         # Execute on_spawn commands
         if effect_def.on_spawn and self.command_executor and bars is not None:
-            from townlet.effects.context import ExecutionContext
-
-            context = ExecutionContext(
+            context = self._lifecycle_context(
+                active,
                 bars=bars,
                 vfs_registry=vfs_registry,
-                self_index=target_entity_id,
-                target_index=None,
-                effect=active,
-                effect_manager=self,
                 item_manager=item_manager or NullItemManager(),
                 spawn_depth=spawn_depth + 1,  # Increment depth for cascade tracking
                 agent_positions=agent_positions,  # NEW: for for_each spatial queries
                 current_tick=current_step,  # NEW
-                scheduler=self.scheduler,
-                affordance_overrides=self.affordance_overrides,
             )
 
             for command in effect_def.on_spawn:
                 self.command_executor.execute(command, context)
 
         return active
+
+    def _lifecycle_context(
+        self,
+        effect: ActiveEffect,
+        *,
+        bars: dict[str, torch.Tensor],
+        vfs_registry: Any | None,
+        item_manager: Any | None,
+        spawn_depth: int,
+        current_tick: int,
+        agent_positions: Any | None = None,
+        interrupt_reason: str | None = None,
+    ) -> ExecutionContext:
+        """Build one scope-authoritative context for every effect lifecycle hook."""
+        from townlet.effects.context import ExecutionContext
+
+        scope = EffectScope(effect.scope)
+        entity_id = effect.target_entity_id
+        entity_is_indexed_self = scope in {EffectScope.AGENT, EffectScope.ITEM}
+        is_item = scope == EffectScope.ITEM
+        return ExecutionContext(
+            bars=bars,
+            vfs_registry=vfs_registry,
+            self_index=entity_id if entity_is_indexed_self else None,
+            target_index=entity_id,
+            effect=effect,
+            self_is_item=is_item,
+            target_is_item=is_item,
+            effect_manager=self,
+            item_manager=item_manager or NullItemManager(),
+            spawn_depth=spawn_depth,
+            agent_positions=agent_positions,
+            interrupt_reason=interrupt_reason,
+            current_tick=current_tick,
+            scheduler=self.scheduler,
+            affordance_overrides=self.affordance_overrides,
+        )
 
     def _add_to_scope(self, effect: ActiveEffect) -> None:
         """Add effect to appropriate scoped collection."""
@@ -313,7 +336,7 @@ class EffectManager:
     def get_observable_agent_effects(self, agent_id: int) -> list[ActiveEffect]:
         """Return observable effects attached to a specific agent."""
         effects = self.agent_effects.get(agent_id, [])
-        return [eff for eff in effects if getattr(eff, "observable", False)]
+        return [eff for eff in effects if eff.observable]
 
     def _cancel_scheduled_for_effect(self, effect: ActiveEffect) -> None:
         """Cancel any scheduled commands tied to the effect's scope/entity."""
@@ -371,29 +394,13 @@ class EffectManager:
             due_items = self.scheduler.advance(current_step)
             self._execute_scheduled_items(due_items, bars, vfs_registry, item_manager, agent_positions)
 
-        # Tick global effects
-        for i in range(len(self.global_effects) - 1, -1, -1):
-            effect = self.global_effects[i]
-            self._tick_effect(effect, None, EffectScope.GLOBAL, bars, vfs_registry, item_manager)
-            if effect.duration_remaining <= 0:
-                self.global_effects.pop(i)
-
-        # Tick agent effects
-        for agent_id, effects in list(self.agent_effects.items()):
-            # Process in reverse to safely remove during iteration
-            for i in range(len(effects) - 1, -1, -1):
-                effect = effects[i]
-                self._tick_effect(effect, agent_id, EffectScope.AGENT, bars, vfs_registry, item_manager)
-                if effect.duration_remaining <= 0:
-                    self._despawn_effect(
-                        effect,
-                        agent_id,
-                        EffectScope.AGENT,
-                        bars,
-                        vfs_registry,
-                        item_manager,
-                        interrupt_reason=None,
-                    )
+        self._tick_scope_collection(self.global_effects, bars, vfs_registry, item_manager)
+        for effects in list(self.agent_effects.values()):
+            self._tick_scope_collection(effects, bars, vfs_registry, item_manager)
+        for effects in list(self.item_effects.values()):
+            self._tick_scope_collection(effects, bars, vfs_registry, item_manager)
+        for effects in list(self.affordance_effects.values()):
+            self._tick_scope_collection(effects, bars, vfs_registry, item_manager)
 
         # Drain any zero-delay commands scheduled during this tick
         if self.scheduler:
@@ -402,6 +409,19 @@ class EffectManager:
                 if not pending_now:
                     break
                 self._execute_scheduled_items(pending_now, bars, vfs_registry, item_manager, agent_positions)
+
+    def _tick_scope_collection(
+        self,
+        effects: list[ActiveEffect],
+        bars: dict[str, torch.Tensor],
+        vfs_registry: Any | None,
+        item_manager: Any | None,
+    ) -> None:
+        """Tick and naturally despawn one scope collection in reverse removal order."""
+        for effect in reversed(effects.copy()):
+            self._tick_effect(effect, bars, vfs_registry, item_manager)
+            if effect.duration_remaining <= 0:
+                self._despawn_effect(effect, bars, vfs_registry, item_manager, interrupt_reason=None)
 
     def _execute_scheduled_items(
         self,
@@ -473,8 +493,6 @@ class EffectManager:
     def _tick_effect(
         self,
         effect: ActiveEffect,
-        entity_id: int | None,
-        scope: EffectScope,
         bars: dict[str, torch.Tensor],
         vfs_registry: Any | None,
         item_manager: Any | None = None,  # NEW
@@ -485,20 +503,13 @@ class EffectManager:
             compiled = self.catalog.effects[effect.effect_id]
 
             if compiled.on_tick and self.command_executor:
-                from townlet.effects.context import ExecutionContext
-
-                context = ExecutionContext(
+                context = self._lifecycle_context(
+                    effect,
                     bars=bars,
                     vfs_registry=vfs_registry,
-                    self_index=entity_id,
-                    target_index=effect.target_entity_id,
-                    effect=effect,
-                    effect_manager=self,  # Pass self for spawn_effect
-                    item_manager=item_manager,  # NEW
+                    item_manager=item_manager,
                     spawn_depth=0,  # Reset depth for top-level tick
                     current_tick=self.current_step,  # NEW
-                    scheduler=self.scheduler,
-                    affordance_overrides=self.affordance_overrides,
                 )
 
                 for command in compiled.on_tick:
@@ -511,8 +522,6 @@ class EffectManager:
     def _despawn_effect(
         self,
         effect: ActiveEffect,
-        entity_id: int,
-        scope: EffectScope,
         bars: dict[str, torch.Tensor],
         vfs_registry: Any | None,
         item_manager: Any | None = None,  # NEW
@@ -526,29 +535,20 @@ class EffectManager:
             self._cancel_scheduled_for_effect(effect)
 
             if compiled.on_despawn and self.command_executor:
-                from townlet.effects.context import ExecutionContext
-
-                context = ExecutionContext(
+                context = self._lifecycle_context(
+                    effect,
                     bars=bars,
                     vfs_registry=vfs_registry,
-                    self_index=entity_id,
-                    target_index=effect.target_entity_id,
-                    effect=effect,
-                    effect_manager=self,
-                    item_manager=item_manager,  # NEW
+                    item_manager=item_manager,
                     spawn_depth=0,
                     interrupt_reason=interrupt_reason,
                     current_tick=self.current_step,  # NEW
-                    scheduler=self.scheduler,
-                    affordance_overrides=self.affordance_overrides,
                 )
 
                 for command in compiled.on_despawn:
                     self.command_executor.execute(command, context)
 
-        # Remove from storage
-        if scope == EffectScope.AGENT and entity_id in self.agent_effects:
-            self.agent_effects[entity_id].remove(effect)
+        self._remove_from_scope(effect)
 
     def _build_context(
         self, effect: ActiveEffect, env_state: Any, current_tick: int = 0, item_manager: Any | None = None
@@ -563,23 +563,15 @@ class EffectManager:
         Returns:
             ExecutionContext with effect and target references
         """
-        from townlet.effects.context import ExecutionContext
-
-        # Extract state from env_state
         bars = getattr(env_state, "bars", None)
         vfs_registry = getattr(env_state, "vfs_registry", None)
-
-        return ExecutionContext(
-            bars=bars or {},  # Default to empty dict if None
+        return self._lifecycle_context(
+            effect,
+            bars=bars or {},
             vfs_registry=vfs_registry,
-            self_index=None,  # Not used in effect context
-            target_index=effect.target_entity_id,
-            effect=effect,  # Pass effect for effect-specific variables
-            effect_manager=self,
             item_manager=item_manager or NullItemManager(),
+            spawn_depth=0,
             current_tick=current_tick,
-            scheduler=self.scheduler,
-            affordance_overrides=self.affordance_overrides,
         )
 
     def get_all_active_effects(self) -> list[ActiveEffect]:
@@ -607,91 +599,31 @@ class EffectManager:
         item_manager: Any | None = None,
     ) -> None:
         """Manually cancel an effect instance (fail-forward: on_interrupt then remove)."""
-        found_scope = None
-        found_entity: int | str | None = None  # Can be int (agent/item) or str (affordance)
-        target_effect: ActiveEffect | None = None
-
-        # Check global effects
-        for effect in self.global_effects:
-            if effect.instance_id == instance_id:
-                found_scope = EffectScope.GLOBAL
-                target_effect = effect
-                break
-
-        # Check agent effects
-        if target_effect is None:
-            for agent_id, effects in self.agent_effects.items():
-                for effect in effects:
-                    if effect.instance_id == instance_id:
-                        found_scope = EffectScope.AGENT
-                        found_entity = agent_id
-                        target_effect = effect
-                        break
-                if target_effect:
-                    break
-
-        # Check item effects
-        if target_effect is None:
-            for item_id, effects in self.item_effects.items():
-                for effect in effects:
-                    if effect.instance_id == instance_id:
-                        found_scope = EffectScope.ITEM
-                        found_entity = item_id
-                        target_effect = effect
-                        break
-                if target_effect:
-                    break
-
-        # Check affordance effects
-        if target_effect is None:
-            for key, effects in self.affordance_effects.items():
-                for effect in effects:
-                    if effect.instance_id == instance_id:
-                        found_scope = EffectScope.AFFORDANCE
-                        found_entity = key
-                        target_effect = effect
-                        break
-                if target_effect:
-                    break
+        target_effect = next(
+            (effect for effect in self.get_all_active_effects() if effect.instance_id == instance_id),
+            None,
+        )
 
         if target_effect is None:
             raise ValueError(f"Effect instance {instance_id} not found for cancel_effect")
 
         compiled = self.catalog.effects.get(target_effect.effect_id)
         if compiled and compiled.on_interrupt and self.command_executor:
-            from townlet.effects.context import ExecutionContext
-
             # Cancel pending delayed work tied to this effect before interrupt commands run
             self._cancel_scheduled_for_effect(target_effect)
 
-            context = ExecutionContext(
+            context = self._lifecycle_context(
+                target_effect,
                 bars=bars,
                 vfs_registry=vfs_registry,
-                self_index=found_entity if isinstance(found_entity, int) else None,
-                target_index=target_effect.target_entity_id,
-                effect=target_effect,
-                effect_manager=self,
                 item_manager=item_manager or NullItemManager(),
                 spawn_depth=0,
                 interrupt_reason="manually_cancelled",
                 current_tick=current_step,
-                scheduler=self.scheduler,
-                affordance_overrides=self.affordance_overrides,
             )
 
             for command in compiled.on_interrupt:
                 self.command_executor.execute(command, context)
 
-        # Remove effect (no on_despawn when manually cancelled)
-        if found_scope == EffectScope.GLOBAL:
-            self.global_effects.remove(target_effect)
-        elif found_scope == EffectScope.AGENT and found_entity is not None:
-            assert isinstance(found_entity, int), "Agent entity must be int"
-            self.agent_effects[found_entity].remove(target_effect)
-        elif found_scope == EffectScope.ITEM and found_entity is not None:
-            assert isinstance(found_entity, int), "Item entity must be int"
-            self.item_effects[found_entity].remove(target_effect)
-        elif found_scope == EffectScope.AFFORDANCE and found_entity is not None:
-            key = str(found_entity)
-            if key in self.affordance_effects:
-                self.affordance_effects[key].remove(target_effect)
+        # Remove effect (no on_despawn when manually cancelled).
+        self._remove_from_scope(target_effect)

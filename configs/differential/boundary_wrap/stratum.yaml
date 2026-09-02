@@ -1,0 +1,21 @@
+stratum:
+  version: "1.0"
+
+  substrate:
+    type: grid
+
+    grid:
+      topology: square
+      width: 8
+      height: 8
+
+      boundary: wrap
+
+      distance_metric: manhattan
+
+      diagonals: true
+
+  vision_support: both
+
+  temporal_support: enabled
+

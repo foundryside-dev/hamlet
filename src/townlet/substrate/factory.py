@@ -52,7 +52,6 @@ class SubstrateFactory:
                     height=config.grid.height,
                     boundary=config.grid.boundary,
                     distance_metric=config.grid.distance_metric,
-                    observation_encoding=config.grid.observation_encoding,  # NEW: Phase 5C
                     topology=config.grid.topology,
                     enable_diagonals=config.grid.diagonals,
                 )
@@ -65,7 +64,6 @@ class SubstrateFactory:
                     depth=config.grid.depth,
                     boundary=config.grid.boundary,
                     distance_metric=config.grid.distance_metric,
-                    observation_encoding=config.grid.observation_encoding,  # NEW: Phase 5C
                     topology=config.grid.topology,
                     enable_diagonals=config.grid.diagonals,
                 )
@@ -84,7 +82,6 @@ class SubstrateFactory:
                     movement_delta=config.continuous.movement_delta,
                     interaction_radius=config.continuous.interaction_radius,
                     distance_metric=config.continuous.distance_metric,
-                    observation_encoding=config.continuous.observation_encoding,  # NEW: Phase 5C
                     action_discretization=config.continuous.action_discretization.model_dump(),  # NEW: Discretized actions
                 )
 
@@ -99,7 +96,6 @@ class SubstrateFactory:
                     movement_delta=config.continuous.movement_delta,
                     interaction_radius=config.continuous.interaction_radius,
                     distance_metric=config.continuous.distance_metric,
-                    observation_encoding=config.continuous.observation_encoding,  # NEW: Phase 5C
                     action_discretization=config.continuous.action_discretization.model_dump(),  # NEW: Discretized actions
                 )
 
@@ -116,7 +112,6 @@ class SubstrateFactory:
                     movement_delta=config.continuous.movement_delta,
                     interaction_radius=config.continuous.interaction_radius,
                     distance_metric=config.continuous.distance_metric,
-                    observation_encoding=config.continuous.observation_encoding,  # NEW: Phase 5C
                     action_discretization=config.continuous.action_discretization.model_dump(),  # NEW: Discretized actions
                 )
             else:
@@ -129,7 +124,6 @@ class SubstrateFactory:
                 dimension_sizes=config.gridnd.dimension_sizes,
                 boundary=config.gridnd.boundary,
                 distance_metric=config.gridnd.distance_metric,
-                observation_encoding=config.gridnd.observation_encoding,
                 topology=config.gridnd.topology,  # NEW: Pass topology from config
             )
 
@@ -142,7 +136,6 @@ class SubstrateFactory:
                 movement_delta=config.continuous.movement_delta,
                 interaction_radius=config.continuous.interaction_radius,
                 distance_metric=config.continuous.distance_metric,
-                observation_encoding=config.continuous.observation_encoding,
             )
 
         elif config.type == "aspatial":

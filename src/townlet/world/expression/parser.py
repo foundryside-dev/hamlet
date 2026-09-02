@@ -13,7 +13,7 @@ from pyparsing import (
     Word,
     alphanums,
     alphas,
-    infixNotation,
+    infix_notation,
     opAssoc,
     pyparsing_common,
 )
@@ -32,7 +32,7 @@ from townlet.world.expression import (
 )
 
 # Enable packrat parsing for performance
-ParserElement.enablePackrat()
+ParserElement.enable_packrat()
 
 
 class ExpressionParser:
@@ -60,23 +60,23 @@ class ExpressionParser:
 
         # Literals
         # Boolean literals (must come before identifiers)
-        true_literal = Literal("true").setParseAction(lambda: Constant(value=True))
-        false_literal = Literal("false").setParseAction(lambda: Constant(value=False))
+        true_literal = Literal("true").set_parse_action(lambda: Constant(value=True))
+        false_literal = Literal("false").set_parse_action(lambda: Constant(value=False))
         bool_literal = true_literal | false_literal
 
         # Numeric literals
         # CRITICAL FIX: Use strict float matching to prevent "42" from parsing as float
         # fnumber() aggressively matches integers, breaking type checking for array indices
         # This regex requires either a decimal point OR scientific notation: 0.5, -10.3, 1., 1.0e-5, 1e-3
-        float_literal = Regex(r"[+-]?(\d+\.\d*([eE][+-]?\d+)?|\d+[eE][+-]?\d+)").setParseAction(
+        float_literal = Regex(r"[+-]?(\d+\.\d*([eE][+-]?\d+)?|\d+[eE][+-]?\d+)").set_parse_action(
             lambda tokens: Constant(value=float(tokens[0]))
         )
-        int_literal = pyparsing_common.signed_integer().setParseAction(lambda tokens: Constant(value=int(tokens[0])))
+        int_literal = pyparsing_common.signed_integer().set_parse_action(lambda tokens: Constant(value=int(tokens[0])))
         # Try float first (so "0.5" isn't parsed as "0"), but strict regex prevents "42" matching
         numeric_literal = float_literal | int_literal
 
         # String literals (double or single quotes)
-        string_literal = (QuotedString('"', escChar="\\") | QuotedString("'", escChar="\\")).setParseAction(
+        string_literal = (QuotedString('"', esc_char="\\") | QuotedString("'", esc_char="\\")).set_parse_action(
             lambda tokens: Constant(value=str(tokens[0]))
         )
 
@@ -97,7 +97,7 @@ class ExpressionParser:
             args = list(tokens[1:]) if len(tokens) > 1 else []
             return FunctionCall(function_name=func_name, arguments=args)
 
-        function_call = (identifier + lparen + Optional(expression_ref + (comma + expression_ref)[...]) + rparen).setParseAction(
+        function_call = (identifier + lparen + Optional(expression_ref + (comma + expression_ref)[...]) + rparen).set_parse_action(
             make_function_call
         )
 
@@ -111,7 +111,7 @@ class ExpressionParser:
                 return Variable(name=name)
             return PathAccess(segments=segments)
 
-        path_or_variable = (identifier + (Literal(".").suppress() + identifier)[...]).setParseAction(make_path_access)
+        path_or_variable = (identifier + (Literal(".").suppress() + identifier)[...]).set_parse_action(make_path_access)
 
         # If-Then-Else (ternary conditional)
         # if x > 0 then 1 else -1
@@ -125,7 +125,7 @@ class ExpressionParser:
 
         if_expression = (
             if_kw.suppress() + expression_ref + then_kw.suppress() + expression_ref + else_kw.suppress() + expression_ref
-        ).setParseAction(make_if_then_else)
+        ).set_parse_action(make_if_then_else)
 
         # Index access (array subscripting)
         # inventory[0] → IndexAccess(Variable("inventory"), Constant(0))
@@ -144,7 +144,7 @@ class ExpressionParser:
                 result = IndexAccess(base=result, index=index_expr)
             return result
 
-        primary_with_index = (primary_base + (lbracket + expression_ref + rbracket)[...]).setParseAction(make_index_access)
+        primary_with_index = (primary_base + (lbracket + expression_ref + rbracket)[...]).set_parse_action(make_index_access)
 
         # Update primary to include index access
         primary = primary_with_index
@@ -213,7 +213,7 @@ class ExpressionParser:
             return result
 
         # Build expression with operator precedence
-        expression_with_ops = infixNotation(
+        expression_with_ops = infix_notation(
             primary,
             [
                 (Literal("-") | Literal("not"), 1, opAssoc.RIGHT, make_unaryop),
@@ -247,5 +247,5 @@ class ExpressionParser:
         Raises:
             ParseException: If text is not a valid expression
         """
-        result = self.expression.parseString(text, parseAll=True)
+        result = self.expression.parse_string(text, parse_all=True)
         return cast(ASTNode, result[0])

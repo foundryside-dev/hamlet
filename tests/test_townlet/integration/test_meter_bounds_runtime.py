@@ -38,6 +38,7 @@ import torch
 import yaml
 from pydantic import ValidationError
 
+from townlet.agent.token_input import TokenInputAssembler
 from townlet.environment.action_executor import ActionExecutor
 from townlet.environment.affordance_engine import AffordanceEngine
 from townlet.environment.vectorized_env import VectorizedHamletEnv
@@ -90,7 +91,30 @@ def _action(env: VectorizedHamletEnv, name: str) -> int:
 
 
 def _park_on(env: VectorizedHamletEnv, affordance: str) -> None:
-    env.positions[:] = torch.tensor(env.affordances[affordance], device=env.device, dtype=env.positions.dtype)
+    env.positions[:] = env.affordances[affordance].to(device=env.device, dtype=env.positions.dtype)
+
+
+def _set_meter_range_type(pack: Path, meter_name: str, range_type: dict[str, object]) -> None:
+    environment_path = pack / "environment.yaml"
+    data = yaml.safe_load(environment_path.read_text())
+    meter = next(meter for meter in data["environment"]["meters"] if meter["name"] == meter_name)
+    meter["range_type"] = range_type
+    environment_path.write_text(yaml.safe_dump(data, sort_keys=False))
+
+
+def _expanded_meter_row(env: VectorizedHamletEnv, observation: torch.Tensor, meter_name: str) -> torch.Tensor:
+    schema = env.token_spec.get_type("meter")
+    layout = env.token_spec.compact_layout().get_type("meter")
+    assert schema is not None and layout is not None
+    binding = next(binding for binding in schema.slot_bindings if binding.filler_ref == meter_name)
+    dynamic_rows = observation[:, layout.start : layout.end].view(observation.shape[0], schema.capacity, layout.compact_row_width)
+    return TokenInputAssembler(env.token_spec).expand_type("meter", dynamic_rows)[0, binding.slot_index]
+
+
+def _fixed_meter_feature(env: VectorizedHamletEnv, row: torch.Tensor, feature: str) -> float:
+    schema = env.token_spec.get_type("meter")
+    assert schema is not None
+    return row[1 + schema.payload_features.index(feature)].item()
 
 
 # --------------------------------------------------------------------------------------
@@ -257,6 +281,52 @@ def test_meter_without_declared_bounds_is_fatal() -> None:
 # --------------------------------------------------------------------------------------
 
 
+def test_range_type_changes_the_live_meter_token_value_and_identity(tmp_path: Path) -> None:
+    """Config-in/behavior-out pin for PDR-0134 and hamlet-1e335e0363.
+
+    Before the repair both packs emitted the same bars-derived minmax value and the
+    token carried no declaration identity at all.
+    """
+    linear_pack = _pack(tmp_path / "linear", L1)
+    log_pack = _pack(tmp_path / "log", L1)
+    _set_meter_range_type(linear_pack, "money", {"kind": "minmax", "clip": True})
+    _set_meter_range_type(log_pack, "money", {"kind": "log_scaled", "clip": True})
+    linear = _env(linear_pack, L1)
+    logarithmic = _env(log_pack, L1)
+
+    for env in (linear, logarithmic):
+        env.meters[0, env.meter_name_to_index["money"]] = 1000.0
+
+    linear_observation = linear._get_observations()
+    log_observation = logarithmic._get_observations()
+    linear_row = _expanded_meter_row(linear, linear_observation, "money")
+    log_row = _expanded_meter_row(logarithmic, log_observation, "money")
+    linear_value = _fixed_meter_feature(linear, linear_row, "value_0")
+    log_value = _fixed_meter_feature(logarithmic, log_row, "value_0")
+
+    assert linear_value == pytest.approx(1000.0 / 999999.0)
+    assert log_value == pytest.approx(torch.log1p(torch.tensor(1000.0)).item() / torch.log1p(torch.tensor(999999.0)).item())
+    assert log_value != pytest.approx(linear_value)
+    assert linear.level.layout_hash == logarithmic.level.layout_hash
+    assert linear.level.observation_schema_hash != logarithmic.level.observation_schema_hash
+    assert linear.level.vfs_hash != logarithmic.level.vfs_hash
+    linear_affordances = linear.token_spec.get_type("affordance")
+    log_affordances = logarithmic.token_spec.get_type("affordance")
+    assert linear_affordances is not None and log_affordances is not None
+    assert any(
+        left != right
+        for left, right in zip(
+            linear_affordances.slot_context_payloads,
+            log_affordances.slot_context_payloads,
+            strict=True,
+        )
+    )
+    assert _fixed_meter_feature(linear, linear_row, "normalization_kind_minmax") == 1.0
+    assert _fixed_meter_feature(linear, linear_row, "normalization_kind_log_scaled") == 0.0
+    assert _fixed_meter_feature(logarithmic, log_row, "normalization_kind_minmax") == 0.0
+    assert _fixed_meter_feature(logarithmic, log_row, "normalization_kind_log_scaled") == 1.0
+
+
 # --------------------------------------------------------------------------------------
 # Per-meter normalization kinds (hamlet-3d3039f340, PDR-0054)
 # --------------------------------------------------------------------------------------
@@ -321,7 +391,7 @@ def test_clamp_and_validate_carries_compiled_bounds_rules(tmp_path: Path) -> Non
     a string in DEFAULT_TRANSITION_PHASES, with no rule family ever assigned to it.
     """
     universe = UniverseCompiler().compile(_pack(tmp_path, L1), primary_level=L1, use_cache=False)
-    schedule = universe.transition_schedule
+    schedule = universe.get_level(L1).transition_schedule
 
     bounds_rules = {rule.variable_id: rule for rule in schedule.bounds_clamp_program.rules}
     passive_rules = {rule.variable_id: rule for rule in schedule.passive_depletion_program.rules}

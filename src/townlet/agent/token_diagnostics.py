@@ -53,10 +53,10 @@ def per_type_encoder_grad_norms(network: TokenSetQNetwork) -> dict[str, float]:
     """
     norms: dict[str, float] = {}
     for type_name in network.token_type_names:
-        encoder = network.encoders[type_name]
+        encoder = network.encoder.encoders[type_name]
         assert isinstance(encoder, nn.Linear)
         total = 0.0
-        for parameter in (encoder.weight, encoder.bias, network.type_embeddings[type_name]):
+        for parameter in (encoder.weight, encoder.bias, network.encoder.type_embeddings[type_name]):
             if parameter.grad is not None:
                 total += float(parameter.grad.detach().pow(2).sum())
         norms[type_name] = math.sqrt(total)

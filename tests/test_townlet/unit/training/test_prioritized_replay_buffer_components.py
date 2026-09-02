@@ -1,9 +1,9 @@
-"""Tests for PrioritizedReplayBuffer reward component storage (format_version 3).
+"""Tests for PrioritizedReplayBuffer reward component storage (format_version 4).
 
 Task 5 from docs/plans/2025-11-28-reward-tensor-wiring-implementation.md:
 - Component storage and retrieval
-- Serialization format_version 3
-- Rejection of format_version < 3
+- Serialization format_version 4
+- Rejection of non-current format versions
 """
 
 import numpy as np
@@ -136,11 +136,11 @@ class TestRewardComponentStorage:
         assert buffer.rewards_shaping[3].item() == pytest.approx(3.0 * 0.2)
 
 
-class TestSerializationFormatVersion3:
-    """Test PER serialization with format_version 3."""
+class TestSerializationFormatVersion4:
+    """Test PER serialization with format_version 4."""
 
     def test_serialize_empty_buffer_has_version_3(self):
-        """Empty PER buffer should serialize with format_version 3."""
+        """Empty PER buffer should serialize with format_version 4."""
         buffer = PrioritizedReplayBuffer(
             capacity=10,
             alpha=0.6,
@@ -150,7 +150,7 @@ class TestSerializationFormatVersion3:
         )
         state = buffer.serialize()
 
-        assert state["format_version"] == 3
+        assert state["format_version"] == 4
         assert state["size_current"] == 0
         assert state["rewards_extrinsic"] is None
         assert state["rewards_intrinsic"] is None
@@ -182,7 +182,7 @@ class TestSerializationFormatVersion3:
 
         state = buffer.serialize()
 
-        assert state["format_version"] == 3
+        assert state["format_version"] == 4
         assert state["size_current"] == 5
         assert state["rewards_extrinsic"] is not None
         assert state["rewards_intrinsic"] is not None
@@ -242,7 +242,7 @@ class TestSerializationFormatVersion3:
 
 
 class TestLegacyFormatRejection:
-    """Test that format_version < 3 is rejected by PER."""
+    """Test that non-current format versions are rejected by PER."""
 
     def test_load_format_version_2_raises_error(self):
         """Loading format_version 2 should raise ValueError."""
@@ -272,7 +272,7 @@ class TestLegacyFormatRejection:
             "size_current": 5,
         }
 
-        with pytest.raises(ValueError, match="format_version < 3"):
+        with pytest.raises(ValueError, match="exact current format_version is 4"):
             buffer.load_from_serialized(old_format)
 
     def test_load_format_version_1_raises_error(self):
@@ -304,7 +304,7 @@ class TestLegacyFormatRejection:
             "size_current": 5,
         }
 
-        with pytest.raises(ValueError, match="format_version < 3"):
+        with pytest.raises(ValueError, match="exact current format_version is 4"):
             buffer.load_from_serialized(legacy_format)
 
     def test_load_missing_format_version_raises_error(self):
@@ -335,7 +335,7 @@ class TestLegacyFormatRejection:
             "size_current": 5,
         }
 
-        with pytest.raises(ValueError, match="format_version < 3"):
+        with pytest.raises(ValueError, match="exact current format_version is 4"):
             buffer.load_from_serialized(old_format)
 
 

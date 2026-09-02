@@ -17,12 +17,14 @@ Source files consolidated:
 Total: 38 tests → 15 comprehensive integration tests
 """
 
+import shutil
 import sqlite3
 import tempfile
 from pathlib import Path
 
 import pytest
 import torch
+import yaml
 
 from townlet.curriculum.adversarial import AdversarialCurriculum
 from townlet.curriculum.static import StaticCurriculum
@@ -31,7 +33,7 @@ from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
 from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
 from townlet.population.vectorized import VectorizedPopulation
 
-TRAIN_KWARGS = dict(train_frequency=1, batch_size=32, sequence_length=1, max_grad_norm=1.0, vision_window_size=5)
+TRAIN_KWARGS = dict(train_frequency=1, batch_size=32, sequence_length=1, max_grad_norm=1.0)
 LEVEL_NAME = "L0_test"
 
 
@@ -195,29 +197,29 @@ class TestPopulationCheckpointing:
             sequence_length=1,
             max_grad_norm=1.0,
             action_dim=basic_env.action_dim,
-            vision_window_size=5,
         )
 
         # Get checkpoint
         checkpoint = population.get_checkpoint_state()
 
-        # Verify required keys
-        required_keys = [
+        # Verify the exact current payload surface.
+        required_keys = {
             "version",
             "q_network",
             "optimizer",
+            "scheduler",
             "total_steps",
             "exploration_state",
+            "universe_metadata",
             "replay_buffer",
             "target_network",
             "training_step_counter",
-        ]
+        }
 
-        for key in required_keys:
-            assert key in checkpoint, f"Checkpoint missing required key: {key}"
+        assert set(checkpoint) == required_keys
 
         # Verify version
-        assert checkpoint["version"] >= 2, "Checkpoint version should be >= 2"
+        assert checkpoint["version"] == 5, "Population checkpoint must use the exact current format"
 
     def test_population_checkpoint_preserves_network_weights(self, cpu_device, test_config_pack_path, env_builder, minimal_brain_config):
         """Q-network weights should be exactly preserved across checkpoint cycle."""
@@ -251,7 +253,6 @@ class TestPopulationCheckpointing:
             sequence_length=1,
             max_grad_norm=1.0,
             action_dim=env.action_dim,
-            vision_window_size=5,
         )
 
         # Train for a bit to change weights
@@ -285,7 +286,6 @@ class TestPopulationCheckpointing:
             sequence_length=1,
             max_grad_norm=1.0,
             action_dim=env.action_dim,
-            vision_window_size=5,
         )
 
         pop2.load_checkpoint_state(checkpoint)
@@ -325,7 +325,6 @@ class TestPopulationCheckpointing:
             sequence_length=1,
             max_grad_norm=1.0,
             action_dim=env.action_dim,
-            vision_window_size=5,
         )
 
         # Fill replay buffer with experiences
@@ -354,7 +353,6 @@ class TestPopulationCheckpointing:
             sequence_length=1,
             max_grad_norm=1.0,
             action_dim=env.action_dim,
-            vision_window_size=5,
         )
 
         # Before load, buffer should be empty
@@ -402,7 +400,7 @@ class TestCurriculumCheckpointing:
         original_steps = curriculum1.tracker.steps_at_stage.clone()
 
         # Save state
-        state = curriculum1.state_dict()
+        state = curriculum1.checkpoint_state()
 
         # Create new curriculum and load
         curriculum2 = AdversarialCurriculum(
@@ -416,7 +414,7 @@ class TestCurriculumCheckpointing:
         assert torch.all(curriculum2.tracker.agent_stages == 1), "Fresh curriculum should start all agents at stage 1"
 
         # Load saved state
-        curriculum2.load_state_dict(state)
+        curriculum2.load_state(state)
 
         # Verify stages restored
         assert torch.equal(curriculum2.tracker.agent_stages, original_stages), "Agent stages should be restored"
@@ -438,7 +436,7 @@ class TestCurriculumCheckpointing:
             curriculum1.tracker.update_step(rewards, dones)
 
         # Save state
-        state = curriculum1.state_dict()
+        state = curriculum1.checkpoint_state()
 
         # Create new curriculum and load
         curriculum2 = AdversarialCurriculum(
@@ -449,7 +447,7 @@ class TestCurriculumCheckpointing:
         _init_curriculum(curriculum2, 2)
 
         # Load saved state
-        curriculum2.load_state_dict(state)
+        curriculum2.load_state(state)
 
         # Verify history is preserved (check that recent episodes match)
         assert (
@@ -607,7 +605,6 @@ class TestRunnerCheckpointing:
                     sequence_length=1,
                     max_grad_norm=1.0,
                     action_dim=runner.env.action_dim,
-                    vision_window_size=5,
                 )
 
                 # Save checkpoint
@@ -663,7 +660,6 @@ class TestRunnerCheckpointing:
                     sequence_length=1,
                     max_grad_norm=1.0,
                     action_dim=runner1.env.action_dim,
-                    vision_window_size=5,
                 )
                 runner1.current_episode = 42
                 runner1.save_checkpoint()
@@ -692,7 +688,6 @@ class TestRunnerCheckpointing:
                     sequence_length=1,
                     max_grad_norm=1.0,
                     action_dim=runner2.env.action_dim,
-                    vision_window_size=5,
                 )
                 runner2.load_checkpoint()
                 assert runner2.current_episode == 42, "Episode number should be preserved after load"
@@ -734,7 +729,6 @@ class TestRunnerCheckpointing:
                     sequence_length=1,
                     max_grad_norm=1.0,
                     action_dim=runner1.env.action_dim,
-                    vision_window_size=5,
                 )
 
                 runner1.population.reset()
@@ -773,7 +767,6 @@ class TestRunnerCheckpointing:
                     sequence_length=1,
                     max_grad_norm=1.0,
                     action_dim=runner2.env.action_dim,
-                    vision_window_size=5,
                 )
 
                 runner2.load_checkpoint()
@@ -933,7 +926,7 @@ class TestCheckpointRoundTrip:
         env_affordances = env.get_affordance_positions()
 
         pop_checkpoint = population.get_checkpoint_state()
-        curriculum_state = curriculum.state_dict()
+        curriculum_state = curriculum.checkpoint_state()
         exploration_state = exploration.checkpoint_state()
 
         # Create fresh components
@@ -967,7 +960,7 @@ class TestCheckpointRoundTrip:
         env2.set_affordance_positions(env_affordances)
 
         population2.load_checkpoint_state(pop_checkpoint)
-        curriculum2.load_state_dict(curriculum_state)
+        curriculum2.load_state(curriculum_state)
         exploration2.load_state(exploration_state)
 
         # Verify consistency across components
@@ -993,7 +986,7 @@ class TestCheckpointRoundTrip:
 class TestVariableMeterCheckpoints:
     """Test checkpoint saving/loading with variable meter universes.
 
-    Verifies that checkpoints include meter metadata and validate compatibility.
+    Verifies that checkpoints include meter metadata and validate exact identity.
     """
 
     def test_checkpoint_includes_meter_metadata(self, cpu_device, task001_env_4meter, minimal_brain_config):
@@ -1033,9 +1026,12 @@ class TestVariableMeterCheckpoints:
         assert "meter_names" in metadata, "Metadata should contain meter_names"
         assert "version" in metadata, "Metadata should contain version"
         assert "obs_dim" in metadata, "Metadata should contain obs_dim"
+        assert "observation_schema_hash" in metadata, "Metadata should contain selected-level observation identity"
 
         # Verify values
+        assert checkpoint["version"] == 5
         assert metadata["meter_count"] == 4, f"Should have 4 meters, got {metadata['meter_count']}"
+        assert metadata["observation_schema_hash"] == task001_env_4meter.level.observation_schema_hash
         assert list(metadata["meter_names"]) == [
             "energy",
             "health",
@@ -1070,6 +1066,11 @@ class TestVariableMeterCheckpoints:
 
         # Verify checkpoint has correct metadata
         assert checkpoint_4meter["universe_metadata"]["meter_count"] == 4
+
+        # Isolate the inner count guard: exact-resume validation normally refuses this
+        # foreign checkpoint at the stronger selected-level semantic identity boundary.
+        checkpoint_4meter["universe_metadata"]["observation_schema_hash"] = basic_env.level.observation_schema_hash
+        checkpoint_4meter["universe_metadata"]["action_dim"] = basic_env.action_dim
 
         # Try to load into 8-meter environment (should fail)
         curriculum2 = StaticCurriculum(
@@ -1142,6 +1143,133 @@ class TestVariableMeterCheckpoints:
         # Verify metadata matched
         assert checkpoint["universe_metadata"]["meter_count"] == 4
 
+    @pytest.mark.parametrize(
+        ("mutation", "message"),
+        (
+            pytest.param(lambda checkpoint: checkpoint.__setitem__("version", 2), "population checkpoint version", id="wrong-version"),
+            pytest.param(
+                lambda checkpoint: checkpoint["universe_metadata"].pop("observation_schema_hash"),
+                "universe_metadata key set mismatch",
+                id="missing-observation-schema-hash",
+            ),
+            pytest.param(
+                lambda checkpoint: checkpoint["universe_metadata"].__setitem__("observation_schema_hash", "0" * 64),
+                "observation_schema_hash mismatch",
+                id="mismatched-observation-schema-hash",
+            ),
+            pytest.param(
+                lambda checkpoint: checkpoint["universe_metadata"].pop("action_dim"),
+                "universe_metadata key set mismatch",
+                id="missing-action-dim",
+            ),
+            pytest.param(
+                lambda checkpoint: checkpoint["universe_metadata"].__setitem__("action_dim", -1),
+                "action_dim mismatch",
+                id="mismatched-action-dim",
+            ),
+        ),
+    )
+    def test_population_checkpoint_refuses_foreign_or_incomplete_observation_identity(
+        self,
+        cpu_device,
+        task001_env_4meter,
+        minimal_brain_config,
+        mutation,
+        message: str,
+    ) -> None:
+        """The direct population API is an exact-resume boundary, not a same-width transfer path."""
+        curriculum = AdversarialCurriculum(max_steps_per_episode=100)
+        _init_curriculum(curriculum, 1)
+        population = VectorizedPopulation(
+            env=task001_env_4meter,
+            curriculum=curriculum,
+            exploration=EpsilonGreedyExploration(),
+            agent_ids=["agent_0"],
+            device=cpu_device,
+            obs_dim=task001_env_4meter.observation_dim,
+            brain_config=minimal_brain_config,
+            action_dim=task001_env_4meter.action_dim,
+            **TRAIN_KWARGS,
+        )
+        checkpoint = population.get_checkpoint_state()
+        mutation(checkpoint)
+
+        with pytest.raises(ValueError, match=message):
+            population.load_checkpoint_state(checkpoint)
+
+    def test_population_checkpoint_uses_selected_level_identity_before_loading_state(
+        self,
+        cpu_device,
+        compile_universe,
+        minimal_brain_config,
+        tmp_path: Path,
+    ) -> None:
+        """A non-primary level with equal width but changed semantics must refuse an exact resume."""
+        primary_level = "L0_4meter"
+        selected_level = "L1_changed_initial"
+        pack = tmp_path / "selected-level-checkpoint"
+        shutil.copytree(Path("configs/test/model_config_4meter"), pack)
+        shutil.copytree(pack / "levels" / primary_level, pack / "levels" / selected_level)
+
+        experiment_path = pack / "experiment.yaml"
+        experiment = yaml.safe_load(experiment_path.read_text())
+        experiment["experiment"]["curriculum_levels"].append(selected_level)
+        experiment_path.write_text(yaml.safe_dump(experiment, sort_keys=False))
+
+        bars_path = pack / "levels" / selected_level / "bars.yaml"
+        bars = yaml.safe_load(bars_path.read_text())
+        bars["bars"]["meters"][0]["initial"] = 0.25
+        bars_path.write_text(yaml.safe_dump(bars, sort_keys=False))
+
+        universe = compile_universe(pack, primary_level=primary_level)
+        source_env = universe.create_environment(num_agents=1, level_name=primary_level, device=cpu_device)
+        target_env = universe.create_environment(num_agents=1, level_name=selected_level, device=cpu_device)
+
+        assert source_env.observation_dim == target_env.observation_dim
+        assert source_env.level.layout_hash == target_env.level.layout_hash
+        assert source_env.level.observation_schema_hash != target_env.level.observation_schema_hash
+        primary = universe.get_level(universe.metadata.primary_level)
+        assert primary.observation_schema_hash == source_env.level.observation_schema_hash
+
+        source_curriculum = AdversarialCurriculum(max_steps_per_episode=100)
+        _init_curriculum(source_curriculum, 1)
+        source_population = VectorizedPopulation(
+            env=source_env,
+            curriculum=source_curriculum,
+            exploration=EpsilonGreedyExploration(),
+            agent_ids=["agent_0"],
+            device=cpu_device,
+            obs_dim=source_env.observation_dim,
+            brain_config=minimal_brain_config,
+            action_dim=source_env.action_dim,
+            **TRAIN_KWARGS,
+        )
+        target_curriculum = AdversarialCurriculum(max_steps_per_episode=100)
+        _init_curriculum(target_curriculum, 1)
+        target_population = VectorizedPopulation(
+            env=target_env,
+            curriculum=target_curriculum,
+            exploration=EpsilonGreedyExploration(),
+            agent_ids=["agent_0"],
+            device=cpu_device,
+            obs_dim=target_env.observation_dim,
+            brain_config=minimal_brain_config,
+            action_dim=target_env.action_dim,
+            **TRAIN_KWARGS,
+        )
+
+        checkpoint = source_population.get_checkpoint_state()
+        assert checkpoint["universe_metadata"]["observation_schema_hash"] == source_env.level.observation_schema_hash
+        changed_parameter = next(iter(checkpoint["q_network"]))
+        checkpoint["q_network"][changed_parameter] = torch.full_like(checkpoint["q_network"][changed_parameter], 7)
+        target_weights_before = {name: value.clone() for name, value in target_population.q_network.state_dict().items()}
+
+        with pytest.raises(ValueError, match="observation_schema_hash mismatch"):
+            target_population.load_checkpoint_state(checkpoint)
+
+        target_weights_after = target_population.q_network.state_dict()
+        assert all(torch.equal(target_weights_after[name], value) for name, value in target_weights_before.items())
+
     def test_checkpoint_rejects_missing_universe_metadata(self, cpu_device, basic_env, minimal_brain_config):
         """Checkpoints without universe_metadata should be strictly rejected (pre-release, 0 users)."""
         # Create a real checkpoint first to get proper network state
@@ -1161,12 +1289,12 @@ class TestVariableMeterCheckpoints:
             **TRAIN_KWARGS,
         )
 
-        # Get a real checkpoint and remove universe_metadata to simulate legacy
+        # Get a real checkpoint and remove a required current-format field.
         checkpoint = population.get_checkpoint_state()
-        legacy_checkpoint = {k: v for k, v in checkpoint.items() if k != "universe_metadata"}
+        incomplete_checkpoint = {k: v for k, v in checkpoint.items() if k != "universe_metadata"}
 
         # Verify universe_metadata was removed
-        assert "universe_metadata" not in legacy_checkpoint
+        assert "universe_metadata" not in incomplete_checkpoint
 
         # Create new population
         curriculum2 = AdversarialCurriculum(max_steps_per_episode=100)
@@ -1187,7 +1315,7 @@ class TestVariableMeterCheckpoints:
 
         # Loading checkpoint without universe_metadata should raise ValueError
         with pytest.raises(ValueError) as exc_info:
-            population2.load_checkpoint_state(legacy_checkpoint)
+            population2.load_checkpoint_state(incomplete_checkpoint)
 
         # Verify error message provides clear guidance
         error_msg = str(exc_info.value)

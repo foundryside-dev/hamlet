@@ -13,7 +13,7 @@ from townlet.curriculum.static import StaticCurriculum
 from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
 from townlet.population.vectorized import VectorizedPopulation
 
-TRAIN_KWARGS = dict(train_frequency=4, batch_size=16, sequence_length=1, max_grad_norm=1.0, vision_window_size=5)
+TRAIN_KWARGS = dict(train_frequency=4, batch_size=16, sequence_length=1, max_grad_norm=1.0)
 
 
 class TestRNDLossTracking:

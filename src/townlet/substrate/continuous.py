@@ -43,7 +43,6 @@ class ContinuousSubstrate(SpatialSubstrate):
         interaction_radius: float,
         action_discretization: dict[str, int],
         distance_metric: Literal["euclidean", "manhattan", "chebyshev"],
-        observation_encoding: Literal["relative", "scaled", "absolute"],
     ):
         """Initialize continuous substrate.
 
@@ -56,7 +55,6 @@ class ContinuousSubstrate(SpatialSubstrate):
             action_discretization: Discretized action config {'num_directions': 8-32, 'num_magnitudes': 3-7}.
                 Required; no defaults are applied.
             distance_metric: Distance calculation method (euclidean, manhattan, chebyshev). Required; no defaults are applied.
-            observation_encoding: Position encoding strategy ("relative", "scaled", "absolute"). Required; no defaults are applied.
         """
         if not isinstance(action_discretization, dict) or not action_discretization:
             raise ValueError(
@@ -112,7 +110,6 @@ class ContinuousSubstrate(SpatialSubstrate):
         self.movement_delta = movement_delta
         self.interaction_radius = interaction_radius
         self.distance_metric = distance_metric
-        self.observation_encoding = observation_encoding
         self.action_discretization = action_discretization
         self._cached_actions: list[ActionConfig] | None = None  # Cache for get_default_actions()
 
@@ -291,15 +288,8 @@ class ContinuousSubstrate(SpatialSubstrate):
         """
         return positions
 
-    @property
-    def supports_partial_vision(self) -> bool:
-        return False
-
-    def get_vision_radius(self, vision_range: float) -> int:
-        raise ValueError("Continuous substrates do not support partial vision; no vision radius exists.")
-
     def normalize_positions(self, positions: torch.Tensor) -> torch.Tensor:
-        """Normalize positions to [0, 1] range (always relative encoding).
+        """Normalize positions to the canonical [0, 1] coordinate range.
 
         Args:
             positions: [num_agents, position_dim] positions
@@ -335,14 +325,12 @@ class ContinuousSubstrate(SpatialSubstrate):
         return combine_metric(deltas.abs(), self.distance_metric) <= radius
 
     def egocentric_delta(self, self_pos: torch.Tensor, entity_pos: torch.Tensor) -> torch.Tensor:
-        """entity − self per axis, shortest path under wrap, normalized per encoding mode."""
+        """Bounded entity − self per axis, using the shortest path under wrap."""
         require_position_batch(self_pos, self.position_dim, argument="self_pos")
         require_position_batch(entity_pos, self.position_dim, argument="entity_pos")
         wrap = self._token_axis_extents(self_pos.device) if self.boundary == "wrap" else None
         deltas = pairwise_axis_deltas(self_pos, entity_pos, wrap)
-        if self.observation_encoding == "relative":
-            deltas = deltas / self._token_axis_extents(deltas.device)
-        return deltas
+        return deltas / self._token_axis_extents(deltas.device)
 
     def get_all_positions(self) -> list[list[float]]:
         """Raise error - continuous space has infinite positions."""
@@ -398,7 +386,6 @@ class Continuous1DSubstrate(ContinuousSubstrate):
         interaction_radius: float,
         action_discretization: dict[str, int],
         distance_metric: Literal["euclidean", "manhattan", "chebyshev"],
-        observation_encoding: Literal["relative", "scaled", "absolute"],
     ):
         super().__init__(
             dimensions=1,
@@ -408,7 +395,6 @@ class Continuous1DSubstrate(ContinuousSubstrate):
             interaction_radius=interaction_radius,
             action_discretization=action_discretization,
             distance_metric=distance_metric,
-            observation_encoding=observation_encoding,
         )
         self.min_x = min_x
         self.max_x = max_x
@@ -475,7 +461,6 @@ class Continuous2DSubstrate(ContinuousSubstrate):
         interaction_radius: float,
         action_discretization: dict[str, int],
         distance_metric: Literal["euclidean", "manhattan", "chebyshev"],
-        observation_encoding: Literal["relative", "scaled", "absolute"],
     ):
         super().__init__(
             dimensions=2,
@@ -485,7 +470,6 @@ class Continuous2DSubstrate(ContinuousSubstrate):
             interaction_radius=interaction_radius,
             action_discretization=action_discretization,
             distance_metric=distance_metric,
-            observation_encoding=observation_encoding,
         )
         self.min_x = min_x
         self.max_x = max_x
@@ -630,7 +614,6 @@ class Continuous3DSubstrate(ContinuousSubstrate):
         interaction_radius: float,
         action_discretization: dict[str, int],
         distance_metric: Literal["euclidean", "manhattan", "chebyshev"],
-        observation_encoding: Literal["relative", "scaled", "absolute"],
     ):
         super().__init__(
             dimensions=3,
@@ -640,7 +623,6 @@ class Continuous3DSubstrate(ContinuousSubstrate):
             interaction_radius=interaction_radius,
             action_discretization=action_discretization,
             distance_metric=distance_metric,
-            observation_encoding=observation_encoding,
         )
         self.min_x = min_x
         self.max_x = max_x

@@ -214,23 +214,17 @@ class CommandExecutor:
         else:
             raise ValueError(f"Invalid target: {target_value}")
 
-        # Spawn effect via EffectManager
-        # Note: scope hardcoded to AGENT for now (can extend later)
-        from townlet.config.effects_config import EffectScope
-
+        # Spawn effect via EffectManager using the catalog definition's authoritative scope.
         if command.effect_id is None:
             raise ValueError("spawn_effect command requires 'effect_id'")
 
-        effect_def = context.effect_manager.catalog.get(command.effect_id)
-        resolved_duration = command.duration if command.duration is not None else effect_def.duration
+        context.effect_manager.catalog.get(command.effect_id)
         if command.intensity is None:
             raise ValueError("spawn_effect command requires intensity")
 
         context.effect_manager.spawn_effect(
             effect_id=command.effect_id,
             target_entity_id=target_idx,
-            scope=EffectScope.AGENT,
-            duration=resolved_duration,
             intensity=command.intensity,
             current_step=context.effect_manager.current_step,
             bars=context.bars,

@@ -62,7 +62,7 @@ class TestItemTypeConfigValidation:
             )
 
     def test_interactions_require_known_commands(self):
-        with pytest.raises(ValidationError, match="Command must have one of"):
+        with pytest.raises(ValidationError, match="Extra inputs are not permitted"):
             ItemInteractionsConfig(on_pickup=[{"noop": True}], on_use=[], on_drop=[])
 
     def test_initial_state_allows_various_types(self):
@@ -156,9 +156,13 @@ class TestItemAppearanceRuleConfigValidation:
         with pytest.raises(ValidationError):
             self._rule(spawn_count=-1)
 
-    def test_spawn_interval_ge_1(self):
-        with pytest.raises(ValidationError):
-            self._rule(spawn_interval=0)
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        (("spawn_interval", 1), ("spawn_position", "random")),
+    )
+    def test_legacy_spawn_fields_are_rejected(self, field: str, value: object):
+        with pytest.raises(ValidationError, match="Extra inputs are not permitted"):
+            self._rule(**{field: value})
 
     def test_max_total_ge_1(self):
         with pytest.raises(ValidationError):

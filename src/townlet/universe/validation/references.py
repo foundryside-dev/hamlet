@@ -136,7 +136,7 @@ def validate_dac_references(
 
     for idx, shaping in enumerate(dac_config.shaping):
         if shaping.type == "approach_reward":
-            target_aff = getattr(shaping, "target_affordance", None) or getattr(shaping, "target", None)
+            target_aff = shaping.target_affordance
             if target_aff and target_aff not in symbol_table.affordances:
                 errors.add(
                     CompilationMessage(

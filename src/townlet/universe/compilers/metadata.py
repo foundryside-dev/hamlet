@@ -63,27 +63,12 @@ class MetadataCompiler:
         """Affordance metadata derived from per-level affordances.yaml."""
         infos: list[AffordanceInfo] = []
         for aff in affordances.affordances:
-            effects_dict = {}
-            if aff.interactions and "on_start" in aff.interactions:
-                for cmd in aff.interactions["on_start"]:
-                    modify = getattr(cmd, "modify", None)
-                    if isinstance(modify, str) and modify.startswith("target.bar."):
-                        meter_name = modify.split(".")[-1]
-                        value_field = getattr(cmd, "value", None)
-                        if isinstance(value_field, str) and "+" in value_field:
-                            try:
-                                value_part = value_field.split("+")[-1].strip()
-                                effects_dict[meter_name] = float(value_part)
-                            except (ValueError, IndexError):
-                                pass
-
             infos.append(
                 AffordanceInfo(
                     id=aff.name,
                     name=aff.name,
                     enabled=True,
-                    effects=effects_dict,
-                    cost=float(aff.costs.get("money", 0.0)) if hasattr(aff, "costs") else 0.0,
+                    cost=float(aff.costs["money"]) if "money" in aff.costs else 0.0,
                     category=None,
                     description="",
                     position=None,
@@ -107,21 +92,19 @@ class MetadataCompiler:
         affordance_id_to_index = {a.id: idx for idx, a in enumerate(primary_meta.affordance_metadata.affordances)}
 
         # Shape facts come from the substrate instance, not substrate.type
-        # switches (WS-7 first knockdown, PDR-0035 — this function's old
-        # `grid_size = width` silently discarded height, assessment §3).
+        # switches. Axis dimensions stay on that instance; this summary carries
+        # only the exact finite-cell count.
         substrate_cfg = raw.stratum.stratum.substrate
         substrate_type = substrate_cfg.type
         substrate_instance = SubstrateFactory.build(substrate_cfg, torch.device("cpu"))
         position_dim = substrate_instance.position_dim
+        if primary_meta.token_spec.position_rank != position_dim:
+            raise ValueError(
+                f"Compiled TokenSpec position_rank {primary_meta.token_spec.position_rank} disagrees with "
+                f"substrate position_dim {position_dim} for level {primary_meta.level_name!r}"
+            )
         # Finite substrates report their cell count; continuous/aspatial None.
         grid_cells = substrate_instance.get_capacity() if position_dim else None
-        # grid_size is the SQUARE display size legacy consumers expect
-        # (demo runner, recording). A non-square grid has no such number —
-        # None, honestly, rather than width masquerading as both axes.
-        width = getattr(substrate_instance, "width", None)
-        height = getattr(substrate_instance, "height", None)
-        grid_size = width if width is not None and width == height else None
-
         curriculum_day_length = primary_meta.curriculum.curriculum.day_length
         temporal_supported = raw.stratum.stratum.temporal_support == "enabled"
         temporal_active = primary_meta.curriculum.curriculum.active_temporal
@@ -185,7 +168,6 @@ class MetadataCompiler:
             num_zones=(raw.vfs_extents.num_zones or 0) if raw.vfs_extents is not None else 0,
             num_groups=(raw.vfs_extents.num_groups or 0) if raw.vfs_extents is not None else 0,
             num_message_slots=(raw.vfs_extents.num_message_slots or 0) if raw.vfs_extents is not None else 0,
-            grid_size=grid_size,
             grid_cells=grid_cells,
             ticks_per_day=ticks_per_day,
             config_version=config_version,

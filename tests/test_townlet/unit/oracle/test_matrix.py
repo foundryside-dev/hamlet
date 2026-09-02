@@ -20,12 +20,11 @@ LEVELS = (
 
 # Deliberately DUPLICATED from matrix.py, not imported: these are pins. A
 # matrix edit that changes a block must consciously move the pin too.
-# The differential packs entered as the DIV-003 crash cells (signatures
-# re-verified at oracle-2026-08-13); DIV-003 retired when the oracle moved
-# forward to oracle-2026-08-17 (4222a917, PDR-0074), so they are now plain
-# standing cells and carry no signature.
+# The cubic and rectangular differential packs entered as DIV-003 crash cells.
+# boundary_wrap replaced the deleted observation-encoding axis; all three are
+# plain standing cells and carry no signature.
 _DIFFERENTIAL_LEVELS = {
-    "div003_scaled": "L1_full_observability",
+    "boundary_wrap": "L1_full_observability",
     "div003_cubic_partial": "L2_partial_observability",
     "div003_rect": "L1_full_observability",
 }
@@ -182,7 +181,12 @@ def test_standing_and_differential_cells_bind_div010_and_div008_narrowly() -> No
     and `vfs_hash` — measured by two-worktree probe (11dee204 vs HEAD) and confirmed
     per-commit as the tick-injection commit's own movement. Every standing and differential
     cell binds this as a second, composing entry alongside DIV-009, and unit 3's token cut
-    (DIV-008) composes third — exactly three entries total on these sixteen cells.
+    (DIV-008) composes third, plus a fourth (DIV-012) on all sixteen standing+differential
+    cells (2026-09-02, unit 5 `day_phase`, full cpu-matrix run 20260902-100802):
+    `affordances_hash`, `brain_hash`, `environment_hash`, `stratum_hash`, each bisected to
+    its own causing commit (94656527, c6c6b524 twice, d554fb7f) — see
+    docs/oracle/known-divergences.md#div-012 for the per-field bisection and cell table.
+    Four entries total on all sixteen cells.
 
     DIV-011 is GONE from the binding: it retired into DIV-008 by its own pre-registered
     condition, and its two token hashes are declared under DIV-008 now (2026-08-26)."""
@@ -195,7 +199,15 @@ def test_standing_and_differential_cells_bind_div010_and_div008_narrowly() -> No
         assert not [
             d for d in c.hash_divergences if d.register_ref == "DIV-011"
         ], f"{c.cell_id} still binds DIV-011, which retired into DIV-008"
-        assert len(c.hash_divergences) == 3, f"{c.cell_id} should bind exactly DIV-009 + DIV-010 + DIV-008"
+        div012 = [d for d in c.hash_divergences if d.register_ref == "DIV-012"]
+        assert len(div012) == 1, f"{c.cell_id} does not bind exactly one DIV-012 entry"
+        assert div012[0].declared == {
+            "affordances_hash",
+            "brain_hash",
+            "environment_hash",
+            "stratum_hash",
+        }, f"{c.cell_id}: DIV-012 hash_fields do not match measurement"
+        assert len(c.hash_divergences) == 4, f"{c.cell_id} should bind exactly DIV-009 + DIV-010 + DIV-012 + DIV-008"
 
 
 def test_every_cell_binds_div008_hash_and_stream_narrowly() -> None:
@@ -295,15 +307,26 @@ def test_profile_variable_cells_bind_div010_narrowly() -> None:
     primitives), declared under both entries, legal per the union-exact composing rule since
     each entry's own fields still all move. The tick injection is unconditional, so DIV-010's
     set here is identical to its set on the standing/differential cells, unlike DIV-009's
-    profile-narrowed set; so is DIV-008's. Each profile cell binds exactly three entries:
-    DIV-009, DIV-010, DIV-008."""
+    profile-narrowed set; so is DIV-008's. Each profile cell additionally binds
+    `_DIV012_PROFILE` (2026-09-02, unit 5 `day_phase`, full cpu-matrix run 20260902-100802):
+    `brain_hash`, `environment_hash`, `stratum_hash` — the same three of DIV-012's four causes
+    that move here; `affordances_hash` measurably does NOT move on these two packs, so the
+    narrower object (not `_DIV012`) is bound, per the union-exact rule. Four entries total:
+    DIV-009, DIV-010, DIV-012, DIV-008."""
     profile = [c for c in default_cells() if c.params.pack in _PROFILE_VARIABLE_CELLS]
     assert len(profile) == 4
     for c in profile:
         div010 = [d for d in c.hash_divergences if d.register_ref == "DIV-010"]
         assert len(div010) == 1, f"{c.cell_id} does not bind exactly one DIV-010 entry"
         assert div010[0].declared == {"variable_schema_hash", "vfs_hash"}
-        assert len(c.hash_divergences) == 3, f"{c.cell_id} should bind exactly DIV-009 + DIV-010 + DIV-008"
+        div012 = [d for d in c.hash_divergences if d.register_ref == "DIV-012"]
+        assert len(div012) == 1, f"{c.cell_id} does not bind exactly one DIV-012 entry"
+        assert div012[0].declared == {
+            "brain_hash",
+            "environment_hash",
+            "stratum_hash",
+        }, f"{c.cell_id}: DIV-012 hash_fields do not match measurement (profile cells exclude affordances_hash)"
+        assert len(c.hash_divergences) == 4, f"{c.cell_id} should bind exactly DIV-009 + DIV-010 + DIV-012 + DIV-008"
 
 
 def test_differential_cells_run_their_declared_levels() -> None:

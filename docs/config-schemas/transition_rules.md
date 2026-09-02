@@ -4,7 +4,7 @@
 >
 > One caveat, not a defect: the example variables `trust`, `observer_mask` and `chosen_action`
 > are **not declared in `configs/default_curriculum`**. Pair-scoped `trust` ships only in
-> `configs/L5_multi_agent` and `configs/trial_o_bidding_blind`; `observer_mask` and
+> `configs/L5_multi_agent` (`configs/trial_o_bidding_blind` was deleted 2026-09-02, `PDR-0142`); `observer_mask` and
 > `chosen_action` have no config hits anywhere. Read them as illustrative names, and declare
 > your own before copying an example.
 

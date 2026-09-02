@@ -69,7 +69,7 @@ banner in `low_energy_delerium.md` — it corrects `CLAUDE.md` on this point.
 
 | Doc | The lesson |
 |---|---|
-| [`from_potato_to_attention.md`](from_potato_to_attention.md) | Why flat concatenation limits relational reasoning. **Still live** — `SetEncoderQNetwork` / `TokenSetQNetwork` are this argument's descendants |
+| [`from_potato_to_attention.md`](from_potato_to_attention.md) | Why flat concatenation limits relational reasoning. **Still live** — `TokenSetQNetwork` is this argument's shipped descendant |
 | [`complexity_types.md`](complexity_types.md) | Non-stationarity and context-dependence, not dimensionality, drive sample complexity |
 
 ## Pedagogy

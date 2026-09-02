@@ -6,73 +6,73 @@ environment:
       description: "Physical energy for movement and actions"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
 
     - name: health
       description: "Physical health, death at 0"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
 
     - name: satiation
       description: "Hunger level, affects health cascade"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
 
     - name: hygiene
       description: "Cleanliness, affects mood and social"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
 
     - name: money
       description: "Economic resource for purchasing"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
 
     - name: fitness
       description: "Physical conditioning from exercise"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
 
     - name: mood
       description: "Mental state, affects energy cascade"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
 
     - name: social
       description: "Social connection level"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
 
     - name: reputation
       description: "Social reputation"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
 
     - name: skill
       description: "Professional skill level"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
 
     - name: spirituality
       description: "Spiritual wellbeing"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
 
     - name: community_trust
       description: "Community trust level"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
 
   cascade_graph:
     - source: satiation

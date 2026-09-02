@@ -19,7 +19,6 @@ def _make_population(env, curriculum, exploration, agent_ids, brain_config, **ov
     params = {
         "obs_dim": env.observation_dim,
         "action_dim": env.action_dim,
-        "vision_window_size": 5,
         "train_frequency": 1,
         "batch_size": 8,
         "sequence_length": 1,
@@ -100,7 +99,7 @@ class TestRecurrentNetworkInitialization:
             curriculum=curriculum,
             exploration=exploration,
             agent_ids=["agent_0", "agent_1"],
-            brain_config=recurrent_brain_config,  # Use RecurrentSpatialQNetwork
+            brain_config=recurrent_brain_config,
             batch_size=8,
             sequence_length=10,  # Sequence length for LSTM training
         )
@@ -142,10 +141,10 @@ class TestRecurrentNetworkInitialization:
         population.reset()
 
         # Verify the network is recurrent and the POPULATION owns the memory
-        from townlet.agent.networks import RecurrentSpatialQNetwork
+        from townlet.agent.networks import RecurrentTokenQNetwork
 
         recurrent_network = population.q_network
-        assert isinstance(recurrent_network, RecurrentSpatialQNetwork)
+        assert isinstance(recurrent_network, RecurrentTokenQNetwork)
 
         assert population.rollout_hidden is not None, "Rollout memory should be seeded"
 
@@ -516,8 +515,8 @@ class TestSnapshotAndMetrics:
         # Verify tracker exists and was initialized
         assert curriculum.tracker is not None, "Tracker should be initialized"
 
-    def test_recurrent_network_reads_the_compiled_token_blocks(self, temporal_env, recurrent_brain_config, cpu_device):
-        """VectorizedPopulation wires the compiled TokenSpec's per-type blocks into the network."""
+    def test_recurrent_network_uses_the_compiled_token_schema(self, temporal_env, recurrent_brain_config, cpu_device):
+        """VectorizedPopulation composes recurrence over the compiled token encoder."""
         from townlet.curriculum.static import StaticCurriculum
         from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
 
@@ -541,21 +540,12 @@ class TestSnapshotAndMetrics:
         assert population.is_recurrent is True
         q_net = population.q_network
 
-        # Post-cut the network is a token-BLOCK reader: its meter/affordance/position
-        # slices ARE the compiled per-type serialization blocks, and there is no spatial
-        # window in a token observation (grid_slice is the API's "no window" None, which
-        # is what a full-observability universe produced before the cut too).
-        from townlet.agent.network_factory import NetworkFactory
+        from townlet.agent.networks import RecurrentTokenQNetwork, TokenSetEncoder
 
-        blocks = NetworkFactory.token_block_slices(env.token_spec)
-        assert q_net._grid_slice is None
-        assert q_net._meters_slice == blocks["meter"]
-        assert q_net._affordance_slice == blocks["affordance"]
-        assert q_net._position_slice == blocks["self"]
-
-        # Temporal mechanics enabled in env should toggle temporal features on.
-        assert getattr(env, "enable_temporal_mechanics", False) is True
-        assert getattr(q_net, "enable_temporal_features", False) is True
+        assert isinstance(q_net, RecurrentTokenQNetwork)
+        assert isinstance(q_net.encoder, TokenSetEncoder)
+        assert q_net.encoder.obs_dim == env.token_spec.total_dims
+        assert q_net.token_type_names == tuple(t.type_name for t in env.token_spec.types if t.capacity > 0)
 
     def test_get_training_metrics_returns_dict(self, cpu_env_factory, cpu_device, minimal_brain_config):
         """get_training_metrics() should return metrics dictionary.

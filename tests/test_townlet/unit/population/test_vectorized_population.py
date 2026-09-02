@@ -1,6 +1,10 @@
 """Tests for VectorizedPopulation Double DQN configuration."""
 
+from copy import deepcopy
+
+import numpy as np
 import pytest
+import torch
 
 from townlet.config.brain_config import (
     ArchitectureConfig,
@@ -12,7 +16,32 @@ from townlet.config.brain_config import (
     ReplayConfig,
     ScheduleConfig,
 )
+from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
+from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
+from townlet.exploration.rnd import RNDExploration
 from townlet.population.vectorized import VectorizedPopulation
+from townlet.training.state import RewardTensor
+
+POPULATION_CHECKPOINT_KEYS = {
+    "version",
+    "q_network",
+    "optimizer",
+    "scheduler",
+    "total_steps",
+    "exploration_state",
+    "universe_metadata",
+    "target_network",
+    "training_step_counter",
+    "replay_buffer",
+}
+POPULATION_UNIVERSE_METADATA_KEYS = {
+    "meter_count",
+    "meter_names",
+    "version",
+    "obs_dim",
+    "observation_schema_hash",
+    "action_dim",
+}
 
 
 def _make_population(
@@ -28,7 +57,6 @@ def _make_population(
     params = {
         "obs_dim": env.observation_dim,
         "action_dim": env.action_dim,
-        "vision_window_size": 5,
         "train_frequency": 1,
         "batch_size": 32,
         "sequence_length": 1,
@@ -44,6 +72,39 @@ def _make_population(
         brain_config=brain_config,
         **params,
     )
+
+
+def _population_runtime_snapshot(population) -> dict:
+    return deepcopy(
+        {
+            "q_network": population.q_network.state_dict(),
+            "target_network": population.target_network.state_dict(),
+            "optimizer": population.optimizer.state_dict(),
+            "scheduler": population.scheduler.state_dict() if population.scheduler is not None else None,
+            "total_steps": population.total_steps,
+            "training_step_counter": population.training_step_counter,
+            "replay_buffer": population.replay_buffer.serialize(),
+            "exploration_state": population.exploration.checkpoint_state(),
+        }
+    )
+
+
+def _assert_recursive_state_equal(expected, actual) -> None:
+    assert type(actual) is type(expected)
+    if isinstance(expected, torch.Tensor):
+        assert torch.equal(expected, actual)
+    elif isinstance(expected, np.ndarray):
+        assert np.array_equal(expected, actual)
+    elif isinstance(expected, dict):
+        assert expected.keys() == actual.keys()
+        for key in expected:
+            _assert_recursive_state_equal(expected[key], actual[key])
+    elif isinstance(expected, (list, tuple)):
+        assert len(expected) == len(actual)
+        for expected_item, actual_item in zip(expected, actual):
+            _assert_recursive_state_equal(expected_item, actual_item)
+    else:
+        assert expected == actual
 
 
 class TestDoubleDQNConfiguration:
@@ -443,305 +504,6 @@ class TestBrainConfigIntegration:
         assert population.loss_fn.delta == 2.0
 
 
-class TestRecurrentNetworkSupport:
-    """Test recurrent network integration (Phase 2)."""
-
-    def test_population_builds_recurrent_network_from_brain_config(
-        self,
-        basic_env,
-        adversarial_curriculum,
-        epsilon_greedy_exploration,
-        cpu_device,
-        minimal_brain_config,
-    ):
-        """VectorizedPopulation should build RecurrentSpatialQNetwork from recurrent config."""
-        from townlet.agent.networks import RecurrentSpatialQNetwork
-        from townlet.config.brain_config import (
-            CNNEncoderConfig,
-            LSTMConfig,
-            MLPEncoderConfig,
-            RecurrentConfig,
-        )
-
-        brain_config = BrainConfig(
-            version="1.0",
-            description="Test recurrent config",
-            architecture=ArchitectureConfig(
-                type="recurrent",
-                recurrent=RecurrentConfig(
-                    vision_encoder=CNNEncoderConfig(
-                        channels=[16, 32],
-                        kernel_sizes=[3, 3],
-                        strides=[1, 1],
-                        padding=[1, 1],
-                        activation="relu",
-                    ),
-                    position_encoder=MLPEncoderConfig(
-                        hidden_sizes=[32],
-                        activation="relu",
-                    ),
-                    meter_encoder=MLPEncoderConfig(
-                        hidden_sizes=[32],
-                        activation="relu",
-                    ),
-                    affordance_encoder=MLPEncoderConfig(
-                        hidden_sizes=[32],
-                        activation="relu",
-                    ),
-                    lstm=LSTMConfig(
-                        hidden_size=256,
-                        num_layers=1,
-                        dropout=0.0,
-                    ),
-                    q_head=MLPEncoderConfig(
-                        hidden_sizes=[128],
-                        activation="relu",
-                    ),
-                ),
-            ),
-            optimizer=OptimizerConfig(
-                type="adam",
-                learning_rate=0.0001,
-                adam_beta1=0.9,
-                adam_beta2=0.999,
-                adam_eps=1e-8,
-                weight_decay=0.0,
-                schedule=ScheduleConfig(type="constant"),
-            ),
-            loss=LossConfig(type="huber", huber_delta=1.0),
-            q_learning=QLearningConfig(
-                gamma=0.99,
-                target_update_frequency=100,
-                use_double_dqn=True,
-            ),
-            replay=ReplayConfig(
-                capacity=10000,
-                prioritized=False,
-            ),
-        )
-
-        population = _make_population(
-            env=basic_env,
-            curriculum=adversarial_curriculum,
-            exploration=epsilon_greedy_exploration,
-            device=cpu_device,
-            brain_config=brain_config,
-        )
-
-        # Should build RecurrentSpatialQNetwork
-        assert isinstance(population.q_network, RecurrentSpatialQNetwork)
-        assert isinstance(population.target_network, RecurrentSpatialQNetwork)
-        assert population.is_recurrent is True
-
-    def test_is_recurrent_flag_comes_from_brain_config_not_network_type(
-        self,
-        basic_env,
-        adversarial_curriculum,
-        epsilon_greedy_exploration,
-        cpu_device,
-        minimal_brain_config,
-    ):
-        """CRITICAL: is_recurrent flag must come from brain_config.architecture.type, not network_type parameter."""
-        from townlet.config.brain_config import (
-            CNNEncoderConfig,
-            LSTMConfig,
-            MLPEncoderConfig,
-            RecurrentConfig,
-        )
-
-        # Create recurrent brain_config
-        recurrent_config = BrainConfig(
-            version="1.0",
-            description="Test is_recurrent flag correctness",
-            architecture=ArchitectureConfig(
-                type="recurrent",
-                recurrent=RecurrentConfig(
-                    vision_encoder=CNNEncoderConfig(
-                        channels=[16, 32],
-                        kernel_sizes=[3, 3],
-                        strides=[1, 1],
-                        padding=[1, 1],
-                        activation="relu",
-                    ),
-                    position_encoder=MLPEncoderConfig(
-                        hidden_sizes=[32],
-                        activation="relu",
-                    ),
-                    meter_encoder=MLPEncoderConfig(
-                        hidden_sizes=[32],
-                        activation="relu",
-                    ),
-                    affordance_encoder=MLPEncoderConfig(
-                        hidden_sizes=[32],
-                        activation="relu",
-                    ),
-                    lstm=LSTMConfig(
-                        hidden_size=256,
-                        num_layers=1,
-                        dropout=0.0,
-                    ),
-                    q_head=MLPEncoderConfig(
-                        hidden_sizes=[128],
-                        activation="relu",
-                    ),
-                ),
-            ),
-            optimizer=OptimizerConfig(
-                type="adam",
-                learning_rate=0.0001,
-                adam_beta1=0.9,
-                adam_beta2=0.999,
-                adam_eps=1e-8,
-                weight_decay=0.0,
-                schedule=ScheduleConfig(type="constant"),
-            ),
-            loss=LossConfig(type="huber", huber_delta=1.0),
-            q_learning=QLearningConfig(
-                gamma=0.99,
-                target_update_frequency=100,
-                use_double_dqn=True,
-            ),
-            replay=ReplayConfig(
-                capacity=10000,
-                prioritized=False,
-            ),
-        )
-
-        # Pass brain_config with recurrent architecture
-        # The is_recurrent flag should come from brain_config.architecture.type
-        population = _make_population(
-            env=basic_env,
-            curriculum=adversarial_curriculum,
-            exploration=epsilon_greedy_exploration,
-            device=cpu_device,
-            brain_config=recurrent_config,
-            sequence_length=1,
-        )
-
-        # CRITICAL: is_recurrent should be True (from brain_config.architecture.type)
-        # NOT False (from brain_config=minimal_brain_config)
-        assert population.is_recurrent is True, (
-            "is_recurrent flag must come from brain_config.architecture.type, not network_type parameter. "
-            f"Expected True (from brain_config), got {population.is_recurrent} (from network_type)"
-        )
-
-    def test_is_recurrent_flag_uses_network_type_when_no_brain_config(
-        self,
-        basic_env,
-        adversarial_curriculum,
-        epsilon_greedy_exploration,
-        cpu_device,
-        minimal_brain_config,
-        recurrent_brain_config,
-    ):
-        """is_recurrent should be inferred from brain_config architecture type."""
-        # Test feedforward network
-        population_feedforward = _make_population(
-            env=basic_env,
-            curriculum=adversarial_curriculum,
-            exploration=epsilon_greedy_exploration,
-            device=cpu_device,
-            brain_config=minimal_brain_config,
-        )
-        assert population_feedforward.is_recurrent is False
-
-        # Test recurrent network
-        population_recurrent = _make_population(
-            env=basic_env,
-            curriculum=adversarial_curriculum,
-            exploration=epsilon_greedy_exploration,
-            device=cpu_device,
-            brain_config=recurrent_brain_config,
-            sequence_length=1,
-        )
-        assert population_recurrent.is_recurrent is True
-
-    def test_recurrent_network_has_correct_dimensions(
-        self,
-        basic_env,
-        adversarial_curriculum,
-        epsilon_greedy_exploration,
-        cpu_device,
-        minimal_brain_config,
-    ):
-        """Recurrent network should have dimensions from config."""
-        from townlet.config.brain_config import (
-            CNNEncoderConfig,
-            LSTMConfig,
-            MLPEncoderConfig,
-            RecurrentConfig,
-        )
-
-        brain_config = BrainConfig(
-            version="1.0",
-            description="Test recurrent dimensions",
-            architecture=ArchitectureConfig(
-                type="recurrent",
-                recurrent=RecurrentConfig(
-                    vision_encoder=CNNEncoderConfig(
-                        channels=[16, 32],
-                        kernel_sizes=[3, 3],
-                        strides=[1, 1],
-                        padding=[1, 1],
-                        activation="relu",
-                    ),
-                    position_encoder=MLPEncoderConfig(
-                        hidden_sizes=[32],
-                        activation="relu",
-                    ),
-                    meter_encoder=MLPEncoderConfig(
-                        hidden_sizes=[32],
-                        activation="relu",
-                    ),
-                    affordance_encoder=MLPEncoderConfig(
-                        hidden_sizes=[32],
-                        activation="relu",
-                    ),
-                    lstm=LSTMConfig(
-                        hidden_size=128,  # Different from hardcoded 256
-                        num_layers=1,
-                        dropout=0.0,
-                    ),
-                    q_head=MLPEncoderConfig(
-                        hidden_sizes=[128],
-                        activation="relu",
-                    ),
-                ),
-            ),
-            optimizer=OptimizerConfig(
-                type="adam",
-                learning_rate=0.0001,
-                adam_beta1=0.9,
-                adam_beta2=0.999,
-                adam_eps=1e-8,
-                weight_decay=0.0,
-                schedule=ScheduleConfig(type="constant"),
-            ),
-            loss=LossConfig(type="huber", huber_delta=1.0),
-            q_learning=QLearningConfig(
-                gamma=0.99,
-                target_update_frequency=100,
-                use_double_dqn=True,
-            ),
-            replay=ReplayConfig(
-                capacity=10000,
-                prioritized=False,
-            ),
-        )
-
-        population = _make_population(
-            env=basic_env,
-            curriculum=adversarial_curriculum,
-            exploration=epsilon_greedy_exploration,
-            device=cpu_device,
-            brain_config=brain_config,
-            sequence_length=1,
-        )
-
-        # LSTM hidden size should come from config (128), not hardcoded (256)
-        assert population.q_network.lstm.hidden_size == 128
-
-
 class TestSchedulerIntegration:
     """Test learning rate scheduler integration (Phase 2)."""
 
@@ -1034,6 +796,664 @@ class TestSchedulerIntegration:
         assert population2.scheduler.last_epoch == initial_step_count
 
 
+class TestPopulationCheckpointSchema:
+    """Exact current checkpoint schema and restoration contract."""
+
+    def _standard_population(
+        self,
+        basic_env,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ):
+        population = _make_population(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=epsilon_greedy_exploration,
+            device=cpu_device,
+            brain_config=minimal_brain_config,
+        )
+        observations = torch.zeros((2, basic_env.observation_dim), dtype=torch.float32, device=cpu_device)
+        population.replay_buffer.push(
+            observations,
+            torch.zeros(2, dtype=torch.long, device=cpu_device),
+            RewardTensor.from_dac(torch.zeros(2, dtype=torch.float32, device=cpu_device)),
+            observations.clone(),
+            torch.zeros(2, dtype=torch.bool, device=cpu_device),
+        )
+        return population
+
+    def _scheduled_population(
+        self,
+        basic_env,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ):
+        optimizer = minimal_brain_config.optimizer.model_copy(
+            update={"schedule": ScheduleConfig(type="step_decay", step_size=10, gamma=0.5)}
+        )
+        brain_config = minimal_brain_config.model_copy(update={"optimizer": optimizer})
+        return self._standard_population(
+            basic_env,
+            adversarial_curriculum,
+            epsilon_greedy_exploration,
+            cpu_device,
+            brain_config,
+        )
+
+    def test_immediately_previous_population_version_refuses_without_mutation(
+        self,
+        basic_env,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ) -> None:
+        population = self._standard_population(
+            basic_env,
+            adversarial_curriculum,
+            epsilon_greedy_exploration,
+            cpu_device,
+            minimal_brain_config,
+        )
+        checkpoint = population.get_checkpoint_state()
+        checkpoint["version"] = 4
+        before = _population_runtime_snapshot(population)
+
+        with pytest.raises(ValueError, match=r"population checkpoint version.*4.*expected=5"):
+            population.load_checkpoint_state(checkpoint)
+
+        _assert_recursive_state_equal(before, _population_runtime_snapshot(population))
+
+    @pytest.mark.parametrize("invalid_version", (4.0, True))
+    def test_population_version_requires_an_exact_integer_before_mutation(
+        self,
+        invalid_version,
+        basic_env,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ) -> None:
+        population = self._standard_population(
+            basic_env,
+            adversarial_curriculum,
+            epsilon_greedy_exploration,
+            cpu_device,
+            minimal_brain_config,
+        )
+        checkpoint = population.get_checkpoint_state()
+        checkpoint["version"] = invalid_version
+        before = _population_runtime_snapshot(population)
+
+        with pytest.raises(ValueError, match="population checkpoint version"):
+            population.load_checkpoint_state(checkpoint)
+
+        _assert_recursive_state_equal(before, _population_runtime_snapshot(population))
+
+    @pytest.mark.parametrize(
+        ("invalid_case", "message"),
+        (
+            pytest.param("optimizer-lr", r"optimizer.*lr", id="optimizer-negative-lr"),
+            pytest.param("optimizer-betas", r"optimizer.*betas", id="optimizer-invalid-betas"),
+            pytest.param("scheduler-gamma", r"scheduler\.gamma", id="scheduler-gamma"),
+            pytest.param("scheduler-step-size", r"scheduler\.step_size", id="scheduler-step-size"),
+        ),
+    )
+    def test_optimizer_and_scheduler_invalid_configuration_refuses_whole_state_before_mutation(
+        self,
+        invalid_case,
+        message,
+        basic_env,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ) -> None:
+        population = self._scheduled_population(
+            basic_env,
+            adversarial_curriculum,
+            epsilon_greedy_exploration,
+            cpu_device,
+            minimal_brain_config,
+        )
+        checkpoint = deepcopy(population.get_checkpoint_state())
+        if invalid_case == "optimizer-lr":
+            checkpoint["optimizer"]["param_groups"][0]["lr"] = -123
+        elif invalid_case == "optimizer-betas":
+            checkpoint["optimizer"]["param_groups"][0]["betas"] = "not-betas"
+        elif invalid_case == "scheduler-gamma":
+            checkpoint["scheduler"]["gamma"] = 9
+        else:
+            checkpoint["scheduler"]["step_size"] = -4
+        before = _population_runtime_snapshot(population)
+
+        with pytest.raises(ValueError, match=message):
+            population.load_checkpoint_state(checkpoint)
+
+        _assert_recursive_state_equal(before, _population_runtime_snapshot(population))
+
+    def test_population_materializes_replay_restore_exactly_once(
+        self,
+        monkeypatch,
+        basic_env,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ) -> None:
+        population = self._standard_population(
+            basic_env,
+            adversarial_curriculum,
+            epsilon_greedy_exploration,
+            cpu_device,
+            minimal_brain_config,
+        )
+        checkpoint = deepcopy(population.get_checkpoint_state())
+        validation_calls = 0
+        materialization_calls = 0
+        original_validate = population.replay_buffer._validate_serialized
+        original_materialize = population.replay_buffer._materialize_serialized
+
+        def counted_validate(*args, **kwargs):
+            nonlocal validation_calls
+            validation_calls += 1
+            return original_validate(*args, **kwargs)
+
+        def counted_materialize(*args, **kwargs):
+            nonlocal materialization_calls
+            materialization_calls += 1
+            return original_materialize(*args, **kwargs)
+
+        monkeypatch.setattr(population.replay_buffer, "_validate_serialized", counted_validate)
+        monkeypatch.setattr(population.replay_buffer, "_materialize_serialized", counted_materialize)
+        population.load_checkpoint_state(checkpoint)
+
+        assert validation_calls == 1
+        assert materialization_calls == 1
+
+    @pytest.mark.parametrize(
+        "invalid_case",
+        ("replay-kind", "replay-version", "replay-width", "current-env-width"),
+    )
+    def test_nested_replay_and_runtime_width_refuse_before_any_population_mutation(
+        self,
+        invalid_case,
+        monkeypatch,
+        basic_env,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ) -> None:
+        population = self._standard_population(
+            basic_env,
+            adversarial_curriculum,
+            epsilon_greedy_exploration,
+            cpu_device,
+            minimal_brain_config,
+        )
+        checkpoint = population.get_checkpoint_state()
+        checkpoint["version"] = 5
+        replay_state = checkpoint["replay_buffer"]
+        replay_state["format_version"] = 4
+        replay_state["replay_kind"] = "standard"
+        expected_message = ""
+        if invalid_case == "replay-kind":
+            replay_state["replay_kind"] = "prioritized"
+            expected_message = "replay_kind"
+        elif invalid_case == "replay-version":
+            replay_state["format_version"] = 3
+            expected_message = "format_version"
+        elif invalid_case == "replay-width":
+            replay_state["observations"] = replay_state["observations"][:, :-1]
+            replay_state["next_observations"] = replay_state["next_observations"][:, :-1]
+            expected_message = "obs_dim"
+        else:
+            monkeypatch.setattr(basic_env, "observation_dim", basic_env.observation_dim + 1)
+            expected_message = "token_spec.total_dims"
+        before = _population_runtime_snapshot(population)
+
+        with pytest.raises(ValueError, match=expected_message):
+            population.load_checkpoint_state(checkpoint)
+
+        _assert_recursive_state_equal(before, _population_runtime_snapshot(population))
+
+    def test_per_wrong_kind_refuses_before_any_population_mutation(
+        self,
+        basic_env,
+        adversarial_curriculum,
+        cpu_device,
+        minimal_brain_config,
+    ) -> None:
+        replay_config = minimal_brain_config.replay.model_copy(
+            update={
+                "prioritized": True,
+                "priority_alpha": 0.6,
+                "priority_beta": 0.4,
+                "priority_beta_annealing": True,
+            }
+        )
+        brain_config = minimal_brain_config.model_copy(update={"replay": replay_config})
+        population = _make_population(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=EpsilonGreedyExploration(epsilon=1.0, epsilon_decay=0.99, epsilon_min=0.1),
+            device=cpu_device,
+            brain_config=brain_config,
+        )
+        checkpoint = population.get_checkpoint_state()
+        checkpoint["version"] = 5
+        checkpoint["replay_buffer"]["format_version"] = 4
+        checkpoint["replay_buffer"]["replay_kind"] = "standard"
+        before = _population_runtime_snapshot(population)
+
+        with pytest.raises(ValueError, match="replay_kind"):
+            population.load_checkpoint_state(checkpoint)
+
+        _assert_recursive_state_equal(before, _population_runtime_snapshot(population))
+
+    def test_producer_emits_exact_current_key_sets(
+        self,
+        basic_env,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ) -> None:
+        population = _make_population(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=epsilon_greedy_exploration,
+            device=cpu_device,
+            brain_config=minimal_brain_config,
+        )
+
+        checkpoint = population.get_checkpoint_state()
+
+        assert set(checkpoint) == POPULATION_CHECKPOINT_KEYS
+        assert set(checkpoint["universe_metadata"]) == POPULATION_UNIVERSE_METADATA_KEYS
+
+    def test_validator_is_public_non_mutating_and_refuses_network_shape_mismatch(
+        self,
+        basic_env,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ) -> None:
+        population = _make_population(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=epsilon_greedy_exploration,
+            device=cpu_device,
+            brain_config=minimal_brain_config,
+        )
+        checkpoint = population.get_checkpoint_state()
+        before = {key: value.clone() for key, value in population.q_network.state_dict().items()}
+        first_key = next(iter(checkpoint["q_network"]))
+        checkpoint["q_network"][first_key] = checkpoint["q_network"][first_key][:-1]
+
+        with pytest.raises(ValueError, match="q_network.*shape mismatch"):
+            population.validate_checkpoint_state(checkpoint)
+
+        after = population.q_network.state_dict()
+        assert all(torch.equal(before[key], after[key]) for key in before)
+
+    def test_loader_refuses_network_dtype_mismatch_before_any_population_mutation(
+        self,
+        basic_env,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ) -> None:
+        population = self._standard_population(
+            basic_env,
+            adversarial_curriculum,
+            epsilon_greedy_exploration,
+            cpu_device,
+            minimal_brain_config,
+        )
+        checkpoint = population.get_checkpoint_state()
+        first_key = next(iter(checkpoint["target_network"]))
+        checkpoint["target_network"][first_key] = checkpoint["target_network"][first_key].to(torch.float64)
+        before = _population_runtime_snapshot(population)
+
+        with pytest.raises(ValueError, match="target_network.*dtype mismatch"):
+            population.load_checkpoint_state(checkpoint)
+
+        _assert_recursive_state_equal(before, _population_runtime_snapshot(population))
+
+    def test_loader_refuses_invalid_optimizer_before_network_mutation(
+        self,
+        basic_env,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ) -> None:
+        population = self._standard_population(
+            basic_env,
+            adversarial_curriculum,
+            epsilon_greedy_exploration,
+            cpu_device,
+            minimal_brain_config,
+        )
+        checkpoint = deepcopy(population.get_checkpoint_state())
+        checkpoint["optimizer"]["param_groups"][0]["params"].pop()
+        with torch.no_grad():
+            next(population.q_network.parameters()).add_(1.0)
+        before = _population_runtime_snapshot(population)
+
+        with pytest.raises(ValueError, match="optimizer.*parameter count"):
+            population.load_checkpoint_state(checkpoint)
+
+        _assert_recursive_state_equal(before, _population_runtime_snapshot(population))
+
+    def test_validator_refuses_boolean_optimizer_parameter_id(
+        self,
+        basic_env,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ) -> None:
+        population = self._standard_population(
+            basic_env,
+            adversarial_curriculum,
+            epsilon_greedy_exploration,
+            cpu_device,
+            minimal_brain_config,
+        )
+        checkpoint = deepcopy(population.get_checkpoint_state())
+        checkpoint["optimizer"]["state"][True] = {}
+        before = _population_runtime_snapshot(population)
+
+        with pytest.raises(ValueError, match="optimizer.state entries must map integer ids"):
+            population.validate_checkpoint_state(checkpoint)
+
+        _assert_recursive_state_equal(before, _population_runtime_snapshot(population))
+
+    def test_loader_refuses_exploration_configuration_mismatch_before_mutation(
+        self,
+        basic_env,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ) -> None:
+        population = self._standard_population(
+            basic_env,
+            adversarial_curriculum,
+            epsilon_greedy_exploration,
+            cpu_device,
+            minimal_brain_config,
+        )
+        checkpoint = population.get_checkpoint_state()
+        checkpoint["exploration_state"]["epsilon_decay"] = 0.5
+        before = _population_runtime_snapshot(population)
+
+        with pytest.raises(ValueError, match="exploration_state.epsilon_decay.*current"):
+            population.load_checkpoint_state(checkpoint)
+
+        _assert_recursive_state_equal(before, _population_runtime_snapshot(population))
+
+    @pytest.mark.parametrize("counter", ("total_steps", "training_step_counter"))
+    def test_loader_refuses_invalid_counter_before_any_population_mutation(
+        self,
+        counter,
+        basic_env,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ) -> None:
+        population = self._standard_population(
+            basic_env,
+            adversarial_curriculum,
+            epsilon_greedy_exploration,
+            cpu_device,
+            minimal_brain_config,
+        )
+        checkpoint = population.get_checkpoint_state()
+        checkpoint[counter] = -1
+        before = _population_runtime_snapshot(population)
+
+        with pytest.raises(ValueError, match=counter):
+            population.load_checkpoint_state(checkpoint)
+
+        _assert_recursive_state_equal(before, _population_runtime_snapshot(population))
+
+    @pytest.mark.parametrize("missing_key", sorted(POPULATION_CHECKPOINT_KEYS))
+    def test_loader_refuses_every_missing_top_level_key(
+        self,
+        missing_key,
+        basic_env,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ) -> None:
+        population = _make_population(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=epsilon_greedy_exploration,
+            device=cpu_device,
+            brain_config=minimal_brain_config,
+        )
+        checkpoint = population.get_checkpoint_state()
+        checkpoint.pop(missing_key)
+
+        expected_message = "population checkpoint version" if missing_key == "version" else "Population checkpoint key set mismatch"
+        with pytest.raises(ValueError, match=expected_message):
+            population.load_checkpoint_state(checkpoint)
+
+    def test_loader_refuses_unknown_top_level_key(
+        self,
+        basic_env,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ) -> None:
+        population = _make_population(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=epsilon_greedy_exploration,
+            device=cpu_device,
+            brain_config=minimal_brain_config,
+        )
+        checkpoint = population.get_checkpoint_state()
+        checkpoint["removed_field"] = 1
+
+        with pytest.raises(ValueError, match="Population checkpoint key set mismatch"):
+            population.load_checkpoint_state(checkpoint)
+
+    @pytest.mark.parametrize("missing_key", sorted(POPULATION_UNIVERSE_METADATA_KEYS))
+    def test_loader_refuses_every_missing_universe_metadata_key(
+        self,
+        missing_key,
+        basic_env,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ) -> None:
+        population = _make_population(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=epsilon_greedy_exploration,
+            device=cpu_device,
+            brain_config=minimal_brain_config,
+        )
+        checkpoint = population.get_checkpoint_state()
+        checkpoint["universe_metadata"].pop(missing_key)
+
+        with pytest.raises(ValueError, match="Population universe_metadata key set mismatch"):
+            population.load_checkpoint_state(checkpoint)
+
+    def test_loader_refuses_unknown_universe_metadata_key(
+        self,
+        basic_env,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ) -> None:
+        population = _make_population(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=epsilon_greedy_exploration,
+            device=cpu_device,
+            brain_config=minimal_brain_config,
+        )
+        checkpoint = population.get_checkpoint_state()
+        checkpoint["universe_metadata"]["removed_field"] = 1
+
+        with pytest.raises(ValueError, match="Population universe_metadata key set mismatch"):
+            population.load_checkpoint_state(checkpoint)
+
+    @pytest.mark.parametrize(
+        ("field", "value", "message"),
+        (
+            pytest.param("meter_names", ("wrong",), "meter names mismatch", id="meter-names"),
+            pytest.param("version", "wrong", "bar config version mismatch", id="bar-version"),
+        ),
+    )
+    def test_loader_validates_every_universe_metadata_value(
+        self,
+        field,
+        value,
+        message,
+        basic_env,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ) -> None:
+        population = _make_population(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=epsilon_greedy_exploration,
+            device=cpu_device,
+            brain_config=minimal_brain_config,
+        )
+        checkpoint = population.get_checkpoint_state()
+        checkpoint["universe_metadata"][field] = value
+
+        with pytest.raises(ValueError, match=message):
+            population.load_checkpoint_state(checkpoint)
+
+    @pytest.mark.parametrize("state_key", ("target_network", "replay_buffer", "exploration_state"))
+    def test_loader_refuses_null_mandatory_state(
+        self,
+        state_key,
+        basic_env,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ) -> None:
+        population = _make_population(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=epsilon_greedy_exploration,
+            device=cpu_device,
+            brain_config=minimal_brain_config,
+        )
+        checkpoint = population.get_checkpoint_state()
+        checkpoint[state_key] = None
+
+        with pytest.raises(ValueError, match=f"{state_key} must contain state"):
+            population.load_checkpoint_state(checkpoint)
+
+    def test_loader_refuses_scheduler_state_when_current_scheduler_is_absent(
+        self,
+        basic_env,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ) -> None:
+        population = _make_population(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=epsilon_greedy_exploration,
+            device=cpu_device,
+            brain_config=minimal_brain_config,
+        )
+        checkpoint = population.get_checkpoint_state()
+        checkpoint["scheduler"] = {"last_epoch": 7}
+
+        with pytest.raises(ValueError, match="scheduler nullability mismatch"):
+            population.load_checkpoint_state(checkpoint)
+
+    def test_loader_refuses_null_scheduler_when_current_scheduler_exists(
+        self,
+        basic_env,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ) -> None:
+        optimizer = minimal_brain_config.optimizer.model_copy(
+            update={"schedule": ScheduleConfig(type="step_decay", step_size=10, gamma=0.5)}
+        )
+        brain_config = minimal_brain_config.model_copy(update={"optimizer": optimizer})
+        population = _make_population(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=epsilon_greedy_exploration,
+            device=cpu_device,
+            brain_config=brain_config,
+        )
+        checkpoint = population.get_checkpoint_state()
+        checkpoint["scheduler"] = None
+
+        with pytest.raises(ValueError, match="scheduler nullability mismatch"):
+            population.load_checkpoint_state(checkpoint)
+
+    def test_loader_restores_counters_and_exploration_exactly(
+        self,
+        basic_env,
+        adversarial_curriculum,
+        cpu_device,
+        minimal_brain_config,
+    ) -> None:
+        source_exploration = EpsilonGreedyExploration(epsilon=0.37, epsilon_decay=0.91, epsilon_min=0.07)
+        source = _make_population(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=source_exploration,
+            device=cpu_device,
+            brain_config=minimal_brain_config,
+        )
+        source.total_steps = 17
+        source.training_step_counter = 23
+        checkpoint = source.get_checkpoint_state()
+
+        target_exploration = EpsilonGreedyExploration(epsilon=1.0, epsilon_decay=0.91, epsilon_min=0.07)
+        target = _make_population(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=target_exploration,
+            device=cpu_device,
+            brain_config=minimal_brain_config,
+        )
+        target.total_steps = 999
+        target.training_step_counter = 999
+
+        target.load_checkpoint_state(checkpoint)
+
+        assert target.total_steps == 17
+        assert target.training_step_counter == 23
+        assert target.exploration.checkpoint_state() == checkpoint["exploration_state"]
+
+
 def test_brain_config_none_raises_valueerror(basic_env, adversarial_curriculum, epsilon_greedy_exploration, cpu_device):
     """VectorizedPopulation should reject brain_config=None per WP-C2."""
     import pytest
@@ -1049,7 +1469,6 @@ def test_brain_config_none_raises_valueerror(basic_env, adversarial_curriculum, 
             device=cpu_device,
             obs_dim=basic_env.observation_dim,
             action_dim=basic_env.action_dim,
-            vision_window_size=5,
             train_frequency=1,
             batch_size=32,
             sequence_length=1,
@@ -1080,7 +1499,6 @@ def test_token_spec_none_raises_valueerror(basic_env, adversarial_curriculum, ep
             device=cpu_device,
             obs_dim=basic_env.observation_dim,
             action_dim=basic_env.action_dim,
-            vision_window_size=5,
             train_frequency=1,
             batch_size=32,
             sequence_length=1,
@@ -1114,7 +1532,6 @@ def test_token_spec_missing_attribute_raises_valueerror(
             device=cpu_device,
             obs_dim=basic_env.observation_dim,
             action_dim=basic_env.action_dim,
-            vision_window_size=5,
             train_frequency=1,
             batch_size=32,
             sequence_length=1,
@@ -1147,7 +1564,6 @@ def test_device_mismatch_in_step_all_raises_runtime_error(
         device=cpu_device,
         obs_dim=basic_env.observation_dim,
         action_dim=basic_env.action_dim,
-        vision_window_size=5,
         train_frequency=1,
         batch_size=32,
         sequence_length=1,
@@ -1176,6 +1592,67 @@ def test_device_mismatch_in_step_all_raises_runtime_error(
 
     with pytest.raises(RuntimeError, match="Observation tensor on"):
         population.step_population(action_mask)
+
+
+class TestPopulationExplorationTelemetry:
+    """Telemetry is defined only for the three production exploration strategies."""
+
+    def test_exact_values_for_all_supported_strategies(
+        self,
+        basic_env,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ) -> None:
+        population = _make_population(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=epsilon_greedy_exploration,
+            device=cpu_device,
+            brain_config=minimal_brain_config,
+        )
+
+        epsilon_greedy_exploration.epsilon = 0.31
+        assert population._get_current_epsilon_value() == 0.31
+        assert population._get_current_intrinsic_weight_value() == 0.0
+
+        rnd = RNDExploration(obs_dim=basic_env.observation_dim, epsilon_start=0.27, device=cpu_device)
+        population.exploration = rnd
+        assert population._get_current_epsilon_value() == 0.27
+        assert population._get_current_intrinsic_weight_value() == 0.0
+
+        adaptive = AdaptiveIntrinsicExploration(
+            obs_dim=basic_env.observation_dim,
+            epsilon_start=0.19,
+            initial_intrinsic_weight=0.43,
+            device=cpu_device,
+        )
+        population.exploration = adaptive
+        assert population._get_current_epsilon_value() == 0.19
+        assert population._get_current_intrinsic_weight_value() == 0.43
+
+    def test_unsupported_strategy_refuses_instead_of_falling_back(
+        self,
+        basic_env,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ) -> None:
+        population = _make_population(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=epsilon_greedy_exploration,
+            device=cpu_device,
+            brain_config=minimal_brain_config,
+        )
+        population.exploration = object()  # type: ignore[assignment]
+
+        with pytest.raises(TypeError, match="Unsupported exploration strategy"):
+            population._get_current_epsilon_value()
+        with pytest.raises(TypeError, match="Unsupported exploration strategy"):
+            population._get_current_intrinsic_weight_value()
 
 
 class TestRewardComponentWiring:

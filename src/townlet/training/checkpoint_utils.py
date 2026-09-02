@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import logging
+import math
 import pickle
 from collections.abc import Mapping
 from dataclasses import dataclass
@@ -19,13 +20,120 @@ _DIGEST_BUFFER_SIZE = 1024 * 1024  # 1 MiB chunks keep memory bounded
 
 # WS-1 task 5: the single source of truth for the checkpoint payload format.
 # Previously hardcoded as a magic `3` at two sites in demo/runner.py.
-# 4: THE TOKEN CUT (unit 3 Task 10). `observation_field_uuids` and `observation_dim`
-# are DROPPED with their producer (the compiled ObservationSpec, deleted); token nets gate
-# on `token_type_schema_hash` and flat nets on `layout_hash`. A version-3 checkpoint
-# describes a different observation ABI entirely and refuses loudly (zero backcompat).
-CHECKPOINT_FORMAT_VERSION = 4
+# 5: THE COMPACT TOKEN/REPLAY CUT (unit 3 M3 Task 4). Every nested population and
+# replay artifact now carries only the compact observation ABI and validates before
+# any runtime state is applied. The immediately previous version describes a different ABI.
+CHECKPOINT_FORMAT_VERSION = 6
+
+# The complete DemoRunner artifact. Producers and both consumers share this one
+# closed schema: only artifacts emitted by the current code are accepted.
+DEMO_CHECKPOINT_KEYS = frozenset(
+    {
+        "version",
+        "episode",
+        "timestamp",
+        "substrate_metadata",
+        "population_state",
+        "curriculum_state",
+        "affordance_layout",
+        "agent_ids",
+        "epsilon",
+        "completed_live_agent_steps",
+        "training_config",
+        "config_dir",
+        "config_hash",
+        "primary_level",
+        "action_dim",
+        "meter_count",
+        "observation_schema_hash",
+        "drive_hash",
+        "curriculum_hash",
+        "bars_hash",
+        "affordances_hash",
+        "training_hash",
+        "brain_hash",
+        "pack_brain_hash",
+        "vfs_hash",
+        "token_type_schema_hash",
+        "layout_hash",
+    }
+)
+SUBSTRATE_METADATA_KEYS = frozenset({"position_dim", "substrate_type"})
 
 logger = logging.getLogger(__name__)
+
+
+def _validate_checkpoint_format_version(checkpoint: Mapping[str, Any]) -> None:
+    if not isinstance(checkpoint, Mapping):
+        raise ValueError(f"Demo checkpoint payload must be a mapping; got {type(checkpoint).__name__}.")
+    version = checkpoint.get("version")
+    if type(version) is not int or version != CHECKPOINT_FORMAT_VERSION:
+        raise ValueError(
+            f"Unsupported checkpoint version: {version}\n" f"Expected version {CHECKPOINT_FORMAT_VERSION}. Please retrain from scratch."
+        )
+
+
+def validate_demo_checkpoint_payload(checkpoint: Mapping[str, Any]) -> None:
+    """Validate the exact current outer DemoRunner checkpoint schema."""
+    _validate_checkpoint_format_version(checkpoint)
+
+    checkpoint_keys = set(checkpoint)
+    if checkpoint_keys != DEMO_CHECKPOINT_KEYS:
+        missing = sorted(DEMO_CHECKPOINT_KEYS - checkpoint_keys)
+        unknown = sorted(checkpoint_keys - DEMO_CHECKPOINT_KEYS)
+        raise ValueError(
+            "Demo checkpoint key set mismatch: "
+            f"missing={missing}, unknown={unknown}. "
+            "This checkpoint payload is no longer supported; retrain from scratch."
+        )
+
+
+def validate_demo_checkpoint_runtime_fields(
+    checkpoint: Mapping[str, Any],
+    *,
+    position_dim: int,
+    substrate_type: str,
+    num_agents: int,
+) -> None:
+    """Validate exact outer fields bound to the initialized runtime."""
+    substrate_metadata = checkpoint["substrate_metadata"]
+    if not isinstance(substrate_metadata, dict):
+        raise ValueError("Demo checkpoint substrate_metadata must be a dictionary; " f"got {type(substrate_metadata).__name__}.")
+    metadata_keys = set(substrate_metadata)
+    if metadata_keys != SUBSTRATE_METADATA_KEYS:
+        missing = sorted(SUBSTRATE_METADATA_KEYS - metadata_keys)
+        unknown = sorted(metadata_keys - SUBSTRATE_METADATA_KEYS)
+        raise ValueError(f"Demo checkpoint substrate_metadata key set mismatch: missing={missing}, unknown={unknown}.")
+
+    checkpoint_position_dim = substrate_metadata["position_dim"]
+    if isinstance(checkpoint_position_dim, bool) or not isinstance(checkpoint_position_dim, int):
+        raise ValueError("Demo checkpoint substrate_metadata.position_dim must be an integer.")
+    if checkpoint_position_dim != position_dim:
+        raise ValueError(
+            "Demo checkpoint substrate position_dim mismatch: " f"checkpoint={checkpoint_position_dim}, current={position_dim}."
+        )
+
+    checkpoint_substrate_type = substrate_metadata["substrate_type"]
+    if not isinstance(checkpoint_substrate_type, str):
+        raise ValueError("Demo checkpoint substrate_metadata.substrate_type must be a string.")
+    if checkpoint_substrate_type != substrate_type:
+        raise ValueError(
+            "Demo checkpoint substrate type mismatch: " f"checkpoint={checkpoint_substrate_type!r}, current={substrate_type!r}."
+        )
+
+    agent_ids = checkpoint["agent_ids"]
+    if not isinstance(agent_ids, list) or any(not isinstance(agent_id, str) for agent_id in agent_ids):
+        raise ValueError("Demo checkpoint agent_ids must be a list of strings.")
+    if len(agent_ids) != num_agents:
+        raise ValueError(f"Demo checkpoint agent_ids length mismatch: checkpoint={len(agent_ids)}, current population={num_agents}.")
+
+    epsilon = checkpoint["epsilon"]
+    if isinstance(epsilon, bool) or not isinstance(epsilon, int | float) or not math.isfinite(float(epsilon)):
+        raise ValueError("Demo checkpoint epsilon must be a finite number.")
+
+    completed_live_agent_steps = checkpoint["completed_live_agent_steps"]
+    if isinstance(completed_live_agent_steps, bool) or not isinstance(completed_live_agent_steps, int) or completed_live_agent_steps < 0:
+        raise ValueError("Demo checkpoint completed_live_agent_steps must be a non-negative integer.")
 
 
 def attach_universe_metadata(checkpoint: dict[str, Any], universe: CompiledUniverse) -> None:
@@ -40,29 +148,31 @@ def attach_universe_metadata(checkpoint: dict[str, Any], universe: CompiledUnive
     if universe is None:
         raise ValueError("universe parameter cannot be None - compiled universe required for metadata attachment")
 
+    level = universe.get_level(universe.metadata.primary_level)
+
     checkpoint["config_hash"] = universe.metadata.config_hash
     # D5. The only field separating two levels that collide on every content hash.
     # Stamped here; compared on resume by assert_checkpoint_identity (task 5).
     checkpoint["primary_level"] = universe.metadata.primary_level
-    checkpoint["action_dim"] = universe.metadata.action_count
-    checkpoint["meter_count"] = universe.metadata.meter_count
-    checkpoint["observation_schema_hash"] = universe.observation_schema_hash
-    checkpoint["drive_hash"] = universe.drive_hash
-    checkpoint["curriculum_hash"] = universe.curriculum_hash
-    checkpoint["bars_hash"] = universe.bars_hash
-    checkpoint["affordances_hash"] = universe.affordances_hash
-    checkpoint["training_hash"] = universe.training_hash
+    checkpoint["action_dim"] = level.action_metadata.total_actions
+    checkpoint["meter_count"] = len(level.meter_metadata.meters)
+    checkpoint["observation_schema_hash"] = level.observation_schema_hash
+    checkpoint["drive_hash"] = level.drive_hash
+    checkpoint["curriculum_hash"] = level.curriculum_hash
+    checkpoint["bars_hash"] = level.bars_hash
+    checkpoint["affordances_hash"] = level.affordances_hash
+    checkpoint["training_hash"] = level.training_hash
     checkpoint["brain_hash"] = universe.brain_hash
     # PDR-0027: the pack baseline beside the effective hash, so a lineage fork (a per-level
     # brain.yaml override) is stated at load time instead of discovered at runtime.
     checkpoint["pack_brain_hash"] = universe.pack_brain_hash
-    checkpoint["vfs_hash"] = universe.vfs_hash
+    checkpoint["vfs_hash"] = level.vfs_hash
     # The two TokenSpec hashes ARE the observation identity since the unit-3 cut.
     # `token_type_schema_hash` is the token-net transfer contract (payload-schema
     # contents, MAX_POSITION_RANK, VALUE_BLOCK_WIDTH via the feature names);
     # `layout_hash` is the flat-net contract (capacities, slot bindings, total_dims).
-    checkpoint["token_type_schema_hash"] = universe.token_type_schema_hash
-    checkpoint["layout_hash"] = universe.layout_hash
+    checkpoint["token_type_schema_hash"] = level.token_type_schema_hash
+    checkpoint["layout_hash"] = level.layout_hash
 
 
 def assert_checkpoint_token_type_schema_hash(checkpoint: Mapping[str, Any], universe: CompiledUniverse) -> None:
@@ -75,13 +185,14 @@ def assert_checkpoint_token_type_schema_hash(checkpoint: Mapping[str, Any], univ
 
     Used by token nets (``architecture.type='token_set'``).
     """
+    level = universe.get_level(universe.metadata.primary_level)
     checkpoint_hash = checkpoint.get("token_type_schema_hash")
     if checkpoint_hash is None:
         raise ValueError("Checkpoint missing token_type_schema_hash; regenerate the checkpoint with the latest compiler.")
-    if checkpoint_hash != universe.token_type_schema_hash:
+    if checkpoint_hash != level.token_type_schema_hash:
         raise ValueError(
             f"Checkpoint token_type_schema_hash mismatch: checkpoint={str(checkpoint_hash)[:16]}..., "
-            f"current={universe.token_type_schema_hash[:16]}... "
+            f"current={level.token_type_schema_hash[:16]}... "
             "The engine's token payload schemas have changed since the checkpoint was created "
             "(a closed-vocabulary member, MAX_POSITION_RANK, or VALUE_BLOCK_WIDTH moved). "
             "Per-type encoder weights are not exchangeable across this boundary; retrain."
@@ -96,13 +207,14 @@ def assert_checkpoint_layout_hash(checkpoint: Mapping[str, Any], universe: Compi
     that catches it. Since the unit-3 cut this is THE flat-reader observation gate:
     the obs-dim and field-uuid legs retired with their producer.
     """
+    level = universe.get_level(universe.metadata.primary_level)
     checkpoint_hash = checkpoint.get("layout_hash")
     if checkpoint_hash is None:
         raise ValueError("Checkpoint missing layout_hash; regenerate the checkpoint with the latest compiler.")
-    if checkpoint_hash != universe.layout_hash:
+    if checkpoint_hash != level.layout_hash:
         raise ValueError(
             f"Checkpoint layout_hash mismatch: checkpoint={str(checkpoint_hash)[:16]}..., "
-            f"current={universe.layout_hash[:16]}... "
+            f"current={level.layout_hash[:16]}... "
             "The token serialization layout (type order, capacities, slot bindings, total_dims) "
             "has changed since the checkpoint was created. A flat network reads dims positionally "
             "and cannot ride a moved layout."
@@ -119,7 +231,8 @@ def assert_checkpoint_dimensions(
 
     ``architecture_type`` selects the observation gate (unit-3 cut):
 
-    - ``"token_set"``: the TokenSpec TYPE-SCHEMA hash — the transfer contract.
+    - ``"token_set"`` or ``"recurrent"``: the TokenSpec TYPE-SCHEMA hash —
+      the token-native transfer contract.
       Capacities and slot bindings are entity variation a token net absorbs by design,
       so they are deliberately excluded.
     - anything else (a flat reader, ``None`` included): the LAYOUT hash — type order,
@@ -136,11 +249,13 @@ def assert_checkpoint_dimensions(
     if universe is None:
         raise ValueError("universe parameter cannot be None - compiled universe required for dimension validation")
 
-    action_dim = checkpoint.get("action_dim")
-    if action_dim is not None and action_dim != universe.metadata.action_count:
-        raise ValueError(f"Checkpoint action_dim mismatch: checkpoint={action_dim}, current={universe.metadata.action_count}")
+    level = universe.get_level(universe.metadata.primary_level)
 
-    if architecture_type == "token_set":
+    action_dim = checkpoint.get("action_dim")
+    if action_dim is not None and action_dim != level.action_metadata.total_actions:
+        raise ValueError(f"Checkpoint action_dim mismatch: checkpoint={action_dim}, current={level.action_metadata.total_actions}")
+
+    if architecture_type in {"token_set", "recurrent"}:
         assert_checkpoint_token_type_schema_hash(checkpoint, universe)
     else:
         assert_checkpoint_layout_hash(checkpoint, universe)
@@ -149,12 +264,12 @@ def assert_checkpoint_dimensions(
     checkpoint_drive_hash = checkpoint.get("drive_hash")
     if checkpoint_drive_hash is None:
         raise ValueError("Checkpoint missing drive_hash; regenerate the checkpoint with the latest compiler.")
-    if universe.drive_hash is None:
+    if level.drive_hash is None:
         raise ValueError("Universe missing drive_hash; ensure DAC config is compiled.")
-    if checkpoint_drive_hash != universe.drive_hash:
+    if checkpoint_drive_hash != level.drive_hash:
         raise ValueError(
             f"Checkpoint drive_hash mismatch: checkpoint={checkpoint_drive_hash[:16]}..., "
-            f"current={universe.drive_hash[:16]}... "
+            f"current={level.drive_hash[:16]}... "
             "The reward function configuration has changed since the checkpoint was created."
         )
 
@@ -180,48 +295,48 @@ def assert_checkpoint_dimensions(
     checkpoint_curriculum_hash = checkpoint.get("curriculum_hash")
     if checkpoint_curriculum_hash is None:
         raise ValueError("Checkpoint missing curriculum_hash; regenerate the checkpoint with the latest compiler.")
-    if universe.curriculum_hash is None:
+    if level.curriculum_hash is None:
         raise ValueError("Universe missing curriculum_hash; recompile the config pack.")
-    if checkpoint_curriculum_hash != universe.curriculum_hash:
+    if checkpoint_curriculum_hash != level.curriculum_hash:
         raise ValueError(
             f"Checkpoint curriculum_hash mismatch: checkpoint={checkpoint_curriculum_hash[:16]}..., "
-            f"current={universe.curriculum_hash[:16]}... "
+            f"current={level.curriculum_hash[:16]}... "
             "The curriculum configuration has changed since the checkpoint was created."
         )
 
     checkpoint_bars_hash = checkpoint.get("bars_hash")
     if checkpoint_bars_hash is None:
         raise ValueError("Checkpoint missing bars_hash; regenerate the checkpoint with the latest compiler.")
-    if universe.bars_hash is None:
+    if level.bars_hash is None:
         raise ValueError("Universe missing bars_hash; recompile the config pack.")
-    if checkpoint_bars_hash != universe.bars_hash:
+    if checkpoint_bars_hash != level.bars_hash:
         raise ValueError(
             f"Checkpoint bars_hash mismatch: checkpoint={checkpoint_bars_hash[:16]}..., "
-            f"current={universe.bars_hash[:16]}... "
+            f"current={level.bars_hash[:16]}... "
             "The bars configuration has changed since the checkpoint was created."
         )
 
     checkpoint_affordances_hash = checkpoint.get("affordances_hash")
     if checkpoint_affordances_hash is None:
         raise ValueError("Checkpoint missing affordances_hash; regenerate the checkpoint with the latest compiler.")
-    if universe.affordances_hash is None:
+    if level.affordances_hash is None:
         raise ValueError("Universe missing affordances_hash; recompile the config pack.")
-    if checkpoint_affordances_hash != universe.affordances_hash:
+    if checkpoint_affordances_hash != level.affordances_hash:
         raise ValueError(
             f"Checkpoint affordances_hash mismatch: checkpoint={checkpoint_affordances_hash[:16]}..., "
-            f"current={universe.affordances_hash[:16]}... "
+            f"current={level.affordances_hash[:16]}... "
             "The affordances configuration has changed since the checkpoint was created."
         )
 
     checkpoint_training_hash = checkpoint.get("training_hash")
     if checkpoint_training_hash is None:
         raise ValueError("Checkpoint missing training_hash; regenerate the checkpoint with the latest compiler.")
-    if universe.training_hash is None:
+    if level.training_hash is None:
         raise ValueError("Universe missing training_hash; recompile the config pack.")
-    if checkpoint_training_hash != universe.training_hash:
+    if checkpoint_training_hash != level.training_hash:
         raise ValueError(
             f"Checkpoint training_hash mismatch: checkpoint={checkpoint_training_hash[:16]}..., "
-            f"current={universe.training_hash[:16]}... "
+            f"current={level.training_hash[:16]}... "
             "The training configuration has changed since the checkpoint was created."
         )
 
@@ -262,16 +377,18 @@ def assert_checkpoint_vfs_hash(checkpoint: Mapping[str, Any], universe: Compiled
     if universe is None:
         raise ValueError("universe parameter cannot be None - compiled universe required for VFS hash validation")
 
+    level = universe.get_level(universe.metadata.primary_level)
+
     checkpoint_vfs_hash = checkpoint.get("vfs_hash")
     if checkpoint_vfs_hash is None:
         raise ValueError("Checkpoint missing vfs_hash; regenerate the checkpoint with the latest compiler.")
 
-    if checkpoint_vfs_hash == universe.vfs_hash:
+    if checkpoint_vfs_hash == level.vfs_hash:
         return True
 
     message = (
         f"Checkpoint vfs_hash mismatch: checkpoint={str(checkpoint_vfs_hash)[:16]}..., "
-        f"current={universe.vfs_hash[:16]}... "
+        f"current={level.vfs_hash[:16]}... "
         "Resume against a different VFS schema is a fork, not a continuation."
     )
     if force_new_vfs:
@@ -308,14 +425,9 @@ def assert_checkpoint_identity(checkpoint: Mapping[str, Any], universe: Compiled
     Returns True when the checkpoint may be resumed. Every mismatch raises
     ValueError except the explicit force-new-VFS branch, which returns False.
     """
+    _validate_checkpoint_format_version(checkpoint)
     if universe is None:
         raise ValueError("universe parameter cannot be None - compiled universe required for identity validation")
-
-    version = checkpoint.get("version")
-    if version != CHECKPOINT_FORMAT_VERSION:
-        raise ValueError(
-            f"Unsupported checkpoint version: {version}\nExpected version {CHECKPOINT_FORMAT_VERSION}. Please retrain from scratch."
-        )
 
     # PDR-0027: state a lineage fork before any hash leg can raise about it. Placed after
     # the format gate on purpose — a wrong-format checkpoint lacks the stamp entirely, and
@@ -325,7 +437,7 @@ def assert_checkpoint_identity(checkpoint: Mapping[str, Any], universe: Compiled
     if not assert_checkpoint_vfs_hash(checkpoint, universe, force_new_vfs=force_new_vfs):
         return False
 
-    assert_checkpoint_dimensions(checkpoint, universe)
+    assert_checkpoint_dimensions(checkpoint, universe, architecture_type=universe.brain.architecture.type)
 
     checkpoint_primary_level = checkpoint.get("primary_level")
     if checkpoint_primary_level is None:
@@ -364,7 +476,7 @@ def load_token_network_state_by_type(
     network: torch.nn.Module,
     source_state: Mapping[str, torch.Tensor],
 ) -> TokenRosterReport:
-    """Load a TokenSetQNetwork state dict BY TYPE KEY (token-obs spec §4).
+    """Load a token-native network state dict BY TYPE KEY (token-obs spec §4).
 
     Per-type encoders and type embeddings load for the INTERSECTION of type keys —
     the ``nn.ModuleDict`` keying is the transfer contract (a list indexed by roster
@@ -378,13 +490,13 @@ def load_token_network_state_by_type(
     cold-starts that module and is reported, because the Q-head's values encode the
     source universe's rewards and must be relearned anyway.
     """
-    from townlet.agent.networks import TokenSetQNetwork
+    from townlet.agent.networks import RecurrentTokenQNetwork, TokenSetQNetwork
 
-    if not isinstance(network, TokenSetQNetwork):
-        raise ValueError(f"load_token_network_state_by_type requires a TokenSetQNetwork, got {type(network).__name__}")
+    if not isinstance(network, (TokenSetQNetwork, RecurrentTokenQNetwork)):
+        raise ValueError(f"load_token_network_state_by_type requires a token-native Q-network, got {type(network).__name__}")
 
     def _type_of(key: str) -> str | None:
-        for prefix in ("encoders.", "type_embeddings."):
+        for prefix in ("encoder.encoders.", "encoder.type_embeddings."):
             if key.startswith(prefix):
                 return key[len(prefix) :].split(".", 1)[0]
         return None
@@ -549,7 +661,7 @@ def safe_torch_load(
 
     try:
         # PyTorch 2.6+ requires explicit allowlisting of numpy types
-        # Add numpy types to safe globals for PyTorch 2.6+ compatibility
+        # Register NumPy types required by PyTorch 2.6+ safe loading.
 
         import numpy as np
 

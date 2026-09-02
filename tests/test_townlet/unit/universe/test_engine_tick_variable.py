@@ -33,8 +33,9 @@ _BASE_PROFILES = {
 
 
 def test_tick_variable_is_injected_into_every_universe(tmp_path):
-    u = _compile(prepare_config_dir(tmp_path))
-    tick = next(v for v in u.vfs_variables if v.id == "tick")
+    universe = _compile(prepare_config_dir(tmp_path))
+    level = universe.get_level(universe.metadata.primary_level)
+    tick = next(v for v in level.vfs_variables if v.id == "tick")
     assert str(tick.scope) in ("global", "VariableScope.GLOBAL") or tick.scope.value == "global"
     assert tick.writable_by == ["engine"]
     assert "agent" in tick.readable_by

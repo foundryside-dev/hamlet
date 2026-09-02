@@ -59,7 +59,7 @@ def _record_scale_axes(benchmark, env, *, label: str) -> None:
     benchmark.extra_info["observation_dim"] = env.observation_dim
     benchmark.extra_info["position_dim"] = env.substrate.position_dim
     benchmark.extra_info["affordance_count"] = len(env.affordances) if hasattr(env, "affordances") else 0
-    benchmark.extra_info["grid_size"] = env.grid_size if env.grid_size is not None else 0
+    benchmark.extra_info["grid_cells"] = env.metadata.grid_cells
 
 
 class TestEnvironmentStepBenchmarks:

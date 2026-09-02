@@ -3,7 +3,6 @@
 import pytest
 import torch
 
-from townlet.config.effects_config import EffectScope
 from townlet.effects.catalog import CompiledEffect, EffectCatalog
 from townlet.effects.executor import CommandExecutor
 from townlet.effects.manager import EffectManager
@@ -26,12 +25,12 @@ def test_aoe_heal_nearby_agents():
 
     # Create effect catalog with group_heal effect
     catalog = EffectCatalog(
+        max_active_effects={"global": 8, "agent": 8, "item": 8, "affordance": 8},
         effects={
             "group_heal": CompiledEffect(
                 id="group_heal",
                 scope="agent",
                 duration=1,
-                intensity=1.0,
                 reapply_policy="replace",
                 observable=True,
                 on_spawn=[
@@ -47,7 +46,7 @@ def test_aoe_heal_nearby_agents():
                 on_despawn=[],
                 on_interrupt=[],
             ),
-        }
+        },
     )
 
     manager = EffectManager(catalog=catalog, device="cpu", command_executor=executor)
@@ -61,8 +60,6 @@ def test_aoe_heal_nearby_agents():
     manager.spawn_effect(
         effect_id="group_heal",
         target_entity_id=0,
-        scope=EffectScope.AGENT,
-        duration=1,
         intensity=1.0,
         current_step=0,
         bars=bars,

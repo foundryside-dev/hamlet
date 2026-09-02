@@ -278,9 +278,9 @@ never through the observation. Its absence is an assertion, not an omission — 
 moves, the cut reached the transition graph and that is a finding.
 
 `observation_spec.total_dims` is **unchanged at 124** on every level, because every meter in
-`default_curriculum` declares a width-preserving `minmax`. A pack that declares
-`cyclical_sin_cos` or `one_hot` on a meter widens it by design, which is pinned by
-`test_a_widening_meter_kind_grows_the_observation_by_exactly_its_extra_dims`.
+`default_curriculum` declares a width-preserving `minmax`. This paragraph records the
+deleted pre-token ABI: `PDR-0134` supersedes it with a fixed two-lane value block and
+rejects `one_hot` on meters rather than widening the observation.
 
 **Harness adjudication.** Bound per-cell in `src/townlet/oracle/matrix.py` via
 `RegisteredHashDivergence("DIV-004", hash_fields=(...))` on every STANDING cell. A cell
@@ -834,7 +834,7 @@ what a pack declares, so the note's force comes entirely from what the **live** 
 declare, not the frozen `oracle_fixtures/` copies. Verified both sides, 2026-08-24: zero
 `exposed_to` hits under `oracle_fixtures/` (`grep -rn exposed_to oracle_fixtures/`); under
 `configs/`, `exposed_to` appears only in `configs/trial_f_durability`,
-`configs/test/set_encoder_smoke`, and `configs/reference/config-complete.yaml` — **none of
+`configs/test/token_set_smoke`, and `configs/reference/config-complete.yaml` — **none of
 them a matrix pack** (the twenty cells run `default_curriculum`, the three `differential/
 div003_*` packs, `test/items_smoke`, `test/effects_smoke`). So every matrix pack's live
 `vfs_profiles.yaml` declares no `exposed_to` today, on both sides of the cut. Post-cut, once
@@ -1275,6 +1275,173 @@ difference is `DIVERGE` — all red, as for every hash-only entry.
 **Retire this entry** when DIV-008 lands (Task 10 redefines `observation_schema_hash`
 over the TokenSpec and the token hashes become part of that registered surface), or when
 the oracle is re-tagged past unit 3's landings, whichever comes first.
+
+---
+
+## DIV-012 — Four undeclared hash movers surfaced by the `day_phase` run, each bisected to its causing commit
+
+- **Status:** `built` (2026-09-02 — measured against the full cpu matrix, run
+  `20260902-100802` (`UV_CACHE_DIR=.uv-cache uv run python -m townlet.oracle.harness`, no
+  `--cell`, no `--cuda`), **exit 0**: all ten cpu cells `DIVERGED_AS_REGISTERED` naming
+  `["DIV-009", "DIV-010", "DIV-012", "DIV-008"]` (standing and differential) or
+  `["DIV-009", "DIV-010", "DIV-012", "DIV-008"]` with `_DIV012_PROFILE`'s narrower field set
+  (profile — same `register_ref`, different `RegisteredHashDivergence` object, so the printed
+  ref list is identical text even though the bound fields differ); all ten cuda cells
+  `SKIPPED` (`cuda not requested` — genuinely unmeasured, not adjudicated either way).
+  Superseded an earlier single-cell run, `20260902-092715`
+  (`default_curriculum:L3_temporal_mechanics:cpu` alone), which found the same four fields
+  `HASH_MISMATCH` with `register_refs: []` and an unbisected "already diverged before
+  `149e2bad`" attribution for three of them — that attribution is corrected below by an
+  actual per-commit bisection.)
+- **Harness shape: hash-only** (`RegisteredHashDivergence`, two objects: `_DIV012` and
+  `_DIV012_PROFILE`)
+- **Provenance:** `hamlet-55b2826a02` (unit 5, `day_phase`, this ticket) · `PDR-0143` (unit 5,
+  and its own §6 identity rule) · commit `94656527` (Task 1, "feat(stratum): delete the inert
+  observation_mode key") · commit `c6c6b524` ("fix(tokens): restore executable observation
+  authority", the M2 meter `range_type` migration) · commit `d554fb7f` ("feat(tokens): cut
+  compact replay ABI")
+- **Surface:** `src/townlet/config/stratum_config.py` (`observation_mode` deletion) ·
+  `src/townlet/config/affordances_v2_config.py` (`AffordanceParamConfig`: `duration_ticks`
+  gains `gt=0`, `interaction_type` narrows from `{instant, multi_tick, dual}` to
+  `{instant, multi_tick}`, `validate_interaction_stages` rewritten around reachable-stage
+  sets — no pack YAML edited alongside this one) · `src/townlet/config/environment_config.py`
+  (`MeterRangeNone` deleted, `MeterRangeMinMax.clip` narrows `bool` → `Literal[True]`)
+  **together with** every covered pack's `environment.yaml` (`clip: false` → `true` on every
+  declared meter, same commit — the schema narrowing and the content edit landed together,
+  so `environment_hash`'s movement is not schema-alone) · `src/townlet/config/
+  brain_config.py` (`ArchitectureConfig._serialize_without_absent_token_set` — the
+  `model_serializer` `cbea580f` added specifically to omit the always-`None` `token_set` key
+  from `model_dump()` — deleted by `d554fb7f` alongside `SetEncoderConfig`)
+
+**What the run found.** The single-cell run (`20260902-092715`) reported
+`default_curriculum:L3_temporal_mechanics:cpu` as `HASH_MISMATCH`. Its `mismatched` set has
+twelve fields; eight are already covered by the DIV-008/009/010 union (`day_phase`'s own
+movement of `layout_hash`, `observation_schema_hash`, `variable_schema_hash`, `vfs_hash` —
+additive on top of those entries' own reasons, DIV-010's "two causes, one hash" composing
+shape). Four were undeclared: `affordances_hash`, `brain_hash`, `environment_hash`,
+`stratum_hash`.
+
+**Measurement method (bisection).** DIV-009's own method: OLD side = the frozen
+`.oracle/oracle-2026-08-17` worktree's code (pinned at `4222a917`, never moves) compiled
+against `oracle_fixtures/configs/default_curriculum` **as committed at the candidate
+commit** (not a single frozen snapshot — `oracle_fixtures/` itself moved once in this range,
+see below); NEW side = a `git worktree add --detach` checkout of the candidate commit,
+compiled with that commit's own `src/` against that commit's own
+`configs/default_curriculum`. `git log --oneline 4222a917..149e2bad -- configs/
+default_curriculum src/townlet/config` (the only two path classes a RAW hash can move on)
+narrows the walk to seventeen commits; the ones touching `affordances_v2_config.py`,
+`environment_config.py`, `stratum_config.py` or `brain_config.py` are the only candidates,
+probed via `UniverseCompiler().compile(..., use_cache=False)` reading every `*_hash`
+attribute off the compiled level, metadata AND universe objects (an earlier pass of this
+bisection only read the level object and silently dropped `brain_hash`/`environment_hash`/
+`pack_brain_hash` from the comparison — caught by cross-checking against the actual harness
+report before trusting the result).
+
+`oracle_fixtures/configs/default_curriculum/environment.yaml` itself moves exactly once in
+`4222a917..149e2bad`, at `0b659130` ("delete the four writerless observation variables") —
+but that commit re-freezes its own `oracle_fixtures` copy in the same commit (confirmed:
+`git show --stat 0b659130 -- oracle_fixtures` touches all four differential+standing
+`environment.yaml` fixtures), so the live-vs-frozen comparison nets to zero movement there,
+exactly DIV-009's own `0b659130` finding for `environment_hash`/`variable_schema_hash`/etc.
+No other commit in range touches `oracle_fixtures/configs/default_curriculum/` (corrected
+2026-09-02, PDR-0143 fix wave: the original claim named `oracle_fixtures/` unqualified, which
+is false — `b7fc3951` ("delete inert position encoding modes") also touches `oracle_fixtures/`,
+renaming `oracle_fixtures/configs/differential/div003_scaled/` to `.../boundary_wrap/` and
+editing its `stratum.yaml`, entirely outside `default_curriculum`'s own tree and therefore
+outside this bisection's OLD side), so the OLD side is otherwise constant throughout for
+`default_curriculum` — each candidate's bisection reduces to "does the NEW side's compiled
+value change relative to that one constant."
+
+**Per-field bisection (exact commit, confirmed by comparing the literal hash string, not
+just mismatch/match against OLD):**
+
+| field | value through | first moves at | commit | cause |
+|---|---|---|---|---|
+| `stratum_hash` | `149e2bad` (`263635d7…`) | `94656527` (`bcbf09eb…`) | `94656527` | Task 1 deletes `observation_mode` from `StratumConfig`; RAW hash over the whole config, frozen `oracle_fixtures/stratum.yaml` still declares the key |
+| `affordances_hash` | `237b0c38` (`af020ccd…`, = OLD) | `c6c6b524` (`2bda63f6…`) | `c6c6b524` | `AffordanceParamConfig` schema narrows (`duration_ticks: gt=0`, `interaction_type` drops `dual`, `validate_interaction_stages` rewritten); RAW hash moves for the schema edit alone — `configs/default_curriculum/affordances.yaml` itself has an EMPTY diff in this commit |
+| `environment_hash` | `237b0c38` (`6788982a…`, = OLD) | `c6c6b524` (`5bbd38d3…`) | `c6c6b524` | same commit, BOTH move together: `EnvironmentConfig`'s meter `range_type` schema narrows (`MeterRangeNone` deleted, `MeterRangeMinMax.clip: bool → Literal[True]`) AND every covered pack's `environment.yaml` content changes (`clip: false → true` on all 8 `default_curriculum` meters, same edit landing in `boundary_wrap`, `div003_cubic_partial`, `div003_rect`, `items_smoke`, `effects_smoke` in this commit) — confirmed by `git show c6c6b524 -- configs/default_curriculum/environment.yaml`; movement is NOT isolated to the schema edit, unlike `affordances_hash` above |
+| `brain_hash` | `cbea580f`/`237b0c38` (`5650add3…`, = OLD — `cbea580f`'s own "zero-movement pin" fix works as designed) | `d554fb7f` (`4f10939d…`) | `d554fb7f` | deletes `ArchitectureConfig._serialize_without_absent_token_set`, the `model_serializer` `cbea580f` added specifically to omit the always-`None` `token_set` key from `model_dump()`; its removal reintroduces exactly the movement `cbea580f` had fixed — confirmed unchanged through `9d4e942f` (identical hash value, that later commit's `brain_config.py` edits do not move it further for `default_curriculum`) |
+
+`pack_brain_hash` (already declared by `_DIV009_STANDING`) shares `brain_hash`'s value on
+this pack (no per-level brain override exists) and moves at the same commit for the same
+reason; not separately bisected.
+
+**Full cpu-cell table** (run `20260902-100802`; CUDA genuinely unmeasured, all `SKIPPED`):
+
+| pack | level | undeclared movers before this entry | binding |
+|---|---|---|---|
+| `default_curriculum` | `L0_0_minimal` | `affordances_hash, brain_hash, environment_hash, stratum_hash` | `_DIV012` |
+| `default_curriculum` | `L0_5_dual_resource` | `affordances_hash, brain_hash, environment_hash, stratum_hash` | `_DIV012` |
+| `default_curriculum` | `L1_full_observability` | `affordances_hash, brain_hash, environment_hash, stratum_hash` | `_DIV012` |
+| `default_curriculum` | `L2_partial_observability` | `affordances_hash, brain_hash, environment_hash, stratum_hash` | `_DIV012` |
+| `default_curriculum` | `L3_temporal_mechanics` | `affordances_hash, brain_hash, environment_hash, stratum_hash` | `_DIV012` |
+| `boundary_wrap` | `L1_full_observability` | `affordances_hash, brain_hash, environment_hash, stratum_hash` | `_DIV012` |
+| `div003_cubic_partial` | `L2_partial_observability` | `affordances_hash, brain_hash, environment_hash, stratum_hash` | `_DIV012` |
+| `div003_rect` | `L1_full_observability` | `affordances_hash, brain_hash, environment_hash, stratum_hash` | `_DIV012` |
+| `items_smoke` | `L0_smoke` | `brain_hash, environment_hash, stratum_hash` (measured — `affordances_hash` does NOT move here) | `_DIV012_PROFILE` |
+| `effects_smoke` | `L0_effects` | `brain_hash, environment_hash, stratum_hash` (measured — `affordances_hash` does NOT move here) | `_DIV012_PROFILE` |
+
+The standing and differential blocks' undeclared-mover sets are IDENTICAL to `_DIV012`'s
+four-field declaration — measured directly from the `20260902-100550` pre-fix run's
+`HASH_MISMATCH` detail for the three differential cells (the five standing cells were already
+bound to `_DIV012` by that run, so their own undeclared-mover breakdown isn't independently
+visible in that report, but their clean `DIVERGED_AS_REGISTERED` in both the pre- and
+post-fix runs is the direct confirmation the union matches exactly). The two profile cells
+measurably lack `affordances_hash` in their mismatched set — `items_smoke`/`effects_smoke`
+declare no affordance whose `AffordanceParamConfig` schema exercises the narrowed fields
+differently enough to move the RAW hash, or their affordances happen to compile to the same
+dump either way; not further investigated since the measurement (not the reason) is what the
+narrower `_DIV012_PROFILE` binding needs.
+
+Both the `20260902-100550` pre-fix run and the `20260902-100802` binding run recorded the same
+`new_commit: 430eb5af` in their `report.json`, despite the latter being run after the
+bisection and binding work described above — the harness reads commit provenance from the
+working tree at run time, and that work was still uncommitted (staged locally) when
+`20260902-100802` ran; it was committed afterward at `b3120870`, so the harness's own
+commit-provenance field lags the measurement it is attached to on both reports.
+
+**Why one entry, two binding objects.** `affordances_hash`, `brain_hash` and `environment_hash`
+are schema-level RAW hash movers (three separate commits, three separate causes) and
+`stratum_hash` is a fourth, unrelated schema-level RAW hash mover (a fifth cause would be
+none — all four are genuinely different commits touching different DTOs). They are grouped
+under one `DIV-012` register_ref because that is what PDR-0037's record-then-bind discipline
+and DIV-009's own precedent call for: one ticket, one landing, one entry naming everything the
+ticket's own measurement surfaced, not four entries for four unrelated single-commit findings
+that happen to have been discovered by the same run. Two `RegisteredHashDivergence` objects
+(`_DIV012`, `_DIV012_PROFILE`) exist under that one `register_ref` because the union-exact
+rule requires the declared set to match the OBSERVED set per cell exactly, and the profile
+cells' observed set is measurably narrower by one field (`affordances_hash`) — declaring the
+wider set there would make the entry stale (`REGISTERED_DIVERGENCE_ABSENT`) on those two
+cells.
+
+**Scope.** All ten cpu cells run and adjudicated (`20260902-100802`, exit 0). CUDA is
+declared identically (per `Cell.hash_divergences`) but not run this ticket (`--cuda` not
+passed) — genuinely unmeasured, not assumed to agree.
+
+**Second cause on `items_smoke` (unit-5 item-profile exposure, `7db18ec9`).** Exposing
+`durability` on `items_smoke`'s `medical` profile additionally moves `layout_hash`,
+`observation_schema_hash`, `variable_schema_hash` and `vfs_hash` on the two `items_smoke`
+cells (`obs` shape `[4, 61] → [4, 474]`) — already covered by `_DIV008_HASH`/`_DIV010`'s
+declared sets, not a new undeclared mover; verified `DIVERGED_AS_REGISTERED` with no
+undeclared movers, run `20260902-110926`.
+
+**Harness adjudication.** `_DIV012 = RegisteredHashDivergence(register_ref="DIV-012",
+hash_fields=("affordances_hash", "brain_hash", "environment_hash", "stratum_hash"))` binds
+the ten standing and differential cells: `(_DIV009_STANDING, _DIV010, _DIV012, _DIV008_HASH)`.
+`_DIV012_PROFILE = RegisteredHashDivergence(register_ref="DIV-012", hash_fields=("brain_hash",
+"environment_hash", "stratum_hash"))` binds the four profile cells alongside `_DIV009_PROFILE`:
+`(_DIV009_PROFILE, _DIV010, _DIV012_PROFILE, _DIV008_HASH)`. Both field sets are disjoint from
+every other bound entry's fields on their respective cells (no overlap to resolve, DIV-009's
+shape). A mover outside a cell's declared union stays `HASH_MISMATCH`; a declared field that
+does not move lands `REGISTERED_DIVERGENCE_ABSENT`; any stream difference is `DIVERGE` — all
+red, as for every hash-only entry.
+
+**Retire this entry** when each of its four causes is independently absorbed: `stratum_hash`
+when `oracle_fixtures/stratum.yaml` is re-frozen or the oracle is re-tagged past `94656527`;
+`affordances_hash`/`environment_hash` when re-frozen or re-tagged past `c6c6b524`;
+`brain_hash` when re-frozen or re-tagged past `d554fb7f` — four independent retirement
+conditions bound under one entry for the union-exact rule's sake, not because they share a
+story.
 
 ---
 

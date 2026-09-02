@@ -35,7 +35,6 @@ def test_make_grid2d_substrate_defaults():
     assert substrate.height == 8
     assert substrate.boundary == "clamp"
     assert substrate.distance_metric == "manhattan"
-    assert substrate.observation_encoding == "relative"
     assert substrate.position_dim == 2
 
 
@@ -46,14 +45,12 @@ def test_make_grid2d_substrate_custom():
         height=5,
         boundary="wrap",
         distance_metric="euclidean",
-        observation_encoding="scaled",
     )
 
     assert substrate.width == 3
     assert substrate.height == 5
     assert substrate.boundary == "wrap"
     assert substrate.distance_metric == "euclidean"
-    assert substrate.observation_encoding == "scaled"
 
 
 def test_make_grid3d_substrate_defaults():
@@ -65,7 +62,6 @@ def test_make_grid3d_substrate_defaults():
     assert substrate.depth == 3
     assert substrate.boundary == "clamp"
     assert substrate.distance_metric == "manhattan"
-    assert substrate.observation_encoding == "relative"
     assert substrate.position_dim == 3
 
 
@@ -77,7 +73,6 @@ def test_make_grid3d_substrate_custom():
         depth=2,
         boundary="bounce",
         distance_metric="chebyshev",
-        observation_encoding="absolute",
     )
 
     assert substrate.width == 4
@@ -85,7 +80,6 @@ def test_make_grid3d_substrate_custom():
     assert substrate.depth == 2
     assert substrate.boundary == "bounce"
     assert substrate.distance_metric == "chebyshev"
-    assert substrate.observation_encoding == "absolute"
 
 
 def test_make_bars_config_defaults():

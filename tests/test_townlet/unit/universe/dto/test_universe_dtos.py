@@ -50,7 +50,6 @@ class TestAffordanceMetadata:
                     id="bed",
                     name="Bed",
                     enabled=True,
-                    effects={"energy": 0.5},
                     cost=5.0,
                     category="rest",
                 ),
@@ -77,7 +76,6 @@ def test_universe_metadata_instantiation():
         affordance_id_to_index={"Bed": 0},
         action_count=5,
         observation_dim=42,
-        grid_size=3,
         grid_cells=9,
         ticks_per_day=24,
         config_version="1.0",
@@ -90,4 +88,5 @@ def test_universe_metadata_instantiation():
         torch_version="2.1.0",
         pydantic_version="2.6.0",
     )
+    assert "grid_size" not in UniverseMetadata.__dataclass_fields__
     assert metadata.observation_dim == 42

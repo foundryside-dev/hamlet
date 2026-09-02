@@ -23,6 +23,8 @@ from townlet.training.checkpoint_utils import (
     attach_universe_metadata,
     persist_checkpoint_digest,
     safe_torch_load,
+    validate_demo_checkpoint_payload,
+    validate_demo_checkpoint_runtime_fields,
     verify_checkpoint_digest,
 )
 from townlet.training.state import BatchedAgentState
@@ -31,6 +33,46 @@ from townlet.universe.compiled import CompiledUniverse
 from townlet.universe.compiler import UniverseCompiler
 
 logger = logging.getLogger(__name__)
+
+
+def resolve_training_status(*, failed: bool, should_shutdown: bool, budget_reached: bool, episodes_reached: bool) -> str:
+    """Name how a training loop ended; a graceful stop short of its budget is not ``completed``.
+
+    A shutdown request truncates the episode it lands in, so it outranks the episode
+    limit: only a reached transition budget makes a shut-down run ``completed``.
+    """
+    if failed:
+        return "failed"
+    if budget_reached:
+        return "completed"
+    if should_shutdown:
+        return "interrupted"
+    if episodes_reached:
+        return "completed"
+    raise ValueError("training loop exited without a terminal cause")
+
+
+def decide_live_agent_budget(*, completed: int, live_agents: int, budget: int) -> tuple[bool, int]:
+    """Decide whether one indivisible vector step fits a live-agent transition budget.
+
+    Returns ``(may_step, shortfall)``. The shortfall is non-zero only when the
+    remaining budget cannot fit all currently live lanes, so callers stop before
+    the vector step rather than overshooting or injecting a partial batch.
+    """
+    values = {"completed": completed, "live_agents": live_agents, "budget": budget}
+    for name, value in values.items():
+        if not isinstance(value, int) or isinstance(value, bool):
+            raise ValueError(f"{name} must be an integer")
+    if completed < 0:
+        raise ValueError("completed must be non-negative")
+    if live_agents <= 0:
+        raise ValueError("live_agents must be positive")
+    if budget <= 0:
+        raise ValueError("budget must be positive")
+    if completed > budget:
+        raise ValueError("completed cannot exceed budget")
+    remaining = budget - completed
+    return (True, 0) if live_agents <= remaining else (False, remaining)
 
 
 class DemoRunner:
@@ -46,10 +88,10 @@ class DemoRunner:
         db_path: Path | str,
         checkpoint_dir: Path | str,
         max_episodes: int | None = None,
-        training_config_path: Path | str | None = None,
         *,
         level_name: str | None = None,
         force_new_vfs: bool = False,
+        max_environment_steps: int | None = None,
     ):
         """Initialize demo runner.
 
@@ -60,30 +102,32 @@ class DemoRunner:
             db_path: Path to SQLite database
             checkpoint_dir: Directory for checkpoint files
             max_episodes: Maximum number of episodes to run (if None, reads from level training.yaml)
-            training_config_path: Deprecated; overrides are no longer supported.
             force_new_vfs: Start a fresh run branch instead of resuming an incompatible VFS checkpoint.
+            max_environment_steps: Optional summed-live-agent transition budget.
+                A vector step is taken only when every currently live lane fits.
         """
         self.config_dir = Path(config_dir)
         # Resolve training config path:
         # - v2.1 packs: levels/<level_name>/training.yaml (mandatory)
-        if training_config_path is not None:
-            raise ValueError(
-                "training_config_path override is no longer supported; use levels/<level_name>/training.yaml with explicit level_name."
-            )
         if level_name is None:
-            raise ValueError("level_name is required for v2.1 config packs; legacy single-file training.yaml is no longer supported.")
+            raise ValueError("level_name is required; training configuration is owned by a level in the v2.1 config pack.")
         self.training_config_path = self.config_dir / "levels" / level_name / "training.yaml"
         if not self.training_config_path.exists():
             raise FileNotFoundError(f"Training config not found: {self.training_config_path}")
         self.db_path = Path(db_path)
         self.checkpoint_dir = Path(checkpoint_dir)
         self.force_new_vfs = force_new_vfs
+        if max_environment_steps is not None and (
+            not isinstance(max_environment_steps, int) or isinstance(max_environment_steps, bool) or max_environment_steps <= 0
+        ):
+            raise ValueError("max_environment_steps must be a positive integer or None")
+        self.max_environment_steps = max_environment_steps
+        self.completed_live_agent_steps = 0
+        self.environment_step_budget_shortfall = 0
+        self.environment_step_budget_reached = False
 
         # Create directories
         self.checkpoint_dir.mkdir(parents=True, exist_ok=True)
-
-        # Pre-flight check: detect old checkpoints (Phase 4 breaking change)
-        self._validate_checkpoint_compatibility()
 
         # Initialize database
         self.db = DemoDatabase(self.db_path)
@@ -122,15 +166,6 @@ class DemoRunner:
         # Seed every RNG stream before anything random is constructed; the seed is
         # config-declared so the run is reproducible from its own checkpoint.
         seed_all(self.training_config.seed)
-        # Expose training config in the legacy dict shape for downstream callers/tests
-        self.config: dict[str, Any] = {
-            "training": self.training_config.model_dump(exclude_none=True),
-        }
-        if self.training_config.run_metadata is not None:
-            self.config["run_metadata"] = self.training_config.run_metadata.model_dump(exclude_none=True)
-        if self.training_config.recording is not None:
-            self.config["recording"] = self.training_config.recording.model_dump(exclude_none=True)
-
         # Set max_episodes: use provided value, otherwise read from curriculum training config
         if max_episodes is not None:
             self.max_episodes = max_episodes
@@ -156,51 +191,6 @@ class DemoRunner:
             # Running in a worker thread (e.g., unified server)
             # Signal handling will be done by the orchestrator
             pass
-
-    def _validate_checkpoint_compatibility(self) -> None:
-        """Validate checkpoint directory doesn't contain old checkpoints.
-
-        BREAKING CHANGE: Phase 4 changed checkpoint format.
-        Old checkpoints (Version 2) will not load.
-
-        Raises:
-            ValueError: If old checkpoints detected
-        """
-        if not self.checkpoint_dir.exists():
-            return  # No checkpoints yet (fresh start)
-
-        checkpoint_files = list(self.checkpoint_dir.glob("*.pt"))
-        if not checkpoint_files:
-            return  # Empty directory (fresh start)
-
-        # Check first checkpoint for substrate_metadata
-        first_checkpoint_path = checkpoint_files[0]
-
-        try:
-            verify_checkpoint_digest(first_checkpoint_path, required=True)
-            # Demo checkpoints embed trusted custom Python objects (population
-            # state, curriculum state, replay buffers). The digest above pins
-            # the file we are about to unpickle to one we produced ourselves.
-            checkpoint = safe_torch_load(first_checkpoint_path, allow_unsafe_pickle=True)
-
-            # Validate checkpoint has required metadata
-            if "substrate_metadata" not in checkpoint:
-                raise ValueError(
-                    f"Unsupported checkpoint format detected in {self.checkpoint_dir}.\n"
-                    "Checkpoint missing 'substrate_metadata' field.\n"
-                    "\n"
-                    "Action required:\n"
-                    f"  1. Delete checkpoint directory: {self.checkpoint_dir}\n"
-                    "  2. Retrain model from scratch\n"
-                    "\n"
-                    f"Detected checkpoint: {first_checkpoint_path.name}"
-                )
-        except Exception as e:
-            # If we can't load checkpoint, let the normal loading code handle it
-            # (might be corrupted, wrong format, etc.)
-            if "Unsupported checkpoint format" in str(e):
-                raise  # Re-raise our validation error
-            # Otherwise ignore (will fail later during actual load)
 
     def _handle_shutdown(self, signum, frame):
         """Handle shutdown signal gracefully."""
@@ -263,52 +253,54 @@ class DemoRunner:
 
     def save_checkpoint(self):
         """Save checkpoint at current episode."""
+        if self.env is None or self.population is None or self.curriculum is None:
+            raise RuntimeError("Checkpoint save requires initialized env, population, and curriculum components.")
+
+        env = self.env
+        population = self.population
+        curriculum = self.curriculum
+
         # P1.1 Phase 5: Flush all agents before checkpoint
         self.flush_all_agents()
 
         checkpoint_path = self.checkpoint_dir / f"checkpoint_ep{self.current_episode:05d}.pt"
+
+        population_state = population.get_checkpoint_state()
+        curriculum_state = curriculum.checkpoint_state()
+        affordance_layout = env.get_affordance_positions()
+        population.validate_checkpoint_state(population_state)
+        curriculum.validate_checkpoint_state(curriculum_state)
+        env.validate_affordance_positions(affordance_layout)
 
         # P1.1 Phase 2: Use population's complete checkpoint state
         checkpoint: dict[str, Any] = {
             "version": CHECKPOINT_FORMAT_VERSION,
             "episode": self.current_episode,
             "timestamp": time.time(),
+            "substrate_metadata": {
+                "position_dim": env.substrate.position_dim,
+                "substrate_type": type(env.substrate).__name__,
+            },
+            "population_state": population_state,
+            "curriculum_state": curriculum_state,
+            "affordance_layout": affordance_layout,
+            "agent_ids": population.agent_ids,
+            "epsilon": population._get_current_epsilon_value(),
+            "completed_live_agent_steps": self.completed_live_agent_steps,
+            "training_config": self.training_config.model_dump(),
+            "config_dir": str(self.config_dir),
         }
-
-        # Phase 5: Add substrate metadata for validation
-        if self.env:
-            checkpoint["substrate_metadata"] = {
-                "position_dim": self.env.substrate.position_dim,
-                "substrate_type": type(self.env.substrate).__name__,
-            }
-
-        # Add full population state (includes q_network, optimizer, replay_buffer, etc.)
-        if self.population:
-            checkpoint["population_state"] = self.population.get_checkpoint_state()
-
-        # P1.1 Phase 3: Add curriculum state (agent stages, performance trackers)
-        if self.curriculum:
-            checkpoint["curriculum_state"] = self.curriculum.state_dict()
-
-        # P1.1 Phase 4: Add affordance layout (grid positions)
-        if self.env:
-            checkpoint["affordance_layout"] = self.env.get_affordance_positions()
-
-        # P1.1 Phase 6: Add agent_ids for multi-agent coordination
-        if self.population:
-            checkpoint["agent_ids"] = self.population.agent_ids
-
-        # Add epsilon for inference server display (use population's epsilon getter for all exploration types)
-        if self.population:
-            checkpoint["epsilon"] = self.population._get_current_epsilon_value()
-
-        # Persist the training configuration for provenance
-        checkpoint["training_config"] = self.training_config.model_dump()
-        checkpoint["config_dir"] = str(self.config_dir)
 
         # WS-1 task 5: unconditional. The old `if universe is not None:` skip meant a
         # checkpoint could be written with ZERO provenance keys, making every guard vacuous.
         attach_universe_metadata(checkpoint, self.compiled)
+        validate_demo_checkpoint_payload(checkpoint)
+        validate_demo_checkpoint_runtime_fields(
+            checkpoint,
+            position_dim=env.substrate.position_dim,
+            substrate_type=type(env.substrate).__name__,
+            num_agents=population.num_agents,
+        )
 
         torch.save(checkpoint, checkpoint_path)
         persist_checkpoint_digest(checkpoint_path)
@@ -324,6 +316,13 @@ class DemoRunner:
             Episode number of loaded checkpoint, or None if no checkpoint
             (or when force-new-VFS explicitly branches instead of resuming)
         """
+        if self.env is None or self.population is None or self.curriculum is None:
+            raise RuntimeError("Checkpoint load requires initialized env, population, and curriculum components.")
+
+        env = self.env
+        population = self.population
+        curriculum = self.curriculum
+
         # Find latest checkpoint
         checkpoints = sorted(self.checkpoint_dir.glob("checkpoint_ep*.pt"))
         if not checkpoints:
@@ -334,31 +333,41 @@ class DemoRunner:
         logger.info(f"Loading checkpoint: {latest_checkpoint}")
 
         verify_checkpoint_digest(latest_checkpoint, required=True)
-        # See _detect_old_checkpoints above for the trust-boundary rationale.
+        # The verified digest pins the trusted Python payload we unpickle below.
         checkpoint = safe_torch_load(latest_checkpoint, allow_unsafe_pickle=True)
+        validate_demo_checkpoint_payload(checkpoint)
 
         # WS-1 task 5: the shared identity gate (format version, VFS ABI, dimensions,
         # content hashes, primary_level). The serving path runs the identical chain.
         if not assert_checkpoint_identity(checkpoint, self.compiled, force_new_vfs=self.force_new_vfs):
             return None
 
+        # Validate every outer and nested runtime-bound value before mutation.
+        validate_demo_checkpoint_runtime_fields(
+            checkpoint,
+            position_dim=env.substrate.position_dim,
+            substrate_type=type(env.substrate).__name__,
+            num_agents=population.num_agents,
+        )
+        completed_live_agent_steps = checkpoint["completed_live_agent_steps"]
+        if self.max_environment_steps is not None and completed_live_agent_steps > self.max_environment_steps:
+            raise ValueError(
+                "Checkpoint completed_live_agent_steps exceeds this run's environment-step budget: "
+                f"checkpoint={completed_live_agent_steps}, budget={self.max_environment_steps}."
+            )
+        population.validate_checkpoint_state(checkpoint["population_state"])
+        curriculum.validate_checkpoint_state(checkpoint["curriculum_state"])
+        env.validate_affordance_positions(checkpoint["affordance_layout"])
+
+        population.load_checkpoint_state(checkpoint["population_state"])
+        curriculum.load_state(checkpoint["curriculum_state"])
+        env.set_affordance_positions(checkpoint["affordance_layout"])
+        population.agent_ids = checkpoint["agent_ids"]
         self.current_episode = checkpoint["episode"]
-
-        # P1.1 Phase 2: Load full population state
-        if "population_state" in checkpoint and self.population:
-            self.population.load_checkpoint_state(checkpoint["population_state"])
-
-        # P1.1 Phase 3: Load curriculum state (agent stages, performance trackers)
-        if "curriculum_state" in checkpoint and self.curriculum:
-            self.curriculum.load_state_dict(checkpoint["curriculum_state"])
-
-        # P1.1 Phase 4: Load affordance layout (grid positions)
-        if "affordance_layout" in checkpoint and self.env:
-            self.env.set_affordance_positions(checkpoint["affordance_layout"])
-
-        # P1.1 Phase 6: Restore agent_ids for multi-agent coordination
-        if "agent_ids" in checkpoint and self.population:
-            self.population.agent_ids = checkpoint["agent_ids"]
+        self.completed_live_agent_steps = completed_live_agent_steps
+        if self.max_environment_steps is not None:
+            self.environment_step_budget_shortfall = self.max_environment_steps - completed_live_agent_steps
+            self.environment_step_budget_reached = completed_live_agent_steps == self.max_environment_steps
 
         logger.info(f"Resumed from episode {self.current_episode}")
         return self.current_episode
@@ -375,16 +384,13 @@ class DemoRunner:
         # Initialize training components
         # v2.1: device is an infrastructure concern (no-defaults exemption).
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        device_str = str(device)
-        if device_str == "cuda" and not torch.cuda.is_available():
-            logger.warning("CUDA requested but not available, falling back to CPU")
 
         # Per-level metadata
         level_meta = self.compiled.get_level(self.level_name)
         # Extract config parameters from DTOs (all required, validated at load time)
         loop_cfg = self.training_config.training_loop
         num_agents = self.training_config.population.size
-        grid_size = self.compiled.metadata.grid_size
+        grid_cells = self.compiled.metadata.grid_cells
         partial_observability = level_meta.curriculum.curriculum.active_vision != "global"
         vision_range = level_meta.curriculum.curriculum.vision_range
         enable_temporal_mechanics = level_meta.curriculum.curriculum.active_temporal
@@ -428,12 +434,6 @@ class DemoRunner:
             device=device,
         )
 
-        # The raster vision window died with the fixed-width observation ABI (unit-3
-        # cut). It survives only as a `VectorizedPopulation` constructor parameter for
-        # the recurrent path, which now refuses to build; 1 is the value that API has
-        # always taken for "no window".
-        vision_window_size = 1
-
         # Get training hyperparameters from config (all required per PDR-002)
         train_frequency = loop_cfg.train_frequency
         batch_size = self.training_config.replay_buffer.batch_size
@@ -461,7 +461,6 @@ class DemoRunner:
             device=device,
             obs_dim=obs_dim,
             action_dim=action_dim,
-            vision_window_size=vision_window_size,
             tb_logger=self.tb_logger,
             train_frequency=train_frequency,
             batch_size=batch_size,
@@ -505,14 +504,14 @@ class DemoRunner:
             "gamma": effective_brain_config.q_learning.gamma,
             "network_architecture": base_brain_config.architecture.type,  # 'feedforward' or 'recurrent'
             "replay_buffer_capacity": effective_brain_config.replay.capacity,
-            "grid_size": grid_size,
+            "grid_cells": grid_cells,
             "partial_observability": partial_observability,
             "vision_range": vision_range,
             "enable_temporal": enable_temporal_mechanics,
             "initial_intrinsic_weight": 1.0,
             "variance_threshold": self.training_config.intrinsic.annealing.threshold,
             "max_steps_per_episode": loop_cfg.max_steps_per_episode,
-            "observation_schema_hash": self.compiled.observation_schema_hash,
+            "observation_schema_hash": level_meta.observation_schema_hash,
         }
         # Note: final metrics will be logged at end of training
         self.tb_logger.log_hyperparameters(hparams=self.hparams, metrics={})
@@ -525,10 +524,14 @@ class DemoRunner:
         # Mark training started
         self.db.set_system_state("training_status", "running")
         self.db.set_system_state("start_time", str(time.time()))
+        if self.max_environment_steps is not None:
+            self.db.set_system_state("environment_step_budget_requested", str(self.max_environment_steps))
+            self.db.set_system_state("environment_step_budget_stop_rule", "stop_before_vector_step")
 
         # Training loop
+        failed = False
         try:
-            while self.current_episode < self.max_episodes and not self.should_shutdown:
+            while self.current_episode < self.max_episodes and not self.should_shutdown and not self.environment_step_budget_reached:
                 episode_start = time.time()
 
                 # Generalization test at episode 5000
@@ -573,6 +576,7 @@ class DemoRunner:
                 affordance_transitions = [defaultdict(lambda: defaultdict(int)) for _ in range(num_agents)]
                 last_affordance = [None for _ in range(num_agents)]
                 last_agent_state: BatchedAgentState | None = None
+                alive_agents = torch.ones(num_agents, dtype=torch.bool, device=self.env.device)
 
                 for step in range(max_steps):
                     # Check for shutdown request every step for immediate response
@@ -580,8 +584,30 @@ class DemoRunner:
                         logger.info(f"[Training] Shutdown requested during episode {self.current_episode + 1}, step {step}/{max_steps}")
                         break
 
+                    live_agent_count = int(alive_agents.sum().item())
+                    if self.max_environment_steps is not None:
+                        may_step, shortfall = decide_live_agent_budget(
+                            completed=self.completed_live_agent_steps,
+                            live_agents=live_agent_count,
+                            budget=self.max_environment_steps,
+                        )
+                        if not may_step:
+                            self.environment_step_budget_shortfall = shortfall
+                            self.environment_step_budget_reached = True
+                            logger.info(
+                                "[Training] Environment-step budget reached at %s/%s live-agent transitions " "(conservative shortfall %s)",
+                                self.completed_live_agent_steps,
+                                self.max_environment_steps,
+                                shortfall,
+                            )
+                            break
+
                     agent_state = self.population.step_population(self.env)
                     last_agent_state = agent_state
+                    self.completed_live_agent_steps += live_agent_count
+                    if self.max_environment_steps is not None and self.completed_live_agent_steps == self.max_environment_steps:
+                        self.environment_step_budget_shortfall = 0
+                        self.environment_step_budget_reached = True
 
                     if self.curriculum.transition_events:
                         self.tb_logger.log_curriculum_transitions(
@@ -660,7 +686,8 @@ class DemoRunner:
                             interaction_progress=interaction_progress,
                         )
 
-                    if torch.all(agent_state.dones).item():
+                    alive_agents &= ~agent_state.dones
+                    if torch.all(agent_state.dones).item() or self.environment_step_budget_reached:
                         break
 
                 if last_agent_state is None:
@@ -683,12 +710,8 @@ class DemoRunner:
                     if not last_agent_state.dones[agent_idx]:  # Agent survived to max_steps without dying
                         self.population.flush_episode(agent_idx=agent_idx)
 
-                epsilon_value = (
-                    self.exploration.rnd.epsilon if hasattr(self.exploration, "rnd") else getattr(self.exploration, "epsilon", 0.0)
-                )
-                intrinsic_weight_value = (
-                    self.exploration.get_intrinsic_weight() if hasattr(self.exploration, "get_intrinsic_weight") else 0.0
-                )
+                epsilon_value = self.population._get_current_epsilon_value()
+                intrinsic_weight_value = self.population._get_current_intrinsic_weight_value()
 
                 episode_reward_cpu = episode_reward.detach().cpu()
                 episode_extrinsic_cpu = episode_extrinsic_reward.detach().cpu()
@@ -708,7 +731,7 @@ class DemoRunner:
                     intrinsic_weight=intrinsic_weight_value,
                     curriculum_stage=int(stages_cpu[0].item()),
                     epsilon=epsilon_value,
-                    observation_schema_hash=self.compiled.observation_schema_hash,
+                    observation_schema_hash=level_meta.observation_schema_hash,
                 )
 
                 # NEW: Insert affordance transitions for agent 0
@@ -835,13 +858,9 @@ class DemoRunner:
                         summary_parts = []
                         for name, tick_count in affordance_visits[0].items():
                             # Get duration_ticks to calculate completed interactions
-                            try:
-                                duration = self.env.affordance_engine.get_duration_ticks(name)
-                                completed = tick_count // duration
-                                summary_parts.append(f"{name}: {tick_count} ({completed})")
-                            except Exception:
-                                # Fallback if duration lookup fails
-                                summary_parts.append(f"{name}: {tick_count}")
+                            duration = self.env.affordance_engine.get_duration_ticks(name)
+                            completed = tick_count // duration
+                            summary_parts.append(f"{name}: {tick_count} ({completed})")
                         affordance_summary = ", ".join(summary_parts)
                     else:
                         affordance_summary = "None"
@@ -899,7 +918,20 @@ class DemoRunner:
 
                 self.current_episode += 1
 
+        except BaseException:
+            failed = True
+            raise
         finally:
+            if self.max_environment_steps is not None:
+                shortfall = self.max_environment_steps - self.completed_live_agent_steps
+                if shortfall < 0:
+                    raise RuntimeError(
+                        f"environment-step budget overshot: {self.completed_live_agent_steps} > {self.max_environment_steps}"
+                    )
+                self.environment_step_budget_shortfall = shortfall
+                self.db.set_system_state("environment_step_budget_realized", str(self.completed_live_agent_steps))
+                self.db.set_system_state("environment_step_budget_shortfall", str(shortfall))
+
             # Save final checkpoint
             logger.info("Training complete, saving final checkpoint...")
             self.save_checkpoint()
@@ -914,7 +946,15 @@ class DemoRunner:
                 if hasattr(self, "hparams"):
                     self.tb_logger.log_hyperparameters(hparams=self.hparams, metrics=final_metrics)
 
-            self.db.set_system_state("training_status", "completed")
+            self.db.set_system_state(
+                "training_status",
+                resolve_training_status(
+                    failed=failed,
+                    should_shutdown=self.should_shutdown,
+                    budget_reached=self.environment_step_budget_reached,
+                    episodes_reached=self.current_episode >= self.max_episodes,
+                ),
+            )
 
             # Use extracted cleanup method
             self._cleanup()

@@ -46,7 +46,7 @@ VALID_ENVIRONMENT_PARAMS = {
     "partial_observability": False,
     "vision_range": 8,
     "enable_temporal_mechanics": False,
-    "enabled_affordances": None,  # None = all affordances
+    "enabled_affordances": [],  # Explicit empty list deploys no affordances.
     "randomize_affordances": True,
 }
 

@@ -48,8 +48,8 @@ class UniverseMetadata:
     num_groups: int = 0
     num_message_slots: int = 0
 
-    # Spatial metadata (for grid substrates)
-    grid_size: int | None = None
+    # Spatial metadata for finite substrates. Axis dimensions remain owned by
+    # the substrate; collapsing them to one square-only number loses identity.
     grid_cells: int | None = None
 
     # Versioning + provenance

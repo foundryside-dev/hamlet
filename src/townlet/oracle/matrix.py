@@ -30,16 +30,13 @@ _DEFAULT_LEVELS = (
 
 # Differential packs (configs/differential/): default_curriculum with exactly
 # one stratum axis moved (pinned by
-# test_differential_packs_vary_only_the_declared_axis). They entered the matrix
-# as the DIV-003 crash cells — at oracle-2026-08-13 (0e875d7a) each crashed on
-# the old side with a signature re-verified at that tag. DIV-003 was cut and
-# adjudicated (PDR-0041), and at oracle-2026-08-17 (4222a917, PDR-0074) the
-# oracle itself runs them, so the entry is `retired` and these are plain
-# standing cells expected to AGREE. They stay because they exercise the
-# substrate axes the default pack does not.
+# test_differential_packs_vary_only_the_declared_axis). The cubic and rectangular
+# packs entered as DIV-003 crash cells; boundary_wrap replaced the vacuous
+# observation-encoding cell when that selector was deleted. These are plain
+# standing cells because they exercise real substrate axes the default pack does not.
 _DIFFERENTIAL_PACKS = (
     # (pack dir under configs/differential, level)
-    ("div003_scaled", "L1_full_observability"),
+    ("boundary_wrap", "L1_full_observability"),
     ("div003_cubic_partial", "L2_partial_observability"),
     ("div003_rect", "L1_full_observability"),
 )
@@ -246,7 +243,7 @@ class RegisteredStreamDivergence:
 # Which packs' FROZEN fixture drifts from its live pack, and under which register entry.
 # MEASURED at HEAD (`pack_drift`, 2026-08-26):
 #   configs/default_curriculum           differing: vfs_profiles.yaml     -> DIV-008
-#   configs/differential/div003_*  (×3)  differing: vfs_profiles.yaml     -> DIV-008
+#   configs/differential/*         (×3)  differing: vfs_profiles.yaml     -> DIV-008
 #   configs/test/effects_smoke           differing: effects.yaml, vfs_profiles.yaml -> DIV-008
 #   configs/test/items_smoke             only_in_frozen: levels/L0_smoke/brain.yaml (DIV-007)
 #                                        + differing: effects.yaml (DIV-008)
@@ -265,7 +262,7 @@ class RegisteredStreamDivergence:
 # a forward move of the oracle tag.
 _PACK_DIVERGENCE = {
     "configs/default_curriculum": "DIV-008",
-    "configs/differential/div003_scaled": "DIV-008",
+    "configs/differential/boundary_wrap": "DIV-008",
     "configs/differential/div003_cubic_partial": "DIV-008",
     "configs/differential/div003_rect": "DIV-008",
     "configs/test/effects_smoke": "DIV-008",
@@ -309,6 +306,34 @@ _DIV009_PROFILE = RegisteredHashDivergence(
 _DIV010 = RegisteredHashDivergence(
     register_ref="DIV-010",
     hash_fields=("variable_schema_hash", "vfs_hash"),
+)
+
+# DIV-012 (2026-09-02, unit 5 `day_phase`, hamlet-55b2826a02): four undeclared hash movers,
+# each bisected to its own causing commit (binding full cpu-matrix run 20260902-100802;
+# 20260902-100550 was the pre-fix run, before `_DIV012_PROFILE` existed) —
+# `stratum_hash` at 94656527 (Task 1's `observation_mode` deletion: RAW hash over the whole
+# StratumConfig, frozen fixture still declares the key), `affordances_hash` at c6c6b524
+# ("restore executable observation authority": the meter range_type migration narrows
+# AffordanceParamConfig's schema — the RAW hash moves for the schema edit alone,
+# affordances.yaml itself has an empty diff in this commit), `environment_hash` also at
+# c6c6b524 but for a DIFFERENT reason — BOTH the EnvironmentConfig schema (MeterRangeNone
+# deleted, MeterRangeMinMax.clip: bool -> Literal[True]) AND every covered pack's
+# environment.yaml content change together in that commit (clip: false -> true on every
+# meter), so its movement is not isolated to the schema edit — `brain_hash` at d554fb7f
+# ("cut compact replay ABI": deletes the model_serializer that cbea580f had installed
+# specifically to omit the always-None `token_set` key from the dump — reintroduces exactly
+# the movement cbea580f fixed). Bound together under the union-exact rule, not because they
+# share a cause. `_DIV012` (all four fields) covers the standing and differential blocks;
+# `_DIV012_PROFILE` (three fields, `affordances_hash` excluded — it does not move on the
+# profile packs, measured) covers items_smoke/effects_smoke. See
+# docs/oracle/known-divergences.md#div-012 for the per-field bisection and full cell table.
+_DIV012 = RegisteredHashDivergence(
+    register_ref="DIV-012",
+    hash_fields=("affordances_hash", "brain_hash", "environment_hash", "stratum_hash"),
+)
+_DIV012_PROFILE = RegisteredHashDivergence(
+    register_ref="DIV-012",
+    hash_fields=("brain_hash", "environment_hash", "stratum_hash"),
 )
 
 # DIV-011 is RETIRED into DIV-008 at the token cut (2026-08-26, unit 3 Task 11) — its own
@@ -438,21 +463,41 @@ def default_cells() -> tuple[Cell, ...]:
     first entry to carry both shapes under one register_ref, which
     `compare_traces` labels `"hash+stream"`.
 
-    Standing and differential cells bind `(_DIV009_STANDING, _DIV010,
-    _DIV008_HASH)`; profile cells bind `(_DIV009_PROFILE, _DIV010,
-    _DIV008_HASH)`. DIV-006 and DIV-011 are RETIRED into DIV-008 at this cut
-    (see their comments above) — DIV-006 because the new-side surface it
-    described was deleted, DIV-011 by its own pre-registered condition.
-    Overlapping fields between composing entries are legal where two causes
-    genuinely move one hash (`variable_schema_hash` under DIV-010 and DIV-008;
-    `vfs_hash` under DIV-009, DIV-010 and DIV-008); the union of every entry's
-    declared fields must still equal the observed movers EXACTLY, and each
-    entry's own fields must all move.
+    Standing and differential cells additionally bind `_DIV012` (2026-09-02, unit 5
+    `day_phase`, binding full cpu-matrix run 20260902-100802 — 20260902-100550 was
+    the pre-fix run, taken before `_DIV012_PROFILE` was bound onto the profile
+    cells): `stratum_hash` (Task 1's `observation_mode` deletion, bisected to
+    94656527), `affordances_hash` (bisected to c6c6b524, the meter range_type schema
+    migration — affordances.yaml itself is unedited there), `environment_hash` (also
+    bisected to c6c6b524, but BOTH the schema AND every covered pack's
+    environment.yaml content move together in that commit — not schema-alone),
+    `brain_hash` (bisected to d554fb7f, which deleted the model_serializer cbea580f
+    had installed to suppress exactly this movement). Profile cells bind the
+    narrower `_DIV012_PROFILE` (same three causes, minus `affordances_hash`, which
+    does not move on the profile packs — measured, not assumed). Both the
+    20260902-100550 and 20260902-100802 reports recorded `new_commit: 430eb5af`
+    despite being run at different points in this fix wave — the binding measurement
+    was taken from an uncommitted working tree, before the bisection itself was
+    committed at b3120870, so the harness's own commit-provenance field lags the
+    measurement. See docs/oracle/known-divergences.md#div-012 for the per-field
+    bisection and the full ten-cpu-cell table.
+
+    Standing cells bind `(_DIV009_STANDING, _DIV010, _DIV012, _DIV008_HASH)`;
+    differential cells bind the identical tuple (measured — `_DIV012`'s field set
+    matches the differential cells' undeclared movers exactly); profile cells
+    bind `(_DIV009_PROFILE, _DIV010, _DIV012_PROFILE, _DIV008_HASH)`. DIV-006 and
+    DIV-011 are RETIRED into DIV-008 at this cut (see their comments above) —
+    DIV-006 because the new-side surface it described was deleted, DIV-011 by its
+    own pre-registered condition. Overlapping fields between composing entries are
+    legal where two causes genuinely move one hash (`variable_schema_hash`
+    under DIV-010 and DIV-008; `vfs_hash` under DIV-009, DIV-010 and DIV-008);
+    the union of every entry's declared fields must still equal the observed
+    movers EXACTLY, and each entry's own fields must all move.
 
     Exit 0 now means "everything diverged exactly as registered", DIV-004's
     cost restated at this tag; see docs/oracle/known-divergences.md#div-008,
-    #div-009 and #div-010. Declarations return only when a register entry
-    needs them (PDR-0037 record-then-bind).
+    #div-009, #div-010 and #div-012. Declarations return only when a register
+    entry needs them (PDR-0037 record-then-bind).
     """
     standing = tuple(
         Cell(
@@ -465,7 +510,7 @@ def default_cells() -> tuple[Cell, ...]:
                 device=device,
             ),
             pack_divergence=_PACK_DIVERGENCE.get(_DEFAULT_PACK),
-            hash_divergences=(_DIV009_STANDING, _DIV010, _DIV008_HASH),
+            hash_divergences=(_DIV009_STANDING, _DIV010, _DIV012, _DIV008_HASH),
             stream_divergence=_DIV008_STREAM,
         )
         for device in ("cpu", "cuda")
@@ -482,7 +527,7 @@ def default_cells() -> tuple[Cell, ...]:
                 device=device,
             ),
             pack_divergence=_PACK_DIVERGENCE.get(f"configs/differential/{pack_dir}"),
-            hash_divergences=(_DIV009_STANDING, _DIV010, _DIV008_HASH),
+            hash_divergences=(_DIV009_STANDING, _DIV010, _DIV012, _DIV008_HASH),
             stream_divergence=_DIV008_STREAM,
         )
         for device in ("cpu", "cuda")
@@ -499,7 +544,7 @@ def default_cells() -> tuple[Cell, ...]:
                 device=device,
             ),
             pack_divergence=_PACK_DIVERGENCE.get(pack),
-            hash_divergences=(_DIV009_PROFILE, _DIV010, _DIV008_HASH),
+            hash_divergences=(_DIV009_PROFILE, _DIV010, _DIV012_PROFILE, _DIV008_HASH),
             stream_divergence=_DIV008_STREAM,
         )
         for device in ("cpu", "cuda")

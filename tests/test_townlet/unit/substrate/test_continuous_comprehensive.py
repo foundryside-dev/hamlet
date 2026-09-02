@@ -25,7 +25,6 @@ BASE_CONT_ARGS = dict(
     interaction_radius=1.0,
     distance_metric="euclidean",
     action_discretization=BASE_ACTION_DISC,
-    observation_encoding="relative",
 )
 
 
@@ -66,7 +65,6 @@ class TestContinuousActionGeneration:
                     interaction_radius=1.0,
                     distance_metric="euclidean",
                     action_discretization={"num_directions": 8, "num_magnitudes": 3},
-                    observation_encoding="relative",
                 ),
                 3,  # LEFT, RIGHT, INTERACT
                 ["LEFT", "RIGHT"],
@@ -84,7 +82,6 @@ class TestContinuousActionGeneration:
                     interaction_radius=1.0,
                     distance_metric="euclidean",
                     action_discretization={"num_directions": 8, "num_magnitudes": 3},
-                    observation_encoding="relative",
                 ),
                 17,  # 8 directions × 2 magnitudes + INTERACT
                 ["MOVE_", "MOVE_"],
@@ -104,7 +101,6 @@ class TestContinuousActionGeneration:
                     interaction_radius=1.0,
                     distance_metric="euclidean",
                     action_discretization={"num_directions": 8, "num_magnitudes": 3},
-                    observation_encoding="relative",
                 ),
                 7,  # 6 movement axes + INTERACT
                 ["UP", "DOWN", "LEFT", "RIGHT"],

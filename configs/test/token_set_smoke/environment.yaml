@@ -1,0 +1,183 @@
+---
+environment:
+  version: "1.0"
+
+  meters:
+    - name: energy
+      description: "Physical energy for movement and actions"
+      range_type:
+        kind: minmax
+        clip: true
+
+    - name: health
+      description: "Physical health, death at 0"
+      range_type:
+        kind: minmax
+        clip: true
+
+    - name: satiation
+      description: "Hunger level, affects health cascade"
+      range_type:
+        kind: minmax
+        clip: true
+
+    - name: hygiene
+      description: "Cleanliness, affects mood and social"
+      range_type:
+        kind: minmax
+        clip: true
+
+    - name: money
+      description: "Economic resource for purchasing"
+      range_type:
+        kind: minmax
+        clip: true
+
+    - name: fitness
+      description: "Physical conditioning from exercise"
+      range_type:
+        kind: minmax
+        clip: true
+
+    - name: mood
+      description: "Mental state, affects energy cascade"
+      range_type:
+        kind: minmax
+        clip: true
+
+    - name: social
+      description: "Social connection level"
+      range_type:
+        kind: minmax
+        clip: true
+
+  cascade_graph:
+    - source: satiation
+      target: health
+      description: "Low hunger damages health over time"
+
+    - source: satiation
+      target: energy
+      description: "Low hunger drains energy"
+
+    - source: mood
+      target: energy
+      description: "Low mood reduces energy recovery"
+
+    - source: hygiene
+      target: mood
+      description: "Poor hygiene damages mood"
+
+    - source: hygiene
+      target: social
+      description: "Poor hygiene damages social connection"
+
+  modulation_graph:
+    - bar: energy
+      affordances: [WORK]
+      description: "Low energy reduces work effectiveness"
+
+    - bar: mood
+      affordances: [SOCIALIZE, WORK]
+      description: "Low mood reduces social and work quality"
+
+  affordances:
+    - name: EAT
+      description: "Consume food to restore satiation"
+      category: sustenance
+
+    - name: SLEEP
+      description: "Rest to restore energy"
+      category: sustenance
+
+    - name: SHOWER
+      description: "Clean to restore hygiene"
+      category: hygiene
+
+    - name: EXERCISE
+      description: "Physical activity for fitness"
+      category: fitness
+
+    - name: WORK
+      description: "Employment for money income"
+      category: economic
+
+    - name: SOCIALIZE
+      description: "Social interaction"
+      category: social
+
+    - name: MEDITATE
+      description: "Mental restoration for mood"
+      category: mental
+
+    - name: DRINK_WATER
+      description: "Hydration (combined with satiation)"
+      category: sustenance
+
+    - name: BRUSH_TEETH
+      description: "Dental hygiene"
+      category: hygiene
+
+    - name: LAUNDRY
+      description: "Clothing hygiene"
+      category: hygiene
+
+    - name: COOK
+      description: "Food preparation"
+      category: sustenance
+
+    - name: CLEAN_HOUSE
+      description: "Environmental hygiene"
+      category: hygiene
+
+    - name: ENTERTAINMENT
+      description: "Leisure for mood"
+      category: mental
+
+    - name: DOCTOR
+      description: "Medical care for health"
+      category: health
+
+  variables:
+    - name: deficit_energy
+      type: scalar
+      dims: 1
+      scope: agent
+      description: "How far below target energy (0.0 = at/above target)"
+      semantic_type: custom
+      normalization:
+        method: normalize
+        clip: true
+        range: [0.0, 1.0]
+
+    - name: time_since_last_eat
+      type: scalar
+      dims: 1
+      scope: agent
+      description: "Timesteps since last EAT action"
+      semantic_type: custom
+      normalization:
+        method: normalize
+        clip: true
+        range: [0.0, 100.0]
+
+  cues:
+    - name: low_energy_warning
+      trigger:
+        bar: energy
+        threshold: 0.2
+        direction: below
+      display:
+        icon: "⚠️"
+        color: "#FF6B6B"
+        message: "Energy critically low!"
+
+    - name: high_money_celebration
+      trigger:
+        bar: money
+        threshold: 100.0
+        direction: above
+      display:
+        icon: "💰"
+        color: "#51CF66"
+        message: "Financial milestone reached!"

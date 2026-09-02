@@ -100,9 +100,7 @@ def test_recurrent_brain_yaml_trains_the_recurrent_weight_matrix(tmp_path: Path,
 
 
 @pytest.mark.parametrize("sequence_length", [2, 8])
-def test_training_unroll_threads_hidden_state_for_configured_sequence_length(
-    tmp_path: Path, monkeypatch, sequence_length: int
-) -> None:
+def test_training_unroll_threads_hidden_state_for_configured_sequence_length(tmp_path: Path, monkeypatch, sequence_length: int) -> None:
     """training_loop.sequence_length is the length of the threaded BPTT unroll.
 
     Instruments the real network's forward() during a real DemoRunner run and inspects

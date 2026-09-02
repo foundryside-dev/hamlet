@@ -36,7 +36,9 @@ def test_delay_enqueues_and_executes_after_ticks():
     compiled_delay = compiler.compile_command(delay_cmd)
 
     scheduler = Scheduler(time_enabled=True)
-    manager = EffectManager(catalog=EffectCatalog(effects={}), command_executor=CommandExecutor(), scheduler=scheduler)
+    manager = EffectManager(
+        catalog=EffectCatalog(effects={}, max_active_effects=None), command_executor=CommandExecutor(), scheduler=scheduler
+    )
 
     from townlet.effects.context import ExecutionContext
 
@@ -68,7 +70,9 @@ def test_delay_runs_through_effect_manager_tick():
     compiled_delay = compiler.compile_command(delay_cmd)
 
     scheduler = Scheduler(time_enabled=True)
-    manager = EffectManager(catalog=EffectCatalog(effects={}), command_executor=CommandExecutor(), scheduler=scheduler)
+    manager = EffectManager(
+        catalog=EffectCatalog(effects={}, max_active_effects=None), command_executor=CommandExecutor(), scheduler=scheduler
+    )
 
     bars = {"energy": torch.tensor(0)}
     context = ExecutionContext(bars=bars, scheduler=scheduler, self_index=0)
@@ -98,7 +102,6 @@ def test_delay_cancelled_on_effect_despawn():
         id="delayer",
         scope="agent",
         duration=1,
-        intensity=1.0,
         reapply_policy="stack",
         observable=False,
         on_spawn=[],
@@ -107,7 +110,10 @@ def test_delay_cancelled_on_effect_despawn():
         on_interrupt=[],
     )
 
-    catalog = EffectCatalog(effects={"delayer": effect_def})
+    catalog = EffectCatalog(
+        effects={"delayer": effect_def},
+        max_active_effects={"global": 8, "agent": 8, "item": 8, "affordance": 8},
+    )
     scheduler = Scheduler(time_enabled=True)
     manager = EffectManager(catalog=catalog, command_executor=CommandExecutor(), scheduler=scheduler)
 
@@ -117,8 +123,6 @@ def test_delay_cancelled_on_effect_despawn():
     manager.spawn_effect(
         effect_id="delayer",
         target_entity_id=0,
-        scope=manager.catalog.effects["delayer"].scope,  # type: ignore[arg-type]
-        duration=1,
         intensity=1.0,
         current_step=0,
         bars=bars,

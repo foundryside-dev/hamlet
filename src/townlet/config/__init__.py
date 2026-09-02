@@ -1,8 +1,8 @@
 """Config DTO entrypoints for v2.1 hierarchical packs.
 
 This module intentionally exposes ONLY the v2.1 configuration
-data models used by the UniverseCompiler. Legacy training.yaml
-and flat bars/cascades/affordances loaders are not re-exported.
+data models used by the UniverseCompiler. Training configuration is
+level-owned; flat bars/cascades/affordances loaders are not part of this API.
 
 Philosophy:
     - All behavioral parameters must be explicitly specified.

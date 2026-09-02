@@ -99,7 +99,7 @@ def test_spawn_rules_per_item_are_capped(tmp_path: Path) -> None:
     _write_items_catalog(config_dir, item_types=_make_item_types(1))
 
     level_items_path = config_dir / "levels" / PRIMARY_LEVEL_NAME / "items.yaml"
-    level_items = [{"item_type": "item_0", "spawn_count": 1, "spawn_position": "random"} for _ in range(MAX_SPAWN_RULES_PER_ITEM + 1)]
+    level_items = [{"item_type": "item_0", "spawn_count": 1, "placement": {"mode": "random"}} for _ in range(MAX_SPAWN_RULES_PER_ITEM + 1)]
     level_items_path.parent.mkdir(parents=True, exist_ok=True)
     level_items_path.write_text(yaml.safe_dump({"version": "1.0", "items": level_items}))
 

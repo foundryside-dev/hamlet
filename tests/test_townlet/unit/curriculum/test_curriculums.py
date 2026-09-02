@@ -879,8 +879,8 @@ class TestCurriculumSignalPurity:
     moved to integration/test_curriculum_integration.py in Task 11.
     """
 
-    def test_curriculum_has_state_dict_methods(self, cpu_device):
-        """Verify curriculum has state_dict() and load_state_dict() methods."""
+    def test_curriculum_has_canonical_checkpoint_methods(self, cpu_device):
+        """Verify curriculum exposes the canonical checkpoint API."""
         curriculum = AdversarialCurriculum(
             max_steps_per_episode=100,
             survival_advance_threshold=0.7,
@@ -889,12 +889,11 @@ class TestCurriculumSignalPurity:
         )
         curriculum.initialize_population(1)
 
-        # Verify method exists
-        assert hasattr(curriculum, "state_dict"), "Curriculum should have state_dict()"
-        assert hasattr(curriculum, "load_state_dict"), "Curriculum should have load_state_dict()"
+        assert hasattr(curriculum, "checkpoint_state")
+        assert hasattr(curriculum, "load_state")
 
-        state = curriculum.state_dict()
-        assert isinstance(state, dict), "state_dict should return dict"
+        state = curriculum.checkpoint_state()
+        assert isinstance(state, dict), "checkpoint_state should return dict"
 
         # Verify expected keys (tracker fields are returned directly)
         assert "agent_stages" in state, "Should have agent_stages"
@@ -919,7 +918,7 @@ class TestCurriculumSignalPurity:
         assert original_stage == 3, "Should be at stage 3"
 
         # Save state
-        state = curriculum1.state_dict()
+        state = curriculum1.checkpoint_state()
 
         # Create new curriculum and load
         curriculum2 = AdversarialCurriculum(
@@ -935,7 +934,7 @@ class TestCurriculumSignalPurity:
         assert fresh_stage == 1, "Fresh curriculum should start at stage 1"
 
         # Load saved state
-        curriculum2.load_state_dict(state)
+        curriculum2.load_state(state)
 
         # Verify stage was restored
         restored_stage = curriculum2.tracker.agent_stages[0].item()
@@ -1070,7 +1069,7 @@ class TestAdversarialCurriculumLoadStateStrictness:
             "prev_avg_reward": torch.tensor([0.01]),
             # last_survival_rate omitted on purpose
         }
-        with pytest.raises(KeyError, match="last_survival_rate"):
+        with pytest.raises(ValueError, match="last_survival_rate"):
             curriculum.load_state(partial_state)
 
     def test_load_state_raises_on_num_agents_mismatch(self, cpu_device):
@@ -1090,3 +1089,43 @@ class TestAdversarialCurriculumLoadStateStrictness:
         }
         with pytest.raises(ValueError, match="num_agents"):
             curriculum.load_state(mismatched_state)
+
+
+class TestCurriculumCheckpointValidators:
+    def test_static_validator_requires_exact_typed_schema_without_mutation(self) -> None:
+        curriculum = StaticCurriculum(
+            difficulty_level=0.25,
+            reward_mode="shaped",
+            active_meters=["energy"],
+            depletion_multiplier=0.5,
+        )
+        state = curriculum.checkpoint_state()
+        state["removed_field"] = True
+
+        with pytest.raises(ValueError, match="Static curriculum checkpoint key set mismatch"):
+            curriculum.validate_checkpoint_state(state)
+
+        assert curriculum.difficulty_level == 0.25
+
+        malformed = curriculum.checkpoint_state()
+        malformed["active_meters"] = ["energy", 1]
+        with pytest.raises(ValueError, match="active_meters"):
+            curriculum.validate_checkpoint_state(malformed)
+
+    def test_adversarial_validator_requires_exact_tensor_contract_without_mutation(self, cpu_device) -> None:
+        curriculum = AdversarialCurriculum(device=cpu_device)
+        curriculum.initialize_population(num_agents=2)
+        assert curriculum.tracker is not None
+        before = curriculum.tracker.agent_stages.clone()
+        state = curriculum.checkpoint_state()
+        state["removed_field"] = torch.zeros(2)
+
+        with pytest.raises(ValueError, match="Adversarial curriculum checkpoint key set mismatch"):
+            curriculum.validate_checkpoint_state(state)
+
+        assert torch.equal(curriculum.tracker.agent_stages, before)
+
+        malformed = curriculum.checkpoint_state()
+        malformed["agent_stages"] = malformed["agent_stages"].float()
+        with pytest.raises(ValueError, match="agent_stages.*dtype"):
+            curriculum.validate_checkpoint_state(malformed)

@@ -6,6 +6,10 @@ from townlet.items.instance import ItemInstance
 from townlet.items.inventory import InventoryState
 
 
+def test_item_instance_has_no_single_holder_compatibility_property():
+    assert "holder_agent_id" not in ItemInstance.__dict__
+
+
 def test_inventory_initialization():
     """InventoryState initializes empty inventory slots."""
     inventory = InventoryState(
@@ -53,12 +57,12 @@ def test_add_item_to_inventory():
     success1 = inventory.add_item(agent_idx=0, item=item1)
     assert success1 is True
     assert inventory.slots[0, 0].item() == 42
-    assert item1.holder_agent_id == 0
+    assert item1.holder_agent_ids == {0}
 
     success2 = inventory.add_item(agent_idx=0, item=item2)
     assert success2 is True
     assert inventory.slots[0, 1].item() == 43
-    assert item2.holder_agent_id == 0
+    assert item2.holder_agent_ids == {0}
 
 
 def test_add_item_overflow_deny():
@@ -138,7 +142,7 @@ def test_remove_item_from_slot():
     instance_id = inventory.remove_item(agent_idx=0, slot_idx=0)
     assert instance_id == 42
     assert inventory.slots[0, 0].item() == -1  # Slot now empty
-    assert item.holder_agent_id is None
+    assert item.holder_agent_ids == set()
 
 
 def test_remove_from_empty_slot_returns_none():

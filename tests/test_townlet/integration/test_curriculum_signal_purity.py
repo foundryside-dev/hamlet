@@ -19,7 +19,7 @@ from townlet.curriculum.adversarial import AdversarialCurriculum
 from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
 from townlet.population.vectorized import VectorizedPopulation
 
-TRAIN_KWARGS = dict(train_frequency=1, batch_size=32, sequence_length=1, max_grad_norm=1.0, vision_window_size=5)
+TRAIN_KWARGS = dict(train_frequency=1, batch_size=32, sequence_length=1, max_grad_norm=1.0)
 
 
 @pytest.fixture

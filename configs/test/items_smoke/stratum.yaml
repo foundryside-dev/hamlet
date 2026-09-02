@@ -13,11 +13,8 @@ stratum:
 
       distance_metric: manhattan
 
-      observation_encoding: relative
       diagonals: false
 
   vision_support: global
 
   temporal_support: disabled
-  observation_mode:
-    mode: full_auto

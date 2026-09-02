@@ -49,10 +49,9 @@ def _copy_pack(tmp_path: Path, name: str) -> Path:
 def _mutate_energy_passive(pack: Path) -> None:
     """``bars.yaml`` energy ``depletion.passive`` 0.01 → 0.03 — keep this edit exactly.
 
-    It is pinned BECAUSE it is vfs-VISIBLE: ``vfs_hash`` moves while observation_dim,
-    action_count and observation_schema_hash do not (plan §3 H4). Do not harmonize it
-    with task 4's vfs-INVISIBLE ``initial`` edit — they look like duplicates and are
-    deliberate opposites.
+    It is pinned because the compiled meter signature is network-visible: observation
+    identity and ``vfs_hash`` move while dimensions, the transfer schema and positional
+    layout remain unchanged.
     """
     bars_path = pack / "levels" / LEVEL / "bars.yaml"
     data = yaml.safe_load(bars_path.read_text())
@@ -80,7 +79,9 @@ def _write_checkpoint(
     server: LiveInferenceServer,
     *,
     episode: int = 7,
+    filename_episode: int | None = None,
     version: int = CHECKPOINT_FORMAT_VERSION,
+    epsilon: float = 0.37,
 ) -> Path:
     """A checkpoint stamped exactly as DemoRunner stamps one, from the server's universe.
 
@@ -94,16 +95,31 @@ def _write_checkpoint(
     first_key = next(iter(q_state))
     q_state[first_key] = q_state[first_key] + 1.0
 
+    assert server.env is not None
+    assert server.curriculum is not None
+    population_state = server.population.get_checkpoint_state()
+    population_state["q_network"] = q_state
+    level = server.compiled_universe.get_level(server.compiled_universe.metadata.primary_level)
     checkpoint: dict[str, Any] = {
         "version": version,
         "episode": episode,
         "timestamp": 1.0,
-        "population_state": {"q_network": q_state},
+        "substrate_metadata": {
+            "position_dim": server.env.substrate.position_dim,
+            "substrate_type": type(server.env.substrate).__name__,
+        },
+        "population_state": population_state,
+        "curriculum_state": server.curriculum.checkpoint_state(),
+        "affordance_layout": server.env.get_affordance_positions(),
+        "agent_ids": server.population.agent_ids,
+        "epsilon": epsilon,
+        "completed_live_agent_steps": 0,
+        "training_config": level.training.model_dump(),
+        "config_dir": str(server.config_dir),
     }
-    assert server.compiled_universe is not None
     attach_universe_metadata(checkpoint, server.compiled_universe)
 
-    path = checkpoint_dir / f"checkpoint_ep{episode:05d}.pt"
+    path = checkpoint_dir / f"checkpoint_ep{filename_episode if filename_episode is not None else episode:05d}.pt"
     torch.save(checkpoint, path)
     persist_checkpoint_digest(path)
     return path
@@ -137,6 +153,130 @@ async def test_serving_path_accepts_matching_checkpoint(tmp_path: Path, monkeypa
 
 
 @pytest.mark.asyncio
+async def test_serving_path_uses_canonical_top_level_epsilon(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.chdir(tmp_path)
+    pack = _copy_pack(tmp_path, "base")
+    checkpoint_dir = tmp_path / "ckpts"
+    server = _make_server(pack, checkpoint_dir)
+    _write_checkpoint(checkpoint_dir, server, epsilon=0.73)
+
+    assert await server._check_and_load_checkpoint() is True
+    assert server.current_epsilon == 0.73
+
+
+@pytest.mark.asyncio
+async def test_serving_path_refuses_filename_payload_episode_mismatch_before_mutation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    pack = _copy_pack(tmp_path, "base")
+    checkpoint_dir = tmp_path / "ckpts"
+    server = _make_server(pack, checkpoint_dir)
+    _write_checkpoint(checkpoint_dir, server, episode=7, filename_episode=8)
+    before = _q_state_snapshot(server)
+
+    with pytest.raises(ValueError, match="filename episode mismatch"):
+        await server._check_and_load_checkpoint()
+
+    after = _q_state_snapshot(server)
+    assert all(torch.equal(before[key], after[key]) for key in before)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("schema_change", ("missing", "unknown"))
+async def test_serving_path_refuses_outer_schema_change_before_mutation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, schema_change: str
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    pack = _copy_pack(tmp_path, "base")
+    checkpoint_dir = tmp_path / "ckpts"
+    server = _make_server(pack, checkpoint_dir)
+    path = _write_checkpoint(checkpoint_dir, server)
+    checkpoint = torch.load(path, weights_only=False)
+    if schema_change == "missing":
+        checkpoint.pop("epsilon")
+    else:
+        checkpoint["removed_epsilon"] = 0.5
+    torch.save(checkpoint, path)
+    persist_checkpoint_digest(path)
+    before = _q_state_snapshot(server)
+
+    with pytest.raises(ValueError, match="Demo checkpoint key set mismatch"):
+        await server._check_and_load_checkpoint()
+
+    after = _q_state_snapshot(server)
+    assert all(torch.equal(before[key], after[key]) for key in before)
+
+
+@pytest.mark.asyncio
+async def test_serving_path_refuses_incomplete_population_payload_before_mutation(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.chdir(tmp_path)
+    pack = _copy_pack(tmp_path, "base")
+    checkpoint_dir = tmp_path / "ckpts"
+    server = _make_server(pack, checkpoint_dir)
+    path = _write_checkpoint(checkpoint_dir, server)
+    checkpoint = torch.load(path, weights_only=False)
+    checkpoint["population_state"].pop("target_network")
+    torch.save(checkpoint, path)
+    persist_checkpoint_digest(path)
+    before = _q_state_snapshot(server)
+
+    with pytest.raises(ValueError, match="Population checkpoint key set mismatch"):
+        await server._check_and_load_checkpoint()
+
+    after = _q_state_snapshot(server)
+    assert all(torch.equal(before[key], after[key]) for key in before)
+
+
+@pytest.mark.asyncio
+async def test_serving_path_refuses_malformed_curriculum_before_network_mutation(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.chdir(tmp_path)
+    pack = _copy_pack(tmp_path, "base")
+    checkpoint_dir = tmp_path / "ckpts"
+    server = _make_server(pack, checkpoint_dir)
+    path = _write_checkpoint(checkpoint_dir, server)
+    checkpoint = torch.load(path, weights_only=False)
+    checkpoint["curriculum_state"].pop(next(iter(checkpoint["curriculum_state"])))
+    torch.save(checkpoint, path)
+    persist_checkpoint_digest(path)
+    before = _q_state_snapshot(server)
+
+    with pytest.raises(ValueError, match="curriculum checkpoint key set mismatch"):
+        await server._check_and_load_checkpoint()
+
+    after = _q_state_snapshot(server)
+    assert all(torch.equal(before[key], after[key]) for key in before)
+
+
+@pytest.mark.asyncio
+async def test_serving_path_refuses_network_action_shape_mismatch_before_mutation(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.chdir(tmp_path)
+    pack = _copy_pack(tmp_path, "base")
+    checkpoint_dir = tmp_path / "ckpts"
+    server = _make_server(pack, checkpoint_dir)
+    path = _write_checkpoint(checkpoint_dir, server)
+    checkpoint = torch.load(path, weights_only=False)
+    assert server.env is not None
+    action_parameters = [
+        key
+        for key, tensor in checkpoint["population_state"]["q_network"].items()
+        if tensor.ndim > 0 and tensor.shape[0] == server.env.action_dim
+    ]
+    assert action_parameters, "test network has no action-sized output parameter"
+    action_parameter = action_parameters[-1]
+    checkpoint["population_state"]["q_network"][action_parameter] = checkpoint["population_state"]["q_network"][action_parameter][:-1]
+    torch.save(checkpoint, path)
+    persist_checkpoint_digest(path)
+    before = _q_state_snapshot(server)
+
+    with pytest.raises(ValueError, match="q_network.*shape mismatch"):
+        await server._check_and_load_checkpoint()
+
+    after = _q_state_snapshot(server)
+    assert all(torch.equal(before[key], after[key]) for key in before)
+
+
+@pytest.mark.asyncio
 async def test_serving_path_rejects_checkpoint_from_mutated_universe(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """B2 — THE pinning test. One vfs-visible YAML value separates the universes; the
     serving path must fail loudly and apply nothing. Before task 5 this returned True
@@ -164,24 +304,22 @@ async def test_serving_path_rejects_checkpoint_from_mutated_universe(tmp_path: P
 
 
 def test_dimension_checks_provably_cannot_catch_a_universe_swap(tmp_path: Path) -> None:
-    """B3 — anti-simplification pin: across the B2 edit, observation_dim, action_count
-    AND observation_schema_hash are identical while vfs_hash differs. A dimension check
-    therefore cannot catch a universe swap; the identity guard is not replaceable by
-    something cheaper."""
+    """B3 — dimensions and layout stay blind while compiled content identity moves."""
     base_pack = _copy_pack(tmp_path, "base")
     mutated_pack = _copy_pack(tmp_path, "mutated")
     _mutate_energy_passive(mutated_pack)
 
     base = UniverseCompiler().compile(base_pack, primary_level=LEVEL, use_cache=False)
     mutated = UniverseCompiler().compile(mutated_pack, primary_level=LEVEL, use_cache=False)
+    base_level = base.get_level(base.metadata.primary_level)
+    mutated_level = mutated.get_level(mutated.metadata.primary_level)
 
     assert base.metadata.observation_dim == mutated.metadata.observation_dim
     assert base.metadata.action_count == mutated.metadata.action_count
-    # EXPECTED TO FLIP under WS-1(ii): when observation_schema_hash coverage widens this
-    # equality breaks — that is hash coverage improving, not a regression. Re-point the
-    # witness at whichever hash is still blind then; do not delete the test.
-    assert base.observation_schema_hash == mutated.observation_schema_hash
-    assert base.vfs_hash != mutated.vfs_hash
+    assert base_level.token_type_schema_hash == mutated_level.token_type_schema_hash
+    assert base_level.layout_hash == mutated_level.layout_hash
+    assert base_level.observation_schema_hash != mutated_level.observation_schema_hash
+    assert base_level.vfs_hash != mutated_level.vfs_hash
 
 
 def test_unified_server_raises_when_inference_server_never_starts(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -207,9 +345,10 @@ def test_unified_server_raises_when_inference_server_never_starts(tmp_path: Path
 
     def _make_unified() -> UnifiedServer:
         return UnifiedServer(
-            config_dir=str(tmp_path),
+            config_dir=str(SOURCE_PACK),
             total_episodes=1,
             checkpoint_dir=str(tmp_path / "ckpts"),
+            level_name=LEVEL,
         )
 
     # Control leg: serve() completes normally WITH a successful startup — no shutdown.

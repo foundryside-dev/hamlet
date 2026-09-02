@@ -5,8 +5,9 @@ from pathlib import Path
 import pytest
 import torch
 import yaml
+from pydantic import ValidationError
 
-from townlet.config.stratum_config import AspatialConfig, ContinuousConfig, GridConfig, GridNDConfig, SubstrateConfig
+from townlet.config.stratum_config import AspatialConfig, GridConfig, GridNDConfig, StratumConfig, SubstrateConfig
 from townlet.substrate.aspatial import AspatialSubstrate
 from townlet.substrate.factory import SubstrateFactory
 from townlet.substrate.grid2d import Grid2DSubstrate
@@ -20,7 +21,6 @@ def test_grid2d_config_valid():
         "height": 8,
         "boundary": "clamp",
         "distance_metric": "manhattan",
-        "observation_encoding": "relative",
         "diagonals": True,
     }
 
@@ -39,7 +39,6 @@ def test_grid2d_config_invalid_dimensions():
         "height": 8,
         "boundary": "clamp",
         "distance_metric": "manhattan",
-        "observation_encoding": "relative",
         "diagonals": True,
     }
 
@@ -67,7 +66,6 @@ def test_substrate_config_grid2d():
             "height": 8,
             "boundary": "clamp",
             "distance_metric": "manhattan",
-            "observation_encoding": "relative",
             "diagonals": True,
         },
     }
@@ -100,7 +98,6 @@ def test_factory_build_grid2d():
             "height": 8,
             "boundary": "clamp",
             "distance_metric": "manhattan",
-            "observation_encoding": "relative",
             "diagonals": True,
         },
     }
@@ -127,88 +124,6 @@ def test_factory_build_aspatial():
     assert substrate.position_dim == 0
 
 
-# Phase 5C: observation_encoding tests
-def test_grid_config_observation_encoding_valid():
-    """Test Grid config accepts valid observation_encoding values."""
-
-    for encoding in ["relative", "scaled", "absolute"]:
-        config = GridConfig(
-            topology="square",
-            width=8,
-            height=8,
-            boundary="clamp",
-            distance_metric="manhattan",
-            observation_encoding=encoding,
-            diagonals=True,
-        )
-        assert config.observation_encoding == encoding
-
-
-def test_grid_config_observation_encoding_default():
-    """Test Grid config requires observation_encoding (no defaults)."""
-    import pydantic_core
-
-    with pytest.raises((ValueError, pydantic_core._pydantic_core.ValidationError)):
-        GridConfig(
-            topology="square",
-            width=8,
-            height=8,
-            boundary="clamp",
-            distance_metric="manhattan",
-            diagonals=True,
-            # observation_encoding NOT provided - should fail!
-        )
-
-
-def test_grid_config_observation_encoding_invalid():
-    """Test Grid config rejects invalid observation_encoding."""
-
-    with pytest.raises(ValueError, match="observation_encoding"):
-        GridConfig(
-            topology="square",
-            width=8,
-            height=8,
-            boundary="clamp",
-            distance_metric="manhattan",
-            observation_encoding="invalid",  # Not in Literal
-            diagonals=True,
-        )
-
-
-def test_continuous_config_observation_encoding_valid():
-    """Test Continuous config accepts valid observation_encoding values."""
-
-    for encoding in ["relative", "scaled", "absolute"]:
-        config = ContinuousConfig(
-            dimensions=2,
-            bounds=[(0.0, 10.0), (0.0, 10.0)],
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=1.0,
-            distance_metric="euclidean",
-            observation_encoding=encoding,
-            action_discretization={"num_directions": 8, "num_magnitudes": 3},
-        )
-        assert config.observation_encoding == encoding
-
-
-def test_continuous_config_observation_encoding_default():
-    """Test Continuous config requires observation_encoding (no defaults)."""
-    import pydantic_core
-
-    with pytest.raises((ValueError, pydantic_core._pydantic_core.ValidationError)):
-        ContinuousConfig(
-            dimensions=2,
-            bounds=[(0.0, 10.0), (0.0, 10.0)],
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=1.0,
-            distance_metric="euclidean",
-            # observation_encoding NOT provided - should fail!
-            action_discretization={"num_directions": 8, "num_magnitudes": 3},
-        )
-
-
 def test_gridnd_config_includes_topology_field():
     """GridNDConfig should require topology field (no defaults)."""
 
@@ -216,7 +131,6 @@ def test_gridnd_config_includes_topology_field():
         dimension_sizes=[5, 5, 5, 5],
         boundary="clamp",
         distance_metric="manhattan",
-        observation_encoding="relative",
         topology="hypercube",
     )
     assert hasattr(config, "topology")
@@ -230,7 +144,6 @@ def test_gridnd_config_topology_can_be_overridden():
         dimension_sizes=[5, 5, 5, 5],
         boundary="clamp",
         distance_metric="manhattan",
-        observation_encoding="relative",
         topology="hypercube",
     )
     assert config.topology == "hypercube"
@@ -243,7 +156,6 @@ def test_gridnd_config_validates_yaml_with_topology():
         "dimension_sizes": [5, 5, 5, 5],
         "boundary": "clamp",
         "distance_metric": "manhattan",
-        "observation_encoding": "relative",
         "topology": "hypercube",
     }
     config = GridNDConfig(**yaml_data)
@@ -347,7 +259,6 @@ grid:
   height: 8
   boundary: "invalid_mode"
   distance_metric: "manhattan"
-  observation_encoding: "relative"
   diagonals: true
 """
     invalid_path = Path("/tmp/invalid_boundary_substrate.yaml")
@@ -377,7 +288,6 @@ grid:
   height: 8
   boundary: "clamp"
   distance_metric: "invalid_metric"
-  observation_encoding: "relative"
   diagonals: true
 """
     invalid_path = Path("/tmp/invalid_distance_substrate.yaml")
@@ -407,7 +317,6 @@ grid:
   height: 5
   boundary: "clamp"
   distance_metric: "manhattan"
-  observation_encoding: "relative"
   diagonals: false
 """
     non_square_path = Path("/tmp/non_square_substrate.yaml")
@@ -424,3 +333,30 @@ grid:
 
     # Cleanup
     non_square_path.unlink()
+
+
+def test_observation_mode_is_no_longer_a_stratum_key():
+    """`observation_mode` had no consumer anywhere in src/townlet (PDR-0143); it is deleted, not deprecated."""
+    data = {
+        "stratum": {
+            "version": "1.0",
+            "substrate": {
+                "type": "grid",
+                "grid": {
+                    "topology": "square",
+                    "width": 8,
+                    "height": 8,
+                    "boundary": "clamp",
+                    "distance_metric": "manhattan",
+                    "diagonals": False,
+                },
+            },
+            "vision_support": "both",
+            "temporal_support": "enabled",
+            "observation_mode": {"mode": "full_auto"},
+        }
+    }
+    with pytest.raises(ValidationError, match="observation_mode"):
+        StratumConfig(**data)
+    del data["stratum"]["observation_mode"]
+    assert StratumConfig(**data).stratum.temporal_support == "enabled"

@@ -1,5 +1,13 @@
 # Token Observation Representation — Design
 
+> **Binding amendment — 2026-08-31, `PDR-0131`:** replay stores a compact dynamic flat
+> serialization only (presence, live values, actual-rank coordinates). Immutable per-slot
+> descriptors live once in compiled context. Token-native feedforward/recurrent networks attach
+> that context before per-type projection; universe-bound flat/dueling networks consume the compact
+> dynamic view. Fixed-rank expansion occurs at the network boundary, preserving the per-type
+> transfer schema. Delete the old full-payload transition ABI; do not support both. This amendment
+> supersedes contrary transport and unit-sequencing text below.
+
 **Status:** Design approved in-session by the owner, 2026-08-22, section by section; revised
 same day after a four-lens design review (round 1), and revised again after a four-lens
 VFS-pairing review (round 2) — both synthesized under "Review amendments". **The second
@@ -203,6 +211,12 @@ possible, for it. Nothing in this unit builds them.
   preserved by construction); `one_hot` is **refused at compile time on tokenized
   variables** (the categorical fact is carried as normalized index + the categories count
   in the descriptor block; a future widening is a superseding PDR).
+- **Meter values use the same fixed value block, with `range_type` as authority**
+  (`PDR-0134`, superseding the pre-token meter ruling in `PDR-0057`). The meter surface
+  admits clipped `minmax`, clipped `log_scaled`, `cyclical_sin_cos`, and `binary`; the
+  other five general VFS kinds are rejected at meter parsing because they are unbounded,
+  batch-coupled, or require more than two lanes. The selected kind and bounded canonical
+  parameters are part of the meter signature, including effect-target signatures.
 - **Boundedness is certified at exposure.** A value feature entering a token must come
   from a bounded normalization kind (or a range kind with `clip: true`). Exposing a
   variable under `none`, `zscore`, unclipped `minmax`, or bare `masked_value` is a
@@ -214,14 +228,16 @@ possible, for it. Nothing in this unit builds them.
   naming both declarations and demanding a distinguishing declared parameter. This
   converts the silent-aliasing failure into a loud authoring error, and is what keeps
   reversal trigger 4 an edge case instead of a scheduled event.
-- **Identity = declared payload, applied recursively.** An affordance token's payload:
-  `interaction_type` one-hot; absolute position AND position-relative-to-self (egocentric —
-  "standing on it" = relative zero, which is what deletes `affordance_at_position`); and a
-  fixed-size **effect summary** of k = 4 entries, each `(delta magnitude, sign, target
-  signature)` where the target signature is the target meter's own declared-parameter
-  features — identity-by-payload applied to the reference as well as the referent. Fewer
-  than k effects: absent-marked; more: the k largest by normalized magnitude, count
-  carried as a feature.
+- **Identity = executable declared payload, applied recursively.** An affordance token's
+  payload carries `interaction_type`, duration applicability/value, the exact 24-hour
+  availability mask, absolute and egocentric position, and a fixed-size **effect summary**
+  of k = 5 entries. Each entry carries lifecycle stage, write source, target class, command
+  form, bounded magnitude/sign, and the target meter's complete signature. Costs and
+  per-tick costs enter as their executable lifecycle writes. A spawned effect instead
+  carries its supported target plus command intensity, resolved duration, declared scope,
+  reapply policy and observability (`PDR-0135`). Identity-by-payload therefore applies to
+  references as well as referents. Fewer than k entries are absent-marked; more than k is a
+  compile-time refusal. Nothing is truncated or selected heuristically.
 - **Two payload-identical entities at the same position are genuinely the same** to the
   agent — correct for *instances of one declaration* (a true world symmetry; DRL round 1
   endorsed). Round 2's finding was that *variables* are not instances of one declaration,

@@ -1,43 +1,40 @@
-"""Token observation assembly for :class:`VectorizedHamletEnv`.
+"""Live compact token observation assembly for :class:`VectorizedHamletEnv`.
 
-Unit-3 Task-10 cut: the fixed-width superset+mask `ObservationEncoder` — raster grid
-encoding, local window, position/velocity/meter/affordance/effect/temporal blocks, the
-per-field VFS mirror read and the activity mask — is DELETED. The environment's
-observation is the compiled `TokenSpec` serialization, assembled by
-:class:`TokenObservationEncoder` from one publisher per token type.
+The environment exposes only the compiled compact ``TokenSpec`` serialization. Each
+tick is assembled from dynamic publisher lanes; immutable contexts are attached later
+at the network boundary.
 """
 
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import torch
 
 from townlet.environment.token_publishers import (
-    AffordanceTokenDeclaration,
     AffordanceTokenPublisher,
     AgentTokenPublisher,
     EffectTokenPublisher,
+    ItemArenaVariableElementPublisher,
+    ItemStateSlotDeclaration,
     ItemTokenPublisher,
     MeterTokenPublisher,
     RegistryVariableElementPublisher,
     SelfTokenPublisher,
     TokenPublishContext,
     TokenTypePublisher,
+    parse_filler_ref,
 )
-from townlet.universe.dto.token_spec import (
-    EffectDeclaration,
-    MeterDeclaration,
-    TokenSpec,
-)
+from townlet.universe.dto.token_spec import CompactTokenTypeLayout, TokenSpec, TokenTypeSchema
+from townlet.vfs.schema import NormalizationSpec
 
 if TYPE_CHECKING:
     from townlet.environment.vectorized_env import VectorizedHamletEnv
 
 
 def build_token_observation_encoder(env: VectorizedHamletEnv) -> TokenObservationEncoder:
-    """Assemble the live token encoder for one environment (unit-3 Task-10 swap).
+    """Assemble the live compact token encoder for one environment.
 
     One publisher per token type with capacity > 0 (PDR-0076: dispatch on the compiled
     type, never on a name); a type with slots and no publisher is a refusal inside
@@ -45,112 +42,120 @@ def build_token_observation_encoder(env: VectorizedHamletEnv) -> TokenObservatio
     COMPILED artifact — capacities, slot bindings and their order — never from runtime
     counts.
     """
-    spec = env.universe.token_spec
+    spec = env.token_spec
+    compact_layout = spec.compact_layout()
     device = env.device
     publishers: list[TokenTypePublisher] = []
 
+    def layout_for(type_name: str) -> CompactTokenTypeLayout:
+        layout = compact_layout.get_type(type_name)
+        assert layout is not None
+        return layout
+
     self_type = spec.get_type("self")
     if self_type is not None and self_type.capacity > 0:
-        publishers.append(SelfTokenPublisher(self_type, env.substrate))
+        publishers.append(SelfTokenPublisher(self_type, layout_for("self"), env.substrate))
 
     meter_type = spec.get_type("meter")
     if meter_type is not None and meter_type.capacity > 0:
-        publishers.append(MeterTokenPublisher(meter_type, _meter_declarations(env), env.meter_name_to_index, device))
+        publishers.append(
+            MeterTokenPublisher(meter_type, layout_for("meter"), env.level.meter_declarations, env.meter_name_to_index, device)
+        )
 
     affordance_type = spec.get_type("affordance")
     if affordance_type is not None and affordance_type.capacity > 0:
-        publishers.append(
-            AffordanceTokenPublisher(
-                affordance_type,
-                env.substrate,
-                _affordance_declarations(env),
-                {meter.name: meter for meter in _meter_declarations(env)},
-                device,
-            )
-        )
+        publishers.append(AffordanceTokenPublisher(affordance_type, layout_for("affordance"), env.substrate))
 
     agent_type = spec.get_type("agent")
     if agent_type is not None and agent_type.capacity > 0:
         # Capacity is 0 on every shipped pack: `agent` capacity derives from a DECLARED
         # shared-world count, and no pack declares one (`num_agents` is a batch of
         # independent worlds and must never size this).
-        publishers.append(AgentTokenPublisher(agent_type, env.substrate))
+        publishers.append(AgentTokenPublisher(agent_type, layout_for("agent"), env.substrate))
 
     item_type = spec.get_type("item")
     if item_type is not None and item_type.capacity > 0:
-        publishers.append(ItemTokenPublisher(item_type, env.substrate, _owner_slot_capacity(env)))
+        publishers.append(ItemTokenPublisher(item_type, layout_for("item"), env.substrate, _owner_slot_capacity(env)))
 
     effect_type = spec.get_type("effect")
     if effect_type is not None and effect_type.capacity > 0:
-        publishers.append(EffectTokenPublisher(effect_type, _effect_declarations(env), _owner_slot_capacity(env), device))
+        publishers.append(EffectTokenPublisher(effect_type, layout_for("effect"), _owner_slot_capacity(env)))
 
     element_type = spec.get_type("variable_element")
     if element_type is not None and element_type.capacity > 0:
-        # Item-profile exposure has no compile emission yet (the compiler refuses an
-        # `exposed_to` on an item-profile variable and names the landing), so every
-        # compiled `variable_element` slot is registry-backed today. The item-arena half
-        # wires in with the unit-5 pack migration that authors the first one.
-        publishers.append(RegistryVariableElementPublisher(element_type, env.vfs_registry, list(element_type.slot_bindings), device))
+        # `variable_element` slots are filled by two publishers (token-obs spec §3):
+        # the registry half (global/agent-scope exposed variables) and the item-arena
+        # half (item-profile state, one slot per compiled `item` token slot — token
+        # unit 5 / hamlet-55b2826a02). The compiler's own convention distinguishes
+        # them: an item-arena slot's filler_ref is `<profile>.<variable>[<owner_slot>]`
+        # where `<profile>` names a compiled item profile
+        # (token_spec.py::_variable_element_artifacts); every other slot is
+        # registry-backed.
+        if env.universe.compiled_vfs_profiles is not None:
+            item_profiles = env.universe.compiled_vfs_profiles.item_profiles
+        else:
+            item_profiles = None
+        registry_slots, item_declarations = _split_variable_element_slots(element_type, item_profiles)
+        if registry_slots:
+            publishers.append(
+                RegistryVariableElementPublisher(
+                    element_type,
+                    layout_for("variable_element"),
+                    env.vfs_registry,
+                    registry_slots,
+                    device,
+                )
+            )
+        if item_declarations:
+            publishers.append(
+                ItemArenaVariableElementPublisher(
+                    element_type,
+                    layout_for("variable_element"),
+                    env.vfs_registry,
+                    item_declarations,
+                    owner_capacity=item_type.capacity if item_type is not None else 0,
+                    device=device,
+                )
+            )
 
     return TokenObservationEncoder(spec, publishers, device)
 
 
-def _meter_declarations(env: VectorizedHamletEnv) -> list[MeterDeclaration]:
-    """The level's bars.yaml declarations, in declaration order."""
-    return [
-        MeterDeclaration(
-            name=meter.name,
-            initial=meter.initial,
-            min=meter.bounds.min,
-            max=meter.bounds.max,
-            lethal_min=meter.bounds.lethal_min,
-            lethal_max=meter.bounds.lethal_max,
-            passive_depletion=meter.depletion.passive,
-            move_depletion=meter.depletion.move,
-            interact_depletion=meter.depletion.interact,
-            natural_recovery=meter.recovery.natural,
-        )
-        for meter in env.level.bars.meters
-    ]
+def _split_variable_element_slots(
+    element_type: TokenTypeSchema,
+    item_profiles: dict[str, Any] | None,
+) -> tuple[tuple[int, ...], tuple[ItemStateSlotDeclaration, ...]]:
+    """Partition a compiled `variable_element` type's slots into (registry-backed slot
+    indices, item-arena slot declarations) by their filler_ref shape.
 
+    `item_profiles` is `CompiledVFSProfiles.item_profiles` (`dict[str, CompiledItemProfile]`
+    at runtime; typed `dict[str, Any]` upstream — see `universe/compiled.py`).
+    """
+    profile_normalizations: dict[str, dict[str, NormalizationSpec]] = {}
+    if item_profiles:
+        for profile_name, profile in item_profiles.items():
+            profile_normalizations[profile_name] = {var.name: var.normalization for var in profile.variables if var.exposed_to}
 
-def _affordance_declarations(env: VectorizedHamletEnv) -> list[AffordanceTokenDeclaration]:
-    """Declared identity per compiled affordance slot (spec §1, applied recursively)."""
-    interaction_types = {affordance.name: affordance.interaction_type for affordance in env.level.affordances.affordances}
-    declarations: list[AffordanceTokenDeclaration] = []
-    for info in env.level.affordance_metadata.affordances:
-        interaction_type = interaction_types.get(info.id)
-        if interaction_type is None:
-            raise ValueError(
-                f"Affordance {info.id!r} is in the compiled affordance metadata but not in the level's "
-                "affordances.yaml; recompile the config pack."
+    registry_slots: list[int] = []
+    item_declarations: list[ItemStateSlotDeclaration] = []
+    for binding in element_type.slot_bindings:
+        base_ref, owner_slot = parse_filler_ref(binding.filler_ref)
+        profile_name, separator, var_name = base_ref.partition(".")
+        if separator:
+            var_normalizations = profile_normalizations.get(profile_name)
+        else:
+            var_normalizations = None
+        if var_normalizations is not None and var_name in var_normalizations:
+            item_declarations.append(
+                ItemStateSlotDeclaration(
+                    slot_index=binding.slot_index,
+                    owner_slot=owner_slot,
+                    normalization=var_normalizations[var_name],
+                )
             )
-        declarations.append(
-            AffordanceTokenDeclaration(
-                id=info.id,
-                interaction_type=str(interaction_type),
-                effect_deltas=dict(info.effects),
-            )
-        )
-    return declarations
-
-
-def _effect_declarations(env: VectorizedHamletEnv) -> list[EffectDeclaration]:
-    """Declared effect identity in CATALOG ORDER — `EffectSlotBatch.effect_indices`
-    indexes this list, so the order is the compiled catalog's, not a runtime one."""
-    catalog = env.universe.compiled_effect_catalog
-    if catalog is None:
-        return []
-    return [
-        EffectDeclaration(
-            id=effect.id,
-            scope=effect.scope,
-            duration=effect.duration,
-            intensity=effect.intensity,
-            reapply_policy=effect.reapply_policy,
-        )
-        for effect in catalog.effects.values()
-    ]
+        else:
+            registry_slots.append(binding.slot_index)
+    return tuple(registry_slots), tuple(item_declarations)
 
 
 def _owner_slot_capacity(env: VectorizedHamletEnv) -> int:
@@ -166,11 +171,13 @@ def _owner_slot_capacity(env: VectorizedHamletEnv) -> int:
 
 
 class TokenObservationEncoder:
-    """The environment's observation (unit-3 Task-10 swap).
+    """The environment's live compact observation encoder.
 
     Dispatches one publisher per token type (PDR-0076: dispatch on type, never a name
-    to match) over the compiled TokenSpec's serialization layout. `variable_element`
-    carries TWO publishers — registry-arena and item-arena (spec §3).
+    to match) over the compiled TokenSpec's serialization layout. ``variable_element``
+    slots are filled by up to two publishers: the registry half (global/agent-scope
+    exposed variables) and the item-arena half (item-profile state), split by
+    :func:`_split_variable_element_slots`.
 
     :meth:`encode` is called at the environment's single end-of-step observation point,
     after all VTC / effects / evaluator writes of the tick.
@@ -230,12 +237,13 @@ class TokenObservationEncoder:
         `.view()` of the flat slice — raises on copy, never `.reshape()`.
         """
         observation = torch.zeros((batch_size, self._spec.total_dims), dtype=torch.float32, device=self._device)
-        offset = 0
-        for token_type in self._spec.types:
-            width = token_type.capacity * token_type.row_width
-            if token_type.capacity > 0:
-                rows = observation[:, offset : offset + width].view(batch_size, token_type.capacity, token_type.row_width)
-                for publisher in self._publishers.get(token_type.type_name, []):
+        for type_layout in self._spec.compact_layout().types:
+            if type_layout.capacity > 0:
+                rows = observation[:, type_layout.start : type_layout.end].view(
+                    batch_size,
+                    type_layout.capacity,
+                    type_layout.compact_row_width,
+                )
+                for publisher in self._publishers.get(type_layout.type_name, []):
                     publisher.publish(rows, ctx)
-            offset += width
         return observation

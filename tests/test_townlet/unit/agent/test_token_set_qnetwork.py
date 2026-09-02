@@ -24,30 +24,49 @@ from townlet.agent.networks import TokenSetQNetwork
 from townlet.config.brain_config import SetAggregatorConfig, TokenSetConfig
 from townlet.universe.dto.token_spec import (
     PAYLOAD_SCHEMAS,
+    TOKEN_TRANSPORT_VERSION,
     SlotBinding,
     TokenSpec,
     build_token_type,
 )
 
 
-def _static(count: int, prefix: str) -> tuple[SlotBinding, ...]:
-    return tuple(SlotBinding(slot_index=i, filler_kind="static", filler_ref=f"{prefix}:{i}") for i in range(count))
+def _static(count: int, type_name: str) -> tuple[SlotBinding, ...]:
+    return tuple(
+        SlotBinding(
+            slot_index=i,
+            filler_kind="static",
+            filler_ref=f"{type_name}:{i}",
+        )
+        for i in range(count)
+    )
 
 
 def _dynamic(count: int, prefix: str) -> tuple[SlotBinding, ...]:
     return tuple(SlotBinding(slot_index=i, filler_kind="dynamic", filler_ref=f"{prefix}:{i}") for i in range(count))
 
 
+def _type(type_name: str, bindings: tuple[SlotBinding, ...]):
+    return build_token_type(
+        type_name,
+        bindings,
+        slot_context_payloads=tuple((0.0,) * len(PAYLOAD_SCHEMAS[type_name]) for _ in bindings),
+        effect_catalog_contexts=(),
+    )
+
+
 def make_spec(*, meters: int = 3, affordances: int = 2, items: int = 2) -> TokenSpec:
     """A mixed-type spec: self + meters + affordances + agent(0) + items."""
     return TokenSpec(
         types=(
-            build_token_type("self", _static(1, "self")),
-            build_token_type("meter", _static(meters, "meter")),
-            build_token_type("affordance", _static(affordances, "aff")),
-            build_token_type("agent", ()),
-            build_token_type("item", _dynamic(items, "item")),
-        )
+            _type("self", _static(1, "self")),
+            _type("meter", _static(meters, "meter")),
+            _type("affordance", _static(affordances, "affordance")),
+            _type("agent", ()),
+            _type("item", _dynamic(items, "item")),
+        ),
+        position_rank=2,
+        transport_version=TOKEN_TRANSPORT_VERSION,
     )
 
 
@@ -90,23 +109,32 @@ def present_rows(spec: TokenSpec) -> set[tuple[str, int]]:
 class TestConstruction:
     def test_moduledict_keys_are_the_live_roster(self):
         net = make_network(make_spec())
-        assert set(net.encoders.keys()) == {"self", "meter", "affordance", "item"}
-        assert set(net.type_embeddings.keys()) == {"self", "meter", "affordance", "item"}
+        assert set(net.encoder.encoders.keys()) == {"self", "meter", "affordance", "item"}
+        assert set(net.encoder.type_embeddings.keys()) == {"self", "meter", "affordance", "item"}
         assert net.token_type_names == ("self", "meter", "affordance", "item")
 
     def test_capacity_zero_type_gets_no_encoder(self):
         net = make_network(make_spec())
-        assert "agent" not in net.encoders
+        assert "agent" not in net.encoder.encoders
 
     def test_encoder_widths_match_payload_schemas(self):
         net = make_network(make_spec())
-        for name, encoder in net.encoders.items():
+        for name, encoder in net.encoder.encoders.items():
             assert isinstance(encoder, nn.Linear)
             assert encoder.in_features == len(PAYLOAD_SCHEMAS[name])
             assert encoder.out_features == 16
 
+    def test_compiled_assembler_buffers_are_not_checkpoint_state(self):
+        net = make_network(make_spec())
+        assert any(name.startswith("encoder.input_assembler.") for name, _buffer in net.named_buffers())
+        assert not any(name.startswith("encoder.input_assembler.") for name in net.state_dict())
+
     def test_empty_roster_refuses(self):
-        empty = TokenSpec(types=(build_token_type("agent", ()),))
+        empty = TokenSpec(
+            types=(_type("agent", ()),),
+            position_rank=2,
+            transport_version=TOKEN_TRANSPORT_VERSION,
+        )
         with pytest.raises(ValueError, match="capacity > 0"):
             make_network(empty)
 
@@ -139,9 +167,9 @@ class TestConstruction:
             net = make_network(spec, aggregator=aggregator, num_heads=heads)
             for module in net.modules():
                 if isinstance(module, nn.Linear):
-                    assert module.in_features < set_width
+                    assert module.in_features != set_width
                 if isinstance(module, nn.LayerNorm):
-                    assert module.normalized_shape[0] < set_width
+                    assert module.normalized_shape[0] != set_width
 
 
 @pytest.mark.parametrize(("aggregator", "num_heads"), [("mean", None), ("attention", 4)])
@@ -201,17 +229,17 @@ class TestForward:
         present = present_rows(spec) - {("item", 0)}
         obs = make_obs(spec, 2, present=present)
         net(obs).sum().backward()
-        item_encoder = net.encoders["item"]
+        item_encoder = net.encoder.encoders["item"]
         assert isinstance(item_encoder, nn.Linear)
         assert item_encoder.weight.grad is not None
         assert torch.equal(item_encoder.weight.grad, torch.zeros_like(item_encoder.weight.grad))
         assert item_encoder.bias.grad is not None
         assert torch.equal(item_encoder.bias.grad, torch.zeros_like(item_encoder.bias.grad))
-        embedding_grad = net.type_embeddings["item"].grad
+        embedding_grad = net.encoder.type_embeddings["item"].grad
         assert embedding_grad is not None
         assert torch.equal(embedding_grad, torch.zeros_like(embedding_grad))
         # A present type's encoder DID learn something.
-        meter_encoder = net.encoders["meter"]
+        meter_encoder = net.encoder.encoders["meter"]
         assert isinstance(meter_encoder, nn.Linear)
         assert meter_encoder.weight.grad is not None
         assert meter_encoder.weight.grad.abs().sum() > 0
@@ -254,6 +282,13 @@ class TestForward:
 
 
 class TestTokenSetConfig:
+    def test_aggregator_declaration_validates_attention_heads(self):
+        with pytest.raises(Exception, match="num_heads"):
+            SetAggregatorConfig(type="attention")
+
+        with pytest.raises(Exception, match="num_heads"):
+            SetAggregatorConfig(type="mean", num_heads=2)
+
     def test_all_fields_required(self):
         with pytest.raises(Exception, match="token_embed_dim"):
             TokenSetConfig(q_head_hidden_dim=32, aggregator=SetAggregatorConfig(type="mean"))
@@ -272,11 +307,8 @@ class TestTokenSetConfig:
         with pytest.raises(ValueError, match="requires token_set config"):
             ArchitectureConfig(type="token_set")
 
-    def test_absent_token_set_is_omitted_from_the_dump(self):
-        """brain_hash stability pin (alongside constraint): a pack that does not
-        declare token_set dumps EXACTLY the pre-Task-9 shape — the new key must not
-        move every shipped brain_hash. A declaring pack stamps the key (and its hash
-        moves, correctly)."""
+    def test_architecture_dump_has_only_current_fields(self):
+        """The pre-release ABI has one exact current shape, with no legacy omission."""
         from townlet.config.brain_config import ArchitectureConfig, FeedforwardConfig
 
         flat = ArchitectureConfig(
@@ -284,8 +316,8 @@ class TestTokenSetConfig:
             feedforward=FeedforwardConfig(hidden_layers=[8], activation="relu", dropout=0.0, layer_norm=False),
         )
         dump = flat.model_dump()
-        assert "token_set" not in dump
-        assert set(dump) == {"type", "feedforward", "recurrent", "dueling", "set_encoder"}
+        assert dump["token_set"] is None
+        assert set(dump) == {"type", "feedforward", "recurrent", "dueling", "token_set"}
 
         token = ArchitectureConfig(
             type="token_set",
@@ -296,6 +328,29 @@ class TestTokenSetConfig:
             ),
         )
         assert token.model_dump()["token_set"]["token_embed_dim"] == 16
+
+    def test_legacy_set_encoder_architecture_is_not_in_the_schema(self):
+        from pydantic import ValidationError
+
+        from townlet.config import brain_config
+        from townlet.config.brain_config import ArchitectureConfig
+
+        assert not hasattr(brain_config, "SetEncoderConfig")
+        with pytest.raises(ValidationError, match="type"):
+            ArchitectureConfig(type="set_encoder")
+
+    def test_legacy_set_encoder_network_is_deleted(self):
+        import townlet.agent.networks as networks
+
+        assert not hasattr(networks, "SetEncoderQNetwork")
+
+    def test_legacy_set_encoder_vfs_layout_is_deleted(self):
+        import townlet.vfs as vfs
+        import townlet.vfs.dynamic_needs as dynamic_needs
+
+        for name in ("DynamicNeedTokenLayout", "dynamic_need_token_layout"):
+            assert not hasattr(vfs, name)
+            assert not hasattr(dynamic_needs, name)
 
 
 class TestFactory:
@@ -322,10 +377,12 @@ class TestReviewRound1Pins:
         spec = make_spec()
         net = make_network(spec)
         obs = make_obs(spec, 1, present={("meter", 0)}, seed=5)
-        start, end = row_layout_slices(spec)[("meter", 0)]
-        payload = obs[:, start + 1 : end]
+        layout = spec.compact_layout().get_type("meter")
+        assert layout is not None
+        dynamic_rows = obs[:, layout.start : layout.end].view(1, layout.capacity, layout.compact_row_width)
         with torch.no_grad():
-            expected = net.encoders["meter"](payload) + net.type_embeddings["meter"]
+            payload = net.encoder.input_assembler.expand_type("meter", dynamic_rows)[:, 0, 1:]
+            expected = net.encoder.encoders["meter"](payload) + net.encoder.type_embeddings["meter"]
             pooled = net.pooled_embedding(obs)
         assert torch.allclose(pooled, expected, atol=1e-6)
 

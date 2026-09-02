@@ -37,7 +37,7 @@ from townlet.substrate.grid2d import Grid2DSubstrate
 @settings(max_examples=50)
 def test_property_position_bounds_grid2d(width, height, x, y):
     """Positions should be within grid bounds after initialization."""
-    substrate = Grid2DSubstrate(width=width, height=height, boundary="clamp", distance_metric="manhattan", observation_encoding="relative")
+    substrate = Grid2DSubstrate(width=width, height=height, boundary="clamp", distance_metric="manhattan")
 
     # Initialize positions and verify they're within bounds
     device = torch.device("cpu")
@@ -58,7 +58,7 @@ def test_property_position_bounds_grid2d(width, height, x, y):
 @settings(max_examples=50)
 def test_property_distance_symmetry_grid2d(width, height, x1, y1, x2, y2):
     """Distance from A to B should equal distance from B to A (symmetry)."""
-    substrate = Grid2DSubstrate(width=width, height=height, boundary="clamp", distance_metric="manhattan", observation_encoding="relative")
+    substrate = Grid2DSubstrate(width=width, height=height, boundary="clamp", distance_metric="manhattan")
 
     # Clamp positions to grid bounds
     x1, y1 = min(x1, width - 1), min(y1, height - 1)
@@ -84,7 +84,7 @@ def test_property_distance_symmetry_grid2d(width, height, x1, y1, x2, y2):
 @settings(max_examples=50)
 def test_property_movement_stays_in_bounds_grid2d(width, height, x, y, dx, dy):
     """Moving from valid position with clamping should stay in bounds."""
-    substrate = Grid2DSubstrate(width=width, height=height, boundary="clamp", distance_metric="manhattan", observation_encoding="relative")
+    substrate = Grid2DSubstrate(width=width, height=height, boundary="clamp", distance_metric="manhattan")
 
     # Clamp start position to grid
     x, y = min(x, width - 1), min(y, height - 1)
@@ -106,7 +106,7 @@ def test_property_movement_stays_in_bounds_grid2d(width, height, x, y, dx, dy):
 @settings(max_examples=20)
 def test_property_get_all_positions_count_grid2d(width, height):
     """get_all_positions() should return exactly width × height positions."""
-    substrate = Grid2DSubstrate(width=width, height=height, boundary="clamp", distance_metric="manhattan", observation_encoding="relative")
+    substrate = Grid2DSubstrate(width=width, height=height, boundary="clamp", distance_metric="manhattan")
 
     positions = substrate.get_all_positions()
 

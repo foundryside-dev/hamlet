@@ -6,19 +6,19 @@ environment:
       description: "Physical energy"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
 
     - name: health
       description: "Physical health"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
 
     - name: money
       description: "Currency"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
 
   cascade_graph: []
 

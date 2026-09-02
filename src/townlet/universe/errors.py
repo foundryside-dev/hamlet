@@ -80,10 +80,6 @@ class CompilationErrorCollector:
         else:
             self._issues.append(CompilationMessage(code=code, message=message, location=location))
 
-    # Alias used throughout docs/specs
-    def add_error(self, message: CompilationMessage | str, *, code: str | None = None, location: str | None = None) -> None:
-        self.add(message, code=code, location=location)
-
     def add_hint(self, hint: str) -> None:
         self.hints.append(hint)
 

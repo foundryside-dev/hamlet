@@ -191,7 +191,6 @@ def test_continuous1d_generates_4_actions():
         interaction_radius=0.8,
         action_discretization=ACTION_DISC,
         distance_metric="euclidean",
-        observation_encoding="relative",
     )
 
     actions = substrate.get_default_actions()
@@ -211,7 +210,6 @@ def test_continuous1d_uses_integer_deltas():
         interaction_radius=0.8,
         action_discretization=ACTION_DISC,
         distance_metric="euclidean",
-        observation_encoding="relative",
     )
 
     actions = substrate.get_default_actions()
@@ -234,7 +232,6 @@ def test_continuous2d_generates_6_actions():
         interaction_radius=0.8,
         action_discretization=ACTION_DISC,
         distance_metric="euclidean",
-        observation_encoding="relative",
     )
 
     actions = substrate.get_default_actions()
@@ -259,7 +256,6 @@ def test_continuous3d_generates_8_actions():
         interaction_radius=0.8,
         action_discretization=ACTION_DISC,
         distance_metric="euclidean",
-        observation_encoding="relative",
     )
 
     actions = substrate.get_default_actions()
@@ -282,7 +278,6 @@ def test_continuous3d_uses_integer_deltas():
         interaction_radius=0.8,
         action_discretization=ACTION_DISC,
         distance_metric="euclidean",
-        observation_encoding="relative",
     )
 
     actions = substrate.get_default_actions()
@@ -305,7 +300,6 @@ def test_continuousnd_generates_2n_plus_2_actions():
         movement_delta=0.5,
         interaction_radius=0.8,
         distance_metric="euclidean",
-        observation_encoding="relative",
     )
 
     actions = substrate.get_default_actions()
@@ -321,7 +315,6 @@ def test_continuousnd_action_naming_pattern():
         movement_delta=0.5,
         interaction_radius=0.8,
         distance_metric="euclidean",
-        observation_encoding="relative",
     )
 
     actions = substrate.get_default_actions()
@@ -350,7 +343,6 @@ def test_continuousnd_uses_integer_deltas():
         movement_delta=0.5,
         interaction_radius=0.8,
         distance_metric="euclidean",
-        observation_encoding="relative",
     )
 
     actions = substrate.get_default_actions()
@@ -461,7 +453,6 @@ def test_continuous1d_meta_actions_at_end():
         interaction_radius=0.8,
         action_discretization=ACTION_DISC,
         distance_metric="euclidean",
-        observation_encoding="relative",
     )
     actions = substrate.get_default_actions()
 
@@ -488,7 +479,6 @@ def test_continuous2d_meta_actions_at_end():
         interaction_radius=0.8,
         action_discretization=ACTION_DISC,
         distance_metric="euclidean",
-        observation_encoding="relative",
     )
     actions = substrate.get_default_actions()
 
@@ -516,7 +506,6 @@ def test_continuous3d_meta_actions_at_end():
         interaction_radius=0.8,
         action_discretization=ACTION_DISC,
         distance_metric="euclidean",
-        observation_encoding="relative",
     )
     actions = substrate.get_default_actions()
 
@@ -538,7 +527,6 @@ def test_continuousnd_meta_actions_at_end():
         movement_delta=0.5,
         interaction_radius=0.8,
         distance_metric="euclidean",
-        observation_encoding="relative",
     )
     actions = substrate.get_default_actions()
 

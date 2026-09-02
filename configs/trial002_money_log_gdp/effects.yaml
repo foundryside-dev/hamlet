@@ -4,12 +4,14 @@ effect_definitions:
   - id: business_cycle
     scope: global
     duration: 100000
-    intensity: 1.0
     reapply_policy: renew
     observable: false
+    on_spawn: []
     on_tick:
       - modify: bar.money
         value: "1000.0 * (2.0 + phase_sin(elapsed_ticks, 24.0))"
+    on_despawn: []
+    on_interrupt: []
 
 # Per-scope budget of concurrently active effects (token-obs spec S2, required because
 # effects are declared). Values: one active instance per declared effect per scope

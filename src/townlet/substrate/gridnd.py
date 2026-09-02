@@ -26,10 +26,7 @@ class GridNDSubstrate(SpatialSubstrate):
     - Origin: all zeros [0, 0, 0, ...]
     - Each dimension increases positively from 0 to (size - 1)
 
-    Observation encoding:
-    - relative: Normalized coordinates [0, 1] (N dimensions)
-    - scaled: Normalized + dimension sizes (2N dimensions)
-    - absolute: Raw unnormalized coordinates (N dimensions)
+    Positions are observed in the canonical normalized [0, 1] coordinate range.
 
     Use cases:
     - High-dimensional RL research
@@ -42,7 +39,6 @@ class GridNDSubstrate(SpatialSubstrate):
         dimension_sizes: list[int],
         boundary: Literal["clamp", "wrap", "bounce", "sticky"],
         distance_metric: Literal["manhattan", "euclidean", "chebyshev"] = "manhattan",
-        observation_encoding: Literal["relative", "scaled", "absolute"] = "relative",
         topology: Literal["hypercube"] = "hypercube",  # NEW: GridND uses hypercube topology
     ):
         """Initialize N-dimensional grid substrate.
@@ -51,7 +47,6 @@ class GridNDSubstrate(SpatialSubstrate):
             dimension_sizes: Size of each dimension [d0_size, d1_size, ..., dN_size]
             boundary: Boundary mode ("clamp", "wrap", "bounce", "sticky")
             distance_metric: Distance metric ("manhattan", "euclidean", "chebyshev")
-            observation_encoding: Position encoding strategy ("relative", "scaled", "absolute")
             topology: Grid topology ("hypercube" for N-dimensional Cartesian grid)
 
         Raises:
@@ -91,14 +86,10 @@ class GridNDSubstrate(SpatialSubstrate):
         if distance_metric not in ("manhattan", "euclidean", "chebyshev"):
             raise ValueError(f"Unknown distance metric: {distance_metric}")
 
-        if observation_encoding not in ("relative", "scaled", "absolute"):
-            raise ValueError(f"Unknown observation encoding: {observation_encoding}")
-
         # Store configuration
         self.dimension_sizes = dimension_sizes
         self.boundary = boundary
         self.distance_metric = distance_metric
-        self.observation_encoding = observation_encoding
         self.topology = topology  # NEW: Store topology
 
     @property
@@ -342,15 +333,8 @@ class GridNDSubstrate(SpatialSubstrate):
         """Encode positions as raw unnormalized coordinates."""
         return positions.float()
 
-    @property
-    def supports_partial_vision(self) -> bool:
-        return False
-
-    def get_vision_radius(self, vision_range: float) -> int:
-        raise ValueError("GridND substrates do not support partial vision; no vision radius exists.")
-
     def normalize_positions(self, positions: torch.Tensor) -> torch.Tensor:
-        """Normalize positions to [0, 1] range (always relative encoding).
+        """Normalize positions to the canonical [0, 1] coordinate range.
 
         Args:
             positions: [num_agents, position_dim] positions
@@ -362,11 +346,7 @@ class GridNDSubstrate(SpatialSubstrate):
 
     # --- Token visibility / egocentric contract (token-obs unit 3, Task 8) -----
     #
-    # GridND GAINS partial observability through this contract (the token-obs spec §1
-    # trade, rank ≤ MAX_POSITION_RANK): the OLD raster window path never supported it
-    # (`supports_partial_vision` stays False and `get_vision_radius` still raises —
-    # that contract is untouched), so the radius formula is stated here, identical to
-    # grid2d/grid3d's longest-axis form.
+    # GridND uses the same longest-axis visibility radius as Grid2D/Grid3D.
 
     def _token_axis_sizes(self, device: torch.device) -> torch.Tensor:
         return torch.tensor([float(size) for size in self.dimension_sizes], dtype=torch.float32, device=device)
@@ -387,19 +367,17 @@ class GridNDSubstrate(SpatialSubstrate):
         return combine_metric(deltas.abs(), self.distance_metric) <= radius
 
     def egocentric_delta(self, self_pos: torch.Tensor, entity_pos: torch.Tensor) -> torch.Tensor:
-        """entity − self per axis, shortest path under wrap, normalized per encoding mode."""
+        """Bounded entity − self per axis, using the shortest path under wrap."""
         require_position_batch(self_pos, self.position_dim, argument="self_pos")
         require_position_batch(entity_pos, self.position_dim, argument="entity_pos")
         wrap = self._token_axis_sizes(self_pos.device) if self.boundary == "wrap" else None
         deltas = pairwise_axis_deltas(self_pos, entity_pos, wrap)
-        if self.observation_encoding == "relative":
-            denominators = torch.tensor(
-                [float(max(size - 1, 1)) for size in self.dimension_sizes],
-                dtype=torch.float32,
-                device=deltas.device,
-            )
-            deltas = deltas / denominators
-        return deltas
+        denominators = torch.tensor(
+            [float(max(size - 1, 1)) for size in self.dimension_sizes],
+            dtype=torch.float32,
+            device=deltas.device,
+        )
+        return deltas / denominators
 
     def get_valid_neighbors(self, position: torch.Tensor) -> list[torch.Tensor]:
         """Get cardinal neighbors in N dimensions (2N neighbors).

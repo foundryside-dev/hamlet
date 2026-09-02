@@ -30,7 +30,7 @@ def test_driver_writes_a_loadable_trace(tmp_path: Path) -> None:
     assert trace.actions.shape == (3, 4)
     assert trace.actions.dtype == np.int64
     assert trace.action_source == "seeded-random"
-    # Provenance hashes: every *_hash field on CompiledUniverse, required ones set.
+    # Provenance hashes: shared universe hashes plus the selected level's hashes.
     assert trace.hashes["vfs_hash"]
     assert trace.hashes["observation_schema_hash"]
     assert "training_hash" in trace.hashes

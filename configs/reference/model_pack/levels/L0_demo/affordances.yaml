@@ -11,10 +11,10 @@ affordances:
         on_start:
           - modify: "target.bar.mood"
             value: "target.bar.mood + 0.05"
-        per_tick: []
-        on_completion:
           - modify: "target.bar.energy"
             value: "target.bar.energy + 0.2"
+        per_tick: []
+        on_completion: []
         on_early_exit: []
         on_failure: []
       opening_hours:
@@ -50,10 +50,9 @@ affordances:
         positions: [[1, 1]]
 
     - name: WORK
-      interaction_type: dual
+      interaction_type: multi_tick
       duration_ticks: 2
-      costs:
-        energy: 0.05
+      costs: {}
       costs_per_tick:
         energy: 0.05
       interactions:

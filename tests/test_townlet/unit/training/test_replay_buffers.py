@@ -652,7 +652,7 @@ class TestReplayBufferSerialization:
         assert state["size"] == 5
         assert state["position"] == 5
         assert state["capacity"] == 10
-        assert state["format_version"] == 3  # Version 3: reward components
+        assert state["format_version"] == 4
         assert state["observations"].shape == (5, 1)
 
         # Check temporal order (should be 0, 1, 2, 3, 4)
@@ -679,7 +679,7 @@ class TestReplayBufferSerialization:
 
         # After serialization, data should be in temporal order (oldest first)
         assert state["size"] == 5
-        assert state["position"] == 5  # Reset to size since data is contiguous
+        assert state["position"] == 0  # Canonical full-buffer cursor is in range.
 
         # Expected temporal order: 3, 4, 5, 6, 7
         expected = [3.0, 4.0, 5.0, 6.0, 7.0]
@@ -703,8 +703,7 @@ class TestReplayBufferSerialization:
         buffer2.load_from_serialized(state)
 
         assert buffer2.size == 5
-        # After deserializing, position is restored from serialized state (which was reset to size)
-        assert buffer2.position == 5
+        assert buffer2.position == 0
 
         # Sample from restored buffer should work
         batch = buffer2.sample(batch_size=3)
@@ -718,7 +717,7 @@ class TestReplayBufferSerialization:
 
         assert state["size"] == 0
         assert state["position"] == 0
-        assert state["format_version"] == 3  # Version 3: reward components
+        assert state["format_version"] == 4
         assert state["observations"] is None
 
     def test_load_from_serialized_empty(self):
@@ -730,37 +729,22 @@ class TestReplayBufferSerialization:
         rewards = _make_reward_tensor(torch.randn(3))  # CRIT-07: RewardTensor
         buffer.push(obs, torch.randint(0, 4, (3,)), rewards, torch.randn(3, 4), torch.rand(3) > 0.5)
 
-        # Load empty state (format_version 3)
-        empty_state = {
-            "size": 0,
-            "position": 0,
-            "capacity": 10,
-            "format_version": 3,  # Version 3: reward components
-            "observations": None,
-            "actions": None,
-            "rewards": None,
-            "rewards_extrinsic": None,
-            "rewards_intrinsic": None,
-            "rewards_shaping": None,
-            "next_observations": None,
-            "dones": None,
-        }
+        empty_state = ReplayBuffer(capacity=10, device=CPU).serialize()
 
         buffer.load_from_serialized(empty_state)
 
         assert buffer.size == 0
         assert buffer.position == 0
 
-    def test_load_legacy_format_rejected(self):
-        """load_from_serialized should reject legacy format (version < 3)."""
+    def test_load_previous_format_rejected(self):
+        """load_from_serialized rejects the immediately previous artifact."""
         buffer = ReplayBuffer(capacity=10, device=CPU)
 
-        # Legacy format state (version 1 with split rewards)
-        legacy_state = {
+        previous_state = {
             "size": 5,
             "position": 5,
             "capacity": 10,
-            "format_version": 1,  # Legacy format
+            "format_version": 3,
             "observations": torch.randn(5, 3),
             "actions": torch.randint(0, 4, (5,)),
             "rewards_extrinsic": torch.randn(5),
@@ -769,8 +753,158 @@ class TestReplayBufferSerialization:
             "dones": torch.rand(5) > 0.5,
         }
 
-        with pytest.raises(ValueError, match="format_version < 3"):
-            buffer.load_from_serialized(legacy_state)
+        with pytest.raises(ValueError, match="exact current format_version is 4"):
+            buffer.load_from_serialized(previous_state)
+
+
+class TestCompactReplayCheckpointABI:
+    """The compact observation cut is an exact, one-way replay artifact ABI."""
+
+    def test_l1_observation_pair_uses_exact_float32_shape_and_bytes(self):
+        buffer = ReplayBuffer(capacity=100_000, device=CPU)
+        observations = torch.zeros((1, 115), dtype=torch.float32)
+        buffer.push(
+            observations,
+            torch.zeros(1, dtype=torch.long),
+            _make_reward_tensor(torch.zeros(1, dtype=torch.float32)),
+            observations.clone(),
+            torch.zeros(1, dtype=torch.bool),
+        )
+
+        assert buffer.observations is not None
+        assert buffer.next_observations is not None
+        assert buffer.observations.dtype is torch.float32
+        assert buffer.next_observations.dtype is torch.float32
+        assert buffer.observations.shape == (100_000, 115)
+        assert buffer.next_observations.shape == (100_000, 115)
+        pair = (buffer.observations, buffer.next_observations)
+        assert sum(tensor.numel() * tensor.element_size() for tensor in pair) == 92_000_000
+        assert sum(tensor.untyped_storage().nbytes() for tensor in pair) == 92_000_000
+
+    def test_serialized_state_has_exact_current_version_kind_and_keys(self):
+        state = ReplayBuffer(capacity=10, device=CPU).serialize()
+
+        assert state["format_version"] == 4
+        assert state["replay_kind"] == "standard"
+        assert set(state) == {
+            "replay_kind",
+            "format_version",
+            "capacity",
+            "size",
+            "position",
+            "observations",
+            "actions",
+            "rewards",
+            "rewards_extrinsic",
+            "rewards_intrinsic",
+            "rewards_shaping",
+            "next_observations",
+            "dones",
+        }
+
+    @pytest.mark.parametrize("invalid_version", (4.0, True))
+    def test_format_version_requires_an_exact_integer(self, invalid_version: object):
+        buffer = ReplayBuffer(capacity=10, device=CPU)
+        state = buffer.serialize()
+        state["format_version"] = invalid_version
+
+        with pytest.raises(ValueError, match="exact current format_version is 4"):
+            buffer.load_from_serialized(state)
+
+    def test_structural_validation_does_not_materialize_restore_storage(self, monkeypatch):
+        buffer = ReplayBuffer(capacity=10, device=CPU)
+        observations = torch.zeros((1, 3), dtype=torch.float32)
+        buffer.push(
+            observations,
+            torch.zeros(1, dtype=torch.long),
+            _make_reward_tensor(torch.zeros(1, dtype=torch.float32)),
+            observations.clone(),
+            torch.zeros(1, dtype=torch.bool),
+        )
+        state = buffer.serialize()
+        prepare_calls = 0
+        original_prepare = buffer._prepare_serialized
+
+        def counted_prepare(*args, **kwargs):
+            nonlocal prepare_calls
+            prepare_calls += 1
+            return original_prepare(*args, **kwargs)
+
+        monkeypatch.setattr(buffer, "_prepare_serialized", counted_prepare)
+        buffer.validate_serialized(state, expected_obs_dim=3)
+
+        assert prepare_calls == 0
+
+    def test_loader_refuses_non_mapping_payload(self):
+        replay = ReplayBuffer(capacity=4, device=CPU)
+
+        with pytest.raises(ValueError, match="payload must be a mapping"):
+            replay.load_from_serialized(None)
+
+    def test_immediately_previous_version_refuses_without_mutation(self):
+        buffer = ReplayBuffer(capacity=10, device=CPU)
+        observations = torch.ones((1, 3), dtype=torch.float32)
+        buffer.push(
+            observations,
+            torch.zeros(1, dtype=torch.long),
+            _make_reward_tensor(torch.ones(1, dtype=torch.float32)),
+            observations + 1,
+            torch.zeros(1, dtype=torch.bool),
+        )
+        before = buffer.serialize()
+        previous = dict(before)
+        previous["format_version"] = 3
+
+        with pytest.raises(ValueError, match=r"format_version 3.*format_version is 4"):
+            buffer.load_from_serialized(previous)
+
+        after = buffer.serialize()
+        assert before.keys() == after.keys()
+        for key in before:
+            if isinstance(before[key], torch.Tensor):
+                assert torch.equal(before[key], after[key])
+            else:
+                assert before[key] == after[key]
+
+    @pytest.mark.parametrize(
+        ("mutation", "message"),
+        (
+            pytest.param(lambda state: state.__setitem__("replay_kind", "prioritized"), "replay_kind", id="wrong-kind"),
+            pytest.param(lambda state: state.__setitem__("unknown", 1), "key set", id="unknown-key"),
+            pytest.param(lambda state: state.pop("actions"), "key set", id="missing-key"),
+        ),
+    )
+    def test_current_state_refuses_wrong_kind_or_key_set(self, mutation, message):
+        state = ReplayBuffer(capacity=10, device=CPU).serialize()
+        mutation(state)
+
+        with pytest.raises(ValueError, match=message):
+            ReplayBuffer(capacity=10, device=CPU).load_from_serialized(state)
+
+    @pytest.mark.parametrize(
+        ("field", "replacement", "message"),
+        (
+            pytest.param("observations", lambda tensor: tensor.to(torch.float64), "observations.*dtype", id="observation-dtype"),
+            pytest.param("actions", lambda tensor: tensor.to(torch.int32), "actions.*dtype", id="action-dtype"),
+            pytest.param("dones", lambda tensor: tensor.to(torch.float32), "dones.*dtype", id="done-dtype"),
+            pytest.param("next_observations", lambda tensor: tensor[:, :-1], "next_observations.*shape", id="next-shape"),
+        ),
+    )
+    def test_current_state_refuses_invalid_tensor_contract(self, field, replacement, message):
+        source = ReplayBuffer(capacity=10, device=CPU)
+        observations = torch.ones((2, 3), dtype=torch.float32)
+        source.push(
+            observations,
+            torch.zeros(2, dtype=torch.long),
+            _make_reward_tensor(torch.ones(2, dtype=torch.float32)),
+            observations + 1,
+            torch.zeros(2, dtype=torch.bool),
+        )
+        state = source.serialize()
+        state[field] = replacement(state[field])
+
+        with pytest.raises(ValueError, match=message):
+            ReplayBuffer(capacity=10, device=CPU).load_from_serialized(state)
 
 
 class TestReplayBufferEdgeCases:

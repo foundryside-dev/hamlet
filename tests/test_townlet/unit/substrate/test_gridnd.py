@@ -13,7 +13,6 @@ def test_gridnd_requires_minimum_4_dimensions():
             dimension_sizes=[8, 8, 8],  # Only 3D
             boundary="clamp",
             distance_metric="manhattan",
-            observation_encoding="relative",
         )
 
 
@@ -24,7 +23,6 @@ def test_gridnd_validates_positive_dimensions():
             dimension_sizes=[8, 8, 0, 8],  # Zero size
             boundary="clamp",
             distance_metric="manhattan",
-            observation_encoding="relative",
         )
 
 
@@ -34,7 +32,6 @@ def test_gridnd_asymmetric_dimensions():
         dimension_sizes=[10, 5, 3, 7],  # Different sizes
         boundary="clamp",
         distance_metric="manhattan",
-        observation_encoding="relative",
     )
 
     assert substrate.position_dim == 4
@@ -48,7 +45,6 @@ def test_gridnd_warns_at_10_dimensions():
             dimension_sizes=[3] * 10,
             boundary="clamp",
             distance_metric="manhattan",
-            observation_encoding="relative",
         )
 
     assert substrate.action_space_size == 22  # 2*10 + 2
@@ -60,7 +56,6 @@ def test_gridnd_movement_with_clamp_boundary():
         dimension_sizes=[5, 5, 5, 5],
         boundary="clamp",
         distance_metric="manhattan",
-        observation_encoding="relative",
     )
 
     # Agent at corner [0, 0, 0, 0]
@@ -80,7 +75,6 @@ def test_gridnd_movement_with_wrap_boundary():
         dimension_sizes=[5, 5, 5, 5],
         boundary="wrap",
         distance_metric="manhattan",
-        observation_encoding="relative",
     )
 
     # Agent at [0, 0, 0, 0]
@@ -99,7 +93,6 @@ def test_gridnd_distance_manhattan():
         dimension_sizes=[10, 10, 10, 10],
         boundary="clamp",
         distance_metric="manhattan",
-        observation_encoding="relative",
     )
 
     pos1 = torch.tensor([[0, 0, 0, 0]], dtype=torch.long)
@@ -117,7 +110,6 @@ def test_gridnd_distance_euclidean():
         dimension_sizes=[10, 10, 10, 10],
         boundary="clamp",
         distance_metric="euclidean",
-        observation_encoding="relative",
     )
 
     pos1 = torch.tensor([[0, 0, 0, 0]], dtype=torch.long)
@@ -135,7 +127,6 @@ def test_gridnd_neighbors_4d_interior():
         dimension_sizes=[10, 10, 10, 10],
         boundary="clamp",
         distance_metric="manhattan",
-        observation_encoding="relative",
     )
 
     # Interior position
@@ -157,7 +148,6 @@ def test_gridnd_neighbors_4d_corner():
         dimension_sizes=[5, 5, 5, 5],
         boundary="clamp",
         distance_metric="manhattan",
-        observation_encoding="relative",
     )
 
     # Corner position [0, 0, 0, 0]
@@ -179,7 +169,6 @@ def test_gridnd_is_on_position():
         dimension_sizes=[10, 10, 10, 10],
         boundary="clamp",
         distance_metric="manhattan",
-        observation_encoding="relative",
     )
 
     agent_positions = torch.tensor(
@@ -213,7 +202,6 @@ def test_gridnd_stores_topology_when_provided():
         dimension_sizes=[5, 5, 5, 5],
         boundary="clamp",
         distance_metric="manhattan",
-        observation_encoding="relative",
         topology="hypercube",
     )
     assert substrate.topology == "hypercube"
@@ -227,7 +215,6 @@ def test_gridnd_topology_defaults_to_hypercube():
         dimension_sizes=[5, 5, 5, 5],
         boundary="clamp",
         distance_metric="manhattan",
-        observation_encoding="relative",
     )
     assert substrate.topology == "hypercube"
 
@@ -240,7 +227,6 @@ def test_gridnd_topology_attribute_exists():
         dimension_sizes=[5, 5, 5, 5, 5, 5, 5],
         boundary="clamp",
         distance_metric="manhattan",
-        observation_encoding="relative",
     )
     assert hasattr(substrate, "topology")
 
@@ -254,6 +240,5 @@ def test_gridnd_topology_is_hypercube_for_all_dimensions():
             dimension_sizes=[5] * num_dims,
             boundary="clamp",
             distance_metric="manhattan",
-            observation_encoding="relative",
         )
         assert substrate.topology == "hypercube"

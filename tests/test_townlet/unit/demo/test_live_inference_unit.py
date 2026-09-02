@@ -40,7 +40,6 @@ def live_server(tmp_path: Path, test_config_pack_path: Path, noop_qvalue_log):
         total_episodes=10,
         config_dir=test_config_pack_path,
         level_name="L0_0_minimal",
-        training_config_path=None,
     )
     yield server
     # ensure we don't leave open descriptors
@@ -76,7 +75,22 @@ def test_live_inference_requires_explicit_level_name(tmp_path: Path, test_config
             total_episodes=10,
             config_dir=test_config_pack_path,
             level_name=None,
-            training_config_path=None,
+        )
+
+
+def test_live_inference_requires_complete_replay_paths(tmp_path: Path, test_config_pack_path: Path, noop_qvalue_log) -> None:
+    checkpoint_dir = tmp_path / "ckpts"
+    checkpoint_dir.mkdir()
+
+    with pytest.raises(ValueError, match="db_path.*recordings_dir"):
+        LiveInferenceServer(
+            checkpoint_dir=checkpoint_dir,
+            port=9999,
+            step_delay=0.01,
+            total_episodes=10,
+            config_dir=test_config_pack_path,
+            level_name="L0_0_minimal",
+            db_path=tmp_path / "demo.db",
         )
 
 
@@ -119,6 +133,27 @@ async def test_broadcast_to_clients_removes_dead_connections(live_server: LiveIn
 
     assert healthy.messages == [{"type": "update"}]
     assert failing not in live_server.clients
+
+
+@pytest.mark.asyncio
+async def test_websocket_commands_require_the_canonical_command_field(live_server: LiveInferenceServer) -> None:
+    with pytest.raises(ValueError, match="command"):
+        await live_server._handle_command(object(), {"type": "pause"})  # type: ignore[arg-type]
+
+
+@pytest.mark.asyncio
+async def test_set_speed_requires_an_explicit_positive_speed(live_server: LiveInferenceServer) -> None:
+    with pytest.raises(ValueError, match="speed"):
+        await live_server._handle_command(object(), {"command": "set_speed"})  # type: ignore[arg-type]
+
+    with pytest.raises(ValueError, match="speed"):
+        await live_server._handle_command(object(), {"command": "set_speed", "speed": 0})  # type: ignore[arg-type]
+
+
+@pytest.mark.asyncio
+async def test_unknown_websocket_command_fails_loudly(live_server: LiveInferenceServer) -> None:
+    with pytest.raises(ValueError, match="Unknown WebSocket command"):
+        await live_server._handle_command(object(), {"command": "not-a-command"})  # type: ignore[arg-type]
 
 
 def test_build_agent_telemetry_payload_uses_episode_index(live_server: LiveInferenceServer):
@@ -176,7 +211,6 @@ def test_declared_icons_and_formats_reach_the_payload(tmp_path: Path, test_confi
         total_episodes=10,
         config_dir=pack,
         level_name="L0_test",
-        training_config_path=None,
     )
     try:
         _compile_for(server)

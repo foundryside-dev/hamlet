@@ -184,7 +184,6 @@ def main():
             total_episodes=total_episodes,
             checkpoint_dir=args.checkpoint_dir,
             inference_port=args.inference_port,
-            training_config_path=str(config_file),
             level_name=level_name,
             force_new_vfs=args.force_new_vfs,
         )

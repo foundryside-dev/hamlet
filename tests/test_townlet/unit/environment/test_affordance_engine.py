@@ -7,17 +7,21 @@ Coverage focus (post-v2.1 refactor):
 - Edge cases (affordance not found, invalid inputs)
 - Opening hours and affordability checks
 - Cost queries (get_duration_ticks)
-- Multi-tick vs instant/dual interaction semantics
+- Multi-tick vs instant interaction semantics
 
 Note: Full interaction flows and action masking are tested via
 VectorizedHamletEnv in test_affordances.py and test_vectorized_env.py.
 """
 
-from dataclasses import dataclass
-
 import pytest
 import torch
 
+from townlet.config.affordances_v2_config import (
+    AffordanceParamConfig,
+    DeploymentConfig,
+    OpeningHoursConfig,
+    TimeWindowConfig,
+)
 from townlet.effects.executor import CommandExecutor
 from townlet.environment.affordance_engine import (
     AffordanceEngine,
@@ -41,78 +45,42 @@ def _bounds_kwargs(meter_name_to_idx, device=None):
     }
 
 
-@dataclass
-class RuntimeEffect:
-    meter: str
-    amount: float
-
-
-@dataclass
-class RuntimePipeline:
-    on_start: list[RuntimeEffect]
-    per_tick: list[RuntimeEffect]
-    on_completion: list[RuntimeEffect]
-
-
-@dataclass
-class TimeWindow:
-    """Time window for opening hours schedule."""
-
-    start: int
-    end: int
-
-
-@dataclass
-class OpeningHours:
-    """Opening hours configuration for affordances."""
-
-    enabled: bool
-    schedule: list[TimeWindow] | None = None
-
-
-def make_opening_hours(hours: tuple[int, int]) -> OpeningHours:
-    """Helper to convert (open, close) tuple to OpeningHours object.
+def make_opening_hours(hours: tuple[int, int]) -> OpeningHoursConfig:
+    """Build the canonical opening-hours DTO.
 
     Args:
         hours: Tuple of (open_hour, close_hour), e.g., (8, 18) for 8am-6pm.
                Use (0, 24) for 24/7 availability.
 
     Returns:
-        OpeningHours object with appropriate enabled flag and schedule.
+        OpeningHoursConfig with appropriate enabled flag and schedule.
     """
     open_hour, close_hour = hours
     # (0, 24) means 24/7 - disable opening hours restriction
     if open_hour == 0 and close_hour == 24:
-        return OpeningHours(enabled=False)
-    return OpeningHours(enabled=True, schedule=[TimeWindow(start=open_hour, end=close_hour)])
+        return OpeningHoursConfig(enabled=False)
+    return OpeningHoursConfig(enabled=True, schedule=[TimeWindowConfig(start=open_hour, end=close_hour)])
 
 
-@dataclass
-class RuntimeAffordance:
-    """Lightweight runtime affordance representation for AffordanceEngine tests."""
-
-    id: str
-    name: str
-    interaction_type: str  # "instant", "multi_tick", or "dual"
-    duration_ticks: int | None
-    costs: list[dict[str, float]]
-    costs_per_tick: list[dict[str, float]]
-    effect_pipeline: RuntimePipeline | None
-    opening_hours: OpeningHours
-
-
-@dataclass
-class DictCostAffordance:
-    """Affordance shape that mirrors AffordanceParamConfig (dict-based costs)."""
-
-    name: str
-    interaction_type: str
-    duration_ticks: int | None
-    costs: dict[str, float]
-    costs_per_tick: dict[str, float]
-    interactions: dict
-    opening_hours: OpeningHours
-    id: str | None = None
+def _affordance(
+    name: str,
+    *,
+    interaction_type: str,
+    duration_ticks: int | None = None,
+    costs: dict[str, float] | None = None,
+    costs_per_tick: dict[str, float] | None = None,
+    opening_hours: tuple[int, int] = (0, 24),
+) -> AffordanceParamConfig:
+    return AffordanceParamConfig(
+        name=name,
+        interaction_type=interaction_type,
+        duration_ticks=duration_ticks,
+        costs={} if costs is None else costs,
+        costs_per_tick={} if costs_per_tick is None else costs_per_tick,
+        interactions={},
+        opening_hours=make_opening_hours(opening_hours),
+        deployment=DeploymentConfig(type="random"),
+    )
 
 
 @pytest.fixture
@@ -141,124 +109,14 @@ def affordance_engine_components(cpu_device):
 
     bars_config = BarsConfigCompat(meter_name_to_index)
 
-    # Runtime affordances used across tests.
-    affordances: tuple[RuntimeAffordance, ...] = (
-        # Bed: multi-tick/dual-style rest affordance
-        RuntimeAffordance(
-            id="0",
-            name="Bed",
-            interaction_type="dual",
-            duration_ticks=5,
-            costs=[{"meter": "money", "amount": 0.0}],
-            costs_per_tick=[{"meter": "money", "amount": 0.01}],
-            effect_pipeline=RuntimePipeline(
-                on_start=[],
-                per_tick=[RuntimeEffect(meter="energy", amount=0.05)],
-                on_completion=[RuntimeEffect(meter="energy", amount=0.25)],
-            ),
-            opening_hours=make_opening_hours((0, 24)),  # Always available
-        ),
-        # Shower: instant/dual hygiene affordance ($0.03, +0.4 hygiene)
-        RuntimeAffordance(
-            id="1",
-            name="Shower",
-            interaction_type="dual",
-            duration_ticks=3,
-            costs=[{"meter": "money", "amount": 0.03}],
-            costs_per_tick=[],
-            effect_pipeline=RuntimePipeline(
-                on_start=[RuntimeEffect(meter="hygiene", amount=0.4)],
-                per_tick=[],
-                on_completion=[],
-            ),
-            opening_hours=make_opening_hours((0, 24)),
-        ),
-        # FastFood: dual-mode convenience food ($0.05, 2 ticks)
-        RuntimeAffordance(
-            id="2",
-            name="FastFood",
-            interaction_type="dual",
-            duration_ticks=2,
-            costs=[{"meter": "money", "amount": 0.05}],
-            costs_per_tick=[],
-            effect_pipeline=RuntimePipeline(
-                on_start=[],
-                per_tick=[RuntimeEffect(meter="satiation", amount=0.225)],
-                on_completion=[RuntimeEffect(meter="satiation", amount=0.225)],
-            ),
-            opening_hours=make_opening_hours((0, 24)),
-        ),
-        # Job: dual-mode income source (4 ticks)
-        RuntimeAffordance(
-            id="3",
-            name="Job",
-            interaction_type="dual",
-            duration_ticks=4,
-            costs=[],
-            costs_per_tick=[],
-            effect_pipeline=RuntimePipeline(
-                on_start=[],
-                per_tick=[
-                    RuntimeEffect(meter="money", amount=0.05625),
-                    RuntimeEffect(meter="energy", amount=-0.0375),
-                ],
-                on_completion=[RuntimeEffect(meter="money", amount=0.05625)],
-            ),
-            opening_hours=make_opening_hours((8, 18)),  # 8am-6pm
-        ),
-        # Hospital: instant health restore ($0.15)
-        RuntimeAffordance(
-            id="4",
-            name="Hospital",
-            interaction_type="instant",
-            duration_ticks=None,
-            costs=[{"meter": "money", "amount": 0.15}],
-            costs_per_tick=[],
-            effect_pipeline=RuntimePipeline(
-                on_start=[RuntimeEffect(meter="health", amount=0.4)],
-                per_tick=[],
-                on_completion=[],
-            ),
-            opening_hours=make_opening_hours((0, 24)),
-        ),
-        # Bar: social/mood/health trade-off ($0.15, wraparound hours)
-        RuntimeAffordance(
-            id="5",
-            name="Bar",
-            interaction_type="instant",
-            duration_ticks=None,
-            costs=[{"meter": "money", "amount": 0.15}],
-            costs_per_tick=[],
-            effect_pipeline=RuntimePipeline(
-                on_start=[
-                    RuntimeEffect(meter="social", amount=0.5),
-                    RuntimeEffect(meter="mood", amount=0.25),
-                    RuntimeEffect(meter="health", amount=-0.05),
-                ],
-                per_tick=[],
-                on_completion=[],
-            ),
-            opening_hours=make_opening_hours((18, 28)),  # 6pm-4am
-        ),
-        # Park: free recreation (no costs)
-        RuntimeAffordance(
-            id="6",
-            name="Park",
-            interaction_type="instant",
-            duration_ticks=None,
-            costs=[],
-            costs_per_tick=[],
-            effect_pipeline=RuntimePipeline(
-                on_start=[
-                    RuntimeEffect(meter="social", amount=0.1),
-                    RuntimeEffect(meter="fitness", amount=0.05),
-                    RuntimeEffect(meter="mood", amount=0.05),
-                ],
-                per_tick=[],
-                on_completion=[],
-            ),
-            opening_hours=make_opening_hours((0, 24)),
-        ),
+    affordances = (
+        _affordance("Bed", interaction_type="multi_tick", duration_ticks=5, costs_per_tick={"money": 0.01}),
+        _affordance("Shower", interaction_type="instant", costs={"money": 0.03}),
+        _affordance("FastFood", interaction_type="instant", costs={"money": 0.05}),
+        _affordance("Job", interaction_type="multi_tick", duration_ticks=4, opening_hours=(8, 18)),
+        _affordance("Hospital", interaction_type="instant", costs={"money": 0.15}),
+        _affordance("Bar", interaction_type="instant", costs={"money": 0.15}, opening_hours=(18, 28)),
+        _affordance("Park", interaction_type="instant"),
     )
 
     return bars_config, affordances
@@ -267,36 +125,17 @@ def affordance_engine_components(cpu_device):
 class TestAffordanceQueries:
     """Test affordance lookup and query methods."""
 
-    def test_get_affordance_by_id(self, cpu_device, affordance_engine_components):
-        """Get affordance by ID should return correct config."""
-        bars_config, affordance_config = affordance_engine_components
-        engine = AffordanceEngine(
-            affordance_config,
-            num_agents=1,
-            device=cpu_device,
-            meter_name_to_idx=bars_config.meter_name_to_index,
-            **_bounds_kwargs(bars_config.meter_name_to_index, cpu_device),
-        )
+    def test_engine_refuses_noncanonical_affordance_shapes(self, cpu_device, affordance_engine_components):
+        bars_config, _ = affordance_engine_components
 
-        # Get Bed by ID (Bed is the first affordance in action_masking pack)
-        bed = engine.get_affordance("0")
-        assert bed is not None
-        assert bed.name == "Bed"
-
-    def test_get_affordance_invalid_id_returns_none(self, cpu_device, affordance_engine_components):
-        """Get affordance with invalid ID should return None."""
-        bars_config, affordance_config = affordance_engine_components
-        engine = AffordanceEngine(
-            affordance_config,
-            num_agents=1,
-            device=cpu_device,
-            meter_name_to_idx=bars_config.meter_name_to_index,
-            **_bounds_kwargs(bars_config.meter_name_to_index, cpu_device),
-        )
-
-        # Invalid ID
-        result = engine.get_affordance("invalid_id_12345")
-        assert result is None
+        with pytest.raises(TypeError, match="AffordanceParamConfig"):
+            AffordanceEngine(
+                (object(),),  # type: ignore[arg-type]
+                num_agents=1,
+                device=cpu_device,
+                meter_name_to_idx=bars_config.meter_name_to_index,
+                **_bounds_kwargs(bars_config.meter_name_to_index, cpu_device),
+            )
 
     def test_get_num_affordances(self, cpu_device, affordance_engine_components):
         """Get number of affordances should return correct count."""
@@ -435,7 +274,7 @@ class TestCostQueries:
     """Test cost and tick requirement queries."""
 
     def test_get_duration_ticks_instant(self, cpu_device, affordance_engine_components):
-        """Get required ticks for dual-mode affordances returns actual tick count."""
+        """Instant affordances always resolve in one tick."""
         bars_config, affordance_config = affordance_engine_components
         engine = AffordanceEngine(
             affordance_config,
@@ -445,13 +284,12 @@ class TestCostQueries:
             **_bounds_kwargs(bars_config.meter_name_to_index, cpu_device),
         )
 
-        # Shower is dual-mode, requires 3 ticks
+        # Shower and FastFood are instant affordances.
         ticks = engine.get_duration_ticks("Shower")
-        assert ticks == 3
+        assert ticks == 1
 
-        # FastFood is dual-mode, requires 2 ticks
         ticks = engine.get_duration_ticks("FastFood")
-        assert ticks == 2
+        assert ticks == 1
 
     def test_get_duration_ticks_multi_tick(self, cpu_device, affordance_engine_components):
         """Get required ticks for multi-tick affordance should return correct value."""
@@ -473,7 +311,7 @@ class TestCostQueries:
         assert ticks == 4
 
     def test_get_duration_ticks_invalid_affordance(self, cpu_device, affordance_engine_components):
-        """Get required ticks for invalid affordance should return 1."""
+        """Unknown affordances fail instead of inheriting instant semantics."""
         bars_config, affordance_config = affordance_engine_components
         engine = AffordanceEngine(
             affordance_config,
@@ -483,8 +321,8 @@ class TestCostQueries:
             **_bounds_kwargs(bars_config.meter_name_to_index, cpu_device),
         )
 
-        ticks = engine.get_duration_ticks("InvalidAffordance")
-        assert ticks == 1
+        with pytest.raises(ValueError, match="Unknown affordance"):
+            engine.get_duration_ticks("InvalidAffordance")
 
 
 class TestDictCostAffordances:
@@ -497,14 +335,10 @@ class TestDictCostAffordances:
         )
 
     def test_apply_instant_interaction_handles_dict_costs(self, cpu_device):
-        affordance = DictCostAffordance(
-            name="Eat",
+        affordance = _affordance(
+            "Eat",
             interaction_type="instant",
-            duration_ticks=None,
             costs={"energy": 0.2, "money": 0.1},
-            costs_per_tick={},
-            interactions={},
-            opening_hours=make_opening_hours((0, 24)),
         )
         engine = self._build_engine((affordance,), cpu_device)
         meters = torch.tensor([[1.0, 0.5]], device=cpu_device)
@@ -524,14 +358,10 @@ class TestDictCostAffordances:
         dropped from the mask — a narrowed mask lets the caller record a completed
         interaction the engine declined.
         """
-        affordance = DictCostAffordance(
-            name="Eat",
+        affordance = _affordance(
+            "Eat",
             interaction_type="instant",
-            duration_ticks=None,
             costs={"energy": 0.2, "money": 0.1},
-            costs_per_tick={},
-            interactions={},
-            opening_hours=make_opening_hours((0, 24)),
         )
         engine = self._build_engine((affordance,), cpu_device)
         meters = torch.tensor([[0.05, 0.5]], device=cpu_device)  # energy 0.05 < 0.2
@@ -541,14 +371,10 @@ class TestDictCostAffordances:
             engine.apply_instant_interaction(meters, "Eat", mask, current_tick=0)
 
     def test_can_afford_with_dict_costs(self, cpu_device):
-        affordance = DictCostAffordance(
-            name="Expensive",
+        affordance = _affordance(
+            "Expensive",
             interaction_type="instant",
-            duration_ticks=None,
             costs={"energy": 0.6},
-            costs_per_tick={},
-            interactions={},
-            opening_hours=make_opening_hours((0, 24)),
         )
         engine = self._build_engine((affordance,), cpu_device)
         meters = torch.tensor([[0.5, 1.0]], device=cpu_device)
@@ -558,14 +384,11 @@ class TestDictCostAffordances:
         assert torch.equal(result, torch.tensor([False], device=cpu_device))
 
     def test_apply_vtc_multi_tick_effects_with_dict_costs_per_tick(self, cpu_device):
-        affordance = DictCostAffordance(
-            name="Train",
+        affordance = _affordance(
+            "Train",
             interaction_type="multi_tick",
             duration_ticks=2,
-            costs={},
             costs_per_tick={"money": 0.1},
-            interactions={},
-            opening_hours=make_opening_hours((0, 24)),
         )
         engine = self._build_engine((affordance,), cpu_device)
         meters = torch.tensor([[1.0, 1.0]], device=cpu_device)
@@ -827,27 +650,11 @@ def test_get_meter_idx_validation_raises_on_unknown_meter():
     """
     from townlet.effects.executor import CommandExecutor
 
-    @dataclass
-    class SimpleAffordance:
-        id: str
-        name: str
-        interaction_type: str
-        duration_ticks: int | None
-        costs: list[dict]
-        costs_per_tick: list[dict]
-        effect_pipeline: None
-        opening_hours: OpeningHours
-
     # Create an affordance with an unknown meter in costs
-    affordance_with_bad_meter = SimpleAffordance(
-        id="test",
-        name="BadMeterAffordance",
+    affordance_with_bad_meter = _affordance(
+        "BadMeterAffordance",
         interaction_type="instant",
-        duration_ticks=None,
-        costs=[{"meter": "nonexistent_bar", "amount": 0.1}],  # This meter doesn't exist
-        costs_per_tick=[],
-        effect_pipeline=None,
-        opening_hours=make_opening_hours((0, 24)),
+        costs={"nonexistent_bar": 0.1},  # This meter doesn't exist
     )
 
     # Only define "energy" as valid meter, not "nonexistent_bar"

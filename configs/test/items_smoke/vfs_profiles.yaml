@@ -17,6 +17,12 @@ item_profiles:
       - name: durability
         type: float
         initial_value: 100.0
+        exposed_to: [agent]
+        normalization:
+          kind: minmax
+          min: 0.0
+          max: 100.0
+          clip: true
 
   - profile_name: currency
     variables: []

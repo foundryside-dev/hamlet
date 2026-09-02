@@ -28,7 +28,6 @@ class TestNDSubstrateInteroperability:
             dimension_sizes=[6, 6, 6, 6],
             boundary="clamp",
             distance_metric="manhattan",
-            observation_encoding="relative",
         )
 
         affordances = {
@@ -64,7 +63,6 @@ class TestNDSubstrateInteroperability:
             movement_delta=0.5,
             interaction_radius=0.5,
             distance_metric="euclidean",
-            observation_encoding="relative",
         )
 
         affordances = {
@@ -106,7 +104,6 @@ class TestNDSubstrateInteroperability:
             dimension_sizes=[5, 5, 5, 5],
             boundary="clamp",
             distance_metric="manhattan",
-            observation_encoding="relative",
         )
 
         # Batch of 10 agent positions
@@ -131,7 +128,6 @@ class TestNDSubstrateInteroperability:
             movement_delta=0.5,
             interaction_radius=1.0,
             distance_metric="euclidean",
-            observation_encoding="relative",
         )
 
         # Batch of 10 agent positions
@@ -156,19 +152,16 @@ class TestNDSubstrateInteroperability:
                 dimension_sizes=dimension_sizes,
                 boundary="clamp",
                 distance_metric="manhattan",
-                observation_encoding="relative",
             ),
             "euclidean": GridNDSubstrate(
                 dimension_sizes=dimension_sizes,
                 boundary="clamp",
                 distance_metric="euclidean",
-                observation_encoding="relative",
             ),
             "chebyshev": GridNDSubstrate(
                 dimension_sizes=dimension_sizes,
                 boundary="clamp",
                 distance_metric="chebyshev",
-                observation_encoding="relative",
             ),
         }
 
@@ -197,7 +190,6 @@ class TestNDSubstrateInteroperability:
                 movement_delta=0.5,
                 interaction_radius=1.0,
                 distance_metric="manhattan",
-                observation_encoding="relative",
             ),
             "euclidean": ContinuousNDSubstrate(
                 bounds=bounds,
@@ -205,7 +197,6 @@ class TestNDSubstrateInteroperability:
                 movement_delta=0.5,
                 interaction_radius=1.0,
                 distance_metric="euclidean",
-                observation_encoding="relative",
             ),
             "chebyshev": ContinuousNDSubstrate(
                 bounds=bounds,
@@ -213,7 +204,6 @@ class TestNDSubstrateInteroperability:
                 movement_delta=0.5,
                 interaction_radius=1.0,
                 distance_metric="chebyshev",
-                observation_encoding="relative",
             ),
         }
 
@@ -243,7 +233,6 @@ class TestNDSubstrateConfigRoundtrip:
                 "dimension_sizes": [6, 7, 8, 9],
                 "boundary": "wrap",
                 "distance_metric": "euclidean",
-                "observation_encoding": "scaled",
                 "topology": "hypercube",
             },
         }
@@ -256,7 +245,6 @@ class TestNDSubstrateConfigRoundtrip:
         assert substrate.dimension_sizes == [6, 7, 8, 9]
         assert substrate.boundary == "wrap"
         assert substrate.distance_metric == "euclidean"
-        assert substrate.observation_encoding == "scaled"
 
     def test_continuousnd_yaml_config_roundtrip(self):
         """Test creating ContinuousND from config dict simulates YAML loading."""
@@ -269,7 +257,6 @@ class TestNDSubstrateConfigRoundtrip:
                 "movement_delta": 2.0,
                 "interaction_radius": 3.5,
                 "distance_metric": "chebyshev",
-                "observation_encoding": "absolute",
                 "action_discretization": BASE_ACTION_DISC,
             },
         }
@@ -284,4 +271,3 @@ class TestNDSubstrateConfigRoundtrip:
         assert substrate.movement_delta == 2.0
         assert substrate.interaction_radius == 3.5
         assert substrate.distance_metric == "chebyshev"
-        assert substrate.observation_encoding == "absolute"

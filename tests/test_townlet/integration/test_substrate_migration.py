@@ -16,7 +16,6 @@ def test_training_with_grid3d_substrate(tmp_path):
         depth=3,
         boundary="clamp",
         distance_metric="manhattan",
-        observation_encoding="relative",
     )
 
     # Verify Grid3D substrate properties
@@ -72,7 +71,6 @@ def test_continuous_proximity_interaction(tmp_path):
         interaction_radius=0.8,
         action_discretization=ACTION_DISC,
         distance_metric="euclidean",
-        observation_encoding="relative",
     )
 
     # Place agent and affordance close together

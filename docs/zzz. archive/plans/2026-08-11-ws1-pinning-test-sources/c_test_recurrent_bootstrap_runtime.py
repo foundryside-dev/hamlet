@@ -233,9 +233,7 @@ def _run(pack: Path, out: Path, monkeypatch: pytest.MonkeyPatch, *, episodes: in
                         exp: dict[object, torch.Tensor] = {
                             gamma: _closed_form_boundary_target(population, batch, gamma) for gamma in gammas
                         }
-                        exp["zero"] = _closed_form_boundary_target(
-                            population, batch, gammas[0], boundary_hidden="zero"
-                        )
+                        exp["zero"] = _closed_form_boundary_target(population, batch, gammas[0], boundary_hidden="zero")
                         expectations.append(exp)
                     else:
                         expectations.append({})
@@ -331,7 +329,6 @@ def test_subsequence_boundary_bootstraps_with_gamma_from_yaml(tmp_path, monkeypa
     assert max_deviation < 1e-5, f"boundary target deviates from r + gamma * Q(s', a*) by {max_deviation}"
     assert min_other_gap > 1e-6, "closed forms for the two gammas are indistinguishable - assertion is vacuous"
     assert min_zero_gap > 1e-6, (
-        "threaded-hidden and zero-hidden closed forms are indistinguishable - the "
-        "hidden-state half of the assertion is vacuous"
+        "threaded-hidden and zero-hidden closed forms are indistinguishable - the " "hidden-state half of the assertion is vacuous"
     )
     print(f"[measured] max_deviation={max_deviation:.3e} min_other_gap={min_other_gap:.3e} min_zero_gap={min_zero_gap:.3e}")

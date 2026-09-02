@@ -69,10 +69,10 @@ requires_cuda = pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA n
 
 @requires_cuda
 def test_same_seed_produces_identical_trace_cuda(universe: CompiledUniverse) -> None:
-    """GPU + TorchScript-JIT determinism (WS-7 content 1, previously untested).
+    """GPU tensor-kernel determinism (WS-7 content 1, previously untested).
 
-    The vtc kernels are @torch.jit.script and unconditionally on the step path, so
-    this trace exercises the JIT path on CUDA. Bit-identical means the differential
+    The VTC kernels are unconditionally on the step path, so this trace exercises
+    the eager tensor path on CUDA. Bit-identical means the differential
     harness may trust GPU traces; if this ever fails, the harness must run CPU-side
     (or the offending kernels need deterministic variants) — that is a finding, not
     test noise.

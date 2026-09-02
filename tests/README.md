@@ -323,7 +323,6 @@ def test_custom_substrate():
         height=5,
         boundary="clamp",
         distance_metric="manhattan",
-        observation_encoding="relative",
     )
     # 5 lines of boilerplate
 ```

@@ -1,6 +1,5 @@
 import torch
 
-from townlet.config.effects_config import EffectScope
 from townlet.effects.catalog import CompiledEffect, EffectCatalog
 from townlet.effects.executor import CommandExecutor
 from townlet.effects.manager import EffectManager
@@ -13,12 +12,12 @@ def test_poison_spawns_nausea_cascade():
 
     # Create catalog with poison (spawns nausea) and nausea effects
     catalog = EffectCatalog(
+        max_active_effects={"global": 8, "agent": 8, "item": 8, "affordance": 8},
         effects={
             "poison": CompiledEffect(
                 id="poison",
                 scope="agent",
                 duration=10,
-                intensity=1.0,
                 reapply_policy="stack",
                 observable=True,
                 on_spawn=[],
@@ -27,7 +26,6 @@ def test_poison_spawns_nausea_cascade():
                         type=CommandType.SPAWN_EFFECT,
                         effect_id="nausea",
                         target="self",
-                        duration=5,
                         intensity=0.5,
                     )
                 ],
@@ -38,7 +36,6 @@ def test_poison_spawns_nausea_cascade():
                 id="nausea",
                 scope="agent",
                 duration=5,
-                intensity=0.5,
                 reapply_policy="stack",
                 observable=True,
                 on_spawn=[],
@@ -46,7 +43,7 @@ def test_poison_spawns_nausea_cascade():
                 on_despawn=[],
                 on_interrupt=[],
             ),
-        }
+        },
     )
 
     manager = EffectManager(catalog=catalog, device="cpu", command_executor=executor)
@@ -56,8 +53,6 @@ def test_poison_spawns_nausea_cascade():
     manager.spawn_effect(
         effect_id="poison",
         target_entity_id=0,
-        scope=EffectScope.AGENT,
-        duration=10,
         intensity=1.0,
         current_step=0,
     )

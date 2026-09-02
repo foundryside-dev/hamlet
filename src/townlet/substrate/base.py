@@ -122,7 +122,7 @@ class SpatialSubstrate(ABC):
         2. INTERACT (second-to-last position)
         3. WAIT (last position)
 
-        This ordering enables downstream systems (ActionSpaceBuilder, environment)
+        This ordering enables the action compiler and environment
         to consistently identify meta-actions by position:
         - actions[-2] is always INTERACT
         - actions[-1] is always WAIT
@@ -132,7 +132,7 @@ class SpatialSubstrate(ABC):
 
         Returns:
             List of ActionConfig instances with substrate-provided actions.
-            IDs are temporary (will be reassigned by ActionSpaceBuilder).
+            IDs are temporary (the action compiler assigns runtime IDs).
 
         Examples:
             Grid2D: [UP, DOWN, LEFT, RIGHT, UP_LEFT, UP_RIGHT, DOWN_LEFT, DOWN_RIGHT, INTERACT, WAIT]
@@ -199,42 +199,13 @@ class SpatialSubstrate(ABC):
 
     # --- Vision contract -----------------------------------------------------
     #
-    # What survives of the WS-7 observation-shape contract after the unit-3 token
-    # cut. The raster half — `encode_observation`, `get_observation_dim`,
-    # `get_grid_encoding_dim`, `get_position_feature_dim`, `get_partial_window_dim`,
-    # `encode_partial_observation` — is DELETED with the fixed-width superset ABI it
-    # existed to size; nothing asks a substrate for an observation width any more.
     # The token path asks for `position_dim`, `normalize_positions`,
-    # `egocentric_delta` and `visible` instead, and POMDP is the same TokenSpec with
-    # a radius handed to `visible`.
-
-    @property
-    @abstractmethod
-    def supports_partial_vision(self) -> bool:
-        """Whether this substrate can emit a local vision window (POMDP).
-
-        True only where encode_partial_observation is a real encoding
-        (Grid2D, Grid3D). Substrates returning False never receive
-        get_vision_radius / get_partial_window_dim calls.
-        """
-        pass
-
-    @abstractmethod
-    def get_vision_radius(self, vision_range: float) -> int:
-        """Radius (in cells) for a declared vision_range fraction.
-
-        The single home of the historical `ceil(vision_range * grid_size/2)`
-        formula, generalized to the longest axis (identical on squares).
-        Substrates without partial vision raise ValueError.
-        """
-        pass
+    # `egocentric_delta` and `visible`. POMDP changes token visibility, never the
+    # serialized observation shape.
 
     @abstractmethod
     def normalize_positions(self, positions: torch.Tensor) -> torch.Tensor:
-        """Normalize positions to [0, 1] range (always relative encoding).
-
-        This method ALWAYS returns relative encoding (normalized to [0,1]),
-        regardless of the substrate's observation_encoding mode.
+        """Normalize positions to the canonical [0, 1] coordinate range.
 
         Used by POMDP for position context in recurrent networks, which
         requires normalized positions regardless of how full observations
@@ -331,8 +302,7 @@ class SpatialSubstrate(ABC):
     #
     # The PDR-0041 shape again: the runtime learns spatial-token visibility by asking
     # the substrate instance. These two members are the token path's ONLY spatial
-    # gate — `supports_partial_vision` and the window encoders above remain the OLD
-    # raster contract, untouched until the unit-3 Task-10 swap retires them.
+    # gate.
 
     @abstractmethod
     def visible(
@@ -366,9 +336,7 @@ class SpatialSubstrate(ABC):
             entity_pos: [M, position_dim] entity positions
 
         Returns:
-            [N, M, position_dim] float32, normalized per the declared observation
-            encoding mode: `relative` divides by the same denominator as
+            [N, M, position_dim] float32, divided by the same denominator as
             normalize_positions (span − 1 for grids, extent for continuous), so deltas
-            land in [−1, 1]; `scaled` and `absolute` return raw axis units. Aspatial:
-            zeros of width 0.
+            land in [−1, 1]. Aspatial returns zeros of width 0.
         """

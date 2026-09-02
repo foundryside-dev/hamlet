@@ -60,13 +60,6 @@ class AspatialSubstrate(SpatialSubstrate):
         num_agents = pos1.shape[0]
         return torch.zeros(num_agents, device=pos1.device)
 
-    @property
-    def supports_partial_vision(self) -> bool:
-        return False
-
-    def get_vision_radius(self, vision_range: float) -> int:
-        raise ValueError("Aspatial substrates do not support partial vision; no vision radius exists.")
-
     # --- Token visibility / egocentric contract (token-obs unit 3, Task 8) -----
 
     def visible(self, self_pos: torch.Tensor, entity_pos: torch.Tensor, vision_range: float | None) -> torch.Tensor:

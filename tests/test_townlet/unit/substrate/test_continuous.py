@@ -18,7 +18,6 @@ BASE_ARGS = dict(
     interaction_radius=0.8,
     distance_metric="euclidean",
     action_discretization=BASE_ACTION_DISC,
-    observation_encoding="relative",
 )
 
 
@@ -81,7 +80,6 @@ class TestContinuousInitialization:
                 interaction_radius=0.8,
                 action_discretization={"num_directions": 8, "num_magnitudes": 3},
                 distance_metric="euclidean",
-                observation_encoding="relative",
             )
 
     def test_initialization_bounds_mismatch(self):
@@ -95,7 +93,6 @@ class TestContinuousInitialization:
                 interaction_radius=0.8,
                 action_discretization={"num_directions": 8, "num_magnitudes": 3},
                 distance_metric="euclidean",
-                observation_encoding="relative",
             )
 
     def test_initialization_invalid_bounds(self):
@@ -344,7 +341,6 @@ class TestContinuousConfiguration:
                 movement_delta=0.1,
                 interaction_radius=0.8,
                 distance_metric="euclidean",
-                observation_encoding="relative",
                 action_discretization=BASE_ACTION_DISC,
             ),
         )
@@ -368,7 +364,6 @@ class TestContinuousConfiguration:
                 movement_delta=0.1,
                 interaction_radius=0.8,
                 distance_metric="euclidean",
-                observation_encoding="relative",
                 action_discretization=BASE_ACTION_DISC,
             ),
         )
@@ -392,7 +387,6 @@ class TestContinuousConfiguration:
                 movement_delta=0.1,
                 interaction_radius=0.8,
                 distance_metric="euclidean",
-                observation_encoding="relative",
                 action_discretization=BASE_ACTION_DISC,
             ),
         )

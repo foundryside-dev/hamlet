@@ -6,25 +6,25 @@ environment:
       description: "Physical energy for movement and actions"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
 
     - name: health
       description: "Physical health, death at 0"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
 
     - name: money
       description: "Economic resource for purchasing"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
 
     - name: mood
       description: "Mental state, affects energy cascade"
       range_type:
         kind: minmax
-        clip: false
+        clip: true
 
   cascade_graph:
     - source: mood

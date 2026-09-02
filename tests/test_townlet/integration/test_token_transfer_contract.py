@@ -45,6 +45,10 @@ def universes():
     return {name: UniverseCompiler().compile(path, primary_level="L0_transfer", use_cache=False) for name, path in PACKS.items()}
 
 
+def _level(universe):
+    return universe.get_level(universe.metadata.primary_level)
+
+
 def build_net(pack: str, universes) -> TokenSetQNetwork:
     brain = load_brain_config(PACKS[pack])
     assert brain.architecture.type == "token_set", f"fixture pack {pack} must drive token_set"
@@ -53,15 +57,15 @@ def build_net(pack: str, universes) -> TokenSetQNetwork:
     return NetworkFactory.build_token_set(
         config=brain.architecture.token_set,
         action_dim=universe.metadata.action_count,
-        token_spec=universe.token_spec,
+        token_spec=_level(universe).token_spec,
     )
 
 
 def make_obs(universe, batch_size: int, *, seed: int = 0) -> torch.Tensor:
     """All rows present with random bounded payloads — the shape contract, not content."""
     generator = torch.Generator().manual_seed(seed)
-    obs = torch.zeros(batch_size, universe.token_spec.total_dims)
-    for _name, _slot, start, end in universe.token_spec.row_layout():
+    obs = torch.zeros(batch_size, _level(universe).token_spec.total_dims)
+    for _name, _slot, start, end in _level(universe).token_spec.row_layout():
         obs[:, start] = 1.0
         obs[:, start + 1 : end] = torch.rand(batch_size, end - start - 1, generator=generator)
     return obs
@@ -71,28 +75,28 @@ class TestFixtureRosters:
     """Guard the fixtures against drift — the vocabulary DISJOINTNESS is the test bed."""
 
     def test_pack_a_has_variable_element_and_no_items(self, universes) -> None:
-        census = universes["a"].token_spec.census
+        census = _level(universes["a"]).token_spec.census
         assert census["variable_element"] > 0
         assert census["item"] == 0
 
     def test_pack_b_has_items_and_no_variable_element(self, universes) -> None:
-        census = universes["b"].token_spec.census
+        census = _level(universes["b"]).token_spec.census
         assert census["item"] > 0
         assert census["variable_element"] == 0
 
     def test_pack_c_is_core_only(self, universes) -> None:
-        census = universes["c"].token_spec.census
+        census = _level(universes["c"]).token_spec.census
         assert census["item"] == 0 and census["variable_element"] == 0
         assert census["self"] == 1 and census["meter"] > 0 and census["affordance"] > 0
 
     def test_no_token_advisories(self, universes) -> None:
         for name, universe in universes.items():
-            assert universe.token_advisories == (), f"pack {name}: {universe.token_advisories}"
+            assert _level(universe).token_advisories == (), f"pack {name}: {_level(universe).token_advisories}"
 
     def test_type_schema_hash_is_engine_wide_layout_is_not(self, universes) -> None:
-        hashes = {u.token_type_schema_hash for u in universes.values()}
+        hashes = {_level(u).token_type_schema_hash for u in universes.values()}
         assert len(hashes) == 1, "type-schema hash must be engine-wide (transfer contract)"
-        layouts = {u.layout_hash for u in universes.values()}
+        layouts = {_level(u).layout_hash for u in universes.values()}
         assert len(layouts) == 3, "layout hash must be universe-bound (flat contract)"
 
 
@@ -105,14 +109,14 @@ class TestTransferContract:
         # A real train step on pack A: TD-style regression, backward, optimizer step.
         optimizer = torch.optim.Adam(net_a.parameters(), lr=1e-3)
         obs = make_obs(universes["a"], batch_size=8, seed=1)
-        before = net_a.encoders["meter"].weight.detach().clone()
+        before = net_a.encoder.encoders["meter"].weight.detach().clone()
         q_values = net_a(obs)
         loss = torch.nn.functional.mse_loss(q_values, torch.rand_like(q_values))
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
         assert torch.isfinite(loss)
-        assert not torch.equal(net_a.encoders["meter"].weight, before), "the train step must move the weights"
+        assert not torch.equal(net_a.encoder.encoders["meter"].weight, before), "the train step must move the weights"
 
         # Load by ModuleDict type key on pack B: intersection, both directions reported.
         net_b = build_net("b", universes)
@@ -121,7 +125,7 @@ class TestTransferContract:
         assert report.loaded_types == ("affordance", "meter", "self")
         assert report.cold_started_types == ("item",)
         assert report.dropped_types == ("variable_element",)
-        assert torch.equal(net_b.encoders["meter"].weight, net_a.encoders["meter"].weight)
+        assert torch.equal(net_b.encoder.encoders["meter"].weight, net_a.encoder.encoders["meter"].weight)
 
         # Forward cleanly on B's universe.
         q_b = net_b(make_obs(universes["b"], batch_size=4, seed=2))
@@ -149,7 +153,7 @@ class TestTransferContract:
         from townlet.config.brain_config import DuelingConfig, DuelingStreamConfig, FeedforwardConfig
 
         universe = universes["a"]
-        flat_dim = universe.token_spec.total_dims
+        flat_dim = _level(universe).token_spec.total_dims
         obs = make_obs(universe, batch_size=3, seed=9)
 
         feedforward = NetworkFactory.build_feedforward(
@@ -181,7 +185,7 @@ class TestTransferContract:
         difference means a foreign engine's checkpoint, never a pack difference."""
         net_c = build_net("c", universes)
         doctored = dict(net_c.state_dict())
-        doctored["encoders.meter.weight"] = doctored["encoders.meter.weight"][:, :-3]
+        doctored["encoder.encoders.meter.weight"] = doctored["encoder.encoders.meter.weight"][:, :-3]
         net_b = build_net("b", universes)
         with pytest.raises(ValueError, match="payload-schema mismatch"):
             load_token_network_state_by_type(net_b, doctored)

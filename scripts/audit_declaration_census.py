@@ -78,14 +78,6 @@ PROBES = [
         "manhattan->euclidean",
     ),
     (
-        "observation_encoding",
-        "stratum.yaml",
-        "stratum.substrate.grid.observation_encoding",
-        "scaled",
-        "structural",
-        "relative->scaled: coord encoding",
-    ),
-    (
         "diagonals",
         "stratum.yaml",
         "stratum.substrate.grid.diagonals",

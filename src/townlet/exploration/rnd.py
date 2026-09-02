@@ -258,37 +258,6 @@ class RNDExploration(ExplorationStrategy):
 
         return loss.item()
 
-    def get_novelty_map(self, grid_size: int = 8) -> torch.Tensor:
-        """Get novelty values for all grid positions (for visualization).
-
-        Args:
-            grid_size: Size of environment grid
-
-        Returns:
-            [grid_size, grid_size] tensor of novelty values
-        """
-        # Generate observations for all grid positions
-        # (Simplified: just grid encoding, meters set to 0.5)
-        novelty_map = torch.zeros(grid_size, grid_size, device=self.device)
-
-        for row in range(grid_size):
-            for col in range(grid_size):
-                # Create observation with agent at (row, col)
-                obs = torch.zeros(1, self.obs_dim, device=self.device)
-
-                # Grid encoding (one-hot for position)
-                flat_idx = row * grid_size + col
-                obs[0, flat_idx] = 1.0
-
-                # Meters (placeholder: all 0.5)
-                obs[0, 64:70] = 0.5
-
-                # Compute novelty
-                novelty = self.compute_intrinsic_rewards(obs)
-                novelty_map[row, col] = novelty.item()
-
-        return novelty_map
-
     def decay_epsilon(self) -> None:
         """Decay epsilon (call once per episode)."""
         self.epsilon = max(self.epsilon_min, self.epsilon * self.epsilon_decay)

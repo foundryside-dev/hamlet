@@ -61,7 +61,7 @@ def test_item_interactions_use_effects_syntax():
         on_pickup=[{"modify": "target.vfs.has_food", "value": "true"}],
         on_use=[
             {"modify": "target.bar.energy", "value": "target.bar.energy + 0.3"},
-            {"spawn_effect": "ate_food", "target": "self", "duration": 10},
+            {"spawn_effect": "ate_food", "target": "self", "intensity": 1.0},
         ],
         on_drop=[{"modify": "target.vfs.has_food", "value": "false"}],
     )
@@ -290,3 +290,13 @@ def test_item_custom_commands_schema_and_naming():
     )
     assert interactions.local_commands[0].name == "OPEN_UMBRELLA"
     assert build_item_command_action_name("umbrella", "OPEN_UMBRELLA", "local") == "ITEM_LOCAL_UMBRELLA_OPEN_UMBRELLA"
+
+
+def test_item_interactions_reject_distribution_alias():
+    with pytest.raises(ValidationError, match="Extra inputs are not permitted"):
+        ItemInteractionsConfig(on_pickup=[{"distribution": "uniform"}], on_use=[], on_drop=[])
+
+
+def test_item_custom_commands_reject_distribution_alias():
+    with pytest.raises(ValidationError, match="Extra inputs are not permitted"):
+        ItemCustomCommand(name="ROLL", effects=[{"distribution": "uniform"}])

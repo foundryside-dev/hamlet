@@ -15,7 +15,6 @@ def test_gridnd_config_valid_4d():
         "dimension_sizes": [8, 8, 8, 8],
         "boundary": "clamp",
         "distance_metric": "manhattan",
-        "observation_encoding": "relative",
         "topology": "hypercube",
     }
 
@@ -24,7 +23,6 @@ def test_gridnd_config_valid_4d():
     assert config.dimension_sizes == [8, 8, 8, 8]
     assert config.boundary == "clamp"
     assert config.distance_metric == "manhattan"
-    assert config.observation_encoding == "relative"
 
 
 def test_gridnd_config_valid_asymmetric():
@@ -33,7 +31,6 @@ def test_gridnd_config_valid_asymmetric():
         "dimension_sizes": [10, 5, 3, 8],
         "boundary": "wrap",
         "distance_metric": "euclidean",
-        "observation_encoding": "scaled",
         "topology": "hypercube",
     }
 
@@ -41,7 +38,6 @@ def test_gridnd_config_valid_asymmetric():
 
     assert config.dimension_sizes == [10, 5, 3, 8]
     assert config.boundary == "wrap"
-    assert config.observation_encoding == "scaled"
 
 
 def test_gridnd_config_valid_high_dimensional():
@@ -50,7 +46,6 @@ def test_gridnd_config_valid_high_dimensional():
         "dimension_sizes": [3, 3, 3, 3, 3, 3, 3, 3, 3, 3],  # 10D
         "boundary": "bounce",
         "distance_metric": "chebyshev",
-        "observation_encoding": "relative",
         "topology": "hypercube",
     }
 
@@ -69,7 +64,6 @@ def test_gridnd_config_invalid_too_few_dimensions():
         "dimension_sizes": [8, 8, 8],  # Only 3D!
         "boundary": "clamp",
         "distance_metric": "manhattan",
-        "observation_encoding": "relative",
         "topology": "hypercube",
     }
 
@@ -83,7 +77,6 @@ def test_gridnd_config_invalid_zero_dimension():
         "dimension_sizes": [8, 8, 0, 8],  # Invalid!
         "boundary": "clamp",
         "distance_metric": "manhattan",
-        "observation_encoding": "relative",
         "topology": "hypercube",
     }
 
@@ -97,7 +90,6 @@ def test_gridnd_config_invalid_negative_dimension():
         "dimension_sizes": [8, 8, -5, 8],  # Invalid!
         "boundary": "clamp",
         "distance_metric": "manhattan",
-        "observation_encoding": "relative",
         "topology": "hypercube",
     }
 
@@ -113,25 +105,11 @@ def test_gridnd_config_invalid_too_many_dimensions():
         "dimension_sizes": [3] * 101,  # 101D exceeds limit!
         "boundary": "clamp",
         "distance_metric": "manhattan",
-        "observation_encoding": "relative",
         "topology": "hypercube",
     }
 
     with pytest.raises(ValueError, match="exceeds limit"):
         GridNDConfig(**config_data)
-
-
-def test_gridnd_config_observation_encoding_all_modes():
-    """GridND config should accept all observation encoding modes."""
-    for encoding in ["relative", "scaled", "absolute"]:
-        config = GridNDConfig(
-            dimension_sizes=[4, 4, 4, 4],
-            boundary="clamp",
-            distance_metric="manhattan",
-            observation_encoding=encoding,
-            topology="hypercube",
-        )
-        assert config.observation_encoding == encoding
 
 
 # ============================================================================
@@ -142,7 +120,7 @@ BASE_ACTION_DISC = ActionDiscretizationConfig(num_directions=8, num_magnitudes=3
 
 
 def test_continuous_config_valid_1d():
-    """ContinuousConfig with 1D should still work (backward compatibility)."""
+    """ContinuousConfig accepts one-dimensional bounds."""
     config = ContinuousConfig(
         dimensions=1,
         bounds=[(0.0, 10.0)],
@@ -150,7 +128,6 @@ def test_continuous_config_valid_1d():
         movement_delta=0.5,
         interaction_radius=1.0,
         distance_metric="euclidean",
-        observation_encoding="relative",
         action_discretization=BASE_ACTION_DISC,
     )
 
@@ -159,7 +136,7 @@ def test_continuous_config_valid_1d():
 
 
 def test_continuous_config_valid_2d():
-    """ContinuousConfig with 2D should work (backward compatibility)."""
+    """ContinuousConfig accepts two-dimensional bounds."""
     config = ContinuousConfig(
         dimensions=2,
         bounds=[(0.0, 10.0), (0.0, 10.0)],
@@ -167,7 +144,6 @@ def test_continuous_config_valid_2d():
         movement_delta=0.5,
         interaction_radius=1.0,
         distance_metric="euclidean",
-        observation_encoding="relative",
         action_discretization=BASE_ACTION_DISC,
     )
 
@@ -176,7 +152,7 @@ def test_continuous_config_valid_2d():
 
 
 def test_continuous_config_valid_3d():
-    """ContinuousConfig with 3D should work (backward compatibility)."""
+    """ContinuousConfig accepts three-dimensional bounds."""
     config = ContinuousConfig(
         dimensions=3,
         bounds=[(0.0, 10.0), (0.0, 10.0), (0.0, 10.0)],
@@ -184,7 +160,6 @@ def test_continuous_config_valid_3d():
         movement_delta=0.5,
         interaction_radius=1.0,
         distance_metric="euclidean",
-        observation_encoding="relative",
         action_discretization=BASE_ACTION_DISC,
     )
 
@@ -201,7 +176,6 @@ def test_continuous_config_valid_4d():
         movement_delta=0.5,
         interaction_radius=1.0,
         distance_metric="euclidean",
-        observation_encoding="relative",
         action_discretization=BASE_ACTION_DISC,
     )
 
@@ -219,7 +193,6 @@ def test_continuous_config_valid_high_dimensional():
         movement_delta=0.5,
         interaction_radius=1.0,
         distance_metric="manhattan",
-        observation_encoding="relative",
         action_discretization=BASE_ACTION_DISC,
     )
 
@@ -236,7 +209,6 @@ def test_continuous_config_valid_asymmetric_bounds():
         movement_delta=0.5,
         interaction_radius=1.0,
         distance_metric="euclidean",
-        observation_encoding="relative",
         action_discretization=BASE_ACTION_DISC,
     )
 
@@ -255,7 +227,6 @@ def test_continuous_config_invalid_bounds_mismatch():
         "movement_delta": 0.5,
         "interaction_radius": 1.0,
         "distance_metric": "euclidean",
-        "observation_encoding": "relative",
         "action_discretization": {"num_directions": 8, "num_magnitudes": 3},
     }
 
@@ -272,7 +243,6 @@ def test_continuous_config_invalid_bound_order():
         "movement_delta": 0.5,
         "interaction_radius": 1.0,
         "distance_metric": "euclidean",
-        "observation_encoding": "relative",
         "action_discretization": {"num_directions": 8, "num_magnitudes": 3},
     }
 
@@ -291,7 +261,6 @@ def test_continuous_config_invalid_too_small_range():
         "movement_delta": 0.5,
         "interaction_radius": 1.0,
         "distance_metric": "euclidean",
-        "observation_encoding": "relative",
         "action_discretization": {"num_directions": 8, "num_magnitudes": 3},
     }
 
@@ -309,7 +278,6 @@ def test_continuous_config_invalid_too_many_dimensions():
         "movement_delta": 0.5,
         "interaction_radius": 1.0,
         "distance_metric": "euclidean",
-        "observation_encoding": "relative",
         "action_discretization": {"num_directions": 8, "num_magnitudes": 3},
     }
 
@@ -326,7 +294,6 @@ def test_continuous_config_chebyshev_metric():
         movement_delta=0.5,
         interaction_radius=1.0,
         distance_metric="chebyshev",
-        observation_encoding="relative",
         action_discretization=BASE_ACTION_DISC,
     )
 
@@ -346,7 +313,6 @@ def test_substrate_config_gridnd():
             "dimension_sizes": [8, 8, 8, 8],
             "boundary": "clamp",
             "distance_metric": "manhattan",
-            "observation_encoding": "relative",
             "topology": "hypercube",
         },
     }
@@ -380,7 +346,6 @@ def test_substrate_config_continuousnd():
             "movement_delta": 0.5,
             "interaction_radius": 1.0,
             "distance_metric": "euclidean",
-            "observation_encoding": "relative",
             "action_discretization": {"num_directions": 8, "num_magnitudes": 3},
         },
     }
@@ -416,7 +381,6 @@ def test_substrate_config_continuous_wrong_dimensions():
             "movement_delta": 0.5,
             "interaction_radius": 1.0,
             "distance_metric": "euclidean",
-            "observation_encoding": "relative",
             "action_discretization": {"num_directions": 8, "num_magnitudes": 3},
         },
     }
@@ -438,7 +402,6 @@ def test_substrate_config_continuousnd_wrong_dimensions():
             "movement_delta": 0.5,
             "interaction_radius": 1.0,
             "distance_metric": "euclidean",
-            "observation_encoding": "relative",
             "action_discretization": {"num_directions": 8, "num_magnitudes": 3},
         },
     }
@@ -457,7 +420,6 @@ def test_substrate_config_gridnd_wrong_config_type():
             "height": 8,
             "boundary": "clamp",
             "distance_metric": "manhattan",
-            "observation_encoding": "relative",
             "diagonals": True,
         },
     }
@@ -474,7 +436,6 @@ def test_substrate_config_multiple_configs_provided():
             "dimension_sizes": [8, 8, 8, 8],
             "boundary": "clamp",
             "distance_metric": "manhattan",
-            "observation_encoding": "relative",
             "topology": "hypercube",
         },
         "continuous": {  # Extra config!
@@ -484,7 +445,6 @@ def test_substrate_config_multiple_configs_provided():
             "movement_delta": 0.5,
             "interaction_radius": 1.0,
             "distance_metric": "euclidean",
-            "observation_encoding": "relative",
             "action_discretization": {"num_directions": 8, "num_magnitudes": 3},
         },
     }
@@ -508,7 +468,6 @@ def test_gridnd_yaml_round_trip(tmp_path):
             "dimension_sizes": [5, 5, 5, 5],
             "boundary": "wrap",
             "distance_metric": "euclidean",
-            "observation_encoding": "scaled",
             "topology": "hypercube",
         },
     }
@@ -526,7 +485,6 @@ def test_gridnd_yaml_round_trip(tmp_path):
     assert config.type == "gridnd"
     assert config.gridnd.dimension_sizes == [5, 5, 5, 5]
     assert config.gridnd.boundary == "wrap"
-    assert config.gridnd.observation_encoding == "scaled"
 
 
 def test_continuousnd_yaml_round_trip(tmp_path):
@@ -542,7 +500,6 @@ def test_continuousnd_yaml_round_trip(tmp_path):
             "movement_delta": 0.5,
             "interaction_radius": 1.0,
             "distance_metric": "manhattan",
-            "observation_encoding": "absolute",
             "action_discretization": {"num_directions": 8, "num_magnitudes": 3},
         },
     }
@@ -561,4 +518,3 @@ def test_continuousnd_yaml_round_trip(tmp_path):
     assert config.continuous.dimensions == 4
     assert config.continuous.bounds == [(0.0, 10.0), (0.0, 5.0), (-10.0, 10.0), (0.0, 1.0)]
     assert config.continuous.boundary == "bounce"
-    assert config.continuous.observation_encoding == "absolute"

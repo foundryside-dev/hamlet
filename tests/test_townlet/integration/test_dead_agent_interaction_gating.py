@@ -25,6 +25,7 @@ from pathlib import Path
 
 import pytest
 import torch
+import yaml
 
 from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.universe.compiler import UniverseCompiler
@@ -48,19 +49,16 @@ def multi_tick_universe(tmp_path_factory):
     if compiled.exists():
         shutil.rmtree(compiled)
     affordances = target / "levels" / L3_LEVEL / "affordances.yaml"
-    text = affordances.read_text()
-    old = "  - name: SLEEP\n    interaction_type: instant\n    costs:\n      energy: 0.0\n"
-    new = (
-        "  - name: SLEEP\n"
-        "    interaction_type: multi_tick\n"
-        "    duration_ticks: 3\n"
-        "    costs:\n"
-        "      energy: 0.0\n"
-        "    costs_per_tick:\n"
-        "      energy: 0.0\n"
-    )
-    assert text.count(old) == 1, "SLEEP block in L3 affordances.yaml no longer matches the edit"
-    affordances.write_text(text.replace(old, new))
+    document = yaml.safe_load(affordances.read_text())
+    sleep = next(entry for entry in document["affordances"]["affordances"] if entry["name"] == "SLEEP")
+    assert sleep["interaction_type"] == "instant", "SLEEP interaction fixture has drifted"
+    sleep["interaction_type"] = "multi_tick"
+    sleep["duration_ticks"] = 3
+    sleep["costs"] = {}
+    sleep["costs_per_tick"] = {"energy": 0.0}
+    sleep["interactions"]["on_completion"] = sleep["interactions"]["on_start"]
+    sleep["interactions"]["on_start"] = []
+    affordances.write_text(yaml.safe_dump(document, sort_keys=False))
     return UniverseCompiler().compile(target, primary_level=L3_LEVEL, use_cache=False)
 
 

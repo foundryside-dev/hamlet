@@ -23,7 +23,6 @@ import pytest
 import torch
 
 from townlet.agent.networks import TokenSetQNetwork
-from townlet.agent.optimizer_factory import OptimizerFactory
 from townlet.config.brain_config import (
     ArchitectureConfig,
     BrainConfig,
@@ -35,23 +34,39 @@ from townlet.config.brain_config import (
     SetAggregatorConfig,
     TokenSetConfig,
 )
+from townlet.curriculum.static import StaticCurriculum
 from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
 from townlet.exploration.rnd import RNDExploration
 from townlet.population.vectorized import VectorizedPopulation
 from townlet.training.checkpoint_utils import (
+    CHECKPOINT_FORMAT_VERSION,
     assert_checkpoint_dimensions,
+    assert_checkpoint_identity,
     assert_checkpoint_layout_hash,
     assert_checkpoint_token_type_schema_hash,
     attach_universe_metadata,
     load_token_network_state_by_type,
+    validate_demo_checkpoint_payload,
 )
 from townlet.universe.compiler import UniverseCompiler
-from townlet.universe.dto.token_spec import SlotBinding, TokenSpec, build_token_type
+from townlet.universe.dto.token_spec import (
+    PAYLOAD_SCHEMAS,
+    TOKEN_TRANSPORT_VERSION,
+    SlotBinding,
+    TokenSpec,
+    TokenTypeSchema,
+    build_token_type,
+)
 
 
 @pytest.fixture(scope="module")
 def compiled_universe():
     return UniverseCompiler().compile(Path("configs/test/model_config"), primary_level="L0_test")
+
+
+@pytest.fixture(scope="module")
+def token_set_universe():
+    return UniverseCompiler().compile(Path("configs/test/token_set_smoke"), primary_level="L0_test")
 
 
 @pytest.fixture()
@@ -69,23 +84,37 @@ def _dynamic(count: int, prefix: str) -> tuple[SlotBinding, ...]:
     return tuple(SlotBinding(slot_index=i, filler_kind="dynamic", filler_ref=f"{prefix}:{i}") for i in range(count))
 
 
+def _type(type_name: str, bindings: tuple[SlotBinding, ...]) -> TokenTypeSchema:
+    empty_context = (0.0,) * len(PAYLOAD_SCHEMAS[type_name])
+    return build_token_type(
+        type_name,
+        bindings,
+        slot_context_payloads=tuple(empty_context for _ in bindings),
+        effect_catalog_contexts=(),
+    )
+
+
 def spec_with_affordances() -> TokenSpec:
     return TokenSpec(
         types=(
-            build_token_type("self", _static(1, "self")),
-            build_token_type("meter", _static(2, "meter")),
-            build_token_type("affordance", _static(2, "aff")),
-        )
+            _type("self", _static(1, "self")),
+            _type("meter", _static(2, "meter")),
+            _type("affordance", _static(2, "aff")),
+        ),
+        position_rank=2,
+        transport_version=TOKEN_TRANSPORT_VERSION,
     )
 
 
 def spec_with_items() -> TokenSpec:
     return TokenSpec(
         types=(
-            build_token_type("self", _static(1, "self")),
-            build_token_type("meter", _static(3, "meter")),
-            build_token_type("item", _dynamic(2, "item")),
-        )
+            _type("self", _static(1, "self")),
+            _type("meter", _static(3, "meter")),
+            _type("item", _dynamic(2, "item")),
+        ),
+        position_rank=2,
+        transport_version=TOKEN_TRANSPORT_VERSION,
     )
 
 
@@ -102,8 +131,9 @@ def make_net(spec: TokenSpec, *, action_dim: int = 5) -> TokenSetQNetwork:
 
 class TestAttachStampsTokenHashes:
     def test_both_hashes_stamped(self, checkpoint, compiled_universe) -> None:
-        assert checkpoint["token_type_schema_hash"] == compiled_universe.token_type_schema_hash
-        assert checkpoint["layout_hash"] == compiled_universe.layout_hash
+        level = compiled_universe.get_level(compiled_universe.metadata.primary_level)
+        assert checkpoint["token_type_schema_hash"] == level.token_type_schema_hash
+        assert checkpoint["layout_hash"] == level.layout_hash
 
     def test_the_provenance_fields_all_stay(self, checkpoint, compiled_universe) -> None:
         """Everything but the two ObservationSpec-derived fields survives the cut."""
@@ -128,6 +158,24 @@ class TestAttachStampsTokenHashes:
         assert "observation_field_uuids" not in checkpoint
 
 
+class TestCompactReplayArtifactCut:
+    def test_checkpoint_format_moves_past_the_full_payload_abi(self) -> None:
+        assert CHECKPOINT_FORMAT_VERSION == 6
+
+    def test_full_payload_v4_checkpoint_refuses_before_any_state_is_read(self, compiled_universe) -> None:
+        with pytest.raises(ValueError, match=r"Unsupported checkpoint version: 5\nExpected version 6"):
+            assert_checkpoint_identity({"version": 5}, compiled_universe, force_new_vfs=False)
+
+    def test_outer_v4_refuses_before_exact_keys_or_nested_state_are_read(self) -> None:
+        with pytest.raises(ValueError, match=r"Unsupported checkpoint version: 5\nExpected version 6"):
+            validate_demo_checkpoint_payload({"version": 5, "population_state": object()})
+
+    @pytest.mark.parametrize("invalid_version", (5.0, True))
+    def test_outer_version_requires_an_exact_integer(self, invalid_version: object) -> None:
+        with pytest.raises(ValueError, match="Unsupported checkpoint version"):
+            validate_demo_checkpoint_payload({"version": invalid_version})
+
+
 class TestTokenNetGate:
     def test_matching_type_schema_hash_passes(self, checkpoint, compiled_universe) -> None:
         """The token path gates on the TYPE-SCHEMA hash alone; a moved LAYOUT (capacities,
@@ -149,6 +197,17 @@ class TestTokenNetGate:
         checkpoint["action_dim"] = 999
         with pytest.raises(ValueError, match="action_dim mismatch"):
             assert_checkpoint_dimensions(checkpoint, compiled_universe, architecture_type="token_set")
+
+    @pytest.mark.parametrize("architecture_type", ["token_set", "recurrent"])
+    def test_both_token_native_architectures_ignore_layout_variation(self, checkpoint, compiled_universe, architecture_type: str) -> None:
+        checkpoint["layout_hash"] = "deadbeef" * 8
+        assert_checkpoint_dimensions(checkpoint, compiled_universe, architecture_type=architecture_type)
+
+    def test_live_identity_gate_threads_the_compiled_token_set_type(self, token_set_universe) -> None:
+        checkpoint: dict[str, object] = {"version": CHECKPOINT_FORMAT_VERSION}
+        attach_universe_metadata(checkpoint, token_set_universe)
+        checkpoint["layout_hash"] = "deadbeef" * 8
+        assert assert_checkpoint_identity(checkpoint, token_set_universe, force_new_vfs=False) is True
 
 
 class TestFlatNetLayoutGate:
@@ -179,7 +238,7 @@ class TestLoadByTypeKey:
         torch.manual_seed(3)
         source_net = make_net(spec_with_affordances())
         target_net = make_net(spec_with_items())
-        fresh_item_weight = target_net.encoders["item"].weight.detach().clone()
+        fresh_item_weight = target_net.encoder.encoders["item"].weight.detach().clone()
 
         report = load_token_network_state_by_type(target_net, source_net.state_dict())
 
@@ -188,10 +247,10 @@ class TestLoadByTypeKey:
         assert report.dropped_types == ("affordance",)
         # Shared types carry the SOURCE weights (meter capacity differs — 2 vs 3 —
         # and must not matter: capacities are entity variation, not weight shape).
-        assert torch.equal(target_net.encoders["meter"].weight, source_net.encoders["meter"].weight)
-        assert torch.equal(target_net.type_embeddings["self"], source_net.type_embeddings["self"])
+        assert torch.equal(target_net.encoder.encoders["meter"].weight, source_net.encoder.encoders["meter"].weight)
+        assert torch.equal(target_net.encoder.type_embeddings["self"], source_net.encoder.type_embeddings["self"])
         # The cold-started type keeps its fresh init.
-        assert torch.equal(target_net.encoders["item"].weight, fresh_item_weight)
+        assert torch.equal(target_net.encoder.encoders["item"].weight, fresh_item_weight)
         # Q-head shapes match here, so it transfers mechanically.
         assert report.cold_started_modules == ()
         assert not report.is_clean
@@ -210,7 +269,7 @@ class TestLoadByTypeKey:
         source_net = make_net(spec_with_affordances())
         target_net = make_net(spec_with_items())
         doctored = dict(source_net.state_dict())
-        doctored["encoders.meter.weight"] = doctored["encoders.meter.weight"][:, :-2]
+        doctored["encoder.encoders.meter.weight"] = doctored["encoder.encoders.meter.weight"][:, :-2]
         with pytest.raises(ValueError, match="payload-schema mismatch"):
             load_token_network_state_by_type(target_net, doctored)
 
@@ -229,7 +288,7 @@ class TestLoadByTypeKey:
             assert torch.equal(target_net.state_dict()[key], tensor)
 
     def test_refuses_non_token_networks(self) -> None:
-        with pytest.raises(ValueError, match="requires a TokenSetQNetwork"):
+        with pytest.raises(ValueError, match="requires a token-native Q-network"):
             load_token_network_state_by_type(torch.nn.Linear(4, 4), {})
 
 
@@ -261,28 +320,36 @@ def _token_brain_config() -> BrainConfig:
 
 
 class TestCrossUniverseLoadResets:
-    def _bare_population(self, net: TokenSetQNetwork) -> VectorizedPopulation:
-        """The Task-10 integration seam, tested at the seam: a token_set population
-        cannot be constructed against a live env until the cut (the obs-width guard
-        in _build_network refuses), so the method is pinned on a bare instance."""
-        population = object.__new__(VectorizedPopulation)
-        population.is_token_set = True
-        population.brain_config = _token_brain_config()
-        population.q_network = net
-        population.target_network = make_net(spec_with_items())
-        population.exploration = RNDExploration(obs_dim=net.obs_dim, embed_dim=8, device=torch.device("cpu"))
-        population.env = SimpleNamespace(set_exploration_module=lambda module: None)
-        population.optimizer, population.scheduler = OptimizerFactory.build(
-            config=population.brain_config.optimizer,
-            parameters=net.parameters(),
+    def _population(self, spec: TokenSpec) -> VectorizedPopulation:
+        """Construct the live compact token reader through its public runtime seam."""
+        device = torch.device("cpu")
+        env = SimpleNamespace(
+            token_spec=spec,
+            attach_runtime_registry=lambda registry: None,
+            set_exploration_module=lambda module: None,
+        )
+        population = VectorizedPopulation(
+            env=env,
+            curriculum=StaticCurriculum(difficulty_level=0.5),
+            exploration=RNDExploration(obs_dim=spec.total_dims, embed_dim=8, device=device),
+            agent_ids=["agent_0"],
+            device=device,
+            brain_config=_token_brain_config(),
+            obs_dim=spec.total_dims,
+            train_frequency=1,
+            batch_size=2,
+            sequence_length=1,
+            max_grad_norm=1.0,
+            action_dim=5,
         )
         population.training_step_counter = 7
         return population
 
     def test_resets_optimizer_target_and_rnd(self) -> None:
         torch.manual_seed(11)
-        target_universe_net = make_net(spec_with_items())
-        population = self._bare_population(target_universe_net)
+        population = self._population(spec_with_items())
+        target_universe_net = population.q_network
+        assert isinstance(target_universe_net, TokenSetQNetwork)
 
         # Dirty every piece of state the cross-universe load must reset.
         obs = torch.rand(2, target_universe_net.obs_dim)
@@ -313,7 +380,7 @@ class TestCrossUniverseLoadResets:
 
     def test_refuses_non_token_population(self) -> None:
         population = object.__new__(VectorizedPopulation)
-        population.is_token_set = False
+        population.is_token_native = False
         population.brain_config = _token_brain_config()
         with pytest.raises(ValueError, match="token_set"):
             population.load_token_network_cross_universe({})
@@ -344,8 +411,9 @@ class TestReviewRound1Pins:
         """Cross-universe load resets the AdaptiveIntrinsicExploration WRAPPER's
         annealing/survival statistics, not just the inner RND (task-9 review I1)."""
         torch.manual_seed(13)
-        target_universe_net = make_net(spec_with_items())
-        population = TestCrossUniverseLoadResets()._bare_population(target_universe_net)
+        population = TestCrossUniverseLoadResets()._population(spec_with_items())
+        target_universe_net = population.q_network
+        assert isinstance(target_universe_net, TokenSetQNetwork)
         adaptive = AdaptiveIntrinsicExploration(obs_dim=target_universe_net.obs_dim, embed_dim=8, device=torch.device("cpu"))
         adaptive.current_intrinsic_weight = 0.25
         adaptive.survival_history.extend([10.0, 20.0, 30.0])

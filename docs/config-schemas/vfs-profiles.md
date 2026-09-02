@@ -32,9 +32,17 @@
 > `exposed_to` → `["agent"]` injection (**deleted** — empty means unexposed); "values are
 > observed raw, no normalization surface" (**normalization is now REQUIRED at exposure**, and
 > boundedness is certified there); and the `PDR-0075` per-variable `ObservationField` /
-> `obs_item_slots` emission (**gone** — an exposed profile variable compiles to a
-> `variable_element` token, and item-profile exposure is refused until the unit-5 pack
-> migration). Everything else in this document is still at its 2026-08-26 restoration state.
+> `obs_item_slots` emission (**gone** — an admitted exposed profile variable compiles to a
+> `variable_element` token). Everything else in this document is still at its 2026-08-26
+> restoration state.
+>
+> 🔁 **Updated 2026-09-02 (PDR-0143, unit-5 pack migration, `hamlet-55b2826a02`):**
+> item-profile exposure now compiles — an exposed item-profile variable emits one
+> `variable_element` token per compiled `item` token slot (see "What the compiler emits"
+> below). Expression-backed exposure now compiles too, when the variable also declares
+> `initial_value` (its literal reset value stands in for the executable identity a static
+> token payload cannot carry); an expression variable with no declared `initial_value` is
+> still refused at exposure.
 >
 > Tracked as `hamlet-fd0eb2da2c`.
 >
@@ -278,18 +286,29 @@ item_profiles:
 |-------|------|-------------|
 | `name` | string | Unique variable name — and, when exposed, the name of its observation field, so it must not collide with an `environment.yaml` variable, a meter field, a compiler block, or another exposed profile variable (compile error) |
 | `type` | enum | Variable type (int, float, bool, vec2i, vec3i, …) |
-| `semantic_type` | enum | **Global and agent variables only. Required.** The observation group the variable's field is laid out in when exposed: one of `spatial`, `affordance`, `effects`, `temporal`, `custom` (`bars` is reserved to meters — compile error). Item variables do **not** take it: they are observed through the single `obs_item_slots` feature, so a per-variable group could reach nothing (`PDR-0075`). |
+| `semantic_type` | enum | **Global and agent variables only. Required.** The observation group the variable's field is laid out in when exposed: one of `spatial`, `affordance`, `effects`, `temporal`, `custom` (`bars` is reserved to meters — compile error). Item variables do **not** take it — `ItemVFSVariableConfig` has no `semantic_type` field at all; a per-variable observation group could reach nothing for item-scoped state (`PDR-0075`/`PDR-0066`). Every exposed item variable's compiled token lands in the engine's own `semantic_type="custom"` bucket instead (`scope`/`owner_slot` already distinguish it — PDR-0143, unit-5 pack migration). |
 
 ### Mutually Exclusive Fields (XOR Constraint)
 
-**Exactly one of the following must be specified**:
+**Corrected (PDR-0143)**: the constraint is `initial_value` XOR `initial_value_mode`
+(global/agent variables only — item variables have no `initial_value_mode`), and at least one
+static or dynamic source is required overall:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `initial_value` | varies | Static initial value (no computation) |
+| `initial_value` | varies | Static initial value (no computation); also the literal reset value for an expression variable, when declared |
+| `initial_value_mode` | enum | Tensor initializer (`zeros`, `ones`, `eye`, `random_normal`, `random_uniform`) — global/agent only |
 | `expression` | string | Expression DSL (computed dynamically) |
 
-**Validation**: Pydantic enforces XOR constraint at config load time.
+**`expression` may be combined with `initial_value`** — the expression drives the variable at
+runtime, `initial_value` is its exact value at episode start (needed for exposure identity: an
+exposed expression variable with no declared `initial_value` is refused at compile, not at
+config load — see "What the compiler emits" above). **`expression` may never be combined with
+`initial_value_mode`** — a tensor initializer and an expression are still mutually exclusive.
+
+**Validation**: Pydantic enforces this at config load time
+(`GlobalVFSVariableConfig`/`AgentVFSVariableConfig`/`ItemVFSVariableConfig`
+`.validate_value_xor_expression` in `src/townlet/config/vfs_profiles_config.py`).
 
 ### Optional Fields
 
@@ -504,33 +523,37 @@ kind, certified at exposure (`token_spec.require_exposure_normalization`):
 
 ### What the compiler emits
 
-An exposed global or agent profile variable compiles to a **`variable_element` token** in the
-compiled `TokenSpec`, one token per element (a tensor-shaped variable tokenizes per element;
-a scalar is the rank-0 case). Each token's payload is a padded position block, the two-lane
-value block, and the **descriptor block** — the variable's declared parameters, name-free:
-scope one-hot, `semantic_type` one-hot, normalization kind one-hot plus its canonical
-parameter vector, dtype flag, lifetime one-hot, normalized declared initial, log element
-count, and owner-slot coordinate. Identity is the declared payload (spec §1); two variables
-identical in every declared parameter are **refused at compile time** as
-indistinguishable.
+An exposed global or agent profile variable with a literal initializer compiles to a
+**`variable_element` token** in the compiled `TokenSpec`, one token per element (a tensor-shaped
+variable tokenizes per element; a scalar is the rank-0 case). Deterministic `zeros`, `ones`, and
+`eye` initializers are lowered losslessly to that literal default before token binding. Random
+initializers are still refused (their executable identity cannot yet survive into static
+context). **Expression-backed exposure is admitted (PDR-0143) when the variable also declares
+`initial_value`** — its literal reset value tokenizes; the expression itself keeps driving the
+variable at runtime, it just isn't part of the compiled static identity. An expression variable
+with no declared `initial_value` is still refused at exposure. Each admitted token's payload is
+a padded position block, the two-lane value block, and the **descriptor block** — the
+variable's declared parameters, name-free: scope one-hot, `semantic_type` one-hot,
+normalization kind one-hot plus its canonical parameter vector, dtype flag, lifetime one-hot,
+normalized declared initial, log element count, and owner-slot coordinate. Identity is the
+declared payload (spec §1); two variables identical in every declared parameter are **refused
+at compile time** as indistinguishable.
 
-> **Item-profile exposure does not compile yet.** The `obs_item_slots` feature this section
-> used to describe died with the `ObservationSpec` family. An exposed item-profile variable
-> is refused at compile with the unit-5 pack migration named in the message. `PDR-0075`'s
-> per-variable-field emission and `hamlet-1ad6383186`'s layout question are both superseded
-> by the token layout.
+`default_curriculum` exposes one authored cyclical token this way — `day_phase`
+(`configs/default_curriculum/vfs_profiles.yaml`):
 
 ```yaml
 global_profile:
   variables:
-    - name: time_of_day_phase   # → one `variable_element` token, sin/cos in value lanes 0-1
-      id: time_of_day_phase
+    - name: day_phase
+      id: day_phase
       type: float
       semantic_type: temporal
       expression: tick
+      initial_value: 0.0        # required for expression-backed exposure (PDR-0143)
       exposed_to: [agent]
       normalization:
-        kind: cyclical_sin_cos  # bounded by itself: no clip, no min/max to justify
+        kind: cyclical_sin_cos
         period: 24
 agent_profile:
   variables:
@@ -545,6 +568,12 @@ agent_profile:
         max: 1.0
         clip: true              # required: minmax is bounded only when clipped
 ```
+
+**Item-profile exposure compiles too** (unit-5 pack migration, `hamlet-55b2826a02`): an exposed
+item-profile variable emits one `variable_element` token per compiled `item` token slot,
+`filler_ref` shaped `<profile>.<variable>[<owner_slot>]`
+(`token_spec.py::_variable_element_artifacts`). See `configs/test/items_smoke/vfs_profiles.yaml`
+(`medical.durability`) for a worked example.
 
 ### Observation width
 
@@ -990,7 +1019,9 @@ global_profile:
 ### Compile-Time Validation (Pydantic)
 
 - Schema validation on YAML load
-- XOR constraint (initial_value XOR expression)
+- XOR constraint (`initial_value` XOR `initial_value_mode`; `expression` may combine with
+  `initial_value` but never with `initial_value_mode` — PDR-0143; see "Mutually Exclusive
+  Fields" above)
 - Type checking (int/float/bool/vec2i/vec3i)
 - Unique variable names within profile
 

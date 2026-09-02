@@ -18,7 +18,6 @@ def catalog_with_policies():
                 id="shield",
                 scope=EffectScope.AGENT,
                 duration=100,
-                intensity=1.0,
                 reapply_policy=ReapplyPolicy.RENEW,
                 observable=True,
                 on_spawn=[],
@@ -30,7 +29,6 @@ def catalog_with_policies():
                 id="poison",
                 scope=EffectScope.AGENT,
                 duration=50,
-                intensity=1.0,
                 reapply_policy=ReapplyPolicy.MERGE,
                 observable=True,
                 on_spawn=[],
@@ -42,7 +40,6 @@ def catalog_with_policies():
                 id="buff",
                 scope=EffectScope.AGENT,
                 duration=80,
-                intensity=1.0,
                 reapply_policy=ReapplyPolicy.REPLACE,
                 observable=True,
                 on_spawn=[],
@@ -60,11 +57,11 @@ def test_renew_policy_resets_duration(catalog_with_policies):
     manager = EffectManager(catalog=catalog_with_policies, device="cpu")
 
     # Spawn initial effect
-    effect1 = manager.spawn_effect("shield", 2, EffectScope.AGENT, 100, 1.0, 1000)
+    effect1 = manager.spawn_effect("shield", 2, 1.0, 1000)
     effect1.duration_remaining = 20  # Simulate decay
 
     # Reapply same effect
-    effect2 = manager.spawn_effect("shield", 2, EffectScope.AGENT, 100, 1.0, 1050)
+    effect2 = manager.spawn_effect("shield", 2, 1.0, 1050)
 
     # Should be same instance with renewed duration
     assert len(manager.agent_effects[2]) == 1
@@ -76,20 +73,31 @@ def test_merge_policy_adds_intensity(catalog_with_policies):
     """Merge policy accumulates intensity."""
     manager = EffectManager(catalog=catalog_with_policies, device="cpu")
 
-    effect1 = manager.spawn_effect("poison", 4, EffectScope.AGENT, 50, 1.0, 500)
-    effect2 = manager.spawn_effect("poison", 4, EffectScope.AGENT, 50, 0.5, 510)
+    effect1 = manager.spawn_effect("poison", 4, 1.0, 500)
+    effect2 = manager.spawn_effect("poison", 4, 0.5, 510)
 
     assert len(manager.agent_effects[4]) == 1
     assert effect2.instance_id == effect1.instance_id
     assert effect2.intensity == 1.5  # 1.0 + 0.5
 
 
+def test_merge_policy_rejects_float32_overflow_transactionally(catalog_with_policies):
+    manager = EffectManager(catalog=catalog_with_policies, device="cpu")
+    existing = manager.spawn_effect("poison", 4, 2e38, 500)
+    original_intensity = existing.intensity
+
+    with pytest.raises(ValueError, match="float32"):
+        manager.spawn_effect("poison", 4, 2e38, 510)
+
+    assert existing.intensity == original_intensity
+
+
 def test_replace_policy_despawns_old(catalog_with_policies):
     """Replace policy removes old instance and creates new."""
     manager = EffectManager(catalog=catalog_with_policies, device="cpu")
 
-    effect1 = manager.spawn_effect("buff", 7, EffectScope.AGENT, 80, 2.0, 200)
-    effect2 = manager.spawn_effect("buff", 7, EffectScope.AGENT, 80, 3.0, 210)
+    effect1 = manager.spawn_effect("buff", 7, 2.0, 200)
+    effect2 = manager.spawn_effect("buff", 7, 3.0, 210)
 
     assert len(manager.agent_effects[7]) == 1
     assert effect2.instance_id != effect1.instance_id  # New instance

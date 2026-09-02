@@ -15,7 +15,6 @@ def test_continuousnd_requires_minimum_4_dimensions():
             movement_delta=0.5,
             interaction_radius=1.0,
             distance_metric="euclidean",
-            observation_encoding="relative",
         )
 
 
@@ -28,7 +27,6 @@ def test_continuousnd_validates_positive_bounds():
             movement_delta=0.5,
             interaction_radius=1.0,
             distance_metric="euclidean",
-            observation_encoding="relative",
         )
 
 
@@ -40,7 +38,6 @@ def test_continuousnd_asymmetric_bounds():
         movement_delta=0.5,
         interaction_radius=1.0,
         distance_metric="euclidean",
-        observation_encoding="relative",
     )
 
     assert substrate.position_dim == 4
@@ -56,7 +53,6 @@ def test_continuousnd_warns_at_10_dimensions():
             movement_delta=0.5,
             interaction_radius=1.0,
             distance_metric="euclidean",
-            observation_encoding="relative",
         )
 
     assert substrate.action_space_size == 22  # 2*10 + 2
@@ -71,7 +67,6 @@ def test_continuousnd_exceeds_100_dimensions():
             movement_delta=0.5,
             interaction_radius=1.0,
             distance_metric="euclidean",
-            observation_encoding="relative",
         )
 
 
@@ -83,7 +78,6 @@ def test_continuousnd_movement_with_clamp_boundary():
         movement_delta=0.5,
         interaction_radius=1.0,
         distance_metric="euclidean",
-        observation_encoding="relative",
     )
 
     # Agent at corner [0.0, 0.0, 0.0, 0.0]
@@ -105,7 +99,6 @@ def test_continuousnd_movement_with_wrap_boundary():
         movement_delta=0.5,
         interaction_radius=1.0,
         distance_metric="euclidean",
-        observation_encoding="relative",
     )
 
     # Agent at [0.0, 0.0, 0.0, 0.0]
@@ -127,7 +120,6 @@ def test_continuousnd_distance_manhattan():
         movement_delta=0.5,
         interaction_radius=1.0,
         distance_metric="manhattan",
-        observation_encoding="relative",
     )
 
     pos1 = torch.tensor([[0.0, 0.0, 0.0, 0.0]], dtype=torch.float32)
@@ -147,7 +139,6 @@ def test_continuousnd_distance_euclidean():
         movement_delta=0.5,
         interaction_radius=1.0,
         distance_metric="euclidean",
-        observation_encoding="relative",
     )
 
     pos1 = torch.tensor([[0.0, 0.0, 0.0, 0.0]], dtype=torch.float32)
@@ -167,7 +158,6 @@ def test_continuousnd_distance_chebyshev():
         movement_delta=0.5,
         interaction_radius=1.0,
         distance_metric="chebyshev",
-        observation_encoding="relative",
     )
 
     pos1 = torch.tensor([[0.0, 0.0, 0.0, 0.0]], dtype=torch.float32)
@@ -187,7 +177,6 @@ def test_continuousnd_is_on_position_within_radius():
         movement_delta=0.5,
         interaction_radius=1.0,
         distance_metric="euclidean",
-        observation_encoding="relative",
     )
 
     agent_positions = torch.tensor(
@@ -216,7 +205,6 @@ def test_continuousnd_initialize_positions():
         movement_delta=0.5,
         interaction_radius=1.0,
         distance_metric="euclidean",
-        observation_encoding="relative",
     )
 
     positions = substrate.initialize_positions(num_agents=10, device=torch.device("cpu"))
@@ -240,7 +228,6 @@ def test_continuousnd_get_valid_neighbors_raises():
         movement_delta=0.5,
         interaction_radius=1.0,
         distance_metric="euclidean",
-        observation_encoding="relative",
     )
 
     position = torch.tensor([5.0, 5.0, 5.0, 5.0], dtype=torch.float32)
@@ -257,7 +244,6 @@ def test_continuousnd_get_all_positions_raises():
         movement_delta=0.5,
         interaction_radius=1.0,
         distance_metric="euclidean",
-        observation_encoding="relative",
     )
 
     with pytest.raises(NotImplementedError, match="infinite positions"):
@@ -272,7 +258,6 @@ def test_continuousnd_supports_enumerable_positions():
         movement_delta=0.5,
         interaction_radius=1.0,
         distance_metric="euclidean",
-        observation_encoding="relative",
     )
 
     assert not substrate.supports_enumerable_positions()

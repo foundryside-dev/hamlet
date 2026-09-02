@@ -85,10 +85,3 @@ class Scheduler:
         """Clear all pending items and reset the clock."""
         self.pending.clear()
         self.current_tick = current_tick
-
-    def state_dict(self) -> dict[str, Any]:
-        return {"current_tick": self.current_tick, "pending": self.pending}
-
-    def load_state_dict(self, state: dict[str, Any]) -> None:
-        self.current_tick = int(state.get("current_tick", 0))
-        self.pending = state.get("pending", {})

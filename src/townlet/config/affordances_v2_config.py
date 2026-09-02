@@ -22,6 +22,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_valida
 from townlet.config.base import format_validation_error, load_yaml_section
 from townlet.config.effects_config import CommandConfig
 from townlet.config.interaction_type import PROGRESS_INTERACTION_TYPES, InteractionType
+from townlet.numeric import require_float32
 
 __all__ = [
     "TimeWindowConfig",
@@ -136,18 +137,25 @@ class AffordanceParamConfig(BaseModel):
     interaction_type: InteractionType = Field(
         description=(
             "How an INTERACT resolves: instant (one tick), multi_tick (accumulates over duration_ticks), "
-            "or dual (both). One member of the closed vocabulary in townlet.config.interaction_type; "
+            "one member of the closed vocabulary in townlet.config.interaction_type; "
             "required, no default — it is a behavioural parameter (PDR-0047)."
         ),
     )
     duration_ticks: int | None = Field(
         default=None,
-        description="Number of ticks required to complete a multi_tick or dual interaction.",
+        gt=0,
+        description="Number of ticks required to complete a multi_tick interaction.",
     )
 
     # Availability + spatial deployment --------------------------------------
     opening_hours: OpeningHoursConfig = Field(description="Availability schedule")
     deployment: DeploymentConfig = Field(description="Spatial placement configuration")
+
+    @field_validator("costs", "costs_per_tick")
+    @classmethod
+    def validate_costs_float32(cls, costs: dict[str, float]) -> dict[str, float]:
+        """Retain only costs with an exact, non-zero-preserving float32 representation."""
+        return {meter_name: require_float32(amount, field=f"affordance meter cost {meter_name!r}") for meter_name, amount in costs.items()}
 
     @model_validator(mode="after")
     def validate_interaction_semantics(self) -> "AffordanceParamConfig":
@@ -159,14 +167,13 @@ class AffordanceParamConfig(BaseModel):
             raise ValueError(f"Affordance '{self.name}': interaction_type='{interaction}' requires an explicit duration_ticks value.")
 
         if interaction == "instant" and self.duration_ticks is not None:
-            raise ValueError(f"Affordance '{self.name}': duration_ticks is only valid for multi_tick or dual interaction types.")
+            raise ValueError(f"Affordance '{self.name}': duration_ticks is only valid for multi_tick interaction types.")
 
         return self
 
     @model_validator(mode="after")
     def validate_interaction_stages(self) -> "AffordanceParamConfig":
-        """Validate interactions have correct stages for interaction_type."""
-        # interactions is always present now (required field)
+        """Refuse declarations that no selected runtime path can execute."""
         valid_stages = {"on_start", "per_tick", "on_completion", "on_early_exit", "on_failure"}
         provided_stages = set(self.interactions.keys())
 
@@ -174,13 +181,21 @@ class AffordanceParamConfig(BaseModel):
         if invalid:
             raise ValueError(f"Affordance '{self.name}': Invalid interaction stages: {invalid}. Valid stages: {valid_stages}")
 
-        interaction_type = self.interaction_type
-
-        # Instant affordances shouldn't have per_tick effects
-        if interaction_type == "instant" and self.interactions.get("per_tick"):
+        reachable_stages = {
+            "instant": {"on_start"},
+            "multi_tick": {"per_tick", "on_completion"},
+        }[self.interaction_type]
+        unreachable_stages = sorted(stage for stage, commands in self.interactions.items() if commands and stage not in reachable_stages)
+        if unreachable_stages:
             raise ValueError(
-                f"Affordance '{self.name}': instant affordances cannot have per_tick effects. Use multi_tick or dual interaction_type."
+                f"Affordance '{self.name}': interaction_type='{self.interaction_type}' does not execute non-empty stages "
+                f"{unreachable_stages}; reachable stages are {sorted(reachable_stages)}."
             )
+
+        if self.interaction_type == "instant" and self.costs_per_tick:
+            raise ValueError(f"Affordance '{self.name}': interaction_type='instant' does not execute costs_per_tick; leave it empty.")
+        if self.interaction_type == "multi_tick" and self.costs:
+            raise ValueError(f"Affordance '{self.name}': interaction_type='multi_tick' does not execute costs; leave it empty.")
 
         return self
 

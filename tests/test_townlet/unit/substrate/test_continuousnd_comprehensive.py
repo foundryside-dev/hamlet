@@ -306,20 +306,6 @@ class TestContinuousNDNormalizePositions:
 class TestContinuousNDValidationErrorPaths:
     """Test parameter validation in constructor."""
 
-    def test_constructor_validates_observation_encoding(self):
-        """Constructor should raise ValueError for invalid observation encoding."""
-        with pytest.raises(ValueError) as exc_info:
-            ContinuousNDSubstrate(
-                bounds=[(0.0, 10.0)] * 4,
-                boundary="clamp",
-                movement_delta=0.5,
-                interaction_radius=1.0,
-                observation_encoding="invalid_mode",  # Invalid
-            )
-
-        error_msg = str(exc_info.value).lower()
-        assert "invalid_mode" in error_msg or "observation" in error_msg
-
     def test_constructor_validates_boundary_mode(self):
         """Constructor should raise ValueError for invalid boundary mode."""
         with pytest.raises(ValueError) as exc_info:

@@ -85,7 +85,6 @@ def test_demorunner_threads_training_loop_hyperparameters(tmp_path: Path, monkey
         brain_config,
         obs_dim: int = 70,
         action_dim: int | None = None,
-        vision_window_size: int = 5,
         tb_logger=None,
         train_frequency: int = 4,
         batch_size: int | None = None,

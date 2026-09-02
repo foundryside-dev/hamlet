@@ -82,11 +82,13 @@ def test_cache_returns_requested_level_projection_for_every_level(tmp_path: Path
         if got.metadata.primary_level != level:
             wrong.append(f"{level}: metadata.primary_level == {got.metadata.primary_level!r}")
             continue
+        got_level = got.get_level(level)
+        expected_level = expected.get_level(level)
         for field in IDENTITY_HASHES:
-            if getattr(got, field) != getattr(expected, field):
-                wrong.append(f"{level}: {field} {getattr(got, field)!r} != fresh {getattr(expected, field)!r}")
-        if got.token_spec.total_dims != expected.token_spec.total_dims:
-            wrong.append(f"{level}: observation_dim {got.token_spec.total_dims} != {expected.token_spec.total_dims}")
+            if getattr(got_level, field) != getattr(expected_level, field):
+                wrong.append(f"{level}: {field} {getattr(got_level, field)!r} != fresh {getattr(expected_level, field)!r}")
+        if got_level.token_spec.total_dims != expected_level.token_spec.total_dims:
+            wrong.append(f"{level}: observation_dim {got_level.token_spec.total_dims} != {expected_level.token_spec.total_dims}")
 
     assert not wrong, "cache served another level's projection:\n  " + "\n  ".join(wrong)
 
@@ -130,7 +132,9 @@ def test_yaml_edit_reaches_runtime_and_survives_a_level_switch(tmp_path: Path) -
     # substrate, never the observation layout — so the VFS ABI is deliberately identical
     # across L1 and L2. `curriculum_hash` is what an `active_vision` edit moves, and it
     # is the projection field this leg is actually about.
-    assert after.curriculum_hash != before.curriculum_hash, "runtime leg: editing active_vision did not reach the compiled projection"
+    assert (
+        after.get_level("L2_partial_observability").curriculum_hash != before.get_level("L2_partial_observability").curriculum_hash
+    ), "runtime leg: editing active_vision did not reach the compiled projection"
     assert after.get_level("L2_partial_observability").curriculum.curriculum.active_vision == "global"
 
 

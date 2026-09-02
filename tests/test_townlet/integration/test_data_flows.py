@@ -16,7 +16,7 @@ from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
 from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
 from townlet.population.vectorized import VectorizedPopulation
 
-TRAIN_KWARGS = dict(train_frequency=1, batch_size=16, sequence_length=1, max_grad_norm=1.0, vision_window_size=5)
+TRAIN_KWARGS = dict(train_frequency=1, batch_size=16, sequence_length=1, max_grad_norm=1.0)
 LEVEL_NAME = "L0_test"
 
 # =============================================================================
@@ -130,7 +130,6 @@ class TestObservationPipeline:
             device=cpu_device,
             obs_dim=env.observation_dim,
             brain_config=recurrent_brain_config,  # POMDP uses recurrent network
-            vision_window_size=5,
             batch_size=8,
             action_dim=env.action_dim,
             sequence_length=1,

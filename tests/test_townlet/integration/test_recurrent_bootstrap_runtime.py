@@ -8,8 +8,8 @@ The test only ever edits YAML in a copied config pack and then runs the product'
 own entry point (DemoRunner). Nothing is stubbed; the loss/sample interceptors are
 record-only.
 
-Written against the post-WS-1(b) network API: `RecurrentSpatialQNetwork.forward`
-takes a REQUIRED `hidden` argument and the network owns no mutable hidden state,
+Written against the token-native recurrent network API. The network takes a
+REQUIRED `hidden` argument and owns no mutable hidden state,
 so every recomputation below threads hidden state explicitly.
 """
 
@@ -22,7 +22,7 @@ import pytest
 import torch
 import yaml
 
-from townlet.agent.networks import RecurrentSpatialQNetwork
+from townlet.agent.networks import RecurrentTokenQNetwork
 from townlet.demo.runner import DemoRunner
 from townlet.population.vectorized import VectorizedPopulation
 from townlet.training.replay_buffer import ReplayBuffer
@@ -37,28 +37,14 @@ description: "Recurrent brain (LSTM) for bootstrap pinning test"
 architecture:
   type: recurrent
   recurrent:
-    vision_encoder:
-      channels: [16, 32]
-      kernel_sizes: [3, 3]
-      strides: [1, 1]
-      padding: [1, 1]
-      activation: relu
-    position_encoder:
-      hidden_sizes: [32]
-      activation: relu
-    meter_encoder:
-      hidden_sizes: [32]
-      activation: relu
-    affordance_encoder:
-      hidden_sizes: [32]
-      activation: relu
+    token_embed_dim: 32
+    aggregator:
+      type: mean
     lstm:
       hidden_size: 64
       num_layers: 1
       dropout: 0.0
-    q_head:
-      hidden_sizes: [64]
-      activation: relu
+    q_head_hidden_dim: 64
 optimizer:
   type: adam
   learning_rate: 0.0003
@@ -131,12 +117,10 @@ def _unroll(network, observations: torch.Tensor, device) -> tuple[torch.Tensor, 
 
     Returns (q_values_at_last_step, hidden_after_last_step).
     """
-    batch_size, seq_len = observations.shape[0], observations.shape[1]
+    batch_size = observations.shape[0]
     hidden = network.initial_hidden(batch_size, device)
-    q_values = None
-    for t in range(seq_len):
-        q_values, hidden = network(observations[:, t, :], hidden)
-    return q_values, hidden
+    q_values, hidden = network(observations, hidden)
+    return q_values[:, -1, :], hidden
 
 
 def _closed_form_boundary_target(
@@ -166,13 +150,15 @@ def _closed_form_boundary_target(
         _, target_hidden = _unroll(target_net, batch["observations"], population.device)
         if boundary_hidden == "zero":
             target_hidden = target_net.initial_hidden(batch_size, population.device)
-        q_target_next, _ = target_net(boundary_next_obs, target_hidden)
+        q_target_sequence, _ = target_net(boundary_next_obs.unsqueeze(1), target_hidden)
+        q_target_next = q_target_sequence[:, 0, :]
 
         if population.use_double_dqn:
             _, online_hidden = _unroll(online, batch["observations"], population.device)
             if boundary_hidden == "zero":
                 online_hidden = online.initial_hidden(batch_size, population.device)
-            q_online_next, _ = online(boundary_next_obs, online_hidden)
+            q_online_sequence, _ = online(boundary_next_obs.unsqueeze(1), online_hidden)
+            q_online_next = q_online_sequence[:, 0, :]
             actions = q_online_next.argmax(1)
             q_next = q_target_next.gather(1, actions.unsqueeze(1)).squeeze(1)
         else:
@@ -263,12 +249,12 @@ def test_recurrent_architecture_is_selected_by_brain_yaml(tmp_path, monkeypatch)
 
     recurrent_pop, _ = _run(recurrent_pack, tmp_path / "out-recurrent", monkeypatch, episodes=4)
     assert recurrent_pop.is_recurrent is True
-    assert isinstance(recurrent_pop.q_network, RecurrentSpatialQNetwork)
+    assert isinstance(recurrent_pop.q_network, RecurrentTokenQNetwork)
     assert isinstance(recurrent_pop.replay_buffer, SequentialReplayBuffer)
 
     feedforward_pop, _ = _run(feedforward_pack, tmp_path / "out-feedforward", monkeypatch, episodes=4)
     assert feedforward_pop.is_recurrent is False
-    assert not isinstance(feedforward_pop.q_network, RecurrentSpatialQNetwork)
+    assert not isinstance(feedforward_pop.q_network, RecurrentTokenQNetwork)
     assert isinstance(feedforward_pop.replay_buffer, ReplayBuffer)
 
 

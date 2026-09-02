@@ -93,17 +93,18 @@ class GlobalVFSVariableConfig(BaseModel):
 
     @model_validator(mode="after")
     def validate_value_xor_expression(self):
-        """Exactly one init source (initial_value or initial_value_mode) or expression must be set."""
+        """One static source (initial_value XOR initial_value_mode) or an expression; an
+        expression may ALSO declare initial_value — its exact value at episode start, which
+        is what exposure identity needs (PDR-0143)."""
         has_value = self.initial_value is not None
         has_mode = self.initial_value_mode is not None
         has_expr = self.expression is not None
-
-        provided = int(has_value) + int(has_mode) + int(has_expr)
-        if provided == 0:
+        if has_value and has_mode:
+            raise ValueError(f"Variable '{self.name}' must choose exactly one of initial_value or initial_value_mode")
+        if has_mode and has_expr:
+            raise ValueError(f"Variable '{self.name}' cannot combine initial_value_mode with an expression")
+        if not (has_value or has_mode or has_expr):
             raise ValueError(f"Variable '{self.name}' must provide exactly one of initial_value, initial_value_mode, or expression")
-        if provided > 1:
-            raise ValueError(f"Variable '{self.name}' must choose exactly one of initial_value, initial_value_mode, or expression")
-
         return self
 
     @model_validator(mode="after")
@@ -214,17 +215,18 @@ class AgentVFSVariableConfig(BaseModel):
 
     @model_validator(mode="after")
     def validate_value_xor_expression(self):
-        """Exactly one init source (initial_value or initial_value_mode) or expression must be set."""
+        """One static source (initial_value XOR initial_value_mode) or an expression; an
+        expression may ALSO declare initial_value — its exact value at episode start, which
+        is what exposure identity needs (PDR-0143)."""
         has_value = self.initial_value is not None
         has_mode = self.initial_value_mode is not None
         has_expr = self.expression is not None
-
-        provided = int(has_value) + int(has_mode) + int(has_expr)
-        if provided == 0:
+        if has_value and has_mode:
+            raise ValueError(f"Variable '{self.name}' must choose exactly one of initial_value or initial_value_mode")
+        if has_mode and has_expr:
+            raise ValueError(f"Variable '{self.name}' cannot combine initial_value_mode with an expression")
+        if not (has_value or has_mode or has_expr):
             raise ValueError(f"Variable '{self.name}' must provide exactly one of initial_value, initial_value_mode, or expression")
-        if provided > 1:
-            raise ValueError(f"Variable '{self.name}' must choose exactly one of initial_value, initial_value_mode, or expression")
-
         return self
 
     @model_validator(mode="after")
@@ -298,10 +300,15 @@ class ItemVFSVariableConfig(BaseModel):
 
     Item variables are per-item-instance state (e.g., nutrition, age, is_spoiled).
 
-    Deliberately carries NO `semantic_type`: exposed item variables are observed through the
-    single compiler-emitted `obs_item_slots` feature (slot × profile-position layout), so a
-    per-variable group could reach nothing, and a declaration that can reach nothing is removed
-    rather than defaulted (PDR-0066, PDR-0075; the layout question is hamlet-1ad6383186).
+    Deliberately carries NO `semantic_type`: item-scoped state has no authored observation
+    group (PDR-0066, PDR-0075) — a per-variable group could reach nothing for item-scoped
+    state, and a declaration that can reach nothing is removed rather than defaulted. An
+    exposed item variable now lands as `variable_element` via the item-arena publisher, one
+    slot per compiled `item` token slot with an owner/slot coordinate (token-obs spec §2/§3;
+    compile emission: `token_spec.py::_variable_element_artifacts`, landed at the unit-5
+    pack migration, hamlet-55b2826a02) — the engine supplies a fixed semantic bucket
+    ("custom") and lifetime ("episode") for every exposed item variable uniformly, since
+    neither is authorable here.
     """
 
     # Metadata. An empty exposed_to means UNEXPOSED (explicit exposure at the unit-3 cut).
@@ -328,13 +335,13 @@ class ItemVFSVariableConfig(BaseModel):
 
     @model_validator(mode="after")
     def validate_value_xor_expression(self):
-        """Exactly one of initial_value or expression must be set."""
+        """One static source (initial_value; item variables have no initial_value_mode) or an
+        expression; an expression may ALSO declare initial_value — its exact value at episode
+        start, which is what exposure identity needs (PDR-0143)."""
         has_value = self.initial_value is not None
         has_expr = self.expression is not None
-
-        if has_value == has_expr:
-            raise ValueError(f"Variable '{self.name}' must have exactly one of initial_value or expression (not both, not neither)")
-
+        if not (has_value or has_expr):
+            raise ValueError(f"Variable '{self.name}' must provide exactly one of initial_value or expression")
         return self
 
     @model_validator(mode="after")

@@ -14,8 +14,9 @@ def test_env_loads_substrate_config(cpu_env_factory):
     env = cpu_env_factory(num_agents=1)
 
     # Verify substrate loaded
-    assert hasattr(env, "grid_size")
-    assert env.grid_size == 8
+    assert not hasattr(env, "grid_size")
+    assert env.substrate.width == 8
+    assert env.substrate.height == 8
 
 
 def test_env_substrate_accessible(cpu_env_factory):
@@ -192,9 +193,9 @@ def test_env_substrate_distance_metric(cpu_env_factory):
 
 
 def test_vectorized_env_loads_composed_action_space(cpu_env_factory):
-    """VectorizedHamletEnv should use ActionSpaceBuilder.
+    """VectorizedHamletEnv should load the compiled action space.
 
-    TDD Test (RED phase): Verifies env has action_space attribute from builder.
+    Verifies the environment exposes the compiled runtime action artifact.
     """
     env = cpu_env_factory(num_agents=1)
 

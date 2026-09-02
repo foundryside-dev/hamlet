@@ -34,7 +34,6 @@ def _make_catalog(effect_id: str = "shield") -> EffectCatalog:
         id=effect_id,
         scope="agent",
         duration=5,
-        intensity=1.0,
         reapply_policy="stack",
         observable=True,
         on_spawn=[],
@@ -42,7 +41,10 @@ def _make_catalog(effect_id: str = "shield") -> EffectCatalog:
         on_despawn=[],
         on_interrupt=[],
     )
-    return EffectCatalog(effects={effect_id: compiled})
+    return EffectCatalog(
+        effects={effect_id: compiled},
+        max_active_effects={"global": 8, "agent": 8, "item": 8, "affordance": 8},
+    )
 
 
 def _spawn_command(effect_id: str = "shield") -> CommandNode:
@@ -50,7 +52,6 @@ def _spawn_command(effect_id: str = "shield") -> CommandNode:
         type=CommandType.SPAWN_EFFECT,
         effect_id=effect_id,
         target=0,  # explicit index to avoid self/target resolution
-        duration=None,
         intensity=1.0,
     )
 

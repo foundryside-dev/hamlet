@@ -8,7 +8,10 @@ Manages Q-networks, replay buffers, and training loops.
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, cast
+import math
+from collections.abc import Mapping
+from numbers import Real
+from typing import TYPE_CHECKING, Any, cast
 
 import numpy as np
 import torch
@@ -17,26 +20,82 @@ import torch.nn.functional as F  # noqa: N812
 
 from townlet.agent.loss_factory import LossFactory
 from townlet.agent.network_factory import NetworkFactory
-from townlet.agent.networks import RecurrentSpatialQNetwork
+from townlet.agent.networks import RecurrentTokenQNetwork
 from townlet.agent.optimizer_factory import OptimizerFactory
 from townlet.config.brain_config import BrainConfig
 from townlet.curriculum.base import CurriculumManager
 from townlet.exploration.action_selection import epsilon_greedy_action_selection
 from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
 from townlet.exploration.base import ExplorationStrategy
+from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
 from townlet.exploration.rnd import RNDExploration
 from townlet.population.base import PopulationManager
 from townlet.population.runtime_registry import AgentRuntimeRegistry
 from townlet.training.checkpoint_utils import TokenRosterReport, load_token_network_state_by_type
+from townlet.training.prioritized_replay_buffer import PrioritizedReplayBuffer
 from townlet.training.replay_buffer import ReplayBuffer
 from townlet.training.sequential_replay_buffer import SequentialReplayBuffer
 from townlet.training.state import BatchedAgentState, CurriculumDecision, PopulationCheckpoint, RewardTensor
-from townlet.universe.token_hashes import compute_token_layout_hash
 
 if TYPE_CHECKING:
     from townlet.environment.vectorized_env import VectorizedHamletEnv
 
 _logger = logging.getLogger(__name__)
+
+POPULATION_CHECKPOINT_FORMAT_VERSION = 5
+POPULATION_CHECKPOINT_KEYS = frozenset(
+    {
+        "version",
+        "q_network",
+        "optimizer",
+        "scheduler",
+        "total_steps",
+        "exploration_state",
+        "universe_metadata",
+        "target_network",
+        "training_step_counter",
+        "replay_buffer",
+    }
+)
+POPULATION_UNIVERSE_METADATA_KEYS = frozenset(
+    {
+        "meter_count",
+        "meter_names",
+        "version",
+        "obs_dim",
+        "observation_schema_hash",
+        "action_dim",
+    }
+)
+EPSILON_EXPLORATION_STATE_KEYS = frozenset({"epsilon", "epsilon_decay", "epsilon_min"})
+RND_EXPLORATION_STATE_KEYS = frozenset(
+    {
+        "fixed_network",
+        "predictor_network",
+        "optimizer",
+        "epsilon",
+        "epsilon_min",
+        "epsilon_decay",
+        "obs_dim",
+        "embed_dim",
+        "reward_rms_mean",
+        "reward_rms_var",
+        "reward_rms_count",
+    }
+)
+ADAPTIVE_EXPLORATION_STATE_KEYS = frozenset(
+    {
+        "rnd_state",
+        "current_intrinsic_weight",
+        "min_intrinsic_weight",
+        "variance_threshold",
+        "min_survival_fraction",
+        "max_episode_length",
+        "survival_window",
+        "decay_rate",
+        "survival_history",
+    }
+)
 
 EpisodeContainer = dict[str, list[torch.Tensor]]
 
@@ -63,7 +122,6 @@ class VectorizedPopulation(PopulationManager):
         sequence_length: int,
         max_grad_norm: float,
         action_dim: int,
-        vision_window_size: int,
         tb_logger=None,
         max_episodes: int | None = None,
         max_steps_per_episode: int | None = None,
@@ -82,7 +140,6 @@ class VectorizedPopulation(PopulationManager):
             brain_config: Brain configuration (REQUIRED). Specifies network architecture,
                 optimizer, loss function, Q-learning parameters, and replay buffer settings.
                 See docs/config-schemas/brain.md for schema.
-            vision_window_size: Size of local vision window for recurrent networks (5 for 5×5)
             tb_logger: Optional TensorBoard logger
             train_frequency: Train Q-network every N steps (required; typically from training.yaml)
             batch_size: Batch size for experience replay (required; typically from training.yaml replay_buffer.batch_size)
@@ -91,16 +148,15 @@ class VectorizedPopulation(PopulationManager):
             max_episodes: Maximum training episodes (for PER beta annealing)
             max_steps_per_episode: Maximum steps per episode (for PER beta annealing)
         """
-        # ✅ WP-C2: Validate brain_config required (no legacy fallback)
+        # The compiled brain configuration is mandatory runtime input.
         if brain_config is None:
             raise ValueError(
-                "brain_config is required. Legacy initialization path removed in WP-C2. "
-                "Provide brain.yaml configuration for all training runs. "
+                "brain_config is required. Provide brain.yaml configuration for all training runs. "
                 "See docs/config-schemas/brain.md for examples."
             )
 
         # The compiled token artifact is the observation ABI (unit-3 cut). It is required
-        # and set by VectorizedHamletEnv from the compiled universe; no silent fallback.
+        # and set by VectorizedHamletEnv from the compiled universe; no alternate source exists.
         if getattr(env, "token_spec", None) is None:
             raise ValueError(
                 "env.token_spec is required. The environment must carry the compiled TokenSpec "
@@ -143,11 +199,10 @@ class VectorizedPopulation(PopulationManager):
 
         # Q-network (shared across all agents for now)
         # Store params needed for network building helper
-        self._vision_window_size = vision_window_size
         self._obs_dim = obs_dim
 
         # Build network using DRY helper (POP-001)
-        self.q_network: nn.Module = self._build_network(brain_config, obs_dim, action_dim, env, vision_window_size).to(device)
+        self.q_network: nn.Module = self._build_network(brain_config, obs_dim, action_dim, env).to(device)
 
         # Set is_recurrent flag from brain_config
         self.is_recurrent = brain_config.architecture.type == "recurrent"
@@ -155,29 +210,17 @@ class VectorizedPopulation(PopulationManager):
         # Set is_dueling flag from brain_config
         self.is_dueling = brain_config.architecture.type == "dueling"
 
-        # Set is_set_encoder flag from brain_config
-        self.is_set_encoder = brain_config.architecture.type == "set_encoder"
-
-        # Set is_token_set flag from brain_config (token-obs unit 3 Task 9)
-        self.is_token_set = brain_config.architecture.type == "token_set"
+        self.is_token_native = brain_config.architecture.type in {"token_set", "recurrent"}
 
         # Target network (stabilises training for both feed-forward and recurrent agents)
         # Build using DRY helper (POP-001)
-        self.target_network: nn.Module = self._build_network(brain_config, obs_dim, action_dim, env, vision_window_size).to(device)
+        self.target_network: nn.Module = self._build_network(brain_config, obs_dim, action_dim, env).to(device)
 
         # Initialize common target network state
         self.target_network.load_state_dict(self.q_network.state_dict())
         self.target_network.eval()  # Target network always in eval mode
         self.target_update_frequency = target_update_frequency
         self.training_step_counter = 0
-
-        # Propagate temporal mechanics flag from environment to recurrent networks.
-        if self.is_recurrent and hasattr(env, "enable_temporal_mechanics"):
-            temporal_enabled = bool(getattr(env, "enable_temporal_mechanics"))
-            if hasattr(self.q_network, "enable_temporal_features"):
-                self.q_network.enable_temporal_features = temporal_enabled  # type: ignore[assignment]
-            if hasattr(self.target_network, "enable_temporal_features"):
-                self.target_network.enable_temporal_features = temporal_enabled  # type: ignore[assignment]
 
         # Optimizer and scheduler from brain_config
         self.optimizer, self.scheduler = OptimizerFactory.build(
@@ -198,8 +241,6 @@ class VectorizedPopulation(PopulationManager):
 
         # Replay buffer (dual system: sequential for recurrent, standard/PER for feedforward)
         # TASK-005 Phase 3: Support PrioritizedReplayBuffer
-        from townlet.training.prioritized_replay_buffer import PrioritizedReplayBuffer
-
         self.replay_buffer: ReplayBuffer | SequentialReplayBuffer | PrioritizedReplayBuffer
         self.current_episodes: list[EpisodeContainer] = []
 
@@ -222,7 +263,7 @@ class VectorizedPopulation(PopulationManager):
                     "Use prioritized=false in brain.yaml for recurrent architectures."
                 )
         else:
-            # Feedforward networks support both standard and prioritized replay
+            # Feedforward networks select the configured standard or prioritized replay.
             if self.use_per:
                 # TASK-005 Phase 3: Instantiate PrioritizedReplayBuffer
                 # Pydantic validator ensures PER params not None when prioritized=True
@@ -258,7 +299,7 @@ class VectorizedPopulation(PopulationManager):
         # WS-1(b): rollout memory is population-owned; the network holds no state.
         self.rollout_hidden: tuple[torch.Tensor, torch.Tensor] | None = None
         if self.is_recurrent:
-            recurrent_network = cast(RecurrentSpatialQNetwork, self.q_network)
+            recurrent_network = cast(RecurrentTokenQNetwork, self.q_network)
             self.rollout_hidden = recurrent_network.initial_hidden(self.num_agents, self.device)
         # Q-values recorded by the action selectors (read by the live-inference display).
         self.last_selected_q_values: torch.Tensor | None = None
@@ -269,7 +310,7 @@ class VectorizedPopulation(PopulationManager):
 
         # Re-seed population-owned rollout memory (if applicable)
         if self.is_recurrent:
-            recurrent_network = cast(RecurrentSpatialQNetwork, self.q_network)
+            recurrent_network = cast(RecurrentTokenQNetwork, self.q_network)
             self.rollout_hidden = recurrent_network.initial_hidden(self.num_agents, self.device)
 
         # Get epsilon from exploration strategy (handle both direct and composed)
@@ -355,7 +396,6 @@ class VectorizedPopulation(PopulationManager):
         obs_dim: int,
         action_dim: int,
         env: VectorizedHamletEnv,
-        vision_window_size: int,
     ) -> nn.Module:
         """Build network from brain_config (DRY helper for q_network and target_network).
 
@@ -363,8 +403,7 @@ class VectorizedPopulation(PopulationManager):
             brain_config: Brain configuration specifying architecture
             obs_dim: Observation dimension
             action_dim: Action dimension
-            env: Environment for substrate/meter info (recurrent networks)
-            vision_window_size: Vision window size (recurrent networks)
+            env: Environment carrying the compiled token schema
 
         Returns:
             Constructed network module (not yet moved to device)
@@ -380,13 +419,9 @@ class VectorizedPopulation(PopulationManager):
             )
         elif arch.type == "recurrent":
             assert arch.recurrent is not None, "recurrent config must be present"
-            # Post-cut this is a token-BLOCK reader: its input slices come from the
-            # compiled TokenSpec's contiguous per-type serialization, not from a raster
-            # observation spec. A token-NATIVE recurrent/attention brain is unit 4.
             return NetworkFactory.build_recurrent(
                 config=arch.recurrent,
                 action_dim=action_dim,
-                substrate_position_dim=env.substrate.position_dim,
                 token_spec=env.token_spec,
             )
         elif arch.type == "dueling":
@@ -396,39 +431,15 @@ class VectorizedPopulation(PopulationManager):
                 obs_dim=obs_dim,
                 action_dim=action_dim,
             )
-        elif arch.type == "set_encoder":
-            raise ValueError(
-                "architecture.type='set_encoder' has no buildable network after the unit-3 token cut.\n"
-                "  Reason: it sliced a single flattened token FIELD out of the compiled "
-                "ObservationSpec, and that spec no longer exists — the whole observation is now a "
-                "token set.\n"
-                "  Landing: declare `token_set`, which consumes the compiled TokenSpec directly."
-            )
         elif arch.type == "token_set":
             assert arch.token_set is not None, "token_set config must be present"
-            token_spec = env.universe.token_spec
-            # IDENTITY, not width (task-9 review M3, discharged at the cut): the network
-            # reads the serialization positionally, so equal width with a different slot
-            # binding is a silently wrong net. `layout_hash` IS that identity.
-            env_layout_hash = compute_token_layout_hash(env.token_spec)
-            if env_layout_hash != compute_token_layout_hash(token_spec):
-                raise ValueError(
-                    "architecture.type='token_set' is bound to a different token layout than the "
-                    "environment serializes.\n"
-                    f"  environment layout_hash: {env_layout_hash}\n"
-                    f"  brain layout_hash:       {compute_token_layout_hash(token_spec)}\n"
-                    "  Rule: a flat reader's dims are positional — equal width with a re-bound slot "
-                    "changes what every dim MEANS. Recompile the pack so both come from one artifact."
-                )
             return NetworkFactory.build_token_set(
                 config=arch.token_set,
                 action_dim=action_dim,
-                token_spec=token_spec,
+                token_spec=env.token_spec,
             )
         else:
-            raise ValueError(
-                f"Unsupported architecture type: {arch.type}. Supported: feedforward, recurrent, dueling, set_encoder, token_set"
-            )
+            raise ValueError(f"Unsupported architecture type: {arch.type}. Supported: feedforward, recurrent, dueling, token_set")
 
     def _store_episode_and_reset(self, agent_idx: int) -> bool:
         """Store accumulated episode for agent and reset buffers."""
@@ -475,9 +486,9 @@ class VectorizedPopulation(PopulationManager):
         c[:, agent_idx, :] = 0.0
 
     def _unroll_recurrent(
-        self, network: RecurrentSpatialQNetwork, observations: torch.Tensor
-    ) -> tuple[list[torch.Tensor], tuple[torch.Tensor, torch.Tensor]]:
-        """Unroll `network` over a sampled batch, threading hidden state t -> t+1.
+        self, network: RecurrentTokenQNetwork, observations: torch.Tensor
+    ) -> tuple[torch.Tensor, tuple[torch.Tensor, torch.Tensor]]:
+        """Evaluate a sampled sequence in one recurrent network call.
 
         Hidden state is LOCAL to this unroll: it starts at zeros for every sampled
         sequence (DRQN zero-start, retained deliberately - the WS-1(b) defect was
@@ -488,34 +499,31 @@ class VectorizedPopulation(PopulationManager):
             observations: [batch, seq_len, obs_dim]
 
         Returns:
-            (q_values_per_step, final_hidden): per-timestep Q-values, each
-            [batch, action_dim], and the hidden state after the last timestep -
-            the state the WS-1(c) boundary bootstrap must evaluate under.
+            (q_values, final_hidden), where q_values is [batch, sequence, action]
+            and final_hidden is used for the boundary bootstrap.
         """
-        batch_size, seq_len = observations.shape[0], observations.shape[1]
+        batch_size = observations.shape[0]
         hidden = network.initial_hidden(batch_size, observations.device)
-        q_values_per_step: list[torch.Tensor] = []
-        for t in range(seq_len):
-            q_values, hidden = network(observations[:, t, :], hidden)
-            q_values_per_step.append(q_values)
-        return q_values_per_step, hidden
+        return cast(tuple[torch.Tensor, tuple[torch.Tensor, torch.Tensor]], network(observations, hidden))
 
     # ------------------------------------------------------------------ #
     # Telemetry synchronisation helpers
     # ------------------------------------------------------------------ #
     def _get_current_epsilon_value(self) -> float:
-        """Return current exploration epsilon (global for now)."""
+        """Return epsilon for the closed production exploration vocabulary."""
         if isinstance(self.exploration, AdaptiveIntrinsicExploration):
             return float(self.exploration.rnd.epsilon)
-        if hasattr(self.exploration, "epsilon"):
+        if isinstance(self.exploration, (EpsilonGreedyExploration, RNDExploration)):
             return float(self.exploration.epsilon)
-        return 0.0
+        raise TypeError(f"Unsupported exploration strategy: {type(self.exploration).__name__}.")
 
     def _get_current_intrinsic_weight_value(self) -> float:
-        """Return current intrinsic reward weight."""
-        if hasattr(self.exploration, "get_intrinsic_weight"):
+        """Return the exact strategy-defined intrinsic reward weight."""
+        if isinstance(self.exploration, AdaptiveIntrinsicExploration):
             return float(self.exploration.get_intrinsic_weight())
-        return 0.0
+        if isinstance(self.exploration, (EpsilonGreedyExploration, RNDExploration)):
+            return 0.0
+        raise TypeError(f"Unsupported exploration strategy: {type(self.exploration).__name__}.")
 
     def _sync_curriculum_metrics(self) -> None:
         """
@@ -616,9 +624,10 @@ class VectorizedPopulation(PopulationManager):
         with torch.no_grad():
             # Get Q-values from network (recurrent: advance the rollout memory)
             if self.is_recurrent:
-                recurrent_network = cast(RecurrentSpatialQNetwork, self.q_network)
+                recurrent_network = cast(RecurrentTokenQNetwork, self.q_network)
                 assert self.rollout_hidden is not None
-                q_values, self.rollout_hidden = recurrent_network(self.current_obs, self.rollout_hidden)
+                q_sequence, self.rollout_hidden = recurrent_network(self.current_obs.unsqueeze(1), self.rollout_hidden)
+                q_values = q_sequence[:, 0, :]
             else:
                 q_values = self.q_network(self.current_obs)
             # Record BEFORE any early exit so the live Q-value display never reads stale values (plan §3 H8).
@@ -653,9 +662,10 @@ class VectorizedPopulation(PopulationManager):
         with torch.no_grad():
             # Get Q-values from network (recurrent: advance the rollout memory)
             if self.is_recurrent:
-                recurrent_network = cast(RecurrentSpatialQNetwork, self.q_network)
+                recurrent_network = cast(RecurrentTokenQNetwork, self.q_network)
                 assert self.rollout_hidden is not None
-                q_values, self.rollout_hidden = recurrent_network(self.current_obs, self.rollout_hidden)
+                q_sequence, self.rollout_hidden = recurrent_network(self.current_obs.unsqueeze(1), self.rollout_hidden)
+                q_values = q_sequence[:, 0, :]
             else:
                 q_values = self.q_network(self.current_obs)
             # The return below sits inside this no_grad block: record the Q-values
@@ -710,10 +720,11 @@ class VectorizedPopulation(PopulationManager):
         # 1. Get Q-values from network
         with torch.no_grad():
             if self.is_recurrent:
-                recurrent_network = cast(RecurrentSpatialQNetwork, self.q_network)
+                recurrent_network = cast(RecurrentTokenQNetwork, self.q_network)
                 assert self.rollout_hidden is not None
                 # Thread and advance the population-owned rollout memory.
-                q_values, self.rollout_hidden = recurrent_network(self.current_obs, self.rollout_hidden)
+                q_sequence, self.rollout_hidden = recurrent_network(self.current_obs.unsqueeze(1), self.rollout_hidden)
+                q_values = q_sequence[:, 0, :]
             else:
                 q_values = self.q_network(self.current_obs)
 
@@ -847,12 +858,9 @@ class VectorizedPopulation(PopulationManager):
 
                 # PASS 1: Q-predictions from the online network, hidden state threaded
                 # t -> t+1 through the sampled window (gradient flows through the unroll).
-                recurrent_network = cast(RecurrentSpatialQNetwork, self.q_network)
-                q_values_online_list, online_final_hidden = self._unroll_recurrent(recurrent_network, batch["observations"])
-                q_pred_list = []
-                for t in range(seq_len):
-                    q_pred = q_values_online_list[t].gather(1, batch["actions"][:, t].unsqueeze(1)).squeeze()
-                    q_pred_list.append(q_pred)
+                recurrent_network = cast(RecurrentTokenQNetwork, self.q_network)
+                q_values_online, online_final_hidden = self._unroll_recurrent(recurrent_network, batch["observations"])
+                q_pred_all = q_values_online.gather(2, batch["actions"].unsqueeze(2)).squeeze(2)
 
                 # PASS 2: Q-targets. The last index of a sampled window is a WINDOW
                 # boundary, not a terminal (WS-1(c)): it bootstraps from the stored
@@ -869,25 +877,27 @@ class VectorizedPopulation(PopulationManager):
                         # crossing the two hidden states, silently evaluates the
                         # successor under the wrong network's trajectory (plan H6;
                         # the networks have different weights).
-                        q_online_boundary, _ = recurrent_network(boundary_next_obs, online_final_hidden)
+                        q_online_boundary_sequence, _ = recurrent_network(boundary_next_obs.unsqueeze(1), online_final_hidden)
+                        q_online_boundary = q_online_boundary_sequence[:, 0, :]
 
-                    target_recurrent = cast(RecurrentSpatialQNetwork, self.target_network)
-                    q_values_target_list, target_final_hidden = self._unroll_recurrent(target_recurrent, batch["observations"])
+                    target_recurrent = cast(RecurrentTokenQNetwork, self.target_network)
+                    q_values_target, target_final_hidden = self._unroll_recurrent(target_recurrent, batch["observations"])
                     # Boundary forward for the TARGET network, under its own final hidden state.
-                    q_target_boundary, _ = target_recurrent(boundary_next_obs, target_final_hidden)
+                    q_target_boundary_sequence, _ = target_recurrent(boundary_next_obs.unsqueeze(1), target_final_hidden)
+                    q_target_boundary = q_target_boundary_sequence[:, 0, :]
 
                     if self.use_double_dqn:
                         # Double DQN: online network selects, target network evaluates.
                         # Action selection reuses PASS 1's online unroll - a third
                         # unroll would recompute the same trajectory.
-                        next_action_list = [q_values_online.argmax(1) for q_values_online in q_values_online_list]
+                        next_actions_all = q_values_online.argmax(2)
 
                         q_target_list = []
                         for t in range(seq_len):
                             if t < seq_len - 1:
                                 # Use Q-values from t+1, evaluated at actions selected by online network
-                                next_actions = next_action_list[t + 1]
-                                q_next = q_values_target_list[t + 1].gather(1, next_actions.unsqueeze(1)).squeeze(1)
+                                next_actions = next_actions_all[:, t + 1]
+                                q_next = q_values_target[:, t + 1, :].gather(1, next_actions.unsqueeze(1)).squeeze(1)
                             else:
                                 # Window boundary: successor evaluated at the online network's argmax
                                 boundary_actions = q_online_boundary.argmax(1)
@@ -900,7 +910,7 @@ class VectorizedPopulation(PopulationManager):
                         for t in range(seq_len):
                             if t < seq_len - 1:
                                 # Use Q-values from t+1 (computed with hidden state from t)
-                                q_next = q_values_target_list[t + 1].max(1)[0]
+                                q_next = q_values_target[:, t + 1, :].max(1)[0]
                             else:
                                 # Window boundary: successor evaluated by the target network
                                 q_next = q_target_boundary.max(1)[0]
@@ -908,7 +918,6 @@ class VectorizedPopulation(PopulationManager):
                             q_target_list.append(q_target)
 
                 # Compute loss across all timesteps with post-terminal masking (P2.2)
-                q_pred_all = torch.stack(q_pred_list, dim=1)  # [batch, seq_len]
                 q_target_all = torch.stack(q_target_list, dim=1)  # [batch, seq_len]
 
                 # P2.2: Apply mask to prevent gradients from post-terminal garbage
@@ -966,7 +975,7 @@ class VectorizedPopulation(PopulationManager):
                 # 207/936 mid-episode forwards received an exactly-zero hidden state).
             else:
                 # Standard feedforward DQN training (with optional PER)
-                # TASK-005 Phase 3: Support both standard and prioritized replay
+                # TASK-005 Phase 3: handle the configured standard or prioritized replay.
                 if self.use_per:
                     from townlet.training.prioritized_replay_buffer import PrioritizedReplayBuffer
 
@@ -1157,76 +1166,523 @@ class VectorizedPopulation(PopulationManager):
         Returns comprehensive state dict including:
         - Version number
         - Q-network weights
-        - Target network weights (if recurrent)
+        - Target network weights
         - Optimizer state
+        - Scheduler state or explicit null when no scheduler is configured
         - Training counters
         - Replay buffer contents
         - Exploration strategy state
-        - Curriculum state
-        - Universe metadata (meter count, names) for validation (TASK-001)
+        - Exact universe metadata for identity validation
 
         Returns:
             Complete checkpoint state dictionary
         """
-        checkpoint = {
-            "version": 2,  # Checkpoint format version
+        bars_config = self.env.bars_config
+        return {
+            "version": POPULATION_CHECKPOINT_FORMAT_VERSION,
             "q_network": self.q_network.state_dict(),
             "optimizer": self.optimizer.state_dict(),
             "scheduler": self.scheduler.state_dict() if self.scheduler is not None else None,
             "total_steps": self.total_steps,
             "exploration_state": self.exploration.checkpoint_state(),
+            "universe_metadata": {
+                "meter_count": bars_config.meter_count,
+                "meter_names": bars_config.meter_names,
+                "version": bars_config.version,
+                "obs_dim": self.env.observation_dim,
+                "observation_schema_hash": self.env.level.observation_schema_hash,
+                "action_dim": self.action_dim,
+            },
+            "target_network": self.target_network.state_dict(),
+            "training_step_counter": self.training_step_counter,
+            # All buffer types implement serialize(), but mypy doesn't infer it for unions.
+            "replay_buffer": self.replay_buffer.serialize(),  # type: ignore[union-attr]
         }
 
-        # Universe metadata for compatibility validation (TASK-001)
-        # This allows detecting meter count mismatches when loading checkpoints
-        bars_config = self.env.bars_config
-        checkpoint["universe_metadata"] = {
-            "meter_count": bars_config.meter_count,
-            "meter_names": bars_config.meter_names,
-            "version": bars_config.version,
-            "obs_dim": self.env.observation_dim,
-            "action_dim": self.action_dim,  # From environment action space (TASK-002B Phase 4.1)
-        }
+    @staticmethod
+    def _require_exact_mapping(label: str, incoming_state: object, expected_keys: frozenset[str]) -> Mapping[str, object]:
+        if not isinstance(incoming_state, Mapping):
+            raise ValueError(f"Population checkpoint {label} must be a mapping; got {type(incoming_state).__name__}.")
+        incoming_keys = set(incoming_state)
+        if incoming_keys != expected_keys:
+            missing = sorted(expected_keys - incoming_keys)
+            unknown = sorted(incoming_keys - expected_keys)
+            raise ValueError(f"Population checkpoint {label} key mismatch: missing={missing}, unknown={unknown}.")
+        return incoming_state
 
-        # Target network (always initialized - POP-008 simplified)
-        checkpoint["target_network"] = self.target_network.state_dict()
-        checkpoint["training_step_counter"] = self.training_step_counter
+    @staticmethod
+    def _require_nonnegative_int(label: str, value: object) -> int:
+        if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+            raise ValueError(f"Population checkpoint {label} mismatch: expected a non-negative integer, got {value!r}.")
+        return value
 
-        # Replay buffer
-        # All buffer types implement serialize(), but mypy doesn't infer it for unions
-        checkpoint["replay_buffer"] = self.replay_buffer.serialize()  # type: ignore[union-attr]
+    @staticmethod
+    def _require_finite_real(label: str, value: object) -> float:
+        if isinstance(value, bool) or not isinstance(value, Real) or not math.isfinite(float(value)):
+            raise ValueError(f"Population checkpoint {label} must be a finite real number; got {value!r}.")
+        return float(value)
 
-        return checkpoint
+    @staticmethod
+    def _validate_network_checkpoint_state(
+        state_key: str,
+        incoming_state: object,
+        current_state: Mapping[str, torch.Tensor],
+    ) -> None:
+        if not isinstance(incoming_state, Mapping):
+            raise ValueError(f"Population checkpoint {state_key} must be a parameter mapping.")
 
-    def load_checkpoint_state(self, checkpoint: dict) -> None:
+        incoming_keys = set(incoming_state)
+        current_keys = set(current_state)
+        if incoming_keys != current_keys:
+            missing = sorted(current_keys - incoming_keys)
+            unknown = sorted(incoming_keys - current_keys)
+            raise ValueError(f"Population checkpoint {state_key} key mismatch: missing={missing}, unknown={unknown}.")
+
+        for parameter_name, current_tensor in current_state.items():
+            incoming_tensor = incoming_state[parameter_name]
+            if not isinstance(incoming_tensor, torch.Tensor):
+                raise ValueError(
+                    f"Population checkpoint {state_key}.{parameter_name} must be a tensor; " f"got {type(incoming_tensor).__name__}."
+                )
+            if incoming_tensor.shape != current_tensor.shape:
+                raise ValueError(
+                    f"Population checkpoint {state_key} shape mismatch for {parameter_name}: "
+                    f"checkpoint={tuple(incoming_tensor.shape)}, current={tuple(current_tensor.shape)}."
+                )
+            if incoming_tensor.dtype != current_tensor.dtype:
+                raise ValueError(
+                    f"Population checkpoint {state_key} dtype mismatch for {parameter_name}: "
+                    f"checkpoint={incoming_tensor.dtype}, current={current_tensor.dtype}."
+                )
+            if (incoming_tensor.is_floating_point() or incoming_tensor.is_complex()) and not torch.isfinite(incoming_tensor).all():
+                raise ValueError(f"Population checkpoint {state_key}.{parameter_name} contains non-finite values.")
+
+    @classmethod
+    def _validate_optimizer_checkpoint_state(
+        cls,
+        label: str,
+        incoming_state: object,
+        optimizer: torch.optim.Optimizer,
+        *,
+        allow_learning_rate_change: bool = False,
+    ) -> tuple[float, ...]:
+        state = cls._require_exact_mapping(label, incoming_state, frozenset({"state", "param_groups"}))
+        saved_state = state["state"]
+        saved_groups = state["param_groups"]
+        if not isinstance(saved_state, Mapping):
+            raise ValueError(f"Population checkpoint {label}.state must be a mapping.")
+        if not isinstance(saved_groups, list):
+            raise ValueError(f"Population checkpoint {label}.param_groups must be a list.")
+        if len(saved_groups) != len(optimizer.param_groups):
+            raise ValueError(
+                f"Population checkpoint {label} parameter-group count mismatch: "
+                f"checkpoint={len(saved_groups)}, current={len(optimizer.param_groups)}."
+            )
+
+        current_serialized_groups = optimizer.state_dict()["param_groups"]
+        parameter_by_saved_id: dict[int, torch.Tensor] = {}
+        expected_state_keys_by_saved_id: dict[int, frozenset[str]] = {}
+        saved_learning_rates: list[float] = []
+        for group_index, (saved_group, current_group, current_serialized_group) in enumerate(
+            zip(saved_groups, optimizer.param_groups, current_serialized_groups, strict=True)
+        ):
+            if not isinstance(saved_group, Mapping):
+                raise ValueError(f"Population checkpoint {label}.param_groups[{group_index}] must be a mapping.")
+            expected_group_keys = set(current_serialized_group)
+            saved_group_keys = set(saved_group)
+            if saved_group_keys != expected_group_keys:
+                missing = sorted(expected_group_keys - saved_group_keys)
+                unknown = sorted(saved_group_keys - expected_group_keys)
+                raise ValueError(
+                    f"Population checkpoint {label}.param_groups[{group_index}] key mismatch: " f"missing={missing}, unknown={unknown}."
+                )
+            group_label = f"{label}.param_groups[{group_index}]"
+            for group_key, current_value in current_serialized_group.items():
+                if group_key == "params":
+                    continue
+                saved_value = saved_group[group_key]
+                value_label = f"{group_label}.{group_key}"
+                if group_key == "lr":
+                    if type(saved_value) is not type(current_value):
+                        raise ValueError(
+                            f"Population checkpoint {value_label} type mismatch: "
+                            f"checkpoint={type(saved_value).__name__}, current={type(current_value).__name__}."
+                        )
+                    learning_rate = cls._require_finite_real(value_label, saved_value)
+                    if learning_rate < 0.0:
+                        raise ValueError(f"Population checkpoint {value_label} must be non-negative; got {learning_rate}.")
+                    if not allow_learning_rate_change and learning_rate != float(current_value):
+                        raise ValueError(
+                            f"Population checkpoint {value_label} mismatch: checkpoint={learning_rate}, current={current_value}."
+                        )
+                    saved_learning_rates.append(learning_rate)
+                    continue
+                cls._validate_exact_checkpoint_value(value_label, saved_value, current_value)
+
+            saved_parameter_ids = saved_group["params"]
+            current_parameters = current_group["params"]
+            if not isinstance(saved_parameter_ids, list):
+                raise ValueError(f"Population checkpoint {label}.param_groups[{group_index}].params must be a list.")
+            if len(saved_parameter_ids) != len(current_parameters):
+                raise ValueError(
+                    f"Population checkpoint {label} parameter count mismatch in group {group_index}: "
+                    f"checkpoint={len(saved_parameter_ids)}, current={len(current_parameters)}."
+                )
+            for parameter_index, (saved_id, parameter) in enumerate(zip(saved_parameter_ids, current_parameters, strict=True)):
+                if isinstance(saved_id, bool) or not isinstance(saved_id, int):
+                    raise ValueError(
+                        f"Population checkpoint {label}.param_groups[{group_index}].params[{parameter_index}] "
+                        "must be an integer parameter id."
+                    )
+                if saved_id in parameter_by_saved_id:
+                    raise ValueError(f"Population checkpoint {label} repeats parameter id {saved_id}.")
+                if not isinstance(parameter, torch.Tensor):
+                    raise ValueError(f"Current {label} parameter {parameter_index} in group {group_index} is not a tensor.")
+                parameter_by_saved_id[saved_id] = parameter
+                expected_state_keys_by_saved_id[saved_id] = cls._optimizer_parameter_state_keys(optimizer, current_group)
+
+        if any(isinstance(saved_id, bool) or not isinstance(saved_id, int) for saved_id in saved_state):
+            raise ValueError(f"Population checkpoint {label}.state entries must map integer ids to mappings.")
+        unknown_state_ids = set(saved_state) - set(parameter_by_saved_id)
+        if unknown_state_ids:
+            raise ValueError(f"Population checkpoint {label}.state has unknown parameter ids: {sorted(unknown_state_ids)}.")
+        for saved_id, parameter_state in saved_state.items():
+            if not isinstance(parameter_state, Mapping):
+                raise ValueError(f"Population checkpoint {label}.state entries must map integer ids to mappings.")
+            parameter = parameter_by_saved_id[saved_id]
+            expected_state_keys = expected_state_keys_by_saved_id[saved_id]
+            if set(parameter_state) != expected_state_keys:
+                missing = sorted(expected_state_keys - set(parameter_state))
+                unknown = sorted(set(parameter_state) - expected_state_keys)
+                raise ValueError(f"Population checkpoint {label}.state[{saved_id!r}] key mismatch: missing={missing}, unknown={unknown}.")
+            for value_key, value in parameter_state.items():
+                value_label = f"{label}.state[{saved_id!r}].{value_key}"
+                if not isinstance(value, torch.Tensor):
+                    raise ValueError(f"Population checkpoint {value_label} must be a tensor; got {type(value).__name__}.")
+                if value_key == "step":
+                    if value.shape != torch.Size([]) or value.dtype is not torch.float32:
+                        raise ValueError(f"Population checkpoint {value_label} must be a scalar torch.float32 tensor.")
+                    step = float(value.item())
+                    if not math.isfinite(step) or step < 0.0 or not step.is_integer():
+                        raise ValueError(f"Population checkpoint {value_label} must be a finite non-negative integer-valued scalar.")
+                    continue
+                if value.shape != parameter.shape:
+                    raise ValueError(
+                        f"Population checkpoint {value_label} shape mismatch: "
+                        f"checkpoint={tuple(value.shape)}, parameter={tuple(parameter.shape)}."
+                    )
+                if value.dtype != parameter.dtype:
+                    raise ValueError(
+                        f"Population checkpoint {value_label} dtype mismatch: " f"checkpoint={value.dtype}, parameter={parameter.dtype}."
+                    )
+                if (value.is_floating_point() or value.is_complex()) and not torch.isfinite(value).all():
+                    raise ValueError(f"Population checkpoint {value_label} contains non-finite values.")
+        return tuple(saved_learning_rates)
+
+    @classmethod
+    def _validate_exact_checkpoint_value(cls, label: str, incoming: object, current: object) -> None:
+        if isinstance(current, Mapping):
+            if not isinstance(incoming, Mapping):
+                raise ValueError(f"Population checkpoint {label} must be a mapping.")
+            if set(incoming) != set(current):
+                missing = sorted(set(current) - set(incoming))
+                unknown = sorted(set(incoming) - set(current))
+                raise ValueError(f"Population checkpoint {label} key mismatch: missing={missing}, unknown={unknown}.")
+            for key, current_value in current.items():
+                cls._validate_exact_checkpoint_value(f"{label}.{key}", incoming[key], current_value)
+            return
+        if isinstance(current, (list, tuple)):
+            if type(incoming) is not type(current) or len(incoming) != len(current):
+                raise ValueError(f"Population checkpoint {label} sequence shape/type mismatch.")
+            for index, (incoming_value, current_value) in enumerate(zip(incoming, current, strict=True)):
+                cls._validate_exact_checkpoint_value(f"{label}[{index}]", incoming_value, current_value)
+            return
+        if isinstance(current, torch.Tensor):
+            if not isinstance(incoming, torch.Tensor) or incoming.shape != current.shape or incoming.dtype != current.dtype:
+                raise ValueError(f"Population checkpoint {label} tensor shape/dtype mismatch.")
+            if (incoming.is_floating_point() or incoming.is_complex()) and not torch.isfinite(incoming).all():
+                raise ValueError(f"Population checkpoint {label} contains non-finite values.")
+            if not torch.equal(incoming, current):
+                raise ValueError(f"Population checkpoint {label} mismatch against the current configuration.")
+            return
+        if current is None:
+            if incoming is not None:
+                raise ValueError(f"Population checkpoint {label} must be null.")
+            return
+        if type(incoming) is not type(current):
+            raise ValueError(
+                f"Population checkpoint {label} type mismatch: checkpoint={type(incoming).__name__}, current={type(current).__name__}."
+            )
+        if isinstance(incoming, bool):
+            if incoming != current:
+                raise ValueError(f"Population checkpoint {label} mismatch: checkpoint={incoming!r}, current={current!r}.")
+            return
+        if isinstance(incoming, Real):
+            cls._require_finite_real(label, incoming)
+        if incoming != current:
+            raise ValueError(f"Population checkpoint {label} mismatch: checkpoint={incoming!r}, current={current!r}.")
+
+    @staticmethod
+    def _optimizer_parameter_state_keys(
+        optimizer: torch.optim.Optimizer,
+        parameter_group: Mapping[str, Any],
+    ) -> frozenset[str]:
+        if isinstance(optimizer, (torch.optim.Adam, torch.optim.AdamW)):
+            keys = {"step", "exp_avg", "exp_avg_sq"}
+            if parameter_group["amsgrad"] is True:
+                keys.add("max_exp_avg_sq")
+            return frozenset(keys)
+        if isinstance(optimizer, torch.optim.SGD):
+            return frozenset({"momentum_buffer"}) if float(parameter_group["momentum"]) > 0.0 else frozenset()
+        if isinstance(optimizer, torch.optim.RMSprop):
+            keys = {"step", "square_avg"}
+            if float(parameter_group["momentum"]) > 0.0:
+                keys.add("momentum_buffer")
+            if parameter_group["centered"] is True:
+                keys.add("grad_avg")
+            return frozenset(keys)
+        raise ValueError(f"Population checkpoint optimizer type {type(optimizer).__name__} is unsupported.")
+
+    @classmethod
+    def _validate_scheduler_checkpoint_state(
+        cls,
+        label: str,
+        incoming_state: object,
+        scheduler: torch.optim.lr_scheduler.LRScheduler,
+        optimizer_learning_rates: tuple[float, ...],
+    ) -> None:
+        current_state = scheduler.state_dict()
+        state = cls._require_exact_mapping(label, incoming_state, frozenset(current_state))
+        mutable_keys = frozenset({"last_epoch", "_step_count", "_is_initial", "_get_lr_called_within_step", "_last_lr"})
+        for key, current_value in current_state.items():
+            if key not in mutable_keys:
+                cls._validate_exact_checkpoint_value(f"{label}.{key}", state[key], current_value)
+
+        last_epoch = cls._require_nonnegative_int(f"{label}.last_epoch", state["last_epoch"])
+        step_count = cls._require_nonnegative_int(f"{label}._step_count", state["_step_count"])
+        if step_count != last_epoch + 1:
+            raise ValueError(
+                f"Population checkpoint {label}._step_count must equal last_epoch + 1; "
+                f"checkpoint={step_count}, expected={last_epoch + 1}."
+            )
+        for key in ("_is_initial", "_get_lr_called_within_step"):
+            value = state[key]
+            if type(value) is not bool or value is not False:
+                raise ValueError(f"Population checkpoint {label}.{key} must be false outside a scheduler step.")
+
+        last_learning_rates = state["_last_lr"]
+        if not isinstance(last_learning_rates, list) or len(last_learning_rates) != len(optimizer_learning_rates):
+            raise ValueError(
+                f"Population checkpoint {label}._last_lr must be a list with " f"{len(optimizer_learning_rates)} optimizer-group entries."
+            )
+        for index, (value, optimizer_value) in enumerate(zip(last_learning_rates, optimizer_learning_rates, strict=True)):
+            value_label = f"{label}._last_lr[{index}]"
+            if type(value) is not float:
+                raise ValueError(f"Population checkpoint {value_label} must be a float; got {type(value).__name__}.")
+            learning_rate = cls._require_finite_real(value_label, value)
+            if learning_rate < 0.0:
+                raise ValueError(f"Population checkpoint {value_label} must be non-negative; got {learning_rate}.")
+            if learning_rate != optimizer_value:
+                raise ValueError(
+                    f"Population checkpoint {value_label} must match optimizer group {index} lr; "
+                    f"scheduler={learning_rate}, optimizer={optimizer_value}."
+                )
+
+    @classmethod
+    def _validate_rnd_exploration_state(cls, state: object, current: RNDExploration, label: str) -> None:
+        rnd_state = cls._require_exact_mapping(label, state, RND_EXPLORATION_STATE_KEYS)
+        obs_dim = cls._require_nonnegative_int(f"{label}.obs_dim", rnd_state["obs_dim"])
+        embed_dim = cls._require_nonnegative_int(f"{label}.embed_dim", rnd_state["embed_dim"])
+        if obs_dim != current.obs_dim:
+            raise ValueError(f"Population checkpoint {label}.obs_dim mismatch: checkpoint={obs_dim}, current={current.obs_dim}.")
+        if embed_dim != current.embed_dim:
+            raise ValueError(f"Population checkpoint {label}.embed_dim mismatch: checkpoint={embed_dim}, current={current.embed_dim}.")
+        for config_key in ("epsilon_min", "epsilon_decay"):
+            value = cls._require_finite_real(f"{label}.{config_key}", rnd_state[config_key])
+            current_value = float(getattr(current, config_key))
+            if value != current_value:
+                raise ValueError(f"Population checkpoint {label}.{config_key} mismatch: checkpoint={value}, current={current_value}.")
+        epsilon = cls._require_finite_real(f"{label}.epsilon", rnd_state["epsilon"])
+        if not float(current.epsilon_min) <= epsilon <= 1.0:
+            raise ValueError(f"Population checkpoint {label}.epsilon must be within [epsilon_min, 1.0]; got {epsilon}.")
+        cls._validate_network_checkpoint_state(
+            "exploration_state.fixed_network", rnd_state["fixed_network"], current.fixed_network.state_dict()
+        )
+        cls._validate_network_checkpoint_state(
+            "exploration_state.predictor_network", rnd_state["predictor_network"], current.predictor_network.state_dict()
+        )
+        cls._validate_optimizer_checkpoint_state(f"{label}.optimizer", rnd_state["optimizer"], current.optimizer)
+        cls._require_finite_real(f"{label}.reward_rms_mean", rnd_state["reward_rms_mean"])
+        reward_var = cls._require_finite_real(f"{label}.reward_rms_var", rnd_state["reward_rms_var"])
+        reward_count = cls._require_finite_real(f"{label}.reward_rms_count", rnd_state["reward_rms_count"])
+        if reward_var < 0.0 or reward_count <= 0.0:
+            raise ValueError(f"Population checkpoint {label} reward RMS variance/count must be non-negative/positive.")
+
+    def _validate_exploration_checkpoint_state(self, incoming_state: object) -> None:
+        if isinstance(self.exploration, EpsilonGreedyExploration):
+            state = self._require_exact_mapping("exploration_state", incoming_state, EPSILON_EXPLORATION_STATE_KEYS)
+            epsilon = self._require_finite_real("exploration_state.epsilon", state["epsilon"])
+            if not float(self.exploration.epsilon_min) <= epsilon <= 1.0:
+                raise ValueError(f"Population checkpoint exploration_state.epsilon is outside the current range: {epsilon}.")
+            for config_key in ("epsilon_decay", "epsilon_min"):
+                value = self._require_finite_real(f"exploration_state.{config_key}", state[config_key])
+                current_value = float(getattr(self.exploration, config_key))
+                if value != current_value:
+                    raise ValueError(
+                        f"Population checkpoint exploration_state.{config_key} mismatch: " f"checkpoint={value}, current={current_value}."
+                    )
+            return
+
+        if isinstance(self.exploration, RNDExploration):
+            self._validate_rnd_exploration_state(incoming_state, self.exploration, "exploration_state")
+            return
+
+        if isinstance(self.exploration, AdaptiveIntrinsicExploration):
+            state = self._require_exact_mapping("exploration_state", incoming_state, ADAPTIVE_EXPLORATION_STATE_KEYS)
+            self._validate_rnd_exploration_state(state["rnd_state"], self.exploration.rnd, "exploration_state.rnd_state")
+            for config_key in (
+                "min_intrinsic_weight",
+                "variance_threshold",
+                "min_survival_fraction",
+                "max_episode_length",
+                "survival_window",
+                "decay_rate",
+            ):
+                incoming_value = state[config_key]
+                current_value = getattr(self.exploration, config_key)
+                if type(incoming_value) is not type(current_value) or incoming_value != current_value:
+                    raise ValueError(
+                        f"Population checkpoint exploration_state.{config_key} mismatch: "
+                        f"checkpoint={incoming_value!r}, current={current_value!r}."
+                    )
+                if isinstance(incoming_value, Real):
+                    self._require_finite_real(f"exploration_state.{config_key}", incoming_value)
+            current_weight = self._require_finite_real("exploration_state.current_intrinsic_weight", state["current_intrinsic_weight"])
+            if current_weight < float(self.exploration.min_intrinsic_weight):
+                raise ValueError("Population checkpoint exploration_state.current_intrinsic_weight is below the configured minimum.")
+            survival_history = state["survival_history"]
+            if not isinstance(survival_history, list) or len(survival_history) > self.exploration.survival_window:
+                raise ValueError("Population checkpoint exploration_state.survival_history has an invalid shape.")
+            for index, value in enumerate(survival_history):
+                self._require_finite_real(f"exploration_state.survival_history[{index}]", value)
+            return
+
+        raise ValueError(
+            "Population checkpoint exploration_state cannot be validated for unsupported strategy " f"{type(self.exploration).__name__}."
+        )
+
+    def _validate_checkpoint_state(self, checkpoint: Mapping[str, object]) -> Any:
         """
-        Restore population state from checkpoint (P1.1 complete checkpointing).
+        Validate a complete population checkpoint without mutating runtime state.
 
         Args:
             checkpoint: State dictionary from get_checkpoint_state()
 
         Raises:
-            ValueError: If checkpoint universe metadata doesn't match current environment
+            ValueError: If the payload or universe identity is not exactly current
         """
-        # Validate universe compatibility
-        if "universe_metadata" not in checkpoint:
+        if not isinstance(checkpoint, Mapping):
+            raise ValueError(f"Population checkpoint payload must be a mapping; got {type(checkpoint).__name__}.")
+
+        # The version is the first artifact gate. A previous-format payload is not
+        # inspected for keys or nested state because its entire shape is invalid.
+        checkpoint_version = checkpoint.get("version")
+        if type(checkpoint_version) is not int or checkpoint_version != POPULATION_CHECKPOINT_FORMAT_VERSION:
             raise ValueError(
-                "Checkpoint missing 'universe_metadata' field.\n"
-                "This checkpoint format is no longer supported.\n"
-                "Please retrain from scratch."
+                "Unsupported population checkpoint version: "
+                f"checkpoint={checkpoint_version!r}, expected={POPULATION_CHECKPOINT_FORMAT_VERSION}. "
+                "Regenerate the checkpoint with the current compact observation ABI."
+            )
+
+        checkpoint_keys = set(checkpoint)
+        if checkpoint_keys != POPULATION_CHECKPOINT_KEYS:
+            missing = sorted(POPULATION_CHECKPOINT_KEYS - checkpoint_keys)
+            unknown = sorted(checkpoint_keys - POPULATION_CHECKPOINT_KEYS)
+            raise ValueError(
+                "Population checkpoint key set mismatch: "
+                f"missing={missing}, unknown={unknown}. "
+                "This checkpoint payload is no longer supported; retrain from scratch."
+            )
+
+        current_obs_dim = self.env.observation_dim
+        token_obs_dim = self.token_spec.total_dims
+        if current_obs_dim != token_obs_dim:
+            raise ValueError(
+                "Current environment observation_dim must equal token_spec.total_dims before checkpoint state can be applied: "
+                f"observation_dim={current_obs_dim}, token_spec.total_dims={token_obs_dim}."
+            )
+        if self._obs_dim != current_obs_dim:
+            raise ValueError(
+                "Current population obs_dim must equal the environment compact observation width before checkpoint state can be applied: "
+                f"population={self._obs_dim}, environment={current_obs_dim}."
             )
 
         metadata = checkpoint["universe_metadata"]
-        bars_config = self.env.bars_config
-        current_meter_count = bars_config.meter_count
+        if not isinstance(metadata, Mapping):
+            raise ValueError(
+                "Population universe_metadata must be a mapping with the exact current key set; " f"got {type(metadata).__name__}."
+            )
 
-        # Validate meter count matches
-        checkpoint_meter_count = metadata.get("meter_count")
+        metadata_keys = set(metadata)
+        if metadata_keys != POPULATION_UNIVERSE_METADATA_KEYS:
+            missing = sorted(POPULATION_UNIVERSE_METADATA_KEYS - metadata_keys)
+            unknown = sorted(metadata_keys - POPULATION_UNIVERSE_METADATA_KEYS)
+            raise ValueError(
+                "Population universe_metadata key set mismatch: "
+                f"missing={missing}, unknown={unknown}. "
+                "This checkpoint payload is no longer supported; retrain from scratch."
+            )
+
+        # Validate universe identity before mutating any population state.
+        checkpoint_observation_hash = metadata["observation_schema_hash"]
+        if not isinstance(checkpoint_observation_hash, str):
+            raise ValueError("Population universe_metadata.observation_schema_hash must be a string.")
+        current_observation_hash = self.env.level.observation_schema_hash
+        if checkpoint_observation_hash != current_observation_hash:
+            raise ValueError(
+                "Checkpoint observation_schema_hash mismatch: "
+                f"checkpoint={str(checkpoint_observation_hash)[:16]}..., "
+                f"current={current_observation_hash[:16]}.... "
+                "The selected level's observation semantics changed; retrain or load the exact compiled level."
+            )
+        checkpoint_action_dim = self._require_nonnegative_int("universe_metadata.action_dim", metadata["action_dim"])
+        if checkpoint_action_dim != self.action_dim:
+            raise ValueError(
+                "Checkpoint action_dim mismatch: "
+                f"checkpoint={checkpoint_action_dim!r}, current={self.action_dim}. "
+                "The action ABI changed; retrain or load the exact compiled level."
+            )
+        bars_config = self.env.bars_config
+        checkpoint_meter_count = self._require_nonnegative_int("universe_metadata.meter_count", metadata["meter_count"])
+        current_meter_count = bars_config.meter_count
         if checkpoint_meter_count != current_meter_count:
             raise ValueError(
                 f"Checkpoint meter count mismatch: checkpoint has {checkpoint_meter_count} meters, "
                 f"but current environment has {current_meter_count} meters. "
                 f"Cannot load checkpoint trained on different universe configuration."
+            )
+
+        checkpoint_meter_names = metadata["meter_names"]
+        if type(checkpoint_meter_names) is not type(bars_config.meter_names) or not isinstance(checkpoint_meter_names, (list, tuple)):
+            raise ValueError(
+                "Population universe_metadata.meter_names type mismatch: "
+                f"checkpoint={type(checkpoint_meter_names).__name__}, current={type(bars_config.meter_names).__name__}."
+            )
+        if any(not isinstance(name, str) for name in checkpoint_meter_names):
+            raise ValueError("Population universe_metadata.meter_names entries must be strings.")
+        if checkpoint_meter_names != bars_config.meter_names:
+            raise ValueError(
+                "Checkpoint meter names mismatch: "
+                f"checkpoint={checkpoint_meter_names!r}, current={bars_config.meter_names!r}. "
+                "Cannot load checkpoint trained on a different meter layout."
+            )
+
+        checkpoint_bars_version = metadata["version"]
+        if not isinstance(checkpoint_bars_version, str):
+            raise ValueError("Population universe_metadata.version must be a string.")
+        if checkpoint_bars_version != bars_config.version:
+            raise ValueError(
+                "Checkpoint bar config version mismatch: " f"checkpoint={checkpoint_bars_version!r}, current={bars_config.version!r}."
             )
 
         # Validate obs_dim matches.
@@ -1237,50 +1693,85 @@ class VectorizedPopulation(PopulationManager):
         # recurrent net, whose encoders are sized per BLOCK) succeeds against a layout the
         # weights were never trained on.
         #
-        # PDR-0054 makes it sharper: meter count is no longer sufficient to characterise the
-        # observation, because a meter's declared range_type changes its observed width. So
-        # the count check above can pass while the layout differs entirely, and this is the
-        # check that actually catches it.
-        checkpoint_obs_dim = metadata.get("obs_dim")
-        current_obs_dim = self.env.observation_dim
+        # This is deliberately a narrow dimensional guard. The outer checkpoint-identity gate
+        # compares semantic hashes, including the compiled static identity changed by a meter's
+        # range_type. Every admitted meter normalization occupies the same fixed two-lane block,
+        # so changing range_type alone does not change obs_dim. The count check above can still
+        # pass while another token capacity or payload-width change alters the serialized tensor;
+        # this inner check catches only that shape mismatch.
+        checkpoint_obs_dim = self._require_nonnegative_int("universe_metadata.obs_dim", metadata["obs_dim"])
         if checkpoint_obs_dim != current_obs_dim:
             raise ValueError(
                 f"Checkpoint obs_dim mismatch: checkpoint has {checkpoint_obs_dim}, "
                 f"current env has {current_obs_dim}.\n"
-                "  Cause: grid size, observability mode, or a meter's declared range_type "
-                "differs from the universe this checkpoint was trained on.\n"
-                "  Rule: the observation layout is part of a checkpoint's identity. Retrain, "
-                "or load against the universe the checkpoint names."
+                "  Cause: compiled token capacity or payload width differs from the universe "
+                "this checkpoint was trained on.\n"
+                "  Rule: this inner guard checks serialized tensor dimensions only; the outer "
+                "checkpoint-identity gate handles semantic changes. Retrain, or load against "
+                "the universe the checkpoint names."
             )
 
-        # Restore Q-network
-        self.q_network.load_state_dict(checkpoint["q_network"])
+        scheduler_state = checkpoint["scheduler"]
+        if (self.scheduler is None) != (scheduler_state is None):
+            raise ValueError(
+                "Population checkpoint scheduler nullability mismatch: "
+                f"checkpoint_has_scheduler={scheduler_state is not None}, "
+                f"current_has_scheduler={self.scheduler is not None}."
+            )
 
-        # Restore optimizer
-        self.optimizer.load_state_dict(checkpoint["optimizer"])
+        for state_key in ("q_network", "optimizer", "target_network", "replay_buffer", "exploration_state"):
+            if checkpoint[state_key] is None:
+                raise ValueError(f"Population checkpoint {state_key} must contain state, got null.")
 
-        # Restore scheduler state (if exists)
-        if "scheduler" in checkpoint and checkpoint["scheduler"] is not None:
-            if self.scheduler is not None:
-                self.scheduler.load_state_dict(checkpoint["scheduler"])
+        self._require_nonnegative_int("total_steps", checkpoint["total_steps"])
+        self._require_nonnegative_int("training_step_counter", checkpoint["training_step_counter"])
+        self._validate_network_checkpoint_state("q_network", checkpoint["q_network"], self.q_network.state_dict())
+        self._validate_network_checkpoint_state("target_network", checkpoint["target_network"], self.target_network.state_dict())
+        optimizer_learning_rates = self._validate_optimizer_checkpoint_state(
+            "optimizer",
+            checkpoint["optimizer"],
+            self.optimizer,
+            allow_learning_rate_change=self.scheduler is not None,
+        )
+        if self.scheduler is not None:
+            self._validate_scheduler_checkpoint_state("scheduler", scheduler_state, self.scheduler, optimizer_learning_rates)
+        replay_state = cast(Mapping[str, Any], checkpoint["replay_buffer"])
+        validated_replay: Any = self.replay_buffer.validate_serialized(replay_state, expected_obs_dim=current_obs_dim)
+        self._validate_exploration_checkpoint_state(checkpoint["exploration_state"])
+        return validated_replay
 
-        # Restore training counters
-        self.total_steps = checkpoint.get("total_steps", 0)
+    def validate_checkpoint_state(self, checkpoint: Mapping[str, object]) -> None:
+        """Validate the complete current population artifact without materializing replay storage."""
+        self._validate_checkpoint_state(checkpoint)
 
-        # Restore target network (if exists in checkpoint)
-        # POP-008: Removed redundant self.target_network is not None check - always initialized
-        if "target_network" in checkpoint and checkpoint["target_network"] is not None:
-            self.target_network.load_state_dict(checkpoint["target_network"])
-            self.training_step_counter = checkpoint.get("training_step_counter", 0)
+    def load_checkpoint_state(self, checkpoint: Mapping[str, object]) -> None:
+        """Validate, then restore every field from the exact current payload."""
+        validated_replay = self._validate_checkpoint_state(checkpoint)
 
-        # Restore replay buffer
-        if "replay_buffer" in checkpoint:
-            # All buffer types implement load_from_serialized(), but mypy doesn't infer it for unions
-            self.replay_buffer.load_from_serialized(checkpoint["replay_buffer"])  # type: ignore[union-attr]
+        q_network_state = cast(Mapping[str, Any], checkpoint["q_network"])
+        target_network_state = cast(Mapping[str, Any], checkpoint["target_network"])
+        optimizer_state = dict(cast(Mapping[str, Any], checkpoint["optimizer"]))
+        raw_scheduler_state = checkpoint["scheduler"]
+        scheduler_state = None if raw_scheduler_state is None else dict(cast(Mapping[str, Any], raw_scheduler_state))
+        exploration_state = dict(cast(Mapping[str, Any], checkpoint["exploration_state"]))
+        total_steps = cast(int, checkpoint["total_steps"])
+        training_step_counter = cast(int, checkpoint["training_step_counter"])
+        # Build the only full restore allocation before applying any population field.
+        # The validation pass performs structure-only replay validation, so this
+        # candidate is neither duplicated nor discarded.
+        prepared_replay: Any = self.replay_buffer.materialize_validated(validated_replay)
 
-        # Restore exploration state
-        if "exploration_state" in checkpoint:
-            self.exploration.load_state(checkpoint["exploration_state"])
+        # Restore every producer-owned field from the exact current payload.
+        self.q_network.load_state_dict(q_network_state)
+        self.optimizer.load_state_dict(optimizer_state)
+        if self.scheduler is not None:
+            assert scheduler_state is not None
+            self.scheduler.load_state_dict(scheduler_state)
+        self.total_steps = total_steps
+        self.target_network.load_state_dict(target_network_state)
+        self.training_step_counter = training_step_counter
+        self.replay_buffer.load_prepared(prepared_replay)
+        self.exploration.load_state(exploration_state)
 
     # ------------------------------------------------------------------ #
     # Cross-universe token-net load (token-obs unit 3 Task 9)
@@ -1304,9 +1795,9 @@ class VectorizedPopulation(PopulationManager):
         This is the seam the Task-10 cut wires into the checkpoint-consumer paths;
         nothing calls it in the live step path this task.
         """
-        if not self.is_token_set:
+        if not self.is_token_native:
             raise ValueError(
-                "load_token_network_cross_universe requires architecture.type='token_set'; "
+                "load_token_network_cross_universe requires architecture.type='token_set' or 'recurrent'; "
                 f"this population runs {self.brain_config.architecture.type!r}."
             )
         report = load_token_network_state_by_type(self.q_network, source_q_network_state)

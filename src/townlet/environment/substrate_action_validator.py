@@ -4,10 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from townlet.config.actions_config import ActionsConfig as ActionsConfigDTO
-from townlet.config.actions_config import ActionsConfigRoot
+from townlet.config.actions_config import ActionsConfig
 from townlet.config.stratum_config import SubstrateConfig
-from townlet.environment.action_config import ActionSpaceConfig
 from townlet.substrate.factory import SubstrateFactory
 
 
@@ -21,21 +19,17 @@ class ValidationResult:
 class SubstrateActionValidator:
     """Validates that the action space is compatible with the chosen substrate."""
 
-    def __init__(self, substrate: SubstrateConfig, actions: ActionSpaceConfig | ActionsConfigDTO | ActionsConfigRoot) -> None:
+    def __init__(self, substrate: SubstrateConfig, actions: ActionsConfig) -> None:
         self._substrate = substrate
-        # Normalize to a list of ActionConfig-like objects with .type/.delta attributes.
-        if isinstance(actions, ActionSpaceConfig):
-            self._actions = list(actions.actions)
-        elif isinstance(actions, ActionsConfigDTO) or isinstance(actions, ActionsConfigRoot):
-            # When given the v2.1 actions DTO, synthesize substrate default actions for validation.
-            import torch
+        if not isinstance(actions, ActionsConfig):
+            raise TypeError(f"actions must be ActionsConfig, got {type(actions).__name__}")
 
-            substrate_impl = SubstrateFactory.build(substrate, device=torch.device("cpu"))
-            self._actions = substrate_impl.get_default_actions()
-        elif hasattr(actions, "actions"):
-            self._actions = list(actions.actions)
-        else:
-            self._actions = list(actions)
+        # The current actions DTO declares whether substrate defaults are inherited;
+        # substrate compatibility is validated against that canonical generated set.
+        import torch
+
+        substrate_impl = SubstrateFactory.build(substrate, device=torch.device("cpu"))
+        self._actions = substrate_impl.get_default_actions()
 
     def validate(self) -> ValidationResult:
         result = ValidationResult()

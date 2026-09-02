@@ -6,6 +6,10 @@ from townlet.universe.compiled import CompiledUniverse
 from townlet.universe.compiler import UniverseCompiler
 
 
+def _selected(universe: CompiledUniverse) -> CompiledUniverse.LevelMetadata:
+    return universe.get_level(universe.metadata.primary_level)
+
+
 def test_compiled_universe_serializes_vfs_profiles(minimal_compiled_universe_with_profiles):
     """CompiledUniverse.to_dict() should serialize VFS profiles."""
     # Exercise
@@ -74,9 +78,10 @@ def test_compiled_universe_serializes_runtime_action_space(minimal_compiled_univ
     """CompiledUniverse.to_dict() should serialize the runtime action-space artifact."""
     data = minimal_compiled_universe_with_profiles.to_dict()
 
-    assert "runtime_action_space" in data
-    assert data["runtime_action_space"]["actions"][0]["name"] == "UP"
-    assert data["runtime_action_space"]["substrate_action_count"] > 0
+    assert "runtime_action_space" not in data
+    level_data = data["all_levels"][minimal_compiled_universe_with_profiles.metadata.primary_level]
+    assert level_data["runtime_action_space"]["actions"][0]["name"] == "UP"
+    assert level_data["runtime_action_space"]["substrate_action_count"] > 0
 
 
 def test_compiled_universe_deserializes_runtime_action_space(minimal_compiled_universe_with_profiles):
@@ -85,7 +90,7 @@ def test_compiled_universe_deserializes_runtime_action_space(minimal_compiled_un
 
     restored = CompiledUniverse.from_dict(data)
 
-    assert restored.runtime_action_space == minimal_compiled_universe_with_profiles.runtime_action_space
+    assert _selected(restored).runtime_action_space == _selected(minimal_compiled_universe_with_profiles).runtime_action_space
 
 
 def test_compiled_universe_cache_round_trip_preserves_effect_commands(tmp_path: Path):
@@ -147,12 +152,12 @@ def test_compiled_universe_round_trip_serialization(minimal_compiled_universe_wi
     assert len(restored.compiled_vfs_profiles.global_profile.variables) == len(original.compiled_vfs_profiles.global_profile.variables)
 
     assert restored.effects_schema == original.effects_schema
-    assert restored.runtime_action_space == original.runtime_action_space
-    assert restored.variable_schema_hash == original.variable_schema_hash
-    assert restored.observation_schema_hash == original.observation_schema_hash
-    assert restored.action_schema_hash == original.action_schema_hash
-    assert restored.transition_graph_hash == original.transition_graph_hash
-    assert restored.vfs_hash == original.vfs_hash
+    assert _selected(restored).runtime_action_space == _selected(original).runtime_action_space
+    assert _selected(restored).variable_schema_hash == _selected(original).variable_schema_hash
+    assert _selected(restored).observation_schema_hash == _selected(original).observation_schema_hash
+    assert _selected(restored).action_schema_hash == _selected(original).action_schema_hash
+    assert _selected(restored).transition_graph_hash == _selected(original).transition_graph_hash
+    assert _selected(restored).vfs_hash == _selected(original).vfs_hash
     assert restored.vfs_expression_schema is not None
     assert restored.vfs_expression_schema == original.vfs_expression_schema
 
@@ -175,12 +180,12 @@ def test_compiled_universe_clone_preserves_new_fields(minimal_compiled_universe_
     assert cloned.compiled_vfs_profiles is not None
     assert cloned.compiled_vfs_profiles.global_profile is not None
     assert cloned.effects_schema == original.effects_schema
-    assert cloned.runtime_action_space == original.runtime_action_space
-    assert cloned.variable_schema_hash == original.variable_schema_hash
-    assert cloned.observation_schema_hash == original.observation_schema_hash
-    assert cloned.action_schema_hash == original.action_schema_hash
-    assert cloned.transition_graph_hash == original.transition_graph_hash
-    assert cloned.vfs_hash == original.vfs_hash
+    assert _selected(cloned).runtime_action_space == _selected(original).runtime_action_space
+    assert _selected(cloned).variable_schema_hash == _selected(original).variable_schema_hash
+    assert _selected(cloned).observation_schema_hash == _selected(original).observation_schema_hash
+    assert _selected(cloned).action_schema_hash == _selected(original).action_schema_hash
+    assert _selected(cloned).transition_graph_hash == _selected(original).transition_graph_hash
+    assert _selected(cloned).vfs_hash == _selected(original).vfs_hash
     assert cloned.vfs_expression_schema is not None
     assert cloned.vfs_expression_schema == original.vfs_expression_schema
 

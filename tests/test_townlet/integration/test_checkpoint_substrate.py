@@ -42,19 +42,12 @@ def test_checkpoint_validates_position_dim(env_cpu):
         env_cpu.set_affordance_positions(bad_checkpoint)
 
 
-def test_checkpoint_rejects_legacy_format(env_cpu):
-    """BREAKING CHANGE: Legacy checkpoints (no position_dim) should be strictly rejected (pre-release, 0 users)."""
-    # Create legacy checkpoint (no position_dim field)
-    legacy_checkpoint = {
+def test_checkpoint_requires_exact_layout(env_cpu):
+    """Affordance checkpoints must contain the exact emitted key set."""
+    checkpoint = {
         "positions": {"Bed": [2, 3]},
         "ordering": ["Bed"],
-        # No position_dim field!
     }
 
-    # Should raise clear error with guidance
-    with pytest.raises(ValueError) as exc_info:
-        env_cpu.set_affordance_positions(legacy_checkpoint)
-
-    error_msg = str(exc_info.value)
-    assert "position_dim" in error_msg
-    assert "no longer supported" in error_msg.lower()
+    with pytest.raises(ValueError, match="keys must be exactly.*position_dim"):
+        env_cpu.set_affordance_positions(checkpoint)

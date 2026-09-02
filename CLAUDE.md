@@ -109,13 +109,17 @@ the register says otherwise."* Accepted differences are registered in
 - **Source**: `src/townlet/universe/compiler.py` - seven-stage pipeline (parse → symbol table → resolve → cross-validate → metadata → optimization → emit/cache)
 - **Docs**: `docs/architecture/COMPILER.md`. `docs/architecture/archive/COMPILER_ARCHITECTURE.md`
   is design-era (2025-11): useful for intent, but it describes sub-compilers that were never wired
-  (notably `CuesCompiler`, instantiated at `compiler.py:69` and never called) and asserts a
+  (notably `CuesCompiler`, never called and deleted outright at `bb43e024`) and asserts a
   backwards-compatibility success criterion this project rejects.
 - **Tests**: `uv run pytest tests/test_townlet/unit/universe/` (use `UV_CACHE_DIR=.uv-cache` in sandboxed environments)
 - **CLI**: `python -m townlet.universe {compile,inspect,validate}` - wired into CI via
-  `.github/workflows/config-validation.yml`. **Caveat: no workflow has ever run on
-  `project-recovery`** (filigree `hamlet-2100105c9a`) — the gates that actually hold here are
-  run locally, by hand.
+  `.github/workflows/config-validation.yml`. Lint, Tests and Config Validation run on every
+  push to `project-recovery*` branches (first green run 2026-08-15, `hamlet-2100105c9a` closed
+  on it; corrected here 2026-09-02 — this line used to say no workflow had ever run). A "green"
+  claim still requires reading every per-push row at the tip SHA (`PDR-0127`). The local
+  pre-push set mirrors the Lint job — `ruff check .`, `black --check src tests`,
+  `mypy src/townlet --show-error-codes`, `scripts/no_defaults_lint.py` — plus
+  `scripts/validate_compiler_cli.py` and `pytest` for the other two gates.
 
 ## Development Commands
 
@@ -172,14 +176,10 @@ CLEAN_HOUSE, ENTERTAINMENT, DOCTOR — `affordances.yaml` is byte-identical acro
 (verified 2026-08-15). Several `docs/architecture/` documents list a *different* affordance set;
 they are wrong, this one is the shipped pack.
 
-**Observation Encoding Modes** (`stratum.yaml`): ⚠️ **`observation_mode` and
-`observation_encoding` are INERT since the unit-3 token cut (2026-08-26).** They configured
-the old raster observation spec's field selection and position-block encoding; nothing reads
-them at runtime now. Measured: `scaled` and `relative` compile to a byte-identical `TokenSpec`
-— same `total_dims`, same `observation_schema_hash`, same `layout_hash` — so the declaration
-is a No-Defaults-violating no-op, not a choice. Filed as `hamlet-6a4a6596bd` (P1). A token
-position block is always the substrate's normalized coordinates plus an egocentric delta,
-padded to `MAX_POSITION_RANK`.
+**Position encoding** (`stratum.yaml`): `observation_encoding` is deleted. There is one token
+position contract: substrate coordinates are normalized to `[0, 1]`; egocentric deltas use the
+same per-axis denominator and land in `[-1, 1]`; both are padded to `MAX_POSITION_RANK`. A config
+that still declares the old selector, or the deleted `observation_mode` key, fails validation as an extra field (PDR-0143).
 
 **Observation Dimensions** — the observation is **TOKENS**, not a raster:
 
@@ -241,16 +241,20 @@ the compiled artifact. See `docs/architecture/STRATA.md` §5.
 
 **POMDP Support**:
 
-- ✅ **Supported**: Grid2D, Grid3D — subject to the window-size gate. `vision_range` is a
-  **normalized fraction** of the longest axis, not a cell radius (the old "vision_range ≤ 2"
-  phrasing here predated that encoding; corrected 2026-08-24): validation refuses when the
-  implied window is too large (e.g. Grid3D on 8³ accepts 0.5 → window 5, rejects 0.75 → window 7).
-- ❌ **Not Supported**: Aspatial (`supports_partial_vision` returns False and the
-  window/radius methods raise — the "special case" previously listed here was false,
-  corrected 2026-08-24), Continuous substrates, GridND (N≥4) - window too large
+- `active_vision: partial` keeps the compiled `TokenSpec` and flat width unchanged. It passes
+  the level's normalized `vision_range` to `substrate.visible()`; spatial token publishers clear
+  both presence and payload for entities outside that predicate.
+- Grid2D, Grid3D and GridND convert `vision_range` to a discrete radius from the longest axis:
+  `max(1, ceil(vision_range * span / 2))`. Continuous and ContinuousND use the corresponding
+  world-unit radius without cell quantization. All use the substrate's declared distance metric,
+  and `wrap` uses toroidal shortest-path deltas.
+- `substrate.egocentric_delta()` supplies bounded entity-minus-observer offsets using the same
+  per-axis denominator as normalized positions. Aspatial has no spatial filtering: `visible()`
+  returns all true and `egocentric_delta()` returns width-zero deltas.
+- `stratum.vision_support` must admit the level's declared `active_vision`; this is a config
+  capability check, not a substrate window-capability matrix.
 
-See `tests/test_townlet/unit/environment/test_pomdp_validation.py` for validation logic and
-`docs/architecture/STRATA.md` §7 for the three independent gates.
+See `docs/architecture/STRATA.md` §7 and `docs/manual/pomdp_compatibility_matrix.md`.
 
 ### Variable & Feature System (VFS)
 
@@ -424,7 +428,7 @@ Verified by diff, 2026-08-12 — the levels live under `configs/default_curricul
 | L0_0_minimal | 3×3 grid, 1 affordance | 8×8, 14 affordances |
 | L0_5_dual_resource | 7×7 grid, 4 affordances | 8×8, 14 affordances — `training.yaml` **identical to L1** but for `output_subdir` |
 | L1_full_observability | 8×8, 14 affordances | as intended |
-| L2_partial_observability | POMDP, 5×5 window | genuinely differs (`active_vision: partial`) |
+| L2_partial_observability | token-filtered POMDP | genuinely differs (`active_vision: partial`) |
 | L3_temporal_mechanics | 24-tick day/night | genuinely differs (`active_temporal: true`, `day_length: 24`) |
 
 `bars.yaml`, `affordances.yaml` and `drive.yaml` are **byte-identical across all five levels**.
@@ -471,20 +475,15 @@ DTOs live in `src/townlet/config/` — `training_v2_config.py`, `environment_con
 
 ## Network Architecture Selection
 
-**SimpleQNetwork** (full observability) and **RecurrentSpatialQNetwork** (LSTM). Layer shapes:
-read `src/townlet/agent/networks.py`. Observation width comes only from the compiled artifact
-(see State Representation above) — do not write dimension literals here.
+`brain.yaml` selects `feedforward`, `dueling`, `token_set`, or `recurrent`. `TokenSetQNetwork`
+and `RecurrentTokenQNetwork` share `TokenSetEncoder`: per-type projections and learned type
+embeddings followed by the declared `mean` or `attention` aggregator. The recurrent network
+folds `[batch, sequence, observation]` into frame batches for token encoding, then makes one LSTM
+call over the complete pooled sequence before its Q-head. Observation width and token roster come
+only from the compiled artifact; do not write dimension literals here.
 
-**Census, not intent** (measured 2026-08-26 — the "L0/L0.5/L1 vs L2/L3" mapping this line used
-to assert was never what the packs declared): **no shipped pack declares `recurrent`.** Every
-`default_curriculum` level runs `feedforward`, including the two POMDP ones; only the three
-`configs/test/token_transfer_*` fixtures and `configs/test/set_encoder_smoke` (`token_set`)
-differ. `RecurrentSpatialQNetwork` survives the token cut as a token-BLOCK reader — it binds
-its three real blocks to `NetworkFactory.token_block_slices(spec)` (self→position,
-meter→meters, affordance→affordance) and reads no spatial window, because a token observation
-has none. `set_encoder` no longer builds; declare `token_set`.
-
-- LSTM hidden state: resets at episode start, persists during rollout, resets per transition in batch training
+- LSTM hidden state resets at episode start, persists during rollout, and observes replay sequence
+  and terminal boundaries during training.
 
 **Training Details**:
 
@@ -537,125 +536,25 @@ When in doubt:
 - The goal is a framework others author in, not production-ready agents.
 - **Work only in `src/townlet/`** — `src/hamlet/` is obsolete legacy code.
 
-<!-- filigree:instructions:v3.1.0:65e6fb25 -->
+<!-- filigree:instructions:v3.2.0:c1c023c3 -->
 <!-- filigree:last-writer:filigree install -->
 ## Filigree Issue Tracker
 
-`filigree` tracks tasks for this project. Data lives in `.filigree/`. Prefer
-the MCP tools (`mcp__filigree__*`) when available; fall back to the `filigree`
-CLI otherwise.
+`filigree` tracks this project's work. Use it to find, claim, update and close
+issues: `filigree session-context` at session start, then
+`filigree start-next-work --assignee <name>`.
 
-### Workflow
+Full reference: the **filigree-workflow** skill (patterns, priorities,
+observations, error codes), `filigree --help`, and the `mcp__filigree__*` tool
+schemas. Prefer the MCP tools when available; fall back to the CLI.
 
-```bash
-# At session start
-filigree session-context                            # ready / in-progress / critical path
+Two rules `--help` will not tell you:
 
-# Pick up the next startable issue (atomic claim + transition into its working status)
-filigree start-next-work --assignee <name>
-# ...or claim a specific issue
-filigree start-work <id> --assignee <name>
-
-# Do the work, commit, then
-filigree close <id>
-```
-
-Use the atomic claim+transition verbs — `work_start` / `work_start_next`
-(MCP) or `start-work` / `start-next-work` (CLI). Do **not** chain
-`work_claim` (MCP) or `filigree claim` (CLI) with a subsequent status
-update — the two-step form races against other agents; the combined verb is
-atomic.
-
-**Ready ≠ startable.** The working status is type-specific (tasks →
-`in_progress`, features → `building`). Bugs start at `triage`, which has no
-single-hop transition into work (`triage → confirmed → fixing`), so a triage
-bug is *ready* but not directly *startable*: `work_start` on one returns
-`INVALID_TRANSITION` naming the next status, and `work_start_next` skips it.
-`work_ready` items carry a `startable` flag (plus a `next_action` hint when
-false). Pass `advance=true` (MCP) / `--advance` (CLI) to walk the soft
-transitions to the nearest working status automatically.
-
-### Observations: when (and when not) to use them
-
-`observation_create` is a fire-and-forget scratchpad for *incidental* defects — things
-you notice *outside the scope of your current task* (a code smell in a
-neighbouring file, a stale TODO, a missing test for an edge case you happened
-to spot). Notes expire after 14 days unless promoted. Include `file_path` and
-`line` when relevant. At session end, skim `observation_list` and either
-`observation_dismiss` or `observation_promote` for what has accumulated.
-
-**You fix bugs in your currently defined scope. You do NOT use observations
-to finish work prematurely.** If a defect, gap, or follow-up belongs to your
-current task, you own it — handle it as part of that task: fix it now, expand
-the task's scope, file a proper issue with a dependency, or surface it to the
-user. Filing it as an observation and closing the task is *not* completing
-the task; it is shipping known-broken work and hiding the debt in a 14-day
-expiring scratchpad. The test is "would I have noticed this even if I weren't
-working on this task?" If no, it's task scope, not an observation.
-
-### Priority scale
-
-- P0: Critical (drop everything)
-- P1: High (do next)
-- P2: Medium (default)
-- P3: Low
-- P4: Backlog
-
-### Reaching for tools
-
-MCP tool schemas describe each tool; `filigree --help` and `filigree <verb>
---help` are the authoritative CLI reference. You do not need to memorise
-either catalogue. The verbs you will reach for most:
-
-- **Find work:** `work_ready`, `work_blocked`, `issue_list`, `issue_search`
-- **Claim work:** `work_start`, `work_start_next`
-- **Update:** `comment_add`, `label_add`, `issue_update`, `issue_close`
-- **Admin (irreversible):** `issue_delete` (MCP) / `delete-issue` (CLI) —
-  hard-deletes a terminal issue and its rows; `admin_undo_last` cannot reverse it.
-- **Scratchpad:** `observation_create`, `observation_list`, `observation_promote`, `observation_dismiss`
-- **Cross-product entity bindings (ADR-029):** `entity_association_add`,
-  `entity_association_remove`, `entity_association_list`,
-  `entity_association_list_by_entity`. Used when a sibling tool (e.g.
-  Loomweave) needs to bind a Filigree issue to a function, class, or
-  module identifier it owns. The `entity_id` is an opaque external string
-  from Filigree's perspective and may be a `loomweave:eid:...` SEI or a legacy
-  locator; callers may also supply `entity_kind` explicitly. The consumer (the sibling tool's read
-  path) does drift detection against the stored
-  `content_hash_at_attach`. `entity_association_list_by_entity` is the
-  reverse-lookup surface — given an opaque external entity ID, return every
-  Filigree issue bound to it (project isolation is by DB file). Also
-  reachable over HTTP as
-  `GET/POST /api/issue/{issue_id}/entity-associations`,
-  `DELETE /api/issue/{issue_id}/entity-associations?entity_id=…`,
-  and `GET /api/entity-associations?entity_id=…`.
-- **Health:** `stats_get`, `metrics_get`, `mcp_status_get`
-
-Pass `--actor <name>` (CLI) so events attribute to your agent identity. It
-works in either position — before the verb (`filigree --actor X update …`) or
-after it (`filigree update … --actor X`); the post-verb value overrides the
-group-level one.
-
-### Error handling
-
-Errors return `{error: str, code: ErrorCode, details?: dict}`. Switch on
-`code`, not on message text. Codes: `VALIDATION`, `NOT_FOUND`, `CONFLICT`,
-`INVALID_TRANSITION`, `PERMISSION`, `NOT_INITIALIZED`, `IO`,
-`INVALID_API_URL`, `FILE_REGISTRY_DISPLACED`, `REGISTRY_UNAVAILABLE`,
-`LOOMWEAVE_REGISTRY_VERSION_MISMATCH`, `LOOMWEAVE_OUT_OF_SYNC`,
-`BRIEFING_BLOCKED`, `STOP_FAILED`, `SCHEMA_MISMATCH`, `INTERNAL`.
-
-On `INVALID_TRANSITION`, call `workflow_transition_list` (MCP) or
-`filigree transitions <id>` to see what the workflow allows from here.
-
-Two failure modes deserve a specific response:
-
-- **`SCHEMA_MISMATCH`** — the installed `filigree` is older than the project
-  database. The error message contains upgrade guidance. Surface it to the
-  user; do not retry.
-- **`ForeignDatabaseError`** — filigree found a parent project's database
-  but no local `.filigree.conf`. Run `filigree init` in the current
-  directory. Do **not** `cd` upward to a different project unless that was
-  the actual intent.
+1. Claim atomically: `work_start` / `work_start_next` (MCP) or `start-work` /
+   `start-next-work` (CLI). Never chain a claim with a separate status update;
+   that two-step form races other agents.
+2. On `SCHEMA_MISMATCH` the installed filigree is older than the project
+   database. Surface it to the user; do not retry.
 <!-- /filigree:instructions -->
 
 <!-- loomweave:instructions:v1.5.0:39edbf6d -->
@@ -674,17 +573,3 @@ does Y".
 
 Full reference: `loomweave-workflow` skill, `loomweave --help`, MCP schemas.
 <!-- /loomweave:instructions -->
-
-<!-- warpline:instructions:v1.3.0 -->
-## Warpline (temporal change-impact)
-
-`warpline` answers "if I touch X, what breaks, and what must I re-verify?".
-Prefer the MCP tools (`mcp__warpline__*`); fall back to the `warpline` CLI.
-
-Call `warpline_change_list` (shim: `changed`) for a rev range first, then follow
-its `next_actions` into `reverify` / `blast_radius`. A `completeness` of
-`NO_SNAPSHOT` means warpline cannot see, NOT that nothing is affected.
-
-Enrich-only, local-only, advisory: warpline never gates. The `warpline-workflow`
-skill carries the full tool set, the closed vocabularies, and the loop.
-<!-- /warpline:instructions -->

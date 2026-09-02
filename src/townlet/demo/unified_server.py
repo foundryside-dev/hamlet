@@ -47,7 +47,6 @@ class UnifiedServer:
         total_episodes: int,
         checkpoint_dir: str | None = None,
         inference_port: int = 8766,
-        training_config_path: str | None = None,
         level_name: str = "L1_full_observability",
         force_new_vfs: bool = False,
     ):
@@ -63,15 +62,9 @@ class UnifiedServer:
             force_new_vfs: Start a fresh run branch instead of resuming an incompatible VFS checkpoint.
         """
         self.config_dir = Path(config_dir)
-        # training_config_path is optional; default to the selected level's training.yaml
-        self.training_config_path: Path | None
-        if training_config_path:
-            self.training_config_path = Path(training_config_path)
-        else:
-            inferred_path = self.config_dir / "levels" / level_name / "training.yaml"
-            self.training_config_path = inferred_path if inferred_path.exists() else None
-        if self.training_config_path is not None and not self.training_config_path.exists():
-            raise FileNotFoundError(f"training_config_path provided but not found: {self.training_config_path}")
+        self.training_config_path = self.config_dir / "levels" / level_name / "training.yaml"
+        if not self.training_config_path.exists():
+            raise FileNotFoundError(f"Training config not found: {self.training_config_path}")
         self.total_episodes = total_episodes
         self.checkpoint_dir = Path(checkpoint_dir) if checkpoint_dir else None
         self.inference_port = inference_port
@@ -209,12 +202,7 @@ class UnifiedServer:
         if self._training_config is not None:
             return self._training_config
 
-        if self.training_config_path is not None:
-            config_dir = self.training_config_path.parent
-        else:
-            config_dir = self.config_dir / "levels" / self.level_name
-
-        self._training_config = load_training_v2_config(config_dir)
+        self._training_config = load_training_v2_config(self.training_config_path.parent)
         return self._training_config
 
     def _determine_run_directory(self, timestamp: str) -> Path:
@@ -405,7 +393,6 @@ class UnifiedServer:
                 step_delay=0.2,  # 5 steps/sec
                 total_episodes=self.total_episodes,
                 config_dir=self.config_dir,
-                training_config_path=self.training_config_path,
             )
 
             logger.info(f"[Inference] Starting uvicorn on 0.0.0.0:{self.inference_port}...")

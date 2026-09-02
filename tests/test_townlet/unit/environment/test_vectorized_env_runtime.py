@@ -62,7 +62,7 @@ def test_vectorized_env_uses_compiled_vfs_variables_without_profile_synthesis(tm
 
     compiled = UniverseCompiler().compile(experiment_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
 
-    compiled_variable_ids = [var.id for var in compiled.vfs_variables]
+    compiled_variable_ids = [var.id for var in compiled.get_level(PRIMARY_LEVEL_NAME).vfs_variables]
     assert compiled_variable_ids.count("day_count") == 1
     assert compiled_variable_ids.count("motivation") == 1
 
@@ -117,7 +117,7 @@ def test_vectorized_env_passes_compiled_effects_schema_to_item_manager(monkeypat
 def test_vectorized_env_uses_compiled_runtime_action_space_without_substrate_rebuild(monkeypatch: pytest.MonkeyPatch) -> None:
     """Runtime action-space construction should not re-read substrate defaults."""
     compiled = UniverseCompiler().compile(Path("configs/test/action_space/grid2d"), primary_level="L0", use_cache=False)
-    assert compiled.runtime_action_space is not None
+    runtime_action_space = compiled.get_level("L0").runtime_action_space
 
     def fail_get_default_actions(self: Grid2DSubstrate):  # type: ignore[override]
         raise AssertionError("Runtime must consume compiled runtime_action_space instead of substrate defaults")
@@ -126,5 +126,5 @@ def test_vectorized_env_uses_compiled_runtime_action_space_without_substrate_reb
 
     env = compiled.create_environment(num_agents=1, level_name="L0", device="cpu")
 
-    assert env.action_space.action_dim == compiled.runtime_action_space.action_dim
-    assert env.action_ids == compiled.runtime_action_space.action_ids
+    assert env.action_space.action_dim == runtime_action_space.action_dim
+    assert env.action_ids == runtime_action_space.action_ids

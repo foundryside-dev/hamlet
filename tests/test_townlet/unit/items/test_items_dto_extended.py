@@ -62,7 +62,7 @@ class TestItemTypeConfigValidation:
             )
 
     def test_interactions_require_known_commands(self):
-        with pytest.raises(ValidationError, match="Command must have one of"):
+        with pytest.raises(ValidationError, match="Extra inputs are not permitted"):
             ItemInteractionsConfig(on_pickup=[{"noop": True}], on_use=[], on_drop=[])
 
     def test_initial_state_allows_various_types(self):

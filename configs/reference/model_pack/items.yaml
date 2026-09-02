@@ -11,10 +11,12 @@ items:
       - modify: target.vfs.inventory_weight
         value: target.vfs.inventory_weight + 0.5
       on_use:
-      - spawn_effect:
-          effect_id: ate_food
-          target: agent
-          intensity: self.vfs.calories
+      # Effects-command grammar: `spawn_effect: <id>` with sibling keys. Inside an item
+      # command `target` is the agent using the item; `intensity` must be a float literal
+      # (an expression is not representable in the effect's compiled identity).
+      - spawn_effect: ate_food
+        target: target
+        intensity: 1.0
       on_drop: []
     name: Apple
     icon: "\U0001F34E"

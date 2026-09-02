@@ -8,6 +8,8 @@ from typing import Any, Literal
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from townlet.config.effects_config import CommandConfig
+
 __all__ = [
     "ItemTypeConfig",
     "ItemInteractionsConfig",
@@ -44,27 +46,15 @@ class ItemCustomCommand(BaseModel):
     @field_validator("effects")
     @classmethod
     def validate_effects(cls, v: list[dict[str, Any]]) -> list[dict[str, Any]]:
-        """Basic structure validation; detailed validation occurs in the Effects compiler."""
+        """Validate through the effects command DTO; the same grammar the executor runs."""
         if not v:
             raise ValueError("Custom commands must provide at least one effect command")
-        supported_command_keys = {
-            "modify",
-            "spawn_effect",
-            "spawn_item",
-            "if",
-            "switch",
-            "parallel",
-            "reduce",
-            "delay",
-            "for_each",
-            "sample",
-        }
         for cmd in v:
             if not isinstance(cmd, dict):
-                raise ValueError(f"Effect command must be dict, got {type(cmd)}")
-            if not any(k in cmd for k in supported_command_keys):
-                ordered = ["modify", "spawn_effect", "spawn_item", "if", "for_each", "switch", "reduce", "parallel", "delay", "sample"]
-                raise ValueError(f"Effect command must include one of: {', '.join(ordered)}. Got keys: {list(cmd.keys())}")
+                raise ValueError(f"Command must be dict, got {type(cmd)}")
+            # The same grammar the effects compiler executes: a malformed shape refuses here,
+            # not at ItemManager construction (hamlet-5a87550adb).
+            CommandConfig.model_validate(cmd)
         return v
 
 
@@ -110,26 +100,13 @@ class ItemInteractionsConfig(BaseModel):
     @field_validator("on_pickup", "on_use", "on_drop")
     @classmethod
     def validate_commands(cls, v: list[dict[str, Any]]) -> list[dict[str, Any]]:
-        """Validate command structure (detailed validation in Effects compiler)."""
-        supported_command_keys = {
-            "modify",
-            "spawn_effect",
-            "spawn_item",
-            "if",
-            "switch",
-            "parallel",
-            "reduce",
-            "delay",
-            "for_each",
-            "sample",
-        }
+        """Validate through the effects command DTO; the same grammar the executor runs."""
         for cmd in v:
             if not isinstance(cmd, dict):
                 raise ValueError(f"Command must be dict, got {type(cmd)}")
-            # Basic validation - detailed validation happens in Effects compiler
-            if not any(k in cmd for k in supported_command_keys):
-                ordered = ["modify", "spawn_effect", "spawn_item", "if", "for_each", "switch", "reduce", "parallel", "delay", "sample"]
-                raise ValueError(f"Command must have one of: {', '.join(ordered)}. Got keys: {list(cmd.keys())}")
+            # The same grammar the effects compiler executes: a malformed shape refuses here,
+            # not at ItemManager construction (hamlet-5a87550adb).
+            CommandConfig.model_validate(cmd)
         return v
 
 

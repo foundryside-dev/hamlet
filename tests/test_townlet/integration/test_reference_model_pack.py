@@ -13,6 +13,9 @@ regressing an example nobody runs.
 
 from pathlib import Path
 
+import torch
+
+from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.universe.compiler import UniverseCompiler
 
 CONFIG_DIR = Path(__file__).parent.parent.parent.parent / "configs" / "reference" / "model_pack"
@@ -31,3 +34,13 @@ def test_reference_model_pack_compiles() -> None:
     # variable this test exists to keep declared (task-5-review.md Critical Finding #1).
     assert variables["is_digesting"].scope == "agent"
     assert variables["is_digesting"].type == "bool"
+
+
+def test_reference_model_pack_constructs_and_steps() -> None:
+    """The reference pack's whole claim: it compiles AND runs (hamlet-5a87550adb)."""
+    compiled = UniverseCompiler().compile(CONFIG_DIR, primary_level=PRIMARY_LEVEL, use_cache=False)
+    env = VectorizedHamletEnv(universe=compiled, level_name=PRIMARY_LEVEL, num_agents=2, device=torch.device("cpu"))
+    obs = env.reset()
+    assert obs.shape == (2, env.token_spec.total_dims)
+    obs, _rewards, _dones, _info = env.step(torch.full((2,), env.action_dim - 1, dtype=torch.long))
+    assert torch.isfinite(obs).all()

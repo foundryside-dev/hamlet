@@ -6,8 +6,10 @@
 
 - **The fifth merge is on `main` at `ea3648db`** (PR #38, 36 commits, 610 files, `PDR-0129`–`0146`).
   Active branch **`project-recovery-4`**, cut from the merge commit and pushed; at this checkpoint it
-  carries only the workspace commit. `main`'s per-push CI fired within a minute (Lint ✅; Tests and
-  Config Validation in progress when this was written — **read them at resume**).
+  carries only the workspace commit. `main`'s per-push CI fired within a minute and all three workflows
+  completed green (Lint ✅ Config Validation ✅ Tests ✅). Later commits on `-4`: `a55b5a3f`
+  (project settings tracked, `gh pr merge` allowed, CLAUDE.md merge rule) and `a8b66984`
+  (concurrent: `loomweave.yaml` untracked, ADR-063).
 - WS-7 closed; WS-3/WS-4 open; oracle still required. Critical path unchanged: WS-6
   `hamlet-5e39fcccb0` → WS-2 `hamlet-337b9e80fb` → WS-3 `hamlet-1f89714685` → WS-4
   `hamlet-15050f280a`. Docs rewrite `hamlet-7a52a63e0b` stays gated on WS-4 (`PDR-0125`).
@@ -75,8 +77,8 @@ the merge and workspace commits — re-analyse at resume. Wardline still uninsta
 
 ## Next session starts here
 
-1. `/own-product`: read `main`'s Tests and Config Validation conclusions at `ea3648db`; re-analyse
-   loomweave; confirm the grant.
+1. `/own-product`: re-analyse loomweave; confirm the grant. (`main` at `ea3648db` is fully
+   green — nothing to read there.)
 2. **DECIDE the scope of the declaration-store compiler unit (`PDR-0117`)** — the unit is chosen,
    the cut is not. Start from `PDR-0117`'s five calls, `PDR-0121`'s assessment, and the three
    banked inputs above; decide whether the variable-surface unification lands in the same cut or

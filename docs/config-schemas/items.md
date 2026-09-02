@@ -439,10 +439,8 @@ Items support all Effects commands:
 
 **spawn_item**: Spawn new item instance (e.g., broken tool drops scrap)
 ```yaml
-- spawn_item:
-    item_type: "scrap_metal"
-    position: "target.position"
-    duration: null
+- spawn_item: scrap_metal        # item type id; sibling keys, never a nested mapping (PDR-0143)
+  position: "target.position"
 ```
 
 **if**: Conditional execution

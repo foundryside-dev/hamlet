@@ -1,4 +1,30 @@
-# Metrics — HAMLET / Townlet        Last read: 2026-09-02 · M4 ACCEPTED, all four cells pass (`PDR-0141`)
+# Metrics — HAMLET / Townlet        Last read: 2026-09-02 (later) · unit 5 ACCEPTED, umbrella closed (`PDR-0144`)
+
+> **Unit 5 accepted — 2026-09-02, `PDR-0144`, `project-recovery-3@a07b889b`.**
+>
+> - **Config-surface coverage / declared-but-inert (input):** `observation_mode` — a stratum key
+>   with zero consumers — is deleted from the DTO and all 30 packs; the inert-guard is now
+>   mechanical: `test_pack_smoke.py` discovers every pack from the tree (31 pack/level cases)
+>   and every live token type and scope has a committed config-in/behaviour-out exercise
+>   (`effect`, item-arena `variable_element` new this unit; `agent` asserted structurally absent).
+> - **Pre-release hygiene (guardrail):** nine retired trial packs and their probe scripts deleted,
+>   two promoted to test-bound fixtures (`PDR-0142`); the 2026-10-06 disposition clock is
+>   discharged. No new whitelist entries; the no-defaults gate is clean.
+> - **Provenance integrity (guardrail):** `DIV-012` records four hash movers with a bisected
+>   causing commit each, bound on all ten cpu matrix cells; runs `20260902-100802` (full cpu
+>   matrix) and `20260902-110926` (`items_smoke`) are `DIVERGED_AS_REGISTERED` throughout,
+>   exit 0. One false claim introduced mid-unit ("environment.yaml unedited") was caught by
+>   re-review and corrected before it was trusted.
+> - **Gates green (guardrail), read on `a07b889b`:** Ruff ✅, Black ✅, mypy ✅ (176 files),
+>   no-defaults ✅ (715 whitelisted), compiler CLI ✅ (26 packs), `git diff --check` ✅,
+>   **pytest 3,846 passed / 11 skipped** (unit tier 3,221 + 8 in 195 s; every other tier 625 + 3
+>   in 382 s — run in two foreground tiers because two background runs were killed by the host).
+> - **Documentation truth:** `docs/config-schemas/items.md` and `vfs-profiles.md` no longer
+>   teach refused shapes (nested `spawn_effect` / `spawn_item`, refused expression exposure,
+>   `time_of_day_phase`); STRATA.md, README and CLAUDE.md no longer describe `observation_mode`.
+> - **Measured widths after `day_phase`:** `default_curriculum` L1/L2 compact 118 (was 115),
+>   fixed boundary 4,142; `div003_cubic_partial` 152. `items_smoke` compact 474 after
+>   `durability` exposure (was 435).
 
 > **Milestone 4 accepted — 2026-09-02, `PDR-0141`, training source `project-recovery-3@9d4e942f`,
 > evidence harness `@e1615648`.** Both recurrent cells were resumed from the exact pinned snapshot

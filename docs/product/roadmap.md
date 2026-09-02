@@ -1,4 +1,4 @@
-# Roadmap — HAMLET / Townlet        Updated: 2026-09-02 · milestone 4 accepted, unit 5 is the current unit
+# Roadmap — HAMLET / Townlet        Updated: 2026-09-02 · unit 5 accepted, token engineering umbrella closed
 
 > Sequencing, WSJF / cost-of-delay, and dated forecasts are produced by
 > /axiom-program-management. This file records bets as INTENT, not a delivery
@@ -18,14 +18,14 @@
 > that predates the VFS/VTC/DAC era. This file does not supersede or edit it; retiring it is part
 > of the Now bet.
 
-> **Current checkpoint — 2026-09-02, `PDR-0141`:** no horizon change. **M4 is accepted.** All four
-> token cells pass the raw 79.1947 engineering floor at the exact frozen seed-45 budget:
-> feedforward 98.9925 / 99.0, recurrent 97.315 / 99.0, shortfalls 6 / 1 / 2 / 3, one cohort identity
-> pinned at `9d4e942f`. The three evidence defects are closed at `e1615648` (`PDR-0140`); the engine
-> root cause is filed as `hamlet-d6fc84d147`. `hamlet-25fc3fb955` is closed. **Unit 5
-> (`hamlet-55b2826a02`) is the current unit** — owner-directed roll-in — and starts with the
-> 2026-10-06 trial-pack disposition ruling it requires. Still an engineering qualification, not an
-> IQM or confidence claim.
+> **Current checkpoint — 2026-09-02 (later), `PDR-0144`:** no horizon change. **Unit 5 is accepted and
+> the token-observation engineering umbrella (`hamlet-fa6bb6da4a`) is closed** — all five milestones
+> terminal. Every surviving pack compiles, constructs and steps under one discovery-driven test;
+> every live token type and scope has a committed config-in/behaviour-out exercise; L3 temporality
+> is one authored `day_phase` token; `observation_mode` and the nine retired trial packs are gone
+> (`PDR-0142`, `PDR-0143`). Two P1 engine defects stand outside any unit: `hamlet-d6fc84d147`
+> (survival counter) and `hamlet-4b931faaf4` (held items invisible to item tokens). The Now bet
+> is the strangler rewrite; its next unit is the top of Next.
 
 ## Now  (committed, in-flight)
 
@@ -98,21 +98,25 @@
   Evidence path repaired under `PDR-0140`: transition accounting from the checkpoint-persisted
   counter only, honest curve column, truthful terminal status. Engine survival-counter defect
   filed as `hamlet-d6fc84d147`, deliberately outside M4.
-  · **Current implementation unit: Unit 5 (`hamlet-55b2826a02`).** Migrate every surviving shipped
-  pack to the accepted token ABI, config-in/behaviour-out exercise per live token type and scope,
-  re-author `set_encoder_smoke` and L3 authored temporality, delete every superseded surface.
-  Precondition inside the unit: rule the 2026-10-06 disposition (promote to fixture or delete) of
-  the retired-corpus trial packs before migrating anything.
+  · **Milestone 5 accepted (`PDR-0144`, `5973f79b`…`a07b889b`):** trial packs dispositioned
+  (`PDR-0142`); `observation_mode` deleted; `day_phase` authored as one cyclical token with the
+  compiler admitting an exposed expression variable that declares its reset value; item commands
+  validated through the effects grammar and the reference pack stepped; a discovery-driven smoke
+  test over 31 pack/level cases; effect and item-arena rows exercised from committed packs, with
+  the item-arena profile-match leak fixed and pinned; `DIV-012` bisected and bound on every cpu
+  cell. Umbrella closed. Downstream of this unit: `hamlet-4b931faaf4`, `hamlet-obs-b959ce55c0`,
+  the `period`/`day_length` duplication and the `filler_ref` string contract (both feed the
+  declaration-store unit).
   · **Checkpointed sequence (`PDR-0132`):** canonical bounded positions
   (`hamlet-6a4a6596bd`, complete) → meter `range_type` wiring (`hamlet-1e335e0363`, closed) →
   compact ABI (`hamlet-1b1caf552a`, accepted) → Unit 4 engineering regression
-  (`hamlet-25fc3fb955`, accepted `PDR-0141`) → Unit 5 shipped-pack migration (`hamlet-55b2826a02`, current). Each milestone
+  (`hamlet-25fc3fb955`, accepted `PDR-0141`) → Unit 5 shipped-pack migration (`hamlet-55b2826a02`, accepted `PDR-0144`). Each milestone
   needs terminal tracker evidence and a committed
   product checkpoint before its successor begins. Relational/message exposure and dynamic
   variables remain downstream, not silently folded into this unit.
   · metric: replay resident bytes, viable batch size, observation-encoding share, unit-4
   regression floor
-  · Updated: 2026-09-02 (`PDR-0141`)
+  · Updated: 2026-09-02 (`PDR-0144`)
 
 ## Next (shaped, decreasing certainty)
 

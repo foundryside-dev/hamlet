@@ -167,3 +167,4 @@ findings.jsonl
 
 # Product evidence records are versioned even where they are csv/json (M4 baselines, PDR-0141)
 !docs/product/baselines/**
+loomweave.yaml

@@ -8,7 +8,7 @@ at the network boundary.
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import torch
 
@@ -16,14 +16,18 @@ from townlet.environment.token_publishers import (
     AffordanceTokenPublisher,
     AgentTokenPublisher,
     EffectTokenPublisher,
+    ItemArenaVariableElementPublisher,
+    ItemStateSlotDeclaration,
     ItemTokenPublisher,
     MeterTokenPublisher,
     RegistryVariableElementPublisher,
     SelfTokenPublisher,
     TokenPublishContext,
     TokenTypePublisher,
+    parse_filler_ref,
 )
-from townlet.universe.dto.token_spec import CompactTokenTypeLayout, TokenSpec
+from townlet.universe.dto.token_spec import CompactTokenTypeLayout, TokenSpec, TokenTypeSchema
+from townlet.vfs.schema import NormalizationSpec
 
 if TYPE_CHECKING:
     from townlet.environment.vectorized_env import VectorizedHamletEnv
@@ -79,22 +83,73 @@ def build_token_observation_encoder(env: VectorizedHamletEnv) -> TokenObservatio
 
     element_type = spec.get_type("variable_element")
     if element_type is not None and element_type.capacity > 0:
-        # Item-profile exposure has no compile emission yet (the compiler refuses an
-        # `exposed_to` on an item-profile variable and names the landing), so every
-        # compiled `variable_element` slot is registry-backed today. The item-arena
-        # publisher exists but is not wired here until compile emission and a pack
-        # declaration provide item-profile slots.
-        publishers.append(
-            RegistryVariableElementPublisher(
-                element_type,
-                layout_for("variable_element"),
-                env.vfs_registry,
-                tuple(range(element_type.capacity)),
-                device,
+        # `variable_element` slots are filled by two publishers (token-obs spec §3):
+        # the registry half (global/agent-scope exposed variables) and the item-arena
+        # half (item-profile state, one slot per compiled `item` token slot — token
+        # unit 5 / hamlet-55b2826a02). The compiler's own convention distinguishes
+        # them: an item-arena slot's filler_ref is `<profile>.<variable>[<owner_slot>]`
+        # where `<profile>` names a compiled item profile
+        # (token_spec.py::_variable_element_artifacts); every other slot is
+        # registry-backed.
+        item_profiles = env.universe.compiled_vfs_profiles.item_profiles if env.universe.compiled_vfs_profiles else None
+        registry_slots, item_declarations = _split_variable_element_slots(element_type, item_profiles)
+        if registry_slots:
+            publishers.append(
+                RegistryVariableElementPublisher(
+                    element_type,
+                    layout_for("variable_element"),
+                    env.vfs_registry,
+                    registry_slots,
+                    device,
+                )
             )
-        )
+        if item_declarations:
+            publishers.append(
+                ItemArenaVariableElementPublisher(
+                    element_type,
+                    layout_for("variable_element"),
+                    env.vfs_registry,
+                    item_declarations,
+                    owner_capacity=item_type.capacity if item_type is not None else 0,
+                    device=device,
+                )
+            )
 
     return TokenObservationEncoder(spec, publishers, device)
+
+
+def _split_variable_element_slots(
+    element_type: TokenTypeSchema,
+    item_profiles: dict[str, Any] | None,
+) -> tuple[tuple[int, ...], tuple[ItemStateSlotDeclaration, ...]]:
+    """Partition a compiled `variable_element` type's slots into (registry-backed slot
+    indices, item-arena slot declarations) by their filler_ref shape.
+
+    `item_profiles` is `CompiledVFSProfiles.item_profiles` (`dict[str, CompiledItemProfile]`
+    at runtime; typed `dict[str, Any]` upstream — see `universe/compiled.py`).
+    """
+    profile_normalizations: dict[str, dict[str, NormalizationSpec]] = {}
+    if item_profiles:
+        for profile_name, profile in item_profiles.items():
+            profile_normalizations[profile_name] = {var.name: var.normalization for var in profile.variables if var.exposed_to}
+
+    registry_slots: list[int] = []
+    item_declarations: list[ItemStateSlotDeclaration] = []
+    for binding in element_type.slot_bindings:
+        base_ref, owner_slot = parse_filler_ref(binding.filler_ref)
+        profile_name, separator, var_name = base_ref.partition(".")
+        var_normalizations = profile_normalizations.get(profile_name) if separator else None
+        if var_normalizations is not None and var_name in var_normalizations:
+            item_declarations.append(
+                ItemStateSlotDeclaration(
+                    slot_index=binding.slot_index,
+                    owner_slot=owner_slot,
+                    normalization=var_normalizations[var_name],
+                )
+            )
+        else:
+            registry_slots.append(binding.slot_index)
+    return tuple(registry_slots), tuple(item_declarations)
 
 
 def _owner_slot_capacity(env: VectorizedHamletEnv) -> int:
@@ -113,9 +168,10 @@ class TokenObservationEncoder:
     """The environment's live compact observation encoder.
 
     Dispatches one publisher per token type (PDR-0076: dispatch on type, never a name
-    to match) over the compiled TokenSpec's serialization layout. The live builder
-    wires registry-backed ``variable_element`` slots only. The item-arena publisher
-    exists for the later compile-emission/pack path but is not wired by the builder.
+    to match) over the compiled TokenSpec's serialization layout. ``variable_element``
+    slots are filled by up to two publishers: the registry half (global/agent-scope
+    exposed variables) and the item-arena half (item-profile state), split by
+    :func:`_split_variable_element_slots`.
 
     :meth:`encode` is called at the environment's single end-of-step observation point,
     after all VTC / effects / evaluator writes of the tick.

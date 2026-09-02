@@ -913,8 +913,17 @@ class ItemArenaVariableElementPublisher:
     consolidated `item_vfs` `[max_items, max_vars]` arena with owner/slot coordinates.
 
     Reads are GATHERS — advanced indexing copies, so no view of the item arena is ever
-    held across ticks (spec §6). Presence toggles with the owner item slot's liveness:
-    a dead owner slot publishes presence 0 with zeroed payload.
+    held across ticks (spec §6). Presence toggles with the owner item slot's liveness
+    AND the occupying item's registered profile matching the slot's declared profile
+    (`filler_ref`'s `<profile>` component): `item_vfs` is profile-agnostic storage —
+    "all profiles share the same tensor layout using max_profile_vars across all
+    profiles" (`VariableRegistry._initialize_item_storage_from_profiles`) — so a
+    compiled item token slot occupied by a DIFFERENT profile's item (e.g. a `food` item
+    sitting where a `medical` item usually lives) still has SOME value at this
+    declaration's column; without the profile check that value would publish as this
+    variable's live reading. A dead owner slot, or one occupied by the wrong profile,
+    publishes presence 0 with zeroed payload — token unit 5 (hamlet-55b2826a02), the
+    first pack to expose an item-profile variable.
     """
 
     type_name = "variable_element"
@@ -936,9 +945,14 @@ class ItemArenaVariableElementPublisher:
         # Stored raw: capacity 0 is a real state, legal only with zero declarations,
         # where publish() no-ops before reading it (review Minor-8 — no silent 0→1).
         self._owner_capacity = owner_capacity
+        # Stable id per compiled item profile — used to compare "which profile does
+        # this declared slot expect" against "which profile actually occupies the
+        # owner slot right now" without carrying Python strings into the hot path.
+        self._profile_vocab: dict[str, int] = {name: index for index, name in enumerate(sorted(registry.item_profile_map))}
         slot_positions: list[int] = []
         columns: list[int] = []
         owner_slots: list[int] = []
+        declared_profile_ids: list[int] = []
         normalizer_specs: list[tuple[str, NormalizationSpec, int, int]] = []
         for declaration in declarations:
             if not 0 <= declaration.slot_index < schema.capacity:
@@ -983,6 +997,7 @@ class ItemArenaVariableElementPublisher:
             slot_positions.append(declaration.slot_index)
             columns.append(profile_vars[var_name])
             owner_slots.append(declaration.owner_slot)
+            declared_profile_ids.append(self._profile_vocab[profile_name])
             _slot_context_slice(
                 schema,
                 declaration.slot_index,
@@ -993,6 +1008,7 @@ class ItemArenaVariableElementPublisher:
         self._slots = torch.tensor(slot_positions, dtype=torch.long, device=device)
         self._columns = torch.tensor(columns, dtype=torch.long, device=device)
         self._owner_slots = torch.tensor(owner_slots, dtype=torch.long, device=device)
+        self._declared_profile_ids = torch.tensor(declared_profile_ids, dtype=torch.long, device=device)
         self._normalizer = CompiledValueNormalizer(normalizer_specs, device)
         self._value0 = _lane(layout, "value_0")
 
@@ -1010,11 +1026,27 @@ class ItemArenaVariableElementPublisher:
             raise ValueError("ItemArenaVariableElementPublisher declared slots but the registry has no item_vfs arena")
         live = torch.zeros(self._owner_capacity, dtype=torch.bool, device=rows.device)
         vfs_rows = torch.zeros(self._owner_capacity, dtype=torch.long, device=rows.device)
+        # -1 = no item, or an item whose profile isn't in this publisher's vocabulary
+        # (unreachable for a live item — every spawned item is registered against a
+        # compiled profile — kept as a defined "never matches" sentinel rather than
+        # an assumption).
+        occupant_profile_ids = torch.full((self._owner_capacity,), -1, dtype=torch.long, device=rows.device)
         if ctx.item_slots is not None and ctx.item_slots.slot_indices.shape[0]:
             owner_slots = ctx.item_slots.slot_indices.to(dtype=torch.long)
             live[owner_slots] = True
             vfs_rows[owner_slots] = ctx.item_slots.vfs_indices.to(dtype=torch.long)
-        mine_live = live.index_select(0, self._owner_slots)  # [n] bool
+            # `item_vfs` is profile-agnostic storage shared by every item profile
+            # (docstring above) — the occupying item's OWN registered profile, not
+            # mere slot liveness, decides whether this declaration's column holds a
+            # meaningful value. Small Python loop over live items, the same scale as
+            # `_item_slot_batch`'s own per-item tensor assembly.
+            for compiled_slot, vfs_index in zip(owner_slots.tolist(), ctx.item_slots.vfs_indices.tolist(), strict=True):
+                profile_name = self._registry.get_item_profile_for_index(vfs_index)
+                if profile_name is not None:
+                    occupant_profile_ids[compiled_slot] = self._profile_vocab.get(profile_name, -1)
+        mine_live = live.index_select(0, self._owner_slots) & (
+            occupant_profile_ids.index_select(0, self._owner_slots) == self._declared_profile_ids
+        )  # [n] bool
         source_rows = vfs_rows.index_select(0, self._owner_slots)  # [n]
         # Gather COPIES: no view of item_vfs survives this call (spec §6).
         values = item_vfs[source_rows, self._columns].to(dtype=torch.float32)  # [n]

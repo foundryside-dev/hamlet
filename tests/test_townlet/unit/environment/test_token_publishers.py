@@ -1200,6 +1200,11 @@ class TestItemArenaVariableElementPublisher:
     def test_live_owner_slot_publishes_normalized_state(self):
         registry = _item_profile_registry()
         registry.write_item("food", "nutrition", 0.75, vfs_index=2)
+        # Mirrors production (`ItemManager.spawn_item` -> `register_item_instance`,
+        # manager.py:396): the publisher's live-slot mask checks the occupant's
+        # REGISTERED profile against the declared slot's own profile, not mere
+        # liveness (a compiled item token slot can be occupied by any profile).
+        registry.register_item_instance(2, "food")
         publisher, schema = self._publisher(registry)
         rows = _rows(schema.capacity, "variable_element")
         batch = _item_batch([0], [[1, 1]], [2], [[False], [False]], [-1])
@@ -1223,6 +1228,7 @@ class TestItemArenaVariableElementPublisher:
         registry = _item_profile_registry()
         publisher, schema = self._publisher(registry, n_slots=1)
         registry.write_item("food", "nutrition", 0.5, vfs_index=0)
+        registry.register_item_instance(0, "food")
         rows = _rows(schema.capacity, "variable_element")
         batch = _item_batch([0], [[1, 1]], [0], [[False], [False]], [-1])
 
@@ -1236,6 +1242,7 @@ class TestItemArenaVariableElementPublisher:
     def test_reads_gather_never_hold_views(self):
         registry = _item_profile_registry()
         registry.write_item("food", "nutrition", 0.5, vfs_index=0)
+        registry.register_item_instance(0, "food")
         publisher, schema = self._publisher(registry, n_slots=1)
         batch = _item_batch([0], [[1, 1]], [0], [[False], [False]], [-1])
         rows = _rows(schema.capacity, "variable_element")

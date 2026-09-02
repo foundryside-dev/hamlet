@@ -54,6 +54,7 @@ if TYPE_CHECKING:
     from townlet.config.items_config import ItemsCatalogConfig
     from townlet.effects.catalog import EffectCatalog
     from townlet.universe.compiled import CompiledVFSProfiles
+    from townlet.vfs.profiles import CompiledVariable
 
 # --------------------------------------------------------------------------- engine constants
 
@@ -1371,21 +1372,55 @@ def variable_element_bindings(
     environment: EnvironmentConfig,
     compiled_vfs_profiles: CompiledVFSProfiles | None,
     vfs_variables: tuple[VariableDef, ...],
+    *,
+    item_capacity_value: int = 0,
 ) -> tuple[SlotBinding, ...]:
     """Derive variable-element bindings in registry declaration order."""
-    bindings, _contexts = _variable_element_artifacts(environment, compiled_vfs_profiles, vfs_variables)
+    bindings, _contexts = _variable_element_artifacts(
+        environment, compiled_vfs_profiles, vfs_variables, item_capacity_value=item_capacity_value
+    )
     return bindings
+
+
+#: `ItemVFSVariableConfig.type` uses its own vocabulary. It is congruent with
+#: `VariableDef`'s dtype-bearing members except for plain "float" (spelled "scalar" on
+#: `VariableDef`) and plain "int" (`VariableDef` has no scalar-int member at all — only
+#: typed references and integer vectors resolve to dtype "int"); a plain-int item
+#: variable therefore has no token dtype landing yet and is refused explicitly below.
+_ITEM_VAR_TYPE_TO_TOKEN_TYPE: Final[Mapping[str, str]] = {
+    "float": "scalar",
+    "bool": "bool",
+    "vec2i": "vec2i",
+    "vec3i": "vec3i",
+    "agent_ref": "agent_ref",
+    "item_ref": "item_ref",
+    "affordance_ref": "affordance_ref",
+    "effect_ref": "effect_ref",
+}
+#: Item-profile state has no authored `semantic_type` — `ItemVFSVariableConfig`
+#: deliberately carries none (PDR-0075/0066: a per-variable observation group could
+#: reach nothing for item-scoped state). Every exposed item variable lands in the
+#: engine's own bucket; `scope` ("item") and `owner_slot` already distinguish it from
+#: every other exposed variable, so an authored group is not needed to avoid collision.
+_ITEM_PROFILE_SEMANTIC_TYPE: Final[str] = "custom"
+#: Item-profile state has no authored `lifetime` either — item instances (and their
+#: VFS rows) never survive `env.reset()`, so "episode" is the only member that matches
+#: reality.
+_ITEM_PROFILE_LIFETIME: Final[str] = "episode"
 
 
 def _variable_element_artifacts(
     environment: EnvironmentConfig,
     compiled_vfs_profiles: CompiledVFSProfiles | None,
     vfs_variables: tuple[VariableDef, ...],
+    *,
+    item_capacity_value: int = 0,
 ) -> tuple[tuple[SlotBinding, ...], tuple[tuple[float, ...], ...]]:
     """Derive variable bindings and their complete fixed payloads in one pass."""
     env_semantic = {var.name: str(var.semantic_type) for var in environment.environment.variables}
 
     exposed_profile: dict[str, str] = {}
+    exposed_item_vars: list[tuple[str, CompiledVariable]] = []  # (id "<profile>.<var>", declaration)
     if compiled_vfs_profiles is not None:
         for profile in (compiled_vfs_profiles.global_profile, compiled_vfs_profiles.agent_profile):
             if profile is None:
@@ -1393,23 +1428,53 @@ def _variable_element_artifacts(
             for compiled_var in profile.variables:
                 if compiled_var.exposed_to:
                     exposed_profile[str(compiled_var.name)] = str(compiled_var.semantic_type)
-        for item_profile in (compiled_vfs_profiles.item_profiles or {}).values():
+        for profile_name, item_profile in (compiled_vfs_profiles.item_profiles or {}).items():
             for compiled_var in item_profile.variables:
                 if compiled_var.exposed_to:
-                    raise ValueError(
-                        f"Item-profile variable '{item_profile.profile_name}.{compiled_var.name}' declares "
-                        f"exposed_to={list(compiled_var.exposed_to)}, but item-profile exposure has no compiled "
-                        "slot-binding surface yet.\n"
-                        "  Landing (token-obs spec §2 scope table): `variable_element` via the item-arena "
-                        "publisher with an owner/slot coordinate — the runtime publisher exists "
-                        "(environment/token_publishers.py, unit-3 Task 8); the compile emission lands with the "
-                        "unit-5 pack migration, which authors the first exposed item variable. Until then, "
-                        "remove the exposure."
-                    )
+                    exposed_item_vars.append((f"{profile_name}.{compiled_var.name}", compiled_var))
+
+    if exposed_item_vars and item_capacity_value <= 0:
+        names = ", ".join(var_id for var_id, _ in exposed_item_vars)
+        raise ValueError(
+            f"Item-profile variable(s) {names} declare exposed_to, but this universe's compiled `item` token "
+            "capacity is 0 (no items.yaml, or max_items_in_world + max_items_per_agent × agents_per_world sums "
+            "to 0) — there is no item-arena slot for an exposed item variable to bind against."
+        )
 
     bindings: list[SlotBinding] = []
     contexts: list[tuple[float, ...]] = []
     bound: list[ExposedVariable] = []
+
+    def emit(exposed: ExposedVariable, *, owner_capacity: int | None) -> None:
+        bound.append(exposed)
+        descriptor_blocks = tuple(
+            describe_variable(exposed, element_index=i, owner_capacity=owner_capacity) for i in range(exposed.element_count)
+        )
+        assert exposed.normalization is not None
+        width_used = value_block_width_used(exposed.normalization) / VALUE_BLOCK_WIDTH
+        for element_index, descriptor_block in enumerate(descriptor_blocks):
+            if exposed.owner_slot is not None:
+                filler_ref = f"{exposed.id}[{exposed.owner_slot}]"
+            elif exposed.element_count == 1:
+                filler_ref = exposed.id
+            else:
+                filler_ref = f"{exposed.id}[{element_index}]"
+            bindings.append(
+                SlotBinding(
+                    slot_index=len(bindings),
+                    filler_kind="static",
+                    filler_ref=filler_ref,
+                )
+            )
+            payload = [0.0] * len(PAYLOAD_SCHEMAS["variable_element"])
+            coordinates = element_coordinate_block(exposed.shape, element_index)
+            position_start = PAYLOAD_SCHEMAS["variable_element"].index("position_0")
+            descriptor_start = PAYLOAD_SCHEMAS["variable_element"].index(DESCRIPTOR_BLOCK_FEATURES[0])
+            payload[position_start : position_start + MAX_POSITION_RANK + 1] = coordinates
+            payload[PAYLOAD_SCHEMAS["variable_element"].index("value_width_used")] = width_used
+            payload[descriptor_start : descriptor_start + DESCRIPTOR_BLOCK_WIDTH] = descriptor_block
+            contexts.append(_float32_tuple(payload, field=f"Variable '{exposed.id}' fixed payload"))
+
     for var_def in vfs_variables:
         var_id = var_def.id
         if var_id in env_semantic:
@@ -1446,42 +1511,44 @@ def _variable_element_artifacts(
             shape = (int(var_def.dims),)
         else:
             shape = ()
-        exposed = ExposedVariable(
-            var_id,
-            scope,
-            semantic_type,
-            var_def.type,
-            var_def.lifetime,
-            var_def.default,
-            shape,
-            var_def.normalization,
+        emit(
+            ExposedVariable(
+                var_id,
+                scope,
+                semantic_type,
+                var_def.type,
+                var_def.lifetime,
+                var_def.default,
+                shape,
+                var_def.normalization,
+            ),
+            owner_capacity=None,
         )
-        bound.append(exposed)
-        descriptor_blocks = tuple(describe_variable(exposed, element_index=i, owner_capacity=None) for i in range(exposed.element_count))
-        assert exposed.normalization is not None
-        width_used = value_block_width_used(exposed.normalization) / VALUE_BLOCK_WIDTH
-        for element_index, descriptor_block in enumerate(descriptor_blocks):
-            if exposed.element_count == 1:
-                filler_ref = exposed.id
-            else:
-                filler_ref = f"{exposed.id}[{element_index}]"
-            bindings.append(
-                SlotBinding(
-                    slot_index=len(bindings),
-                    filler_kind="static",
-                    filler_ref=filler_ref,
-                )
-            )
-            payload = [0.0] * len(PAYLOAD_SCHEMAS["variable_element"])
-            coordinates = element_coordinate_block(exposed.shape, element_index)
-            position_start = PAYLOAD_SCHEMAS["variable_element"].index("position_0")
-            descriptor_start = PAYLOAD_SCHEMAS["variable_element"].index(DESCRIPTOR_BLOCK_FEATURES[0])
-            payload[position_start : position_start + MAX_POSITION_RANK + 1] = coordinates
-            payload[PAYLOAD_SCHEMAS["variable_element"].index("value_width_used")] = width_used
-            payload[descriptor_start : descriptor_start + DESCRIPTOR_BLOCK_WIDTH] = descriptor_block
-            contexts.append(_float32_tuple(payload, field=f"Variable '{exposed.id}' fixed payload"))
 
-    check_indistinguishability(bound, owner_capacity=None)
+    for var_id, item_var in exposed_item_vars:
+        mapped_type = _ITEM_VAR_TYPE_TO_TOKEN_TYPE.get(item_var.type)
+        if mapped_type is None:
+            raise ValueError(
+                f"Item-profile variable '{var_id}' declares type {item_var.type!r}, which has no token "
+                "dtype landing yet — expose a float, bool, vec2i/vec3i, or *_ref item variable instead."
+            )
+        for owner_slot in range(item_capacity_value):
+            emit(
+                ExposedVariable(
+                    var_id,
+                    "item",
+                    _ITEM_PROFILE_SEMANTIC_TYPE,
+                    mapped_type,
+                    _ITEM_PROFILE_LIFETIME,
+                    item_var.initial_value,
+                    (),
+                    item_var.normalization,
+                    owner_slot=owner_slot,
+                ),
+                owner_capacity=item_capacity_value,
+            )
+
+    check_indistinguishability(bound, owner_capacity=item_capacity_value or None)
     return tuple(bindings), tuple(contexts)
 
 
@@ -1592,7 +1659,9 @@ def canonical_token_bindings(
         "agent": (),
         "item": item_bindings,
         "effect": effect_bindings,
-        "variable_element": variable_element_bindings(environment, compiled_vfs_profiles, vfs_variables),
+        "variable_element": variable_element_bindings(
+            environment, compiled_vfs_profiles, vfs_variables, item_capacity_value=item_capacity_value
+        ),
     }
     return tuple((type_name, by_type[type_name]) for type_name in TOKEN_TYPE_ROSTER)
 
@@ -1668,7 +1737,9 @@ def canonical_token_contexts(
         )
     item_contexts = tuple(_fixed_payload("item", rank_context) for _ in range(item_capacity_value))
 
-    _variable_bindings, variable_contexts = _variable_element_artifacts(environment, compiled_vfs_profiles, vfs_variables)
+    _variable_bindings, variable_contexts = _variable_element_artifacts(
+        environment, compiled_vfs_profiles, vfs_variables, item_capacity_value=item_capacity_value
+    )
 
     effect_contexts: tuple[TokenContext, ...] = ()
     if compiled_effect_catalog is not None:

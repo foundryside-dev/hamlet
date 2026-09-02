@@ -241,3 +241,32 @@ def test_merge_policy_stacks_intensity(compile_universe, effects_smoke_config_pa
     )
 
     assert effect.intensity == 1.5  # Merged
+
+
+def test_effect_rows_appear_in_the_observation_when_an_effect_spawns(compile_universe, effects_smoke_config_path, cpu_device):
+    """Config-in/behaviour-out for the `effect` token type: a declared effect's row is absent
+    until it spawns, present with a live remaining fraction after, and decays as it ticks."""
+    universe = compile_universe(effects_smoke_config_path)
+    env = VectorizedHamletEnv.from_universe(universe=universe, level_name="L0_effects", num_agents=1, device=cpu_device)
+    layout = env.token_spec.compact_layout().get_type("effect")
+    assert layout is not None and layout.capacity > 0
+    remaining = layout.dynamic_features.index("remaining_fraction")
+
+    obs = env.reset()
+    before = obs[0, layout.start : layout.start + layout.capacity * layout.compact_row_width].view(
+        layout.capacity, layout.compact_row_width
+    )
+    before_present = int(before[:, 0].sum().item())
+
+    env.effect_manager.spawn_effect(effect_id="energy_regen", target_entity_id=0, intensity=1.0, current_step=0)
+    wait = env.action_space.get_action_by_name("WAIT").id
+    obs, *_ = env.step(torch.full((1,), wait, dtype=torch.long, device=cpu_device))
+    rows = obs[0, layout.start : layout.start + layout.capacity * layout.compact_row_width].view(layout.capacity, layout.compact_row_width)
+    present = rows[:, 0] == 1.0
+    assert present.sum().item() == before_present + 1
+    first = rows[present][0, remaining].item()
+    assert 0.0 < first <= 1.0
+
+    obs, *_ = env.step(torch.full((1,), wait, dtype=torch.long, device=cpu_device))
+    rows = obs[0, layout.start : layout.start + layout.capacity * layout.compact_row_width].view(layout.capacity, layout.compact_row_width)
+    assert rows[rows[:, 0] == 1.0][0, remaining].item() < first

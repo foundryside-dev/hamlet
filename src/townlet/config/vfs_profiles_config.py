@@ -300,10 +300,15 @@ class ItemVFSVariableConfig(BaseModel):
 
     Item variables are per-item-instance state (e.g., nutrition, age, is_spoiled).
 
-    Deliberately carries NO `semantic_type`: exposed item variables are observed through the
-    single compiler-emitted `obs_item_slots` feature (slot × profile-position layout), so a
-    per-variable group could reach nothing, and a declaration that can reach nothing is removed
-    rather than defaulted (PDR-0066, PDR-0075; the layout question is hamlet-1ad6383186).
+    Deliberately carries NO `semantic_type`: item-scoped state has no authored observation
+    group (PDR-0066, PDR-0075) — a per-variable group could reach nothing for item-scoped
+    state, and a declaration that can reach nothing is removed rather than defaulted. An
+    exposed item variable now lands as `variable_element` via the item-arena publisher, one
+    slot per compiled `item` token slot with an owner/slot coordinate (token-obs spec §2/§3;
+    compile emission: `token_spec.py::_variable_element_artifacts`, landed at the unit-5
+    pack migration, hamlet-55b2826a02) — the engine supplies a fixed semantic bucket
+    ("custom") and lifetime ("episode") for every exposed item variable uniformly, since
+    neither is authorable here.
     """
 
     # Metadata. An empty exposed_to means UNEXPOSED (explicit exposure at the unit-3 cut).

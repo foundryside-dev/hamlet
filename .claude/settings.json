@@ -1,0 +1,53 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "/home/john/.local/bin/filigree ensure-dashboard",
+            "timeout": 5000,
+            "type": "command"
+          }
+        ],
+        "matcher": "mcp__filigree__.*"
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "/home/john/.local/bin/filigree session-context",
+            "timeout": 5000,
+            "type": "command"
+          },
+          {
+            "command": "/home/john/.local/bin/filigree ensure-dashboard",
+            "timeout": 5000,
+            "type": "command"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "command": "loomweave hook session-start --path \"${CLAUDE_PROJECT_DIR}\"",
+            "type": "command"
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(gh pr merge:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr checks:*)",
+      "Bash(gh pr list:*)",
+      "Bash(gh pr diff:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)",
+      "Bash(gh api repos/foundryside-dev/hamlet/rulesets:*)"
+    ]
+  }
+}

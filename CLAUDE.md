@@ -120,6 +120,12 @@ the register says otherwise."* Accepted differences are registered in
   pre-push set mirrors the Lint job — `ruff check .`, `black --check src tests`,
   `mypy src/townlet --show-error-codes`, `scripts/no_defaults_lint.py` — plus
   `scripts/validate_compiler_cli.py` and `pytest` for the other two gates.
+  **Merging `project-recovery*` to `main` is autonomous under `PDR-0101`** once gate 1 (every CI
+  row green at the tip) and gate 2 (the `PDR-0039` README re-verification by method) are
+  discharged. `.claude/settings.json` allows `gh pr merge` and the read-only `gh pr` / `gh run`
+  commands; the rules are prefix matches, so run `gh pr merge <n> --merge` as its own plain
+  command, never inside a `;` or `&&` compound. Tags, releases and `gh pr close` are deliberately
+  not allowed — they escalate to the owner.
 
 ## Development Commands
 

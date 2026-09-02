@@ -109,13 +109,17 @@ the register says otherwise."* Accepted differences are registered in
 - **Source**: `src/townlet/universe/compiler.py` - seven-stage pipeline (parse → symbol table → resolve → cross-validate → metadata → optimization → emit/cache)
 - **Docs**: `docs/architecture/COMPILER.md`. `docs/architecture/archive/COMPILER_ARCHITECTURE.md`
   is design-era (2025-11): useful for intent, but it describes sub-compilers that were never wired
-  (notably `CuesCompiler`, instantiated at `compiler.py:69` and never called) and asserts a
+  (notably `CuesCompiler`, never called and deleted outright at `bb43e024`) and asserts a
   backwards-compatibility success criterion this project rejects.
 - **Tests**: `uv run pytest tests/test_townlet/unit/universe/` (use `UV_CACHE_DIR=.uv-cache` in sandboxed environments)
 - **CLI**: `python -m townlet.universe {compile,inspect,validate}` - wired into CI via
-  `.github/workflows/config-validation.yml`. **Caveat: no workflow has ever run on
-  `project-recovery`** (filigree `hamlet-2100105c9a`) — the gates that actually hold here are
-  run locally, by hand.
+  `.github/workflows/config-validation.yml`. Lint, Tests and Config Validation run on every
+  push to `project-recovery*` branches (first green run 2026-08-15, `hamlet-2100105c9a` closed
+  on it; corrected here 2026-09-02 — this line used to say no workflow had ever run). A "green"
+  claim still requires reading every per-push row at the tip SHA (`PDR-0127`). The local
+  pre-push set mirrors the Lint job — `ruff check .`, `black --check src tests`,
+  `mypy src/townlet --show-error-codes`, `scripts/no_defaults_lint.py` — plus
+  `scripts/validate_compiler_cli.py` and `pytest` for the other two gates.
 
 ## Development Commands
 

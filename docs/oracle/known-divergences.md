@@ -1343,9 +1343,14 @@ but that commit re-freezes its own `oracle_fixtures` copy in the same commit (co
 `git show --stat 0b659130 -- oracle_fixtures` touches all four differential+standing
 `environment.yaml` fixtures), so the live-vs-frozen comparison nets to zero movement there,
 exactly DIV-009's own `0b659130` finding for `environment_hash`/`variable_schema_hash`/etc.
-No other commit in range touches `oracle_fixtures/`, so the OLD side is otherwise constant
-throughout — each candidate's bisection reduces to "does the NEW side's compiled value change
-relative to that one constant."
+No other commit in range touches `oracle_fixtures/configs/default_curriculum/` (corrected
+2026-09-02, PDR-0143 fix wave: the original claim named `oracle_fixtures/` unqualified, which
+is false — `b7fc3951` ("delete inert position encoding modes") also touches `oracle_fixtures/`,
+renaming `oracle_fixtures/configs/differential/div003_scaled/` to `.../boundary_wrap/` and
+editing its `stratum.yaml`, entirely outside `default_curriculum`'s own tree and therefore
+outside this bisection's OLD side), so the OLD side is otherwise constant throughout for
+`default_curriculum` — each candidate's bisection reduces to "does the NEW side's compiled
+value change relative to that one constant."
 
 **Per-field bisection (exact commit, confirmed by comparing the literal hash string, not
 just mismatch/match against OLD):**
@@ -1388,6 +1393,13 @@ differently enough to move the RAW hash, or their affordances happen to compile 
 dump either way; not further investigated since the measurement (not the reason) is what the
 narrower `_DIV012_PROFILE` binding needs.
 
+Both the `20260902-100550` pre-fix run and the `20260902-100802` binding run recorded the same
+`new_commit: 430eb5af` in their `report.json`, despite the latter being run after the
+bisection and binding work described above — the harness reads commit provenance from the
+working tree at run time, and that work was still uncommitted (staged locally) when
+`20260902-100802` ran; it was committed afterward at `b3120870`, so the harness's own
+commit-provenance field lags the measurement it is attached to on both reports.
+
 **Why one entry, two binding objects.** `affordances_hash`, `brain_hash` and `environment_hash`
 are schema-level RAW hash movers (three separate commits, three separate causes) and
 `stratum_hash` is a fourth, unrelated schema-level RAW hash mover (a fifth cause would be
@@ -1405,6 +1417,13 @@ cells.
 **Scope.** All ten cpu cells run and adjudicated (`20260902-100802`, exit 0). CUDA is
 declared identically (per `Cell.hash_divergences`) but not run this ticket (`--cuda` not
 passed) — genuinely unmeasured, not assumed to agree.
+
+**Second cause on `items_smoke` (unit-5 item-profile exposure, `7db18ec9`).** Exposing
+`durability` on `items_smoke`'s `medical` profile additionally moves `layout_hash`,
+`observation_schema_hash`, `variable_schema_hash` and `vfs_hash` on the two `items_smoke`
+cells (`obs` shape `[4, 61] → [4, 474]`) — already covered by `_DIV008_HASH`/`_DIV010`'s
+declared sets, not a new undeclared mover; verified `DIVERGED_AS_REGISTERED` with no
+undeclared movers, run `20260902-110926`.
 
 **Harness adjudication.** `_DIV012 = RegisteredHashDivergence(register_ref="DIV-012",
 hash_fields=("affordances_hash", "brain_hash", "environment_hash", "stratum_hash"))` binds

@@ -407,7 +407,7 @@ class TestVariableElementBindings:
             _variable_def("temp", normalization=_BOUNDED),
             _variable_def("wind", dims=3, normalization=NormalizationSpec(kind="minmax", min=0.0, max=10.0, clip=True)),
         )
-        bindings = variable_element_bindings(env, None, defs)
+        bindings = variable_element_bindings(env, None, defs, item_capacity_value=0)
         assert [b.filler_ref for b in bindings] == ["temp", "wind[0]", "wind[1]", "wind[2]"]
         assert [b.slot_index for b in bindings] == [0, 1, 2, 3]
         assert all(b.filler_kind == "static" for b in bindings)
@@ -427,40 +427,40 @@ class TestVariableElementBindings:
         env = _env_stub(("raw_var", "custom"))
         defs = (_variable_def("raw_var", normalization=None),)
         with pytest.raises(ValueError, match="declares no normalization"):
-            variable_element_bindings(env, None, defs)
+            variable_element_bindings(env, None, defs, item_capacity_value=0)
 
     def test_unbounded_kind_refuses_with_the_boundedness_rule(self):
         env = _env_stub(("z", "custom"))
         defs = (_variable_def("z", normalization=NormalizationSpec(kind="zscore", mean=0.0, std=1.0)),)
         with pytest.raises(ValueError, match="bounded normalization kind"):
-            variable_element_bindings(env, None, defs)
+            variable_element_bindings(env, None, defs, item_capacity_value=0)
 
     def test_rank_scaled_refuses_at_exposure(self):
         env = _env_stub(("r", "custom"))
         defs = (_variable_def("r", normalization=NormalizationSpec(kind="rank_scaled")),)
         with pytest.raises(ValueError, match="rank_scaled"):
-            variable_element_bindings(env, None, defs)
+            variable_element_bindings(env, None, defs, item_capacity_value=0)
 
     def test_indistinguishable_pair_refuses_naming_both(self):
         # Identical declarations apart from the id: identical static signatures.
         env = _env_stub(("twin_a", "custom"), ("twin_b", "custom"))
         defs = (_variable_def("twin_a", normalization=_BOUNDED), _variable_def("twin_b", normalization=_BOUNDED))
         with pytest.raises(ValueError, match="indistinguishable") as excinfo:
-            variable_element_bindings(env, None, defs)
+            variable_element_bindings(env, None, defs, item_capacity_value=0)
         assert "twin_a" in str(excinfo.value) and "twin_b" in str(excinfo.value)
 
     def test_unexposed_variable_binds_nothing(self):
         # Explicit exposure: a registry variable no environment.yaml or profile exposure
         # names is UNEXPOSED and occupies no slot (the fail-open default is deleted).
         defs = (_variable_def("hidden", normalization=None),)
-        assert variable_element_bindings(_env_stub(), None, defs) == ()
+        assert variable_element_bindings(_env_stub(), None, defs, item_capacity_value=0) == ()
 
     def test_exposed_variable_without_explicit_default_refuses(self):
         env = _env_stub(("implicit", "custom"))
         defs = (_variable_def("implicit", normalization=_BOUNDED, default=None),)
 
         with pytest.raises(ValueError, match=r"implicit.*explicit declared default"):
-            variable_element_bindings(env, None, defs)
+            variable_element_bindings(env, None, defs, item_capacity_value=0)
 
     @pytest.mark.parametrize(
         ("mode", "params"),
@@ -486,7 +486,7 @@ class TestVariableElementBindings:
         )
 
         with pytest.raises(ValueError, match=r"parallel_init.*initial_value_mode.*initial_value_params"):
-            variable_element_bindings(env, None, defs)
+            variable_element_bindings(env, None, defs, item_capacity_value=0)
 
 
 class TestMeanCensusAdvisoryWiring:

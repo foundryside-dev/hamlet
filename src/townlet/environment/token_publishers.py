@@ -1026,10 +1026,13 @@ class ItemArenaVariableElementPublisher:
             raise ValueError("ItemArenaVariableElementPublisher declared slots but the registry has no item_vfs arena")
         live = torch.zeros(self._owner_capacity, dtype=torch.bool, device=rows.device)
         vfs_rows = torch.zeros(self._owner_capacity, dtype=torch.long, device=rows.device)
-        # -1 = no item, or an item whose profile isn't in this publisher's vocabulary
-        # (unreachable for a live item — every spawned item is registered against a
-        # compiled profile — kept as a defined "never matches" sentinel rather than
-        # an assumption).
+        # -1 = no item at this owner slot (never overwritten below, so it never equals
+        # a real `_declared_profile_ids` entry). A live item's REGISTERED profile is
+        # always a member of `_profile_vocab` — `register_item_instance` validates
+        # against the same `registry.item_profile_map` `_profile_vocab` is built from
+        # (__init__ above) — so the lookup below indexes directly rather than
+        # defaulting; a profile missing from the vocabulary is a registry invariant
+        # violation and must raise, not silently fall back to "never matches".
         occupant_profile_ids = torch.full((self._owner_capacity,), -1, dtype=torch.long, device=rows.device)
         if ctx.item_slots is not None and ctx.item_slots.slot_indices.shape[0]:
             owner_slots = ctx.item_slots.slot_indices.to(dtype=torch.long)
@@ -1043,7 +1046,7 @@ class ItemArenaVariableElementPublisher:
             for compiled_slot, vfs_index in zip(owner_slots.tolist(), ctx.item_slots.vfs_indices.tolist(), strict=True):
                 profile_name = self._registry.get_item_profile_for_index(vfs_index)
                 if profile_name is not None:
-                    occupant_profile_ids[compiled_slot] = self._profile_vocab.get(profile_name, -1)
+                    occupant_profile_ids[compiled_slot] = self._profile_vocab[profile_name]
         mine_live = live.index_select(0, self._owner_slots) & (
             occupant_profile_ids.index_select(0, self._owner_slots) == self._declared_profile_ids
         )  # [n] bool

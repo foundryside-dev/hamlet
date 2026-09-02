@@ -386,7 +386,7 @@ machine-checked rather than argued. The acceptance runs, `runs/differential/2026
 `DIVERGED_AS_REGISTERED` with shape `hash+stream`, a `streams` key present and containing
 exactly `obs`; ten CUDA cells SKIPPED, so the finding is CPU-only. Fixtures are no longer
 byte copies either: `vfs_profiles.yaml` differs on the four standing and differential packs
-(the authored `time_of_day_phase` global), `effects.yaml` and `vfs_profiles.yaml` on
+(the authored `day_phase` global — renamed from `time_of_day_phase` at PDR-0143), `effects.yaml` and `vfs_profiles.yaml` on
 `effects_smoke`, `effects.yaml` plus a fixture-only level `brain.yaml` on `items_smoke`
 (`DIV-007`); a declared input delta and a declared output delta remain two decisions, and
 neither blesses the other. The vacuous `div003_scaled` cell was replaced by

@@ -309,7 +309,8 @@ _DIV010 = RegisteredHashDivergence(
 )
 
 # DIV-012 (2026-09-02, unit 5 `day_phase`, hamlet-55b2826a02): four undeclared hash movers,
-# each bisected to its own causing commit (full cpu-matrix run 20260902-100550) —
+# each bisected to its own causing commit (binding full cpu-matrix run 20260902-100802;
+# 20260902-100550 was the pre-fix run, before `_DIV012_PROFILE` existed) —
 # `stratum_hash` at 94656527 (Task 1's `observation_mode` deletion: RAW hash over the whole
 # StratumConfig, frozen fixture still declares the key), `affordances_hash` at c6c6b524
 # ("restore executable observation authority": the meter range_type migration narrows
@@ -463,16 +464,22 @@ def default_cells() -> tuple[Cell, ...]:
     `compare_traces` labels `"hash+stream"`.
 
     Standing and differential cells additionally bind `_DIV012` (2026-09-02, unit 5
-    `day_phase`, full cpu-matrix run 20260902-100550): `stratum_hash` (Task 1's
-    `observation_mode` deletion, bisected to 94656527), `affordances_hash` (bisected
-    to c6c6b524, the meter range_type schema migration — affordances.yaml itself is
-    unedited there), `environment_hash` (also bisected to c6c6b524, but BOTH the
-    schema AND every covered pack's environment.yaml content move together in that
-    commit — not schema-alone), `brain_hash` (bisected to d554fb7f, which deleted
-    the model_serializer cbea580f had installed to suppress exactly this movement).
-    Profile cells bind the narrower `_DIV012_PROFILE` (same three causes, minus
-    `affordances_hash`, which does not move on the profile packs — measured, not
-    assumed). See docs/oracle/known-divergences.md#div-012 for the per-field
+    `day_phase`, binding full cpu-matrix run 20260902-100802 — 20260902-100550 was
+    the pre-fix run, taken before `_DIV012_PROFILE` was bound onto the profile
+    cells): `stratum_hash` (Task 1's `observation_mode` deletion, bisected to
+    94656527), `affordances_hash` (bisected to c6c6b524, the meter range_type schema
+    migration — affordances.yaml itself is unedited there), `environment_hash` (also
+    bisected to c6c6b524, but BOTH the schema AND every covered pack's
+    environment.yaml content move together in that commit — not schema-alone),
+    `brain_hash` (bisected to d554fb7f, which deleted the model_serializer cbea580f
+    had installed to suppress exactly this movement). Profile cells bind the
+    narrower `_DIV012_PROFILE` (same three causes, minus `affordances_hash`, which
+    does not move on the profile packs — measured, not assumed). Both the
+    20260902-100550 and 20260902-100802 reports recorded `new_commit: 430eb5af`
+    despite being run at different points in this fix wave — the binding measurement
+    was taken from an uncommitted working tree, before the bisection itself was
+    committed at b3120870, so the harness's own commit-provenance field lags the
+    measurement. See docs/oracle/known-divergences.md#div-012 for the per-field
     bisection and the full ten-cpu-cell table.
 
     Standing cells bind `(_DIV009_STANDING, _DIV010, _DIV012, _DIV008_HASH)`;

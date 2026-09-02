@@ -1157,16 +1157,18 @@ class TestRegistryVariableElementPublisher:
             build_token_type("variable_element", bindings, slot_context_payloads=(), effect_catalog_contexts=())
 
 
+class _ProfileVar:
+    def __init__(self, name: str):
+        self.name = name
+        self.type = "scalar"
+
+
+class _Profile:
+    def __init__(self, names: list[str]):
+        self.variables = [_ProfileVar(name) for name in names]
+
+
 def _item_profile_registry() -> VariableRegistry:
-    class _ProfileVar:
-        def __init__(self, name: str):
-            self.name = name
-            self.type = "scalar"
-
-    class _Profile:
-        def __init__(self, names: list[str]):
-            self.variables = [_ProfileVar(name) for name in names]
-
     return VariableRegistry(
         variables=[],
         num_agents=2,
@@ -1262,6 +1264,41 @@ class TestItemArenaVariableElementPublisher:
         schema = _variable_type(bindings)
         with pytest.raises(ValueError, match="'ghost'"):
             ItemArenaVariableElementPublisher(schema, _layout(schema), registry, [declaration], owner_capacity=2, device=DEVICE)
+
+    def test_occupant_from_a_different_profile_reads_absent_not_the_declared_profiles_column(self):
+        """Regression for the profile-match fix (unit 5 / hamlet-55b2826a02): a slot
+        declared against `medical.durability` must NOT publish a `food`-profile
+        occupant's own value at the same column, even though `item_vfs` is
+        profile-agnostic storage and both profiles' single variable happen to share
+        column 0 (mirrors `items_smoke`: apples are `food`, medkits are `medical`,
+        `freshness` and `durability` are both column 0). Without the occupant-profile
+        check (mere liveness), this slot would read the `food` item's value as if it
+        were `durability`; with the fix it reads absent, presence 0, payload zeroed.
+        """
+        registry = VariableRegistry(
+            variables=[],
+            num_agents=2,
+            device=DEVICE,
+            max_items=3,
+            item_profiles={
+                "food": _Profile(["nutrition"]),
+                "medical": _Profile(["durability"]),
+            },
+        )
+        registry.write_item("food", "nutrition", 0.75, vfs_index=2)
+        registry.register_item_instance(2, "food")  # occupant is `food`, slot below declares `medical`
+
+        declaration = ItemStateSlotDeclaration(slot_index=0, owner_slot=0, normalization=_BOUNDED)
+        bindings = [SlotBinding(slot_index=0, filler_kind="static", filler_ref="medical.durability[0]")]
+        schema = _variable_type(bindings)
+        publisher = ItemArenaVariableElementPublisher(schema, _layout(schema), registry, [declaration], owner_capacity=2, device=DEVICE)
+
+        rows = _rows(schema.capacity, "variable_element")
+        batch = _item_batch([0], [[1, 1]], [2], [[False]], [-1])
+        publisher.publish(rows, TokenPublishContext(item_slots=batch))
+
+        assert rows[0, 0, 0].item() == 0.0
+        assert rows[0, 0].abs().sum().item() == 0.0
 
 
 def _full_spec(registry: VariableRegistry, element_refs: list[str]) -> TokenSpec:

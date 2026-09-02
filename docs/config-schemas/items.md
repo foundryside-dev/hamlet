@@ -429,11 +429,12 @@ Items support all Effects commands:
 
 **spawn_effect**: Spawn persistent effect on agent
 ```yaml
-- spawn_effect:
-    effect_id: "food_poisoning"
-    target: "self"        # Spawn on agent
-    duration: 100
-    intensity: 1.0
+# Sibling-key grammar (PDR-0143): `spawn_effect: <effect_id>` with `target` and
+# `intensity` as sibling keys, not a nested mapping. `CommandConfig` has no `duration`
+# key at all — an effect's own duration is declared on the effect, not the spawn command.
+- spawn_effect: "food_poisoning"
+  target: "self"        # Spawn on agent
+  intensity: 1.0
 ```
 
 **spawn_item**: Spawn new item instance (e.g., broken tool drops scrap)
@@ -452,9 +453,9 @@ Items support all Effects commands:
       - modify: "target.bar.health"
         value: "target.bar.health + 0.5"
     else:
-      - spawn_effect:
-          effect_id: "broken_item"
-          target: "self"
+      - spawn_effect: "broken_item"  # sibling-key grammar (PDR-0143)
+        target: "self"
+        intensity: 1.0
 ```
 
 See `docs/config-schemas/effects.md` for complete Effects command reference.
@@ -728,11 +729,10 @@ item_profiles:
       - if:
           condition: "self.vfs.durability <= 0"
           then:
-            - spawn_effect:
-                effect_id: "darkness"
-                target: "self"
-                duration: 50
-                intensity: 1.0
+            # sibling-key grammar (PDR-0143): no `duration` key on CommandConfig
+            - spawn_effect: "darkness"
+              target: "self"
+              intensity: 1.0
     on_drop: []
 ```
 
@@ -817,11 +817,10 @@ item_profiles:
             - modify: "self.vfs.charges"
               value: "self.vfs.charges - 1"
           else:
-            - spawn_effect:
-                effect_id: "empty_medkit"
-                target: "self"
-                duration: 10
-                intensity: 1.0
+            # sibling-key grammar (PDR-0143): no `duration` key on CommandConfig
+            - spawn_effect: "empty_medkit"
+              target: "self"
+              intensity: 1.0
     on_drop: []
 ```
 
@@ -979,10 +978,11 @@ item_profiles:
       - if:
           condition: "self.vfs.charges > 0"
           then:
-            - spawn_effect:
-                effect_id: "powered"
-                target: "self"
-                duration: 100
+            # sibling-key grammar (PDR-0143): no `duration` key on CommandConfig;
+            # `target` and `intensity` are both required by `spawn_effect`.
+            - spawn_effect: "powered"
+              target: "self"
+              intensity: 1.0
             - modify: "self.vfs.charges"
               value: "self.vfs.charges - 1"
 ```

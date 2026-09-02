@@ -7,6 +7,7 @@ Nothing here is wired into the compiler yet (Task 7); every input is a synthetic
 from __future__ import annotations
 
 import math
+from types import SimpleNamespace
 from typing import get_args
 
 import pytest
@@ -67,6 +68,7 @@ from townlet.universe.dto.token_spec import (
     self_capacity,
     static_payload_signature,
     value_block_width_used,
+    variable_element_bindings,
     variable_element_capacity,
 )
 from townlet.universe.dto.token_spec import build_token_type as _build_token_type
@@ -832,3 +834,52 @@ class TestCensusAdvisory:
             )
         )
         assert mean_census_advisory(spec, aggregator="attention") is None
+
+
+# --------------------------------------------------------------------------- item-profile exposure refusals
+
+
+def _env_stub() -> SimpleNamespace:
+    """Minimal EnvConfigV21 stand-in: `variable_element_bindings` reads only
+    `environment.environment.variables[*].name / .semantic_type`, unused by these tests."""
+    return SimpleNamespace(environment=SimpleNamespace(variables=[]))
+
+
+def _compiled_item_profiles(profile_name: str, var_name: str, var_type: str) -> SimpleNamespace:
+    """Minimal CompiledVFSProfiles stand-in with one exposed item-profile variable."""
+    item_var = SimpleNamespace(
+        name=var_name,
+        exposed_to=["agent"],
+        type=var_type,
+        initial_value=0.0,
+        normalization=_minmax(),
+    )
+    return SimpleNamespace(
+        global_profile=None,
+        agent_profile=None,
+        item_profiles={profile_name: SimpleNamespace(variables=[item_var])},
+    )
+
+
+class TestItemProfileExposureRefusals:
+    """Unit coverage for the two compile-time refusals `_variable_element_artifacts`
+    added at the unit-5 item-profile-exposure landing (token_spec.py). Both were
+    previously reachable only through a full compiler run; these hit them directly."""
+
+    def test_exposed_item_variable_with_zero_item_capacity_refuses(self):
+        # token_spec.py:1436-1442: an exposed item-profile variable declares
+        # `exposed_to`, but this universe's compiled `item` token capacity is 0 (no
+        # items.yaml, or the item-count arithmetic sums to 0) — there is no item-arena
+        # slot to bind it against.
+        compiled_vfs_profiles = _compiled_item_profiles("medical", "durability", "float")
+        with pytest.raises(ValueError, match=r"medical\.durability.*compiled `item` token capacity is 0"):
+            variable_element_bindings(_env_stub(), compiled_vfs_profiles, (), item_capacity_value=0)
+
+    def test_exposed_item_variable_with_unmapped_type_refuses(self):
+        # token_spec.py:1526-1530 (now ~1528-1534): an item-profile variable type with
+        # no token dtype landing (e.g. plain "int" — `VariableDef` has no scalar-int
+        # member; see `_ITEM_VAR_TYPE_TO_TOKEN_TYPE`'s own docstring) refuses naming the
+        # variable and its declared type.
+        compiled_vfs_profiles = _compiled_item_profiles("medical", "durability", "int")
+        with pytest.raises(ValueError, match=r"medical\.durability.*'int'.*no token dtype landing yet"):
+            variable_element_bindings(_env_stub(), compiled_vfs_profiles, (), item_capacity_value=1)

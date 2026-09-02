@@ -91,7 +91,10 @@ def build_token_observation_encoder(env: VectorizedHamletEnv) -> TokenObservatio
         # where `<profile>` names a compiled item profile
         # (token_spec.py::_variable_element_artifacts); every other slot is
         # registry-backed.
-        item_profiles = env.universe.compiled_vfs_profiles.item_profiles if env.universe.compiled_vfs_profiles else None
+        if env.universe.compiled_vfs_profiles is not None:
+            item_profiles = env.universe.compiled_vfs_profiles.item_profiles
+        else:
+            item_profiles = None
         registry_slots, item_declarations = _split_variable_element_slots(element_type, item_profiles)
         if registry_slots:
             publishers.append(
@@ -138,7 +141,10 @@ def _split_variable_element_slots(
     for binding in element_type.slot_bindings:
         base_ref, owner_slot = parse_filler_ref(binding.filler_ref)
         profile_name, separator, var_name = base_ref.partition(".")
-        var_normalizations = profile_normalizations.get(profile_name) if separator else None
+        if separator:
+            var_normalizations = profile_normalizations.get(profile_name)
+        else:
+            var_normalizations = None
         if var_normalizations is not None and var_name in var_normalizations:
             item_declarations.append(
                 ItemStateSlotDeclaration(

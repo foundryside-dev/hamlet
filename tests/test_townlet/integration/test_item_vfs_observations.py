@@ -162,6 +162,15 @@ def test_exposed_item_variable_publishes_through_the_item_arena():
 
     before = rows()
     baseline = present_count(before)
+    # Pins the profile-match fix (token_publishers.py `ItemArenaVariableElementPublisher`):
+    # `L0_smoke` auto-spawns 3 apples (`food` profile) + 1 medkit (`medical` profile) at
+    # reset. Without the occupant-profile check, ANY live item in a compiled item-token
+    # slot would satisfy this `medical.durability` declaration — including the 3 apples,
+    # whose `food.freshness` shares column 0 with `medical.durability` in items_smoke —
+    # making baseline 4, not 1. Asserting the exact value (not just the later relative
+    # deltas) is what actually exercises the profile check: reverting it leaves every
+    # relative assertion below unchanged but flips this one from 1 to 4.
+    assert baseline == 1
 
     # World-resident spawn (no pickup): proves presence toggling, per-instance value, and
     # normalization for the item-arena scope on its own terms.

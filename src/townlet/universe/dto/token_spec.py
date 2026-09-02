@@ -1373,7 +1373,7 @@ def variable_element_bindings(
     compiled_vfs_profiles: CompiledVFSProfiles | None,
     vfs_variables: tuple[VariableDef, ...],
     *,
-    item_capacity_value: int = 0,
+    item_capacity_value: int,
 ) -> tuple[SlotBinding, ...]:
     """Derive variable-element bindings in registry declaration order."""
     bindings, _contexts = _variable_element_artifacts(
@@ -1414,7 +1414,7 @@ def _variable_element_artifacts(
     compiled_vfs_profiles: CompiledVFSProfiles | None,
     vfs_variables: tuple[VariableDef, ...],
     *,
-    item_capacity_value: int = 0,
+    item_capacity_value: int,
 ) -> tuple[tuple[SlotBinding, ...], tuple[tuple[float, ...], ...]]:
     """Derive variable bindings and their complete fixed payloads in one pass."""
     env_semantic = {var.name: str(var.semantic_type) for var in environment.environment.variables}

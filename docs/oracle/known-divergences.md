@@ -1304,8 +1304,11 @@ the oracle is re-tagged past unit 3's landings, whichever comes first.
   `src/townlet/config/affordances_v2_config.py` (`AffordanceParamConfig`: `duration_ticks`
   gains `gt=0`, `interaction_type` narrows from `{instant, multi_tick, dual}` to
   `{instant, multi_tick}`, `validate_interaction_stages` rewritten around reachable-stage
-  sets) · `src/townlet/config/environment_config.py` (`MeterRangeNone` deleted,
-  `MeterRangeMinMax.clip` narrows `bool` → `Literal[True]`) · `src/townlet/config/
+  sets — no pack YAML edited alongside this one) · `src/townlet/config/environment_config.py`
+  (`MeterRangeNone` deleted, `MeterRangeMinMax.clip` narrows `bool` → `Literal[True]`)
+  **together with** every covered pack's `environment.yaml` (`clip: false` → `true` on every
+  declared meter, same commit — the schema narrowing and the content edit landed together,
+  so `environment_hash`'s movement is not schema-alone) · `src/townlet/config/
   brain_config.py` (`ArchitectureConfig._serialize_without_absent_token_set` — the
   `model_serializer` `cbea580f` added specifically to omit the always-`None` `token_set` key
   from `model_dump()` — deleted by `d554fb7f` alongside `SetEncoderConfig`)
@@ -1351,7 +1354,7 @@ just mismatch/match against OLD):**
 |---|---|---|---|---|
 | `stratum_hash` | `149e2bad` (`263635d7…`) | `94656527` (`bcbf09eb…`) | `94656527` | Task 1 deletes `observation_mode` from `StratumConfig`; RAW hash over the whole config, frozen `oracle_fixtures/stratum.yaml` still declares the key |
 | `affordances_hash` | `237b0c38` (`af020ccd…`, = OLD) | `c6c6b524` (`2bda63f6…`) | `c6c6b524` | `AffordanceParamConfig` schema narrows (`duration_ticks: gt=0`, `interaction_type` drops `dual`, `validate_interaction_stages` rewritten); RAW hash moves for the schema edit alone — `configs/default_curriculum/affordances.yaml` itself has an EMPTY diff in this commit |
-| `environment_hash` | `237b0c38` (`6788982a…`, = OLD) | `c6c6b524` (`5bbd38d3…`) | `c6c6b524` | same commit, `EnvironmentConfig`'s meter `range_type` schema narrows (`MeterRangeNone` deleted, `MeterRangeMinMax.clip: bool → Literal[True]`); `environment.yaml` unedited |
+| `environment_hash` | `237b0c38` (`6788982a…`, = OLD) | `c6c6b524` (`5bbd38d3…`) | `c6c6b524` | same commit, BOTH move together: `EnvironmentConfig`'s meter `range_type` schema narrows (`MeterRangeNone` deleted, `MeterRangeMinMax.clip: bool → Literal[True]`) AND every covered pack's `environment.yaml` content changes (`clip: false → true` on all 8 `default_curriculum` meters, same edit landing in `boundary_wrap`, `div003_cubic_partial`, `div003_rect`, `items_smoke`, `effects_smoke` in this commit) — confirmed by `git show c6c6b524 -- configs/default_curriculum/environment.yaml`; movement is NOT isolated to the schema edit, unlike `affordances_hash` above |
 | `brain_hash` | `cbea580f`/`237b0c38` (`5650add3…`, = OLD — `cbea580f`'s own "zero-movement pin" fix works as designed) | `d554fb7f` (`4f10939d…`) | `d554fb7f` | deletes `ArchitectureConfig._serialize_without_absent_token_set`, the `model_serializer` `cbea580f` added specifically to omit the always-`None` `token_set` key from `model_dump()`; its removal reintroduces exactly the movement `cbea580f` had fixed — confirmed unchanged through `9d4e942f` (identical hash value, that later commit's `brain_config.py` edits do not move it further for `default_curriculum`) |
 
 `pack_brain_hash` (already declared by `_DIV009_STANDING`) shares `brain_hash`'s value on

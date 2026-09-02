@@ -311,16 +311,20 @@ _DIV010 = RegisteredHashDivergence(
 # DIV-012 (2026-09-02, unit 5 `day_phase`, hamlet-55b2826a02): four undeclared hash movers,
 # each bisected to its own causing commit (full cpu-matrix run 20260902-100550) —
 # `stratum_hash` at 94656527 (Task 1's `observation_mode` deletion: RAW hash over the whole
-# StratumConfig, frozen fixture still declares the key), `affordances_hash` and
-# `environment_hash` at c6c6b524 ("restore executable observation authority": the meter
-# range_type migration narrows AffordanceParamConfig/EnvironmentConfig's schema — both RAW
-# hashes move for the schema edit alone, neither pack's own YAML is touched), `brain_hash`
-# at d554fb7f ("cut compact replay ABI": deletes the model_serializer that cbea580f had
-# installed specifically to omit the always-None `token_set` key from the dump — reintroduces
-# exactly the movement cbea580f fixed). Bound together under the union-exact rule, not
-# because they share a cause. `_DIV012` (all four fields) covers the standing and
-# differential blocks; `_DIV012_PROFILE` (three fields, `affordances_hash` excluded — it
-# does not move on the profile packs, measured) covers items_smoke/effects_smoke. See
+# StratumConfig, frozen fixture still declares the key), `affordances_hash` at c6c6b524
+# ("restore executable observation authority": the meter range_type migration narrows
+# AffordanceParamConfig's schema — the RAW hash moves for the schema edit alone,
+# affordances.yaml itself has an empty diff in this commit), `environment_hash` also at
+# c6c6b524 but for a DIFFERENT reason — BOTH the EnvironmentConfig schema (MeterRangeNone
+# deleted, MeterRangeMinMax.clip: bool -> Literal[True]) AND every covered pack's
+# environment.yaml content change together in that commit (clip: false -> true on every
+# meter), so its movement is not isolated to the schema edit — `brain_hash` at d554fb7f
+# ("cut compact replay ABI": deletes the model_serializer that cbea580f had installed
+# specifically to omit the always-None `token_set` key from the dump — reintroduces exactly
+# the movement cbea580f fixed). Bound together under the union-exact rule, not because they
+# share a cause. `_DIV012` (all four fields) covers the standing and differential blocks;
+# `_DIV012_PROFILE` (three fields, `affordances_hash` excluded — it does not move on the
+# profile packs, measured) covers items_smoke/effects_smoke. See
 # docs/oracle/known-divergences.md#div-012 for the per-field bisection and full cell table.
 _DIV012 = RegisteredHashDivergence(
     register_ref="DIV-012",
@@ -460,10 +464,12 @@ def default_cells() -> tuple[Cell, ...]:
 
     Standing and differential cells additionally bind `_DIV012` (2026-09-02, unit 5
     `day_phase`, full cpu-matrix run 20260902-100550): `stratum_hash` (Task 1's
-    `observation_mode` deletion, bisected to 94656527), `affordances_hash` and
-    `environment_hash` (both bisected to c6c6b524, the meter range_type schema
-    migration), `brain_hash` (bisected to d554fb7f, which deleted the
-    model_serializer cbea580f had installed to suppress exactly this movement).
+    `observation_mode` deletion, bisected to 94656527), `affordances_hash` (bisected
+    to c6c6b524, the meter range_type schema migration — affordances.yaml itself is
+    unedited there), `environment_hash` (also bisected to c6c6b524, but BOTH the
+    schema AND every covered pack's environment.yaml content move together in that
+    commit — not schema-alone), `brain_hash` (bisected to d554fb7f, which deleted
+    the model_serializer cbea580f had installed to suppress exactly this movement).
     Profile cells bind the narrower `_DIV012_PROFILE` (same three causes, minus
     `affordances_hash`, which does not move on the profile packs — measured, not
     assumed). See docs/oracle/known-divergences.md#div-012 for the per-field

@@ -101,6 +101,14 @@
 >   unchanged — same autonomous list, same escalation taxonomy, including the `PDR-0099` push
 >   and `PDR-0101` merge widenings. This is a factual review-stamp correction, not a vision or
 >   grant change. Recorded with the ownership reconciliation in `PDR-0131`.
+> - *2026-09-02* — corrected the authority grant's **`Last reviewed` stamp** from `2026-08-31`
+>   to `2026-09-02`. At this session's `/own-product` resume the owner confirmed the grant and
+>   **approved this correction explicitly** ("Confirmed, update stamp"). Scope unchanged — same
+>   autonomous list (including the `PDR-0099` push and `PDR-0101` merge widenings), same
+>   escalation taxonomy. One mechanism note, not a scope change: the harness permission
+>   classifier blocked the autonomous merge twice this session and the owner granted it via
+>   `/permissions` (`PDR-0146`). Factual review-stamp correction, not a vision or grant change.
+>   Provenance: `PDR-0146`.
 > - *2026-08-20* (fourth entry that day) — corrected the
 >   authority grant's **Status paragraph**, which still claimed the scope was *"unchanged from the
 >   2026-08-11 grant"* and *"scope identical every time"*. Both clauses were falsified the previous
@@ -326,9 +334,9 @@ they are already binding project commitments, not new inventions.
 
 ## Authority grant
 
-Granted by: John Morrissey (qacona@gmail.com)     Last reviewed: 2026-08-31
+Granted by: John Morrissey (qacona@gmail.com)     Last reviewed: 2026-09-02
 Review cadence: monthly, or on any vision change
-Status: **CONFIRMED unchanged** by the owner on 2026-08-31. **The scope is NO LONGER identical
+Status: **CONFIRMED unchanged** by the owner on 2026-09-02. **The scope is NO LONGER identical
 to the 2026-08-11 grant** — it was widened
 twice on 2026-08-20, by `PDR-0099` (push `project-recovery*`) and `PDR-0101` (merge to `main`).
 This paragraph previously read *"unchanged from the 2026-08-11 grant … scope identical every

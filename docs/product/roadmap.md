@@ -1,4 +1,4 @@
-# Roadmap — HAMLET / Townlet        Updated: 2026-09-02 · unit 5 accepted, token engineering umbrella closed
+# Roadmap — HAMLET / Townlet        Updated: 2026-09-02 (fifth merge) · no horizon change; next unit chosen by the owner (`PDR-0146`)
 
 > Sequencing, WSJF / cost-of-delay, and dated forecasts are produced by
 > /axiom-program-management. This file records bets as INTENT, not a delivery
@@ -18,7 +18,16 @@
 > that predates the VFS/VTC/DAC era. This file does not supersede or edit it; retiring it is part
 > of the Now bet.
 
-> **Current checkpoint — 2026-09-02 (later), `PDR-0144`:** no horizon change. **Unit 5 is accepted and
+> **Current checkpoint — 2026-09-02 (fifth merge), `PDR-0145`/`PDR-0146`:** no horizon change.
+> **The fifth merge is on `main` at `ea3648db`** (PR #38, 36 commits, both gates discharged —
+> gate 2 found 29 stale claims, 22 omissions and nine defects in its own draft). Active branch is
+> `project-recovery-4`. The owner's DECIDE at this resume: *merge, then the declaration-store
+> compiler unit (`PDR-0117`)* — so that unit is now the **committed next unit of the Now bet**,
+> with its scope ruling the next session's first act. Three inputs are banked for it: the
+> `period`/`day_length` duplication, the `filler_ref` string contract, and the silently-ignored
+> stray files in `items_smoke` (`hamlet-obs-982755441c`).
+>
+> **Previous checkpoint — 2026-09-02 (later), `PDR-0144`:** no horizon change. **Unit 5 is accepted and
 > the token-observation engineering umbrella (`hamlet-fa6bb6da4a`) is closed** — all five milestones
 > terminal. Every surviving pack compiles, constructs and steps under one discovery-driven test;
 > every live token type and scope has a committed config-in/behaviour-out exercise; L3 temporality
@@ -36,9 +45,10 @@
   · **Delivered:** WS-1 is closed; WS-7 is closed as of 2026-08-31 after delivering determinism,
   oracle pinning, the differential harness, divergence register and the first seam cut. Its
   standalone P3 `--oracle-ref` hardening item remains visible under the recovery milestone.
-  · **Current branch state:** the fourth merge is on `main` at `9efadd3c`; active work is
-  `project-recovery-3`. The bet has not exited: the oracle is still required and WS-3/WS-4 are
-  open.
+  · **Current branch state:** the fifth merge is on `main` at `ea3648db` (`PDR-0146`); active
+  work is `project-recovery-4`. The bet has not exited: the oracle is still required and
+  WS-3/WS-4 are open. **Next unit (owner-chosen 2026-09-02): the declaration-store compiler
+  unit, `PDR-0117`** — see Next.
   · **Critical path:** WS-6 `hamlet-5e39fcccb0` → WS-2 `hamlet-337b9e80fb` → WS-3
   `hamlet-1f89714685` → WS-4 `hamlet-15050f280a`.
   · **Exit:** retire the oracle only when every registered divergence is terminal, the harness
@@ -48,7 +58,7 @@
   the source-verified README gate. The documentation rewrite remains gated on WS-4 even though its
   tracker item appears ready.
   · metric: terminal divergence register, wiring-test coverage, trustworthy CI conclusions
-  · Updated: 2026-08-31 (`PDR-0131`)
+  · Updated: 2026-09-02 (`PDR-0146`)
 
 > **Retired record, not active delivery:** the authoring-trial instrument is terminal for its
 > corpus (`PDR-0111`). No rate publishes from it and redesign remains parked. Its only live

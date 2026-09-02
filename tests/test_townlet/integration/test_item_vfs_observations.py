@@ -141,7 +141,8 @@ def test_exposed_item_variable_publishes_through_the_item_arena():
        just this one — a pre-existing gap in the `item` token type's coverage of held
        inventory, not something this task's item-arena wiring introduces or should paper
        over. Demonstrated below (the row goes from present back to absent) rather than
-       worked around, so the gap is visible in-tree, not only in the task report.
+       worked around, so the gap is visible in-tree, not only in the task report. Filed as
+       hamlet-4b931faaf4.
     """
     universe = UniverseCompiler().compile(Path("configs/test/items_smoke"), primary_level="L0_smoke", use_cache=False)
     env = VectorizedHamletEnv(universe=universe, level_name="L0_smoke", num_agents=1, device=torch.device("cpu"))
@@ -174,9 +175,10 @@ def test_exposed_item_variable_publishes_through_the_item_arena():
     assert newly_present.sum().item() == 1
     assert after_spawn[newly_present][0, v0].item() == pytest.approx(0.5)  # minmax 0..100
 
-    # Documents the held-item gap named above: lifting the same instance (matching GET's
-    # exclusive-pickup semantics) removes it from `ItemManager.get_all_items()`, so its
-    # durability row goes back to absent even though the item and its VFS state still exist.
+    # Documents the held-item gap named above (filed as hamlet-4b931faaf4): lifting the
+    # same instance (matching GET's exclusive-pickup semantics) removes it from
+    # `ItemManager.get_all_items()`, so its durability row goes back to absent even though
+    # the item and its VFS state still exist.
     env.item_manager.lift_item(spawned.instance_id)
     after_lift = rows()
     assert present_count(after_lift) == baseline

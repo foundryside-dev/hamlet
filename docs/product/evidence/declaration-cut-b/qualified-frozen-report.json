@@ -2,9 +2,9 @@
   "meta": {
     "oracle_ref": "oracle-2026-08-17",
     "oracle_commit": "4222a9176e68e232a0e46c7004183440e27f22c3",
-    "new_commit": "73f52c20e16e31ddbda9ec4ac637e02840ffb9de",
+    "new_commit": "baced7dba659ab2024a3f164f18c450695000362",
     "new_dirty": false,
-    "generated": "declaration-cut-b-73f52c20-frozen-clean-cpu",
+    "generated": "declaration-cut-b-baced7db-frozen-clean-cpu",
     "oracle_worktree": "/home/john/hamlet/.oracle/oracle-2026-08-17",
     "oracle_access": "existing verified clean worktree; no writes or construction"
   },

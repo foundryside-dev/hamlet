@@ -1522,7 +1522,7 @@ CUDA is unmeasured by this Cut A acceptance unless separately reported.
 ## DIV-014 — Declaration-store Cut B: canonical variables and explicit token scope
 
 - **Status:** locally CPU-qualified at clean checkpoint
-  `73f52c20e16e31ddbda9ec4ac637e02840ffb9de`. Both the exact direct-parent
+  `baced7dba659ab2024a3f164f18c450695000362`. Both the exact direct-parent
   comparator and frozen CPU matrix exit 0. Product acceptance and delivery
   are recorded separately; this register is causal evidence.
 - **Harness shape: hash-only**. No trace-stream allowance is added by this entry.
@@ -1631,11 +1631,15 @@ create a new permissive adjudication shape.
 
 ### Final local CPU qualification
 
-The frozen-oracle matrix must complete at a clean implementation checkpoint:
-ten CPU cells and ten explicitly skipped CUDA cells unless CUDA is actually
-executed. The direct-parent gate must also qualify exact attributed values and
-all four byte-exact streams at that checkpoint, with no stale entries or dirty
-execution files. Input provenance and the canonical causing commit are now bound to `8060ef19`. Terminal
-clean-tip CPU outcomes must resolve the remaining pending status before product acceptance.
+At clean checkpoint `baced7dba659ab2024a3f164f18c450695000362`, both CPU gates
+returned 0. The frozen matrix reported ten CPU `DIVERGED_AS_REGISTERED` cells and
+ten explicit CUDA skips. The direct-parent comparison qualified all 31 cases /
+884 readings and exactly 212 attributed identity movements, with no stale or
+unexplained entries. All four streams in ten trajectories and eleven reset
+censuses matched the parent byte-for-byte. Input provenance and canonical
+causes remain bound to `8060ef19`; final measured source is `baced7db`.
+Reports and commands are banked under `docs/product/evidence/declaration-cut-b`.
+Full local, integration and hosted product acceptance gates are recorded there
+separately; the CPU result does not imply their completion.
 No convergence, browser, CUDA execution or full variable/privacy-system
 completion is claimed by the registration.

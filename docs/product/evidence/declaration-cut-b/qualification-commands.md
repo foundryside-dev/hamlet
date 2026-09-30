@@ -1,17 +1,17 @@
 # Clean Cut B qualification commands
 
-Working directory: `/tmp/hamlet-declaration-cut-b`. Source: `73f52c20e16e31ddbda9ec4ac637e02840ffb9de`.
+Working directory: `/tmp/hamlet-declaration-cut-b`. Source: `baced7dba659ab2024a3f164f18c450695000362`.
 Core: `8060ef19b820ddada047570825865b69e6b38b3b`. Python 3.13.1, separate frozen all-extras environment.
 
 The direct-parent command returned **0**:
 
 ```bash
-OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 .venv/bin/python scripts/check_declaration_cut_b.py --output runs/differential/declaration-cut-b-73f52c20-parent-qualified --attributions docs/product/evidence/declaration-cut-b/attributions.json
+OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 .venv/bin/python scripts/check_declaration_cut_b.py --output runs/differential/declaration-cut-b-baced7db-parent-qualified --attributions docs/product/evidence/declaration-cut-b/attributions.json
 ```
 
 All six after JSON products are banked as `qualified-parent-*`; NPZ trajectories remain in the ignored run directory. The before NPZ digests and exact replay parameters are recorded in `before-cpu-traces.json`. This comparator requires those retained trace files. It does not inherit historical observation allowances.
 
-The earlier da035e50 frozen run returned 0 but included an untracked pending acceptance draft (`new_dirty:true`). The final frozen run parked that unpublished draft in `/tmp` and verified the entire repository clean before/after. It returned **0**, with 10 CPU registered divergences and 10 explicit CUDA skips. No source or input bytes changed between runs. The frozen old source and fixtures were never edited or constructed by this command:
+The earlier da035e50 frozen run returned 0 but included an untracked pending acceptance draft (`new_dirty:true`). Subsequent source/fixture cleanup was committed at `73f52c20` and the clock-negative correction at `baced7db`; both CPU gates were rerun after those changes. The final baced7db frozen run kept the unpublished acceptance draft outside the worktree and verified the entire repository clean before/after. It returned **0**, with 10 CPU registered divergences and 10 explicit CUDA skips. No source or input bytes changed between the final baced7db direct-parent and frozen runs. The frozen old source and fixtures were never edited or constructed by this command:
 
 ```bash
 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 .venv/bin/python - <<'PY_FROZEN'
@@ -22,7 +22,7 @@ root=Path.cwd();old=Path('/home/john/hamlet/.oracle/oracle-2026-08-17');tag='ora
 assert not _git(root,'status','--porcelain')
 assert _git(old,'rev-parse','HEAD')==_git(root,'rev-parse',f'{tag}^{{commit}}')
 assert not _git(old,'status','--porcelain')
-run_id='declaration-cut-b-73f52c20-frozen-clean-cpu';run_dir=root/'runs'/'differential'/run_id
+run_id='declaration-cut-b-baced7db-frozen-clean-cpu';run_dir=root/'runs'/'differential'/run_id
 run_dir.mkdir(parents=True,exist_ok=False)
 meta=_collect_run_meta(root,tag,run_id);meta['oracle_worktree']=str(old)
 meta['oracle_access']='existing verified clean worktree; no writes or construction'

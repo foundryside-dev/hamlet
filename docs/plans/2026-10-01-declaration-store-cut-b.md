@@ -18,7 +18,8 @@ Authoritative acceptance: PRD-0003 (not the old Cut A hash-identical bar).
 ## Task 1 — Bank baseline and close the design
 
 Files: create `docs/product/evidence/declaration-cut-b/before-hashes.json`,
-`before-state.json`, command/provenance record; PRD-0003 and this plan.
+`before-variable-products.json`, `before-variable-transports.json`, `before-cpu-traces.json`,
+`before-resets.json`, command/provenance record; PRD-0003 and this plan.
 
 1. Compile all 31 cases without cache at 599cad15; inventory every dataclass hash including
    each level and metadata.config_hash; capture descriptor and representative CPU state/step/reset.

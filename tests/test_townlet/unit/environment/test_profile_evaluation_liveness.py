@@ -30,6 +30,8 @@ _PROFILES = {
         "item_profiles": ["default_item"],
         "declarations": [
             {
+                "readable_by": ["engine", "agent"],
+                "writable_by": ["engine"],
                 "id": "stash",
                 "scope": "global",
                 "type": "scalar",
@@ -39,6 +41,8 @@ _PROFILES = {
                 "exposed_to": [],
             },
             {
+                "readable_by": ["engine", "agent"],
+                "writable_by": ["engine"],
                 "id": "tick_echo",
                 "scope": "global",
                 "type": "scalar",
@@ -82,6 +86,8 @@ _DEPENDENCY_PROFILES = {
         "item_profiles": ["default_item"],
         "declarations": [
             {
+                "readable_by": ["engine", "agent"],
+                "writable_by": ["engine"],
                 "id": "base",
                 "scope": "global",
                 "type": "scalar",
@@ -91,6 +97,8 @@ _DEPENDENCY_PROFILES = {
                 "exposed_to": [],
             },
             {
+                "readable_by": ["engine", "agent"],
+                "writable_by": ["engine"],
                 "id": "derived",
                 "scope": "global",
                 "type": "scalar",
@@ -130,6 +138,8 @@ _AGENT_PROFILES = {
         "item_profiles": ["default_item"],
         "declarations": [
             {
+                "readable_by": ["engine", "agent"],
+                "writable_by": ["engine"],
                 "id": "wealth_static",
                 "scope": "agent",
                 "type": "scalar",
@@ -139,6 +149,8 @@ _AGENT_PROFILES = {
                 "exposed_to": [],
             },
             {
+                "readable_by": ["engine", "agent"],
+                "writable_by": ["engine"],
                 "id": "low_energy",
                 "scope": "agent",
                 "type": "bool",
@@ -179,6 +191,8 @@ _AGENT_DEPENDENCY_PROFILES = {
         "item_profiles": ["default_item"],
         "declarations": [
             {
+                "readable_by": ["engine", "agent"],
+                "writable_by": ["engine"],
                 "id": "base",
                 "scope": "agent",
                 "type": "scalar",
@@ -188,6 +202,8 @@ _AGENT_DEPENDENCY_PROFILES = {
                 "exposed_to": [],
             },
             {
+                "readable_by": ["engine", "agent"],
+                "writable_by": ["engine"],
                 "id": "derived",
                 "scope": "agent",
                 "type": "scalar",
@@ -229,6 +245,8 @@ _AGENT_SCALAR_EXPRESSION_PROFILES = {
         "item_profiles": ["default_item"],
         "declarations": [
             {
+                "readable_by": ["engine", "agent"],
+                "writable_by": ["engine"],
                 "id": "scalar_expr",
                 "scope": "agent",
                 "type": "scalar",
@@ -261,6 +279,8 @@ _EAGER_PROFILES = {
         "item_profiles": ["default_item"],
         "declarations": [
             {
+                "readable_by": ["engine", "agent"],
+                "writable_by": ["engine"],
                 "id": "stash",
                 "scope": "global",
                 "type": "scalar",
@@ -270,6 +290,8 @@ _EAGER_PROFILES = {
                 "exposed_to": [],
             },
             {
+                "readable_by": ["engine", "agent"],
+                "writable_by": ["engine"],
                 "id": "tick_echo",
                 "scope": "global",
                 "type": "scalar",

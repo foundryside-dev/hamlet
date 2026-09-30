@@ -7,6 +7,8 @@ variables:
   - default_item
   declarations:
   - id: is_night
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: global
     type: scalar
     lifetime: persistent
@@ -15,6 +17,8 @@ variables:
     expression: '0.0'
     initial_value: 0.0
   - id: inventory_weight
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: agent
     type: scalar
     lifetime: episode
@@ -22,6 +26,8 @@ variables:
     exposed_to: []
     initial_value: 0.0
   - id: is_encumbered
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: agent
     type: bool
     lifetime: episode
@@ -30,6 +36,8 @@ variables:
     expression: inventory_weight > 1.0
     initial_value: false
   - id: is_digesting
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: agent
     type: bool
     lifetime: episode
@@ -37,6 +45,8 @@ variables:
     exposed_to: []
     initial_value: false
   - id: freshness
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: item
     type: scalar
     lifetime: episode
@@ -45,6 +55,8 @@ variables:
     profile: default_item
     initial_value: 1.0
   - id: calories
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: item
     type: scalar
     lifetime: episode

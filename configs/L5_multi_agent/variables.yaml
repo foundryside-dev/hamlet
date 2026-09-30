@@ -7,6 +7,8 @@ variables:
   item_profiles: []
   declarations:
   - id: deficit_energy
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: agent
     type: scalar
     lifetime: tick
@@ -21,6 +23,8 @@ variables:
       clip: true
     description: How far below target energy (0.0 = at/above target)
   - id: time_since_last_sleep
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: agent
     type: scalar
     lifetime: tick
@@ -35,6 +39,8 @@ variables:
       clip: true
     description: Timesteps since last SLEEP action
   - id: trust
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: pair
     type: scalar
     lifetime: episode
@@ -43,6 +49,8 @@ variables:
     initial_value: 0.5
     description: Directed trust from one agent to another.
   - id: occupied_by
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: affordance
     type: agent_ref
     lifetime: tick

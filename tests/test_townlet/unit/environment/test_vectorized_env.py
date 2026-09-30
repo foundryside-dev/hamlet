@@ -552,6 +552,8 @@ class TestVectorizedHamletEnvStep:
         profile = CompiledGlobalProfile(
             variables=[
                 CompiledVariable(
+                    readable_by=("engine", "agent"),
+                    writable_by=("engine",),
                     name="context_probe",
                     lifetime="persistent",
                     type="bool",
@@ -623,6 +625,8 @@ class TestVFSWriteBackLoudness:
         profile = CompiledGlobalProfile(
             variables=[
                 CompiledVariable(
+                    readable_by=("engine", "agent"),
+                    writable_by=("engine",),
                     name="__unknown_global_expr__",
                     lifetime="persistent",
                     type="bool",
@@ -660,6 +664,8 @@ class TestVFSWriteBackLoudness:
         agent_profile = CompiledGlobalProfile(
             variables=[
                 CompiledVariable(
+                    readable_by=("engine", "agent"),
+                    writable_by=("engine",),
                     name="__unknown_agent_expr__",
                     lifetime="episode",
                     type="bool",

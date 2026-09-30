@@ -153,7 +153,7 @@ def test_effect_writes_enforce_writable_by(path: str):
             type="scalar",
             lifetime="episode",
             readable_by=["agent", "engine"],
-            writable_by=["vtc"],  # engine is not an authorized writer
+            writable_by=[],  # engine is not an authorized writer
             default=0.0,
         ),
     ]

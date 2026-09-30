@@ -65,7 +65,7 @@ class TestRegistryInitialization:
             type="scalar",
             lifetime="tick",
             readable_by=["engine"],
-            writable_by=["actions"],
+            writable_by=[],
             default=0.0,
         )
         registry = VariableRegistry(
@@ -217,7 +217,7 @@ class TestRegistryInitialization:
                 type="vecNf",
                 dims=2,
                 lifetime="episode",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],
                 default=[0.0, 0.0],
             )
@@ -326,7 +326,7 @@ class TestRegistryInitialization:
                 scope="agent",
                 type="scalar",
                 lifetime="episode",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],
                 default=1.0,
             ),
@@ -335,7 +335,7 @@ class TestRegistryInitialization:
                 scope="agent",
                 type="scalar",
                 lifetime="episode",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],
                 default=0.5,
             ),
@@ -427,7 +427,7 @@ class TestRegistryAccessControl:
                 scope="agent",
                 type="scalar",
                 lifetime="episode",
-                readable_by=["agent"],  # Only agent can read
+                readable_by=["agent", "engine"],  # Finite engine/agent readers
                 writable_by=["engine"],
                 default=1.0,
             )
@@ -494,7 +494,7 @@ class TestRegistryAccessControl:
                 scope="agent",
                 type="scalar",
                 lifetime="episode",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],
                 default=1.0,
             )
@@ -521,7 +521,7 @@ class TestRegistryAccessControl:
                 scope="agent",
                 type="scalar",
                 lifetime="episode",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],  # Only engine can write
                 default=1.0,
             )
@@ -567,7 +567,7 @@ class TestRegistryGetSet:
                 scope="agent",
                 type="scalar",
                 lifetime="episode",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],
                 default=1.0,
             )
@@ -599,7 +599,7 @@ class TestRegistryGetSet:
                 type="vecNf",
                 dims=2,
                 lifetime="episode",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],
                 default=[0.0, 0.0],
             )
@@ -655,7 +655,7 @@ class TestRegistryGetSet:
                 type="vecNf",
                 dims=2,
                 lifetime="episode",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],
                 default=[0.0, 0.0],
             )
@@ -678,7 +678,7 @@ class TestRegistryGetSet:
                 scope="agent",
                 type="scalar",
                 lifetime="episode",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],
                 default=1.0,
             )
@@ -701,7 +701,7 @@ class TestRegistryGetSet:
                 scope="global",
                 type="scalar",
                 lifetime="tick",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],
                 default=0.0,
             )
@@ -732,7 +732,7 @@ class TestRegistryScopeSemantics:
                 scope="global",
                 type="scalar",
                 lifetime="tick",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],
                 default=1.0,
             )
@@ -755,7 +755,7 @@ class TestRegistryScopeSemantics:
                 type="vecNf",
                 dims=3,
                 lifetime="tick",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],
                 default=[1.0, 2.0, 3.0],
             )
@@ -777,7 +777,7 @@ class TestRegistryScopeSemantics:
                 scope="agent",
                 type="scalar",
                 lifetime="episode",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],
                 default=1.0,
             )
@@ -800,7 +800,7 @@ class TestRegistryScopeSemantics:
                 type="vecNf",
                 dims=2,
                 lifetime="episode",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],
                 default=[0.0, 0.0],
             )
@@ -1115,7 +1115,7 @@ class TestRegistryVariablesProperty:
                 scope="agent",
                 type="scalar",
                 lifetime="episode",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],
                 default=1.0,
             ),
@@ -1125,7 +1125,7 @@ class TestRegistryVariablesProperty:
                 type="vecNf",
                 dims=2,
                 lifetime="episode",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],
                 default=[0.0, 0.0],
             ),
@@ -1149,7 +1149,7 @@ class TestRegistryVariablesProperty:
                 scope="agent",
                 type="scalar",
                 lifetime="episode",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],
                 default=1.0,
             ),

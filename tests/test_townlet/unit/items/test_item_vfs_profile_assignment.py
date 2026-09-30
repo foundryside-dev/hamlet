@@ -58,6 +58,8 @@ def test_item_manager_assigns_vfs_profile_on_spawn():
         profile_name="food_stats",
         variables=[
             CompiledVariable(
+                readable_by=("engine", "agent"),
+                writable_by=("engine",),
                 name="calories",
                 lifetime="episode",
                 type="float",
@@ -67,6 +69,8 @@ def test_item_manager_assigns_vfs_profile_on_spawn():
                 exposed_to=("agent",),
             ),
             CompiledVariable(
+                readable_by=("engine", "agent"),
+                writable_by=("engine",),
                 name="freshness",
                 lifetime="episode",
                 type="float",
@@ -82,6 +86,8 @@ def test_item_manager_assigns_vfs_profile_on_spawn():
         profile_name="weapon_stats",
         variables=[
             CompiledVariable(
+                readable_by=("engine", "agent"),
+                writable_by=("engine",),
                 name="damage",
                 lifetime="episode",
                 type="float",
@@ -91,6 +97,8 @@ def test_item_manager_assigns_vfs_profile_on_spawn():
                 exposed_to=("agent",),
             ),
             CompiledVariable(
+                readable_by=("engine", "agent"),
+                writable_by=("engine",),
                 name="durability",
                 lifetime="episode",
                 type="float",
@@ -171,6 +179,8 @@ def test_item_manager_preserves_vfs_profile_across_operations():
         profile_name="consumable_stats",
         variables=[
             CompiledVariable(
+                readable_by=("engine", "agent"),
+                writable_by=("engine",),
                 name="charges",
                 lifetime="episode",
                 type="float",
@@ -180,6 +190,8 @@ def test_item_manager_preserves_vfs_profile_across_operations():
                 exposed_to=("agent",),
             ),
             CompiledVariable(
+                readable_by=("engine", "agent"),
+                writable_by=("engine",),
                 name="potency",
                 lifetime="episode",
                 type="float",

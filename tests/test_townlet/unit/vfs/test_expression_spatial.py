@@ -8,6 +8,8 @@ from townlet.world.expression import ExpressionParser
 def _profile(expr: str, name: str = "var") -> CompiledGlobalProfile:
     ast = ExpressionParser().parse(expr)
     var = CompiledVariable(
+        readable_by=("engine", "agent"),
+        writable_by=("engine",),
         name=name,
         lifetime="episode",
         type="float",

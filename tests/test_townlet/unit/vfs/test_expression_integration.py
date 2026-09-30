@@ -10,6 +10,8 @@ from townlet.world.expression.type_checker import TypeCheckError
 @pytest.mark.parametrize("scope,expression", [("agent", "3.0"), ("global", "bar.energy"), ("global", "mean(bar.energy)")])
 def test_expression_result_must_match_runtime_scope_shape(scope, expression):
     declaration = VariableDeclaration(
+        readable_by=["engine", "agent"],
+        writable_by=["engine"],
         id="computed",
         scope=scope,
         type="scalar",
@@ -26,9 +28,19 @@ def test_expression_result_must_match_runtime_scope_shape(scope, expression):
 def test_agent_expression_static_dependency_retains_batched_shape():
     declarations = [
         VariableDeclaration(
-            id="source", scope="agent", type="scalar", lifetime="episode", semantic_type="custom", exposed_to=[], initial_value=2.0
+            readable_by=["engine", "agent"],
+            writable_by=["engine"],
+            id="source",
+            scope="agent",
+            type="scalar",
+            lifetime="episode",
+            semantic_type="custom",
+            exposed_to=[],
+            initial_value=2.0,
         ),
         VariableDeclaration(
+            readable_by=["engine", "agent"],
+            writable_by=["engine"],
             id="computed",
             scope="agent",
             type="scalar",
@@ -47,10 +59,26 @@ def test_build_dependency_graph_no_deps():
     """Variables with no dependencies have no edges."""
     profile = [
         VariableDeclaration(
-            semantic_type="custom", id="day_count", type="scalar", initial_value=0, scope="global", lifetime="persistent", exposed_to=[]
+            readable_by=["engine", "agent"],
+            writable_by=["engine"],
+            semantic_type="custom",
+            id="day_count",
+            type="scalar",
+            initial_value=0,
+            scope="global",
+            lifetime="persistent",
+            exposed_to=[],
         ),
         VariableDeclaration(
-            semantic_type="custom", id="tick", type="scalar", initial_value=0, scope="global", lifetime="persistent", exposed_to=[]
+            readable_by=["engine", "agent"],
+            writable_by=["engine"],
+            semantic_type="custom",
+            id="tick",
+            type="scalar",
+            initial_value=0,
+            scope="global",
+            lifetime="persistent",
+            exposed_to=[],
         ),
     ]
     compiler = VFSProfileCompiler()
@@ -69,9 +97,19 @@ def test_build_dependency_graph_with_deps():
     """
     profile = [
         VariableDeclaration(
-            semantic_type="custom", id="hour", type="scalar", initial_value=0, scope="global", lifetime="persistent", exposed_to=[]
+            readable_by=["engine", "agent"],
+            writable_by=["engine"],
+            semantic_type="custom",
+            id="hour",
+            type="scalar",
+            initial_value=0,
+            scope="global",
+            lifetime="persistent",
+            exposed_to=[],
         ),
         VariableDeclaration(
+            readable_by=["engine", "agent"],
+            writable_by=["engine"],
             semantic_type="custom",
             id="is_night",
             type="bool",
@@ -91,9 +129,19 @@ def test_build_dependency_graph_nested_deps():
     """Nested dependencies create transitive edges."""
     profile = [
         VariableDeclaration(
-            semantic_type="custom", id="a", type="scalar", initial_value=1, scope="global", lifetime="persistent", exposed_to=[]
+            readable_by=["engine", "agent"],
+            writable_by=["engine"],
+            semantic_type="custom",
+            id="a",
+            type="scalar",
+            initial_value=1,
+            scope="global",
+            lifetime="persistent",
+            exposed_to=[],
         ),
         VariableDeclaration(
+            readable_by=["engine", "agent"],
+            writable_by=["engine"],
             semantic_type="custom",
             id="b",
             type="scalar",
@@ -104,6 +152,8 @@ def test_build_dependency_graph_nested_deps():
             initial_value=0.0,
         ),
         VariableDeclaration(
+            readable_by=["engine", "agent"],
+            writable_by=["engine"],
             semantic_type="custom",
             id="c",
             type="scalar",
@@ -124,9 +174,19 @@ def test_build_dependency_graph_with_path_deps():
     """Variables with PathAccess dependencies (e.g., target.bar.energy) extract root namespace."""
     profile = [
         VariableDeclaration(
-            semantic_type="custom", id="target", type="agent_ref", initial_value=0, scope="global", lifetime="persistent", exposed_to=[]
+            readable_by=["engine", "agent"],
+            writable_by=["engine"],
+            semantic_type="custom",
+            id="target",
+            type="agent_ref",
+            initial_value=0,
+            scope="global",
+            lifetime="persistent",
+            exposed_to=[],
         ),
         VariableDeclaration(
+            readable_by=["engine", "agent"],
+            writable_by=["engine"],
             semantic_type="custom",
             id="is_low",
             type="bool",
@@ -147,6 +207,8 @@ def test_detect_circular_dependency_simple():
     """Detect simple circular dependency (a -> b -> a)."""
     profile = [
         VariableDeclaration(
+            readable_by=["engine", "agent"],
+            writable_by=["engine"],
             semantic_type="custom",
             id="a",
             type="scalar",
@@ -157,6 +219,8 @@ def test_detect_circular_dependency_simple():
             initial_value=0.0,
         ),
         VariableDeclaration(
+            readable_by=["engine", "agent"],
+            writable_by=["engine"],
             semantic_type="custom",
             id="b",
             type="scalar",
@@ -176,6 +240,8 @@ def test_detect_circular_dependency_complex():
     """Detect complex circular dependency (a -> b -> c -> a)."""
     profile = [
         VariableDeclaration(
+            readable_by=["engine", "agent"],
+            writable_by=["engine"],
             semantic_type="custom",
             id="a",
             type="scalar",
@@ -186,6 +252,8 @@ def test_detect_circular_dependency_complex():
             initial_value=0.0,
         ),
         VariableDeclaration(
+            readable_by=["engine", "agent"],
+            writable_by=["engine"],
             semantic_type="custom",
             id="b",
             type="scalar",
@@ -196,6 +264,8 @@ def test_detect_circular_dependency_complex():
             initial_value=0.0,
         ),
         VariableDeclaration(
+            readable_by=["engine", "agent"],
+            writable_by=["engine"],
             semantic_type="custom",
             id="c",
             type="scalar",
@@ -215,10 +285,26 @@ def test_topological_sort_no_deps():
     """Topological sort with no dependencies."""
     profile = [
         VariableDeclaration(
-            semantic_type="custom", id="a", type="scalar", initial_value=1, scope="global", lifetime="persistent", exposed_to=[]
+            readable_by=["engine", "agent"],
+            writable_by=["engine"],
+            semantic_type="custom",
+            id="a",
+            type="scalar",
+            initial_value=1,
+            scope="global",
+            lifetime="persistent",
+            exposed_to=[],
         ),
         VariableDeclaration(
-            semantic_type="custom", id="b", type="scalar", initial_value=2, scope="global", lifetime="persistent", exposed_to=[]
+            readable_by=["engine", "agent"],
+            writable_by=["engine"],
+            semantic_type="custom",
+            id="b",
+            type="scalar",
+            initial_value=2,
+            scope="global",
+            lifetime="persistent",
+            exposed_to=[],
         ),
     ]
     compiler = VFSProfileCompiler()
@@ -230,6 +316,8 @@ def test_topological_sort_linear_deps():
     """Topological sort with linear dependencies (a -> b -> c)."""
     profile = [
         VariableDeclaration(
+            readable_by=["engine", "agent"],
+            writable_by=["engine"],
             semantic_type="custom",
             id="c",
             type="scalar",
@@ -240,9 +328,19 @@ def test_topological_sort_linear_deps():
             initial_value=0.0,
         ),
         VariableDeclaration(
-            semantic_type="custom", id="a", type="scalar", initial_value=1, scope="global", lifetime="persistent", exposed_to=[]
+            readable_by=["engine", "agent"],
+            writable_by=["engine"],
+            semantic_type="custom",
+            id="a",
+            type="scalar",
+            initial_value=1,
+            scope="global",
+            lifetime="persistent",
+            exposed_to=[],
         ),
         VariableDeclaration(
+            readable_by=["engine", "agent"],
+            writable_by=["engine"],
             semantic_type="custom",
             id="b",
             type="scalar",
@@ -262,6 +360,8 @@ def test_topological_sort_linear_deps():
 def test_compile_variable_with_expression():
     """Compiler parses and type-checks expressions."""
     var = VariableDeclaration(
+        readable_by=["engine", "agent"],
+        writable_by=["engine"],
         semantic_type="custom",
         id="is_night",
         type="bool",
@@ -282,7 +382,15 @@ def test_compile_variable_with_expression():
 def test_compile_variable_with_initial_value():
     """Compiler handles static initial values (no expression)."""
     var = VariableDeclaration(
-        semantic_type="custom", id="day_count", type="scalar", initial_value=0, scope="global", lifetime="persistent", exposed_to=[]
+        readable_by=["engine", "agent"],
+        writable_by=["engine"],
+        semantic_type="custom",
+        id="day_count",
+        type="scalar",
+        initial_value=0,
+        scope="global",
+        lifetime="persistent",
+        exposed_to=[],
     )
     compiler = VFSProfileCompiler()
     schema = {}
@@ -297,6 +405,8 @@ def test_compile_variable_type_mismatch():
     from townlet.world.expression.type_checker import TypeCheckError
 
     var = VariableDeclaration(
+        readable_by=["engine", "agent"],
+        writable_by=["engine"],
         semantic_type="custom",
         id="invalid",
         type="bool",
@@ -316,6 +426,8 @@ def test_compile_global_profile():
     """Compiler compiles global profile with dependency ordering."""
     profile = [
         VariableDeclaration(
+            readable_by=["engine", "agent"],
+            writable_by=["engine"],
             semantic_type="custom",
             id="c",
             type="scalar",
@@ -326,9 +438,19 @@ def test_compile_global_profile():
             initial_value=0.0,
         ),
         VariableDeclaration(
-            semantic_type="custom", id="a", type="scalar", initial_value=1, scope="global", lifetime="persistent", exposed_to=[]
+            readable_by=["engine", "agent"],
+            writable_by=["engine"],
+            semantic_type="custom",
+            id="a",
+            type="scalar",
+            initial_value=1,
+            scope="global",
+            lifetime="persistent",
+            exposed_to=[],
         ),
         VariableDeclaration(
+            readable_by=["engine", "agent"],
+            writable_by=["engine"],
             semantic_type="custom",
             id="b",
             type="scalar",
@@ -349,6 +471,8 @@ def test_compile_agent_profile_with_bars():
     """Compiler includes bars in schema for expressions."""
     profile = [
         VariableDeclaration(
+            readable_by=["engine", "agent"],
+            writable_by=["engine"],
             semantic_type="custom",
             id="avg_energy",
             type="scalar",
@@ -367,9 +491,19 @@ def test_compile_agent_profile_with_bars():
 def test_eager_agent_static_dependency_refuses_the_scalar_reinitialization_shape():
     declarations = [
         VariableDeclaration(
-            id="source", scope="agent", type="scalar", lifetime="episode", semantic_type="custom", exposed_to=[], initial_value=2.0
+            readable_by=["engine", "agent"],
+            writable_by=["engine"],
+            id="source",
+            scope="agent",
+            type="scalar",
+            lifetime="episode",
+            semantic_type="custom",
+            exposed_to=[],
+            initial_value=2.0,
         ),
         VariableDeclaration(
+            readable_by=["engine", "agent"],
+            writable_by=["engine"],
             id="computed",
             scope="agent",
             type="scalar",

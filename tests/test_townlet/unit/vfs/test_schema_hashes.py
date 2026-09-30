@@ -106,7 +106,7 @@ def test_variable_schema_hash_changes_when_abi_field_changes() -> None:
     )
 
     changed_range = variable.model_copy(update={"normalization": NormalizationSpec(kind="minmax", min=0.0, max=2.0, clip=False)})
-    changed_permissions = variable.model_copy(update={"writable_by": ["engine", "vtc"]})
+    changed_permissions = variable.model_copy(update={"writable_by": []})
 
     assert compute_variable_schema_hash((variable,)) != compute_variable_schema_hash((changed_range,))
     assert compute_variable_schema_hash((variable,)) != compute_variable_schema_hash((changed_permissions,))
@@ -124,6 +124,8 @@ def test_compiler_surfaces_variable_schema_hash(tmp_path: Path) -> None:
             "item_profiles": [],
             "declarations": [
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "day_count",
                     "scope": "global",
                     "type": "scalar",

@@ -63,6 +63,8 @@ def _write_variables(config_dir: Path, *, profile_count: int) -> None:
             "item_profiles": profiles,
             "declarations": [
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "value",
                     "profile": profile,
                     "scope": "item",

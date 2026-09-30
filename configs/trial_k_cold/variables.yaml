@@ -8,6 +8,8 @@ variables:
   - default_item
   declarations:
   - id: world_temp
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: global
     type: scalar
     lifetime: persistent
@@ -15,6 +17,8 @@ variables:
     exposed_to: []
     initial_value: 1.0
   - id: season_clock
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: global
     type: scalar
     lifetime: persistent
@@ -22,6 +26,8 @@ variables:
     exposed_to: []
     initial_value: 0.0
   - id: winter_ticks
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: global
     type: scalar
     lifetime: persistent
@@ -29,6 +35,8 @@ variables:
     exposed_to: []
     initial_value: 0.0
   - id: position
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: agent
     type: vec2f
     lifetime: tick
@@ -39,6 +47,8 @@ variables:
     - 0.0
     description: Normalized agent position in [0, 1]^2 range
   - id: insulation
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: item
     type: scalar
     lifetime: episode

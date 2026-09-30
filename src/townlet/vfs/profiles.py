@@ -8,6 +8,7 @@ from dataclasses import dataclass
 import networkx as nx  # type: ignore[import-untyped]
 
 from townlet.config.variables_config import VariableDeclaration
+from townlet.vfs.access_policy import validate_static_access
 from townlet.vfs.schema import NormalizationSpec, VariableScope
 from townlet.world.expression import ASTNode, ExpressionParser, PathAccess, Variable
 from townlet.world.expression.ast_nodes import BinaryOp, Constant, FunctionCall, IfThenElse, UnaryOp
@@ -39,6 +40,8 @@ class CompiledVariable:
     type: str
     exposed_to: tuple[str, ...]
     lifetime: str
+    readable_by: tuple[str, ...]
+    writable_by: tuple[str, ...]
     expression: str | None = None
     ast: ASTNode | None = None  # None if initial_value
     initial_value: int | float | bool | list | None = None
@@ -52,6 +55,12 @@ class CompiledVariable:
     # The declared normalization — REQUIRED at exposure, absent when unexposed
     # (token-obs spec §2, normalization authority; hamlet-b8ad2ffcd6).
     normalization: NormalizationSpec | None = None
+
+    def __post_init__(self) -> None:
+        validate_static_access(self.name, self.readable_by, self.writable_by, self.exposed_to)
+        self.readable_by = tuple(self.readable_by)
+        self.writable_by = tuple(self.writable_by)
+        self.exposed_to = tuple(self.exposed_to)
 
 
 @dataclass
@@ -235,6 +244,8 @@ class VFSProfileCompiler:
                 name=var.id,
                 exposed_to=tuple(var.exposed_to),
                 lifetime=var.lifetime,
+                readable_by=tuple(var.readable_by),
+                writable_by=tuple(var.writable_by),
                 type="float" if var.type == "scalar" else var.type,
                 expression=None,
                 ast=None,
@@ -264,6 +275,8 @@ class VFSProfileCompiler:
             name=var.id,
             exposed_to=tuple(var.exposed_to),
             lifetime=var.lifetime,
+            readable_by=tuple(var.readable_by),
+            writable_by=tuple(var.writable_by),
             type="float" if var.type == "scalar" else var.type,
             expression=var.expression,
             ast=ast,

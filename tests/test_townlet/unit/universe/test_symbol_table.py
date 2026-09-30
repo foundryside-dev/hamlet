@@ -49,6 +49,8 @@ def test_duplicate_meter_registration_raises():
 def test_duplicate_variable_registration_raises():
     table = UniverseSymbolTable()
     var = VariableDeclaration(
+        readable_by=["engine", "agent"],
+        writable_by=["engine"],
         id="energy",
         scope="agent",
         type="scalar",

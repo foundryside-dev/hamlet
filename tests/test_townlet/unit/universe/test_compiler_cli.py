@@ -82,6 +82,8 @@ variables:
   item_profiles: []
   declarations:
     - id: first
+      readable_by: [engine, agent]
+      writable_by: [engine]
       scope: global
       lifetime: persistent
       semantic_type: custom
@@ -90,6 +92,8 @@ variables:
       initial_value: 0.0
       expression: second + 1
     - id: second
+      readable_by: [engine, agent]
+      writable_by: [engine]
       scope: global
       lifetime: persistent
       semantic_type: custom

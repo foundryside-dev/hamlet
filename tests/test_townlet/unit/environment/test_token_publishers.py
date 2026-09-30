@@ -1178,6 +1178,9 @@ class _ProfileVar:
     def __init__(self, name: str):
         self.name = name
         self.type = "scalar"
+        self.readable_by = ("engine", "agent")
+        self.writable_by = ("engine",)
+        self.exposed_to = ("agent",)
 
 
 class _Profile:
@@ -1413,7 +1416,17 @@ class TestTokenObservationEncoder:
         ]
         spec = TokenSpec(types=(_variable_type(bindings),), position_rank=0, transport_version=TOKEN_TRANSPORT_VERSION)
         item_profiles = {
-            "food": SimpleNamespace(variables=[SimpleNamespace(name="nutrition", exposed_to=["agent"], normalization=_BOUNDED)])
+            "food": SimpleNamespace(
+                variables=[
+                    SimpleNamespace(
+                        name="nutrition",
+                        readable_by=("engine", "agent"),
+                        writable_by=("engine",),
+                        exposed_to=["agent"],
+                        normalization=_BOUNDED,
+                    )
+                ]
+            )
         }
         observations = []
         for artifact in (spec, _token_spec_from_plain(_serialize_token_spec(spec))):

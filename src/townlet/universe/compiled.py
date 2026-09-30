@@ -115,7 +115,9 @@ from townlet.vfs.transition_schedule import (
 # nested token interpretation.
 # 1.27: variable-element bindings carry their required typed scope. Scope is no longer
 # inferred from filler-reference spelling; 1.26 bindings lack this execution authority.
-COMPILED_SCHEMA_VERSION = "1.28"
+# 1.29: static permissions are required on registry definitions and every compiled
+# global, agent and qualified item variable. Older artifacts have no policy authority.
+COMPILED_SCHEMA_VERSION = "1.29"
 
 REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "compiled_schema_version",
@@ -973,6 +975,8 @@ def _serialize_compiled_variable(var: Any) -> dict[str, Any]:
         "result_type": var.result_type,
         "exposed_to": list(var.exposed_to),
         "lifetime": var.lifetime,
+        "readable_by": list(var.readable_by),
+        "writable_by": list(var.writable_by),
         "shape": var.shape,
         "initial_value_mode": var.initial_value_mode,
         "initial_value_params": var.initial_value_params,
@@ -1033,6 +1037,8 @@ def _deserialize_compiled_variable(var: dict[str, Any], *, field_name: str) -> A
         result_type=_required_field(var, f"{field_name}.result_type"),
         exposed_to=tuple(_required_field(var, f"{field_name}.exposed_to")),
         lifetime=_required_field(var, f"{field_name}.lifetime"),
+        readable_by=_required_field(var, f"{field_name}.readable_by"),
+        writable_by=_required_field(var, f"{field_name}.writable_by"),
         shape=_required_field(var, f"{field_name}.shape"),
         initial_value_mode=_required_field(var, f"{field_name}.initial_value_mode"),
         initial_value_params=_required_field(var, f"{field_name}.initial_value_params"),

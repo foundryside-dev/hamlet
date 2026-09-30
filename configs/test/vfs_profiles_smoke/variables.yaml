@@ -8,6 +8,8 @@ variables:
   - weapon_stats
   declarations:
   - id: day_count
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: global
     type: scalar
     lifetime: persistent
@@ -16,6 +18,8 @@ variables:
     description: Number of days elapsed
     initial_value: 0
   - id: is_night
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: global
     type: bool
     lifetime: persistent
@@ -25,6 +29,8 @@ variables:
     description: True during night hours (18:00-6:00)
     initial_value: false
   - id: motivation
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: agent
     type: scalar
     lifetime: episode
@@ -33,6 +39,8 @@ variables:
     description: Agent's intrinsic motivation multiplier
     initial_value: 1.0
   - id: is_crisis
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: agent
     type: bool
     lifetime: episode
@@ -42,6 +50,8 @@ variables:
     description: True when agent is in resource crisis
     initial_value: false
   - id: crisis_duration
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: agent
     type: scalar
     lifetime: episode
@@ -50,6 +60,8 @@ variables:
     description: Ticks spent in crisis state
     initial_value: 0
   - id: nutrition
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: item
     type: scalar
     lifetime: episode
@@ -59,6 +71,8 @@ variables:
     description: Energy restored when consumed
     initial_value: 0.5
   - id: is_spoiled
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: item
     type: bool
     lifetime: episode
@@ -68,6 +82,8 @@ variables:
     description: True when food has spoiled
     initial_value: false
   - id: damage
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: item
     type: scalar
     lifetime: episode
@@ -77,6 +93,8 @@ variables:
     description: Damage dealt per use
     initial_value: 10.0
   - id: durability
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: item
     type: scalar
     lifetime: episode

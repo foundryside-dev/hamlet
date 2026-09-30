@@ -25,6 +25,8 @@ def _pack(tmp_path: Path, declaration: dict) -> Path:
 
 def _declaration(scope: str, variable_type: str, initial: float | bool, expression: str | None = None) -> dict:
     declaration = {
+        "readable_by": ["engine", "agent"],
+        "writable_by": ["engine"],
         "id": "signal",
         "scope": scope,
         "type": variable_type,

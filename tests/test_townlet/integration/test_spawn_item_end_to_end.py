@@ -40,6 +40,8 @@ def test_effect_on_despawn_spawns_item_with_real_itemmanager():
             profile_name="treasure",
             variables=[
                 CompiledVariable(
+                    readable_by=("engine", "agent"),
+                    writable_by=("engine",),
                     name="durability",
                     lifetime="episode",
                     type="float",
@@ -50,6 +52,8 @@ def test_effect_on_despawn_spawns_item_with_real_itemmanager():
                     exposed_to=("agent",),
                 ),
                 CompiledVariable(
+                    readable_by=("engine", "agent"),
+                    writable_by=("engine",),
                     name="quality",
                     lifetime="episode",
                     type="float",

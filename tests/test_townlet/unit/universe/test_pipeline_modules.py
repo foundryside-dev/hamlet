@@ -91,6 +91,8 @@ def test_resolve_references_allows_profile_vfs_variables_in_dac(tmp_path: Path) 
                     "item_profiles": [],
                     "declarations": [
                         {
+                            "readable_by": ["engine", "agent"],
+                            "writable_by": ["engine"],
                             "id": "hunger_pressure",
                             "scope": "global",
                             "type": "scalar",

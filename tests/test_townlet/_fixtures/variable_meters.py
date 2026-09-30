@@ -179,6 +179,8 @@ def task001_config_4meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
             "item_profiles": ["default_item"],
             "declarations": [
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "grid_encoding",
                     "scope": "agent",
                     "type": "vecNf",
@@ -255,6 +257,8 @@ def task001_config_4meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
                     "exposed_to": [],
                 },
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "local_window",
                     "scope": "agent",
                     "type": "vecNf",
@@ -292,6 +296,8 @@ def task001_config_4meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
                     "exposed_to": [],
                 },
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "position",
                     "scope": "agent",
                     "type": "vecNf",
@@ -303,6 +309,8 @@ def task001_config_4meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
                     "exposed_to": [],
                 },
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "energy",
                     "scope": "agent",
                     "type": "scalar",
@@ -312,6 +320,8 @@ def task001_config_4meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
                     "exposed_to": [],
                 },
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "health",
                     "scope": "agent",
                     "type": "scalar",
@@ -321,6 +331,8 @@ def task001_config_4meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
                     "exposed_to": [],
                 },
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "money",
                     "scope": "agent",
                     "type": "scalar",
@@ -330,6 +342,8 @@ def task001_config_4meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
                     "exposed_to": [],
                 },
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "mood",
                     "scope": "agent",
                     "type": "scalar",
@@ -339,6 +353,8 @@ def task001_config_4meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
                     "exposed_to": [],
                 },
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "affordance_at_position",
                     "scope": "agent",
                     "type": "vecNf",
@@ -349,6 +365,8 @@ def task001_config_4meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
                     "exposed_to": [],
                 },
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "time_sin",
                     "scope": "global",
                     "type": "scalar",
@@ -358,6 +376,8 @@ def task001_config_4meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
                     "exposed_to": [],
                 },
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "time_cos",
                     "scope": "global",
                     "type": "scalar",
@@ -367,6 +387,8 @@ def task001_config_4meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
                     "exposed_to": [],
                 },
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "interaction_progress",
                     "scope": "agent",
                     "type": "scalar",
@@ -376,6 +398,8 @@ def task001_config_4meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
                     "exposed_to": [],
                 },
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "lifetime_progress",
                     "scope": "agent",
                     "type": "scalar",
@@ -430,6 +454,8 @@ def task001_config_12meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
             "item_profiles": ["default_item"],
             "declarations": [
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "grid_encoding",
                     "scope": "agent",
                     "type": "vecNf",
@@ -506,6 +532,8 @@ def task001_config_12meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
                     "exposed_to": [],
                 },
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "local_window",
                     "scope": "agent",
                     "type": "vecNf",
@@ -543,6 +571,8 @@ def task001_config_12meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
                     "exposed_to": [],
                 },
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "position",
                     "scope": "agent",
                     "type": "vecNf",
@@ -554,6 +584,8 @@ def task001_config_12meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
                     "exposed_to": [],
                 },
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "energy",
                     "scope": "agent",
                     "type": "scalar",
@@ -563,6 +595,8 @@ def task001_config_12meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
                     "exposed_to": [],
                 },
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "health",
                     "scope": "agent",
                     "type": "scalar",
@@ -572,6 +606,8 @@ def task001_config_12meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
                     "exposed_to": [],
                 },
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "satiation",
                     "scope": "agent",
                     "type": "scalar",
@@ -581,6 +617,8 @@ def task001_config_12meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
                     "exposed_to": [],
                 },
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "money",
                     "scope": "agent",
                     "type": "scalar",
@@ -590,6 +628,8 @@ def task001_config_12meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
                     "exposed_to": [],
                 },
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "mood",
                     "scope": "agent",
                     "type": "scalar",
@@ -599,6 +639,8 @@ def task001_config_12meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
                     "exposed_to": [],
                 },
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "social",
                     "scope": "agent",
                     "type": "scalar",
@@ -608,6 +650,8 @@ def task001_config_12meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
                     "exposed_to": [],
                 },
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "fitness",
                     "scope": "agent",
                     "type": "scalar",
@@ -617,6 +661,8 @@ def task001_config_12meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
                     "exposed_to": [],
                 },
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "hygiene",
                     "scope": "agent",
                     "type": "scalar",
@@ -626,6 +672,8 @@ def task001_config_12meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
                     "exposed_to": [],
                 },
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "reputation",
                     "scope": "agent",
                     "type": "scalar",
@@ -635,6 +683,8 @@ def task001_config_12meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
                     "exposed_to": [],
                 },
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "skill",
                     "scope": "agent",
                     "type": "scalar",
@@ -644,6 +694,8 @@ def task001_config_12meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
                     "exposed_to": [],
                 },
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "spirituality",
                     "scope": "agent",
                     "type": "scalar",
@@ -653,6 +705,8 @@ def task001_config_12meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
                     "exposed_to": [],
                 },
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "community_trust",
                     "scope": "agent",
                     "type": "scalar",
@@ -662,6 +716,8 @@ def task001_config_12meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
                     "exposed_to": [],
                 },
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "affordance_at_position",
                     "scope": "agent",
                     "type": "vecNf",
@@ -672,6 +728,8 @@ def task001_config_12meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
                     "exposed_to": [],
                 },
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "time_sin",
                     "scope": "global",
                     "type": "scalar",
@@ -681,6 +739,8 @@ def task001_config_12meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
                     "exposed_to": [],
                 },
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "time_cos",
                     "scope": "global",
                     "type": "scalar",
@@ -690,6 +750,8 @@ def task001_config_12meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
                     "exposed_to": [],
                 },
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "interaction_progress",
                     "scope": "agent",
                     "type": "scalar",
@@ -699,6 +761,8 @@ def task001_config_12meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
                     "exposed_to": [],
                 },
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "lifetime_progress",
                     "scope": "agent",
                     "type": "scalar",

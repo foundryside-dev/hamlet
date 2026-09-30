@@ -32,6 +32,8 @@ def test_spawn_item_with_initial_state():
         profile_name="weapon",
         variables=[
             CompiledVariable(
+                readable_by=("engine", "agent"),
+                writable_by=("engine",),
                 name="durability",
                 lifetime="episode",
                 type="float",
@@ -41,6 +43,8 @@ def test_spawn_item_with_initial_state():
                 exposed_to=("agent",),
             ),
             CompiledVariable(
+                readable_by=("engine", "agent"),
+                writable_by=("engine",),
                 name="quality",
                 lifetime="episode",
                 type="float",
@@ -118,6 +122,8 @@ def test_spawn_item_without_initial_state_uses_defaults():
         profile_name="weapon",
         variables=[
             CompiledVariable(
+                readable_by=("engine", "agent"),
+                writable_by=("engine",),
                 name="durability",
                 lifetime="episode",
                 type="float",

@@ -41,6 +41,8 @@ def _pack(tmp_path: Path, declarations: list[dict]) -> Path:
 
 def _variable(identifier: str, *, scope: str = "global", lifetime: str = "episode", initial: float = 2.0) -> dict:
     return {
+        "readable_by": ["engine", "agent"],
+        "writable_by": ["engine"],
         "id": identifier,
         "scope": scope,
         "type": "scalar",

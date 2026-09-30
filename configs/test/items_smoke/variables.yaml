@@ -9,6 +9,8 @@ variables:
   - currency
   declarations:
   - id: position
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: agent
     type: vec2f
     lifetime: tick
@@ -19,6 +21,8 @@ variables:
     - 0.0
     description: Normalized agent position in [0, 1]^2 range
   - id: has_food
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: agent
     type: bool
     lifetime: tick
@@ -27,6 +31,8 @@ variables:
     initial_value: false
     description: Agent has picked up food (set by on_pickup Effects)
   - id: freshness
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: item
     type: scalar
     lifetime: episode
@@ -35,6 +41,8 @@ variables:
     profile: food
     initial_value: 100.0
   - id: durability
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: item
     type: scalar
     lifetime: episode

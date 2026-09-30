@@ -9,6 +9,8 @@ from townlet.config.variables_config import VariableDeclaration
 def test_item_expression_refuses_before_emission():
     with pytest.raises(ValidationError, match="expression execution supports global and agent"):
         VariableDeclaration(
+            readable_by=["engine", "agent"],
+            writable_by=["engine"],
             id="rot",
             scope="item",
             profile="p",

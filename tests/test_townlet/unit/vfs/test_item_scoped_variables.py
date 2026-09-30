@@ -15,7 +15,7 @@ def test_item_scope_is_valid():
         default=100.0,
         lifetime="persistent",
         readable_by=["agent", "engine"],
-        writable_by=["actions", "engine"],
+        writable_by=["engine"],
         description="Item durability (0-100)",
     )
 
@@ -28,6 +28,8 @@ def test_item_variable_uses_the_canonical_declaration_contract():
     from townlet.config.variables_config import VariableDeclaration
 
     payload = {
+        "readable_by": ["engine", "agent"],
+        "writable_by": ["engine"],
         "id": "durability",
         "scope": "item",
         "profile": "equipment",

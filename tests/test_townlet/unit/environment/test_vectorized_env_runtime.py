@@ -60,6 +60,8 @@ def test_vectorized_env_uses_compiled_vfs_variables_without_profile_synthesis(tm
             "item_profiles": [],
             "declarations": [
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "day_count",
                     "scope": "global",
                     "type": "scalar",
@@ -69,6 +71,8 @@ def test_vectorized_env_uses_compiled_vfs_variables_without_profile_synthesis(tm
                     "exposed_to": [],
                 },
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "motivation",
                     "scope": "agent",
                     "type": "scalar",
@@ -106,6 +110,8 @@ def test_vectorized_env_uses_compiled_effects_schema(tmp_path: Path) -> None:
             "item_profiles": [],
             "declarations": [
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "day_count",
                     "scope": "global",
                     "type": "scalar",
@@ -115,6 +121,8 @@ def test_vectorized_env_uses_compiled_effects_schema(tmp_path: Path) -> None:
                     "exposed_to": [],
                 },
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "motivation",
                     "scope": "agent",
                     "type": "scalar",

@@ -6,6 +6,8 @@ variables:
   item_profiles: []
   declarations:
   - id: deficit_energy
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: agent
     type: scalar
     lifetime: tick
@@ -20,6 +22,8 @@ variables:
       clip: true
     description: How far below target energy (0.0 = at/above target)
   - id: time_since_last_eat
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: agent
     type: scalar
     lifetime: tick
@@ -34,6 +38,8 @@ variables:
       clip: true
     description: Timesteps since last EAT action
   - id: position
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: agent
     type: vecNf
     lifetime: tick

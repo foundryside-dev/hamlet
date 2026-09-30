@@ -31,6 +31,8 @@ def _write_profiles_with_agent(experiment_dir: Path) -> None:
             "item_profiles": [],
             "declarations": [
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "day_count",
                     "scope": "global",
                     "type": "scalar",
@@ -40,6 +42,8 @@ def _write_profiles_with_agent(experiment_dir: Path) -> None:
                     "initial_value": 0,
                 },
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "inventory_weight",
                     "scope": "agent",
                     "type": "scalar",
@@ -49,6 +53,8 @@ def _write_profiles_with_agent(experiment_dir: Path) -> None:
                     "initial_value": 0.0,
                 },
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "is_encumbered",
                     "scope": "agent",
                     "type": "bool",

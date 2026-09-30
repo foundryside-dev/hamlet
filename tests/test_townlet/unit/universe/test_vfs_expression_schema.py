@@ -24,6 +24,8 @@ def test_compiler_generates_vfs_expression_schema(tmp_path: Path):
             "item_profiles": [],
             "declarations": [
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "day_count",
                     "scope": "global",
                     "type": "scalar",
@@ -34,6 +36,8 @@ def test_compiler_generates_vfs_expression_schema(tmp_path: Path):
                     "description": "Number of days elapsed",
                 },
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "is_night",
                     "scope": "global",
                     "type": "bool",
@@ -44,6 +48,8 @@ def test_compiler_generates_vfs_expression_schema(tmp_path: Path):
                     "description": "Whether it is currently night time",
                 },
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "ambient_temperature",
                     "scope": "global",
                     "type": "scalar",

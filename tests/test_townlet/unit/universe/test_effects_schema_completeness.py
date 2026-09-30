@@ -70,6 +70,8 @@ def test_effects_schema_canonical_global_variables_never_acquire_target_paths():
         item_profiles=[],
         declarations=[
             {
+                "readable_by": ["engine", "agent"],
+                "writable_by": ["engine"],
                 "id": "world_heat",
                 "scope": "global",
                 "type": "scalar",
@@ -79,6 +81,8 @@ def test_effects_schema_canonical_global_variables_never_acquire_target_paths():
                 "exposed_to": [],
             },
             {
+                "readable_by": ["engine", "agent"],
+                "writable_by": ["engine"],
                 "id": "deficit",
                 "scope": "agent",
                 "type": "scalar",
@@ -119,6 +123,8 @@ def test_effects_schema_preserves_canonical_vector_type_before_command_compilati
         item_profiles=[],
         declarations=[
             dict(
+                readable_by=["engine", "agent"],
+                writable_by=["engine"],
                 id="vector",
                 scope="global",
                 type="vec2f",
@@ -127,7 +133,17 @@ def test_effects_schema_preserves_canonical_vector_type_before_command_compilati
                 exposed_to=[],
                 initial_value=[0.1, 0.2],
             ),
-            dict(id="scalar", scope="global", type="scalar", lifetime="episode", semantic_type="custom", exposed_to=[], initial_value=0.0),
+            dict(
+                readable_by=["engine", "agent"],
+                writable_by=["engine"],
+                id="scalar",
+                scope="global",
+                type="scalar",
+                lifetime="episode",
+                semantic_type="custom",
+                exposed_to=[],
+                initial_value=0.0,
+            ),
         ],
     )
     schema = EffectsCompiler().build_schema(bar_names=(), variables=variables, compiled_vfs_profiles=None)

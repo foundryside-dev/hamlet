@@ -7,6 +7,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, StrictInt, model_validator
 
+from townlet.vfs.access_policy import validate_static_access
 from townlet.vfs.schema import NormalizationSpec, VariableScope, VFSScopeExtents
 from townlet.vfs.semantic_type import SemanticType
 
@@ -45,6 +46,8 @@ class VariableDeclaration(BaseModel):
     type: VariableType
     lifetime: VariableLifetime
     semantic_type: SemanticType
+    readable_by: list[Literal["engine", "agent"]]
+    writable_by: list[Literal["engine"]]
     exposed_to: list[Literal["agent"]]
     profile: str | None = None
     dims: StrictInt | None = None
@@ -58,6 +61,7 @@ class VariableDeclaration(BaseModel):
 
     @model_validator(mode="after")
     def validate_contract(self) -> VariableDeclaration:
+        validate_static_access(self.id, self.readable_by, self.writable_by, self.exposed_to)
         if "[" in self.id or "]" in self.id:
             raise ValueError(f"Variable '{self.id}' cannot contain slot-index delimiters")
         has_literal = "initial_value" in self.model_fields_set

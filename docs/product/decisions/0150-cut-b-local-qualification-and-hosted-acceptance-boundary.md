@@ -1,7 +1,7 @@
 # PDR-0150 — Cut B local qualification and hosted acceptance boundary
 
 Date: 2026-10-01 Australia/Canberra
-Status: **locally qualified; integration and hosted acceptance pending**
+Status: **locally qualified and integrated; hosted acceptance pending**
 Author: Codex
 Owner instruction: “excellent work, please plan and execute B”
 Related: PRD-0003, PDR-0147, PDR-0149, `hamlet-89cae04b5e`, `hamlet-33e520cebd`, `hamlet-61e3de957f`
@@ -16,8 +16,9 @@ source-reviewed. Their final CPU qualification checkpoint is
 
 This is not a full product acceptance decision. The complete local suite passed: 4,055 tests,
 18 skips, 84% coverage, exit 0. Ruff, Black, mypy, unchanged no-defaults whitelist and compiler
-CLI fleet passed. Local integration verification follows this checkpoint. Feature publication
-and exact-tip hosted checks remain pending.
+CLI fleet passed. Local fast-forward integration at `ded73a68` on `project-recovery-4`
+passed 87 focused checks; its execution tree equals the fully tested source. Unrelated dirty
+skill references remain byte-identical. Feature publication and exact-tip hosted checks remain pending.
 Automatic approval review rejected private-source publication without explicit authorization
 for GitHub. That external action will not be retried until the owner authorizes it.
 No calendar deadline is added or silently extended for B.
@@ -35,8 +36,9 @@ no unexplained or stale attribution, byte-exact ten CPU trajectory sets and elev
 Frozen matrix: ten registered CPU cells, ten explicit CUDA skips, exit 0; verified old oracle and
 fixtures unchanged. DIFF output identity is not confused with a learned-world change.
 
-Close implementation and the specific omitted-symbol defect only after required local gates,
-committed evidence and local integration are established. Keep acceptance task
+The required local gates, independent review, CPU comparison and local integration are
+established. Close implementation and the specific omitted-symbol defect for that evidence,
+without extending the claim to unsupported relational consumers. Keep acceptance task
 `hamlet-61e3de957f` open until the exact pushed implementation's hosted checks are terminal-success
 and a final accepting decision records that evidence. Cut A's hosted results do not qualify B.
 A B draft PR must stack on Cut A's feature branch (#40) to expose the B-only change; local merge

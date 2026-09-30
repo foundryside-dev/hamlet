@@ -1,6 +1,6 @@
 # Cut B qualification and delivery evidence
 
-Status: implementation and full local qualification passed; local integration pending. Hosted acceptance is pending.
+Status: implementation locally qualified and integrated. Hosted acceptance is pending.
 Authority: [PRD-0003](../../prds/0003-declaration-store-cut-b-one-variable-contract.md),
 PDR-0147 and accepted Cut A PDR-0149. No calendar deadline was added for B.
 
@@ -17,7 +17,7 @@ PDR-0147 and accepted Cut A PDR-0149. No calendar deadline was added for B.
 | Final fixture/consumer cleanup | `73f52c20e16e31ddbda9ec4ac637e02840ffb9de` |
 | Clock-negative fixture and final tested source | `baced7dba659ab2024a3f164f18c450695000362` |
 | Final direct-parent and frozen CPU qualification | Both exit 0 at `baced7db`; source/input tree clean, frozen run entire tree clean |
-| Local integration | Pending the final full-suite result; target only local `project-recovery-4` |
+| Local integration | Fast-forward to `ded73a68c0b91a9e7209a1f2588ca660d236eba7` on local `project-recovery-4`; 87 post-integration checks passed |
 | Feature push / B PR | Not performed; publication authorization required by automatic approval review |
 | Hosted B checks | Not run; neither prior Cut A CI nor local checks substitute |
 | Full PRD-0003 acceptance | Pending hosted checks and final delivery checkpoint |
@@ -33,7 +33,7 @@ PDR-0147 and accepted Cut A PDR-0149. No calendar deadline was added for B.
 | 5: Attribution | PASS. 31 cases / 884 hash readings; exactly 212 measured movements, each with values and a causing commit; none unexplained or stale. Ten direct-parent CPU trajectories (40 observation/action/reward/done arrays) and eleven reset censuses match byte-for-byte. Frozen matrix: ten CPU cells `DIVERGED_AS_REGISTERED`, ten CUDA cells explicitly `SKIPPED`, exit 0. Old source and frozen fixtures unchanged. |
 | 6: Gates | LOCAL PASS: full default suite **4,055 passed / 18 skipped / 84% coverage**, exit 0. Ruff, Black, mypy, no-defaults and public CLI fleet exit 0; whitelist unchanged. Focused runtime/shape/persistence/negative-control suites pass. Hosted checks pending explicit publication approval. |
 | 7: Hygiene | PASS. Active variables/declarations/compiler/VFS and changed item/effects/reward/expression docs use the new contract and name unsupported combinations. Internal expression/item profiles are compiler-owned execution products. Dated historical sketches remain explicitly non-normative. Independent review found no compatibility path. |
-| 8: Independent checkpoint | Independent specification and quality reviews GO for implementation; final acceptance remains conditional on the recorded full-suite/integration/hosted gates. This evidence and PDR-0150 distinguish local qualification from product acceptance. |
+| 8: Independent checkpoint | Independent specification and quality reviews GO for local implementation; full-suite and local-integration conditions passed. Product acceptance still requires the hosted gate. This evidence and PDR-0150 distinguish local qualification from product acceptance. |
 
 ## Identity attribution and reproducibility
 
@@ -88,7 +88,10 @@ passed; focused passes were not added to the earlier count.
 
 Task branch/worktree: `feat/declaration-store-cut-b` at `/tmp/hamlet-declaration-cut-b`.
 Preserve it and its ignored measurement traces while publication is pending.
-The local integration target is `project-recovery-4`; no parent/main push is authorized here.
+Local integration completed on `project-recovery-4` at `ded73a68`; 87 focused checks passed in
+21.11 seconds from the parent’s proper environment/import path. The execution-bearing tree
+is identical to fully tested `baced7db`. See [local integration](local-integration.json).
+Subsequent delivery-record changes are documentation/evidence only. No parent/main push occurred.
 Parent's two pre-existing dirty Filigree skill references must remain byte-identical; both banked
 SHA256 values are `27b0487e302939f67d6e1e2a4e1b66b531904944e9bf41b88e8c125e2ec0846a`.
 The frozen oracle is verified at `4222a9176e68e232a0e46c7004183440e27f22c3`; it was read only.

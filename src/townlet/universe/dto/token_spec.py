@@ -530,6 +530,7 @@ class SlotBinding:
     slot_index: int
     filler_kind: FillerKind
     filler_ref: str
+    scope: VariableScope | None
 
     def __post_init__(self) -> None:
         if self.slot_index < 0:
@@ -538,6 +539,11 @@ class SlotBinding:
             raise ValueError(f"SlotBinding filler_kind must be static|dynamic, got {self.filler_kind!r}")
         if not self.filler_ref:
             raise ValueError("SlotBinding filler_ref must name the declaration it is bound to")
+        if self.scope is not None:
+            try:
+                object.__setattr__(self, "scope", VariableScope(self.scope))
+            except (TypeError, ValueError) as exc:
+                raise ValueError(f"SlotBinding scope must be a VariableScope member or null, got {self.scope!r}") from exc
 
 
 @dataclass(frozen=True)
@@ -604,6 +610,10 @@ class TokenTypeSchema:
         if len(self.slot_bindings) != self.capacity:
             raise ValueError(f"Token type {self.type_name!r}: capacity {self.capacity} but {len(self.slot_bindings)} slot bindings")
         for expected_index, binding in enumerate(self.slot_bindings):
+            if self.type_name == "variable_element" and binding.scope is None:
+                raise ValueError(f"Token type 'variable_element': slot {binding.slot_index} requires a variable scope")
+            if self.type_name != "variable_element" and binding.scope is not None:
+                raise ValueError(f"Token type {self.type_name!r}: slot {binding.slot_index} requires null variable scope")
             if binding.slot_index != expected_index:
                 raise ValueError(
                     f"Token type {self.type_name!r}: slot_index {binding.slot_index} at position {expected_index}; "
@@ -1460,11 +1470,7 @@ def _variable_element_artifacts(
             else:
                 filler_ref = f"{exposed.id}[{element_index}]"
             bindings.append(
-                SlotBinding(
-                    slot_index=len(bindings),
-                    filler_kind="static",
-                    filler_ref=filler_ref,
-                )
+                SlotBinding(slot_index=len(bindings), filler_kind="static", filler_ref=filler_ref, scope=VariableScope(exposed.scope))
             )
             payload = [0.0] * len(PAYLOAD_SCHEMAS["variable_element"])
             coordinates = element_coordinate_block(exposed.shape, element_index)
@@ -1594,11 +1600,7 @@ def canonical_token_bindings(
     if len(set(meter_names)) != len(meter_names):
         raise ValueError("meter declarations contain duplicate names; meter token identity must be unique")
     meter_bindings = tuple(
-        SlotBinding(
-            slot_index=index,
-            filler_kind="static",
-            filler_ref=meter.name,
-        )
+        SlotBinding(slot_index=index, filler_kind="static", filler_ref=meter.name, scope=None)
         for index, meter in enumerate(meter_declarations)
     )
 
@@ -1606,11 +1608,7 @@ def canonical_token_bindings(
     if len(set(affordance_names)) != len(affordance_names):
         raise ValueError("The affordances declaration contains duplicate names; affordance token identity must be unique")
     affordance_bindings = tuple(
-        SlotBinding(
-            slot_index=index,
-            filler_kind="static",
-            filler_ref=affordance.name,
-        )
+        SlotBinding(slot_index=index, filler_kind="static", filler_ref=affordance.name, scope=None)
         for index, affordance in enumerate(affordances.affordances)
     )
 
@@ -1623,7 +1621,7 @@ def canonical_token_bindings(
             declared_agents_per_world=None,
         )
     item_bindings = tuple(
-        SlotBinding(slot_index=index, filler_kind="dynamic", filler_ref=f"item:{index}") for index in range(item_capacity_value)
+        SlotBinding(slot_index=index, filler_kind="dynamic", filler_ref=f"item:{index}", scope=None) for index in range(item_capacity_value)
     )
 
     if compiled_effect_catalog is not None:
@@ -1650,10 +1648,12 @@ def canonical_token_bindings(
             "Effect token slot layout disagrees with its declared capacity; canonical effect derivations must "
             "consume the same persisted budget and denominators"
         )
-    effect_bindings = tuple(SlotBinding(slot_index=index, filler_kind="dynamic", filler_ref=ref) for index, ref in enumerate(effect_refs))
+    effect_bindings = tuple(
+        SlotBinding(slot_index=index, filler_kind="dynamic", filler_ref=ref, scope=None) for index, ref in enumerate(effect_refs)
+    )
 
     by_type: Mapping[TokenType, tuple[SlotBinding, ...]] = {
-        "self": (SlotBinding(slot_index=0, filler_kind="static", filler_ref="self"),),
+        "self": (SlotBinding(slot_index=0, filler_kind="static", filler_ref="self", scope=None),),
         "meter": meter_bindings,
         "affordance": affordance_bindings,
         "agent": (),

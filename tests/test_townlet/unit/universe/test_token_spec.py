@@ -125,11 +125,11 @@ def _meter(name: str = "energy", initial: float = 1.0, lo: float = 0.0, hi: floa
 
 def _static_bindings(n: int, prefix: str, *, signature_width: int | None = None) -> tuple[SlotBinding, ...]:
     del signature_width
-    return tuple(SlotBinding(slot_index=i, filler_kind="static", filler_ref=f"{prefix}:{i}") for i in range(n))
+    return tuple(SlotBinding(slot_index=i, filler_kind="static", filler_ref=f"{prefix}:{i}", scope=None) for i in range(n))
 
 
 def _dynamic_bindings(n: int, prefix: str) -> tuple[SlotBinding, ...]:
-    return tuple(SlotBinding(slot_index=i, filler_kind="dynamic", filler_ref=f"{prefix}:{i}") for i in range(n))
+    return tuple(SlotBinding(slot_index=i, filler_kind="dynamic", filler_ref=f"{prefix}:{i}", scope=None) for i in range(n))
 
 
 def build_token_type(type_name: str, bindings: tuple[SlotBinding, ...]) -> TokenTypeSchema:
@@ -750,14 +750,16 @@ class TestTokenSpecArtifact:
             )
 
     def test_slot_binding_indices_are_dense_from_zero(self):
-        bad = (SlotBinding(slot_index=1, filler_kind="static", filler_ref="m:1"),)
+        bad = (SlotBinding(slot_index=1, filler_kind="static", filler_ref="m:1", scope=None),)
         with pytest.raises(ValueError, match="slot_index"):
             build_token_type("meter", bad)
 
     @pytest.mark.parametrize("type_name", ("self", "meter", "affordance", "agent", "item", "variable_element"))
     def test_non_effect_slot_requires_one_complete_context(self, type_name: str):
         filler_kind = "static" if type_name in {"self", "meter", "affordance", "variable_element"} else "dynamic"
-        binding = SlotBinding(slot_index=0, filler_kind=filler_kind, filler_ref="decl")
+        binding = SlotBinding(
+            slot_index=0, filler_kind=filler_kind, filler_ref="decl", scope="global" if type_name == "variable_element" else None
+        )
 
         with pytest.raises(ValueError, match=rf"{type_name}.*slot context"):
             _build_token_type(type_name, (binding,), slot_context_payloads=(), effect_catalog_contexts=())
@@ -765,21 +767,23 @@ class TestTokenSpecArtifact:
     @pytest.mark.parametrize("type_name", ("self", "meter", "affordance", "agent", "item", "variable_element"))
     def test_non_effect_slot_rejects_wrong_context_width(self, type_name: str):
         filler_kind = "static" if type_name in {"self", "meter", "affordance", "variable_element"} else "dynamic"
-        binding = SlotBinding(slot_index=0, filler_kind=filler_kind, filler_ref="decl")
+        binding = SlotBinding(
+            slot_index=0, filler_kind=filler_kind, filler_ref="decl", scope="global" if type_name == "variable_element" else None
+        )
 
         with pytest.raises(ValueError, match=rf"{type_name}.*expected"):
             _build_token_type(type_name, (binding,), slot_context_payloads=((0.0,),), effect_catalog_contexts=())
 
     @pytest.mark.parametrize("non_finite", (float("nan"), float("inf"), float("-inf")))
     def test_context_payload_rejects_non_finite_features(self, non_finite: float):
-        binding = SlotBinding(slot_index=0, filler_kind="static", filler_ref="decl")
+        binding = SlotBinding(slot_index=0, filler_kind="static", filler_ref="decl", scope=None)
         payload = (non_finite,) + (0.0,) * (len(PAYLOAD_SCHEMAS["meter"]) - 1)
 
         with pytest.raises(ValueError, match=r"meter.*context payload.*finite"):
             _build_token_type("meter", (binding,), slot_context_payloads=(payload,), effect_catalog_contexts=())
 
     def test_effect_uses_named_catalog_contexts_only(self):
-        binding = SlotBinding(slot_index=0, filler_kind="dynamic", filler_ref="effect:agent:0")
+        binding = SlotBinding(slot_index=0, filler_kind="dynamic", filler_ref="effect:agent:0", scope=None)
         payload = (0.0,) * len(PAYLOAD_SCHEMAS["effect"])
 
         with pytest.raises(ValueError, match="slot_context_payloads must be empty"):

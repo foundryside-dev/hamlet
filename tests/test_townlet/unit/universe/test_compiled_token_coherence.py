@@ -55,6 +55,7 @@ def _append_non_effect_slot(token_type: dict[str, Any], *, filler_kind: str, fil
             "slot_index": slot_index,
             "filler_kind": filler_kind,
             "filler_ref": filler_ref,
+            "scope": "global" if token_type["type_name"] == "variable_element" else None,
         }
     )
     token_type["slot_context_payloads"].append([0.0] * len(token_type["payload_features"]))
@@ -260,6 +261,7 @@ def test_load_rejects_effect_scope_block_order_tampering_even_with_recomputed_ha
             "slot_index": 0,
             "filler_kind": "dynamic",
             "filler_ref": "effect:agent:0",
+            "scope": None,
         },
     )
     effect_type["slot_bindings"][1]["slot_index"] = 1
@@ -270,7 +272,7 @@ def test_load_rejects_effect_scope_block_order_tampering_even_with_recomputed_ha
         CompiledUniverse.from_dict(payload)
 
 
-@pytest.mark.parametrize("mutation", ["reference", "order", "context", "capacity"])
+@pytest.mark.parametrize("mutation", ["reference", "order", "context", "capacity", "scope"])
 def test_load_rejects_variable_element_binding_tampering_even_with_recomputed_hashes(
     compiled_token_payload: dict[str, Any],
     mutation: str,
@@ -286,6 +288,8 @@ def test_load_rejects_variable_element_binding_tampering_even_with_recomputed_ha
         contexts = variable_type["slot_context_payloads"]
         current = contexts[0][0]
         contexts[0][0] = 0.25 if current != 0.25 else 0.5
+    elif mutation == "scope":
+        bindings[0]["scope"] = "agent" if bindings[0]["scope"] == "global" else "global"
     else:
         _remove_last_non_effect_slot(variable_type)
     _rehash_primary_token_artifact(payload)

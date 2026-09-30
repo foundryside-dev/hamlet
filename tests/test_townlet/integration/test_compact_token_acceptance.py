@@ -500,7 +500,7 @@ def _effect_spec() -> TokenSpec:
         contexts.append(TokenContext(context_ref=f"effect:{declaration.id}", fixed_payload=tuple(payload)))
     schema = build_token_type(
         "effect",
-        (SlotBinding(slot_index=0, filler_kind="dynamic", filler_ref="effect:0"),),
+        (SlotBinding(slot_index=0, filler_kind="dynamic", filler_ref="effect:0", scope=None),),
         slot_context_payloads=(),
         effect_catalog_contexts=tuple(contexts),
     )

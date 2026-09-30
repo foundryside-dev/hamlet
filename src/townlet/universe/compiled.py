@@ -113,7 +113,9 @@ from townlet.vfs.transition_schedule import (
 # transport versions plus schema-owned fixed context tables replace binding-local static
 # signatures. A 1.25 token payload is a different artifact and is refused before any
 # nested token interpretation.
-COMPILED_SCHEMA_VERSION = "1.26"
+# 1.27: variable-element bindings carry their required typed scope. Scope is no longer
+# inferred from filler-reference spelling; 1.26 bindings lack this execution authority.
+COMPILED_SCHEMA_VERSION = "1.27"
 
 REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "compiled_schema_version",
@@ -839,6 +841,7 @@ def _serialize_token_spec(spec: TokenSpec) -> dict[str, Any]:
                         "slot_index": binding.slot_index,
                         "filler_kind": binding.filler_kind,
                         "filler_ref": binding.filler_ref,
+                        "scope": binding.scope,
                     }
                     for binding in t.slot_bindings
                 ],
@@ -905,12 +908,13 @@ def _token_spec_from_plain(payload: Mapping[str, Any] | None) -> TokenSpec:
             binding_field = f"{type_field}.slot_bindings[{binding_index}]"
             if not isinstance(raw_binding, Mapping):
                 raise ValueError(f"Compiled universe cache field '{binding_field}' must be a mapping")
-            _require_exact_keys(raw_binding, {"slot_index", "filler_kind", "filler_ref"}, field_name=binding_field)
+            _require_exact_keys(raw_binding, {"slot_index", "filler_kind", "filler_ref", "scope"}, field_name=binding_field)
             bindings.append(
                 SlotBinding(
                     slot_index=raw_binding["slot_index"],
                     filler_kind=raw_binding["filler_kind"],
                     filler_ref=raw_binding["filler_ref"],
+                    scope=raw_binding["scope"],
                 )
             )
 

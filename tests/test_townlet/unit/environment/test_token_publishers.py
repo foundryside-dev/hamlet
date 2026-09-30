@@ -24,7 +24,7 @@ import townlet.environment.token_publishers as token_publishers
 from townlet.agent.token_input import TokenInputAssembler
 from townlet.config.affordances_v2_config import AffordanceParamConfig, DeploymentConfig, OpeningHoursConfig
 from townlet.effects.affordance_identity import AffordanceMeterWrite
-from townlet.environment.observation_encoder import TokenObservationEncoder, build_token_observation_encoder
+from townlet.environment.observation_encoder import TokenObservationEncoder, _split_variable_element_slots, build_token_observation_encoder
 from townlet.environment.token_publishers import (
     AffordanceTokenPublisher,
     AgentSlotBatch,
@@ -46,6 +46,7 @@ from townlet.environment.token_publishers import (
 )
 from townlet.substrate.aspatial import AspatialSubstrate
 from townlet.substrate.grid2d import Grid2DSubstrate
+from townlet.universe.compiled import _serialize_token_spec, _token_spec_from_plain
 from townlet.universe.dto.token_spec import (
     AFFORDANCE_DURATION_FEATURES,
     DESCRIPTOR_BLOCK_WIDTH,
@@ -70,7 +71,7 @@ from townlet.universe.dto.token_spec import (
     value_block_width_used,
 )
 from townlet.vfs.registry import VariableRegistry
-from townlet.vfs.schema import NormalizationSpec, VariableDef
+from townlet.vfs.schema import NormalizationSpec, VariableDef, VariableScope
 
 DEVICE = torch.device("cpu")
 
@@ -92,14 +93,19 @@ def _static_type(type_name: str, refs: list[str], contexts: list[tuple[float, ..
     assert len(contexts) == len(refs)
     return build_token_type(
         type_name,
-        tuple(SlotBinding(slot_index=i, filler_kind="static", filler_ref=ref) for i, ref in enumerate(refs)),
+        tuple(
+            SlotBinding(
+                slot_index=i, filler_kind="static", filler_ref=ref, scope=VariableScope.GLOBAL if type_name == "variable_element" else None
+            )
+            for i, ref in enumerate(refs)
+        ),
         slot_context_payloads=contexts,
         effect_catalog_contexts=(),
     )
 
 
 def _dynamic_type(type_name: str, capacity: int):
-    bindings = tuple(SlotBinding(slot_index=i, filler_kind="dynamic", filler_ref=f"{type_name}:{i}") for i in range(capacity))
+    bindings = tuple(SlotBinding(slot_index=i, filler_kind="dynamic", filler_ref=f"{type_name}:{i}", scope=None) for i in range(capacity))
     return build_token_type(
         type_name,
         bindings,
@@ -794,7 +800,7 @@ class TestEffectTokenPublisher:
 
     @staticmethod
     def _schema(capacity: int, declarations: list[EffectDeclaration]):
-        bindings = tuple(SlotBinding(slot_index=i, filler_kind="dynamic", filler_ref=f"effect:{i}") for i in range(capacity))
+        bindings = tuple(SlotBinding(slot_index=i, filler_kind="dynamic", filler_ref=f"effect:{i}", scope=None) for i in range(capacity))
         contexts = []
         for declaration in declarations:
             payload = list(_payload("effect"))
@@ -976,7 +982,11 @@ def _registry(extra_vars: list[VariableDef] | None = None, num_agents: int = 2) 
 
 
 def _registry_bindings(refs: list[str]) -> list[SlotBinding]:
-    return [SlotBinding(slot_index=i, filler_kind="static", filler_ref=ref) for i, ref in enumerate(refs)]
+    scopes = {"mood": VariableScope.AGENT, "secret": VariableScope.AGENT_PRIVATE}
+    return [
+        SlotBinding(slot_index=i, filler_kind="static", filler_ref=ref, scope=scopes.get(parse_filler_ref(ref)[0], VariableScope.GLOBAL))
+        for i, ref in enumerate(refs)
+    ]
 
 
 def _variable_context(ref: str, slot_index: int) -> tuple[float, ...]:
@@ -1004,6 +1014,13 @@ def _variable_type(bindings: list[SlotBinding]):
 
 
 class TestRegistryVariableElementPublisher:
+    def test_scope_mismatch_refuses_instead_of_using_the_registry_scope(self):
+        registry = _registry()
+        binding = SlotBinding(slot_index=0, filler_kind="static", filler_ref="mood", scope=VariableScope.GLOBAL)
+        schema = _variable_type([binding])
+        with pytest.raises(ValueError, match="binding scope.*registry variable.*scope"):
+            RegistryVariableElementPublisher(schema, _layout(schema), registry, slot_indices=(0,), device=DEVICE)
+
     def test_constructor_identity_authority_is_schema_slot_indices(self):
         signature = inspect.signature(RegistryVariableElementPublisher)
         assert "slot_bindings" not in signature.parameters
@@ -1152,7 +1169,7 @@ class TestRegistryVariableElementPublisher:
             RegistryVariableElementPublisher(schema, _layout(schema), registry, tuple(range(schema.capacity)), DEVICE)
 
     def test_missing_slot_context_refuses(self):
-        bindings = [SlotBinding(slot_index=0, filler_kind="static", filler_ref="temp")]
+        bindings = [SlotBinding(slot_index=0, filler_kind="static", filler_ref="temp", scope=VariableScope.GLOBAL)]
         with pytest.raises(ValueError, match="slot context payloads"):
             build_token_type("variable_element", bindings, slot_context_payloads=(), effect_catalog_contexts=())
 
@@ -1179,6 +1196,14 @@ def _item_profile_registry() -> VariableRegistry:
 
 
 class TestItemArenaVariableElementPublisher:
+    def test_non_item_scope_refuses_before_reading_an_item_profile(self):
+        registry = _item_profile_registry()
+        binding = SlotBinding(slot_index=0, filler_kind="static", filler_ref="food.nutrition[0]", scope=VariableScope.GLOBAL)
+        schema = _variable_type([binding])
+        declaration = ItemStateSlotDeclaration(slot_index=0, owner_slot=0, normalization=_BOUNDED)
+        with pytest.raises(ValueError, match="requires item scope"):
+            ItemArenaVariableElementPublisher(schema, _layout(schema), registry, [declaration], owner_capacity=2, device=DEVICE)
+
     def _publisher(self, registry, n_slots: int = 2):
         declarations = [
             ItemStateSlotDeclaration(
@@ -1193,6 +1218,7 @@ class TestItemArenaVariableElementPublisher:
                 slot_index=i,
                 filler_kind="static",
                 filler_ref=f"food.{('nutrition' if i == 0 else 'freshness')}[{i}]",
+                scope=VariableScope.ITEM,
             )
             for i in range(n_slots)
         ]
@@ -1260,7 +1286,7 @@ class TestItemArenaVariableElementPublisher:
             owner_slot=0,
             normalization=_BOUNDED,
         )
-        bindings = [SlotBinding(slot_index=0, filler_kind="static", filler_ref="ghost.x")]
+        bindings = [SlotBinding(slot_index=0, filler_kind="static", filler_ref="ghost.x", scope=VariableScope.ITEM)]
         schema = _variable_type(bindings)
         with pytest.raises(ValueError, match="'ghost'"):
             ItemArenaVariableElementPublisher(schema, _layout(schema), registry, [declaration], owner_capacity=2, device=DEVICE)
@@ -1289,7 +1315,7 @@ class TestItemArenaVariableElementPublisher:
         registry.register_item_instance(2, "food")  # occupant is `food`, slot below declares `medical`
 
         declaration = ItemStateSlotDeclaration(slot_index=0, owner_slot=0, normalization=_BOUNDED)
-        bindings = [SlotBinding(slot_index=0, filler_kind="static", filler_ref="medical.durability[0]")]
+        bindings = [SlotBinding(slot_index=0, filler_kind="static", filler_ref="medical.durability[0]", scope=VariableScope.ITEM)]
         schema = _variable_type(bindings)
         publisher = ItemArenaVariableElementPublisher(schema, _layout(schema), registry, [declaration], owner_capacity=2, device=DEVICE)
 
@@ -1372,6 +1398,41 @@ def _full_ctx(registry_positions=None) -> TokenPublishContext:
 
 
 class TestTokenObservationEncoder:
+    def test_mixed_scope_publication_survives_token_artifact_roundtrip(self):
+        registry = VariableRegistry(
+            variables=[_var("temp", default=0.25), _var("mood", scope="agent", default=0.75)],
+            num_agents=2,
+            device=DEVICE,
+            max_items=2,
+            item_profiles={"food": _Profile(["nutrition"])},
+        )
+        registry.write_item("food", "nutrition", 0.5, vfs_index=0)
+        registry.register_item_instance(0, "food")
+        bindings = _registry_bindings(["temp", "mood"]) + [
+            SlotBinding(slot_index=2, filler_kind="static", filler_ref="food.nutrition[0]", scope=VariableScope.ITEM)
+        ]
+        spec = TokenSpec(types=(_variable_type(bindings),), position_rank=0, transport_version=TOKEN_TRANSPORT_VERSION)
+        item_profiles = {
+            "food": SimpleNamespace(variables=[SimpleNamespace(name="nutrition", exposed_to=["agent"], normalization=_BOUNDED)])
+        }
+        observations = []
+        for artifact in (spec, _token_spec_from_plain(_serialize_token_spec(spec))):
+            schema = artifact.types[0]
+            registry_slots, item_declarations = _split_variable_element_slots(schema, item_profiles)
+            layout = artifact.compact_layout().types[0]
+            encoder = TokenObservationEncoder(
+                artifact,
+                [
+                    RegistryVariableElementPublisher(schema, layout, registry, registry_slots, DEVICE),
+                    ItemArenaVariableElementPublisher(schema, layout, registry, item_declarations, owner_capacity=1, device=DEVICE),
+                ],
+                DEVICE,
+            )
+            observations.append(encoder.encode(2, TokenPublishContext(item_slots=_item_batch([0], [[1, 1]], [0], [[False]], [-1]))))
+        assert torch.equal(observations[0], observations[1])
+        assert observations[0].reshape(2, 3, 3)[:, :, 0].tolist() == [[1.0, 1.0, 1.0], [1.0, 1.0, 1.0]]
+        assert observations[0].reshape(2, 3, 3)[:, :, 1].tolist() == [[0.25, 0.75, 0.5], [0.25, 0.75, 0.5]]
+
     def test_layout_matches_spec_serialization(self):
         registry = _registry()
         spec = _full_spec(registry, ["temp", "mood"])

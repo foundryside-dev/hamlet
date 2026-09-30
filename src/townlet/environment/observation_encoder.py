@@ -27,7 +27,7 @@ from townlet.environment.token_publishers import (
     parse_filler_ref,
 )
 from townlet.universe.dto.token_spec import CompactTokenTypeLayout, TokenSpec, TokenTypeSchema
-from townlet.vfs.schema import NormalizationSpec
+from townlet.vfs.schema import NormalizationSpec, VariableScope
 
 if TYPE_CHECKING:
     from townlet.environment.vectorized_env import VectorizedHamletEnv
@@ -126,7 +126,7 @@ def _split_variable_element_slots(
     item_profiles: dict[str, Any] | None,
 ) -> tuple[tuple[int, ...], tuple[ItemStateSlotDeclaration, ...]]:
     """Partition a compiled `variable_element` type's slots into (registry-backed slot
-    indices, item-arena slot declarations) by their filler_ref shape.
+    indices, item-arena slot declarations) by their explicit compiled scope.
 
     `item_profiles` is `CompiledVFSProfiles.item_profiles` (`dict[str, CompiledItemProfile]`
     at runtime; typed `dict[str, Any]` upstream — see `universe/compiled.py`).
@@ -139,22 +139,23 @@ def _split_variable_element_slots(
     registry_slots: list[int] = []
     item_declarations: list[ItemStateSlotDeclaration] = []
     for binding in element_type.slot_bindings:
+        if binding.scope != VariableScope.ITEM:
+            registry_slots.append(binding.slot_index)
+            continue
         base_ref, owner_slot = parse_filler_ref(binding.filler_ref)
         profile_name, separator, var_name = base_ref.partition(".")
-        if separator:
-            var_normalizations = profile_normalizations.get(profile_name)
-        else:
-            var_normalizations = None
-        if var_normalizations is not None and var_name in var_normalizations:
-            item_declarations.append(
-                ItemStateSlotDeclaration(
-                    slot_index=binding.slot_index,
-                    owner_slot=owner_slot,
-                    normalization=var_normalizations[var_name],
-                )
+        if not separator or profile_name not in profile_normalizations:
+            raise ValueError(f"variable_element slot {binding.slot_index}: unknown item profile in {binding.filler_ref!r}")
+        var_normalizations = profile_normalizations[profile_name]
+        if var_name not in var_normalizations:
+            raise ValueError(f"variable_element slot {binding.slot_index}: unknown exposed item variable {binding.filler_ref!r}")
+        item_declarations.append(
+            ItemStateSlotDeclaration(
+                slot_index=binding.slot_index,
+                owner_slot=owner_slot,
+                normalization=var_normalizations[var_name],
             )
-        else:
-            registry_slots.append(binding.slot_index)
+        )
     return tuple(registry_slots), tuple(item_declarations)
 
 

@@ -211,18 +211,15 @@ def _spec_with(meter_refs: tuple[str, ...], *, item_capacity: int = 0) -> TokenS
     types = []
     for type_name in TOKEN_TYPE_ROSTER:
         if type_name == "self":
-            bindings = (SlotBinding(slot_index=0, filler_kind="static", filler_ref="self"),)
+            bindings = (SlotBinding(slot_index=0, filler_kind="static", filler_ref="self", scope=None),)
         elif type_name == "meter":
             bindings = tuple(
-                SlotBinding(
-                    slot_index=i,
-                    filler_kind="static",
-                    filler_ref=ref,
-                )
-                for i, ref in enumerate(meter_refs)
+                SlotBinding(slot_index=i, filler_kind="static", filler_ref=ref, scope=None) for i, ref in enumerate(meter_refs)
             )
         elif type_name == "item":
-            bindings = tuple(SlotBinding(slot_index=i, filler_kind="dynamic", filler_ref=f"item:{i}") for i in range(item_capacity))
+            bindings = tuple(
+                SlotBinding(slot_index=i, filler_kind="dynamic", filler_ref=f"item:{i}", scope=None) for i in range(item_capacity)
+            )
         else:
             bindings = ()
         contexts = () if type_name == "effect" else tuple((0.0,) * len(PAYLOAD_SCHEMAS[type_name]) for _ in bindings)
@@ -284,7 +281,7 @@ class TestHashNarrowness:
             type_name="meter",
             payload_features=PAYLOAD_SCHEMAS["meter"],
             capacity=1,
-            slot_bindings=(SlotBinding(slot_index=0, filler_kind="static", filler_ref="energy"),),
+            slot_bindings=(SlotBinding(slot_index=0, filler_kind="static", filler_ref="energy", scope=None),),
             slot_context_payloads=(context_a,),
             effect_catalog_contexts=(),
         )
@@ -292,7 +289,7 @@ class TestHashNarrowness:
             type_name="meter",
             payload_features=PAYLOAD_SCHEMAS["meter"],
             capacity=1,
-            slot_bindings=(SlotBinding(slot_index=0, filler_kind="static", filler_ref="energy"),),
+            slot_bindings=(SlotBinding(slot_index=0, filler_kind="static", filler_ref="energy", scope=None),),
             slot_context_payloads=(context_b,),
             effect_catalog_contexts=(),
         )

@@ -803,6 +803,11 @@ class RegistryVariableElementPublisher:
                     "item-profile state slots belong to ItemArenaVariableElementPublisher"
                 )
             scope = VariableScope(var_def.scope)
+            if binding.scope != scope:
+                raise ValueError(
+                    f"variable_element slot {slot_index}: binding scope {binding.scope!r} disagrees with "
+                    f"registry variable {base_id!r} scope {scope.value!r}; recompile the config pack"
+                )
             if scope == VariableScope.AGENT_PRIVATE:
                 raise ValueError(
                     f"variable_element slot {slot_index} is bound to agent_private variable {base_id!r}.\n"
@@ -958,6 +963,8 @@ class ItemArenaVariableElementPublisher:
             if not 0 <= declaration.slot_index < schema.capacity:
                 raise ValueError(f"variable_element item-state slot {declaration.slot_index} is out of range [0, {schema.capacity})")
             binding = schema.slot_bindings[declaration.slot_index]
+            if binding.scope != VariableScope.ITEM:
+                raise ValueError(f"variable_element slot {declaration.slot_index}: item-state binding requires item scope")
             base_ref, _ = parse_filler_ref(binding.filler_ref)
             profile_name, separator, var_name = base_ref.partition(".")
             if not separator or not profile_name or not var_name:

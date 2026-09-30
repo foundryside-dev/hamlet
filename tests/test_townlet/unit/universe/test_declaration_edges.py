@@ -152,8 +152,13 @@ def test_clock_reference_refusals_have_the_authored_origin(pack: Path, failure: 
     elif failure == "fractional":
         variable["normalization"]["period"] = 24.5
     elif failure == "boolean":
+        # A valid hidden boolean is not an ambient cyclical scalar clock.
+        # Avoid failing the earlier registry-exposure contract instead.
         variable["type"] = "bool"
         variable["initial_value"] = False
+        variable["expression"] = "tick > 0"
+        variable["exposed_to"] = []
+        del variable["normalization"]
     elif failure == "boolean_period":
         variable["normalization"]["period"] = True
     elif failure in {"equal_literal", "unequal_literal"}:

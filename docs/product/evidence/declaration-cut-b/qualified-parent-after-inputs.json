@@ -121,6 +121,13 @@
       "path": "/configs/differential/div003_rect/vfs_profiles.yaml"
     },
     {
+      "after": "24fa08bdb0fa3d5542c0def9f562eb7eed923d00f6f6bbfda06200dfc0b8ee00",
+      "after_present": true,
+      "before": "391fb12c722fdc634e86a15573c3d5a0e538b81c85fbe9745423a1b450959214",
+      "before_present": true,
+      "path": "/configs/reference/config-complete.yaml"
+    },
+    {
       "after": "d0c01ee7081a4ffcda4748a191354236194820e6684d6e1f26d9da337d73cafd",
       "after_present": true,
       "before": "c7155a420d00d6686eb205f3a93e783c01bedf6d5d6f34ec06234dc0f0b30f13",
@@ -832,7 +839,7 @@
     "configs/differential/div003_rect/levels/L1_full_observability/training.yaml": "398fe080467e4cfb63bcb09562f095254fbbe5c5bfce913b129b6a796aa88c3c",
     "configs/differential/div003_rect/stratum.yaml": "772242034c34fb5dd598ff2566473d123c287a9213730b50c8645508d5d8ca3d",
     "configs/differential/div003_rect/variables.yaml": "25c8865a7b786e02d32fd1f17384e08086f35c269a6b5e37739fab69de61579b",
-    "configs/reference/config-complete.yaml": "391fb12c722fdc634e86a15573c3d5a0e538b81c85fbe9745423a1b450959214",
+    "configs/reference/config-complete.yaml": "24fa08bdb0fa3d5542c0def9f562eb7eed923d00f6f6bbfda06200dfc0b8ee00",
     "configs/reference/model_pack/actions.yaml": "11cf7da67f3e824f45a743794a9bf4f6d3eaa2229b2b6603ab6e623b8a1f6c45",
     "configs/reference/model_pack/brain.yaml": "b6249279df2cde80af2049b60bd8a43cbe8e0f2024aa66528157613eeef80a86",
     "configs/reference/model_pack/effects.yaml": "9930d2f2c8b1a007bc757f9f98531d4a27e6f1fe9e62d240efc511a2f1123549",

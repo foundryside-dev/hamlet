@@ -1,0 +1,57 @@
+{
+  "source_commit": "73f52c20e16e31ddbda9ec4ac637e02840ffb9de",
+  "gates": [
+    {
+      "command": [
+        ".venv/bin/ruff",
+        "check",
+        "."
+      ],
+      "exit_code": 0,
+      "log": "/tmp/cut-b-final-gate-0.log",
+      "elapsed_seconds": 0.01
+    },
+    {
+      "command": [
+        ".venv/bin/black",
+        "--check",
+        "src",
+        "tests"
+      ],
+      "exit_code": 0,
+      "log": "/tmp/cut-b-final-gate-1.log",
+      "elapsed_seconds": 1.91
+    },
+    {
+      "command": [
+        ".venv/bin/mypy",
+        "src/townlet",
+        "--show-error-codes"
+      ],
+      "exit_code": 0,
+      "log": "/tmp/cut-b-final-gate-2.log",
+      "elapsed_seconds": 0.91
+    },
+    {
+      "command": [
+        ".venv/bin/python",
+        "scripts/no_defaults_lint.py",
+        "src/townlet/",
+        "--whitelist",
+        ".defaults-whitelist.txt"
+      ],
+      "exit_code": 0,
+      "log": "/tmp/cut-b-final-gate-3.log",
+      "elapsed_seconds": 0.39
+    },
+    {
+      "command": [
+        ".venv/bin/python",
+        "scripts/validate_compiler_cli.py"
+      ],
+      "exit_code": 0,
+      "log": "/tmp/cut-b-final-gate-4.log",
+      "elapsed_seconds": 47.44
+    }
+  ]
+}

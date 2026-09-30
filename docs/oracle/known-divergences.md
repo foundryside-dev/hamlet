@@ -1521,10 +1521,10 @@ CUDA is unmeasured by this Cut A acceptance unless separately reported.
 
 ## DIV-014 — Declaration-store Cut B: canonical variables and explicit token scope
 
-- **Status:** causes measured in the Task 2 clean checkpoint and the Task 3
-  working-tree diagnostic `declaration-cut-b-diagnostic-02`; final clean-tip
-  frozen-oracle CPU acceptance remains pending. This is attribution evidence,
-  not the product acceptance checkpoint.
+- **Status:** locally CPU-qualified at clean checkpoint
+  `73f52c20e16e31ddbda9ec4ac637e02840ffb9de`. Both the exact direct-parent
+  comparator and frozen CPU matrix exit 0. Product acceptance and delivery
+  are recorded separately; this register is causal evidence.
 - **Harness shape: hash-only**. No trace-stream allowance is added by this entry.
   The fixed oracle retains DIV-008's historical observation-stream binding; the
   direct Cut A parent comparison inherits no observation allowance.
@@ -1629,7 +1629,7 @@ within an already-declared differing file as well as a new or removed file.
 This guard supplements the existing boolean harness mechanism; it does not
 create a new permissive adjudication shape.
 
-### Remaining acceptance evidence
+### Final local CPU qualification
 
 The frozen-oracle matrix must complete at a clean implementation checkpoint:
 ten CPU cells and ten explicitly skipped CUDA cells unless CUDA is actually

@@ -1,9 +1,15 @@
 # PDR-0148 — Cut A banks engineering evidence; the acceptance window was missed
 
 Date: 2026-10-01 Australia/Canberra
-Status: **recorded assessment — formal acceptance REJECT; no owner extension**
+Status: **superseded by PDR-0149 — original calendar rejection retained as history**
 Author: Codex, engineering assessment
 Related: PRD-0002, PDR-0147, implementation `hamlet-e62029114c`, acceptance `hamlet-41e79fb08b`
+
+## Subsequent decision
+
+[PDR-0149](0149-owner-extends-cut-a-acceptance-to-october-1-and-cut-a-is-accepted.md)
+records the owner-authorized extension and accepts the verified checkpoint. It supersedes this calendar rejection and the resulting Cut B hold.
+The original reading below is retained as history.
 
 ## Reading
 

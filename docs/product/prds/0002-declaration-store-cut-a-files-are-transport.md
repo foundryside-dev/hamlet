@@ -1,4 +1,4 @@
-# PRD-0002 — Declaration-store unit, cut A: files are transport            Status: ready-for-planning
+# PRD-0002 — Declaration-store unit, cut A: files are transport            Status: accepted (PDR-0149)
 
 Decision: `PDR-0147` (scope ruling: one unit, two cuts, this is cut A), standing on `PDR-0117`
 (the unit's five calls, owner-directed), `PDR-0121` (the declaration-store target shape and the
@@ -8,8 +8,8 @@ unit, the first item under Next
 Target metric (`metrics.md`): input — **Failure loudness**
 Guardrails pulled (`metrics.md`): **Provenance integrity**, **Gates green**, **Pre-release
 hygiene**, **Documentation truth**
-Tracker: implementation `hamlet-e62029114c`, acceptance `hamlet-41e79fb08b` (blocked by the
-implementation issue), both under `hamlet-15050f280a` (WS-4), filed 2026-09-02; inputs `hamlet-obs-982755441c`, `hamlet-obs-b959ce55c0`, `hamlet-af929afa06` (parked
+Tracker: implementation `hamlet-e62029114c`, acceptance `hamlet-41e79fb08b` (accepted at
+`75383d18` under PDR-0149), both under `hamlet-15050f280a` (WS-4), filed 2026-09-02; inputs `hamlet-obs-982755441c`, `hamlet-obs-b959ce55c0`, `hamlet-af929afa06` (parked
 items); `hamlet-33e520cebd` is cut B's, not this cut's
 Written: 2026-09-02, at the fifty-fourth resume, under the grant confirmed the same session
 
@@ -57,16 +57,18 @@ error rather than a silent no-op; target 100% of known classes.
   declaration* class is **SILENT** — `items_smoke` compiles clean with six such files. The
   *duplicated fact* class (`period` / `day_length`) is **SILENT** — no check that the two agree.
 - **TARGET**: both classes **LOUD** at compile time, each refusal naming file and line, with a
-  committed test per class, on the cut-A checkpoint commit, **by 2026-09-16**.
-- **Falsification**: on 2026-09-16, if any file in a pack can still be ignored without a compile
+  committed test per class, on the cut-A checkpoint commit, **by 2026-10-01** (owner-authorized extension in PDR-0149).
+- **Falsification**: on 2026-10-01, if any file in a pack can still be ignored without a compile
   error, or a fact can still be declared twice with disagreeing values without one, the bet has
   not paid off.
 
 ## Acceptance criteria (falsifiable)
 
-All criteria are read on the cut-A checkpoint commit, and all are due by **2026-09-16**
-(A1 below, owner-confirmed). Missing the date without an accepted extension recorded in a PDR is a
-reject on every criterion.
+All criteria are read on the cut-A checkpoint commit, and all are due by **2026-10-01**,
+end of day Australia/Canberra (PDR-0149, implementing the owner-authorized extension).
+The original September 16 window was missed; PDR-0148 records that historical reading.
+Missing the revised date without an accepted extension recorded in a PDR is a reject on
+every criterion.
 
 1. **SUCCESS — stray declarations are loud.** Compiling `configs/test/items_smoke` as it stands
    at `ea3648db` (strays present) refuses, and the error names every file that no declaration
@@ -171,7 +173,10 @@ reject on every criterion.
 ## Open questions / assumptions
 
 - **A1 — the date. OWNER-CONFIRMED 2026-09-02** (*"Keep 2026-09-16"*). Chosen because it is
-  the expiry of the stray-file observation this cut discharges. Moving it now needs a PDR.
+  the expiry of the stray-file observation this cut discharges. **Superseded by PDR-0149:**
+  on October 1 the owner authorized extending the date; the agent selected October 1,
+  end of day Australia/Canberra, the verified completion date. September 16 remains the
+  historical missed window. All technical criteria are unchanged.
 - **A2 — `config_hash` is exempt for edited packs. OWNER-CONFIRMED 2026-09-02** (*"Yes, exempt
   config_hash on edited packs"*). `config_hash` digests raw file paths and contents, so any pack
   edit moves it by construction. `PDR-0147`'s bar therefore applies to the semantic hashes on
@@ -213,7 +218,7 @@ reject on every criterion.
   and canonical-order semantics, the single-source shape for day length (A3), and where
   file:line provenance attaches so criterion 5 is mechanical rather than per-site.
 - **Sequencing and forecast → `/axiom-program-management`:** this PRD carries no date of
-  delivery; 2026-09-16 is an acceptance window, not a forecast.
+  delivery; the revised 2026-10-01 acceptance window (PDR-0149) is not a forecast.
 - **Tracker:** file one implementation issue and one acceptance issue for cut A under
   `hamlet-15050f280a`; link `hamlet-af929afa06` (parked provenance sites, criterion 5),
   `hamlet-obs-982755441c` (discharged by criterion 1 or promoted by its reject branch),

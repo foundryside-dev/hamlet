@@ -13,29 +13,33 @@ by content, declarations merge by scoped identity, and unsupported/malformed inp
 with source provenance. No environment, learner, network, observation or variable-access
 semantics are changed. Cut B and the compile/render/converge milestone remain separate.
 
-The PRD's September 16 acceptance window was missed. Its exact wording is:
-“Missing the date without an accepted extension recorded in a PDR is a reject on every
-criterion.” The October 1 continuation instruction does not record such an extension.
-Consequently **formal acceptance remains rejected on calendar grounds**, regardless of
-functional test results. No acceptance PDR or retroactive date extension is fabricated.
+The original September 16 acceptance window was missed and recorded in PDR-0148.
+The owner subsequently instructed: “yeah, but lets just extend the date instead”.
+[PDR-0149](../../decisions/0149-owner-extends-cut-a-acceptance-to-october-1-and-cut-a-is-accepted.md)
+extends the window to October 1, end of day Australia/Canberra, and accepts implementation
+checkpoint `75383d189a57546b5ae8871eb996041b742457de` using the completed evidence.
+The agent selected October 1 as the actual verified completion date; the owner authorized
+extending the window without specifying a separate date. Technical criteria are unchanged.
+The earlier calendar rejection remains history; it is superseded for the revised assessment.
 
 ## Criterion readings
 
-| PRD criterion | Functional evidence | Formal date reading |
+| PRD criterion | Functional evidence | Verdict under revised window |
 | --- | --- | --- |
-| 1: Original strays are loud | Original five source blobs banked before correction in `tests/test_townlet/fixtures/declaration_store/items_smoke_strays`; public compiler refusal test names every path and line | Missed |
-| 2: One clock authority | Default L3 references `day_phase`; period mutation changes both effective curriculum time and token normalization; unknown/wrong-kind/fractional/boolean/inactive and equal/unequal duplicate controls refuse | Missed |
-| 3: Required declaration | Nested renamed drive and experiment witnesses compile; missing drive names its family rather than a mandated filename | Missed |
-| 4: Collisions | Singleton and catalog collisions name both actual declaring origins, including pack profile namespaces and level documents | Missed |
-| 5: Refusal provenance | Registry-linked witness covers all 21 codes in the four pinned families via real public compiler refusals; checks every raised issue's code, source and positive line | Missed |
-| 6: Hash integrity | Committed before snapshot and complete after comparison: 31 cases, 884 readings, all 853 semantic readings identical; six transport-digest readings move only on the two approved packs | Missed |
-| 7: Gates/harness | Final gate outcomes are recorded below; DIV-013 changes only input bindings, with no new output allowance | Missed |
-| 8: Hygiene/docs | Filename dispatch/parallel source parser/obsolete preflight APIs/dead static-variable filename loader deleted; canonical authoring references corrected; no defaults whitelist added | Missed |
+| 1: Original strays are loud | Original five source blobs banked before correction in `tests/test_townlet/fixtures/declaration_store/items_smoke_strays`; public compiler refusal test names every path and line | PASS |
+| 2: One clock authority | Default L3 references `day_phase`; period mutation changes both effective curriculum time and token normalization; unknown/wrong-kind/fractional/boolean/inactive and equal/unequal duplicate controls refuse | PASS |
+| 3: Required declaration | Nested renamed drive and experiment witnesses compile; missing drive names its family rather than a mandated filename | PASS |
+| 4: Collisions | Singleton and catalog collisions name both actual declaring origins, including pack profile namespaces and level documents | PASS |
+| 5: Refusal provenance | Registry-linked witness covers all 21 codes in the four pinned families via real public compiler refusals; checks every raised issue's code, source and positive line | PASS |
+| 6: Hash integrity | Committed before snapshot and complete after comparison: 31 cases, 884 readings, all 853 semantic readings identical; six transport-digest readings move only on the two approved packs | PASS |
+| 7: Gates/harness | Final gate outcomes are recorded below; DIV-013 changes only input bindings, with no new output allowance | PASS |
+| 8: Hygiene/docs | Filename dispatch/parallel source parser/obsolete preflight APIs/dead static-variable filename loader deleted; canonical authoring references corrected; no defaults whitelist added | PASS |
 
 The before snapshot was committed at `ee520090`, before the first production edit.
 The preceding plan/PRD-only commit `cc21d013` did not contain the ignored JSON; the
-follow-up forced-added it before implementation. The original parent PRD draft remains
-untouched. Source baseline for the readings is `64f5d3f5`.
+follow-up forced-added it before implementation. The original parent PRD draft was
+banked byte-for-byte before integration; the current PRD now records the authorized date
+amendment. Source baseline for the readings is `64f5d3f5`.
 
 ## Reproduction and gate outcomes
 
@@ -54,18 +58,24 @@ CPU correctness is the claim. CUDA, training convergence and browser acceptance 
 Ruff, Black, mypy and no-defaults passed at the engineering checkpoint. No whitelist edit;
 558 source/test Python files formatted, 177 source files type-checked. All 28 CLI packs passed
 including three expected failures. The after comparison passed with zero unexpected movements.
-At evidence preparation, full pytest and hosted exact-tip outcomes are pending. The completed
-`144788f8` suite found exactly three obsolete test assumptions (3969 passed, 18 skipped,
-three failed; coverage 84%). Commit `75600ef1` repairs those tests; all 24 cases in their
-complete files/initialization class pass. The complete suite is rerunning without exclusions.
-Interrupted earlier attempts are not passing evidence.
+The final full local suite passed **3972 tests**, with 18 skips and 84% coverage, in
+995.10 seconds. The earlier `144788f8` suite found three obsolete test assumptions;
+commit `75600ef1` repaired those tests. The final checkpoint differs from that executable/test
+tree only in documentation. Post-integration checks in the parent checkout passed all 38 cases.
+Interrupted or failed earlier attempts are not passing evidence.
 
-Terminal local-suite, pushed-tip CI and local recovery-branch integration readings are recorded
-after execution in implementation issue `hamlet-e62029114c`, acceptance issue
-`hamlet-41e79fb08b`, and [PR #40](https://github.com/foundryside-dev/hamlet/pull/40).
-This immutable preparation record does not predict those later outcomes or use an earlier
-workflow SHA as proof of the evidence commit. The acceptance decision is
-[PDR-0148](../../decisions/0148-declaration-cut-a-banks-engineering-evidence-but-misses-the-acceptance-window.md).
+Every hosted row was read as completed/success at the accepted implementation checkpoint
+`75383d189a57546b5ae8871eb996041b742457de`:
+
+- [Tests 36743412101](https://github.com/foundryside-dev/hamlet/actions/runs/36743412101).
+- [Config Validation 36743412391](https://github.com/foundryside-dev/hamlet/actions/runs/36743412391).
+- [Lint 36743412251](https://github.com/foundryside-dev/hamlet/actions/runs/36743412251).
+
+Implementation/acceptance issue comments 309–312 record the terminal readings. Local
+`project-recovery-4` was fast-forwarded to the implementation checkpoint; its feature branch
+was pushed in draft PR #40. The recovery branch was not pushed. The date amendment and
+acceptance documentation are subsequent commits; these older CI rows qualify the implementation
+checkpoint, not the later documentation tip.
 
 The CPU matrix uses the harness's `default_cells`, `run_cell_safely`, `write_report` and
 `exit_code` against the existing clean `oracle-2026-08-17` worktree, whose HEAD is verified
@@ -104,7 +114,9 @@ The pre-existing item-appearance cache serialization defect also remains; this c
 claim of warm-cache fidelity for item spawning. Existing level/cache identity regression tests
 qualify their stated paths; broader artifact repair belongs to the next program of work.
 
-The original parent checkout's unrelated skill-document edits and untracked PRD are preserved.
+The original parent checkout's unrelated skill-document edits are preserved. The original
+untracked PRD was banked byte-for-byte before its tracked copy was installed; its date is now
+amended under the owner instruction recorded in PDR-0149.
 Frozen oracle fixtures are unchanged. No migration readers, new behavioral defaults, training campaign or
-Murk migration are included. Local integration, push and hosted checks are reported separately
-when completed. Cut B does not start before the formal checkpoint decision.
+Murk migration are included. PDR-0149 supplies the formal checkpoint decision and satisfies
+the gate before Cut B. No Cut B implementation is included in this amendment.

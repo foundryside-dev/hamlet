@@ -10,6 +10,13 @@
 
 **Prerequisites:** Isolated `/tmp/hamlet-declaration-cut-a` worktree, dedicated locked environment, implementation issue `hamlet-e62029114c` claimed atomically. The original untracked PRD is copied unchanged from the parent checkout. No source, configuration, test or script changes exist between baseline `ea3648db` and task starting HEAD `64f5d3f5`.
 
+## Completion amendment
+
+PDR-0149 records the owner-authorized extension to October 1 and accepts checkpoint
+`75383d18`. The original planning assumptions below describe the pre-extension state.
+The Cut A acceptance gate is now satisfied; technical scope and evidence requirements
+remain unchanged.
+
 ## Acceptance contract
 
 - The September 16 calendar window in PRD-0002 was missed. The October 1 instruction authorizes continuing the existing work; it does not retroactively satisfy that calendar criterion. Report functional acceptance separately from that expired window.

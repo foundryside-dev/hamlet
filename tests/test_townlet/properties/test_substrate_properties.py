@@ -168,12 +168,11 @@ def test_property_obs_dim_matches_substrate_grid2d(grid_size, num_agents, test_c
         stratum_grid["height"] = grid_size
         stratum_path.write_text(yaml.safe_dump(stratum_data, sort_keys=False))
 
-        # Update training.yaml with vision_range
-        training_path = temp_pack / "levels" / "L0_test" / "training.yaml"
-        training_data = yaml.safe_load(training_path.read_text())
-        training_env = training_data.setdefault("environment", {})
-        training_env["vision_range"] = grid_size
-        training_path.write_text(yaml.safe_dump(training_data, sort_keys=False))
+        # Vision belongs to the curriculum declaration; 1.0 is the full normalized range.
+        curriculum_path = temp_pack / "levels" / "L0_test" / "curriculum.yaml"
+        curriculum_data = yaml.safe_load(curriculum_path.read_text())
+        curriculum_data["curriculum"]["vision_range"] = 1.0
+        curriculum_path.write_text(yaml.safe_dump(curriculum_data, sort_keys=False))
 
         # Update variables_reference.yaml to match new grid dimensions
         vfs_path = temp_pack / "variables_reference.yaml"
@@ -199,6 +198,8 @@ def test_property_obs_dim_matches_substrate_grid2d(grid_size, num_agents, test_c
 
     obs = env.reset()
 
+    assert env.vision_range == 1.0
+    assert env.substrate.width == env.substrate.height == grid_size
     expected_dim = env.metadata.observation_dim
     assert env.observation_dim == expected_dim
     assert obs.shape == (

@@ -875,11 +875,10 @@ class TestItemProfileExposureRefusals:
         with pytest.raises(ValueError, match=r"medical\.durability.*compiled `item` token capacity is 0"):
             variable_element_bindings(compiled_vfs_profiles, (), item_capacity_value=0)
 
-    def test_exposed_item_variable_with_unmapped_type_refuses(self):
-        # token_spec.py:1526-1530 (now ~1528-1534): an item-profile variable type with
-        # no token dtype landing (e.g. plain "int" — `VariableDef` has no scalar-int
-        # member; see `_ITEM_VAR_TYPE_TO_TOKEN_TYPE`'s own docstring) refuses naming the
-        # variable and its declared type.
-        compiled_vfs_profiles = _compiled_item_profiles("medical", "durability", "int")
-        with pytest.raises(ValueError, match=r"medical\.durability.*'int'.*no token dtype landing yet"):
+    @pytest.mark.parametrize("var_type", ["int", "vec2i", "vec3i"])
+    def test_exposed_item_variable_with_unmapped_type_refuses(self, var_type):
+        # These types cannot be produced by canonical scalar-like item declarations.
+        # Invalid internal products must refuse rather than acquire a compatibility landing.
+        compiled_vfs_profiles = _compiled_item_profiles("medical", "durability", var_type)
+        with pytest.raises(ValueError, match=rf"medical\.durability.*'{var_type}'.*no token dtype landing yet"):
             variable_element_bindings(compiled_vfs_profiles, (), item_capacity_value=1)

@@ -6,7 +6,6 @@ import re
 from pathlib import Path
 
 import pytest
-import yaml
 
 from townlet.oracle.matrix import Cell, RegisteredDivergence, RegisteredHashDivergence, default_cells
 from townlet.oracle.trace_io import RunParams
@@ -381,13 +380,7 @@ def test_differential_packs_vary_only_the_declared_axis() -> None:
             assert counterpart.exists(), f"{pack_name}/{rel} has no default_curriculum counterpart"
             if rel.name in ("stratum.yaml", "experiment.yaml"):
                 continue
-            if rel == Path("vfs_profiles.yaml"):
-                # Cut A changes the base clock comment, not the declaration.
-                assert yaml.safe_load((pack / rel).read_text()) == yaml.safe_load(
-                    counterpart.read_text()
-                ), f"{pack_name}/{rel} declaration drifted from default_curriculum"
-            else:
-                assert (pack / rel).read_bytes() == counterpart.read_bytes(), f"{pack_name}/{rel} drifted from default_curriculum"
+            assert (pack / rel).read_bytes() == counterpart.read_bytes(), f"{pack_name}/{rel} drifted from default_curriculum"
         assert (pack / "stratum.yaml").read_bytes() != (
             base / "stratum.yaml"
         ).read_bytes(), f"{pack_name}: stratum.yaml does not move the declared axis"

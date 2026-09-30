@@ -41,6 +41,7 @@ def test_effect_on_despawn_spawns_item_with_real_itemmanager():
             variables=[
                 CompiledVariable(
                     name="durability",
+                    lifetime="episode",
                     type="float",
                     expression=None,
                     ast=None,
@@ -50,6 +51,7 @@ def test_effect_on_despawn_spawns_item_with_real_itemmanager():
                 ),
                 CompiledVariable(
                     name="quality",
+                    lifetime="episode",
                     type="float",
                     expression=None,
                     ast=None,

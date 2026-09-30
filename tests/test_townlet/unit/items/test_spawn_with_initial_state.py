@@ -33,18 +33,20 @@ def test_spawn_item_with_initial_state():
         variables=[
             CompiledVariable(
                 name="durability",
-                type="scalar",
+                lifetime="episode",
+                type="float",
                 ast=None,
                 initial_value=100.0,
-                result_type="scalar",
+                result_type="float",
                 exposed_to=("agent",),
             ),
             CompiledVariable(
                 name="quality",
-                type="scalar",
+                lifetime="episode",
+                type="float",
                 ast=None,
                 initial_value=1.0,
-                result_type="scalar",
+                result_type="float",
                 exposed_to=("agent",),
             ),
         ],
@@ -117,10 +119,11 @@ def test_spawn_item_without_initial_state_uses_defaults():
         variables=[
             CompiledVariable(
                 name="durability",
-                type="scalar",
+                lifetime="episode",
+                type="float",
                 ast=None,
                 initial_value=100.0,
-                result_type="scalar",
+                result_type="float",
                 exposed_to=("agent",),
             ),
         ],

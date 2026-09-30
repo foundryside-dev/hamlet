@@ -14,7 +14,8 @@ def test_registry_initializes_item_storage_from_profiles():
         variables=[
             CompiledVariable(
                 name="calories",
-                type="int",
+                lifetime="episode",
+                type="float",
                 ast=None,
                 initial_value=100,
                 result_type="int",
@@ -22,6 +23,7 @@ def test_registry_initializes_item_storage_from_profiles():
             ),
             CompiledVariable(
                 name="freshness",
+                lifetime="episode",
                 type="float",
                 ast=None,
                 initial_value=1.0,
@@ -36,7 +38,8 @@ def test_registry_initializes_item_storage_from_profiles():
         variables=[
             CompiledVariable(
                 name="damage",
-                type="int",
+                lifetime="episode",
+                type="float",
                 ast=None,
                 initial_value=50,
                 result_type="int",
@@ -44,6 +47,7 @@ def test_registry_initializes_item_storage_from_profiles():
             ),
             CompiledVariable(
                 name="durability",
+                lifetime="episode",
                 type="float",
                 ast=None,
                 initial_value=1.0,
@@ -84,7 +88,8 @@ def test_registry_item_storage_has_correct_shape():
         variables=[
             CompiledVariable(
                 name="var1",
-                type="int",
+                lifetime="episode",
+                type="float",
                 ast=None,
                 initial_value=0,
                 result_type="int",
@@ -92,7 +97,8 @@ def test_registry_item_storage_has_correct_shape():
             ),
             CompiledVariable(
                 name="var2",
-                type="int",
+                lifetime="episode",
+                type="float",
                 ast=None,
                 initial_value=0,
                 result_type="int",
@@ -106,7 +112,8 @@ def test_registry_item_storage_has_correct_shape():
         variables=[
             CompiledVariable(
                 name="var1",
-                type="int",
+                lifetime="episode",
+                type="float",
                 ast=None,
                 initial_value=0,
                 result_type="int",

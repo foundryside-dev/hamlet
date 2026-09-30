@@ -230,6 +230,7 @@ def test_spawn_item_with_initial_state():
             variables=[
                 CompiledVariable(
                     name="durability",
+                    lifetime="episode",
                     type="float",
                     expression=None,
                     ast=None,

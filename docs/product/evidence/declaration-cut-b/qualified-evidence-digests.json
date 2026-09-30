@@ -1,0 +1,19 @@
+{
+  "canonical_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+  "files": {
+    "qualified-frozen-report.json": "6d8b842d214f356f16cba382c886b1875e8a8146940f656e79b7d1cad558bb40",
+    "qualified-parent-after-census.json": "83769c6483f391516c64c618ced1d04b9894e16184dbf513e16743244f4431d1",
+    "qualified-parent-after-cpu-traces.json": "d7df79b2d1f1fa379ae2e5691708f5e08fba33f4551371f1c1028faabc3f583c",
+    "qualified-parent-after-inputs.json": "f83f98f2f538c67f632597620764db20fae309fd55a0f39d2a995270f749109e",
+    "qualified-parent-after-resets.json": "30a743f6b9edec684daf24b68e4af0c342e5c5fa32b97ff949b80648626c96fb",
+    "qualified-parent-provenance.json": "d55cc3362481e753a57b85d213688f4a7d2825400348f3d1846a59bfaaea06aa",
+    "qualified-parent-report.json": "5c5e7530b365d7636932497e071f740907ee2896c241ec22129602477074d9f7"
+  },
+  "frozen_counts": {
+    "DIVERGED_AS_REGISTERED": 10,
+    "SKIPPED": 10
+  },
+  "frozen_matrix_exit": 0,
+  "parent_comparator_exit": 0,
+  "source_commit": "da035e50a44fe25b729fae6a0e365d2820c79e5b"
+}

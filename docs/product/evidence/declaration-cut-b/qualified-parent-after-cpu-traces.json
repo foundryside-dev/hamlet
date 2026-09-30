@@ -1,0 +1,1109 @@
+{
+  "cells": [
+    {
+      "action_source": "scripted:a8c1f8b2122f5c68",
+      "cell_id": "default_curriculum:L0_0_minimal:cpu:seed42",
+      "code_root": "/tmp/hamlet-declaration-cut-b/src",
+      "hash_changes": [
+        {
+          "after": "2accfd2d6c800f3a9711d447e910616eff9d41d35542c2739c81cf398cdcea41",
+          "after_present": true,
+          "before": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279",
+          "before_present": true,
+          "path": "/environment_hash"
+        },
+        {
+          "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+          "after_present": true,
+          "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+          "before_present": true,
+          "path": "/observation_schema_hash"
+        },
+        {
+          "after": "1a696caab82b87388534e72429b9f97710b9b13453891e81c2cda12220fad8ae",
+          "after_present": true,
+          "before": "8760b4c3e9507c01138f59f2f0f98db110d17a9af6cb68f17a192c0a2e8eb84c",
+          "before_present": true,
+          "path": "/vfs_hash"
+        }
+      ],
+      "pack_root": "/tmp/hamlet-declaration-cut-b",
+      "streams": {
+        "actions": {
+          "after": {
+            "dtype": "int64",
+            "sha256": "a8c1f8b2122f5c68ed1023dc7c5119f5bc0c04883b100d5b56a630cbffc63297",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "int64",
+            "sha256": "a8c1f8b2122f5c68ed1023dc7c5119f5bc0c04883b100d5b56a630cbffc63297",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "dones": {
+          "after": {
+            "dtype": "bool",
+            "sha256": "80717a5fc244b2ce7b686c1449157abeb8028de1cb76806fcbae441a41137873",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "bool",
+            "sha256": "80717a5fc244b2ce7b686c1449157abeb8028de1cb76806fcbae441a41137873",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "obs": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "1f097b4a1b3495e59c6f798b3a94abdb2ce1538cb4e0f2d247b893f4e2a8e45a",
+            "shape": [
+              101,
+              4,
+              118
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "1f097b4a1b3495e59c6f798b3a94abdb2ce1538cb4e0f2d247b893f4e2a8e45a",
+            "shape": [
+              101,
+              4,
+              118
+            ]
+          },
+          "equal": true
+        },
+        "rewards": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "9a988facc574565aad11a347058acc3075088d83ccf5bc19d40fa29cc10f17a4",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "9a988facc574565aad11a347058acc3075088d83ccf5bc19d40fa29cc10f17a4",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        }
+      }
+    },
+    {
+      "action_source": "scripted:a8c1f8b2122f5c68",
+      "cell_id": "default_curriculum:L0_5_dual_resource:cpu:seed42",
+      "code_root": "/tmp/hamlet-declaration-cut-b/src",
+      "hash_changes": [
+        {
+          "after": "2accfd2d6c800f3a9711d447e910616eff9d41d35542c2739c81cf398cdcea41",
+          "after_present": true,
+          "before": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279",
+          "before_present": true,
+          "path": "/environment_hash"
+        },
+        {
+          "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+          "after_present": true,
+          "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+          "before_present": true,
+          "path": "/observation_schema_hash"
+        },
+        {
+          "after": "05e73e6eb8757a224670aabf9df07657ce0601bf75d80dbf48f633f5b307ed4d",
+          "after_present": true,
+          "before": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3",
+          "before_present": true,
+          "path": "/vfs_hash"
+        }
+      ],
+      "pack_root": "/tmp/hamlet-declaration-cut-b",
+      "streams": {
+        "actions": {
+          "after": {
+            "dtype": "int64",
+            "sha256": "a8c1f8b2122f5c68ed1023dc7c5119f5bc0c04883b100d5b56a630cbffc63297",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "int64",
+            "sha256": "a8c1f8b2122f5c68ed1023dc7c5119f5bc0c04883b100d5b56a630cbffc63297",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "dones": {
+          "after": {
+            "dtype": "bool",
+            "sha256": "80717a5fc244b2ce7b686c1449157abeb8028de1cb76806fcbae441a41137873",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "bool",
+            "sha256": "80717a5fc244b2ce7b686c1449157abeb8028de1cb76806fcbae441a41137873",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "obs": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "1f097b4a1b3495e59c6f798b3a94abdb2ce1538cb4e0f2d247b893f4e2a8e45a",
+            "shape": [
+              101,
+              4,
+              118
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "1f097b4a1b3495e59c6f798b3a94abdb2ce1538cb4e0f2d247b893f4e2a8e45a",
+            "shape": [
+              101,
+              4,
+              118
+            ]
+          },
+          "equal": true
+        },
+        "rewards": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "9a988facc574565aad11a347058acc3075088d83ccf5bc19d40fa29cc10f17a4",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "9a988facc574565aad11a347058acc3075088d83ccf5bc19d40fa29cc10f17a4",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        }
+      }
+    },
+    {
+      "action_source": "scripted:a8c1f8b2122f5c68",
+      "cell_id": "default_curriculum:L1_full_observability:cpu:seed42",
+      "code_root": "/tmp/hamlet-declaration-cut-b/src",
+      "hash_changes": [
+        {
+          "after": "2accfd2d6c800f3a9711d447e910616eff9d41d35542c2739c81cf398cdcea41",
+          "after_present": true,
+          "before": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279",
+          "before_present": true,
+          "path": "/environment_hash"
+        },
+        {
+          "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+          "after_present": true,
+          "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+          "before_present": true,
+          "path": "/observation_schema_hash"
+        },
+        {
+          "after": "05e73e6eb8757a224670aabf9df07657ce0601bf75d80dbf48f633f5b307ed4d",
+          "after_present": true,
+          "before": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3",
+          "before_present": true,
+          "path": "/vfs_hash"
+        }
+      ],
+      "pack_root": "/tmp/hamlet-declaration-cut-b",
+      "streams": {
+        "actions": {
+          "after": {
+            "dtype": "int64",
+            "sha256": "a8c1f8b2122f5c68ed1023dc7c5119f5bc0c04883b100d5b56a630cbffc63297",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "int64",
+            "sha256": "a8c1f8b2122f5c68ed1023dc7c5119f5bc0c04883b100d5b56a630cbffc63297",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "dones": {
+          "after": {
+            "dtype": "bool",
+            "sha256": "80717a5fc244b2ce7b686c1449157abeb8028de1cb76806fcbae441a41137873",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "bool",
+            "sha256": "80717a5fc244b2ce7b686c1449157abeb8028de1cb76806fcbae441a41137873",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "obs": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "1f097b4a1b3495e59c6f798b3a94abdb2ce1538cb4e0f2d247b893f4e2a8e45a",
+            "shape": [
+              101,
+              4,
+              118
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "1f097b4a1b3495e59c6f798b3a94abdb2ce1538cb4e0f2d247b893f4e2a8e45a",
+            "shape": [
+              101,
+              4,
+              118
+            ]
+          },
+          "equal": true
+        },
+        "rewards": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "9a988facc574565aad11a347058acc3075088d83ccf5bc19d40fa29cc10f17a4",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "9a988facc574565aad11a347058acc3075088d83ccf5bc19d40fa29cc10f17a4",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        }
+      }
+    },
+    {
+      "action_source": "scripted:a8c1f8b2122f5c68",
+      "cell_id": "default_curriculum:L2_partial_observability:cpu:seed42",
+      "code_root": "/tmp/hamlet-declaration-cut-b/src",
+      "hash_changes": [
+        {
+          "after": "2accfd2d6c800f3a9711d447e910616eff9d41d35542c2739c81cf398cdcea41",
+          "after_present": true,
+          "before": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279",
+          "before_present": true,
+          "path": "/environment_hash"
+        },
+        {
+          "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+          "after_present": true,
+          "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+          "before_present": true,
+          "path": "/observation_schema_hash"
+        },
+        {
+          "after": "05e73e6eb8757a224670aabf9df07657ce0601bf75d80dbf48f633f5b307ed4d",
+          "after_present": true,
+          "before": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3",
+          "before_present": true,
+          "path": "/vfs_hash"
+        }
+      ],
+      "pack_root": "/tmp/hamlet-declaration-cut-b",
+      "streams": {
+        "actions": {
+          "after": {
+            "dtype": "int64",
+            "sha256": "a8c1f8b2122f5c68ed1023dc7c5119f5bc0c04883b100d5b56a630cbffc63297",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "int64",
+            "sha256": "a8c1f8b2122f5c68ed1023dc7c5119f5bc0c04883b100d5b56a630cbffc63297",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "dones": {
+          "after": {
+            "dtype": "bool",
+            "sha256": "80717a5fc244b2ce7b686c1449157abeb8028de1cb76806fcbae441a41137873",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "bool",
+            "sha256": "80717a5fc244b2ce7b686c1449157abeb8028de1cb76806fcbae441a41137873",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "obs": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "2d0f209d82dce052b72c499e55743acbeab98980f0a8650fe1e59349e80d283e",
+            "shape": [
+              101,
+              4,
+              118
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "2d0f209d82dce052b72c499e55743acbeab98980f0a8650fe1e59349e80d283e",
+            "shape": [
+              101,
+              4,
+              118
+            ]
+          },
+          "equal": true
+        },
+        "rewards": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "9a988facc574565aad11a347058acc3075088d83ccf5bc19d40fa29cc10f17a4",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "9a988facc574565aad11a347058acc3075088d83ccf5bc19d40fa29cc10f17a4",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        }
+      }
+    },
+    {
+      "action_source": "scripted:a8c1f8b2122f5c68",
+      "cell_id": "default_curriculum:L3_temporal_mechanics:cpu:seed42",
+      "code_root": "/tmp/hamlet-declaration-cut-b/src",
+      "hash_changes": [
+        {
+          "after": "2accfd2d6c800f3a9711d447e910616eff9d41d35542c2739c81cf398cdcea41",
+          "after_present": true,
+          "before": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279",
+          "before_present": true,
+          "path": "/environment_hash"
+        },
+        {
+          "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+          "after_present": true,
+          "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+          "before_present": true,
+          "path": "/observation_schema_hash"
+        },
+        {
+          "after": "05e73e6eb8757a224670aabf9df07657ce0601bf75d80dbf48f633f5b307ed4d",
+          "after_present": true,
+          "before": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3",
+          "before_present": true,
+          "path": "/vfs_hash"
+        }
+      ],
+      "pack_root": "/tmp/hamlet-declaration-cut-b",
+      "streams": {
+        "actions": {
+          "after": {
+            "dtype": "int64",
+            "sha256": "a8c1f8b2122f5c68ed1023dc7c5119f5bc0c04883b100d5b56a630cbffc63297",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "int64",
+            "sha256": "a8c1f8b2122f5c68ed1023dc7c5119f5bc0c04883b100d5b56a630cbffc63297",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "dones": {
+          "after": {
+            "dtype": "bool",
+            "sha256": "93208a950482d4e03cbf3d9c58dcde7fdddc7c7e708dff1e2579d1df116ca64e",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "bool",
+            "sha256": "93208a950482d4e03cbf3d9c58dcde7fdddc7c7e708dff1e2579d1df116ca64e",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "obs": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "f4b7e9c27a83a3b3e7f1b3aab77c762212fb499bc23316f09707188cecaa16d7",
+            "shape": [
+              101,
+              4,
+              118
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "f4b7e9c27a83a3b3e7f1b3aab77c762212fb499bc23316f09707188cecaa16d7",
+            "shape": [
+              101,
+              4,
+              118
+            ]
+          },
+          "equal": true
+        },
+        "rewards": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "d41ae43a4e8058c0744742fd9c71891dafb6f57033cfaa9a0b7d3fb579f46b75",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "d41ae43a4e8058c0744742fd9c71891dafb6f57033cfaa9a0b7d3fb579f46b75",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        }
+      }
+    },
+    {
+      "action_source": "scripted:a8c1f8b2122f5c68",
+      "cell_id": "boundary_wrap:L1_full_observability:cpu:seed42",
+      "code_root": "/tmp/hamlet-declaration-cut-b/src",
+      "hash_changes": [
+        {
+          "after": "2accfd2d6c800f3a9711d447e910616eff9d41d35542c2739c81cf398cdcea41",
+          "after_present": true,
+          "before": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279",
+          "before_present": true,
+          "path": "/environment_hash"
+        },
+        {
+          "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+          "after_present": true,
+          "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+          "before_present": true,
+          "path": "/observation_schema_hash"
+        },
+        {
+          "after": "05e73e6eb8757a224670aabf9df07657ce0601bf75d80dbf48f633f5b307ed4d",
+          "after_present": true,
+          "before": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3",
+          "before_present": true,
+          "path": "/vfs_hash"
+        }
+      ],
+      "pack_root": "/tmp/hamlet-declaration-cut-b",
+      "streams": {
+        "actions": {
+          "after": {
+            "dtype": "int64",
+            "sha256": "a8c1f8b2122f5c68ed1023dc7c5119f5bc0c04883b100d5b56a630cbffc63297",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "int64",
+            "sha256": "a8c1f8b2122f5c68ed1023dc7c5119f5bc0c04883b100d5b56a630cbffc63297",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "dones": {
+          "after": {
+            "dtype": "bool",
+            "sha256": "7a12ee729458c183f2ebc735d546e585878aa64a84525025e2762fad249c3a53",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "bool",
+            "sha256": "7a12ee729458c183f2ebc735d546e585878aa64a84525025e2762fad249c3a53",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "obs": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "2e71e65bf03105467a962275a56a4fa705eb75723e8752aeeda36de3615645f5",
+            "shape": [
+              101,
+              4,
+              118
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "2e71e65bf03105467a962275a56a4fa705eb75723e8752aeeda36de3615645f5",
+            "shape": [
+              101,
+              4,
+              118
+            ]
+          },
+          "equal": true
+        },
+        "rewards": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "7731b29b5a820dfc050320d4605d0f5d01444afb0d698f25cf4f73caadf0e0a3",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "7731b29b5a820dfc050320d4605d0f5d01444afb0d698f25cf4f73caadf0e0a3",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        }
+      }
+    },
+    {
+      "action_source": "scripted:bee7792e4af0c4cc",
+      "cell_id": "div003_cubic_partial:L2_partial_observability:cpu:seed42",
+      "code_root": "/tmp/hamlet-declaration-cut-b/src",
+      "hash_changes": [
+        {
+          "after": "2accfd2d6c800f3a9711d447e910616eff9d41d35542c2739c81cf398cdcea41",
+          "after_present": true,
+          "before": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279",
+          "before_present": true,
+          "path": "/environment_hash"
+        },
+        {
+          "after": "88b72261226dccd95c5717aacefdaec0e4bbf4a2decf8b8439df80b69337cc07",
+          "after_present": true,
+          "before": "a221e121044ef5c92091645eddab6820396a1782ff386a63ead1b136db8d0927",
+          "before_present": true,
+          "path": "/observation_schema_hash"
+        },
+        {
+          "after": "2163b37fde594ff2f1d3916d987314e7c75838b96d352b210e362d6053f9a150",
+          "after_present": true,
+          "before": "9563de51e767aa64bd7f426fd50936706de8b3998db3758770cbaa474440b339",
+          "before_present": true,
+          "path": "/vfs_hash"
+        }
+      ],
+      "pack_root": "/tmp/hamlet-declaration-cut-b",
+      "streams": {
+        "actions": {
+          "after": {
+            "dtype": "int64",
+            "sha256": "bee7792e4af0c4ccba7d47b5ff63ebf4cd166639feec6820fc035e7f24849576",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "int64",
+            "sha256": "bee7792e4af0c4ccba7d47b5ff63ebf4cd166639feec6820fc035e7f24849576",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "dones": {
+          "after": {
+            "dtype": "bool",
+            "sha256": "c4271d491b15703529d9ef1c23937e5890b0a21dd21aea959efd74949a0c8d54",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "bool",
+            "sha256": "c4271d491b15703529d9ef1c23937e5890b0a21dd21aea959efd74949a0c8d54",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "obs": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "1cfe4bd7ce2264c97a581a84bb7ca3a5f3e3beb26d14ff91b1b852c423de983c",
+            "shape": [
+              101,
+              4,
+              152
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "1cfe4bd7ce2264c97a581a84bb7ca3a5f3e3beb26d14ff91b1b852c423de983c",
+            "shape": [
+              101,
+              4,
+              152
+            ]
+          },
+          "equal": true
+        },
+        "rewards": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "628b97ad29b187d670d9d736141368fb866333b688a2eacef1b2d450607217b8",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "628b97ad29b187d670d9d736141368fb866333b688a2eacef1b2d450607217b8",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        }
+      }
+    },
+    {
+      "action_source": "scripted:2a0799b319316b8a",
+      "cell_id": "div003_rect:L1_full_observability:cpu:seed42",
+      "code_root": "/tmp/hamlet-declaration-cut-b/src",
+      "hash_changes": [
+        {
+          "after": "2accfd2d6c800f3a9711d447e910616eff9d41d35542c2739c81cf398cdcea41",
+          "after_present": true,
+          "before": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279",
+          "before_present": true,
+          "path": "/environment_hash"
+        },
+        {
+          "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+          "after_present": true,
+          "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+          "before_present": true,
+          "path": "/observation_schema_hash"
+        },
+        {
+          "after": "05e73e6eb8757a224670aabf9df07657ce0601bf75d80dbf48f633f5b307ed4d",
+          "after_present": true,
+          "before": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3",
+          "before_present": true,
+          "path": "/vfs_hash"
+        }
+      ],
+      "pack_root": "/tmp/hamlet-declaration-cut-b",
+      "streams": {
+        "actions": {
+          "after": {
+            "dtype": "int64",
+            "sha256": "2a0799b319316b8a300b35139729115a853a1df1babbfd07472d38def7232401",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "int64",
+            "sha256": "2a0799b319316b8a300b35139729115a853a1df1babbfd07472d38def7232401",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "dones": {
+          "after": {
+            "dtype": "bool",
+            "sha256": "5cadb20245fb72e7b0f3ff555af446bad55cec5125d996a8950a9dec5507c616",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "bool",
+            "sha256": "5cadb20245fb72e7b0f3ff555af446bad55cec5125d996a8950a9dec5507c616",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "obs": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "5d0cf08353ab98134bb612a492ffcb754d2c7818063ceb60f1590d2f4fd1038d",
+            "shape": [
+              101,
+              4,
+              118
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "5d0cf08353ab98134bb612a492ffcb754d2c7818063ceb60f1590d2f4fd1038d",
+            "shape": [
+              101,
+              4,
+              118
+            ]
+          },
+          "equal": true
+        },
+        "rewards": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "825d620d3b2593f4f254b016a74de4fab5ec09d4bf4f55461030dfc03d379ad2",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "825d620d3b2593f4f254b016a74de4fab5ec09d4bf4f55461030dfc03d379ad2",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        }
+      }
+    },
+    {
+      "action_source": "scripted:4e023b53426044bf",
+      "cell_id": "items_smoke:L0_smoke:cpu:seed42",
+      "code_root": "/tmp/hamlet-declaration-cut-b/src",
+      "hash_changes": [
+        {
+          "after": "90fa23dd5c64f2fcf561673370836c698e0729774113f5b6f42bb004b3c55388",
+          "after_present": true,
+          "before": "6bd3a9c0ff55b7978a72ab4bdd8b94ef2662e284d46fcab2726bf8bd61020016",
+          "before_present": true,
+          "path": "/environment_hash"
+        },
+        {
+          "after": "0d2986acc1af11801febda48d34e48fd4627ccb63f860141d746c2a53eda0ec4",
+          "after_present": true,
+          "before": "302658b1450e8cfbb60d3119a79085bb2e1b0a664a83c3c6020680113344e7f0",
+          "before_present": true,
+          "path": "/observation_schema_hash"
+        },
+        {
+          "after": "6818530d1b2a24bd939d6e2121f332a84be18de20f5e88328cb8384b57f4a828",
+          "after_present": true,
+          "before": "7a291a67154f3c6585c8ff385e34bf99fd3b3f7921a0a28d86af9168858b6f30",
+          "before_present": true,
+          "path": "/variable_schema_hash"
+        },
+        {
+          "after": "97865ee79712555ee895ec56a2b360977823bd1efd66fa55a3554cfb42158e86",
+          "after_present": true,
+          "before": "a0407c5fe52374b53586842eb7957b8d8f2b29e24d5d0bb5227719e293b9a00f",
+          "before_present": true,
+          "path": "/vfs_hash"
+        }
+      ],
+      "pack_root": "/tmp/hamlet-declaration-cut-b",
+      "streams": {
+        "actions": {
+          "after": {
+            "dtype": "int64",
+            "sha256": "4e023b53426044bf6a78d4b8f153800a614d7db78cc97ef04c196fb9df7c117a",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "int64",
+            "sha256": "4e023b53426044bf6a78d4b8f153800a614d7db78cc97ef04c196fb9df7c117a",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "dones": {
+          "after": {
+            "dtype": "bool",
+            "sha256": "8570c0b3dc0380bdbb46b91ce546652db38bf10686d8b4de32dae9884fff080c",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "bool",
+            "sha256": "8570c0b3dc0380bdbb46b91ce546652db38bf10686d8b4de32dae9884fff080c",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "obs": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "1344c533473a20d71a100538bcdbdabb4ed3d04429f51dedb812730898599911",
+            "shape": [
+              101,
+              4,
+              474
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "1344c533473a20d71a100538bcdbdabb4ed3d04429f51dedb812730898599911",
+            "shape": [
+              101,
+              4,
+              474
+            ]
+          },
+          "equal": true
+        },
+        "rewards": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "aec44a9ccb19b724ec8d407d308030943164ff389ac7457bea71864f41932a51",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "aec44a9ccb19b724ec8d407d308030943164ff389ac7457bea71864f41932a51",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        }
+      }
+    },
+    {
+      "action_source": "scripted:6a242d4ad5560c5b",
+      "cell_id": "effects_smoke:L0_effects:cpu:seed42",
+      "code_root": "/tmp/hamlet-declaration-cut-b/src",
+      "hash_changes": [
+        {
+          "after": "077adada9fdb74469368761c3545e34767a25007129f177c50e5520ba2b7bcb5",
+          "after_present": true,
+          "before": "50406e5bbad790769c140e91236f7018a16330c956d4f74456b2e7fa20849603",
+          "before_present": true,
+          "path": "/environment_hash"
+        },
+        {
+          "after": "2e6077c4248ab88e5b10588d320d411dcf81cefe48270474b30d0317c65ee387",
+          "after_present": true,
+          "before": "dde5eaac7c48dbfac35ca1dfd707c78f3dd540eb7438a91956c696b04a1a2f02",
+          "before_present": true,
+          "path": "/observation_schema_hash"
+        },
+        {
+          "after": "a95ac3cdd865c746543005af56bcbcef8a7dfa181373791076bb891f003ea820",
+          "after_present": true,
+          "before": "e1fc0ee0df0992be5f7708b0a74dfd4fbbeabe17948327cbafca4c210cfc0166",
+          "before_present": true,
+          "path": "/variable_schema_hash"
+        },
+        {
+          "after": "b7340cb5915799af269ea7c1ed4ec9d8c44239282664441ab2748466c2b629a4",
+          "after_present": true,
+          "before": "9ddadaa124e951ddc583a71132ea0a8c2ce81eabcba0cec6bc22ebbbad073425",
+          "before_present": true,
+          "path": "/vfs_hash"
+        }
+      ],
+      "pack_root": "/tmp/hamlet-declaration-cut-b",
+      "streams": {
+        "actions": {
+          "after": {
+            "dtype": "int64",
+            "sha256": "6a242d4ad5560c5b883184bad0930426ac5a5ab22e049f31f0975330d7db540e",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "int64",
+            "sha256": "6a242d4ad5560c5b883184bad0930426ac5a5ab22e049f31f0975330d7db540e",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "dones": {
+          "after": {
+            "dtype": "bool",
+            "sha256": "945341520a34b2afd00941d6abb505d561e3f7bedb6cdf0d2d6025c4f76e79e6",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "bool",
+            "sha256": "945341520a34b2afd00941d6abb505d561e3f7bedb6cdf0d2d6025c4f76e79e6",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "obs": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "dbc4bf8d1acf296d2ba68d024a769ec6a972d80aac756d0538366e0c015006c1",
+            "shape": [
+              101,
+              4,
+              61
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "dbc4bf8d1acf296d2ba68d024a769ec6a972d80aac756d0538366e0c015006c1",
+            "shape": [
+              101,
+              4,
+              61
+            ]
+          },
+          "equal": true
+        },
+        "rewards": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "d44318e97a53f0a4c608ec9e85512c7727ba97ca9f0f0e53951342871f4e6f2f",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "d44318e97a53f0a4c608ec9e85512c7727ba97ca9f0f0e53951342871f4e6f2f",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        }
+      }
+    }
+  ],
+  "failed": false
+}

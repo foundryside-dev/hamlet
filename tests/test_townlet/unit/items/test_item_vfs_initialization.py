@@ -16,10 +16,11 @@ def test_spawn_item_initializes_vfs_state():
         variables=[
             CompiledVariable(
                 name="durability",
-                type="scalar",
+                lifetime="episode",
+                type="float",
                 ast=None,
                 initial_value=100.0,
-                result_type="scalar",
+                result_type="float",
                 exposed_to=("agent",),
             ),
         ],
@@ -68,10 +69,11 @@ def test_despawn_item_does_not_clear_vfs_state():
         variables=[
             CompiledVariable(
                 name="durability",
-                type="scalar",
+                lifetime="episode",
+                type="float",
                 ast=None,
                 initial_value=100.0,
-                result_type="scalar",
+                result_type="float",
                 exposed_to=("agent",),
             ),
         ],

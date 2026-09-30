@@ -10,6 +10,7 @@ def _profile(expr: str, name: str = "var", type_: str = "float") -> CompiledGlob
     ast = ExpressionParser().parse(expr)
     var = CompiledVariable(
         name=name,
+        lifetime="episode",
         type=type_,
         exposed_to=("agent",),
         expression=expr,

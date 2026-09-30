@@ -16,7 +16,8 @@ def test_vfs_evaluator_evaluates_expressions_in_topo_order():
     variables = [
         CompiledVariable(
             name="a",
-            type="int",
+            lifetime="persistent",
+            type="float",
             ast=None,
             initial_value=5,
             result_type="int",
@@ -24,7 +25,8 @@ def test_vfs_evaluator_evaluates_expressions_in_topo_order():
         ),
         CompiledVariable(
             name="b",
-            type="int",
+            lifetime="persistent",
+            type="float",
             ast=parser.parse("a + 10"),  # Depends on "a"
             initial_value=None,
             result_type="int",
@@ -63,7 +65,8 @@ def test_vfs_evaluator_mark_and_sweep_evaluates_marks_only_when_independent():
     variables = [
         CompiledVariable(
             name="observed",
-            type="int",
+            lifetime="persistent",
+            type="float",
             ast=parser.parse("1 + 1"),
             initial_value=None,
             result_type="int",
@@ -71,7 +74,8 @@ def test_vfs_evaluator_mark_and_sweep_evaluates_marks_only_when_independent():
         ),
         CompiledVariable(
             name="unobserved",
-            type="int",
+            lifetime="persistent",
+            type="float",
             ast=parser.parse("2 + 2"),
             initial_value=None,
             result_type="int",
@@ -106,6 +110,7 @@ def test_vfs_evaluator_mark_and_sweep_recomputes_dependencies():
     variables = [
         CompiledVariable(
             name="a",
+            lifetime="episode",
             type="float",
             ast=parser.parse("bar.energy + 1"),
             initial_value=None,
@@ -114,6 +119,7 @@ def test_vfs_evaluator_mark_and_sweep_recomputes_dependencies():
         ),
         CompiledVariable(
             name="b",
+            lifetime="episode",
             type="float",
             ast=parser.parse("a * 2"),
             initial_value=None,
@@ -149,7 +155,8 @@ def test_vfs_evaluator_mark_and_sweep_requires_explicit_marks():
         variables=[
             CompiledVariable(
                 name="observed",
-                type="int",
+                lifetime="persistent",
+                type="float",
                 ast=None,
                 initial_value=1,
                 result_type="int",
@@ -177,7 +184,8 @@ def test_vfs_evaluator_mark_and_sweep_rejects_unknown_marks():
         variables=[
             CompiledVariable(
                 name="observed",
-                type="int",
+                lifetime="persistent",
+                type="float",
                 ast=None,
                 initial_value=1,
                 result_type="int",
@@ -207,7 +215,8 @@ def test_vfs_evaluator_eager_mode_evaluates_all_vars():
     variables = [
         CompiledVariable(
             name="var1",
-            type="int",
+            lifetime="persistent",
+            type="float",
             ast=parser.parse("1"),
             initial_value=None,
             result_type="int",
@@ -215,7 +224,8 @@ def test_vfs_evaluator_eager_mode_evaluates_all_vars():
         ),
         CompiledVariable(
             name="var2",
-            type="int",
+            lifetime="persistent",
+            type="float",
             ast=parser.parse("2"),
             initial_value=None,
             result_type="int",
@@ -250,6 +260,7 @@ def test_vfs_evaluator_handles_reference_path_access():
     variables = [
         CompiledVariable(
             name="ref_target",
+            lifetime="persistent",
             type="float",
             ast=None,
             initial_value=3.0,
@@ -258,6 +269,7 @@ def test_vfs_evaluator_handles_reference_path_access():
         ),
         CompiledVariable(
             name="use_ref",
+            lifetime="persistent",
             type="float",
             ast=parser.parse("vfs.ref.ref_target * 2"),
             initial_value=None,
@@ -293,6 +305,7 @@ def test_vfs_evaluator_handles_nested_reference_paths():
     variables = [
         CompiledVariable(
             name="a",
+            lifetime="persistent",
             type="float",
             ast=None,
             initial_value=1.5,
@@ -301,6 +314,7 @@ def test_vfs_evaluator_handles_nested_reference_paths():
         ),
         CompiledVariable(
             name="b",
+            lifetime="persistent",
             type="float",
             ast=parser.parse("vfs.ref.a + 1.0"),
             initial_value=None,
@@ -309,6 +323,7 @@ def test_vfs_evaluator_handles_nested_reference_paths():
         ),
         CompiledVariable(
             name="c",
+            lifetime="persistent",
             type="float",
             ast=parser.parse("vfs.ref.b * 2.0"),
             initial_value=None,
@@ -342,6 +357,7 @@ def test_vfs_evaluator_threads_affordance_and_temporal_context():
     variables = [
         CompiledVariable(
             name="can_use_bank_late",
+            lifetime="persistent",
             type="bool",
             ast=parser.parse("affordance.bank.available and temporal.tick > 5"),
             initial_value=None,

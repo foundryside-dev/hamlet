@@ -1392,8 +1392,6 @@ def variable_element_bindings(
 _ITEM_VAR_TYPE_TO_TOKEN_TYPE: Final[Mapping[str, str]] = {
     "float": "scalar",
     "bool": "bool",
-    "vec2i": "vec2i",
-    "vec3i": "vec3i",
     "agent_ref": "agent_ref",
     "item_ref": "item_ref",
     "affordance_ref": "affordance_ref",
@@ -1496,7 +1494,7 @@ def _variable_element_artifacts(
         if mapped_type is None:
             raise ValueError(
                 f"Item-profile variable '{var_id}' declares type {item_var.type!r}, which has no token "
-                "dtype landing yet — expose a float, bool, vec2i/vec3i, or *_ref item variable instead."
+                "dtype landing yet — supported compiled item types are float (authored scalar), bool, and *_ref."
             )
         for owner_slot in range(item_capacity_value):
             emit(

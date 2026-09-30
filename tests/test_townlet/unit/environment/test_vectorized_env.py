@@ -553,6 +553,7 @@ class TestVectorizedHamletEnvStep:
             variables=[
                 CompiledVariable(
                     name="context_probe",
+                    lifetime="persistent",
                     type="bool",
                     exposed_to=("agent",),
                     initial_value=True,
@@ -623,6 +624,7 @@ class TestVFSWriteBackLoudness:
             variables=[
                 CompiledVariable(
                     name="__unknown_global_expr__",
+                    lifetime="persistent",
                     type="bool",
                     exposed_to=("agent",),
                     ast=object(),  # any non-None marks it as an expression var
@@ -659,6 +661,7 @@ class TestVFSWriteBackLoudness:
             variables=[
                 CompiledVariable(
                     name="__unknown_agent_expr__",
+                    lifetime="episode",
                     type="bool",
                     exposed_to=("agent",),
                     ast=object(),

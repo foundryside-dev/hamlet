@@ -26,7 +26,7 @@ repeat those bounds on a parallel observation field.
 | `effects.yaml` | `business_cycle` writes `1000 * (2 + sin(2πk/24))` from effect-local elapsed time |
 | `levels/L0_simple/affordances.yaml` | interacting with `WORK` starts `business_cycle` |
 
-`variables_reference.yaml` intentionally declares no variables. Its former `money` entry was a
+The canonical `variables` declaration contains no money variable. Its former `money` entry was a
 dead parallel declaration: meter observation semantics come only from `meters[].range_type`.
 
 ## Working log-scaled observation

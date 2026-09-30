@@ -59,7 +59,8 @@ def test_item_manager_assigns_vfs_profile_on_spawn():
         variables=[
             CompiledVariable(
                 name="calories",
-                type="int",
+                lifetime="episode",
+                type="float",
                 ast=None,
                 initial_value=100,
                 result_type="int",
@@ -67,6 +68,7 @@ def test_item_manager_assigns_vfs_profile_on_spawn():
             ),
             CompiledVariable(
                 name="freshness",
+                lifetime="episode",
                 type="float",
                 ast=None,
                 initial_value=1.0,
@@ -81,7 +83,8 @@ def test_item_manager_assigns_vfs_profile_on_spawn():
         variables=[
             CompiledVariable(
                 name="damage",
-                type="int",
+                lifetime="episode",
+                type="float",
                 ast=None,
                 initial_value=50,
                 result_type="int",
@@ -89,6 +92,7 @@ def test_item_manager_assigns_vfs_profile_on_spawn():
             ),
             CompiledVariable(
                 name="durability",
+                lifetime="episode",
                 type="float",
                 ast=None,
                 initial_value=1.0,
@@ -168,7 +172,8 @@ def test_item_manager_preserves_vfs_profile_across_operations():
         variables=[
             CompiledVariable(
                 name="charges",
-                type="int",
+                lifetime="episode",
+                type="float",
                 ast=None,
                 initial_value=3,
                 result_type="int",
@@ -176,6 +181,7 @@ def test_item_manager_preserves_vfs_profile_across_operations():
             ),
             CompiledVariable(
                 name="potency",
+                lifetime="episode",
                 type="float",
                 ast=None,
                 initial_value=1.0,

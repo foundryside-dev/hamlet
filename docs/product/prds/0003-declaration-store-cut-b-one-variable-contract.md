@@ -1,7 +1,7 @@
 # PRD-0003 — Declaration-store Cut B: one variable contract
 
-Status: implementation locally qualified and integrated; hosted acceptance pending.
-Execution authorized by John ("please plan and execute B"); delivery checkpoint: PDR-0150.
+Status: accepted at implementation checkpoint `22924d0a`; final delivery-head verification is separate.
+Execution authorized by John ("please plan and execute B"); acceptance decision: PDR-0151; historical local boundary: PDR-0150.
 Prepared: 2026-10-01 Australia/Canberra. Baseline: `599cad15706ac8824c3f8e38276da6440c4816a3`.
 Scope authority: PDR-0117, PDR-0121, PDR-0147; Cut A accepted by PDR-0149.
 Implementation: `hamlet-89cae04b5e`; included defect: `hamlet-33e520cebd`.

@@ -1,9 +1,17 @@
-# Roadmap — HAMLET / Townlet        Updated: 2026-09-02 (fifth merge) · no horizon change; next unit chosen by the owner (`PDR-0146`)
+# Roadmap — HAMLET / Townlet · Updated: 2026-10-01 · declaration-store delivered; next package remains shaped
 
 > Sequencing, WSJF / cost-of-delay, and dated forecasts are produced by
 > /axiom-program-management. This file records bets as INTENT, not a delivery
 > schedule. Do not compute WSJF here; hand the committed bet over for sequencing.
 
+> **Current checkpoint — 2026-10-01:** declaration-store A is accepted by PDR-0149;
+> B is accepted at published implementation `22924d0a` by
+> [PDR-0151](decisions/0151-cut-b-accepted-against-prd-0003.md). All three exact implementation-head
+> hosted workflows passed; local integration is complete. Draft PR #41 stacks on Cut A #40.
+> Final delivery-record head verification is separately tracked. This is no main merge or
+> broader bet-exit reading. The epistemic-access package remains shaped and uncommitted;
+> its older scope must be rebased against the delivered variable contracts before dispatch.
+>
 > **Within Now, the order is open (`PDR-0019`, owner-stated).** The WS-0…WS-7 work streams are an
 > **inventory, not a sequence**. One system is pinned at a time; the next is chosen on the
 > strangler's selection criterion — *where does the runtime still know what the game is?* — not by
@@ -18,7 +26,7 @@
 > that predates the VFS/VTC/DAC era. This file does not supersede or edit it; retiring it is part
 > of the Now bet.
 
-> **Current checkpoint — 2026-09-02 (fifth merge), `PDR-0145`/`PDR-0146`:** no horizon change.
+> **Previous checkpoint — 2026-09-02 (fifth merge), `PDR-0145`/`PDR-0146`:** no horizon change.
 > **The fifth merge is on `main` at `ea3648db`** (PR #38, 36 commits, both gates discharged —
 > gate 2 found 29 stale claims, 22 omissions and nine defects in its own draft). Active branch is
 > `project-recovery-4`. The owner's DECIDE at this resume: *merge, then the declaration-store
@@ -130,31 +138,21 @@
 
 ## Next (shaped, decreasing certainty)
 
-- **The declaration-store compiler unit — PDR-0117 + variable-surface unification, one
-  unit, after the token cut.** Pack filenames become convention (discovery/merge-by-id
-  with loud collision refusal, canonical ordering, "required file" → "required
-  declaration"); the three variable-declaration surfaces (`environment.yaml`,
-  `vfs_profiles.yaml`, `variables_reference.yaml`) collapse to one declaration semantics
-  — the compiler's largest validation tangle and VFS's worst authoring gap are the same
-  defect (`PDR-0121` assessment). SourceMap file:line provenance already wired
-  (`hamlet-af929afa06`); parked items from that cleanup land here. Explicitly NOT built:
-  orchestrator tiers, sub-compiler graph engine, incremental compilation.
-  · tracker: `PDR-0117`, `hamlet-af929afa06` (parks), `hamlet-33e520cebd` (symbol-table
-  half) · metric: Config-surface coverage · Added: 2026-08-24 (`PDR-0117`, `PDR-0121`)
-
-- **The epistemic-access unit — give declared epistemic state its doors, after the token
-  cut.** The 2026-08-24 audit's systemic gap as one design: authoring fields for
-  `readable_by`/`writable_by` on the required surfaces, `exposed_to` fails CLOSED, the
-  observation path reads through the checked accessor (the `get_agent` bypass dies —
-  `hamlet-83a043a9b9`), roles actually passed at call sites (`hamlet-1a520475f4`),
-  `lifetime` author-declared (`hamlet-4597fd5d04`, `hamlet-0268336cd1`). Designed with
-  awareness of the owner's **declared-propagation** proposal (observability as a
-  per-(observer, source) expression — vision range from brightness, latched by floor) so
-  static doors and dynamic gates land as one epistemic design; token presence bits are
-  the natural carrier.
-  · tracker: `PDR-0120`, propagation feature ticket, `hamlet-d97b4d6b4a`,
-  `hamlet-c78fbf32a3` · metric: Declared-but-inert config surfaces · Added: 2026-08-24
-  (`PDR-0120`)
+- **The epistemic-access unit — authorable permissions and enforced observation access.**
+  PDR-0120 remains shaped intent, not scheduled implementation. The canonical variable
+  declaration still has no `readable_by`/`writable_by`; lowering uses fixed engine/agent
+  policies. Checked registry access must cover convenience getters and item access, and
+  observation publication must apply the same declared policy with truthful presence/payload.
+  Lifetime, symbol registration and explicit fail-closed exposure are already delivered;
+  preserve them as regressions rather than implementing their old audit findings again.
+  Separate role permissions from observer/source visibility. Shared item arenas and current
+  independent-world batch semantics need an explicit observer contract before owner/spatial
+  privacy is promised. Design for the owner's declared-propagation proposal (brightness,
+  floors and other per-observer/source rules); a proposed first static slice can qualify
+  before dynamic gates, subject to a fresh scope ruling and acceptance plan.
+  · authority: `PDR-0120`; candidates: `hamlet-fc78bb49d3`, `hamlet-1a520475f4`,
+  `hamlet-d97b4d6b4a`, `hamlet-c78fbf32a3` · broader historical candidates require retriage
+  against current source · metric: declared-but-inert access surfaces.
 
 - **Close the "you must write Python" gaps — WS-4, the actual product work.** The assessment's
   authorability ledger replaced the earlier guess (substrate topology as sole holdout) with a real

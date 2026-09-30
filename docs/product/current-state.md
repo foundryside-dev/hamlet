@@ -1,4 +1,28 @@
-# Current State — HAMLET / Townlet        Checkpoint: 2026-09-02 (fifty-third) · `main` at `ea3648db` (green), branch `project-recovery-4` · scope ruled (`PDR-0147`), recovery progress read
+# Current State — HAMLET / Townlet · Checkpoint: 2026-10-01 · declaration-store A+B accepted
+
+## Latest delivered checkpoint
+
+Cut A is accepted by [PDR-0149](decisions/0149-owner-extends-cut-a-acceptance-to-october-1-and-cut-a-is-accepted.md).
+Cut B is accepted at published implementation `22924d0a` by
+[PDR-0151](decisions/0151-cut-b-accepted-against-prd-0003.md): canonical variable semantics,
+complete symbols and typed token scope. Local suite: 4,055 passed / 18 skipped / 84% coverage;
+hosted implementation suite: 4,054 passed / 19 skipped / 84% coverage. All three implementation-head
+hosted workflows passed. Direct-parent and frozen CPU comparisons qualified with exact attribution.
+Local `project-recovery-4` includes B; [draft PR #41](https://github.com/foundryside-dev/hamlet/pull/41)
+stacks on Cut A #40. Parent/main were not pushed. Final acceptance-record head verification is
+tracked separately before acceptance issue closure.
+
+The next **shaped, uncommitted** package is epistemic access (PDR-0120). Rebase its scope against
+the delivered lifetime, symbol and fail-closed exposure contracts; those are regression gates.
+Remaining seams are authorable permissions, consistent checked runtime access and observation
+publication. Role permission and observer/source visibility need distinct contracts before
+ownership/spatial privacy is promised. A suggested first static slice precedes dynamic propagation;
+its scope and acceptance plan remain to be ruled, not implemented by this checkpoint.
+
+The recovery counts and main/nightly claims below are the historical **2026-09-02** reading.
+They were not re-audited by Cut B; do not treat them as current fleet or workstream measurements.
+
+## Historical recovery reading — 2026-09-02
 
 ## The bets right now
 

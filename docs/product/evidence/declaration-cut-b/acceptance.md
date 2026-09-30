@@ -1,6 +1,7 @@
 # Cut B qualification and delivery evidence
 
-Status: implementation locally qualified and integrated. Hosted acceptance is pending.
+Status: Cut B accepted at published implementation checkpoint `22924d0a`; final documentation-head verification follows separately.
+Decision: [PDR-0151](../../decisions/0151-cut-b-accepted-against-prd-0003.md).
 Authority: [PRD-0003](../../prds/0003-declaration-store-cut-b-one-variable-contract.md),
 PDR-0147 and accepted Cut A PDR-0149. No calendar deadline was added for B.
 
@@ -18,9 +19,9 @@ PDR-0147 and accepted Cut A PDR-0149. No calendar deadline was added for B.
 | Clock-negative fixture and final tested source | `baced7dba659ab2024a3f164f18c450695000362` |
 | Final direct-parent and frozen CPU qualification | Both exit 0 at `baced7db`; source/input tree clean, frozen run entire tree clean |
 | Local integration | Fast-forward to `ded73a68c0b91a9e7209a1f2588ca660d236eba7` on local `project-recovery-4`; 87 post-integration checks passed |
-| Feature push / B PR | Not performed; publication authorization required by automatic approval review |
-| Hosted B checks | Not run; neither prior Cut A CI nor local checks substitute |
-| Full PRD-0003 acceptance | Pending hosted checks and final delivery checkpoint |
+| Feature push / B PR | Owner explicitly authorized publication; published `22924d0a`; [draft PR #41](https://github.com/foundryside-dev/hamlet/pull/41) stacks on Cut A #40 |
+| Hosted B checks | All three completed/success at exact checkpoint `22924d0a`: [Config Validation 36781512698](https://github.com/foundryside-dev/hamlet/actions/runs/36781512698), [Lint 36781512796](https://github.com/foundryside-dev/hamlet/actions/runs/36781512796), [Tests 36781512782](https://github.com/foundryside-dev/hamlet/actions/runs/36781512782) |
+| Full PRD-0003 acceptance | Accepted implementation checkpoint `22924d0a` by PDR-0151; acceptance issue closes after final documentation-head verification |
 
 ## Criterion readings
 
@@ -31,9 +32,9 @@ PDR-0147 and accepted Cut A PDR-0149. No calendar deadline was added for B.
 | 3: Symbols | PASS within supported consumers. One registry roster and profile-qualified item identities; configured global/agent writes and named rewards use the same state, including cache roundtrip. Unknown names/collisions refuse with origins. Scalar/bool global/agent reward consumers are qualified. This repairs the omitted-symbol defect, without promising generic pair/tensor reward reductions or a complete relational world. |
 | 4: Scope | PASS. `test_token_binding_scope.py` and compiled-token-coherence tests cover mixed routing, dotted registry IDs, item profiles, required/mismatched scope, explicit null for non-variable bindings and persistence. Schema **1.28** refuses old artifacts. Registry exposure requires float32-backed state. Compact layout/type-schema and direct-parent observation bytes remain unchanged. |
 | 5: Attribution | PASS. 31 cases / 884 hash readings; exactly 212 measured movements, each with values and a causing commit; none unexplained or stale. Ten direct-parent CPU trajectories (40 observation/action/reward/done arrays) and eleven reset censuses match byte-for-byte. Frozen matrix: ten CPU cells `DIVERGED_AS_REGISTERED`, ten CUDA cells explicitly `SKIPPED`, exit 0. Old source and frozen fixtures unchanged. |
-| 6: Gates | LOCAL PASS: full default suite **4,055 passed / 18 skipped / 84% coverage**, exit 0. Ruff, Black, mypy, no-defaults and public CLI fleet exit 0; whitelist unchanged. Focused runtime/shape/persistence/negative-control suites pass. Hosted checks pending explicit publication approval. |
+| 6: Gates | PASS: full default suite **4,055 passed / 18 skipped / 84% coverage**, exit 0. Ruff, Black, mypy, no-defaults and public CLI fleet exit 0; whitelist unchanged. Focused runtime/shape/persistence/negative-control suites pass. Exact published implementation-head hosted checks all completed/success: [Config Validation 36781512698](https://github.com/foundryside-dev/hamlet/actions/runs/36781512698), [Lint 36781512796](https://github.com/foundryside-dev/hamlet/actions/runs/36781512796), [Tests 36781512782](https://github.com/foundryside-dev/hamlet/actions/runs/36781512782). |
 | 7: Hygiene | PASS. Active variables/declarations/compiler/VFS and changed item/effects/reward/expression docs use the new contract and name unsupported combinations. Internal expression/item profiles are compiler-owned execution products. Dated historical sketches remain explicitly non-normative. Independent review found no compatibility path. |
-| 8: Independent checkpoint | Independent specification and quality reviews GO for local implementation; full-suite and local-integration conditions passed. Product acceptance still requires the hosted gate. This evidence and PDR-0150 distinguish local qualification from product acceptance. |
+| 8: Independent checkpoint | Independent specification and quality reviews GO for local implementation; full-suite and local-integration conditions passed. The exact published implementation hosted gate passed. PDR-0150 preserves the historical local boundary; PDR-0151 records acceptance. Later documentation-head checks are verified separately before closing the acceptance issue. |
 
 ## Identity attribution and reproducibility
 
@@ -72,6 +73,7 @@ frozen all-extras environment. CUDA's presence in the installed version is not h
 - Complete internal constructor/runtime evaluation check: 117 passed, one skipped.
 - Final independent criterion recheck: 18 passed. Final clock module: 25 passed; independent clock slice: 14 passed.
 - Final full local suite: **4,055 passed, 18 skipped, 15 warnings, 84% coverage**, exit 0, 977.17 seconds.
+- Exact implementation-head hosted suite: **4,054 passed, 19 skipped, 15 warnings, 84% coverage**, terminal success, 1,354.50 seconds. The extra skip is MP4 video export because the hosted ffmpeg availability check fails; no local skip became a hosted pass.
 
 Specification review preceded code-quality review. Review covered each PRD criterion, complete
 old-surface caller inventory, variable descriptor causes, fixed permission boundary, expression
@@ -87,7 +89,7 @@ passed; focused passes were not added to the earlier count.
 ## Custody and boundaries
 
 Task branch/worktree: `feat/declaration-store-cut-b` at `/tmp/hamlet-declaration-cut-b`.
-Preserve it and its ignored measurement traces while publication is pending.
+The task worktree and ignored qualification traces are retained; the feature branch is published.
 Local integration completed on `project-recovery-4` at `ded73a68`; 87 focused checks passed in
 21.11 seconds from the parent’s proper environment/import path. The execution-bearing tree
 is identical to fully tested `baced7db`. See [local integration](local-integration.json).
@@ -96,11 +98,16 @@ Parent's two pre-existing dirty Filigree skill references must remain byte-ident
 SHA256 values are `27b0487e302939f67d6e1e2a4e1b66b531904944e9bf41b88e8c125e2ec0846a`.
 The frozen oracle is verified at `4222a9176e68e232a0e46c7004183440e27f22c3`; it was read only.
 
-Automatic approval review rejected pushing this private implementation to GitHub and creating
-a draft PR because source export to that destination requires explicit user authorization.
-No publication occurred. Once authorized, the B draft PR should be stacked against
-`feat/declaration-store-cut-a` (existing draft PR #40); remote `project-recovery-4` predates accepted
-Cut A, so targeting it would misrepresent the B-only diff. Local integration stays on its agreed parent.
+Publication was initially rejected by automatic approval review for missing destination-specific
+authorization. The owner then answered **yes** to pushing `feat/declaration-store-cut-b` to
+GitHub's `foundryside-dev/hamlet` and opening a draft PR stacked on Cut A. The approved publication
+completed at `22924d0a`; [PR #41](https://github.com/foundryside-dev/hamlet/pull/41) is draft,
+based on `feat/declaration-store-cut-a` ([#40](https://github.com/foundryside-dev/hamlet/pull/40)).
+The [hosted receipt](hosted-implementation-checks.json) records exact-head terminal results,
+observation time, run URLs and authorization. Local integration stays on `project-recovery-4`.
+Neither parent nor main was pushed. The final acceptance-record commit is documentation/evidence
+only; the earlier CI jobs are not represented as testing that later SHA. Its exact PR-head checks
+are monitored separately and recorded in acceptance issue `hamlet-61e3de957f` before closure.
 
 This work does not repair initial item-appearance cache loss, carried-item publication, item-state
 locality/capacity, effects reset or terminal-lane accounting. It does not qualify browser UX,

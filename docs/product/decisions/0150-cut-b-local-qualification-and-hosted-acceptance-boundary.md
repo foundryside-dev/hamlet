@@ -1,7 +1,7 @@
 # PDR-0150 — Cut B local qualification and hosted acceptance boundary
 
 Date: 2026-10-01 Australia/Canberra
-Status: **locally qualified and integrated; hosted acceptance pending**
+Status: **historical local qualification — superseded by PDR-0151 after hosted success**
 Author: Codex
 Owner instruction: “excellent work, please plan and execute B”
 Related: PRD-0003, PDR-0147, PDR-0149, `hamlet-89cae04b5e`, `hamlet-33e520cebd`, `hamlet-61e3de957f`
@@ -44,3 +44,10 @@ and a final accepting decision records that evidence. Cut A's hosted results do 
 A B draft PR must stack on Cut A's feature branch (#40) to expose the B-only change; local merge
 remains `project-recovery-4`. No main merge, deployment, CUDA, browser, convergence, Murk or full
 cognitive-domain acceptance follows from this decision.
+
+## Follow-up
+
+The owner subsequently approved GitHub publication with an explicit **yes** to the named
+repository, feature branch and stacked draft PR. All three hosted workflows at `22924d0a`
+completed successfully. [PDR-0151](0151-cut-b-accepted-against-prd-0003.md) records the accepting
+decision; the pending/rejected state above is the historical local checkpoint, not current delivery.

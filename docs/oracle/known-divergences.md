@@ -1480,8 +1480,10 @@ bound, which is what stops a typo-bind from certifying the wrong entry.
 
 ## DIV-013 — Declaration-store Cut A: input transport drift only; compiled semantics preserved
 
-- **Status:** registered for Cut A acceptance, 2026-10-01; measurement recorded in
-  `docs/product/evidence/declaration-cut-a/acceptance.md` when available.
+- **Status:** measured 2026-10-01 at `144788f8`: CPU matrix exit 0, ten CPU cells
+  `DIVERGED_AS_REGISTERED`, ten CUDA cells skipped. Report retained in
+  `docs/product/evidence/declaration-cut-a/cpu-matrix.json`; formal acceptance remains
+  separate from this engineering reading.
 - **Harness shape: pack-drift-only**. No hash fields or trace streams are declared by
   this entry. The existing DIV-008/009/010/012 output bindings remain unchanged.
 - **Cause:** PRD-0002/PDR-0147 replaces filename dispatch with declaration discovery.

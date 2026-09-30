@@ -1477,3 +1477,42 @@ traceback-boilerplate signatures. Matrix-side tests require every declared ref t
 `## DIV-NNN` heading in this file **and** that entry to carry a machine-readable
 `Harness shape: old-side-crash` line — an entry predicting any other diff shape cannot be
 bound, which is what stops a typo-bind from certifying the wrong entry.
+
+## DIV-013 — Declaration-store Cut A: input transport drift only; compiled semantics preserved
+
+- **Status:** registered for Cut A acceptance, 2026-10-01; measurement recorded in
+  `docs/product/evidence/declaration-cut-a/acceptance.md` when available.
+- **Harness shape: pack-drift-only**. No hash fields or trace streams are declared by
+  this entry. The existing DIV-008/009/010/012 output bindings remain unchanged.
+- **Cause:** PRD-0002/PDR-0147 replaces filename dispatch with declaration discovery.
+  The original five ignored/misplaced `items_smoke` documents are banked in a refusal
+  fixture before deletion. Default L3's day length now references the existing declared
+  clock period; its effective value remains 24. The root VFS comment explains that reference.
+- **Binding:** default_curriculum and items_smoke name DIV-013 on the input axis only.
+  This supersedes their DIV-008/DIV-007 *input bindings*, preserving all inherited rows
+  below. Neither earlier output divergence is retired or broadened.
+
+Complete current frozen/live input delta (the frozen tree is unchanged):
+
+| Pack | Delta | Attribution |
+|---|---|---|
+| default_curriculum | differing: levels/L3_temporal_mechanics/curriculum.yaml | Cut A period reference, same compiled 24 |
+| default_curriculum | differing: vfs_profiles.yaml | prior DIV-008 authored clock; Cut A comment only |
+| default_curriculum | differing: environment.yaml, stratum.yaml | inherited prior schema/content cuts, including DIV-012 |
+| default_curriculum | differing: levels/L2_partial_observability/curriculum.yaml | inherited pre-Cut-A curriculum drift |
+| test/items_smoke | only_in_frozen: affordances.yaml, bars.yaml, drive_as_code.yaml, substrate.yaml, training.yaml | Cut A deletes originally unconsumed/mis-scoped documents |
+| test/items_smoke | only_in_frozen: levels/L0_smoke/brain.yaml | inherited DIV-007 stale stub deletion |
+| test/items_smoke | differing: effects.yaml | inherited DIV-008 effect budgets |
+| test/items_smoke | differing: environment.yaml, stratum.yaml | inherited prior schema/content cuts, including DIV-012 |
+| test/items_smoke | differing: vfs_profiles.yaml | inherited unit-5 medical durability exposure |
+
+The before-snapshot is committed at `ee520090` before production edits: 31 cases,
+884 readings. Cut A must preserve all 853 semantic readings; only the raw input digest
+may move on these two packs. A new output mover invalidates this cut and cannot be
+covered by this input-only entry. The CPU matrix must still match every output
+outside the pre-existing registered sets.
+
+The harness's input flag is a boolean gate, not a row-wise validator. That existing
+limitation is retained explicitly: the table is checked against measured byte deltas,
+and new tests pin these two deltas. No new permissive harness mechanism is introduced.
+CUDA is unmeasured by this Cut A acceptance unless separately reported.

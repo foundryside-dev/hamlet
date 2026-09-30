@@ -1321,7 +1321,7 @@ def effect_capacity(
         return 0
     if max_active_effects is None:
         raise ValueError(
-            f"effects.yaml declares {declared_effect_count} effect(s) but no `max_active_effects` budget.\n"
+            f"The effects declaration contains {declared_effect_count} effect(s) but no `max_active_effects` budget.\n"
             "  Rule: effect token capacity derives from a per-scope declared budget "
             f"(max_active_effects: {{{', '.join(f'{s}: N' for s in EFFECT_SCOPE_VOCABULARY)}}}), "
             "required if any effects are declared (spec §2 capacity table, No-Defaults)."
@@ -1437,7 +1437,7 @@ def _variable_element_artifacts(
         names = ", ".join(var_id for var_id, _ in exposed_item_vars)
         raise ValueError(
             f"Item-profile variable(s) {names} declare exposed_to, but this universe's compiled `item` token "
-            "capacity is 0 (no items.yaml, or max_items_in_world + max_items_per_agent × agents_per_world sums "
+            "capacity is 0 (no item catalog declaration, or max_items_in_world + max_items_per_agent × agents_per_world sums "
             "to 0) — there is no item-arena slot for an exposed item variable to bind against."
         )
 
@@ -1483,9 +1483,9 @@ def _variable_element_artifacts(
             semantic_type = exposed_profile[var_id]
         elif var_def.exposed_to:
             raise ValueError(
-                f"Variable '{var_id}' (variables_reference.yaml overlay) declares exposed_to, but overlay "
+                f"Variable '{var_id}' (static variable overlay) declares exposed_to, but overlay "
                 "statics have no semantic_type surface and cannot bind variable_element slots yet. "
-                "Declare the variable in vfs_profiles.yaml to expose it."
+                "Declare the variable in the VFS profiles declaration to expose it."
             )
         else:
             continue
@@ -1604,7 +1604,7 @@ def canonical_token_bindings(
 
     affordance_names = [affordance.name for affordance in affordances.affordances]
     if len(set(affordance_names)) != len(affordance_names):
-        raise ValueError("affordances.yaml declares duplicate names; affordance token identity must be unique")
+        raise ValueError("The affordances declaration contains duplicate names; affordance token identity must be unique")
     affordance_bindings = tuple(
         SlotBinding(
             slot_index=index,

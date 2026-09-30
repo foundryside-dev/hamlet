@@ -85,11 +85,15 @@ Items integrate with:
 
 ## File Structure
 
-Items configuration consists of two separate files:
+Items configuration has two distinct declaration families. Their scope and content shape,
+not their filenames, distinguish the catalog from appearance. See
+[declaration discovery](declarations.md).
 
 ### 1. Items Catalog (Experiment-Level)
 
-**Location**: `<config_pack>/items.yaml`
+**Scope**: Pack-scope item catalog, conventionally `<config_pack>/items.yaml`.
+Keep the `items:` catalog mapping with `item_types`; catalog fragments must agree on structural
+headers and may not repeat item IDs.
 
 Defines item types once for entire experiment.
 
@@ -114,7 +118,10 @@ items:
 
 ### 2. Items Appearance (Level-Specific)
 
-**Location**: `<config_pack>/levels/<level_name>/items.yaml`
+**Scope**: Optional level-scope appearance declaration, conventionally
+`<config_pack>/levels/<level_name>/items.yaml`. Its existing bare shape has `version` and an
+`items` list. Appearance is a singleton per level: these ordered rules have no rule identifier,
+so splitting it into multiple appearance declarations is refused.
 
 Defines spawn rules for specific level.
 
@@ -466,7 +473,8 @@ Items use VFS profiles to store persistent state. Each item instance has a uniqu
 
 ### VFS Profile Configuration
 
-**Location**: `<config_pack>/vfs_profiles.yaml`
+**Scope**: Pack-scope profiles declaration, conventionally `<config_pack>/vfs_profiles.yaml`.
+See [declaration discovery](declarations.md).
 
 ```yaml
 item_profiles:

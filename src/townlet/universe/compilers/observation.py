@@ -135,11 +135,11 @@ class ObservationCompiler:
         environment_meters = environment.environment.meters
         by_name = {meter.name: meter for meter in environment_meters}
         if len(by_name) != len(environment_meters):
-            raise ValueError("environment.yaml declares duplicate meter names; meter token identity must be unique")
+            raise ValueError("The environment declaration contains duplicate meter names; meter token identity must be unique")
         bar_names = {meter.name for meter in bars.meters}
         if set(by_name) != bar_names:
             raise ValueError(
-                "Meter vocabulary mismatch between environment.yaml and bars.yaml while compiling token declarations: "
+                "Meter vocabulary mismatch between environment and bars declarations while compiling token declarations: "
                 f"environment-only={sorted(set(by_name) - bar_names)}, bars-only={sorted(bar_names - set(by_name))}"
             )
         return tuple(
@@ -231,7 +231,7 @@ class ObservationCompiler:
         """
         if norm_cfg is None:
             raise ValueError(
-                "Missing normalization for variable declared in environment.yaml.\n"
+                "Missing normalization for an environment variable declaration.\n"
                 f"  Variable: {var_name}\n"
                 "  Rule: every variable must declare normalization explicitly; there is no default (No-Defaults Principle).\n"
                 "  Provide method: normalize (scale to [0,1] against range) | standardize (mean/std)."
@@ -245,7 +245,7 @@ class ObservationCompiler:
 
         if method is None:
             raise ValueError(
-                "Normalization entry missing 'method' in environment.yaml.\n"
+                "Environment variable normalization entry missing 'method'.\n"
                 f"  Variable: {var_name}\n"
                 "  Provide method: normalize | standardize."
             )
@@ -259,7 +259,7 @@ class ObservationCompiler:
         if method == "standardize":
             if mean is None or std is None:
                 raise ValueError(
-                    "Normalization method 'standardize' requires 'mean' and 'std' parameters in environment.yaml.\n"
+                    "Environment variable normalization method 'standardize' requires 'mean' and 'std' parameters.\n"
                     f"  Variable: {var_name}\n"
                     "  Action: add mean/std fields to normalization, or use normalize with an explicit range."
                 )

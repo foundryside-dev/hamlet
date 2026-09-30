@@ -30,36 +30,36 @@ def build_symbol_table(raw: RawConfigsV21, source_map: SourceMap | None = None) 
 
     env = raw.environment.environment
     for meter in getattr(env, "meters", []) or []:
-        _register(table.register_meter, meter)
+        _register(table.register_meter, meter, f"environment:{meter.name}")
 
     for cascade in getattr(env, "cascade_graph", []) or []:
-        _register(table.register_cascade, cascade)
+        _register(table.register_cascade, cascade, f"environment:{cascade.source}->{cascade.target}")
 
     for affordance in getattr(env, "affordances", []) or []:
-        _register(table.register_affordance, affordance)
+        _register(table.register_affordance, affordance, f"environment:{affordance.name}")
 
     for variable in getattr(env, "variables", []) or []:
-        _register(table.register_variable, variable, f"environment.yaml:{getattr(variable, 'name', None) or getattr(variable, 'id', '')}")
+        _register(table.register_variable, variable, f"environment:{getattr(variable, 'name', None) or getattr(variable, 'id', '')}")
 
     if raw.vfs_profiles is not None:
         profile_configs = [
-            raw.vfs_profiles.global_profile,
-            raw.vfs_profiles.agent_profile,
-            *(raw.vfs_profiles.item_profiles or []),
+            ("global_profile", raw.vfs_profiles.global_profile),
+            ("agent_profile", raw.vfs_profiles.agent_profile),
+            *((f"item_profiles:{profile.profile_name}", profile) for profile in raw.vfs_profiles.item_profiles or []),
         ]
-        for profile in profile_configs:
+        for qualifier, profile in profile_configs:
             if profile is None:
                 continue
             for variable in getattr(profile, "variables", []) or []:
                 var_id = getattr(variable, "id", None) or getattr(variable, "name", "")
-                _register(table.register_profile_vfs_variable, variable, f"vfs_profiles.yaml:{var_id}")
+                _register(table.register_profile_vfs_variable, variable, f"vfs_profiles:{qualifier}:{var_id}")
 
     for action in getattr(raw.actions.actions, "custom_actions", []) or []:
-        _register(table.register_action, action)
+        _register(table.register_action, action, f"actions:{action.name}")
 
     if raw.items is not None:
         for item in getattr(raw.items, "item_types", []) or []:
-            _register(table.register_item, item)
+            _register(table.register_item, item, f"items:{item.id}")
 
     errors.check_and_raise()
     return table
@@ -75,8 +75,8 @@ def validate_dac_references(
 ) -> None:
     """Validate DAC references to bars, variables, and affordances.
 
-    ``drive_location`` is the pack-relative path of the level's drive.yaml
-    (e.g. ``levels/L1_full_observability/drive.yaml``) cited in diagnostics.
+    ``drive_location`` is the semantic identity of the level's drive declaration
+    (e.g. ``levels/L1_full_observability/drive``), resolved through provenance.
     """
     for mod_name, mod_config in dac_config.modifiers.items():
         bar_ref = getattr(mod_config, "bar", None)
@@ -258,8 +258,8 @@ def resolve_references(
         for cascade in getattr(level.bars, "cascades", []) or []:
             cascade_location = locate(
                 source_map,
-                f"levels/{level_name}/bars.yaml:{cascade.source}->{cascade.target}",
-                str(level_dir / "bars.yaml"),
+                f"levels/{level_name}/bars:{cascade.source}->{cascade.target}",
+                str(level_dir / "bars"),
             )
             if cascade.source not in meter_names:
                 errors.add(
@@ -293,8 +293,8 @@ def resolve_references(
                                         message=f"Affordance '{affordance.name}' interaction uses unknown VFS variable '{var_name}'.",
                                         location=locate(
                                             source_map,
-                                            f"levels/{level_name}/affordances.yaml:{affordance.name}",
-                                            str(level_dir / "affordances.yaml"),
+                                            f"levels/{level_name}/affordances:{affordance.name}",
+                                            str(level_dir / "affordances"),
                                         ),
                                     )
                                 )
@@ -306,7 +306,7 @@ def resolve_references(
                         CompilationMessage(
                             code=ErrorCode.UAC_RES_ITEM,
                             message=f"Item appearance references unknown item_type '{rule.item_type}'.",
-                            location=str(level_dir / "items.yaml"),
+                            location=locate(source_map, f"levels/{level_name}/items_appearance", str(level_dir / "items_appearance")),
                         )
                     )
 
@@ -316,7 +316,7 @@ def resolve_references(
                 level.drive,
                 symbol_table,
                 errors,
-                drive_location=f"levels/{level_name}/drive.yaml",
+                drive_location=f"levels/{level_name}/drive",
                 source_map=source_map,
             )
 

@@ -541,28 +541,48 @@ def load_variables_reference_config(config_dir: Path) -> VariablesReferenceData:
     except yaml.YAMLError as exc:
         raise ValueError(f"Failed to parse {yaml_path}: {exc}") from exc
 
+    return parse_variables_reference(data, str(yaml_path))
+
+
+def parse_variables_reference(data: dict[str, Any], origin: str) -> VariablesReferenceData:
+    """Validate static registry declarations independently of their transport."""
+    yaml_path = origin
+    if not isinstance(data, dict):
+        raise ValueError(f"{origin} must contain a static registry declaration mapping.")
+    unknown = data.keys() - {"version", "variables", "extents", "exposed_observations"}
+    if unknown:
+        raise ValueError(f"Unknown static registry declaration fields at {origin}: {sorted(unknown, key=str)}")
     variables_block = data.get("variables")
-    if variables_block is None:
+    if not isinstance(variables_block, list):
         raise ValueError(f"{yaml_path} must include a top-level 'variables' list.")
+    if any(not isinstance(variable, dict) for variable in variables_block):
+        raise ValueError(f"{origin}: every static variable must be a mapping.")
+    observations = data.get("exposed_observations")
+    if observations is not None and (
+        not isinstance(observations, list) or any(not isinstance(observation, dict) for observation in observations)
+    ):
+        raise ValueError(f"{origin}: exposed_observations must be a list of observation mappings.")
 
     # variables_reference.yaml remains a static registry input; expression DSL
     # belongs to vfs_profiles.yaml and effect specs.
     for raw_var in variables_block:
         if "expression" in raw_var:
             raise ValueError(
-                "variables_reference.yaml must define static variables only; expressions belong in vfs_profiles.yaml or effects specs.\n"
+                "Static registry declarations must define static variables only; expressions belong in VFS profiles or effects specs.\n"
                 f"  Variable: {raw_var.get('name') or raw_var.get('id')}\n"
                 "  Action: remove expression and provide static defaults, or move the derived variable into vfs_profiles.yaml."
             )
         if raw_var.get("scope") == "item":
-            raise ValueError("variables_reference.yaml cannot define item-scoped variables; use vfs_profiles.yaml item_profiles.")
+            raise ValueError("Static registry declarations cannot define item-scoped variables; use item VFS profiles.")
 
     try:
         variables = tuple(VariableDef(**raw_var) for raw_var in variables_block)
     except ValidationError as exc:
-        raise ValueError(f"Invalid variables_reference.yaml: {exc}") from exc
+        raise ValueError(f"Invalid static variable declaration: {exc}") from exc
 
     extents_block = data.get("extents")
+    if extents_block is not None and not isinstance(extents_block, dict):
+        raise ValueError(f"{origin}: extents must be a mapping.")
     try:
         extents = VFSScopeExtents(**extents_block) if extents_block is not None else None
     except ValidationError as exc:

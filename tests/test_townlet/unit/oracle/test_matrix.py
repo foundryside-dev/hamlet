@@ -6,6 +6,7 @@ import re
 from pathlib import Path
 
 import pytest
+import yaml
 
 from townlet.oracle.matrix import Cell, RegisteredDivergence, RegisteredHashDivergence, default_cells
 from townlet.oracle.trace_io import RunParams
@@ -164,7 +165,8 @@ def test_standing_and_differential_cells_bind_div009_narrowly() -> None:
         if c.params.pack in _PROFILE_VARIABLE_CELLS:
             continue
         assert c.expected is None, f"{c.cell_id} declares an old-side-crash expectation"
-        assert c.pack_divergence == "DIV-008", f"{c.cell_id}: the vfs_profiles.yaml drift is DIV-008's row"
+        input_entry = "DIV-013" if c.params.pack == "configs/default_curriculum" else "DIV-008"
+        assert c.pack_divergence == input_entry, f"{c.cell_id}: input drift must retain its registered rows"
         div009 = [d for d in c.hash_divergences if d.register_ref == "DIV-009"]
         assert len(div009) == 1, f"{c.cell_id} does not bind exactly one DIV-009 entry"
         assert div009[0].declared == {
@@ -270,9 +272,10 @@ def test_profile_variable_cells_declare_their_pack_drift() -> None:
     What survives is the pack-drift declaration, re-pointed by measurement:
     effects_smoke drifts on effects.yaml (Task 10's required max_active_effects) AND
     vfs_profiles.yaml (DIV-006's old schema hold) -> DIV-008, which enumerates both rows.
-    items_smoke keeps DIV-007 — its fixture still carries the stale, never-loaded
+    items_smoke's prior DIV-007 row — its fixture still carries the stale, never-loaded
     levels/L0_smoke/brain.yaml stub the PDR-0027 cut deleted from the live pack; its own
-    effects.yaml row is enumerated in DIV-008's table, since pack_divergence is one string."""
+    effects.yaml row is enumerated in DIV-008's table. Cut A supersedes its input
+    binding with DIV-013, preserving all inherited rows."""
     profile = [c for c in default_cells() if c.params.pack in _PROFILE_VARIABLE_CELLS]
     assert len(profile) == 4
     for c in profile:
@@ -283,7 +286,7 @@ def test_profile_variable_cells_declare_their_pack_drift() -> None:
         if c.params.pack == "configs/test/effects_smoke":
             assert c.pack_divergence == "DIV-008"
         else:
-            assert c.pack_divergence == "DIV-007", f"{c.cell_id}: items_smoke's fixture keeps the deleted brain.yaml stub (DIV-007)"
+            assert c.pack_divergence == "DIV-013", f"{c.cell_id}: Cut A supersedes the input-drift binding, preserving DIV-007's row"
 
 
 def test_profile_variable_cells_bind_div009_narrowly() -> None:
@@ -384,7 +387,13 @@ def test_differential_packs_vary_only_the_declared_axis() -> None:
             assert counterpart.exists(), f"{pack_name}/{rel} has no default_curriculum counterpart"
             if rel.name in ("stratum.yaml", "experiment.yaml"):
                 continue
-            assert (pack / rel).read_bytes() == counterpart.read_bytes(), f"{pack_name}/{rel} drifted from default_curriculum"
+            if rel == Path("vfs_profiles.yaml"):
+                # Cut A changes the base clock comment, not the declaration.
+                assert yaml.safe_load((pack / rel).read_text()) == yaml.safe_load(
+                    counterpart.read_text()
+                ), f"{pack_name}/{rel} declaration drifted from default_curriculum"
+            else:
+                assert (pack / rel).read_bytes() == counterpart.read_bytes(), f"{pack_name}/{rel} drifted from default_curriculum"
         assert (pack / "stratum.yaml").read_bytes() != (
             base / "stratum.yaml"
         ).read_bytes(), f"{pack_name}: stratum.yaml does not move the declared axis"

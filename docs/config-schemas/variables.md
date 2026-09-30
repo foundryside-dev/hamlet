@@ -19,10 +19,9 @@
 >   currently mid-migration. **Never quote a number from that list.**
 > - **`variables_reference.yaml` is OPTIONAL** — a *static overlay only*, no expressions and no
 >   item-scoped variables. `configs/default_curriculum` has **none at all**;
->   `configs/L5_multi_agent` has one. The **required** file is `vfs_profiles.yaml` at pack root,
->   and level directories must NOT contain one. This file's "File Location" section frames
->   `variables.yaml` as the future home and `variables_reference.yaml` as "current test
->   infrastructure"; neither framing matches the shipped pack.
+>   `configs/L5_multi_agent` has one. The **required** profiles declaration is at pack scope,
+>   and level scopes must NOT contain one. These names are transport conventions;
+>   discovery requires the typed profiles declaration, not a particular filename.
 > - **The `scope` field table says the enum is `global` / `agent` / `agent_private` — three
 >   values. VFS has nine**: those plus `item`, `pair`, `group`, `affordance`, `zone`, `message`
 >   (`VariableScope` in `vfs/schema.py`). The file contradicts itself — a later section does
@@ -47,7 +46,11 @@ The Variable & Feature System (VFS) uses declarative YAML configuration to defin
 
 ## File Location
 
-Variables are defined in `configs/<config_pack>/variables.yaml` (future) or `variables_reference.yaml` (current test infrastructure).
+The optional static variable-overlay declaration lives at pack scope; `variables_reference.yaml`
+is a convention, not dispatch. Its distinctive bare `variables` shape is discovered in any
+nested `.yaml`/`.yml` document and validated against the existing overlay vocabulary.
+See [declaration discovery](declarations.md). This does not unify the overlay with profile or
+environment variable semantics.
 
 ## Schema Structure
 

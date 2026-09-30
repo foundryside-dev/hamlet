@@ -15,8 +15,8 @@
 > matches `CLAUDE.md` §VFS: access-control enforcement is real where it runs but currently has
 > **no authoring surface** — the compiler hardcodes the role lists.)
 >
-> **⚠️ The "Optional File" framing is false.** `vfs_profiles.yaml` is **required**, at pack
-> root, and level directories must NOT contain one.
+> **Profiles are a required pack-scope declaration.** `vfs_profiles.yaml` is a filename
+> convention; profile content under a level scope is refused. See [discovery](declarations.md).
 >
 > **⚠️ `tensorNd` is entirely undocumented here** while `vfs_profiles_config.py:39-52` accepts
 > `tensor1d` / `tensor2d` / `tensor3d` / **`tensorNd`**. It genuinely works, and an
@@ -101,9 +101,11 @@ agent_profile:
 
 ## File Location
 
-VFS Profiles are defined in `configs/<config_pack>/vfs_profiles.yaml`.
-
-**Optional File**: If no `vfs_profiles.yaml` exists, the system uses default configuration (no custom variables).
+A VFS profiles declaration is required at pack scope, conventionally in
+`configs/<config_pack>/vfs_profiles.yaml`. Missing declarations fail compilation; empty profiles
+must still be explicit. Discovery recognizes the bare profile shape by its closed profile
+fields, independently of the filename. Profile fragments preserve list order and reject repeated
+variable identities with both source locations. See [declaration discovery](declarations.md).
 
 ## Schema Structure
 
@@ -1046,7 +1048,7 @@ global_profile:
 VFS Profiles are compiled by the Universe Compiler (UAC) during config validation:
 
 **Pipeline**:
-1. Load `vfs_profiles.yaml` → Pydantic validation
+1. Discover and merge pack-scope profile declarations → Pydantic validation
 2. Parse expressions → AST generation
 3. Build dependency graph → Topological sort
 4. Type check expressions → Schema validation

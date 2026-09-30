@@ -15,6 +15,7 @@ import yaml
 from townlet.config.brain_config import apply_training_overrides, compute_brain_hash
 from townlet.effects.catalog import EffectCatalog
 from townlet.universe.compiled import CompiledUniverse
+from townlet.universe.declarations import DeclarationStore, config_documents
 from townlet.universe.dto import UniverseMetadata
 from townlet.universe.error_codes import ErrorCode
 from townlet.universe.raw_configs_v21 import RawConfigsV21
@@ -41,10 +42,8 @@ from .compilers.observation import ObservationCompiler
 from .compilers.optimization import OptimizationCompiler
 from .compilers.vfs import VFSCompiler
 from .errors import CompilationError, CompilationMessage
-from .loaders.preflight import validate_config_dir, validate_scoping, validate_yaml_syntax
-from .loaders.v21 import load_v21_configs
+from .loaders.preflight import validate_config_dir
 from .pipeline import CompiledLevelBundle, SharedCompilerArtifacts
-from .source_map import build_pack_source_map
 from .stages import CompilationStage
 from .validation.limits import (
     MAX_CACHE_FILE_SIZE,
@@ -90,7 +89,7 @@ class UniverseCompiler:
         validate_config_dir(experiment_dir)
 
         # Stage 0 preflight: scoping (no YAML parsing yet)
-        validate_scoping(experiment_dir)
+        declarations = DeclarationStore.discover(experiment_dir)
 
         # The cache path is derived from primary_level, so an unknown level must be
         # rejected BEFORE it can name an artifact. Exact-name membership against the
@@ -137,16 +136,15 @@ class UniverseCompiler:
                     logger.info("Cached universe at %s missing fingerprint/provenance fields; recompiling.", cache_path)
 
         # Stage 0 preflight: YAML syntax validation (lightweight)
-        validate_yaml_syntax(experiment_dir)
 
         self._log_stage(CompilationStage.PARSE)
-        raw = load_v21_configs(experiment_dir)
+        raw = RawConfigsV21.from_declarations(declarations)
         # Parallel line-annotating parse for file:line diagnostics; the DTOs
         # never see it (its __line__ keys would violate extra="forbid").
-        source_map = build_pack_source_map(experiment_dir)
+        source_map = declarations.source_map
 
         self._log_stage(CompilationStage.LIMITS)
-        validate_v21_limits(raw, experiment_dir)
+        validate_v21_limits(raw, experiment_dir, source_map)
 
         self._log_stage(CompilationStage.SEMANTICS)
         validate_v21_semantics(raw, experiment_dir, source_map)
@@ -174,7 +172,7 @@ class UniverseCompiler:
             raise self._vfs_domain_compilation_error(
                 CompilationStage.SHARED.label,
                 ErrorCode.VFS_PROFILE_COMPILE,
-                experiment_dir / "vfs_profiles.yaml",
+                Path(source_map.lookup("vfs_profiles") or f"{experiment_dir}:1"),
                 exc,
             ) from exc
 
@@ -348,6 +346,8 @@ class UniverseCompiler:
                 meter_metadata,
                 affordance_metadata,
                 action_metadata,
+                source_map=raw.source_map,
+                level_name=level_name,
             )
             base_vfs_variables = self._observation_compiler.build_vfs_variables(raw.environment)
             vfs_variables = self._vfs_compiler.build_runtime_variables(
@@ -543,8 +543,10 @@ class UniverseCompiler:
     def _normalize_yaml(self, file_path: Path) -> str:
         try:
             with file_path.open() as handle:
-                data = yaml.safe_load(handle) or {}
-            return yaml.dump(data, sort_keys=True)
+                documents = list(yaml.safe_load_all(handle))
+            if len(documents) == 1:
+                return yaml.dump(documents[0] or {}, sort_keys=True)
+            return yaml.safe_dump_all(documents, sort_keys=True)
         except yaml.YAMLError as exc:
             # Transform raw YAML errors into friendly syntax errors
             error_msg = str(exc)
@@ -560,7 +562,7 @@ class UniverseCompiler:
                     CompilationMessage(
                         code=ErrorCode.YAML_SYNTAX_ERROR,
                         message=error_msg,
-                        location=str(file_path),
+                        location=f"{file_path}:{getattr(getattr(exc, 'problem_mark', None), 'line', 0) + 1}",
                     )
                 ],
                 hints=[
@@ -652,13 +654,7 @@ class UniverseCompiler:
 
     def _compute_config_hash(self, config_dir: Path) -> str:
         # Include root YAML files and any hierarchical level YAMLs.
-        yaml_files = sorted(config_dir.glob("*.yaml"))
-
-        levels_dir = config_dir / "levels"
-        if levels_dir.exists():
-            yaml_files.extend(sorted(levels_dir.rglob("*.yaml")))
-
-        # v2.1 actions are per-experiment via actions.yaml or embedded in training.yaml.
+        yaml_files = config_documents(config_dir)
 
         digest = hashlib.sha256()
         for file_path in yaml_files:
@@ -676,11 +672,7 @@ class UniverseCompiler:
         This ensures cache is invalidated when ANY config file changes
         (including comment/whitespace-only changes).
         """
-        yaml_files = sorted(config_dir.glob("*.yaml"))
-
-        levels_dir = config_dir / "levels"
-        if levels_dir.exists():
-            yaml_files.extend(sorted(levels_dir.rglob("*.yaml")))
+        yaml_files = config_documents(config_dir)
 
         max_mtime = 0.0
         for file_path in yaml_files:

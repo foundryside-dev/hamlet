@@ -56,7 +56,10 @@ The Effects System is HAMLET's foundational command pipeline language for all si
 
 ---
 
-**Location**: `<config_pack>/effects.yaml` (experiment-level)
+**Scope**: Optional pack-scope effects declaration, conventionally `<config_pack>/effects.yaml`.
+The bare `effect_definitions` shape is recognized by content; fragments may live in nested
+`.yaml`/`.yml` documents. Effect identifiers must be unique across the scope, with both origins
+reported on collision. See [declaration discovery](declarations.md).
 
 **Status**: Phase 3 Complete + Phase 4 Command Extensions Implemented
 

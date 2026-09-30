@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 from townlet.universe.error_codes import ErrorCode
 from townlet.universe.errors import CompilationErrorCollector
+from townlet.universe.source_map import SourceMap, locate
 from townlet.universe.stages import CompilationStage
 from townlet.universe.validation.feasibility import grid_capacity_for_substrate
 
@@ -26,7 +27,7 @@ MAX_VFS_PROFILES = 200
 MAX_SPAWN_RULES_PER_ITEM = 200
 
 
-def validate_v21_limits(raw: RawConfigsV21, experiment_dir: Path) -> None:
+def validate_v21_limits(raw: RawConfigsV21, experiment_dir: Path, source_map: SourceMap | None) -> None:
     """Validate hard config-pack size and resource limits over loaded DTOs."""
     errors = CompilationErrorCollector(stage=CompilationStage.LIMITS.label)
     experiment_dir = Path(experiment_dir)
@@ -37,14 +38,14 @@ def validate_v21_limits(raw: RawConfigsV21, experiment_dir: Path) -> None:
     env_variables = raw.environment.environment.variables
 
     checks = [
-        (len(env_meter_names), MAX_METERS, "environment.yaml", "meters"),
-        (len(env_affordance_names), MAX_AFFORDANCES, "environment.yaml", "affordances"),
-        (len(env_cascades), MAX_CASCADES, "environment.yaml", "cascade_graph"),
-        (len(raw.actions.actions.custom_actions), MAX_ACTIONS, "actions.yaml", "actions"),
-        (len(env_variables), MAX_VARIABLES, "environment.yaml", "variables"),
+        (len(env_meter_names), MAX_METERS, "environment", "meters"),
+        (len(env_affordance_names), MAX_AFFORDANCES, "environment", "affordances"),
+        (len(env_cascades), MAX_CASCADES, "environment", "cascade_graph"),
+        (len(raw.actions.actions.custom_actions), MAX_ACTIONS, "actions", "actions"),
+        (len(env_variables), MAX_VARIABLES, "environment", "variables"),
     ]
 
-    for count, limit, filename, label in checks:
+    for count, limit, family, label in checks:
         if count > limit:
             errors.add(
                 (
@@ -52,16 +53,16 @@ def validate_v21_limits(raw: RawConfigsV21, experiment_dir: Path) -> None:
                     "This may indicate config injection, duplication, or an unsafe configuration size."
                 ),
                 code=ErrorCode.CONFIG_LIMIT_EXCEEDED,
-                location=str(experiment_dir / filename),
+                location=locate(source_map, family, str(experiment_dir / family)),
             )
 
     if raw.items is not None:
         item_count = len(raw.items.item_types)
         if item_count > MAX_ITEM_TYPES:
             errors.add(
-                f"items.yaml item_types exceeds safety limit for v2.1 configs: found {item_count} (max {MAX_ITEM_TYPES}).",
+                f"Item catalog item_types exceeds safety limit for v2.1 configs: found {item_count} (max {MAX_ITEM_TYPES}).",
                 code=ErrorCode.ITEM_TYPES_LIMIT_EXCEEDED,
-                location=str(experiment_dir / "items.yaml"),
+                location=locate(source_map, "items", str(experiment_dir / "items")),
             )
 
     grid_capacity = grid_capacity_for_substrate(raw.stratum.stratum.substrate)
@@ -69,7 +70,7 @@ def validate_v21_limits(raw: RawConfigsV21, experiment_dir: Path) -> None:
         errors.add(
             f"Substrate grid size exceeds safety limit for v2.1 configs: {grid_capacity} cells (max {MAX_GRID_CELLS}).",
             code=ErrorCode.GRID_SIZE_LIMIT_EXCEEDED,
-            location=str(experiment_dir / "stratum.yaml"),
+            location=locate(source_map, "stratum", str(experiment_dir / "stratum")),
         )
 
     for level_name, level in raw.levels.items():
@@ -82,12 +83,16 @@ def validate_v21_limits(raw: RawConfigsV21, experiment_dir: Path) -> None:
             if per_item_rule_counts[rule.item_type] > MAX_SPAWN_RULES_PER_ITEM:
                 errors.add(
                     (
-                        "items.yaml spawn rules exceed safety limit for a single item type: "
+                        "Item appearance spawn rules exceed safety limit for a single item type: "
                         f"{rule.item_type} has {per_item_rule_counts[rule.item_type]} rules "
                         f"(max {MAX_SPAWN_RULES_PER_ITEM})."
                     ),
                     code=ErrorCode.SPAWN_RULE_LIMIT_EXCEEDED,
-                    location=str(experiment_dir / "levels" / level_name / "items.yaml"),
+                    location=locate(
+                        source_map,
+                        f"levels/{level_name}/items_appearance",
+                        str(experiment_dir / "levels" / level_name / "items_appearance"),
+                    ),
                 )
 
     errors.check_and_raise()

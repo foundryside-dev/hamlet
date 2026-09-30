@@ -24,11 +24,7 @@ def pack(tmp_path: Path) -> Path:
 
 
 def semantic_hashes(universe) -> dict[str, str | None]:
-    result = {
-        field.name: getattr(universe, field.name)
-        for field in dataclasses.fields(universe)
-        if field.name.endswith("_hash")
-    }
+    result = {field.name: getattr(universe, field.name) for field in dataclasses.fields(universe) if field.name.endswith("_hash")}
     for level, metadata in universe.all_levels.items():
         result.update(
             {

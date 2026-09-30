@@ -4,7 +4,7 @@ debug_logging: false
 global_profile:
   variables:
   # The authored day clock (PDR-0143, spec §6 unit 5): ONE cyclical token, sin and cos in the
-  # same value block. `period` mirrors L3's `day_length: 24`; levels without temporal
+  # same value block. L3's day_length references this period; levels without temporal
   # mechanics still observe the clock — their worlds simply do not act on it.
   - name: day_phase
     id: day_phase

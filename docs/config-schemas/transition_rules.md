@@ -30,7 +30,10 @@
 
 ---
 
-**Location**: `<config_pack>/transition_rules.yaml` (experiment-level, optional file)
+**Scope**: Optional pack-scope transition-rules declaration, conventionally
+`<config_pack>/transition_rules.yaml`. Its bare `social_residue` shape is recognized by content;
+rule IDs are unique across fragments in the scope, not merely within a file.
+See [declaration discovery](declarations.md).
 
 **Schema**: `townlet.config.transition_rules_config.TransitionRulesConfig`
 
@@ -62,7 +65,7 @@ social_residue:           # required list (may be empty, but say so explicitly)
 
 | field | required | notes |
 |---|---|---|
-| `id` | yes | unique across the file; appears in telemetry labels |
+| `id` | yes | unique across pack-scope transition declarations; appears in telemetry labels |
 | `kind` | yes | `visibility_effect` \| `social_residue` \| `institutional_rule` |
 | `phase` | yes | canonically `apply_social_residue_effects`; writes inherit it |
 | `reads` | yes, non-empty | variables the rule reads; directionality lives here as pair-scope data |

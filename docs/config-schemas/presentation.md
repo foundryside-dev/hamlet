@@ -11,10 +11,11 @@ changing how the frontend renders meters or affordances; wondering why the front
 shows `$` for a meter called `money`.
 
 **AI-Friendly Summary**:
-`presentation.yaml` is an **optional** pack-root file read only by the live-inference server
-(`townlet.demo.presentation`) and forwarded to the frontend on the `connected` message. The
-universe compiler never opens it and nothing in it enters a compiled hash — presentation cannot
-change observations, rewards, transitions, or checkpoint compatibility. **Absent is the honest
+The live-inference adapter (`townlet.demo.presentation`) reads the **optional** conventional
+pack-root `presentation.yaml` and forwards it on the `connected` message. The
+declaration-store compiler recognizes and validates its content but does not emit it as an
+execution product or include it in semantic hashes — presentation cannot change observations,
+rewards, transitions, or checkpoint compatibility. **Absent is the honest
 default**: every meter renders from its declared `bars.yaml` bounds, uniformly (bar = fraction of
 the declared range, value shown plainly, "critical" = within 20% of a declared lethal bound,
 relationships drawn from declared cascades). No site — server or frontend — may infer
@@ -62,18 +63,23 @@ layer (that is `PDR-0025`'s reversal trigger).
 ```
 configs/<pack>/
 ├── stratum.yaml, environment.yaml, ...   # compiled by the universe compiler
-├── presentation.yaml                     # OPTIONAL — read by the live-inference server ONLY
+├── presentation.yaml                     # OPTIONAL observer settings; adapter reads this filename
 └── levels/<level>/bars.yaml              # declares bounds + lethality the honest default uses
 ```
 
 - Read by: `townlet.demo.presentation.load_presentation(config_dir, universe)` at
   `LiveInferenceServer` startup, after the universe is compiled.
-- **Not** read by `UniverseCompiler`. Verified by test: compiling a pack with and without the
-  file yields identical `environment_hash`, `bars_hash`, `affordances_hash`, `vfs_hash`,
+- Recognized and typed by compiler discovery as optional observer metadata, independently of
+  filename. It is not part of execution products. Compiling a pack with and without the
+  declaration must retain identical `environment_hash`, `bars_hash`, `affordances_hash`, `vfs_hash`,
   `observation_schema_hash`, `action_schema_hash`, `transition_graph_hash`
   (`tests/test_townlet/unit/demo/test_presentation.py`). The compiler's *cache key* hashes every
-  YAML in the pack root, so adding the file may invalidate a compile cache — that is a cache
-  effect, not a provenance one.
+  discovered `.yaml`/`.yml` document, so adding the file may invalidate a compile cache —
+  that is a transport-cache effect, not an execution-semantic change.
+- The live-inference adapter still reads the conventional pack-root `presentation.yaml`;
+  it does not consume the declaration store. Relocating or combining the declaration is valid
+  compiler transport but does not relocate that observer's display settings. This is a scoped
+  UX follow-on, not an execution-semantic change. See [declaration discovery](declarations.md).
 - Forwarded to the frontend on the `connected` message as `presentation` (or `null`), next to
   `meters` (declared bounds/lethality/cascades per meter, compiled order — see "Payload").
 

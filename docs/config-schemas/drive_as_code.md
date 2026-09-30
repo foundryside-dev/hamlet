@@ -1,20 +1,10 @@
-# drive_as_code.yaml Configuration
+# Drive As Code Configuration
 
-> ⚠️ **Restored to the live tree 2026-08-26 — authoritative on the reward VOCABULARY, wrong about the FILENAME.**
->
-> This is the reference `CLAUDE.md` and `docs/architecture/HLD.md`/`UAC.md` delegate to for the
-> DAC component vocabularies (modifiers; 9 extrinsic, 5 intrinsic, 11 shaping types). That
-> content is why it is out of the archive.
->
-> **Known wrong — one error, repeated throughout:** every reference to a file called
-> **`drive_as_code.yaml` is dead.** No shipped pack contains such a file, and a grep for that
-> name returns zero hits, so it will falsely "confirm" whatever you were checking. The real
-> file is **`drive.yaml`**, one per level, at
-> `configs/default_curriculum/levels/<level>/drive.yaml`. Read every `drive_as_code.yaml` below
-> as `drive.yaml`.
->
-> (The compiler has the same bug in its own error strings — `validation/references.py` emits
-> diagnostics located at `drive_as_code.yaml`. That is a source defect, not a doc defect.)
+> **Authoring transport updated 2026-10-01 (declaration-store Cut A).** Each level requires
+> a typed `drive:` declaration. `drive.yaml` is the shipped filename convention; another
+> `.yaml`/`.yml` name has the same meaning when its content and scope are unchanged.
+> Diagnostics use its actual source origin. This front-end change does not establish that
+> every reward strategy described below is implemented end to end.
 
 
 ---
@@ -41,7 +31,10 @@ Drive As Code (DAC) is a declarative reward function compiler that extracts all 
 
 ---
 
-**Location**: `<config_pack>/drive_as_code.yaml`
+**Scope**: Required level-scope `drive:` declaration, conventionally
+`<config_pack>/levels/<level>/drive.yaml`. It may share a multi-document file with other
+families; duplicate drive declarations at the same level refuse.
+See [declaration discovery](declarations.md).
 
 **Status**: PRODUCTION (TASK-004C Complete)
 
@@ -1304,7 +1297,7 @@ Use drive_hash for provenance when comparing different reward structures.
 # Train with multiplicative
 uv run scripts/run_demo.py --config configs/L1_full_observability
 
-# Change to constant_base in drive_as_code.yaml
+# Change to constant_base in the drive declaration
 # Drive hash will change, enabling comparison in TensorBoard
 ```
 
@@ -1350,7 +1343,7 @@ extrinsic:
 
 **Cause**: DAC references bar not defined in bars.yaml
 
-**Fix**: Add bar to bars.yaml or fix typo in drive_as_code.yaml
+**Fix**: Add bar to bars.yaml or fix typo in the drive declaration
 
 ```yaml
 # bars.yaml

@@ -10,8 +10,8 @@ import pytest
 import yaml
 
 from townlet.universe.compiler import UniverseCompiler
+from townlet.universe.declarations import DeclarationStore
 from townlet.universe.errors import CompilationError
-from townlet.universe.source_map import build_pack_source_map
 
 
 def _copy_experiment(tmp_path: Path) -> Path:
@@ -22,9 +22,9 @@ def _copy_experiment(tmp_path: Path) -> Path:
 
 
 def test_build_pack_source_map_records_affordance_lines() -> None:
-    source_map = build_pack_source_map(Path("configs/test/model_config"))
+    source_map = DeclarationStore.discover(Path("configs/test/model_config")).source_map
 
-    located = source_map.lookup("levels/L0_test/affordances.yaml:EAT")
+    located = source_map.lookup("levels/L0_test/affordances:EAT")
     assert located is not None
     path, _, line = located.rpartition(":")
     assert path.endswith("affordances.yaml")
@@ -32,19 +32,19 @@ def test_build_pack_source_map_records_affordance_lines() -> None:
 
 
 def test_build_pack_source_map_records_drive_modifier_lines() -> None:
-    source_map = build_pack_source_map(Path("configs/test/model_config"))
+    source_map = DeclarationStore.discover(Path("configs/test/model_config")).source_map
 
-    located = source_map.lookup("levels/L0_test/drive.yaml:modifiers.energy_crisis")
+    located = source_map.lookup("levels/L0_test/drive:modifiers.energy_crisis")
     assert located is not None
     assert re.search(r"drive\.yaml:\d+$", located)
 
 
 def test_build_pack_source_map_records_cascade_lines() -> None:
-    source_map = build_pack_source_map(Path("configs/test/model_config"))
+    source_map = DeclarationStore.discover(Path("configs/test/model_config")).source_map
     bars_doc = yaml.safe_load(Path("configs/test/model_config/levels/L0_test/bars.yaml").read_text())
     cascades = bars_doc["bars"]["cascades"]
     assert cascades, "test pack must declare at least one cascade"
-    key = f"levels/L0_test/bars.yaml:{cascades[0]['source']}->{cascades[0]['target']}"
+    key = f"levels/L0_test/bars:{cascades[0]['source']}->{cascades[0]['target']}"
 
     located = source_map.lookup(key)
     assert located is not None

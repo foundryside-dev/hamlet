@@ -293,18 +293,23 @@ TokenSpec → Runtime Registry + token publishers → Observations`
 `registry.get()` / `set()`. Roles are open strings, not a closed enum — `agent`, `engine`,
 `actions`, `vtc`, `social_model` are the common ones. ⚠ Caveat (2026-08-24 audit): the
 enforcement is real where it runs, but it currently has **no authoring surface** (the compiler
-hardcodes the role lists on both required config files) and the observation path bypasses the
+hardcodes the role lists on both required declaration families) and the observation path bypasses the
 checked accessor entirely — see `docs/architecture/VFS.md` §6 caveat and
 `docs/architecture/archive/REVIEW-2026-08-24-vfs-implementation-vs-spec.md`.
 
-**Which files a pack needs** (corrected 2026-08-15 — the previous "all packs MUST include
-`variables_reference.yaml`" was **false**):
+**Which declarations a pack needs** (declaration-store Cut A):
 
-- `vfs_profiles.yaml` — **required**, pack root. Authoritative source for compiled global, agent
-  and item profiles. Level directories must NOT contain one.
-- `variables_reference.yaml` — **optional** static overlay for non-item variables and observation
-  marks. Static only: no expressions, no item-scoped variables. `configs/default_curriculum`
-  does not have one; `configs/L5_multi_agent` does.
+- A **VFS profiles declaration is required at pack scope**. It supplies compiled global, agent
+  and item profiles. A profiles declaration under `levels/<id>/` is refused.
+- A **static variable-overlay declaration is optional at pack scope**: no expressions and no
+  item-scoped variables. `configs/default_curriculum` has none; `configs/L5_multi_agent` does.
+- `vfs_profiles.yaml` and `variables_reference.yaml` are filename conventions. The compiler
+  discovers content in every nested `.yaml`/`.yml` document outside `.compiled`; it has no
+  filename reader or aliases. Unknown documents and duplicate declarations fail loudly with
+  actual source locations. See [the authoring contract](docs/config-schemas/declarations.md).
+
+Cut A retains the existing profile/overlay vocabulary and runtime semantics; it does not unify
+variable permissions, lifetimes or the compiler symbol model.
 
 **Documentation**: `docs/architecture/VFS.md` (the authoritative VFS document, reviewed
 2026-08-24), `docs/config-schemas/vfs-profiles.md`,
@@ -335,25 +340,29 @@ Drive As Code (DAC) is a declarative reward function compiler that extracts all 
 
 ### Key Components
 
-**Files**: Each level requires `drive.yaml`. The real pack layout is pack-level shared files
-plus per-level overrides — **not** a flat `configs/<level>/` directory:
+**Declarations**: Each level requires a typed `drive` declaration. Pack versus
+`levels/<level>/` determines scope; filenames and additional subfolders are transport.
+The following filenames are a readable convention, not compiler dispatch:
 ```
 configs/default_curriculum/
 ├── stratum.yaml          # substrate: grid 8×8, shared by EVERY level
 ├── environment.yaml      # VFS variable definitions, shared
-├── brain.yaml            # network architecture, shared (no per-level override exists)
+├── brain.yaml            # required pack brain; complete level overrides allowed
 ├── actions.yaml, effects.yaml, items.yaml, vfs_profiles.yaml
 └── levels/<level>/
     ├── bars.yaml
     ├── affordances.yaml
-    ├── drive.yaml        # DAC reward specification (REQUIRED)
+    ├── drive.yaml        # required typed DAC reward declaration
     ├── training.yaml
     └── curriculum.yaml   # vision + temporal switches
 ```
-**No file named `drive_as_code.yaml` exists in any shipped pack.** A grep for that filename
-returns zero hits and will falsely "confirm" whatever you were checking.
+A declaration may move to `levels/<level>/mechanics/rewards.yml`, or share a multi-document
+file with other declarations. Keep the existing `drive:` wrapper: renaming a file does not
+change its content vocabulary. Required families are checked after discovery. Catalog fragments
+merge in sorted pack-relative path/document order, preserving each authored list's order;
+duplicates, even identical ones, refuse with both `file:line` origins.
 
-**Architecture**: Reward logic lives in each level's `drive.yaml` → compiled by UAC →
+**Architecture**: Each level's `drive` declaration → compiled by UAC →
 executed by `DACEngine` (`src/townlet/environment/dac_engine.py`). RewardStrategy classes
 fully removed. Checkpoint provenance via `drive_hash` (SHA256 of the compiled DAC config).
 
@@ -368,8 +377,8 @@ where:
 ### Components
 
 Modifier, extrinsic (9 types), intrinsic (5 types), and shaping (11 types) vocabularies:
-see `docs/config-schemas/drive_as_code.md` (⚠ carries a dated staleness banner: it names
-the file `drive_as_code.yaml`, which does not exist — the real file is `drive.yaml`).
+see `docs/config-schemas/drive_as_code.md`. Its `drive.yaml` examples use the filename
+convention; declaration identity supplies diagnostic locations.
 
 ### Pedagogical Pattern: "Low Energy Delirium" Bug
 
@@ -395,7 +404,7 @@ The intended design, for whoever authors it:
 - All legacy reward strategy tests → DELETED (349 lines removed)
 
 **New System** (REQUIRED):
-- `drive.yaml` required for every level (see pack layout above)
+- A `drive` declaration is required for every level (see pack layout above)
 - DACEngine compiles YAML → GPU computation graphs
 - Checkpoint provenance via `drive_hash` (SHA256 of DAC config)
 - All checkpoints must have matching `drive_hash`
@@ -435,10 +444,14 @@ Verified by diff, 2026-08-12 — the levels live under `configs/default_curricul
 | L0_5_dual_resource | 7×7 grid, 4 affordances | 8×8, 14 affordances — `training.yaml` **identical to L1** but for `output_subdir` |
 | L1_full_observability | 8×8, 14 affordances | as intended |
 | L2_partial_observability | token-filtered POMDP | genuinely differs (`active_vision: partial`) |
-| L3_temporal_mechanics | 24-tick day/night | genuinely differs (`active_temporal: true`, `day_length: 24`) |
+| L3_temporal_mechanics | 24-tick day/night | genuinely differs (`active_temporal: true`, `day_length: {period_of: day_phase}` resolves the authored clock period to 24) |
 
 `bars.yaml`, `affordances.yaml` and `drive.yaml` are **byte-identical across all five levels**.
-Grid size is set once in pack-level `stratum.yaml` (8×8) and **no level can override it**.
+Grid size is set once in the pack-scope `stratum` declaration (8×8) and **no level can override it**.
+For active temporal levels, `curriculum.day_length: {period_of: day_phase}` resolves the finite,
+positive integral period of the declared global temporal variable derived from ambient `tick`.
+An active literal day length duplicating that clock fact is refused; inactive levels keep
+`day_length: null`. See [clock references](docs/config-schemas/declarations.md#clock-period-reference).
 L0_0/L0_5/L1 differ from one another only in training hyperparameters; their `curriculum.yaml`
 files differ only in comments. Five documented levels are **three distinct universes**.
 

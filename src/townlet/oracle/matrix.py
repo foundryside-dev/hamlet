@@ -241,13 +241,13 @@ class RegisteredStreamDivergence:
 # longer exists. See docs/oracle/known-divergences.md#div-006.
 #
 # Which packs' FROZEN fixture drifts from its live pack, and under which register entry.
-# MEASURED at HEAD (`pack_drift`, 2026-08-26):
+# Historical measurement (`pack_drift`, 2026-08-26):
 #   configs/default_curriculum           differing: vfs_profiles.yaml     -> DIV-008
 #   configs/differential/*         (×3)  differing: vfs_profiles.yaml     -> DIV-008
 #   configs/test/effects_smoke           differing: effects.yaml, vfs_profiles.yaml -> DIV-008
 #   configs/test/items_smoke             only_in_frozen: levels/L0_smoke/brain.yaml (DIV-007)
 #                                        + differing: effects.yaml (DIV-008)
-# items_smoke keeps DIV-007 because that entry survives and still describes the stale
+# At that cut items_smoke kept DIV-007 because that entry describes the stale
 # never-loaded brain.yaml stub; DIV-008's entry enumerates the complete per-pack delta,
 # including the row DIV-007 owns, so no drift is blessed by a declaration that does not
 # describe it. effects_smoke moves to DIV-008 because DIV-006 (which held its fixture at the
@@ -260,13 +260,16 @@ class RegisteredStreamDivergence:
 # the pack-freeze guard built at 49bdf28e is armed on ZERO of the twenty cells for as long
 # as DIV-008 is open. That is the same cost DIV-004 recorded, and it dissolves the same way:
 # a forward move of the oracle tag.
+# Cut A (2026-10-01) supersedes default_curriculum/items_smoke input bindings with
+# DIV-013. Its complete per-pack table preserves the inherited rows and adds only
+# the period reference/comment and five stray deletions. Output bindings are unchanged.
 _PACK_DIVERGENCE = {
-    "configs/default_curriculum": "DIV-008",
+    "configs/default_curriculum": "DIV-013",
     "configs/differential/boundary_wrap": "DIV-008",
     "configs/differential/div003_cubic_partial": "DIV-008",
     "configs/differential/div003_rect": "DIV-008",
     "configs/test/effects_smoke": "DIV-008",
-    "configs/test/items_smoke": "DIV-007",
+    "configs/test/items_smoke": "DIV-013",
 }
 
 # DIV-009 (2026-08-23, hamlet-5cc071f4b6): six Phase B landings after the oracle tag moved
@@ -496,7 +499,8 @@ def default_cells() -> tuple[Cell, ...]:
 
     Exit 0 now means "everything diverged exactly as registered", DIV-004's
     cost restated at this tag; see docs/oracle/known-divergences.md#div-008,
-    #div-009, #div-010 and #div-012. Declarations return only when a register
+    #div-009, #div-010 and #div-012. DIV-013 binds input drift only for default/items;
+    it neither broadens nor retires any output allowance. Declarations return only when a register
     entry needs them (PDR-0037 record-then-bind).
     """
     standing = tuple(

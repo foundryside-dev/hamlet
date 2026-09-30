@@ -78,7 +78,7 @@ class VFSCompiler:
         )
         if profile_count > MAX_VFS_PROFILES:
             raise ValueError(
-                "vfs_profiles.yaml exceeds safety limit for profile count.\n"
+                "The VFS profiles declaration exceeds the safety limit for profile count.\n"
                 f"  Experiment: {experiment_dir}\n"
                 f"  Profiles: {profile_count} (max {MAX_VFS_PROFILES})\n"
                 "Reduce VFS profile count to keep config size within guardrails."
@@ -231,7 +231,7 @@ class VFSCompiler:
                     f"  Item: {item.id}\n"
                     f"  vfs_profile: {profile_name!r}\n"
                     f"  Available item profiles: {sorted(available_profiles)}\n"
-                    "Define the profile in vfs_profiles.yaml:item_profiles or update items.yaml."
+                    "Define the profile in the pack-scope item_profiles declaration or update the item catalog binding."
                 )
 
     def compile_item_spawn_conditions(

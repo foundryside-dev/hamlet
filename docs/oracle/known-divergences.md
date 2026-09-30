@@ -1494,7 +1494,7 @@ bound, which is what stops a typo-bind from certifying the wrong entry.
   This supersedes their DIV-008/DIV-007 *input bindings*, preserving all inherited rows
   below. Neither earlier output divergence is retired or broadened.
 
-Complete current frozen/live input delta (the frozen tree is unchanged):
+Complete Cut A frozen/live input delta (before Cut B; the frozen tree is unchanged):
 
 | Pack | Delta | Attribution |
 |---|---|---|
@@ -1518,3 +1518,124 @@ The harness's input flag is a boolean gate, not a row-wise validator. That exist
 limitation is retained explicitly: the table is checked against measured byte deltas,
 and new tests pin these two deltas. No new permissive harness mechanism is introduced.
 CUDA is unmeasured by this Cut A acceptance unless separately reported.
+
+## DIV-014 — Declaration-store Cut B: canonical variables and explicit token scope
+
+- **Status:** causes measured in the Task 2 clean checkpoint and the Task 3
+  working-tree diagnostic `declaration-cut-b-diagnostic-02`; final clean-tip
+  frozen-oracle CPU acceptance remains pending. This is attribution evidence,
+  not the product acceptance checkpoint.
+- **Harness shape: hash-only**. No trace-stream allowance is added by this entry.
+  The fixed oracle retains DIV-008's historical observation-stream binding; the
+  direct Cut A parent comparison inherits no observation allowance.
+- **Input binding:** all six matrix packs name DIV-014. It supersedes their
+  DIV-008/DIV-013 input bindings only, preserving inherited frozen/live rows.
+  `docs/oracle/declaration-cut-b-inputs.json` pins the complete byte inventory;
+  a boolean `pack_divergence` gate alone cannot validate it.
+- **Scope:** PRD-0003 / PDR-0147. One explicit variable declaration replaces the
+  environment/profile/overlay surfaces. Access-role authoring remains excluded.
+  Neither frozen fixtures nor the oracle worktree is modified.
+
+### Separately measured causes
+
+Task 2 (`8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3`), before canonical declarations
+changed, adds required `SlotBinding.scope`. Only variable-element binding scopes
+enter the semantic observation payload. Compact transport identity remains
+unchanged: scope selects an owner/publisher, not a row width or ordering. The
+complete 31-case / 884-reading scope-only census records **106 movers**,
+exclusively per-level `observation_schema_hash` and composite `vfs_hash`.
+All layout, variable-schema, environment and other readings remain identical.
+Evidence: `docs/product/evidence/declaration-cut-b/scope-only-hashes.json`.
+
+Task 3 (`8060ef19b820ddada047570825865b69e6b38b3b`) removes `EnvironmentConfigRoot.variables`, including empty lists. The raw
+`environment_hash` is computed over the resulting DTO dump, so it moves on every
+case even when that case declared no environment variables. This structural
+movement is isolated from Task 2: all 31 environment hashes were unchanged at
+`8a234b61`. Canonical transport replacement changes all 31 raw input digest
+readings (`metadata.config_hash`). Those digests are census/input evidence,
+not an additional driver output field.
+
+The variable schema moves on only **12 readings over nine packs**:
+
+| Pack | Canonical variable-schema change |
+|---|---|
+| `L5_multi_agent` | `trust` and `occupied_by` lose old reader/writer role metadata in favor of the one fixed engine policy |
+| `test/effects_smoke` | unexposed `position` loses inert normalization range and redundant fixed-vector `dims`; `digesting` loses the old `actions` writer |
+| `test/items_smoke` | unexposed `position` loses inert normalization range and redundant fixed-vector `dims`; `has_food` loses the old `actions`/`bac` writers |
+| `test/gridnd_4d_pack`, `test/model_config`, `test/token_set_smoke` | unexposed `position` loses inert normalization range |
+| `test/vfs_bar_access`, `test/vfs_dependency_chain`, `trial_k_cold` | unexposed `position` loses inert normalization range and redundant fixed-vector `dims` |
+
+The canonical schema includes `id`, type, scope, dimensions, lifetime, sorted
+reader/writer lists and normalization range. It excludes descriptions,
+`semantic_type` and `exposed_to`; descriptor order is sorted by ID. Consequently,
+the added semantic/exposure metadata, authored descriptions and one profile ID
+order correction produce product diffs without being variable-schema causes.
+No default value, lifetime, type, scope or registry capacity changes appear in
+the exhaustive product diffs. `canonical-schema-attribution.json` independently
+reconstructs each changed before/after canonical payload and verifies its SHA256
+against the measured hash. The role-policy simplification is intentional and
+bounded; it does not implement new privacy/access-role authoring.
+
+The final diagnostic inventory is **180 census hash changes**:
+53 observation-schema readings, 53 VFS composite readings, 31 raw environment
+readings, 31 transport digest readings and 12 variable-schema readings. Counts
+include repeated all-level projections across selected-primary compilation
+cases; they are not a count of distinct worlds. All observation hashes equal
+the separately measured scope-only hashes, so Task 3 adds no observation-identity
+movement. VFS differences arise from the observation input and, on those nine
+packs, the variable-schema input; action and transition inputs remain unchanged.
+
+The ten direct-parent CPU replays show **32 selected trace-hash changes**:
+observation, environment and VFS on all ten cells, plus variable schema on the
+two profile cells. Every observation/action/done/reward array remains byte-exact.
+The eleven reset/step/reset state censuses have zero differences. This working-tree
+diagnostic establishes attribution and behavior for its measured source; the
+final clean-tip run must repeat it before acceptance.
+
+### Exact matrix bindings
+
+| Block | DIV-014 fields |
+|---|---|
+| standing and differential (16 declared CPU/CUDA cells) | `environment_hash`, `observation_schema_hash`, `vfs_hash` |
+| profile (4 declared CPU/CUDA cells) | the same three, plus `variable_schema_hash` |
+
+Older DIV-008/009/010/012 hash sets remain unchanged. These fields already differ
+against the fixed oracle for older causes, so adding overlapping DIV-014 bindings
+records B's separately measured causes without enlarging the permitted union.
+No layout or token-type-schema movement is attributed to B. The parent comparison
+is essential: a green frozen matrix alone could not isolate this cut from the
+older registered changes.
+
+### Complete frozen/live input delta
+
+All packs replace frozen `vfs_profiles.yaml` with live `variables.yaml`.
+`effects_smoke` and `items_smoke` also remove frozen `variables_reference.yaml`.
+Every differing `environment.yaml` now combines inherited schema/content changes
+with removal of its old variable declaration field. All other rows below are
+inherited from DIV-007/008/012/013 and remain explicitly present:
+
+| Pack | Only in frozen | Only in live | Differing bytes |
+|---|---|---|---|
+| `default_curriculum` | `vfs_profiles.yaml` | `variables.yaml` | `environment.yaml`, `stratum.yaml`, `levels/L2_partial_observability/curriculum.yaml`, `levels/L3_temporal_mechanics/curriculum.yaml` |
+| `differential/boundary_wrap` | `vfs_profiles.yaml` | `variables.yaml` | `environment.yaml`, `stratum.yaml` |
+| `differential/div003_cubic_partial` | `vfs_profiles.yaml` | `variables.yaml` | `environment.yaml`, `stratum.yaml`, `levels/L2_partial_observability/curriculum.yaml` |
+| `differential/div003_rect` | `vfs_profiles.yaml` | `variables.yaml` | `environment.yaml`, `stratum.yaml` |
+| `test/effects_smoke` | `variables_reference.yaml`, `vfs_profiles.yaml` | `variables.yaml` | `effects.yaml`, `environment.yaml`, `stratum.yaml` |
+| `test/items_smoke` | `affordances.yaml`, `bars.yaml`, `drive_as_code.yaml`, `levels/L0_smoke/brain.yaml`, `substrate.yaml`, `training.yaml`, `variables_reference.yaml`, `vfs_profiles.yaml` | `variables.yaml` | `effects.yaml`, `environment.yaml`, `stratum.yaml` |
+
+The JSON inventory pins every frozen and live file's SHA256, including unchanged
+files, and the exact delta categories. Tests reject an unrelated content edit
+within an already-declared differing file as well as a new or removed file.
+This guard supplements the existing boolean harness mechanism; it does not
+create a new permissive adjudication shape.
+
+### Remaining acceptance evidence
+
+The frozen-oracle matrix must complete at a clean implementation checkpoint:
+ten CPU cells and ten explicitly skipped CUDA cells unless CUDA is actually
+executed. The direct-parent gate must also qualify exact attributed values and
+all four byte-exact streams at that checkpoint, with no stale entries or dirty
+execution files. Input provenance and the canonical causing commit are now bound to `8060ef19`. Terminal
+clean-tip CPU outcomes must resolve the remaining pending status before product acceptance.
+No convergence, browser, CUDA execution or full variable/privacy-system
+completion is claimed by the registration.

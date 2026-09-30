@@ -1,10 +1,12 @@
-"""Cut A's input-only registration must describe the exact byte deltas."""
+"""Preserve Cut A history and pin Cut B's complete frozen/live input inventory."""
 
+import hashlib
+import json
 from pathlib import Path
 
 import pytest
 
-from townlet.oracle.harness import ORACLE_PACK_ROOT, pack_drift
+from townlet.oracle.harness import ORACLE_PACK_ROOT, _pack_files, pack_drift
 from townlet.oracle.matrix import default_cells
 
 
@@ -39,12 +41,40 @@ from townlet.oracle.matrix import default_cells
         ),
     ],
 )
-def test_cut_a_input_binding_is_narrow(pack: str, delta: dict[str, list[str]]) -> None:
+def test_cut_a_recorded_input_delta_is_preserved(pack: str, delta: dict[str, list[str]]) -> None:
+    """B replaces the live transport; the banked parent proves A's old reading."""
     root = Path(__file__).parents[4]
-    assert pack_drift(root / ORACLE_PACK_ROOT, root, pack) == delta
-    for cell in default_cells():
-        if cell.params.pack == pack:
-            assert cell.pack_divergence == "DIV-013"
-            assert all(entry.register_ref != "DIV-013" for entry in cell.hash_divergences)
-            assert cell.stream_divergence is not None
-            assert cell.stream_divergence.register_ref != "DIV-013"
+    parent = json.loads((root / "docs/product/evidence/declaration-cut-b/before-inputs.json").read_text())
+    assert parent["source_commit"] == "599cad15706ac8824c3f8e38276da6440c4816a3"
+    prefix = f"{pack}/"
+    old_live = {name.removeprefix(prefix): digest for name, digest in parent["files"].items() if name.startswith(prefix)}
+    frozen = {name: hashlib.sha256(data).hexdigest() for name, data in _pack_files(root / ORACLE_PACK_ROOT / pack).items()}
+    actual = {}
+    for kind, names in (
+        ("only_in_frozen", sorted(frozen.keys() - old_live.keys())),
+        ("only_in_live", sorted(old_live.keys() - frozen.keys())),
+        ("differing", sorted(name for name in frozen.keys() & old_live.keys() if frozen[name] != old_live[name])),
+    ):
+        if names:
+            actual[kind] = names
+    assert actual == delta
+
+
+def test_cut_b_input_binding_matches_complete_pinned_bytes() -> None:
+    """A boolean drift allowance cannot silently admit a later unrelated edit."""
+    root = Path(__file__).parents[4]
+    inventory = json.loads((root / "docs/oracle/declaration-cut-b-inputs.json").read_text())
+    expected_packs = {cell.params.pack for cell in default_cells()}
+    assert inventory["register_ref"] == "DIV-014"
+    assert inventory["baseline_source"] == "599cad15706ac8824c3f8e38276da6440c4816a3"
+    assert inventory["packs"].keys() == expected_packs
+    for pack, record in inventory["packs"].items():
+        live = {name: hashlib.sha256(data).hexdigest() for name, data in _pack_files(root / pack).items()}
+        frozen = {name: hashlib.sha256(data).hexdigest() for name, data in _pack_files(root / ORACLE_PACK_ROOT / pack).items()}
+        assert live == record["live_files"], f"{pack}: live bytes moved outside the registered inventory"
+        assert frozen == record["frozen_files"], f"{pack}: frozen oracle input changed"
+        assert pack_drift(root / ORACLE_PACK_ROOT, root, pack) == record["delta"]
+        readers = [cell for cell in default_cells() if cell.params.pack == pack]
+        assert all(cell.pack_divergence == "DIV-014" for cell in readers)
+        assert all(entry.register_ref != "DIV-013" for cell in readers for entry in cell.hash_divergences)
+        assert all(cell.stream_divergence is not None and cell.stream_divergence.register_ref == "DIV-008" for cell in readers)

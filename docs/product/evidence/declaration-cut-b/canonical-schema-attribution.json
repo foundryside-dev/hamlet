@@ -1,0 +1,1886 @@
+{
+  "baseline_source": "599cad15706ac8824c3f8e38276da6440c4816a3",
+  "canonical_source_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+  "cases": [
+    {
+      "after_canonical": [
+        {
+          "dims": null,
+          "id": "deficit_energy",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "occupied_by",
+          "lifetime": "tick",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "affordance",
+          "type": "agent_ref",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "time_since_last_sleep",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            100.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "trust",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "pair",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_canonical": [
+        {
+          "dims": null,
+          "id": "deficit_energy",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "occupied_by",
+          "lifetime": "tick",
+          "range": null,
+          "readable_by": [
+            "engine",
+            "vtc"
+          ],
+          "scope": "affordance",
+          "type": "agent_ref",
+          "writable_by": [
+            "engine",
+            "vtc"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "time_since_last_sleep",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            100.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "trust",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine",
+            "social_model"
+          ],
+          "scope": "pair",
+          "type": "scalar",
+          "writable_by": [
+            "engine",
+            "vtc"
+          ]
+        }
+      ],
+      "cause": "trust/occupied_by legacy reader/writer roles replaced by fixed agent/engine read and engine write policy",
+      "level": "L5_multi_agent",
+      "pack": "configs/L5_multi_agent",
+      "primary_level": "L5_multi_agent"
+    },
+    {
+      "after_canonical": [
+        {
+          "dims": null,
+          "id": "day_count",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "digesting",
+          "lifetime": "tick",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "bool",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "is_wet",
+          "lifetime": "tick",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "bool",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "position",
+          "lifetime": "tick",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "vec2f",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_canonical": [
+        {
+          "dims": null,
+          "id": "day_count",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "digesting",
+          "lifetime": "tick",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "bool",
+          "writable_by": [
+            "actions",
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "is_wet",
+          "lifetime": "tick",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "bool",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": 2,
+          "id": "position",
+          "lifetime": "tick",
+          "range": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ]
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "vec2f",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "cause": "unexposed position loses inert normalization range and redundant vec2f dims; digesting loses legacy actions writer",
+      "level": "L0_effects",
+      "pack": "configs/test/effects_smoke",
+      "primary_level": "L0_effects"
+    },
+    {
+      "after_canonical": [
+        {
+          "dims": 4,
+          "id": "position",
+          "lifetime": "tick",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "vecNf",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_canonical": [
+        {
+          "dims": 4,
+          "id": "position",
+          "lifetime": "tick",
+          "range": [
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ]
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "vecNf",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "cause": "unexposed position loses inert normalization range",
+      "level": "L0_test",
+      "pack": "configs/test/gridnd_4d_pack",
+      "primary_level": "L0_test"
+    },
+    {
+      "after_canonical": [
+        {
+          "dims": null,
+          "id": "has_food",
+          "lifetime": "tick",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "bool",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "position",
+          "lifetime": "tick",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "vec2f",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_canonical": [
+        {
+          "dims": null,
+          "id": "has_food",
+          "lifetime": "tick",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "bool",
+          "writable_by": [
+            "actions",
+            "bac",
+            "engine"
+          ]
+        },
+        {
+          "dims": 2,
+          "id": "position",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "vec2f",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "cause": "unexposed position loses inert normalization range and redundant vec2f dims; has_food loses legacy actions/bac writers",
+      "level": "L0_smoke",
+      "pack": "configs/test/items_smoke",
+      "primary_level": "L0_smoke"
+    },
+    {
+      "after_canonical": [
+        {
+          "dims": null,
+          "id": "deficit_energy",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": 2,
+          "id": "position",
+          "lifetime": "tick",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "vecNf",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "time_since_last_eat",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            100.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_canonical": [
+        {
+          "dims": null,
+          "id": "deficit_energy",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": 2,
+          "id": "position",
+          "lifetime": "tick",
+          "range": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ]
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "vecNf",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "time_since_last_eat",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            100.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "cause": "unexposed position loses inert normalization range",
+      "level": "L0_test",
+      "pack": "configs/test/model_config",
+      "primary_level": "L0_test"
+    },
+    {
+      "after_canonical": [
+        {
+          "dims": null,
+          "id": "deficit_energy",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "need_tokens",
+          "lifetime": "episode",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "tensor2d",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": 2,
+          "id": "position",
+          "lifetime": "tick",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "vecNf",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "time_since_last_eat",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            100.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_canonical": [
+        {
+          "dims": null,
+          "id": "deficit_energy",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "need_tokens",
+          "lifetime": "episode",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "tensor2d",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": 2,
+          "id": "position",
+          "lifetime": "tick",
+          "range": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ]
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "vecNf",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "time_since_last_eat",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            100.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "cause": "unexposed position loses inert normalization range at both levels",
+      "level": "L0_test",
+      "pack": "configs/test/token_set_smoke",
+      "primary_level": "L0_test"
+    },
+    {
+      "after_canonical": [
+        {
+          "dims": null,
+          "id": "deficit_energy",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "need_tokens",
+          "lifetime": "episode",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "tensor2d",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": 2,
+          "id": "position",
+          "lifetime": "tick",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "vecNf",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "time_since_last_eat",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            100.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_canonical": [
+        {
+          "dims": null,
+          "id": "deficit_energy",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "need_tokens",
+          "lifetime": "episode",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "tensor2d",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": 2,
+          "id": "position",
+          "lifetime": "tick",
+          "range": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ]
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "vecNf",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "time_since_last_eat",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            100.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "cause": "unexposed position loses inert normalization range at both levels",
+      "level": "L1_attention",
+      "pack": "configs/test/token_set_smoke",
+      "primary_level": "L0_test"
+    },
+    {
+      "after_canonical": [
+        {
+          "dims": null,
+          "id": "deficit_energy",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "need_tokens",
+          "lifetime": "episode",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "tensor2d",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": 2,
+          "id": "position",
+          "lifetime": "tick",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "vecNf",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "time_since_last_eat",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            100.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_canonical": [
+        {
+          "dims": null,
+          "id": "deficit_energy",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "need_tokens",
+          "lifetime": "episode",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "tensor2d",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": 2,
+          "id": "position",
+          "lifetime": "tick",
+          "range": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ]
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "vecNf",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "time_since_last_eat",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            100.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "cause": "unexposed position loses inert normalization range at both levels",
+      "level": "L0_test",
+      "pack": "configs/test/token_set_smoke",
+      "primary_level": "L1_attention"
+    },
+    {
+      "after_canonical": [
+        {
+          "dims": null,
+          "id": "deficit_energy",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "need_tokens",
+          "lifetime": "episode",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "tensor2d",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": 2,
+          "id": "position",
+          "lifetime": "tick",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "vecNf",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "time_since_last_eat",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            100.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_canonical": [
+        {
+          "dims": null,
+          "id": "deficit_energy",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "need_tokens",
+          "lifetime": "episode",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "tensor2d",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": 2,
+          "id": "position",
+          "lifetime": "tick",
+          "range": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ]
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "vecNf",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "time_since_last_eat",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            100.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "cause": "unexposed position loses inert normalization range at both levels",
+      "level": "L1_attention",
+      "pack": "configs/test/token_set_smoke",
+      "primary_level": "L1_attention"
+    },
+    {
+      "after_canonical": [
+        {
+          "dims": null,
+          "id": "low_energy_flag",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "bool",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "position",
+          "lifetime": "tick",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "vec2f",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_canonical": [
+        {
+          "dims": null,
+          "id": "low_energy_flag",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "bool",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": 2,
+          "id": "position",
+          "lifetime": "tick",
+          "range": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ]
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "vec2f",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "cause": "unexposed position loses inert normalization range and redundant vec2f dims",
+      "level": "L0_bars",
+      "pack": "configs/test/vfs_bar_access",
+      "primary_level": "L0_bars"
+    },
+    {
+      "after_canonical": [
+        {
+          "dims": null,
+          "id": "a",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "b",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "c",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "position",
+          "lifetime": "tick",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "vec2f",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_canonical": [
+        {
+          "dims": null,
+          "id": "a",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "b",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "c",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": 2,
+          "id": "position",
+          "lifetime": "tick",
+          "range": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ]
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "vec2f",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "cause": "unexposed position loses inert normalization range and redundant vec2f dims",
+      "level": "L0_deps",
+      "pack": "configs/test/vfs_dependency_chain",
+      "primary_level": "L0_deps"
+    },
+    {
+      "after_canonical": [
+        {
+          "dims": null,
+          "id": "position",
+          "lifetime": "tick",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "vec2f",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "season_clock",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "winter_ticks",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "world_temp",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_canonical": [
+        {
+          "dims": 2,
+          "id": "position",
+          "lifetime": "tick",
+          "range": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ]
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "vec2f",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "season_clock",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "winter_ticks",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "world_temp",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "cause": "unexposed position loses inert normalization range and redundant vec2f dims",
+      "level": "L0_cold",
+      "pack": "configs/trial_k_cold",
+      "primary_level": "L0_cold"
+    }
+  ],
+  "status": "canonical payload SHA pairs reviewed against diagnostic02; clean core census matches; final CPU acceptance pending"
+}

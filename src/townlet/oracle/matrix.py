@@ -260,16 +260,16 @@ class RegisteredStreamDivergence:
 # the pack-freeze guard built at 49bdf28e is armed on ZERO of the twenty cells for as long
 # as DIV-008 is open. That is the same cost DIV-004 recorded, and it dissolves the same way:
 # a forward move of the oracle tag.
-# Cut A (2026-10-01) supersedes default_curriculum/items_smoke input bindings with
-# DIV-013. Its complete per-pack table preserves the inherited rows and adds only
-# the period reference/comment and five stray deletions. Output bindings are unchanged.
+# Cut B supersedes every input binding with DIV-014. Its complete per-pack
+# inventory preserves inherited rows and attributes the canonical-variable
+# transport replacement separately. Historical output tuples stay unchanged.
 _PACK_DIVERGENCE = {
-    "configs/default_curriculum": "DIV-013",
-    "configs/differential/boundary_wrap": "DIV-008",
-    "configs/differential/div003_cubic_partial": "DIV-008",
-    "configs/differential/div003_rect": "DIV-008",
-    "configs/test/effects_smoke": "DIV-008",
-    "configs/test/items_smoke": "DIV-013",
+    "configs/default_curriculum": "DIV-014",
+    "configs/differential/boundary_wrap": "DIV-014",
+    "configs/differential/div003_cubic_partial": "DIV-014",
+    "configs/differential/div003_rect": "DIV-014",
+    "configs/test/effects_smoke": "DIV-014",
+    "configs/test/items_smoke": "DIV-014",
 }
 
 # DIV-009 (2026-08-23, hamlet-5cc071f4b6): six Phase B landings after the oracle tag moved
@@ -390,6 +390,23 @@ _DIV008_HASH = RegisteredHashDivergence(
 # world does.
 _DIV008_STREAM = RegisteredStreamDivergence(register_ref="DIV-008", streams=("obs",))
 
+# DIV-014 Task 2 is measured independently at 8a234b61: typed variable scope
+# moves observation identity and its VFS composite, never compact layout.
+# Task 3's separate census identifies environment_hash on every pack because
+# EnvironmentConfigRoot loses its variables field (including empty lists).
+# Only the two profile packs additionally move variable_schema_hash: obsolete
+# unexposed normalization/redundant fixed-vector dims and old role metadata
+# leave their descriptors. Older hash tuples are unchanged; overlap is
+# attributed explicitly rather than widening their allowances.
+_DIV014 = RegisteredHashDivergence(
+    register_ref="DIV-014",
+    hash_fields=("environment_hash", "observation_schema_hash", "vfs_hash"),
+)
+_DIV014_PROFILE = RegisteredHashDivergence(
+    register_ref="DIV-014",
+    hash_fields=("environment_hash", "observation_schema_hash", "variable_schema_hash", "vfs_hash"),
+)
+
 
 @dataclass(frozen=True)
 class Cell:
@@ -497,10 +514,15 @@ def default_cells() -> tuple[Cell, ...]:
     the union of every entry's declared fields must still equal the observed
     movers EXACTLY, and each entry's own fields must all move.
 
+    Cut B appends DIV-014 to each historical four-entry tuple without changing
+    any older field set. Its typed-scope cause is independently measured;
+    complete input drift is now bound under DIV-014 for every matrix pack.
+    Additional canonical-variable movers require their own measured causes.
+
     Exit 0 now means "everything diverged exactly as registered", DIV-004's
     cost restated at this tag; see docs/oracle/known-divergences.md#div-008,
-    #div-009, #div-010 and #div-012. DIV-013 binds input drift only for default/items;
-    it neither broadens nor retires any output allowance. Declarations return only when a register
+    #div-009, #div-010 and #div-012. DIV-014 supersedes DIV-013's input-only
+    binding and preserves its inherited rows. Declarations return only when a register
     entry needs them (PDR-0037 record-then-bind).
     """
     standing = tuple(
@@ -514,7 +536,7 @@ def default_cells() -> tuple[Cell, ...]:
                 device=device,
             ),
             pack_divergence=_PACK_DIVERGENCE.get(_DEFAULT_PACK),
-            hash_divergences=(_DIV009_STANDING, _DIV010, _DIV012, _DIV008_HASH),
+            hash_divergences=(_DIV009_STANDING, _DIV010, _DIV012, _DIV008_HASH, _DIV014),
             stream_divergence=_DIV008_STREAM,
         )
         for device in ("cpu", "cuda")
@@ -531,7 +553,7 @@ def default_cells() -> tuple[Cell, ...]:
                 device=device,
             ),
             pack_divergence=_PACK_DIVERGENCE.get(f"configs/differential/{pack_dir}"),
-            hash_divergences=(_DIV009_STANDING, _DIV010, _DIV012, _DIV008_HASH),
+            hash_divergences=(_DIV009_STANDING, _DIV010, _DIV012, _DIV008_HASH, _DIV014),
             stream_divergence=_DIV008_STREAM,
         )
         for device in ("cpu", "cuda")
@@ -548,7 +570,7 @@ def default_cells() -> tuple[Cell, ...]:
                 device=device,
             ),
             pack_divergence=_PACK_DIVERGENCE.get(pack),
-            hash_divergences=(_DIV009_PROFILE, _DIV010, _DIV012_PROFILE, _DIV008_HASH),
+            hash_divergences=(_DIV009_PROFILE, _DIV010, _DIV012_PROFILE, _DIV008_HASH, _DIV014_PROFILE),
             stream_divergence=_DIV008_STREAM,
         )
         for device in ("cpu", "cuda")

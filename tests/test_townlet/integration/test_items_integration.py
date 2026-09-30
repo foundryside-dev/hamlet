@@ -6,18 +6,27 @@ import torch
 
 from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.universe.compiler import UniverseCompiler
+from townlet.universe.declarations import DeclarationStore
 
 
-def test_items_smoke_config_pack_exists():
-    """items_smoke config pack has all required files."""
+def test_items_smoke_pack_compiles_required_declarations():
+    """The shipped item pack supplies complete scoped declarations and a usable catalog."""
     config_dir = Path("configs/test/items_smoke")
+    declarations = DeclarationStore.discover(config_dir)
+    for family in ("experiment", "stratum", "environment", "actions", "brain", "vfs_profiles", "items"):
+        assert declarations.get(family, None) is not None, f"Missing pack-scope {family} declaration"
+    for family in ("curriculum", "bars", "affordances", "training", "drive", "items_appearance"):
+        assert declarations.get(family, "L0_smoke") is not None, f"Missing L0_smoke {family} declaration"
 
-    # Core config files
-    assert (config_dir / "items.yaml").exists(), "items.yaml missing"
-    assert (config_dir / "substrate.yaml").exists(), "substrate.yaml missing"
-    assert (config_dir / "bars.yaml").exists(), "bars.yaml missing"
-    assert (config_dir / "affordances.yaml").exists(), "affordances.yaml missing"
-    assert (config_dir / "training.yaml").exists(), "training.yaml missing"
+    universe = UniverseCompiler().compile(config_dir, primary_level="L0_smoke", use_cache=False)
+    assert universe.items_catalog is not None
+    assert {item.id for item in universe.items_catalog.item_types} == {"apple", "medkit", "coin"}
+    env = universe.create_environment(num_agents=1, level_name="L0_smoke", device="cpu")
+    observation = env.reset()
+    assert torch.isfinite(observation).all()
+    assert env.item_manager is not None
+    assert env.item_manager.catalog == universe.items_catalog
+    assert {item.item_type for item in env.item_manager.get_all_items()} == {"apple", "medkit"}
 
 
 def test_items_catalog_has_three_item_types():

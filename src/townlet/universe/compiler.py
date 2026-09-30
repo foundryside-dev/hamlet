@@ -139,8 +139,8 @@ class UniverseCompiler:
 
         self._log_stage(CompilationStage.PARSE)
         raw = RawConfigsV21.from_declarations(declarations)
-        # Parallel line-annotating parse for file:line diagnostics; the DTOs
-        # never see it (its __line__ keys would violate extra="forbid").
+        # Discovery retains source marks outside authored mapping keys;
+        # the typed declaration products never receive metadata fields.
         source_map = declarations.source_map
 
         self._log_stage(CompilationStage.LIMITS)

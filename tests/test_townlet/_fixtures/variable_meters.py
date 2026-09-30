@@ -169,50 +169,6 @@ def task001_config_4meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
     # NOTE: 4-meter pack now uses dedicated v2.1 model_config_4meter affordances.yaml;
     # we no longer override per-level affordances here.
 
-    cues_config = {
-        "version": "1.0",
-        "description": "4-meter cues for variable meter tests",
-        "status": "TEST",
-        "simple_cues": [
-            {
-                "cue_id": "looks_exhausted",
-                "name": "Looks Exhausted",
-                "category": "energy",
-                "visibility": "public",
-                "condition": {"meter": "energy", "operator": "<", "threshold": 0.25},
-                "description": "Agent appears visibly tired",
-            },
-            {
-                "cue_id": "looks_sickly",
-                "name": "Looks Sickly",
-                "category": "health",
-                "visibility": "public",
-                "condition": {"meter": "health", "operator": "<", "threshold": 0.4},
-                "description": "Agent shows signs of illness",
-            },
-            {
-                "cue_id": "looks_broke",
-                "name": "Looks Broke",
-                "category": "money",
-                "visibility": "public",
-                "condition": {"meter": "money", "operator": "<", "threshold": 0.2},
-                "description": "Agent checks pockets frequently",
-            },
-            {
-                "cue_id": "looks_sad",
-                "name": "Looks Sad",
-                "category": "mood",
-                "visibility": "public",
-                "condition": {"meter": "mood", "operator": "<", "threshold": 0.3},
-                "description": "Agent moves listlessly",
-            },
-        ],
-        "compound_cues": [],
-    }
-
-    with open(config_4m / "cues.yaml", "w") as f:
-        yaml.safe_dump(cues_config, f, sort_keys=False)
-
     # Generate matching variables_reference.yaml for 4 meters
     # Must match bars_config meter count to avoid VFS/bars mismatch
     vfs_config = {

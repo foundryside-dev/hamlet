@@ -9,10 +9,8 @@ for the runtime VFS profile pipeline.
 """
 
 from enum import StrEnum
-from pathlib import Path
 from typing import Any, Literal
 
-import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
 __all__ = [
@@ -22,7 +20,7 @@ __all__ = [
     "VariableScope",
     "VFSScopeExtents",
     "VariablesReferenceData",
-    "load_variables_reference_config",
+    "parse_variables_reference",
 ]
 
 
@@ -524,24 +522,6 @@ _SCOPE_EXTENT_FIELD: dict[VariableScope, str] = {
     VariableScope.MESSAGE: "num_message_slots",
     VariableScope.AFFORDANCE: "num_affordances",
 }
-
-
-def load_variables_reference_config(config_dir: Path) -> VariablesReferenceData:
-    """Load and validate variables_reference.yaml."""
-
-    config_dir = Path(config_dir)
-    yaml_path = config_dir / "variables_reference.yaml"
-
-    if not yaml_path.exists():
-        raise FileNotFoundError(f"variables_reference.yaml is required but not found in {config_dir}.")
-
-    try:
-        with yaml_path.open() as handle:
-            data = yaml.safe_load(handle) or {}
-    except yaml.YAMLError as exc:
-        raise ValueError(f"Failed to parse {yaml_path}: {exc}") from exc
-
-    return parse_variables_reference(data, str(yaml_path))
 
 
 def parse_variables_reference(data: dict[str, Any], origin: str) -> VariablesReferenceData:

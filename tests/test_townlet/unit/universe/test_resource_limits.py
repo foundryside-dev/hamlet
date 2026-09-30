@@ -115,6 +115,8 @@ def test_vfs_profiles_count_is_capped(tmp_path: Path) -> None:
     _write_items_catalog(config_dir, item_types=_make_item_types(1, profile="profile_0"))
 
     compiler = UniverseCompiler()
-    with pytest.raises(ValueError, match="VFS profiles declaration exceeds the safety limit") as caught:
+    with pytest.raises(CompilationError, match="VFS profiles declaration exceeds the safety limit") as caught:
         compiler.compile(config_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
     assert f"Profiles: {MAX_VFS_PROFILES + 1} (max {MAX_VFS_PROFILES})" in str(caught.value)
+    assert caught.value.issues[0].code == "CONFIG_LIMIT_EXCEEDED"
+    assert caught.value.issues[0].location == f"{config_dir / 'vfs_profiles.yaml'}:1"

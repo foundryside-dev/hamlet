@@ -129,7 +129,9 @@ def test_recursive_yaml_alias_is_a_structured_refusal(pack: Path) -> None:
     assert str(path) in str(caught.value)
 
 
-@pytest.mark.parametrize("failure", ["unknown", "noncyclical", "fractional", "boolean", "equal_literal", "unequal_literal", "inactive"])
+@pytest.mark.parametrize(
+    "failure", ["unknown", "noncyclical", "fractional", "boolean", "boolean_period", "equal_literal", "unequal_literal", "inactive"]
+)
 def test_clock_reference_refusals_have_the_authored_origin(pack: Path, failure: str) -> None:
     profile_path = pack / "vfs_profiles.yaml"
     profiles = yaml.safe_load(profile_path.read_text())
@@ -144,6 +146,8 @@ def test_clock_reference_refusals_have_the_authored_origin(pack: Path, failure: 
         variable["normalization"]["period"] = 24.5
     elif failure == "boolean":
         variable["type"] = "bool"
+    elif failure == "boolean_period":
+        variable["normalization"]["period"] = True
     elif failure in {"equal_literal", "unequal_literal"}:
         curriculum["curriculum"]["day_length"] = 24 if failure == "equal_literal" else 25
     else:
@@ -154,7 +158,7 @@ def test_clock_reference_refusals_have_the_authored_origin(pack: Path, failure: 
         RawConfigsV21.from_experiment_dir(pack)
     message = str(caught.value)
     assert str(curriculum_path) in message
-    if failure in {"noncyclical", "fractional", "boolean", "equal_literal", "unequal_literal"}:
+    if failure in {"noncyclical", "fractional", "boolean", "boolean_period", "equal_literal", "unequal_literal"}:
         assert str(profile_path) in message
 
 

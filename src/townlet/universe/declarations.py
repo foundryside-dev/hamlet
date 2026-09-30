@@ -490,8 +490,10 @@ class DeclarationStore:
             return
         clocks: dict[str, GlobalVFSVariableConfig] = {}
         global_variables: dict[str, GlobalVFSVariableConfig] = {}
+        authored_periods: dict[str, Any] = {}
         if profile_config.global_profile is not None:
-            for variable in profile_config.global_profile.variables:
+            raw_variables = profiles.payload["global_profile"]["variables"]
+            for variable, raw_variable in zip(profile_config.global_profile.variables, raw_variables, strict=True):
                 if variable.id is None:
                     identifier = variable.name
                 else:
@@ -505,6 +507,7 @@ class DeclarationStore:
                     and variable.normalization.kind == "cyclical_sin_cos"
                 ):
                     clocks[identifier] = variable
+                    authored_periods[identifier] = raw_variable["normalization"]["period"]
         for level in self.level_names:
             declaration = self.declarations.get((level, "curriculum"))
             if declaration is None:
@@ -532,7 +535,8 @@ class DeclarationStore:
                     )
                     continue
                 assert clock_variable.normalization is not None
-                period = clock_variable.normalization.period
+                assert isinstance(clock_reference, str)
+                period = authored_periods[clock_reference]
                 if (
                     clock_variable.type not in {"int", "float"}
                     or not isinstance(period, (int, float))

@@ -10,7 +10,6 @@ from townlet.config.environment_config import VariableConfig
 from townlet.config.items_config import ItemsAppearanceConfig, ItemsCatalogConfig
 from townlet.config.vfs_profiles_config import GlobalVFSProfileConfig, VFSProfilesConfig
 from townlet.universe.compiled import CompiledVFSProfiles
-from townlet.universe.validation.limits import MAX_VFS_PROFILES
 from townlet.vfs.profiles import CompiledItemProfile, CompiledVariable, VFSProfileCompiler
 from townlet.vfs.schema import VariableDef
 from townlet.world.expression import ExpressionParser
@@ -70,19 +69,6 @@ class VFSCompiler:
         """Compile Stage 1 VFS profile DTOs."""
         if profiles_config is None:
             return None
-
-        profile_count = (
-            int(profiles_config.global_profile is not None)
-            + int(profiles_config.agent_profile is not None)
-            + len(profiles_config.item_profiles or [])
-        )
-        if profile_count > MAX_VFS_PROFILES:
-            raise ValueError(
-                "The VFS profiles declaration exceeds the safety limit for profile count.\n"
-                f"  Experiment: {experiment_dir}\n"
-                f"  Profiles: {profile_count} (max {MAX_VFS_PROFILES})\n"
-                "Reduce VFS profile count to keep config size within guardrails."
-            )
 
         compiler = VFSProfileCompiler()
         compiler.validate_version(profiles_config.version)

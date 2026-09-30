@@ -65,6 +65,21 @@ def validate_v21_limits(raw: RawConfigsV21, experiment_dir: Path, source_map: So
                 location=locate(source_map, "items", str(experiment_dir / "items")),
             )
 
+    if raw.vfs_profiles is not None:
+        profile_count = (
+            int(raw.vfs_profiles.global_profile is not None)
+            + int(raw.vfs_profiles.agent_profile is not None)
+            + len(raw.vfs_profiles.item_profiles or [])
+        )
+        if profile_count > MAX_VFS_PROFILES:
+            errors.add(
+                "The VFS profiles declaration exceeds the safety limit for profile count.\n"
+                f"  Profiles: {profile_count} (max {MAX_VFS_PROFILES})\n"
+                "Reduce VFS profile count to keep config size within guardrails.",
+                code=ErrorCode.CONFIG_LIMIT_EXCEEDED,
+                location=locate(source_map, "vfs_profiles", f"{experiment_dir}:1"),
+            )
+
     grid_capacity = grid_capacity_for_substrate(raw.stratum.stratum.substrate)
     if grid_capacity is not None and grid_capacity > MAX_GRID_CELLS:
         errors.add(

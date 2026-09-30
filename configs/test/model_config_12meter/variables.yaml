@@ -1,0 +1,36 @@
+variables:
+  version: '1.0'
+  evaluation_mode: mark_and_sweep
+  debug_logging: false
+  extents: {}
+  item_profiles:
+  - default_item
+  declarations:
+  - id: deficit_energy
+    scope: agent
+    type: scalar
+    lifetime: tick
+    semantic_type: custom
+    exposed_to:
+    - agent
+    initial_value: 0.0
+    normalization:
+      kind: minmax
+      min: 0.0
+      max: 1.0
+      clip: true
+    description: How far below target energy (0.0 = at/above target)
+  - id: time_since_last_eat
+    scope: agent
+    type: scalar
+    lifetime: tick
+    semantic_type: custom
+    exposed_to:
+    - agent
+    initial_value: 0.0
+    normalization:
+      kind: minmax
+      min: 0.0
+      max: 100.0
+      clip: true
+    description: Timesteps since last EAT action

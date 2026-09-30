@@ -58,74 +58,102 @@ def test_effects_schema_includes_bar_paths():
     # Note: Effects can reference target.bar.energy in commands
 
 
-def test_effects_schema_global_profile_vars_register_global_root_not_target():
-    """Global-profile variables register vfs.X and global.vfs.X — never target.vfs.X.
-
-    A global variable has no per-agent axis, so target.vfs.X has no runtime
-    semantics; registering it type-checks a path whose execution indexes the
-    container's first spatial axis by agent index (hamlet-cf16cdb6c4).
-    """
-    from townlet.universe.compiled import CompiledVFSProfiles
+def test_effects_schema_canonical_global_variables_never_acquire_target_paths():
+    from townlet.config.variables_config import VariablesConfig
     from townlet.universe.compilers.effects import EffectsCompiler
-    from townlet.vfs.profiles import CompiledGlobalProfile, CompiledVariable
 
-    profiles = CompiledVFSProfiles(
+    variables = VariablesConfig(
+        version="1.0",
         evaluation_mode="eager",
         debug_logging=False,
-        global_profile=CompiledGlobalProfile(
-            variables=[CompiledVariable(name="grid", type="tensor2d", exposed_to=("agent",), shape=[3, 3])],
-            dependencies={},
-        ),
+        extents={},
+        item_profiles=[],
+        declarations=[
+            {
+                "id": "world_heat",
+                "scope": "global",
+                "type": "scalar",
+                "lifetime": "episode",
+                "initial_value": 0.0,
+                "semantic_type": "custom",
+                "exposed_to": [],
+            },
+            {
+                "id": "deficit",
+                "scope": "agent",
+                "type": "scalar",
+                "lifetime": "episode",
+                "initial_value": 0.0,
+                "semantic_type": "custom",
+                "exposed_to": [],
+            },
+        ],
     )
-
-    schema = EffectsCompiler().build_schema(
-        bar_names=("energy",),
-        environment_variables=(),
-        compiled_vfs_profiles=profiles,
-    )
-
-    assert "vfs.grid" in schema
-    assert "global.vfs.grid" in schema
-    assert "target.vfs.grid" not in schema
-
-
-def test_effects_schema_env_vars_are_scope_aware():
-    """environment.yaml variables register per their declared scope."""
-    from townlet.config.environment_config import NormalizationConfig, VariableConfig
-    from townlet.universe.compilers.effects import EffectsCompiler
-
-    norm = NormalizationConfig(method="normalize", clip=False, range=[0.0, 1.0])
-    env_global = VariableConfig(
-        name="world_heat",
-        type="scalar",
-        dims=1,
-        scope="global",
-        description="test",
-        normalization=norm,
-        semantic_type="custom",
-    )
-    env_agent = VariableConfig(
-        name="deficit",
-        type="scalar",
-        dims=1,
-        scope="agent",
-        description="test",
-        normalization=norm,
-        semantic_type="custom",
-    )
-
-    schema = EffectsCompiler().build_schema(
-        bar_names=(),
-        environment_variables=(env_global, env_agent),
-        compiled_vfs_profiles=None,
-    )
-
-    # Global-scoped: readable plainly and via the explicit root; no target path.
+    schema = EffectsCompiler().build_schema(bar_names=(), variables=variables, compiled_vfs_profiles=None)
     assert "vfs.world_heat" in schema
     assert "global.vfs.world_heat" in schema
     assert "target.vfs.world_heat" not in schema
-
-    # Agent-scoped: unchanged registration.
     assert "vfs.deficit" in schema
     assert "target.vfs.deficit" in schema
     assert "global.vfs.deficit" not in schema
+
+
+def test_effects_schema_preserves_canonical_vector_type_before_command_compilation(tmp_path):
+    import shutil
+
+    import pytest
+    import yaml
+
+    from townlet.config.variables_config import VariablesConfig
+    from townlet.effects.compiler import CommandCompiler
+    from townlet.effects.schema import CommandNode, CommandType
+    from townlet.universe.compilers.effects import EffectsCompiler
+    from townlet.universe.errors import CompilationError
+    from townlet.world.expression.type_checker import TypeCheckError
+
+    variables = VariablesConfig(
+        version="1.0",
+        evaluation_mode="mark_and_sweep",
+        debug_logging=False,
+        extents={},
+        item_profiles=[],
+        declarations=[
+            dict(
+                id="vector",
+                scope="global",
+                type="vec2f",
+                lifetime="episode",
+                semantic_type="custom",
+                exposed_to=[],
+                initial_value=[0.1, 0.2],
+            ),
+            dict(id="scalar", scope="global", type="scalar", lifetime="episode", semantic_type="custom", exposed_to=[], initial_value=0.0),
+        ],
+    )
+    schema = EffectsCompiler().build_schema(bar_names=(), variables=variables, compiled_vfs_profiles=None)
+    command = CommandNode(type=CommandType.MODIFY, path="vfs.scalar", value_expr="vfs.vector")
+    with pytest.raises(TypeCheckError, match="expected float, got vec2f"):
+        CommandCompiler(schema).compile_command(command)
+
+    pack = tmp_path / "pack"
+    shutil.copytree("configs/test/effects_smoke", pack)
+    (pack / "variables.yaml").write_text(yaml.safe_dump({"variables": variables.model_dump(mode="json", exclude_unset=True)}))
+    effects_path = pack / "effects.yaml"
+    effects = yaml.safe_load(effects_path.read_text())
+    effects["effect_definitions"] = [
+        dict(
+            id="type_probe",
+            scope="global",
+            duration=1,
+            reapply_policy="renew",
+            observable=False,
+            on_spawn=[],
+            on_tick=[dict(modify="vfs.scalar", value="vfs.vector")],
+            on_despawn=[],
+            on_interrupt=[],
+        )
+    ]
+    effects["max_active_effects"] = {"global": 1, "agent": 0, "item": 0, "affordance": 0}
+    effects_path.write_text(yaml.safe_dump(effects))
+    with pytest.raises(CompilationError, match="expected float, got vec2f"):
+        UniverseCompiler().compile(pack, primary_level="L0_effects", use_cache=False)

@@ -52,7 +52,7 @@ from townlet.universe.dto.token_spec import (
     element_coordinate_block as _element_coordinate_block,
 )
 from townlet.vfs.registry import VariableRegistry
-from townlet.vfs.schema import NormalizationSpec, VariableDef, VariableScope
+from townlet.vfs.schema import NormalizationSpec, VariableDef, VariableScope, variable_element_shape
 
 __all__ = [
     "AffordanceTokenPublisher",
@@ -874,11 +874,7 @@ class RegistryVariableElementPublisher:
 
     @staticmethod
     def _element_shape(var_def: VariableDef) -> tuple[int, ...]:
-        if var_def.shape:
-            return tuple(var_def.shape)
-        if var_def.dims is not None and var_def.dims > 1:
-            return (int(var_def.dims),)
-        return ()
+        return variable_element_shape(var_def)
 
     def publish(self, rows: torch.Tensor, ctx: TokenPublishContext) -> None:
         n = self._slots.shape[0]

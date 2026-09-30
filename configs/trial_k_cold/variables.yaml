@@ -1,0 +1,48 @@
+variables:
+  version: '1.0'
+  evaluation_mode: mark_and_sweep
+  debug_logging: false
+  extents: {}
+  item_profiles:
+  - garment_stats
+  - default_item
+  declarations:
+  - id: world_temp
+    scope: global
+    type: scalar
+    lifetime: persistent
+    semantic_type: custom
+    exposed_to: []
+    initial_value: 1.0
+  - id: season_clock
+    scope: global
+    type: scalar
+    lifetime: persistent
+    semantic_type: custom
+    exposed_to: []
+    initial_value: 0.0
+  - id: winter_ticks
+    scope: global
+    type: scalar
+    lifetime: persistent
+    semantic_type: custom
+    exposed_to: []
+    initial_value: 0.0
+  - id: position
+    scope: agent
+    type: vec2f
+    lifetime: tick
+    semantic_type: custom
+    exposed_to: []
+    initial_value:
+    - 0.0
+    - 0.0
+    description: Normalized agent position in [0, 1]^2 range
+  - id: insulation
+    scope: item
+    type: scalar
+    lifetime: episode
+    semantic_type: custom
+    exposed_to: []
+    profile: garment_stats
+    initial_value: 0.6

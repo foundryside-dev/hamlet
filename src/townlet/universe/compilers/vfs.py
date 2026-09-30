@@ -2,27 +2,20 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-from typing import Any, Literal, cast
+from typing import Any
 
 from townlet.config.bars_v2_config import BarsV2Config
-from townlet.config.environment_config import VariableConfig
 from townlet.config.items_config import ItemsAppearanceConfig, ItemsCatalogConfig
-from townlet.config.vfs_profiles_config import GlobalVFSProfileConfig, VFSProfilesConfig
+from townlet.config.variables_config import VariableDeclaration, VariablesConfig
 from townlet.universe.compiled import CompiledVFSProfiles
-from townlet.vfs.profiles import CompiledItemProfile, CompiledVariable, VFSProfileCompiler
-from townlet.vfs.schema import VariableDef
+from townlet.vfs.profiles import VFSProfileCompiler
+from townlet.vfs.schema import VariableDef, VariableScope
 from townlet.world.expression import ExpressionParser
 from townlet.world.expression.type_checker import TypeChecker, TypeCheckError
-
-_RUNTIME_VFS_TYPES = frozenset(
-    {"scalar", "bool", "tensor1d", "tensor2d", "tensor3d", "tensorNd", "agent_ref", "item_ref", "affordance_ref", "effect_ref"}
-)
 
 _ENGINE_TICK_ID = "tick"
 
 _DETERMINISTIC_TENSOR_INITIALIZERS = frozenset({"zeros", "ones", "eye"})
-_RANDOM_TENSOR_INITIALIZERS = frozenset({"random_normal", "random_uniform"})
 
 
 def _literal_tensor_default(mode: str, shape: list[int], *, var_id: str) -> list[Any]:
@@ -62,82 +55,55 @@ class VFSCompiler:
 
     def compile_profiles(
         self,
-        profiles_config: VFSProfilesConfig | None,
-        experiment_dir: Path,
+        config: VariablesConfig,
         bar_schema: dict[str, str],
-    ) -> CompiledVFSProfiles | None:
-        """Compile Stage 1 VFS profile DTOs."""
-        if profiles_config is None:
-            return None
-
+    ) -> CompiledVFSProfiles:
+        """Lower one canonical roster into internal expression and item products."""
         compiler = VFSProfileCompiler()
-        compiler.validate_version(profiles_config.version)
-
-        compiled_global = None
-        if profiles_config.global_profile is not None:
-            compiled_global = compiler.compile_global_profile(profiles_config.global_profile, bar_schema=bar_schema)
-
-        compiled_agent = None
-        if profiles_config.agent_profile is not None:
-            agent_profile = cast(GlobalVFSProfileConfig, profiles_config.agent_profile)
-            compiled_agent = compiler.compile_global_profile(agent_profile, bar_schema=bar_schema)
-
-        compiled_item_profiles: dict[str, CompiledItemProfile] = {}
-        if profiles_config.item_profiles:
-            for item_profile_config in profiles_config.item_profiles:
-                compiled_profile = compiler.compile_item_profile(item_profile_config, bar_schema=bar_schema)
-                compiled_item_profiles[compiled_profile.profile_name] = compiled_profile
-
+        globals_ = config.for_scope(VariableScope.GLOBAL)
+        agents = config.for_scope(VariableScope.AGENT)
         return CompiledVFSProfiles(
-            evaluation_mode=profiles_config.evaluation_mode,
-            debug_logging=profiles_config.debug_logging,
-            global_profile=compiled_global,
-            agent_profile=compiled_agent,
-            item_profiles=compiled_item_profiles,
+            evaluation_mode=config.evaluation_mode,
+            debug_logging=config.debug_logging,
+            global_profile=compiler.compile_profile(globals_, bar_schema, evaluation_mode=config.evaluation_mode) if globals_ else None,
+            agent_profile=compiler.compile_profile(agents, bar_schema, evaluation_mode=config.evaluation_mode) if agents else None,
+            item_profiles={
+                name: compiler.compile_item_profile(name, config.for_item_profile(name), bar_schema) for name in config.item_profiles
+            },
         )
 
-    def build_runtime_variables(
-        self,
-        base_variables: tuple[VariableDef, ...],
-        compiled_vfs_profiles: CompiledVFSProfiles | None,
-        static_variables: tuple[VariableDef, ...] | None = None,
-    ) -> tuple[VariableDef, ...]:
-        """Emit registry-ready VFS variables from observation/environment variables and profiles."""
-        variables: list[VariableDef] = [_engine_tick_variable_def(), *base_variables]
+    def build_runtime_variables(self, config: VariablesConfig) -> tuple[VariableDef, ...]:
+        """Lower each authored registry variable exactly once, with fixed engine roles."""
+        return (
+            _engine_tick_variable_def(),
+            *(self._variable_to_definition(variable) for variable in config.declarations if variable.scope != VariableScope.ITEM),
+        )
 
-        if compiled_vfs_profiles is not None:
-            if compiled_vfs_profiles.global_profile is not None:
-                for compiled_var in compiled_vfs_profiles.global_profile.variables:
-                    variables.append(self._compiled_profile_var_to_variable_def(compiled_var, scope="global", lifetime="persistent"))
-
-            if compiled_vfs_profiles.agent_profile is not None:
-                for compiled_var in compiled_vfs_profiles.agent_profile.variables:
-                    variables.append(self._compiled_profile_var_to_variable_def(compiled_var, scope="agent", lifetime="episode"))
-
-            existing_ids = {variable.id for variable in variables}
-            for variable in static_variables or ():
-                # Refuse explicitly BEFORE the dedup skip below: existing_ids already
-                # contains the engine's own prepended 'tick' (index 0), so an authored
-                # static variable (variables_reference.yaml) named 'tick' would otherwise
-                # match that dedup check and be silently dropped instead of refused.
-                if variable.id == _ENGINE_TICK_ID:
-                    raise ValueError(
-                        "Variable id 'tick' is reserved for the engine-written step counter "
-                        "(token-obs design ruling 6). Rename the authored variable."
-                    )
-                if variable.id in existing_ids:
-                    continue
-                variables.append(variable)
-                existing_ids.add(variable.id)
-
-        clashes = [v.id for v in variables[1:] if v.id == _ENGINE_TICK_ID]
-        if clashes:
-            raise ValueError(
-                "Variable id 'tick' is reserved for the engine-written step counter "
-                "(token-obs design ruling 6). Rename the authored variable."
-            )
-
-        return tuple(variables)
+    def _variable_to_definition(self, variable: VariableDeclaration) -> VariableDef:
+        mode = variable.initial_value_mode
+        params = variable.initial_value_params
+        default = variable.initial_value
+        if variable.exposed_to and mode in _DETERMINISTIC_TENSOR_INITIALIZERS:
+            assert variable.shape is not None
+            default = _literal_tensor_default(mode, variable.shape, var_id=variable.id)
+            mode, params = None, None
+        return VariableDef(
+            id=variable.id,
+            scope=variable.scope,
+            type=variable.type,
+            lifetime=variable.lifetime,
+            readable_by=["agent", "engine"],
+            writable_by=["engine"],
+            default=default,
+            shape=variable.shape,
+            dims=variable.dims,
+            initial_value_mode=mode,
+            initial_value_params=params,
+            normalization=variable.normalization,
+            exposed_to=list(variable.exposed_to),
+            semantic_type=variable.semantic_type,
+            description=variable.description,
+        )
 
     def build_expression_schema(self, bars: BarsV2Config, compiled_vfs_profiles: CompiledVFSProfiles | None) -> dict[str, str]:
         """Build type schema for VFS expression runtime validation."""
@@ -158,44 +124,13 @@ class VFSCompiler:
 
         return schema
 
-    def derive_evaluation_marks(
-        self,
-        profiles_config: VFSProfilesConfig | None,
-        overlay_variables: tuple[VariableDef, ...] | None,
-    ) -> dict[str, set[str]] | None:
-        """Marks = every profile EXPRESSION variable. Statics are never marked.
-
-        An expression variable's value is WORLD STATE: a VTC rule, a DAC reward
-        component, another expression or a terminal condition may read it, and none of
-        those care whether anyone observes it. So evaluation is marked by declaration —
-        having an expression — never by exposure.
-
-        It used to be marked by exposure ("only evaluate observed variables"), which
-        looked harmless only because `exposed_to` failed open to `["agent"]`: every
-        profile expression variable was exposed, so every one was evaluated. Deleting
-        that fail-open at the unit-3 cut (hamlet-d97b4d6b4a) turned an OBSERVATION
-        decision into a STATE decision — unexposed expression variables silently stopped
-        being computed and sat at their defaults, which is a world-evolution change, not
-        an observation change, and would have broken the cut's own adjudication criterion
-        (spec §5: only `obs` may diverge). Marking every expression reproduces the
-        pre-cut evaluation set exactly on every pack.
-
-        Statics stay unmarked: they are storage, and re-emitting their initial value
-        would clobber runtime writes (hamlet-df3a96bbac). They still reach the evaluator
-        by its other two doors — the dependency chase and the compiled `history_spec` —
-        and are REPORTED at their current value there, never re-initialized
-        (vfs/evaluator.py's static branch, comment-242 item 4).
-        """
-        if profiles_config is None:
-            return None
-        marks: dict[str, set[str]] = {}
-        for scope_key, profile in (("global", profiles_config.global_profile), ("agent", profiles_config.agent_profile)):
-            if profile is None:
-                continue
-            expression_vars = {v.name for v in profile.variables if v.expression is not None}
-            if expression_vars:
-                marks[scope_key] = expression_vars
-        return marks or {}
+    def derive_evaluation_marks(self, config: VariablesConfig) -> dict[str, set[str]]:
+        """Expressions are state; evaluate them irrespective of observation exposure."""
+        return {
+            scope.value: {variable.id for variable in config.for_scope(scope) if variable.expression is not None}
+            for scope in (VariableScope.GLOBAL, VariableScope.AGENT)
+            if any(variable.expression is not None for variable in config.for_scope(scope))
+        }
 
     def validate_item_profile_bindings(
         self,
@@ -225,7 +160,7 @@ class VFSCompiler:
         appearance: ItemsAppearanceConfig | None,
         *,
         bar_schema: dict[str, str],
-        env_vars: list[VariableConfig],
+        variables: VariablesConfig,
         compiled_vfs_profiles: CompiledVFSProfiles | None,
         temporal_supported: bool,
     ) -> None:
@@ -234,7 +169,7 @@ class VFSCompiler:
             return
         schema = self._build_spawn_condition_schema(
             bar_schema=bar_schema,
-            env_vars=env_vars,
+            variables=variables,
             compiled_vfs_profiles=compiled_vfs_profiles,
             temporal_supported=temporal_supported,
         )
@@ -260,14 +195,15 @@ class VFSCompiler:
         self,
         *,
         bar_schema: dict[str, str],
-        env_vars: list[VariableConfig],
+        variables: VariablesConfig,
         compiled_vfs_profiles: CompiledVFSProfiles | None,
         temporal_supported: bool,
     ) -> dict[str, str]:
         """Build expression schema for item spawn conditions."""
         schema: dict[str, str] = {**bar_schema}
-        for var in env_vars:
-            schema[f"env.{var.name}"] = getattr(var, "type", "float")
+        for var in variables.declarations:
+            if var.scope in {VariableScope.GLOBAL, VariableScope.AGENT}:
+                schema[f"env.{var.id}"] = "float" if var.type == "scalar" else var.type
         if temporal_supported:
             schema["temporal.time_of_day"] = "float"
             schema["temporal.day_progress"] = "float"
@@ -296,93 +232,3 @@ class VFSCompiler:
         if hasattr(ast, "__dict__"):
             return self._ast_uses_temporal(vars(ast))
         return False
-
-    def _compiled_profile_var_to_variable_def(
-        self,
-        compiled_var: CompiledVariable,
-        *,
-        scope: Literal["global", "agent", "agent_private", "item", "pair", "group", "affordance", "zone", "message"],
-        lifetime: Literal["persistent", "episode"],
-    ) -> VariableDef:
-        raw_type = str(compiled_var.type)
-        exposed = bool(compiled_var.exposed_to)
-        expression = compiled_var.expression
-        mode = compiled_var.initial_value_mode
-        params = compiled_var.initial_value_params
-        default_value: Any
-
-        if exposed and expression is not None and compiled_var.initial_value is None:
-            raise ValueError(
-                f"Exposed VFS variable '{compiled_var.name}' uses an expression without a declared initial_value and "
-                "cannot be exposed: variable_element identity requires the exact declared reset value. Declare "
-                "initial_value (the value at episode start) or remove exposed_to."
-            )
-
-        if exposed and mode in _RANDOM_TENSOR_INITIALIZERS:
-            raise ValueError(
-                f"Exposed VFS variable '{compiled_var.name}' uses initial_value_mode '{mode}' and cannot be exposed: "
-                "a random sample has no exact declared variable_element default."
-            )
-
-        if exposed and mode in _DETERMINISTIC_TENSOR_INITIALIZERS:
-            if not raw_type.startswith("tensor"):
-                raise ValueError(
-                    f"Exposed VFS variable '{compiled_var.name}' uses tensor initial_value_mode '{mode}' with non-tensor type '{raw_type}'"
-                )
-            shape = compiled_var.shape
-            if not shape:
-                raise ValueError(f"Exposed VFS variable '{compiled_var.name}' uses initial_value_mode '{mode}' without a tensor shape")
-            default_value = _literal_tensor_default(mode, list(shape), var_id=str(compiled_var.name))
-            mode = None
-            params = None
-        elif raw_type in ("agent_ref", "item_ref", "affordance_ref", "effect_ref"):
-            default_value = compiled_var.initial_value
-        else:
-            default_value = (
-                compiled_var.initial_value if compiled_var.initial_value is not None else (0.0 if raw_type in ("int", "float") else False)
-            )
-
-        normalized_type = self._normalize_runtime_vfs_type(raw_type, str(compiled_var.name))
-        variable_type = cast(
-            Literal[
-                "scalar",
-                "bool",
-                "tensor1d",
-                "tensor2d",
-                "tensor3d",
-                "tensorNd",
-                "agent_ref",
-                "item_ref",
-                "affordance_ref",
-                "effect_ref",
-            ],
-            normalized_type,
-        )
-        return VariableDef(
-            id=str(compiled_var.name),
-            scope=scope,
-            type=variable_type,
-            default=default_value,
-            lifetime=lifetime,
-            readable_by=["agent", "engine"],
-            writable_by=["engine"],
-            description=f"{scope.title()} VFS variable from vfs_profiles.yaml",
-            shape=compiled_var.shape,
-            dims=compiled_var.dims,
-            initial_value_mode=cast(
-                Literal["zeros", "ones", "eye", "random_normal", "random_uniform"] | None,
-                mode,
-            ),
-            initial_value_params=params,
-            # The declared normalization rides onto the runtime declaration so the token
-            # publishers read exactly what the author declared (spec §2).
-            normalization=compiled_var.normalization,
-        )
-
-    @staticmethod
-    def _normalize_runtime_vfs_type(raw_type: str, var_id: str) -> str:
-        if raw_type in ("int", "float"):
-            return "scalar"
-        if raw_type in _RUNTIME_VFS_TYPES:
-            return raw_type
-        raise ValueError(f"Unsupported VFS variable type '{raw_type}' for variable '{var_id}'. Valid types: {sorted(_RUNTIME_VFS_TYPES)}")

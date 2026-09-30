@@ -2,26 +2,59 @@
 
 import pytest
 
-from townlet.config.vfs_profiles_config import (
-    GlobalVFSProfileConfig,
-    GlobalVFSVariableConfig,
-)
+from townlet.config.variables_config import VariableDeclaration
 from townlet.vfs.profiles import CircularDependencyError, VFSProfileCompiler
+from townlet.world.expression.type_checker import TypeCheckError
+
+
+@pytest.mark.parametrize("scope,expression", [("agent", "3.0"), ("global", "bar.energy"), ("global", "mean(bar.energy)")])
+def test_expression_result_must_match_runtime_scope_shape(scope, expression):
+    declaration = VariableDeclaration(
+        id="computed",
+        scope=scope,
+        type="scalar",
+        lifetime="episode",
+        semantic_type="custom",
+        exposed_to=[],
+        initial_value=0.0,
+        expression=expression,
+    )
+    with pytest.raises(TypeCheckError, match="shape"):
+        VFSProfileCompiler().compile_profile([declaration], {"energy": "float"}, evaluation_mode="mark_and_sweep")
+
+
+def test_agent_expression_static_dependency_retains_batched_shape():
+    declarations = [
+        VariableDeclaration(
+            id="source", scope="agent", type="scalar", lifetime="episode", semantic_type="custom", exposed_to=[], initial_value=2.0
+        ),
+        VariableDeclaration(
+            id="computed",
+            scope="agent",
+            type="scalar",
+            lifetime="episode",
+            semantic_type="custom",
+            exposed_to=[],
+            initial_value=0.0,
+            expression="source + 1.0",
+        ),
+    ]
+    compiled = VFSProfileCompiler().compile_profile(declarations, evaluation_mode="mark_and_sweep")
+    assert compiled.variables[-1].name == "computed"
 
 
 def test_build_dependency_graph_no_deps():
     """Variables with no dependencies have no edges."""
-    profile = GlobalVFSProfileConfig(
-        variables=[
-            GlobalVFSVariableConfig(semantic_type="custom", name="day_count", type="int", initial_value=0),
-            GlobalVFSVariableConfig(semantic_type="custom", name="tick", type="int", initial_value=0),
-        ]
-    )
-
+    profile = [
+        VariableDeclaration(
+            semantic_type="custom", id="day_count", type="scalar", initial_value=0, scope="global", lifetime="persistent", exposed_to=[]
+        ),
+        VariableDeclaration(
+            semantic_type="custom", id="tick", type="scalar", initial_value=0, scope="global", lifetime="persistent", exposed_to=[]
+        ),
+    ]
     compiler = VFSProfileCompiler()
-    graph = compiler.build_dependency_graph(profile.variables)
-
-    # No dependencies = no edges
+    graph = compiler.build_dependency_graph(profile)
     assert len(graph.edges) == 0
     assert set(graph.nodes) == {"day_count", "tick"}
 
@@ -34,147 +67,228 @@ def test_build_dependency_graph_with_deps():
     expressions — it never becomes an in-profile dependency edge, which would defeat the
     point of this test. See test_engine_tick_variable.py for tick-specific coverage.
     """
-    profile = GlobalVFSProfileConfig(
-        variables=[
-            GlobalVFSVariableConfig(semantic_type="custom", name="hour", type="int", initial_value=0),
-            GlobalVFSVariableConfig(semantic_type="custom", name="is_night", type="bool", expression="hour % 24 >= 18"),
-        ]
-    )
-
+    profile = [
+        VariableDeclaration(
+            semantic_type="custom", id="hour", type="scalar", initial_value=0, scope="global", lifetime="persistent", exposed_to=[]
+        ),
+        VariableDeclaration(
+            semantic_type="custom",
+            id="is_night",
+            type="bool",
+            expression="hour % 24 >= 18",
+            scope="global",
+            lifetime="persistent",
+            exposed_to=[],
+            initial_value=False,
+        ),
+    ]
     compiler = VFSProfileCompiler()
-    graph = compiler.build_dependency_graph(profile.variables)
-
-    # is_night depends on hour
+    graph = compiler.build_dependency_graph(profile)
     assert ("hour", "is_night") in graph.edges
 
 
 def test_build_dependency_graph_nested_deps():
     """Nested dependencies create transitive edges."""
-    profile = GlobalVFSProfileConfig(
-        variables=[
-            GlobalVFSVariableConfig(semantic_type="custom", name="a", type="int", initial_value=1),
-            GlobalVFSVariableConfig(semantic_type="custom", name="b", type="int", expression="a + 1"),
-            GlobalVFSVariableConfig(semantic_type="custom", name="c", type="int", expression="b + 1"),
-        ]
-    )
-
+    profile = [
+        VariableDeclaration(
+            semantic_type="custom", id="a", type="scalar", initial_value=1, scope="global", lifetime="persistent", exposed_to=[]
+        ),
+        VariableDeclaration(
+            semantic_type="custom",
+            id="b",
+            type="scalar",
+            expression="a + 1",
+            scope="global",
+            lifetime="persistent",
+            exposed_to=[],
+            initial_value=0.0,
+        ),
+        VariableDeclaration(
+            semantic_type="custom",
+            id="c",
+            type="scalar",
+            expression="b + 1",
+            scope="global",
+            lifetime="persistent",
+            exposed_to=[],
+            initial_value=0.0,
+        ),
+    ]
     compiler = VFSProfileCompiler()
-    graph = compiler.build_dependency_graph(profile.variables)
-
-    # a -> b -> c
+    graph = compiler.build_dependency_graph(profile)
     assert ("a", "b") in graph.edges
     assert ("b", "c") in graph.edges
 
 
 def test_build_dependency_graph_with_path_deps():
     """Variables with PathAccess dependencies (e.g., target.bar.energy) extract root namespace."""
-    profile = GlobalVFSProfileConfig(
-        variables=[
-            # Simulate a variable named "target" that would be accessed via PathAccess
-            GlobalVFSVariableConfig(semantic_type="custom", name="target", type="agent_ref", initial_value=0),
-            # Expression uses PathAccess: target.bar.energy (should extract "target" as dependency)
-            GlobalVFSVariableConfig(semantic_type="custom", name="is_low", type="bool", expression="target.bar.energy < 0.2"),
-        ]
-    )
-
+    profile = [
+        VariableDeclaration(
+            semantic_type="custom", id="target", type="agent_ref", initial_value=0, scope="global", lifetime="persistent", exposed_to=[]
+        ),
+        VariableDeclaration(
+            semantic_type="custom",
+            id="is_low",
+            type="bool",
+            expression="target.bar.energy < 0.2",
+            scope="global",
+            lifetime="persistent",
+            exposed_to=[],
+            initial_value=False,
+        ),
+    ]
     compiler = VFSProfileCompiler()
-    graph = compiler.build_dependency_graph(profile.variables)
-
-    # is_low depends on target (root namespace from target.bar.energy)
+    graph = compiler.build_dependency_graph(profile)
     assert ("target", "is_low") in graph.edges
-    assert len(graph.edges) == 1  # Only one dependency
+    assert len(graph.edges) == 1
 
 
 def test_detect_circular_dependency_simple():
     """Detect simple circular dependency (a -> b -> a)."""
-    profile = GlobalVFSProfileConfig(
-        variables=[
-            GlobalVFSVariableConfig(semantic_type="custom", name="a", type="int", expression="b + 1"),
-            GlobalVFSVariableConfig(semantic_type="custom", name="b", type="int", expression="a + 1"),
-        ]
-    )
-
+    profile = [
+        VariableDeclaration(
+            semantic_type="custom",
+            id="a",
+            type="scalar",
+            expression="b + 1",
+            scope="global",
+            lifetime="persistent",
+            exposed_to=[],
+            initial_value=0.0,
+        ),
+        VariableDeclaration(
+            semantic_type="custom",
+            id="b",
+            type="scalar",
+            expression="a + 1",
+            scope="global",
+            lifetime="persistent",
+            exposed_to=[],
+            initial_value=0.0,
+        ),
+    ]
     compiler = VFSProfileCompiler()
-
     with pytest.raises(CircularDependencyError, match="cycle"):
-        compiler.topological_sort(profile.variables)
+        compiler.topological_sort(profile)
 
 
 def test_detect_circular_dependency_complex():
     """Detect complex circular dependency (a -> b -> c -> a)."""
-    profile = GlobalVFSProfileConfig(
-        variables=[
-            GlobalVFSVariableConfig(semantic_type="custom", name="a", type="int", expression="c + 1"),
-            GlobalVFSVariableConfig(semantic_type="custom", name="b", type="int", expression="a + 1"),
-            GlobalVFSVariableConfig(semantic_type="custom", name="c", type="int", expression="b + 1"),
-        ]
-    )
-
+    profile = [
+        VariableDeclaration(
+            semantic_type="custom",
+            id="a",
+            type="scalar",
+            expression="c + 1",
+            scope="global",
+            lifetime="persistent",
+            exposed_to=[],
+            initial_value=0.0,
+        ),
+        VariableDeclaration(
+            semantic_type="custom",
+            id="b",
+            type="scalar",
+            expression="a + 1",
+            scope="global",
+            lifetime="persistent",
+            exposed_to=[],
+            initial_value=0.0,
+        ),
+        VariableDeclaration(
+            semantic_type="custom",
+            id="c",
+            type="scalar",
+            expression="b + 1",
+            scope="global",
+            lifetime="persistent",
+            exposed_to=[],
+            initial_value=0.0,
+        ),
+    ]
     compiler = VFSProfileCompiler()
-
     with pytest.raises(CircularDependencyError, match="cycle"):
-        compiler.topological_sort(profile.variables)
+        compiler.topological_sort(profile)
 
 
 def test_topological_sort_no_deps():
     """Topological sort with no dependencies."""
-    profile = GlobalVFSProfileConfig(
-        variables=[
-            GlobalVFSVariableConfig(semantic_type="custom", name="a", type="int", initial_value=1),
-            GlobalVFSVariableConfig(semantic_type="custom", name="b", type="int", initial_value=2),
-        ]
-    )
-
+    profile = [
+        VariableDeclaration(
+            semantic_type="custom", id="a", type="scalar", initial_value=1, scope="global", lifetime="persistent", exposed_to=[]
+        ),
+        VariableDeclaration(
+            semantic_type="custom", id="b", type="scalar", initial_value=2, scope="global", lifetime="persistent", exposed_to=[]
+        ),
+    ]
     compiler = VFSProfileCompiler()
-    sorted_vars = compiler.topological_sort(profile.variables)
-
-    # Both have no deps, order doesn't matter (but should be deterministic)
+    sorted_vars = compiler.topological_sort(profile)
     assert len(sorted_vars) == 2
 
 
 def test_topological_sort_linear_deps():
     """Topological sort with linear dependencies (a -> b -> c)."""
-    profile = GlobalVFSProfileConfig(
-        variables=[
-            GlobalVFSVariableConfig(semantic_type="custom", name="c", type="int", expression="b + 1"),
-            GlobalVFSVariableConfig(semantic_type="custom", name="a", type="int", initial_value=1),
-            GlobalVFSVariableConfig(semantic_type="custom", name="b", type="int", expression="a + 1"),
-        ]
-    )
-
+    profile = [
+        VariableDeclaration(
+            semantic_type="custom",
+            id="c",
+            type="scalar",
+            expression="b + 1",
+            scope="global",
+            lifetime="persistent",
+            exposed_to=[],
+            initial_value=0.0,
+        ),
+        VariableDeclaration(
+            semantic_type="custom", id="a", type="scalar", initial_value=1, scope="global", lifetime="persistent", exposed_to=[]
+        ),
+        VariableDeclaration(
+            semantic_type="custom",
+            id="b",
+            type="scalar",
+            expression="a + 1",
+            scope="global",
+            lifetime="persistent",
+            exposed_to=[],
+            initial_value=0.0,
+        ),
+    ]
     compiler = VFSProfileCompiler()
-    sorted_vars = compiler.topological_sort(profile.variables)
-
-    # Should be ordered: a, b, c
-    names = [v.name for v in sorted_vars]
+    sorted_vars = compiler.topological_sort(profile)
+    names = [v.id for v in sorted_vars]
     assert names == ["a", "b", "c"]
 
 
 def test_compile_variable_with_expression():
     """Compiler parses and type-checks expressions."""
-    var = GlobalVFSVariableConfig(semantic_type="custom", name="is_night", type="bool", expression="tick % 24 >= 18")
-
+    var = VariableDeclaration(
+        semantic_type="custom",
+        id="is_night",
+        type="bool",
+        expression="tick % 24 >= 18",
+        scope="global",
+        lifetime="persistent",
+        exposed_to=[],
+        initial_value=False,
+    )
     compiler = VFSProfileCompiler()
-    schema = {"tick": "int"}  # Available variables
-
+    schema = {"tick": "int"}
     compiled = compiler.compile_variable(var, schema)
-
     assert compiled.name == "is_night"
-    assert compiled.ast is not None  # Parsed AST
+    assert compiled.ast is not None
     assert compiled.result_type == "bool"
 
 
 def test_compile_variable_with_initial_value():
     """Compiler handles static initial values (no expression)."""
-    var = GlobalVFSVariableConfig(semantic_type="custom", name="day_count", type="int", initial_value=0)
-
+    var = VariableDeclaration(
+        semantic_type="custom", id="day_count", type="scalar", initial_value=0, scope="global", lifetime="persistent", exposed_to=[]
+    )
     compiler = VFSProfileCompiler()
     schema = {}
-
     compiled = compiler.compile_variable(var, schema)
-
     assert compiled.name == "day_count"
-    assert compiled.ast is None  # No expression
+    assert compiled.ast is None
     assert compiled.initial_value == 0
 
 
@@ -182,50 +296,89 @@ def test_compile_variable_type_mismatch():
     """Compiler catches type mismatches."""
     from townlet.world.expression.type_checker import TypeCheckError
 
-    var = GlobalVFSVariableConfig(semantic_type="custom", name="invalid", type="bool", expression="tick + 1")  # Returns int, not bool
-
+    var = VariableDeclaration(
+        semantic_type="custom",
+        id="invalid",
+        type="bool",
+        expression="tick + 1",
+        scope="global",
+        lifetime="persistent",
+        exposed_to=[],
+        initial_value=False,
+    )
     compiler = VFSProfileCompiler()
     schema = {"tick": "int"}
-
     with pytest.raises(TypeCheckError, match="bool"):
         compiler.compile_variable(var, schema)
 
 
 def test_compile_global_profile():
     """Compiler compiles global profile with dependency ordering."""
-    profile = GlobalVFSProfileConfig(
-        variables=[
-            GlobalVFSVariableConfig(semantic_type="custom", name="c", type="int", expression="b + 1"),
-            GlobalVFSVariableConfig(semantic_type="custom", name="a", type="int", initial_value=1),
-            GlobalVFSVariableConfig(semantic_type="custom", name="b", type="int", expression="a + 1"),
-        ]
-    )
-
+    profile = [
+        VariableDeclaration(
+            semantic_type="custom",
+            id="c",
+            type="scalar",
+            expression="b + 1",
+            scope="global",
+            lifetime="persistent",
+            exposed_to=[],
+            initial_value=0.0,
+        ),
+        VariableDeclaration(
+            semantic_type="custom", id="a", type="scalar", initial_value=1, scope="global", lifetime="persistent", exposed_to=[]
+        ),
+        VariableDeclaration(
+            semantic_type="custom",
+            id="b",
+            type="scalar",
+            expression="a + 1",
+            scope="global",
+            lifetime="persistent",
+            exposed_to=[],
+            initial_value=0.0,
+        ),
+    ]
     compiler = VFSProfileCompiler()
-    compiled = compiler.compile_global_profile(profile)
-
-    # Variables sorted in dependency order
+    compiled = compiler.compile_profile(profile, evaluation_mode="mark_and_sweep")
     assert [v.name for v in compiled.variables] == ["a", "b", "c"]
-
-    # All variables compiled
     assert all(v.ast is not None or v.initial_value is not None for v in compiled.variables)
 
 
-def test_compile_global_profile_with_bars():
+def test_compile_agent_profile_with_bars():
     """Compiler includes bars in schema for expressions."""
-    profile = GlobalVFSProfileConfig(
-        variables=[
-            GlobalVFSVariableConfig(
-                semantic_type="custom",
-                name="avg_energy",
-                type="float",
-                expression="bar.energy",  # Reference to bar
-            ),
-        ]
-    )
-
+    profile = [
+        VariableDeclaration(
+            semantic_type="custom",
+            id="avg_energy",
+            type="scalar",
+            expression="bar.energy",
+            scope="agent",
+            lifetime="persistent",
+            exposed_to=[],
+            initial_value=0.0,
+        )
+    ]
     compiler = VFSProfileCompiler()
-    # Should not raise (bar.energy is valid path)
-    compiled = compiler.compile_global_profile(profile, bar_schema={"energy": "float"})
-
+    compiled = compiler.compile_profile(profile, bar_schema={"energy": "float"}, evaluation_mode="mark_and_sweep")
     assert compiled.variables[0].name == "avg_energy"
+
+
+def test_eager_agent_static_dependency_refuses_the_scalar_reinitialization_shape():
+    declarations = [
+        VariableDeclaration(
+            id="source", scope="agent", type="scalar", lifetime="episode", semantic_type="custom", exposed_to=[], initial_value=2.0
+        ),
+        VariableDeclaration(
+            id="computed",
+            scope="agent",
+            type="scalar",
+            lifetime="episode",
+            semantic_type="custom",
+            exposed_to=[],
+            initial_value=0.0,
+            expression="source + 1.0",
+        ),
+    ]
+    with pytest.raises(TypeCheckError, match="shape"):
+        VFSProfileCompiler().compile_profile(declarations, evaluation_mode="eager")

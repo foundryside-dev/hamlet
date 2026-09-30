@@ -38,21 +38,9 @@ def build_symbol_table(raw: RawConfigsV21, source_map: SourceMap | None = None) 
     for affordance in getattr(env, "affordances", []) or []:
         _register(table.register_affordance, affordance, f"environment:{affordance.name}")
 
-    for variable in getattr(env, "variables", []) or []:
-        _register(table.register_variable, variable, f"environment:{getattr(variable, 'name', None) or getattr(variable, 'id', '')}")
-
-    if raw.vfs_profiles is not None:
-        profile_configs = [
-            ("global_profile", raw.vfs_profiles.global_profile),
-            ("agent_profile", raw.vfs_profiles.agent_profile),
-            *((f"item_profiles:{profile.profile_name}", profile) for profile in raw.vfs_profiles.item_profiles or []),
-        ]
-        for qualifier, profile in profile_configs:
-            if profile is None:
-                continue
-            for variable in getattr(profile, "variables", []) or []:
-                var_id = getattr(variable, "id", None) or getattr(variable, "name", "")
-                _register(table.register_profile_vfs_variable, variable, f"vfs_profiles:{qualifier}:{var_id}")
+    for variable in raw.variables.declarations:
+        identity = f"{variable.profile}:{variable.id}" if variable.profile is not None else variable.id
+        _register(table.register_variable, variable, f"variables:{identity}")
 
     for action in getattr(raw.actions.actions, "custom_actions", []) or []:
         _register(table.register_action, action, f"actions:{action.name}")
@@ -78,6 +66,21 @@ def validate_dac_references(
     ``drive_location`` is the semantic identity of the level's drive declaration
     (e.g. ``levels/L1_full_observability/drive``), resolved through provenance.
     """
+
+    def validate_reward_variable(variable_id: str, consumer_location: str) -> None:
+        if variable_id not in symbol_table.vfs_variables:
+            return  # The existing reference check reports undefined names separately.
+        declaration = symbol_table.vfs_variables[variable_id]
+        if declaration.scope not in {"global", "agent"} or declaration.type not in {"scalar", "bool"}:
+            errors.add(
+                CompilationMessage(
+                    code=ErrorCode.UAC_RES_VFS,
+                    message=f"Reward variable '{variable_id}' must use global/agent scalar or bool storage; "
+                    f"'{declaration.scope}/{declaration.type}' has no ordinary reward reduction",
+                    location=locate(source_map, consumer_location),
+                )
+            )
+
     for mod_name, mod_config in dac_config.modifiers.items():
         bar_ref = getattr(mod_config, "bar", None)
         variable_ref = getattr(mod_config, "variable", None)
@@ -91,6 +94,7 @@ def validate_dac_references(
                     )
                 )
         elif variable_ref:
+            validate_reward_variable(variable_ref, f"{drive_location}:modifiers.{mod_name}")
             if variable_ref not in symbol_table.vfs_variables:
                 errors.add(
                     CompilationMessage(
@@ -125,6 +129,8 @@ def validate_dac_references(
 
     for idx, var_bonus in enumerate(getattr(dac_config.extrinsic, "variable_bonuses", []) or []):
         var_ref = getattr(var_bonus, "variable", None)
+        if var_ref:
+            validate_reward_variable(var_ref, f"{drive_location}:extrinsic.variable_bonuses[{idx}]")
         if var_ref and var_ref not in symbol_table.vfs_variables:
             errors.add(
                 CompilationMessage(
@@ -229,6 +235,8 @@ def validate_dac_references(
                     )
         elif shaping.type == "vfs_variable":
             var_ref = getattr(shaping, "variable", None)
+            if var_ref:
+                validate_reward_variable(var_ref, f"{drive_location}:shaping[{idx}]")
             if var_ref and var_ref not in symbol_table.vfs_variables:
                 errors.add(
                     CompilationMessage(

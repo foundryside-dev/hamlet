@@ -23,10 +23,10 @@ from townlet.config.presentation_config import PresentationConfig
 from townlet.config.stratum_config import StratumConfig
 from townlet.config.training_v2_config import TrainingV2Config
 from townlet.config.transition_rules_config import TransitionRulesConfig
-from townlet.config.vfs_profiles_config import VFSProfilesConfig
+from townlet.config.variables_config import VariablesConfig
 from townlet.universe.error_codes import ErrorCode
 from townlet.universe.source_map import SourceMap
-from townlet.vfs.schema import VariableDef, VFSScopeExtents, parse_variables_reference
+from townlet.vfs.schema import VFSScopeExtents
 
 if TYPE_CHECKING:
     from townlet.universe.declarations import DeclarationStore
@@ -74,6 +74,7 @@ class RawConfigsV21:
     environment: EnvironmentConfig
     actions: ActionsConfig
     brain: BrainConfig
+    variables: VariablesConfig
 
     # Curriculum levels (per-level parameters)
     levels: dict[str, CurriculumLevel]
@@ -84,10 +85,8 @@ class RawConfigsV21:
 
     # Optional experiment-level configs
     items: ItemsCatalogConfig | None = None
-    vfs_profiles: VFSProfilesConfig | None = None
     effects: EffectsConfig | None = None
     action_label_overrides: dict[int, str] | None = None
-    variables_reference: tuple[VariableDef, ...] | None = None
     vfs_extents: VFSScopeExtents | None = None
     social_residue_rules: tuple[dict[str, object], ...] = ()
 
@@ -113,7 +112,7 @@ class RawConfigsV21:
         actions = store.parse("actions", None, ActionsConfig, True)
         brain = store.parse("brain", None, BrainConfig, False)
         items = store.parse("items", None, ItemsCatalogConfig, False)
-        vfs_profiles = store.parse("vfs_profiles", None, VFSProfilesConfig, False)
+        variables = store.parse("variables", None, VariablesConfig, False)
         effects = store.parse("effects", None, EffectsConfig, False)
         transition_rules = store.parse("transition_rules", None, TransitionRulesConfig, False)
         store.parse("presentation", None, PresentationConfig, False)
@@ -144,17 +143,6 @@ class RawConfigsV21:
             if labels is not None:
                 action_label_overrides = labels.custom
 
-        variables_reference = None
-        vfs_extents = None
-        reference = store.get("variables_reference", None)
-        if reference is not None:
-            try:
-                reference_data = parse_variables_reference(reference.payload, reference.origin)
-                variables_reference = reference_data.variables
-                vfs_extents = reference_data.extents
-            except ValueError as exc:
-                store.errors.add(str(exc), code=ErrorCode.LOAD_ERROR, location=reference.origin)
-
         levels = {}
         for name in store.level_names:
             curriculum = store.parse("curriculum", name, CurriculumConfig, True)
@@ -177,7 +165,7 @@ class RawConfigsV21:
                 )
         store.errors.check_and_raise()
         assert experiment is not None and stratum is not None and environment is not None
-        assert actions is not None and brain is not None and vfs_profiles is not None
+        assert actions is not None and brain is not None and variables is not None
         if items is not None and (items.max_items_in_world == 0 or items.max_items_per_agent == 0):
             items = None
         return cls(
@@ -187,11 +175,10 @@ class RawConfigsV21:
             actions=actions,
             brain=brain,
             items=items,
-            vfs_profiles=vfs_profiles,
+            variables=variables,
             effects=effects,
             action_label_overrides=action_label_overrides,
-            variables_reference=variables_reference,
-            vfs_extents=vfs_extents,
+            vfs_extents=variables.extents,
             social_residue_rules=transition_rules.social_residue_sources() if transition_rules is not None else (),
             levels=levels,
             experiment_dir=store.experiment_dir,

@@ -26,23 +26,23 @@ OCCUPIED_BY_VARIABLE = {
     "id": "occupied_by",
     "scope": "affordance",
     "type": "scalar",
-    "default": -1.0,
+    "initial_value": -1.0,
     "lifetime": "episode",
-    "readable_by": ["agent", "engine"],
-    "writable_by": ["engine"],
+    "semantic_type": "custom",
+    "exposed_to": [],
     "description": "Agent id currently claiming this affordance, -1 when free",
 }
 
 
 def _declare_claim_action(pack: Path, *, source_affordance: str | None = "SLEEP", variable_id: str = "occupied_by") -> None:
     """Declare the occupancy variable and a CLAIM_BED custom action in the pack."""
-    ref_path = pack / "variables_reference.yaml"
+    ref_path = pack / "variables.yaml"
     ref = yaml.safe_load(ref_path.read_text())
-    ref["variables"].append(OCCUPIED_BY_VARIABLE)
+    ref["variables"]["declarations"].append(OCCUPIED_BY_VARIABLE)
     # affordance-scope extent required at compile time since hamlet-702ae15f82's preflight
     # half landed (token-obs unit 3, Task 5e) — matches the 14-affordance fixed vocabulary
     # test_config_pack_path (configs/test/model_config) declares.
-    ref.setdefault("extents", {})["num_affordances"] = 14
+    ref["variables"]["extents"]["num_affordances"] = 14
     ref_path.write_text(yaml.safe_dump(ref))
 
     actions_path = pack / "actions.yaml"

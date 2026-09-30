@@ -5,10 +5,10 @@ from __future__ import annotations
 from typing import Any
 
 from townlet.config.effects_config import EffectsConfig
+from townlet.config.variables_config import VariablesConfig
 from townlet.effects.catalog import EffectCatalog
 from townlet.universe.compiled import CompiledVFSProfiles
-
-_EFFECT_SCHEMA_REFERENCE_TYPES = frozenset({"agent_ref", "item_ref", "affordance_ref", "effect_ref"})
+from townlet.vfs.schema import VariableScope
 
 
 class EffectsCompiler:
@@ -18,7 +18,7 @@ class EffectsCompiler:
         self,
         *,
         bar_names: tuple[str, ...],
-        environment_variables: tuple[Any, ...],
+        variables: VariablesConfig,
         compiled_vfs_profiles: CompiledVFSProfiles | None,
     ) -> dict[str, str]:
         """Build the runtime effect expression schema from compiler-owned artifacts."""
@@ -32,25 +32,17 @@ class EffectsCompiler:
             schema[f"bar.{bar_name}"] = "float"
             schema[f"target.bar.{bar_name}"] = "float"
 
-        for var in environment_variables:
-            if str(getattr(var, "scope", "")) == "global":
-                self._add_global_vfs_paths(schema, str(var.name), getattr(var, "type", None))
-            else:
-                self._add_target_vfs_paths(schema, str(var.name), getattr(var, "type", None))
+        for var in variables.declarations:
+            if var.scope == VariableScope.GLOBAL:
+                self._add_global_vfs_paths(schema, var.id, var.type)
+            elif var.scope in {VariableScope.AGENT, VariableScope.AGENT_PRIVATE}:
+                self._add_target_vfs_paths(schema, var.id, var.type)
 
         if compiled_vfs_profiles is not None:
-            if compiled_vfs_profiles.global_profile is not None:
-                # Global-profile variables are global by construction: no per-agent
-                # axis exists, so no target.vfs path is registered (hamlet-cf16cdb6c4).
-                for var in compiled_vfs_profiles.global_profile.variables:
-                    self._add_global_vfs_paths(schema, str(var.name), getattr(var, "type", None))
-            if compiled_vfs_profiles.agent_profile is not None:
-                for var in compiled_vfs_profiles.agent_profile.variables:
-                    self._add_target_vfs_paths(schema, str(var.name), getattr(var, "type", None))
             if compiled_vfs_profiles.item_profiles:
                 for profile in compiled_vfs_profiles.item_profiles.values():
-                    for var in profile.variables:
-                        schema[f"self.vfs.{var.name}"] = self._normalize_effect_schema_type(getattr(var, "type", None))
+                    for compiled_var in profile.variables:
+                        schema[f"self.vfs.{compiled_var.name}"] = self._normalize_effect_schema_type(compiled_var.type)
 
         return schema
 
@@ -82,8 +74,6 @@ class EffectsCompiler:
 
     @staticmethod
     def _normalize_effect_schema_type(raw_type: Any) -> str:
-        if raw_type in _EFFECT_SCHEMA_REFERENCE_TYPES:
-            return str(raw_type)
-        if raw_type == "bool":
-            return "bool"
-        return "float"
+        if raw_type == "scalar":
+            return "float"
+        return str(raw_type)

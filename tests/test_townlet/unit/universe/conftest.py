@@ -17,17 +17,35 @@ def minimal_compiled_universe_with_profiles(tmp_path: Path):
 
     # Add VFS profiles with global variables
     profiles = {
-        "version": "1.0",
-        "evaluation_mode": "mark_and_sweep",
-        "debug_logging": False,
-        "global_profile": {
-            "variables": [
-                {"semantic_type": "custom", "name": "day_count", "type": "int", "initial_value": 0},
-                {"semantic_type": "custom", "name": "total_earnings", "type": "float", "initial_value": 0.0},
-            ]
-        },
+        "variables": {
+            "version": "1.0",
+            "evaluation_mode": "mark_and_sweep",
+            "debug_logging": False,
+            "extents": {},
+            "item_profiles": [],
+            "declarations": [
+                {
+                    "id": "day_count",
+                    "scope": "global",
+                    "type": "scalar",
+                    "lifetime": "persistent",
+                    "semantic_type": "custom",
+                    "exposed_to": [],
+                    "initial_value": 0,
+                },
+                {
+                    "id": "total_earnings",
+                    "scope": "global",
+                    "type": "scalar",
+                    "lifetime": "persistent",
+                    "semantic_type": "custom",
+                    "exposed_to": [],
+                    "initial_value": 0.0,
+                },
+            ],
+        }
     }
-    (experiment_dir / "vfs_profiles.yaml").write_text(yaml.dump(profiles))
+    (experiment_dir / "variables.yaml").write_text(yaml.dump(profiles))
 
     # Compile
     compiler = UniverseCompiler()
@@ -44,12 +62,26 @@ def minimal_compiled_universe_with_effects(tmp_path: Path):
 
     # Add VFS profiles (required for effects)
     profiles = {
-        "version": "1.0",
-        "evaluation_mode": "mark_and_sweep",
-        "debug_logging": False,
-        "global_profile": {"variables": [{"semantic_type": "custom", "name": "day_count", "type": "int", "initial_value": 0}]},
+        "variables": {
+            "version": "1.0",
+            "evaluation_mode": "mark_and_sweep",
+            "debug_logging": False,
+            "extents": {},
+            "item_profiles": [],
+            "declarations": [
+                {
+                    "id": "day_count",
+                    "scope": "global",
+                    "type": "scalar",
+                    "lifetime": "persistent",
+                    "semantic_type": "custom",
+                    "exposed_to": [],
+                    "initial_value": 0,
+                }
+            ],
+        }
     }
-    (experiment_dir / "vfs_profiles.yaml").write_text(yaml.dump(profiles))
+    (experiment_dir / "variables.yaml").write_text(yaml.dump(profiles))
 
     # Add effects.yaml
     effects = {

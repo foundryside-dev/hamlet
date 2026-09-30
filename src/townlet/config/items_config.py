@@ -140,7 +140,7 @@ class ItemTypeConfig(BaseModel):
 
     vfs_profile: str = Field(
         ...,
-        description="VFS profile ID from vfs_profiles.yaml (item scope)",
+        description="Named item schema from the canonical variables declaration (item scope)",
     )
 
     interactions: ItemInteractionsConfig = Field(

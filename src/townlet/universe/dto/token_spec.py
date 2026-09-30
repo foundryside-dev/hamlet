@@ -45,12 +45,11 @@ from townlet.effects.affordance_identity import (
     opening_hours_signature,
 )
 from townlet.numeric import require_float32
-from townlet.vfs.schema import NormalizationSpec, VariableDef, VariableScope
+from townlet.vfs.schema import NormalizationSpec, VariableDef, VariableScope, variable_element_shape
 from townlet.vfs.semantic_type import SemanticType
 
 if TYPE_CHECKING:
     from townlet.config.affordances_v2_config import AffordancesV2Config
-    from townlet.config.environment_config import EnvironmentConfig
     from townlet.config.items_config import ItemsCatalogConfig
     from townlet.effects.catalog import EffectCatalog
     from townlet.universe.compiled import CompiledVFSProfiles
@@ -1379,24 +1378,17 @@ def variable_element_capacity(variables: Iterable[ExposedVariable]) -> int:
 
 
 def variable_element_bindings(
-    environment: EnvironmentConfig,
     compiled_vfs_profiles: CompiledVFSProfiles | None,
     vfs_variables: tuple[VariableDef, ...],
     *,
     item_capacity_value: int,
 ) -> tuple[SlotBinding, ...]:
     """Derive variable-element bindings in registry declaration order."""
-    bindings, _contexts = _variable_element_artifacts(
-        environment, compiled_vfs_profiles, vfs_variables, item_capacity_value=item_capacity_value
-    )
+    bindings, _contexts = _variable_element_artifacts(compiled_vfs_profiles, vfs_variables, item_capacity_value=item_capacity_value)
     return bindings
 
 
-#: `ItemVFSVariableConfig.type` uses its own vocabulary. It is congruent with
-#: `VariableDef`'s dtype-bearing members except for plain "float" (spelled "scalar" on
-#: `VariableDef`) and plain "int" (`VariableDef` has no scalar-int member at all — only
-#: typed references and integer vectors resolve to dtype "int"); a plain-int item
-#: variable therefore has no token dtype landing yet and is refused explicitly below.
+#: Internal compiled item expression types map to registry descriptor types.
 _ITEM_VAR_TYPE_TO_TOKEN_TYPE: Final[Mapping[str, str]] = {
     "float": "scalar",
     "bool": "bool",
@@ -1407,37 +1399,17 @@ _ITEM_VAR_TYPE_TO_TOKEN_TYPE: Final[Mapping[str, str]] = {
     "affordance_ref": "affordance_ref",
     "effect_ref": "effect_ref",
 }
-#: Item-profile state has no authored `semantic_type` — `ItemVFSVariableConfig`
-#: deliberately carries none (PDR-0075/0066: a per-variable observation group could
-#: reach nothing for item-scoped state). Every exposed item variable lands in the
-#: engine's own bucket; `scope` ("item") and `owner_slot` already distinguish it from
-#: every other exposed variable, so an authored group is not needed to avoid collision.
-_ITEM_PROFILE_SEMANTIC_TYPE: Final[str] = "custom"
-#: Item-profile state has no authored `lifetime` either — item instances (and their
-#: VFS rows) never survive `env.reset()`, so "episode" is the only member that matches
-#: reality.
-_ITEM_PROFILE_LIFETIME: Final[str] = "episode"
 
 
 def _variable_element_artifacts(
-    environment: EnvironmentConfig,
     compiled_vfs_profiles: CompiledVFSProfiles | None,
     vfs_variables: tuple[VariableDef, ...],
     *,
     item_capacity_value: int,
 ) -> tuple[tuple[SlotBinding, ...], tuple[tuple[float, ...], ...]]:
     """Derive variable bindings and their complete fixed payloads in one pass."""
-    env_semantic = {var.name: str(var.semantic_type) for var in environment.environment.variables}
-
-    exposed_profile: dict[str, str] = {}
     exposed_item_vars: list[tuple[str, CompiledVariable]] = []  # (id "<profile>.<var>", declaration)
     if compiled_vfs_profiles is not None:
-        for profile in (compiled_vfs_profiles.global_profile, compiled_vfs_profiles.agent_profile):
-            if profile is None:
-                continue
-            for compiled_var in profile.variables:
-                if compiled_var.exposed_to:
-                    exposed_profile[str(compiled_var.name)] = str(compiled_var.semantic_type)
         for profile_name, item_profile in (compiled_vfs_profiles.item_profiles or {}).items():
             for compiled_var in item_profile.variables:
                 if compiled_var.exposed_to:
@@ -1483,18 +1455,11 @@ def _variable_element_artifacts(
 
     for var_def in vfs_variables:
         var_id = var_def.id
-        if var_id in env_semantic:
-            semantic_type = env_semantic[var_id]
-        elif var_id in exposed_profile:
-            semantic_type = exposed_profile[var_id]
-        elif var_def.exposed_to:
-            raise ValueError(
-                f"Variable '{var_id}' (static variable overlay) declares exposed_to, but overlay "
-                "statics have no semantic_type surface and cannot bind variable_element slots yet. "
-                "Declare the variable in the VFS profiles declaration to expose it."
-            )
-        else:
+        if not var_def.exposed_to:
             continue
+        if var_def.semantic_type is None:
+            raise ValueError(f"Exposed variable '{var_id}' requires declared semantic_type")
+        semantic_type = str(var_def.semantic_type)
 
         if var_def.initial_value_mode is not None or var_def.initial_value_params is not None:
             raise ValueError(
@@ -1511,12 +1476,7 @@ def _variable_element_artifacts(
             scope = var_def.scope.value
         else:
             scope = str(var_def.scope)
-        if var_def.shape:
-            shape = tuple(var_def.shape)
-        elif var_def.dims is not None and var_def.dims > 1:
-            shape = (int(var_def.dims),)
-        else:
-            shape = ()
+        shape = variable_element_shape(var_def)
         emit(
             ExposedVariable(
                 var_id,
@@ -1543,9 +1503,9 @@ def _variable_element_artifacts(
                 ExposedVariable(
                     var_id,
                     "item",
-                    _ITEM_PROFILE_SEMANTIC_TYPE,
+                    str(item_var.semantic_type),
                     mapped_type,
-                    _ITEM_PROFILE_LIFETIME,
+                    item_var.lifetime,
                     item_var.initial_value,
                     (),
                     item_var.normalization,
@@ -1587,7 +1547,6 @@ def canonical_token_bindings(
     affordances: AffordancesV2Config,
     items_catalog: ItemsCatalogConfig | None,
     compiled_effect_catalog: EffectCatalog | None,
-    environment: EnvironmentConfig,
     compiled_vfs_profiles: CompiledVFSProfiles | None,
     vfs_variables: tuple[VariableDef, ...],
 ) -> tuple[tuple[TokenType, tuple[SlotBinding, ...]], ...]:
@@ -1659,9 +1618,7 @@ def canonical_token_bindings(
         "agent": (),
         "item": item_bindings,
         "effect": effect_bindings,
-        "variable_element": variable_element_bindings(
-            environment, compiled_vfs_profiles, vfs_variables, item_capacity_value=item_capacity_value
-        ),
+        "variable_element": variable_element_bindings(compiled_vfs_profiles, vfs_variables, item_capacity_value=item_capacity_value),
     }
     return tuple((type_name, by_type[type_name]) for type_name in TOKEN_TYPE_ROSTER)
 
@@ -1680,7 +1637,6 @@ def canonical_token_contexts(
     affordances: AffordancesV2Config,
     items_catalog: ItemsCatalogConfig | None,
     compiled_effect_catalog: EffectCatalog | None,
-    environment: EnvironmentConfig,
     compiled_vfs_profiles: CompiledVFSProfiles | None,
     vfs_variables: tuple[VariableDef, ...],
 ) -> tuple[tuple[TokenType, tuple[tuple[float, ...], ...], tuple[TokenContext, ...]], ...]:
@@ -1738,7 +1694,7 @@ def canonical_token_contexts(
     item_contexts = tuple(_fixed_payload("item", rank_context) for _ in range(item_capacity_value))
 
     _variable_bindings, variable_contexts = _variable_element_artifacts(
-        environment, compiled_vfs_profiles, vfs_variables, item_capacity_value=item_capacity_value
+        compiled_vfs_profiles, vfs_variables, item_capacity_value=item_capacity_value
     )
 
     effect_contexts: tuple[TokenContext, ...] = ()

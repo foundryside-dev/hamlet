@@ -35,14 +35,14 @@ def validate_v21_limits(raw: RawConfigsV21, experiment_dir: Path, source_map: So
     env_meter_names = {meter.name for meter in raw.environment.environment.meters}
     env_affordance_names = {aff.name for aff in raw.environment.environment.affordances}
     env_cascades = raw.environment.environment.cascade_graph
-    env_variables = raw.environment.environment.variables
+    env_variables = raw.variables.declarations
 
     checks = [
         (len(env_meter_names), MAX_METERS, "environment", "meters"),
         (len(env_affordance_names), MAX_AFFORDANCES, "environment", "affordances"),
         (len(env_cascades), MAX_CASCADES, "environment", "cascade_graph"),
         (len(raw.actions.actions.custom_actions), MAX_ACTIONS, "actions", "actions"),
-        (len(env_variables), MAX_VARIABLES, "environment", "variables"),
+        (len(env_variables), MAX_VARIABLES, "variables", "declarations"),
     ]
 
     for count, limit, family, label in checks:
@@ -65,20 +65,15 @@ def validate_v21_limits(raw: RawConfigsV21, experiment_dir: Path, source_map: So
                 location=locate(source_map, "items", str(experiment_dir / "items")),
             )
 
-    if raw.vfs_profiles is not None:
-        profile_count = (
-            int(raw.vfs_profiles.global_profile is not None)
-            + int(raw.vfs_profiles.agent_profile is not None)
-            + len(raw.vfs_profiles.item_profiles or [])
+    profile_count = len(raw.variables.item_profiles) + sum(
+        any(variable.scope == scope for variable in raw.variables.declarations) for scope in ("global", "agent")
+    )
+    if profile_count > MAX_VFS_PROFILES:
+        errors.add(
+            f"Variables item profile count exceeds safety limit: {profile_count} (max {MAX_VFS_PROFILES}).",
+            code=ErrorCode.CONFIG_LIMIT_EXCEEDED,
+            location=locate(source_map, "variables", f"{experiment_dir}:1"),
         )
-        if profile_count > MAX_VFS_PROFILES:
-            errors.add(
-                "The VFS profiles declaration exceeds the safety limit for profile count.\n"
-                f"  Profiles: {profile_count} (max {MAX_VFS_PROFILES})\n"
-                "Reduce VFS profile count to keep config size within guardrails.",
-                code=ErrorCode.CONFIG_LIMIT_EXCEEDED,
-                location=locate(source_map, "vfs_profiles", f"{experiment_dir}:1"),
-            )
 
     grid_capacity = grid_capacity_for_substrate(raw.stratum.stratum.substrate)
     if grid_capacity is not None and grid_capacity > MAX_GRID_CELLS:

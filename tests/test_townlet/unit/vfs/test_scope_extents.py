@@ -7,7 +7,7 @@ VariableRegistry and no config surface exists to declare them.
 These tests pin the fix from both ends:
 - Declaring a zone/group/message-scoped variable WITHOUT its extent fails loudly
   at compile time (not at env construction).
-- Declaring the extent in variables_reference.yaml `extents:` reaches the runtime
+- Declaring the extent in variables.yaml `extents:` reaches the runtime
   registry, so the scope actually works end-to-end.
 """
 
@@ -30,31 +30,31 @@ SCOPED_VARIABLE = {
         "id": "zone_temp_offset",
         "scope": "zone",
         "type": "scalar",
-        "default": 0.0,
         "lifetime": "persistent",
-        "readable_by": ["agent", "engine"],
-        "writable_by": ["engine"],
+        "semantic_type": "custom",
+        "initial_value": 0.0,
+        "exposed_to": [],
         "description": "Per-zone temperature offset",
     },
     "group": {
         "id": "group_cohesion",
         "scope": "group",
         "type": "scalar",
-        "default": 0.5,
         "lifetime": "persistent",
-        "readable_by": ["agent", "engine"],
-        "writable_by": ["engine"],
+        "semantic_type": "custom",
+        "initial_value": 0.5,
+        "exposed_to": [],
         "description": "Per-group cohesion",
     },
     "message": {
         "id": "message_payload",
         "scope": "message",
         "type": "vecNf",
-        "dims": 3,
-        "default": [0.0, 0.0, 0.0],
         "lifetime": "tick",
-        "readable_by": ["agent", "engine"],
-        "writable_by": ["engine"],
+        "semantic_type": "custom",
+        "initial_value": [0.0, 0.0, 0.0],
+        "exposed_to": [],
+        "dims": 3,
         "description": "Recent message buffer payload",
     },
     "affordance": {
@@ -62,10 +62,9 @@ SCOPED_VARIABLE = {
         "scope": "affordance",
         "type": "agent_ref",
         "lifetime": "tick",
-        "readable_by": ["engine", "vtc"],
-        "writable_by": ["engine", "vtc"],
-        "default": None,
-        "observable": False,
+        "semantic_type": "custom",
+        "initial_value": None,
+        "exposed_to": [],
         "description": "Current claimant for each affordance row",
     },
 }
@@ -79,12 +78,12 @@ EXTENT_NAME = {
 
 
 def _add_scoped_variable(pack: Path, scope: str, extents: dict[str, int] | None) -> None:
-    """Append a scoped variable (and optionally an extents block) to the pack's variables_reference.yaml."""
-    ref_path = pack / "variables_reference.yaml"
+    """Append a scoped variable (and optionally an extents block) to the pack's variables.yaml."""
+    ref_path = pack / "variables.yaml"
     data = yaml.safe_load(ref_path.read_text())
-    data["variables"].append(SCOPED_VARIABLE[scope])
+    data["variables"]["declarations"].append(SCOPED_VARIABLE[scope])
     if extents is not None:
-        data["extents"] = extents
+        data["variables"]["extents"] = extents
     ref_path.write_text(yaml.safe_dump(data))
 
 
@@ -148,9 +147,9 @@ def test_extent_of_zero_is_rejected(temp_config_pack: Path) -> None:
 
 def test_extents_without_scoped_variables_are_allowed(temp_config_pack: Path) -> None:
     """Declaring extents with no matching-scope variables is harmless sizing metadata."""
-    ref_path = temp_config_pack / "variables_reference.yaml"
+    ref_path = temp_config_pack / "variables.yaml"
     data = yaml.safe_load(ref_path.read_text())
-    data["extents"] = {"num_zones": 4}
+    data["variables"]["extents"] = {"num_zones": 4}
     ref_path.write_text(yaml.safe_dump(data))
 
     universe = UniverseCompiler().compile(temp_config_pack, primary_level=PRIMARY_LEVEL, use_cache=False)

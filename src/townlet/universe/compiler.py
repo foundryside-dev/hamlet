@@ -172,7 +172,7 @@ class UniverseCompiler:
             raise self._vfs_domain_compilation_error(
                 CompilationStage.SHARED.label,
                 ErrorCode.VFS_PROFILE_COMPILE,
-                Path(source_map.lookup("vfs_profiles") or f"{experiment_dir}:1"),
+                Path(source_map.lookup("variables") or f"{experiment_dir}:1"),
                 exc,
             ) from exc
 
@@ -276,7 +276,7 @@ class UniverseCompiler:
         primary_level_config = raw.levels[primary_level]
         bar_schema: dict[str, str] = {meter.name: "float" for meter in primary_level_config.bars.meters}
 
-        compiled_vfs_profiles = self._vfs_compiler.compile_profiles(raw.vfs_profiles, experiment_dir, bar_schema)
+        compiled_vfs_profiles = self._vfs_compiler.compile_profiles(raw.variables, bar_schema)
         self._vfs_compiler.validate_item_profile_bindings(raw.items, compiled_vfs_profiles)
 
         from townlet.vfs.history import collect_history_requirements
@@ -285,7 +285,7 @@ class UniverseCompiler:
 
         effects_schema = self._effects_compiler.build_schema(
             bar_names=tuple(meter.name for meter in primary_level_config.bars.meters),
-            environment_variables=tuple(getattr(raw.environment.environment, "variables", ()) or ()),
+            variables=raw.variables,
             compiled_vfs_profiles=compiled_vfs_profiles,
         )
 
@@ -336,7 +336,7 @@ class UniverseCompiler:
             self._vfs_compiler.compile_item_spawn_conditions(
                 level.items_appearance,
                 bar_schema=bar_schema,
-                env_vars=getattr(raw.environment.environment, "variables", []) or [],
+                variables=raw.variables,
                 compiled_vfs_profiles=compiled_vfs_profiles,
                 temporal_supported=temporal_supported and level.curriculum.curriculum.active_temporal,
             )
@@ -349,12 +349,7 @@ class UniverseCompiler:
                 source_map=raw.source_map,
                 level_name=level_name,
             )
-            base_vfs_variables = self._observation_compiler.build_vfs_variables(raw.environment)
-            vfs_variables = self._vfs_compiler.build_runtime_variables(
-                base_vfs_variables,
-                compiled_vfs_profiles,
-                raw.variables_reference,
-            )
+            vfs_variables = self._vfs_compiler.build_runtime_variables(raw.variables)
 
             # The token observation artifact IS the compiler's observation product
             # (unit-3 Task-10 cut). It is built BEFORE `observation_schema_hash`, which
@@ -367,7 +362,6 @@ class UniverseCompiler:
                 level.affordances,
                 raw.items,
                 compiled_effect_catalog,
-                raw.environment,
                 compiled_vfs_profiles,
                 vfs_variables,
                 # The EFFECTIVE brain for this level (PDR-0027 selection, same as stage 8).
@@ -453,7 +447,7 @@ class UniverseCompiler:
 
         vfs_expression_schema = self._vfs_compiler.build_expression_schema(primary_level_config.bars, compiled_vfs_profiles)
 
-        vfs_evaluation_marks = self._vfs_compiler.derive_evaluation_marks(raw.vfs_profiles, raw.variables_reference)
+        vfs_evaluation_marks = self._vfs_compiler.derive_evaluation_marks(raw.variables)
 
         return CompiledLevelBundle(
             all_levels=all_levels,

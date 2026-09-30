@@ -91,9 +91,9 @@ set in `docs/architecture/` — `HLD.md`, `STRATA.md`, `UAC.md`, `BAC.md`, `COMP
 "zzz. archive") swept it into the archive on a fast visual pass, and a follow-up sweep
 repointed every citation at the archive path. Both were reversed on 2026-08-26 — it is the
 reference tier the HLD set delegates to, and nothing replaced it. It is back at
-`docs/config-schemas/` and back on the trustworthy list, **with four exceptions that carry
-dated staleness banners of their own**: `variables.md` (2025-11, wholesale stale),
-`drive_as_code.md`, `enabled_actions.md`, and `training.md`. Trust a file in that directory
+`docs/config-schemas/` and back on the trustworthy list, **with three exceptions that carry
+dated staleness banners of their own**: `drive_as_code.md`, `enabled_actions.md`, and `training.md`.
+`variables.md` is the current Cut B canonical authoring contract. Trust a file in that directory
 unless it opens with a banner telling you not to.
 
 ### The oracle (strangler discipline)
@@ -293,29 +293,27 @@ TokenSpec → Runtime Registry + token publishers → Observations`
 `registry.get()` / `set()`. Roles are open strings, not a closed enum — `agent`, `engine`,
 `actions`, `vtc`, `social_model` are the common ones. ⚠ Caveat (2026-08-24 audit): the
 enforcement is real where it runs, but it currently has **no authoring surface** (the compiler
-hardcodes the role lists on both required declaration families) and the observation path bypasses the
+applies one fixed role policy to the canonical variable family) and the observation path bypasses the
 checked accessor entirely — see `docs/architecture/VFS.md` §6 caveat and
 `docs/architecture/archive/REVIEW-2026-08-24-vfs-implementation-vs-spec.md`.
 
-**Which declarations a pack needs** (declaration-store Cut A):
+**Which declarations a pack needs** (declaration-store Cut B):
 
-- A **VFS profiles declaration is required at pack scope**. It supplies compiled global, agent
-  and item profiles. A profiles declaration under `levels/<id>/` is refused.
-- A **static variable-overlay declaration is optional at pack scope**: no expressions and no
-  item-scoped variables. `configs/default_curriculum` has none; `configs/L5_multi_agent` does.
-- `vfs_profiles.yaml` and `variables_reference.yaml` are filename conventions. The compiler
-  discovers content in every nested `.yaml`/`.yml` document outside `.compiled`; it has no
-  filename reader or aliases. Unknown documents and duplicate declarations fail loudly with
-  actual source locations. See [the authoring contract](docs/config-schemas/declarations.md).
+- One required pack-scope `variables:` declaration supplies the explicit registry-variable
+  roster, evaluator settings, scope extents and named item-profile groups.
+- Every variable declares type, scope, initialization, lifetime, semantic type and exposure.
+  Global/agent expressions and supported item state lower into internal compiled profiles.
+- Environment-variable, VFS-profile and static-overlay authoring languages are deleted.
+  Old payloads fail; no filename reader, alias, permission-field authoring or translation remains.
+- All variables enter the symbol inventory; item identities are profile-qualified. Token bindings
+  carry typed scope, which selects the publisher independently of reference-string shape.
+- Discovery reads all nested YAML/YML outside `.compiled`; duplicates and unknown declarations
+  name actual source locations. Arrays retain their authored order.
 
-Cut A retains the existing profile/overlay vocabulary and runtime semantics; it does not unify
-variable permissions, lifetimes or the compiler symbol model.
-
-**Documentation**: `docs/architecture/VFS.md` (the authoritative VFS document, reviewed
-2026-08-24), `docs/config-schemas/vfs-profiles.md`,
-`docs/config-schemas/variables.md` (⚠ **stale, 2025-11** — restored 2026-08-26 with a
-staleness banner; it is the only variables reference we have, but verify against source), and `docs/architecture/archive/vfs-current-implementation.md`
-(accurate per the 2026-08-24 audit except its access-control and `agent_private` claims).
+**Documentation:** [canonical variables](docs/config-schemas/variables.md),
+[declaration discovery](docs/config-schemas/declarations.md), and the Cut B acceptance evidence.
+`docs/architecture/VFS.md` retains dated architecture material; its October 1 boundary takes
+precedence over historical authoring/permission examples. PDR-0120 access design remains separate.
 
 ### Action Space (Composable)
 
@@ -346,9 +344,9 @@ The following filenames are a readable convention, not compiler dispatch:
 ```
 configs/default_curriculum/
 ├── stratum.yaml          # substrate: grid 8×8, shared by EVERY level
-├── environment.yaml      # VFS variable definitions, shared
+├── environment.yaml      # shared runtime and observation settings
 ├── brain.yaml            # required pack brain; complete level overrides allowed
-├── actions.yaml, effects.yaml, items.yaml, vfs_profiles.yaml
+├── actions.yaml, effects.yaml, items.yaml, variables.yaml
 └── levels/<level>/
     ├── bars.yaml
     ├── affordances.yaml
@@ -483,7 +481,7 @@ enforces this, with `ConfigDict(extra="forbid")` so stray keys fail at parse tim
 
 DTOs live in `src/townlet/config/` — `training_v2_config.py`, `environment_config.py`,
 `bars_v2_config.py`, `affordances_v2_config.py`, `stratum_config.py` (`SubstrateConfig`,
-`StratumConfig`), `curriculum_config.py`, `drive_as_code.py`, `vfs_profiles_config.py`,
+`StratumConfig`), `curriculum_config.py`, `drive_as_code.py`, `variables_config.py`,
 `effects_config.py`, `items_config.py` — plus
 `townlet.environment.action_config.ActionConfig`. (`townlet.substrate.config` does not exist;
 `SubstrateConfig` is in `config/stratum_config.py`.)

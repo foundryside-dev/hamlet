@@ -168,7 +168,7 @@ The compiler-side implications are noted in `COMPILER.md` §Forward.
 | terminal conditions, end-of-life | `VTCTerminalConditionProgram`; scoring → DAC | `VFS.md`, `docs/config-schemas/drive_as_code.md` (archived) |
 | affordances, costs, effects, multi-tick | `affordances.yaml` + VTC action writes, occupancy, interaction progress | `docs/config-schemas/affordances.md`, `docs/config-schemas/effects.md` (both archived) |
 | `reward_model`, episodic scoring | **deleted** → DAC (`drive.yaml`, compiled to GPU graphs, `drive_hash`) | `docs/config-schemas/drive_as_code.md` (archived) |
-| observability levels | VFS observation spec: exposure + normalization + activity mask | `VFS.md` §8, `docs/config-schemas/vfs-profiles.md` (archived) |
+| observability levels | VFS observation spec: exposure + normalization + activity mask | `VFS.md` §8, `docs/config-schemas/variables.md` (current Cut B contract) |
 | time of day, action masks | `curriculum.yaml` temporal switches + VTC affordance gates | `docs/config-schemas/enabled_actions.md` (archived) |
 | grid, positions | **Strata** (promoted out of UAC) | `STRATA.md`; `archive/substrate-system.md` for history |
 | money ≈ $100 at 1.0, clamped | **dead** — the `[0,1]` clamps were removed in WS-1(e); money is a bounded variable like any other | `docs/config-schemas/bars.md` (archived) |

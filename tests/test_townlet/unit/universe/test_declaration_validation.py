@@ -11,7 +11,7 @@ import pytest
 import yaml
 
 from townlet.config.items_config import ItemAppearanceRuleConfig, ItemsAppearanceConfig, ItemsCatalogConfig, ItemTypeConfig
-from townlet.config.vfs_profiles_config import VFSProfilesConfig
+from townlet.config.variables_config import VariablesConfig
 from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.error_codes import ErrorCode
 from townlet.universe.errors import CompilationError
@@ -24,6 +24,37 @@ from townlet.universe.validation.semantics import validate_v21_semantics
 
 PACK = Path("configs/test/model_config")
 LEVEL = "L0_test"
+
+
+@pytest.mark.parametrize("filename", ["a.yaml", "z.yaml"])
+def test_malformed_fragmented_item_profile_reports_its_own_origin(tmp_path, filename):
+    pack = tmp_path / "pack"
+    shutil.copytree(PACK, pack)
+    malformed = pack / filename
+    malformed.write_text("variables:\n  item_profiles:\n    - bad: value\n")
+    with pytest.raises(CompilationError) as caught:
+        UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)
+    issue = next(issue for issue in caught.value.issues if issue.code == ErrorCode.LOAD_ERROR and "item_profiles" in issue.message)
+    assert issue.location == f"{malformed}:3"
+
+
+def test_pair_reward_reader_refuses_without_an_explicit_reduction(tmp_path):
+    pack = tmp_path / "pack"
+    shutil.copytree(PACK, pack)
+    variable_path = pack / "variables.yaml"
+    variables = yaml.safe_load(variable_path.read_text())
+    variables["variables"]["declarations"].append(
+        dict(id="score", scope="pair", type="scalar", lifetime="episode", semantic_type="custom", exposed_to=[], initial_value=1.0)
+    )
+    variable_path.write_text(yaml.safe_dump(variables))
+    drive_path = pack / "levels" / LEVEL / "drive.yaml"
+    drive = yaml.safe_load(drive_path.read_text())
+    drive["drive"]["extrinsic"]["variable_bonuses"] = [dict(variable="score", weight=1.0)]
+    drive_path.write_text(yaml.safe_dump(drive))
+    with pytest.raises(CompilationError) as caught:
+        UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)
+    issue = next(issue for issue in caught.value.issues if "ordinary reward reduction" in issue.message)
+    assert issue.location.startswith(f"{drive_path}:")
 
 
 def test_semantics_of_loaded_declarations_do_not_recheck_transport_files(tmp_path: Path) -> None:
@@ -80,7 +111,7 @@ def test_lockstep_diagnostics_name_both_relocated_declarations(tmp_path: Path, m
         ("MAX_METERS", "environment", ErrorCode.CONFIG_LIMIT_EXCEEDED),
         ("MAX_AFFORDANCES", "environment", ErrorCode.CONFIG_LIMIT_EXCEEDED),
         ("MAX_CASCADES", "environment", ErrorCode.CONFIG_LIMIT_EXCEEDED),
-        ("MAX_VARIABLES", "environment", ErrorCode.CONFIG_LIMIT_EXCEEDED),
+        ("MAX_VARIABLES", "variables", ErrorCode.CONFIG_LIMIT_EXCEEDED),
         ("MAX_ACTIONS", "actions", ErrorCode.CONFIG_LIMIT_EXCEEDED),
         ("MAX_GRID_CELLS", "stratum", ErrorCode.GRID_SIZE_LIMIT_EXCEEDED),
         ("MAX_ITEM_TYPES", "items", ErrorCode.ITEM_TYPES_LIMIT_EXCEEDED),
@@ -170,38 +201,48 @@ def test_item_appearance_reference_uses_relocated_family_origin(tmp_path: Path) 
 def test_profile_registration_error_uses_qualified_profile_origin(tmp_path: Path, monkeypatch) -> None:
     """Same-named variables in different profiles never share diagnostic identity."""
     raw = load_v21_configs(PACK)
-    variable = {"name": "shared", "type": "float", "initial_value": 0.0}
+    declarations = [
+        {
+            "id": identifier,
+            "scope": scope,
+            "type": "scalar",
+            "initial_value": 0.0,
+            "lifetime": "episode",
+            "semantic_type": "custom",
+            "exposed_to": [],
+            **({"profile": profile} if profile is not None else {}),
+        }
+        for identifier, scope, profile in (
+            ("world", "global", None),
+            ("agent", "agent", None),
+            ("shared", "item", "tool"),
+            ("shared", "item", "food"),
+        )
+    ]
     raw = replace(
         raw,
-        vfs_profiles=VFSProfilesConfig.model_validate(
-            {
-                "version": "1.0",
-                "evaluation_mode": "mark_and_sweep",
-                "debug_logging": False,
-                "global_profile": {"variables": [{**variable, "semantic_type": "custom"}]},
-                "agent_profile": {"variables": [{**variable, "semantic_type": "custom"}]},
-                "item_profiles": [
-                    {"profile_name": "tool", "variables": [variable]},
-                    {"profile_name": "food", "variables": [variable]},
-                ],
-            }
+        variables=VariablesConfig(
+            version="1.0",
+            evaluation_mode="mark_and_sweep",
+            debug_logging=False,
+            extents={},
+            item_profiles=["tool", "food"],
+            declarations=declarations,
         ),
     )
     source_map = SourceMap()
     origins = []
-    for index, qualifier in enumerate(("global_profile", "agent_profile", "item_profiles:tool", "item_profiles:food"), start=1):
-        path = tmp_path / "profiles" / f"{index}.yml"
-        source_map.record(f"vfs_profiles:{qualifier}:shared", path, 8)
+    for index, identity in enumerate(("world", "agent", "tool:shared", "food:shared"), start=1):
+        path = tmp_path / "variables" / f"{index}.yml"
+        source_map.record(f"variables:{identity}", path, 8)
         origins.append(f"{path}:8")
 
-    # Inject a domain registration failure to exercise provenance on its error boundary.
     def fail_registration(self, config):
-        raise CompilationError("Symbols", ["Injected profile registration failure"])
+        raise CompilationError("Symbols", ["Injected canonical variable registration failure"])
 
-    monkeypatch.setattr(UniverseSymbolTable, "register_profile_vfs_variable", fail_registration)
+    monkeypatch.setattr(UniverseSymbolTable, "register_variable", fail_registration)
     with pytest.raises(CompilationError) as caught:
         build_symbol_table(raw, source_map)
-
     assert [issue.location for issue in caught.value.issues] == origins
 
 

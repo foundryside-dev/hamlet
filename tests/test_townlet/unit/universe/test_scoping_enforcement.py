@@ -22,9 +22,9 @@ def config_dir(tmp_path: Path) -> Path:
     return root
 
 
-def test_missing_required_vfs_declaration_rejected(config_dir: Path) -> None:
-    """The required VFS declaration cannot disappear from a valid pack."""
-    (config_dir / "vfs_profiles.yaml").unlink()
+def test_missing_required_variables_declaration_rejected(config_dir: Path) -> None:
+    """The required variables declaration cannot disappear from a valid pack."""
+    (config_dir / "variables.yaml").unlink()
 
     with pytest.raises(CompilationError) as caught:
         UniverseCompiler().compile(config_dir, primary_level="L0_test", use_cache=False)
@@ -32,7 +32,7 @@ def test_missing_required_vfs_declaration_rejected(config_dir: Path) -> None:
     assert len(caught.value.issues) == 1, str(caught.value)
     issue = caught.value.issues[0]
     assert issue.code == ErrorCode.DECLARATION_MISSING
-    assert issue.message == "Missing required vfs_profiles declaration"
+    assert issue.message == "Missing required variables declaration"
     assert issue.location == f"{config_dir}:1"
 
 
@@ -49,7 +49,7 @@ def test_item_free_pack_supports_absent_optional_item_catalog(config_dir: Path) 
     assert env.item_manager is None
 
 
-@pytest.mark.parametrize("family", ["vfs_profiles", "effects", "items"])
+@pytest.mark.parametrize("family", ["variables", "effects", "items"])
 def test_level_scoped_shared_declarations_rejected(config_dir: Path, family: str) -> None:
     """Complete shared catalogs remain pack scoped in arbitrarily named documents."""
     level_dir = config_dir / "levels" / "L0_test" / "catalogs"

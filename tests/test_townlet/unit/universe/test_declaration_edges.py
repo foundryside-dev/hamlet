@@ -22,14 +22,14 @@ def pack(tmp_path: Path) -> Path:
 
 @pytest.mark.parametrize("field", ["profile", "variable", "expression", "normalization"])
 def test_malformed_clock_shapes_are_structured(pack: Path, field: str) -> None:
-    path = pack / "vfs_profiles.yaml"
+    path = pack / "variables.yaml"
     data = yaml.safe_load(path.read_text())
     if field == "profile":
-        data["global_profile"] = ["oops"]
+        data["variables"]["declarations"] = {"oops": 1}
     elif field == "variable":
-        data["global_profile"]["variables"] = ["oops"]
+        data["variables"]["declarations"] = ["oops"]
     else:
-        data["global_profile"]["variables"][0][field] = 1 if field == "expression" else ["oops"]
+        next(var for var in data["variables"]["declarations"] if var["id"] == "day_phase")[field] = 1 if field == "expression" else ["oops"]
     path.write_text(yaml.safe_dump(data, sort_keys=False))
     with pytest.raises(CompilationError) as caught:
         RawConfigsV21.from_experiment_dir(pack)
@@ -58,22 +58,29 @@ def test_merged_array_validation_points_to_original_field(pack: Path, invalid_fr
     assert store.errors.issues[0].location == f"{invalid}:{line}"
 
 
-def test_profile_collision_names_its_own_namespace(pack: Path) -> None:
-    source = pack / "vfs_profiles.yaml"
+def test_registry_collision_across_scopes_names_both_origins(pack: Path) -> None:
+    source = pack / "variables.yaml"
     data = yaml.safe_load(source.read_text())
-    variable = {"name": "foo", "id": "foo", "type": "float", "semantic_type": "custom", "initial_value": 0.0, "exposed_to": []}
-    data["global_profile"]["variables"].append(variable)
+    variable = {
+        "id": "foo",
+        "scope": "global",
+        "type": "scalar",
+        "lifetime": "episode",
+        "semantic_type": "custom",
+        "initial_value": 0.0,
+        "exposed_to": [],
+    }
+    data["variables"]["declarations"].append(variable)
     source.write_text(yaml.safe_dump(data, sort_keys=False))
-    headers = {key: data[key] for key in ("version", "evaluation_mode", "debug_logging")}
-    agent = pack / "w_agent.yml"
-    agent.write_text(yaml.safe_dump({**headers, "agent_profile": {"variables": [variable]}}, sort_keys=False))
-    duplicate = pack / "z_global.yml"
-    duplicate.write_text(yaml.safe_dump({**headers, "global_profile": {"variables": [variable]}}, sort_keys=False))
+    headers = {key: data["variables"][key] for key in ("version", "evaluation_mode", "debug_logging", "extents")}
+    duplicate = pack / "z_agent.yml"
+    duplicate.write_text(yaml.safe_dump({"variables": {**headers, "declarations": [{**variable, "scope": "agent"}]}}, sort_keys=False))
     with pytest.raises(CompilationError) as caught:
         DeclarationStore.discover(pack)
     message = str(caught.value)
     assert str(source) in message and str(duplicate) in message
-    assert str(agent) not in message
+    assert "identifier 'foo'" in message
+    assert "first declared at" in message
 
 
 def test_effect_fragments_accept_equal_budget_headers(tmp_path: Path) -> None:
@@ -133,9 +140,9 @@ def test_recursive_yaml_alias_is_a_structured_refusal(pack: Path) -> None:
     "failure", ["unknown", "noncyclical", "fractional", "boolean", "boolean_period", "equal_literal", "unequal_literal", "inactive"]
 )
 def test_clock_reference_refusals_have_the_authored_origin(pack: Path, failure: str) -> None:
-    profile_path = pack / "vfs_profiles.yaml"
+    profile_path = pack / "variables.yaml"
     profiles = yaml.safe_load(profile_path.read_text())
-    variable = profiles["global_profile"]["variables"][0]
+    variable = next(var for var in profiles["variables"]["declarations"] if var["id"] == "day_phase")
     curriculum_path = pack / "levels" / "L3_temporal_mechanics" / "curriculum.yaml"
     curriculum = yaml.safe_load(curriculum_path.read_text())
     if failure == "unknown":
@@ -146,6 +153,7 @@ def test_clock_reference_refusals_have_the_authored_origin(pack: Path, failure: 
         variable["normalization"]["period"] = 24.5
     elif failure == "boolean":
         variable["type"] = "bool"
+        variable["initial_value"] = False
     elif failure == "boolean_period":
         variable["normalization"]["period"] = True
     elif failure in {"equal_literal", "unequal_literal"}:
@@ -163,16 +171,22 @@ def test_clock_reference_refusals_have_the_authored_origin(pack: Path, failure: 
 
 
 def test_clock_reference_selects_global_identity_among_profiles_and_clocks(pack: Path) -> None:
-    path = pack / "vfs_profiles.yaml"
+    path = pack / "variables.yaml"
     profiles = yaml.safe_load(path.read_text())
-    second = dict(profiles["global_profile"]["variables"][0])
-    second.update(name="other_clock", id="other_clock", normalization={"kind": "cyclical_sin_cos", "period": 30})
-    profiles["global_profile"]["variables"].append(second)
-    profiles["agent_profile"] = {
-        "variables": [
-            {"name": "other_clock", "id": "other_clock", "type": "float", "semantic_type": "custom", "initial_value": 0.0, "exposed_to": []}
-        ]
-    }
+    second = dict(next(var for var in profiles["variables"]["declarations"] if var["id"] == "day_phase"))
+    second.update(id="other_clock", normalization={"kind": "cyclical_sin_cos", "period": 30})
+    profiles["variables"]["declarations"].append(second)
+    profiles["variables"]["declarations"].append(
+        {
+            "id": "agent_clock",
+            "scope": "agent",
+            "type": "scalar",
+            "lifetime": "episode",
+            "semantic_type": "custom",
+            "initial_value": 0.0,
+            "exposed_to": [],
+        }
+    )
     path.write_text(yaml.safe_dump(profiles, sort_keys=False))
     curriculum_path = pack / "levels" / "L3_temporal_mechanics" / "curriculum.yaml"
     curriculum = yaml.safe_load(curriculum_path.read_text())
@@ -200,9 +214,9 @@ def test_shared_document_preserves_each_wrapper_line(pack: Path) -> None:
 def test_clock_authority_mutation_changes_both_resolved_consumers(pack: Path) -> None:
     compiler = UniverseCompiler()
     before = compiler.compile(pack, primary_level="L3_temporal_mechanics", use_cache=False)
-    path = pack / "vfs_profiles.yaml"
+    path = pack / "variables.yaml"
     profiles = yaml.safe_load(path.read_text())
-    profiles["global_profile"]["variables"][0]["normalization"]["period"] = 30
+    next(var for var in profiles["variables"]["declarations"] if var["id"] == "day_phase")["normalization"]["period"] = 30
     path.write_text(yaml.safe_dump(profiles, sort_keys=False))
     after = compiler.compile(pack, primary_level="L3_temporal_mechanics", use_cache=False)
     level = after.get_level("L3_temporal_mechanics")

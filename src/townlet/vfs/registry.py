@@ -597,7 +597,7 @@ class VariableRegistry:
             return (self.num_agents, self._positive_extent(var_def, "num_message_slots"))
         if scope == VariableScope.ITEM:
             raise ValueError(
-                "Item-scoped variables in variables_reference.yaml are not supported. Use vfs_profiles.yaml item_profiles instead."
+                "Item-scoped state requires an item arena and a declared item profile; it cannot enter ordinary registry storage."
             )
         raise ValueError(f"Unsupported variable scope: {var_def.scope}")
 
@@ -848,7 +848,7 @@ class VariableRegistry:
         item_vars = [v for v in self._definitions.values() if v.scope == VariableScope.ITEM]
         if item_vars:
             raise ValueError(
-                "Item-scoped variables in variables_reference.yaml are not supported. Use vfs_profiles.yaml item_profiles instead."
+                "Item-scoped state requires an item arena and a declared item profile; it cannot enter ordinary registry storage."
             )
 
         if self.max_items > 0 and not self.item_profiles:

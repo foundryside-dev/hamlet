@@ -187,7 +187,7 @@ Base reward strategy configuration. Defines how to compute extrinsic rewards fro
 **Validation**:
 - `type` must be one of 9 supported strategies
 - Referenced bars must exist in bars.yaml
-- Referenced variables must exist in variables_reference.yaml
+- Referenced variables must exist in the canonical variables declaration
 
 ---
 
@@ -520,7 +520,10 @@ extrinsic:
   variable: custom_reward_function
 ```
 
-**Note**: Requires VFS variable with `readable_by: ["engine"]` and `writable_by: ["bac"]` or custom computation.
+**Current variable boundary:** named reward inputs require a canonical global/agent
+scalar or boolean variable. Access roles are fixed compiler policy, not authored
+`readable_by`/`writable_by` fields. This older strategy example does not establish
+that the direct `variable` setting is consumed; see the documented strategy gaps.
 
 ---
 
@@ -1207,7 +1210,8 @@ drive_as_code:
       weight: 1.0
 ```
 
-**Requirement**: VFS variables must have `readable_by: ["engine"]`
+**Requirement**: use canonical global/agent scalar or boolean variables. Engine access
+is fixed by compiler policy; access-role fields are not part of variable authoring.
 
 ---
 
@@ -1237,7 +1241,8 @@ drive_as_code:
 **Location**: `townlet.environment.dac_engine.DACEngine`
 
 **Checks**:
-1. **VFS access control**: Engine can read variables with `readable_by: ["engine"]`
+1. **VFS access control**: Internal descriptors grant engine reads; authorable access
+   roles remain separate PDR-0120 work.
 2. **Bar index mapping**: Bar names map to valid meter indices
 3. **Tensor shapes**: All operations broadcast correctly across agents
 
@@ -1356,19 +1361,11 @@ bars:
 
 ### CompilationError: "undefined VFS variable"
 
-**Cause**: DAC references variable not in variables_reference.yaml
+**Cause**: DAC references an unknown canonical variable identifier.
 
-**Fix**: Add variable definition with `readable_by: ["engine"]`
-
-```yaml
-# variables_reference.yaml
-variables:
-  - id: energy_urgency
-    scope: agent
-    type: scalar
-    readable_by: [agent, engine]  # Must include "engine"
-    # ...
-```
+**Fix**: Declare the variable in `variables.declarations` with explicit type, scope,
+initialization, lifetime and exposure; use that exact identifier in the reward rule.
+Access roles are compiler-owned, not an authoring fix. See [variables](variables.md).
 
 ---
 

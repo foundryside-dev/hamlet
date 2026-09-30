@@ -1,9 +1,8 @@
 # Declaration discovery and authoring transport
 
-Declaration-store Cut A replaces compiler filename dispatch with content discovery. The current
-configuration DTOs remain the closed content vocabulary. This cut preserves their compiled
-semantics; it does not complete variable unification, BAC cognition, runtime contracts, rendering
-or convergence.
+Declaration-store Cut A supplies content discovery; Cut B supplies the single canonical
+[variable contract](variables.md). Configuration DTOs form the closed content vocabulary.
+This authoring path does not establish BAC cognition, all runtime contracts, rendering or convergence.
 
 ## Scope and discovery
 
@@ -32,10 +31,9 @@ does not permit omitted required fields or extra keys.
 | Pack | Environment | `environment:` mapping | Yes |
 | Pack | Actions | `actions:` mapping | Yes |
 | Pack | Brain | Bare configuration identified by `architecture` and `optimizer` | Yes |
-| Pack | VFS profiles | Bare configuration identified by `evaluation_mode` and `debug_logging` | Yes |
+| Pack | Variables | `variables:` mapping with explicit declarations and evaluator settings | Yes |
 | Pack | Item catalog | `items:` mapping containing `item_types` | No |
 | Pack | Effects | Bare configuration identified by `effect_definitions` | No |
-| Pack | Static variable overlay | Bare configuration identified by `variables` | No |
 | Pack | Transition rules | Bare configuration identified by `social_residue` | No |
 | Pack | Action labels | Bare configuration identified by `custom` | No |
 | Pack | Observer presentation | Bare `version` with `meters` and `affordances` mappings | No |
@@ -47,8 +45,8 @@ does not permit omitted required fields or extra keys.
 | Level | Brain override | Complete bare brain configuration | No |
 | Level | Item appearance | Bare `version` with `items` list | No |
 
-Keep the existing wrapper and bare shapes. Cut A does not introduce `brain:`, `profiles:` or
-other wrapper aliases. A level brain replaces the pack brain completely; it is not a partial
+Only the listed wrapper and bare shapes are accepted; there are no wrapper aliases.
+Variables use their single wrapped canonical contract. A level brain replaces the pack brain completely; it is not a partial
 configuration patch. Empty required families remain explicit rather than becoming defaults.
 
 A file combining two wrapped sections can look like this schematic excerpt:
@@ -82,10 +80,8 @@ rules have no declared rule identifier.
 
 Action-label keys are explicit YAML integers; quoted numeric keys are refused. Two keys
 that would resolve to the same numeric identifier collide before any coercion can overwrite one.
-Static variable overlays retain their existing `version`, `variables`, `extents` and
-`exposed_observations` transport fields. The latter is retained input metadata; the current
-token compiler uses its existing exposure contract, rather than this retired observation list.
-Unifying those semantics remains Cut B work.
+The variable catalog has one explicit initialization, lifetime and exposure contract. Historical
+profile and static-overlay shapes are refused. See [the variable reference](variables.md).
 
 Array ordering is part of the existing semantics and ABI. Do not alphabetize entity arrays to
 make discovery appear deterministic. Moving fragments so their relative order changes can
@@ -142,6 +138,6 @@ using that adapter. See [presentation configuration](presentation.md).
 - [PDR-0117: files are transport](../product/decisions/0117-files-are-transport-declarations-are-the-unit.md)
 
 Functional acceptance must compare the baseline semantic hashes and prove discovery, merge,
-source diagnostics and clock resolution. The original PRD calendar window is unchanged;
-continuing work on October 1 does not retroactively satisfy it. This authoring contract alone is
-not evidence of full compiler completion or learned-scenario convergence.
+source diagnostics and clock resolution. The owner extended the Cut A date; its accepted
+checkpoint is recorded in PDR-0149. Cut B has its own evidence gate in PRD-0003. Neither
+authoring checkpoint establishes full compiler completion or learned-scenario convergence.

@@ -1,0 +1,22 @@
+variables:
+  version: '1.0'
+  evaluation_mode: mark_and_sweep
+  debug_logging: false
+  extents: {}
+  item_profiles:
+  - default_item
+  declarations:
+  - id: threat_level
+    scope: agent
+    type: scalar
+    lifetime: tick
+    semantic_type: custom
+    exposed_to:
+    - agent
+    initial_value: 0.0
+    normalization:
+      kind: minmax
+      min: 0.0
+      max: 1.0
+      clip: true
+    description: Bounded scalar that binds a variable_element token slot

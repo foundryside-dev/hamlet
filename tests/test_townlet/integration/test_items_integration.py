@@ -13,7 +13,7 @@ def test_items_smoke_pack_compiles_required_declarations():
     """The shipped item pack supplies complete scoped declarations and a usable catalog."""
     config_dir = Path("configs/test/items_smoke")
     declarations = DeclarationStore.discover(config_dir)
-    for family in ("experiment", "stratum", "environment", "actions", "brain", "vfs_profiles", "items"):
+    for family in ("experiment", "stratum", "environment", "actions", "brain", "variables", "items"):
         assert declarations.get(family, None) is not None, f"Missing pack-scope {family} declaration"
     for family in ("curriculum", "bars", "affordances", "training", "drive", "items_appearance"):
         assert declarations.get(family, "L0_smoke") is not None, f"Missing L0_smoke {family} declaration"

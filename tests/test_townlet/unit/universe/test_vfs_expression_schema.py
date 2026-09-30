@@ -13,39 +13,50 @@ def test_compiler_generates_vfs_expression_schema(tmp_path: Path):
     # Setup: Create minimal config pack using the helper
     experiment_dir = prepare_config_dir(tmp_path, name="experiment")
 
-    # Add vfs_profiles.yaml at experiment root with global variables
-    vfs_profiles_yaml = experiment_dir / "vfs_profiles.yaml"
-    vfs_profiles = {
-        "version": "1.0",
-        "evaluation_mode": "mark_and_sweep",
-        "debug_logging": False,
-        "global_profile": {
-            "variables": [
+    # Author global variables through the canonical pack declaration
+    variables_yaml = experiment_dir / "variables.yaml"
+    variables_document = {
+        "variables": {
+            "version": "1.0",
+            "evaluation_mode": "mark_and_sweep",
+            "debug_logging": False,
+            "extents": {},
+            "item_profiles": [],
+            "declarations": [
                 {
+                    "id": "day_count",
+                    "scope": "global",
+                    "type": "scalar",
+                    "lifetime": "persistent",
                     "semantic_type": "custom",
-                    "name": "day_count",
-                    "type": "int",
+                    "exposed_to": [],
                     "initial_value": 0,
                     "description": "Number of days elapsed",
                 },
                 {
-                    "semantic_type": "custom",
-                    "name": "is_night",
+                    "id": "is_night",
+                    "scope": "global",
                     "type": "bool",
+                    "lifetime": "persistent",
+                    "semantic_type": "custom",
+                    "exposed_to": [],
                     "initial_value": False,
                     "description": "Whether it is currently night time",
                 },
                 {
+                    "id": "ambient_temperature",
+                    "scope": "global",
+                    "type": "scalar",
+                    "lifetime": "persistent",
                     "semantic_type": "custom",
-                    "name": "ambient_temperature",
-                    "type": "float",
+                    "exposed_to": [],
                     "initial_value": 20.0,
                     "description": "Ambient temperature in celsius",
                 },
             ],
-        },
+        }
     }
-    vfs_profiles_yaml.write_text(yaml.dump(vfs_profiles, sort_keys=False))
+    variables_yaml.write_text(yaml.dump(variables_document, sort_keys=False))
 
     # Exercise: Compile universe
     compiler = UniverseCompiler()
@@ -63,17 +74,21 @@ def test_compiler_generates_vfs_expression_schema(tmp_path: Path):
     assert "vfs.is_night" in compiled.vfs_expression_schema
     assert "vfs.ambient_temperature" in compiled.vfs_expression_schema
 
-    assert compiled.vfs_expression_schema["vfs.day_count"] == "int"
+    assert compiled.vfs_expression_schema["vfs.day_count"] == "float"
     assert compiled.vfs_expression_schema["vfs.is_night"] == "bool"
     assert compiled.vfs_expression_schema["vfs.ambient_temperature"] == "float"
 
 
-def test_vfs_expression_schema_without_vfs_profiles(tmp_path: Path):
-    """VFS expression schema should work even without VFS profiles (bars only)."""
-    # Setup: Create minimal config pack WITHOUT vfs_profiles.yaml
+def test_vfs_expression_schema_with_empty_variable_roster(tmp_path: Path):
+    """An explicitly empty variable roster yields the bar-only schema."""
+    # Setup: Create a pack with an explicitly empty canonical roster
     experiment_dir = prepare_config_dir(tmp_path, name="experiment")
 
-    # Exercise: Compile universe (no vfs_profiles.yaml created)
+    data = yaml.safe_load((experiment_dir / "variables.yaml").read_text())
+    data["variables"]["declarations"] = []
+    (experiment_dir / "variables.yaml").write_text(yaml.safe_dump(data))
+
+    # Exercise: Compile the bar-only expression schema
     compiler = UniverseCompiler()
     compiled = compiler.compile(experiment_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
 

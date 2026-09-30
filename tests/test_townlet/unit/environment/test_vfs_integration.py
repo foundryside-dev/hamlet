@@ -5,7 +5,7 @@ These tests ensure that:
     - Observation dimensions change when the meter vocabulary changes.
     - Environment meter tensors and name/index mappings stay aligned with
       the compiled universe metadata.
-    - VFS misconfiguration (variables not matching bars) fails loudly.
+    - Cross-file meter misconfiguration fails loudly.
 """
 
 from __future__ import annotations
@@ -76,12 +76,11 @@ class TestVariableMeterVFSIntegration:
         assert compiled_12.metadata.observation_dim > compiled_4.metadata.observation_dim
 
 
-def test_vfs_bars_mismatch_fails_fast(tmp_path: Path, compile_universe: callable, test_config_pack_path: Path) -> None:
-    """Universe compiler should reject packs where VFS variables don't match bars.
+def test_meter_affordance_mismatch_fails_fast(tmp_path: Path, compile_universe: callable, test_config_pack_path: Path) -> None:
+    """Universe compiler should reject mismatched meter and affordance vocabularies.
 
     This creates a minimal broken pack by copying the canonical test config and
-    changing bars.yaml to use a different number of meters than the variables
-    declared in variables_reference.yaml.
+    changing bars.yaml while retaining affordances for the original meters.
     """
     broken_pack = tmp_path / "broken_vfs_pack"
     broken_pack.mkdir()
@@ -119,7 +118,6 @@ def test_vfs_bars_mismatch_fails_fast(tmp_path: Path, compile_universe: callable
     with open(bars_yaml, "w") as handle:
         yaml.safe_dump({"bars": bars_data}, handle, sort_keys=False)
 
-    # Leave variables_reference.yaml as-is, so it still reflects the original
-    # meter vocabulary. The compiler should detect the mismatch and raise.
+    # Leave affordances unchanged; their original meter targets must now refuse.
     with pytest.raises(Exception):
         compile_universe(broken_pack)

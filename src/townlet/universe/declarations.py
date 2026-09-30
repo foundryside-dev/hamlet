@@ -24,19 +24,20 @@ PACK_FAMILIES = frozenset(
         "actions",
         "brain",
         "items",
-        "vfs_profiles",
+        "variables",
         "effects",
-        "variables_reference",
         "transition_rules",
         "action_labels",
         "presentation",
     }
 )
 LEVEL_FAMILIES = frozenset({"curriculum", "bars", "affordances", "drive", "training", "brain", "items_appearance"})
-REQUIRED_PACK = ("experiment", "stratum", "environment", "actions", "brain", "vfs_profiles")
+REQUIRED_PACK = ("experiment", "stratum", "environment", "actions", "brain", "variables")
 REQUIRED_LEVEL = ("curriculum", "bars", "affordances", "drive", "training")
-WRAPPED = frozenset({"experiment", "stratum", "environment", "actions", "curriculum", "bars", "affordances", "drive", "training", "items"})
-COLLECTION_FAMILIES = frozenset({"bars", "affordances", "items", "effects", "vfs_profiles", "variables_reference", "transition_rules"})
+WRAPPED = frozenset(
+    {"experiment", "stratum", "environment", "actions", "curriculum", "bars", "affordances", "drive", "training", "items", "variables"}
+)
+COLLECTION_FAMILIES = frozenset({"bars", "affordances", "items", "effects", "variables", "transition_rules"})
 STRUCTURAL_HEADERS = frozenset(
     {"version", "evaluation_mode", "debug_logging", "max_items_in_world", "max_items_per_agent", "max_active_effects", "extents"}
 )
@@ -225,9 +226,7 @@ class DeclarationStore:
     def _bare_family(document: MarkedMapping) -> str | None:
         signatures = {
             "brain": {"architecture", "optimizer"},
-            "vfs_profiles": {"evaluation_mode", "debug_logging"},
             "effects": {"effect_definitions"},
-            "variables_reference": {"variables"},
             "transition_rules": {"social_residue"},
             "action_labels": {"custom"},
         }
@@ -298,6 +297,10 @@ class DeclarationStore:
                     self._field_collision(key, field_path, left, right, previous, incoming)
             elif isinstance(current, MarkedMapping) and isinstance(value, MarkedMapping):
                 merged[key] = self._merge(current, value, previous, incoming, (*field_path, key))
+            elif incoming.family == "variables" and key == "item_profiles" and isinstance(current, list) and isinstance(value, list):
+                if all(isinstance(profile, str) for profile in [*current, *value]) and set(current) & set(value):
+                    self._field_collision(key, field_path, left, right, previous, incoming)
+                merged[key] = [*current, *value]
             elif isinstance(current, list) and isinstance(value, list) and self._is_named_collection(key, current, value):
                 seen = {self._entry_id(entry): entry for entry in current}
                 for entry in value:
@@ -352,6 +355,14 @@ class DeclarationStore:
     def _validate_entity_duplicates(self, value: Any, declaration: Declaration) -> None:
         if isinstance(value, MarkedMapping):
             for key, child in value.items():
+                if declaration.family == "variables" and key == "item_profiles" and isinstance(child, list):
+                    for profile in child:
+                        if not isinstance(profile, str):
+                            self.errors.add(
+                                "variables.item_profiles must contain string identifiers",
+                                code=ErrorCode.LOAD_ERROR,
+                                location=self._node_origin(profile, declaration),
+                            )
                 if isinstance(child, list) and self._is_named_collection(key, child, []):
                     seen: dict[str | None, Any] = {}
                     for entry in child:
@@ -375,6 +386,8 @@ class DeclarationStore:
             return None
         if isinstance(entry.get("source"), str) and isinstance(entry.get("target"), str):
             return f"{entry['source']}->{entry['target']}"
+        if entry.get("scope") == "item" and isinstance(entry.get("profile"), str) and isinstance(entry.get("id"), str):
+            return f"{entry['profile']}:{entry['id']}"
         for field in ("id", "name", "profile_name"):
             identity = entry.get(field)
             if isinstance(identity, str) and identity:
@@ -389,6 +402,7 @@ class DeclarationStore:
             "cascades",
             "item_types",
             "effect_definitions",
+            "declarations",
             "variables",
             "item_profiles",
             "social_residue",
@@ -406,8 +420,6 @@ class DeclarationStore:
                 if segments:
                     self.source_map.record(f"{declaration.key}:{'.'.join(segments)}", path, value.line)
                 identity = self._entry_id(value)
-                if declaration.family == "vfs_profiles" and isinstance(value.get("profile_name"), str):
-                    namespace = f"item_profiles:{value['profile_name']}"
                 if identity is not None:
                     if namespace:
                         qualified = f"{namespace}:{identity}"
@@ -418,11 +430,7 @@ class DeclarationStore:
                     child_segments = (*segments, str(key))
                     key_path, key_line = self._key_origin(value, key, declaration)
                     self.source_map.record(f"{declaration.key}:{'.'.join(child_segments)}", key_path, key_line)
-                    if declaration.family == "vfs_profiles" and key in {"global_profile", "agent_profile"}:
-                        child_namespace = str(key)
-                    else:
-                        child_namespace = namespace
-                    walk(child, child_segments, child_namespace)
+                    walk(child, child_segments, namespace)
             elif isinstance(value, list):
                 for index, child in enumerate(value):
                     if segments:
@@ -479,35 +487,33 @@ class DeclarationStore:
             return None
 
     def resolve_clock_references(self) -> None:
-        profiles = self.declarations.get((None, "vfs_profiles"))
+        profiles = self.declarations.get((None, "variables"))
         if profiles is None:
             return
-        from townlet.config.vfs_profiles_config import GlobalVFSVariableConfig, VFSProfilesConfig
+        from townlet.config.variables_config import VariableDeclaration, VariablesConfig
+        from townlet.vfs.schema import VariableScope
 
-        profile_config = self.parse("vfs_profiles", None, VFSProfilesConfig, False)
+        profile_config = self.parse("variables", None, VariablesConfig, False)
         if profile_config is None:
             self.errors.check_and_raise()
             return
-        clocks: dict[str, GlobalVFSVariableConfig] = {}
-        global_variables: dict[str, GlobalVFSVariableConfig] = {}
+        clocks: dict[str, VariableDeclaration] = {}
+        global_variables: dict[str, VariableDeclaration] = {}
         authored_periods: dict[str, Any] = {}
-        if profile_config.global_profile is not None:
-            raw_variables = profiles.payload["global_profile"]["variables"]
-            for variable, raw_variable in zip(profile_config.global_profile.variables, raw_variables, strict=True):
-                if variable.id is None:
-                    identifier = variable.name
-                else:
-                    identifier = variable.id
-                global_variables[identifier] = variable
-                if variable.expression is None or variable.normalization is None:
-                    continue
-                if (
-                    variable.semantic_type == "temporal"
-                    and variable.expression.strip() == "tick"
-                    and variable.normalization.kind == "cyclical_sin_cos"
-                ):
-                    clocks[identifier] = variable
-                    authored_periods[identifier] = raw_variable["normalization"]["period"]
+        for variable, raw_variable in zip(profile_config.declarations, profiles.payload["declarations"], strict=True):
+            if variable.scope != VariableScope.GLOBAL:
+                continue
+            identifier = variable.id
+            global_variables[identifier] = variable
+            if variable.expression is None or variable.normalization is None:
+                continue
+            if (
+                variable.semantic_type == "temporal"
+                and variable.expression.strip() == "tick"
+                and variable.normalization.kind == "cyclical_sin_cos"
+            ):
+                clocks[identifier] = variable
+                authored_periods[identifier] = raw_variable["normalization"]["period"]
         for level in self.level_names:
             declaration = self.declarations.get((level, "curriculum"))
             if declaration is None:
@@ -525,7 +531,7 @@ class DeclarationStore:
                 if set(day_length) != {"period_of"} or clock_variable is None:
                     message = "day_length.period_of must identify a declared global temporal ambient-tick cyclical variable"
                     if isinstance(clock_reference, str) and clock_reference in global_variables:
-                        target = self.source_map.lookup(f"vfs_profiles:global_profile:{clock_reference}")
+                        target = self.source_map.lookup(f"variables:{clock_reference}")
                         if target is not None:
                             message += f"; target declared at {target}"
                     self.errors.add(
@@ -538,14 +544,14 @@ class DeclarationStore:
                 assert isinstance(clock_reference, str)
                 period = authored_periods[clock_reference]
                 if (
-                    clock_variable.type not in {"int", "float"}
+                    clock_variable.type != "scalar"
                     or not isinstance(period, (int, float))
                     or isinstance(period, bool)
                     or not math.isfinite(period)
                     or period <= 0
                     or int(period) != period
                 ):
-                    target = self.source_map.lookup(f"vfs_profiles:global_profile:{clock_reference}")
+                    target = self.source_map.lookup(f"variables:{clock_reference}")
                     if target is None:
                         target = profiles.origin
                     self.errors.add(
@@ -556,7 +562,7 @@ class DeclarationStore:
                     continue
                 declaration.payload["day_length"] = int(period)
             elif day_length is not None and clocks:
-                targets = [self.source_map.lookup(f"vfs_profiles:global_profile:{identity}") or profiles.origin for identity in clocks]
+                targets = [self.source_map.lookup(f"variables:{identity}") or profiles.origin for identity in clocks]
                 self.errors.add(
                     f"Duplicated clock period: use day_length.period_of to link its authority; clock declaration(s): {', '.join(targets)}",
                     code=ErrorCode.CLOCK_REFERENCE,

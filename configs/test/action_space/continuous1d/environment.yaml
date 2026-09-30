@@ -22,5 +22,4 @@ environment:
       category: rest
   cascade_graph: []
   modulation_graph: []
-  variables: []
   cues: []

@@ -843,16 +843,12 @@ class TestCensusAdvisory:
 # --------------------------------------------------------------------------- item-profile exposure refusals
 
 
-def _env_stub() -> SimpleNamespace:
-    """Minimal EnvConfigV21 stand-in: `variable_element_bindings` reads only
-    `environment.environment.variables[*].name / .semantic_type`, unused by these tests."""
-    return SimpleNamespace(environment=SimpleNamespace(variables=[]))
-
-
 def _compiled_item_profiles(profile_name: str, var_name: str, var_type: str) -> SimpleNamespace:
     """Minimal CompiledVFSProfiles stand-in with one exposed item-profile variable."""
     item_var = SimpleNamespace(
         name=var_name,
+        semantic_type="custom",
+        lifetime="episode",
         exposed_to=["agent"],
         type=var_type,
         initial_value=0.0,
@@ -877,7 +873,7 @@ class TestItemProfileExposureRefusals:
         # slot to bind it against.
         compiled_vfs_profiles = _compiled_item_profiles("medical", "durability", "float")
         with pytest.raises(ValueError, match=r"medical\.durability.*compiled `item` token capacity is 0"):
-            variable_element_bindings(_env_stub(), compiled_vfs_profiles, (), item_capacity_value=0)
+            variable_element_bindings(compiled_vfs_profiles, (), item_capacity_value=0)
 
     def test_exposed_item_variable_with_unmapped_type_refuses(self):
         # token_spec.py:1526-1530 (now ~1528-1534): an item-profile variable type with
@@ -886,4 +882,4 @@ class TestItemProfileExposureRefusals:
         # variable and its declared type.
         compiled_vfs_profiles = _compiled_item_profiles("medical", "durability", "int")
         with pytest.raises(ValueError, match=r"medical\.durability.*'int'.*no token dtype landing yet"):
-            variable_element_bindings(_env_stub(), compiled_vfs_profiles, (), item_capacity_value=1)
+            variable_element_bindings(compiled_vfs_profiles, (), item_capacity_value=1)

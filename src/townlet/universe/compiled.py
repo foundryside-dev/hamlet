@@ -115,7 +115,7 @@ from townlet.vfs.transition_schedule import (
 # nested token interpretation.
 # 1.27: variable-element bindings carry their required typed scope. Scope is no longer
 # inferred from filler-reference spelling; 1.26 bindings lack this execution authority.
-COMPILED_SCHEMA_VERSION = "1.27"
+COMPILED_SCHEMA_VERSION = "1.28"
 
 REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "compiled_schema_version",
@@ -152,7 +152,7 @@ class CompiledVFSProfiles:
     debug_logging: bool
     global_profile: CompiledGlobalProfile | None = None
     # A compiled agent profile is a CompiledGlobalProfile: both compile through
-    # VFSProfileCompiler.compile_global_profile (townlet/universe/compilers/vfs.py).
+    # VFSProfileCompiler.compile_profile (townlet/universe/compilers/vfs.py).
     agent_profile: CompiledGlobalProfile | None = None
     item_profiles: dict[str, Any] | None = None  # TODO: Add CompiledItemProfile type
 
@@ -430,7 +430,10 @@ class CompiledUniverse:
                 _required_mapping(meta, f"all_levels.{name}.runtime_action_space"),
                 f"all_levels.{name}.runtime_action_space",
             )
-            level_vfs_variables = tuple(VariableDef(**var) for var in _required_field(meta, f"all_levels.{name}.vfs_variables"))
+            raw_variables = _required_field(meta, f"all_levels.{name}.vfs_variables")
+            for index, variable in enumerate(raw_variables):
+                _required_field(variable, f"all_levels.{name}.vfs_variables[{index}].semantic_type")
+            level_vfs_variables = tuple(VariableDef(**var) for var in raw_variables)
             level_transition_payload = _required_mapping(meta, f"all_levels.{name}.transition_schedule")
             level_schedule = build_vtc_transition_schedule(
                 runtime_action_space=level_runtime_action_space,
@@ -662,7 +665,6 @@ def _validate_compiled_token_coherence(compiled: CompiledUniverse) -> None:
             affordances=level.affordances,
             items_catalog=compiled.items_catalog,
             compiled_effect_catalog=compiled.compiled_effect_catalog,
-            environment=compiled.environment,
             compiled_vfs_profiles=compiled.compiled_vfs_profiles,
             vfs_variables=level.vfs_variables,
         )
@@ -682,7 +684,6 @@ def _validate_compiled_token_coherence(compiled: CompiledUniverse) -> None:
             affordances=level.affordances,
             items_catalog=compiled.items_catalog,
             compiled_effect_catalog=compiled.compiled_effect_catalog,
-            environment=compiled.environment,
             compiled_vfs_profiles=compiled.compiled_vfs_profiles,
             vfs_variables=level.vfs_variables,
         )
@@ -971,6 +972,7 @@ def _serialize_compiled_variable(var: Any) -> dict[str, Any]:
         "initial_value": var.initial_value,
         "result_type": var.result_type,
         "exposed_to": list(var.exposed_to),
+        "lifetime": var.lifetime,
         "shape": var.shape,
         "initial_value_mode": var.initial_value_mode,
         "initial_value_params": var.initial_value_params,
@@ -1030,6 +1032,7 @@ def _deserialize_compiled_variable(var: dict[str, Any], *, field_name: str) -> A
         initial_value=_required_field(var, f"{field_name}.initial_value"),
         result_type=_required_field(var, f"{field_name}.result_type"),
         exposed_to=tuple(_required_field(var, f"{field_name}.exposed_to")),
+        lifetime=_required_field(var, f"{field_name}.lifetime"),
         shape=_required_field(var, f"{field_name}.shape"),
         initial_value_mode=_required_field(var, f"{field_name}.initial_value_mode"),
         initial_value_params=_required_field(var, f"{field_name}.initial_value_params"),

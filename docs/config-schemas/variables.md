@@ -1,548 +1,124 @@
-# VFS Variables Configuration
+# Variables: the canonical declaration contract
 
-> ⛔ **Restored to the live tree 2026-08-26 — STALE (2025-11). This is the only variables reference we have; it is not a trustworthy one.**
->
-> `CLAUDE.md` flags this file as stale and it is. It is restored rather than left archived
-> because nothing has replaced it and `docs/architecture/VFS.md` cites it for the optional
-> static variable/observation overlay — but **verify everything here against source before
-> acting on it.**
->
-> **Known wrong (each verified 2026-08-26):**
->
-> - **The file list at the end is the worst part.** It names
->   `configs/L0_0_minimal/variables_reference.yaml` … `configs/L3_temporal_mechanics/...` with
->   dimension figures **(38 / 78 / 93 / 54 / 93)**. Both halves are wrong. That **flat
->   `configs/<level>/` layout does not exist** — levels live at
->   `configs/default_curriculum/levels/<level>/` under a pack root. And those dimension figures
->   are the exact corrupted table `CLAUDE.md` warns about: observation width is **two**
->   quantities (allocated vs active), it moves whenever the observed surface changes, and it is
->   currently mid-migration. **Never quote a number from that list.**
-> - **`variables_reference.yaml` is OPTIONAL** — a *static overlay only*, no expressions and no
->   item-scoped variables. `configs/default_curriculum` has **none at all**;
->   `configs/L5_multi_agent` has one. The **required** profiles declaration is at pack scope,
->   and level scopes must NOT contain one. These names are transport conventions;
->   discovery requires the typed profiles declaration, not a particular filename.
-> - **The `scope` field table says the enum is `global` / `agent` / `agent_private` — three
->   values. VFS has nine**: those plus `item`, `pair`, `group`, `affordance`, `zone`, `message`
->   (`VariableScope` in `vfs/schema.py`). The file contradicts itself — a later section does
->   document zone/group/message extents.
-> - **`configs/global_actions.yaml`** (referenced in an example) is a dead path; the action
->   vocabulary is the pack-level `<pack>/actions.yaml`.
-> - Anything this file says about **access control** or **`agent_private`** should be checked
->   against `docs/architecture/VFS.md` §6, whose caveat notes the enforcement currently has no
->   authoring surface and that the observation path bypasses the checked accessor.
->
-> **Authority order:** `docs/architecture/VFS.md` first, then `vfs-profiles.md` in this
-> directory, then the DTOs in `src/townlet/config/`. This file last.
-
-
-**Status**: Phase 1 Implementation (TASK-002C)
-**Version**: 1.0
-**Last Updated**: 2025-11-07
-
-## Overview
-
-The Variable & Feature System (VFS) uses declarative YAML configuration to define state space variables, observation specs, and action dependencies. This document describes the `variables.yaml` schema and configuration patterns.
-
-## File Location
-
-The optional static variable-overlay declaration lives at pack scope; `variables_reference.yaml`
-is a convention, not dispatch. Its distinctive bare `variables` shape is discovered in any
-nested `.yaml`/`.yml` document and validated against the existing overlay vocabulary.
-See [declaration discovery](declarations.md). This does not unify the overlay with profile or
-environment variable semantics.
-
-## Schema Structure
+Declaration-store Cut B replaces the environment-variable, VFS-profile and static-overlay
+languages with one required pack-scope `variables` declaration. A filename such as
+`variables.yaml` is a convention; content identifies the declaration. See
+[discovery and source provenance](declarations.md).
 
 ```yaml
-version: "1.0"
-
 variables:
-  - id: "energy"
-    scope: "agent"
-    type: "scalar"
-    lifetime: "episode"
-    readable_by: ["agent", "engine", "acs"]
-    writable_by: ["actions", "engine"]
-    default: 1.0
-    description: "Energy level [0.0-1.0]"
-
-exposed_observations:
-  - id: "obs_energy"
-    source_variable: "energy"
-    exposed_to: ["agent"]
-    shape: []
+  version: '1.0'
+  evaluation_mode: mark_and_sweep
+  debug_logging: false
+  extents: {}
+  item_profiles: [default_item]
+  declarations:
+  - id: day_phase
+    scope: global
+    type: scalar
+    lifetime: persistent
+    semantic_type: temporal
+    initial_value: 0.0
+    expression: tick
+    exposed_to: [agent]
     normalization:
-      kind: "minmax"
-      min: 0.0
-      max: 1.0
+      kind: cyclical_sin_cos
+      period: 24
 ```
 
-## Variable Definition Schema
-
-### Required Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique variable identifier (e.g., "energy", "position") |
-| `scope` | enum | Storage scope: "global", "agent", "agent_private" |
-| `type` | enum | Data type: "scalar", "bool", "vec2i", "vec3i", "vecNi", "vecNf" |
-| `lifetime` | enum | Lifecycle: "tick" (recomputed), "episode" (persistent) |
-| `readable_by` | list[string] | Access control readers: ["agent", "engine", "acs", "bac"] |
-| `writable_by` | list[string] | Access control writers: ["engine", "actions", "bac"] |
-| `default` | varies | Initial value (scalar: float/bool, vector: list) |
-
-### Optional Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `description` | string | Human-readable description |
-| `dims` | int | Dimension count (required for vecNi/vecNf types) |
-
-## Scope Semantics
-
-### Global Scope
-**Storage**: Single value shared by all agents
-**Shape**: `[]` (scalar) or `[dims]` (vector)
-**Use Case**: Time-of-day, global flags, environment state
-
-**Example**:
-```yaml
-- id: "time_sin"
-  scope: "global"
-  type: "scalar"
-  lifetime: "tick"
-  readable_by: ["agent", "engine"]
-  writable_by: ["engine"]
-  default: 0.0
-  description: "sin(2π * time_of_day / 24) for cyclical time encoding"
-```
-
-### Agent Scope
-**Storage**: Per-agent values, observable by all
-**Shape**: `[num_agents]` (scalar) or `[num_agents, dims]` (vector)
-**Use Case**: Meters, position, visible state
-
-**Example**:
-```yaml
-- id: "energy"
-  scope: "agent"
-  type: "scalar"
-  lifetime: "episode"
-  readable_by: ["agent", "engine", "acs"]
-  writable_by: ["actions", "engine"]
-  default: 1.0
-  description: "Energy level [0.0-1.0]"
-```
-
-### Agent_Private Scope
-**Storage**: Per-agent values, observable only by owner
-**Shape**: `[num_agents]` (scalar) or `[num_agents, dims]` (vector)
-**Use Case**: Hidden state, private rewards, theory of mind
-
-**Example**:
-```yaml
-- id: "internal_motivation"
-  scope: "agent_private"
-  type: "scalar"
-  lifetime: "episode"
-  readable_by: ["engine"]  # Agent cannot observe own motivation directly
-  writable_by: ["engine"]
-  default: 0.5
-  description: "Internal motivation level (not exposed to agent)"
-```
-
-### Zone, Group and Message Scopes (extents required)
-
-**Storage**: `zone` → `[num_zones, ...]`, `group` → `[num_groups, ...]`,
-`message` → `[num_agents, num_message_slots, ...]`
-
-These scopes size their storage by an **extent** that must be declared in a
-top-level `extents:` block of `variables_reference.yaml`. Declaring a variable
-with one of these scopes and no matching extent is a compile error (the loader
-rejects the pack — it never validates green and then crashes at env
-construction).
-
-```yaml
-extents:
-  num_zones: 4          # required by any zone-scoped variable, >= 1
-  num_groups: 2         # required by any group-scoped variable, >= 1
-  num_message_slots: 8  # required by any message-scoped variable, >= 1
-
-variables:
-  - id: "zone_temp_offset"
-    scope: "zone"
-    type: "scalar"
-    lifetime: "persistent"
-    readable_by: ["agent", "engine"]
-    writable_by: ["engine"]
-    default: 0.0
-    description: "Per-zone temperature offset"
-```
-
-Extents declared without any matching-scope variable are harmless sizing
-metadata. Note: extents allocate storage only — there is no agent→zone or
-agent→group membership mapping yet, so "which zone is this agent in" is not
-resolvable from the extent alone.
-
-## Type System
-
-### Scalar Types
-
-**scalar**: Single float value
-**Storage**: `torch.float32`
-**Default Example**: `1.0`
-
-**bool**: Boolean flag
-**Storage**: `torch.bool`
-**Default Example**: `true`
-
-### Vector Types
-
-**vec2i**: 2D integer vector (e.g., grid position)
-**Storage**: `torch.long`, shape `[2]` (global) or `[num_agents, 2]` (agent)
-**Default Example**: `[0, 0]`
-
-**vec3i**: 3D integer vector
-**Storage**: `torch.long`, shape `[3]` (global) or `[num_agents, 3]` (agent)
-**Default Example**: `[0, 0, 0]`
-
-**vecNi**: N-dimensional integer vector
-**Storage**: `torch.long`, shape `[dims]` or `[num_agents, dims]`
-**Requires**: `dims` field
-**Default Example**: `[0, 0, 0, 0, 0]` (5D)
-
-**vecNf**: N-dimensional float vector
-**Storage**: `torch.float32`, shape `[dims]` or `[num_agents, dims]`
-**Requires**: `dims` field
-**Default Example**: `[0.0, 0.0, 0.0]` (3D)
-
-## Lifetime Semantics
-
-### tick
-**Behavior**: Recomputed every tick (derived state)
-**Use Case**: Grid encoding, affordance at position, interaction progress
-**Example**: Substrate observation encoding (changes with agent position)
-
-### episode
-**Behavior**: Persistent across ticks (stateful)
-**Use Case**: Meters, position, accumulated rewards
-**Example**: Energy level (drains over time, restored by interactions)
-
-## Access Control
-
-### Readers
-- **agent**: Agent networks can read this variable for decision-making
-- **engine**: Environment engine can read for dynamics/rendering
-- **acs**: Adversarial Curriculum System can read for difficulty adjustment
-- **bac**: Behavioral Action Compiler can read for action execution
-
-### Writers
-- **engine**: Environment engine updates this variable (substrate dynamics)
-- **actions**: Actions modify this variable (movement, interactions)
-- **bac**: Behavioral Action Compiler writes computed values
-
-**Permission Validation**: Registry enforces access control at runtime via `get()` and `set()` methods.
-
-## Observation Exposure
-
-Observations map variables to agent observation space with optional normalization.
-
-### Observation Field Schema
-
-```yaml
-exposed_observations:
-  - id: "obs_position"
-    source_variable: "position"
-    exposed_to: ["agent"]
-    shape: [2]
-    normalization:
-      kind: "minmax"
-      min: [0.0, 0.0]
-      max: [1.0, 1.0]
-```
-
-### Normalization Options
-
-**minmax**: Scale to [0, 1] or custom range
-```yaml
-normalization:
-  kind: "minmax"
-  min: 0.0  # scalar or list for vectors
-  max: 1.0
-```
-
-**zscore**: Standardize to zero mean, unit variance
-```yaml
-normalization:
-  kind: "zscore"
-  mean: 0.5  # scalar or list for vectors
-  std: 0.2
-```
-
-**null**: No normalization (raw values)
-```yaml
-normalization: null
-```
-
-## Complete Example: L1_full_observability
-
-```yaml
-version: "1.0"
-
-variables:
-  # Substrate Encoding (66 dims)
-  - id: "grid_encoding"
-    scope: "agent"
-    type: "vecNf"
-    dims: 64
-    lifetime: "tick"
-    readable_by: ["agent", "engine"]
-    writable_by: ["engine"]
-    default: [0.0, 0.0, ...]  # 64 zeros
-    description: "8×8 grid encoding (0=empty, 1=agent, 2=affordance, 3=both)"
-
-  - id: "position"
-    scope: "agent"
-    type: "vecNf"
-    dims: 2
-    lifetime: "episode"
-    readable_by: ["agent", "engine", "acs"]
-    writable_by: ["actions", "engine"]
-    default: [0.0, 0.0]
-    description: "Normalized agent position (x, y) in [0, 1] range"
-
-  # Meters (8 dims)
-  - id: "energy"
-    scope: "agent"
-    type: "scalar"
-    lifetime: "episode"
-    readable_by: ["agent", "engine", "acs"]
-    writable_by: ["actions", "engine"]
-    default: 1.0
-    description: "Energy level [0.0-1.0]"
-
-  # ... (other 7 meters)
-
-  # Affordance at Position (15 dims)
-  - id: "affordance_at_position"
-    scope: "agent"
-    type: "vecNf"
-    dims: 15
-    lifetime: "tick"
-    readable_by: ["agent", "engine"]
-    writable_by: ["engine"]
-    default: [0.0, 0.0, ..., 1.0]  # 15-element one-hot
-    description: "One-hot affordance type at agent position"
-
-  # Temporal Features (4 dims)
-  - id: "time_sin"
-    scope: "global"
-    type: "scalar"
-    lifetime: "tick"
-    readable_by: ["agent", "engine"]
-    writable_by: ["engine"]
-    default: 0.0
-    description: "sin(2π * time_of_day / 24)"
-
-exposed_observations:
-  - id: "obs_grid_encoding"
-    source_variable: "grid_encoding"
-    exposed_to: ["agent"]
-    shape: [64]
-    normalization: null
-
-  - id: "obs_position"
-    source_variable: "position"
-    exposed_to: ["agent"]
-    shape: [2]
-    normalization:
-      kind: "minmax"
-      min: [0.0, 0.0]
-      max: [1.0, 1.0]
-
-  - id: "obs_energy"
-    source_variable: "energy"
-    exposed_to: ["agent"]
-    shape: []
-    normalization:
-      kind: "minmax"
-      min: 0.0
-      max: 1.0
-
-  # ... (other observations)
-```
-
-**Total Observation Dimension**: 66 + 8 + 15 + 4 = **93 dims**
-
-## Configuration Patterns
-
-### Pattern 1: Simple Meter
-```yaml
-- id: "health"
-  scope: "agent"
-  type: "scalar"
-  lifetime: "episode"
-  readable_by: ["agent", "engine"]
-  writable_by: ["engine"]
-  default: 1.0
-  description: "Health level [0.0-1.0]"
-```
-
-### Pattern 2: Normalized Position
-```yaml
-- id: "position"
-  scope: "agent"
-  type: "vecNf"
-  dims: 2
-  lifetime: "episode"
-  readable_by: ["agent", "engine", "acs"]
-  writable_by: ["actions", "engine"]
-  default: [0.0, 0.0]
-  description: "Normalized position [0, 1]²"
-```
-
-### Pattern 3: Global Time Signal
-```yaml
-- id: "time_cos"
-  scope: "global"
-  type: "scalar"
-  lifetime: "tick"
-  readable_by: ["agent", "engine"]
-  writable_by: ["engine"]
-  default: 1.0
-  description: "cos(2π * time_of_day / 24)"
-```
-
-### Pattern 4: Derived State (tick lifetime)
-```yaml
-- id: "interaction_progress"
-  scope: "agent"
-  type: "scalar"
-  lifetime: "tick"
-  readable_by: ["agent", "engine"]
-  writable_by: ["engine"]
-  default: 0.0
-  description: "Normalized interaction progress [0-1]"
-```
-
-## Best Practices
-
-### 1. Checkpoint Compatibility
-**CRITICAL**: Changing observation dimensions breaks all existing checkpoints!
-
-- Always run regression tests after modifying variables
-- Use `pytest tests/test_townlet/unit/vfs/test_observation_dimension_regression.py`
-- Expected dimensions documented in test file
-
-### 2. Access Control Design
-- **Principle of Least Privilege**: Only grant necessary read/write access
-- **Agent-readable**: Variables agent needs for decision-making
-- **Engine-writable**: Variables controlled by environment dynamics
-- **ACS-readable**: Variables needed for curriculum adjustment
-
-### 3. Scope Selection
-- **global**: Time, weather, global events (rare, use sparingly)
-- **agent**: Most game state (meters, position, observable state)
-- **agent_private**: Hidden state, internal motivation (advanced use)
-
-### 4. Type Selection
-- **scalar**: Single values (meters, flags, progress)
-- **vecNf**: Continuous vectors (normalized positions, velocities)
-- **vecNi**: Discrete vectors (grid coordinates, indices)
-
-### 5. Normalization Strategy
-- **Meters [0, 1]**: Use minmax with min=0, max=1
-- **Positions**: Normalized by substrate automatically
-- **Time signals**: Already in [-1, 1], use normalization=null
-- **One-hot encodings**: No normalization needed
-
-## Validation
-
-### Compile-Time Validation (Pydantic)
-- Schema validation on YAML load
-- Type checking (scalar must not have dims, vecNi must have dims)
-- Scope validation (global/agent/agent_private only)
-
-### Runtime Validation
-- Access control enforcement in VariableRegistry
-- Shape validation on tensor operations
-- Device consistency (CPU/CUDA)
-
-### Regression Tests
-- Dimension compatibility tests (Cycle 5)
-- Integration tests (Cycle 6)
-- End-to-end pipeline validation
-
-## Integration with Other Systems
-
-### ActionConfig Integration (Phase 1)
-Actions declare variable dependencies via `reads` and `writes` fields:
-
-```yaml
-# In global_actions.yaml
-actions:
-  - id: 0
-    name: "MOVE_UP"
-    type: "movement"
-    delta: [0, -1]
-    costs: {energy: 0.005}
-    reads: ["position", "energy"]  # VFS integration
-    writes:
-      - variable_id: "position"
-        expression: "position + delta"
-```
-
-### BAC Integration (Phase 2 - Future)
-Behavioral Action Compiler will:
-1. Parse `reads`/`writes` specifications
-2. Generate efficient tensor operations
-3. Enforce variable dependencies at compile time
-4. Optimize batch operations
-
-## Migration Guide
-
-### From Hardcoded Observations to VFS
-
-**Before** (hardcoded in environment):
-```python
-def _get_observation(self):
-    obs = torch.cat([
-        self.substrate.get_encoding(),
-        self.meters.get_values(),
-        # ... hardcoded concatenation
-    ])
-    return obs
-```
-
-**After** (VFS-driven):
-```python
-def _get_observation(self):
-    builder = VFSObservationSpecBuilder()
-    spec = builder.build_observation_spec(self.variables, self.exposures)
-    obs = []
-    for field in spec:
-        value = self.registry.get(field.source_variable, reader="agent")
-        obs.append(value)
-    return torch.cat(obs)
-```
-
-## Reference Files
-
-Current test infrastructure uses reference variable files:
-- `configs/L0_0_minimal/variables_reference.yaml` (38 dims)
-- `configs/L0_5_dual_resource/variables_reference.yaml` (78 dims)
-- `configs/L1_full_observability/variables_reference.yaml` (93 dims)
-- `configs/L2_partial_observability/variables_reference.yaml` (54 dims)
-- `configs/L3_temporal_mechanics/variables_reference.yaml` (93 dims)
-
-**Note**: These files are part of the regression test infrastructure and should NOT be deleted. They validate VFS dimension calculations match current hardcoded implementation.
-
-## See Also
-
-- `docs/plans/2025-11-06-variables-and-features-system.md` - VFS design document
-- `src/townlet/vfs/schema.py` - Pydantic schema definitions
-- `src/townlet/vfs/registry.py` - Runtime variable storage
-- `src/townlet/vfs/observation_builder.py` - Observation spec builder
-- `tests/test_townlet/unit/vfs/` - VFS unit tests
-- `tests/test_townlet/integration/test_vfs_integration.py` - Integration tests
+The clock is declared once. A level can use `day_length: {period_of: day_phase}`;
+it cannot redeclare the same period as a numeric day length.
+
+## Required variable meaning
+
+Every variable declares its `id`, `scope`, `type`, `lifetime`, `semantic_type` and
+`exposed_to`. IDs identify registry state globally. Item state additionally declares
+`profile`, identifying a name in the explicit `item_profiles` catalog. An empty catalog
+entry remains a valid schema group for item types with no state variables.
+
+- **Scope:** `global`, `agent`, `agent_private`, `item`, `pair`, `affordance`, `zone`,
+  `group`, or `message`. Storage scope and observation support are separate contracts.
+- **Type:** `scalar` (float32 storage), `bool`, supported fixed/dynamic vectors,
+  references, tensors or `message_token`. There are no authored `float`, `int` or
+  generic `vector` aliases. Tensor shapes and dynamic vector dimensions are explicit.
+- **Lifetime:** `tick` resets before each step; `episode` resets with the environment;
+  `persistent` retains state across episode resets. Authors choose this independently
+  of filename or scope, subject to item-arena restrictions below.
+- **Initialization:** an explicit `initial_value`, or a supported tensor
+  `initial_value_mode`. Reference null is an explicitly unbound value. Omitting a
+  reference initial value is not the same as declaring null.
+- **Expression:** optional for global/agent variables; it must have an explicit initial
+  value. Dependencies are resolved and ordered before execution. Scalar expressions use
+  the expression DSL's numeric types; they do not promise integer registry storage.
+  The compiler proves output shape: global scalar/bool expressions produce a scalar,
+  agent scalar/bool expressions produce an agent batch. Vector/tensor expression outputs
+  and functions without a qualified shape refuse. A constant belongs in initialization.
+- **Exposure:** an empty list means hidden. Exposed variables require a supported bounded
+  `normalization`; normalization on a hidden variable is refused. `semantic_type` uses
+  the closed semantic vocabulary. Exposure does not confer new privacy guarantees.
+
+Tensor modes `zeros`, `ones` and `eye` can lower to exact declared literals for token
+identity. Exposed random initializers are refused because they have no exact static reset
+identity. Irrelevant, conflicting or malformed initialization parameters fail validation.
+
+## Item state and supported consumers
+
+Item declarations use the same model, with `scope: item`, a declared `profile`,
+`lifetime: episode`, scalar/bool/reference literal state and an explicit semantic type.
+The current item arena does not execute expressions, vectors, tensors or alternate
+lifetimes. Those declarations fail validation instead of being silently accepted.
+
+Global/agent registry observation supports float32-backed scalar, floating vector, tensor
+and message-token state. Registry booleans, integer vectors and references cannot be
+exposed by the current publisher and fail compilation. Item booleans/references use its
+float-backed arena and remain supported. Ordinary named reward inputs require scalar or
+boolean global/agent state; other scopes/shapes need a separately implemented reduction.
+
+The `eager` evaluator requires non-null literal initialization for global/agent state
+and rebuilds static expression context from those literals. Null
+references and initializer modes in global/agent profiles therefore require `mark_and_sweep`.
+Expressions depending on eager agent statics must still prove a batched output; an agent
+static dependency alone supplies no batch axis. Unsupported combinations refuse early.
+
+Global/agent registry variables and item-profile variables have token publishers. Other
+storage scopes do not acquire an observation publisher simply by entering the symbol table.
+Unsupported exposure fails explicitly; private registry state must not reach ordinary
+observation rows. Existing held-item visibility and item-state locality limitations are
+separate runtime work, not repaired by this declaration cut.
+
+Supported consumer boundaries are explicit:
+
+| Consumer | Accepted variable input |
+| --- | --- |
+| Registry observation | Global/agent float32-backed state with bounded normalization |
+| Item observation | Profile-qualified scalar/bool/reference arena state |
+| Ordinary reward input | Global/agent scalar or boolean state |
+| Global effects | `vfs.X` or `global.vfs.X` in its typed schema |
+| Agent/private effects | `vfs.X` or `target.vfs.X` in its typed schema |
+
+Symbol registration alone does not supply pair-state reductions or arbitrary tensor
+operations to a consumer. Command expressions must satisfy that consumer's type contract.
+
+## Resolution, access and artifacts
+
+Every variable enters the compiler's canonical symbol inventory, including variables formerly
+accepted only as overlays. Item symbols are profile-qualified. Duplicate identities are
+refused with both source origins; unknown references name the consumer's source location.
+
+`readable_by` and `writable_by` are internal registry descriptors, **not authoring fields**.
+The compiler applies one fixed engine role policy. Configuring epistemic access belongs to
+PDR-0120 and is deliberately outside Cut B.
+
+Compiled variable token bindings carry required typed scope. Publisher dispatch uses that
+scope; the reference string identifies the variable/element and does not select its storage.
+Serialization preserves scope and checks the canonical binding against the declaration.
+Old compiled artifacts fail the exact artifact schema check.
+
+The removed authoring shapes are errors: `environment.variables`, bare static overlays,
+`global_profile`/`agent_profile` variable catalogs and the old VFS-profile catalog language
+have no reader, alias or automatic translation. Convert source declarations explicitly.
+
+## Acceptance boundary
+
+This language closes declaration and resolution contracts. It does not establish that every
+world mechanic, cognitive capability or scenario learns successfully. Cut B measurements and acceptance status, with their limits, are recorded in the product acceptance evidence.

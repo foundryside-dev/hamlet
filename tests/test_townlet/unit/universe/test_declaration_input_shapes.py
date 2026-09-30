@@ -21,19 +21,20 @@ def pack(tmp_path: Path) -> Path:
 @pytest.mark.parametrize(
     "payload",
     [
-        "variables: []\nthis_is_a_typo: 10\n",
+        "variables: {}\nthis_is_a_typo: 10\n",
         "variables: [oops]\n",
         "variables: {bad: 1}\n",
-        "variables: []\nextents: 7\n",
+        "variables: {version: '1.0', evaluation_mode: eager, debug_logging: false, extents: 7, item_profiles: [], declarations: []}\n",
     ],
 )
-def test_static_reference_bad_shapes_are_structured(pack: Path, payload: str) -> None:
-    origin = pack / "variables_reference.yaml"
+def test_canonical_variable_bad_shapes_are_structured(pack: Path, payload: str) -> None:
+    origin = pack / "variables.yaml"
     origin.write_text(payload)
     with pytest.raises(CompilationError) as caught:
         RawConfigsV21.from_experiment_dir(pack)
     assert str(origin) in str(caught.value)
-    assert "LOAD_ERROR" in str(caught.value)
+    expected_code = "DECLARATION_UNKNOWN" if "this_is_a_typo" in payload else "LOAD_ERROR"
+    assert expected_code in str(caught.value)
 
 
 def test_numeric_label_collision_is_refused_before_coercion(pack: Path) -> None:

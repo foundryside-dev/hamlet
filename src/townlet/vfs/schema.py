@@ -11,7 +11,7 @@ for the runtime VFS profile pipeline.
 from enum import StrEnum
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 __all__ = [
     "NormalizationSpec",
@@ -19,9 +19,24 @@ __all__ = [
     "VariableDef",
     "VariableScope",
     "VFSScopeExtents",
-    "VariablesReferenceData",
-    "parse_variables_reference",
+    "variable_element_shape",
 ]
+
+
+from townlet.vfs.semantic_type import SemanticType
+
+
+def variable_element_shape(variable: "VariableDef") -> tuple[int, ...]:
+    """Declared element axes, excluding storage-scope axes, for every token consumer."""
+    if variable.shape:
+        return tuple(variable.shape)
+    fixed_widths = {"vec2i": 2, "vec3i": 3, "vec2f": 2, "vec3f": 3}
+    if variable.type in fixed_widths:
+        return (fixed_widths[variable.type],)
+    if variable.type in {"vecNi", "vecNf", "message_token"}:
+        assert variable.dims is not None
+        return (variable.dims,)
+    return ()
 
 
 class VariableScope(StrEnum):
@@ -368,6 +383,8 @@ class VariableDef(BaseModel):
         description="Unique identifier for this variable",
     )
 
+    semantic_type: SemanticType | None = None
+
     exposed_to: list[str] = Field(
         default_factory=list,
         description="Who can observe this variable (e.g., ['agent', 'engine'])",
@@ -492,7 +509,7 @@ class VFSScopeExtents(BaseModel):
     """Storage extents for the zone/group/message variable scopes.
 
     Declared in the optional top-level ``extents:`` block of
-    variables_reference.yaml — the only file that can declare variables with
+    the canonical variables declaration, which can declare variables with
     these scopes. An extent is required exactly when a variable of the matching
     scope is declared; the loader rejects the pack otherwise, so the failure is
     a compile error and never a green compile that crashes at env construction
@@ -505,85 +522,3 @@ class VFSScopeExtents(BaseModel):
     num_groups: int | None = Field(default=None, ge=1, description="Number of group-scope storage rows")
     num_message_slots: int | None = Field(default=None, ge=1, description="Recent-message buffer slots per agent")
     num_affordances: int | None = Field(default=None, ge=1, description="Number of affordance-scope storage rows")
-
-
-class VariablesReferenceData(BaseModel):
-    """Parsed contents of variables_reference.yaml the compiler consumes."""
-
-    model_config = ConfigDict(frozen=True)
-
-    variables: tuple[VariableDef, ...]
-    extents: VFSScopeExtents | None
-
-
-_SCOPE_EXTENT_FIELD: dict[VariableScope, str] = {
-    VariableScope.ZONE: "num_zones",
-    VariableScope.GROUP: "num_groups",
-    VariableScope.MESSAGE: "num_message_slots",
-    VariableScope.AFFORDANCE: "num_affordances",
-}
-
-
-def parse_variables_reference(data: dict[str, Any], origin: str) -> VariablesReferenceData:
-    """Validate static registry declarations independently of their transport."""
-    yaml_path = origin
-    if not isinstance(data, dict):
-        raise ValueError(f"{origin} must contain a static registry declaration mapping.")
-    unknown = data.keys() - {"version", "variables", "extents", "exposed_observations"}
-    if unknown:
-        raise ValueError(f"Unknown static registry declaration fields at {origin}: {sorted(unknown, key=str)}")
-    variables_block = data.get("variables")
-    if not isinstance(variables_block, list):
-        raise ValueError(f"{yaml_path} must include a top-level 'variables' list.")
-    if any(not isinstance(variable, dict) for variable in variables_block):
-        raise ValueError(f"{origin}: every static variable must be a mapping.")
-    observations = data.get("exposed_observations")
-    if observations is not None and (
-        not isinstance(observations, list) or any(not isinstance(observation, dict) for observation in observations)
-    ):
-        raise ValueError(f"{origin}: exposed_observations must be a list of observation mappings.")
-
-    # variables_reference.yaml remains a static registry input; expression DSL
-    # belongs to vfs_profiles.yaml and effect specs.
-    for raw_var in variables_block:
-        if "expression" in raw_var:
-            raise ValueError(
-                "Static registry declarations must define static variables only; expressions belong in VFS profiles or effects specs.\n"
-                f"  Variable: {raw_var.get('name') or raw_var.get('id')}\n"
-                "  Action: remove expression and provide static defaults, or move the derived variable into vfs_profiles.yaml."
-            )
-        if raw_var.get("scope") == "item":
-            raise ValueError("Static registry declarations cannot define item-scoped variables; use item VFS profiles.")
-
-    try:
-        variables = tuple(VariableDef(**raw_var) for raw_var in variables_block)
-    except ValidationError as exc:
-        raise ValueError(f"Invalid static variable declaration: {exc}") from exc
-
-    extents_block = data.get("extents")
-    if extents_block is not None and not isinstance(extents_block, dict):
-        raise ValueError(f"{origin}: extents must be a mapping.")
-    try:
-        extents = VFSScopeExtents(**extents_block) if extents_block is not None else None
-    except ValidationError as exc:
-        raise ValueError(f"Invalid extents block in {yaml_path}: {exc}") from exc
-
-    # A zone/group/message-scoped variable sizes its storage by the matching
-    # extent; without one the registry cannot allocate. Reject HERE, so the
-    # author gets a compile error, not a crash at env construction.
-    for variable in variables:
-        extent_field = _SCOPE_EXTENT_FIELD.get(VariableScope(variable.scope))
-        if extent_field is None:
-            continue
-        declared = getattr(extents, extent_field) if extents is not None else None
-        if declared is None:
-            raise ValueError(
-                f"Variable '{variable.id}' uses {VariableScope(variable.scope).value} scope "
-                f"but the pack declares no '{extent_field}' extent.\n"
-                f"  File: {yaml_path}\n"
-                f"  Action: add a top-level extents block:\n"
-                f"    extents:\n"
-                f"      {extent_field}: <positive int>"
-            )
-
-    return VariablesReferenceData(variables=variables, extents=extents)

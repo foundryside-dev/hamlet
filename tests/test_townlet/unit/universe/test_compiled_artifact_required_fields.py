@@ -96,6 +96,7 @@ COMPILED_VFS_PROFILE_FIELDS = (
 COMPILED_VARIABLE_FIELDS = (
     "name",
     "type",
+    "lifetime",
     "expression",
     "initial_value",
     "result_type",
@@ -154,8 +155,8 @@ def test_primary_level_products_exist_only_on_level_metadata(artifact_payload: d
     assert set(PRIMARY_LEVEL_PAYLOAD_FIELDS) <= set(artifact_payload["all_levels"]["L0_demo"])
 
 
-def test_primary_level_authority_cut_bumps_exact_artifact_schema() -> None:
-    assert COMPILED_SCHEMA_VERSION == "1.26"
+def test_canonical_variable_cut_bumps_exact_artifact_schema() -> None:
+    assert COMPILED_SCHEMA_VERSION == "1.28"
 
 
 def _assert_missing_field(payload: dict[str, Any], field_path: str) -> None:
@@ -264,3 +265,18 @@ def test_compiled_artifact_requires_every_level_optimization_field(artifact_payl
     payload["all_levels"]["L0_demo"]["optimization_data_raw"].pop(field_name)
 
     _assert_missing_field(payload, f"all_levels.L0_demo.optimization_data_raw.{field_name}")
+
+
+def test_compiled_registry_descriptor_requires_semantic_type_key(artifact_payload: dict[str, Any]) -> None:
+    from copy import deepcopy
+
+    payload = deepcopy(artifact_payload)
+    payload["all_levels"]["L0_demo"]["vfs_variables"][0].pop("semantic_type")
+    _assert_missing_field(payload, "all_levels.L0_demo.vfs_variables[0].semantic_type")
+
+
+@pytest.mark.parametrize("old_version", ["1.26", "1.27"])
+def test_previous_variable_artifact_versions_refuse(artifact_payload: dict[str, Any], old_version: str) -> None:
+    payload = {**artifact_payload, "compiled_schema_version": old_version}
+    with pytest.raises(ValueError, match="schema mismatch"):
+        CompiledUniverse.from_dict(payload)

@@ -1,5 +1,14 @@
 # Townlet Variable & Feature System (VFS) — Updated Design and Integration Specification
 
+> **Current authoring boundary — 1 October 2026 (Cut B):** the canonical
+> [variables declaration](../config-schemas/variables.md) replaces every historical
+> environment-variable, VFS-profile and static-overlay authoring example below.
+> Type, lifetime, initialization and exposure are explicit in one roster; all variables
+> enter common resolution. Internal compiled profiles remain execution products.
+> Typed token binding scope selects storage. New access-role authoring remains PDR-0120 work.
+> The dated architecture and audit caveats below are historical where they describe those
+> removed authoring languages; they do not supply alternative supported payloads.
+
 **Document Type**: Design Specification + Integration Specification  
 **Status**: Phase 1 Complete; observation path fully VFS-driven in production (shadow migration finished, old path deleted); VTC partially unified (Phase 2.x)  
 **Version**: 1.1 Draft  
@@ -31,8 +40,8 @@ The Variable & Feature System (VFS) is the formal state, feature, observation, a
 In its current Phase 1 form, VFS provides:
 
 1. **Schema definitions** for variables and compiled token exposure.
-2. **A required experiment-level `vfs_profiles.yaml` catalog** for compiled global, agent, and item profiles.
-3. **An optional experiment-level `variables_reference.yaml` static registry overlay** for non-item variables and observation marks; item-scoped variables and expressions belong in `vfs_profiles.yaml`.
+2. **One required pack-scope canonical variable declaration** with explicit state/exposure semantics.
+3. **Internal compiled global, agent and item profiles**, produced from that same declaration roster.
 4. **A runtime variable registry** that stores state tensors and enforces read/write access control.
 5. **TokenSpec compilation** that binds agent-facing token slots from declarative exposures.
 6. **ActionConfig dependency tracking** through declared `reads` and `writes` fields.
@@ -2500,23 +2509,11 @@ Condensed from the archived implementation overview
 (`archive/vfs-current-implementation.md`, "How To Extend VFS Safely"), with the current
 caveats bound in:
 
-**Add a static runtime variable** (`variables_reference.yaml`): keep it static (no
-expressions); set explicit `readable_by`, `writable_by`, `lifetime`, `scope`, and default;
-declare the matching `extents:` entry for zone/group/message/affordance scopes (§5.1). ⚠ Know
-the door you are using: this is the only surface where `readable_by`/`writable_by`/`lifetime`
-are author-settable, and its variables are invisible to the compiler symbol table — no effect,
-affordance, action write, or `drive.yaml` can reference them (§5.1 caveat,
-`hamlet-33e520cebd`).
-
-**Add a derived profile variable** (`vfs_profiles.yaml`): choose global/agent/item profile
-scope; provide exactly one initialization source (`initial_value` / `initial_value_mode` /
-`expression` for global and agent profiles — the item-profile DTO has no
-`initial_value_mode` at all and refuses `expression` at compile, so an item variable is
-`initial_value` only; `config/vfs_profiles_config.py:22-60,245-275`); the profile compiler
-parses, type-checks, and topologically sorts dependencies. If it should be observed, declare
-`exposed_to` and — on global/agent variables only; item variables carry no `semantic_type`
-(`PDR-0066`) — `semantic_type`; and remember `exposed_to: []` currently fails open to
-`["agent"]` (§5.3 caveat).
+**Add authored state:** use the canonical `variables.declarations` roster with explicit
+`id`, `scope`, `type`, `lifetime`, `semantic_type`, `exposed_to` and initialization.
+Add `expression` for supported global/agent derived state, and `profile` for item state.
+The compiler applies fixed engine roles; do not author `readable_by`/`writable_by`.
+See [the current variable schema](../config-schemas/variables.md) for validation and consumer limits.
 
 **Add a new transition rule family** (`vtc.py`): compile source config into immutable
 `CompiledVTC...` records with parsed expression ASTs; sort by
@@ -2683,11 +2680,8 @@ This would make VFS teachable and debuggable.
   per the 2026-08-24 audit except its access-control and `agent_private` claims
 - `docs/architecture/archive/REVIEW-2026-08-24-vfs-implementation-vs-spec.md` — the two-auditor
   claim-by-claim verdict tables behind this document's §5/§6 caveats
-- `docs/config-schemas/vfs-profiles.md` (archived 2026-08-24; schema concepts
-  remain useful)
-- `docs/config-schemas/variables.md` — optional static variable and observation
-  metadata overlay (⚠ broadly stale, 2025-11: three scopes, dead file paths, retracted
-  dimension counts)
+- `docs/config-schemas/variables.md` — current canonical variable authoring contract
+  introduced by declaration-store Cut B
 - `docs/zzz. archive/plans/archive/vfs_uplift/2025-11-18-items-and-vfs-profiles.md`
 - `docs/zzz. archive/plans/archive/vfs_uplift/master_requirements.md`
 - `CLAUDE.md` VFS section

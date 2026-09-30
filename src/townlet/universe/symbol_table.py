@@ -5,8 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
+from townlet.config.variables_config import VariableDeclaration
 from townlet.environment.action_config import ActionConfig
-from townlet.vfs.schema import VariableDef
 
 from .errors import CompilationError
 from .stages import CompilationStage
@@ -20,8 +20,8 @@ class UniverseSymbolTable:
     cascades: dict[str, Any] = field(default_factory=dict)
     affordances: dict[str, Any] = field(default_factory=dict)
     affordances_by_name: dict[str, Any] = field(default_factory=dict)
-    variables: dict[str, VariableDef] = field(default_factory=dict)
-    profile_vfs_variables: dict[str, Any] = field(default_factory=dict)
+    variables: dict[str, VariableDeclaration] = field(default_factory=dict)
+    item_variables: dict[str, VariableDeclaration] = field(default_factory=dict)
     actions: dict[int, ActionConfig] = field(default_factory=dict)
     items: dict[str, Any] = field(default_factory=dict)
 
@@ -30,19 +30,16 @@ class UniverseSymbolTable:
             raise CompilationError(CompilationStage.SYMBOLS.label, [f"Duplicate meter '{config.name}' detected."])
         self.meters[config.name] = config
 
-    def register_variable(self, config: VariableDef) -> None:
-        var_id = getattr(config, "id", None) or getattr(config, "name", None)
-        if var_id is None:
-            raise CompilationError(CompilationStage.SYMBOLS.label, ["Variable missing identifier during registration."])
-        if var_id in self.variables:
-            raise CompilationError(CompilationStage.SYMBOLS.label, [f"Duplicate variable '{var_id}' detected."])
-        self.variables[var_id] = config
-
-    def register_profile_vfs_variable(self, config: Any) -> None:
-        var_id = getattr(config, "id", None) or getattr(config, "name", None)
-        if var_id is None:
-            raise CompilationError(CompilationStage.SYMBOLS.label, ["VFS profile variable missing identifier during registration."])
-        self.profile_vfs_variables.setdefault(var_id, config)
+    def register_variable(self, config: VariableDeclaration) -> None:
+        identifier = config.id
+        if config.scope == "item":
+            identifier = f"{config.profile}:{identifier}"
+            target = self.item_variables
+        else:
+            target = self.variables
+        if identifier in target:
+            raise CompilationError(CompilationStage.SYMBOLS.label, [f"Duplicate variable '{identifier}' detected."])
+        target[identifier] = config
 
     def register_action(self, config: ActionConfig) -> None:
         action_id = getattr(config, "id", None)
@@ -102,7 +99,7 @@ class UniverseSymbolTable:
     def get_action(self, action_id: int) -> ActionConfig:
         return self.actions[action_id]
 
-    def get_variable(self, variable_id: str) -> VariableDef:
+    def get_variable(self, variable_id: str) -> VariableDeclaration:
         return self.variables[variable_id]
 
     def get_affordance_count(self) -> int:
@@ -117,9 +114,9 @@ class UniverseSymbolTable:
         return sorted(self.affordances_by_name.keys())
 
     @property
-    def vfs_variables(self) -> dict[str, Any]:
+    def vfs_variables(self) -> dict[str, VariableDeclaration]:
         """Variables that may be referenced through VFS-aware config surfaces."""
-        return {**self.variables, **self.profile_vfs_variables}
+        return self.variables
 
     def get_affordance(self, affordance_id: str) -> Any:
         return self.affordances[affordance_id]

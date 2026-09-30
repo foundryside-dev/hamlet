@@ -116,12 +116,26 @@ def test_compiler_surfaces_variable_schema_hash(tmp_path: Path) -> None:
     """UniverseCompiler should emit the variable schema hash on the compiled artifact."""
     experiment_dir = prepare_config_dir(tmp_path, name="experiment")
     profiles = {
-        "version": "1.0",
-        "evaluation_mode": "mark_and_sweep",
-        "debug_logging": False,
-        "global_profile": {"variables": [{"semantic_type": "custom", "name": "day_count", "type": "int", "initial_value": 0}]},
+        "variables": {
+            "version": "1.0",
+            "evaluation_mode": "mark_and_sweep",
+            "debug_logging": False,
+            "extents": {},
+            "item_profiles": [],
+            "declarations": [
+                {
+                    "id": "day_count",
+                    "scope": "global",
+                    "type": "scalar",
+                    "lifetime": "persistent",
+                    "semantic_type": "custom",
+                    "initial_value": 0,
+                    "exposed_to": [],
+                }
+            ],
+        }
     }
-    (experiment_dir / "vfs_profiles.yaml").write_text(yaml.dump(profiles))
+    (experiment_dir / "variables.yaml").write_text(yaml.dump(profiles))
 
     compiled = UniverseCompiler().compile(experiment_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
     level = compiled.get_level(PRIMARY_LEVEL_NAME)

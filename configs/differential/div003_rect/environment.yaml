@@ -141,8 +141,6 @@ environment:
   # time_since_last_eat / time_since_last_sleep were declared here with no
   # runtime writer — agents observed frozen zeros (hamlet-dc8f887cd5).
   # A variable belongs here only once the authoring surface can drive it.
-  variables: []
-
   cues:
     - name: low_energy_warning
       trigger:

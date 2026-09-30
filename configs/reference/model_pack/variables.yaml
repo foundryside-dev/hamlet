@@ -1,0 +1,54 @@
+variables:
+  version: '1.0'
+  evaluation_mode: mark_and_sweep
+  debug_logging: false
+  extents: {}
+  item_profiles:
+  - default_item
+  declarations:
+  - id: is_night
+    scope: global
+    type: scalar
+    lifetime: persistent
+    semantic_type: temporal
+    exposed_to: []
+    expression: '0.0'
+    initial_value: 0.0
+  - id: inventory_weight
+    scope: agent
+    type: scalar
+    lifetime: episode
+    semantic_type: custom
+    exposed_to: []
+    initial_value: 0.0
+  - id: is_encumbered
+    scope: agent
+    type: bool
+    lifetime: episode
+    semantic_type: custom
+    exposed_to: []
+    expression: inventory_weight > 1.0
+    initial_value: false
+  - id: is_digesting
+    scope: agent
+    type: bool
+    lifetime: episode
+    semantic_type: custom
+    exposed_to: []
+    initial_value: false
+  - id: freshness
+    scope: item
+    type: scalar
+    lifetime: episode
+    semantic_type: custom
+    exposed_to: []
+    profile: default_item
+    initial_value: 1.0
+  - id: calories
+    scope: item
+    type: scalar
+    lifetime: episode
+    semantic_type: custom
+    exposed_to: []
+    profile: default_item
+    initial_value: 10.0

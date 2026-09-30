@@ -39,11 +39,11 @@ def test_load_v21_configs_loads_root_optional_artifacts(tmp_path: Path) -> None:
 
     raw = load_v21_configs(config_dir)
 
-    assert raw.vfs_profiles is not None
+    assert raw.variables is not None
     assert raw.effects is not None
     assert raw.action_label_overrides == {0: "PORT"}
-    assert raw.variables_reference is not None
-    assert {var.id for var in raw.variables_reference} == {"position"}
+    assert raw.variables.declarations
+    assert "position" in {var.id for var in raw.variables.declarations}
 
 
 def test_discovery_checks_optional_document_yaml_syntax(tmp_path: Path) -> None:
@@ -80,23 +80,27 @@ def test_resolve_references_validates_dac_bar_references(tmp_path: Path) -> None
 
 def test_resolve_references_allows_profile_vfs_variables_in_dac(tmp_path: Path) -> None:
     config_dir = _copy_experiment(tmp_path)
-    (config_dir / "vfs_profiles.yaml").write_text(
+    (config_dir / "variables.yaml").write_text(
         yaml.safe_dump(
             {
-                "version": "1.0",
-                "evaluation_mode": "mark_and_sweep",
-                "debug_logging": False,
-                "global_profile": {
-                    "variables": [
+                "variables": {
+                    "version": "1.0",
+                    "evaluation_mode": "mark_and_sweep",
+                    "debug_logging": False,
+                    "extents": {},
+                    "item_profiles": [],
+                    "declarations": [
                         {
+                            "id": "hunger_pressure",
+                            "scope": "global",
+                            "type": "scalar",
+                            "lifetime": "persistent",
                             "semantic_type": "custom",
-                            "name": "hunger_pressure",
-                            "type": "float",
+                            "exposed_to": [],
                             "initial_value": 0.0,
                         }
-                    ]
-                },
-                "item_profiles": [],
+                    ],
+                }
             },
             sort_keys=False,
         )

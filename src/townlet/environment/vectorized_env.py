@@ -639,7 +639,7 @@ class VectorizedHamletEnv:
         if universe.compiled_vfs_profiles is None or not universe.compiled_vfs_profiles.item_profiles:
             raise ValueError(
                 "items_catalog provided but compiled_vfs_profiles.item_profiles is missing. "
-                "Define item VFS profiles in vfs_profiles.yaml for all item types."
+                "Declare item profile names and state in the canonical variables declaration for all item types."
             )
 
         self.item_manager = ItemManager(

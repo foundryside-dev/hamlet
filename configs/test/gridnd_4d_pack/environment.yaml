@@ -33,5 +33,4 @@ environment:
     - name: WORK
       description: Earn money
       category: income
-  variables: []
   cues: []

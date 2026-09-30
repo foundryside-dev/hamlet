@@ -214,12 +214,12 @@ reward function produced it. Two fields in that file are inert: `composition.nor
 configs/default_curriculum/
   experiment.yaml       # which levels the pack declares
   stratum.yaml          # substrate and topology — nothing about observation encoding
-  environment.yaml      # meter observation types (range_type), VFS variables, cascade graph
+  environment.yaml      # meter observation types (range_type), cascade graph
   actions.yaml          # substrate and custom actions, action labels
   brain.yaml            # architecture, optimizer, loss, Q-learning, replay
-  items.yaml  effects.yaml  vfs_profiles.yaml
-  transition_rules.yaml variables_reference.yaml action_labels.yaml   # optional, compiled
-  presentation.yaml     # optional; rendering hints for the live viewer — never compiled
+  items.yaml  effects.yaml  variables.yaml  # canonical variable roster
+  transition_rules.yaml action_labels.yaml   # optional, compiled
+  presentation.yaml     # optional; validated display metadata; no execution product
   levels/<level>/
     curriculum.yaml     # vision and temporal switches
     bars.yaml           # meters, bounds, cascades
@@ -229,20 +229,19 @@ configs/default_curriculum/
     brain.yaml          # optional; a COMPLETE replacement brain, never a partial patch
 ```
 
-A level directory carries those five required files plus two optional ones: an `items.yaml`
-declaring level-scoped item spawns, and — since `d60104f0` (2026-08-22, `PDR-0027`) — a
-complete `brain.yaml` that forks the whole brain for that level (one pack does:
-`configs/test/token_set_smoke`); the loader (`src/townlet/universe/raw_configs_v21.py`) reads
-nothing else from it. The shared catalogs `vfs_profiles.yaml` and `effects.yaml` are rejected
-outright at level scope, and a level `items.yaml` must declare the v1.0 ItemsAppearance schema
-(`src/townlet/universe/loaders/preflight.py`). Without a level `brain.yaml` the architecture
-is pack-level: a level's `training.yaml` overrides exactly five scalars of the pack `brain.yaml`
-— gamma, target-update frequency, the double-DQN flag, learning rate and replay capacity — and
-none of them live in the `architecture` block. Of the optional pack-root files,
-`transition_rules.yaml` (typed social-residue rules, `7e989e8c`) is carried by no pack in
-`configs/`; `variables_reference.yaml`, where a pack declares the `extents` that size its
-`zone`, `group` and `message` scopes, by thirteen (`find configs -name variables_reference.yaml`;
-it was twenty before the nine trial packs were deleted at `5973f79b`).
+Files are transport: declaration-store discovery identifies wrapped declarations by content,
+including nested files. Pack declarations live outside `levels/`; declarations under
+`levels/<id>/` belong to that level. Filenames do not select declaration families. The five required level families are curriculum, bars, affordances, drive
+and training. Level item appearances and complete brain replacements are optional. Pack
+catalogs, including the required canonical `variables` roster and `effects`, refuse level
+scope. See [declaration discovery](docs/config-schemas/declarations.md).
+
+Without a level brain replacement, training overrides exactly five scalars of the pack brain:
+gamma, target-update frequency, Double DQN, learning rate and replay capacity. The canonical
+variable catalog declares scope, lifetime, initialization, semantic type and exposure once;
+its explicit `extents` size zone, group, message and affordance storage. Item state uses the
+same variable contract, grouped by its declared item profile. See
+[variable declarations](docs/config-schemas/variables.md).
 
 Three declarations are worth knowing about because older docs predate them. Each meter's
 observation type is declared per meter as `range_type` in `environment.yaml` — a closed,
@@ -253,15 +252,16 @@ being restated, and `clip` on the two clipped kinds is `Literal[True]` — a met
 a token is bounded by declaration, not by a flag. Normalization kinds that are unbounded,
 batch-coupled or need more than two lanes are deleted from the meter surface, not mapped or
 retained as compatibility aliases (`PDR-0134`; the DTO in `config/environment_config.py`
-admits exactly those four members). Each `environment.yaml` variable
+admits exactly those four members). Each canonical variable
 declares a `semantic_type` from a closed vocabulary, and each affordance declares its
 `interaction_type` (`instant` or `multi_tick`) — required, no default. `instant` has no duration
 and admits only immediate costs/`on_start` writes; `multi_tick` requires duration and admits only
 per-tick costs/`per_tick`/`on_completion` writes. The old `dual` spelling is deleted because it
 never executed both behaviours (`PDR-0135`). And a pack may carry
 an optional `presentation.yaml` at its root: the live-inference server reads it to render meters and
-affordances (labels, colours, icons, plain/percent/currency formats), the compiler never does, so it enters no hash and
-cannot change behaviour (`src/townlet/demo/presentation.py`,
+affordances (labels, colours, icons, plain/percent/currency formats). Compiler discovery validates
+that metadata and includes its transport in `metadata.config_hash`; it does not enter semantic
+hashes or change execution behaviour (`src/townlet/demo/presentation.py`,
 `docs/config-schemas/presentation.md` — archived 2026-08-24, back at the live path since
 `931e26d8` on 2026-08-26, the only file in that directory that opens with no banner of any kind).
 No shipped pack carries one; without it the viewer renders every meter honestly from its declared
@@ -272,7 +272,7 @@ name.
 levels, but `bars.yaml`, `affordances.yaml` and `drive.yaml` are byte-identical across all five,
 and the substrate is pack-level. Only two levels change the world the agent sees:
 `L2_partial_observability` (`active_vision: partial`, `vision_range: 0.5`) and
-`L3_temporal_mechanics` (`active_temporal: true`, `day_length: 24`). **Corrected 2026-08-26 at
+`L3_temporal_mechanics` (`active_temporal: true`, `day_length: {period_of: day_phase}`). **Corrected 2026-08-26 at
 the unit-3 token cut:** this paragraph used to say `observation_schema_hash` took three distinct
 values across the five levels — one shared by L0_0/L0_5/L1, one for L2, one for L3 — and read
 that as "three distinct observation surfaces". It now takes **exactly one**: compiling all five
@@ -280,7 +280,7 @@ gives an identical `observation_schema_hash`, `layout_hash`, `token_type_schema_
 `total_dims` (re-measured at `1eb347f7`). The compiled observation surface is the same at every
 level. Partial observability is a **runtime visibility filter** over an unchanged TokenSpec
 (out-of-range spatial tokens have presence and payload zeroed), not a compiled difference; and
-the day/night phase is an authored global in the pack-root `vfs_profiles.yaml` — `day_phase`,
+the day/night phase is an authored global in the pack-root `variables.yaml` — `day_phase`,
 `expression: tick`, `initial_value: 0.0`, `exposed_to: [agent]`, `cyclical_sin_cos` with
 `period: 24` — so every level carries it *and observes it*, as one cyclical token, `active_temporal`
 or not (`430eb5af`, `PDR-0143`). So the "five documented levels are three distinct universes"
@@ -378,7 +378,7 @@ uv run python -m townlet.oracle.harness --cell default_curriculum:L0_0_minimal
 
 Its declared matrix is twenty cells: five levels of `default_curriculum` × {cpu, cuda}, three
 single-axis packs under `configs/differential/` × {cpu, cuda}, and two packs whose
-`vfs_profiles.yaml` declares variables (`configs/test/items_smoke`, `configs/test/effects_smoke`)
+canonical `variables` declarations include item/derived state (`configs/test/items_smoke`, `configs/test/effects_smoke`)
 × {cpu, cuda} — originally the only runnable packs that exposed VFS profile variables, added
 under `PDR-0074` so the cut that split the old `obs_vfs` block was visible to the harness at
 all. The CUDA cells
@@ -396,6 +396,12 @@ is never suppressed: an undeclared stream difference is DIVERGE, an undeclared h
 HASH_MISMATCH, and a declared divergence that fails to manifest is REGISTERED_DIVERGENCE_ABSENT
 — all red. An unmatched red of any kind
 still fails, and an empty or all-SKIPPED run exits 1 so that doing nothing cannot look green.
+**Cut B:** the current canonical variable cut is registered separately as DIV-014.
+Its direct-parent comparator additionally checks unchanged observation/action/reward/done
+bytes and reset state; it does not inherit the historical observation-stream suppression.
+See [Cut B evidence](docs/product/evidence/declaration-cut-b/comparator-contract.md).
+The following register/run descriptions are historical, stamped before Cut B.
+
 **What exit 0 means has changed since `oracle-2026-08-17`.** At the re-tag, the sixteen
 `default_curriculum` and differential cells declared nothing and their fixtures were byte copies
 of the live packs, so a green run meant *old and new agree*. That is no longer true — the
@@ -797,7 +803,7 @@ Intent, not yet built — stated plainly because older docs blur the line:
     the registry its `num_zones` / `num_groups` / `num_message_slots` extents and no YAML could
     set them (found by Trial K, `docs/product/trials/`). **Fixed at `6b752b3c` (2026-08-21,
     `hamlet-9e1ae3b7a2` closed):** a pack declares an `extents:` block in
-    `variables_reference.yaml`, the compiler carries it into the level metadata,
+    the canonical `variables.extents` declaration, the compiler carries it into the level metadata,
     `environment/vectorized_env.py` passes it to the registry, and a pack that declares one of
     those scopes without extents is refused loudly. One pack declares them (`L5_multi_agent`;
     `trial_o_bidding_blind`, the other one, was deleted at `5973f79b`).
@@ -805,7 +811,8 @@ Intent, not yet built — stated plainly because older docs blur the line:
     `deficit_energy`, `deficit_satiation`, `time_since_last_eat`, `time_since_last_sleep` — were
     observed but written by nothing, so agents saw frozen zeros in slots the ABI claimed were
     live. Deleted 2026-08-21 (`0b659130`, `hamlet-dc8f887cd5`); the shipped pack declares no custom
-    variables in `environment.yaml` (`variables: []`). Trial L
+    variables in the removed environment-variable surface. Cut B now requires the canonical
+    `variables` roster; its authored day-phase variable remains. Trial L
     (`docs/product/trials/0001/L-20260818.md`) demonstrated the counter
     mechanic is authorable without them: a bar with a negative passive rate advances per tick,
     an `on_start` `modify` resets it on use.
@@ -901,9 +908,9 @@ swept most of the rest of `docs/` — `docs/config-schemas/` included — into `
 (`PDR-0125`, owner-authorised) 53 files were
 recovered to their live paths with 51 dated staleness banners, all thirteen
 `docs/config-schemas/` files among them. At `1eb347f7` eleven of the thirteen still open with
-their 2026-08-26 banner — eight naming how they are wrong (`variables.md` is wholesale 2025-11
+their 2026-08-26 banner — eight naming how they were wrong (`variables.md` was wholesale 2025-11
 stale; `affordances.md` documents a schema wired to nothing; `expressions.md` calls nine shipped
-functions "planned"; `items.md`, `vfs-profiles.md`, `drive_as_code.md`, `effects.md` and
+functions "planned"; `items.md`, the now-retired `vfs-profiles.md`, `drive_as_code.md`, `effects.md` and
 `enabled_actions.md` each name their own defect), three carrying a ✅ (`transition_rules.md`
 verified accurate; `bars.md` and `training.md` accurate but for one known error each);
 `brain.md` was rewritten at `9d4e942f` and opens with a 2026-08-31 verification note against

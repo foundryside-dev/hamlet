@@ -2,7 +2,7 @@
 
 Document date: 2026-08-24; authoring front end updated 2026-10-01.
 Status: Part of the six-document HLD set (PDR-0118). The declaration-store Cut A sections below
-supersede the old filename/loading account. Other architectural descriptions retain their
+supersede the old filename/loading account; Cut B uses the single canonical variables family. Other architectural descriptions retain their
 original date; this update does not certify full compiler or runtime completeness.
 
 The compiler is the thing that turns a YAML pack into one frozen, hash-carrying
@@ -22,6 +22,11 @@ explicit exception for display metadata; see [its boundary](../config-schemas/de
 ---
 
 ## 1. Scope
+
+Variable authoring uses [one canonical contract](../config-schemas/variables.md). The old
+environment/profile/overlay declaration paths are removed. Every variable reaches common
+symbol resolution; compiled token scope is explicit and required through cache load.
+Other dated architecture descriptions below are not a current symbol inventory.
 
 - **Inputs**: one config pack of recursively discovered `.yaml`/`.yml` documents outside
   `.compiled`. Content identifies the closed declaration family; pack root versus

@@ -1,10 +1,12 @@
 # PRD-0004 — Static epistemic access
 
-Status: **proposed; scope and acceptance planning only**.
+Status: **implementation authorized; acceptance pending**.
 Prepared: 2026-10-01 Australia/Sydney. Source baseline:
 `bdf64fadc69739c3e204845f9797d08500f46d46` (completed Cut B).
-Authority: PDR-0120 intent, rebased after PDR-0151. Owner's “yes” authorizes this
-planning package; it does not start implementation or authorize publication.
+Authority: PDR-0120 intent, rebased after PDR-0151. The planning package was
+authorized first; the subsequent explicit owner instruction to execute the plan,
+commit and merge authorizes implementation and local integration. Publication is
+not authorized by that instruction.
 Planning: `hamlet-b59513c8e2`; implementation: `hamlet-a3272e31c0`;
 independent acceptance: `hamlet-e911091cb2`.
 

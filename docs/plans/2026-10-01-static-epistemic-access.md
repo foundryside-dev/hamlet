@@ -9,7 +9,7 @@
 **Tech Stack:** Python 3.13+, Pydantic 2, PyTorch, MessagePack, pytest, uv; existing compiler/oracle tooling.
 
 **Prerequisites:**
-- Owner authorization to implement [PRD-0004](../product/prds/0004-static-epistemic-access.md); current authorization is planning only.
+- Owner authorization to implement [PRD-0004](../product/prds/0004-static-epistemic-access.md) is now recorded: execute, commit and merge locally. Publication remains outside scope.
 - Clean isolated execution worktree from `bdf64fadc69739c3e204845f9797d08500f46d46` or a reviewed documentation-only descendant. Verify no concurrent product-source changes.
 - Own local virtual environment using `uv sync --all-extras --locked`; never repurpose the parent's environment.
 - Read PDR-0120, PDR-0147, PDR-0151 and the proposed PRD. Preserve unrelated parent edits and frozen oracle `4222a917`.
@@ -369,3 +369,14 @@ If a declared command target cannot be resolved safely, reject the unsupported f
 with source provenance rather than bypass authorization. Any observed unrelated
 numeric change needs a causal explanation and independent review, not an expanded
 oracle allowance. Owner/spatial privacy requests require a new scope decision.
+
+## Execution record
+
+Task 1 is complete: instrumentation `0fdb16ea` passed 46 comparator controls and
+focused Ruff/Black. The unchanged parent bank was captured on CPU and committed
+at `dd8ec028`, with 31 cases, 884 identity readings, ten trajectories, eleven reset
+recipes and 408 exact YAML inputs. All raw trace digests and relocated manifest
+references passed validation before product edits. See the [execution evidence](../product/evidence/static-epistemic-access/README.md).
+
+Remaining tasks and PRD acceptance are pending. No local merge or publication
+has occurred for this implementation package.

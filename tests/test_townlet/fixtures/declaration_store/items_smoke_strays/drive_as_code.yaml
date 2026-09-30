@@ -1,0 +1,23 @@
+# Items Smoke Test - Drive As Code Configuration
+# Minimal DAC config for testing
+
+version: "1.0"
+
+modifiers: {}
+
+extrinsic:
+  type: multiplicative
+  base: 1.0
+  bars: [energy, health]
+
+intrinsic:
+  strategy: none  # No intrinsic exploration for smoke test
+  base_weight: 0.0
+
+shaping: []
+
+composition:
+  normalize: false
+  clip: null
+  log_components: true
+  log_modifiers: false

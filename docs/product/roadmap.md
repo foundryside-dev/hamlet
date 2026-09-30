@@ -8,9 +8,13 @@
 > B is accepted at published implementation `22924d0a` by
 > [PDR-0151](decisions/0151-cut-b-accepted-against-prd-0003.md). All three exact implementation-head
 > hosted workflows passed; local integration is complete. Draft PR #41 stacks on Cut A #40.
-> Final delivery-record head verification is separately tracked. This is no main merge or
+> Final published head `bdf64fad` also passed all three hosted workflows; acceptance
+> issue `hamlet-61e3de957f` is closed. This is no main merge or
 > broader bet-exit reading. The epistemic-access package remains shaped and uncommitted;
-> its older scope must be rebased against the delivered variable contracts before dispatch.
+> its rebased static scope and acceptance plan are proposed in
+> [PRD-0004](prds/0004-static-epistemic-access.md) and
+> [PDR-0152](decisions/0152-static-epistemic-access-planning-boundary.md).
+> Planning is authorized; implementation remains open and unstarted.
 >
 > **Within Now, the order is open (`PDR-0019`, owner-stated).** The WS-0…WS-7 work streams are an
 > **inventory, not a sequence**. One system is pinned at a time; the next is chosen on the

@@ -9,15 +9,20 @@ complete symbols and typed token scope. Local suite: 4,055 passed / 18 skipped /
 hosted implementation suite: 4,054 passed / 19 skipped / 84% coverage. All three implementation-head
 hosted workflows passed. Direct-parent and frozen CPU comparisons qualified with exact attribution.
 Local `project-recovery-4` includes B; [draft PR #41](https://github.com/foundryside-dev/hamlet/pull/41)
-stacks on Cut A #40. Parent/main were not pushed. Final acceptance-record head verification is
-tracked separately before acceptance issue closure.
+stacks on Cut A #40. Parent/main were not pushed. Final acceptance-record head verification passed at published `bdf64fad`: Tests, Lint and Config Validation completed
+successfully; acceptance issue `hamlet-61e3de957f` is closed. This remains a draft PR,
+not a GitHub main/parent merge.
 
 The next **shaped, uncommitted** package is epistemic access (PDR-0120). Rebase its scope against
 the delivered lifetime, symbol and fail-closed exposure contracts; those are regression gates.
 Remaining seams are authorable permissions, consistent checked runtime access and observation
 publication. Role permission and observer/source visibility need distinct contracts before
 ownership/spatial privacy is promised. A suggested first static slice precedes dynamic propagation;
-its scope and acceptance plan remain to be ruled, not implemented by this checkpoint.
+[PRD-0004](prds/0004-static-epistemic-access.md) and the
+[reviewed plan](../plans/2026-10-01-static-epistemic-access.md) now propose that slice
+under [PDR-0152](decisions/0152-static-epistemic-access-planning-boundary.md).
+The owner authorized planning only. Implementation/acceptance tasks are open;
+no static-access behavior is implemented by this checkpoint.
 
 The recovery counts and main/nightly claims below are the historical **2026-09-02** reading.
 They were not re-audited by Cut B; do not treat them as current fleet or workstream measurements.

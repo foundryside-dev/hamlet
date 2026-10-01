@@ -46,9 +46,7 @@ def test_item_use_modifies_item_durability():
 
     # Check initial durability
     initial_durability = env.vfs_registry.read_item(
-        profile_name=medkit_instance.vfs_profile,
-        var_name="durability",
-        vfs_index=medkit_instance.vfs_index,
+        profile_name=medkit_instance.vfs_profile, var_name="durability", vfs_index=medkit_instance.vfs_index, reader="engine"
     )
     assert initial_durability == 100.0
 
@@ -58,9 +56,7 @@ def test_item_use_modifies_item_durability():
 
     # Durability should decrease
     final_durability = env.vfs_registry.read_item(
-        profile_name=medkit_instance.vfs_profile,
-        var_name="durability",
-        vfs_index=medkit_instance.vfs_index,
+        profile_name=medkit_instance.vfs_profile, var_name="durability", vfs_index=medkit_instance.vfs_index, reader="engine"
     )
     assert final_durability < initial_durability
     assert final_durability == 90.0  # Expect -10 per use

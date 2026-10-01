@@ -78,11 +78,7 @@ def test_token_spec_refuses_noncanonical_encoding_version() -> None:
 
 
 def test_slot_context_payloads_are_bounded_model_inputs() -> None:
-    binding = SlotBinding(
-        slot_index=0,
-        filler_kind="static",
-        filler_ref="meter:energy",
-    )
+    binding = SlotBinding(slot_index=0, filler_kind="static", filler_ref="meter:energy", scope=None)
     payload = [0.0] * len(PAYLOAD_SCHEMAS["meter"])
     payload[PAYLOAD_SCHEMAS["meter"].index(METER_SIGNATURE_FEATURES[0])] = 1.000001
 
@@ -96,11 +92,7 @@ def test_slot_context_payloads_are_bounded_model_inputs() -> None:
 
 
 def test_slot_context_payloads_are_canonical_float32_values() -> None:
-    binding = SlotBinding(
-        slot_index=0,
-        filler_kind="static",
-        filler_ref="meter:energy",
-    )
+    binding = SlotBinding(slot_index=0, filler_kind="static", filler_ref="meter:energy", scope=None)
     payload = [0.0] * len(PAYLOAD_SCHEMAS["meter"])
     feature_index = PAYLOAD_SCHEMAS["meter"].index(METER_SIGNATURE_FEATURES[0])
     payload[feature_index] = 0.1

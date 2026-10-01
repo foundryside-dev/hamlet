@@ -1,0 +1,263 @@
+{
+  "reviewer": "/root/epistemic_intent",
+  "source_commit": "b70fda104e5061ed2735e8b31b7f8f9caaf99f19",
+  "review_type": "criterion-by-criterion source and systems architecture review",
+  "decision": "IMPLEMENTATION_ACCEPTANCE_GO",
+  "blocking_source_findings": [],
+  "independence": {
+    "independent_implementation_reviews": [
+      "Task 2 canonical declaration/preservation/fixture conversion",
+      "Task 5 publishers and witness"
+    ],
+    "self_review_explicit": [
+      "Task 4 VTC write intent and compile-time known-target validation, including namespace correction",
+      "Loop metadata-preflight semantics repair, independently reviewed by policy agent with direct parent comparison controls."
+    ],
+    "other_source_reviews": "Tasks 3 and 6 inspected for architecture and integration; independent detailed peer review is owned by the policy agent.",
+    "evidence_review": "Read exact-head direct-parent and frozen CPU reports; root and instrumentation agent retain command-exit and comparator review custody."
+  },
+  "criteria": [
+    {
+      "id": 1,
+      "verdict": "SOURCE_PASS",
+      "findings": "The canonical author declaration and runtime/profile products require explicit finite read/write policies. Shared validation rejects duplicate or unsupported roles, engine-unreadable state and exposure contradictions. Task 2 independent fixture and pack review found no non-policy YAML deviations. No actor compatibility aliases/defaults or duplicate ScopedVariableRegistry return.",
+      "evidence": [
+        "src/townlet/config/variables_config.py",
+        "src/townlet/vfs/access_policy.py",
+        "src/townlet/vfs/schema.py",
+        "src/townlet/vfs/profiles.py",
+        "tests/test_townlet/unit/config/test_variables_dto.py",
+        "tests/test_townlet/unit/universe/test_canonical_variable_compilation.py"
+      ]
+    },
+    {
+      "id": 2,
+      "verdict": "SOURCE_PASS",
+      "findings": "Ordinary get/set and global/agent convenience access require explicit actors; set_engine_value fixes engine identity and still authorizes. Qualified item reads/writes authorize and validate registered profile rows. Ordinary returned values are clones. Registry-owned frozen role snapshots resist later source declaration/profile mutations. Public access APIs have no permission bypass parameter.",
+      "evidence": [
+        "src/townlet/vfs/registry.py",
+        "src/townlet/effects/context.py",
+        "src/townlet/vfs/evaluator.py",
+        "tests/test_townlet/unit/vfs/test_static_access.py"
+      ]
+    },
+    {
+      "id": 3,
+      "verdict": "SOURCE_PASS_SELF_REVIEW_DECLARED",
+      "findings": "Initialization/reset uses private lifecycle storage operations. VTC selects attempted destinations from action, active and condition masks before composition; same-value writes and failed claims remain attempts while nonselected entries do not. Commit preauthorizes all attempted VFS targets before transition bars, dones and registry writes. Static validation traverses typed nested command structures, maintains self versus retargeted loop namespaces and refuses known denied writes. Authored initial-state fields not admitted by current DTOs fail rather than silently bypass; dynamically constructed overrides are all authorized before allocation/registration. Compound command preflight conservatively checks nested targets before command mutation. Earlier independent commands are outside rollback scope. Loop preflight authorizes ordinary variable policies without resolving target rows or evaluating collection expressions. Inventory policy candidates are inspected deterministically by qualified profile. Actual loop execution resolves the collection once after earlier sibling state changes, authorizes the exact selected child contexts, then executes those contexts. No persistent cache or speculative branch RNG evaluation is introduced. The policy agent independently compared five actual bd34b538 parent controls against the repair, matching results and full RNG bytes.",
+      "evidence": [
+        "src/townlet/vfs/vtc.py",
+        "src/townlet/vfs/transition_schedule.py",
+        "src/townlet/universe/validation/static_access.py",
+        "src/townlet/environment/vectorized_env.py::_commit_vtc_transition_state",
+        "src/townlet/effects/executor.py::_preflight_command",
+        "src/townlet/items/manager.py::_authorize_spawn_state",
+        "tests/test_townlet/unit/vfs/test_vtc_write_intent.py",
+        "tests/test_townlet/unit/universe/test_static_write_authorization.py",
+        "tests/test_townlet/integration/test_static_write_intent_runtime.py",
+        "tests/test_townlet/unit/items/test_static_access_operations.py",
+        "tests/test_townlet/unit/effects/test_static_command_access.py",
+        "tests/test_townlet/unit/effects/test_command_preflight_selection.py"
+      ]
+    },
+    {
+      "id": 4,
+      "verdict": "INDEPENDENT_SOURCE_PASS",
+      "findings": "Publication checks the registry-owned agent-read/exposure authority before constructing arena gather plans; mutable profile lists no longer filter bindings independently. Hidden and readable-unexposed declarations have no binding/payload. Persisted or constructed forbidden bindings refuse. The runtime batched gather path and token ABI remain intact, including row differences and qualified profile/liveness gates.",
+      "evidence": [
+        "src/townlet/environment/token_publishers.py",
+        "src/townlet/environment/observation_encoder.py",
+        "src/townlet/universe/dto/token_spec.py",
+        "tests/test_townlet/unit/environment/test_token_publishers.py",
+        "tests/test_townlet/integration/test_item_vfs_observations.py"
+      ]
+    },
+    {
+      "id": 5,
+      "verdict": "INDEPENDENT_SOURCE_AND_FOCUSED_PASS",
+      "findings": "The committed pack has public, hidden, readable-unexposed and immutable variables. Actual ADVANCE actions change both public and hidden state; the named hidden reward changes by row while direct agent reads deny. Direct and serialized-cache variants cover two rows and two reset episodes. Qualified item probes use controlled actual spawning and explicitly avoid the initial item-appearance cache gap; they retain profile and despawn/liveness assertions.",
+      "evidence": [
+        "configs/static_epistemic_access/README.md",
+        "configs/static_epistemic_access/variables.yaml",
+        "configs/static_epistemic_access/actions.yaml",
+        "configs/static_epistemic_access/levels/L0_simple/drive.yaml",
+        "tests/test_townlet/integration/test_static_epistemic_access.py",
+        "tests/test_townlet/integration/test_item_vfs_observations.py"
+      ]
+    },
+    {
+      "id": 6,
+      "verdict": "SOURCE_PASS_INDEPENDENT_PEER_REVIEW_RETAINED",
+      "findings": "Canonical identity tags ordinary ids and qualified (profile, variable) item ids separately, includes both permission sets even for hidden state, and sorts sets so role ordering is irrelevant. Existing four-term VFS composition is preserved. Artifact load requires current schema and policy fields, reconstructs and validates ordinary/profile policy coherence, token bindings and recomputed variable/VFS identity. Real serving and training resume tests refuse permission-only changes before applying weights, across flat and token brains.",
+      "evidence": [
+        "src/townlet/vfs/schema_hashes.py",
+        "src/townlet/universe/compiled.py",
+        "src/townlet/universe/compiler.py",
+        "tests/test_townlet/unit/vfs/test_schema_hashes.py",
+        "tests/test_townlet/unit/universe/test_compiled_token_coherence.py",
+        "tests/test_townlet/integration/test_static_epistemic_checkpoint_identity.py",
+        "/tmp/epistemic-independent-acceptance-policy.json"
+      ]
+    },
+    {
+      "id": 7,
+      "verdict": "PASS",
+      "findings": "Exact b70fda10 parent report qualifies 31 cases, 884 readings, ten CPU traces and eleven reset recipes; 150 identity changes are attributed with zero stale/unattributed changes and no trace/reset failures. Instrumentation independent evidence review reconstructs every attribution, forty byte-exact observation/action/reward/done streams and eleven unchanged reset readings. Exact clean-head frozen report has ten DIVERGED_AS_REGISTERED CPU and ten explicit CUDA skips; its independent reconstruction retains existing stream/field limits and adds only DIV-015 variable/VFS causes. Ruff, Black, mypy, no-defaults and public compiler fleet gates all terminate zero. Defaults whitelist is unchanged. Fresh exact-head Loomweave and supplemental AST inventory/manual reconciliation close known actor/hash sites without claiming complete dynamic graph coverage. Full local suite remains in progress and is not yet accepted. The exact-head full local suite has now terminated with exit 0: 4250 passed, 18 skipped, 15 warnings, 1561.29 seconds and 85% coverage. This closes the final pending execution gate; skipped and warning outcomes remain reported explicitly.",
+      "evidence": [
+        "docs/product/evidence/static-epistemic-access/before/manifest.json",
+        "runs/static-epistemic-access/qualified-b70fda10/report.json",
+        "runs/differential/static-epistemic-b70fda10-frozen-clean-cpu/report.json",
+        ".defaults-whitelist.txt",
+        "/tmp/epistemic-final-gates.json",
+        "/tmp/epistemic-final-review-b70fda10.json",
+        "/tmp/epistemic-final-caller-closure.json",
+        "/tmp/epistemic-final-ast-closure.json",
+        "/tmp/epistemic-full-suite-terminal.json",
+        "/tmp/epistemic-final-full-suite.log"
+      ],
+      "remaining": []
+    },
+    {
+      "id": 8,
+      "verdict": "IMPLEMENTATION_ACCEPTANCE_PASS_DELIVERY_STEPS_SEPARATE",
+      "findings": "Independent policy review of Tasks 3/4/6, intent review of Tasks 2/5, and instrumentation command/evidence review are retained with explicit authorship boundaries. Criterion readings are individual. Exact-head graph and AST closure evidence is present with unresolved/dynamic coverage caveats. Final committed acceptance decision and subsequent local integration receipt remain separate completion steps; no author-free whole-package or published/hosted/product-learning claim is made. All implementation acceptance criteria are now GO based on the retained independent cross-reviews, fresh caller closure and exact-head terminal gates. Committing the acceptance decision and authorized local merge remain delivery steps, rather than missing product implementation.",
+      "remaining": [
+        "commit the acceptance decision",
+        "authorized local integration and preservation receipt"
+      ]
+    }
+  ],
+  "fresh_verification": {
+    "command": ".venv/bin/python -m pytest --no-cov tests/test_townlet/unit/effects/test_command_preflight_selection.py tests/test_townlet/unit/effects/test_static_command_access.py tests/test_townlet/unit/effects/test_for_each.py tests/test_townlet/integration/test_static_epistemic_access.py -q",
+    "result": "22 passed in 0.85s",
+    "worktree_status": "clean",
+    "exit_code": 0
+  },
+  "scope_limits": [
+    "static engine/agent role access, not owner privacy",
+    "not a Python sandbox or engine confidentiality guarantee",
+    "no information-theoretic noninterference: rewards/public derived state may reveal hidden inputs",
+    "item appearance cache, held items, locality, shared-world isolation, lifecycle gaps, convergence and CUDA are excluded",
+    "no publication or hosted CI acceptance claimed"
+  ],
+  "final_acceptance_condition": "Implementation accepted at b70fda104e5061ed2735e8b31b7f8f9caaf99f19. All exact-head local execution gates and independent cross-review requirements pass. Acceptance-record commit and authorized local integration remain separate delivery steps; publication, hosted CI, deployment and product learning are not claimed.",
+  "superseded_review": {
+    "source": "9211346cc19224e9e3feafdbce2e94dc7f31677e",
+    "reason": "Independent policy review found duplicate/eager stochastic FOR_EACH resolution. The product fix is committed in 45ba42bb and must be independently checked and qualified at this reviewed head."
+  },
+  "available_final_evidence": {
+    "source_commit": "b70fda104e5061ed2735e8b31b7f8f9caaf99f19",
+    "local_gates": {
+      "ruff": {
+        "command": [
+          ".venv/bin/ruff",
+          "check"
+        ],
+        "exit_code": 0,
+        "log": "/tmp/epistemic-final-ruff.log"
+      },
+      "black": {
+        "command": [
+          ".venv/bin/black",
+          "--check",
+          "."
+        ],
+        "exit_code": 0,
+        "log": "/tmp/epistemic-final-black.log"
+      },
+      "mypy": {
+        "command": [
+          ".venv/bin/mypy",
+          "src"
+        ],
+        "exit_code": 0,
+        "log": "/tmp/epistemic-final-mypy.log"
+      },
+      "no-defaults": {
+        "command": [
+          ".venv/bin/python",
+          "scripts/no_defaults_lint.py",
+          "src",
+          "--whitelist",
+          ".defaults-whitelist.txt"
+        ],
+        "exit_code": 0,
+        "log": "/tmp/epistemic-final-no-defaults.log"
+      },
+      "fleet": {
+        "command": [
+          ".venv/bin/python",
+          "scripts/validate_compiler_cli.py"
+        ],
+        "exit_code": 0,
+        "log": "/tmp/epistemic-final-fleet.log"
+      }
+    },
+    "independent_reconstruction": {
+      "controls": "56 passed in0.43s",
+      "direct_parent": {
+        "attributed_changes": 150,
+        "byte_exact_streams": 40,
+        "cases": 31,
+        "readings": 884,
+        "unchanged_resets": 11
+      },
+      "frozen": {
+        "cpu_verdicts_recomputed": 10,
+        "cuda_skipped": 10,
+        "div015_only": [
+          "variable_schema_hash",
+          "vfs_hash"
+        ],
+        "old_allowances_unchanged": true
+      },
+      "full_acceptance": "pending full gate terminal results",
+      "report_sha256": {
+        "runs/differential/static-epistemic-b70fda10-frozen-clean-cpu/report.json": "e4e8d39d61a76dc7c0b1fff5466314a6bfc3e3718abba39dc7bbb39325d41119",
+        "runs/static-epistemic-access/qualified-b70fda10/report.json": "2a6f10a0e618d66fd7d54b2c46239cb9f64c0702efba01f5c415cbcb325df5df"
+      },
+      "reviewed_source": "b70fda104e5061ed2735e8b31b7f8f9caaf99f19",
+      "source_clean": true
+    },
+    "graph_counts": {
+      "briefing_blocked": 24,
+      "edges": 17425,
+      "entities": 8346,
+      "findings": 9,
+      "subsystems": 35
+    },
+    "ast_summary": {
+      "python_files": 587,
+      "actor_sites": 253,
+      "production_actor_sites": 38,
+      "hash_sites": 22,
+      "production_hash_sites": 4,
+      "missing_actor_sites": 2,
+      "missing_production_actors": [],
+      "hash_calls_without_item_roster": [],
+      "retired_symbol_sites": 0,
+      "definition_mapping_sites": 7,
+      "fixed_engine_write_sites": 17,
+      "production_fixed_engine_write_sites": 4,
+      "pair_diagnostic_access_sites": 1,
+      "excluded_generic_production_get_set_sites": 314
+    },
+    "independent_policy_blockers": [],
+    "full_suite": {
+      "session_id": 51439,
+      "exit_code": 0,
+      "source_commit": "b70fda104e5061ed2735e8b31b7f8f9caaf99f19",
+      "log": "/tmp/epistemic-final-full-suite.log"
+    }
+  },
+  "acceptance_draft_review": {
+    "path": "/tmp/epistemic-acceptance-draft.md",
+    "blocking_factual_or_scope_errors": [],
+    "minor_wording": "Criterion 2 could state Public tensor reads clone storage (item read_item returns a detached float) or Public read results cannot mutate storage, rather than implying every public read returns a cloned tensor.",
+    "pending_placeholders": [
+      "replace FULL_SUITE_RESULT with exact terminal outcome",
+      "record acceptance decision commit",
+      "subsequent local integration receipt"
+    ]
+  }
+}

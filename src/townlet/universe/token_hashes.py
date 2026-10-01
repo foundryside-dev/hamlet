@@ -102,6 +102,8 @@ def canonical_observation_schema(spec: TokenSpec) -> dict[str, Any]:
     layout = canonical_token_layout(spec)
     type_entries = cast("list[dict[str, Any]]", layout["types"])
     for type_entry, token_type in zip(type_entries, spec.types, strict=True):
+        if token_type.type_name == "variable_element":
+            type_entry["slot_binding_scopes"] = [binding.scope for binding in token_type.slot_bindings]
         type_entry["slot_context_payloads"] = [list(payload) for payload in token_type.slot_context_payloads]
         type_entry["effect_catalog_contexts"] = [
             {"context_ref": context.context_ref, "fixed_payload": list(context.fixed_payload)}

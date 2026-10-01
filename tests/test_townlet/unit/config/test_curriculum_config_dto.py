@@ -10,6 +10,7 @@ from tests.test_townlet.unit.config.fixtures import (
     make_valid_params,
 )
 from townlet.config.curriculum import CurriculumConfig, load_curriculum_config
+from townlet.universe.raw_configs_v21 import RawConfigsV21
 
 
 class TestCurriculumConfigValidation:
@@ -76,10 +77,15 @@ class TestCurriculumConfigLoading:
                 missing_packs.append(pack_name)
                 continue
 
-            # Should load without errors
-            config = load_curriculum_config(config_dir)
+            # Production packs resolve authored references before constructing runtime DTOs.
+            raw = RawConfigsV21.from_experiment_dir(config_dir.parent.parent)
+            config = raw.levels[config_dir.name].curriculum
             assert config.curriculum.active_vision in {"global", "partial"}, f"{pack_name}: invalid active_vision"
             assert 0.0 <= config.curriculum.vision_range <= 1.0, f"{pack_name}: invalid vision_range"
+            if config.curriculum.active_temporal:
+                assert isinstance(config.curriculum.day_length, int) and config.curriculum.day_length > 0
+            else:
+                assert config.curriculum.day_length is None
             validated_packs += 1
 
         if validated_packs == 0:

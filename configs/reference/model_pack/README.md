@@ -1,6 +1,6 @@
 # HAMLET Reference Model Pack (runnable example)
 
-This pack is a minimal, self-consistent v2.1.1 configuration intended for smoke testing and as a starting point. It mirrors the reference spec but with concrete values you can run through the compiler/CLI.
+This is a runnable reference pack for the current compiler. Its canonical `variables` declaration replaces the historical profile language in `../config-complete.yaml`; that dated design sketch is not a supported schema. Filenames below are transport conventions.
 
 Layout:
 
@@ -17,11 +17,11 @@ Layout:
   - training.yaml (hyperparams)
   - items.yaml (appearance)
 - items.yaml (catalog)
-- vfs_profiles.yaml (global/agent/item profiles)
+- variables.yaml (canonical global/agent/item declarations and item schema catalog)
 - effects.yaml (reusable effects)
 
 How to validate:
 
 ```
-uv run python -m townlet.universe validate configs/reference/model_pack
+uv run python -m townlet.universe validate configs/reference/model_pack --primary-level L0_demo
 ```

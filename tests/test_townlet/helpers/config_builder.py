@@ -18,7 +18,7 @@ TOP_LEVEL_FILES = [
     "actions.yaml",
     "brain.yaml",
     "effects.yaml",
-    "vfs_profiles.yaml",
+    "variables.yaml",
     "items.yaml",
 ]
 

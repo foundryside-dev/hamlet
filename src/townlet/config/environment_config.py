@@ -16,10 +16,9 @@ from pathlib import Path
 from typing import Annotated, Literal
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Discriminator, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Discriminator, Field
 
 from townlet.vfs.schema import NormalizationSpec
-from townlet.vfs.semantic_type import SemanticType
 
 
 class _MeterRangeBase(BaseModel):
@@ -156,85 +155,6 @@ class AffordanceDefinition(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
-class NormalizationConfig(BaseModel):
-    """Variable normalization configuration."""
-
-    method: Literal["normalize", "standardize"] = Field(
-        ...,
-        description=(
-            "Normalization method: normalize (scale to [0,1] against `range`) or "
-            "standardize (mean/std). Every member is distinct and does what its name says "
-            "(PDR-0047 rule 1)."
-        ),
-    )
-    range: list[float] = Field(..., description="Value range [min, max]", min_length=2, max_length=2)
-    clip: bool | None = Field(
-        default=None,
-        description=(
-            "Clamp the value into `range` before scaling. REQUIRED when method=normalize, "
-            "forbidden when method=standardize (which has no range to clamp against). "
-            "`None` is not a default — the validator rejects it where the parameter applies."
-        ),
-    )
-    mean: float | list[float] | None = Field(
-        default=None,
-        description="Mean value(s) for standardize normalization (optional; required when method=standardize).",
-    )
-    std: float | list[float] | None = Field(
-        default=None,
-        description="Standard deviation value(s) for standardize normalization (optional; required when method=standardize).",
-    )
-
-    model_config = ConfigDict(extra="forbid")
-
-    @model_validator(mode="after")
-    def validate_clip_is_declared_where_it_applies(self) -> "NormalizationConfig":
-        """`clip` is required for `normalize` and forbidden for `standardize`.
-
-        Removing the false `clip` *member* (hamlet-1dba1910c0) did not give authors
-        clamping — they never had it, because `minmax` is pure affine rescaling.
-        This is the real thing (hamlet-fba56feca5), as a parameter rather than a
-        member, so it composes with `log_scaled` instead of multiplying members.
-        """
-        if self.method == "normalize" and self.clip is None:
-            raise ValueError(
-                "normalization method 'normalize' requires an explicit 'clip' (true or false).\n"
-                "  Rule: clamping is a declared choice, never inferred (No-Defaults Principle).\n"
-                "  clip: false — rescale only; an input outside `range` stays outside [0, 1].\n"
-                "  clip: true  — clamp into `range` first, so the observation is bounded."
-            )
-        if self.method == "standardize" and self.clip is not None:
-            raise ValueError("normalization method 'standardize' does not accept 'clip' — it has no range to clamp against.")
-        return self
-
-
-class VariableConfig(BaseModel):
-    """An environment variable — and, today, its exposure declaration.
-
-    Each of these becomes exactly ONE compiled observation field, so the observation-side
-    properties (`normalization`, `semantic_type`) are declared here beside the state. When a
-    per-variable exposure surface exists (vfs.md §4.3 / §8.1) both move to it together.
-    """
-
-    name: str = Field(..., description="Variable name")
-    type: Literal["scalar", "vector"] = Field(..., description="Variable data type")
-    dims: int = Field(..., description="Number of dimensions", gt=0)
-    scope: Literal["global", "agent", "agent_private"] = Field(..., description="Variable visibility scope")
-    description: str = Field(..., description="Human-readable description")
-    normalization: NormalizationConfig = Field(..., description="Normalization configuration")
-    semantic_type: SemanticType = Field(
-        ...,
-        description=(
-            "Semantic group of this variable's observation field — one member of the closed vocabulary "
-            "in townlet.vfs.semantic_type (PDR-0047). The declaration is authoritative: the compiler emits "
-            "exactly this value and lays the field out with its group. `bars` is the meter block and is "
-            "not declarable here. Required, no default: it is part of the field's provenance."
-        ),
-    )
-
-    model_config = ConfigDict(extra="forbid")
-
-
 class CueTriggerConfig(BaseModel):
     """Cue trigger condition."""
 
@@ -273,7 +193,6 @@ class EnvironmentConfigRoot(BaseModel):
     cascade_graph: list[CascadeConfig] = Field(..., description="Cascade relationships")
     modulation_graph: list[ModulationConfig] = Field(..., description="Modulation relationships")
     affordances: list[AffordanceDefinition] = Field(..., description="Affordance definitions")
-    variables: list[VariableConfig] = Field(..., description="VFS variable definitions")
     cues: list[CueConfig] = Field(..., description="UI cue definitions")
 
     model_config = ConfigDict(extra="forbid")

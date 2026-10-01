@@ -1,5 +1,5 @@
 """hamlet-df3a96bbac: expressions evaluate on the shipped default shape —
-mark_and_sweep, no variables_reference.yaml."""
+mark_and_sweep with canonical variable declarations."""
 
 from __future__ import annotations
 
@@ -9,14 +9,12 @@ import yaml
 
 from tests.test_townlet.helpers.config_builder import PRIMARY_LEVEL_NAME, prepare_config_dir
 from townlet.universe.compiler import UniverseCompiler
+from townlet.universe.errors import CompilationError
 
 
 def _make_env(tmp_path, profile_payload, num_agents=2):
     config_dir = prepare_config_dir(tmp_path)
-    (config_dir / "vfs_profiles.yaml").write_text(yaml.safe_dump(profile_payload))
-    ref = config_dir / "variables_reference.yaml"
-    if ref.exists():
-        ref.unlink()  # the shipped-default shape: NO overlay file
+    (config_dir / "variables.yaml").write_text(yaml.safe_dump(profile_payload))
     u = UniverseCompiler().compile(config_dir, primary_level=PRIMARY_LEVEL_NAME)
     env = u.create_environment(num_agents=num_agents, level_name=PRIMARY_LEVEL_NAME, device="cpu")
     env.reset()
@@ -24,17 +22,38 @@ def _make_env(tmp_path, profile_payload, num_agents=2):
 
 
 _PROFILES = {
-    "version": "1.0",
-    "evaluation_mode": "mark_and_sweep",
-    "debug_logging": False,
-    "global_profile": {
-        "variables": [
-            {"semantic_type": "custom", "name": "stash", "type": "float", "initial_value": 1.0},
-            {"semantic_type": "custom", "name": "tick_echo", "type": "float", "expression": "tick * 2.0"},
-        ]
-    },
-    "agent_profile": None,
-    "item_profiles": [{"profile_name": "default_item", "variables": []}],
+    "variables": {
+        "version": "1.0",
+        "evaluation_mode": "mark_and_sweep",
+        "debug_logging": False,
+        "extents": {},
+        "item_profiles": ["default_item"],
+        "declarations": [
+            {
+                "readable_by": ["engine", "agent"],
+                "writable_by": ["engine"],
+                "id": "stash",
+                "scope": "global",
+                "type": "scalar",
+                "lifetime": "persistent",
+                "semantic_type": "custom",
+                "initial_value": 1.0,
+                "exposed_to": [],
+            },
+            {
+                "readable_by": ["engine", "agent"],
+                "writable_by": ["engine"],
+                "id": "tick_echo",
+                "scope": "global",
+                "type": "scalar",
+                "lifetime": "persistent",
+                "semantic_type": "custom",
+                "initial_value": 0.0,
+                "exposed_to": [],
+                "expression": "tick * 2.0",
+            },
+        ],
+    }
 }
 
 
@@ -59,17 +78,38 @@ def test_static_survives_engine_write_unclobbered(tmp_path):
 
 
 _DEPENDENCY_PROFILES = {
-    "version": "1.0",
-    "evaluation_mode": "mark_and_sweep",
-    "debug_logging": False,
-    "global_profile": {
-        "variables": [
-            {"semantic_type": "custom", "name": "base", "type": "float", "initial_value": 1.0},
-            {"semantic_type": "custom", "name": "derived", "type": "float", "expression": "base + 1.0"},
-        ]
-    },
-    "agent_profile": None,
-    "item_profiles": [{"profile_name": "default_item", "variables": []}],
+    "variables": {
+        "version": "1.0",
+        "evaluation_mode": "mark_and_sweep",
+        "debug_logging": False,
+        "extents": {},
+        "item_profiles": ["default_item"],
+        "declarations": [
+            {
+                "readable_by": ["engine", "agent"],
+                "writable_by": ["engine"],
+                "id": "base",
+                "scope": "global",
+                "type": "scalar",
+                "lifetime": "persistent",
+                "semantic_type": "custom",
+                "initial_value": 1.0,
+                "exposed_to": [],
+            },
+            {
+                "readable_by": ["engine", "agent"],
+                "writable_by": ["engine"],
+                "id": "derived",
+                "scope": "global",
+                "type": "scalar",
+                "lifetime": "persistent",
+                "semantic_type": "custom",
+                "initial_value": 0.0,
+                "exposed_to": [],
+                "expression": "base + 1.0",
+            },
+        ],
+    }
 }
 
 
@@ -90,17 +130,38 @@ def test_static_dependency_of_marked_expression_is_not_clobbered_by_write_back(t
 # --- Task 6 (hamlet-5d74335111): agent-profile evaluation gets the second call site ---
 
 _AGENT_PROFILES = {
-    "version": "1.0",
-    "evaluation_mode": "mark_and_sweep",
-    "debug_logging": False,
-    "global_profile": None,
-    "agent_profile": {
-        "variables": [
-            {"semantic_type": "custom", "name": "wealth_static", "type": "float", "initial_value": 1.0},
-            {"semantic_type": "custom", "name": "low_energy", "type": "bool", "expression": "bar.energy < 2.0"},
-        ]
-    },
-    "item_profiles": [{"profile_name": "default_item", "variables": []}],
+    "variables": {
+        "version": "1.0",
+        "evaluation_mode": "mark_and_sweep",
+        "debug_logging": False,
+        "extents": {},
+        "item_profiles": ["default_item"],
+        "declarations": [
+            {
+                "readable_by": ["engine", "agent"],
+                "writable_by": ["engine"],
+                "id": "wealth_static",
+                "scope": "agent",
+                "type": "scalar",
+                "lifetime": "episode",
+                "semantic_type": "custom",
+                "initial_value": 1.0,
+                "exposed_to": [],
+            },
+            {
+                "readable_by": ["engine", "agent"],
+                "writable_by": ["engine"],
+                "id": "low_energy",
+                "scope": "agent",
+                "type": "bool",
+                "lifetime": "episode",
+                "semantic_type": "custom",
+                "initial_value": False,
+                "exposed_to": [],
+                "expression": "bar.energy < 2.0",
+            },
+        ],
+    }
 }
 
 
@@ -122,17 +183,38 @@ def test_agent_static_is_never_clobbered(tmp_path):
 
 
 _AGENT_DEPENDENCY_PROFILES = {
-    "version": "1.0",
-    "evaluation_mode": "mark_and_sweep",
-    "debug_logging": False,
-    "global_profile": None,
-    "agent_profile": {
-        "variables": [
-            {"semantic_type": "custom", "name": "base", "type": "float", "initial_value": 1.0},
-            {"semantic_type": "custom", "name": "derived", "type": "float", "expression": "base + 1.0"},
-        ]
-    },
-    "item_profiles": [{"profile_name": "default_item", "variables": []}],
+    "variables": {
+        "version": "1.0",
+        "evaluation_mode": "mark_and_sweep",
+        "debug_logging": False,
+        "extents": {},
+        "item_profiles": ["default_item"],
+        "declarations": [
+            {
+                "readable_by": ["engine", "agent"],
+                "writable_by": ["engine"],
+                "id": "base",
+                "scope": "agent",
+                "type": "scalar",
+                "lifetime": "episode",
+                "semantic_type": "custom",
+                "initial_value": 1.0,
+                "exposed_to": [],
+            },
+            {
+                "readable_by": ["engine", "agent"],
+                "writable_by": ["engine"],
+                "id": "derived",
+                "scope": "agent",
+                "type": "scalar",
+                "lifetime": "episode",
+                "semantic_type": "custom",
+                "initial_value": 0.0,
+                "exposed_to": [],
+                "expression": "base + 1.0",
+            },
+        ],
+    }
 }
 
 
@@ -155,27 +237,33 @@ def test_agent_static_dependency_of_marked_expression_is_not_clobbered_by_write_
 
 
 _AGENT_SCALAR_EXPRESSION_PROFILES = {
-    "version": "1.0",
-    "evaluation_mode": "mark_and_sweep",
-    "debug_logging": False,
-    "global_profile": None,
-    "agent_profile": {
-        "variables": [
-            # No bar.* reference: "tick" is the ambient engine scalar (0-dim), so this
-            # expression evaluates to a SCALAR, not a per-agent tensor. A constant like
-            # this belongs in initial_value; declaring it as an agent-profile expression
-            # must be refused loudly by the write-back shape check, not broadcast.
-            {"semantic_type": "custom", "name": "scalar_expr", "type": "float", "expression": "tick * 2.0"},
-        ]
-    },
-    "item_profiles": [{"profile_name": "default_item", "variables": []}],
+    "variables": {
+        "version": "1.0",
+        "evaluation_mode": "mark_and_sweep",
+        "debug_logging": False,
+        "extents": {},
+        "item_profiles": ["default_item"],
+        "declarations": [
+            {
+                "readable_by": ["engine", "agent"],
+                "writable_by": ["engine"],
+                "id": "scalar_expr",
+                "scope": "agent",
+                "type": "scalar",
+                "lifetime": "episode",
+                "semantic_type": "custom",
+                "initial_value": 0.0,
+                "exposed_to": [],
+                "expression": "tick * 2.0",
+            }
+        ],
+    }
 }
 
 
 def test_agent_expression_wrong_shape_raises_naming_variable_and_shapes(tmp_path):
-    env = _make_env(tmp_path, _AGENT_SCALAR_EXPRESSION_PROFILES)
-    with pytest.raises(ValueError, match="scalar_expr"):
-        env.step(torch.zeros(env.num_agents, dtype=torch.long, device=env.device))
+    with pytest.raises(CompilationError, match="scalar_expr.*shape"):
+        _make_env(tmp_path, _AGENT_SCALAR_EXPRESSION_PROFILES)
 
 
 # --- Amendment obligation 3 (Task 5 fix-round controller ruling): the write-back
@@ -183,17 +271,38 @@ def test_agent_expression_wrong_shape_raises_naming_variable_and_shapes(tmp_path
 # Statics are storage in every evaluation mode, not just mark_and_sweep. ---
 
 _EAGER_PROFILES = {
-    "version": "1.0",
-    "evaluation_mode": "eager",
-    "debug_logging": False,
-    "global_profile": {
-        "variables": [
-            {"semantic_type": "custom", "name": "stash", "type": "float", "initial_value": 1.0},
-            {"semantic_type": "custom", "name": "tick_echo", "type": "float", "expression": "tick * 2.0"},
-        ]
-    },
-    "agent_profile": None,
-    "item_profiles": [{"profile_name": "default_item", "variables": []}],
+    "variables": {
+        "version": "1.0",
+        "evaluation_mode": "eager",
+        "debug_logging": False,
+        "extents": {},
+        "item_profiles": ["default_item"],
+        "declarations": [
+            {
+                "readable_by": ["engine", "agent"],
+                "writable_by": ["engine"],
+                "id": "stash",
+                "scope": "global",
+                "type": "scalar",
+                "lifetime": "persistent",
+                "semantic_type": "custom",
+                "initial_value": 1.0,
+                "exposed_to": [],
+            },
+            {
+                "readable_by": ["engine", "agent"],
+                "writable_by": ["engine"],
+                "id": "tick_echo",
+                "scope": "global",
+                "type": "scalar",
+                "lifetime": "persistent",
+                "semantic_type": "custom",
+                "initial_value": 0.0,
+                "exposed_to": [],
+                "expression": "tick * 2.0",
+            },
+        ],
+    }
 }
 
 

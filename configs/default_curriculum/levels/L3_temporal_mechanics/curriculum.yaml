@@ -9,4 +9,5 @@ curriculum:
   active_vision: global
   vision_range: 0.5
   active_temporal: true       # Temporal features active
-  day_length: 24              # 24 ticks per day
+  day_length:
+    period_of: day_phase     # Resolve the authored ambient clock's period

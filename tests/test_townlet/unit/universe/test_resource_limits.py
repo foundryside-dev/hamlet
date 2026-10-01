@@ -51,28 +51,40 @@ def _write_items_catalog(config_dir: Path, *, item_types: list[dict]) -> None:
     (config_dir / "items.yaml").write_text(yaml.safe_dump(catalog))
 
 
-def _write_vfs_profiles(config_dir: Path, *, profile_count: int) -> None:
-    """Override vfs_profiles.yaml with a given number of item profiles."""
-    profiles = [
-        {
-            "profile_name": f"profile_{idx}",
-            "variables": [{"name": "value", "type": "int", "initial_value": idx}],
+def _write_variables(config_dir: Path, *, profile_count: int) -> None:
+    """Declare explicit item-profile groups and one scalar variable in each."""
+    profiles = [f"profile_{idx}" for idx in range(profile_count)]
+    variables = {
+        "variables": {
+            "version": "1.0",
+            "evaluation_mode": "mark_and_sweep",
+            "debug_logging": False,
+            "extents": {},
+            "item_profiles": profiles,
+            "declarations": [
+                {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
+                    "id": "value",
+                    "profile": profile,
+                    "scope": "item",
+                    "type": "scalar",
+                    "lifetime": "episode",
+                    "semantic_type": "custom",
+                    "initial_value": idx,
+                    "exposed_to": [],
+                }
+                for idx, profile in enumerate(profiles)
+            ],
         }
-        for idx in range(profile_count)
-    ]
-    vfs_payload = {
-        "version": "1.0",
-        "evaluation_mode": "mark_and_sweep",
-        "debug_logging": False,
-        "item_profiles": profiles,
     }
-    (config_dir / "vfs_profiles.yaml").write_text(yaml.safe_dump(vfs_payload))
+    (config_dir / "variables.yaml").write_text(yaml.safe_dump(variables))
 
 
 def test_item_catalog_rejects_more_than_max_item_types(tmp_path: Path) -> None:
     """items.yaml should fail fast when item_types exceeds MAX_ITEM_TYPES."""
     config_dir = prepare_config_dir(tmp_path, name="too_many_items")
-    _write_vfs_profiles(config_dir, profile_count=1)
+    _write_variables(config_dir, profile_count=1)
     _write_items_catalog(config_dir, item_types=_make_item_types(MAX_ITEM_TYPES + 1))
 
     compiler = UniverseCompiler()
@@ -83,19 +95,19 @@ def test_item_catalog_rejects_more_than_max_item_types(tmp_path: Path) -> None:
 def test_item_catalog_limit_is_enforced_by_limits_validation_after_dto_load(tmp_path: Path) -> None:
     """Stage 1 should load DTOs; the limits validator should own safety limit policy."""
     config_dir = prepare_config_dir(tmp_path, name="too_many_items_limits_module")
-    _write_vfs_profiles(config_dir, profile_count=1)
+    _write_variables(config_dir, profile_count=1)
     _write_items_catalog(config_dir, item_types=_make_item_types(MAX_ITEM_TYPES + 1))
 
     raw = load_v21_configs(config_dir)
 
     with pytest.raises(CompilationError, match="item_types exceeds safety limit"):
-        limits.validate_v21_limits(raw, config_dir)
+        limits.validate_v21_limits(raw, config_dir, source_map=None)
 
 
 def test_spawn_rules_per_item_are_capped(tmp_path: Path) -> None:
-    """Level items.yaml should enforce a per-item spawn rule cap."""
+    """Level item appearances should enforce a per-item spawn rule cap."""
     config_dir = prepare_config_dir(tmp_path, name="too_many_spawn_rules")
-    _write_vfs_profiles(config_dir, profile_count=1)
+    _write_variables(config_dir, profile_count=1)
     _write_items_catalog(config_dir, item_types=_make_item_types(1))
 
     level_items_path = config_dir / "levels" / PRIMARY_LEVEL_NAME / "items.yaml"
@@ -108,12 +120,19 @@ def test_spawn_rules_per_item_are_capped(tmp_path: Path) -> None:
         compiler.compile(config_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
 
 
-def test_vfs_profiles_count_is_capped(tmp_path: Path) -> None:
-    """vfs_profiles.yaml should cap total profiles (global/agent/item) at MAX_VFS_PROFILES."""
+def test_item_profile_group_count_is_capped(tmp_path: Path) -> None:
+    """Named item groups are bounded independently of their variable counts."""
     config_dir = prepare_config_dir(tmp_path, name="too_many_profiles")
-    _write_vfs_profiles(config_dir, profile_count=MAX_VFS_PROFILES + 1)
+    _write_variables(config_dir, profile_count=MAX_VFS_PROFILES + 1)
+    path = config_dir / "variables.yaml"
+    data = yaml.safe_load(path.read_text())
+    data["variables"]["declarations"] = []
+    path.write_text(yaml.safe_dump(data))
     _write_items_catalog(config_dir, item_types=_make_item_types(1, profile="profile_0"))
 
     compiler = UniverseCompiler()
-    with pytest.raises(ValueError, match="vfs_profiles.yaml exceeds safety limit"):
+    with pytest.raises(CompilationError, match="Variables item profile count exceeds safety limit") as caught:
         compiler.compile(config_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
+    assert f"{MAX_VFS_PROFILES + 1} (max {MAX_VFS_PROFILES})" in str(caught.value)
+    assert caught.value.issues[0].code == "CONFIG_LIMIT_EXCEEDED"
+    assert caught.value.issues[0].location == f"{config_dir / 'variables.yaml'}:1"

@@ -1,0 +1,786 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.1, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /tmp/hamlet-static-epistemic-access
+configfile: pyproject.toml
+plugins: hypothesis-6.165.3, anyio-4.14.2, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 3574 items
+
+tests/test_townlet/unit/agent/test_brain_config.py ..................... [  0%]
+...................                                                      [  1%]
+tests/test_townlet/unit/agent/test_loss_factory.py ....                  [  1%]
+tests/test_townlet/unit/agent/test_network_factory.py .....              [  1%]
+tests/test_townlet/unit/agent/test_networks.py ..                        [  1%]
+tests/test_townlet/unit/agent/test_optimizer_factory.py ........         [  1%]
+tests/test_townlet/unit/agent/test_recurrent_token_qnetwork.py .....     [  1%]
+tests/test_townlet/unit/agent/test_structured_qnetwork.py .....          [  1%]
+tests/test_townlet/unit/agent/test_token_diagnostics.py ...............  [  2%]
+tests/test_townlet/unit/agent/test_token_set_qnetwork.py ............... [  2%]
+......................                                                   [  3%]
+tests/test_townlet/unit/config/test_affordance_masking.py ......         [  3%]
+tests/test_townlet/unit/config/test_affordance_runtime_reachability.py . [  3%]
+.........                                                                [  3%]
+tests/test_townlet/unit/config/test_base.py ...........                  [  4%]
+tests/test_townlet/unit/config/test_config_pack_factory.py ..            [  4%]
+tests/test_townlet/unit/config/test_curriculum_config_dto.py .........   [  4%]
+tests/test_townlet/unit/config/test_drive_as_code_dto.py ............... [  4%]
+........                                                                 [  5%]
+tests/test_townlet/unit/config/test_environment_config_dto.py .......... [  5%]
+.                                                                        [  5%]
+tests/test_townlet/unit/config/test_exploration_config_dto.py .......    [  5%]
+tests/test_townlet/unit/config/test_interaction_type_vocabulary.py ..... [  5%]
+...                                                                      [  5%]
+tests/test_townlet/unit/config/test_items_command_shapes.py ...          [  5%]
+tests/test_townlet/unit/config/test_presentation_config_dto.py ......... [  6%]
+......                                                                   [  6%]
+tests/test_townlet/unit/config/test_stratum_config_dto.py ....           [  6%]
+tests/test_townlet/unit/config/test_training_v2_config_dto.py .......    [  6%]
+tests/test_townlet/unit/config/test_transition_rules_config_dto.py ..... [  6%]
+....................                                                     [  7%]
+tests/test_townlet/unit/config/test_variables_dto.py ................... [  7%]
+.......................                                                  [  8%]
+tests/test_townlet/unit/config/test_vfs_doc_social_residue_examples.py . [  8%]
+                                                                         [  8%]
+tests/test_townlet/unit/config/test_vfs_profile_init_sources.py ...      [  8%]
+tests/test_townlet/unit/curriculum/test_curriculums.py ................. [  9%]
+.........................                                                [  9%]
+tests/test_townlet/unit/demo/test_live_inference_unit.py ..............  [ 10%]
+tests/test_townlet/unit/demo/test_presentation.py .........              [ 10%]
+tests/test_townlet/unit/demo/test_runner_environment_budget.py ......... [ 10%]
+..                                                                       [ 10%]
+tests/test_townlet/unit/demo/test_runner_seeding.py .......              [ 10%]
+tests/test_townlet/unit/demo/test_runner_training_status.py ..........   [ 11%]
+tests/test_townlet/unit/demo/test_runner_vfs_hash.py ....                [ 11%]
+tests/test_townlet/unit/demo/test_unified_server_unit.py ...             [ 11%]
+tests/test_townlet/unit/effects/test_affordance_toggle.py ..             [ 11%]
+tests/test_townlet/unit/effects/test_cascade_depth_limit.py ..           [ 11%]
+tests/test_townlet/unit/effects/test_catalog_compilation.py ..........   [ 11%]
+tests/test_townlet/unit/effects/test_collections.py .................    [ 12%]
+tests/test_townlet/unit/effects/test_command_compiler.py ............... [ 12%]
+.....                                                                    [ 12%]
+tests/test_townlet/unit/effects/test_command_executor.py .....           [ 12%]
+tests/test_townlet/unit/effects/test_command_parser.py ................. [ 13%]
+.                                                                        [ 13%]
+tests/test_townlet/unit/effects/test_context_current_tick.py ..          [ 13%]
+tests/test_townlet/unit/effects/test_delay_alignment.py .                [ 13%]
+tests/test_townlet/unit/effects/test_delay_executor.py ....              [ 13%]
+tests/test_townlet/unit/effects/test_effect_manager.py ................. [ 14%]
+..........                                                               [ 14%]
+tests/test_townlet/unit/effects/test_effects_dto.py .................... [ 14%]
+.............                                                            [ 15%]
+tests/test_townlet/unit/effects/test_execution_context.py .............. [ 15%]
+..                                                                       [ 15%]
+tests/test_townlet/unit/effects/test_executor_device_propagation.py .    [ 15%]
+tests/test_townlet/unit/effects/test_float32_boundaries.py ............. [ 16%]
+..........                                                               [ 16%]
+tests/test_townlet/unit/effects/test_for_each.py .......                 [ 16%]
+tests/test_townlet/unit/effects/test_global_scope_resolution.py ........ [ 16%]
+                                                                         [ 16%]
+tests/test_townlet/unit/effects/test_lifecycle_interrupt.py .......      [ 17%]
+tests/test_townlet/unit/effects/test_parallel_compiler.py ..             [ 17%]
+tests/test_townlet/unit/effects/test_reapply_policies.py ....            [ 17%]
+tests/test_townlet/unit/effects/test_reduce_executor.py ...              [ 17%]
+tests/test_townlet/unit/effects/test_reference_types_runtime.py ......   [ 17%]
+tests/test_townlet/unit/effects/test_sample_command.py ....              [ 17%]
+tests/test_townlet/unit/effects/test_scheduler.py ......                 [ 17%]
+tests/test_townlet/unit/effects/test_spawn_effect.py ...........         [ 18%]
+tests/test_townlet/unit/effects/test_spawn_item_position_resolution.py . [ 18%]
+....                                                                     [ 18%]
+tests/test_townlet/unit/effects/test_static_command_access.py .....      [ 18%]
+tests/test_townlet/unit/effects/test_switch_executor.py ..               [ 18%]
+tests/test_townlet/unit/environment/test_action_config_extension.py .... [ 18%]
+.......                                                                  [ 18%]
+tests/test_townlet/unit/environment/test_action_labels.py .............. [ 19%]
+......................                                                   [ 19%]
+tests/test_townlet/unit/environment/test_action_masking.py ............. [ 20%]
+..........................                                               [ 20%]
+tests/test_townlet/unit/environment/test_action_space.py .......         [ 21%]
+tests/test_townlet/unit/environment/test_affordance_engine.py .......... [ 21%]
+.........                                                                [ 21%]
+tests/test_townlet/unit/environment/test_affordances.py ..               [ 21%]
+tests/test_townlet/unit/environment/test_checkpoint_validation.py ...... [ 21%]
+                                                                         [ 21%]
+tests/test_townlet/unit/environment/test_compiled_effects_usage.py ..    [ 21%]
+tests/test_townlet/unit/environment/test_dac_engine.py ................. [ 22%]
+....................................                                     [ 23%]
+tests/test_townlet/unit/environment/test_engine_dynamic_sizing.py ....   [ 23%]
+tests/test_townlet/unit/environment/test_engine_tick_runtime.py ...      [ 23%]
+tests/test_townlet/unit/environment/test_gridnd_action_support.py ..     [ 23%]
+tests/test_townlet/unit/environment/test_item_delay_tick.py .            [ 23%]
+tests/test_townlet/unit/environment/test_meters.py ...............       [ 24%]
+tests/test_townlet/unit/environment/test_movement_deltas.py ...          [ 24%]
+tests/test_townlet/unit/environment/test_movement_mask_bug.py .........  [ 24%]
+tests/test_townlet/unit/environment/test_profile_evaluation_liveness.py . [ 24%]
+.......                                                                  [ 24%]
+tests/test_townlet/unit/environment/test_reward_calculator.py .          [ 24%]
+tests/test_townlet/unit/environment/test_temporal_pipeline.py ...        [ 24%]
+tests/test_townlet/unit/environment/test_token_binding_scope.py ........ [ 24%]
+                                                                         [ 24%]
+tests/test_townlet/unit/environment/test_token_partial_observability.py . [ 24%]
+                                                                         [ 24%]
+tests/test_townlet/unit/environment/test_token_publishers.py ........... [ 25%]
+........................................................................ [ 27%]
+..............                                                           [ 27%]
+tests/test_townlet/unit/environment/test_vectorized_env.py ............. [ 28%]
+............................s...............................             [ 29%]
+tests/test_townlet/unit/environment/test_vectorized_env_level_metadata.py . [ 29%]
+.....                                                                    [ 29%]
+tests/test_townlet/unit/environment/test_vectorized_env_runtime.py ..... [ 30%]
+                                                                         [ 30%]
+tests/test_townlet/unit/environment/test_vfs_integration.py ....         [ 30%]
+tests/test_townlet/unit/environment/test_vfs_type_validation.py ........ [ 30%]
+..                                                                       [ 30%]
+tests/test_townlet/unit/exploration/test_epsilon_greedy_selection.py ... [ 30%]
+...                                                                      [ 30%]
+tests/test_townlet/unit/exploration/test_exploration_strategies.py ..... [ 30%]
+.........................................................                [ 32%]
+tests/test_townlet/unit/exploration/test_rnd_normalization.py ....       [ 32%]
+tests/test_townlet/unit/exploration/test_rnd_stats_update_timing.py ..   [ 32%]
+tests/test_townlet/unit/expression/test_functions.py ...........         [ 32%]
+tests/test_townlet/unit/items/test_action_handlers.py .......            [ 32%]
+tests/test_townlet/unit/items/test_custom_item_verbs.py .                [ 33%]
+tests/test_townlet/unit/items/test_effects_integration.py .              [ 33%]
+tests/test_townlet/unit/items/test_inventory.py .........                [ 33%]
+tests/test_townlet/unit/items/test_item_lifecycle.py ..                  [ 33%]
+tests/test_townlet/unit/items/test_item_manager.py .........             [ 33%]
+tests/test_townlet/unit/items/test_item_manager_debug_logging.py ..      [ 33%]
+tests/test_townlet/unit/items/test_item_sharing.py ..                    [ 33%]
+tests/test_townlet/unit/items/test_item_vfs_initialization.py ..         [ 33%]
+tests/test_townlet/unit/items/test_item_vfs_profile_assignment.py ..     [ 33%]
+tests/test_townlet/unit/items/test_items_dto.py ................         [ 34%]
+tests/test_townlet/unit/items/test_items_dto_extended.py ............... [ 34%]
+..............                                                           [ 35%]
+tests/test_townlet/unit/items/test_periodic_respawn.py ....              [ 35%]
+tests/test_townlet/unit/items/test_spawn_conditions.py ...........       [ 35%]
+tests/test_townlet/unit/items/test_spawn_rules_advanced.py ..........    [ 35%]
+tests/test_townlet/unit/items/test_spawn_with_initial_state.py ..        [ 35%]
+tests/test_townlet/unit/items/test_static_access_operations.py ......    [ 36%]
+tests/test_townlet/unit/oracle/test_compare.py ......................... [ 36%]
+..........                                                               [ 36%]
+tests/test_townlet/unit/oracle/test_declaration_input_drift.py ..F       [ 37%]
+tests/test_townlet/unit/oracle/test_driver.py .........                  [ 37%]
+tests/test_townlet/unit/oracle/test_epistemic_comparison.py ............ [ 37%]
+..................................                                       [ 38%]
+tests/test_townlet/unit/oracle/test_harness.py ......................... [ 39%]
+....................                                                     [ 39%]
+tests/test_townlet/unit/oracle/test_matrix.py ........................FF [ 40%]
+..F.F.....F......F                                                       [ 41%]
+tests/test_townlet/unit/oracle/test_pack_freeze.py ...............       [ 41%]
+tests/test_townlet/unit/oracle/test_trace_io.py ......                   [ 41%]
+tests/test_townlet/unit/population/test_action_selection.py ............ [ 42%]
+                                                                         [ 42%]
+tests/test_townlet/unit/population/test_double_dqn_algorithm.py .....    [ 42%]
+tests/test_townlet/unit/population/test_recurrent_training.py .......... [ 42%]
+..                                                                       [ 42%]
+tests/test_townlet/unit/population/test_runtime_registry.py .......      [ 42%]
+tests/test_townlet/unit/population/test_vectorized_population.py ....... [ 42%]
+..............................................................           [ 44%]
+tests/test_townlet/unit/recording/test_criteria.py ...............       [ 45%]
+tests/test_townlet/unit/recording/test_data_structures.py .......        [ 45%]
+tests/test_townlet/unit/recording/test_database.py ...............       [ 45%]
+tests/test_townlet/unit/recording/test_recorder.py ................      [ 46%]
+tests/test_townlet/unit/recording/test_video_export.py ................. [ 46%]
+..                                                                       [ 46%]
+tests/test_townlet/unit/scripts/test_l2_baseline.py .....                [ 46%]
+tests/test_townlet/unit/scripts/test_l2_token_regression.py ............ [ 47%]
+...................                                                      [ 47%]
+tests/test_townlet/unit/substrate/test_base.py .......                   [ 47%]
+tests/test_townlet/unit/substrate/test_config.py ....................    [ 48%]
+tests/test_townlet/unit/substrate/test_config_nd.py ...s..s........s.... [ 48%]
+..ss....                                                                 [ 49%]
+tests/test_townlet/unit/substrate/test_continuous.py ................... [ 49%]
+.....................                                                    [ 50%]
+tests/test_townlet/unit/substrate/test_continuous_comprehensive.py ..... [ 50%]
+..............                                                           [ 50%]
+tests/test_townlet/unit/substrate/test_continuousnd.py ...............   [ 51%]
+tests/test_townlet/unit/substrate/test_continuousnd_comprehensive.py ... [ 51%]
+..........                                                               [ 51%]
+tests/test_townlet/unit/substrate/test_continuousnd_edge_cases.py ...... [ 51%]
+.........                                                                [ 52%]
+tests/test_townlet/unit/substrate/test_continuousnd_scaling.py .......   [ 52%]
+tests/test_townlet/unit/substrate/test_distances.py .                    [ 52%]
+tests/test_townlet/unit/substrate/test_factory.py ......                 [ 52%]
+tests/test_townlet/unit/substrate/test_grid2d.py .....                   [ 52%]
+tests/test_townlet/unit/substrate/test_grid2d_boundary_edge_cases.py ... [ 52%]
+......                                                                   [ 52%]
+tests/test_townlet/unit/substrate/test_grid3d.py ......................  [ 53%]
+tests/test_townlet/unit/substrate/test_grid3d_boundary_edge_cases.py ... [ 53%]
+........                                                                 [ 53%]
+tests/test_townlet/unit/substrate/test_gridnd.py ...............         [ 54%]
+tests/test_townlet/unit/substrate/test_gridnd_comprehensive.py ......... [ 54%]
+............                                                             [ 54%]
+tests/test_townlet/unit/substrate/test_gridnd_edge_cases.py .......      [ 54%]
+tests/test_townlet/unit/substrate/test_gridnd_scaling.py ....            [ 55%]
+tests/test_townlet/unit/substrate/test_interface.py ..................   [ 55%]
+tests/test_townlet/unit/substrate/test_visibility_contract.py .......... [ 55%]
+..................................                                       [ 56%]
+tests/test_townlet/unit/test_action_builder.py .....                     [ 56%]
+tests/test_townlet/unit/test_action_config.py ......                     [ 57%]
+tests/test_townlet/unit/test_determinism.py ..                           [ 57%]
+tests/test_townlet/unit/test_substrate_actions.py ...................... [ 57%]
+.......                                                                  [ 57%]
+tests/test_townlet/unit/test_utilities_validation.py ................... [ 58%]
+........                                                                 [ 58%]
+tests/test_townlet/unit/training/test_brain_lineage_legibility.py ....   [ 58%]
+tests/test_townlet/unit/training/test_checkpoint_utils.py .............. [ 59%]
+.                                                                        [ 59%]
+tests/test_townlet/unit/training/test_prioritized_replay_buffer.py ..... [ 59%]
+...................................s.                                    [ 60%]
+tests/test_townlet/unit/training/test_prioritized_replay_buffer_components.py . [ 60%]
+............                                                             [ 60%]
+tests/test_townlet/unit/training/test_replay_buffer_components.py ...... [ 60%]
+.........                                                                [ 61%]
+tests/test_townlet/unit/training/test_replay_buffers.py ................ [ 61%]
+..ss........s.........................................s............      [ 63%]
+tests/test_townlet/unit/training/test_sequential_replay_buffer.py ...... [ 63%]
+.............................                                            [ 64%]
+tests/test_townlet/unit/training/test_state.py .....                     [ 64%]
+tests/test_townlet/unit/training/test_tensorboard_logger.py ............ [ 64%]
+.............                                                            [ 65%]
+tests/test_townlet/unit/training/test_token_checkpoint_gates.py ........ [ 65%]
+....................                                                     [ 66%]
+tests/test_townlet/unit/universe/dto/test_universe_dtos.py ....          [ 66%]
+tests/test_townlet/unit/universe/test_action_space_composition.py ...    [ 66%]
+tests/test_townlet/unit/universe/test_agent_profile_cache_serialization.py . [ 66%]
+.....                                                                    [ 66%]
+tests/test_townlet/unit/universe/test_brain_level_override.py ....       [ 66%]
+tests/test_townlet/unit/universe/test_canonical_variable_compilation.py . [ 66%]
+..........                                                               [ 66%]
+tests/test_townlet/unit/universe/test_compact_token_layout.py .......... [ 67%]
+.....................                                                    [ 67%]
+tests/test_townlet/unit/universe/test_compiled_artifact_required_fields.py . [ 67%]
+........................................................................ [ 69%]
+........................................................                 [ 71%]
+tests/test_townlet/unit/universe/test_compiled_token_coherence.py ...... [ 71%]
+.................................................................        [ 73%]
+tests/test_townlet/unit/universe/test_compiled_universe.py ............. [ 73%]
+..........                                                               [ 74%]
+tests/test_townlet/unit/universe/test_compiled_universe_primary_level.py . [ 74%]
+...                                                                      [ 74%]
+tests/test_townlet/unit/universe/test_compiled_universe_serialization.py . [ 74%]
+..............                                                           [ 74%]
+tests/test_townlet/unit/universe/test_compiler_cache.py ................ [ 75%]
+.........................................                                [ 76%]
+tests/test_townlet/unit/universe/test_compiler_cli.py ......             [ 76%]
+tests/test_townlet/unit/universe/test_compiler_comprehensive.py ...      [ 76%]
+tests/test_townlet/unit/universe/test_compiler_declaration_origins.py .. [ 76%]
+...                                                                      [ 76%]
+tests/test_townlet/unit/universe/test_compiler_normalization.py ..       [ 76%]
+tests/test_townlet/unit/universe/test_compiler_pipeline.py ....          [ 76%]
+tests/test_townlet/unit/universe/test_compiler_validation.py .......     [ 76%]
+tests/test_townlet/unit/universe/test_cut_b_comparator.py ....           [ 77%]
+tests/test_townlet/unit/universe/test_declaration_edges.py ............. [ 77%]
+............                                                             [ 77%]
+tests/test_townlet/unit/universe/test_declaration_error_registry.py .... [ 77%]
+..................                                                       [ 78%]
+tests/test_townlet/unit/universe/test_declaration_input_shapes.py ...... [ 78%]
+...                                                                      [ 78%]
+tests/test_townlet/unit/universe/test_declaration_store.py .......       [ 78%]
+tests/test_townlet/unit/universe/test_declaration_validation.py ........ [ 79%]
+..................                                                       [ 79%]
+tests/test_townlet/unit/universe/test_effects_catalog_compilation.py ..  [ 79%]
+tests/test_townlet/unit/universe/test_effects_schema_completeness.py ... [ 79%]
+.                                                                        [ 79%]
+tests/test_townlet/unit/universe/test_engine_tick_variable.py .....      [ 79%]
+tests/test_townlet/unit/universe/test_error_codes.py ....                [ 79%]
+tests/test_townlet/unit/universe/test_evaluation_marks.py .....          [ 80%]
+tests/test_townlet/unit/universe/test_item_profile_compilation.py ....   [ 80%]
+tests/test_townlet/unit/universe/test_metadata_compiler.py ....          [ 80%]
+tests/test_townlet/unit/universe/test_metadata_serialization.py ....     [ 80%]
+tests/test_townlet/unit/universe/test_no_full_token_observation_abi.py . [ 80%]
+.                                                                        [ 80%]
+tests/test_townlet/unit/universe/test_pipeline_modules.py .............. [ 80%]
+.........                                                                [ 81%]
+tests/test_townlet/unit/universe/test_resource_limits.py ....            [ 81%]
+tests/test_townlet/unit/universe/test_scoping_enforcement.py .....       [ 81%]
+tests/test_townlet/unit/universe/test_source_map_wiring.py .....         [ 81%]
+tests/test_townlet/unit/universe/test_stages.py ....                     [ 81%]
+tests/test_townlet/unit/universe/test_static_write_authorization.py .... [ 81%]
+............                                                             [ 82%]
+tests/test_townlet/unit/universe/test_symbol_table.py ......             [ 82%]
+tests/test_townlet/unit/universe/test_token_emission.py ................ [ 82%]
+..............................                                           [ 83%]
+tests/test_townlet/unit/universe/test_token_numeric_contract.py ........ [ 83%]
+..........................                                               [ 84%]
+tests/test_townlet/unit/universe/test_token_set_pack.py ...              [ 84%]
+tests/test_townlet/unit/universe/test_token_spec.py .................... [ 85%]
+..................................................................FFFF   [ 87%]
+tests/test_townlet/unit/universe/test_validate_compiler_cli_script.py .. [ 87%]
+                                                                         [ 87%]
+tests/test_townlet/unit/universe/test_vfs_expression_schema.py ..        [ 87%]
+tests/test_townlet/unit/vfs/test_dynamic_needs.py ...                    [ 87%]
+tests/test_townlet/unit/vfs/test_dynamic_variable_mode.py .....          [ 87%]
+tests/test_townlet/unit/vfs/test_expression_integration.py ............. [ 87%]
+.....                                                                    [ 87%]
+tests/test_townlet/unit/vfs/test_expression_noise.py ...                 [ 87%]
+tests/test_townlet/unit/vfs/test_expression_spatial.py ....              [ 88%]
+tests/test_townlet/unit/vfs/test_expression_temporal.py .....            [ 88%]
+tests/test_townlet/unit/vfs/test_generalisation_harness.py ....          [ 88%]
+tests/test_townlet/unit/vfs/test_item_profile_expression_refusal.py .    [ 88%]
+tests/test_townlet/unit/vfs/test_item_scoped_variables.py ..             [ 88%]
+tests/test_townlet/unit/vfs/test_item_vfs_storage.py ..                  [ 88%]
+tests/test_townlet/unit/vfs/test_message_variables.py ....               [ 88%]
+tests/test_townlet/unit/vfs/test_occupancy_wiring.py .....               [ 88%]
+tests/test_townlet/unit/vfs/test_registry.py ........................... [ 89%]
+..................                                                       [ 90%]
+tests/test_townlet/unit/vfs/test_registry_scope_arenas.py .............. [ 90%]
+.                                                                        [ 90%]
+tests/test_townlet/unit/vfs/test_relational_variables.py ..              [ 90%]
+tests/test_townlet/unit/vfs/test_schema.py ............................. [ 91%]
+.                                                                        [ 91%]
+tests/test_townlet/unit/vfs/test_schema_hashes.py ...................... [ 91%]
+                                                                         [ 91%]
+tests/test_townlet/unit/vfs/test_scope_extents.py .........              [ 92%]
+tests/test_townlet/unit/vfs/test_scoped_registry.py ....                 [ 92%]
+tests/test_townlet/unit/vfs/test_static_access.py ..........             [ 92%]
+tests/test_townlet/unit/vfs/test_transition_graph.py .....               [ 92%]
+tests/test_townlet/unit/vfs/test_variable_registry_tensor.py ....        [ 92%]
+tests/test_townlet/unit/vfs/test_vfs_debug_logging.py ...                [ 92%]
+tests/test_townlet/unit/vfs/test_vfs_evaluator.py .........              [ 93%]
+tests/test_townlet/unit/vfs/test_vtc_action_writes.py ..............     [ 93%]
+tests/test_townlet/unit/vfs/test_vtc_affordance_gates.py ..              [ 93%]
+tests/test_townlet/unit/vfs/test_vtc_affordance_occupancy.py ..          [ 93%]
+tests/test_townlet/unit/vfs/test_vtc_bounds_clamps.py ...                [ 93%]
+tests/test_townlet/unit/vfs/test_vtc_interaction_progress.py ..          [ 93%]
+tests/test_townlet/unit/vfs/test_vtc_kernels.py ....                     [ 93%]
+tests/test_townlet/unit/vfs/test_vtc_modulations.py ..                   [ 93%]
+tests/test_townlet/unit/vfs/test_vtc_passive_depletions.py ..            [ 94%]
+tests/test_townlet/unit/vfs/test_vtc_passive_dynamics_equivalence.py ... [ 94%]
+............                                                             [ 94%]
+tests/test_townlet/unit/vfs/test_vtc_reward_components.py ...            [ 94%]
+tests/test_townlet/unit/vfs/test_vtc_social_residue.py .....             [ 94%]
+tests/test_townlet/unit/vfs/test_vtc_terminal_conditions.py ..           [ 94%]
+tests/test_townlet/unit/vfs/test_vtc_threshold_cascades.py ..            [ 94%]
+tests/test_townlet/unit/vfs/test_vtc_write_intent.py .........           [ 95%]
+tests/test_townlet/unit/world/expression/test_ast_nodes.py ............. [ 95%]
+                                                                         [ 95%]
+tests/test_townlet/unit/world/expression/test_context.py ............    [ 95%]
+tests/test_townlet/unit/world/expression/test_evaluator.py ............. [ 96%]
+.....                                                                    [ 96%]
+tests/test_townlet/unit/world/expression/test_integration.py ....s...s.  [ 96%]
+tests/test_townlet/unit/world/expression/test_parser.py ................ [ 96%]
+..........................                                               [ 97%]
+tests/test_townlet/unit/world/expression/test_type_checker.py .......... [ 97%]
+...................                                                      [ 98%]
+tests/test_townlet/unit/world/test_type_checker_functions.py ......      [ 98%]
+tests/test_townlet/unit/world/types/test_primitive.py ............       [ 99%]
+tests/test_no_defaults_lint.py ...................................       [100%]
+
+=================================== FAILURES ===================================
+____________ test_cut_b_input_binding_matches_complete_pinned_bytes ____________
+
+    def test_cut_b_input_binding_matches_complete_pinned_bytes() -> None:
+        """A boolean drift allowance cannot silently admit a later unrelated edit."""
+        root = Path(__file__).parents[4]
+        inventory = json.loads((root / "docs/oracle/declaration-cut-b-inputs.json").read_text())
+        expected_packs = {cell.params.pack for cell in default_cells()}
+        assert inventory["register_ref"] == "DIV-014"
+        assert inventory["baseline_source"] == "599cad15706ac8824c3f8e38276da6440c4816a3"
+        assert inventory["packs"].keys() == expected_packs
+        for pack, record in inventory["packs"].items():
+            live = {name: hashlib.sha256(data).hexdigest() for name, data in _pack_files(root / pack).items()}
+            frozen = {name: hashlib.sha256(data).hexdigest() for name, data in _pack_files(root / ORACLE_PACK_ROOT / pack).items()}
+>           assert live == record["live_files"], f"{pack}: live bytes moved outside the registered inventory"
+E           AssertionError: configs/default_curriculum: live bytes moved outside the registered inventory
+E           assert {'actions.yam...d94f2ee', ...} == {'actions.yam...d94f2ee', ...}
+E             
+E             Omitting 32 identical items, use -vv to show
+E             Differing items:
+E             {'variables.yaml': 'a2192f836f2de11a35ac4a5491fd9fd2de9c62feca7a73418f15137a0ed6acf9'} != {'variables.yaml': '25c8865a7b786e02d32fd1f17384e08086f35c269a6b5e37739fab69de61579b'}
+E             Use -v to get more diff
+
+tests/test_townlet/unit/oracle/test_declaration_input_drift.py:74: AssertionError
+__________ test_standing_and_differential_cells_bind_div009_narrowly ___________
+
+    def test_standing_and_differential_cells_bind_div009_narrowly() -> None:
+        """Pin (hamlet-5cc071f4b6, DIV-009): the sixteen non-profile cells no longer
+        certify bare agreement. Six Phase B landings after the oracle tag moved
+        provenance with no register entry (measured 2026-08-23); every standing and
+        differential cell binds a hash-only DIV-009 entry over exactly the four
+        measured fields — no crash expectation, and no wider or narrower hash_fields
+        set than measurement showed. DIV-010 (hamlet-fa6bb6da4a, unit 2) and DIV-008
+        (unit 3's token cut) compose alongside it on these same cells — checked here
+        as "DIV-009 is present and still narrow", leaving their own field sets to
+        test_standing_and_differential_cells_bind_div010_and_div008_narrowly.
+    
+        These sixteen cells DO declare a pack divergence since 2026-08-26: their
+        live vfs_profiles.yaml carries the L3 temporal declaration
+        (hamlet-02684be106) and their frozen fixtures do not. That is DIV-008's
+        row — see docs/oracle/known-divergences.md#div-008's per-pack drift table."""
+        for c in default_cells():
+            if c.params.pack in _PROFILE_VARIABLE_CELLS:
+                continue
+            assert c.expected is None, f"{c.cell_id} declares an old-side-crash expectation"
+>           assert c.pack_divergence == "DIV-014", f"{c.cell_id}: Cut B input inventory must retain inherited rows"
+E           AssertionError: default_curriculum:L0_0_minimal:cpu:seed42: Cut B input inventory must retain inherited rows
+E           assert 'DIV-015' == 'DIV-014'
+E             
+E             - DIV-014
+E             ?       ^
+E             + DIV-015
+E             ?       ^
+
+tests/test_townlet/unit/oracle/test_matrix.py:168: AssertionError
+_____ test_standing_and_differential_cells_bind_div010_and_div008_narrowly _____
+
+    def test_standing_and_differential_cells_bind_div010_and_div008_narrowly() -> None:
+        """Pin (hamlet-fa6bb6da4a, DIV-010, unit 2 "authored temporality"): the engine tick
+        VariableDef injected into every compiled universe moves exactly `variable_schema_hash`
+        and `vfs_hash` — measured by two-worktree probe (11dee204 vs HEAD) and confirmed
+        per-commit as the tick-injection commit's own movement. Every standing and differential
+        cell binds this as a second, composing entry alongside DIV-009, and unit 3's token cut
+        (DIV-008) composes third, plus a fourth (DIV-012) on all sixteen standing+differential
+        cells (2026-09-02, unit 5 `day_phase`, full cpu-matrix run 20260902-100802):
+        `affordances_hash`, `brain_hash`, `environment_hash`, `stratum_hash`, each bisected to
+        its own causing commit (94656527, c6c6b524 twice, d554fb7f) — see
+        docs/oracle/known-divergences.md#div-012 for the per-field bisection and cell table.
+        Four entries total on all sixteen cells.
+    
+        DIV-011 is GONE from the binding: it retired into DIV-008 by its own pre-registered
+        condition, and its two token hashes are declared under DIV-008 now (2026-08-26)."""
+        for c in default_cells():
+            if c.params.pack in _PROFILE_VARIABLE_CELLS:
+                continue
+            div010 = [d for d in c.hash_divergences if d.register_ref == "DIV-010"]
+            assert len(div010) == 1, f"{c.cell_id} does not bind exactly one DIV-010 entry"
+            assert div010[0].declared == {"variable_schema_hash", "vfs_hash"}, f"{c.cell_id}: DIV-010 hash_fields do not match measurement"
+            assert not [
+                d for d in c.hash_divergences if d.register_ref == "DIV-011"
+            ], f"{c.cell_id} still binds DIV-011, which retired into DIV-008"
+            div012 = [d for d in c.hash_divergences if d.register_ref == "DIV-012"]
+            assert len(div012) == 1, f"{c.cell_id} does not bind exactly one DIV-012 entry"
+            assert div012[0].declared == {
+                "affordances_hash",
+                "brain_hash",
+                "environment_hash",
+                "stratum_hash",
+            }, f"{c.cell_id}: DIV-012 hash_fields do not match measurement"
+>           assert len(c.hash_divergences) == 5, f"{c.cell_id} should bind historical four entries plus independently attributed DIV-014"
+E           AssertionError: default_curriculum:L0_0_minimal:cpu:seed42 should bind historical four entries plus independently attributed DIV-014
+E           assert 6 == 5
+E            +  where 6 = len((RegisteredHashDivergence(register_ref='DIV-009', hash_fields=('actions_hash', 'pack_brain_hash', 'transition_graph_ha...ash', 'vfs_hash')), RegisteredHashDivergence(register_ref='DIV-015', hash_fields=('variable_schema_hash', 'vfs_hash'))))
+E            +    where (RegisteredHashDivergence(register_ref='DIV-009', hash_fields=('actions_hash', 'pack_brain_hash', 'transition_graph_ha...ash', 'vfs_hash')), RegisteredHashDivergence(register_ref='DIV-015', hash_fields=('variable_schema_hash', 'vfs_hash'))) = Cell(params=RunParams(pack='configs/default_curriculum', level='L0_0_minimal', num_agents=4, steps=100, seed=42, devic...sh'))), stream_divergence=RegisteredStreamDivergence(register_ref='DIV-008', streams=('obs',)), scripted_actions=False).hash_divergences
+
+tests/test_townlet/unit/oracle/test_matrix.py:211: AssertionError
+_____________ test_profile_variable_cells_declare_their_pack_drift _____________
+
+    def test_profile_variable_cells_declare_their_pack_drift() -> None:
+        """DIV-006 is RETIRED at the token cut (2026-08-26): its new-side surface — the obs_vfs
+        split into per-variable ObservationFields plus obs_item_slots — was deleted with the
+        whole ObservationSpec family, so binding it would certify a ghost. Its three hashes are
+        declared under DIV-008 now, uniformly on all twenty cells.
+    
+        What survives is the pack-drift declaration, re-pointed by measurement:
+        effects_smoke drifts on effects.yaml (Task 10's required max_active_effects) AND
+        vfs_profiles.yaml (DIV-006's old schema hold) -> DIV-008, which enumerates both rows.
+        items_smoke's prior DIV-007 row — its fixture still carries the stale, never-loaded
+        levels/L0_smoke/brain.yaml stub the PDR-0027 cut deleted from the live pack; its own
+        effects.yaml row is enumerated in DIV-008's table. Cut A supersedes its input
+        binding with DIV-013, preserving all inherited rows."""
+        profile = [c for c in default_cells() if c.params.pack in _PROFILE_VARIABLE_CELLS]
+        assert len(profile) == 4
+        for c in profile:
+            assert c.expected is None
+            assert not [
+                d for d in c.hash_divergences if d.register_ref == "DIV-006"
+            ], f"{c.cell_id} still binds DIV-006, which retired into DIV-008"
+>           assert c.pack_divergence == "DIV-014", f"{c.cell_id}: Cut B preserves every inherited input row"
+E           AssertionError: items_smoke:L0_smoke:cpu:seed42: Cut B preserves every inherited input row
+E           assert 'DIV-015' == 'DIV-014'
+E             
+E             - DIV-014
+E             ?       ^
+E             + DIV-015
+E             ?       ^
+
+tests/test_townlet/unit/oracle/test_matrix.py:285: AssertionError
+_______________ test_profile_variable_cells_bind_div010_narrowly _______________
+
+    def test_profile_variable_cells_bind_div010_narrowly() -> None:
+        """DIV-010's field set on the four profile cells overlaps DIV-008's on
+        `variable_schema_hash` and `vfs_hash` — both move for both causes (DIV-010's tick
+        injection ADDS one VariableDef; the token cut REMOVES fourteen engine-minted `obs_*`
+        primitives), declared under both entries, legal per the union-exact composing rule since
+        each entry's own fields still all move. The tick injection is unconditional, so DIV-010's
+        set here is identical to its set on the standing/differential cells, unlike DIV-009's
+        profile-narrowed set; so is DIV-008's. Each profile cell additionally binds
+        `_DIV012_PROFILE` (2026-09-02, unit 5 `day_phase`, full cpu-matrix run 20260902-100802):
+        `brain_hash`, `environment_hash`, `stratum_hash` — the same three of DIV-012's four causes
+        that move here; `affordances_hash` measurably does NOT move on these two packs, so the
+        narrower object (not `_DIV012`) is bound, per the union-exact rule. Four entries total:
+        DIV-009, DIV-010, DIV-012, DIV-008."""
+        profile = [c for c in default_cells() if c.params.pack in _PROFILE_VARIABLE_CELLS]
+        assert len(profile) == 4
+        for c in profile:
+            div010 = [d for d in c.hash_divergences if d.register_ref == "DIV-010"]
+            assert len(div010) == 1, f"{c.cell_id} does not bind exactly one DIV-010 entry"
+            assert div010[0].declared == {"variable_schema_hash", "vfs_hash"}
+            div012 = [d for d in c.hash_divergences if d.register_ref == "DIV-012"]
+            assert len(div012) == 1, f"{c.cell_id} does not bind exactly one DIV-012 entry"
+            assert div012[0].declared == {
+                "brain_hash",
+                "environment_hash",
+                "stratum_hash",
+            }, f"{c.cell_id}: DIV-012 hash_fields do not match measurement (profile cells exclude affordances_hash)"
+>           assert len(c.hash_divergences) == 5, f"{c.cell_id} should bind historical four entries plus independently attributed DIV-014"
+E           AssertionError: items_smoke:L0_smoke:cpu:seed42 should bind historical four entries plus independently attributed DIV-014
+E           assert 6 == 5
+E            +  where 6 = len((RegisteredHashDivergence(register_ref='DIV-009', hash_fields=('actions_hash', 'pack_brain_hash', 'transition_graph_ha...ash', 'vfs_hash')), RegisteredHashDivergence(register_ref='DIV-015', hash_fields=('variable_schema_hash', 'vfs_hash'))))
+E            +    where (RegisteredHashDivergence(register_ref='DIV-009', hash_fields=('actions_hash', 'pack_brain_hash', 'transition_graph_ha...ash', 'vfs_hash')), RegisteredHashDivergence(register_ref='DIV-015', hash_fields=('variable_schema_hash', 'vfs_hash'))) = Cell(params=RunParams(pack='configs/test/items_smoke', level='L0_smoke', num_agents=4, steps=100, seed=42, device='cpu...sh'))), stream_divergence=RegisteredStreamDivergence(register_ref='DIV-008', streams=('obs',)), scripted_actions=False).hash_divergences
+
+tests/test_townlet/unit/oracle/test_matrix.py:328: AssertionError
+_____ test_hash_divergence_bindings_bind_entries_with_the_hash_only_shape ______
+
+    def test_hash_divergence_bindings_bind_entries_with_the_hash_only_shape() -> None:
+        """The second shape gets the same typo-bind guard as the first.
+    
+        A `RegisteredHashDivergence` certifies "provenance moved as registered,
+        behaviour did not". Binding it to an entry that predicts an old-side crash
+        (or a checkpoint-boundary entry that cannot manifest in a trace at all)
+        would certify the wrong thing, so the entry must say `Harness shape:
+        hash-only` in its own text.
+        """
+        sections = _register_sections()
+        for cell in default_cells():
+            for hd in cell.hash_divergences:
+                ref = hd.register_ref
+                assert ref in sections, f"{ref} has no register entry"
+>               assert "Harness shape: hash-only" in sections[ref], (
+                    f"cell {cell.cell_id} binds {ref} as a hash-only divergence, but that entry " f"does not declare `Harness shape: hash-only`"
+                )
+E               AssertionError: cell default_curriculum:L0_0_minimal:cpu:seed42 binds DIV-015 as a hash-only divergence, but that entry does not declare `Harness shape: hash-only`
+E               assert 'Harness shape: hash-only' in '\n- **Status:** measured at clean source `9137484965b05c26ceed1740ee9aab39a364a61c`;\n  final qualification pending. ...parent numeric difference.\nThe new witness pack is independently qualified, outside the inherited equivalence bank.\n'
+
+tests/test_townlet/unit/oracle/test_matrix.py:452: AssertionError
+_ test_cut_b_scope_binding_adds_attribution_without_widening_historical_outputs _
+
+    def test_cut_b_scope_binding_adds_attribution_without_widening_historical_outputs() -> None:
+        """Scope and canonical descriptor movements have separately measured causes."""
+        for cell in default_cells():
+            cut_b = [entry for entry in cell.hash_divergences if entry.register_ref == "DIV-014"]
+            assert len(cut_b) == 1
+            expected = {"environment_hash", "observation_schema_hash", "vfs_hash"}
+            if cell.params.pack in _PROFILE_VARIABLE_CELLS:
+                expected.add("variable_schema_hash")
+            assert cut_b[0].declared == expected
+            assert cell.stream_divergence is not None
+            assert cell.stream_divergence.register_ref == "DIV-008"
+            assert cell.stream_divergence.declared == {"obs"}
+>           assert [entry.register_ref for entry in cell.hash_divergences] == ["DIV-009", "DIV-010", "DIV-012", "DIV-008", "DIV-014"]
+E           AssertionError: assert ['DIV-009', '...4', 'DIV-015'] == ['DIV-009', '...8', 'DIV-014']
+E             
+E             Left contains one more item: 'DIV-015'
+E             Use -v to get more diff
+
+tests/test_townlet/unit/oracle/test_matrix.py:566: AssertionError
+_ TestItemProfileExposureRefusals.test_exposed_item_variable_with_zero_item_capacity_refuses _
+
+self = <test_token_spec.TestItemProfileExposureRefusals object at 0x71e94697aad0>
+
+    def test_exposed_item_variable_with_zero_item_capacity_refuses(self):
+        # token_spec.py:1436-1442: an exposed item-profile variable declares
+        # `exposed_to`, but this universe's compiled `item` token capacity is 0 (no
+        # items.yaml, or the item-count arithmetic sums to 0) — there is no item-arena
+        # slot to bind it against.
+        compiled_vfs_profiles = _compiled_item_profiles("medical", "durability", "float")
+        with pytest.raises(ValueError, match=r"medical\.durability.*compiled `item` token capacity is 0"):
+>           variable_element_bindings(compiled_vfs_profiles, (), item_capacity_value=0)
+
+tests/test_townlet/unit/universe/test_token_spec.py:876: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/universe/dto/token_spec.py:1388: in variable_element_bindings
+    bindings, _contexts = _variable_element_artifacts(compiled_vfs_profiles, vfs_variables, item_capacity_value=item_capacity_value)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+compiled_vfs_profiles = namespace(global_profile=None, agent_profile=None, item_profiles={'medical': namespace(variables=[namespace(name='dura...0, mean=None, std=None, period=None, categories=None, threshold=None, mask_value=None, fill_value=None, clip=True))])})
+vfs_variables = ()
+
+    def _variable_element_artifacts(
+        compiled_vfs_profiles: CompiledVFSProfiles | None,
+        vfs_variables: tuple[VariableDef, ...],
+        *,
+        item_capacity_value: int,
+    ) -> tuple[tuple[SlotBinding, ...], tuple[tuple[float, ...], ...]]:
+        """Derive variable bindings and their complete fixed payloads in one pass."""
+        exposed_item_vars: list[tuple[str, CompiledVariable]] = []  # (id "<profile>.<var>", declaration)
+        if compiled_vfs_profiles is not None:
+            for profile_name, item_profile in (compiled_vfs_profiles.item_profiles or {}).items():
+                for compiled_var in item_profile.variables:
+                    validate_static_access(
+>                       f"{profile_name}.{compiled_var.name}", compiled_var.readable_by, compiled_var.writable_by, compiled_var.exposed_to
+                                                               ^^^^^^^^^^^^^^^^^^^^^^^^
+                    )
+E                   AttributeError: 'types.SimpleNamespace' object has no attribute 'readable_by'
+
+src/townlet/universe/dto/token_spec.py:1415: AttributeError
+_ TestItemProfileExposureRefusals.test_exposed_item_variable_with_unmapped_type_refuses[int] _
+
+self = <test_token_spec.TestItemProfileExposureRefusals object at 0x71e94697ac10>
+var_type = 'int'
+
+    @pytest.mark.parametrize("var_type", ["int", "vec2i", "vec3i"])
+    def test_exposed_item_variable_with_unmapped_type_refuses(self, var_type):
+        # These types cannot be produced by canonical scalar-like item declarations.
+        # Invalid internal products must refuse rather than acquire a compatibility landing.
+        compiled_vfs_profiles = _compiled_item_profiles("medical", "durability", var_type)
+        with pytest.raises(ValueError, match=rf"medical\.durability.*'{var_type}'.*no token dtype landing yet"):
+>           variable_element_bindings(compiled_vfs_profiles, (), item_capacity_value=1)
+
+tests/test_townlet/unit/universe/test_token_spec.py:884: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/universe/dto/token_spec.py:1388: in variable_element_bindings
+    bindings, _contexts = _variable_element_artifacts(compiled_vfs_profiles, vfs_variables, item_capacity_value=item_capacity_value)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+compiled_vfs_profiles = namespace(global_profile=None, agent_profile=None, item_profiles={'medical': namespace(variables=[namespace(name='dura...0, mean=None, std=None, period=None, categories=None, threshold=None, mask_value=None, fill_value=None, clip=True))])})
+vfs_variables = ()
+
+    def _variable_element_artifacts(
+        compiled_vfs_profiles: CompiledVFSProfiles | None,
+        vfs_variables: tuple[VariableDef, ...],
+        *,
+        item_capacity_value: int,
+    ) -> tuple[tuple[SlotBinding, ...], tuple[tuple[float, ...], ...]]:
+        """Derive variable bindings and their complete fixed payloads in one pass."""
+        exposed_item_vars: list[tuple[str, CompiledVariable]] = []  # (id "<profile>.<var>", declaration)
+        if compiled_vfs_profiles is not None:
+            for profile_name, item_profile in (compiled_vfs_profiles.item_profiles or {}).items():
+                for compiled_var in item_profile.variables:
+                    validate_static_access(
+>                       f"{profile_name}.{compiled_var.name}", compiled_var.readable_by, compiled_var.writable_by, compiled_var.exposed_to
+                                                               ^^^^^^^^^^^^^^^^^^^^^^^^
+                    )
+E                   AttributeError: 'types.SimpleNamespace' object has no attribute 'readable_by'
+
+src/townlet/universe/dto/token_spec.py:1415: AttributeError
+_ TestItemProfileExposureRefusals.test_exposed_item_variable_with_unmapped_type_refuses[vec2i] _
+
+self = <test_token_spec.TestItemProfileExposureRefusals object at 0x71e9469fc9d0>
+var_type = 'vec2i'
+
+    @pytest.mark.parametrize("var_type", ["int", "vec2i", "vec3i"])
+    def test_exposed_item_variable_with_unmapped_type_refuses(self, var_type):
+        # These types cannot be produced by canonical scalar-like item declarations.
+        # Invalid internal products must refuse rather than acquire a compatibility landing.
+        compiled_vfs_profiles = _compiled_item_profiles("medical", "durability", var_type)
+        with pytest.raises(ValueError, match=rf"medical\.durability.*'{var_type}'.*no token dtype landing yet"):
+>           variable_element_bindings(compiled_vfs_profiles, (), item_capacity_value=1)
+
+tests/test_townlet/unit/universe/test_token_spec.py:884: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/universe/dto/token_spec.py:1388: in variable_element_bindings
+    bindings, _contexts = _variable_element_artifacts(compiled_vfs_profiles, vfs_variables, item_capacity_value=item_capacity_value)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+compiled_vfs_profiles = namespace(global_profile=None, agent_profile=None, item_profiles={'medical': namespace(variables=[namespace(name='dura...0, mean=None, std=None, period=None, categories=None, threshold=None, mask_value=None, fill_value=None, clip=True))])})
+vfs_variables = ()
+
+    def _variable_element_artifacts(
+        compiled_vfs_profiles: CompiledVFSProfiles | None,
+        vfs_variables: tuple[VariableDef, ...],
+        *,
+        item_capacity_value: int,
+    ) -> tuple[tuple[SlotBinding, ...], tuple[tuple[float, ...], ...]]:
+        """Derive variable bindings and their complete fixed payloads in one pass."""
+        exposed_item_vars: list[tuple[str, CompiledVariable]] = []  # (id "<profile>.<var>", declaration)
+        if compiled_vfs_profiles is not None:
+            for profile_name, item_profile in (compiled_vfs_profiles.item_profiles or {}).items():
+                for compiled_var in item_profile.variables:
+                    validate_static_access(
+>                       f"{profile_name}.{compiled_var.name}", compiled_var.readable_by, compiled_var.writable_by, compiled_var.exposed_to
+                                                               ^^^^^^^^^^^^^^^^^^^^^^^^
+                    )
+E                   AttributeError: 'types.SimpleNamespace' object has no attribute 'readable_by'
+
+src/townlet/universe/dto/token_spec.py:1415: AttributeError
+_ TestItemProfileExposureRefusals.test_exposed_item_variable_with_unmapped_type_refuses[vec3i] _
+
+self = <test_token_spec.TestItemProfileExposureRefusals object at 0x71e9469fcb00>
+var_type = 'vec3i'
+
+    @pytest.mark.parametrize("var_type", ["int", "vec2i", "vec3i"])
+    def test_exposed_item_variable_with_unmapped_type_refuses(self, var_type):
+        # These types cannot be produced by canonical scalar-like item declarations.
+        # Invalid internal products must refuse rather than acquire a compatibility landing.
+        compiled_vfs_profiles = _compiled_item_profiles("medical", "durability", var_type)
+        with pytest.raises(ValueError, match=rf"medical\.durability.*'{var_type}'.*no token dtype landing yet"):
+>           variable_element_bindings(compiled_vfs_profiles, (), item_capacity_value=1)
+
+tests/test_townlet/unit/universe/test_token_spec.py:884: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/universe/dto/token_spec.py:1388: in variable_element_bindings
+    bindings, _contexts = _variable_element_artifacts(compiled_vfs_profiles, vfs_variables, item_capacity_value=item_capacity_value)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+compiled_vfs_profiles = namespace(global_profile=None, agent_profile=None, item_profiles={'medical': namespace(variables=[namespace(name='dura...0, mean=None, std=None, period=None, categories=None, threshold=None, mask_value=None, fill_value=None, clip=True))])})
+vfs_variables = ()
+
+    def _variable_element_artifacts(
+        compiled_vfs_profiles: CompiledVFSProfiles | None,
+        vfs_variables: tuple[VariableDef, ...],
+        *,
+        item_capacity_value: int,
+    ) -> tuple[tuple[SlotBinding, ...], tuple[tuple[float, ...], ...]]:
+        """Derive variable bindings and their complete fixed payloads in one pass."""
+        exposed_item_vars: list[tuple[str, CompiledVariable]] = []  # (id "<profile>.<var>", declaration)
+        if compiled_vfs_profiles is not None:
+            for profile_name, item_profile in (compiled_vfs_profiles.item_profiles or {}).items():
+                for compiled_var in item_profile.variables:
+                    validate_static_access(
+>                       f"{profile_name}.{compiled_var.name}", compiled_var.readable_by, compiled_var.writable_by, compiled_var.exposed_to
+                                                               ^^^^^^^^^^^^^^^^^^^^^^^^
+                    )
+E                   AttributeError: 'types.SimpleNamespace' object has no attribute 'readable_by'
+
+src/townlet/universe/dto/token_spec.py:1415: AttributeError
+=============================== warnings summary ===============================
+tests/test_townlet/unit/substrate/test_continuous_comprehensive.py::TestContinuousBounceEdgeCases::test_bounce_boundary_multiple_reflections_positive
+tests/test_townlet/unit/substrate/test_continuous_comprehensive.py::TestContinuousBounceEdgeCases::test_bounce_boundary_exceed_half_reflection
+  /tmp/hamlet-static-epistemic-access/src/townlet/substrate/continuous.py:100: UserWarning: interaction_radius (0.5) < movement_delta (1.0). Agent may step over affordances without interaction. This may be intentional for challenge, but verify configuration.
+    warnings.warn(
+
+tests/test_townlet/unit/substrate/test_continuousnd_comprehensive.py::TestContinuousNDActionGeneration::test_get_default_actions_10d_count
+  /tmp/hamlet-static-epistemic-access/src/townlet/substrate/continuousnd.py:83: UserWarning: ContinuousND with 10 dimensions has 22 actions. Large action spaces may be challenging to train. Verify this is intentional for your research.
+    warnings.warn(
+
+tests/test_townlet/unit/substrate/test_continuousnd_comprehensive.py::TestContinuousNDActionGeneration::test_get_default_actions_description_includes_movement_delta
+  /tmp/hamlet-static-epistemic-access/src/townlet/substrate/continuousnd.py:118: UserWarning: interaction_radius (1.0) < movement_delta (2.5). Agent may step over affordances without interaction. This may be intentional for challenge, but verify configuration.
+    warnings.warn(
+
+tests/test_townlet/unit/substrate/test_continuousnd_comprehensive.py::TestContinuousNDBounceEdgeCases::test_bounce_boundary_multiple_reflections_4d
+tests/test_townlet/unit/substrate/test_continuousnd_comprehensive.py::TestContinuousNDBounceEdgeCases::test_bounce_boundary_negative_direction_4d
+tests/test_townlet/unit/substrate/test_continuousnd_edge_cases.py::test_continuousnd_bounce_boundary_single_reflection
+tests/test_townlet/unit/substrate/test_continuousnd_edge_cases.py::test_continuousnd_bounce_boundary_negative
+tests/test_townlet/unit/substrate/test_continuousnd_edge_cases.py::test_continuousnd_sticky_boundary
+tests/test_townlet/unit/substrate/test_continuousnd_edge_cases.py::test_continuousnd_negative_bounds
+tests/test_townlet/unit/substrate/test_continuousnd_edge_cases.py::test_continuousnd_mixed_positive_negative_bounds
+  /tmp/hamlet-static-epistemic-access/src/townlet/substrate/continuousnd.py:118: UserWarning: interaction_radius (0.5) < movement_delta (1.0). Agent may step over affordances without interaction. This may be intentional for challenge, but verify configuration.
+    warnings.warn(
+
+tests/test_townlet/unit/substrate/test_continuousnd_edge_cases.py::test_continuousnd_large_movement_delta
+  /tmp/hamlet-static-epistemic-access/src/townlet/substrate/continuousnd.py:118: UserWarning: interaction_radius (1.0) < movement_delta (100.0). Agent may step over affordances without interaction. This may be intentional for challenge, but verify configuration.
+    warnings.warn(
+
+tests/test_townlet/unit/substrate/test_gridnd.py::test_gridnd_topology_is_hypercube_for_all_dimensions
+  /tmp/hamlet-static-epistemic-access/src/townlet/substrate/gridnd.py:70: UserWarning: GridND with 10 dimensions has 22 actions. Large action spaces may be challenging to train. Verify this is intentional for your research.
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_townlet/unit/oracle/test_declaration_input_drift.py::test_cut_b_input_binding_matches_complete_pinned_bytes
+FAILED tests/test_townlet/unit/oracle/test_matrix.py::test_standing_and_differential_cells_bind_div009_narrowly
+FAILED tests/test_townlet/unit/oracle/test_matrix.py::test_standing_and_differential_cells_bind_div010_and_div008_narrowly
+FAILED tests/test_townlet/unit/oracle/test_matrix.py::test_profile_variable_cells_declare_their_pack_drift
+FAILED tests/test_townlet/unit/oracle/test_matrix.py::test_profile_variable_cells_bind_div010_narrowly
+FAILED tests/test_townlet/unit/oracle/test_matrix.py::test_hash_divergence_bindings_bind_entries_with_the_hash_only_shape
+FAILED tests/test_townlet/unit/oracle/test_matrix.py::test_cut_b_scope_binding_adds_attribution_without_widening_historical_outputs
+FAILED tests/test_townlet/unit/universe/test_token_spec.py::TestItemProfileExposureRefusals::test_exposed_item_variable_with_zero_item_capacity_refuses
+FAILED tests/test_townlet/unit/universe/test_token_spec.py::TestItemProfileExposureRefusals::test_exposed_item_variable_with_unmapped_type_refuses[int]
+FAILED tests/test_townlet/unit/universe/test_token_spec.py::TestItemProfileExposureRefusals::test_exposed_item_variable_with_unmapped_type_refuses[vec2i]
+FAILED tests/test_townlet/unit/universe/test_token_spec.py::TestItemProfileExposureRefusals::test_exposed_item_variable_with_unmapped_type_refuses[vec3i]
+===== 11 failed, 3550 passed, 13 skipped, 13 warnings in 261.95s (0:04:21) =====

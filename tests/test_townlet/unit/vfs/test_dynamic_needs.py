@@ -27,8 +27,8 @@ def test_canonical_fixed_slot_dynamic_need_variables_match_spec_fields() -> None
         assert variable.type == "vecNf"
         assert variable.dims == 4
         assert variable.lifetime == "episode"
-        assert variable.readable_by == ["agent", "engine", "social_model"]
-        assert variable.writable_by == ["engine", "vtc"]
+        assert variable.readable_by == ["engine", "agent"]
+        assert variable.writable_by == ["engine"]
         assert variable.default == [0.0, 0.0, 0.0, 0.0]
         assert variable.observable is True
         assert variable.normalization is not None
@@ -45,7 +45,7 @@ def test_canonical_fixed_slot_dynamic_need_variables_initialize_expected_registr
     )
 
     intensity = registry.get("dynamic_need_intensity", reader="agent")
-    catastrophe_curve = registry.get("dynamic_need_catastrophe_curve", reader="social_model")
+    catastrophe_curve = registry.get("dynamic_need_catastrophe_curve", reader="engine")
 
     assert intensity.shape == torch.Size([2, 3])
     assert catastrophe_curve.shape == torch.Size([2, 3])

@@ -30,18 +30,16 @@ class TestRegistryInitialization:
         assert registry.device == torch.device("cpu")
 
     def test_registry_implements_observation_protocol(self):
-        """Both registry implementations must satisfy the observation builder contract."""
-        from townlet.vfs.registry import ScopedVariableRegistry, VariableRegistry, VFSRegistryProtocol
+        """Canonical registry satisfies the observation-facing protocol."""
+        from townlet.vfs.registry import VariableRegistry, VFSRegistryProtocol
 
         registry = VariableRegistry(
             variables=[],
             num_agents=4,
             device=torch.device("cpu"),
         )
-        scoped_registry = ScopedVariableRegistry(device=torch.device("cpu"))
 
         assert isinstance(registry, VFSRegistryProtocol)
-        assert isinstance(scoped_registry, VFSRegistryProtocol)
 
     def test_engine_write_path_enforces_declared_shape_and_permissions(self):
         """Engine writeback has a public registry method; it enforces the declared element
@@ -65,7 +63,7 @@ class TestRegistryInitialization:
             type="scalar",
             lifetime="tick",
             readable_by=["engine"],
-            writable_by=["actions"],
+            writable_by=[],
             default=0.0,
         )
         registry = VariableRegistry(
@@ -81,7 +79,7 @@ class TestRegistryInitialization:
 
         # A correctly (declared-)shaped write still succeeds.
         registry.set_engine_value("low_energy_flag", torch.tensor(True))
-        value = registry.get_global("low_energy_flag")
+        value = registry.get_global("low_energy_flag", reader="engine")
         assert value.shape == ()
         assert value.dtype == torch.bool
         assert bool(value.item()) is True
@@ -132,15 +130,15 @@ class TestRegistryInitialization:
 
         registry.reset_tick_scoped()
 
-        assert registry.get_global("tick_flag").item() is False
-        assert torch.equal(registry.get_agent("episode_score"), torch.tensor([7.0, 8.0]))
-        assert registry.get_global("persistent_counter").item() == 9.0
+        assert registry.get_global("tick_flag", reader="engine").item() is False
+        assert torch.equal(registry.get_agent("episode_score", reader="engine"), torch.tensor([7.0, 8.0]))
+        assert registry.get_global("persistent_counter", reader="engine").item() == 9.0
 
         registry.reset_episode_scoped()
 
-        assert registry.get_global("tick_flag").item() is False
-        assert torch.equal(registry.get_agent("episode_score"), torch.tensor([1.0, 1.0]))
-        assert registry.get_global("persistent_counter").item() == 9.0
+        assert registry.get_global("tick_flag", reader="engine").item() is False
+        assert torch.equal(registry.get_agent("episode_score", reader="engine"), torch.tensor([1.0, 1.0]))
+        assert registry.get_global("persistent_counter", reader="engine").item() == 9.0
 
     def test_generic_read_write_api_removed_from_variable_registry(self):
         """Item VFS callers should use read_item/write_item instead of partial wrappers."""
@@ -217,7 +215,7 @@ class TestRegistryInitialization:
                 type="vecNf",
                 dims=2,
                 lifetime="episode",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],
                 default=[0.0, 0.0],
             )
@@ -326,7 +324,7 @@ class TestRegistryInitialization:
                 scope="agent",
                 type="scalar",
                 lifetime="episode",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],
                 default=1.0,
             ),
@@ -335,7 +333,7 @@ class TestRegistryInitialization:
                 scope="agent",
                 type="scalar",
                 lifetime="episode",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],
                 default=0.5,
             ),
@@ -378,7 +376,7 @@ class TestRegistryInitialization:
             type="vecNf",
             dims=None,
             lifetime="episode",
-            readable_by=["agent"],
+            readable_by=["engine", "agent"],
             writable_by=["engine"],
             default=[0.0, 0.0],
         )
@@ -427,7 +425,7 @@ class TestRegistryAccessControl:
                 scope="agent",
                 type="scalar",
                 lifetime="episode",
-                readable_by=["agent"],  # Only agent can read
+                readable_by=["agent", "engine"],  # Finite engine/agent readers
                 writable_by=["engine"],
                 default=1.0,
             )
@@ -436,7 +434,7 @@ class TestRegistryAccessControl:
         registry = VariableRegistry(variables=variables, num_agents=4, device=torch.device("cpu"))
 
         # acs cannot read (not in readable_by)
-        with pytest.raises(PermissionError, match="acs.*not allowed to read.*energy"):
+        with pytest.raises(PermissionError, match="Unknown actor.*acs.*read"):
             registry.get("energy", reader="acs")
 
     def test_agent_cannot_read_agent_private(self):
@@ -494,7 +492,7 @@ class TestRegistryAccessControl:
                 scope="agent",
                 type="scalar",
                 lifetime="episode",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],
                 default=1.0,
             )
@@ -521,7 +519,7 @@ class TestRegistryAccessControl:
                 scope="agent",
                 type="scalar",
                 lifetime="episode",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],  # Only engine can write
                 default=1.0,
             )
@@ -567,7 +565,7 @@ class TestRegistryGetSet:
                 scope="agent",
                 type="scalar",
                 lifetime="episode",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],
                 default=1.0,
             )
@@ -599,7 +597,7 @@ class TestRegistryGetSet:
                 type="vecNf",
                 dims=2,
                 lifetime="episode",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],
                 default=[0.0, 0.0],
             )
@@ -655,7 +653,7 @@ class TestRegistryGetSet:
                 type="vecNf",
                 dims=2,
                 lifetime="episode",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],
                 default=[0.0, 0.0],
             )
@@ -678,7 +676,7 @@ class TestRegistryGetSet:
                 scope="agent",
                 type="scalar",
                 lifetime="episode",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],
                 default=1.0,
             )
@@ -701,7 +699,7 @@ class TestRegistryGetSet:
                 scope="global",
                 type="scalar",
                 lifetime="tick",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],
                 default=0.0,
             )
@@ -732,7 +730,7 @@ class TestRegistryScopeSemantics:
                 scope="global",
                 type="scalar",
                 lifetime="tick",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],
                 default=1.0,
             )
@@ -755,7 +753,7 @@ class TestRegistryScopeSemantics:
                 type="vecNf",
                 dims=3,
                 lifetime="tick",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],
                 default=[1.0, 2.0, 3.0],
             )
@@ -777,7 +775,7 @@ class TestRegistryScopeSemantics:
                 scope="agent",
                 type="scalar",
                 lifetime="episode",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],
                 default=1.0,
             )
@@ -800,7 +798,7 @@ class TestRegistryScopeSemantics:
                 type="vecNf",
                 dims=2,
                 lifetime="episode",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],
                 default=[0.0, 0.0],
             )
@@ -1115,7 +1113,7 @@ class TestRegistryVariablesProperty:
                 scope="agent",
                 type="scalar",
                 lifetime="episode",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],
                 default=1.0,
             ),
@@ -1125,7 +1123,7 @@ class TestRegistryVariablesProperty:
                 type="vecNf",
                 dims=2,
                 lifetime="episode",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],
                 default=[0.0, 0.0],
             ),
@@ -1149,7 +1147,7 @@ class TestRegistryVariablesProperty:
                 scope="agent",
                 type="scalar",
                 lifetime="episode",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],
                 default=1.0,
             ),

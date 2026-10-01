@@ -1,0 +1,912 @@
+{
+  "cases": [
+    {
+      "changes": [],
+      "level": "L5_multi_agent",
+      "pack": "configs/L5_multi_agent",
+      "readings": {
+        "after_reset": {
+          "deficit_energy": {
+            "dtype": "torch.float32",
+            "shape": [
+              4
+            ],
+            "values": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "occupied_by": {
+            "dtype": "torch.int64",
+            "shape": [
+              4
+            ],
+            "values": [
+              -1,
+              -1,
+              -1,
+              -1
+            ]
+          },
+          "tick": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 0.0
+          },
+          "time_since_last_sleep": {
+            "dtype": "torch.float32",
+            "shape": [
+              4
+            ],
+            "values": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "trust": {
+            "dtype": "torch.float32",
+            "shape": [
+              4,
+              4
+            ],
+            "values": [
+              [
+                0.5,
+                0.5,
+                0.5,
+                0.5
+              ],
+              [
+                0.5,
+                0.5,
+                0.5,
+                0.5
+              ],
+              [
+                0.5,
+                0.5,
+                0.5,
+                0.5
+              ],
+              [
+                0.5,
+                0.5,
+                0.5,
+                0.5
+              ]
+            ]
+          }
+        },
+        "after_steps": {
+          "deficit_energy": {
+            "dtype": "torch.float32",
+            "shape": [
+              4
+            ],
+            "values": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "occupied_by": {
+            "dtype": "torch.int64",
+            "shape": [
+              4
+            ],
+            "values": [
+              -1,
+              -1,
+              -1,
+              -1
+            ]
+          },
+          "tick": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 2.0
+          },
+          "time_since_last_sleep": {
+            "dtype": "torch.float32",
+            "shape": [
+              4
+            ],
+            "values": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "trust": {
+            "dtype": "torch.float32",
+            "shape": [
+              4,
+              4
+            ],
+            "values": [
+              [
+                0.5,
+                0.5,
+                0.5,
+                0.5
+              ],
+              [
+                0.5,
+                0.5,
+                0.5,
+                0.5
+              ],
+              [
+                0.5,
+                0.5,
+                0.5,
+                0.5
+              ],
+              [
+                0.5,
+                0.5,
+                0.5,
+                0.5
+              ]
+            ]
+          }
+        },
+        "initial": {
+          "deficit_energy": {
+            "dtype": "torch.float32",
+            "shape": [
+              4
+            ],
+            "values": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "occupied_by": {
+            "dtype": "torch.int64",
+            "shape": [
+              4
+            ],
+            "values": [
+              -1,
+              -1,
+              -1,
+              -1
+            ]
+          },
+          "tick": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 0.0
+          },
+          "time_since_last_sleep": {
+            "dtype": "torch.float32",
+            "shape": [
+              4
+            ],
+            "values": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "trust": {
+            "dtype": "torch.float32",
+            "shape": [
+              4,
+              4
+            ],
+            "values": [
+              [
+                0.5,
+                0.5,
+                0.5,
+                0.5
+              ],
+              [
+                0.5,
+                0.5,
+                0.5,
+                0.5
+              ],
+              [
+                0.5,
+                0.5,
+                0.5,
+                0.5
+              ],
+              [
+                0.5,
+                0.5,
+                0.5,
+                0.5
+              ]
+            ]
+          }
+        }
+      }
+    },
+    {
+      "changes": [],
+      "level": "L0_0_minimal",
+      "pack": "configs/default_curriculum",
+      "readings": {
+        "after_reset": {
+          "day_phase": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 2.0
+          },
+          "tick": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 0.0
+          }
+        },
+        "after_steps": {
+          "day_phase": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 2.0
+          },
+          "tick": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 2.0
+          }
+        },
+        "initial": {
+          "day_phase": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 0.0
+          },
+          "tick": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 0.0
+          }
+        }
+      }
+    },
+    {
+      "changes": [],
+      "level": "L0_5_dual_resource",
+      "pack": "configs/default_curriculum",
+      "readings": {
+        "after_reset": {
+          "day_phase": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 2.0
+          },
+          "tick": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 0.0
+          }
+        },
+        "after_steps": {
+          "day_phase": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 2.0
+          },
+          "tick": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 2.0
+          }
+        },
+        "initial": {
+          "day_phase": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 0.0
+          },
+          "tick": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 0.0
+          }
+        }
+      }
+    },
+    {
+      "changes": [],
+      "level": "L1_full_observability",
+      "pack": "configs/default_curriculum",
+      "readings": {
+        "after_reset": {
+          "day_phase": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 2.0
+          },
+          "tick": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 0.0
+          }
+        },
+        "after_steps": {
+          "day_phase": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 2.0
+          },
+          "tick": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 2.0
+          }
+        },
+        "initial": {
+          "day_phase": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 0.0
+          },
+          "tick": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 0.0
+          }
+        }
+      }
+    },
+    {
+      "changes": [],
+      "level": "L2_partial_observability",
+      "pack": "configs/default_curriculum",
+      "readings": {
+        "after_reset": {
+          "day_phase": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 2.0
+          },
+          "tick": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 0.0
+          }
+        },
+        "after_steps": {
+          "day_phase": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 2.0
+          },
+          "tick": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 2.0
+          }
+        },
+        "initial": {
+          "day_phase": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 0.0
+          },
+          "tick": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 0.0
+          }
+        }
+      }
+    },
+    {
+      "changes": [],
+      "level": "L3_temporal_mechanics",
+      "pack": "configs/default_curriculum",
+      "readings": {
+        "after_reset": {
+          "day_phase": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 2.0
+          },
+          "tick": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 0.0
+          }
+        },
+        "after_steps": {
+          "day_phase": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 2.0
+          },
+          "tick": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 2.0
+          }
+        },
+        "initial": {
+          "day_phase": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 0.0
+          },
+          "tick": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 0.0
+          }
+        }
+      }
+    },
+    {
+      "changes": [],
+      "level": "L1_full_observability",
+      "pack": "configs/differential/boundary_wrap",
+      "readings": {
+        "after_reset": {
+          "day_phase": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 2.0
+          },
+          "tick": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 0.0
+          }
+        },
+        "after_steps": {
+          "day_phase": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 2.0
+          },
+          "tick": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 2.0
+          }
+        },
+        "initial": {
+          "day_phase": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 0.0
+          },
+          "tick": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 0.0
+          }
+        }
+      }
+    },
+    {
+      "changes": [],
+      "level": "L2_partial_observability",
+      "pack": "configs/differential/div003_cubic_partial",
+      "readings": {
+        "after_reset": {
+          "day_phase": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 2.0
+          },
+          "tick": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 0.0
+          }
+        },
+        "after_steps": {
+          "day_phase": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 2.0
+          },
+          "tick": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 2.0
+          }
+        },
+        "initial": {
+          "day_phase": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 0.0
+          },
+          "tick": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 0.0
+          }
+        }
+      }
+    },
+    {
+      "changes": [],
+      "level": "L1_full_observability",
+      "pack": "configs/differential/div003_rect",
+      "readings": {
+        "after_reset": {
+          "day_phase": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 2.0
+          },
+          "tick": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 0.0
+          }
+        },
+        "after_steps": {
+          "day_phase": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 2.0
+          },
+          "tick": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 2.0
+          }
+        },
+        "initial": {
+          "day_phase": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 0.0
+          },
+          "tick": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 0.0
+          }
+        }
+      }
+    },
+    {
+      "changes": [],
+      "level": "L0_effects",
+      "pack": "configs/test/effects_smoke",
+      "readings": {
+        "after_reset": {
+          "day_count": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 0.0
+          },
+          "digesting": {
+            "dtype": "torch.bool",
+            "shape": [
+              4
+            ],
+            "values": [
+              false,
+              false,
+              false,
+              false
+            ]
+          },
+          "is_wet": {
+            "dtype": "torch.bool",
+            "shape": [
+              4
+            ],
+            "values": [
+              false,
+              false,
+              false,
+              false
+            ]
+          },
+          "position": {
+            "dtype": "torch.float32",
+            "shape": [
+              4,
+              2
+            ],
+            "values": [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          },
+          "tick": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 0.0
+          }
+        },
+        "after_steps": {
+          "day_count": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 0.0
+          },
+          "digesting": {
+            "dtype": "torch.bool",
+            "shape": [
+              4
+            ],
+            "values": [
+              false,
+              false,
+              false,
+              false
+            ]
+          },
+          "is_wet": {
+            "dtype": "torch.bool",
+            "shape": [
+              4
+            ],
+            "values": [
+              false,
+              false,
+              false,
+              false
+            ]
+          },
+          "position": {
+            "dtype": "torch.float32",
+            "shape": [
+              4,
+              2
+            ],
+            "values": [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          },
+          "tick": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 2.0
+          }
+        },
+        "initial": {
+          "day_count": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 0.0
+          },
+          "digesting": {
+            "dtype": "torch.bool",
+            "shape": [
+              4
+            ],
+            "values": [
+              false,
+              false,
+              false,
+              false
+            ]
+          },
+          "is_wet": {
+            "dtype": "torch.bool",
+            "shape": [
+              4
+            ],
+            "values": [
+              false,
+              false,
+              false,
+              false
+            ]
+          },
+          "position": {
+            "dtype": "torch.float32",
+            "shape": [
+              4,
+              2
+            ],
+            "values": [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          },
+          "tick": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 0.0
+          }
+        }
+      }
+    },
+    {
+      "changes": [],
+      "level": "L0_smoke",
+      "pack": "configs/test/items_smoke",
+      "readings": {
+        "after_reset": {
+          "has_food": {
+            "dtype": "torch.bool",
+            "shape": [
+              4
+            ],
+            "values": [
+              false,
+              false,
+              false,
+              false
+            ]
+          },
+          "position": {
+            "dtype": "torch.float32",
+            "shape": [
+              4,
+              2
+            ],
+            "values": [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          },
+          "tick": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 0.0
+          }
+        },
+        "after_steps": {
+          "has_food": {
+            "dtype": "torch.bool",
+            "shape": [
+              4
+            ],
+            "values": [
+              false,
+              false,
+              false,
+              false
+            ]
+          },
+          "position": {
+            "dtype": "torch.float32",
+            "shape": [
+              4,
+              2
+            ],
+            "values": [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          },
+          "tick": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 2.0
+          }
+        },
+        "initial": {
+          "has_food": {
+            "dtype": "torch.bool",
+            "shape": [
+              4
+            ],
+            "values": [
+              false,
+              false,
+              false,
+              false
+            ]
+          },
+          "position": {
+            "dtype": "torch.float32",
+            "shape": [
+              4,
+              2
+            ],
+            "values": [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0
+              ]
+            ]
+          },
+          "tick": {
+            "dtype": "torch.float32",
+            "shape": [],
+            "values": 0.0
+          }
+        }
+      }
+    }
+  ]
+}

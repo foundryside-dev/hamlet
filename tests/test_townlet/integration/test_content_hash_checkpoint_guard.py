@@ -45,6 +45,7 @@ SOURCE_PACK = Path("configs/default_curriculum")
 L0 = "L0_0_minimal"
 L1 = "L1_full_observability"
 L0_5 = "L0_5_dual_resource"
+L2 = "L2_partial_observability"
 L3 = "L3_temporal_mechanics"
 
 
@@ -225,18 +226,17 @@ def test_training_edit_is_caught(tmp_path: Path) -> None:
 
 
 def test_curriculum_edit_is_caught(tmp_path: Path) -> None:
-    """`day_length 24 -> 12` on **L3**. L1 has `active_temporal: false`, so the edit is
-    runtime-inert there and the test would pin nothing."""
+    """Partial-vision radius changes runtime perception and the curriculum guard."""
 
     def runtime(base_env: VectorizedHamletEnv, mut_env: VectorizedHamletEnv) -> None:
-        assert base_env.day_length == 24
-        assert mut_env.day_length == 12
+        assert base_env.vision_range == 0.5
+        assert mut_env.vision_range == 0.25
 
     _six_legs(
         tmp_path,
-        L3,
+        L2,
         "curriculum.yaml",
-        lambda d: d["curriculum"].__setitem__("day_length", 12),
+        lambda d: d["curriculum"].__setitem__("vision_range", 0.25),
         "curriculum_hash",
         frozenset(),
         runtime,

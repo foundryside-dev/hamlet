@@ -1,0 +1,1546 @@
+{
+  "documents": [
+    {
+      "path": "configs/L5_multi_agent/variables_reference.yaml",
+      "payload": {
+        "extents": {
+          "num_affordances": 4
+        },
+        "variables": [
+          {
+            "default": 0.5,
+            "description": "Directed trust from one agent to another.",
+            "id": "trust",
+            "lifetime": "episode",
+            "observable": false,
+            "readable_by": [
+              "agent",
+              "engine",
+              "social_model"
+            ],
+            "scope": "pair",
+            "type": "scalar",
+            "writable_by": [
+              "engine",
+              "vtc"
+            ]
+          },
+          {
+            "default": null,
+            "description": "Current claimant for each affordance row, using -1 for free rows.",
+            "id": "occupied_by",
+            "lifetime": "tick",
+            "observable": false,
+            "readable_by": [
+              "engine",
+              "vtc"
+            ],
+            "scope": "affordance",
+            "type": "agent_ref",
+            "writable_by": [
+              "engine",
+              "vtc"
+            ]
+          }
+        ],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/L5_multi_agent/vfs_profiles.yaml",
+      "payload": {
+        "debug_logging": false,
+        "evaluation_mode": "mark_and_sweep",
+        "item_profiles": [],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/aspatial_test/vfs_profiles.yaml",
+      "payload": {
+        "debug_logging": false,
+        "evaluation_mode": "mark_and_sweep",
+        "item_profiles": [
+          {
+            "profile_name": "default_item",
+            "variables": []
+          }
+        ],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/default_curriculum/vfs_profiles.yaml",
+      "payload": {
+        "debug_logging": false,
+        "evaluation_mode": "mark_and_sweep",
+        "global_profile": {
+          "variables": [
+            {
+              "description": "Authored day clock derived from the ambient engine tick; exposed as one cyclical token.",
+              "exposed_to": [
+                "agent"
+              ],
+              "expression": "tick",
+              "id": "day_phase",
+              "initial_value": 0.0,
+              "name": "day_phase",
+              "normalization": {
+                "kind": "cyclical_sin_cos",
+                "period": 24
+              },
+              "semantic_type": "temporal",
+              "type": "float"
+            }
+          ]
+        },
+        "item_profiles": [
+          {
+            "profile_name": "default_item",
+            "variables": []
+          }
+        ],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/differential/boundary_wrap/vfs_profiles.yaml",
+      "payload": {
+        "debug_logging": false,
+        "evaluation_mode": "mark_and_sweep",
+        "global_profile": {
+          "variables": [
+            {
+              "description": "Authored day clock derived from the ambient engine tick; exposed as one cyclical token.",
+              "exposed_to": [
+                "agent"
+              ],
+              "expression": "tick",
+              "id": "day_phase",
+              "initial_value": 0.0,
+              "name": "day_phase",
+              "normalization": {
+                "kind": "cyclical_sin_cos",
+                "period": 24
+              },
+              "semantic_type": "temporal",
+              "type": "float"
+            }
+          ]
+        },
+        "item_profiles": [
+          {
+            "profile_name": "default_item",
+            "variables": []
+          }
+        ],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/differential/div003_cubic_partial/vfs_profiles.yaml",
+      "payload": {
+        "debug_logging": false,
+        "evaluation_mode": "mark_and_sweep",
+        "global_profile": {
+          "variables": [
+            {
+              "description": "Authored day clock derived from the ambient engine tick; exposed as one cyclical token.",
+              "exposed_to": [
+                "agent"
+              ],
+              "expression": "tick",
+              "id": "day_phase",
+              "initial_value": 0.0,
+              "name": "day_phase",
+              "normalization": {
+                "kind": "cyclical_sin_cos",
+                "period": 24
+              },
+              "semantic_type": "temporal",
+              "type": "float"
+            }
+          ]
+        },
+        "item_profiles": [
+          {
+            "profile_name": "default_item",
+            "variables": []
+          }
+        ],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/differential/div003_rect/vfs_profiles.yaml",
+      "payload": {
+        "debug_logging": false,
+        "evaluation_mode": "mark_and_sweep",
+        "global_profile": {
+          "variables": [
+            {
+              "description": "Authored day clock derived from the ambient engine tick; exposed as one cyclical token.",
+              "exposed_to": [
+                "agent"
+              ],
+              "expression": "tick",
+              "id": "day_phase",
+              "initial_value": 0.0,
+              "name": "day_phase",
+              "normalization": {
+                "kind": "cyclical_sin_cos",
+                "period": 24
+              },
+              "semantic_type": "temporal",
+              "type": "float"
+            }
+          ]
+        },
+        "item_profiles": [
+          {
+            "profile_name": "default_item",
+            "variables": []
+          }
+        ],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/reference/model_pack/vfs_profiles.yaml",
+      "payload": {
+        "agent_profile": {
+          "variables": [
+            {
+              "initial_value": 0.0,
+              "name": "inventory_weight",
+              "semantic_type": "custom",
+              "type": "float"
+            },
+            {
+              "expression": "inventory_weight > 1.0",
+              "name": "is_encumbered",
+              "semantic_type": "custom",
+              "type": "bool"
+            },
+            {
+              "initial_value": false,
+              "name": "is_digesting",
+              "semantic_type": "custom",
+              "type": "bool"
+            }
+          ]
+        },
+        "debug_logging": false,
+        "evaluation_mode": "mark_and_sweep",
+        "global_profile": {
+          "variables": [
+            {
+              "expression": "0.0",
+              "name": "is_night",
+              "semantic_type": "temporal",
+              "type": "float"
+            }
+          ]
+        },
+        "item_profiles": [
+          {
+            "profile_name": "default_item",
+            "variables": [
+              {
+                "initial_value": 1.0,
+                "name": "freshness",
+                "type": "float"
+              },
+              {
+                "initial_value": 10.0,
+                "name": "calories",
+                "type": "float"
+              }
+            ]
+          }
+        ],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/simple/vfs_profiles.yaml",
+      "payload": {
+        "debug_logging": false,
+        "evaluation_mode": "mark_and_sweep",
+        "item_profiles": [],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/test/action_masking/vfs_profiles.yaml",
+      "payload": {
+        "debug_logging": false,
+        "evaluation_mode": "mark_and_sweep",
+        "item_profiles": [
+          {
+            "profile_name": "default_item",
+            "variables": []
+          }
+        ],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/test/action_space/aspatial/vfs_profiles.yaml",
+      "payload": {
+        "debug_logging": false,
+        "evaluation_mode": "mark_and_sweep",
+        "item_profiles": [
+          {
+            "profile_name": "default_item",
+            "variables": []
+          }
+        ],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/test/action_space/continuous1d/vfs_profiles.yaml",
+      "payload": {
+        "debug_logging": false,
+        "evaluation_mode": "mark_and_sweep",
+        "item_profiles": [
+          {
+            "profile_name": "default_item",
+            "variables": []
+          }
+        ],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/test/action_space/grid2d/vfs_profiles.yaml",
+      "payload": {
+        "debug_logging": false,
+        "evaluation_mode": "mark_and_sweep",
+        "item_profiles": [
+          {
+            "profile_name": "default_item",
+            "variables": []
+          }
+        ],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/test/effects_smoke/variables_reference.yaml",
+      "payload": {
+        "exposed_observations": [
+          {
+            "id": "obs_position",
+            "normalization": {
+              "clip": false,
+              "kind": "minmax",
+              "max": [
+                1.0,
+                1.0
+              ],
+              "min": [
+                0.0,
+                0.0
+              ]
+            },
+            "scope": "agent",
+            "shape": [
+              2
+            ],
+            "source": "position",
+            "type": "vec2f"
+          }
+        ],
+        "variables": [
+          {
+            "default": [
+              0.0,
+              0.0
+            ],
+            "description": "Normalized agent position in [0, 1]^2 range",
+            "dims": 2,
+            "id": "position",
+            "lifetime": "tick",
+            "normalization": {
+              "clip": false,
+              "kind": "minmax",
+              "max": [
+                1.0,
+                1.0
+              ],
+              "min": [
+                0.0,
+                0.0
+              ]
+            },
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "vec2f",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          {
+            "default": false,
+            "description": "Agent is currently digesting food (set by effects)",
+            "id": "digesting",
+            "lifetime": "tick",
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "bool",
+            "writable_by": [
+              "engine",
+              "actions"
+            ]
+          },
+          {
+            "default": false,
+            "description": "Agent is wet (set by effects)",
+            "id": "is_wet",
+            "lifetime": "tick",
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "bool",
+            "writable_by": [
+              "engine"
+            ]
+          }
+        ],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/test/effects_smoke/vfs_profiles.yaml",
+      "payload": {
+        "agent_profile": null,
+        "debug_logging": false,
+        "evaluation_mode": "mark_and_sweep",
+        "global_profile": {
+          "variables": [
+            {
+              "initial_value": 0,
+              "name": "day_count",
+              "semantic_type": "custom",
+              "type": "int"
+            }
+          ]
+        },
+        "item_profiles": [
+          {
+            "profile_name": "default_item",
+            "variables": []
+          }
+        ],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/test/gridnd_4d_pack/variables_reference.yaml",
+      "payload": {
+        "exposed_observations": [
+          {
+            "id": "obs_position",
+            "normalization": {
+              "clip": false,
+              "kind": "minmax",
+              "max": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ],
+              "min": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            "scope": "agent",
+            "shape": [
+              4
+            ],
+            "source": "position",
+            "type": "vecNf"
+          }
+        ],
+        "variables": [
+          {
+            "default": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "description": "Normalized agent position (4D) in [0, 1]^4 range",
+            "dims": 4,
+            "id": "position",
+            "lifetime": "tick",
+            "normalization": {
+              "clip": false,
+              "kind": "minmax",
+              "max": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ],
+              "min": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "vecNf",
+            "writable_by": [
+              "engine"
+            ]
+          }
+        ],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/test/gridnd_4d_pack/vfs_profiles.yaml",
+      "payload": {
+        "debug_logging": false,
+        "evaluation_mode": "mark_and_sweep",
+        "item_profiles": [
+          {
+            "profile_name": "default_item",
+            "variables": []
+          }
+        ],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/test/items_smoke/variables_reference.yaml",
+      "payload": {
+        "exposed_observations": [
+          {
+            "id": "obs_position",
+            "normalization": {
+              "clip": false,
+              "kind": "minmax",
+              "max": [
+                1.0,
+                1.0
+              ],
+              "min": [
+                0.0,
+                0.0
+              ]
+            },
+            "scope": "agent",
+            "shape": [
+              2
+            ],
+            "source": "position",
+            "type": "vec2f"
+          }
+        ],
+        "variables": [
+          {
+            "default": [
+              0.0,
+              0.0
+            ],
+            "description": "Normalized agent position in [0, 1]^2 range",
+            "dims": 2,
+            "id": "position",
+            "lifetime": "tick",
+            "normalization": {
+              "clip": false,
+              "kind": "minmax",
+              "max": 1.0,
+              "min": 0.0
+            },
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "vec2f",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          {
+            "default": false,
+            "description": "Agent has picked up food (set by on_pickup Effects)",
+            "id": "has_food",
+            "lifetime": "tick",
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "bool",
+            "writable_by": [
+              "engine",
+              "actions",
+              "bac"
+            ]
+          }
+        ],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/test/items_smoke/vfs_profiles.yaml",
+      "payload": {
+        "agent_profile": null,
+        "debug_logging": false,
+        "evaluation_mode": "mark_and_sweep",
+        "global_profile": null,
+        "item_profiles": [
+          {
+            "profile_name": "food",
+            "variables": [
+              {
+                "initial_value": 100.0,
+                "name": "freshness",
+                "type": "float"
+              }
+            ]
+          },
+          {
+            "profile_name": "medical",
+            "variables": [
+              {
+                "exposed_to": [
+                  "agent"
+                ],
+                "initial_value": 100.0,
+                "name": "durability",
+                "normalization": {
+                  "clip": true,
+                  "kind": "minmax",
+                  "max": 100.0,
+                  "min": 0.0
+                },
+                "type": "float"
+              }
+            ]
+          },
+          {
+            "profile_name": "currency",
+            "variables": []
+          }
+        ],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/test/model_config/variables_reference.yaml",
+      "payload": {
+        "exposed_observations": [
+          {
+            "id": "obs_position",
+            "normalization": {
+              "clip": false,
+              "kind": "minmax",
+              "max": [
+                1.0,
+                1.0
+              ],
+              "min": [
+                0.0,
+                0.0
+              ]
+            },
+            "scope": "agent",
+            "shape": [
+              2
+            ],
+            "source": "position",
+            "type": "vecNf"
+          }
+        ],
+        "variables": [
+          {
+            "default": [
+              0.0,
+              0.0
+            ],
+            "description": "Normalized agent position (2D) in [0, 1]^2 range",
+            "dims": 2,
+            "id": "position",
+            "lifetime": "tick",
+            "normalization": {
+              "clip": false,
+              "kind": "minmax",
+              "max": [
+                1.0,
+                1.0
+              ],
+              "min": [
+                0.0,
+                0.0
+              ]
+            },
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "vecNf",
+            "writable_by": [
+              "engine"
+            ]
+          }
+        ],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/test/model_config/vfs_profiles.yaml",
+      "payload": {
+        "debug_logging": false,
+        "evaluation_mode": "mark_and_sweep",
+        "item_profiles": [],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/test/model_config_12meter/vfs_profiles.yaml",
+      "payload": {
+        "debug_logging": false,
+        "evaluation_mode": "mark_and_sweep",
+        "item_profiles": [
+          {
+            "profile_name": "default_item",
+            "variables": []
+          }
+        ],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/test/model_config_4meter/vfs_profiles.yaml",
+      "payload": {
+        "debug_logging": false,
+        "evaluation_mode": "mark_and_sweep",
+        "item_profiles": [
+          {
+            "profile_name": "default_item",
+            "variables": []
+          }
+        ],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/test/token_set_smoke/variables_reference.yaml",
+      "payload": {
+        "exposed_observations": [
+          {
+            "id": "obs_position",
+            "normalization": {
+              "clip": false,
+              "kind": "minmax",
+              "max": [
+                1.0,
+                1.0
+              ],
+              "min": [
+                0.0,
+                0.0
+              ]
+            },
+            "scope": "agent",
+            "shape": [
+              2
+            ],
+            "source": "position",
+            "type": "vecNf"
+          }
+        ],
+        "variables": [
+          {
+            "default": [
+              0.0,
+              0.0
+            ],
+            "description": "Normalized agent position (2D) in [0, 1]^2 range",
+            "dims": 2,
+            "id": "position",
+            "lifetime": "tick",
+            "normalization": {
+              "clip": false,
+              "kind": "minmax",
+              "max": [
+                1.0,
+                1.0
+              ],
+              "min": [
+                0.0,
+                0.0
+              ]
+            },
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "vecNf",
+            "writable_by": [
+              "engine"
+            ]
+          }
+        ],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/test/token_set_smoke/vfs_profiles.yaml",
+      "payload": {
+        "agent_profile": {
+          "variables": [
+            {
+              "description": "Flattened variable-element token rows: 4 tokens x 3 features.",
+              "exposed_to": [
+                "agent"
+              ],
+              "initial_value_mode": "zeros",
+              "name": "need_tokens",
+              "normalization": {
+                "clip": true,
+                "kind": "minmax",
+                "max": 1.0,
+                "min": 0.0
+              },
+              "semantic_type": "custom",
+              "shape": [
+                4,
+                3
+              ],
+              "type": "tensor2d"
+            }
+          ]
+        },
+        "debug_logging": false,
+        "evaluation_mode": "mark_and_sweep",
+        "item_profiles": [],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/test/token_transfer_a/vfs_profiles.yaml",
+      "payload": {
+        "agent_profile": null,
+        "debug_logging": false,
+        "evaluation_mode": "mark_and_sweep",
+        "global_profile": null,
+        "item_profiles": [
+          {
+            "profile_name": "default_item",
+            "variables": []
+          }
+        ],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/test/token_transfer_b/vfs_profiles.yaml",
+      "payload": {
+        "agent_profile": null,
+        "debug_logging": false,
+        "evaluation_mode": "mark_and_sweep",
+        "global_profile": null,
+        "item_profiles": [
+          {
+            "profile_name": "default_item",
+            "variables": []
+          }
+        ],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/test/token_transfer_c/vfs_profiles.yaml",
+      "payload": {
+        "agent_profile": null,
+        "debug_logging": false,
+        "evaluation_mode": "mark_and_sweep",
+        "global_profile": null,
+        "item_profiles": [
+          {
+            "profile_name": "default_item",
+            "variables": []
+          }
+        ],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/test/vfs_bar_access/variables_reference.yaml",
+      "payload": {
+        "exposed_observations": [
+          {
+            "id": "obs_position",
+            "normalization": {
+              "clip": false,
+              "kind": "minmax",
+              "max": [
+                1.0,
+                1.0
+              ],
+              "min": [
+                0.0,
+                0.0
+              ]
+            },
+            "scope": "agent",
+            "shape": [
+              2
+            ],
+            "source": "position",
+            "type": "vec2f"
+          }
+        ],
+        "variables": [
+          {
+            "default": [
+              0.0,
+              0.0
+            ],
+            "description": "Normalized agent position in [0, 1]^2 range",
+            "dims": 2,
+            "id": "position",
+            "lifetime": "tick",
+            "normalization": {
+              "clip": false,
+              "kind": "minmax",
+              "max": [
+                1.0,
+                1.0
+              ],
+              "min": [
+                0.0,
+                0.0
+              ]
+            },
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "vec2f",
+            "writable_by": [
+              "engine"
+            ]
+          }
+        ],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/test/vfs_bar_access/vfs_profiles.yaml",
+      "payload": {
+        "agent_profile": {
+          "variables": [
+            {
+              "expression": "bar.energy < 0.3",
+              "name": "low_energy_flag",
+              "semantic_type": "custom",
+              "type": "bool"
+            }
+          ]
+        },
+        "debug_logging": false,
+        "evaluation_mode": "eager",
+        "global_profile": null,
+        "item_profiles": [
+          {
+            "profile_name": "default_item",
+            "variables": []
+          }
+        ],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/test/vfs_circular_dependency/variables_reference.yaml",
+      "payload": {
+        "exposed_observations": [
+          {
+            "id": "obs_position",
+            "normalization": {
+              "clip": false,
+              "kind": "minmax",
+              "max": [
+                1.0,
+                1.0
+              ],
+              "min": [
+                0.0,
+                0.0
+              ]
+            },
+            "scope": "agent",
+            "shape": [
+              2
+            ],
+            "source": "position",
+            "type": "vec2f"
+          }
+        ],
+        "variables": [
+          {
+            "default": [
+              0.0,
+              0.0
+            ],
+            "description": "Normalized agent position in [0, 1]^2 range",
+            "dims": 2,
+            "id": "position",
+            "lifetime": "tick",
+            "normalization": {
+              "clip": false,
+              "kind": "minmax",
+              "max": [
+                1.0,
+                1.0
+              ],
+              "min": [
+                0.0,
+                0.0
+              ]
+            },
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "vec2f",
+            "writable_by": [
+              "engine"
+            ]
+          }
+        ],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/test/vfs_circular_dependency/vfs_profiles.yaml",
+      "payload": {
+        "agent_profile": null,
+        "debug_logging": false,
+        "evaluation_mode": "mark_and_sweep",
+        "global_profile": {
+          "variables": [
+            {
+              "expression": "b + 1",
+              "name": "a",
+              "semantic_type": "custom",
+              "type": "float"
+            },
+            {
+              "expression": "a + 1",
+              "name": "b",
+              "semantic_type": "custom",
+              "type": "float"
+            }
+          ]
+        },
+        "item_profiles": [],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/test/vfs_dependency_chain/variables_reference.yaml",
+      "payload": {
+        "exposed_observations": [
+          {
+            "id": "obs_position",
+            "normalization": {
+              "clip": false,
+              "kind": "minmax",
+              "max": [
+                1.0,
+                1.0
+              ],
+              "min": [
+                0.0,
+                0.0
+              ]
+            },
+            "scope": "agent",
+            "shape": [
+              2
+            ],
+            "source": "position",
+            "type": "vec2f"
+          }
+        ],
+        "variables": [
+          {
+            "default": [
+              0.0,
+              0.0
+            ],
+            "description": "Normalized agent position in [0, 1]^2 range",
+            "dims": 2,
+            "id": "position",
+            "lifetime": "tick",
+            "normalization": {
+              "clip": false,
+              "kind": "minmax",
+              "max": [
+                1.0,
+                1.0
+              ],
+              "min": [
+                0.0,
+                0.0
+              ]
+            },
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "vec2f",
+            "writable_by": [
+              "engine"
+            ]
+          }
+        ],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/test/vfs_dependency_chain/vfs_profiles.yaml",
+      "payload": {
+        "agent_profile": null,
+        "debug_logging": false,
+        "evaluation_mode": "eager",
+        "global_profile": {
+          "variables": [
+            {
+              "initial_value": 10.0,
+              "name": "a",
+              "semantic_type": "custom",
+              "type": "float"
+            },
+            {
+              "expression": "a + 5",
+              "name": "b",
+              "semantic_type": "custom",
+              "type": "float"
+            },
+            {
+              "expression": "b * 2",
+              "name": "c",
+              "semantic_type": "custom",
+              "type": "float"
+            }
+          ]
+        },
+        "item_profiles": [
+          {
+            "profile_name": "default_item",
+            "variables": []
+          }
+        ],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/test/vfs_profiles_smoke/vfs_profiles.yaml",
+      "payload": {
+        "agent_profile": {
+          "variables": [
+            {
+              "description": "Agent's intrinsic motivation multiplier",
+              "initial_value": 1.0,
+              "name": "motivation",
+              "semantic_type": "custom",
+              "type": "float"
+            },
+            {
+              "description": "True when agent is in resource crisis",
+              "expression": "bar.energy < 0.2 or bar.health < 0.2",
+              "name": "is_crisis",
+              "semantic_type": "custom",
+              "type": "bool"
+            },
+            {
+              "description": "Ticks spent in crisis state",
+              "initial_value": 0,
+              "name": "crisis_duration",
+              "semantic_type": "custom",
+              "type": "int"
+            }
+          ]
+        },
+        "debug_logging": false,
+        "evaluation_mode": "mark_and_sweep",
+        "global_profile": {
+          "variables": [
+            {
+              "description": "Number of days elapsed",
+              "initial_value": 0,
+              "name": "day_count",
+              "semantic_type": "temporal",
+              "type": "int"
+            },
+            {
+              "description": "True during night hours (18:00-6:00)",
+              "expression": "tick % 24 >= 18",
+              "name": "is_night",
+              "semantic_type": "temporal",
+              "type": "bool"
+            }
+          ]
+        },
+        "item_profiles": [
+          {
+            "profile_name": "food_stats",
+            "variables": [
+              {
+                "description": "Energy restored when consumed",
+                "initial_value": 0.5,
+                "name": "nutrition",
+                "type": "float"
+              },
+              {
+                "description": "True when food has spoiled",
+                "initial_value": false,
+                "name": "is_spoiled",
+                "type": "bool"
+              }
+            ]
+          },
+          {
+            "profile_name": "weapon_stats",
+            "variables": [
+              {
+                "description": "Damage dealt per use",
+                "initial_value": 10.0,
+                "name": "damage",
+                "type": "float"
+              },
+              {
+                "description": "Remaining uses before breaking",
+                "initial_value": 100,
+                "name": "durability",
+                "type": "int"
+              }
+            ]
+          }
+        ],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/test/vfs_type_mismatch/variables_reference.yaml",
+      "payload": {
+        "exposed_observations": [
+          {
+            "id": "obs_position",
+            "normalization": {
+              "clip": false,
+              "kind": "minmax",
+              "max": [
+                1.0,
+                1.0
+              ],
+              "min": [
+                0.0,
+                0.0
+              ]
+            },
+            "scope": "agent",
+            "shape": [
+              2
+            ],
+            "source": "position",
+            "type": "vec2f"
+          }
+        ],
+        "variables": [
+          {
+            "default": [
+              0.0,
+              0.0
+            ],
+            "description": "Normalized agent position in [0, 1]^2 range",
+            "dims": 2,
+            "id": "position",
+            "lifetime": "tick",
+            "normalization": {
+              "clip": false,
+              "kind": "minmax",
+              "max": [
+                1.0,
+                1.0
+              ],
+              "min": [
+                0.0,
+                0.0
+              ]
+            },
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "vec2f",
+            "writable_by": [
+              "engine"
+            ]
+          }
+        ],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/test/vfs_type_mismatch/vfs_profiles.yaml",
+      "payload": {
+        "agent_profile": null,
+        "debug_logging": false,
+        "evaluation_mode": "mark_and_sweep",
+        "global_profile": {
+          "variables": [
+            {
+              "expression": "10 < 5",
+              "name": "my_int_var",
+              "semantic_type": "custom",
+              "type": "int"
+            }
+          ]
+        },
+        "item_profiles": [],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/test/vfs_undefined_var/variables_reference.yaml",
+      "payload": {
+        "exposed_observations": [
+          {
+            "id": "obs_position",
+            "normalization": {
+              "clip": false,
+              "kind": "minmax",
+              "max": [
+                1.0,
+                1.0
+              ],
+              "min": [
+                0.0,
+                0.0
+              ]
+            },
+            "scope": "agent",
+            "shape": [
+              2
+            ],
+            "source": "position",
+            "type": "vec2f"
+          }
+        ],
+        "variables": [
+          {
+            "default": [
+              0.0,
+              0.0
+            ],
+            "description": "Normalized agent position in [0, 1]^2 range",
+            "dims": 2,
+            "id": "position",
+            "lifetime": "tick",
+            "normalization": {
+              "clip": false,
+              "kind": "minmax",
+              "max": [
+                1.0,
+                1.0
+              ],
+              "min": [
+                0.0,
+                0.0
+              ]
+            },
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "vec2f",
+            "writable_by": [
+              "engine"
+            ]
+          }
+        ],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/test/vfs_undefined_var/vfs_profiles.yaml",
+      "payload": {
+        "agent_profile": null,
+        "debug_logging": false,
+        "evaluation_mode": "mark_and_sweep",
+        "global_profile": {
+          "variables": [
+            {
+              "expression": "undefined_var + 1",
+              "name": "my_var",
+              "semantic_type": "custom",
+              "type": "float"
+            }
+          ]
+        },
+        "item_profiles": [],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/trial002_money_log_gdp/variables_reference.yaml",
+      "payload": {
+        "variables": [],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/trial002_money_log_gdp/vfs_profiles.yaml",
+      "payload": {
+        "debug_logging": false,
+        "evaluation_mode": "mark_and_sweep",
+        "item_profiles": [],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/trial_k_cold/variables_reference.yaml",
+      "payload": {
+        "exposed_observations": [
+          {
+            "id": "obs_position",
+            "normalization": {
+              "clip": false,
+              "kind": "minmax",
+              "max": [
+                1.0,
+                1.0
+              ],
+              "min": [
+                0.0,
+                0.0
+              ]
+            },
+            "scope": "agent",
+            "shape": [
+              2
+            ],
+            "source": "position",
+            "type": "vec2f"
+          }
+        ],
+        "variables": [
+          {
+            "default": [
+              0.0,
+              0.0
+            ],
+            "description": "Normalized agent position in [0, 1]^2 range",
+            "dims": 2,
+            "id": "position",
+            "lifetime": "tick",
+            "normalization": {
+              "clip": false,
+              "kind": "minmax",
+              "max": [
+                1.0,
+                1.0
+              ],
+              "min": [
+                0.0,
+                0.0
+              ]
+            },
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "vec2f",
+            "writable_by": [
+              "engine"
+            ]
+          }
+        ],
+        "version": "1.0"
+      }
+    },
+    {
+      "path": "configs/trial_k_cold/vfs_profiles.yaml",
+      "payload": {
+        "agent_profile": null,
+        "debug_logging": false,
+        "evaluation_mode": "mark_and_sweep",
+        "global_profile": {
+          "variables": [
+            {
+              "initial_value": 1.0,
+              "name": "world_temp",
+              "semantic_type": "custom",
+              "type": "float"
+            },
+            {
+              "initial_value": 0.0,
+              "name": "season_clock",
+              "semantic_type": "custom",
+              "type": "float"
+            },
+            {
+              "initial_value": 0.0,
+              "name": "winter_ticks",
+              "semantic_type": "custom",
+              "type": "float"
+            }
+          ]
+        },
+        "item_profiles": [
+          {
+            "profile_name": "garment_stats",
+            "variables": [
+              {
+                "initial_value": 0.6,
+                "name": "insulation",
+                "type": "float"
+              }
+            ]
+          },
+          {
+            "profile_name": "default_item",
+            "variables": []
+          }
+        ],
+        "version": "1.0"
+      }
+    }
+  ],
+  "source_commit": "599cad15706ac8824c3f8e38276da6440c4816a3"
+}

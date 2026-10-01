@@ -23,5 +23,4 @@ environment:
       description: Eat food
       category: sustenance
 
-  variables: []
   cues: []

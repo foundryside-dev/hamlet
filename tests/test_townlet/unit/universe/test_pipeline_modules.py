@@ -9,8 +9,9 @@ from types import SimpleNamespace
 import pytest
 import yaml
 
+from townlet.universe.declarations import DeclarationStore
+from townlet.universe.error_codes import ErrorCode
 from townlet.universe.errors import CompilationError
-from townlet.universe.loaders.preflight import validate_scoping, validate_yaml_syntax
 from townlet.universe.loaders.v21 import load_v21_configs
 from townlet.universe.validation.feasibility import grid_capacity_for_substrate
 from townlet.universe.validation.references import build_symbol_table, resolve_references
@@ -38,19 +39,22 @@ def test_load_v21_configs_loads_root_optional_artifacts(tmp_path: Path) -> None:
 
     raw = load_v21_configs(config_dir)
 
-    assert raw.vfs_profiles is not None
+    assert raw.variables is not None
     assert raw.effects is not None
     assert raw.action_label_overrides == {0: "PORT"}
-    assert raw.variables_reference is not None
-    assert {var.id for var in raw.variables_reference} == {"position"}
+    assert raw.variables.declarations
+    assert "position" in {var.id for var in raw.variables.declarations}
 
 
-def test_validate_yaml_syntax_checks_optional_root_yaml(tmp_path: Path) -> None:
+def test_discovery_checks_optional_document_yaml_syntax(tmp_path: Path) -> None:
     config_dir = _copy_experiment(tmp_path)
     (config_dir / "action_labels.yaml").write_text("custom: [broken: yaml")
 
-    with pytest.raises(CompilationError, match="Stage 0: Preflight validation"):
-        validate_yaml_syntax(config_dir)
+    with pytest.raises(CompilationError) as caught:
+        DeclarationStore.discover(config_dir)
+
+    issue = next(issue for issue in caught.value.issues if issue.code == ErrorCode.YAML_SYNTAX_ERROR)
+    assert str(config_dir / "action_labels.yaml") in (issue.location or "")
 
 
 def test_resolve_references_accepts_valid_pack(tmp_path: Path) -> None:
@@ -76,23 +80,29 @@ def test_resolve_references_validates_dac_bar_references(tmp_path: Path) -> None
 
 def test_resolve_references_allows_profile_vfs_variables_in_dac(tmp_path: Path) -> None:
     config_dir = _copy_experiment(tmp_path)
-    (config_dir / "vfs_profiles.yaml").write_text(
+    (config_dir / "variables.yaml").write_text(
         yaml.safe_dump(
             {
-                "version": "1.0",
-                "evaluation_mode": "mark_and_sweep",
-                "debug_logging": False,
-                "global_profile": {
-                    "variables": [
+                "variables": {
+                    "version": "1.0",
+                    "evaluation_mode": "mark_and_sweep",
+                    "debug_logging": False,
+                    "extents": {},
+                    "item_profiles": [],
+                    "declarations": [
                         {
+                            "readable_by": ["engine", "agent"],
+                            "writable_by": ["engine"],
+                            "id": "hunger_pressure",
+                            "scope": "global",
+                            "type": "scalar",
+                            "lifetime": "persistent",
                             "semantic_type": "custom",
-                            "name": "hunger_pressure",
-                            "type": "float",
+                            "exposed_to": [],
                             "initial_value": 0.0,
                         }
-                    ]
-                },
-                "item_profiles": [],
+                    ],
+                }
             },
             sort_keys=False,
         )
@@ -108,11 +118,13 @@ def test_resolve_references_allows_profile_vfs_variables_in_dac(tmp_path: Path) 
     resolve_references(raw, symbol_table, config_dir)
 
 
-def test_preflight_rejects_level_directory_directly(tmp_path: Path) -> None:
+def test_discovery_rejects_level_directory_directly(tmp_path: Path) -> None:
     config_dir = _copy_experiment(tmp_path)
 
-    with pytest.raises(CompilationError, match="Cannot validate level directory directly"):
-        validate_scoping(config_dir / "levels" / "L0_test")
+    with pytest.raises(CompilationError, match="Cannot validate level directory directly") as caught:
+        DeclarationStore.discover(config_dir / "levels" / "L0_test")
+
+    assert any(issue.code == ErrorCode.SCOPING_LEVEL_DIRECTORY for issue in caught.value.issues)
 
 
 def test_select_primary_level_rejects_unknown_level() -> None:

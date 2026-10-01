@@ -1,17 +1,23 @@
-"""hamlet-bc0a5deeff: item-profile expressions have no evaluator — refuse at compile."""
-
-from __future__ import annotations
+"""Item expressions refuse at authoring because they have no runtime evaluator."""
 
 import pytest
+from pydantic import ValidationError
 
-from townlet.config.vfs_profiles_config import ItemVFSProfileConfig
-from townlet.vfs.profiles import VFSProfileCompiler
+from townlet.config.variables_config import VariableDeclaration
 
 
-def test_item_profile_expression_refuses_at_compile():
-    profile = ItemVFSProfileConfig(
-        profile_name="p",
-        variables=[{"name": "rot", "type": "float", "expression": "1.0"}],
-    )
-    with pytest.raises(ValueError, match="hamlet-bc0a5deeff"):
-        VFSProfileCompiler().compile_item_profile(profile, bar_schema={})
+def test_item_expression_refuses_before_emission():
+    with pytest.raises(ValidationError, match="expression execution supports global and agent"):
+        VariableDeclaration(
+            readable_by=["engine", "agent"],
+            writable_by=["engine"],
+            id="rot",
+            scope="item",
+            profile="p",
+            type="scalar",
+            lifetime="episode",
+            semantic_type="custom",
+            exposed_to=[],
+            initial_value=0.0,
+            expression="1.0",
+        )

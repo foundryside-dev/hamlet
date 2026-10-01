@@ -1,9 +1,10 @@
 # HAMLET Configuration System v2.1.1 - Reference Specification
 # =======================================================
-# This document is the authoritative reference for HAMLET configuration v2.1.1.
-# It describes every field and its intent; treat examples as normative schemas,
-# not runnable defaults. Configs are split across files in practice; this single
-# reference consolidates them for clarity.
+# HISTORICAL DESIGN SKETCH (v2.1.1, 2025): NOT a supported compiler input or
+# authoritative schema. Several selectors and the variable language below were
+# deleted. Cut B authoring uses docs/config-schemas/variables.md and declarations.md;
+# configs/reference/model_pack is the current runnable witness. This document
+# retains old design intent only; no compatibility reader accepts its old shapes.
 #
 # Semantic versioning for the spec:
 #   - MAJOR: Breaking changes to layout/semantics (obs_dim, file shapes, schema)

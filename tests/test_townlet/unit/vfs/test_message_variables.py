@@ -16,8 +16,8 @@ def test_message_scope_and_token_type_are_first_class_schema_values() -> None:
         type="message_token",
         dims=4,
         lifetime="episode",
-        readable_by=["agent", "social_model"],
-        writable_by=["vtc"],
+        readable_by=["agent", "engine"],
+        writable_by=[],
         default=[0.0, 0.0, 0.0, 0.0],
     )
 
@@ -36,8 +36,8 @@ def test_canonical_l6_message_variables_match_spec_metadata() -> None:
     assert recent_messages.type == "message_token"
     assert recent_messages.dims == 5
     assert recent_messages.lifetime == "episode"
-    assert recent_messages.readable_by == ["agent", "social_model"]
-    assert recent_messages.writable_by == ["vtc"]
+    assert recent_messages.readable_by == ["engine", "agent"]
+    assert recent_messages.writable_by == ["engine"]
     assert recent_messages.default == [0.0, 0.0, 0.0, 0.0, 0.0]
 
 
@@ -49,7 +49,7 @@ def test_canonical_l6_message_variables_initialize_expected_registry_shape() -> 
         device=torch.device("cpu"),
     )
 
-    messages = registry.get("recent_message_tokens", reader="social_model")
+    messages = registry.get("recent_message_tokens", reader="engine")
 
     assert messages.shape == torch.Size([3, 2, 5])
     assert torch.all(messages == 0.0)

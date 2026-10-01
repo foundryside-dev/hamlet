@@ -27,6 +27,14 @@
 > is rewritten.
 
 
+## Declaration scope
+
+Each level requires an `affordances:` declaration, conventionally in
+`levels/<level>/affordances.yaml`. Filenames and additional subfolders are transport;
+fragments keep authored list order and duplicate affordance names fail with both actual source
+locations. See [declaration discovery](declarations.md). This changes loading, not the unsupported
+capability vocabulary described in the dated warning above.
+
 ## Capability Validation Rules
 
 The Universe Compiler validates affordance capabilities to ensure configuration correctness at compile time.

@@ -9,6 +9,7 @@ import pytest
 import yaml
 
 from townlet.universe.compiler import UniverseCompiler
+from townlet.universe.error_codes import ErrorCode
 from townlet.universe.errors import CompilationError
 
 
@@ -42,10 +43,14 @@ def test_compile_rejects_file_path(tmp_path: Path) -> None:
 
 def test_compile_rejects_invalid_yaml_in_level_file(tmp_path: Path) -> None:
     config_dir = _copy_experiment(tmp_path)
-    (config_dir / "levels" / "L0_test" / "curriculum.yaml").write_text("invalid: [yaml: syntax")
+    curriculum_path = config_dir / "levels" / "L0_test" / "curriculum.yaml"
+    curriculum_path.write_text("invalid: [yaml: syntax")
 
-    with pytest.raises(CompilationError, match="Stage 0: Preflight validation"):
+    with pytest.raises(CompilationError) as caught:
         UniverseCompiler().compile(config_dir, primary_level="L0_test", use_cache=False)
+
+    issue = next(issue for issue in caught.value.issues if issue.code == ErrorCode.YAML_SYNTAX_ERROR)
+    assert issue.location == f"{curriculum_path}:1"
 
 
 def test_compile_rejects_grid_capacity_exceeded(tmp_path: Path) -> None:

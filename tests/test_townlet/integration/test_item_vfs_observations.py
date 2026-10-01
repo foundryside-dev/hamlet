@@ -191,3 +191,65 @@ def test_exposed_item_variable_publishes_through_the_item_arena():
     env.item_manager.lift_item(spawned.instance_id)
     after_lift = rows()
     assert present_count(after_lift) == baseline
+
+
+@pytest.mark.parametrize("cached", [False, True])
+def test_qualified_item_policy_and_observation_cold_cache_two_resets(tmp_path, cached):
+    """Controlled live spawns qualify roles, not initial appearance cache fidelity.
+
+    The initial appearance declaration is explicitly removed. World-shared item
+    rows remain world-shared; owner locality and held-item publication are excluded.
+    """
+    import shutil
+
+    import yaml
+
+    from townlet.environment.observation_encoder import build_token_observation_encoder
+    from townlet.universe.compiled import CompiledUniverse
+
+    pack = tmp_path / "items"
+    shutil.copytree("configs/test/items_smoke", pack)
+    (pack / "levels/L0_smoke/items.yaml").unlink()
+    path = pack / "variables.yaml"
+    declarations = yaml.safe_load(path.read_text())
+    food = next(v for v in declarations["variables"]["declarations"] if v.get("profile") == "food")
+    food["readable_by"] = ["engine"]
+    path.write_text(yaml.safe_dump(declarations, sort_keys=False))
+    universe = UniverseCompiler().compile(pack, primary_level="L0_smoke", use_cache=False)
+    if cached:
+        artifact = tmp_path / "items.msgpack"
+        universe.save_to_cache(artifact)
+        universe = CompiledUniverse.load_from_cache(artifact)
+    assert universe.get_level("L0_smoke").items_appearance is None
+    env = universe.create_environment(num_agents=2, level_name="L0_smoke", device="cpu")
+    layout = env.token_spec.compact_layout().get_type("variable_element")
+    value_lane = layout.dynamic_features.index("value_0")
+    bindings = env.token_spec.get_type("variable_element").slot_bindings
+    assert bindings and all(binding.filler_ref.startswith("medical.durability[") for binding in bindings)
+
+    def observations():
+        obs = env._get_observations()
+        return obs[:, layout.start : layout.start + layout.capacity * layout.compact_row_width].reshape(
+            2, layout.capacity, layout.compact_row_width
+        )
+
+    for episode in range(2):
+        env.reset()
+        assert not observations()[:, :, 0].any()
+        apple = env.item_manager.spawn_item("apple", (0, 0), current_tick=0, initial_state={"freshness": 42.0})
+        medkit = env.item_manager.spawn_item("medkit", (1, 1), current_tick=0, initial_state={"durability": 30.0})
+        assert apple is not None and medkit is not None
+        with pytest.raises(PermissionError, match="food.*freshness"):
+            env.vfs_registry.read_item("food", "freshness", apple.vfs_index, reader="agent")
+        assert env.vfs_registry.read_item("medical", "durability", medkit.vfs_index, reader="agent") == 30.0
+        variable = env.vfs_registry.item_profiles["medical"].variables[0]
+        variable.readable_by = ("engine",)
+        variable.exposed_to = ()
+        # Reconstruct from the same immutable policy authority after source DTO mutation.
+        env._observation_encoder = build_token_observation_encoder(env)
+        rows = observations()
+        present = rows[0, :, 0].bool()
+        assert int(present.sum()) == 1
+        assert torch.allclose(rows[:, present, value_lane], torch.full((2, 1), 0.3))
+        env.item_manager.despawn_item(medkit.instance_id, current_tick=0)
+        assert not observations()[:, :, 0].any()

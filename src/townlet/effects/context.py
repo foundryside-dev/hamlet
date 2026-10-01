@@ -123,7 +123,7 @@ class ExecutionContext:
                 profile_name = self.vfs_registry.get_item_profile_for_index(self.self_index)
                 if profile_name is None:
                     raise KeyError(f"No item profile registered for vfs_index {self.self_index}")
-                value = self.vfs_registry.read_item(profile_name, var_name, self.self_index)
+                value = self.vfs_registry.read_item(profile_name, var_name, self.self_index, reader="engine")
                 return torch.as_tensor(value, dtype=torch.float32)
 
             tensor = self.get_path(rest)
@@ -158,6 +158,35 @@ class ExecutionContext:
 
         raise ValueError(f"Invalid path: {path}")
 
+    def authorize_write_path(self, path: str) -> None:
+        """Preflight one resolved command target without reading or mutating storage."""
+        parts = path.split(".")
+        item_index: int | None = None
+        if parts[0] in ("self", "target"):
+            actor = parts.pop(0)
+            is_item = self.self_is_item if actor == "self" else self.target_is_item
+            if is_item:
+                index = self.self_index if actor == "self" else self.target_index
+                if index is None:
+                    raise ValueError(f"{actor}_index not set in context")
+                item_index = index
+        if parts[0] != "vfs":
+            return
+        if len(parts) < 2:
+            raise ValueError(f"VFS write path '{path}' has no variable identity")
+        if self.vfs_registry is None:
+            raise ValueError("VFS registry not set in context")
+        # Bare VFS targets and item-profile IDs may contain dots. Resolve the
+        # complete declared identity rather than interpreting it as traversal.
+        variable_id = ".".join(parts[1:])
+        if item_index is None:
+            self.vfs_registry.authorize_write(variable_id, writer="engine")
+        else:
+            profile = self.vfs_registry.get_item_profile_for_index(item_index)
+            if profile is None:
+                raise KeyError(f"No item profile registered for vfs_index {item_index}")
+            self.vfs_registry.authorize_item_write(profile, variable_id, writer="engine")
+
     def set_path(self, path: str, value: torch.Tensor) -> None:
         """Set path to new tensor value (mutation).
 
@@ -165,6 +194,7 @@ class ExecutionContext:
             path: Dot-separated path
             value: New tensor value
         """
+        self.authorize_write_path(path)
         # Handle target. prefix
         if path.startswith("target."):
             if self.target_index is None:
@@ -181,7 +211,7 @@ class ExecutionContext:
                 profile_name = self.vfs_registry.get_item_profile_for_index(self.target_index)
                 if profile_name is None:
                     raise KeyError(f"No item profile registered for vfs_index {self.target_index}")
-                self.vfs_registry.write_item(profile_name, var_name, write_value, self.target_index)
+                self.vfs_registry.write_item(profile_name, var_name, write_value, self.target_index, writer="engine")
                 return
 
             if rest.startswith("vfs."):
@@ -219,7 +249,7 @@ class ExecutionContext:
                 profile_name = self.vfs_registry.get_item_profile_for_index(self.self_index)
                 if profile_name is None:
                     raise KeyError(f"No item profile registered for vfs_index {self.self_index}")
-                self.vfs_registry.write_item(profile_name, var_name, write_value, self.self_index)
+                self.vfs_registry.write_item(profile_name, var_name, write_value, self.self_index, writer="engine")
                 return
 
             if rest.startswith("vfs."):
@@ -360,7 +390,7 @@ class ExecutionContext:
             profile_name = self.vfs_registry.get_item_profile_for_index(index)
             if profile_name is None:
                 raise KeyError(f"No item profile registered for vfs_index {index}")
-            val = self.vfs_registry.read_item(profile_name, var_name, index)
+            val = self.vfs_registry.read_item(profile_name, var_name, index, reader="engine")
             if isinstance(val, torch.Tensor):
                 return val
             return torch.tensor(val, device=self.bars[next(iter(self.bars))].device if self.bars else torch.device("cpu"))

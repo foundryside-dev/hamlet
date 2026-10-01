@@ -8,8 +8,10 @@ Brain configuration defines agent architecture, optimizer, loss function, Q-lear
 
 ## File Location
 
-Each config pack requires a pack-root `brain.yaml`, and any level MAY override it with a
-complete `brain.yaml` of its own:
+Each pack requires a pack-scope brain declaration, and any level MAY supply a complete brain
+override. `brain.yaml` is a convention; the distinctive bare brain shape is recognized by
+content in any nested `.yaml`/`.yml` document. See [declaration discovery](declarations.md).
+A conventional layout is:
 
 ```
 configs/<pack>/
@@ -25,7 +27,7 @@ configs/<pack>/
 
 **Per-level override semantics (PDR-0027):**
 
-- A level's `brain.yaml` is a **complete file**, not a patch. If present it replaces the
+- A level's brain declaration is a **complete configuration**, not a patch. If present it replaces the
   pack brain as that level's effective base; if absent the level inherits the pack brain
   unchanged. There is no partial merge — partial merges need default semantics, which the
   No-Defaults Principle forbids.
@@ -598,7 +600,7 @@ resume. A change to any of those four files rejects the checkpoint with a
 - Curriculum configs: `configs/default_curriculum/levels/L0_0_minimal/` through
   `.../levels/L3_temporal_mechanics/`
   (⚠ corrected 2026-08-26 — the flat `configs/L0_0_minimal/` paths previously listed here are
-  dead; levels live under a pack root, and `brain.yaml` is a **pack-level shared file** with no
+  dead; levels live under a pack root. The brain declaration is required at pack scope, with a
   per-level override)
 - ⚠ There is no `configs/experiments/` directory (the `dueling_network` and
   `prioritized_replay` example packs listed here previously do not exist). For a pack that

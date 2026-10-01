@@ -1,0 +1,29 @@
+variables:
+  version: '1.0'
+  evaluation_mode: mark_and_sweep
+  debug_logging: false
+  extents: {}
+  item_profiles: []
+  declarations:
+  - id: my_var
+    readable_by: [engine, agent]
+    writable_by: [engine]
+    scope: global
+    type: scalar
+    lifetime: persistent
+    semantic_type: custom
+    exposed_to: []
+    expression: undefined_var + 1
+    initial_value: 0.0
+  - id: position
+    readable_by: [engine, agent]
+    writable_by: [engine]
+    scope: agent
+    type: vec2f
+    lifetime: tick
+    semantic_type: custom
+    exposed_to: []
+    initial_value:
+    - 0.0
+    - 0.0
+    description: Normalized agent position in [0, 1]^2 range

@@ -62,5 +62,4 @@ environment:
 
   cascade_graph: []
   modulation_graph: []
-  variables: []
   cues: []

@@ -85,11 +85,15 @@ Items integrate with:
 
 ## File Structure
 
-Items configuration consists of two separate files:
+Items configuration has two distinct declaration families. Their scope and content shape,
+not their filenames, distinguish the catalog from appearance. See
+[declaration discovery](declarations.md).
 
 ### 1. Items Catalog (Experiment-Level)
 
-**Location**: `<config_pack>/items.yaml`
+**Scope**: Pack-scope item catalog, conventionally `<config_pack>/items.yaml`.
+Keep the `items:` catalog mapping with `item_types`; catalog fragments must agree on structural
+headers and may not repeat item IDs.
 
 Defines item types once for entire experiment.
 
@@ -114,7 +118,10 @@ items:
 
 ### 2. Items Appearance (Level-Specific)
 
-**Location**: `<config_pack>/levels/<level_name>/items.yaml`
+**Scope**: Optional level-scope appearance declaration, conventionally
+`<config_pack>/levels/<level_name>/items.yaml`. Its existing bare shape has `version` and an
+`items` list. Appearance is a singleton per level: these ordered rules have no rule identifier,
+so splitting it into multiple appearance declarations is refused.
 
 Defines spawn rules for specific level.
 
@@ -176,7 +183,7 @@ items:
 | Field | Type | Description |
 |-------|------|-------------|
 | `id` | string | Unique item type identifier (lowercase, alphanumeric + underscores) |
-| `vfs_profile` | string | VFS profile ID from vfs_profiles.yaml (item scope) |
+| `vfs_profile` | string | Named item profile from the canonical variables catalog |
 | `interactions` | object | Item interaction commands (on_pickup, on_use, on_drop) |
 
 #### Optional Fields
@@ -466,40 +473,31 @@ Items use VFS profiles to store persistent state. Each item instance has a uniqu
 
 ### VFS Profile Configuration
 
-**Location**: `<config_pack>/vfs_profiles.yaml`
+**Scope**: Pack-scope [canonical variable declaration](variables.md).
 
 ```yaml
-item_profiles:
-  - id: "durability"
+variables:
+  version: '1.0'
+  evaluation_mode: mark_and_sweep
+  debug_logging: false
+  extents: {}
+  item_profiles: [durable]
+  declarations:
+  - id: durability
     scope: item
+    profile: durable
     type: scalar
+    lifetime: episode
+    semantic_type: custom
     initial_value: 100.0
-    description: "Item durability (100.0 = pristine, 0.0 = broken)"
-    normalization:
-      kind: minmax
-      min: 0.0
-      max: 100.0
-
-  - id: "quality"
-    scope: item
-    type: scalar
-    initial_value: 1.0
-    description: "Item quality multiplier (affects effectiveness)"
-    normalization:
-      kind: minmax
-      min: 0.0
-      max: 1.0
-
-  - id: "charges"
-    scope: item
-    type: scalar
-    initial_value: 3.0
-    description: "Number of uses remaining"
-    normalization:
-      kind: minmax
-      min: 0.0
-      max: 10.0
+    exposed_to: [agent]
+    normalization: {kind: minmax, min: 0.0, max: 100.0, clip: true}
 ```
+
+Item state currently supports scalar/bool/reference literal values and episode lifetime.
+Expressions, tensor/vector storage and other lifetimes are refused. Item catalog
+`vfs_profile: durable` selects the named schema group; its state definitions use the same
+variable model as registry state.
 
 ### Accessing Item State
 
@@ -536,7 +534,7 @@ Each item type specifies a `vfs_profile` field:
 ```yaml
 item_types:
   - id: "torch"
-    vfs_profile: "durable"    # References item_profiles in vfs_profiles.yaml
+    vfs_profile: "durable"    # References variables.item_profiles
 ```
 
 **Multiple items can share profiles**:
@@ -696,13 +694,18 @@ When inventory full, GET action fails:
   spawn_position: random
 ```
 
-**VFS Profile** (vfs_profiles.yaml):
+**Canonical item state** (within the `variables` declaration):
 ```yaml
-item_profiles:
-  - id: "food"
+item_profiles: [food]
+declarations:
+  - id: freshness
+    profile: food
     scope: item
     type: scalar
+    lifetime: episode
+    semantic_type: custom
     initial_value: 1.0
+    exposed_to: []
     description: "Food freshness (1.0 = fresh, 0.0 = spoiled)"
 ```
 

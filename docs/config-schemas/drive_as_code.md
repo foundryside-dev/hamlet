@@ -1,20 +1,10 @@
-# drive_as_code.yaml Configuration
+# Drive As Code Configuration
 
-> ⚠️ **Restored to the live tree 2026-08-26 — authoritative on the reward VOCABULARY, wrong about the FILENAME.**
->
-> This is the reference `CLAUDE.md` and `docs/architecture/HLD.md`/`UAC.md` delegate to for the
-> DAC component vocabularies (modifiers; 9 extrinsic, 5 intrinsic, 11 shaping types). That
-> content is why it is out of the archive.
->
-> **Known wrong — one error, repeated throughout:** every reference to a file called
-> **`drive_as_code.yaml` is dead.** No shipped pack contains such a file, and a grep for that
-> name returns zero hits, so it will falsely "confirm" whatever you were checking. The real
-> file is **`drive.yaml`**, one per level, at
-> `configs/default_curriculum/levels/<level>/drive.yaml`. Read every `drive_as_code.yaml` below
-> as `drive.yaml`.
->
-> (The compiler has the same bug in its own error strings — `validation/references.py` emits
-> diagnostics located at `drive_as_code.yaml`. That is a source defect, not a doc defect.)
+> **Authoring transport updated 2026-10-01 (declaration-store Cut A).** Each level requires
+> a typed `drive:` declaration. `drive.yaml` is the shipped filename convention; another
+> `.yaml`/`.yml` name has the same meaning when its content and scope are unchanged.
+> Diagnostics use its actual source origin. This front-end change does not establish that
+> every reward strategy described below is implemented end to end.
 
 
 ---
@@ -41,7 +31,10 @@ Drive As Code (DAC) is a declarative reward function compiler that extracts all 
 
 ---
 
-**Location**: `<config_pack>/drive_as_code.yaml`
+**Scope**: Required level-scope `drive:` declaration, conventionally
+`<config_pack>/levels/<level>/drive.yaml`. It may share a multi-document file with other
+families; duplicate drive declarations at the same level refuse.
+See [declaration discovery](declarations.md).
 
 **Status**: PRODUCTION (TASK-004C Complete)
 
@@ -194,7 +187,7 @@ Base reward strategy configuration. Defines how to compute extrinsic rewards fro
 **Validation**:
 - `type` must be one of 9 supported strategies
 - Referenced bars must exist in bars.yaml
-- Referenced variables must exist in variables_reference.yaml
+- Referenced variables must exist in the canonical variables declaration
 
 ---
 
@@ -527,7 +520,11 @@ extrinsic:
   variable: custom_reward_function
 ```
 
-**Note**: Requires VFS variable with `readable_by: ["engine"]` and `writable_by: ["bac"]` or custom computation.
+**Current variable boundary:** named reward inputs require a canonical global/agent
+scalar or boolean variable. Reward evaluation reads as engine; a hidden engine-readable
+variable can contribute without direct agent exposure. Static roles are required authored
+fields (see [variables](variables.md)). This older strategy example does not establish
+that the direct `variable` setting is consumed; see the documented strategy gaps.
 
 ---
 
@@ -1214,7 +1211,8 @@ drive_as_code:
       weight: 1.0
 ```
 
-**Requirement**: VFS variables must have `readable_by: ["engine"]`
+**Requirement**: use canonical global/agent scalar or boolean variables. Engine access
+is fixed by compiler policy; access-role fields are not part of variable authoring.
 
 ---
 
@@ -1244,7 +1242,8 @@ drive_as_code:
 **Location**: `townlet.environment.dac_engine.DACEngine`
 
 **Checks**:
-1. **VFS access control**: Engine can read variables with `readable_by: ["engine"]`
+1. **VFS access control**: Internal descriptors grant engine reads; authorable access
+   roles remain separate PDR-0120 work.
 2. **Bar index mapping**: Bar names map to valid meter indices
 3. **Tensor shapes**: All operations broadcast correctly across agents
 
@@ -1304,7 +1303,7 @@ Use drive_hash for provenance when comparing different reward structures.
 # Train with multiplicative
 uv run scripts/run_demo.py --config configs/L1_full_observability
 
-# Change to constant_base in drive_as_code.yaml
+# Change to constant_base in the drive declaration
 # Drive hash will change, enabling comparison in TensorBoard
 ```
 
@@ -1350,7 +1349,7 @@ extrinsic:
 
 **Cause**: DAC references bar not defined in bars.yaml
 
-**Fix**: Add bar to bars.yaml or fix typo in drive_as_code.yaml
+**Fix**: Add bar to bars.yaml or fix typo in the drive declaration
 
 ```yaml
 # bars.yaml
@@ -1363,19 +1362,11 @@ bars:
 
 ### CompilationError: "undefined VFS variable"
 
-**Cause**: DAC references variable not in variables_reference.yaml
+**Cause**: DAC references an unknown canonical variable identifier.
 
-**Fix**: Add variable definition with `readable_by: ["engine"]`
-
-```yaml
-# variables_reference.yaml
-variables:
-  - id: energy_urgency
-    scope: agent
-    type: scalar
-    readable_by: [agent, engine]  # Must include "engine"
-    # ...
-```
+**Fix**: Declare the variable in `variables.declarations` with explicit type, scope,
+initialization, lifetime and exposure; use that exact identifier in the reward rule.
+Access roles are compiler-owned, not an authoring fix. See [variables](variables.md).
 
 ---
 

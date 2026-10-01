@@ -52,7 +52,7 @@ from townlet.universe.dto.token_spec import (
     element_coordinate_block as _element_coordinate_block,
 )
 from townlet.vfs.registry import VariableRegistry
-from townlet.vfs.schema import NormalizationSpec, VariableDef, VariableScope
+from townlet.vfs.schema import NormalizationSpec, VariableDef, VariableScope, variable_element_shape
 
 __all__ = [
     "AffordanceTokenPublisher",
@@ -740,15 +740,10 @@ class RegistryVariableElementPublisher:
     two batched slabs from the per-scope arenas (`VariableRegistry.scope_arenas`) —
     never a per-variable Python loop, never a clone per read (hamlet-c7084169f7).
 
-    **This publisher is the `agent_private` enforcement point** (spec §2 scope table;
-    the hamlet-83a043a9b9 boundary by mechanism, not assumption). The registry's raw
-    accessors `get_global` / `get_agent` check NOTHING — `get_agent` serves
-    `agent_private` variables to any caller, and `list_agent` includes them — so
-    nothing upstream protects the observation. The filter is here, structurally and
-    before slot binding: slot bindings resolve ONLY against the global/agent scope
-    arenas (which exclude `agent_private` by construction), and a compiled binding
-    whose variable is `agent_private` is refused loudly at construction. Pinned by
-    test: an agent_private value never lands in any agent's rows.
+    The gather plan authorizes every binding against the registry's immutable role
+    and exposure authority before indexing its arena. ``agent_private`` has no
+    publisher and remains refused. Convenience getters enforce the same authority;
+    the authorized batched arena read avoids per-variable clones in the hot path.
     """
 
     type_name = "variable_element"
@@ -803,12 +798,18 @@ class RegistryVariableElementPublisher:
                     "item-profile state slots belong to ItemArenaVariableElementPublisher"
                 )
             scope = VariableScope(var_def.scope)
+            if binding.scope != scope:
+                raise ValueError(
+                    f"variable_element slot {slot_index}: binding scope {binding.scope!r} disagrees with "
+                    f"registry variable {base_id!r} scope {scope.value!r}; recompile the config pack"
+                )
             if scope == VariableScope.AGENT_PRIVATE:
                 raise ValueError(
                     f"variable_element slot {slot_index} is bound to agent_private variable {base_id!r}.\n"
                     "  Rule: agent_private is excluded from observation by the publisher, filtered BEFORE slot "
-                    "binding (token-obs spec §2 scope table; hamlet-83a043a9b9). The raw registry accessors "
-                    "check nothing — this refusal is the enforcement point."
+                    "binding at this publisher enforcement point (token-obs spec §2 scope table; hamlet-83a043a9b9). "
+                    "Checked accessors also "
+                    "refuse agent reads of private-scope storage."
                 )
             if scope == VariableScope.GLOBAL:
                 scope_key = "global"
@@ -819,6 +820,10 @@ class RegistryVariableElementPublisher:
                     f"variable_element slot {slot_index} is bound to {base_id!r} of scope {scope.value!r}; only "
                     "global/agent registry scopes publish through the registry arena (spec §2 scope table)"
                 )
+            registry.authorize_read(base_id, reader="agent")
+            policy = registry.get_access_policy(base_id)
+            if "agent" not in policy.exposed_to:
+                raise ValueError(f"variable_element slot {slot_index}: variable '{base_id}' is not declared exposed to agent")
             arena = registry.scope_arenas[scope_key]
             if base_id not in arena.index:
                 raise ValueError(
@@ -869,11 +874,7 @@ class RegistryVariableElementPublisher:
 
     @staticmethod
     def _element_shape(var_def: VariableDef) -> tuple[int, ...]:
-        if var_def.shape:
-            return tuple(var_def.shape)
-        if var_def.dims is not None and var_def.dims > 1:
-            return (int(var_def.dims),)
-        return ()
+        return variable_element_shape(var_def)
 
     def publish(self, rows: torch.Tensor, ctx: TokenPublishContext) -> None:
         n = self._slots.shape[0]
@@ -958,6 +959,8 @@ class ItemArenaVariableElementPublisher:
             if not 0 <= declaration.slot_index < schema.capacity:
                 raise ValueError(f"variable_element item-state slot {declaration.slot_index} is out of range [0, {schema.capacity})")
             binding = schema.slot_bindings[declaration.slot_index]
+            if binding.scope != VariableScope.ITEM:
+                raise ValueError(f"variable_element slot {declaration.slot_index}: item-state binding requires item scope")
             base_ref, _ = parse_filler_ref(binding.filler_ref)
             profile_name, separator, var_name = base_ref.partition(".")
             if not separator or not profile_name or not var_name:
@@ -975,6 +978,13 @@ class ItemArenaVariableElementPublisher:
                 raise ValueError(
                     f"variable_element slot {declaration.slot_index}: variable {var_name!r} is not in item "
                     f"profile {profile_name!r} (available: {sorted(profile_vars)})"
+                )
+            registry.authorize_item_read(profile_name, var_name, reader="agent")
+            policy = registry.get_item_access_policy(profile_name, var_name)
+            if "agent" not in policy.exposed_to:
+                raise ValueError(
+                    f"variable_element slot {declaration.slot_index}: item variable '{profile_name}.{var_name}' "
+                    "is not declared exposed to agent"
                 )
             if not (0 <= declaration.owner_slot < owner_capacity):
                 raise ValueError(

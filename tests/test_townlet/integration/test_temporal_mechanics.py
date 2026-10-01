@@ -252,7 +252,7 @@ class TestTimeProgression:
 
 
 class TestAuthoredDayPhase:
-    """L3 temporality is ONE authored cyclical token (PDR-0143): declared in vfs_profiles.yaml,
+    """L3 temporality is ONE authored cyclical token (PDR-0143): declared in variables.yaml,
     bound to a variable_element slot, sin and cos of the tick in one value block."""
 
     VARIABLE = "day_phase"

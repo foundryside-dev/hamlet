@@ -54,9 +54,9 @@ from townlet.universe.token_hashes import (
     compute_token_layout_hash,
     compute_token_type_schema_hash,
 )
-from townlet.vfs.profiles import CompiledGlobalProfile
-from townlet.vfs.schema import NormalizationSpec, VariableDef
-from townlet.vfs.schema_hashes import compute_vfs_hash
+from townlet.vfs.profiles import AMBIENT_ENGINE_NAMES, CompiledGlobalProfile, CompiledItemProfile
+from townlet.vfs.schema import NormalizationSpec, VariableDef, VariableScope
+from townlet.vfs.schema_hashes import compute_variable_schema_hash, compute_vfs_hash
 from townlet.vfs.transition_schedule import (
     VTCTransitionSchedule,
     build_vtc_transition_schedule,
@@ -113,7 +113,11 @@ from townlet.vfs.transition_schedule import (
 # transport versions plus schema-owned fixed context tables replace binding-local static
 # signatures. A 1.25 token payload is a different artifact and is refused before any
 # nested token interpretation.
-COMPILED_SCHEMA_VERSION = "1.26"
+# 1.27: variable-element bindings carry their required typed scope. Scope is no longer
+# inferred from filler-reference spelling; 1.26 bindings lack this execution authority.
+# 1.29: static permissions are required on registry definitions and every compiled
+# global, agent and qualified item variable. Older artifacts have no policy authority.
+COMPILED_SCHEMA_VERSION = "1.29"
 
 REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "compiled_schema_version",
@@ -150,7 +154,7 @@ class CompiledVFSProfiles:
     debug_logging: bool
     global_profile: CompiledGlobalProfile | None = None
     # A compiled agent profile is a CompiledGlobalProfile: both compile through
-    # VFSProfileCompiler.compile_global_profile (townlet/universe/compilers/vfs.py).
+    # VFSProfileCompiler.compile_profile (townlet/universe/compilers/vfs.py).
     agent_profile: CompiledGlobalProfile | None = None
     item_profiles: dict[str, Any] | None = None  # TODO: Add CompiledItemProfile type
 
@@ -428,7 +432,10 @@ class CompiledUniverse:
                 _required_mapping(meta, f"all_levels.{name}.runtime_action_space"),
                 f"all_levels.{name}.runtime_action_space",
             )
-            level_vfs_variables = tuple(VariableDef(**var) for var in _required_field(meta, f"all_levels.{name}.vfs_variables"))
+            raw_variables = _required_field(meta, f"all_levels.{name}.vfs_variables")
+            for index, variable in enumerate(raw_variables):
+                _required_field(variable, f"all_levels.{name}.vfs_variables[{index}].semantic_type")
+            level_vfs_variables = tuple(VariableDef(**var) for var in raw_variables)
             level_transition_payload = _required_mapping(meta, f"all_levels.{name}.transition_schedule")
             level_schedule = build_vtc_transition_schedule(
                 runtime_action_space=level_runtime_action_space,
@@ -639,9 +646,72 @@ def _require_exact_keys(payload: Mapping[str, Any], expected: set[str], *, field
         )
 
 
+def _validate_compiled_policy_coherence(
+    compiled: CompiledUniverse, level_name: str, level: CompiledUniverse.LevelMetadata
+) -> Mapping[str, CompiledItemProfile]:
+    """Both products of each ordinary declaration must agree before publication.
+
+    Global/agent profiles own expression products; the registry owns ordinary
+    storage and access. Their same-entity type, shape, lifetime, normalization and
+    policy must agree. Item policies have one qualified compiled authority and
+    enter identity below.
+    """
+    definitions = {variable.id: variable for variable in level.vfs_variables}
+    if len(definitions) != len(level.vfs_variables):
+        raise ValueError(f"Compiled universe cache policy coherence failure for {level_name!r}: duplicate registry identity")
+    profiles = compiled.compiled_vfs_profiles
+    for scope, profile in (
+        (VariableScope.GLOBAL, None if profiles is None else profiles.global_profile),
+        (VariableScope.AGENT, None if profiles is None else profiles.agent_profile),
+    ):
+        expected = {
+            variable.id: variable
+            for variable in level.vfs_variables
+            if variable.scope == scope and not (scope == VariableScope.GLOBAL and variable.id in AMBIENT_ENGINE_NAMES)
+        }
+        variables = () if profile is None else profile.variables
+        actual = {variable.name: variable for variable in variables}
+        if len(actual) != len(variables) or set(actual) != set(expected):
+            raise ValueError(
+                f"Compiled universe cache policy coherence failure for {level_name!r}: " f"{scope.value} profile/registry rosters disagree"
+            )
+        for name, variable in actual.items():
+            definition = expected[name]
+            # Expression products spell scalar storage as float. The remaining
+            # same-entity metadata is copied directly from the declaration.
+            # Initializers are intentionally not compared: exposed deterministic
+            # tensor modes are lowered to literals only in the registry product.
+            profile_type = "scalar" if variable.type == "float" else variable.type
+            if profile_type != definition.type:
+                raise ValueError(
+                    f"Compiled universe cache policy coherence failure for {level_name!r}: "
+                    f"{scope.value} variable {name!r} type disagrees"
+                )
+            for field in ("lifetime", "dims", "shape", "normalization"):
+                if getattr(variable, field) != getattr(definition, field):
+                    raise ValueError(
+                        f"Compiled universe cache policy coherence failure for {level_name!r}: "
+                        f"{scope.value} variable {name!r} {field} disagrees"
+                    )
+            for field in ("readable_by", "writable_by", "exposed_to"):
+                if tuple(sorted(getattr(variable, field))) != tuple(sorted(getattr(definition, field))):
+                    raise ValueError(
+                        f"Compiled universe cache policy coherence failure for {level_name!r}: "
+                        f"{scope.value} variable {name!r} {field} disagrees"
+                    )
+    if profiles is None:
+        # Explicit absence of every compiled profile is valid only with the
+        # empty ordinary roster proved above; this is not an old-artifact reader.
+        return {}
+    if profiles.item_profiles is None:
+        raise ValueError("Compiled universe cache policy coherence failure: missing qualified item profile roster")
+    return profiles.item_profiles
+
+
 def _validate_compiled_token_coherence(compiled: CompiledUniverse) -> None:
     """Refuse a deserialized artifact whose derived token products disagree."""
     for level_name, level in compiled.all_levels.items():
+        item_profiles = _validate_compiled_policy_coherence(compiled, level_name, level)
         if level.token_spec.position_rank != compiled.metadata.position_dim:
             raise _token_coherence_error(
                 level_name,
@@ -660,7 +730,6 @@ def _validate_compiled_token_coherence(compiled: CompiledUniverse) -> None:
             affordances=level.affordances,
             items_catalog=compiled.items_catalog,
             compiled_effect_catalog=compiled.compiled_effect_catalog,
-            environment=compiled.environment,
             compiled_vfs_profiles=compiled.compiled_vfs_profiles,
             vfs_variables=level.vfs_variables,
         )
@@ -680,7 +749,6 @@ def _validate_compiled_token_coherence(compiled: CompiledUniverse) -> None:
             affordances=level.affordances,
             items_catalog=compiled.items_catalog,
             compiled_effect_catalog=compiled.compiled_effect_catalog,
-            environment=compiled.environment,
             compiled_vfs_profiles=compiled.compiled_vfs_profiles,
             vfs_variables=level.vfs_variables,
         )
@@ -700,12 +768,13 @@ def _validate_compiled_token_coherence(compiled: CompiledUniverse) -> None:
                 )
 
         computed_hashes = {
+            "variable_schema_hash": compute_variable_schema_hash(level.vfs_variables, item_profiles),
             "token_type_schema_hash": compute_token_type_schema_hash(level.token_spec),
             "layout_hash": compute_token_layout_hash(level.token_spec),
             "observation_schema_hash": compute_observation_schema_hash(level.token_spec),
         }
         computed_hashes["vfs_hash"] = compute_vfs_hash(
-            level.variable_schema_hash,
+            computed_hashes["variable_schema_hash"],
             computed_hashes["observation_schema_hash"],
             level.action_schema_hash,
             level.transition_graph_hash,
@@ -839,6 +908,7 @@ def _serialize_token_spec(spec: TokenSpec) -> dict[str, Any]:
                         "slot_index": binding.slot_index,
                         "filler_kind": binding.filler_kind,
                         "filler_ref": binding.filler_ref,
+                        "scope": binding.scope,
                     }
                     for binding in t.slot_bindings
                 ],
@@ -905,12 +975,13 @@ def _token_spec_from_plain(payload: Mapping[str, Any] | None) -> TokenSpec:
             binding_field = f"{type_field}.slot_bindings[{binding_index}]"
             if not isinstance(raw_binding, Mapping):
                 raise ValueError(f"Compiled universe cache field '{binding_field}' must be a mapping")
-            _require_exact_keys(raw_binding, {"slot_index", "filler_kind", "filler_ref"}, field_name=binding_field)
+            _require_exact_keys(raw_binding, {"slot_index", "filler_kind", "filler_ref", "scope"}, field_name=binding_field)
             bindings.append(
                 SlotBinding(
                     slot_index=raw_binding["slot_index"],
                     filler_kind=raw_binding["filler_kind"],
                     filler_ref=raw_binding["filler_ref"],
+                    scope=raw_binding["scope"],
                 )
             )
 
@@ -967,6 +1038,9 @@ def _serialize_compiled_variable(var: Any) -> dict[str, Any]:
         "initial_value": var.initial_value,
         "result_type": var.result_type,
         "exposed_to": list(var.exposed_to),
+        "lifetime": var.lifetime,
+        "readable_by": list(var.readable_by),
+        "writable_by": list(var.writable_by),
         "shape": var.shape,
         "initial_value_mode": var.initial_value_mode,
         "initial_value_params": var.initial_value_params,
@@ -1026,6 +1100,9 @@ def _deserialize_compiled_variable(var: dict[str, Any], *, field_name: str) -> A
         initial_value=_required_field(var, f"{field_name}.initial_value"),
         result_type=_required_field(var, f"{field_name}.result_type"),
         exposed_to=tuple(_required_field(var, f"{field_name}.exposed_to")),
+        lifetime=_required_field(var, f"{field_name}.lifetime"),
+        readable_by=_required_field(var, f"{field_name}.readable_by"),
+        writable_by=_required_field(var, f"{field_name}.writable_by"),
         shape=_required_field(var, f"{field_name}.shape"),
         initial_value_mode=_required_field(var, f"{field_name}.initial_value_mode"),
         initial_value_params=_required_field(var, f"{field_name}.initial_value_params"),

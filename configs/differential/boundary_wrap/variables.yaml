@@ -1,0 +1,24 @@
+variables:
+  version: '1.0'
+  evaluation_mode: mark_and_sweep
+  debug_logging: false
+  extents: {}
+  item_profiles:
+  - default_item
+  declarations:
+  - id: day_phase
+    readable_by: [engine, agent]
+    writable_by: [engine]
+    scope: global
+    type: scalar
+    lifetime: persistent
+    semantic_type: temporal
+    exposed_to:
+    - agent
+    expression: tick
+    normalization:
+      kind: cyclical_sin_cos
+      period: 24
+    description: Authored day clock derived from the ambient engine tick; exposed
+      as one cyclical token.
+    initial_value: 0.0

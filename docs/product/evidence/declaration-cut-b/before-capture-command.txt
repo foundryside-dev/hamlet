@@ -1,0 +1,20 @@
+Run from /tmp/hamlet-declaration-cut-b with independent locked .venv:
+
+OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 .venv/bin/python docs/product/evidence/declaration-cut-b/capture-before.py
+
+Capture source: 599cad15706ac8824c3f8e38276da6440c4816a3
+Result: exit 0; 31 compile cases, 884 hash readings, 10 direct CPU traces,
+11 reset/step/reset registry censuses. Import-origin assertion passed.
+The only authored mutations during the capture were evidence/doc files; no
+production source, tests, configs or scripts changed.
+
+CPU binary traces are retained under:
+runs/differential/declaration-cut-b-before-599cad15/
+Their file and byte-stream SHA256s are committed in before-cpu-traces.json.
+These traces use live 599 source and configs, seeded-random actions, 4 agents,
+100 steps, seed42, CPU. B's direct-parent comparison must replay these actions.
+The ten CUDA cells were not executed; the final full matrix must report skips.
+
+Before trace capture is not a frozen-oracle comparison, a convergence result,
+or general scope/lifetime qualification. before-resets uses the existing fleet
+smoke's last-index action and does not assume that index is always WAIT.

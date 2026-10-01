@@ -1,0 +1,229 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.1, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /tmp/hamlet-static-epistemic-access
+configfile: pyproject.toml
+plugins: hypothesis-6.165.3, anyio-4.14.2, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 47 items
+
+tests/test_townlet/unit/oracle/test_matrix.py ........................FF [ 55%]
+..F.F.....F......F                                                       [ 93%]
+tests/test_townlet/unit/oracle/test_declaration_input_drift.py ..F       [100%]
+
+=================================== FAILURES ===================================
+__________ test_standing_and_differential_cells_bind_div009_narrowly ___________
+
+    def test_standing_and_differential_cells_bind_div009_narrowly() -> None:
+        """Pin (hamlet-5cc071f4b6, DIV-009): the sixteen non-profile cells no longer
+        certify bare agreement. Six Phase B landings after the oracle tag moved
+        provenance with no register entry (measured 2026-08-23); every standing and
+        differential cell binds a hash-only DIV-009 entry over exactly the four
+        measured fields — no crash expectation, and no wider or narrower hash_fields
+        set than measurement showed. DIV-010 (hamlet-fa6bb6da4a, unit 2) and DIV-008
+        (unit 3's token cut) compose alongside it on these same cells — checked here
+        as "DIV-009 is present and still narrow", leaving their own field sets to
+        test_standing_and_differential_cells_bind_div010_and_div008_narrowly.
+    
+        These sixteen cells DO declare a pack divergence since 2026-08-26: their
+        live vfs_profiles.yaml carries the L3 temporal declaration
+        (hamlet-02684be106) and their frozen fixtures do not. That is DIV-008's
+        row — see docs/oracle/known-divergences.md#div-008's per-pack drift table."""
+        for c in default_cells():
+            if c.params.pack in _PROFILE_VARIABLE_CELLS:
+                continue
+            assert c.expected is None, f"{c.cell_id} declares an old-side-crash expectation"
+>           assert c.pack_divergence == "DIV-014", f"{c.cell_id}: Cut B input inventory must retain inherited rows"
+E           AssertionError: default_curriculum:L0_0_minimal:cpu:seed42: Cut B input inventory must retain inherited rows
+E           assert 'DIV-015' == 'DIV-014'
+E             
+E             - DIV-014
+E             ?       ^
+E             + DIV-015
+E             ?       ^
+
+tests/test_townlet/unit/oracle/test_matrix.py:168: AssertionError
+_____ test_standing_and_differential_cells_bind_div010_and_div008_narrowly _____
+
+    def test_standing_and_differential_cells_bind_div010_and_div008_narrowly() -> None:
+        """Pin (hamlet-fa6bb6da4a, DIV-010, unit 2 "authored temporality"): the engine tick
+        VariableDef injected into every compiled universe moves exactly `variable_schema_hash`
+        and `vfs_hash` — measured by two-worktree probe (11dee204 vs HEAD) and confirmed
+        per-commit as the tick-injection commit's own movement. Every standing and differential
+        cell binds this as a second, composing entry alongside DIV-009, and unit 3's token cut
+        (DIV-008) composes third, plus a fourth (DIV-012) on all sixteen standing+differential
+        cells (2026-09-02, unit 5 `day_phase`, full cpu-matrix run 20260902-100802):
+        `affordances_hash`, `brain_hash`, `environment_hash`, `stratum_hash`, each bisected to
+        its own causing commit (94656527, c6c6b524 twice, d554fb7f) — see
+        docs/oracle/known-divergences.md#div-012 for the per-field bisection and cell table.
+        Four entries total on all sixteen cells.
+    
+        DIV-011 is GONE from the binding: it retired into DIV-008 by its own pre-registered
+        condition, and its two token hashes are declared under DIV-008 now (2026-08-26)."""
+        for c in default_cells():
+            if c.params.pack in _PROFILE_VARIABLE_CELLS:
+                continue
+            div010 = [d for d in c.hash_divergences if d.register_ref == "DIV-010"]
+            assert len(div010) == 1, f"{c.cell_id} does not bind exactly one DIV-010 entry"
+            assert div010[0].declared == {"variable_schema_hash", "vfs_hash"}, f"{c.cell_id}: DIV-010 hash_fields do not match measurement"
+            assert not [
+                d for d in c.hash_divergences if d.register_ref == "DIV-011"
+            ], f"{c.cell_id} still binds DIV-011, which retired into DIV-008"
+            div012 = [d for d in c.hash_divergences if d.register_ref == "DIV-012"]
+            assert len(div012) == 1, f"{c.cell_id} does not bind exactly one DIV-012 entry"
+            assert div012[0].declared == {
+                "affordances_hash",
+                "brain_hash",
+                "environment_hash",
+                "stratum_hash",
+            }, f"{c.cell_id}: DIV-012 hash_fields do not match measurement"
+>           assert len(c.hash_divergences) == 5, f"{c.cell_id} should bind historical four entries plus independently attributed DIV-014"
+E           AssertionError: default_curriculum:L0_0_minimal:cpu:seed42 should bind historical four entries plus independently attributed DIV-014
+E           assert 6 == 5
+E            +  where 6 = len((RegisteredHashDivergence(register_ref='DIV-009', hash_fields=('actions_hash', 'pack_brain_hash', 'transition_graph_ha...ash', 'vfs_hash')), RegisteredHashDivergence(register_ref='DIV-015', hash_fields=('variable_schema_hash', 'vfs_hash'))))
+E            +    where (RegisteredHashDivergence(register_ref='DIV-009', hash_fields=('actions_hash', 'pack_brain_hash', 'transition_graph_ha...ash', 'vfs_hash')), RegisteredHashDivergence(register_ref='DIV-015', hash_fields=('variable_schema_hash', 'vfs_hash'))) = Cell(params=RunParams(pack='configs/default_curriculum', level='L0_0_minimal', num_agents=4, steps=100, seed=42, devic...sh'))), stream_divergence=RegisteredStreamDivergence(register_ref='DIV-008', streams=('obs',)), scripted_actions=False).hash_divergences
+
+tests/test_townlet/unit/oracle/test_matrix.py:211: AssertionError
+_____________ test_profile_variable_cells_declare_their_pack_drift _____________
+
+    def test_profile_variable_cells_declare_their_pack_drift() -> None:
+        """DIV-006 is RETIRED at the token cut (2026-08-26): its new-side surface — the obs_vfs
+        split into per-variable ObservationFields plus obs_item_slots — was deleted with the
+        whole ObservationSpec family, so binding it would certify a ghost. Its three hashes are
+        declared under DIV-008 now, uniformly on all twenty cells.
+    
+        What survives is the pack-drift declaration, re-pointed by measurement:
+        effects_smoke drifts on effects.yaml (Task 10's required max_active_effects) AND
+        vfs_profiles.yaml (DIV-006's old schema hold) -> DIV-008, which enumerates both rows.
+        items_smoke's prior DIV-007 row — its fixture still carries the stale, never-loaded
+        levels/L0_smoke/brain.yaml stub the PDR-0027 cut deleted from the live pack; its own
+        effects.yaml row is enumerated in DIV-008's table. Cut A supersedes its input
+        binding with DIV-013, preserving all inherited rows."""
+        profile = [c for c in default_cells() if c.params.pack in _PROFILE_VARIABLE_CELLS]
+        assert len(profile) == 4
+        for c in profile:
+            assert c.expected is None
+            assert not [
+                d for d in c.hash_divergences if d.register_ref == "DIV-006"
+            ], f"{c.cell_id} still binds DIV-006, which retired into DIV-008"
+>           assert c.pack_divergence == "DIV-014", f"{c.cell_id}: Cut B preserves every inherited input row"
+E           AssertionError: items_smoke:L0_smoke:cpu:seed42: Cut B preserves every inherited input row
+E           assert 'DIV-015' == 'DIV-014'
+E             
+E             - DIV-014
+E             ?       ^
+E             + DIV-015
+E             ?       ^
+
+tests/test_townlet/unit/oracle/test_matrix.py:285: AssertionError
+_______________ test_profile_variable_cells_bind_div010_narrowly _______________
+
+    def test_profile_variable_cells_bind_div010_narrowly() -> None:
+        """DIV-010's field set on the four profile cells overlaps DIV-008's on
+        `variable_schema_hash` and `vfs_hash` — both move for both causes (DIV-010's tick
+        injection ADDS one VariableDef; the token cut REMOVES fourteen engine-minted `obs_*`
+        primitives), declared under both entries, legal per the union-exact composing rule since
+        each entry's own fields still all move. The tick injection is unconditional, so DIV-010's
+        set here is identical to its set on the standing/differential cells, unlike DIV-009's
+        profile-narrowed set; so is DIV-008's. Each profile cell additionally binds
+        `_DIV012_PROFILE` (2026-09-02, unit 5 `day_phase`, full cpu-matrix run 20260902-100802):
+        `brain_hash`, `environment_hash`, `stratum_hash` — the same three of DIV-012's four causes
+        that move here; `affordances_hash` measurably does NOT move on these two packs, so the
+        narrower object (not `_DIV012`) is bound, per the union-exact rule. Four entries total:
+        DIV-009, DIV-010, DIV-012, DIV-008."""
+        profile = [c for c in default_cells() if c.params.pack in _PROFILE_VARIABLE_CELLS]
+        assert len(profile) == 4
+        for c in profile:
+            div010 = [d for d in c.hash_divergences if d.register_ref == "DIV-010"]
+            assert len(div010) == 1, f"{c.cell_id} does not bind exactly one DIV-010 entry"
+            assert div010[0].declared == {"variable_schema_hash", "vfs_hash"}
+            div012 = [d for d in c.hash_divergences if d.register_ref == "DIV-012"]
+            assert len(div012) == 1, f"{c.cell_id} does not bind exactly one DIV-012 entry"
+            assert div012[0].declared == {
+                "brain_hash",
+                "environment_hash",
+                "stratum_hash",
+            }, f"{c.cell_id}: DIV-012 hash_fields do not match measurement (profile cells exclude affordances_hash)"
+>           assert len(c.hash_divergences) == 5, f"{c.cell_id} should bind historical four entries plus independently attributed DIV-014"
+E           AssertionError: items_smoke:L0_smoke:cpu:seed42 should bind historical four entries plus independently attributed DIV-014
+E           assert 6 == 5
+E            +  where 6 = len((RegisteredHashDivergence(register_ref='DIV-009', hash_fields=('actions_hash', 'pack_brain_hash', 'transition_graph_ha...ash', 'vfs_hash')), RegisteredHashDivergence(register_ref='DIV-015', hash_fields=('variable_schema_hash', 'vfs_hash'))))
+E            +    where (RegisteredHashDivergence(register_ref='DIV-009', hash_fields=('actions_hash', 'pack_brain_hash', 'transition_graph_ha...ash', 'vfs_hash')), RegisteredHashDivergence(register_ref='DIV-015', hash_fields=('variable_schema_hash', 'vfs_hash'))) = Cell(params=RunParams(pack='configs/test/items_smoke', level='L0_smoke', num_agents=4, steps=100, seed=42, device='cpu...sh'))), stream_divergence=RegisteredStreamDivergence(register_ref='DIV-008', streams=('obs',)), scripted_actions=False).hash_divergences
+
+tests/test_townlet/unit/oracle/test_matrix.py:328: AssertionError
+_____ test_hash_divergence_bindings_bind_entries_with_the_hash_only_shape ______
+
+    def test_hash_divergence_bindings_bind_entries_with_the_hash_only_shape() -> None:
+        """The second shape gets the same typo-bind guard as the first.
+    
+        A `RegisteredHashDivergence` certifies "provenance moved as registered,
+        behaviour did not". Binding it to an entry that predicts an old-side crash
+        (or a checkpoint-boundary entry that cannot manifest in a trace at all)
+        would certify the wrong thing, so the entry must say `Harness shape:
+        hash-only` in its own text.
+        """
+        sections = _register_sections()
+        for cell in default_cells():
+            for hd in cell.hash_divergences:
+                ref = hd.register_ref
+                assert ref in sections, f"{ref} has no register entry"
+>               assert "Harness shape: hash-only" in sections[ref], (
+                    f"cell {cell.cell_id} binds {ref} as a hash-only divergence, but that entry " f"does not declare `Harness shape: hash-only`"
+                )
+E               AssertionError: cell default_curriculum:L0_0_minimal:cpu:seed42 binds DIV-015 as a hash-only divergence, but that entry does not declare `Harness shape: hash-only`
+E               assert 'Harness shape: hash-only' in '\n- **Status:** measured at clean source `9137484965b05c26ceed1740ee9aab39a364a61c`;\n  final qualification pending. ...parent numeric difference.\nThe new witness pack is independently qualified, outside the inherited equivalence bank.\n'
+
+tests/test_townlet/unit/oracle/test_matrix.py:452: AssertionError
+_ test_cut_b_scope_binding_adds_attribution_without_widening_historical_outputs _
+
+    def test_cut_b_scope_binding_adds_attribution_without_widening_historical_outputs() -> None:
+        """Scope and canonical descriptor movements have separately measured causes."""
+        for cell in default_cells():
+            cut_b = [entry for entry in cell.hash_divergences if entry.register_ref == "DIV-014"]
+            assert len(cut_b) == 1
+            expected = {"environment_hash", "observation_schema_hash", "vfs_hash"}
+            if cell.params.pack in _PROFILE_VARIABLE_CELLS:
+                expected.add("variable_schema_hash")
+            assert cut_b[0].declared == expected
+            assert cell.stream_divergence is not None
+            assert cell.stream_divergence.register_ref == "DIV-008"
+            assert cell.stream_divergence.declared == {"obs"}
+>           assert [entry.register_ref for entry in cell.hash_divergences] == ["DIV-009", "DIV-010", "DIV-012", "DIV-008", "DIV-014"]
+E           AssertionError: assert ['DIV-009', '...4', 'DIV-015'] == ['DIV-009', '...8', 'DIV-014']
+E             
+E             Left contains one more item: 'DIV-015'
+E             Use -v to get more diff
+
+tests/test_townlet/unit/oracle/test_matrix.py:566: AssertionError
+____________ test_cut_b_input_binding_matches_complete_pinned_bytes ____________
+
+    def test_cut_b_input_binding_matches_complete_pinned_bytes() -> None:
+        """A boolean drift allowance cannot silently admit a later unrelated edit."""
+        root = Path(__file__).parents[4]
+        inventory = json.loads((root / "docs/oracle/declaration-cut-b-inputs.json").read_text())
+        expected_packs = {cell.params.pack for cell in default_cells()}
+        assert inventory["register_ref"] == "DIV-014"
+        assert inventory["baseline_source"] == "599cad15706ac8824c3f8e38276da6440c4816a3"
+        assert inventory["packs"].keys() == expected_packs
+        for pack, record in inventory["packs"].items():
+            live = {name: hashlib.sha256(data).hexdigest() for name, data in _pack_files(root / pack).items()}
+            frozen = {name: hashlib.sha256(data).hexdigest() for name, data in _pack_files(root / ORACLE_PACK_ROOT / pack).items()}
+>           assert live == record["live_files"], f"{pack}: live bytes moved outside the registered inventory"
+E           AssertionError: configs/default_curriculum: live bytes moved outside the registered inventory
+E           assert {'actions.yam...d94f2ee', ...} == {'actions.yam...d94f2ee', ...}
+E             
+E             Omitting 32 identical items, use -vv to show
+E             Differing items:
+E             {'variables.yaml': 'a2192f836f2de11a35ac4a5491fd9fd2de9c62feca7a73418f15137a0ed6acf9'} != {'variables.yaml': '25c8865a7b786e02d32fd1f17384e08086f35c269a6b5e37739fab69de61579b'}
+E             Use -v to get more diff
+
+tests/test_townlet/unit/oracle/test_declaration_input_drift.py:74: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/unit/oracle/test_matrix.py::test_standing_and_differential_cells_bind_div009_narrowly
+FAILED tests/test_townlet/unit/oracle/test_matrix.py::test_standing_and_differential_cells_bind_div010_and_div008_narrowly
+FAILED tests/test_townlet/unit/oracle/test_matrix.py::test_profile_variable_cells_declare_their_pack_drift
+FAILED tests/test_townlet/unit/oracle/test_matrix.py::test_profile_variable_cells_bind_div010_narrowly
+FAILED tests/test_townlet/unit/oracle/test_matrix.py::test_hash_divergence_bindings_bind_entries_with_the_hash_only_shape
+FAILED tests/test_townlet/unit/oracle/test_matrix.py::test_cut_b_scope_binding_adds_attribution_without_widening_historical_outputs
+FAILED tests/test_townlet/unit/oracle/test_declaration_input_drift.py::test_cut_b_input_binding_matches_complete_pinned_bytes
+========================= 7 failed, 40 passed in 0.54s =========================

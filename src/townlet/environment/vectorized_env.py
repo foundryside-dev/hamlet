@@ -639,7 +639,7 @@ class VectorizedHamletEnv:
         if universe.compiled_vfs_profiles is None or not universe.compiled_vfs_profiles.item_profiles:
             raise ValueError(
                 "items_catalog provided but compiled_vfs_profiles.item_profiles is missing. "
-                "Define item VFS profiles in vfs_profiles.yaml for all item types."
+                "Declare item profile names and state in the canonical variables declaration for all item types."
             )
 
         self.item_manager = ItemManager(
@@ -1283,16 +1283,16 @@ class VectorizedHamletEnv:
         self._commit_vtc_transition_state(result)
 
     def _commit_vtc_transition_state(self, state: VTCTransitionState) -> None:
+        # Authorize the complete selected operation before publishing any result.
+        # The remaining snapshot values are reads, including immutable literals.
+        for variable_id in sorted(state.attempted_vfs_targets):
+            if variable_id not in state.vfs_state:
+                raise KeyError(f"VTC write intent has no value for '{variable_id}'")
+            self.vfs_registry.authorize_write(variable_id, writer="engine")
         for bar_name, value in state.bars_state.items():
             self._set_vtc_bar_value(bar_name, value)
-        for variable_id, value in state.vfs_state.items():
-            if variable_id not in self.vfs_registry.variables:
-                raise KeyError(
-                    f"VTC transition write-back produced unknown variable id '{variable_id}'.\n"
-                    "  Write source: VTC transition state commit (_commit_vtc_transition_state) "
-                    "(hamlet-0ddc83e377)."
-                )
-            self.vfs_registry.set_engine_value(variable_id, value)
+        for variable_id in sorted(state.attempted_vfs_targets):
+            self.vfs_registry.set_engine_value(variable_id, state.vfs_state[variable_id])
         if state.dones is not None:
             self.dones = state.dones
 

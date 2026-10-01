@@ -1,0 +1,30 @@
+Run from /tmp/hamlet-declaration-cut-b, after Task2 commit8a234b61 and beforeTask3:
+
+OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 .venv/bin/python - <<'PY'
+import importlib.util
+import json
+import subprocess
+from pathlib import Path
+root = Path.cwd()
+source = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+assert source == '8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3'
+assert not subprocess.check_output(['git', 'diff', '--name-only', 'HEAD', '--', 'src', 'configs'], text=True).strip()
+spec = importlib.util.spec_from_file_location('cut_b_comparator', root/'scripts/check_declaration_cut_b.py')
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+out = root/'runs/differential/declaration-cut-b-scope-only-8a234b61'
+out.mkdir(parents=True, exist_ok=False)
+changes, census = module.run_census(out)
+census['source_commit'] = source
+census['baseline_source'] = module.BASELINE_SOURCE
+census['stage'] = 'Task2 typed token scope only; canonical declarations have not changed'
+(root/'docs/product/evidence/declaration-cut-b/scope-only-hashes.json').write_text(json.dumps(census, indent=2, sort_keys=True)+'\n')
+PY
+
+Result: exit0,31cases884readings,106changedreadings. Every mover is
+all_levels.<level>.observation_schema_hash or all_levels.<level>.vfs_hash.
+All layout_hash, variable_schema_hash, environment_hash and other hashreadings
+remain byteidentical to599cad15. Completeproductfielddifferences appear in the
+sameJSON; no runtime/CPUtraceclaim is made by this static scopeonlybisect.
+Production src/configs diff atHEAD wasempty. Concurrent untracked test/docs and
+acceptancehelper files do not affect this compiler-product capture.

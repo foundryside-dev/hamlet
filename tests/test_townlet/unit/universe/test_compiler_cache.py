@@ -12,7 +12,9 @@ import yaml
 import townlet.universe.compiler as compiler_module
 from townlet.universe.compiled import CompiledUniverse
 from townlet.universe.compiler import UniverseCompiler
+from townlet.universe.declarations import DeclarationStore
 from townlet.universe.errors import CompilationError
+from townlet.universe.raw_configs_v21 import RawConfigsV21
 
 
 def _copy_experiment(tmp_path: Path, source: Path | None = None) -> Path:
@@ -68,18 +70,18 @@ def test_compile_uses_cache_when_hash_matches(tmp_path: Path, monkeypatch: pytes
     builder = UniverseCompiler()
     builder.compile(config_dir, primary_level="L0_test", use_cache=True)
 
-    flag = {"stage1_called": False}
+    flag = {"lowering_called": False}
 
-    def _fail_loader(_config_dir: Path):
-        flag["stage1_called"] = True
-        raise AssertionError("Stage 1 should not run when loading from cache")
+    def _fail_lowering(_cls: type[RawConfigsV21], _store: DeclarationStore):
+        flag["lowering_called"] = True
+        raise AssertionError("DTO lowering should not run when loading from cache")
 
-    monkeypatch.setattr(compiler_module, "load_v21_configs", _fail_loader)
+    monkeypatch.setattr(RawConfigsV21, "from_declarations", classmethod(_fail_lowering))
 
     cached_compiler = UniverseCompiler()
     compiled = cached_compiler.compile(config_dir, primary_level="L0_test", use_cache=True)
 
-    assert not flag["stage1_called"]
+    assert not flag["lowering_called"]
     assert compiled.metadata.universe_name == "Model Config (Test)"
 
 
@@ -92,14 +94,14 @@ def test_compile_rebuilds_cache_when_hash_changes(tmp_path: Path, monkeypatch: p
     training_text = training_path.read_text()
     training_path.write_text(training_text.replace("max_episodes: 500", "max_episodes: 501"))
 
-    original_loader = compiler_module.load_v21_configs
+    original_lowering = RawConfigsV21.from_declarations
     counter = {"calls": 0}
 
-    def _wrapped_loader(cfg_dir: Path):
+    def _wrapped_lowering(_cls: type[RawConfigsV21], store: DeclarationStore):
         counter["calls"] += 1
-        return original_loader(cfg_dir)
+        return original_lowering(store)
 
-    monkeypatch.setattr(compiler_module, "load_v21_configs", _wrapped_loader)
+    monkeypatch.setattr(RawConfigsV21, "from_declarations", classmethod(_wrapped_lowering))
 
     refreshed_compiler = UniverseCompiler()
     refreshed_compiler.compile(config_dir, primary_level="L0_test", use_cache=True)
@@ -122,15 +124,15 @@ def test_compile_rebuilds_cache_when_compiler_provenance_changes(tmp_path: Path,
     builder = UniverseCompiler()
     builder.compile(config_dir, primary_level="L0_test", use_cache=True)
 
-    original_loader = compiler_module.load_v21_configs
+    original_lowering = RawConfigsV21.from_declarations
     counter = {"calls": 0}
 
-    def _wrapped_loader(cfg_dir: Path):
+    def _wrapped_lowering(_cls: type[RawConfigsV21], store: DeclarationStore):
         counter["calls"] += 1
-        return original_loader(cfg_dir)
+        return original_lowering(store)
 
     monkeypatch.setattr(compiler_module, "COMPILER_VERSION", "99.0-test")
-    monkeypatch.setattr(compiler_module, "load_v21_configs", _wrapped_loader)
+    monkeypatch.setattr(RawConfigsV21, "from_declarations", classmethod(_wrapped_lowering))
 
     UniverseCompiler().compile(config_dir, primary_level="L0_test", use_cache=True)
 
@@ -145,14 +147,14 @@ def test_compile_recovers_from_corrupted_cache(tmp_path: Path, monkeypatch: pyte
     cache_path = compiler._cache_artifact_path(config_dir, "L0_test")
     cache_path.write_bytes(b"corrupted")
 
-    original_loader = compiler_module.load_v21_configs
+    original_lowering = RawConfigsV21.from_declarations
     counter = {"calls": 0}
 
-    def _wrapped_loader(cfg_dir: Path):
+    def _wrapped_lowering(_cls: type[RawConfigsV21], store: DeclarationStore):
         counter["calls"] += 1
-        return original_loader(cfg_dir)
+        return original_lowering(store)
 
-    monkeypatch.setattr(compiler_module, "load_v21_configs", _wrapped_loader)
+    monkeypatch.setattr(RawConfigsV21, "from_declarations", classmethod(_wrapped_lowering))
 
     UniverseCompiler().compile(config_dir, primary_level="L0_test", use_cache=True)
 

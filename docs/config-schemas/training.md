@@ -4,8 +4,8 @@
 >
 > Cited by `CLAUDE.md` and `docs/architecture/BAC.md` as the `training.yaml` field reference.
 >
-> **Known wrong:** `configs/global_actions.yaml` is a **dead path**. The action vocabulary is
-> the pack-level `<pack>/actions.yaml`. See `enabled_actions.md` in this directory.
+> The action vocabulary is the pack-scope `actions:` declaration, conventionally
+> `<pack>/actions.yaml`. See `enabled_actions.md` and [discovery](declarations.md).
 >
 > ⚠️ **`CLAUDE.md` is out of date about this file, not the other way round.** `CLAUDE.md`
 > §"Q-Learning Algorithm Variants" says this document "still carries the stale 3-vs-2 figure".
@@ -19,7 +19,9 @@
 
 **Purpose**: Configure hyperparameters for DQN training, including learning rates, replay buffer settings, exploration strategy, and algorithm variants.
 
-**Location**: `<config_pack>/training.yaml`
+**Scope**: Required level-scope `training:` declaration, conventionally
+`<config_pack>/levels/<level>/training.yaml`. Filenames and extra subfolders are transport;
+the wrapper remains part of the content vocabulary. See [declaration discovery](declarations.md).
 
 **Pattern**: All training parameters must be explicitly specified (no-defaults principle). This ensures reproducibility and prevents silent behavioral changes when code defaults evolve.
 
@@ -311,7 +313,7 @@ List of action names to enable for this config. Actions not listed are masked (n
 **Purpose**: Progressive curriculum - enable subset of actions per level while maintaining same `action_dim` for checkpoint transfer.
 
 **Validation**:
-- All names must exist in global vocabulary (substrate actions + `configs/global_actions.yaml`)
+- All names must exist in the pack vocabulary (substrate actions + the `actions:` declaration)
 - No duplicates allowed
 - Empty list disables all actions (for testing only)
 

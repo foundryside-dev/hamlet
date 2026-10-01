@@ -10,6 +10,7 @@ from townlet.universe.dto import ActionSpaceMetadata, AffordanceMetadata, MeterM
 from townlet.universe.error_codes import ErrorCode
 from townlet.universe.errors import CompilationError, CompilationMessage
 from townlet.universe.optimization import OptimizationData
+from townlet.universe.source_map import SourceMap, locate
 from townlet.universe.stages import CompilationStage
 
 
@@ -23,6 +24,9 @@ class OptimizationCompiler:
         meter_metadata: MeterMetadata,
         affordance_metadata: AffordanceMetadata,
         action_metadata: ActionSpaceMetadata,
+        *,
+        source_map: SourceMap | None,
+        level_name: str,
     ) -> OptimizationData:
         """Precompute tensors from v2.1 DTOs."""
         _ = action_metadata
@@ -36,7 +40,7 @@ class OptimizationCompiler:
             if source_idx is None or target_idx is None:
                 missing_source = cascade.source not in meter_lookup
                 missing_target = cascade.target not in meter_lookup
-                parts = ["Invalid cascade entry in bars.yaml."]
+                parts = ["Invalid cascade entry in the bars declaration."]
                 if missing_source:
                     parts.append(f"  Unknown source meter: {cascade.source!r}")
                 if missing_target:
@@ -44,7 +48,13 @@ class OptimizationCompiler:
                 parts.append("  Valid meters: " + ", ".join(sorted(meter_lookup.keys())))
                 raise CompilationError(
                     CompilationStage.LEVELS.label,
-                    [CompilationMessage(code=ErrorCode.UAC_OPT_CASCADE, message="\n".join(parts), location="bars.yaml")],
+                    [
+                        CompilationMessage(
+                            code=ErrorCode.UAC_OPT_CASCADE,
+                            message="\n".join(parts),
+                            location=locate(source_map, f"levels/{level_name}/bars:{cascade.source}->{cascade.target}"),
+                        )
+                    ],
                 )
             entry = {
                 "source_idx": source_idx,
@@ -57,7 +67,7 @@ class OptimizationCompiler:
             cascade_by_id[pair_id] = cascade_by_id.get(pair_id, []) + [entry]
 
         modulation_entries: list[dict[str, Any]] = []
-        for modulation in affordances.modulations:
+        for modulation_index, modulation in enumerate(affordances.modulations):
             bar_idx = meter_lookup.get(modulation.bar)
             if bar_idx is None:
                 raise CompilationError(
@@ -66,11 +76,11 @@ class OptimizationCompiler:
                         CompilationMessage(
                             code=ErrorCode.UAC_OPT_MODULATION,
                             message=(
-                                "Invalid modulation entry in affordances.yaml.\n"
+                                "Invalid modulation entry in the affordances declaration.\n"
                                 f"  Unknown bar: {modulation.bar!r}\n"
                                 "  Valid meters: " + ", ".join(sorted(meter_lookup.keys()))
                             ),
-                            location="affordances.yaml",
+                            location=locate(source_map, f"levels/{level_name}/affordances:modulations[{modulation_index}]"),
                         )
                     ],
                 )
@@ -84,11 +94,11 @@ class OptimizationCompiler:
                             CompilationMessage(
                                 code=ErrorCode.UAC_OPT_MODULATION,
                                 message=(
-                                    "Invalid modulation entry in affordances.yaml.\n"
+                                    "Invalid modulation entry in the affordances declaration.\n"
                                     f"  Unknown affordance in modulation.affordances: {aff_name!r}\n"
                                     "  Valid affordances: " + ", ".join(sorted(valid_affordances))
                                 ),
-                                location="affordances.yaml",
+                                location=locate(source_map, f"levels/{level_name}/affordances:modulations[{modulation_index}]"),
                             )
                         ],
                     )

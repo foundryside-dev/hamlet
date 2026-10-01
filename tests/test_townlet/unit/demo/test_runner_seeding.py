@@ -77,7 +77,7 @@ class _CheckpointPopulation:
         self.load_calls += 1
 
     @staticmethod
-    def flush_episode(_agent_idx: int) -> None:
+    def flush_episode(_agent_idx: int, reason: str) -> None:
         return None
 
 

@@ -26,6 +26,12 @@ from townlet.population.vectorized import VectorizedPopulation
 # =============================================================================
 
 
+def _complete_capped_lanes(population: VectorizedPopulation) -> None:
+    """Close genuine short-horizon experience before beginning another fixture episode."""
+    for agent_idx in range(population.num_agents):
+        population.flush_episode(agent_idx, reason="cap")
+
+
 class TestMaskedLossIntegration:
     """Test masked loss during training with real components.
 
@@ -96,6 +102,7 @@ class TestMaskedLossIntegration:
         # With high depletion and random actions, agents should die quickly
         completed_episodes = 0
         for episode in range(30):  # More episodes to ensure some complete
+            _complete_capped_lanes(population)
             population.reset()
             for step in range(30):
                 agent_state = population.step_population(env)
@@ -162,6 +169,7 @@ class TestMaskedLossIntegration:
         )
 
         # Reset and run steps
+        _complete_capped_lanes(population)
         population.reset()
 
         # Track actions over 50 steps
@@ -221,6 +229,7 @@ class TestMaskedLossIntegration:
         )
 
         # Reset and run steps
+        _complete_capped_lanes(population)
         population.reset()
 
         # Track positions over 100 steps (should hit boundaries)
@@ -299,6 +308,7 @@ class TestMultiEpisodeTraining:
         # Train for 10 episodes
         survival_times = []
         for episode in range(10):
+            _complete_capped_lanes(population)
             population.reset()
             episode_steps = 0
 
@@ -377,6 +387,7 @@ class TestMultiEpisodeTraining:
             epsilon_history.append(exploration.epsilon)
 
             # Run short episode
+            _complete_capped_lanes(population)
             population.reset()
             for step in range(10):
                 agent_state = population.step_population(env)
@@ -443,6 +454,7 @@ class TestMultiEpisodeTraining:
         # Run 5 episodes and track buffer size
         buffer_sizes = []
         for episode in range(5):
+            _complete_capped_lanes(population)
             population.reset()
 
             for step in range(20):
@@ -506,10 +518,12 @@ class TestMultiEpisodeTraining:
         # train_frequency=4, so training happens every 4 steps
         # target_update_frequency=10, so update happens after 10 training steps
         # Need at least 4 * 10 = 40 environment steps to trigger 10 training steps
+        _complete_capped_lanes(population)
         population.reset()
         for step in range(100):
             agent_state = population.step_population(env)
             if agent_state.dones[0]:
+                _complete_capped_lanes(population)
                 population.reset()
 
         # Verify training occurred
@@ -567,6 +581,7 @@ class TestMultiEpisodeTraining:
         )
 
         # Sample Q-values at episode 0 (untrained)
+        _complete_capped_lanes(population)
         population.reset()
         with torch.no_grad():
             q_values_initial = population.q_network(population.current_obs)
@@ -575,6 +590,7 @@ class TestMultiEpisodeTraining:
 
         # Train for 20 episodes
         for episode in range(20):
+            _complete_capped_lanes(population)
             population.reset()
 
             for step in range(30):
@@ -585,6 +601,7 @@ class TestMultiEpisodeTraining:
             exploration.decay_epsilon()
 
         # Sample Q-values at episode 20 (trained)
+        _complete_capped_lanes(population)
         population.reset()
         with torch.no_grad():
             q_values_final = population.q_network(population.current_obs)

@@ -27,6 +27,7 @@ from townlet.training.checkpoint_utils import (
     validate_demo_checkpoint_runtime_fields,
     verify_checkpoint_digest,
 )
+from townlet.training.episode import RunnerCompletionReason
 from townlet.training.state import BatchedAgentState
 from townlet.training.tensorboard_logger import TensorBoardLogger
 from townlet.universe.compiled import CompiledUniverse
@@ -249,7 +250,7 @@ class DemoRunner:
             return
 
         for agent_idx in range(self.population.num_agents):
-            self.population.flush_episode(agent_idx)
+            self.population.flush_episode(agent_idx, reason="checkpoint")
 
     def save_checkpoint(self):
         """Save checkpoint at current episode."""
@@ -703,12 +704,17 @@ class DemoRunner:
                 curriculum_done_tensor = torch.ones_like(last_agent_state.dones, dtype=torch.bool, device=self.env.device)
                 self.population.update_curriculum_tracker(curriculum_survival_tensor, curriculum_done_tensor)
 
-                # P1.2: Flush episode if agent survived to max_steps (recurrent networks only)
-                # Without this, successful episodes never reach replay buffer → memory leak + data loss
-                # CRITICAL: Loop over all agents to support multi-agent configs (not just agent 0)
+                # Close surviving lanes before publishing for the actual external stop.
+                completion_reason: RunnerCompletionReason
+                if self.environment_step_budget_reached:
+                    completion_reason = "budget"
+                elif self.should_shutdown:
+                    completion_reason = "shutdown"
+                else:
+                    completion_reason = "cap"
                 for agent_idx in range(self.population.num_agents):
-                    if not last_agent_state.dones[agent_idx]:  # Agent survived to max_steps without dying
-                        self.population.flush_episode(agent_idx=agent_idx)
+                    if not last_agent_state.dones[agent_idx]:
+                        self.population.flush_episode(agent_idx=agent_idx, reason=completion_reason)
 
                 epsilon_value = self.population._get_current_epsilon_value()
                 intrinsic_weight_value = self.population._get_current_intrinsic_weight_value()

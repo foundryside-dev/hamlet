@@ -32,6 +32,7 @@ from townlet.exploration.rnd import RNDExploration
 from townlet.population.base import PopulationManager
 from townlet.population.runtime_registry import AgentRuntimeRegistry
 from townlet.training.checkpoint_utils import TokenRosterReport, load_token_network_state_by_type
+from townlet.training.episode import CompletionReason, EpisodeCompletion, RunnerCompletionReason
 from townlet.training.prioritized_replay_buffer import PrioritizedReplayBuffer
 from townlet.training.replay_buffer import ReplayBuffer
 from townlet.training.sequential_replay_buffer import SequentialReplayBuffer
@@ -287,8 +288,10 @@ class VectorizedPopulation(PopulationManager):
         self.max_grad_norm = max_grad_norm
         self.batch_size = batch_size
 
-        # Episode step counters (reset on done)
+        # Lane survival and completion state are cleared only by an explicit batch reset.
         self.episode_step_counts = torch.zeros(self.num_agents, dtype=torch.long, device=device)
+        self.episode_completed = torch.zeros(self.num_agents, dtype=torch.bool, device=self.device)
+        self.episode_completions: list[EpisodeCompletion | None] = [None for _ in range(self.num_agents)]
 
         # Current state
         self.current_obs = torch.zeros((self.num_agents, obs_dim), dtype=torch.float32, device=device)
@@ -306,14 +309,23 @@ class VectorizedPopulation(PopulationManager):
 
     def reset(self) -> None:
         """Reset all environments and state."""
+        pending = (self.episode_step_counts > 0) & ~self.episode_completed
+        if bool(pending.any()):
+            raise RuntimeError("Complete pending lanes with an explicit stop reason before reset")
         self.current_obs = self.env.reset()
+        self.episode_step_counts.zero_()
+        self.episode_completed.zero_()
+        self.episode_completions = [None for _ in range(self.num_agents)]
 
-        # Re-seed population-owned rollout memory (if applicable)
+        # Re-seed population-owned rollout memory and empty episode containers.
         if self.is_recurrent:
             recurrent_network = cast(RecurrentTokenQNetwork, self.q_network)
             self.rollout_hidden = recurrent_network.initial_hidden(self.num_agents, self.device)
 
-        # Get epsilon from exploration strategy (handle both direct and composed)
+            self.current_episodes = [self._new_episode_container() for _ in range(self.num_agents)]
+        for agent_idx in range(self.num_agents):
+            self.runtime_registry.record_survival_time(agent_idx=agent_idx, steps=0)
+
         # Sync telemetry + exploration metrics (initial epsilon / stage)
         self.sync_exploration_metrics()
         self._sync_curriculum_metrics()
@@ -572,41 +584,34 @@ class VectorizedPopulation(PopulationManager):
             self.runtime_registry.set_epsilon(agent_idx=idx, epsilon=epsilon_tensor[idx])
             self.runtime_registry.set_intrinsic_weight(agent_idx=idx, weight=intrinsic_weight)
 
-    def _finalize_episode(self, agent_idx: int, survival_time: int) -> None:
-        """Finalize episode metadata and bookkeeping after store."""
+    def _finalize_episode(self, agent_idx: int, reason: CompletionReason) -> EpisodeCompletion | None:
+        """Close one nonempty lane once and retain its final owned readings."""
+        if bool(self.episode_completed[agent_idx]):
+            return None
+        survival_time = int(self.episode_step_counts[agent_idx].item())
+        if survival_time == 0:
+            return None
+        if self.is_recurrent and not self._store_episode_and_reset(agent_idx):
+            raise RuntimeError("A nonempty episode lost its recurrent transitions.")
+        completion = EpisodeCompletion(
+            agent_idx=agent_idx,
+            reason=reason,
+            survival_time=survival_time,
+            final_observation=self.current_obs[agent_idx].detach().cpu().clone(),
+            final_meters=self.env.meters[agent_idx].detach().cpu().clone(),
+        )
+        self.episode_completed[agent_idx] = True
+        self.episode_completions[agent_idx] = completion
         self.runtime_registry.record_survival_time(agent_idx=agent_idx, steps=survival_time)
-
         if isinstance(self.exploration, AdaptiveIntrinsicExploration):
             self.exploration.update_on_episode_end(survival_time=survival_time)
-
-        # Sync exploration telemetry after any annealing/decay changes
         self.sync_exploration_metrics()
-
-        self.episode_step_counts[agent_idx] = 0
         self._reset_hidden_state(agent_idx)
+        return completion
 
-    def flush_episode(self, agent_idx: int) -> None:
-        """
-        Flush current episode for an agent to replay buffer.
-
-        Used when agent dies or episode hits max_steps.
-        This prevents memory leaks and ensures successful episodes reach the replay buffer.
-
-        Args:
-            agent_idx: Index of agent to flush
-        """
-        if not self.is_recurrent:
-            # Feedforward mode: transitions already in buffer, nothing to flush
-            return
-
-        episode = self.current_episodes[agent_idx]
-        if len(episode["observations"]) == 0:
-            # Nothing to flush
-            return
-
-        survival_time = len(episode["observations"])
-        self._store_episode_and_reset(agent_idx)
-        self._finalize_episode(agent_idx, survival_time)
+    def flush_episode(self, agent_idx: int, reason: RunnerCompletionReason) -> EpisodeCompletion | None:
+        """Complete a surviving lane for an explicit external stop without changing replay done."""
+        return self._finalize_episode(agent_idx, reason)
 
     def select_greedy_actions(self, env: VectorizedHamletEnv) -> torch.Tensor:
         """
@@ -717,13 +722,24 @@ class VectorizedPopulation(PopulationManager):
                 f"Ensure environment and population use the same device."
             )
 
+        if bool(self.episode_completed.all()):
+            raise RuntimeError("Population episode is complete; call reset before stepping.")
+        active_on_entry = ~envs.dones.clone()
+        if bool((active_on_entry & self.episode_completed).any()):
+            raise RuntimeError("A completed population lane cannot enter another transition.")
+
         # 1. Get Q-values from network
         with torch.no_grad():
             if self.is_recurrent:
                 recurrent_network = cast(RecurrentTokenQNetwork, self.q_network)
                 assert self.rollout_hidden is not None
-                # Thread and advance the population-owned rollout memory.
-                q_sequence, self.rollout_hidden = recurrent_network(self.current_obs.unsqueeze(1), self.rollout_hidden)
+                h, c = self.rollout_hidden
+                inactive_h = h[:, ~active_on_entry, :].clone()
+                inactive_c = c[:, ~active_on_entry, :].clone()
+                q_sequence, (next_h, next_c) = recurrent_network(self.current_obs.unsqueeze(1), (h, c))
+                next_h[:, ~active_on_entry, :] = inactive_h
+                next_c[:, ~active_on_entry, :] = inactive_c
+                self.rollout_hidden = (next_h, next_c)
                 q_values = q_sequence[:, 0, :]
             else:
                 q_values = self.q_network(self.current_obs)
@@ -774,68 +790,53 @@ class VectorizedPopulation(PopulationManager):
         #   rewards = extrinsic + (intrinsic * base_weight * modifiers) + shaping
         next_obs, rewards, dones, info = envs.step(actions, depletion_multiplier)
 
-        # 7. Compute intrinsic rewards for logging/tracking only (not added to rewards)
-        # DAC engine already includes intrinsic in the rewards tensor above
-        # BUG-22 FIX: Don't update stats here - they're updated in the environment during reward calculation
+        active_on_entry = info["active_on_entry"]
+        newly_terminal = info["newly_terminal"]
+        newly_retired = info["newly_retired"]
+        components = info["reward_components"]
+        intrinsic_weight = info["intrinsic_weight"]
+
+        # Logging novelty and predictor admission use real predecessor transitions.
         intrinsic_rewards = torch.zeros_like(rewards)
         if isinstance(self.exploration, RNDExploration | AdaptiveIntrinsicExploration):
-            intrinsic_rewards = self.exploration.compute_intrinsic_rewards(self.current_obs, update_stats=False)
-
-        # 7. Store transition in replay buffer
-        # Extract DAC components from info dict for provenance tracking
-        components = info.get("reward_components", {})
-        intrinsic_weight = info.get("intrinsic_weight")
-
-        reward_tensor = RewardTensor.from_dac(
-            total=rewards,
-            extrinsic=components.get("extrinsic"),
-            intrinsic=components.get("intrinsic"),
-            shaping=components.get("shaping"),
-        )
-
-        # Log components to TensorBoard (step-level aggregation)
-        if self.tb_logger is not None and components:
-            self._log_reward_components(
-                components=components,
-                intrinsic_weight=intrinsic_weight,
+            intrinsic_rewards[active_on_entry] = self.exploration.compute_intrinsic_rewards(
+                self.current_obs[active_on_entry], update_stats=False
             )
+
+        if self.tb_logger is not None:
+            self._log_reward_components(components=components, intrinsic_weight=intrinsic_weight)
 
         if self.is_recurrent:
-            # For recurrent networks: accumulate episodes with components
-            for i in range(self.num_agents):
-                self.current_episodes[i]["observations"].append(self.current_obs[i].cpu())
-                self.current_episodes[i]["actions"].append(actions[i].cpu())
-                self.current_episodes[i]["rewards"].append(rewards[i].cpu())
-                self.current_episodes[i]["rewards_extrinsic"].append(components["extrinsic"][i].cpu())
-                self.current_episodes[i]["rewards_intrinsic"].append(components["intrinsic"][i].cpu())
-                self.current_episodes[i]["rewards_shaping"].append(components["shaping"][i].cpu())
-                self.current_episodes[i]["dones"].append(dones[i].cpu())
-                # WS-1(c): at a done step next_obs[i] is the post-reset observation -
-                # harmless and correct, the (~dones) factor zeros its bootstrap, and it
-                # is exactly what the feedforward path stores. Do not special-case it.
-                self.current_episodes[i]["next_observations"].append(next_obs[i].cpu())
+            for agent_idx in torch.nonzero(active_on_entry, as_tuple=False).flatten().tolist():
+                episode = self.current_episodes[agent_idx]
+                episode["observations"].append(self.current_obs[agent_idx].detach().cpu().clone())
+                episode["actions"].append(actions[agent_idx].detach().cpu().clone())
+                episode["rewards"].append(rewards[agent_idx].detach().cpu().clone())
+                episode["rewards_extrinsic"].append(components["extrinsic"][agent_idx].detach().cpu().clone())
+                episode["rewards_intrinsic"].append(components["intrinsic"][agent_idx].detach().cpu().clone())
+                episode["rewards_shaping"].append(components["shaping"][agent_idx].detach().cpu().clone())
+                episode["dones"].append(dones[agent_idx].detach().cpu().clone())
+                episode["next_observations"].append(next_obs[agent_idx].detach().cpu().clone())
         else:
-            # For feedforward networks: store individual transitions
-            # Both ReplayBuffer and PrioritizedReplayBuffer accept RewardTensor
-            # SequentialReplayBuffer is only used for recurrent (not in this branch)
+            eligible_rewards = RewardTensor.from_dac(
+                total=rewards[active_on_entry],
+                extrinsic=components["extrinsic"][active_on_entry],
+                intrinsic=components["intrinsic"][active_on_entry],
+                shaping=components["shaping"][active_on_entry],
+            )
             self.replay_buffer.push(  # type: ignore[union-attr]
-                observations=self.current_obs,
-                actions=actions,
-                rewards=reward_tensor,  # CRIT-07: RewardTensor with DAC-composed total
-                next_observations=next_obs,
-                dones=dones,
+                observations=self.current_obs[active_on_entry],
+                actions=actions[active_on_entry],
+                rewards=eligible_rewards,
+                next_observations=next_obs[active_on_entry],
+                dones=dones[active_on_entry],
             )
 
-        # 8. Train RND predictor (if applicable)
+        # Preserve predictor update ordering after eligible replay admission.
         if isinstance(self.exploration, RNDExploration | AdaptiveIntrinsicExploration):
             rnd = self.exploration.rnd if isinstance(self.exploration, AdaptiveIntrinsicExploration) else self.exploration
-            # Accumulate observations in RND buffer
-            for i in range(self.num_agents):
-                rnd.obs_buffer.append(self.current_obs[i].cpu())
-            # Train predictor if buffer is full
-            rnd_loss = rnd.update_predictor()
-            # Track RND loss for monitoring (similar to Q-network loss)
-            self.last_rnd_loss = rnd_loss
+            rnd.obs_buffer.extend(row.detach().cpu().clone() for row in self.current_obs[active_on_entry])
+            self.last_rnd_loss = rnd.update_predictor()
 
         # 9. Train Q-network from replay buffer (every train_frequency steps)
         self.total_steps += 1
@@ -1069,17 +1070,14 @@ class VectorizedPopulation(PopulationManager):
         # 10. Update current state
         self.current_obs = next_obs
 
-        # Track episode steps
-        self.episode_step_counts += 1
-
-        # 11. Handle episode resets (for adaptive intrinsic annealing)
-        if dones.any():
-            reset_indices = torch.where(dones)[0]
-            for idx in reset_indices:
-                survival_time = int(self.episode_step_counts[idx].item())
-                if self.is_recurrent:
-                    self._store_episode_and_reset(idx)
-                self._finalize_episode(idx, survival_time)
+        self.episode_step_counts += active_on_entry.long()
+        new_completions = []
+        for agent_idx in torch.nonzero(newly_terminal, as_tuple=False).flatten().tolist():
+            reason: CompletionReason = "retirement" if bool(newly_retired[agent_idx]) else "authored_terminal"
+            completion = self._finalize_episode(agent_idx, reason)
+            if completion is not None:
+                new_completions.append(completion)
+        info["episode_completions"] = tuple(new_completions)
 
         # 12. Construct BatchedAgentState
         # Note: rewards from environment already contain full DAC composition including intrinsic.

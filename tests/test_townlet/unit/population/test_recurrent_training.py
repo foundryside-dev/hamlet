@@ -304,27 +304,16 @@ class TestEpisodeBuffering:
 
         population.reset()
 
-        # Add episode data
-        agent_idx = 0
-        episode = population.current_episodes[agent_idx]
-        for i in range(3):
-            episode["observations"].append(torch.randn(env.observation_dim, device=cpu_device))
-            episode["actions"].append(torch.tensor(0, device=cpu_device))
-            episode["rewards"].append(torch.tensor(1.0, device=cpu_device))  # Combined reward
-            episode["dones"].append(torch.tensor(False, device=cpu_device))
-            episode["next_observations"].append(torch.randn(env.observation_dim, device=cpu_device))
-
-        # Flush episode
-        population.flush_episode(agent_idx)
-
-        # Verify episode was stored (use len() for SequentialReplayBuffer)
-        assert len(population.replay_buffer) > 0, "Episode should be in buffer"
-
-        # Verify container was reset
-        assert len(population.current_episodes[agent_idx]["observations"]) == 0, "Container should be empty"
-
-        # Verify episode step count was reset
-        assert population.episode_step_counts[agent_idx] == 0, "Step count should be reset"
+        for _ in range(3):
+            population.step_population(env)
+        completion = population.flush_episode(0, reason="cap")
+        assert completion is not None
+        assert completion.reason == "cap"
+        assert completion.survival_time == 3
+        assert len(population.replay_buffer) == 1
+        assert len(population.current_episodes[0]["observations"]) == 0
+        assert population.episode_step_counts[0] == 3
+        assert population.flush_episode(0, reason="checkpoint") is None
 
 
 class TestRecurrentTraining:
@@ -419,17 +408,15 @@ class TestAdaptiveIntrinsicExplorationIntegration:
 
         population.reset()
 
-        # Simulate episode end with survival time
-        agent_idx = 0
-        survival_time = 50
-
-        # Call _finalize_episode which should trigger exploration update
-        population._finalize_episode(agent_idx, survival_time)
-
-        # Verify exploration was updated (weight may change based on performance)
-        # The actual value change depends on internal state, so just verify method was called
-        # by checking that sync happened (exploration telemetry should be synced)
-        assert population.runtime_registry is not None
+        for _ in range(2):
+            population.step_population(env)
+        completion = population.flush_episode(0, reason="cap")
+        assert completion is not None
+        assert completion.survival_time == 2
+        assert exploration.survival_history == [2]
+        assert population.runtime_registry.get_survival_time(0) == 2
+        assert population.flush_episode(0, reason="checkpoint") is None
+        assert exploration.survival_history == [2]
 
 
 class TestSnapshotAndMetrics:

@@ -26,7 +26,10 @@ def validate_static_write_targets(raw: RawConfigsV21, source_map: SourceMap | No
 
     def check(variable: VariableDeclaration | None, origin: str) -> None:
         if variable is not None and "engine" not in variable.writable_by:
-            identity = f"{variable.profile}:{variable.id}" if variable.profile is not None else variable.id
+            if variable.profile is not None:
+                identity = f"{variable.profile}:{variable.id}"
+            else:
+                identity = variable.id
             errors.add(
                 f"Variable '{identity}' denies engine write required by {origin}",
                 code=ErrorCode.UAC_STATIC_WRITE,
@@ -70,7 +73,9 @@ def validate_static_write_targets(raw: RawConfigsV21, source_map: SourceMap | No
             if node.delay is not None:
                 commands(node.delay_do, f"{command_origin}.delay_do", item_profile, self_is_item, target_is_item)
             for case_index, case in enumerate(node.cases):
-                children = [CommandConfig.model_validate(command) for command in case.get("do", [])]
+                if "do" not in case:
+                    continue
+                children = [CommandConfig.model_validate(command) for command in case["do"]]
                 commands(children, f"{command_origin}.cases[{case_index}].do", item_profile, self_is_item, target_is_item)
 
     for variable in raw.variables.declarations:

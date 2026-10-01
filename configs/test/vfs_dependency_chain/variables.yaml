@@ -7,6 +7,8 @@ variables:
   - default_item
   declarations:
   - id: a
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: global
     type: scalar
     lifetime: persistent
@@ -14,6 +16,8 @@ variables:
     exposed_to: []
     initial_value: 10.0
   - id: b
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: global
     type: scalar
     lifetime: persistent
@@ -22,6 +26,8 @@ variables:
     expression: a + 5
     initial_value: 0.0
   - id: c
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: global
     type: scalar
     lifetime: persistent
@@ -30,6 +36,8 @@ variables:
     expression: b * 2
     initial_value: 0.0
   - id: position
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: agent
     type: vec2f
     lifetime: tick

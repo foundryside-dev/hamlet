@@ -15,6 +15,8 @@ def test_vfs_evaluator_evaluates_expressions_in_topo_order():
 
     variables = [
         CompiledVariable(
+            readable_by=("engine", "agent"),
+            writable_by=("engine",),
             name="a",
             lifetime="persistent",
             type="float",
@@ -24,6 +26,8 @@ def test_vfs_evaluator_evaluates_expressions_in_topo_order():
             exposed_to=("agent",),
         ),
         CompiledVariable(
+            readable_by=("engine", "agent"),
+            writable_by=("engine",),
             name="b",
             lifetime="persistent",
             type="float",
@@ -64,6 +68,8 @@ def test_vfs_evaluator_mark_and_sweep_evaluates_marks_only_when_independent():
 
     variables = [
         CompiledVariable(
+            readable_by=("engine", "agent"),
+            writable_by=("engine",),
             name="observed",
             lifetime="persistent",
             type="float",
@@ -73,6 +79,8 @@ def test_vfs_evaluator_mark_and_sweep_evaluates_marks_only_when_independent():
             exposed_to=("agent",),
         ),
         CompiledVariable(
+            readable_by=("engine", "agent"),
+            writable_by=("engine",),
             name="unobserved",
             lifetime="persistent",
             type="float",
@@ -109,6 +117,8 @@ def test_vfs_evaluator_mark_and_sweep_recomputes_dependencies():
 
     variables = [
         CompiledVariable(
+            readable_by=("engine", "agent"),
+            writable_by=("engine",),
             name="a",
             lifetime="episode",
             type="float",
@@ -118,6 +128,8 @@ def test_vfs_evaluator_mark_and_sweep_recomputes_dependencies():
             exposed_to=("agent",),
         ),
         CompiledVariable(
+            readable_by=("engine", "agent"),
+            writable_by=("engine",),
             name="b",
             lifetime="episode",
             type="float",
@@ -154,6 +166,8 @@ def test_vfs_evaluator_mark_and_sweep_requires_explicit_marks():
     profile = CompiledGlobalProfile(
         variables=[
             CompiledVariable(
+                readable_by=("engine", "agent"),
+                writable_by=("engine",),
                 name="observed",
                 lifetime="persistent",
                 type="float",
@@ -183,6 +197,8 @@ def test_vfs_evaluator_mark_and_sweep_rejects_unknown_marks():
     profile = CompiledGlobalProfile(
         variables=[
             CompiledVariable(
+                readable_by=("engine", "agent"),
+                writable_by=("engine",),
                 name="observed",
                 lifetime="persistent",
                 type="float",
@@ -214,6 +230,8 @@ def test_vfs_evaluator_eager_mode_evaluates_all_vars():
 
     variables = [
         CompiledVariable(
+            readable_by=("engine", "agent"),
+            writable_by=("engine",),
             name="var1",
             lifetime="persistent",
             type="float",
@@ -223,6 +241,8 @@ def test_vfs_evaluator_eager_mode_evaluates_all_vars():
             exposed_to=("agent",),
         ),
         CompiledVariable(
+            readable_by=("engine", "agent"),
+            writable_by=("engine",),
             name="var2",
             lifetime="persistent",
             type="float",
@@ -259,6 +279,8 @@ def test_vfs_evaluator_handles_reference_path_access():
 
     variables = [
         CompiledVariable(
+            readable_by=("engine", "agent"),
+            writable_by=("engine",),
             name="ref_target",
             lifetime="persistent",
             type="float",
@@ -268,6 +290,8 @@ def test_vfs_evaluator_handles_reference_path_access():
             exposed_to=("agent",),
         ),
         CompiledVariable(
+            readable_by=("engine", "agent"),
+            writable_by=("engine",),
             name="use_ref",
             lifetime="persistent",
             type="float",
@@ -304,6 +328,8 @@ def test_vfs_evaluator_handles_nested_reference_paths():
 
     variables = [
         CompiledVariable(
+            readable_by=("engine", "agent"),
+            writable_by=("engine",),
             name="a",
             lifetime="persistent",
             type="float",
@@ -313,6 +339,8 @@ def test_vfs_evaluator_handles_nested_reference_paths():
             exposed_to=("agent",),
         ),
         CompiledVariable(
+            readable_by=("engine", "agent"),
+            writable_by=("engine",),
             name="b",
             lifetime="persistent",
             type="float",
@@ -322,6 +350,8 @@ def test_vfs_evaluator_handles_nested_reference_paths():
             exposed_to=("agent",),
         ),
         CompiledVariable(
+            readable_by=("engine", "agent"),
+            writable_by=("engine",),
             name="c",
             lifetime="persistent",
             type="float",
@@ -356,6 +386,8 @@ def test_vfs_evaluator_threads_affordance_and_temporal_context():
 
     variables = [
         CompiledVariable(
+            readable_by=("engine", "agent"),
+            writable_by=("engine",),
             name="can_use_bank_late",
             lifetime="persistent",
             type="bool",

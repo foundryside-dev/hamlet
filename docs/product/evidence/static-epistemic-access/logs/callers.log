@@ -1,0 +1,9 @@
+freshness fresh source b70fda104e5061ed2735e8b31b7f8f9caaf99f19
+ScopedVariableRegistry matches 0 caller result keys []
+AccessDeniedError matches 0 caller result keys []
+VariableRegistry.get_global matches 1 caller result keys [['callers', 'degraded_call_coverage_files', 'next_action', 'next_cursor', 'scope_excludes', 'traversal_complete', 'truncated', 'unresolved_candidates', 'unresolved_name_matches']]
+VariableRegistry.get_agent matches 1 caller result keys [['callers', 'degraded_call_coverage_files', 'next_action', 'next_cursor', 'scope_excludes', 'traversal_complete', 'truncated', 'unresolved_candidates', 'unresolved_name_matches']]
+VariableRegistry.read_item matches 1 caller result keys [['callers', 'degraded_call_coverage_files', 'next_action', 'next_cursor', 'scope_excludes', 'traversal_complete', 'truncated', 'unresolved_candidates', 'unresolved_name_matches']]
+VariableRegistry.write_item matches 1 caller result keys [['callers', 'degraded_call_coverage_files', 'next_action', 'next_cursor', 'scope_excludes', 'traversal_complete', 'truncated', 'unresolved_candidates', 'unresolved_name_matches']]
+compute_variable_schema_hash matches 1 caller result keys [['callers', 'degraded_call_coverage_files', 'next_action', 'next_cursor', 'scope_excludes', 'traversal_complete', 'truncated', 'unresolved_candidates', 'unresolved_name_matches']]
+canonical_variable_schema matches 2 caller result keys [['callers', 'degraded_call_coverage_files', 'next_action', 'next_cursor', 'scope_excludes', 'traversal_complete', 'truncated', 'unresolved_candidates', 'unresolved_name_matches'], ['callers', 'degraded_call_coverage_files', 'next_action', 'next_cursor', 'scope_excludes', 'traversal_complete', 'truncated', 'unresolved_candidates', 'unresolved_name_matches']]

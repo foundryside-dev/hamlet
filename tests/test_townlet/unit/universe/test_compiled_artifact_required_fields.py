@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from copy import deepcopy
 from dataclasses import fields
 from pathlib import Path
 from typing import Any
@@ -94,6 +95,8 @@ COMPILED_VFS_PROFILE_FIELDS = (
 )
 
 COMPILED_VARIABLE_FIELDS = (
+    "readable_by",
+    "writable_by",
     "name",
     "type",
     "lifetime",
@@ -156,7 +159,7 @@ def test_primary_level_products_exist_only_on_level_metadata(artifact_payload: d
 
 
 def test_canonical_variable_cut_bumps_exact_artifact_schema() -> None:
-    assert COMPILED_SCHEMA_VERSION == "1.28"
+    assert COMPILED_SCHEMA_VERSION == "1.29"
 
 
 def _assert_missing_field(payload: dict[str, Any], field_path: str) -> None:
@@ -233,17 +236,16 @@ def test_compiled_artifact_requires_every_item_profile_field(artifact_payload: d
 
 
 @pytest.mark.parametrize("field_name", COMPILED_VARIABLE_FIELDS)
-def test_compiled_artifact_requires_every_serialized_vfs_variable_field(artifact_payload: dict[str, Any], field_name: str) -> None:
-    payload = artifact_payload.copy()
-    payload["compiled_vfs_profiles"] = artifact_payload["compiled_vfs_profiles"].copy()
-    payload["compiled_vfs_profiles"]["global_profile"] = artifact_payload["compiled_vfs_profiles"]["global_profile"].copy()
-    payload["compiled_vfs_profiles"]["global_profile"]["variables"] = [
-        artifact_payload["compiled_vfs_profiles"]["global_profile"]["variables"][0].copy()
-    ]
-    variable = payload["compiled_vfs_profiles"]["global_profile"]["variables"][0]
-    variable.pop(field_name)
-
-    _assert_missing_field(payload, f"compiled_vfs_profiles.global_profile.variables[0].{field_name}")
+@pytest.mark.parametrize("profile_path", ("global_profile", "agent_profile", "item_profiles.default_item"))
+def test_compiled_artifact_requires_every_serialized_vfs_variable_field(
+    artifact_payload: dict[str, Any], field_name: str, profile_path: str
+) -> None:
+    payload = deepcopy(artifact_payload)
+    profile = payload["compiled_vfs_profiles"]
+    for component in profile_path.split("."):
+        profile = profile[component]
+    profile["variables"][0].pop(field_name)
+    _assert_missing_field(payload, f"compiled_vfs_profiles.{profile_path}.variables[0].{field_name}")
 
 
 @pytest.mark.parametrize("field_name", LEVEL_FIELDS)
@@ -275,7 +277,7 @@ def test_compiled_registry_descriptor_requires_semantic_type_key(artifact_payloa
     _assert_missing_field(payload, "all_levels.L0_demo.vfs_variables[0].semantic_type")
 
 
-@pytest.mark.parametrize("old_version", ["1.26", "1.27"])
+@pytest.mark.parametrize("old_version", ["1.26", "1.27", "1.28"])
 def test_previous_variable_artifact_versions_refuse(artifact_payload: dict[str, Any], old_version: str) -> None:
     payload = {**artifact_payload, "compiled_schema_version": old_version}
     with pytest.raises(ValueError, match="schema mismatch"):

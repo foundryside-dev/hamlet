@@ -7,6 +7,8 @@ variables:
   - default_item
   declarations:
   - id: threat_level
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: agent
     type: scalar
     lifetime: tick

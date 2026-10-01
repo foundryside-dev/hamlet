@@ -23,6 +23,8 @@ def test_compiler_compiles_effects_catalog_per_level(tmp_path: Path):
             "item_profiles": [],
             "declarations": [
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "day_count",
                     "scope": "global",
                     "type": "scalar",
@@ -81,6 +83,8 @@ def test_compiler_allows_missing_effects_yaml(tmp_path: Path):
             "item_profiles": [],
             "declarations": [
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "day_count",
                     "scope": "global",
                     "type": "scalar",

@@ -73,7 +73,7 @@ class VFSCompiler:
         )
 
     def build_runtime_variables(self, config: VariablesConfig) -> tuple[VariableDef, ...]:
-        """Lower each authored registry variable exactly once, with fixed engine roles."""
+        """Lower each authored registry variable exactly once, with its declared static access policy."""
         return (
             _engine_tick_variable_def(),
             *(self._variable_to_definition(variable) for variable in config.declarations if variable.scope != VariableScope.ITEM),
@@ -92,8 +92,8 @@ class VFSCompiler:
             scope=variable.scope,
             type=variable.type,
             lifetime=variable.lifetime,
-            readable_by=["agent", "engine"],
-            writable_by=["engine"],
+            readable_by=list(variable.readable_by),
+            writable_by=list(variable.writable_by),
             default=default,
             shape=variable.shape,
             dims=variable.dims,

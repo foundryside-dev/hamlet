@@ -36,6 +36,8 @@ def _write_variables(config_dir: Path, declarations: list[dict]) -> None:
 
 def _variable(identifier: str, scope: str = "global", **fields) -> dict:
     return {
+        "readable_by": ["engine", "agent"],
+        "writable_by": ["engine"],
         "id": identifier,
         "scope": scope,
         "type": "scalar",

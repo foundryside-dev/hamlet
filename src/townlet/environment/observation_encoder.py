@@ -131,10 +131,12 @@ def _split_variable_element_slots(
     `item_profiles` is `CompiledVFSProfiles.item_profiles` (`dict[str, CompiledItemProfile]`
     at runtime; typed `dict[str, Any]` upstream — see `universe/compiled.py`).
     """
+    # Partition compiled bindings; access/exposure is authorized by publishers from
+    # the immutable registry policy, never reselected from mutable profile lists.
     profile_normalizations: dict[str, dict[str, NormalizationSpec]] = {}
     if item_profiles:
         for profile_name, profile in item_profiles.items():
-            profile_normalizations[profile_name] = {var.name: var.normalization for var in profile.variables if var.exposed_to}
+            profile_normalizations[profile_name] = {var.name: var.normalization for var in profile.variables}
 
     registry_slots: list[int] = []
     item_declarations: list[ItemStateSlotDeclaration] = []
@@ -148,7 +150,7 @@ def _split_variable_element_slots(
             raise ValueError(f"variable_element slot {binding.slot_index}: unknown item profile in {binding.filler_ref!r}")
         var_normalizations = profile_normalizations[profile_name]
         if var_name not in var_normalizations:
-            raise ValueError(f"variable_element slot {binding.slot_index}: unknown exposed item variable {binding.filler_ref!r}")
+            raise ValueError(f"variable_element slot {binding.slot_index}: unknown item variable {binding.filler_ref!r}")
         item_declarations.append(
             ItemStateSlotDeclaration(
                 slot_index=binding.slot_index,

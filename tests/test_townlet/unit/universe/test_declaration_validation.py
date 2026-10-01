@@ -44,7 +44,17 @@ def test_pair_reward_reader_refuses_without_an_explicit_reduction(tmp_path):
     variable_path = pack / "variables.yaml"
     variables = yaml.safe_load(variable_path.read_text())
     variables["variables"]["declarations"].append(
-        dict(id="score", scope="pair", type="scalar", lifetime="episode", semantic_type="custom", exposed_to=[], initial_value=1.0)
+        dict(
+            readable_by=["engine", "agent"],
+            writable_by=["engine"],
+            id="score",
+            scope="pair",
+            type="scalar",
+            lifetime="episode",
+            semantic_type="custom",
+            exposed_to=[],
+            initial_value=1.0,
+        )
     )
     variable_path.write_text(yaml.safe_dump(variables))
     drive_path = pack / "levels" / LEVEL / "drive.yaml"
@@ -203,6 +213,8 @@ def test_profile_registration_error_uses_qualified_profile_origin(tmp_path: Path
     raw = load_v21_configs(PACK)
     declarations = [
         {
+            "readable_by": ["engine", "agent"],
+            "writable_by": ["engine"],
             "id": identifier,
             "scope": scope,
             "type": "scalar",

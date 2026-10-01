@@ -229,6 +229,8 @@ def test_spawn_item_with_initial_state():
             profile_name="weapon",
             variables=[
                 CompiledVariable(
+                    readable_by=("engine", "agent"),
+                    writable_by=("engine",),
                     name="durability",
                     lifetime="episode",
                     type="float",
@@ -304,7 +306,7 @@ def test_spawn_item_with_initial_state():
 
     # Verify custom initial_state applied
     item = items[0]
-    durability = vfs_registry.read_item(item.vfs_profile, "durability", item.vfs_index)
+    durability = vfs_registry.read_item(item.vfs_profile, "durability", item.vfs_index, reader="engine")
     assert durability == 25.0
 
 

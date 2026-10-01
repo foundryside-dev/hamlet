@@ -25,6 +25,8 @@ def minimal_compiled_universe_with_profiles(tmp_path: Path):
             "item_profiles": [],
             "declarations": [
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "day_count",
                     "scope": "global",
                     "type": "scalar",
@@ -34,6 +36,8 @@ def minimal_compiled_universe_with_profiles(tmp_path: Path):
                     "initial_value": 0,
                 },
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "total_earnings",
                     "scope": "global",
                     "type": "scalar",
@@ -70,6 +74,8 @@ def minimal_compiled_universe_with_effects(tmp_path: Path):
             "item_profiles": [],
             "declarations": [
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "day_count",
                     "scope": "global",
                     "type": "scalar",

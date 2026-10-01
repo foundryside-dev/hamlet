@@ -12,6 +12,8 @@ def variable(**changes):
         "lifetime": "episode",
         "semantic_type": "custom",
         "exposed_to": [],
+        "readable_by": ["engine", "agent"],
+        "writable_by": ["engine"],
         "initial_value": 0.0,
         **changes,
     }
@@ -38,8 +40,8 @@ def test_reference_null_is_a_declared_unbound_value():
         VariableDeclaration.model_validate(payload)
 
 
-@pytest.mark.parametrize("field,value", [("name", "state"), ("readable_by", ["engine"]), ("writable_by", ["engine"])])
-def test_removed_aliases_and_permissions_refuse(field, value):
+@pytest.mark.parametrize("field,value", [("name", "state")])
+def test_removed_aliases_refuse(field, value):
     with pytest.raises(ValidationError, match="Extra inputs"):
         VariableDeclaration.model_validate(variable(**{field: value}))
 
@@ -122,7 +124,7 @@ def test_item_reference_null_initializes_actual_arena_as_unbound(tmp_path):
         env.reset()
         item = env.item_manager.spawn_item(item_type="apple", position=(0, 0), current_tick=0)
         assert item is not None
-        assert env.vfs_registry.read_item("food", "claimant", item.vfs_index) == -1
+        assert env.vfs_registry.read_item("food", "claimant", item.vfs_index, reader="engine") == -1
 
 
 @pytest.mark.parametrize(
@@ -183,3 +185,45 @@ def test_float_vector_exposure_preserves_actual_declared_element_axes(tmp_path, 
     env = compiled.create_environment(num_agents=2, level_name="L0_simple", device="cpu")
     env.reset()
     assert env.vfs_registry.get("state", reader="engine").shape == (2, width)
+
+
+@pytest.mark.parametrize("field", ["readable_by", "writable_by"])
+def test_static_access_fields_are_required(field):
+    payload = variable()
+    payload.pop(field)
+    with pytest.raises(ValidationError, match=field):
+        VariableDeclaration.model_validate(payload)
+
+
+@pytest.mark.parametrize(
+    "changes,reason",
+    [
+        ({"readable_by": ["engine", "engine"]}, "duplicate readers"),
+        ({"writable_by": ["engine", "engine"]}, "duplicate writers"),
+        ({"readable_by": ["agent"]}, "engine read"),
+        ({"readable_by": ["social_model"]}, "readable_by"),
+        ({"writable_by": ["agent"]}, "writable_by"),
+        ({"writable_by": ["vtc"]}, "writable_by"),
+        ({"readable_by": ["engine"], "exposed_to": ["agent"], "normalization": {"kind": "none"}}, "exposure requires read"),
+    ],
+)
+def test_static_access_invalid_policies_refuse(changes, reason):
+    with pytest.raises(ValidationError, match=reason):
+        VariableDeclaration.model_validate(variable(**changes))
+
+
+def test_static_access_supports_hidden_immutable_literal():
+    declaration = VariableDeclaration.model_validate(variable(readable_by=["engine"], writable_by=[]))
+    assert declaration.readable_by == ["engine"]
+    assert declaration.writable_by == []
+
+
+def test_runtime_definition_supports_same_closed_policy():
+    from townlet.vfs.schema import VariableDef
+
+    declaration = VariableDef(
+        id="literal", scope="global", type="scalar", lifetime="persistent", readable_by=["engine"], writable_by=[], default=3.0
+    )
+    assert declaration.writable_by == []
+    with pytest.raises(ValidationError, match="engine read"):
+        VariableDef(id="literal", scope="global", type="scalar", lifetime="persistent", readable_by=["agent"], writable_by=[], default=3.0)

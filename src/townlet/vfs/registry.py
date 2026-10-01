@@ -5,7 +5,7 @@ and scope semantics. It handles these scope patterns:
 
 - global: Single value shared by all agents (shape [] or [dims])
 - agent: Per-agent values, observable by all (shape [num_agents] or [num_agents, dims])
-- agent_private: Per-agent values, observable only by owner (shape [num_agents] or [num_agents, dims])
+- agent_private: Per-agent values, excluded from policy observation (shape [num_agents] or [num_agents, dims])
 - pair: Directed agent-agent values (dense shape [num_agents, num_agents, ...] or sparse shape [num_pair_edges, ...])
 - group: Group/faction/team values (shape [num_groups, ...])
 - affordance: Per-affordance-instance values (shape [num_affordances, ...])
@@ -17,11 +17,13 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from collections.abc import Set as AbstractSet
+from copy import deepcopy
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Literal, Protocol, runtime_checkable
 
 import torch
 
+from townlet.vfs.access_policy import validate_static_access
 from townlet.vfs.schema import VariableDef, VariableScope
 from townlet.vfs.schema_hashes import compute_variable_schema_hash
 
@@ -31,11 +33,23 @@ if TYPE_CHECKING:
 __all__ = [
     "VariableRegistry",
     "ScopeArena",
-    "ScopedVariableRegistry",
     "VFSRegistryProtocol",
-    "AccessDeniedError",
     "DynamicVariableMutation",
 ]
+
+
+@dataclass(frozen=True)
+class StaticAccessPolicy:
+    """The immutable role authority for one runtime variable."""
+
+    readable_by: tuple[str, ...]
+    writable_by: tuple[str, ...]
+    exposed_to: tuple[str, ...]
+
+
+def _snapshot_access_policy(identifier: str, declaration: Any) -> StaticAccessPolicy:
+    validate_static_access(identifier, declaration.readable_by, declaration.writable_by, declaration.exposed_to)
+    return StaticAccessPolicy(tuple(declaration.readable_by), tuple(declaration.writable_by), tuple(declaration.exposed_to))
 
 
 @dataclass(frozen=True)
@@ -74,12 +88,6 @@ class DynamicVariableMutation:
     variable_schema_hash: str
 
 
-class AccessDeniedError(Exception):
-    """Raised when access control check fails."""
-
-    pass
-
-
 @runtime_checkable
 class VFSRegistryProtocol(Protocol):
     """Observation-facing registry contract shared by runtime registry variants."""
@@ -91,11 +99,11 @@ class VFSRegistryProtocol(Protocol):
 
     def list_global(self) -> list[str]: ...
 
-    def get_global(self, name: str) -> torch.Tensor: ...
+    def get_global(self, name: str, *, reader: str) -> torch.Tensor: ...
 
     def list_agent(self) -> list[str]: ...
 
-    def get_agent(self, name: str) -> torch.Tensor: ...
+    def get_agent(self, name: str, *, reader: str) -> torch.Tensor: ...
 
 
 class VariableRegistry:
@@ -167,10 +175,29 @@ class VariableRegistry:
 
         # Store variable definitions by ID, guarding against duplicate IDs
         self._definitions: dict[str, VariableDef] = {}
+        self._access_policies: dict[str, StaticAccessPolicy] = {}
+        self._item_access_policies: dict[tuple[str, str], StaticAccessPolicy] = {}
         for var in variables:
             if var.id in self._definitions:
                 raise ValueError(f"Duplicate variable id '{var.id}' in registry initialization")
+            self._access_policies[var.id] = _snapshot_access_policy(var.id, var)
             self._definitions[var.id] = var
+
+        for profile_name, profile in self.item_profiles.items():
+            for variable in profile.variables:
+                key = (profile_name, variable.name)
+                if key in self._item_access_policies:
+                    raise ValueError(f"Duplicate item variable {key!r}")
+                self._item_access_policies[key] = _snapshot_access_policy(f"{profile_name}.{variable.name}", variable)
+
+        # Hash the same sealed policies used by checked access and publishers.
+        self._identity_item_profiles = deepcopy(self.item_profiles)
+        for profile_name, profile in self._identity_item_profiles.items():
+            for variable in profile.variables:
+                policy = self._item_access_policies[(profile_name, variable.name)]
+                variable.readable_by = policy.readable_by
+                variable.writable_by = policy.writable_by
+                variable.exposed_to = policy.exposed_to
 
         self._pair_edges: torch.Tensor | None = None
         self._pair_edge_to_index: dict[tuple[int, int], int] = {}
@@ -226,7 +253,17 @@ class VariableRegistry:
     @property
     def variable_schema_hash(self) -> str:
         """Return the current variable schema hash for this registry."""
-        return compute_variable_schema_hash(self._definitions.values())
+        definitions = [
+            definition.model_copy(
+                update={
+                    "readable_by": list(self._access_policies[name].readable_by),
+                    "writable_by": list(self._access_policies[name].writable_by),
+                    "exposed_to": list(self._access_policies[name].exposed_to),
+                }
+            )
+            for name, definition in self._definitions.items()
+        ]
+        return compute_variable_schema_hash(definitions, self._identity_item_profiles)
 
     def _initialize_pair_storage_index(self, pair_edges: torch.Tensor | Sequence[Sequence[int]] | None) -> None:
         """Validate and store sparse pair topology metadata."""
@@ -348,7 +385,9 @@ class VariableRegistry:
         if var_def.id in self._definitions:
             raise ValueError(f"Variable '{var_def.id}' already exists in registry")
 
+        policy = _snapshot_access_policy(var_def.id, var_def)
         tensor = self._build_storage_tensor(var_def)
+        self._access_policies[var_def.id] = policy
         self._definitions[var_def.id] = var_def
         self._storage[var_def.id] = tensor
         self._expected_shapes[var_def.id] = tensor.shape
@@ -365,6 +404,7 @@ class VariableRegistry:
         var_def = self._definitions[variable_id]
         self._validate_network_shape_effect(var_def, network_shape_effect)
         tensor = self._storage[variable_id]
+        del self._access_policies[variable_id]
         del self._definitions[variable_id]
         del self._storage[variable_id]
         del self._expected_shapes[variable_id]
@@ -613,7 +653,7 @@ class VariableRegistry:
 
         Args:
             variable_id: ID of the variable to read
-            reader: Who is reading (e.g., "agent", "engine", "acs")
+            reader: Explicit engine or agent role
 
         Returns:
             Tensor containing the variable value
@@ -631,22 +671,12 @@ class VariableRegistry:
             time_sin = registry.get("time_sin", reader="agent")
             # Returns: tensor(0.0)  # shape []
         """
+        self._validate_actor(reader, "read", variable_id)
         if variable_id not in self._definitions:
             raise KeyError(f"Variable '{variable_id}' not found in registry")
 
-        var_def = self._definitions[variable_id]
-
-        # Check read permission
-        if reader not in var_def.readable_by:
-            raise PermissionError(f"'{reader}' is not allowed to read variable '{variable_id}'. Readable by: {var_def.readable_by}")
-
+        self.authorize_read(variable_id, reader=reader)
         value = self._storage[variable_id]
-
-        if var_def.scope == "agent_private" and reader == "agent":
-            raise PermissionError(
-                f"'{reader}' is not allowed to read agent_private variable '{variable_id}'. "
-                "Only privileged readers (engine, acs, etc.) may access raw values."
-            )
 
         return value.clone()
 
@@ -656,7 +686,7 @@ class VariableRegistry:
         Args:
             variable_id: ID of the variable to write
             value: New tensor value
-            writer: Who is writing (e.g., "engine", "actions")
+            writer: Explicit role; only engine writes may be declared
 
         Raises:
             KeyError: If variable_id doesn't exist
@@ -670,14 +700,11 @@ class VariableRegistry:
             # Update global time_sin
             registry.set("time_sin", torch.tensor(0.707), writer="engine")
         """
+        self._validate_actor(writer, "write", variable_id)
         if variable_id not in self._definitions:
             raise KeyError(f"Variable '{variable_id}' not found in registry")
 
-        var_def = self._definitions[variable_id]
-
-        # Check write permission
-        if writer not in var_def.writable_by:
-            raise PermissionError(f"'{writer}' is not allowed to write variable '{variable_id}'. Writable by: {var_def.writable_by}")
+        self.authorize_write(variable_id, writer=writer)
 
         expected_shape = self._expected_shapes[variable_id]
         expected_dtype = self._expected_dtypes[variable_id]
@@ -706,9 +733,7 @@ class VariableRegistry:
         if variable_id not in self._definitions:
             raise KeyError(f"Variable '{variable_id}' not found in registry")
 
-        var_def = self._definitions[variable_id]
-        if "engine" not in var_def.writable_by:
-            raise PermissionError(f"'engine' is not allowed to write variable '{variable_id}'. Writable by: {var_def.writable_by}")
+        self.authorize_write(variable_id, writer="engine")
 
         expected_dtype = self._expected_dtypes[variable_id]
         expected_shape = self._expected_shapes[variable_id]
@@ -878,11 +903,70 @@ class VariableRegistry:
             self.item_profile_map[profile_name] = var_map
             self.item_profile_type_map[profile_name] = type_map
 
+    def get_access_policy(self, variable_id: str) -> StaticAccessPolicy:
+        """Return the validated runtime policy, independent of mutable DTO lists."""
+        return self._access_policies[variable_id]
+
+    def get_item_access_policy(self, profile_name: str, variable_id: str) -> StaticAccessPolicy:
+        """Return the qualified policy; shared arena columns are not variable identity."""
+        return self._item_access_policies[(profile_name, variable_id)]
+
+    @staticmethod
+    def _validate_actor(actor: str, operation: str, identifier: str) -> None:
+        if not isinstance(actor, str) or actor not in ("engine", "agent"):
+            raise PermissionError(
+                f"Unknown actor '{actor}' for {operation} of variable '{identifier}'; supported roles are engine and agent"
+            )
+
+    def authorize_read(self, variable_id: str, *, reader: str) -> None:
+        """Authorize an ordinary read without touching storage."""
+        self._validate_actor(reader, "read", variable_id)
+        policy = self.get_access_policy(variable_id)
+        if reader not in policy.readable_by or (self._definitions[variable_id].scope == VariableScope.AGENT_PRIVATE and reader == "agent"):
+            raise PermissionError(
+                f"Actor '{reader}' is not allowed to read {self._definitions[variable_id].scope} variable '{variable_id}'"
+            )
+
+    def authorize_write(self, variable_id: str, *, writer: str) -> None:
+        """Authorize an attempted ordinary write, even if its value is unchanged."""
+        self._validate_actor(writer, "write", variable_id)
+        if writer not in self.get_access_policy(variable_id).writable_by:
+            raise PermissionError(f"Actor '{writer}' is not allowed to write variable '{variable_id}'")
+
+    def authorize_item_read(self, profile_name: str, variable_id: str, *, reader: str) -> None:
+        """Authorize a qualified item read without accessing the arena."""
+        self._validate_actor(reader, "read", f"{profile_name}.{variable_id}")
+        if reader not in self.get_item_access_policy(profile_name, variable_id).readable_by:
+            raise PermissionError(f"Actor '{reader}' is not allowed to read item variable '{profile_name}.{variable_id}'")
+
+    def authorize_item_write(self, profile_name: str, variable_id: str, *, writer: str) -> None:
+        """Authorize a qualified item write before arena mutation."""
+        self._validate_actor(writer, "write", f"{profile_name}.{variable_id}")
+        if writer not in self.get_item_access_policy(profile_name, variable_id).writable_by:
+            raise PermissionError(f"Actor '{writer}' is not allowed to write item variable '{profile_name}.{variable_id}'")
+
+    def _validate_item_row(self, profile_name: str, vfs_index: int) -> None:
+        if not 0 <= vfs_index < self.max_items:
+            raise IndexError(f"Item row {vfs_index} is outside the declared arena")
+        actual = self.item_vfs_index_to_profile.get(vfs_index)
+        if actual != profile_name:
+            raise PermissionError(f"Item row {vfs_index} has profile '{actual}', not '{profile_name}'")
+
+    def _initialize_item_row(self, profile_name: str, vfs_index: int) -> None:
+        """Trusted allocation lifecycle; authored overrides use checked write_item."""
+        if self.item_vfs is None:
+            raise RuntimeError("Item VFS storage not allocated")
+        self.item_vfs[vfs_index].zero_()
+        profile = self.item_profiles[profile_name]
+        for variable in profile.variables:
+            if variable.initial_value is not None:
+                self.item_vfs[vfs_index, self.item_profile_map[profile_name][variable.name]] = float(variable.initial_value)
+
     def list_global(self) -> list[str]:
         """List all global variable names."""
         return [var_id for var_id, var_def in self._definitions.items() if var_def.scope == VariableScope.GLOBAL]
 
-    def get_global(self, name: str) -> torch.Tensor:
+    def get_global(self, name: str, *, reader: str) -> torch.Tensor:
         """Get global variable value.
 
         Args:
@@ -894,12 +978,13 @@ class VariableRegistry:
         Raises:
             KeyError: If variable not found or not global
         """
+        self._validate_actor(reader, "read", name)
         if name not in self._definitions:
             raise KeyError(f"Variable '{name}' not found")
         var_def = self._definitions[name]
         if var_def.scope != VariableScope.GLOBAL:
             raise KeyError(f"Variable '{name}' is not global (scope: {var_def.scope})")
-        return self._storage[name].clone()
+        return self.get(name, reader=reader)
 
     def list_agent(self) -> list[str]:
         """List all agent variable names (including agent_private)."""
@@ -907,7 +992,7 @@ class VariableRegistry:
             var_id for var_id, var_def in self._definitions.items() if var_def.scope in (VariableScope.AGENT, VariableScope.AGENT_PRIVATE)
         ]
 
-    def get_agent(self, name: str) -> torch.Tensor:
+    def get_agent(self, name: str, *, reader: str) -> torch.Tensor:
         """Get agent variable value.
 
         Args:
@@ -919,14 +1004,15 @@ class VariableRegistry:
         Raises:
             KeyError: If variable not found or not agent-scoped
         """
+        self._validate_actor(reader, "read", name)
         if name not in self._definitions:
             raise KeyError(f"Variable '{name}' not found")
         var_def = self._definitions[name]
         if var_def.scope not in (VariableScope.AGENT, VariableScope.AGENT_PRIVATE):
             raise KeyError(f"Variable '{name}' is not agent-scoped (scope: {var_def.scope})")
-        return self._storage[name].clone()
+        return self.get(name, reader=reader)
 
-    def write_item(self, profile_name: str, var_name: str, value: float | torch.Tensor, vfs_index: int) -> None:
+    def write_item(self, profile_name: str, var_name: str, value: float | torch.Tensor, vfs_index: int, *, writer: str) -> None:
         """Write item variable value.
 
         Args:
@@ -939,6 +1025,8 @@ class VariableRegistry:
             RuntimeError: If item storage not allocated
             KeyError: If profile or variable not found
         """
+        self.authorize_item_write(profile_name, var_name, writer=writer)
+        self._validate_item_row(profile_name, vfs_index)
         if self.item_vfs is None:
             raise RuntimeError("Item VFS storage not allocated")
         if profile_name not in self.item_profile_map:
@@ -949,7 +1037,7 @@ class VariableRegistry:
         var_idx = profile_vars[var_name]
         self.item_vfs[vfs_index, var_idx] = value
 
-    def read_item(self, profile_name: str, var_name: str, vfs_index: int) -> float:
+    def read_item(self, profile_name: str, var_name: str, vfs_index: int, *, reader: str) -> float:
         """Read item variable value.
 
         Args:
@@ -964,6 +1052,8 @@ class VariableRegistry:
             RuntimeError: If item storage not allocated
             KeyError: If profile or variable not found
         """
+        self.authorize_item_read(profile_name, var_name, reader=reader)
+        self._validate_item_row(profile_name, vfs_index)
         if self.item_vfs is None:
             raise RuntimeError("Item VFS storage not allocated")
         if profile_name not in self.item_profile_map:
@@ -1008,178 +1098,3 @@ class VariableRegistry:
     def get_item_profile_for_index(self, vfs_index: int) -> str | None:
         """Return profile name for a given item VFS index (if registered)."""
         return self.item_vfs_index_to_profile.get(vfs_index)
-
-
-class ScopedVariableRegistry:
-    """Variable storage with three scopes: global, agent, item.
-
-    Global scope: Singleton values shared across all agents
-        - Storage: dict[str, torch.Tensor] (scalar tensors)
-        - Example: {"day_count": tensor(42), "is_night": tensor(True)}
-
-    Agent scope: Per-agent values (batch tensors)
-        - Storage: dict[str, torch.Tensor] (batch_size tensors)
-        - Example: {"motivation": tensor([1.0, 0.8, 1.2])}
-
-    Item scope: Per-item-instance values (profile-based)
-        - Storage: dict[profile_name, dict[var_name, torch.Tensor]]
-        - Example: {"food_stats": {"nutrition": tensor([0.5, 0.3])}}
-    """
-
-    def __init__(self, device: torch.device = torch.device("cpu")):
-        self.device = device
-
-        # Global scope: singleton tensors
-        self._global_storage: dict[str, torch.Tensor] = {}
-
-        # Agent scope: batch tensors (populated later)
-        self._agent_storage: dict[str, torch.Tensor] = {}
-
-        # Item scope: profile -> {var -> tensor} (populated later)
-        self._item_storage: dict[str, dict[str, torch.Tensor]] = {}
-        self.item_vfs: torch.Tensor | None = None
-        self.item_profile_map: dict[str, dict[str, int]] = {}
-        self.item_vfs_index_to_profile: dict[int, str] = {}
-
-    # Global scope methods
-
-    def set_global(self, name: str, value: torch.Tensor) -> None:
-        """Set global variable value.
-
-        Args:
-            name: Variable name
-            value: Singleton tensor (no batch dimension)
-        """
-        self._global_storage[name] = value.to(self.device)
-
-    def get_global(self, name: str) -> torch.Tensor:
-        """Get global variable value.
-
-        Args:
-            name: Variable name
-
-        Returns:
-            Singleton tensor
-
-        Raises:
-            KeyError: If variable not found
-        """
-        if name not in self._global_storage:
-            raise KeyError(f"Global variable '{name}' not found. Available: {list(self._global_storage.keys())}")
-        return self._global_storage[name].clone()
-
-    def list_global(self) -> list[str]:
-        """List all global variable names."""
-        return list(self._global_storage.keys())
-
-    # Agent scope methods (stubs for now)
-
-    def set_agent(self, name: str, value: torch.Tensor) -> None:
-        """Set agent variable value (batch tensor)."""
-        self._agent_storage[name] = value.to(self.device)
-
-    def get_agent(self, name: str) -> torch.Tensor:
-        """Get agent variable value (batch tensor)."""
-        if name not in self._agent_storage:
-            raise KeyError(f"Agent variable '{name}' not found. Available: {list(self._agent_storage.keys())}")
-        return self._agent_storage[name].clone()
-
-    def list_agent(self) -> list[str]:
-        """List all agent variable names."""
-        return list(self._agent_storage.keys())
-
-    # Item scope methods
-
-    def set_item(self, profile_name: str, var_name: str, value: torch.Tensor) -> None:
-        """Set item variable value for a profile.
-
-        Args:
-            profile_name: Item profile name (e.g., "food_stats")
-            var_name: Variable name within profile
-            value: Tensor with shape [num_instances] or [num_instances, ...]
-        """
-        if profile_name not in self._item_storage:
-            self._item_storage[profile_name] = {}
-
-        self._item_storage[profile_name][var_name] = value.to(self.device)
-
-    def get_item(self, profile_name: str, var_name: str) -> torch.Tensor:
-        """Get item variable value for a profile.
-
-        Args:
-            profile_name: Item profile name
-            var_name: Variable name within profile
-
-        Returns:
-            Tensor with shape [num_instances] or [num_instances, ...]
-
-        Raises:
-            KeyError: If profile or variable not found
-        """
-        if profile_name not in self._item_storage:
-            raise KeyError(f"Item profile '{profile_name}' not found. Available: {list(self._item_storage.keys())}")
-
-        profile_vars = self._item_storage[profile_name]
-        if var_name not in profile_vars:
-            raise KeyError(f"Variable '{var_name}' not found in profile '{profile_name}'. Available: {list(profile_vars.keys())}")
-
-        return profile_vars[var_name].clone()
-
-    def list_item_profiles(self) -> list[str]:
-        """List all item profile names."""
-        return list(self._item_storage.keys())
-
-    def list_item_variables(self, profile_name: str) -> list[str]:
-        """List all variables in an item profile.
-
-        Args:
-            profile_name: Item profile name
-
-        Returns:
-            List of variable names in profile
-
-        Raises:
-            KeyError: If profile not found
-        """
-        if profile_name not in self._item_storage:
-            raise KeyError(f"Item profile '{profile_name}' not found. Available: {list(self._item_storage.keys())}")
-
-        return list(self._item_storage[profile_name].keys())
-
-    def check_access(self, scope: str, path: str, operation: str) -> None:
-        """Check if access is allowed per VFS access control rules.
-
-        Access control rules:
-        - Global variables: read-only for all scopes
-        - Agent variables: read/write for agent scope only
-        - Item variables: read/write for item scope only
-
-        Args:
-            scope: Requesting scope ("global", "agent", "item")
-            path: Variable path (e.g., "day_count", "food_stats.nutrition")
-            operation: Access type ("read", "write")
-
-        Raises:
-            AccessDeniedError: If access denied
-        """
-        # Agent variables (check first, before global)
-        if path in self._agent_storage:
-            if scope != "agent" and operation == "write":
-                raise AccessDeniedError(f"Agent variable '{path}' can only be written by agent scope. Scope '{scope}' denied.")
-            return  # Read allowed, write allowed for agent scope
-
-        # Global variables are read-only
-        if path in self._global_storage:
-            if operation == "write":
-                raise AccessDeniedError(f"Global variable '{path}' is read-only. Cannot write from scope '{scope}'.")
-            return  # Read allowed
-
-        # Item variables (profile.var format)
-        if "." in path:
-            profile, var = path.split(".", 1)
-            if profile in self._item_storage:
-                if scope != "item" and operation == "write":
-                    raise AccessDeniedError(f"Item variable '{path}' can only be written by item scope. Scope '{scope}' denied.")
-                return  # Read allowed, write allowed for item scope
-
-        # Variable not found in any scope - allow for now (will fail at get/set)

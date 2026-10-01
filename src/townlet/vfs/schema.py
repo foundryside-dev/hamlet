@@ -23,6 +23,7 @@ __all__ = [
 ]
 
 
+from townlet.vfs.access_policy import validate_static_access
 from townlet.vfs.semantic_type import SemanticType
 
 
@@ -370,7 +371,7 @@ class VariableDef(BaseModel):
             type="vecNf",
             dims=2,
             lifetime="episode",
-            readable_by=["agent"],
+            readable_by=["agent", "engine"],
             writable_by=["engine"],
             default=[0.0, 0.0],
         )
@@ -387,7 +388,7 @@ class VariableDef(BaseModel):
 
     exposed_to: list[str] = Field(
         default_factory=list,
-        description="Who can observe this variable (e.g., ['agent', 'engine'])",
+        description="Direct policy exposure selection, independent of agent-read permission",
     )
 
     scope: VariableScope | Literal["global", "agent", "agent_private", "item", "pair", "group", "affordance", "zone", "message"] = Field(
@@ -427,15 +428,9 @@ class VariableDef(BaseModel):
         description="Lifetime: tick (recomputed each step), episode (persistent within episode), or persistent (survives episodes)",
     )
 
-    readable_by: list[str] = Field(
-        min_length=1,
-        description="Who can read this variable (e.g., ['agent', 'engine', 'acs'])",
-    )
+    readable_by: list[Literal["engine", "agent"]] = Field(description="Static readers: engine is required; agent is optional")
 
-    writable_by: list[str] = Field(
-        min_length=1,
-        description="Who can write this variable (e.g., ['engine', 'actions'])",
-    )
+    writable_by: list[Literal["engine"]] = Field(description="Static writers: engine, or explicit empty list for immutable state")
 
     default: Any = Field(
         description="Default value (type depends on 'type' field)",
@@ -470,6 +465,11 @@ class VariableDef(BaseModel):
         default=False,
         description="Whether this variable should be included in agent observations (for mark-and-sweep evaluation)",
     )
+
+    @model_validator(mode="after")
+    def validate_access_policy(self) -> "VariableDef":
+        validate_static_access(self.id, self.readable_by, self.writable_by, self.exposed_to)
+        return self
 
     @model_validator(mode="after")
     def validate_vector_types(self) -> "VariableDef":

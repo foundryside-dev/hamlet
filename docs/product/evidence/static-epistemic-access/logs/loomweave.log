@@ -1,0 +1,13 @@
+2026-10-01T01:04:45.230529Z  INFO discovered plugin plugin_id=python executable=/home/john/.local/bin/loomweave-plugin-python
+2026-10-01T01:04:45.230625Z  INFO discovered plugin plugin_id=rust executable=/home/john/.local/bin/loomweave-plugin-rust
+2026-10-01T01:04:45.287020Z  INFO source tree walk complete file_count=593
+2026-10-01T01:04:45.304288Z  INFO secret scan file walk complete file_count=593 sidecar_walk_skipped=0
+2026-10-01T01:04:45.687079Z  INFO processing plugin plugin_id=python file_count=6 skipped=587
+2026-10-01T01:04:50.177041Z  INFO plugin complete plugin_id=python entity_count=183 edge_count=800
+2026-10-01T01:04:50.178986Z  INFO no files match plugin extensions; skipping plugin_id=rust
+2026-10-01T01:04:50.531657Z  INFO phase3 emitted weak-modularity finding run_id=e51efa7b-768d-44ce-99f2-11a2c176b313
+2026-10-01T01:04:50.560630Z  INFO loomweave.yaml is operator-owned; egress settings honoured path=/home/john/hamlet/loomweave.yaml trust="operator_owned"
+2026-10-01T01:04:51.252398Z  INFO SEI mint pass complete run_id=e51efa7b-768d-44ce-99f2-11a2c176b313 minted=15 carried=168 orphaned=1 deletion_findings=1
+2026-10-01T01:04:51.414264Z  INFO scoped sweep retired secret-scan findings the full pre-ingest scan no longer reproduces run_id=e51efa7b-768d-44ce-99f2-11a2c176b313 stale_secret_findings_retired=2
+analyze complete: run e51efa7b-768d-44ce-99f2-11a2c176b313 completed (graph: 8346 entities incl. 35 subsystems, 17425 edges; incremental: 587 unchanged files skipped)
+2026-10-01T01:04:51.452877Z  INFO worktree cleanup sweep complete deleted=0 preserved=1

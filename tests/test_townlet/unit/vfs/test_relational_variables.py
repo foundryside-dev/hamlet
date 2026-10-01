@@ -21,14 +21,14 @@ def test_canonical_l5_relational_variables_match_spec_metadata() -> None:
     assert by_id["obligation"].scope == "pair"
     assert by_id["obligation"].default == 0.0
     assert by_id["public_reputation"].scope == "agent"
-    assert by_id["public_reputation"].readable_by == ["agent", "other_agents", "social_model", "engine"]
+    assert by_id["public_reputation"].readable_by == ["engine", "agent"]
     assert by_id["norm_legitimacy"].scope == "group"
-    assert by_id["norm_legitimacy"].readable_by == ["engine", "social_model"]
+    assert by_id["norm_legitimacy"].readable_by == ["engine"]
 
     for variable in variables:
         assert variable.type == "scalar"
         assert variable.lifetime == "episode"
-        assert variable.writable_by == ["vtc"]
+        assert variable.writable_by == ["engine"]
 
 
 def test_canonical_l5_relational_variables_initialize_expected_registry_shapes() -> None:

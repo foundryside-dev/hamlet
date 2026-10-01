@@ -1,0 +1,32 @@
+{
+  "format_version": 1,
+  "reports": {
+    "hashes": {
+      "file": "before-hashes.json",
+      "sha256": "b5652e130dfec820cb92c8b9cd52728d9d1b903dead782ac5f01d267df8134f3"
+    },
+    "inputs": {
+      "file": "before-inputs.json",
+      "sha256": "eb852f8ee639804ef6470ae8fb1d9038cb3b8febe7d69f1bf50cfd2799d71f55"
+    },
+    "products": {
+      "file": "before-products.json",
+      "sha256": "2691abd03bb608d27b680bff6454a79cf235dd80f7e8f5f791ac1fb0ed484128"
+    },
+    "recipes": {
+      "file": "before-recipes.json",
+      "sha256": "dd22db12fb8efae6381a731cb692232b1552ff19826382f2a81adafce465b130"
+    },
+    "resets": {
+      "file": "before-resets.json",
+      "sha256": "cef0ea018b69584d2e25b5d484a92e04a2c6cea4af33d7e82e2a06cfda68a2f2"
+    },
+    "traces": {
+      "file": "before-traces.json",
+      "sha256": "4c1983de650ce4f69bda0e73a7e95f779aa8d04562cd779f40dc30ff9fb315c0"
+    }
+  },
+  "source_commit": "0fdb16eadfa7e4096a238959ba113e92e90fb5af",
+  "source_root": "/tmp/hamlet-static-epistemic-access",
+  "trace_base": "/tmp/hamlet-static-epistemic-access/runs/static-epistemic-access/before"
+}

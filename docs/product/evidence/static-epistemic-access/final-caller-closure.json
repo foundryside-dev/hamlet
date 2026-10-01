@@ -1,0 +1,865 @@
+{
+  "status": {
+    "config_trust": {
+      "path": "/home/john/hamlet/loomweave.yaml",
+      "remedy": null,
+      "state": "operator_owned",
+      "stripped": []
+    },
+    "counts": {
+      "briefing_blocked": 24,
+      "edges": 17425,
+      "entities": 8346,
+      "findings": 9,
+      "subsystems": 35
+    },
+    "db_identity": {
+      "data_version": 2,
+      "db_size_bytes": 71102464
+    },
+    "db_path": "/home/john/hamlet/.weft/loomweave/worktrees/wt-e0a266f90e12d0d054e3f25bbd94cf01a1bbe92fc18a88028a27f6d5298029b5/loomweave.db",
+    "db_present": true,
+    "filigree": {
+      "configured_url": "http://127.0.0.1:8749",
+      "enabled": true,
+      "resolution_source": "config",
+      "resolved_url": "http://127.0.0.1:8749"
+    },
+    "git_sha": "b70fda104e5061ed2735e8b31b7f8f9caaf99f19",
+    "index_state": "ready",
+    "last_analyzed_at": "2026-10-01T01:04:50.560Z",
+    "latest_run": {
+      "analyzed_at_commit": "b70fda104e5061ed2735e8b31b7f8f9caaf99f19",
+      "completed_at": "2026-10-01T01:04:50.560Z",
+      "heartbeat_at": "2026-10-01T01:04:50.323Z",
+      "id": "e51efa7b-768d-44ce-99f2-11a2c176b313",
+      "owner_pid": null,
+      "started_at": "2026-10-01T01:04:45.059Z",
+      "status": "completed"
+    },
+    "llm": {
+      "allow_live_provider": false,
+      "cache_max_age_days": 180,
+      "enabled": false,
+      "live": false,
+      "next_action": "Live summaries are off; entity_summary_get is cache-only. Set llm_policy.enabled: true + allow_live_provider: true and supply the provider credential (e.g. OPENROUTER_API_KEY), then restart serve. Run `loomweave config check` to verify.",
+      "provider": "disabled"
+    },
+    "loomweave_read_api": {
+      "resolution_source": ".weft/loomweave/ephemeral.port",
+      "resolved_url": "http://127.0.0.1:10043"
+    },
+    "plugins": [
+      {
+        "entity_count": 628,
+        "plugin_id": "core"
+      },
+      {
+        "entity_count": 7718,
+        "plugin_id": "python"
+      }
+    ],
+    "project_root": "/tmp/hamlet-static-epistemic-access",
+    "scan_truncated": false,
+    "sei": {
+      "populated": true,
+      "supported": true
+    },
+    "staleness": "fresh",
+    "staleness_note": "this verdict derives from the same computation as index_diff_get (the authoritative freshness surface; call it for per-file detail). \"fresh\" covers indexed-file mtimes/existence, the analyzed-vs-HEAD commit, staged changes, and untracked source of indexed types \u2014 it does NOT detect unstaged edits to never-indexed files or untracked files of types the index has never ingested. If source was added or moved since the last analyze, re-run `loomweave analyze`.",
+    "worktree_dirty": false,
+    "worktree_dirty_note": "`worktree_dirty` reports UN-INDEXED UNTRACKED source files (an ignore-aware `git ls-files --others` scoped to ingested extensions), NOT the git working-tree state: a `false`/`null` value does NOT mean the git tree is clean. It is scoped to UNTRACKED source only \u2014 a MODIFIED already-tracked source file does not set this flag (broadening it would require working-tree hashing, declined under the untrusted-corpus posture); such edits surface via `staleness` (\u2192 `stale`) instead. A freshness or signing gate must require `staleness == fresh`, not `worktree_dirty == false` alone. `null` = not a git work tree, git unavailable, or nothing ingested to scope against."
+  },
+  "symbols": {
+    "ScopedVariableRegistry": {
+      "find": {
+        "entities": [],
+        "next_cursor": null
+      },
+      "callers": []
+    },
+    "AccessDeniedError": {
+      "find": {
+        "entities": [],
+        "next_cursor": null
+      },
+      "callers": []
+    },
+    "VariableRegistry.get_global": {
+      "find": {
+        "entities": [
+          {
+            "id": "python:function:townlet.vfs.registry.VariableRegistry.get_global",
+            "kind": "function",
+            "sei": "loomweave:eid:ca6fb107a380b1248e0f4e03ba79f2db",
+            "short_name": "get_global",
+            "source_file_path": "/tmp/hamlet-static-epistemic-access/src/townlet/vfs/registry.py",
+            "source_line_start": 969
+          }
+        ],
+        "next_cursor": null
+      },
+      "callers": [
+        {
+          "sei": "loomweave:eid:ca6fb107a380b1248e0f4e03ba79f2db",
+          "result": {
+            "callers": [],
+            "degraded_call_coverage_files": 0,
+            "next_action": "9 unresolved call site(s) name-match this entity; inspect them with entity_call_site_list id=python:function:townlet.vfs.registry.VariableRegistry.get_global role=callee",
+            "next_cursor": null,
+            "scope_excludes": [
+              "attribute-receiver-calls",
+              "unresolved-static-calls"
+            ],
+            "traversal_complete": false,
+            "truncated": false,
+            "unresolved_candidates": [
+              {
+                "callee_text": "registry.get_global",
+                "line": 82,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_registry.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.get_global",
+                "line": 133,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_registry.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.get_global",
+                "line": 135,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_registry.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.get_global",
+                "line": 139,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_registry.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.get_global",
+                "line": 141,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_registry.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.get_global",
+                "line": 115,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_registry_scope_arenas.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.get_global",
+                "line": 38,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_scoped_registry.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.get_global",
+                "line": 41,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_scoped_registry.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.get_global",
+                "line": 230,
+                "path": "/tmp/hamlet-static-epistemic-access/src/townlet/vfs/evaluator.py",
+                "why": "attribute-receiver"
+              }
+            ],
+            "unresolved_name_matches": 9
+          }
+        }
+      ]
+    },
+    "VariableRegistry.get_agent": {
+      "find": {
+        "entities": [
+          {
+            "id": "python:function:townlet.vfs.registry.VariableRegistry.get_agent",
+            "kind": "function",
+            "sei": "loomweave:eid:56a189178c785ca44394ef3b4fbd3e03",
+            "short_name": "get_agent",
+            "source_file_path": "/tmp/hamlet-static-epistemic-access/src/townlet/vfs/registry.py",
+            "source_line_start": 995
+          }
+        ],
+        "next_cursor": null
+      },
+      "callers": [
+        {
+          "sei": "loomweave:eid:56a189178c785ca44394ef3b4fbd3e03",
+          "result": {
+            "callers": [],
+            "degraded_call_coverage_files": 0,
+            "next_action": "9 unresolved call site(s) name-match this entity; inspect them with entity_call_site_list id=python:function:townlet.vfs.registry.VariableRegistry.get_agent role=callee",
+            "next_cursor": null,
+            "scope_excludes": [
+              "attribute-receiver-calls",
+              "unresolved-static-calls"
+            ],
+            "traversal_complete": false,
+            "truncated": false,
+            "unresolved_candidates": [
+              {
+                "callee_text": "env.vfs_registry.get_agent",
+                "line": 42,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/integration/test_static_epistemic_access.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "env.vfs_registry.get_agent",
+                "line": 43,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/integration/test_static_epistemic_access.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.get_agent",
+                "line": 134,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_registry.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.get_agent",
+                "line": 140,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_registry.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.get_agent",
+                "line": 112,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_registry_scope_arenas.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.get_agent",
+                "line": 39,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_scoped_registry.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.get_agent",
+                "line": 43,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_scoped_registry.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.get_agent",
+                "line": 49,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_static_access.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.get_agent",
+                "line": 234,
+                "path": "/tmp/hamlet-static-epistemic-access/src/townlet/vfs/evaluator.py",
+                "why": "attribute-receiver"
+              }
+            ],
+            "unresolved_name_matches": 9
+          }
+        }
+      ]
+    },
+    "VariableRegistry.read_item": {
+      "find": {
+        "entities": [
+          {
+            "id": "python:function:townlet.vfs.registry.VariableRegistry.read_item",
+            "kind": "function",
+            "sei": "loomweave:eid:7c797b00b3ea89d90f514720ab0b75fa",
+            "short_name": "read_item",
+            "source_file_path": "/tmp/hamlet-static-epistemic-access/src/townlet/vfs/registry.py",
+            "source_line_start": 1040
+          }
+        ],
+        "next_cursor": null
+      },
+      "callers": [
+        {
+          "sei": "loomweave:eid:7c797b00b3ea89d90f514720ab0b75fa",
+          "result": {
+            "callers": [
+              {
+                "edge_confidence": "resolved",
+                "entity": {
+                  "id": "python:function:townlet.effects.context.ExecutionContext._read_vfs_value",
+                  "kind": "function",
+                  "sei": "loomweave:eid:1a03dfe57c64f87b4f86566831ebe2bb",
+                  "short_name": "_read_vfs_value",
+                  "source_file_path": "/tmp/hamlet-static-epistemic-access/src/townlet/effects/context.py",
+                  "source_line_start": 371
+                },
+                "source_byte_end": 17385,
+                "source_byte_start": 17376,
+                "stored_to_id": "python:function:townlet.vfs.registry.VariableRegistry.read_item",
+                "target_id": "python:function:townlet.vfs.registry.VariableRegistry.read_item"
+              },
+              {
+                "edge_confidence": "resolved",
+                "entity": {
+                  "id": "python:function:townlet.effects.context.ExecutionContext.get_path",
+                  "kind": "function",
+                  "sei": "loomweave:eid:8037f37136eeb5d36124bf692c8628f6",
+                  "short_name": "get_path",
+                  "source_file_path": "/tmp/hamlet-static-epistemic-access/src/townlet/effects/context.py",
+                  "source_line_start": 64
+                },
+                "source_byte_end": 4704,
+                "source_byte_start": 4695,
+                "stored_to_id": "python:function:townlet.vfs.registry.VariableRegistry.read_item",
+                "target_id": "python:function:townlet.vfs.registry.VariableRegistry.read_item"
+              }
+            ],
+            "degraded_call_coverage_files": 0,
+            "next_action": "21 unresolved call site(s) name-match this entity; inspect them with entity_call_site_list id=python:function:townlet.vfs.registry.VariableRegistry.read_item role=callee",
+            "next_cursor": null,
+            "scope_excludes": [
+              "attribute-receiver-calls",
+              "unresolved-static-calls"
+            ],
+            "traversal_complete": false,
+            "truncated": false,
+            "unresolved_candidates": [
+              {
+                "callee_text": "env.vfs_registry.read_item",
+                "line": 27,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/integration/test_item_observations.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "env.vfs_registry.read_item",
+                "line": 48,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/integration/test_item_self_modification.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "env.vfs_registry.read_item",
+                "line": 58,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/integration/test_item_self_modification.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "env.vfs_registry.read_item",
+                "line": 243,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/integration/test_item_vfs_observations.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "env.vfs_registry.read_item",
+                "line": 244,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/integration/test_item_vfs_observations.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "vfs_registry.read_item",
+                "line": 208,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/integration/test_spawn_item_end_to_end.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "vfs_registry.read_item",
+                "line": 209,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/integration/test_spawn_item_end_to_end.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "env.vfs_registry.read_item",
+                "line": 127,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/config/test_variables_dto.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "vfs_registry.read_item",
+                "line": 309,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/effects/test_spawn_item_position_resolution.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.read_item",
+                "line": 1579,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/environment/test_token_publishers.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.read_item",
+                "line": 68,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/items/test_static_access_operations.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.read_item",
+                "line": 72,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/items/test_static_access_operations.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.read_item",
+                "line": 73,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/items/test_static_access_operations.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.read_item",
+                "line": 101,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_static_access.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.read_item",
+                "line": 105,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_static_access.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.read_item",
+                "line": 109,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_static_access.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.read_item",
+                "line": 112,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_static_access.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.read_item",
+                "line": 114,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_static_access.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.read_item",
+                "line": 127,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_static_access.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.read_item",
+                "line": 139,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_static_access.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "self.vfs_registry.read_item",
+                "line": 87,
+                "path": "/tmp/hamlet-static-epistemic-access/src/townlet/effects/executor.py",
+                "why": "attribute-receiver"
+              }
+            ],
+            "unresolved_name_matches": 21
+          }
+        }
+      ]
+    },
+    "VariableRegistry.write_item": {
+      "find": {
+        "entities": [
+          {
+            "id": "python:function:townlet.vfs.registry.VariableRegistry.write_item",
+            "kind": "function",
+            "sei": "loomweave:eid:67650b36cece7ec4dc4aa25572a0f50c",
+            "short_name": "write_item",
+            "source_file_path": "/tmp/hamlet-static-epistemic-access/src/townlet/vfs/registry.py",
+            "source_line_start": 1015
+          }
+        ],
+        "next_cursor": null
+      },
+      "callers": [
+        {
+          "sei": "loomweave:eid:67650b36cece7ec4dc4aa25572a0f50c",
+          "result": {
+            "callers": [
+              {
+                "edge_confidence": "resolved",
+                "entity": {
+                  "id": "python:function:townlet.effects.context.ExecutionContext.set_path",
+                  "kind": "function",
+                  "sei": "loomweave:eid:83f5076bf39e6444ad510e94deb4532d",
+                  "short_name": "set_path",
+                  "source_file_path": "/tmp/hamlet-static-epistemic-access/src/townlet/effects/context.py",
+                  "source_line_start": 190
+                },
+                "source_byte_end": 10835,
+                "source_byte_start": 10825,
+                "stored_to_id": "python:function:townlet.vfs.registry.VariableRegistry.write_item",
+                "target_id": "python:function:townlet.vfs.registry.VariableRegistry.write_item"
+              },
+              {
+                "edge_confidence": "resolved",
+                "entity": {
+                  "id": "python:function:townlet.items.manager.ItemManager.spawn_item",
+                  "kind": "function",
+                  "sei": "loomweave:eid:c42db78d4c00525a00ee26bd84c38659",
+                  "short_name": "spawn_item",
+                  "source_file_path": "/tmp/hamlet-static-epistemic-access/src/townlet/items/manager.py",
+                  "source_line_start": 319
+                },
+                "source_byte_end": 16799,
+                "source_byte_start": 16789,
+                "stored_to_id": "python:function:townlet.vfs.registry.VariableRegistry.write_item",
+                "target_id": "python:function:townlet.vfs.registry.VariableRegistry.write_item"
+              }
+            ],
+            "degraded_call_coverage_files": 0,
+            "next_action": "13 unresolved call site(s) name-match this entity; inspect them with entity_call_site_list id=python:function:townlet.vfs.registry.VariableRegistry.write_item role=callee",
+            "next_cursor": null,
+            "scope_excludes": [
+              "attribute-receiver-calls",
+              "unresolved-static-calls"
+            ],
+            "traversal_complete": false,
+            "truncated": false,
+            "unresolved_candidates": [
+              {
+                "callee_text": "env.vfs_registry.write_item",
+                "line": 25,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/integration/test_item_observations.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.write_item",
+                "line": 1264,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/environment/test_token_publishers.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.write_item",
+                "line": 1236,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/environment/test_token_publishers.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.write_item",
+                "line": 1320,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/environment/test_token_publishers.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.write_item",
+                "line": 1278,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/environment/test_token_publishers.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.write_item",
+                "line": 1284,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/environment/test_token_publishers.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.write_item",
+                "line": 1415,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/environment/test_token_publishers.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.write_item",
+                "line": 1577,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/environment/test_token_publishers.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.write_item",
+                "line": 100,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_static_access.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.write_item",
+                "line": 107,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_static_access.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.write_item",
+                "line": 116,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_static_access.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.write_item",
+                "line": 126,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_static_access.py",
+                "why": "attribute-receiver"
+              },
+              {
+                "callee_text": "registry.write_item",
+                "line": 141,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_static_access.py",
+                "why": "attribute-receiver"
+              }
+            ],
+            "unresolved_name_matches": 13
+          }
+        }
+      ]
+    },
+    "compute_variable_schema_hash": {
+      "find": {
+        "entities": [
+          {
+            "id": "python:function:townlet.vfs.schema_hashes.compute_variable_schema_hash",
+            "kind": "function",
+            "sei": "loomweave:eid:9226d29c411a7b38a1444806bff04ebd",
+            "short_name": "compute_variable_schema_hash",
+            "source_file_path": "/tmp/hamlet-static-epistemic-access/src/townlet/vfs/schema_hashes.py",
+            "source_line_start": 58
+          }
+        ],
+        "next_cursor": null
+      },
+      "callers": [
+        {
+          "sei": "loomweave:eid:9226d29c411a7b38a1444806bff04ebd",
+          "result": {
+            "callers": [
+              {
+                "edge_confidence": "resolved",
+                "entity": {
+                  "id": "python:function:townlet.universe.compiled._validate_compiled_token_coherence",
+                  "kind": "function",
+                  "sei": "loomweave:eid:02422a8a235a72ad5b837c6077e0ff25",
+                  "short_name": "_validate_compiled_token_coherence",
+                  "source_file_path": "/tmp/hamlet-static-epistemic-access/src/townlet/universe/compiled.py",
+                  "source_line_start": 711
+                },
+                "source_byte_end": 39976,
+                "source_byte_start": 39948,
+                "stored_to_id": "python:function:townlet.vfs.schema_hashes.compute_variable_schema_hash",
+                "target_id": "python:function:townlet.vfs.schema_hashes.compute_variable_schema_hash"
+              },
+              {
+                "edge_confidence": "resolved",
+                "entity": {
+                  "id": "python:function:townlet.universe.compiler.UniverseCompiler._stage_7_compile_levels",
+                  "kind": "function",
+                  "sei": "loomweave:eid:4b740fface7a049495a37e5b389e4a83",
+                  "short_name": "_stage_7_compile_levels",
+                  "source_file_path": "/tmp/hamlet-static-epistemic-access/src/townlet/universe/compiler.py",
+                  "source_line_start": 309
+                },
+                "source_byte_end": 17329,
+                "source_byte_start": 17301,
+                "stored_to_id": "python:function:townlet.vfs.schema_hashes.compute_variable_schema_hash",
+                "target_id": "python:function:townlet.vfs.schema_hashes.compute_variable_schema_hash"
+              },
+              {
+                "edge_confidence": "resolved",
+                "entity": {
+                  "id": "python:function:townlet.vfs.registry.VariableRegistry.variable_schema_hash",
+                  "kind": "function",
+                  "sei": "loomweave:eid:dfeb7f86b0411d8a2ae33230aa528fb8",
+                  "short_name": "variable_schema_hash",
+                  "source_file_path": "/tmp/hamlet-static-epistemic-access/src/townlet/vfs/registry.py",
+                  "source_line_start": 253
+                },
+                "source_byte_end": 11227,
+                "source_byte_start": 11199,
+                "stored_to_id": "python:function:townlet.vfs.schema_hashes.compute_variable_schema_hash",
+                "target_id": "python:function:townlet.vfs.schema_hashes.compute_variable_schema_hash"
+              }
+            ],
+            "degraded_call_coverage_files": 0,
+            "next_action": "16 unresolved call site(s) name-match this entity; inspect them with entity_call_site_list id=python:function:townlet.vfs.schema_hashes.compute_variable_schema_hash role=callee",
+            "next_cursor": null,
+            "scope_excludes": [
+              "attribute-receiver-calls",
+              "unresolved-static-calls"
+            ],
+            "traversal_complete": false,
+            "truncated": false,
+            "unresolved_candidates": [
+              {
+                "callee_text": "compute_variable_schema_hash",
+                "line": 449,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/universe/test_compiled_token_coherence.py",
+                "why": "dynamic"
+              },
+              {
+                "callee_text": "compute_variable_schema_hash",
+                "line": 148,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_schema_hashes.py",
+                "why": "dynamic"
+              },
+              {
+                "callee_text": "compute_variable_schema_hash",
+                "line": 771,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_schema_hashes.py",
+                "why": "dynamic"
+              },
+              {
+                "callee_text": "compute_variable_schema_hash",
+                "line": 772,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_schema_hashes.py",
+                "why": "dynamic"
+              },
+              {
+                "callee_text": "compute_variable_schema_hash",
+                "line": 773,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_schema_hashes.py",
+                "why": "dynamic"
+              },
+              {
+                "callee_text": "compute_variable_schema_hash",
+                "line": 801,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_schema_hashes.py",
+                "why": "dynamic"
+              },
+              {
+                "callee_text": "compute_variable_schema_hash",
+                "line": 784,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_schema_hashes.py",
+                "why": "dynamic"
+              },
+              {
+                "callee_text": "compute_variable_schema_hash",
+                "line": 784,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_schema_hashes.py",
+                "why": "dynamic"
+              },
+              {
+                "callee_text": "compute_variable_schema_hash",
+                "line": 794,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_schema_hashes.py",
+                "why": "dynamic"
+              },
+              {
+                "callee_text": "compute_variable_schema_hash",
+                "line": 794,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_schema_hashes.py",
+                "why": "dynamic"
+              },
+              {
+                "callee_text": "compute_variable_schema_hash",
+                "line": 114,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_schema_hashes.py",
+                "why": "dynamic"
+              },
+              {
+                "callee_text": "compute_variable_schema_hash",
+                "line": 114,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_schema_hashes.py",
+                "why": "dynamic"
+              },
+              {
+                "callee_text": "compute_variable_schema_hash",
+                "line": 115,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_schema_hashes.py",
+                "why": "dynamic"
+              },
+              {
+                "callee_text": "compute_variable_schema_hash",
+                "line": 115,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_schema_hashes.py",
+                "why": "dynamic"
+              },
+              {
+                "callee_text": "compute_variable_schema_hash",
+                "line": 91,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_schema_hashes.py",
+                "why": "dynamic"
+              },
+              {
+                "callee_text": "compute_variable_schema_hash",
+                "line": 92,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_schema_hashes.py",
+                "why": "dynamic"
+              }
+            ],
+            "unresolved_name_matches": 16
+          }
+        }
+      ]
+    },
+    "canonical_variable_schema": {
+      "find": {
+        "entities": [
+          {
+            "id": "python:function:townlet.vfs.schema_hashes.canonical_variable_schema",
+            "kind": "function",
+            "sei": "loomweave:eid:a844027ffefb0d83846d5ca1b24e5590",
+            "short_name": "canonical_variable_schema",
+            "source_file_path": "/tmp/hamlet-static-epistemic-access/src/townlet/vfs/schema_hashes.py",
+            "source_line_start": 25
+          },
+          {
+            "id": "python:function:tests.test_townlet.unit.vfs.test_schema_hashes.test_canonical_variable_schema_uses_sorted_contract_fields",
+            "kind": "function",
+            "sei": "loomweave:eid:55f272600c6c53f1bb63e722b7b370ef",
+            "short_name": "test_canonical_variable_schema_uses_sorted_contract_fields",
+            "source_file_path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_schema_hashes.py",
+            "source_line_start": 35
+          }
+        ],
+        "next_cursor": null
+      },
+      "callers": [
+        {
+          "sei": "loomweave:eid:a844027ffefb0d83846d5ca1b24e5590",
+          "result": {
+            "callers": [
+              {
+                "edge_confidence": "resolved",
+                "entity": {
+                  "id": "python:function:townlet.vfs.schema_hashes.compute_variable_schema_hash",
+                  "kind": "function",
+                  "sei": "loomweave:eid:9226d29c411a7b38a1444806bff04ebd",
+                  "short_name": "compute_variable_schema_hash",
+                  "source_file_path": "/tmp/hamlet-static-epistemic-access/src/townlet/vfs/schema_hashes.py",
+                  "source_line_start": 58
+                },
+                "source_byte_end": 2647,
+                "source_byte_start": 2622,
+                "stored_to_id": "python:function:townlet.vfs.schema_hashes.canonical_variable_schema",
+                "target_id": "python:function:townlet.vfs.schema_hashes.canonical_variable_schema"
+              }
+            ],
+            "degraded_call_coverage_files": 0,
+            "next_action": "2 unresolved call site(s) name-match this entity; inspect them with entity_call_site_list id=python:function:townlet.vfs.schema_hashes.canonical_variable_schema role=callee",
+            "next_cursor": null,
+            "scope_excludes": [
+              "attribute-receiver-calls",
+              "unresolved-static-calls"
+            ],
+            "traversal_complete": false,
+            "truncated": false,
+            "unresolved_candidates": [
+              {
+                "callee_text": "canonical_variable_schema",
+                "line": 49,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_schema_hashes.py",
+                "why": "dynamic"
+              },
+              {
+                "callee_text": "canonical_variable_schema",
+                "line": 792,
+                "path": "/tmp/hamlet-static-epistemic-access/tests/test_townlet/unit/vfs/test_schema_hashes.py",
+                "why": "dynamic"
+              }
+            ],
+            "unresolved_name_matches": 2
+          }
+        },
+        {
+          "sei": "loomweave:eid:55f272600c6c53f1bb63e722b7b370ef",
+          "result": {
+            "callers": [],
+            "degraded_call_coverage_files": 0,
+            "next_action": null,
+            "next_cursor": null,
+            "scope_excludes": [],
+            "traversal_complete": true,
+            "truncated": false,
+            "unresolved_candidates": [],
+            "unresolved_name_matches": 0
+          }
+        }
+      ]
+    }
+  }
+}

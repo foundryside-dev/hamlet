@@ -8,6 +8,8 @@ from townlet.config.variables_config import VariableDeclaration
 
 def _base(**extra):
     return {
+        "readable_by": ["engine", "agent"],
+        "writable_by": ["engine"],
         "id": "day_phase",
         "scope": "global",
         "lifetime": "persistent",

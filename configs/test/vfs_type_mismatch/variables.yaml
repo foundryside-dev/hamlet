@@ -6,6 +6,8 @@ variables:
   item_profiles: []
   declarations:
   - id: my_int_var
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: global
     type: scalar
     lifetime: persistent
@@ -14,6 +16,8 @@ variables:
     expression: 10 < 5
     initial_value: 0.0
   - id: position
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: agent
     type: vec2f
     lifetime: tick

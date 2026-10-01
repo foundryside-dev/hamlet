@@ -7,6 +7,8 @@ variables:
   - default_item
   declarations:
   - id: day_phase
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: global
     type: scalar
     lifetime: persistent

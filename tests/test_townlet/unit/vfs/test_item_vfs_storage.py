@@ -13,6 +13,8 @@ def test_registry_initializes_item_storage_from_profiles():
         profile_name="food_stats",
         variables=[
             CompiledVariable(
+                readable_by=("engine", "agent"),
+                writable_by=("engine",),
                 name="calories",
                 lifetime="episode",
                 type="float",
@@ -22,6 +24,8 @@ def test_registry_initializes_item_storage_from_profiles():
                 exposed_to=("agent",),
             ),
             CompiledVariable(
+                readable_by=("engine", "agent"),
+                writable_by=("engine",),
                 name="freshness",
                 lifetime="episode",
                 type="float",
@@ -37,6 +41,8 @@ def test_registry_initializes_item_storage_from_profiles():
         profile_name="weapon_stats",
         variables=[
             CompiledVariable(
+                readable_by=("engine", "agent"),
+                writable_by=("engine",),
                 name="damage",
                 lifetime="episode",
                 type="float",
@@ -46,6 +52,8 @@ def test_registry_initializes_item_storage_from_profiles():
                 exposed_to=("agent",),
             ),
             CompiledVariable(
+                readable_by=("engine", "agent"),
+                writable_by=("engine",),
                 name="durability",
                 lifetime="episode",
                 type="float",
@@ -87,6 +95,8 @@ def test_registry_item_storage_has_correct_shape():
         profile_name="profile1",
         variables=[
             CompiledVariable(
+                readable_by=("engine", "agent"),
+                writable_by=("engine",),
                 name="var1",
                 lifetime="episode",
                 type="float",
@@ -96,6 +106,8 @@ def test_registry_item_storage_has_correct_shape():
                 exposed_to=("agent",),
             ),
             CompiledVariable(
+                readable_by=("engine", "agent"),
+                writable_by=("engine",),
                 name="var2",
                 lifetime="episode",
                 type="float",
@@ -111,6 +123,8 @@ def test_registry_item_storage_has_correct_shape():
         profile_name="profile2",
         variables=[
             CompiledVariable(
+                readable_by=("engine", "agent"),
+                writable_by=("engine",),
                 name="var1",
                 lifetime="episode",
                 type="float",

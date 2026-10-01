@@ -34,6 +34,8 @@ def _variable(identifier: str, scope: str, lifetime: str, dtype: str, **fields) 
         "lifetime": lifetime,
         "semantic_type": "custom",
         "exposed_to": [],
+        "readable_by": ["engine", "agent"],
+        "writable_by": ["engine"],
         **fields,
     }
 
@@ -177,3 +179,32 @@ def test_exposed_random_tensor_refuses_before_runtime_allocation(tmp_path: Path,
     )
     with pytest.raises(CompilationError, match=r"random_tensor.*random initialization.*exposed"):
         UniverseCompiler().compile(experiment_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
+
+
+def test_static_policy_survives_cold_and_messagepack_reload(tmp_path):
+    experiment_dir = prepare_config_dir(tmp_path, name="epistemic")
+    _declare(
+        experiment_dir,
+        [
+            _variable("literal", "global", "persistent", "scalar", initial_value=3.0, readable_by=["engine"], writable_by=[]),
+            _variable("agent_literal", "agent", "episode", "scalar", initial_value=4.0, readable_by=["engine", "agent"], writable_by=[]),
+            _variable(
+                "literal", "item", "episode", "scalar", profile="default_item", initial_value=5.0, readable_by=["engine"], writable_by=[]
+            ),
+        ],
+    )
+    compiled = UniverseCompiler().compile(experiment_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
+    cache = tmp_path / "policy.msgpack"
+    compiled.save_to_cache(cache)
+    for universe in (compiled, CompiledUniverse.load_from_cache(cache)):
+        definitions = {v.id: v for v in universe.get_level(PRIMARY_LEVEL_NAME).vfs_variables}
+        assert definitions["literal"].readable_by == ["engine"]
+        assert definitions["literal"].writable_by == []
+        assert definitions["agent_literal"].writable_by == []
+        profiles = universe.compiled_vfs_profiles
+        assert profiles is not None
+        assert profiles.global_profile.variables[0].readable_by == ("engine",)
+        assert profiles.agent_profile.variables[0].writable_by == ()
+        item = profiles.item_profiles["default_item"].variables[0]
+        assert item.readable_by == ("engine",)
+        assert item.writable_by == ()

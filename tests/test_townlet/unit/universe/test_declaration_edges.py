@@ -62,6 +62,8 @@ def test_registry_collision_across_scopes_names_both_origins(pack: Path) -> None
     source = pack / "variables.yaml"
     data = yaml.safe_load(source.read_text())
     variable = {
+        "readable_by": ["engine", "agent"],
+        "writable_by": ["engine"],
         "id": "foo",
         "scope": "global",
         "type": "scalar",
@@ -183,6 +185,8 @@ def test_clock_reference_selects_global_identity_among_profiles_and_clocks(pack:
     profiles["variables"]["declarations"].append(second)
     profiles["variables"]["declarations"].append(
         {
+            "readable_by": ["engine", "agent"],
+            "writable_by": ["engine"],
             "id": "agent_clock",
             "scope": "agent",
             "type": "scalar",

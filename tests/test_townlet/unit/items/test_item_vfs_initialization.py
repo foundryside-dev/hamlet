@@ -15,6 +15,8 @@ def test_spawn_item_initializes_vfs_state():
         profile_name="food",
         variables=[
             CompiledVariable(
+                readable_by=("engine", "agent"),
+                writable_by=("engine",),
                 name="durability",
                 lifetime="episode",
                 type="float",
@@ -68,6 +70,8 @@ def test_despawn_item_does_not_clear_vfs_state():
         profile_name="food",
         variables=[
             CompiledVariable(
+                readable_by=("engine", "agent"),
+                writable_by=("engine",),
                 name="durability",
                 lifetime="episode",
                 type="float",

@@ -9,10 +9,10 @@
 **Tech Stack:** Python 3.13+, Pydantic 2, PyTorch, MessagePack, pytest, uv; existing compiler/oracle tooling.
 
 **Prerequisites:**
-- Owner authorization to implement [PRD-0004](../product/prds/0004-static-epistemic-access.md); current authorization is planning only.
+- Owner authorization to implement [PRD-0004](../product/prds/0004-static-epistemic-access.md) is now recorded: execute, commit and merge locally. Publication remains outside scope.
 - Clean isolated execution worktree from `bdf64fadc69739c3e204845f9797d08500f46d46` or a reviewed documentation-only descendant. Verify no concurrent product-source changes.
 - Own local virtual environment using `uv sync --all-extras --locked`; never repurpose the parent's environment.
-- Read PDR-0120, PDR-0147, PDR-0151 and the proposed PRD. Preserve unrelated parent edits and frozen oracle `4222a917`.
+- Read PDR-0120, PDR-0147, PDR-0151 and the bounded PRD. Preserve unrelated parent edits and frozen oracle `4222a917`.
 - Bank before evidence before the first source/config edit. No calendar promise or implicit GitHub publication authorization.
 
 ---
@@ -369,3 +369,33 @@ If a declared command target cannot be resolved safely, reject the unsupported f
 with source provenance rather than bypass authorization. Any observed unrelated
 numeric change needs a causal explanation and independent review, not an expanded
 oracle allowance. Owner/spatial privacy requests require a new scope decision.
+
+## Execution record
+
+Task 1 is complete: instrumentation `0fdb16ea` passed 46 comparator controls and
+focused Ruff/Black. The unchanged parent bank was captured on CPU and committed
+at `dd8ec028`, with 31 cases, 884 identity readings, ten trajectories, eleven reset
+recipes and 408 exact YAML inputs. All raw trace digests and relocated manifest
+references passed validation before product edits. See the [execution evidence](../product/evidence/static-epistemic-access/README.md).
+
+Tasks 2–7 are complete at qualified source `b70fda104e5061ed2735e8b31b7f8f9caaf99f19`:
+
+| Task | Execution and closure |
+| --- | --- |
+| 2 | `30b6adaa`: required finite policy authoring, explicit live packs and compiled profiles; schema 1.29. |
+| 3 | `cb91522c`: single registry, explicit checked actors, cloned public reads and frozen qualified policies. |
+| 4 | `7becd007`, `b6a75042`, `91374849`, `9211346c`, `45ba42bb`: attempted-write provenance, complete preauthorization, static target refusal, checked spawn overrides and metadata-only loop preflight. |
+| 5 | `09872f8a`, `b70fda10`: authorized publishers, public/hidden/immutable witness and retained explicit refusal controls. |
+| 6 | `3db56521`: tagged ordinary/item semantic identity, artifact coherence, real resume/serving refusal. |
+| 7 | `6a0951ed`, `d22e7940`, final qualification/evidence: exact causal attribution, historical-limit/input controls, full local gates and criterion-by-criterion cross-review. |
+
+Full local suite: **4,250 passed, 18 skipped, 15 warnings**, 1561.29 seconds, **85% coverage**, terminal exit 0 at the qualified source. Skipped tests are not passes.
+The five static/compiler gates, parent and frozen CPU comparisons returned zero at
+the same clean execution head. Evidence includes corrected counterexamples and
+superseded failures; no partial run is counted as a pass. See the
+[acceptance report](../product/evidence/static-epistemic-access/acceptance.md) and
+[PDR-0153](../product/decisions/0153-static-epistemic-access-accepted-against-prd-0004.md).
+
+This documentation records implementation acceptance. Authorized local merge and
+postmerge verification are recorded separately after they occur. Publication,
+hosted CI, learning/convergence and broader privacy remain outside this completion.

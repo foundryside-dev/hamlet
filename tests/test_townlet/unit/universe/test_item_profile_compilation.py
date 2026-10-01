@@ -12,6 +12,8 @@ from townlet.universe.compiler import UniverseCompiler
 
 def _item_variable(profile: str, identifier: str, initial: float) -> dict:
     return {
+        "readable_by": ["engine", "agent"],
+        "writable_by": ["engine"],
         "id": identifier,
         "scope": "item",
         "profile": profile,
@@ -102,6 +104,8 @@ def test_compiler_handles_empty_item_profile_inventory(tmp_path: Path) -> None:
         [],
         [
             {
+                "readable_by": ["engine", "agent"],
+                "writable_by": ["engine"],
                 "id": "day_count",
                 "scope": "global",
                 "type": "scalar",

@@ -46,16 +46,19 @@ def test_canonical_variable_schema_uses_sorted_contract_fields() -> None:
         description="Description is not part of the state ABI hash",
     )
 
-    assert canonical_variable_schema((variable,)) == [
+    assert canonical_variable_schema((variable,), {}) == [
         {
-            "id": "energy",
-            "type": "scalar",
-            "scope": "agent",
-            "dims": None,
-            "lifetime": "tick",
-            "readable_by": ["agent", "engine"],
-            "writable_by": ["engine"],
-            "range": [0.0, 1.0],
+            "identity": ("registry", "energy"),
+            "definition": {
+                "id": "energy",
+                "type": "scalar",
+                "scope": "agent",
+                "dims": None,
+                "lifetime": "tick",
+                "readable_by": ["agent", "engine"],
+                "writable_by": ["engine"],
+                "range": [0.0, 1.0],
+            },
         }
     ]
 
@@ -85,8 +88,8 @@ def test_variable_schema_hash_is_order_stable() -> None:
     )
     energy_reordered_permissions = energy.model_copy(update={"readable_by": ["agent", "engine"]})
 
-    left_hash = compute_variable_schema_hash((energy, position))
-    right_hash = compute_variable_schema_hash((position, energy_reordered_permissions))
+    left_hash = compute_variable_schema_hash((energy, position), {})
+    right_hash = compute_variable_schema_hash((position, energy_reordered_permissions), {})
 
     assert left_hash == right_hash
     assert len(left_hash) == 64
@@ -106,10 +109,10 @@ def test_variable_schema_hash_changes_when_abi_field_changes() -> None:
     )
 
     changed_range = variable.model_copy(update={"normalization": NormalizationSpec(kind="minmax", min=0.0, max=2.0, clip=False)})
-    changed_permissions = variable.model_copy(update={"writable_by": ["engine", "vtc"]})
+    changed_permissions = variable.model_copy(update={"writable_by": []})
 
-    assert compute_variable_schema_hash((variable,)) != compute_variable_schema_hash((changed_range,))
-    assert compute_variable_schema_hash((variable,)) != compute_variable_schema_hash((changed_permissions,))
+    assert compute_variable_schema_hash((variable,), {}) != compute_variable_schema_hash((changed_range,), {})
+    assert compute_variable_schema_hash((variable,), {}) != compute_variable_schema_hash((changed_permissions,), {})
 
 
 def test_compiler_surfaces_variable_schema_hash(tmp_path: Path) -> None:
@@ -124,6 +127,8 @@ def test_compiler_surfaces_variable_schema_hash(tmp_path: Path) -> None:
             "item_profiles": [],
             "declarations": [
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
                     "id": "day_count",
                     "scope": "global",
                     "type": "scalar",
@@ -140,7 +145,7 @@ def test_compiler_surfaces_variable_schema_hash(tmp_path: Path) -> None:
     compiled = UniverseCompiler().compile(experiment_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
     level = compiled.get_level(PRIMARY_LEVEL_NAME)
 
-    assert level.variable_schema_hash == compute_variable_schema_hash(level.vfs_variables)
+    assert level.variable_schema_hash == compute_variable_schema_hash(level.vfs_variables, compiled.compiled_vfs_profiles.item_profiles)
     assert compiled.to_dict()["all_levels"][PRIMARY_LEVEL_NAME]["variable_schema_hash"] == level.variable_schema_hash
 
 
@@ -744,3 +749,53 @@ def test_compiler_surfaces_vfs_hash(tmp_path: Path) -> None:
     level_payload = compiled.to_dict()["all_levels"][PRIMARY_LEVEL_NAME]
     assert level_payload["transition_graph_hash"] == level.transition_graph_hash
     assert level_payload["vfs_hash"] == level.vfs_hash
+
+
+def _item_profile(name: str, *, readers: tuple[str, ...], writers: tuple[str, ...]):
+    from townlet.vfs.profiles import CompiledItemProfile, CompiledVariable
+
+    return CompiledItemProfile(
+        profile_name=name,
+        variables=[
+            CompiledVariable(
+                name="value", type="float", exposed_to=(), lifetime="episode", readable_by=readers, writable_by=writers, initial_value=1.0
+            )
+        ],
+    )
+
+
+def test_hidden_qualified_item_permissions_enter_variable_identity() -> None:
+    first = _item_profile("first", readers=("engine", "agent"), writers=("engine",))
+    denied = _item_profile("first", readers=("engine",), writers=())
+    second = _item_profile("second", readers=("engine", "agent"), writers=("engine",))
+    original = compute_variable_schema_hash((), {"first": first, "second": second})
+    assert original != compute_variable_schema_hash((), {"first": denied, "second": second})
+    assert original != compute_variable_schema_hash(
+        (), {"third": _item_profile("third", readers=("engine", "agent"), writers=("engine",)), "second": second}
+    )
+
+
+def test_item_policy_order_and_profile_order_are_semantically_stable() -> None:
+    original = {
+        "first": _item_profile("first", readers=("engine", "agent"), writers=("engine",)),
+        "second": _item_profile("second", readers=("engine",), writers=()),
+    }
+    reordered = {"second": original["second"], "first": _item_profile("first", readers=("agent", "engine"), writers=("engine",))}
+    assert compute_variable_schema_hash((), original) == compute_variable_schema_hash((), reordered)
+
+
+def test_registry_and_qualified_item_identities_cannot_alias() -> None:
+    registry = VariableDef(
+        id="first.value", type="scalar", scope="global", lifetime="episode", default=1.0, readable_by=["engine"], writable_by=[]
+    )
+    profile = _item_profile("first", readers=("engine",), writers=())
+    payload = canonical_variable_schema([registry], {"first": profile})
+    assert {tuple(entry["identity"]) for entry in payload} == {("registry", "first.value"), ("item", "first", "value")}
+    assert compute_variable_schema_hash([registry], {}) != compute_variable_schema_hash((), {"first": profile})
+
+
+def test_item_mapping_name_must_match_profile_identity() -> None:
+    import pytest
+
+    with pytest.raises(ValueError, match="profile.*identity"):
+        compute_variable_schema_hash((), {"wrong": _item_profile("actual", readers=("engine",), writers=())})

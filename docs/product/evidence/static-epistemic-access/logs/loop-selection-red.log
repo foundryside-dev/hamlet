@@ -1,0 +1,149 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.1, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /tmp/hamlet-static-epistemic-access
+configfile: pyproject.toml
+plugins: hypothesis-6.165.3, anyio-4.14.2, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 7 items
+
+tests/test_townlet/unit/effects/test_command_preflight_selection.py FFFF [ 57%]
+.F.                                                                      [100%]
+
+=================================== FAILURES ===================================
+________ test_stochastic_loop_selects_once_and_reuses_the_exact_context ________
+
+    def test_stochastic_loop_selects_once_and_reuses_the_exact_context() -> None:
+        command = CommandCompiler({"target.bar.energy": "float"}).compile_command(_random_loop([_energy_write()]))
+        executor = CommandExecutor()
+        torch.manual_seed(1)
+        selected = int((torch.rand(()) * 2).item())
+        expected_rng = torch.get_rng_state().clone()
+        expected = torch.full((2,), 3.0)
+        expected[selected] = 9.0
+        torch.manual_seed(1)
+        context = ExecutionContext(bars={"energy": torch.full((2,), 3.0)})
+        executor.execute(command, context)
+>       assert torch.equal(context.bars["energy"], expected)
+E       assert False
+E        +  where False = <built-in method equal of type object at 0x7a026c545000>(tensor([9., 3.]), tensor([3., 9.]))
+E        +    where <built-in method equal of type object at 0x7a026c545000> = torch.equal
+
+tests/test_townlet/unit/effects/test_command_preflight_selection.py:36: AssertionError
+__________ test_loop_nested_under_compounds_evaluates_collection_once __________
+
+    def test_loop_nested_under_compounds_evaluates_collection_once() -> None:
+        command = CommandCompiler({"target.bar.energy": "float"}).compile_command(
+            CommandNode(
+                type=CommandType.PARALLEL,
+                parallel_commands=[
+                    CommandNode(type=CommandType.IF, condition_expr="1 > 0", then_commands=[_random_loop([_energy_write()])], else_commands=[])
+                ],
+            )
+        )
+        torch.manual_seed(1)
+        target = int((torch.rand(()) * 2).item())
+        expected_rng = torch.get_rng_state().clone()
+        expected = torch.full((2,), 3.0)
+        expected[target] = 9.0
+        torch.manual_seed(1)
+        context = ExecutionContext(bars={"energy": torch.full((2,), 3.0)})
+        CommandExecutor().execute(command, context)
+        assert torch.equal(context.bars["energy"], expected)
+>       assert torch.equal(torch.get_rng_state(), expected_rng)
+E       assert False
+E        +  where False = <built-in method equal of type object at 0x7a026c545000>(tensor([1, 0, 0,  ..., 0, 0, 0], dtype=torch.uint8), tensor([1, 0, 0,  ..., 0, 0, 0], dtype=torch.uint8))
+E        +    where <built-in method equal of type object at 0x7a026c545000> = torch.equal
+E        +    and   tensor([1, 0, 0,  ..., 0, 0, 0], dtype=torch.uint8) = <function get_rng_state at 0x7a02a9f2c680>()
+E        +      where <function get_rng_state at 0x7a02a9f2c680> = torch.get_rng_state
+
+tests/test_townlet/unit/effects/test_command_preflight_selection.py:67: AssertionError
+_________ test_unselected_branch_does_not_evaluate_stochastic_loop[if] _________
+
+kind = 'if'
+
+    @pytest.mark.parametrize("kind", ["if", "switch"])
+    def test_unselected_branch_does_not_evaluate_stochastic_loop(kind: str) -> None:
+        loop = _random_loop([_energy_write()])
+        if kind == "if":
+            command = CommandNode(type=CommandType.IF, condition_expr="0 > 1", then_commands=[loop], else_commands=[])
+        else:
+            command = CommandNode(type=CommandType.SWITCH, switch_expr="0", cases=[("1", [loop])], default_commands=[])
+        command = CommandCompiler({"target.bar.energy": "float"}).compile_command(command)
+        torch.manual_seed(1)
+        before_rng = torch.get_rng_state().clone()
+        context = ExecutionContext(bars={"energy": torch.full((2,), 3.0)})
+        CommandExecutor().execute(command, context)
+        assert torch.equal(context.bars["energy"], torch.full((2,), 3.0))
+>       assert torch.equal(torch.get_rng_state(), before_rng)
+E       assert False
+E        +  where False = <built-in method equal of type object at 0x7a026c545000>(tensor([1, 0, 0,  ..., 0, 0, 0], dtype=torch.uint8), tensor([1, 0, 0,  ..., 0, 0, 0], dtype=torch.uint8))
+E        +    where <built-in method equal of type object at 0x7a026c545000> = torch.equal
+E        +    and   tensor([1, 0, 0,  ..., 0, 0, 0], dtype=torch.uint8) = <function get_rng_state at 0x7a02a9f2c680>()
+E        +      where <function get_rng_state at 0x7a02a9f2c680> = torch.get_rng_state
+
+tests/test_townlet/unit/effects/test_command_preflight_selection.py:83: AssertionError
+_______ test_unselected_branch_does_not_evaluate_stochastic_loop[switch] _______
+
+kind = 'switch'
+
+    @pytest.mark.parametrize("kind", ["if", "switch"])
+    def test_unselected_branch_does_not_evaluate_stochastic_loop(kind: str) -> None:
+        loop = _random_loop([_energy_write()])
+        if kind == "if":
+            command = CommandNode(type=CommandType.IF, condition_expr="0 > 1", then_commands=[loop], else_commands=[])
+        else:
+            command = CommandNode(type=CommandType.SWITCH, switch_expr="0", cases=[("1", [loop])], default_commands=[])
+        command = CommandCompiler({"target.bar.energy": "float"}).compile_command(command)
+        torch.manual_seed(1)
+        before_rng = torch.get_rng_state().clone()
+        context = ExecutionContext(bars={"energy": torch.full((2,), 3.0)})
+        CommandExecutor().execute(command, context)
+        assert torch.equal(context.bars["energy"], torch.full((2,), 3.0))
+>       assert torch.equal(torch.get_rng_state(), before_rng)
+E       assert False
+E        +  where False = <built-in method equal of type object at 0x7a026c545000>(tensor([1, 0, 0,  ..., 0, 0, 0], dtype=torch.uint8), tensor([1, 0, 0,  ..., 0, 0, 0], dtype=torch.uint8))
+E        +    where <built-in method equal of type object at 0x7a026c545000> = torch.equal
+E        +    and   tensor([1, 0, 0,  ..., 0, 0, 0], dtype=torch.uint8) = <function get_rng_state at 0x7a02a9f2c680>()
+E        +      where <function get_rng_state at 0x7a02a9f2c680> = torch.get_rng_state
+
+tests/test_townlet/unit/effects/test_command_preflight_selection.py:83: AssertionError
+_____ test_denied_stochastic_loop_body_precedes_compound_mutation_and_rng ______
+
+    def test_denied_stochastic_loop_body_precedes_compound_mutation_and_rng() -> None:
+        registry = VariableRegistry(
+            [VariableDef(id="constant", scope="agent", type="scalar", lifetime="episode", default=2.0, readable_by=["engine"], writable_by=[])],
+            2,
+            torch.device("cpu"),
+        )
+        command = CommandCompiler({"bar.energy": "float", "target.vfs.constant": "float"}).compile_command(
+            CommandNode(
+                type=CommandType.PARALLEL,
+                parallel_commands=[
+                    CommandNode(type=CommandType.MODIFY, path="bar.energy", value_expr="9.0"),
+                    _random_loop([CommandNode(type=CommandType.MODIFY, path="target.vfs.constant", value_expr="2.0")]),
+                ],
+            )
+        )
+        torch.manual_seed(1)
+        before_rng = torch.get_rng_state().clone()
+        context = ExecutionContext(vfs_registry=registry, bars={"energy": torch.full((2,), 3.0)})
+        with pytest.raises(PermissionError, match="constant"):
+            CommandExecutor().execute(command, context)
+        assert torch.equal(context.bars["energy"], torch.full((2,), 3.0))
+        assert torch.equal(registry.get("constant", reader="engine"), torch.full((2,), 2.0))
+>       assert torch.equal(torch.get_rng_state(), before_rng)
+E       assert False
+E        +  where False = <built-in method equal of type object at 0x7a026c545000>(tensor([1, 0, 0,  ..., 0, 0, 0], dtype=torch.uint8), tensor([1, 0, 0,  ..., 0, 0, 0], dtype=torch.uint8))
+E        +    where <built-in method equal of type object at 0x7a026c545000> = torch.equal
+E        +    and   tensor([1, 0, 0,  ..., 0, 0, 0], dtype=torch.uint8) = <function get_rng_state at 0x7a02a9f2c680>()
+E        +      where <function get_rng_state at 0x7a02a9f2c680> = torch.get_rng_state
+
+tests/test_townlet/unit/effects/test_command_preflight_selection.py:129: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/unit/effects/test_command_preflight_selection.py::test_stochastic_loop_selects_once_and_reuses_the_exact_context
+FAILED tests/test_townlet/unit/effects/test_command_preflight_selection.py::test_loop_nested_under_compounds_evaluates_collection_once
+FAILED tests/test_townlet/unit/effects/test_command_preflight_selection.py::test_unselected_branch_does_not_evaluate_stochastic_loop[if]
+FAILED tests/test_townlet/unit/effects/test_command_preflight_selection.py::test_unselected_branch_does_not_evaluate_stochastic_loop[switch]
+FAILED tests/test_townlet/unit/effects/test_command_preflight_selection.py::test_denied_stochastic_loop_body_precedes_compound_mutation_and_rng
+========================= 5 failed, 2 passed in 0.28s ==========================

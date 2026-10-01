@@ -7,6 +7,8 @@ variables:
   - default_item
   declarations:
   - id: low_energy_flag
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: agent
     type: bool
     lifetime: episode
@@ -15,6 +17,8 @@ variables:
     expression: bar.energy < 0.3
     initial_value: false
   - id: position
+    readable_by: [engine, agent]
+    writable_by: [engine]
     scope: agent
     type: vec2f
     lifetime: tick

@@ -1643,3 +1643,47 @@ Full local, integration and hosted product acceptance gates are recorded there
 separately; the CPU result does not imply their completion.
 No convergence, browser, CUDA execution or full variable/privacy-system
 completion is claimed by the registration.
+
+
+## DIV-015 — Static epistemic access: qualified policy identity
+
+- **Status:** qualified at clean source `b70fda104e5061ed2735e8b31b7f8f9caaf99f19`;
+  direct-parent and frozen CPU gates returned zero. All 150 identity changes are
+  exactly attributed; streams and resets remain unchanged. The earlier 91374849
+  diagnostic deliberately omitted attributions and exited 1; it is not a passing gate.
+- **Harness shape: hash-only**: `variable_schema_hash` and `vfs_hash` on every matrix cell.
+  No stream, observation, layout, action or transition allowance is introduced.
+- **Scope:** PRD-0004 static engine/agent roles. Owner, spatial and dynamic epistemic
+  propagation remain excluded. Frozen source and input fixtures are unchanged.
+- **Input binding:** DIV-015 supersedes DIV-014 for the six matrix packs. The
+  complete frozen/live file digests and exact drift rows are retained in
+  [frozen-live-inputs](../product/evidence/static-epistemic-access/frozen-live-inputs.json).
+  Existing inherited drift remains explicitly listed. The harness's boolean input
+  gate is unchanged; independent review and exact inventory tests pin these rows.
+  The harness gate itself is not a row-wise validator.
+
+### Measured causes
+
+The 31-case, 884-reading bank predates product edits. There are 130 census movers:
+53 variable-schema hashes, their 53 VFS composites, and 24 raw transport fingerprints.
+The ten CPU trajectories add 20 selected hash movers (variable schema and VFS).
+All observation/action/reward/done bytes and all eleven reset censuses remain exact.
+
+`30b6adaa3a53abf8e02ce7d053aca895eb5a7f6b` adds required authored role fields;
+existing variables keep their permitted policy. Only packs with variable declarations
+change YAML bytes; repeated primary-level projections account for the 24 transport
+readings. Empty declaration files do not acquire a behavioral default.
+
+`3db56521ff823c7108ae6a53688c95726efd9be5` adds tagged registry identities and `(item, profile, variable)` descriptors
+including hidden item permissions, type, dimensions, lifetime and normalization range.
+The [canonical reconstruction](../product/evidence/static-epistemic-access/canonical-schema-attribution.json)
+independently reproduces every before hash and verifies all 53 after hashes. Ordinary
+sorted descriptor payloads remain identical; namespace tags and the qualified item
+roster are the added semantic inputs. Observation, action and transition hash inputs
+remain identical. The existing four-term VFS composition is unchanged.
+
+Every exact case/field/before/after value and its causing commit is recorded in
+[attributions](../product/evidence/static-epistemic-access/attributions.json).
+Older DIV-008/009/010/012/014 field sets remain unchanged. Their overlaps with DIV-015
+record separate causes; they do not excuse a direct-parent numeric difference.
+The new witness pack is independently qualified, outside the inherited equivalence bank.

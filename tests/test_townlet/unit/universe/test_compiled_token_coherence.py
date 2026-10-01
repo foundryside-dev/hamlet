@@ -382,3 +382,177 @@ def test_valid_compiled_token_artifact_still_round_trips(compiled_token_payload:
     restored = CompiledUniverse.from_dict(deepcopy(compiled_token_payload))
 
     assert restored.metadata.primary_level == "L0_simple"
+
+
+@pytest.fixture
+def static_access_payload(tmp_path: Path) -> dict[str, Any]:
+    from tests.test_townlet.integration.test_canonical_variable_runtime import _compile, _pack, _variable
+
+    public = _variable("public", scope="global")
+    public.update(exposed_to=["agent"], normalization={"kind": "minmax", "min": 0.0, "max": 10.0, "clip": True})
+    hidden = _variable("hidden", scope="agent")
+    hidden.update(readable_by=["engine"], writable_by=[])
+    item = _variable("charge", scope="item")
+    item.update(profile="default_item", readable_by=["engine"], writable_by=[])
+    return _compile(_pack(tmp_path, [public, hidden, item])).to_dict()
+
+
+@pytest.mark.parametrize("side", ["registry", "profile"])
+@pytest.mark.parametrize("field", ["readable_by", "writable_by"])
+def test_load_refuses_bidirectional_ordinary_policy_disagreement(static_access_payload: dict[str, Any], side: str, field: str) -> None:
+    payload = deepcopy(static_access_payload)
+    variable = (
+        next(v for v in _level(payload)["vfs_variables"] if v["id"] == "hidden")
+        if side == "registry"
+        else payload["compiled_vfs_profiles"]["agent_profile"]["variables"][0]
+    )
+    variable[field] = ["engine", "agent"] if field == "readable_by" else ["engine"]
+    with pytest.raises(ValueError, match="policy coherence"):
+        CompiledUniverse.from_dict(payload)
+
+
+@pytest.mark.parametrize("side", ["registry", "profile"])
+def test_load_refuses_ordinary_profile_roster_loss(static_access_payload: dict[str, Any], side: str) -> None:
+    payload = deepcopy(static_access_payload)
+    if side == "registry":
+        _level(payload)["vfs_variables"] = [v for v in _level(payload)["vfs_variables"] if v["id"] != "hidden"]
+    else:
+        payload["compiled_vfs_profiles"]["agent_profile"]["variables"].clear()
+    with pytest.raises(ValueError, match="policy coherence"):
+        CompiledUniverse.from_dict(payload)
+
+
+@pytest.mark.parametrize("field", ["readable_by", "writable_by"])
+def test_load_refuses_hidden_item_policy_with_stale_hash(static_access_payload: dict[str, Any], field: str) -> None:
+    payload = deepcopy(static_access_payload)
+    item = payload["compiled_vfs_profiles"]["item_profiles"]["default_item"]["variables"][0]
+    item[field] = ["engine", "agent"] if field == "readable_by" else ["engine"]
+    with pytest.raises(ValueError, match="variable_schema_hash"):
+        CompiledUniverse.from_dict(payload)
+
+
+def test_load_refuses_item_profile_key_identity_disagreement(static_access_payload: dict[str, Any]) -> None:
+    payload = deepcopy(static_access_payload)
+    payload["compiled_vfs_profiles"]["item_profiles"]["default_item"]["profile_name"] = "wrong"
+    with pytest.raises(ValueError, match="profile.*identity"):
+        CompiledUniverse.from_dict(payload)
+
+
+def test_load_refuses_hidden_item_policy_even_if_variable_hash_is_refreshed(static_access_payload: dict[str, Any]) -> None:
+    from townlet.vfs.schema_hashes import compute_variable_schema_hash
+
+    payload = deepcopy(static_access_payload)
+    item = payload["compiled_vfs_profiles"]["item_profiles"]["default_item"]["variables"][0]
+    item["writable_by"] = ["engine"]
+    profiles = compiled_module._deserialize_vfs_profiles(payload["compiled_vfs_profiles"])
+    definitions = tuple(compiled_module.VariableDef(**v) for v in _level(payload)["vfs_variables"])
+    _level(payload)["variable_schema_hash"] = compute_variable_schema_hash(definitions, profiles.item_profiles)
+    with pytest.raises(ValueError, match="vfs_hash"):
+        CompiledUniverse.from_dict(payload)
+
+
+@pytest.mark.parametrize("scope", ["agent_profile", "global_profile", "item_profiles"])
+@pytest.mark.parametrize("field", ["readable_by", "writable_by"])
+def test_load_requires_profile_policy_fields(static_access_payload: dict[str, Any], scope: str, field: str) -> None:
+    payload = deepcopy(static_access_payload)
+    profile = payload["compiled_vfs_profiles"][scope]
+    if scope == "item_profiles":
+        profile = profile["default_item"]
+    profile["variables"][0].pop(field)
+    with pytest.raises(ValueError, match=field):
+        CompiledUniverse.from_dict(payload)
+
+
+@pytest.mark.parametrize("scope", ["agent_profile", "item_profiles"])
+def test_load_refuses_duplicate_profile_variable_identity(static_access_payload: dict[str, Any], scope: str) -> None:
+    payload = deepcopy(static_access_payload)
+    profile = payload["compiled_vfs_profiles"][scope]
+    if scope == "item_profiles":
+        profile = profile["default_item"]
+    profile["variables"].append(deepcopy(profile["variables"][0]))
+    with pytest.raises(ValueError, match="(?:policy coherence|duplicate variable identity)"):
+        CompiledUniverse.from_dict(payload)
+
+
+def test_load_does_not_accept_deleted_whole_item_profile_with_stale_identity(static_access_payload: dict[str, Any]) -> None:
+    payload = deepcopy(static_access_payload)
+    payload["compiled_vfs_profiles"]["item_profiles"].clear()
+    with pytest.raises(ValueError, match="variable_schema_hash"):
+        CompiledUniverse.from_dict(payload)
+
+
+@pytest.mark.parametrize("side", ["registry", "profile"])
+@pytest.mark.parametrize("field", ["type", "lifetime", "normalization"])
+def test_load_refuses_same_entity_profile_metadata_disagreement(static_access_payload: dict[str, Any], side: str, field: str) -> None:
+    payload = deepcopy(static_access_payload)
+    variable = (
+        next(v for v in _level(payload)["vfs_variables"] if v["id"] == "public")
+        if side == "registry"
+        else payload["compiled_vfs_profiles"]["global_profile"]["variables"][0]
+    )
+    if field == "type":
+        variable["type"] = "bool"
+        variable["default" if side == "registry" else "initial_value"] = True
+    elif field == "lifetime":
+        variable["lifetime"] = "persistent"
+    else:
+        variable["normalization"]["max"] = 20.0
+    with pytest.raises(ValueError, match=f"policy coherence.*{field}"):
+        CompiledUniverse.from_dict(payload)
+
+
+@pytest.mark.parametrize("side", ["registry", "profile"])
+def test_load_refuses_same_entity_profile_dimension_disagreement(tmp_path: Path, side: str) -> None:
+    from tests.test_townlet.integration.test_canonical_variable_runtime import _compile, _pack, _variable
+
+    vector = _variable("vector", scope="agent")
+    vector.update(type="vecNf", dims=2, initial_value=[1.0, 2.0])
+    payload = _compile(_pack(tmp_path, [vector])).to_dict()
+    variable = (
+        next(v for v in _level(payload)["vfs_variables"] if v["id"] == "vector")
+        if side == "registry"
+        else payload["compiled_vfs_profiles"]["agent_profile"]["variables"][0]
+    )
+    variable["dims"] = 3
+    variable["default" if side == "registry" else "initial_value"] = [1.0, 2.0, 3.0]
+    with pytest.raises(ValueError, match="policy coherence.*dims"):
+        CompiledUniverse.from_dict(payload)
+
+
+@pytest.mark.parametrize("side", ["registry", "profile"])
+def test_load_refuses_same_entity_profile_tensor_shape_disagreement(tmp_path: Path, side: str) -> None:
+    from tests.test_townlet.integration.test_canonical_variable_runtime import _compile, _pack, _variable
+
+    tensor = _variable("matrix", scope="agent")
+    tensor.pop("initial_value")
+    tensor.update(type="tensor2d", shape=[2, 2], initial_value_mode="zeros")
+    payload = _compile(_pack(tmp_path, [tensor])).to_dict()
+    variable = (
+        next(v for v in _level(payload)["vfs_variables"] if v["id"] == "matrix")
+        if side == "registry"
+        else payload["compiled_vfs_profiles"]["agent_profile"]["variables"][0]
+    )
+    variable["shape"] = [2, 3]
+    with pytest.raises(ValueError, match="policy coherence.*shape"):
+        CompiledUniverse.from_dict(payload)
+
+
+def test_load_accepts_scalar_expression_spelling_and_lowered_tensor_initializer(tmp_path: Path) -> None:
+    from tests.test_townlet.integration.test_canonical_variable_runtime import _compile, _pack, _variable
+
+    scalar = _variable("number", scope="global")
+    tensor = _variable("matrix", scope="agent")
+    tensor.pop("initial_value")
+    tensor.update(
+        type="tensor2d",
+        shape=[2, 2],
+        initial_value_mode="zeros",
+        exposed_to=["agent"],
+        normalization={"kind": "minmax", "min": 0.0, "max": 1.0, "clip": True},
+    )
+    payload = _compile(_pack(tmp_path, [scalar, tensor])).to_dict()
+    assert next(v for v in _level(payload)["vfs_variables"] if v["id"] == "number")["type"] == "scalar"
+    assert payload["compiled_vfs_profiles"]["global_profile"]["variables"][0]["type"] == "float"
+    assert next(v for v in _level(payload)["vfs_variables"] if v["id"] == "matrix")["initial_value_mode"] is None
+    assert payload["compiled_vfs_profiles"]["agent_profile"]["variables"][0]["initial_value_mode"] == "zeros"
+    CompiledUniverse.from_dict(payload)

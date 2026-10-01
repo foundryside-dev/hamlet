@@ -27,6 +27,8 @@ PRIMARY_LEVEL = "L0_test"
 
 SCOPED_VARIABLE = {
     "zone": {
+        "readable_by": ["engine", "agent"],
+        "writable_by": ["engine"],
         "id": "zone_temp_offset",
         "scope": "zone",
         "type": "scalar",
@@ -37,6 +39,8 @@ SCOPED_VARIABLE = {
         "description": "Per-zone temperature offset",
     },
     "group": {
+        "readable_by": ["engine", "agent"],
+        "writable_by": ["engine"],
         "id": "group_cohesion",
         "scope": "group",
         "type": "scalar",
@@ -47,6 +51,8 @@ SCOPED_VARIABLE = {
         "description": "Per-group cohesion",
     },
     "message": {
+        "readable_by": ["engine", "agent"],
+        "writable_by": ["engine"],
         "id": "message_payload",
         "scope": "message",
         "type": "vecNf",
@@ -58,6 +64,8 @@ SCOPED_VARIABLE = {
         "description": "Recent message buffer payload",
     },
     "affordance": {
+        "readable_by": ["engine", "agent"],
+        "writable_by": ["engine"],
         "id": "occupied_by_test",
         "scope": "affordance",
         "type": "agent_ref",

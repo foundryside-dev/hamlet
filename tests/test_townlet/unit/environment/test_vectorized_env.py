@@ -552,6 +552,8 @@ class TestVectorizedHamletEnvStep:
         profile = CompiledGlobalProfile(
             variables=[
                 CompiledVariable(
+                    readable_by=("engine", "agent"),
+                    writable_by=("engine",),
                     name="context_probe",
                     lifetime="persistent",
                     type="bool",
@@ -609,11 +611,12 @@ class TestVFSWriteBackLoudness:
 
         state = VTCTransitionState(
             vfs_state={"__definitely_not_a_registered_variable__": torch.zeros(env.num_agents)},
+            attempted_vfs_targets=frozenset({"__definitely_not_a_registered_variable__"}),
             bars_state={},
             dones=None,
         )
 
-        with pytest.raises(KeyError, match=r"__definitely_not_a_registered_variable__.*Write source: VTC transition state commit"):
+        with pytest.raises(KeyError, match=r"__definitely_not_a_registered_variable__"):
             env._commit_vtc_transition_state(state)
 
     def test_global_profile_write_back_raises_on_unknown_id(self, custom_env_builder, monkeypatch):
@@ -623,6 +626,8 @@ class TestVFSWriteBackLoudness:
         profile = CompiledGlobalProfile(
             variables=[
                 CompiledVariable(
+                    readable_by=("engine", "agent"),
+                    writable_by=("engine",),
                     name="__unknown_global_expr__",
                     lifetime="persistent",
                     type="bool",
@@ -660,6 +665,8 @@ class TestVFSWriteBackLoudness:
         agent_profile = CompiledGlobalProfile(
             variables=[
                 CompiledVariable(
+                    readable_by=("engine", "agent"),
+                    writable_by=("engine",),
                     name="__unknown_agent_expr__",
                     lifetime="episode",
                     type="bool",

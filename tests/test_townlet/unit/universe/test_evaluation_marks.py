@@ -10,6 +10,8 @@ from townlet.universe.compilers.vfs import VFSCompiler
 
 def _variable(identifier, *, scope="global", expression=None, initial_value=0.0, type="scalar"):
     return {
+        "readable_by": ["engine", "agent"],
+        "writable_by": ["engine"],
         "id": identifier,
         "scope": scope,
         "type": type,

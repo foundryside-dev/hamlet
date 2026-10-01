@@ -262,14 +262,16 @@ class RegisteredStreamDivergence:
 # a forward move of the oracle tag.
 # Cut B supersedes every input binding with DIV-014. Its complete per-pack
 # inventory preserves inherited rows and attributes the canonical-variable
-# transport replacement separately. Historical output tuples stay unchanged.
+# transport replacement separately. Static access supersedes the input binding
+# with DIV-015 after measuring explicit policy transport; historical hash sets
+# remain unchanged.
 _PACK_DIVERGENCE = {
-    "configs/default_curriculum": "DIV-014",
-    "configs/differential/boundary_wrap": "DIV-014",
-    "configs/differential/div003_cubic_partial": "DIV-014",
-    "configs/differential/div003_rect": "DIV-014",
-    "configs/test/effects_smoke": "DIV-014",
-    "configs/test/items_smoke": "DIV-014",
+    "configs/default_curriculum": "DIV-015",
+    "configs/differential/boundary_wrap": "DIV-015",
+    "configs/differential/div003_cubic_partial": "DIV-015",
+    "configs/differential/div003_rect": "DIV-015",
+    "configs/test/effects_smoke": "DIV-015",
+    "configs/test/items_smoke": "DIV-015",
 }
 
 # DIV-009 (2026-08-23, hamlet-5cc071f4b6): six Phase B landings after the oracle tag moved
@@ -407,6 +409,14 @@ _DIV014_PROFILE = RegisteredHashDivergence(
     hash_fields=("environment_hash", "observation_schema_hash", "variable_schema_hash", "vfs_hash"),
 )
 
+# DIV-015: exact direct-parent evidence attributes tagged registry identity and
+# qualified item policy descriptors to variable_schema_hash and its existing VFS
+# composite. No observation, layout, action, transition or numeric allowance.
+_DIV015 = RegisteredHashDivergence(
+    register_ref="DIV-015",
+    hash_fields=("variable_schema_hash", "vfs_hash"),
+)
+
 
 @dataclass(frozen=True)
 class Cell:
@@ -517,7 +527,9 @@ def default_cells() -> tuple[Cell, ...]:
     Cut B appends DIV-014 to each historical four-entry tuple without changing
     any older field set. Its typed-scope cause is independently measured;
     complete input drift is now bound under DIV-014 for every matrix pack.
-    Additional canonical-variable movers require their own measured causes.
+    Static epistemic access appends measured DIV-015 without changing older
+    field sets; it also supersedes the input binding with a complete frozen/live
+    byte inventory. Direct-parent streams remain byte-exact.
 
     Exit 0 now means "everything diverged exactly as registered", DIV-004's
     cost restated at this tag; see docs/oracle/known-divergences.md#div-008,
@@ -536,7 +548,7 @@ def default_cells() -> tuple[Cell, ...]:
                 device=device,
             ),
             pack_divergence=_PACK_DIVERGENCE.get(_DEFAULT_PACK),
-            hash_divergences=(_DIV009_STANDING, _DIV010, _DIV012, _DIV008_HASH, _DIV014),
+            hash_divergences=(_DIV009_STANDING, _DIV010, _DIV012, _DIV008_HASH, _DIV014, _DIV015),
             stream_divergence=_DIV008_STREAM,
         )
         for device in ("cpu", "cuda")
@@ -553,7 +565,7 @@ def default_cells() -> tuple[Cell, ...]:
                 device=device,
             ),
             pack_divergence=_PACK_DIVERGENCE.get(f"configs/differential/{pack_dir}"),
-            hash_divergences=(_DIV009_STANDING, _DIV010, _DIV012, _DIV008_HASH, _DIV014),
+            hash_divergences=(_DIV009_STANDING, _DIV010, _DIV012, _DIV008_HASH, _DIV014, _DIV015),
             stream_divergence=_DIV008_STREAM,
         )
         for device in ("cpu", "cuda")
@@ -570,7 +582,7 @@ def default_cells() -> tuple[Cell, ...]:
                 device=device,
             ),
             pack_divergence=_PACK_DIVERGENCE.get(pack),
-            hash_divergences=(_DIV009_PROFILE, _DIV010, _DIV012_PROFILE, _DIV008_HASH, _DIV014_PROFILE),
+            hash_divergences=(_DIV009_PROFILE, _DIV010, _DIV012_PROFILE, _DIV008_HASH, _DIV014_PROFILE, _DIV015),
             stream_divergence=_DIV008_STREAM,
         )
         for device in ("cpu", "cuda")

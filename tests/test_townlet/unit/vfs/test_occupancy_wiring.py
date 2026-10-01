@@ -23,6 +23,8 @@ from townlet.universe.errors import CompilationError
 PRIMARY_LEVEL = "L0_test"
 
 OCCUPIED_BY_VARIABLE = {
+    "readable_by": ["engine", "agent"],
+    "writable_by": ["engine"],
     "id": "occupied_by",
     "scope": "affordance",
     "type": "scalar",

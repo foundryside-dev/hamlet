@@ -4,6 +4,7 @@ import pytest
 
 from townlet.config.effects_config import CommandConfig, EffectDefinitionConfig, EffectsConfig, EffectScope, ReapplyPolicy
 from townlet.effects.catalog import CompiledEffect, EffectCatalog
+from townlet.effects.executor import CommandExecutor
 from townlet.effects.manager import ActiveEffect, EffectManager
 from townlet.effects.schema import CommandNode, CommandType
 
@@ -185,7 +186,7 @@ def test_tick_despawns_expired_effects(catalog_fixture):
 def test_tick_and_natural_despawn_execute_for_all_effect_scopes():
     """Every admitted effect scope owns the same executable lifecycle."""
 
-    class RecordingExecutor:
+    class RecordingExecutor(CommandExecutor):
         def __init__(self) -> None:
             self.calls = []
 
@@ -241,7 +242,7 @@ def test_tick_and_natural_despawn_execute_for_all_effect_scopes():
 
 
 def test_item_scope_context_is_authoritative_across_spawn_merge_and_cancel():
-    class RecordingExecutor:
+    class RecordingExecutor(CommandExecutor):
         def __init__(self) -> None:
             self.calls = []
 
@@ -319,7 +320,7 @@ def test_tick_handles_multiple_scopes(catalog_fixture):
 # Step 5: Command Execution Integration Tests
 
 
-class MockCommandExecutor:
+class MockCommandExecutor(CommandExecutor):
     """Mock CommandExecutor for testing command execution integration."""
 
     def __init__(self):

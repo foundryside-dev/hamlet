@@ -7,7 +7,7 @@ from townlet.config.variables_config import VariableDeclaration
 from townlet.universe.error_codes import ErrorCode
 from townlet.universe.errors import CompilationErrorCollector
 from townlet.universe.raw_configs_v21 import RawConfigsV21
-from townlet.universe.source_map import SourceMap, locate
+from townlet.universe.source_map import SourceMap, locate, variable_location_key
 from townlet.vfs.schema import VariableScope
 from townlet.world.expression import ExpressionParser, PathAccess
 
@@ -80,7 +80,7 @@ def validate_static_write_targets(raw: RawConfigsV21, source_map: SourceMap | No
 
     for variable in raw.variables.declarations:
         if variable.expression is not None:
-            check(variable, f"variables:{variable.id}:expression")
+            check(variable, f"{variable_location_key(variable.profile, variable.id)}:expression")
     for action in raw.actions.actions.custom_actions:
         for write in action.writes:
             check(registry.get(write.variable_id), f"actions:{action.name}:writes")

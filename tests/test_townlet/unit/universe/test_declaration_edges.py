@@ -11,6 +11,7 @@ from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.declarations import DeclarationStore
 from townlet.universe.errors import CompilationError
 from townlet.universe.raw_configs_v21 import RawConfigsV21
+from townlet.universe.validation.references import build_symbol_table
 
 
 @pytest.fixture
@@ -83,6 +84,124 @@ def test_registry_collision_across_scopes_names_both_origins(pack: Path) -> None
     assert str(source) in message and str(duplicate) in message
     assert "identifier 'foo'" in message
     assert "first declared at" in message
+
+
+@pytest.mark.parametrize("fragmented", [False, True])
+@pytest.mark.parametrize("first_identity", [(None, "tool:charge"), ("tool:heavy", "charge")])
+def test_variable_identity_preserves_profile_and_identifier_components(
+    pack: Path, fragmented: bool, first_identity: tuple[str | None, str]
+) -> None:
+    source = pack / "variables.yaml"
+    data = yaml.safe_load(source.read_text())
+    declarations = []
+    for profile, identifier in (first_identity, ("tool", "charge" if first_identity[0] is None else "heavy:charge")):
+        declaration = {
+            "id": identifier,
+            "scope": "global" if profile is None else "item",
+            "type": "scalar",
+            "lifetime": "episode",
+            "semantic_type": "custom",
+            "initial_value": 0.0,
+            "readable_by": ["engine"],
+            "writable_by": ["engine"],
+            "exposed_to": [],
+        }
+        if profile is not None:
+            declaration["profile"] = profile
+        declarations.append(declaration)
+    data["variables"]["item_profiles"].extend(declaration["profile"] for declaration in declarations if "profile" in declaration)
+    data["variables"]["declarations"].extend(declarations[:1] if fragmented else declarations)
+    source.write_text(yaml.safe_dump(data, sort_keys=False))
+    if fragmented:
+        (pack / "z_variables.yml").write_text(yaml.safe_dump({"variables": {"declarations": declarations[1:]}}, sort_keys=False))
+
+    raw = RawConfigsV21.from_experiment_dir(pack)
+
+    assert raw.variables is not None
+    discovered = {(variable.profile, variable.id) for variable in raw.variables.declarations}
+    assert {(declaration.get("profile"), declaration["id"]) for declaration in declarations} <= discovered
+    symbols = build_symbol_table(raw, raw.source_map)
+    assert len(symbols.item_variables) == len([declaration for declaration in declarations if "profile" in declaration])
+    universe = UniverseCompiler().compile(pack, primary_level="L0_0_minimal", use_cache=False)
+    compiled_level = universe.get_level("L0_0_minimal")
+    compiled_variables = {(None, variable.id) for variable in compiled_level.vfs_variables}
+    assert universe.compiled_vfs_profiles is not None
+    assert universe.compiled_vfs_profiles.item_profiles is not None
+    compiled_variables.update(
+        (profile, variable.name)
+        for profile, item_profile in universe.compiled_vfs_profiles.item_profiles.items()
+        for variable in item_profile.variables
+    )
+    assert {(declaration.get("profile"), declaration["id"]) for declaration in declarations} <= compiled_variables
+
+
+def test_clock_diagnostic_distinguishes_ordinary_variable_from_item_identity(pack: Path) -> None:
+    source = pack / "variables.yaml"
+    data = yaml.safe_load(source.read_text())
+    clock = next(variable for variable in data["variables"]["declarations"] if variable["id"] == "day_phase")
+    clock["id"] = "tool:charge"
+    data["variables"]["item_profiles"].append("tool")
+    data["variables"]["declarations"].append(
+        {
+            "id": "charge",
+            "scope": "item",
+            "profile": "tool",
+            "type": "scalar",
+            "lifetime": "episode",
+            "semantic_type": "custom",
+            "initial_value": 0.0,
+            "readable_by": ["engine"],
+            "writable_by": ["engine"],
+            "exposed_to": [],
+        }
+    )
+    source.write_text(yaml.safe_dump(data, sort_keys=False))
+    clock_line = next(index for index, line in enumerate(source.read_text().splitlines(), 1) if line == "  - id: tool:charge")
+    curriculum_path = pack / "levels" / "L3_temporal_mechanics" / "curriculum.yaml"
+    curriculum = yaml.safe_load(curriculum_path.read_text())
+    curriculum["curriculum"]["day_length"] = 25
+    curriculum_path.write_text(yaml.safe_dump(curriculum, sort_keys=False))
+
+    with pytest.raises(CompilationError) as caught:
+        RawConfigsV21.from_experiment_dir(pack)
+
+    assert f"{source}:{clock_line}" in str(caught.value)
+
+
+@pytest.mark.parametrize("fragmented", [False, True])
+def test_duplicate_item_variable_preserves_both_origins(pack: Path, fragmented: bool) -> None:
+    source = pack / "variables.yaml"
+    data = yaml.safe_load(source.read_text())
+    variable = {
+        "id": "charge",
+        "scope": "item",
+        "profile": "tool",
+        "type": "scalar",
+        "lifetime": "episode",
+        "semantic_type": "custom",
+        "initial_value": 0.0,
+        "readable_by": ["engine"],
+        "writable_by": ["engine"],
+        "exposed_to": [],
+    }
+    data["variables"]["item_profiles"].append("tool")
+    data["variables"]["declarations"].append(variable)
+    duplicate = pack / "z_variables.yml" if fragmented else source
+    if fragmented:
+        duplicate.write_text(yaml.safe_dump({"variables": {"declarations": [dict(variable)]}}, sort_keys=False))
+    else:
+        data["variables"]["declarations"].append(dict(variable))
+    source.write_text(yaml.safe_dump(data, sort_keys=False))
+    source_line = next(index for index, line in enumerate(source.read_text().splitlines(), 1) if line == "  - id: charge")
+    duplicate_line = max(index for index, line in enumerate(duplicate.read_text().splitlines(), 1) if line == "  - id: charge")
+
+    with pytest.raises(CompilationError) as caught:
+        DeclarationStore.discover(pack)
+
+    message = str(caught.value)
+    assert f"first declared at {source}:{source_line}" in message
+    assert f"{duplicate}:{duplicate_line}" in message
+    assert "identifier 'tool:charge'" in message
 
 
 def test_effect_fragments_accept_equal_budget_headers(tmp_path: Path) -> None:

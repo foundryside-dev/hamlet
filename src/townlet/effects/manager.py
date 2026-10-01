@@ -13,6 +13,8 @@ if TYPE_CHECKING:
     from townlet.effects.executor import CommandExecutor
 
 from townlet.config.effects_config import EffectScope
+from townlet.effects.admission import EffectAdmissionSnapshot
+from townlet.effects.schema import CommandNode, CommandType
 from townlet.numeric import require_float32
 
 __all__ = [
@@ -88,6 +90,7 @@ class EffectManager:
         self.affordance_overrides = affordance_overrides
         self.current_step = 0  # Track environment step
         self.next_instance_id = 0
+        self._admission_transaction_active = False
 
         # Scoped storage
         self.global_effects: list[ActiveEffect] = []
@@ -122,6 +125,72 @@ class EffectManager:
         Returns:
             ActiveEffect instance
         """
+        effect_def = self.catalog.effects[effect_id]
+        existing = self._find_existing(effect_id, target_entity_id, EffectScope(effect_def.scope))
+        pipelines = []
+        if existing is None or effect_def.reapply_policy == "stack":
+            pipelines.append(effect_def.on_spawn)
+        elif effect_def.reapply_policy in {"merge", "replace"}:
+            pipelines.append(effect_def.on_interrupt)
+            if effect_def.reapply_policy == "replace":
+                pipelines.append(effect_def.on_spawn)
+        owns_transaction = (
+            not self._admission_transaction_active
+            and self.command_executor is not None
+            and bars is not None
+            and any(self._has_immediate_spawn(pipeline) for pipeline in pipelines)
+        )
+        snapshot = None
+        if owns_transaction:
+            from townlet.effects.context import _NullItemManager as ContextNullItemManager
+            from townlet.environment.null_managers import NullItemManager as EnvironmentNullItemManager
+
+            snapshot_item_manager = item_manager
+            if isinstance(item_manager, (NullItemManager, ContextNullItemManager, EnvironmentNullItemManager)):
+                snapshot_item_manager = None
+            snapshot = EffectAdmissionSnapshot.capture(
+                manager=self,
+                bars=bars,
+                registry=vfs_registry,
+                item_manager=snapshot_item_manager,
+            )
+            self._admission_transaction_active = True
+        try:
+            return self._spawn_effect(
+                effect_id, target_entity_id, intensity, current_step, bars, vfs_registry, spawn_depth, agent_positions, item_manager
+            )
+        except PermissionError:
+            if snapshot is not None:
+                snapshot.restore()
+            raise
+        finally:
+            if owns_transaction:
+                self._admission_transaction_active = False
+
+    @classmethod
+    def _has_immediate_spawn(cls, commands: list[CommandNode]) -> bool:
+        """Detect cascades without evaluating targets or entering delayed work."""
+        for command in commands:
+            if command.type == CommandType.SPAWN_EFFECT:
+                return True
+            branches = [command.then_commands, command.else_commands, command.body, command.parallel_commands, command.default_commands]
+            branches.extend(commands for _, commands in command.case_asts or [])
+            if any(cls._has_immediate_spawn(branch) for branch in branches if branch):
+                return True
+        return False
+
+    def _spawn_effect(
+        self,
+        effect_id: str,
+        target_entity_id: int,
+        intensity: float,
+        current_step: int,
+        bars: dict[str, torch.Tensor] | None,
+        vfs_registry: Any | None,
+        spawn_depth: int,
+        agent_positions: Any | None,
+        item_manager: Any | None,
+    ) -> ActiveEffect:
         # Get compiled effect definition (validates effect_id exists)
         effect_def = self.catalog.effects[effect_id]
         scope = EffectScope(effect_def.scope)
@@ -133,95 +202,88 @@ class EffectManager:
         # Check for existing effect on same target
         existing = self._find_existing(effect_id, target_entity_id, scope)
 
-        if existing:
-            # Handle reapply policy
-            if effect_def.reapply_policy == "renew":
-                # Reset duration to full
-                existing.duration_remaining = duration
-                return existing
+        if existing and effect_def.reapply_policy == "renew":
+            # Renew invokes no lifecycle commands.
+            existing.duration_remaining = duration
+            return existing
 
-            elif effect_def.reapply_policy == "merge":
-                # Accumulate intensity
-                merged_intensity = require_float32(
-                    existing.intensity + intensity,
-                    field=f"merged effect intensity for {effect_id!r}",
-                )
-                existing.intensity = merged_intensity
-                if effect_def.on_interrupt and self.command_executor and bars is not None:
-                    context = self._lifecycle_context(
-                        existing,
-                        bars=bars,
-                        vfs_registry=vfs_registry,
-                        item_manager=item_manager or NullItemManager(),
-                        spawn_depth=spawn_depth,
-                        agent_positions=agent_positions,
-                        interrupt_reason="merged_by_effect",
-                        current_tick=current_step,
-                    )
-
-                    for command in effect_def.on_interrupt:
-                        self.command_executor.execute(command, context)
-                return existing
-
-            elif effect_def.reapply_policy == "replace":
-                # Cancel any pending delayed work from the existing effect before replacing
-                self._cancel_scheduled_for_effect(existing)
-
-                # NEW: Execute on_interrupt before removing old effect
-                if effect_def.on_interrupt and self.command_executor and bars is not None:
-                    context = self._lifecycle_context(
-                        existing,
-                        bars=bars,
-                        vfs_registry=vfs_registry,
-                        item_manager=item_manager or NullItemManager(),
-                        spawn_depth=spawn_depth,
-                        agent_positions=agent_positions,
-                        interrupt_reason="replaced_by_effect",  # NEW
-                        current_tick=current_step,  # NEW
-                    )
-
-                    for command in effect_def.on_interrupt:
-                        self.command_executor.execute(command, context)
-
-                # Remove old instance (skip on_despawn - already interrupted)
-                self._remove_from_scope(existing)
-                # Continue to create new instance below
-
-            # STACK: Do nothing, create new instance below
-
-        # Create new instance
-        active = ActiveEffect(
-            effect_id=effect_id,
-            instance_id=self.next_instance_id,
-            target_entity_id=target_entity_id,
-            scope=scope,
-            intensity=intensity,
-            duration_total=duration,
-            duration_remaining=duration,
-            elapsed_ticks=0,
-            spawn_step=current_step,
-            observable=observable,
-            effect_index=effect_index,
+        merging = existing is not None and effect_def.reapply_policy == "merge"
+        replacing = existing is not None and effect_def.reapply_policy == "replace"
+        merged_intensity = (
+            require_float32(existing.intensity + intensity, field=f"merged effect intensity for {effect_id!r}")
+            if merging and existing is not None
+            else intensity
         )
-        self.next_instance_id += 1
-
-        # Store in scoped collection
-        self._add_to_scope(active)
-
-        # Execute on_spawn commands
-        if effect_def.on_spawn and self.command_executor and bars is not None:
-            context = self._lifecycle_context(
-                active,
-                bars=bars,
-                vfs_registry=vfs_registry,
-                item_manager=item_manager or NullItemManager(),
-                spawn_depth=spawn_depth + 1,  # Increment depth for cascade tracking
-                agent_positions=agent_positions,  # NEW: for for_each spatial queries
-                current_tick=current_step,  # NEW
+        active = (
+            existing
+            if merging
+            else ActiveEffect(
+                effect_id=effect_id,
+                instance_id=self.next_instance_id,
+                target_entity_id=target_entity_id,
+                scope=scope,
+                intensity=intensity,
+                duration_total=duration,
+                duration_remaining=duration,
+                elapsed_ticks=0,
+                spawn_step=current_step,
+                observable=observable,
+                effect_index=effect_index,
             )
+        )
+        assert active is not None
 
+        # Resolve every immediate lifecycle context before changing manager state.
+        # In particular, replacement must authorize BOTH hooks before interrupting
+        # the existing effect, and item writes must use the attached row's profile.
+        interrupt_context = None
+        spawn_context = None
+        if self.command_executor is not None and bars is not None:
+            if (merging or replacing) and existing is not None and effect_def.on_interrupt:
+                interrupt_context = self._lifecycle_context(
+                    existing,
+                    bars=bars,
+                    vfs_registry=vfs_registry,
+                    item_manager=item_manager,
+                    spawn_depth=spawn_depth,
+                    agent_positions=agent_positions,
+                    interrupt_reason="merged_by_effect" if merging else "replaced_by_effect",
+                    current_tick=current_step,
+                )
+                self.command_executor.preflight_commands(effect_def.on_interrupt, interrupt_context)
+            if not merging and effect_def.on_spawn:
+                spawn_context = self._lifecycle_context(
+                    active,
+                    bars=bars,
+                    vfs_registry=vfs_registry,
+                    item_manager=item_manager,
+                    spawn_depth=spawn_depth + 1,
+                    agent_positions=agent_positions,
+                    current_tick=current_step,
+                )
+                self.command_executor.preflight_commands(effect_def.on_spawn, spawn_context)
+
+        if merging:
+            active.intensity = merged_intensity
+        elif replacing and existing is not None:
+            self._cancel_scheduled_for_effect(existing)
+
+        if interrupt_context is not None and self.command_executor is not None:
+            for command in effect_def.on_interrupt:
+                self.command_executor.execute(command, interrupt_context)
+        if merging:
+            return active
+        if replacing and existing is not None:
+            self._remove_from_scope(existing)
+
+        # Interrupt hooks can themselves spawn effects. Allocate the final ID only
+        # after they execute, preserving the successful path's allocation order.
+        active.instance_id = self.next_instance_id
+        self.next_instance_id += 1
+        self._add_to_scope(active)
+        if spawn_context is not None and self.command_executor is not None:
             for command in effect_def.on_spawn:
-                self.command_executor.execute(command, context)
+                self.command_executor.execute(command, spawn_context)
 
         return active
 

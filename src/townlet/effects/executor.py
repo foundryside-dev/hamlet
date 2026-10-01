@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import Any
 
 import torch
@@ -127,7 +128,13 @@ class CommandExecutor:
         if command.type == CommandType.MODIFY:
             self._execute_modify(command, context)
         elif command.type == CommandType.SPAWN_EFFECT:
-            self._execute_spawn_effect(command, context)
+            if command.target_ast is not None:
+                from townlet.effects.admission import permission_denial_rng
+
+                with permission_denial_rng():
+                    self._execute_spawn_effect(command, context)
+            else:
+                self._execute_spawn_effect(command, context)
         elif command.type == CommandType.SPAWN_ITEM:
             self._execute_spawn_item(command, context)
         elif command.type == CommandType.SAMPLE:
@@ -146,6 +153,11 @@ class CommandExecutor:
             self._execute_delay(command, context)
         else:
             raise NotImplementedError(f"Command type {command.type} not implemented")
+
+    def preflight_commands(self, commands: Sequence[CommandNode], context: ExecutionContext) -> None:
+        """Authorize a lifecycle pipeline without evaluating expressions or mutating state."""
+        for command in commands:
+            self._preflight_command(command, context)
 
     def _preflight_command(self, command: CommandNode, context: ExecutionContext) -> None:
         """Authorize compound command targets before this command mutates state.

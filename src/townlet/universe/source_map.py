@@ -2,11 +2,17 @@
 
 from __future__ import annotations
 
+import json
 import re
 from collections.abc import Iterable
 from pathlib import Path
 
 _TRAILING_SEGMENT = re.compile(r"(\.[A-Za-z_0-9]+|\[\d+\])$")
+
+
+def variable_location_key(profile: str | None, identifier: str) -> str:
+    """Encode canonical variable identity without ambiguous name separators."""
+    return f"variables:{json.dumps((profile, identifier), separators=(',', ':'))}"
 
 
 class SourceMap:

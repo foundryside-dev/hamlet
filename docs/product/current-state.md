@@ -1,94 +1,84 @@
-# Current state — Townlet · 2026-10-01
+# Current state — Townlet · 2026-10-02
 
 ## Delivered and verified
 
-Declaration-store **Cut A**, canonical-variable **Cut B** and **static epistemic access**
-are accepted and consolidated on GitHub `main` at **`729779280820a31294013f9f7c839fbf23732ced`** (PR #42), as read at 08:17 UTC.
-At that reading, local main matched publication, all 20 pre-consolidation local branch tips
-were contained, and no additional committed branch work was found. Local main subsequently
-advanced to documentation checkpoint **`792c6704`**; the repair branch is identified below.
-[PDR-0154](decisions/0154-main-consolidation-and-product-checkpoint.md) records the pre-publication checkpoint;
-[PDR-0155](decisions/0155-resume-reconciles-completed-main-publication.md) reconciles delivery at the 08:17 UTC resume.
+GitHub main is **`95b2f828dae4f52d6e30e79600fc3491364a1eb5`** after
+[PR #44](https://github.com/foundryside-dev/hamlet/pull/44), merged October 1 at
+15:08:34 UTC. Its exact-main Lint, Config Validation and Tests all succeeded.
+Hosted tests report **4,276 passed / 19 skipped / 15 warnings / 85% coverage**.
+[Hosted receipt](evidence/static-access-review/hosted-delivery.md) records identities,
+run links and log custody; the previous brief's local-only claim is superseded.
 
-| Package | Accepted contract | Qualification |
+| Package | Accepted contract | Evidence |
 | --- | --- | --- |
-| A | Content discovery, scoped declaration merge, collision/provenance diagnostics, single authored clock authority | [PDR-0149](decisions/0149-owner-extends-cut-a-acceptance-to-october-1-and-cut-a-is-accepted.md); exact implementation `75383d18` hosted gates accepted |
-| B | Canonical variables, explicit lifetime/default/expression semantics, complete supported symbols and typed token scope | [PDR-0151](decisions/0151-cut-b-accepted-against-prd-0003.md); published implementation `22924d0a` hosted gates accepted |
-| Static access | Required finite engine/agent read policies, engine/empty writers, independent exposure, checked ordinary/item access, immutable authority and policy-bearing cache/checkpoint identity | [PDR-0153](decisions/0153-static-epistemic-access-accepted-against-prd-0004.md); qualified execution `b70fda10` |
+| Declaration Cut A | Content discovery, scoped merge, provenance/duplicates, authored clock | PDR-0149 |
+| Canonical-variable Cut B | Explicit lifetime/default/expression semantics, symbols and typed token scope | PDR-0151 |
+| Static access | Explicit finite roles, independent exposure, checked access/write intent, immutable policy and cache/checkpoint identity | PDR-0153 |
+| Review repairs | Effect preflight/reapplication, immediate nested refusal rollback, deterministic item allocation and structured variable identities | [PDR-0156](decisions/0156-static-access-review-refusal-and-identity-repairs.md) |
 
-The static source passed **4,250 tests / 18 skips / 85% coverage**, all local lint/fleet gates,
-31-case direct-parent comparison and ten frozen CPU cells. This is retained source qualification,
-not a new full-suite run at the local merge. **201 postmerge checks passed** against
-actual main-worktree imports. [Main integration receipt](evidence/main-consolidation/local-integration.json)
-records identities, commands and preservation checks. Exact-head GitHub publication/checks are
-verified separately in closed delivery issue **`hamlet-dd9a03f787`** and
-[PR #42](https://github.com/foundryside-dev/hamlet/pull/42). Actual-main Lint, Config Validation
-and Tests completed successfully; the retained hosted suite records **4,249 passed / 19 skips /
-15 warnings**. [Publication reading](evidence/main-consolidation/hosted-publication.json)
-records exact identities and run links. The resume reran no suite; a separate failed Dependabot
-update is outside the delivery verdict. No release, tag or deployment is part of this task.
+PR #42 delivered the first three at `72977928`; PR #44 delivered repairs qualified
+at `7eb7ded3`, with unchanged runtime/test/config source through the merge.
+Retained local qualification is **4,277 passed / 18 skips / 15 warnings / 85%
+coverage**, plus 397 focused item/effect and 988 compiler/oracle/access checks.
+The earlier owner-requested local merge passed 432 post-merge checks. These are
+separate readings, not a fresh suite during this resume.
+[Verification](evidence/static-access-review/verification.md) retains their limits.
+Both requested Filigree Markdown reference files were committed as `80d6a5ce`
+and included in PR #44. The three review repair issues remain closed:
+`hamlet-f75ff623be`, `hamlet-bae419a592`, `hamlet-940089c925`.
 
-Three historical access defects are closed with bounded source/runtime evidence:
-`hamlet-fc78bb49d3`, `hamlet-1a520475f4`, `hamlet-c78fbf32a3`. Owner/per-observer privacy
-`hamlet-83a043a9b9` remains open. Unknown historical roles are refused, not implemented.
+## Selected package: truthful episode lanes
 
-The owner's review of `72977928` exposed effect-admission refusal and canonical
-variable-identity defects. Both reproduced. The repair on `fix/static-access-review`
-contains implementation **`7eb7ded3`** (following `c3faa4bf`): selected lifecycle writes authorize before
-admission/reapplication, immediate nested denials restore runtime state, and structured
-canonical identities retain distinct variables and origins. Deterministic lowest-free
-item rows prevent rejected cascades from changing later allocation. **397 focused
-item/effect checks and 988 compiler/oracle/access checks pass**; lint/type/no-defaults/fleet gates
-pass. The final source's full suite passed **4,277 tests / 18 skips / 15 warnings /
-85% coverage** in 989.23s, exit 0. `hamlet-f75ff623be`, `hamlet-bae419a592` and the
-additional cascade defect `hamlet-940089c925` are closed against this local source. The repair is local;
-published main's source and hosted qualification remain the historical readings above.
-[PDR-0156](decisions/0156-static-access-review-refusal-and-identity-repairs.md) records
-the repair scope, independent counterexamples and acceptance limits.
-[Verification receipt](evidence/static-access-review/verification.md) banks the full
-reading and skip disposition. No frozen trajectory or convergence campaign was rerun.
+The owner's new branch **`fix/episode-lane-accounting`** starts from main
+`95b2f828`. This session records product discovery/specification; no runtime fix
+or learning campaign has run. [PRD-0005](prds/0005-truthful-episode-lanes.md) is
+**ready for planning**, with handoff **`hamlet-87d3ef8e23`**. Product scope task:
+`hamlet-e484af6168`. Existing engine bug **`hamlet-d6fc84d147` is confirmed**.
 
-The owner subsequently requested a local main merge. **Main fast-forwarded from
-`792c6704` to `a370814a`**, with an exact tree match to the qualified repair branch.
-**432 post-merge checks passed** in 11.95s against actual main-checkout imports;
-the full suite above is retained qualification, not a new merge-time full run.
-The receipt's local-integration addendum records custody and landing evidence.
-The merged task branch was retired; unrelated file contents and modes were preserved.
-At the owner's subsequent request, both Filigree error-code reference files were
-committed unchanged as **`80d6a5ce`**. No push
-or new hosted CI reading was performed. The follow-up checkpoint changes only product docs.
+Fresh real-runtime probes reproduce deterministic deaths at ticks 2/5:
 
-## Product judgment
+- Environment survival `[5,5]` instead of `[2,5]`; ten reported transitions versus
+  seven live transitions and five world ticks. Accounting error: **3**, target **0**.
+- Standard/PER replay stores ten transitions and five terminal rows. Recurrent
+  lengths are `[2,1,1,1,5]`; repeated finalization leaves registry survival `[1,5]`.
+- RND ingestion/statistics consume ten samples; adaptive history is `[2,1,1,1,5]`.
+  Adaptive weight remains 1.0. Gradient updates were suppressed in discovery.
+- A lifespan-five case gives a retirement bonus to the already-dead lane at tick 5.
 
-The supported declaration → compiled state → checked runtime contract is stronger. The product
-still has no freshly qualified multi-scenario compile → render → converge milestone. Static
-policy tests do not establish trustworthy episode outcomes, full BAC cognition, browser behavior,
-Murk integration, item ownership/locality, effect reset or portable model export.
+[Baseline evidence](evidence/episode-lanes/baseline.md) retains commands, script
+copies, raw-log digests and source closure. The coordinator repeated both probes
+with byte-identical logs. Runner live-transition budgeting already counts on entry
+correctly; curriculum currently completes once at batch end with wrong survival,
+not repeatedly on death. Persisted DB/TensorBoard/recording outputs remain
+source-traced, not freshly executed.
 
-Historical M4 remains four passing token architecture/aggregation cells at training `9d4e942f`,
-one training seed and its fixed evaluation/budget protocol. It is not current-main multi-seed
-convergence evidence. [Metrics](metrics.md) keeps those readings separate.
+The package requires one terminal transition/finalization per lane, correct
+replay/RND eligibility, stable completed outcomes, truthful consumers, explicit
+cap/budget truncation and clean restart of its own bookkeeping. Authored death
+wins a coincident retirement boundary; genuine retirement gets its bonus once.
+Acceptance also requires actual learner/predictor update and sink witnesses,
+exact parent/oracle attribution and independent criteria review. Product review
+is October 9 or the first candidate, whichever is earlier; no shipment forecast.
 
-## Recovery exit and next step
+## Recovery and product judgment
 
-Recovery remains open. **PDR-0058's register-growth trigger has fired:** A/B/static added
-DIV-013/014/015 without terminalizing existing divergences. Reopen the oracle-retirement exit
-framing for review; do not erase evidence, re-freeze the oracle or call registered differences
-terminal because qualification passes. The existing exit is not met, and a main merge does not
-meet it. [Checkpoint assessment](assessments/2026-10-01-main-product-checkpoint.md) records this
-reading. No new exit definition or deadline is invented here.
+Recovery remains open. **PDR-0058's register-growth trigger remains unresolved**:
+fifteen divergences, five retired and ten nonterminal. Review task
+**`hamlet-4554a428b2`** must produce a concrete exit/instrument proposal. The frozen
+oracle, inputs, current exit and authority grant stay intact. Episode integrity
+is a prerequisite for credible learning evidence, not a substitute retirement exit.
+[PDR-0157](decisions/0157-episode-lane-package-and-merged-repair-delivery.md) records
+this scope and delivery reconciliation.
 
-The recommended next package is **truthful episode lanes**, starting from
-`hamlet-d6fc84d147`: reproduce current main, then plan a bounded lifecycle/accounting contract
-before another learning campaign. Proposed fixture: deaths at steps 2/5 give survival `[2,5]`,
-seven live transitions, five vector ticks, one terminal/finalization each, and no post-death
-replay/RND/annealing/bonus. Adjacent learner defects require reproduction before being treated
-as confirmed scope. This recommendation is not authorization to implement it.
+No current-main multi-scenario compile → render → converge milestone is qualified.
+Historical M4 remains four passing token cells at training `9d4e942f`, one training
+seed and its fixed protocol. Static access is not per-owner privacy
+(`hamlet-83a043a9b9`); effect reset (`hamlet-d76684f549`), initial-item cache fidelity,
+RNG isolation, complete BAC cognition, viewer behavior, Murk and model export
+remain separate work. No north-star authoring success rate is revived.
 
-The initial resume reconciled publication. The subsequent owner review dispatched these
-bounded contract repairs; no bet moved horizon and the standing authority grant remains
-unchanged. Recovery is open. The owner-requested integration is on local main only.
-
-Next session: adjudicate the fired exit trigger, then source-reproduce and scope the episode-lane PRD. Keep effects reset and item fidelity as
-separate packages unless the chosen scenario explicitly depends on them. The frozen oracle,
-raw evidence and owner-authored skill reference edits remain preserved.
+Next action: atomically start the PRD-0005 planning handoff and resolve its
+prerequisite witnesses and truncation semantics before runtime implementation.
+Keep the exit review separate; reopen scope if an actual dependency requires it.
+This checkpoint is local to the new branch, with no new push or hosted reading
+of its documentation commit.

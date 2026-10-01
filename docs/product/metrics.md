@@ -1,4 +1,4 @@
-# Metrics — Townlet · Latest reading 2026-10-01
+# Metrics — Townlet · Latest reading 2026-10-02
 
 This is a source/evidence/tracker reading, not a new training campaign. New readings are
 separate from the retained chronological tables below; historical “current” cells there
@@ -20,6 +20,9 @@ refer to their dated source, not the consolidated main.
 | Tracker census after delivery closure — resume 08:17 UTC | 266 issues: 159 done, 107 open, zero in progress; 103 ready, four blocked | Delivery dd9a03f787 closed; recovery planning; episode bug d6fc84d147 triage; bookkeeping only |
 | Post-review local repair | Full suite 4,277 passed / 18 skipped / 15 warnings; 85% coverage; 989.23s, exit 0; 397 focused item/effect and 988 compiler/oracle/access checks; lint/type/no-defaults/fleet gates pass | Implementation 7eb7ded3 following c3faa4bf on fix/static-access-review; three reproduced defects closed; skip disposition retained; no publication or learning campaign |
 | Owner-requested local main merge | Exact qualified repair-tree fast-forward; 432 post-merge checks passed, 11.95s, exit 0; unrelated dirty file digests/modes preserved | Main landing a370814a from 792c6704; actual main-checkout imports; retained full suite above; no push, new hosted CI or convergence campaign |
+| Repair hosted delivery — October 2 resume | PR #44 merged; exact-main Lint, Config Validation and Tests completed/success; 4,276 passed / 19 skipped / 15 warnings / 85% coverage | Actual main `95b2f828`; published head `171318c8`; 4,295 collected, 1504.18s; separate from local 4,277/18; extra MP4 test skip; no fresh local suite |
+| Episode accounting error — input metric | Baseline **3**: returned survival sums ten versus seven independently counted live transitions; individual counters `[5,5]` versus `[2,5]` | Real CPU compiled environment `95b2f828`, deaths 2/5; target **0** with exact individual survival; PRD-0005 review October 9 or first candidate, no delivery forecast |
+| Episode consumer baseline | All three replay variants store ten transitions / five terminal rows; recurrent lengths `[2,1,1,1,5]`; registry `[1,5]`; RND sample delta ten; adaptive history `[2,1,1,1,5]`, weight 1.0 | Real population/replay/statistics/finalizers; gradients suppressed; no learner/predictor update, persisted-sink or convergence qualification |
 
 [PDR-0155](decisions/0155-resume-reconciles-completed-main-publication.md) and the
 [publication reading](evidence/main-consolidation/hosted-publication.json) record the resume
@@ -27,7 +30,14 @@ delta. That resume added no authoring or learning reading. Recovery's fired exit
 remains unresolved.
 [PDR-0156](decisions/0156-static-access-review-refusal-and-identity-repairs.md) records
 the subsequent refusal/identity repair. Its bounded verification is separate from
-the published-main baseline; a repaired access contract is not convergence evidence.
+the original published-main baseline; a repaired access contract is not convergence evidence.
+[PDR-0157](decisions/0157-episode-lane-package-and-merged-repair-delivery.md) now
+reconciles PR #44's completed [hosted delivery](evidence/static-access-review/hosted-delivery.md)
+and selects the episode-integrity planning scope. [Baseline probes](evidence/episode-lanes/baseline.md)
+are discovery evidence: the metric target is not met, the bug is confirmed and
+unfixed, and implementation remains unaccepted. Baseline error uses environment
+publication, not a fresh database/TensorBoard output reproduction. Exact lane values
+and zero post-terminal contributions guard against gaming a correct aggregate.
 
 No aggregate seven-surface completion percentage is recalculated: the old ledger predates
 canonical declaration discovery, variable unification, action-write witnesses and checked
@@ -35,7 +45,7 @@ static access. No new north-star authoring success rate, default-scenario conver
 browser/CUDA acceptance or Murk performance reading is asserted. No-defaults whitelist,
 frozen fixtures, unrelated dirty files and qualified raw evidence are preserved.
 
-The next discriminating measurement is exact episode-lane accounting, then task-specific
+The next discriminating measurement is candidate acceptance of exact episode-lane accounting, then task-specific
 held-out learning evidence from a declared scenario. See
 [checkpoint assessment](assessments/2026-10-01-main-product-checkpoint.md).
 

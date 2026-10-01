@@ -1,4 +1,4 @@
-# Roadmap — Townlet · Updated 2026-10-01
+# Roadmap — Townlet · Updated 2026-10-02
 
 This records product intent, not a delivery schedule. Workstream numbers are an inventory,
 not an execution order. One bounded recovery unit is selected at a time; forecasts and
@@ -26,19 +26,28 @@ Delivered within the bet:
   policy, attempted-write authorization and policy-bearing persistence/identity (PDR-0153).
   Permission authoring is no longer absent. Custom action writes are declared and exercised
   by the committed ADVANCE witness. No old profile/overlay authoring reader is preserved.
+- Refusal/identity review repairs are delivered through PR #44 at `95b2f828` with
+  exact-main hosted gates successful (PDR-0156/0157). This improves the supported
+  runtime contract; it adds no fresh convergence or frozen-trajectory claim.
 
 **Exit review required.** PDR-0058's trigger fired as DIV-013/014/015 were added without an
 entry becoming terminal across successive checkpoints. Keep the oracle and the current
 non-exit status; adjudicate the exit/instrument framing before treating the next unit as
 progress toward a settled retirement criterion. Qualification of a registered divergence
 is not a terminal disposition. Do not widen allowances or change frozen inputs to conceal it.
+The concrete exit/instrument review is tracked in `hamlet-4554a428b2`; preserve
+the current exit while preparing an evidence-backed proposal. No strategic exit
+change is made by the episode package.
 
-**Recommended next unit: truthful episode lanes.** Reproduce current main starting with
-`hamlet-d6fc84d147`, then scope a lifecycle/accounting PRD. Acceptance should share active-on-entry
-and newly-terminal events across runtime, replay, exploration and output sinks: one terminal
-transition/finalization, frozen post-death outcomes, exact live-transition versus vector-tick
-units. This is a recommendation under the compile → render → converge objective; no new
-implementation, deadline or training campaign is authorized by the checkpoint.
+**Selected next package: truthful episode lanes, ready for planning.** Current-main
+environment and population probes confirm `hamlet-d6fc84d147` and adjacent
+replay/RND/repeated-finalization failures. [PRD-0005](prds/0005-truthful-episode-lanes.md)
+sets zero accounting error, exact survival `[2,5]`, seven live transitions/five
+vector ticks, one terminal/completion per lane and no later contributions.
+Planning handoff `hamlet-87d3ef8e23` resolves truncation, clocks and actual learner/sink
+witnesses. Product review October 9 or the first candidate is a review checkpoint,
+not a promised shipment. No runtime implementation or training campaign is
+dispatched by this PM checkpoint, and no bet changes horizon.
 
 ## Next — shaped, separately scoped
 

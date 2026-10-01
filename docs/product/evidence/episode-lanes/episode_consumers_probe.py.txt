@@ -1,0 +1,121 @@
+"""Discovery witness only: real compiler/environment/population, no product edits.
+
+Q learning is suppressed by batch_size=128 (>10 recorded transitions); the
+recurrent path additionally requires >=16 stored episodes. RND predictor
+learning is suppressed by rnd_training_batch_size=128. Real forward passes,
+reward normalization, replay insertion and finalization still run. The policy
+is an instrumented constant WAIT selector so the real compiled passive energy
+decay produces deaths at steps2/5. Finalization is wrapped only to record calls.
+"""
+
+import json
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+import tempfile
+
+import torch
+
+sys.path.insert(0, '/home/john/hamlet')
+
+from tests.test_townlet._fixtures.brain_configs import minimal_brain_config, recurrent_brain_config
+from townlet.curriculum.static import StaticCurriculum
+from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
+from townlet.population.vectorized import VectorizedPopulation
+from townlet.universe.compiler import UniverseCompiler
+
+
+ROOT = Path('/home/john/hamlet')
+SOURCE_HEAD = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
+assert SOURCE_HEAD == '95b2f828dae4f52d6e30e79600fc3491364a1eb5'
+LEVEL = 'L0_0_minimal'
+
+
+def probe(universe, mode, tmp):
+    torch.manual_seed(42)
+    env = universe.create_environment(num_agents=2, level_name=LEVEL, device='cpu')
+    brain_dir = tmp / mode
+    brain_dir.mkdir()
+    factory = recurrent_brain_config if mode == 'recurrent' else minimal_brain_config
+    brain = factory.__wrapped__(brain_dir)
+    if mode == 'prioritized':
+        replay_data = brain.replay.model_dump()
+        replay_data.update(prioritized=True, priority_alpha=.6, priority_beta=.4, priority_beta_annealing=False)
+        brain = brain.model_copy(update={'replay': type(brain.replay).model_validate(replay_data)})
+    exploration = AdaptiveIntrinsicExploration(
+        obs_dim=env.observation_dim, rnd_training_batch_size=128, device=torch.device('cpu')
+    )
+    wait_id = env.action_space.get_action_by_name('WAIT').id
+    exploration.select_actions = lambda q_values, state, masks: torch.full((2,), wait_id, dtype=torch.long)
+    population = VectorizedPopulation(
+        env=env, curriculum=StaticCurriculum(difficulty_level=1.0), exploration=exploration,
+        agent_ids=['early', 'late'], device=torch.device('cpu'), brain_config=brain,
+        obs_dim=env.observation_dim, train_frequency=1, batch_size=128,
+        sequence_length=1, max_grad_norm=1.0, action_dim=env.action_dim,
+    )
+    population.reset()
+    env.meters[:, env.meter_name_to_index['energy']] = torch.tensor([.015, .045])
+    # Use the same post-injection initial observation as the environment-only
+    # fixture. Population normally seeds current_obs at reset before injection.
+    population.current_obs = env._get_observations()
+    finalizations = []
+    original_finalize = population._finalize_episode
+
+    def record_finalize(agent_idx, survival_time):
+        finalizations.append({'tick': env.global_tick, 'agent': int(agent_idx), 'survival_time': survival_time})
+        original_finalize(agent_idx, survival_time)
+
+    population._finalize_episode = record_finalize
+    live_counts = torch.zeros(2, dtype=torch.long)
+    newly_counts = torch.zeros(2, dtype=torch.long)
+    trace = []
+    stats_start = exploration.rnd.reward_rms.count
+    for tick in range(1, 6):
+        active = ~env.dones.clone()
+        live_counts += active.long()
+        state = population.step_population(env)
+        newly_counts += (active & state.dones).long()
+        trace.append({'tick': tick, 'active_on_entry': active.tolist(),
+                      'dones': state.dones.tolist(), 'env_step_counts': env.step_counts.tolist(),
+                      'population_episode_counters': population.episode_step_counts.tolist(),
+                      'registry_survival': population.runtime_registry.get_survival_time_tensor().tolist(),
+                      'replay_len': len(population.replay_buffer),
+                      'rnd_observation_buffer_len': len(exploration.rnd.obs_buffer),
+                      'rnd_statistics_samples': exploration.rnd.reward_rms.count - stats_start,
+                      'adaptive_survival_history': exploration.survival_history.copy()})
+    assert live_counts.tolist() == [2, 5]
+    assert newly_counts.tolist() == [1, 1]
+    assert population.training_step_counter == 0
+    assert population.last_rnd_loss == 0
+    buffer = population.replay_buffer
+    if mode == 'recurrent':
+        replay = {'episode_lengths': [len(e['observations']) for e in buffer.episodes],
+                  'episode_dones': [e['dones'].tolist() for e in buffer.episodes],
+                  'num_transitions': buffer.num_transitions}
+    else:
+        replay = {'num_transitions': len(buffer), 'dones': buffer.dones[:len(buffer)].tolist()}
+    return {'mode': mode, 'brain': brain.model_dump(mode='json'), 'actual_live_counts': live_counts.tolist(),
+            'actual_live_transitions': int(live_counts.sum()), 'batch_ticks': env.global_tick,
+            'newly_terminal_counts': newly_counts.tolist(), 'finalizations': finalizations,
+            'replay': replay, 'trace': trace, 'learner_updates': population.training_step_counter,
+            'rnd_predictor_loss': population.last_rnd_loss,
+            'rnd_buffer_samples': len(exploration.rnd.obs_buffer),
+            'rnd_statistics_samples': exploration.rnd.reward_rms.count - stats_start,
+            'rnd_step_counter': exploration.rnd.step_counter,
+            'adaptive_survival_history': exploration.survival_history,
+            'intrinsic_weight': exploration.current_intrinsic_weight,
+            'registry_survival': population.runtime_registry.get_survival_time_tensor().tolist()}
+
+
+with tempfile.TemporaryDirectory(prefix='townlet-episode-consumers-') as temp:
+    tmp = Path(temp)
+    config = tmp / 'default_curriculum'
+    shutil.copytree(ROOT / 'configs/default_curriculum', config)
+    universe = UniverseCompiler().compile(config, primary_level=LEVEL, use_cache=False)
+    result = {'source_head': SOURCE_HEAD, 'seed': 42, 'device': 'cpu',
+              'config_source': 'configs/default_curriculum', 'primary_level': LEVEL,
+              'fixture': 'after reset energy [.015,.045]; constant WAIT action policy; real terminal conditions',
+              'limits': 'No Q or RND predictor gradient updates; no DemoRunner/sink execution; discovery probe, not suite gate',
+              'cases': [probe(universe, mode, tmp) for mode in ['standard', 'prioritized', 'recurrent']]}
+    print(json.dumps(result, indent=2))

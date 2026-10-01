@@ -1,0 +1,13 @@
+experiment:
+  version: '1.0'
+  experiment_name: authored_episode_lanes
+  metadata:
+    name: Authored Episode Lanes
+    description: Deterministic independent lifecycle and eligible experience witness
+    author: Hamlet Tests
+    created: '2026-10-02'
+    tags:
+    - test
+    - episode-lanes
+  curriculum_levels:
+  - L0_test

@@ -1,0 +1,368 @@
+{
+  "parent_revision": "880f9c90f65aa646a0da04d7ca2ef92e48f85caa",
+  "runtime_source_revision": "ec463fdaaa632e4e1f778b938ace94f53a73a745",
+  "execution_worktree": "/home/john/hamlet/.worktrees/episode-lane-implementation",
+  "parent_source_root": "/home/john/hamlet",
+  "python_executable": "/home/john/hamlet/.worktrees/episode-lane-implementation/.venv/bin/python",
+  "python_version": "3.13.15",
+  "sqlite_version": "3.53.1",
+  "torch_version": "2.11.0+cu130",
+  "uv_lock_sha256": "ca5ef261863c57ad4d67bdc8e8aa9fee341bca71f026cdaabf974fd22fa90e77",
+  "e0": {
+    "inventories": 31,
+    "cpu_traces": 10,
+    "reset_checks": 11,
+    "exit_code": 0
+  },
+  "e0a": {
+    "ordinary_attempts": 10,
+    "losses": 0,
+    "repair_admitted": false,
+    "witness_commit": "0e410e87"
+  },
+  "e1": {
+    "compiler_real_forward_green": true,
+    "behavior_red": {
+      "failed": 7,
+      "passed": 1
+    },
+    "exact_preregistered_changes": 799
+  },
+  "files": [
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/static-access/before-hashes.json",
+      "bytes": 103992,
+      "sha256": "b7a3b3cd0e4bcc2719eb8ee946736640c16aed2641fe7fb154c93bdd8b9e4292"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/static-access/before-inputs.json",
+      "bytes": 630995,
+      "sha256": "30526ea26feb63375f0820c72c3a694031465b540d1e6c4a27a5ea909521bf08"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/static-access/before-products.json",
+      "bytes": 5663458,
+      "sha256": "13a685d6a75af86f3ecceb1b3d597d1b0a9595525b508b41051ce6ef2d3eee0a"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/static-access/before-recipes.json",
+      "bytes": 8792,
+      "sha256": "c446c97c1c8507fa6d97893b6db7e22aba3c9c383170f86e73db4b15b5c0c502"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/static-access/before-resets.json",
+      "bytes": 26739,
+      "sha256": "eac37c561a7bee828510ceb8b5ae3c500f1e15a4dde65674867331ce1001c0c6"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/static-access/before-traces.json",
+      "bytes": 33308,
+      "sha256": "ac4645068789af78e10748170afe58402c60dffdb7a356f660ab693a8e5c9b3c"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/static-access/cpu-00.npz",
+      "bytes": 20224,
+      "sha256": "e7aa827f5240a4a52ff70ecd585cda2702e943c17c35b5c618cd19afc197db6b"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/static-access/cpu-01.npz",
+      "bytes": 20235,
+      "sha256": "84b4812dedab70bab105662b9a26bb8c7cd376b4963b4d77a63bca2f7123409a"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/static-access/cpu-02.npz",
+      "bytes": 20237,
+      "sha256": "6dd4db005688aa1bb93b9ed250868e3f5fd233241b59d155c5dd68471bf070d6"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/static-access/cpu-03.npz",
+      "bytes": 17692,
+      "sha256": "d447aa3bc0abae294227d59fee910525e18b4dc3321a023fcbf4776dcd097a17"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/static-access/cpu-04.npz",
+      "bytes": 19464,
+      "sha256": "501bc800ab4e1b4c4e6dff9591470fec9b2ead47e054841a82f1a1789dde3bb8"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/static-access/cpu-05.npz",
+      "bytes": 20351,
+      "sha256": "39cc9b48f6bbc948531245e5cba1ed5784298c413846185cb58efeccf2e3b503"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/static-access/cpu-06.npz",
+      "bytes": 19457,
+      "sha256": "b06f102f34cb010726945c76bb8a31af278d2b3adf1ba878747079b28a25e403"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/static-access/cpu-07.npz",
+      "bytes": 19770,
+      "sha256": "da87fd5b971a88fcb1b6baf8602b0f4e78014e21202279ef8df2b107d7a3a1cd"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/static-access/cpu-08.npz",
+      "bytes": 9421,
+      "sha256": "dcf4bc6174ab00c9356f7cf41552b001df842b2c6761415492c9eb6de07fab18"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/static-access/cpu-09.npz",
+      "bytes": 7073,
+      "sha256": "d19ebe7f64f339dbea93a258fd1515173daa1b5a36899c34f7273684bb8406ae"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/static-access/manifest.json",
+      "bytes": 1185,
+      "sha256": "47442e6c155541b0ef2c355ce594872f48fb2f2eeeabd66daa87c5cfc0c19acf"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/episode-lanes/authored-two-five/capture.json",
+      "bytes": 190141,
+      "sha256": "e7d1000a578222b036de791e4e30b62e1c938804bbee32ca9358858fecc648da"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/episode-lanes/authored-two-five/command.json",
+      "bytes": 648,
+      "sha256": "328a6aeba1a12be25d7f5d9a6a48e1117da0e63ed311bcdd1489dab035226f26"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/episode-lanes/authored-two-five/stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/episode-lanes/authored-two-five/stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/episode-lanes/budget-six/capture.json",
+      "bytes": 161334,
+      "sha256": "314fc417c6a9be15aad9f360e7b692d1531a56f0eea0a2cec705d9ab03df2d50"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/episode-lanes/budget-six/command.json",
+      "bytes": 634,
+      "sha256": "db22b76af7390159eaf2147f24766289af4267e285d00ad1128ce051e5f73801"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/episode-lanes/budget-six/stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/episode-lanes/budget-six/stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/episode-lanes/death-at-lifespan/capture.json",
+      "bytes": 154695,
+      "sha256": "32b920d03b9f4544c89b74db32eb51ff5b443afed57126ad61d5ac81f92184d2"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/episode-lanes/death-at-lifespan/command.json",
+      "bytes": 648,
+      "sha256": "70a3593e67a5707111f74e92f0124701bb81642e0c6e7cac4526971d84656cbe"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/episode-lanes/death-at-lifespan/stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/episode-lanes/death-at-lifespan/stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/episode-lanes/healthy-retirement/capture.json",
+      "bytes": 155630,
+      "sha256": "ff6ed9f6c938a7f84daed4c0fe1048edf8c836f59c70e394bd378885aef01571"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/episode-lanes/healthy-retirement/command.json",
+      "bytes": 650,
+      "sha256": "e2b368c5f3f61edf3ab7c923915ce97dea60240925f55152fdd70b333ef4fe3b"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/episode-lanes/healthy-retirement/stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/episode-lanes/healthy-retirement/stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/episode-lanes/passive-two-five/capture.json",
+      "bytes": 154305,
+      "sha256": "df4e5556f323de671d98fa1dab7ee76fe2b2682acf11a3a4a4e000adf40ab5bd"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/episode-lanes/passive-two-five/command.json",
+      "bytes": 646,
+      "sha256": "a4f541eebdfcbf3eb99433289bd5dd599966afadfaefd09a46c89d34b914fc05"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/episode-lanes/passive-two-five/stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/episode-lanes/passive-two-five/stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/episode-lanes/two-episodes-reset/capture.json",
+      "bytes": 351780,
+      "sha256": "9ce35bb0cfb920170664485e81da7af848b93ead58916aa282a306926f90ed85"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/episode-lanes/two-episodes-reset/command.json",
+      "bytes": 650,
+      "sha256": "a00eb98675b5852eedfe8dff585ae155487de7a6aa531cfabfe9b44a3b675d1b"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/episode-lanes/two-episodes-reset/stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/episode-lanes/two-episodes-reset/stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/oracle/controlled-lifecycle.json",
+      "bytes": 9696,
+      "sha256": "ba9ab2526e4bef2a9ebc8c5f2a09d9e217a72b1bf9b0fcebc18165308a1c9fba"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/oracle/controlled-lifecycle.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/oracle/receipt.json",
+      "bytes": 838,
+      "sha256": "0697aa1ed3da6930a1ffc52d42cde1f5b2a9806ed10e9dac508977b7a321b7d1"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/population-numerics/reference/capture.log",
+      "bytes": 1322,
+      "sha256": "5297163e8c8bd0a0a651f60e064422b69f76d228e9f6891f4511ebd8ebb8a155"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/population-numerics/reference/capture.py",
+      "bytes": 6504,
+      "sha256": "8d69502113a071ef383861f8b8356a35f603398e7362aa340ad9d6567e13d5da"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/population-numerics/reference/capture.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/population-numerics/reference/fixture-helper.py",
+      "bytes": 6257,
+      "sha256": "b22601ae6cac1c78fe86f3e23b717c831905df9c39850daa24b406ae4e6f5c33"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/population-numerics/reference/per-seq1-double0.json",
+      "bytes": 143855,
+      "sha256": "3b214ff0db38a2cae90c7abe4fb112df03c663bde649876deece0e5b5eea634b"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/population-numerics/reference/per-seq1-double1.json",
+      "bytes": 143869,
+      "sha256": "e6d0780d90335771ff057d5f629d03a318aea7c5d6de7e637687a500e7aaaf52"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/population-numerics/reference/population-helper.py",
+      "bytes": 17539,
+      "sha256": "1612d6c2ab5ab01c4dbd4156543e45fe7f8f57827edfca6bcc996b490feb2058"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/population-numerics/reference/receipt.json",
+      "bytes": 16903,
+      "sha256": "1174d0a481397908b540a2aa7de65b4f280983acdc1ae1bda03fa8cd8feb5d9e"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/population-numerics/reference/recurrent-seq1-double0.json",
+      "bytes": 144139,
+      "sha256": "369d061a8c385e4559d100420e78dc5662cb33449002f41515db9900d254c7d3"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/population-numerics/reference/recurrent-seq1-double1.json",
+      "bytes": 144139,
+      "sha256": "2dd009f5d134493dfd0533dbedd90d37ab732d85046d69df1d6493f14bd009f2"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/population-numerics/reference/recurrent-seq2-double0.json",
+      "bytes": 144133,
+      "sha256": "af7c26c8af364a3859f87f81eb6ecf3b9826bf0d610554ae803458ef5ae222cd"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/population-numerics/reference/recurrent-seq2-double1.json",
+      "bytes": 144133,
+      "sha256": "2d8211029b68c80f909e3a28265c02a78dfdb14fe41c957ae4c03a8f3fd73051"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/population-numerics/reference/standard-seq1-double0.json",
+      "bytes": 144215,
+      "sha256": "66bb86dfb82bad8630ec099d88ebc4e4eb3e650d3411ddd3e73ba788ef35924a"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/parent/population-numerics/reference/standard-seq1-double1.json",
+      "bytes": 144215,
+      "sha256": "07322b18f0ab25ef56feab3322af0b03d870a85e6d9876c3547968ce20bab6c8"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/instrument/derive-preregistration.py",
+      "bytes": 6070,
+      "sha256": "c715f0e48419390b481c3cb610255199bbb08eda9f3b557d3800697c582e49fc"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/instrument/parent-capture-receipts.json",
+      "bytes": 2677,
+      "sha256": "9d1ca67baf62e8ab10eae5372c3640a59df77606db879adf1df7ad2a467639c0"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/prerequisites/recorder-shutdown/receipt.json",
+      "bytes": 51030,
+      "sha256": "bd754fca1c648bdda7e528a6027603cfa15e10deca6156c557e4c37372cfa562"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/prerequisites/recorder-shutdown/ordinary-parent.log",
+      "bytes": 881,
+      "sha256": "891642f983bf973bad69730eb1ac24293fcdac0802940193b0bc5ae1852ccd72"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/environment/e1-red.log",
+      "bytes": 13642,
+      "sha256": "6e5f540589245cd08e6e98f52725686681704eb1a1fe6a87a46041a938204a66"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/population/P1-P2-red.log",
+      "bytes": 32343,
+      "sha256": "f30da29793acb03159a37e1e6550df60253a0150374d3588052b33e8aa797dd0"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/population/P3-red.log",
+      "bytes": 3964,
+      "sha256": "273cd85cb898f8adad1801b8b67b39766a2a3fc5f0c5e34e2e8af28dab93ea71"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/exporters-red.log",
+      "bytes": 22281,
+      "sha256": "b2c4b18204cc236b670ce9e8f2458868dfa15b44cb14eb3ae154a06c75dbcc39"
+    },
+    {
+      "path": "runs/episode-lanes/2026-10-02/implementation/database-schema-red-final.log",
+      "bytes": 17726,
+      "sha256": "c0bf338ec4bc59aa829f44c8532a3e8e23696d0ad87f28ce288b31421befca98"
+    }
+  ]
+}

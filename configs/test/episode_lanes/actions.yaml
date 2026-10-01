@@ -1,0 +1,25 @@
+actions:
+  version: '1.0'
+  substrate_actions:
+    inherit: true
+  custom_actions:
+  - name: WAIT
+    description: Do nothing (pass turn)
+    enabled_by_default: true
+  - name: REST
+    description: Passive energy recovery (test action)
+    enabled_by_default: false
+  - name: END_LANE
+    description: Deterministic lifecycle witness
+    enabled_by_default: true
+    writes:
+    - variable_id: energy
+      expression: '0.0'
+      condition: null
+      composition: overwrite
+      phase: apply_action_effects
+      priority: 0
+      clamp: null
+      telemetry_label: end_lane
+  labels:
+    preset: gaming

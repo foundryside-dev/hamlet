@@ -43,7 +43,7 @@ if TYPE_CHECKING:
 
 _logger = logging.getLogger(__name__)
 
-POPULATION_CHECKPOINT_FORMAT_VERSION = 5
+POPULATION_CHECKPOINT_FORMAT_VERSION = 6
 POPULATION_CHECKPOINT_KEYS = frozenset(
     {
         "version",

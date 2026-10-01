@@ -860,15 +860,15 @@ class TestPopulationCheckpointSchema:
             minimal_brain_config,
         )
         checkpoint = population.get_checkpoint_state()
-        checkpoint["version"] = 4
+        checkpoint["version"] = 5
         before = _population_runtime_snapshot(population)
 
-        with pytest.raises(ValueError, match=r"population checkpoint version.*4.*expected=5"):
+        with pytest.raises(ValueError, match=r"population checkpoint version.*5.*expected=6"):
             population.load_checkpoint_state(checkpoint)
 
         _assert_recursive_state_equal(before, _population_runtime_snapshot(population))
 
-    @pytest.mark.parametrize("invalid_version", (4.0, True))
+    @pytest.mark.parametrize("invalid_version", (6.0, True))
     def test_population_version_requires_an_exact_integer_before_mutation(
         self,
         invalid_version,
@@ -997,7 +997,7 @@ class TestPopulationCheckpointSchema:
             minimal_brain_config,
         )
         checkpoint = population.get_checkpoint_state()
-        checkpoint["version"] = 5
+        checkpoint["version"] = 6
         replay_state = checkpoint["replay_buffer"]
         replay_state["format_version"] = 4
         replay_state["replay_kind"] = "standard"
@@ -1046,7 +1046,7 @@ class TestPopulationCheckpointSchema:
             brain_config=brain_config,
         )
         checkpoint = population.get_checkpoint_state()
-        checkpoint["version"] = 5
+        checkpoint["version"] = 6
         checkpoint["replay_buffer"]["format_version"] = 4
         checkpoint["replay_buffer"]["replay_kind"] = "standard"
         before = _population_runtime_snapshot(population)

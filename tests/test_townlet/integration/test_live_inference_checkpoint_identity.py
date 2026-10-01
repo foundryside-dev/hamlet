@@ -17,6 +17,7 @@ from __future__ import annotations
 import shutil
 from pathlib import Path
 from typing import Any
+from unittest.mock import patch
 
 import pytest
 import torch
@@ -128,6 +129,28 @@ def _write_checkpoint(
 def _q_state_snapshot(server: LiveInferenceServer) -> dict[str, torch.Tensor]:
     assert server.population is not None
     return {k: v.clone() for k, v in server.population.q_network.state_dict().items()}
+
+
+@pytest.mark.asyncio
+async def test_serving_refuses_population_version_five_before_network_load(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.chdir(tmp_path)
+    pack = _copy_pack(tmp_path, "base")
+    checkpoint_dir = tmp_path / "ckpts"
+    server = _make_server(pack, checkpoint_dir)
+    checkpoint_path = _write_checkpoint(checkpoint_dir, server)
+    checkpoint = torch.load(checkpoint_path, weights_only=False)
+    assert checkpoint["version"] == CHECKPOINT_FORMAT_VERSION == 6
+    checkpoint["population_state"]["version"] = 5
+    torch.save(checkpoint, checkpoint_path)
+    persist_checkpoint_digest(checkpoint_path)
+    before = _q_state_snapshot(server)
+    network = server.population.q_network
+    with patch.object(network, "load_state_dict", wraps=network.load_state_dict) as load_network:
+        with pytest.raises(ValueError, match=r"population checkpoint version.*5.*expected=6"):
+            await server._check_and_load_checkpoint()
+        load_network.assert_not_called()
+    assert all(torch.equal(before[key], after) for key, after in _q_state_snapshot(server).items())
+    assert server.current_checkpoint_path is None
 
 
 @pytest.mark.asyncio

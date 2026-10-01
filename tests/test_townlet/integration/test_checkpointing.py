@@ -20,7 +20,9 @@ Total: 38 tests → 15 comprehensive integration tests
 import shutil
 import sqlite3
 import tempfile
+from copy import deepcopy
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 import torch
@@ -32,9 +34,174 @@ from townlet.demo.runner import DemoRunner
 from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
 from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
 from townlet.population.vectorized import VectorizedPopulation
+from townlet.training.checkpoint_utils import CHECKPOINT_FORMAT_VERSION, persist_checkpoint_digest
 
 TRAIN_KWARGS = dict(train_frequency=1, batch_size=32, sequence_length=1, max_grad_norm=1.0)
 LEVEL_NAME = "L0_test"
+
+
+def _train_vector_ticks(population: VectorizedPopulation, env, ticks: int) -> None:
+    """Continue real training through completed batch boundaries without ghost transitions."""
+    for _ in range(ticks):
+        if bool(population.episode_completed.all()):
+            population.reset()
+        population.step_population(env)
+
+
+def test_runner_refuses_population_version_five_before_all_consumer_mutation(tmp_path: Path) -> None:
+    from tests.test_townlet.regressions.test_episode_lane_population import make_lane_population
+    from tests.test_townlet.unit.population.test_vectorized_population import _assert_recursive_state_equal
+
+    population = make_lane_population(
+        tmp_path / "pack",
+        mode="standard",
+        num_agents=2,
+        lifespan=20,
+        batch_size=128,
+        sequence_length=1,
+        rnd_batch_size=128,
+        double_dqn=False,
+    )
+    with DemoRunner(
+        config_dir=tmp_path / "pack",
+        db_path=tmp_path / "demo.db",
+        checkpoint_dir=tmp_path / "checkpoints",
+        max_episodes=1,
+        level_name=LEVEL_NAME,
+        max_environment_steps=100,
+    ) as runner:
+        runner.population = population
+        runner.env = population.env
+        runner.curriculum = population.curriculum
+        runner.exploration = population.exploration
+        runner.save_checkpoint()
+        checkpoint_path = next(runner.checkpoint_dir.glob("checkpoint_ep*.pt"))
+        checkpoint = torch.load(checkpoint_path, weights_only=False)
+        assert checkpoint["version"] == CHECKPOINT_FORMAT_VERSION == 6
+        checkpoint["population_state"]["version"] = 5
+        first_weight = next(iter(checkpoint["population_state"]["q_network"]))
+        checkpoint["population_state"]["q_network"][first_weight] += 1.0
+        checkpoint["completed_live_agent_steps"] = 9
+        torch.save(checkpoint, checkpoint_path)
+        persist_checkpoint_digest(checkpoint_path)
+
+        def snapshot():
+            return deepcopy(
+                {
+                    "population": population.get_checkpoint_state(),
+                    "curriculum": runner.curriculum.checkpoint_state(),
+                    "layout": runner.env.get_affordance_positions(),
+                    "agent_ids": population.agent_ids,
+                    "budget": (
+                        runner.completed_live_agent_steps,
+                        runner.environment_step_budget_shortfall,
+                        runner.environment_step_budget_reached,
+                    ),
+                    "episode": runner.current_episode,
+                    "observations": population.current_obs,
+                }
+            )
+
+        before = snapshot()
+        with (
+            patch.object(population, "load_checkpoint_state", wraps=population.load_checkpoint_state) as load_population,
+            patch.object(runner.curriculum, "load_state", wraps=runner.curriculum.load_state) as load_curriculum,
+            patch.object(runner.env, "set_affordance_positions", wraps=runner.env.set_affordance_positions) as load_layout,
+        ):
+            with pytest.raises(ValueError, match=r"population checkpoint version.*5.*expected=6"):
+                runner.load_checkpoint()
+            load_population.assert_not_called()
+            load_curriculum.assert_not_called()
+            load_layout.assert_not_called()
+        _assert_recursive_state_equal(before, snapshot())
+
+
+@pytest.mark.parametrize("mode", ["standard", "recurrent"])
+def test_current_checkpoint_closes_pending_lanes_once_and_resumes_fresh_episode(tmp_path: Path, mode: str) -> None:
+    from tests.test_townlet.regressions.fixtures.episode_lanes import compile_authored_environment, controlled_action_schedule
+    from tests.test_townlet.regressions.test_episode_lane_population import make_lane_population
+    from tests.test_townlet.unit.population.test_vectorized_population import _assert_recursive_state_equal
+    from townlet.training.sequential_replay_buffer import SequentialReplayBuffer
+
+    population = make_lane_population(
+        tmp_path / "pack",
+        mode=mode,
+        num_agents=2,
+        lifespan=20,
+        batch_size=128,
+        sequence_length=1,
+        rnd_batch_size=128,
+        double_dqn=False,
+    )
+    with controlled_action_schedule(population.exploration, population.env, [("WAIT", "WAIT")]):
+        population.step_population(population.env)
+    with DemoRunner(
+        config_dir=tmp_path / "pack",
+        db_path=tmp_path / "first.db",
+        checkpoint_dir=tmp_path / "checkpoints",
+        max_episodes=1,
+        level_name=LEVEL_NAME,
+    ) as runner:
+        runner.population = population
+        runner.env = population.env
+        runner.curriculum = population.curriculum
+        runner.exploration = population.exploration
+        runner.save_checkpoint()
+        assert [item.reason for item in population.episode_completions] == ["checkpoint", "checkpoint"]
+        assert population.exploration.survival_history == [1, 1]
+        runner.save_checkpoint()
+        assert population.exploration.survival_history == [1, 1]
+        learned_state = deepcopy(population.get_checkpoint_state())
+        assert learned_state["version"] == 6
+        assert not {"episode_completed", "episode_completions", "current_obs", "rollout_hidden", "current_episodes"}.intersection(
+            learned_state
+        )
+
+    env = compile_authored_environment(tmp_path / "pack", num_agents=2)
+    exploration = AdaptiveIntrinsicExploration(obs_dim=env.observation_dim, rnd_training_batch_size=128, device=env.device)
+    restored = VectorizedPopulation(
+        env=env,
+        curriculum=StaticCurriculum(1.0),
+        exploration=exploration,
+        agent_ids=population.agent_ids,
+        device=env.device,
+        brain_config=env.universe.brain,
+        obs_dim=env.observation_dim,
+        action_dim=env.action_dim,
+        train_frequency=1,
+        batch_size=128,
+        sequence_length=1,
+        max_grad_norm=1.0,
+        tb_logger=None,
+        max_episodes=100,
+        max_steps_per_episode=20,
+    )
+    with DemoRunner(
+        config_dir=tmp_path / "pack",
+        db_path=tmp_path / "second.db",
+        checkpoint_dir=tmp_path / "checkpoints",
+        max_episodes=1,
+        level_name=LEVEL_NAME,
+    ) as resumed:
+        resumed.population = restored
+        resumed.env = env
+        resumed.curriculum = restored.curriculum
+        resumed.exploration = exploration
+        assert resumed.load_checkpoint() == 0
+        restored.reset()  # This is the runner's existing fresh-episode resume policy.
+        _assert_recursive_state_equal(learned_state, restored.get_checkpoint_state())
+        assert restored.episode_completions == [None, None]
+        assert restored.episode_step_counts.tolist() == [0, 0]
+        assert env.step_counts.tolist() == [0, 0]
+        assert not env.dones.any()
+        if isinstance(restored.replay_buffer, SequentialReplayBuffer):
+            assert restored.replay_buffer.num_transitions == 2
+            assert all(not episode["dones"].any() for episode in restored.replay_buffer.episodes)
+            assert all(not episode["observations"] for episode in restored.current_episodes)
+            assert all(not tensor.any() for tensor in restored.rollout_hidden)
+        else:
+            assert len(restored.replay_buffer) == 2
+            assert not restored.replay_buffer.dones[:2].any()
 
 
 @pytest.fixture
@@ -219,7 +386,7 @@ class TestPopulationCheckpointing:
         assert set(checkpoint) == required_keys
 
         # Verify version
-        assert checkpoint["version"] == 5, "Population checkpoint must use the exact current format"
+        assert checkpoint["version"] == 6, "Population checkpoint must use the exact current format"
 
     def test_population_checkpoint_preserves_network_weights(self, cpu_device, test_config_pack_path, env_builder, minimal_brain_config):
         """Q-network weights should be exactly preserved across checkpoint cycle."""
@@ -257,8 +424,7 @@ class TestPopulationCheckpointing:
 
         # Train for a bit to change weights
         pop1.reset()
-        for _ in range(50):
-            pop1.step_population(env)
+        _train_vector_ticks(pop1, env, 50)
 
         # Capture weights
         original_weights = {k: v.clone() for k, v in pop1.q_network.state_dict().items()}
@@ -329,8 +495,7 @@ class TestPopulationCheckpointing:
 
         # Fill replay buffer with experiences
         pop1.reset()
-        for _ in range(100):
-            pop1.step_population(env)
+        _train_vector_ticks(pop1, env, 100)
 
         original_buffer_size = len(pop1.replay_buffer)
         assert original_buffer_size > 0, "Replay buffer should have experiences"
@@ -732,8 +897,7 @@ class TestRunnerCheckpointing:
                 )
 
                 runner1.population.reset()
-                for _ in range(50):
-                    runner1.population.step_population(runner1.env)
+                _train_vector_ticks(runner1.population, runner1.env, 50)
                 runner1.curriculum.tracker.agent_stages[0] = 3
 
                 q_weights_before = {k: v.clone() for k, v in runner1.population.q_network.state_dict().items()}
@@ -828,15 +992,13 @@ class TestCheckpointRoundTrip:
 
         # Train first population
         pop1.reset()
-        for _ in range(100):
-            pop1.step_population(env)
+        _train_vector_ticks(pop1, env, 100)
 
         # Save checkpoint at step 100
         checkpoint = pop1.get_checkpoint_state()
 
         # Continue training for 50 more steps
-        for _ in range(50):
-            pop1.step_population(env)
+        _train_vector_ticks(pop1, env, 50)
 
         # Capture state at step 150
         weights_at_150 = {k: v.clone() for k, v in pop1.q_network.state_dict().items()}
@@ -861,10 +1023,10 @@ class TestCheckpointRoundTrip:
         )
 
         pop2.load_checkpoint_state(checkpoint)
+        pop2.reset()
 
         # Train for 50 steps (should reach step 150)
-        for _ in range(50):
-            pop2.step_population(env)
+        _train_vector_ticks(pop2, env, 50)
 
         # Verify weights differ (training progressed)
         # Note: We can't expect exact match due to randomness, but should be trained
@@ -912,8 +1074,7 @@ class TestCheckpointRoundTrip:
 
         # Train for some steps
         population.reset()
-        for _ in range(100):
-            population.step_population(env)
+        _train_vector_ticks(population, env, 100)
 
         # Advance curriculum manually
         curriculum.tracker.agent_stages[0] = 2
@@ -1029,7 +1190,7 @@ class TestVariableMeterCheckpoints:
         assert "observation_schema_hash" in metadata, "Metadata should contain selected-level observation identity"
 
         # Verify values
-        assert checkpoint["version"] == 5
+        assert checkpoint["version"] == 6
         assert metadata["meter_count"] == 4, f"Should have 4 meters, got {metadata['meter_count']}"
         assert metadata["observation_schema_hash"] == task001_env_4meter.level.observation_schema_hash
         assert list(metadata["meter_names"]) == [

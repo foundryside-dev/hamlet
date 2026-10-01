@@ -205,6 +205,7 @@ def _var(name: str, *, scope: str = "global", normalization=_BOUNDED, dims: int 
         lifetime="episode",
         readable_by=["agent", "engine"],
         writable_by=["engine"],
+        exposed_to=["agent"] if scope != "agent_private" else [],
         default=[0.0] * dims if is_vector else default,
         description=f"test {name}",
         normalization=normalization,
@@ -1181,6 +1182,7 @@ class _ProfileVar:
         self.readable_by = ("engine", "agent")
         self.writable_by = ("engine",)
         self.exposed_to = ("agent",)
+        self.normalization = _BOUNDED
 
 
 class _Profile:
@@ -1521,3 +1523,102 @@ class TestTokenObservationEncoder:
         encoder = _encoder(registry, spec)
         observation = encoder.encode(2, _full_ctx())
         assert not bool(torch.isclose(observation, torch.tensor(sentinel)).any())
+
+
+@pytest.mark.parametrize("readers,reason", [(["engine"], PermissionError), (["engine", "agent"], ValueError)])
+def test_registry_publisher_refuses_hidden_constructed_bindings_before_gather_plan(readers, reason):
+    variable = VariableDef(
+        id="temp",
+        scope="global",
+        type="scalar",
+        lifetime="episode",
+        default=0.25,
+        readable_by=readers,
+        writable_by=["engine"],
+        exposed_to=[],
+        normalization=_BOUNDED,
+    )
+    registry = VariableRegistry([variable], 2, DEVICE)
+    registry._scope_arenas = {}  # Authorization must precede arena/index access.
+    schema = _variable_type(_registry_bindings(["temp"]))
+    with pytest.raises(reason, match="temp"):
+        RegistryVariableElementPublisher(schema, _layout(schema), registry, (0,), DEVICE)
+
+
+def test_registry_publisher_and_getter_share_snapshot_after_dto_policy_mutation(monkeypatch):
+    registry = _registry()
+    registry.variables["temp"].readable_by.clear()
+    registry.variables["temp"].exposed_to.clear()
+    schema = _variable_type(_registry_bindings(["temp"]))
+    publisher = RegistryVariableElementPublisher(schema, _layout(schema), registry, (0,), DEVICE)
+    assert registry.get("temp", reader="agent").item() == pytest.approx(0.25)
+    monkeypatch.setattr(registry, "get", lambda *args, **kwargs: pytest.fail("publisher must retain batched arena gathers"))
+    rows = _rows(1, "variable_element")
+    publisher.publish(rows, TokenPublishContext())
+    assert rows[:, 0, _lane("variable_element", "value_0")].tolist() == pytest.approx([0.25, 0.25])
+
+
+@pytest.mark.parametrize("readers,reason", [(("engine",), PermissionError), (("engine", "agent"), ValueError)])
+def test_item_publisher_refuses_hidden_qualified_binding(readers, reason):
+    profile = _Profile(["nutrition", "freshness"])
+    profile.variables[0].readable_by = readers
+    profile.variables[0].exposed_to = ()
+    registry = VariableRegistry([], 2, DEVICE, max_items=3, item_profiles={"food": profile})
+    with pytest.raises(reason, match="food.*nutrition"):
+        TestItemArenaVariableElementPublisher()._publisher(registry)
+
+
+def test_item_publisher_and_getter_share_snapshot_after_profile_policy_mutation(monkeypatch):
+    registry = _item_profile_registry()
+    variable = registry.item_profiles["food"].variables[0]
+    variable.readable_by = ("engine",)
+    variable.exposed_to = ()
+    registry.register_item_instance(2, "food")
+    registry.write_item("food", "nutrition", 0.75, 2, writer="engine")
+    publisher, schema = TestItemArenaVariableElementPublisher()._publisher(registry)
+    assert registry.read_item("food", "nutrition", 2, reader="agent") == pytest.approx(0.75)
+    monkeypatch.setattr(registry, "read_item", lambda *args, **kwargs: pytest.fail("publisher must retain batched arena gather"))
+    rows = _rows(schema.capacity, "variable_element")
+    batch = _item_batch([0], [[1, 1]], [2], [[False], [False]], [-1])
+    publisher.publish(rows, TokenPublishContext(item_slots=batch))
+    assert rows[:, 0, _lane("variable_element", "value_0")].tolist() == pytest.approx([0.75, 0.75])
+
+
+@pytest.mark.parametrize("item_scope", [False, True])
+def test_token_binding_derivation_refuses_mutated_exposure_policy(item_scope):
+    from townlet.universe.dto.token_spec import _variable_element_artifacts
+    from townlet.vfs.profiles import CompiledItemProfile, CompiledVariable
+
+    if item_scope:
+        variable = CompiledVariable(
+            name="nutrition",
+            type="float",
+            lifetime="episode",
+            exposed_to=("agent",),
+            readable_by=("engine", "agent"),
+            writable_by=("engine",),
+            initial_value=0.25,
+            normalization=_BOUNDED,
+            semantic_type="custom",
+        )
+        variable.readable_by = ("engine",)
+        profile = CompiledItemProfile(profile_name="food", variables=[variable])
+        products = SimpleNamespace(item_profiles={"food": profile})
+        registry_variables = ()
+    else:
+        products = None
+        registry_variables = (_var("temp").model_copy(update={"readable_by": ["engine"]}),)
+    with pytest.raises(ValueError, match="exposure requires read"):
+        _variable_element_artifacts(products, registry_variables, item_capacity_value=1)
+
+
+def test_item_slot_partition_does_not_reinterpret_mutated_exposure_lists():
+    registry = _item_profile_registry()
+    variable = registry.item_profiles["food"].variables[0]
+    variable.normalization = _BOUNDED
+    variable.exposed_to = ()
+    schema = _variable_type([SlotBinding(slot_index=0, filler_kind="static", filler_ref="food.nutrition[0]", scope=VariableScope.ITEM)])
+    registry_slots, declarations = _split_variable_element_slots(schema, registry.item_profiles)
+    assert not registry_slots
+    publisher = ItemArenaVariableElementPublisher(schema, _layout(schema), registry, declarations, owner_capacity=1, device=DEVICE)
+    assert publisher.claimed_slots == (0,)

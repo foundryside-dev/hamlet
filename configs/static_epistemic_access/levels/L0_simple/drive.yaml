@@ -1,0 +1,65 @@
+drive:
+  version: '1.0'
+  modifiers:
+    energy_crisis:
+      bar: energy
+      ranges:
+      - name: critical
+        min: 0.0
+        max: 0.2
+        multiplier: 0.0
+      - name: normal
+        min: 0.2
+        max: 1.0
+        multiplier: 1.0
+    health_crisis:
+      bar: health
+      ranges:
+      - name: critical
+        min: 0.0
+        max: 0.2
+        multiplier: 0.0
+      - name: normal
+        min: 0.2
+        max: 1.0
+        multiplier: 1.0
+    money_crisis:
+      bar: money
+      ranges:
+      - name: critical
+        min: 0.0
+        max: 0.2
+        multiplier: 0.0
+      - name: normal
+        min: 0.2
+        max: 1.0
+        multiplier: 1.0
+    food_crisis:
+      bar: sustenance
+      ranges:
+      - name: critical
+        min: 0.0
+        max: 0.2
+        multiplier: 0.0
+      - name: normal
+        min: 0.2
+        max: 1.0
+        multiplier: 1.0
+  extrinsic:
+    type: vfs_variable
+    base: 0.0
+    bar_bonuses: []
+    variable_bonuses:
+    - variable: hidden_score
+      weight: 0.5
+    apply_modifiers: []
+  intrinsic:
+    strategy: none
+    base_weight: 0.0
+    apply_modifiers: []
+  shaping: []
+  composition:
+    normalize: false
+    clip: null
+    log_components: true
+    log_modifiers: true

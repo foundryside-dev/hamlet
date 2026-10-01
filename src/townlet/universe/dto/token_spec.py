@@ -45,6 +45,7 @@ from townlet.effects.affordance_identity import (
     opening_hours_signature,
 )
 from townlet.numeric import require_float32
+from townlet.vfs.access_policy import validate_static_access
 from townlet.vfs.schema import NormalizationSpec, VariableDef, VariableScope, variable_element_shape
 from townlet.vfs.semantic_type import SemanticType
 
@@ -1410,6 +1411,9 @@ def _variable_element_artifacts(
     if compiled_vfs_profiles is not None:
         for profile_name, item_profile in (compiled_vfs_profiles.item_profiles or {}).items():
             for compiled_var in item_profile.variables:
+                validate_static_access(
+                    f"{profile_name}.{compiled_var.name}", compiled_var.readable_by, compiled_var.writable_by, compiled_var.exposed_to
+                )
                 if compiled_var.exposed_to:
                     exposed_item_vars.append((f"{profile_name}.{compiled_var.name}", compiled_var))
 
@@ -1453,6 +1457,7 @@ def _variable_element_artifacts(
 
     for var_def in vfs_variables:
         var_id = var_def.id
+        validate_static_access(var_id, var_def.readable_by, var_def.writable_by, var_def.exposed_to)
         if not var_def.exposed_to:
             continue
         if var_def.semantic_type is None:

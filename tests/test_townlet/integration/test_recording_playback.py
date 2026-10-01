@@ -5,7 +5,7 @@ Tests loading and replaying recorded episodes through the inference server.
 """
 
 import tempfile
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from pathlib import Path
 
 import lz4.frame
@@ -45,6 +45,8 @@ class TestReplayLoading:
                 affordance_layout={"Bed": (2, 3), "Job": (5, 6)},
                 affordance_visits={"Bed": 5, "Job": 3},
                 custom_action_uses={},
+                completion_reason="authored_terminal",
+                shaping_reward=0.0,
             )
 
             steps = [
@@ -59,13 +61,23 @@ class TestReplayLoading:
                     q_values=(0.1, 0.2, 0.3, 0.4, 0.5),
                     time_of_day=i % 24,
                     interaction_progress=0.5 if i % 5 == 0 else 0.0,
+                    extrinsic_reward=0.9,
+                    shaping_reward=0.0,
                 )
                 for i in range(50)
             ]
 
             # Serialize and compress
+            metadata = replace(
+                metadata,
+                survival_steps=len(steps),
+                total_reward=sum(step.reward for step in steps),
+                extrinsic_reward=sum(step.extrinsic_reward for step in steps),
+                intrinsic_reward=sum(step.intrinsic_reward for step in steps),
+                shaping_reward=sum(step.shaping_reward for step in steps),
+            )
             episode_data = {
-                "version": 1,
+                "version": 2,
                 "metadata": asdict(metadata),
                 "steps": [asdict(step) for step in steps],
                 "affordances": metadata.affordance_layout,
@@ -119,6 +131,8 @@ class TestReplayLoading:
                 affordance_layout={"Bed": (1, 2)},
                 affordance_visits={"Bed": 2},
                 custom_action_uses={},
+                completion_reason="authored_terminal",
+                shaping_reward=0.0,
             )
 
             steps = [
@@ -133,13 +147,23 @@ class TestReplayLoading:
                     q_values=None,
                     time_of_day=None,
                     interaction_progress=None,
+                    extrinsic_reward=0.95,
+                    shaping_reward=0.0,
                 )
                 for i in range(30)
             ]
 
             # Serialize and compress
+            metadata = replace(
+                metadata,
+                survival_steps=len(steps),
+                total_reward=sum(step.reward for step in steps),
+                extrinsic_reward=sum(step.extrinsic_reward for step in steps),
+                intrinsic_reward=sum(step.intrinsic_reward for step in steps),
+                shaping_reward=sum(step.shaping_reward for step in steps),
+            )
             episode_data = {
-                "version": 1,
+                "version": 2,
                 "metadata": asdict(metadata),
                 "steps": [asdict(step) for step in steps],
                 "affordances": metadata.affordance_layout,
@@ -157,7 +181,7 @@ class TestReplayLoading:
             episode_data_loaded = msgpack.unpackb(decompressed, raw=False)
 
             # Verify structure
-            assert episode_data_loaded["version"] == 1
+            assert episode_data_loaded["version"] == 2
             assert episode_data_loaded["metadata"]["episode_id"] == 200
             assert len(episode_data_loaded["steps"]) == 30
             assert episode_data_loaded["steps"][0]["step"] == 0

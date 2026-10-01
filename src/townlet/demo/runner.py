@@ -570,6 +570,9 @@ class DemoRunner:
                 episode_reward = torch.zeros(num_agents, device=self.env.device)
                 episode_extrinsic_reward = torch.zeros(num_agents, device=self.env.device)
                 episode_intrinsic_reward = torch.zeros(num_agents, device=self.env.device)
+                episode_shaping_reward = torch.zeros(num_agents, device=self.env.device)
+                batch_episode_steps = 0
+                episode_live_agent_transitions = 0
                 final_meters = [None for _ in range(num_agents)]
                 affordance_visits = [defaultdict(int) for _ in range(num_agents)]
                 custom_action_uses = [defaultdict(int) for _ in range(num_agents)]  # Track REST, MEDITATE, etc.
@@ -623,16 +626,16 @@ class DemoRunner:
                             )
                         self.curriculum.transition_events.clear()
 
-                    # Note: agent_state.rewards contains COMBINED rewards (extrinsic + weighted intrinsic)
-                    # We need to extract pure extrinsic for separate logging
-                    intrinsic_weight = self.exploration.get_intrinsic_weight() if hasattr(self.exploration, "get_intrinsic_weight") else 1.0
-                    weighted_intrinsic = agent_state.intrinsic_rewards * intrinsic_weight
-                    extrinsic_only = agent_state.rewards - weighted_intrinsic
-
-                    # Accumulate rewards for episode totals
-                    episode_reward += agent_state.rewards  # Combined (what agent actually receives)
-                    episode_extrinsic_reward += extrinsic_only  # Pure extrinsic (for analysis)
-                    episode_intrinsic_reward += agent_state.intrinsic_rewards  # Unweighted intrinsic (for analysis)
+                    # The same entry-eligible canonical row feeds summaries and recordings.
+                    active_on_entry = agent_state.info["active_on_entry"]
+                    components = agent_state.info["reward_components"]
+                    zero_reward = torch.zeros_like(agent_state.rewards)
+                    episode_reward += torch.where(active_on_entry, agent_state.rewards, zero_reward)
+                    episode_extrinsic_reward += torch.where(active_on_entry, components["extrinsic"], zero_reward)
+                    episode_intrinsic_reward += torch.where(active_on_entry, components["intrinsic"], zero_reward)
+                    episode_shaping_reward += torch.where(active_on_entry, components["shaping"], zero_reward)
+                    batch_episode_steps += 1
+                    episode_live_agent_transitions += int(active_on_entry.sum().item())
 
                     if "successful_interactions" in agent_state.info:
                         for agent_idx, affordance_name in agent_state.info["successful_interactions"].items():
@@ -662,7 +665,7 @@ class DemoRunner:
                             final_meters[idx] = self.env.meters[idx].detach().cpu()
 
                     # Record step if recording enabled (only agent 0 for now)
-                    if self.recorder is not None:
+                    if self.recorder is not None and bool(active_on_entry[0].item()):
                         # Get temporal mechanics fields if available
                         time_of_day = agent_state.info.get("time_of_day", [None] * num_agents)[0]
                         interaction_progress = agent_state.info.get("interaction_progress", [None] * num_agents)[0]
@@ -677,8 +680,10 @@ class DemoRunner:
                             action=(
                                 agent_state.actions[0].item() if hasattr(agent_state.actions[0], "item") else int(agent_state.actions[0])
                             ),
-                            reward=float(extrinsic_only[0].item()),
-                            intrinsic_reward=float(agent_state.intrinsic_rewards[0].item()),
+                            reward=float(agent_state.rewards[0].item()),
+                            extrinsic_reward=float(components["extrinsic"][0].item()),
+                            intrinsic_reward=float(components["intrinsic"][0].item()),
+                            shaping_reward=float(components["shaping"][0].item()),
                             done=bool(agent_state.dones[0].item()),
                             q_values=agent_state.info.get("q_values", [None] * num_agents)[0],
                             epsilon=float(agent_state.epsilons[0].item()),
@@ -722,6 +727,10 @@ class DemoRunner:
                 episode_reward_cpu = episode_reward.detach().cpu()
                 episode_extrinsic_cpu = episode_extrinsic_reward.detach().cpu()
                 episode_intrinsic_cpu = episode_intrinsic_reward.detach().cpu()
+                episode_shaping_cpu = episode_shaping_reward.detach().cpu()
+                completion = self.population.episode_completions[0]
+                if completion is None:
+                    raise RuntimeError("Cannot publish an episode without a slot-zero completion")
                 step_counts_cpu = step_counts.detach().cpu().long()
                 stages_cpu = self.curriculum.tracker.agent_stages.detach().cpu()
 
@@ -730,10 +739,14 @@ class DemoRunner:
                 self.db.insert_episode(
                     episode_id=self.current_episode,
                     timestamp=episode_timestamp,
-                    survival_time=int(step_counts_cpu[0].item()),
+                    survival_time=completion.survival_time,
+                    batch_episode_steps=batch_episode_steps,
+                    live_agent_transitions=episode_live_agent_transitions,
+                    completion_reason=completion.reason,
                     total_reward=float(episode_reward_cpu[0].item()),
                     extrinsic_reward=float(episode_extrinsic_cpu[0].item()),
                     intrinsic_reward=float(episode_intrinsic_cpu[0].item()),
+                    shaping_reward=float(episode_shaping_cpu[0].item()),
                     intrinsic_weight=intrinsic_weight_value,
                     curriculum_stage=int(stages_cpu[0].item()),
                     epsilon=epsilon_value,
@@ -752,15 +765,19 @@ class DemoRunner:
 
                     metadata = EpisodeMetadata(
                         episode_id=self.current_episode,
-                        survival_steps=int(step_counts_cpu[0].item()),
+                        survival_steps=completion.survival_time,
+                        completion_reason=completion.reason,
                         total_reward=float(episode_reward_cpu[0].item()),
                         extrinsic_reward=float(episode_extrinsic_cpu[0].item()),
                         intrinsic_reward=float(episode_intrinsic_cpu[0].item()),
+                        shaping_reward=float(episode_shaping_cpu[0].item()),
                         curriculum_stage=int(stages_cpu[0].item()),
                         epsilon=epsilon_value,
                         intrinsic_weight=intrinsic_weight_value,
                         timestamp=episode_timestamp,
-                        affordance_layout=self.env.get_affordance_positions(),
+                        affordance_layout={
+                            name: tuple(position) for name, position in self.env.get_affordance_positions()["positions"].items()
+                        },
                         affordance_visits={k: v for k, v in affordance_visits[0].items()},  # Agent 0 visits
                         custom_action_uses={k: v for k, v in custom_action_uses[0].items()},  # Agent 0 custom actions
                     )
@@ -768,13 +785,18 @@ class DemoRunner:
 
                 agent_metrics = []
                 for idx, agent_id in enumerate(self.population.agent_ids):
+                    agent_completion = self.population.episode_completions[idx]
+                    if agent_completion is None:
+                        raise RuntimeError("Cannot publish a participated lane without its completion")
                     agent_metrics.append(
                         {
                             "agent_id": agent_id,
-                            "survival_time": int(step_counts_cpu[idx].item()),
+                            "survival_time": agent_completion.survival_time,
+                            "completion_reason": agent_completion.reason,
                             "total_reward": float(episode_reward_cpu[idx].item()),
                             "extrinsic_reward": float(episode_extrinsic_cpu[idx].item()),
                             "intrinsic_reward": float(episode_intrinsic_cpu[idx].item()),
+                            "shaping_reward": float(episode_shaping_cpu[idx].item()),
                             "curriculum_stage": int(stages_cpu[idx].item()),
                             "epsilon": epsilon_value,
                             "intrinsic_weight": intrinsic_weight_value,

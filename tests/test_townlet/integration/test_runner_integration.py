@@ -489,6 +489,10 @@ class TestDatabaseDefensiveChecks:
                 curriculum_stage=1,
                 epsilon=0.5,
                 observation_schema_hash="abc123",
+                batch_episode_steps=100,
+                live_agent_transitions=100,
+                completion_reason="cap",
+                shaping_reward=0.0,
             )
 
         with pytest.raises(RuntimeError, match="Database connection is closed"):

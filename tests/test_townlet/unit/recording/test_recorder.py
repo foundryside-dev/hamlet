@@ -53,6 +53,8 @@ def test_record_step_uses_recording_output_dir_fixture(mock_thread, mock_writer_
         reward=0.5,
         intrinsic_reward=0.0,
         done=False,
+        extrinsic_reward=0.5,
+        shaping_reward=0.0,
     )
 
     assert recording_output_dir.exists()
@@ -97,6 +99,8 @@ class TestEpisodeRecorderEdgeCases:
             intrinsic_reward=0.1,
             done=False,
             q_values=q_values_list,  # List, not tensor
+            extrinsic_reward=0.9,
+            shaping_reward=0.0,
         )
 
         # Should convert list to tuple without error
@@ -133,6 +137,8 @@ class TestEpisodeRecorderEdgeCases:
             intrinsic_reward=0.1,
             done=False,
             action_masks=action_masks_list,  # List, not tensor
+            extrinsic_reward=0.9,
+            shaping_reward=0.0,
         )
 
         # Should convert list to tuple without error
@@ -165,6 +171,8 @@ class TestEpisodeRecorderEdgeCases:
             reward=1.0,
             intrinsic_reward=0.0,
             done=False,
+            extrinsic_reward=1.0,
+            shaping_reward=0.0,
         )
 
         # Queue is now full
@@ -248,7 +256,7 @@ class TestRecordingWriterProcessing:
             curriculum=None,
         )
 
-        writer.episode_buffer.append(make_test_recorded_step())
+        writer.episode_buffer.append(make_test_recorded_step(done=True))
         metadata = make_test_episode_metadata()
         marker = EpisodeEndMarker(metadata=metadata)
 
@@ -271,7 +279,7 @@ class TestRecordingWriterProcessing:
             curriculum=None,
         )
 
-        writer.episode_buffer.append(make_test_recorded_step())
+        writer.episode_buffer.append(make_test_recorded_step(done=True))
         metadata = EpisodeMetadata(
             episode_id=100,
             survival_steps=10,
@@ -285,6 +293,8 @@ class TestRecordingWriterProcessing:
             affordance_layout={"Bed": (2, 3)},
             affordance_visits={"Bed": 1},
             custom_action_uses={},
+            completion_reason="authored_terminal",
+            shaping_reward=0.0,
         )
 
         with patch.object(writer, "_write_episode") as mock_write, patch("townlet.recording.recorder.logger") as mock_logger:
@@ -316,6 +326,8 @@ class TestRecordingWriterProcessing:
             affordance_layout={"Bed": (2, 3)},
             affordance_visits={"Bed": 1},
             custom_action_uses={},
+            completion_reason="authored_terminal",
+            shaping_reward=0.0,
         )
 
         with patch.object(writer, "_write_episode") as mock_write, patch("townlet.recording.recorder.logger") as mock_logger:
@@ -376,8 +388,8 @@ class TestRecordingWriterProcessing:
             curriculum=None,
         )
 
-        writer.episode_buffer.append(make_test_recorded_step())
-        writer._write_episode(make_test_episode_metadata(episode_id=42))
+        writer.episode_buffer.append(make_test_recorded_step(done=True))
+        writer._write_episode(make_test_episode_metadata(episode_id=42, survival_steps=1, total_reward=1.0))
 
         expected_path = recording_output_dir / "episode_000042.msgpack.lz4"
         assert expected_path.exists()
@@ -394,8 +406,8 @@ class TestRecordingWriterProcessing:
             curriculum=None,
         )
 
-        writer.episode_buffer.append(make_test_recorded_step())
-        writer._write_episode(make_test_episode_metadata(episode_id=99))
+        writer.episode_buffer.append(make_test_recorded_step(done=True))
+        writer._write_episode(make_test_episode_metadata(episode_id=99, survival_steps=1, total_reward=1.0))
 
         expected_path = recording_output_dir / "episode_000099.msgpack.lz4"
         assert expected_path.exists()
@@ -415,8 +427,8 @@ class TestRecordingWriterProcessing:
             curriculum=None,
         )
 
-        writer.episode_buffer.append(make_test_recorded_step())
-        writer._write_episode(make_test_episode_metadata(episode_id=55))
+        writer.episode_buffer.append(make_test_recorded_step(done=True))
+        writer._write_episode(make_test_episode_metadata(episode_id=55, survival_steps=1, total_reward=1.0))
 
         mock_database.insert_recording.assert_called_once()
         call_args = mock_database.insert_recording.call_args

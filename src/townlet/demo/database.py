@@ -1,17 +1,242 @@
 """SQLite database for multi-day demo state management."""
 
+import hashlib
+import os
 import sqlite3
+import stat
+import tempfile
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Any
+from typing import Any, get_args
+
+from townlet.recording.data_structures import build_recording_reward_payload
+from townlet.training.episode import CompletionReason
+
+DEMO_SCHEMA_VERSION = 1
+DEMO_FAMILY_SUFFIXES = ("", "-wal", "-shm", "-journal")
+Column = tuple[int, str, str, int, str | None, int, int]
+Signature = tuple[int, int, int, int, int, str]
+DEMO_TABLE_COLUMNS = {
+    "episodes": (
+        ("episode_id", "INTEGER PRIMARY KEY"),
+        ("timestamp", "REAL NOT NULL"),
+        ("survival_time", "INTEGER NOT NULL"),
+        ("batch_episode_steps", "INTEGER NOT NULL"),
+        ("live_agent_transitions", "INTEGER NOT NULL"),
+        ("completion_reason", "TEXT NOT NULL"),
+        ("total_reward", "REAL NOT NULL"),
+        ("extrinsic_reward", "REAL NOT NULL"),
+        ("intrinsic_reward", "REAL NOT NULL"),
+        ("shaping_reward", "REAL NOT NULL"),
+        ("intrinsic_weight", "REAL NOT NULL"),
+        ("curriculum_stage", "INTEGER NOT NULL"),
+        ("epsilon", "REAL NOT NULL"),
+        ("observation_schema_hash", "TEXT NOT NULL"),
+    ),
+    "affordance_visits": (
+        ("episode_id", "INTEGER NOT NULL"),
+        ("from_affordance", "TEXT NOT NULL"),
+        ("to_affordance", "TEXT NOT NULL"),
+        ("visit_count", "INTEGER NOT NULL"),
+    ),
+    "position_heatmap": (
+        ("episode_id", "INTEGER NOT NULL"),
+        ("x", "INTEGER NOT NULL"),
+        ("y", "INTEGER NOT NULL"),
+        ("visit_count", "INTEGER NOT NULL"),
+        ("novelty_value", "REAL"),
+    ),
+    "system_state": (("key", "TEXT PRIMARY KEY"), ("value", "TEXT NOT NULL")),
+    "episode_recordings": (
+        ("episode_id", "INTEGER PRIMARY KEY"),
+        ("file_path", "TEXT NOT NULL"),
+        ("timestamp", "REAL NOT NULL"),
+        ("survival_steps", "INTEGER NOT NULL"),
+        ("completion_reason", "TEXT NOT NULL"),
+        ("total_reward", "REAL NOT NULL"),
+        ("extrinsic_reward", "REAL NOT NULL"),
+        ("intrinsic_reward", "REAL NOT NULL"),
+        ("shaping_reward", "REAL NOT NULL"),
+        ("curriculum_stage", "INTEGER NOT NULL"),
+        ("epsilon", "REAL NOT NULL"),
+        ("intrinsic_weight", "REAL NOT NULL"),
+        ("recording_reason", "TEXT NOT NULL"),
+        ("file_size_bytes", "INTEGER"),
+        ("compressed_size_bytes", "INTEGER"),
+    ),
+}
+DEMO_EXPECTED_COLUMNS: dict[str, tuple[Column, ...]] = {
+    table: tuple(
+        (cid, name, declaration.split()[0], int("NOT NULL" in declaration), None, int("PRIMARY KEY" in declaration), 0)
+        for cid, (name, declaration) in enumerate(columns)
+    )
+    for table, columns in DEMO_TABLE_COLUMNS.items()
+}
+DEMO_SCHEMA_DDL = """
+            CREATE TABLE episodes (
+                episode_id INTEGER PRIMARY KEY,
+                timestamp REAL NOT NULL,
+                survival_time INTEGER NOT NULL,
+                batch_episode_steps INTEGER NOT NULL,
+                live_agent_transitions INTEGER NOT NULL,
+                completion_reason TEXT NOT NULL,
+                total_reward REAL NOT NULL,
+                extrinsic_reward REAL NOT NULL,
+                intrinsic_reward REAL NOT NULL,
+                shaping_reward REAL NOT NULL,
+                intrinsic_weight REAL NOT NULL,
+                curriculum_stage INTEGER NOT NULL,
+                epsilon REAL NOT NULL,
+                observation_schema_hash TEXT NOT NULL
+            );
+            CREATE INDEX idx_episodes_timestamp ON episodes(timestamp);
+
+            CREATE TABLE affordance_visits (
+                episode_id INTEGER NOT NULL,
+                from_affordance TEXT NOT NULL,
+                to_affordance TEXT NOT NULL,
+                visit_count INTEGER NOT NULL,
+                FOREIGN KEY (episode_id) REFERENCES episodes(episode_id)
+            );
+            CREATE INDEX idx_visits_episode ON affordance_visits(episode_id);
+
+            CREATE TABLE position_heatmap (
+                episode_id INTEGER NOT NULL,
+                x INTEGER NOT NULL,
+                y INTEGER NOT NULL,
+                visit_count INTEGER NOT NULL,
+                novelty_value REAL,
+                FOREIGN KEY (episode_id) REFERENCES episodes(episode_id)
+            );
+            CREATE INDEX idx_heatmap_episode ON position_heatmap(episode_id);
+
+            CREATE TABLE system_state (
+                key TEXT PRIMARY KEY,
+                value TEXT NOT NULL
+            );
+
+            CREATE TABLE episode_recordings (
+                episode_id INTEGER PRIMARY KEY,
+                file_path TEXT NOT NULL,
+                timestamp REAL NOT NULL,
+                survival_steps INTEGER NOT NULL,
+                completion_reason TEXT NOT NULL,
+                total_reward REAL NOT NULL,
+                extrinsic_reward REAL NOT NULL,
+                intrinsic_reward REAL NOT NULL,
+                shaping_reward REAL NOT NULL,
+                curriculum_stage INTEGER NOT NULL,
+                epsilon REAL NOT NULL,
+                intrinsic_weight REAL NOT NULL,
+                recording_reason TEXT NOT NULL,
+                file_size_bytes INTEGER,
+                compressed_size_bytes INTEGER
+            );
+            CREATE INDEX idx_recordings_stage ON episode_recordings(curriculum_stage);
+            CREATE INDEX idx_recordings_reason ON episode_recordings(recording_reason);
+            CREATE INDEX idx_recordings_reward ON episode_recordings(total_reward);
+        """
+
+
+def _read_regular(path: Path) -> tuple[bytes, Signature]:
+    descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    with os.fdopen(descriptor, "rb") as stream:
+        before = os.fstat(stream.fileno())
+        if not stat.S_ISREG(before.st_mode):
+            raise ValueError(f"Unsupported nonregular artifact: {path.name}")
+        data = stream.read()
+        after = os.fstat(stream.fileno())
+
+    def fields(value: os.stat_result) -> tuple[int, int, int, int, int]:
+        return value.st_dev, value.st_ino, value.st_size, value.st_mtime_ns, value.st_ctime_ns
+
+    if fields(before) != fields(after) or len(data) != after.st_size:
+        raise ValueError("Demo artifact changed during read")
+    return data, (*fields(after), hashlib.sha256(data).hexdigest())
+
+
+def demo_family_snapshot(path: Path) -> tuple[Signature | None, ...]:
+    """Raw OS reads only; include companion existence and bytes."""
+    readings: list[Signature | None] = []
+    for suffix in DEMO_FAMILY_SUFFIXES:
+        member = Path(str(path) + suffix)
+        try:
+            _, signature = _read_regular(member)
+        except FileNotFoundError:
+            readings.append(None)
+        else:
+            readings.append(signature)
+    return tuple(readings)
+
+
+def inspect_existing_demo_schema(
+    path: Path,
+    expected_columns: Mapping[str, tuple[Column, ...]],
+    *,
+    exclusive_custody: bool,
+) -> None:
+    """Require stopped owners and custody through the following real open.
+
+    Only absent/zero-byte companion-free new files and closed companion-free
+    current files are supported. Any WAL/SHM/journal presence is refused, even
+    an empty companion. No checkpoint, recovery, migration or original-file
+    SQLite open occurs here. Fingerprints detect changes, not atomic snapshots.
+    """
+    if not exclusive_custody:
+        raise ValueError("Exclusive demo artifact custody is required")
+    path = path.absolute()
+    if any(not table.isidentifier() for table in expected_columns):
+        raise ValueError("Invalid internal schema table name")
+    before = demo_family_snapshot(path)
+    try:
+        if any(reading is not None for reading in before[1:]):
+            raise ValueError("Existing WAL/SHM/journal family is unsupported; preserve it unchanged")
+        if before[0] is None or before[0][2] == 0:
+            return
+        data, signature = _read_regular(path)
+        if signature != before[0]:
+            raise ValueError("Demo artifact changed before private validation")
+        if len(data) < 100 or data[:16] != b"SQLite format 3\x00":
+            raise ValueError("Malformed nonempty demo database header")
+        version = int.from_bytes(data[60:64], "big")
+        if version != DEMO_SCHEMA_VERSION:
+            raise ValueError(f"Unsupported demo schema version: {version}")
+        # WAL may exist only in this private directory. No immutable assumption.
+        with tempfile.TemporaryDirectory(prefix="demo-schema-preflight-") as directory:
+            private_path = Path(directory) / "probe.db"
+            private_path.write_bytes(data)
+            connection = sqlite3.connect(private_path.as_uri() + "?mode=ro", uri=True)
+            try:
+                if connection.execute("PRAGMA quick_check").fetchall() != [("ok",)]:
+                    raise ValueError("Corrupt demo database")
+                if connection.execute("PRAGMA user_version").fetchone() != (DEMO_SCHEMA_VERSION,):
+                    raise ValueError("Unsupported demo schema stamp")
+                actual_tables = {
+                    row[0]
+                    for row in connection.execute("SELECT name FROM sqlite_schema WHERE type='table' AND substr(name, 1, 7) != 'sqlite_'")
+                }
+                if actual_tables != set(expected_columns):
+                    raise ValueError("Unsupported demo table layout")
+                for table, columns in expected_columns.items():
+                    actual = tuple(connection.execute(f'PRAGMA table_xinfo("{table}")'))
+                    if actual != columns:
+                        raise ValueError(f"Unsupported demo columns: {table}")
+            except sqlite3.DatabaseError as error:
+                raise ValueError("Malformed demo database") from error
+            finally:
+                connection.close()
+    finally:
+        if demo_family_snapshot(path) != before:
+            raise ValueError("Demo artifact family changed during preflight")
 
 
 class DemoDatabase:
     """Manages SQLite database for demo metrics and state.
 
-    Thread Safety:
-        Uses check_same_thread=False and WAL mode for concurrent access.
-        Safe for multiple readers and single writer (training process).
-        Not safe for multiple concurrent writers without external synchronization.
+    Opening requires exclusive caller custody of a stopped, companion-free family.
+    Current files reopen after normal owner closure; pending or incompatible files
+    are refused unchanged. The admitted connection may serve its recording writer
+    thread, but multiple DemoDatabase owners for the same family are unsupported.
     """
 
     def __init__(self, db_path: Path | str):
@@ -20,17 +245,26 @@ class DemoDatabase:
         Args:
             db_path: Path to SQLite database file
         """
+        self._closed = True
         self.db_path = Path(db_path)
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
 
-        # Enable WAL mode for better concurrent access
+        # Caller owns a stopped family exclusively through inspection and actual reopen.
+        inspect_existing_demo_schema(self.db_path, DEMO_EXPECTED_COLUMNS, exclusive_custody=True)
+
+        # Enable WAL mode for this admitted current database
         self.conn = sqlite3.connect(self.db_path, check_same_thread=False)
         self.conn.execute("PRAGMA journal_mode=WAL")
         self.conn.row_factory = sqlite3.Row
 
         self._closed = False  # Track closed state for idempotency
 
-        self._create_schema()
+        if self.conn.execute("PRAGMA user_version").fetchone()[0] != DEMO_SCHEMA_VERSION:
+            try:
+                self._create_schema()
+            except BaseException:
+                self.close()
+                raise
 
     def _ensure_open(self):
         """Ensure database connection is open.
@@ -45,75 +279,21 @@ class DemoDatabase:
             )
 
     def _create_schema(self):
-        """Create database schema if it doesn't exist."""
-        self.conn.executescript("""
-            CREATE TABLE IF NOT EXISTS episodes (
-                episode_id INTEGER PRIMARY KEY,
-                timestamp REAL NOT NULL,
-                survival_time INTEGER NOT NULL,
-                total_reward REAL NOT NULL,
-                extrinsic_reward REAL NOT NULL,
-                intrinsic_reward REAL NOT NULL,
-                intrinsic_weight REAL NOT NULL,
-                curriculum_stage INTEGER NOT NULL,
-                epsilon REAL NOT NULL,
-                observation_schema_hash TEXT NOT NULL
-            );
-            CREATE INDEX IF NOT EXISTS idx_episodes_timestamp ON episodes(timestamp);
-
-            CREATE TABLE IF NOT EXISTS affordance_visits (
-                episode_id INTEGER NOT NULL,
-                from_affordance TEXT NOT NULL,
-                to_affordance TEXT NOT NULL,
-                visit_count INTEGER NOT NULL,
-                FOREIGN KEY (episode_id) REFERENCES episodes(episode_id)
-            );
-            CREATE INDEX IF NOT EXISTS idx_visits_episode ON affordance_visits(episode_id);
-
-            CREATE TABLE IF NOT EXISTS position_heatmap (
-                episode_id INTEGER NOT NULL,
-                x INTEGER NOT NULL,
-                y INTEGER NOT NULL,
-                visit_count INTEGER NOT NULL,
-                novelty_value REAL,
-                FOREIGN KEY (episode_id) REFERENCES episodes(episode_id)
-            );
-            CREATE INDEX IF NOT EXISTS idx_heatmap_episode ON position_heatmap(episode_id);
-
-            CREATE TABLE IF NOT EXISTS system_state (
-                key TEXT PRIMARY KEY,
-                value TEXT NOT NULL
-            );
-
-            CREATE TABLE IF NOT EXISTS episode_recordings (
-                episode_id INTEGER PRIMARY KEY,
-                file_path TEXT NOT NULL,
-                timestamp REAL NOT NULL,
-                survival_steps INTEGER NOT NULL,
-                total_reward REAL NOT NULL,
-                extrinsic_reward REAL NOT NULL,
-                intrinsic_reward REAL NOT NULL,
-                curriculum_stage INTEGER NOT NULL,
-                epsilon REAL NOT NULL,
-                intrinsic_weight REAL NOT NULL,
-                recording_reason TEXT NOT NULL,
-                file_size_bytes INTEGER,
-                compressed_size_bytes INTEGER
-            );
-            CREATE INDEX IF NOT EXISTS idx_recordings_stage ON episode_recordings(curriculum_stage);
-            CREATE INDEX IF NOT EXISTS idx_recordings_reason ON episode_recordings(recording_reason);
-            CREATE INDEX IF NOT EXISTS idx_recordings_reward ON episode_recordings(total_reward);
-        """)
-        self.conn.commit()
+        """Create and stamp the fresh schema in one transaction."""
+        self.conn.executescript("BEGIN IMMEDIATE;" + DEMO_SCHEMA_DDL + f"PRAGMA user_version={DEMO_SCHEMA_VERSION}; COMMIT;")
 
     def insert_episode(
         self,
         episode_id: int,
         timestamp: float,
         survival_time: int,
+        batch_episode_steps: int,
+        live_agent_transitions: int,
+        completion_reason: CompletionReason,
         total_reward: float,
         extrinsic_reward: float,
         intrinsic_reward: float,
+        shaping_reward: float,
         intrinsic_weight: float,
         curriculum_stage: int,
         epsilon: float,
@@ -124,10 +304,14 @@ class DemoDatabase:
         Args:
             episode_id: Episode number
             timestamp: Unix timestamp
-            survival_time: Steps survived
+            survival_time: Eligible slot-zero transitions
+            batch_episode_steps: Vector ticks in this batch
+            live_agent_transitions: Eligible transitions across all lanes
+            completion_reason: Frozen slot-zero completion reason
             total_reward: Combined reward
             extrinsic_reward: Environment reward
-            intrinsic_reward: RND novelty reward
+            intrinsic_reward: Effective canonical DAC contributor
+            shaping_reward: Canonical DAC shaping contributor
             intrinsic_weight: Current intrinsic weight
             curriculum_stage: Current curriculum stage (1-5)
             epsilon: Current exploration epsilon
@@ -137,19 +321,26 @@ class DemoDatabase:
             RuntimeError: If database connection is closed
         """
         self._ensure_open()
+        if completion_reason not in get_args(CompletionReason):
+            raise ValueError("Unsupported episode completion reason")
+        build_recording_reward_payload(total=total_reward, extrinsic=extrinsic_reward, intrinsic=intrinsic_reward, shaping=shaping_reward)
         self.conn.execute(
             """INSERT OR REPLACE INTO episodes
-               (episode_id, timestamp, survival_time, total_reward, extrinsic_reward,
-                intrinsic_reward, intrinsic_weight, curriculum_stage, epsilon,
-                observation_schema_hash)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+               (episode_id, timestamp, survival_time, batch_episode_steps, live_agent_transitions, completion_reason,
+                total_reward, extrinsic_reward,
+                intrinsic_reward, shaping_reward, intrinsic_weight, curriculum_stage, epsilon, observation_schema_hash)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (
                 episode_id,
                 timestamp,
                 survival_time,
+                batch_episode_steps,
+                live_agent_transitions,
+                completion_reason,
                 total_reward,
                 extrinsic_reward,
                 intrinsic_reward,
+                shaping_reward,
                 intrinsic_weight,
                 curriculum_stage,
                 epsilon,
@@ -294,18 +485,20 @@ class DemoDatabase:
         self._ensure_open()
         self.conn.execute(
             """INSERT OR REPLACE INTO episode_recordings
-               (episode_id, file_path, timestamp, survival_steps, total_reward,
-                extrinsic_reward, intrinsic_reward, curriculum_stage, epsilon,
+               (episode_id, file_path, timestamp, survival_steps, completion_reason, total_reward,
+                extrinsic_reward, intrinsic_reward, shaping_reward, curriculum_stage, epsilon,
                 intrinsic_weight, recording_reason, file_size_bytes, compressed_size_bytes)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (
                 episode_id,
                 file_path,
                 metadata.timestamp,
                 metadata.survival_steps,
+                metadata.completion_reason,
                 metadata.total_reward,
                 metadata.extrinsic_reward,
                 metadata.intrinsic_reward,
+                metadata.shaping_reward,
                 metadata.curriculum_stage,
                 metadata.epsilon,
                 metadata.intrinsic_weight,

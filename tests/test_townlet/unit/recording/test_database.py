@@ -50,6 +50,8 @@ class TestDatabaseRecording:
                 affordance_layout={"Bed": (2, 3)},
                 affordance_visits={"Bed": 15},
                 custom_action_uses={},
+                completion_reason="authored_terminal",
+                shaping_reward=0.0,
             )
 
             db.insert_recording(
@@ -99,6 +101,8 @@ class TestDatabaseRecording:
                 affordance_layout={},
                 affordance_visits={},
                 custom_action_uses={},
+                completion_reason="authored_terminal",
+                shaping_reward=0.0,
             )
 
             db.insert_recording(
@@ -157,6 +161,8 @@ class TestDatabaseRecording:
                     affordance_layout={},
                     affordance_visits={},
                     custom_action_uses={},
+                    completion_reason="authored_terminal",
+                    shaping_reward=0.0,
                 )
                 db.insert_recording(
                     episode_id=i * 100,
@@ -203,6 +209,8 @@ class TestDatabaseRecording:
                         affordance_layout={},
                         affordance_visits={},
                         custom_action_uses={},
+                        completion_reason="authored_terminal",
+                        shaping_reward=0.0,
                     )
                     db.insert_recording(
                         episode_id=episode_id,
@@ -246,6 +254,8 @@ class TestDatabaseRecording:
                     affordance_layout={},
                     affordance_visits={},
                     custom_action_uses={},
+                    completion_reason="authored_terminal",
+                    shaping_reward=0.0,
                 )
                 db.insert_recording(
                     episode_id=i * 100,
@@ -289,6 +299,8 @@ class TestDatabaseRecording:
                     affordance_layout={},
                     affordance_visits={},
                     custom_action_uses={},
+                    completion_reason="authored_terminal",
+                    shaping_reward=0.0,
                 )
                 db.insert_recording(
                     episode_id=i,
@@ -334,6 +346,8 @@ class TestDatabaseRecording:
                     affordance_layout={},
                     affordance_visits={},
                     custom_action_uses={},
+                    completion_reason="authored_terminal",
+                    shaping_reward=0.0,
                 )
                 db.insert_recording(
                     episode_id=i,

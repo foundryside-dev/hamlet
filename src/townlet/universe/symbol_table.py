@@ -21,7 +21,7 @@ class UniverseSymbolTable:
     affordances: dict[str, Any] = field(default_factory=dict)
     affordances_by_name: dict[str, Any] = field(default_factory=dict)
     variables: dict[str, VariableDeclaration] = field(default_factory=dict)
-    item_variables: dict[str, VariableDeclaration] = field(default_factory=dict)
+    item_variables: dict[tuple[str, str], VariableDeclaration] = field(default_factory=dict)
     actions: dict[int, ActionConfig] = field(default_factory=dict)
     items: dict[str, Any] = field(default_factory=dict)
 
@@ -33,13 +33,15 @@ class UniverseSymbolTable:
     def register_variable(self, config: VariableDeclaration) -> None:
         identifier = config.id
         if config.scope == "item":
-            identifier = f"{config.profile}:{identifier}"
-            target = self.item_variables
-        else:
-            target = self.variables
-        if identifier in target:
+            assert config.profile is not None
+            identity = (config.profile, identifier)
+            if identity in self.item_variables:
+                raise CompilationError(CompilationStage.SYMBOLS.label, [f"Duplicate variable '{config.profile}:{identifier}' detected."])
+            self.item_variables[identity] = config
+            return
+        if identifier in self.variables:
             raise CompilationError(CompilationStage.SYMBOLS.label, [f"Duplicate variable '{identifier}' detected."])
-        target[identifier] = config
+        self.variables[identifier] = config
 
     def register_action(self, config: ActionConfig) -> None:
         action_id = getattr(config, "id", None)

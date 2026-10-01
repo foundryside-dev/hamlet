@@ -12,7 +12,7 @@ from pydantic import BaseModel, ValidationError
 
 from townlet.universe.error_codes import ErrorCode
 from townlet.universe.errors import CompilationErrorCollector
-from townlet.universe.source_map import SourceMap
+from townlet.universe.source_map import SourceMap, variable_location_key
 from townlet.universe.stages import CompilationStage
 
 Model = TypeVar("Model", bound=BaseModel)
@@ -302,13 +302,13 @@ class DeclarationStore:
                     self._field_collision(key, field_path, left, right, previous, incoming)
                 merged[key] = [*current, *value]
             elif isinstance(current, list) and isinstance(value, list) and self._is_named_collection(key, current, value):
-                seen = {self._entry_id(entry): entry for entry in current}
+                seen = {self._entry_key(entry): entry for entry in current}
                 for entry in value:
-                    identity = self._entry_id(entry)
+                    identity = self._entry_key(entry)
                     if identity in seen:
                         prior = self._node_origin(seen[identity], previous)
                         self.errors.add(
-                            f"Duplicate {incoming.family} identifier '{identity}'; first declared at {prior}",
+                            f"Duplicate {incoming.family} identifier '{self._entry_id(entry)}'; first declared at {prior}",
                             code=ErrorCode.DECLARATION_COLLISION,
                             location=self._node_origin(entry, incoming),
                         )
@@ -364,13 +364,13 @@ class DeclarationStore:
                                 location=self._node_origin(profile, declaration),
                             )
                 if isinstance(child, list) and self._is_named_collection(key, child, []):
-                    seen: dict[str | None, Any] = {}
+                    seen: dict[tuple[str | None, str] | None, Any] = {}
                     for entry in child:
-                        identity = self._entry_id(entry)
+                        identity = self._entry_key(entry)
                         if identity in seen:
                             prior = self._node_origin(seen[identity], declaration)
                             self.errors.add(
-                                f"Duplicate {declaration.family} identifier '{identity}'; first declared at {prior}",
+                                f"Duplicate {declaration.family} identifier '{self._entry_id(entry)}'; first declared at {prior}",
                                 code=ErrorCode.DECLARATION_COLLISION,
                                 location=self._node_origin(entry, declaration),
                             )
@@ -379,6 +379,16 @@ class DeclarationStore:
         elif isinstance(value, list):
             for child in value:
                 self._validate_entity_duplicates(child, declaration)
+
+    @classmethod
+    def _entry_key(cls, entry: Any) -> tuple[str | None, str] | None:
+        """Compare canonical identity components without flattening item profiles."""
+        identity = cls._entry_id(entry)
+        if identity is None:
+            return None
+        if entry.get("scope") == "item" and isinstance(entry.get("profile"), str) and isinstance(entry.get("id"), str):
+            return entry["profile"], entry["id"]
+        return None, identity
 
     @staticmethod
     def _entry_id(entry: Any) -> str | None:
@@ -421,11 +431,18 @@ class DeclarationStore:
                     self.source_map.record(f"{declaration.key}:{'.'.join(segments)}", path, value.line)
                 identity = self._entry_id(value)
                 if identity is not None:
-                    if namespace:
+                    if declaration.family == "variables" and isinstance(value.get("id"), str):
+                        if value.get("scope") == "item":
+                            profile = value.get("profile")
+                        else:
+                            profile = None
+                        location_key = variable_location_key(profile, value["id"])
+                    elif namespace:
                         qualified = f"{namespace}:{identity}"
+                        location_key = f"{declaration.key}:{qualified}"
                     else:
-                        qualified = identity
-                    self.source_map.record(f"{declaration.key}:{qualified}", path, value.line)
+                        location_key = f"{declaration.key}:{identity}"
+                    self.source_map.record(location_key, path, value.line)
                 for key, child in value.items():
                     child_segments = (*segments, str(key))
                     key_path, key_line = self._key_origin(value, key, declaration)
@@ -531,7 +548,7 @@ class DeclarationStore:
                 if set(day_length) != {"period_of"} or clock_variable is None:
                     message = "day_length.period_of must identify a declared global temporal ambient-tick cyclical variable"
                     if isinstance(clock_reference, str) and clock_reference in global_variables:
-                        target = self.source_map.lookup(f"variables:{clock_reference}")
+                        target = self.source_map.lookup(variable_location_key(None, clock_reference))
                         if target is not None:
                             message += f"; target declared at {target}"
                     self.errors.add(
@@ -551,7 +568,7 @@ class DeclarationStore:
                     or period <= 0
                     or int(period) != period
                 ):
-                    target = self.source_map.lookup(f"variables:{clock_reference}")
+                    target = self.source_map.lookup(variable_location_key(None, clock_reference))
                     if target is None:
                         target = profiles.origin
                     self.errors.add(
@@ -562,7 +579,7 @@ class DeclarationStore:
                     continue
                 declaration.payload["day_length"] = int(period)
             elif day_length is not None and clocks:
-                targets = [self.source_map.lookup(f"variables:{identity}") or profiles.origin for identity in clocks]
+                targets = [self.source_map.lookup(variable_location_key(None, identity)) or profiles.origin for identity in clocks]
                 self.errors.add(
                     f"Duplicated clock period: use day_length.period_of to link its authority; clock declaration(s): {', '.join(targets)}",
                     code=ErrorCode.CLOCK_REFERENCE,

@@ -8,7 +8,7 @@ from townlet.config.drive_as_code import DriveAsCodeConfig
 from townlet.universe.error_codes import ErrorCode
 from townlet.universe.errors import CompilationError, CompilationErrorCollector, CompilationMessage
 from townlet.universe.raw_configs_v21 import RawConfigsV21
-from townlet.universe.source_map import SourceMap, locate
+from townlet.universe.source_map import SourceMap, locate, variable_location_key
 from townlet.universe.stages import CompilationStage
 from townlet.universe.symbol_table import UniverseSymbolTable
 
@@ -39,8 +39,7 @@ def build_symbol_table(raw: RawConfigsV21, source_map: SourceMap | None = None) 
         _register(table.register_affordance, affordance, f"environment:{affordance.name}")
 
     for variable in raw.variables.declarations:
-        identity = f"{variable.profile}:{variable.id}" if variable.profile is not None else variable.id
-        _register(table.register_variable, variable, f"variables:{identity}")
+        _register(table.register_variable, variable, variable_location_key(variable.profile, variable.id))
 
     for action in getattr(raw.actions.actions, "custom_actions", []) or []:
         _register(table.register_action, action, f"actions:{action.name}")

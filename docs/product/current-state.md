@@ -3,9 +3,12 @@
 ## Delivered and verified
 
 Declaration-store **Cut A**, canonical-variable **Cut B** and **static epistemic access**
-are accepted and consolidated on local `main` at **`bb88beb84a8dfdb6e2851c16140b7d65054efb14`**. All 20 pre-consolidation
-local branch tips are contained; no additional committed branch work was found.
-[PDR-0154](decisions/0154-main-consolidation-and-product-checkpoint.md) records this checkpoint and its boundaries.
+are accepted and consolidated on GitHub `main` at **`729779280820a31294013f9f7c839fbf23732ced`** (PR #42), as read at 08:17 UTC.
+At that reading, local main matched publication, all 20 pre-consolidation local branch tips
+were contained, and no additional committed branch work was found. Local main subsequently
+advanced to documentation checkpoint **`792c6704`**; the repair branch is identified below.
+[PDR-0154](decisions/0154-main-consolidation-and-product-checkpoint.md) records the pre-publication checkpoint;
+[PDR-0155](decisions/0155-resume-reconciles-completed-main-publication.md) reconciles delivery at the 08:17 UTC resume.
 
 | Package | Accepted contract | Qualification |
 | --- | --- | --- |
@@ -18,13 +21,42 @@ The static source passed **4,250 tests / 18 skips / 85% coverage**, all local li
 not a new full-suite run at the local merge. **201 postmerge checks passed** against
 actual main-worktree imports. [Main integration receipt](evidence/main-consolidation/local-integration.json)
 records identities, commands and preservation checks. Exact-head GitHub publication/checks are
-recorded separately in delivery issue **`hamlet-dd9a03f787`** and its consolidation PR; this
-committed snapshot precedes that publication. Local merge, push, hosted success and GitHub merge
-are separate gates. No release, tag or deployment is part of this task.
+verified separately in closed delivery issue **`hamlet-dd9a03f787`** and
+[PR #42](https://github.com/foundryside-dev/hamlet/pull/42). Actual-main Lint, Config Validation
+and Tests completed successfully; the retained hosted suite records **4,249 passed / 19 skips /
+15 warnings**. [Publication reading](evidence/main-consolidation/hosted-publication.json)
+records exact identities and run links. The resume reran no suite; a separate failed Dependabot
+update is outside the delivery verdict. No release, tag or deployment is part of this task.
 
 Three historical access defects are closed with bounded source/runtime evidence:
 `hamlet-fc78bb49d3`, `hamlet-1a520475f4`, `hamlet-c78fbf32a3`. Owner/per-observer privacy
 `hamlet-83a043a9b9` remains open. Unknown historical roles are refused, not implemented.
+
+The owner's review of `72977928` exposed effect-admission refusal and canonical
+variable-identity defects. Both reproduced. The repair on `fix/static-access-review`
+contains implementation **`7eb7ded3`** (following `c3faa4bf`): selected lifecycle writes authorize before
+admission/reapplication, immediate nested denials restore runtime state, and structured
+canonical identities retain distinct variables and origins. Deterministic lowest-free
+item rows prevent rejected cascades from changing later allocation. **397 focused
+item/effect checks and 988 compiler/oracle/access checks pass**; lint/type/no-defaults/fleet gates
+pass. The final source's full suite passed **4,277 tests / 18 skips / 15 warnings /
+85% coverage** in 989.23s, exit 0. `hamlet-f75ff623be`, `hamlet-bae419a592` and the
+additional cascade defect `hamlet-940089c925` are closed against this local source. The repair is local;
+published main's source and hosted qualification remain the historical readings above.
+[PDR-0156](decisions/0156-static-access-review-refusal-and-identity-repairs.md) records
+the repair scope, independent counterexamples and acceptance limits.
+[Verification receipt](evidence/static-access-review/verification.md) banks the full
+reading and skip disposition. No frozen trajectory or convergence campaign was rerun.
+
+The owner subsequently requested a local main merge. **Main fast-forwarded from
+`792c6704` to `a370814a`**, with an exact tree match to the qualified repair branch.
+**432 post-merge checks passed** in 11.95s against actual main-checkout imports;
+the full suite above is retained qualification, not a new merge-time full run.
+The receipt's local-integration addendum records custody and landing evidence.
+The merged task branch was retired; unrelated file contents and modes were preserved.
+At the owner's subsequent request, both Filigree error-code reference files were
+committed unchanged as **`80d6a5ce`**. No push
+or new hosted CI reading was performed. The follow-up checkpoint changes only product docs.
 
 ## Product judgment
 
@@ -53,7 +85,10 @@ seven live transitions, five vector ticks, one terminal/finalization each, and n
 replay/RND/annealing/bonus. Adjacent learner defects require reproduction before being treated
 as confirmed scope. This recommendation is not authorization to implement it.
 
-Next session: read the completed publication receipt, adjudicate the fired exit trigger,
-then source-reproduce and scope the episode-lane PRD. Keep effects reset and item fidelity as
+The initial resume reconciled publication. The subsequent owner review dispatched these
+bounded contract repairs; no bet moved horizon and the standing authority grant remains
+unchanged. Recovery is open. The owner-requested integration is on local main only.
+
+Next session: adjudicate the fired exit trigger, then source-reproduce and scope the episode-lane PRD. Keep effects reset and item fidelity as
 separate packages unless the chosen scenario explicitly depends on them. The frozen oracle,
-raw evidence and two unrelated dirty skill files remain preserved.
+raw evidence and owner-authored skill reference edits remain preserved.

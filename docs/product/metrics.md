@@ -16,7 +16,18 @@ refer to their dated source, not the consolidated main.
 | Recovery workstreams | WS-1 and WS-7 closed; six others open | Two of eight is status count, not product progress fraction |
 | Divergence exit reading | 15 entries: five retired, two tag-stamped, five built, three qualified additions | Not all terminal; PDR-0058 register-growth reversal review is triggered |
 | Learning evidence | Historical M4 four of four cells passed | Training `9d4e942f`, seed45, fixed protocol; no current-main/multi-seed rerun |
-| Hosted delivery | Separate exact published-head/main receipt required | Recorded in consolidation PR / hamlet-dd9a03f787 after this snapshot; old green is not new-head green |
+| Hosted delivery — resume 08:17 UTC | PR #42 merged; actual-main Lint, Config Validation and Tests completed/success; retained suite 4,249 passed / 19 skipped / 15 warnings | Main `72977928`; live GitHub reading and retained receipt; no suite rerun during resume; separate failed Dependabot update outside delivery verdict |
+| Tracker census after delivery closure — resume 08:17 UTC | 266 issues: 159 done, 107 open, zero in progress; 103 ready, four blocked | Delivery dd9a03f787 closed; recovery planning; episode bug d6fc84d147 triage; bookkeeping only |
+| Post-review local repair | Full suite 4,277 passed / 18 skipped / 15 warnings; 85% coverage; 989.23s, exit 0; 397 focused item/effect and 988 compiler/oracle/access checks; lint/type/no-defaults/fleet gates pass | Implementation 7eb7ded3 following c3faa4bf on fix/static-access-review; three reproduced defects closed; skip disposition retained; no publication or learning campaign |
+| Owner-requested local main merge | Exact qualified repair-tree fast-forward; 432 post-merge checks passed, 11.95s, exit 0; unrelated dirty file digests/modes preserved | Main landing a370814a from 792c6704; actual main-checkout imports; retained full suite above; no push, new hosted CI or convergence campaign |
+
+[PDR-0155](decisions/0155-resume-reconciles-completed-main-publication.md) and the
+[publication reading](evidence/main-consolidation/hosted-publication.json) record the resume
+delta. That resume added no authoring or learning reading. Recovery's fired exit trigger
+remains unresolved.
+[PDR-0156](decisions/0156-static-access-review-refusal-and-identity-repairs.md) records
+the subsequent refusal/identity repair. Its bounded verification is separate from
+the published-main baseline; a repaired access contract is not convergence evidence.
 
 No aggregate seven-surface completion percentage is recalculated: the old ledger predates
 canonical declaration discovery, variable unification, action-write witnesses and checked

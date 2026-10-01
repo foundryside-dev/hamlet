@@ -16,7 +16,7 @@ from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.error_codes import ErrorCode
 from townlet.universe.errors import CompilationError
 from townlet.universe.loaders.v21 import load_v21_configs
-from townlet.universe.source_map import SourceMap
+from townlet.universe.source_map import SourceMap, variable_location_key
 from townlet.universe.symbol_table import UniverseSymbolTable
 from townlet.universe.validation import limits
 from townlet.universe.validation.references import build_symbol_table, resolve_references
@@ -244,9 +244,9 @@ def test_profile_registration_error_uses_qualified_profile_origin(tmp_path: Path
     )
     source_map = SourceMap()
     origins = []
-    for index, identity in enumerate(("world", "agent", "tool:shared", "food:shared"), start=1):
+    for index, declaration in enumerate(raw.variables.declarations, start=1):
         path = tmp_path / "variables" / f"{index}.yml"
-        source_map.record(f"variables:{identity}", path, 8)
+        source_map.record(variable_location_key(declaration.profile, declaration.id), path, 8)
         origins.append(f"{path}:8")
 
     def fail_registration(self, config):

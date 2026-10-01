@@ -30,8 +30,9 @@ and included in PR #44. The three review repair issues remain closed:
 ## Selected package: truthful episode lanes
 
 The owner's new branch **`fix/episode-lane-accounting`** starts from main
-`95b2f828`. Product discovery and source-validated implementation planning are complete; no runtime fix
-or learning campaign has run. [PRD-0005](prds/0005-truthful-episode-lanes.md) is
+`95b2f828`. Product discovery and source-validated implementation planning are
+complete, with Astra revisions recorded in PDR-0159; no runtime fix or learning
+campaign has run. [PRD-0005](prds/0005-truthful-episode-lanes.md) is
 **planned; implementation unaccepted**. Planning **`hamlet-87d3ef8e23`**
 hands off to execution **`hamlet-78ad37dd49`** (unclaimed). Product scope task:
 `hamlet-e484af6168`. Existing engine bug **`hamlet-d6fc84d147` is confirmed**.
@@ -60,7 +61,9 @@ The checkpoint-backed regression transition export remains correct.
 END_LANE witness through the compiled brain, actual Q/RND updates with identifiable
 phantom samples, and a controlled pinned-oracle reproduction. These are parent
 defects/setup feasibility, not corrected behavior. The sink probe waited for writer
-persistence; ordinary shutdown remains a separate unqualified prerequisite.
+persistence; independent Astra probes then lost four of five ordinary recorder-thread
+artifacts without indexing. The revised E0a brings full ordinary runner shutdown/index
+qualification forward before substantial implementation.
 
 The package requires one terminal transition/finalization per lane, correct
 replay/RND eligibility, stable completed outcomes, truthful consumers, explicit
@@ -87,11 +90,16 @@ seed and its fixed protocol. Static access is not per-owner privacy
 RNG isolation, complete BAC cognition, viewer behavior, Murk and model export
 remain separate work. No north-star authoring success rate is revived.
 
-Next action: atomically claim `hamlet-78ad37dd49` and execute the
-[reviewed plan](../plans/2026-10-02-truthful-episode-lanes.md).
+Astra [re-review](../plans/2026-10-02-truthful-episode-lanes.astra-revision-review.md)
+approves the revised plan **with execution warnings and no blockers**. Revision
+`hamlet-272374260c` records this local planning handoff. Next action: atomically
+claim execution `hamlet-78ad37dd49` and run E0/E0a of the
+[revised plan](../plans/2026-10-02-truthful-episode-lanes.md).
 [PDR-0158](decisions/0158-episode-lane-plan-and-boundary-semantics.md) resolves
 truncation/bootstrap, scheduling units, reset guard and strict artifact cuts.
-Planning probes and the 20-pass/one-skip prerequisite gate do not accept the fix.
+[PDR-0159](decisions/0159-episode-lane-astra-plan-revisions.md) resolves original-family
+DB preservation, early recorder prerequisites and canonical recorded reward/prefix
+reconciliation. Planning probes and the 20-pass/one-skip gate do not accept the fix.
 Keep the exit review separate; reopen scope if an actual dependency requires it.
 This checkpoint is local to the new branch, with no new push or hosted reading
 of its documentation commit.

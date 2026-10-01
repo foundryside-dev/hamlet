@@ -1,0 +1,60 @@
+{
+  "verdict": "APPROVED_WITH_WARNINGS",
+  "reviewer": {
+    "model": "gpt-6-astra",
+    "agent": "astra_episode_plan_review",
+    "reasoning_effort": "high"
+  },
+  "reviewed_at": "2026-10-01T19:46:16Z",
+  "revision_parent": "86857eb0e0730c113cbf27f21bd97a308095079b",
+  "plan_file": "docs/plans/2026-10-02-truthful-episode-lanes.md",
+  "plan_sha256": "159ab22fc58bb43a5c2e9756c5bfbc9546f10ecb1d5a42145a357b104acb1b6c",
+  "plan_lines": 1576,
+  "report_file": "docs/plans/2026-10-02-truthful-episode-lanes.astra-revision-review.md",
+  "report_sha256": "a0dc3d9d78a08880152f6520286ac5167f11d15927758b83e9cec009a5517b81",
+  "blocking_issues": [],
+  "resolved_findings": [
+    {
+      "id": "B1",
+      "resolution": "SQLite never opens the original during preflight; private-copy validation, entire-family preservation, explicit pending-WAL refusal and custody limits."
+    },
+    {
+      "id": "W1",
+      "resolution": "E0a ordinary runner/index/file shutdown witness precedes substantive implementation, with retained RED and explicit bounded PDR prerequisite gate."
+    },
+    {
+      "id": "W2",
+      "resolution": "Atomic canonical frame/metadata/DB reward components, shaping forwarding, actual observer selected-index prefix and non-vacuous same-artifact reconciliation."
+    },
+    {
+      "id": "export-custody",
+      "resolution": "S1 closes listing owner before export children and each child owner after actual load on every path; real sequential reopen/cleanup controls specified."
+    }
+  ],
+  "warnings": [
+    {
+      "id": "R1",
+      "severity": "high",
+      "issue": "Ordinary recorder durability remains a demonstrated execution risk.",
+      "required_gate": "Execute E0/E0a, retain any failure and resolve the separately scoped prerequisite deterministically before substantial episode implementation."
+    },
+    {
+      "id": "R2",
+      "severity": "medium",
+      "issue": "Runtime exclusive custody and sequential export reopen/cleanup must be established.",
+      "required_gate": "Implement and verify the specified S1 caller conformance; preserve all pending original companions, never bypass custody."
+    }
+  ],
+  "independent_checks": {
+    "database_controls_passed": 22,
+    "original_families_unchanged": 20,
+    "injected_external_change_refusals": 2,
+    "numeric_refusal_controls_passed": 11
+  },
+  "limits": [
+    "Planning approval only; runtime source/tests/config/scripts/dependency manifests unchanged.",
+    "No complete ordinary runner prerequisite or corrected format2 persisted observer acceptance yet.",
+    "No candidate Q/RND/full-suite/hosted/convergence acceptance.",
+    "Historical original review receipts retained unchanged."
+  ]
+}

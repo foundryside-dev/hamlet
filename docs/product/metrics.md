@@ -41,7 +41,11 @@ and selects the episode-integrity planning scope.
 [PDR-0158](decisions/0158-episode-lane-plan-and-boundary-semantics.md) completes its
 [implementation plan](../plans/2026-10-02-truthful-episode-lanes.md);
 [planning receipts](evidence/episode-lanes/planning/receipt.md) add executed prerequisite
-witnesses. The zero-error target is still unmet and runtime implementation unaccepted. [Baseline probes](evidence/episode-lanes/baseline.md)
+witnesses. [PDR-0159](decisions/0159-episode-lane-astra-plan-revisions.md) adds
+nonmutating DB proposal controls and explicit ordinary-shutdown/reward-prefix gates.
+These are planning evidence; the candidate measurements remain outstanding. The
+zero-error target is still unmet and runtime implementation unaccepted.
+[Baseline probes](evidence/episode-lanes/baseline.md)
 are discovery evidence: the metric target is not met, the bug is confirmed and
 unfixed, and implementation remains unaccepted. Baseline error uses environment
 publication, not a fresh database/TensorBoard output reproduction. Exact lane values

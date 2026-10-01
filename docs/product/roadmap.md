@@ -48,7 +48,12 @@ vector ticks, one terminal/completion per lane and no later contributions.
 `hamlet-87d3ef8e23` and prepares execution `hamlet-78ad37dd49` (unclaimed).
 [PDR-0158](decisions/0158-episode-lane-plan-and-boundary-semantics.md) resolves
 truncation, clocks and artifact boundaries; authored/gradient/sink/oracle probes
-confirm parent defects and feasibility, not candidate acceptance. Product review October 9 or the first candidate is a review checkpoint,
+confirm parent defects and feasibility, not candidate acceptance. [PDR-0159](decisions/0159-episode-lane-astra-plan-revisions.md)
+revises the database preflight, advances ordinary recorder shutdown to an early
+prerequisite and makes reward/prefix reconciliation explicit. Revision `hamlet-272374260c`
+records Astra approval with execution warnings and no blockers; execution remains
+unclaimed and starts with E0/E0a. Product review
+October 9 or the first candidate is a review checkpoint,
 not a promised shipment. No runtime implementation or training campaign is
 dispatched by this PM checkpoint, and no bet changes horizon.
 

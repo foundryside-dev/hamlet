@@ -2,7 +2,8 @@
 
 Status: **implementation planned; implementation unaccepted**.
 Prepared: 2026-10-02 Australia/Canberra. Source baseline: `95b2f828` (PR #44 main).
-Decision: PDR-0157; planning resolution: PDR-0158. Bet: bounded integrity package inside continuing recovery.
+Decision: PDR-0157; planning resolution: PDR-0158; Astra revision: PDR-0159.
+Bet: bounded integrity package inside continuing recovery.
 Existing engine bug: `hamlet-d6fc84d147` (confirmed). Product scoping:
 `hamlet-e484af6168`; planning handoff: `hamlet-87d3ef8e23`.
 
@@ -174,3 +175,21 @@ Strict new DB/recording contracts and the ordinary producer-to-playback witness
 are required; old historical artifacts remain unchanged. Ordinary recorder
 shutdown was isolated in the probe, not qualified. No acceptance criterion or
 October9 review window changes, and no convergence campaign is dispatched.
+
+## Independent review resolution — October 2
+
+[PDR-0159](../decisions/0159-episode-lane-astra-plan-revisions.md) and the revised
+plan resolve Astra's concrete findings without accepting runtime behavior. Existing
+DB refusal preserves the entire original main/WAL/SHM/journal family. Supported
+reopen requires a stopped, companion-free current file and maintained caller
+custody; pending committed WAL is refused explicitly, never ignored. Ordinary
+runner shutdown/index/file qualification now precedes substantial implementation;
+a demonstrated loss requires retained evidence and a bounded PDR scope amendment.
+
+Consumer acceptance reconciles canonical total/extrinsic/effective intrinsic/shaping
+values in persisted frames, metadata, database and actual TensorBoard events, plus
+observer emitted eligible-prefix totals at the selected playback index. Earlier
+positive reward followed by a zero terminal frame and nonzero intrinsic modifiers/
+shaping make the witness non-vacuous. Floating-point rounding tolerances are explicit
+in the plan; all lifecycle counts, identities and presence assertions stay exact.
+All eight criteria and the review window remain in force, with implementation unaccepted.

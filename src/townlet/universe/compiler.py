@@ -155,6 +155,10 @@ class UniverseCompiler:
         self._log_stage(CompilationStage.RESOLVE)
         resolve_references(raw, symbol_table, experiment_dir, source_map)
 
+        from townlet.universe.validation.static_access import validate_static_write_targets
+
+        validate_static_write_targets(raw, source_map)
+
         temporal_supported = raw.stratum.stratum.temporal_support == "enabled"
 
         # Select primary level

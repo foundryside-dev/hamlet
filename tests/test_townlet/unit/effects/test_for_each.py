@@ -297,6 +297,10 @@ def test_for_each_inventory_items_skips_empty_and_uses_ints():
         def read_item(self, profile_name, name, vfs_index, *, reader):
             return self.values[name][vfs_index]
 
+        def authorize_item_write(self, profile_name, var_name, *, writer):
+            assert writer == "engine"
+            assert profile_name == "default"
+
         def write_item(self, profile_name, name, value, vfs_index, *, writer):
             self.values[name][vfs_index] = value
 

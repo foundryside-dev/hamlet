@@ -328,6 +328,20 @@ class ItemManager:
         if item_def is None:
             raise KeyError(f"Unknown item type: {item_type}")
 
+        # Authorize every override before allocating or initializing any row.
+        overrides: dict[str, float] = {}
+        if self.vfs_registry is not None and item_def.vfs_profile:
+            profile_name = item_def.vfs_profile
+            if profile_name not in self.vfs_registry.item_profile_map:
+                raise ValueError(f"VFS profile '{profile_name}' not found in registry")
+            if self.vfs_registry.item_vfs is None:
+                raise ValueError("Item VFS storage not allocated in registry")
+            for var_name, value in (initial_state or {}).items():
+                self.vfs_registry.authorize_item_write(profile_name, var_name, writer="engine")
+                overrides[var_name] = float(value)
+        elif initial_state:
+            raise ValueError("Item initial_state requires a declared VFS profile and registry")
+
         # Allocate VFS slot
         if not self.vfs_free_slots:
             return None  # No VFS slots available
@@ -337,21 +351,12 @@ class ItemManager:
         if self.vfs_registry is not None and item_def.vfs_profile:
             profile_name = item_def.vfs_profile
 
-            # Get profile from registry
-            if profile_name not in self.vfs_registry.item_profile_map:
-                raise ValueError(f"VFS profile '{profile_name}' not found in registry")
-
-            item_vfs = getattr(self.vfs_registry, "item_vfs", None)
-            if item_vfs is None:
-                raise ValueError("Item VFS storage not allocated in registry")
-
             self.vfs_registry._initialize_item_row(profile_name, vfs_index)
             self.vfs_registry.register_item_instance(vfs_index, profile_name)
 
             # Authored overrides are writes, including overrides equal to a default.
-            if initial_state is not None:
-                for var_name, value in initial_state.items():
-                    self.vfs_registry.write_item(profile_name, var_name, float(value), vfs_index, writer="engine")
+            for var_name, value in overrides.items():
+                self.vfs_registry.write_item(profile_name, var_name, value, vfs_index, writer="engine")
 
         # Create instance
         instance = ItemInstance(
@@ -378,10 +383,6 @@ class ItemManager:
         if pos_key not in self._position_index:
             self._position_index[pos_key] = set()
         self._position_index[pos_key].add(instance.instance_id)
-
-        # Register item instance in VFS registry
-        if self.vfs_registry is not None and instance.vfs_profile:
-            self.vfs_registry.register_item_instance(instance.vfs_index, instance.vfs_profile)
 
         self._log_items(
             "spawn_item",

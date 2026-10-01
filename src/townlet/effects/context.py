@@ -158,6 +158,33 @@ class ExecutionContext:
 
         raise ValueError(f"Invalid path: {path}")
 
+    def authorize_write_path(self, path: str) -> None:
+        """Preflight one resolved command target without reading or mutating storage."""
+        parts = path.split(".")
+        item_index: int | None = None
+        if parts[0] in ("self", "target"):
+            actor = parts.pop(0)
+            index = self.self_index if actor == "self" else self.target_index
+            if index is None:
+                raise ValueError(f"{actor}_index not set in context")
+            is_item = self.self_is_item if actor == "self" else self.target_is_item
+            if is_item:
+                item_index = index
+        if parts[0] != "vfs":
+            return
+        if len(parts) != 2:
+            raise ValueError(f"Setting reference traversal '{path}' is not supported")
+        if self.vfs_registry is None:
+            raise ValueError("VFS registry not set in context")
+        variable_id = parts[1]
+        if item_index is None:
+            self.vfs_registry.authorize_write(variable_id, writer="engine")
+        else:
+            profile = self.vfs_registry.get_item_profile_for_index(item_index)
+            if profile is None:
+                raise KeyError(f"No item profile registered for vfs_index {item_index}")
+            self.vfs_registry.authorize_item_write(profile, variable_id, writer="engine")
+
     def set_path(self, path: str, value: torch.Tensor) -> None:
         """Set path to new tensor value (mutation).
 
@@ -165,6 +192,7 @@ class ExecutionContext:
             path: Dot-separated path
             value: New tensor value
         """
+        self.authorize_write_path(path)
         # Handle target. prefix
         if path.startswith("target."):
             if self.target_index is None:

@@ -72,7 +72,7 @@ def test_vtc_affordance_occupancy_claim_if_free_targets_source_affordance_row() 
         bars_state={},
         active_mask=torch.tensor([True, True, True, True]),
         device=torch.device("cpu"),
-    )
+    ).values
 
     assert torch.allclose(updated["occupied_by"], torch.tensor([0.0, 2.0]))
 
@@ -92,6 +92,6 @@ def test_vtc_affordance_capacity_claim_fills_first_free_slots_without_overalloca
         bars_state={},
         active_mask=torch.tensor([True, True, True, True]),
         device=torch.device("cpu"),
-    )
+    ).values
 
     assert torch.allclose(updated["slot_owner"], torch.tensor([[8.0, -1.0], [0.0, 1.0]]))

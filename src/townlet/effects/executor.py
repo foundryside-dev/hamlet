@@ -123,6 +123,7 @@ class CommandExecutor:
         Raises:
             NotImplementedError: For unimplemented command types
         """
+        self._preflight_command(command, context)
         if command.type == CommandType.MODIFY:
             self._execute_modify(command, context)
         elif command.type == CommandType.SPAWN_EFFECT:
@@ -145,6 +146,39 @@ class CommandExecutor:
             self._execute_delay(command, context)
         else:
             raise NotImplementedError(f"Command type {command.type} not implemented")
+
+    def _preflight_command(self, command: CommandNode, context: ExecutionContext) -> None:
+        """Authorize compound command targets before this command mutates state.
+
+        Constructed conditional branches are conservatively checked just like
+        authored branches. Delayed work is checked when it executes, against its
+        then-current target. This does not roll back earlier independent commands.
+        """
+        path = None
+        if command.type == CommandType.MODIFY:
+            path = command.path
+        elif command.type == CommandType.SAMPLE:
+            path = command.sample_store_path
+        elif command.type == CommandType.REDUCE:
+            path = command.reduce_target
+        if path is not None:
+            context.authorize_write_path(path)
+        if command.type == CommandType.FOR_EACH:
+            for child in self._for_each_contexts(command, context):
+                for nested in command.body or []:
+                    self._preflight_command(nested, child)
+        elif command.type == CommandType.PARALLEL:
+            for nested in command.parallel_commands or []:
+                self._preflight_command(nested, context)
+        elif command.type == CommandType.IF:
+            for nested in [*(command.then_commands or []), *(command.else_commands or [])]:
+                self._preflight_command(nested, context)
+        elif command.type == CommandType.SWITCH:
+            for _, branch in command.case_asts or []:
+                for nested in branch:
+                    self._preflight_command(nested, context)
+            for nested in command.default_commands or []:
+                self._preflight_command(nested, context)
 
     def _execute_modify(self, command: CommandNode, context: ExecutionContext) -> None:
         """Execute modify command.
@@ -419,12 +453,13 @@ class CommandExecutor:
                 self.execute(cmd, context)
 
     def _execute_for_each(self, command: CommandNode, context: ExecutionContext) -> None:
-        """Execute for_each command.
+        """Execute a preauthorized body for each resolved target."""
+        for child_context in self._for_each_contexts(command, context):
+            for body_cmd in command.body or []:
+                self.execute(body_cmd, child_context)
 
-        Args:
-            command: For each command node with collection, iterator, body
-            context: Execution context
-        """
+    def _for_each_contexts(self, command: CommandNode, context: ExecutionContext) -> list[ExecutionContext]:
+        """Resolve the complete target set without mutating any target."""
         from townlet.effects.collections import MAX_COLLECTION_SIZE, resolve_collection
         from townlet.world.expression.evaluator import Evaluator
 
@@ -455,7 +490,7 @@ class CommandExecutor:
         if len(indices) > MAX_COLLECTION_SIZE:
             raise RuntimeError(f"for_each collection size {len(indices)} exceeds cap {MAX_COLLECTION_SIZE}")
 
-        # Execute body commands for each index
+        contexts: list[ExecutionContext] = []
         for idx in indices:
             target_idx = idx
             target_is_item = collection_type == "inventory_items"
@@ -476,10 +511,8 @@ class CommandExecutor:
                 iterator_value=idx,
             )
 
-            # Execute body commands with child context
-            body = command.body or []
-            for body_cmd in body:
-                self.execute(body_cmd, child_context)
+            contexts.append(child_context)
+        return contexts
 
     def _execute_switch(self, command: CommandNode, context: ExecutionContext) -> None:
         """Execute switch/case (equality-based, first-match wins)."""

@@ -71,6 +71,7 @@ class VTCTransitionState:
     vfs_state: dict[str, torch.Tensor]
     bars_state: dict[str, torch.Tensor]
     dones: torch.Tensor | None
+    attempted_vfs_targets: frozenset[str]
 
 
 class VTCTransitionRunner:
@@ -102,16 +103,21 @@ class VTCTransitionRunner:
         bars_state = {name: value.to(device=context.device).clone() for name, value in context.bars_state.items()}
         dones = None if context.dones is None else context.dones.to(device=context.device, dtype=torch.bool).clone()
 
+        attempted_vfs_targets: set[str] = set()
         for phase in phases:
             self.schedule.phase_graph.sort_key(phase)
-            vfs_state, bars_state = self._run_action_writes(phase, context, vfs_state, bars_state)
+            vfs_state, bars_state, action_targets = self._run_action_writes(phase, context, vfs_state, bars_state)
+            attempted_vfs_targets.update(action_targets)
             bars_state = self._run_passive_depletions(phase, context, bars_state)
             bars_state = self._run_threshold_cascades(phase, context, bars_state)
-            vfs_state = self._run_state_residue(phase, context, vfs_state, bars_state)
+            vfs_state, residue_targets = self._run_state_residue(phase, context, vfs_state, bars_state)
+            attempted_vfs_targets.update(residue_targets)
             bars_state = self._run_bounds_clamps(phase, context, bars_state)
             dones = self._run_terminal_conditions(phase, context, bars_state, dones)
 
-        return VTCTransitionState(vfs_state=vfs_state, bars_state=bars_state, dones=dones)
+        return VTCTransitionState(
+            vfs_state=vfs_state, bars_state=bars_state, dones=dones, attempted_vfs_targets=frozenset(attempted_vfs_targets)
+        )
 
     def _run_action_writes(
         self,
@@ -119,10 +125,10 @@ class VTCTransitionRunner:
         context: VTCTransitionContext,
         vfs_state: dict[str, torch.Tensor],
         bars_state: dict[str, torch.Tensor],
-    ) -> tuple[dict[str, torch.Tensor], dict[str, torch.Tensor]]:
+    ) -> tuple[dict[str, torch.Tensor], dict[str, torch.Tensor], frozenset[str]]:
         writes = tuple(write for write in self.schedule.action_write_program.writes if write.phase == phase)
         if not writes:
-            return vfs_state, bars_state
+            return vfs_state, bars_state, frozenset()
         if context.actions is None:
             raise ValueError(f"Transition phase '{phase}' requires actions for VTC action writes")
 
@@ -133,7 +139,8 @@ class VTCTransitionRunner:
             active_mask=context.active_mask,
             device=context.device,
         )
-        return _split_vfs_and_bars(updated, vfs_state.keys(), bars_state.keys())
+        next_vfs, next_bars = _split_vfs_and_bars(updated.values, vfs_state.keys(), bars_state.keys())
+        return next_vfs, next_bars, updated.attempted_targets.intersection(vfs_state)
 
     def _run_passive_depletions(
         self,
@@ -172,16 +179,17 @@ class VTCTransitionRunner:
         context: VTCTransitionContext,
         vfs_state: dict[str, torch.Tensor],
         bars_state: dict[str, torch.Tensor],
-    ) -> dict[str, torch.Tensor]:
+    ) -> tuple[dict[str, torch.Tensor], frozenset[str]]:
         rules = tuple(rule for rule in self.schedule.social_residue_program.rules if rule.phase == phase)
         if not rules:
-            return vfs_state
-        return VTCSocialResidueProgram(rules).apply(
+            return vfs_state, frozenset()
+        result = VTCSocialResidueProgram(rules).apply(
             vfs_state=vfs_state,
             active_mask=context.active_mask,
             device=context.device,
             bars_state=bars_state,
         )
+        return result.values, result.attempted_targets
 
     def _run_bounds_clamps(
         self,

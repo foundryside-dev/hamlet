@@ -7,7 +7,12 @@ from pathlib import Path
 
 import pytest
 
-from townlet.oracle.matrix import Cell, RegisteredDivergence, RegisteredHashDivergence, default_cells
+from townlet.oracle.matrix import (
+    Cell,
+    RegisteredDivergence,
+    RegisteredHashDivergence,
+    default_cells,
+)
 from townlet.oracle.trace_io import RunParams
 from townlet.universe.declarations import DeclarationStore
 
@@ -165,7 +170,7 @@ def test_standing_and_differential_cells_bind_div009_narrowly() -> None:
         if c.params.pack in _PROFILE_VARIABLE_CELLS:
             continue
         assert c.expected is None, f"{c.cell_id} declares an old-side-crash expectation"
-        assert c.pack_divergence == "DIV-014", f"{c.cell_id}: Cut B input inventory must retain inherited rows"
+        assert c.pack_divergence == "DIV-015", f"{c.cell_id}: static access input inventory must retain inherited rows"
         div009 = [d for d in c.hash_divergences if d.register_ref == "DIV-009"]
         assert len(div009) == 1, f"{c.cell_id} does not bind exactly one DIV-009 entry"
         assert div009[0].declared == {
@@ -196,7 +201,10 @@ def test_standing_and_differential_cells_bind_div010_and_div008_narrowly() -> No
             continue
         div010 = [d for d in c.hash_divergences if d.register_ref == "DIV-010"]
         assert len(div010) == 1, f"{c.cell_id} does not bind exactly one DIV-010 entry"
-        assert div010[0].declared == {"variable_schema_hash", "vfs_hash"}, f"{c.cell_id}: DIV-010 hash_fields do not match measurement"
+        assert div010[0].declared == {
+            "variable_schema_hash",
+            "vfs_hash",
+        }, f"{c.cell_id}: DIV-010 hash_fields do not match measurement"
         assert not [
             d for d in c.hash_divergences if d.register_ref == "DIV-011"
         ], f"{c.cell_id} still binds DIV-011, which retired into DIV-008"
@@ -208,7 +216,9 @@ def test_standing_and_differential_cells_bind_div010_and_div008_narrowly() -> No
             "environment_hash",
             "stratum_hash",
         }, f"{c.cell_id}: DIV-012 hash_fields do not match measurement"
-        assert len(c.hash_divergences) == 5, f"{c.cell_id} should bind historical four entries plus independently attributed DIV-014"
+        assert (
+            len(c.hash_divergences) == 6
+        ), f"{c.cell_id} should bind historical four entries plus independently attributed DIV-014 and DIV-015"
 
 
 def test_every_cell_binds_div008_hash_and_stream_narrowly() -> None:
@@ -282,7 +292,7 @@ def test_profile_variable_cells_declare_their_pack_drift() -> None:
         assert not [
             d for d in c.hash_divergences if d.register_ref == "DIV-006"
         ], f"{c.cell_id} still binds DIV-006, which retired into DIV-008"
-        assert c.pack_divergence == "DIV-014", f"{c.cell_id}: Cut B preserves every inherited input row"
+        assert c.pack_divergence == "DIV-015", f"{c.cell_id}: static access preserves every inherited input row"
 
 
 def test_profile_variable_cells_bind_div009_narrowly() -> None:
@@ -296,7 +306,11 @@ def test_profile_variable_cells_bind_div009_narrowly() -> None:
     for c in profile:
         div009 = [d for d in c.hash_divergences if d.register_ref == "DIV-009"]
         assert len(div009) == 1, f"{c.cell_id} does not bind exactly one DIV-009 entry"
-        assert div009[0].declared == {"actions_hash", "pack_brain_hash", "transition_graph_hash"}
+        assert div009[0].declared == {
+            "actions_hash",
+            "pack_brain_hash",
+            "transition_graph_hash",
+        }
 
 
 def test_profile_variable_cells_bind_div010_narrowly() -> None:
@@ -325,7 +339,9 @@ def test_profile_variable_cells_bind_div010_narrowly() -> None:
             "environment_hash",
             "stratum_hash",
         }, f"{c.cell_id}: DIV-012 hash_fields do not match measurement (profile cells exclude affordances_hash)"
-        assert len(c.hash_divergences) == 5, f"{c.cell_id} should bind historical four entries plus independently attributed DIV-014"
+        assert (
+            len(c.hash_divergences) == 6
+        ), f"{c.cell_id} should bind historical four entries plus independently attributed DIV-014 and DIV-015"
 
 
 def test_differential_cells_run_their_declared_levels() -> None:
@@ -563,4 +579,24 @@ def test_cut_b_scope_binding_adds_attribution_without_widening_historical_output
         assert cell.stream_divergence is not None
         assert cell.stream_divergence.register_ref == "DIV-008"
         assert cell.stream_divergence.declared == {"obs"}
-        assert [entry.register_ref for entry in cell.hash_divergences] == ["DIV-009", "DIV-010", "DIV-012", "DIV-008", "DIV-014"]
+        assert [entry.register_ref for entry in cell.hash_divergences] == [
+            "DIV-009",
+            "DIV-010",
+            "DIV-012",
+            "DIV-008",
+            "DIV-014",
+            "DIV-015",
+        ]
+
+
+def test_static_access_binding_adds_only_qualified_variable_identity_and_vfs() -> None:
+    """DIV-015 adds its own narrow cause while historical outputs remain pinned."""
+    for cell in default_cells():
+        static_access = [entry for entry in cell.hash_divergences if entry.register_ref == "DIV-015"]
+        assert len(static_access) == 1
+        assert static_access[0].declared == {"variable_schema_hash", "vfs_hash"}
+        assert cell.pack_divergence == "DIV-015"
+        assert cell.stream_divergence is not None
+        assert cell.stream_divergence.register_ref == "DIV-008"
+        assert cell.stream_divergence.declared == {"obs"}
+        assert cell.scripted_actions is False

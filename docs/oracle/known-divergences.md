@@ -1650,7 +1650,7 @@ completion is claimed by the registration.
 - **Status:** measured at clean source `9137484965b05c26ceed1740ee9aab39a364a61c`;
   final qualification pending. The diagnostic deliberately used no attributions and
   exited 1 for 150 unexplained identities, with no trace/reset differences.
-- **Shape:** hash-only: `variable_schema_hash` and `vfs_hash` on every matrix cell.
+- **Harness shape: hash-only**: `variable_schema_hash` and `vfs_hash` on every matrix cell.
   No stream, observation, layout, action or transition allowance is introduced.
 - **Scope:** PRD-0004 static engine/agent roles. Owner, spatial and dynamic epistemic
   propagation remain excluded. Frozen source and input fixtures are unchanged.

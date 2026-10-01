@@ -53,6 +53,7 @@ which is explicitly a transcribed tool-result receipt.
 | File | SHA-256 |
 | --- | --- |
 | full-suite.log | 93b382e138e452195786fab751c8e428290890eef7cd0db4dda70b93913024bd |
+| main-checks.log (subsequent local merge) | 2d129ce2ddc4735f31685288762e526bb254d60a34449a5472fe65398cdc5562 |
 | compiler-focused.log | 88a7ca1ce56b09bfb4b10f46f02bac2a160fcf7cef514afb23411b5b36085de0 |
 | runtime-focused.log (earlier 293 cases) | 0699b197cb8b9228c6d7430f31c4dccd524185de86d211f9d526af172ef47193 |
 | ruff.log | 82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18 |
@@ -69,11 +70,39 @@ Both unrelated dirty skill files retain SHA-256
 
 ## Acceptance limits
 
-This is local refusal/identity qualification. No push, main merge, hosted CI,
-release or deployment is performed. No new learning/convergence campaign or frozen
+At the original branch qualification, no push, main merge, hosted CI, release or
+deployment was performed. The subsequent owner-requested local integration is
+recorded below. No new learning/convergence campaign or frozen
 trajectory qualification is claimed. Item allocation after reuse intentionally
 changes to the lowest available row. Cascade capture is linear in supplied state;
 its performance is unmeasured. New rollback regressions exercise CPU; initialized
 CUDA RNG restoration is implemented but not independently exercised here.
 Future delayed execution and whole ticks are outside immediate admission atomicity.
 Recovery and PDR-0058's fired exit review remain open.
+
+## Subsequent owner-requested local integration
+
+The owner requested: "please merge it onto main". After refreshing `origin/main`
+(still `72977928`), local main fast-forwarded from `792c6704` to
+**`a370814ab446af04afe5274772eb2799499d9e10`**. Its tree exactly matches the
+qualified repair branch; execution remains unchanged from `7eb7ded3`. Actual
+imports resolve to `/home/john/hamlet/src/townlet`.
+
+Fresh post-merge checks: **432 passed in 11.95s, exit 0**. Scope: all item/effect
+units, declaration-edge compilation cases, both cascade integrations, static
+write-intent runtime and both denial regression modules (`--no-cov -q`). The
+4,277-case full pass above is retained qualification, not a new merge-time full run.
+
+At integration, both unrelated dirty paths retained their original contents, modes
+and dirty status.
+The merged task branch was retired after successful verification. The primary
+checkout, other worktrees and raw evidence are retained. No push was performed;
+there is no new hosted CI reading. A documentation-only follow-up records this
+integration without changing qualified execution code.
+
+The owner then explicitly requested committing the two changed reference Markdown
+files. Commit **`80d6a5ce6f0ec4b04ee9ef461f8b687a5c2d0f71`** includes exactly
+`.agents/skills/filigree-workflow/references/error-codes.md` and
+`.claude/skills/filigree-workflow/references/error-codes.md`. Their file contents
+remain at the custody digest above; only their Git status changes to committed.
+No runtime code changes or new test claims follow from this documentation commit.

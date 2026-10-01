@@ -33,8 +33,8 @@ Three historical access defects are closed with bounded source/runtime evidence:
 `hamlet-83a043a9b9` remains open. Unknown historical roles are refused, not implemented.
 
 The owner's review of `72977928` exposed effect-admission refusal and canonical
-variable-identity defects. Both reproduced. Local branch `fix/static-access-review`
-now contains implementation **`7eb7ded3`** (following `c3faa4bf`): selected lifecycle writes authorize before
+variable-identity defects. Both reproduced. The repair on `fix/static-access-review`
+contains implementation **`7eb7ded3`** (following `c3faa4bf`): selected lifecycle writes authorize before
 admission/reapplication, immediate nested denials restore runtime state, and structured
 canonical identities retain distinct variables and origins. Deterministic lowest-free
 item rows prevent rejected cascades from changing later allocation. **397 focused
@@ -47,6 +47,16 @@ published main's source and hosted qualification remain the historical readings 
 the repair scope, independent counterexamples and acceptance limits.
 [Verification receipt](evidence/static-access-review/verification.md) banks the full
 reading and skip disposition. No frozen trajectory or convergence campaign was rerun.
+
+The owner subsequently requested a local main merge. **Main fast-forwarded from
+`792c6704` to `a370814a`**, with an exact tree match to the qualified repair branch.
+**432 post-merge checks passed** in 11.95s against actual main-checkout imports;
+the full suite above is retained qualification, not a new merge-time full run.
+The receipt's local-integration addendum records custody and landing evidence.
+The merged task branch was retired; unrelated file contents and modes were preserved.
+At the owner's subsequent request, both Filigree error-code reference files were
+committed unchanged as **`80d6a5ce`**. No push
+or new hosted CI reading was performed. The follow-up checkpoint changes only product docs.
 
 ## Product judgment
 
@@ -77,8 +87,8 @@ as confirmed scope. This recommendation is not authorization to implement it.
 
 The initial resume reconciled publication. The subsequent owner review dispatched these
 bounded contract repairs; no bet moved horizon and the standing authority grant remains
-unchanged. Recovery is open. The repair/checkpoint branch is local only.
+unchanged. Recovery is open. The owner-requested integration is on local main only.
 
 Next session: adjudicate the fired exit trigger, then source-reproduce and scope the episode-lane PRD. Keep effects reset and item fidelity as
 separate packages unless the chosen scenario explicitly depends on them. The frozen oracle,
-raw evidence and two unrelated dirty skill files remain preserved.
+raw evidence and owner-authored skill reference edits remain preserved.

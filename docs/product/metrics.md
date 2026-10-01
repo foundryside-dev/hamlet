@@ -19,6 +19,7 @@ refer to their dated source, not the consolidated main.
 | Hosted delivery — resume 08:17 UTC | PR #42 merged; actual-main Lint, Config Validation and Tests completed/success; retained suite 4,249 passed / 19 skipped / 15 warnings | Main `72977928`; live GitHub reading and retained receipt; no suite rerun during resume; separate failed Dependabot update outside delivery verdict |
 | Tracker census after delivery closure — resume 08:17 UTC | 266 issues: 159 done, 107 open, zero in progress; 103 ready, four blocked | Delivery dd9a03f787 closed; recovery planning; episode bug d6fc84d147 triage; bookkeeping only |
 | Post-review local repair | Full suite 4,277 passed / 18 skipped / 15 warnings; 85% coverage; 989.23s, exit 0; 397 focused item/effect and 988 compiler/oracle/access checks; lint/type/no-defaults/fleet gates pass | Implementation 7eb7ded3 following c3faa4bf on fix/static-access-review; three reproduced defects closed; skip disposition retained; no publication or learning campaign |
+| Owner-requested local main merge | Exact qualified repair-tree fast-forward; 432 post-merge checks passed, 11.95s, exit 0; unrelated dirty file digests/modes preserved | Main landing a370814a from 792c6704; actual main-checkout imports; retained full suite above; no push, new hosted CI or convergence campaign |
 
 [PDR-0155](decisions/0155-resume-reconciles-completed-main-publication.md) and the
 [publication reading](evidence/main-consolidation/hosted-publication.json) record the resume

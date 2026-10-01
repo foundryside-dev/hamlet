@@ -16,7 +16,9 @@ from townlet.vfs.registry import VariableRegistry
 from townlet.vfs.schema import VariableDef
 
 
-def _services() -> tuple[EffectManager, VariableRegistry, ItemManager, ItemInstance, dict[str, torch.Tensor], CommandCompiler]:
+def _services(
+    max_items: int,
+) -> tuple[EffectManager, VariableRegistry, ItemManager, ItemInstance, dict[str, torch.Tensor], CommandCompiler]:
     profiles = {
         name: CompiledItemProfile(
             profile_name=name,
@@ -49,7 +51,7 @@ def _services() -> tuple[EffectManager, VariableRegistry, ItemManager, ItemInsta
         ],
         num_agents=2,
         device=torch.device("cpu"),
-        max_items=3,
+        max_items=max_items,
         item_profiles=profiles,
     )
     compiler = CommandCompiler(
@@ -107,16 +109,16 @@ def _services() -> tuple[EffectManager, VariableRegistry, ItemManager, ItemInsta
             for name in profiles
         ],
         max_items_per_agent=3,
-        max_items_in_world=3,
+        max_items_in_world=max_items,
     )
-    items = ItemManager(catalog=catalog, max_items=3, device="cpu", schema=None, vfs_registry=registry, effect_manager=manager)
+    items = ItemManager(catalog=catalog, max_items=max_items, device="cpu", schema=None, vfs_registry=registry, effect_manager=manager)
     sealed = items.spawn_item("sealed", (0, 0), 0)
     assert sealed is not None
     return manager, registry, items, sealed, {"energy": torch.full((2,), 3.0)}, compiler
 
 
 def test_fresh_parent_denial_releases_items_positions_and_profile_rows() -> None:
-    manager, registry, items, sealed, bars, compiler = _services()
+    manager, registry, items, sealed, bars, compiler = _services(3)
     manager.catalog.effects["parent"].on_spawn = compiler.compile_commands(
         [
             CommandNode(type=CommandType.SPAWN_ITEM, item_type="writable", position="self", quantity=1, initial_state={"charge": 7.0}),
@@ -159,7 +161,7 @@ def test_fresh_parent_denial_releases_items_positions_and_profile_rows() -> None
 
 
 def test_descendant_denial_restores_published_arenas_private_aliases_and_affordance() -> None:
-    manager, registry, items, sealed, bars, compiler = _services()
+    manager, registry, items, sealed, bars, compiler = _services(3)
     # Hold the views used by runtime publishers, and the original private tensor
     # which ordinary registry writes replace. The rollback must repair both.
     original = {name: tensor for name, tensor in registry._storage.items()}
@@ -191,3 +193,49 @@ def test_descendant_denial_restores_published_arenas_private_aliases_and_afforda
     assert manager.affordance_overrides is availability
     assert availability == {"bank": True}
     assert manager.get_all_active_effects() == []
+
+
+def test_refused_cascade_preserves_next_item_row_after_allocation_and_reuse() -> None:
+    control = _services(4)
+    rejected = _services(4)
+    targets = []
+    for _, registry, items, initial, _, _ in [control, rejected]:
+        sealed = items.spawn_item("sealed", (1, 0), 0)
+        writable = items.spawn_item("writable", (2, 0), 0)
+        assert sealed is not None and writable is not None
+        assert [initial.vfs_index, sealed.vfs_index, writable.vfs_index] == [0, 1, 2]
+        items.despawn_item(initial.instance_id, current_tick=1)
+        assert registry.get_item_profile_for_index(initial.vfs_index) is None
+        targets.append(sealed)
+
+    manager, registry, items, _, bars, compiler = rejected
+    manager.catalog.effects["parent"].on_spawn = compiler.compile_commands(
+        [
+            CommandNode(type=CommandType.SPAWN_ITEM, item_type="writable", position="self", quantity=1, initial_state={"charge": 7.0}),
+            CommandNode(type=CommandType.SPAWN_EFFECT, effect_id="child", target=targets[1].vfs_index, intensity=1.0),
+        ]
+    )
+    with pytest.raises(PermissionError, match="sealed"):
+        manager.spawn_effect(
+            "parent",
+            0,
+            1.0,
+            2,
+            bars=bars,
+            vfs_registry=registry,
+            item_manager=items,
+            agent_positions=torch.tensor([[4, 5], [6, 7]]),
+        )
+    expected = control[2].spawn_item("writable", (4, 5), 2, initial_state={"charge": 6.0})
+    actual = items.spawn_item("writable", (4, 5), 2, initial_state={"charge": 6.0})
+    assert expected is not None and actual is not None
+    assert actual.vfs_index == expected.vfs_index
+    # Allocation is determined by the available rows, including reused lower
+    # rows, rather than by a set.pop() cursor that survives membership changes.
+    assert actual.vfs_index == 0
+    assert actual.instance_id == expected.instance_id == 3
+    assert actual.position == expected.position == (4, 5)
+    assert actual.item_type == expected.item_type == "writable"
+    assert len(items.get_all_items()) == len(control[2].get_all_items()) == 3
+    assert registry.read_item("writable", "charge", actual.vfs_index, reader="engine") == 6.0
+    assert registry.read_item("sealed", "charge", targets[1].vfs_index, reader="engine") == 2.0

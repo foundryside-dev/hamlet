@@ -353,7 +353,10 @@ class ItemManager:
         # Allocate VFS slot
         if not self.vfs_free_slots:
             return None  # No VFS slots available
-        vfs_index = self.vfs_free_slots.pop()
+        # Row selection depends only on available membership. set.pop() keeps
+        # a hidden cursor which a refused effect cascade cannot restore.
+        vfs_index = min(self.vfs_free_slots)
+        self.vfs_free_slots.remove(vfs_index)
 
         # Initialize item VFS state from profile defaults + initial_state overrides
         if self.vfs_registry is not None and item_def.vfs_profile:

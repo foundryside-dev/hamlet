@@ -849,6 +849,8 @@ def _compiled_item_profiles(profile_name: str, var_name: str, var_type: str) -> 
         name=var_name,
         semantic_type="custom",
         lifetime="episode",
+        readable_by=["engine", "agent"],
+        writable_by=["engine"],
         exposed_to=["agent"],
         type=var_type,
         initial_value=0.0,
@@ -865,6 +867,12 @@ class TestItemProfileExposureRefusals:
     """Unit coverage for the two compile-time refusals `_variable_element_artifacts`
     added at the unit-5 item-profile-exposure landing (token_spec.py). Both were
     previously reachable only through a full compiler run; these hit them directly."""
+
+    def test_exposed_item_variable_without_agent_read_access_refuses(self):
+        compiled_vfs_profiles = _compiled_item_profiles("medical", "durability", "float")
+        compiled_vfs_profiles.item_profiles["medical"].variables[0].readable_by = ["engine"]
+        with pytest.raises(ValueError, match=r"medical\.durability.*exposure requires read access"):
+            variable_element_bindings(compiled_vfs_profiles, (), item_capacity_value=1)
 
     def test_exposed_item_variable_with_zero_item_capacity_refuses(self):
         # token_spec.py:1436-1442: an exposed item-profile variable declares

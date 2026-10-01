@@ -16,14 +16,15 @@ class RewardCalculator:
     def __init__(self, env: VectorizedHamletEnv) -> None:
         self._env = env
 
-    def _calculate_shaped_rewards(self) -> torch.Tensor:
+    def _calculate_shaped_rewards(self, *, active_on_entry: torch.Tensor) -> torch.Tensor:
         """Calculate total rewards using DACEngine."""
         env = self._env
-        if env.exploration_module is not None:
+        intrinsic_raw = torch.zeros(env.num_agents, device=env.device)
+        if env.exploration_module is not None and bool(active_on_entry.any()):
             observations = env._get_observations()
-            intrinsic_raw = env.exploration_module.compute_intrinsic_rewards(observations, update_stats=True)
-        else:
-            intrinsic_raw = torch.zeros(env.num_agents, device=env.device)
+            intrinsic_raw[active_on_entry] = env.exploration_module.compute_intrinsic_rewards(
+                observations[active_on_entry], update_stats=True
+            )
 
         agent_positions = env.positions.to(device=env.device, dtype=torch.float32)
 

@@ -1196,8 +1196,15 @@ class VectorizedHamletEnv:
         newly_retired = active_on_entry & ~authored_terminal & (self.step_counts >= self.agent_lifespan)
 
         # 6. Calculate rewards (interoception-aware)
-        rewards = self._reward_calculator._calculate_shaped_rewards()
-        rewards = torch.where(newly_retired, rewards + 1.0, rewards)  # +1 retirement bonus
+        rewards = self._reward_calculator._calculate_shaped_rewards(active_on_entry=active_on_entry)
+        bonus = newly_retired.to(dtype=rewards.dtype)
+        components = self._last_reward_components
+        components["extrinsic"] = components["extrinsic"] + bonus
+        rewards = rewards + bonus
+        rewards = torch.where(active_on_entry, rewards, torch.zeros_like(rewards))
+        for name, component in components.items():
+            components[name] = torch.where(active_on_entry, component, torch.zeros_like(component))
+        self.intrinsic_weights = torch.where(active_on_entry, self.intrinsic_weights, torch.zeros_like(self.intrinsic_weights))
         self.dones = torch.logical_or(self.dones, newly_retired)
         newly_terminal = authored_terminal | newly_retired
 
@@ -1363,9 +1370,9 @@ class VectorizedHamletEnv:
         """Handle INTERACT action at affordances in instant mode."""
         return self._action_executor._handle_instant_interactions(interact_mask)
 
-    def _calculate_shaped_rewards(self) -> torch.Tensor:
+    def _calculate_shaped_rewards(self, *, active_on_entry: torch.Tensor) -> torch.Tensor:
         """Calculate total rewards using DACEngine."""
-        return self._reward_calculator._calculate_shaped_rewards()
+        return self._reward_calculator._calculate_shaped_rewards(active_on_entry=active_on_entry)
 
     def _get_affordance_positions(self) -> dict[str, torch.Tensor]:
         """Get current affordance positions as dict.

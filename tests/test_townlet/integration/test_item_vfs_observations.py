@@ -201,7 +201,9 @@ def test_qualified_item_policy_and_observation_cold_cache_two_resets(tmp_path, c
     rows remain world-shared; owner locality and held-item publication are excluded.
     """
     import shutil
+
     import yaml
+
     from townlet.environment.observation_encoder import build_token_observation_encoder
     from townlet.universe.compiled import CompiledUniverse
 

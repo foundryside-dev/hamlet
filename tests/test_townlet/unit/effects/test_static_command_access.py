@@ -84,3 +84,30 @@ def test_denied_sample_does_not_advance_random_generator() -> None:
     with pytest.raises(PermissionError, match="constant"):
         CommandExecutor().execute(command, ctx)
     assert torch.equal(generator.get_state(), before)
+
+
+@pytest.mark.parametrize("writers", [["engine"], []])
+def test_bare_dotted_registry_id_is_an_exact_target(writers: list[str]) -> None:
+    registry = VariableRegistry(
+        [
+            VariableDef(
+                id="food.freshness",
+                scope="global",
+                type="scalar",
+                lifetime="episode",
+                default=2.0,
+                readable_by=["engine"],
+                writable_by=writers,
+            )
+        ],
+        2,
+        torch.device("cpu"),
+    )
+    ctx = ExecutionContext(vfs_registry=registry)
+    if writers:
+        ctx.set_path("vfs.food.freshness", torch.tensor(7.0))
+        assert registry.get("food.freshness", reader="engine").item() == 7.0
+    else:
+        with pytest.raises(PermissionError, match="food.freshness"):
+            ctx.set_path("vfs.food.freshness", torch.tensor(2.0))
+        assert registry.get("food.freshness", reader="engine").item() == 2.0

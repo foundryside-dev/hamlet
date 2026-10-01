@@ -163,6 +163,12 @@ class CommandExecutor:
             path = command.reduce_target
         if path is not None:
             context.authorize_write_path(path)
+        if command.type == CommandType.SPAWN_ITEM and command.initial_state:
+            if command.item_type is None:
+                raise ValueError("spawn_item overrides require a declared item type")
+            if context.item_manager is None:
+                raise ValueError("spawn_item overrides require an item manager")
+            context.item_manager._authorize_spawn_state(command.item_type, command.initial_state)
         if command.type == CommandType.FOR_EACH:
             for child in self._for_each_contexts(command, context):
                 for nested in command.body or []:

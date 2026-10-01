@@ -807,7 +807,8 @@ class RegistryVariableElementPublisher:
                 raise ValueError(
                     f"variable_element slot {slot_index} is bound to agent_private variable {base_id!r}.\n"
                     "  Rule: agent_private is excluded from observation by the publisher, filtered BEFORE slot "
-                    "binding at this publisher enforcement point (token-obs spec §2 scope table; hamlet-83a043a9b9). Checked accessors also "
+                    "binding at this publisher enforcement point (token-obs spec §2 scope table; hamlet-83a043a9b9). "
+                    "Checked accessors also "
                     "refuse agent reads of private-scope storage."
                 )
             if scope == VariableScope.GLOBAL:
@@ -982,7 +983,8 @@ class ItemArenaVariableElementPublisher:
             policy = registry.get_item_access_policy(profile_name, var_name)
             if "agent" not in policy.exposed_to:
                 raise ValueError(
-                    f"variable_element slot {declaration.slot_index}: item variable '{profile_name}.{var_name}' is not declared exposed to agent"
+                    f"variable_element slot {declaration.slot_index}: item variable '{profile_name}.{var_name}' "
+                    "is not declared exposed to agent"
                 )
             if not (0 <= declaration.owner_slot < owner_capacity):
                 raise ValueError(

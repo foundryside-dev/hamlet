@@ -59,6 +59,7 @@ def test_witness_public_observation_hidden_named_reward_and_immutable_state(tmp_
 
 def test_exposure_contradiction_refuses_at_declared_source(tmp_path):
     import shutil
+
     import yaml
 
     pack = tmp_path / "invalid"

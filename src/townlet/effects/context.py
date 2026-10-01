@@ -172,11 +172,13 @@ class ExecutionContext:
                 item_index = index
         if parts[0] != "vfs":
             return
-        if len(parts) != 2:
-            raise ValueError(f"Setting reference traversal '{path}' is not supported")
+        if len(parts) < 2:
+            raise ValueError(f"VFS write path '{path}' has no variable identity")
         if self.vfs_registry is None:
             raise ValueError("VFS registry not set in context")
-        variable_id = parts[1]
+        # Bare VFS targets and item-profile IDs may contain dots. Resolve the
+        # complete declared identity rather than interpreting it as traversal.
+        variable_id = ".".join(parts[1:])
         if item_index is None:
             self.vfs_registry.authorize_write(variable_id, writer="engine")
         else:

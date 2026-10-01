@@ -80,3 +80,38 @@ def test_dynamic_path_authorization_denies_no_op_item_write() -> None:
     ctx = ExecutionContext(vfs_registry=manager.vfs_registry, self_is_item=True, self_index=item.vfs_index)
     with pytest.raises(PermissionError, match="constant"):
         ctx.authorize_write_path("self.vfs.constant")
+
+
+def test_compound_spawn_denial_precedes_sibling_mutation() -> None:
+    from townlet.effects.compiler import CommandCompiler
+    from townlet.effects.executor import CommandExecutor
+    from townlet.effects.schema import CommandNode, CommandType
+
+    manager = _manager()
+    command = CommandCompiler({"bar.energy": "float"}).compile_command(
+        CommandNode(
+            type=CommandType.PARALLEL,
+            parallel_commands=[
+                CommandNode(type=CommandType.MODIFY, path="bar.energy", value_expr="9.0"),
+                CommandNode(
+                    type=CommandType.SPAWN_ITEM,
+                    item_type="object",
+                    position="self",
+                    quantity=1,
+                    initial_state={"allowed": 8.0, "constant": 2.0},
+                ),
+            ],
+        )
+    )
+    ctx = ExecutionContext(
+        bars={"energy": torch.full((2,), 3.0)},
+        item_manager=manager,
+        vfs_registry=manager.vfs_registry,
+        self_index=0,
+        agent_positions=torch.zeros((2, 2), dtype=torch.long),
+    )
+    before = ctx.bars["energy"].clone()
+    with pytest.raises(PermissionError, match="constant"):
+        CommandExecutor().execute(command, ctx)
+    assert torch.equal(ctx.bars["energy"], before)
+    assert manager.active_items == {}

@@ -296,6 +296,26 @@ class ItemManager:
         """Check whether a position is occupied by an active item (O(1) lookup)."""
         return bool(self._position_index.get(position))
 
+    def _authorize_spawn_state(self, item_type: str, initial_state: dict[str, float] | None) -> dict[str, float]:
+        """Resolve and authorize complete overrides without allocating an item."""
+        item_def = next((item for item in self.catalog.item_types if item.id == item_type), None)
+        if item_def is None:
+            raise KeyError(f"Unknown item type: {item_type}")
+        overrides: dict[str, float] = {}
+        if self.vfs_registry is not None and item_def.vfs_profile:
+            profile_name = item_def.vfs_profile
+            if profile_name not in self.vfs_registry.item_profile_map:
+                raise ValueError(f"VFS profile '{profile_name}' not found in registry")
+            if self.vfs_registry.item_vfs is None:
+                raise ValueError("Item VFS storage not allocated in registry")
+            for var_name, value in (initial_state or {}).items():
+                self.vfs_registry.authorize_item_write(profile_name, var_name, writer="engine")
+                overrides[var_name] = float(value)
+        elif initial_state:
+            raise ValueError("Item initial_state requires a declared VFS profile and registry")
+
+        return overrides
+
     def spawn_item(
         self,
         item_type: str,
@@ -328,19 +348,7 @@ class ItemManager:
         if item_def is None:
             raise KeyError(f"Unknown item type: {item_type}")
 
-        # Authorize every override before allocating or initializing any row.
-        overrides: dict[str, float] = {}
-        if self.vfs_registry is not None and item_def.vfs_profile:
-            profile_name = item_def.vfs_profile
-            if profile_name not in self.vfs_registry.item_profile_map:
-                raise ValueError(f"VFS profile '{profile_name}' not found in registry")
-            if self.vfs_registry.item_vfs is None:
-                raise ValueError("Item VFS storage not allocated in registry")
-            for var_name, value in (initial_state or {}).items():
-                self.vfs_registry.authorize_item_write(profile_name, var_name, writer="engine")
-                overrides[var_name] = float(value)
-        elif initial_state:
-            raise ValueError("Item initial_state requires a declared VFS profile and registry")
+        overrides = self._authorize_spawn_state(item_type, initial_state)
 
         # Allocate VFS slot
         if not self.vfs_free_slots:

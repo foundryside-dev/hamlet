@@ -164,11 +164,11 @@ class ExecutionContext:
         item_index: int | None = None
         if parts[0] in ("self", "target"):
             actor = parts.pop(0)
-            index = self.self_index if actor == "self" else self.target_index
-            if index is None:
-                raise ValueError(f"{actor}_index not set in context")
             is_item = self.self_is_item if actor == "self" else self.target_is_item
             if is_item:
+                index = self.self_index if actor == "self" else self.target_index
+                if index is None:
+                    raise ValueError(f"{actor}_index not set in context")
                 item_index = index
         if parts[0] != "vfs":
             return

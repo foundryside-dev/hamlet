@@ -170,7 +170,14 @@ class CommandExecutor:
                 raise ValueError("spawn_item overrides require an item manager")
             context.item_manager._authorize_spawn_state(command.item_type, command.initial_state)
         if command.type == CommandType.FOR_EACH:
-            for child in self._for_each_contexts(command, context):
+            if command.collection == "inventory_items":
+                children = self._inventory_item_contexts(context)
+            else:
+                # Ordinary agent roles are independent of the selected row.
+                # Do not evaluate a collection expression or resolver while
+                # scanning a compound command's possible write policies.
+                children = [context.copy(target_index=None, target_is_item=False)]
+            for child in children:
                 for nested in command.body or []:
                     self._preflight_command(nested, child)
         elif command.type == CommandType.PARALLEL:
@@ -460,9 +467,33 @@ class CommandExecutor:
 
     def _execute_for_each(self, command: CommandNode, context: ExecutionContext) -> None:
         """Execute a preauthorized body for each resolved target."""
-        for child_context in self._for_each_contexts(command, context):
+        children = self._for_each_contexts(command, context)
+        # Resolve only when this loop executes, after earlier sibling writes.
+        # Authorize all selected bodies before mutating the first selected row.
+        for child_context in children:
+            for body_cmd in command.body or []:
+                self._preflight_command(body_cmd, child_context)
+        for child_context in children:
             for body_cmd in command.body or []:
                 self.execute(body_cmd, child_context)
+
+    def _inventory_item_contexts(self, context: ExecutionContext) -> list[ExecutionContext]:
+        """Inspect current qualified inventory policies without evaluating expressions."""
+        inventory = context.inventory
+        if inventory is None:
+            raise ValueError("inventory required for 'inventory_items' collection")
+        if context.self_index is None:
+            raise ValueError("self_index required for 'inventory_items' collection")
+        contexts = []
+        for slot in inventory.slots[context.self_index]:
+            instance_id = int(slot.item())
+            if instance_id < 0:
+                continue
+            item = inventory.items.get(instance_id)
+            if item is None:
+                raise ValueError(f"Item instance {instance_id} not found in inventory metadata")
+            contexts.append(context.copy(target_index=item.vfs_index, target_is_item=True, iterator_value=instance_id))
+        return contexts
 
     def _for_each_contexts(self, command: CommandNode, context: ExecutionContext) -> list[ExecutionContext]:
         """Resolve the complete target set without mutating any target."""

@@ -208,3 +208,43 @@ def test_unsupported_authored_initial_state_refuses_at_typed_boundary():
     with pytest.raises(ValidationError, match="initial_state") as appearance_error:
         ItemAppearanceRuleConfig.model_validate({"item_type": "item", "spawn_count": 1, "initial_state": {"secret": 3.0}})
     assert appearance_error.value.errors()[0]["type"] == "extra_forbidden"
+
+
+@pytest.mark.parametrize(
+    "effect_scope,collection,path,denied",
+    [
+        ("agent", "inventory_items", "target.vfs.secret", False),
+        ("item", "all_agents", "target.vfs.secret", True),
+        ("agent", "inventory_items", "self.vfs.secret", True),
+    ],
+)
+def test_for_each_preserves_self_and_retargets_target_namespace(effect_scope, collection, path, denied):
+    from townlet.universe.validation.static_access import validate_static_write_targets
+
+    raw = _raw()
+    # Same name is read-only in ordinary state and writable in an item profile.
+    raw.variables.item_profiles.append("inventory")
+    raw.variables.declarations.append(
+        raw.variables.declarations[0].model_copy(update={"scope": "item", "profile": "inventory", "writable_by": ["engine"]})
+    )
+    effects = EffectsConfig(
+        effect_definitions=[
+            dict(
+                id="loop",
+                scope=effect_scope,
+                duration=3,
+                reapply_policy="stack",
+                observable=False,
+                on_spawn=[{"for_each": collection, "as": "member", "do": [{"modify": path, "value": "3"}]}],
+                on_tick=[],
+                on_despawn=[],
+                on_interrupt=[],
+            )
+        ],
+        max_active_effects={"global": 0, "agent": 1, "item": 1, "affordance": 0},
+    )
+    if denied:
+        with pytest.raises(CompilationError, match="secret.*engine write"):
+            validate_static_write_targets(replace(raw, effects=effects), raw.source_map)
+    else:
+        validate_static_write_targets(replace(raw, effects=effects), raw.source_map)

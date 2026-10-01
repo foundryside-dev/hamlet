@@ -33,7 +33,7 @@ def validate_static_write_targets(raw: RawConfigsV21, source_map: SourceMap | No
                 location=locate(source_map, origin),
             )
 
-    def check_path(path: str, origin: str, item_profile: str | None, item_target: bool) -> None:
+    def check_path(path: str, origin: str, item_profile: str | None, self_is_item: bool, target_is_item: bool) -> None:
         ast = parser.parse(path)
         if not isinstance(ast, PathAccess):
             return
@@ -47,24 +47,31 @@ def validate_static_write_targets(raw: RawConfigsV21, source_map: SourceMap | No
         identifier = ".".join(segments[1:])
         if prefix == "self" and item_profile is not None:
             check(items.get((item_profile, identifier)), origin)
-        elif item_target and prefix in {"self", "target"}:
+        elif (self_is_item and prefix == "self") or (target_is_item and prefix == "target"):
             return  # The effect's item instance/profile is selected dynamically.
         else:
             check(registry.get(identifier), origin)
 
-    def commands(nodes: Iterable[CommandConfig], origin: str, item_profile: str | None, item_target: bool) -> None:
+    def commands(nodes: Iterable[CommandConfig], origin: str, item_profile: str | None, self_is_item: bool, target_is_item: bool) -> None:
         for index, node in enumerate(nodes):
             command_origin = f"{origin}[{index}]"
             for path in (node.modify, node.store_in, node.reduce_into):
                 if path is not None:
-                    check_path(path, command_origin, item_profile, item_target)
-            for field in ("then", "else_", "do", "default", "parallel", "delay_do"):
+                    check_path(path, command_origin, item_profile, self_is_item, target_is_item)
+            for field in ("then", "else_", "default", "parallel"):
                 children = getattr(node, field)
                 if children:
-                    commands(children, f"{command_origin}.{field}", item_profile, item_target)
+                    commands(children, f"{command_origin}.{field}", item_profile, self_is_item, target_is_item)
+            if node.for_each is not None:
+                # The executor changes only target_is_item when entering a loop.
+                # inventory_items resolves instance/profile at runtime; all other
+                # existing collection paths yield ordinary agent targets.
+                commands(node.do, f"{command_origin}.do", item_profile, self_is_item, node.for_each == "inventory_items")
+            if node.delay is not None:
+                commands(node.delay_do, f"{command_origin}.delay_do", item_profile, self_is_item, target_is_item)
             for case_index, case in enumerate(node.cases):
                 children = [CommandConfig.model_validate(command) for command in case.get("do", [])]
-                commands(children, f"{command_origin}.cases[{case_index}].do", item_profile, item_target)
+                commands(children, f"{command_origin}.cases[{case_index}].do", item_profile, self_is_item, target_is_item)
 
     for variable in raw.variables.declarations:
         if variable.expression is not None:
@@ -86,18 +93,24 @@ def validate_static_write_targets(raw: RawConfigsV21, source_map: SourceMap | No
     for level in raw.levels.values():
         for affordance in level.affordances.affordances:
             for stage, pipeline in affordance.interactions.items():
-                commands(pipeline, f"levels/{level.name}/affordances:{affordance.name}:{stage}", None, False)
+                commands(pipeline, f"levels/{level.name}/affordances:{affordance.name}:{stage}", None, False, False)
     if raw.effects is not None:
         for effect in raw.effects.effect_definitions:
             for stage in ("on_spawn", "on_tick", "on_despawn", "on_interrupt"):
-                commands(getattr(effect, stage), f"effects:{effect.id}:{stage}", None, effect.scope == EffectScope.ITEM)
+                commands(
+                    getattr(effect, stage),
+                    f"effects:{effect.id}:{stage}",
+                    None,
+                    effect.scope == EffectScope.ITEM,
+                    effect.scope == EffectScope.ITEM,
+                )
     if raw.items is not None:
         for item in raw.items.item_types:
             for stage in ("on_pickup", "on_use", "on_drop"):
                 nodes = [CommandConfig.model_validate(command) for command in getattr(item.interactions, stage)]
-                commands(nodes, f"items:{item.id}:{stage}", item.vfs_profile, False)
+                commands(nodes, f"items:{item.id}:{stage}", item.vfs_profile, True, False)
             for stage in ("local_commands", "inventory_commands"):
                 for verb in getattr(item.interactions, stage):
                     nodes = [CommandConfig.model_validate(command) for command in verb.effects]
-                    commands(nodes, f"items:{item.id}:{stage}:{verb.name}", item.vfs_profile, False)
+                    commands(nodes, f"items:{item.id}:{stage}:{verb.name}", item.vfs_profile, True, False)
     errors.check_and_raise()

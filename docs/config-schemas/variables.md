@@ -20,6 +20,8 @@ variables:
     semantic_type: temporal
     initial_value: 0.0
     expression: tick
+    readable_by: [engine, agent]
+    writable_by: [engine]
     exposed_to: [agent]
     normalization:
       kind: cyclical_sin_cos
@@ -32,7 +34,7 @@ it cannot redeclare the same period as a numeric day length.
 ## Required variable meaning
 
 Every variable declares its `id`, `scope`, `type`, `lifetime`, `semantic_type` and
-`exposed_to`. IDs identify registry state globally. Item state additionally declares
+`readable_by`, `writable_by` and `exposed_to`. IDs identify registry state globally. Item state additionally declares
 `profile`, identifying a name in the explicit `item_profiles` catalog. An empty catalog
 entry remains a valid schema group for item types with no state variables.
 
@@ -105,9 +107,34 @@ Every variable enters the compiler's canonical symbol inventory, including varia
 accepted only as overlays. Item symbols are profile-qualified. Duplicate identities are
 refused with both source origins; unknown references name the consumer's source location.
 
-`readable_by` and `writable_by` are internal registry descriptors, **not authoring fields**.
-The compiler applies one fixed engine role policy. Configuring epistemic access belongs to
-PDR-0120 and is deliberately outside Cut B.
+Static epistemic access (PRD-0004) requires explicit role lists on every declaration.
+Readers are `engine` and optionally `agent`; engine read is required. Writers are
+`[engine]` or `[]`. Exposure is `[]` or `[agent]`, and agent exposure requires agent
+read permission. Unknown/duplicate roles and missing fields fail with source provenance.
+Agent-readable unexposed state and engine-only hidden state are valid.
+
+`writable_by: []` makes a literal runtime-immutable. Private allocation and the declared
+reset lifecycle still initialize it. Expressions and known action/social/effect/item-hook
+write targets require engine write permission during compilation, including conditional
+writes. Runtime APIs also check attempted writes, even if the value is unchanged.
+Item `initial_state` is not an authored command/appearance field; constructed runtime
+spawn overrides are checked as writes before allocation.
+
+The runtime snapshots validated roles once. `get`, `set`, `get_global`, `get_agent`,
+`read_item` and `write_item` require explicit actors; `set_engine_value` has a fixed,
+checked engine actor. Item access requires a live row with the matching qualified
+profile. Returned values do not expose a mutable storage view. Publisher binding plans
+check the same immutable policy authority before batched gathers.
+
+Hidden state can affect a reward without appearing in direct policy observations.
+This is static role access, not item ownership, spatial privacy or confidentiality
+against Python code holding internal tensors. Deliberately public outputs or rewards
+can reveal hidden inputs. There is no information-theoretic noninterference claim.
+
+Registry and qualified item policies, including hidden ones, contribute to variable/VFS
+semantic identity. Permission order is irrelevant. Artifacts require schema 1.29 and
+coherent declaration/profile/hash metadata. Exact checkpoint resume and serving reject
+a changed policy before applying weights; deliberate transfer remains separate.
 
 Compiled variable token bindings carry required typed scope. Publisher dispatch uses that
 scope; the reference string identifies the variable/element and does not select its storage.

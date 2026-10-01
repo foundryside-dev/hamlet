@@ -521,8 +521,9 @@ extrinsic:
 ```
 
 **Current variable boundary:** named reward inputs require a canonical global/agent
-scalar or boolean variable. Access roles are fixed compiler policy, not authored
-`readable_by`/`writable_by` fields. This older strategy example does not establish
+scalar or boolean variable. Reward evaluation reads as engine; a hidden engine-readable
+variable can contribute without direct agent exposure. Static roles are required authored
+fields (see [variables](variables.md)). This older strategy example does not establish
 that the direct `variable` setting is consumed; see the documented strategy gaps.
 
 ---

@@ -5,7 +5,8 @@ import os
 import sqlite3
 import stat
 import tempfile
-from collections.abc import Mapping
+from collections.abc import Iterator, Mapping
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, get_args
 
@@ -228,6 +229,41 @@ def inspect_existing_demo_schema(
     finally:
         if demo_family_snapshot(path) != before:
             raise ValueError("Demo artifact family changed during preflight")
+
+
+@contextmanager
+def read_existing_demo_snapshot(path: Path, *, exclusive_custody: bool) -> Iterator[sqlite3.Connection]:
+    """Read a validated private copy while retaining the stopped original family.
+
+    The caller must hold exclusive custody throughout the context. Existing,
+    nonempty, companion-free current databases are required. SQLite never opens
+    the original; final fingerprints detect external changes without repairing
+    them. The private connection stays open through downstream reconciliation.
+    """
+    if not exclusive_custody:
+        raise ValueError("Exclusive demo artifact custody is required")
+    path = path.absolute()
+    before = demo_family_snapshot(path)
+    try:
+        if before[0] is None:
+            raise FileNotFoundError(f"Existing demo database required: {path}")
+        if before[0][2] == 0:
+            raise ValueError("Existing nonempty demo database required")
+        inspect_existing_demo_schema(path, DEMO_EXPECTED_COLUMNS, exclusive_custody=True)
+        data, signature = _read_regular(path)
+        if signature != before[0] or demo_family_snapshot(path) != before:
+            raise ValueError("Demo artifact family changed before private read")
+        with tempfile.TemporaryDirectory(prefix="demo-accounting-read-") as directory:
+            private_path = Path(directory) / "snapshot.db"
+            private_path.write_bytes(data)
+            connection = sqlite3.connect(private_path.as_uri() + "?mode=ro", uri=True)
+            try:
+                yield connection
+            finally:
+                connection.close()
+    finally:
+        if demo_family_snapshot(path) != before:
+            raise ValueError("Demo artifact family changed during private read")
 
 
 class DemoDatabase:

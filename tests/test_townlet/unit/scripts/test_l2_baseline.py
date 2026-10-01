@@ -94,17 +94,37 @@ def _write_accounting_run(run_dir: Path, *, duplicate: bool, wrong_survival: boo
     """Persist real SQL and event files; the exporter consumes both boundaries."""
     from torch.utils.tensorboard import SummaryWriter
 
+    from townlet.demo.database import DemoDatabase
+
     run_dir.mkdir()
-    with sqlite3.connect(run_dir / "demo.db") as connection:
-        if old_columns:
+    if old_columns:
+        connection = sqlite3.connect(run_dir / "demo.db")
+        try:
+            connection.execute("PRAGMA journal_mode=WAL")
             connection.execute("CREATE TABLE episodes (episode_id INTEGER, survival_time INTEGER, epsilon REAL, intrinsic_weight REAL)")
             connection.execute("INSERT INTO episodes VALUES (0, 2, 0.0, 0.0)")
-        else:
-            connection.execute(
-                "CREATE TABLE episodes (episode_id INTEGER, survival_time INTEGER, batch_episode_steps INTEGER, "
-                "live_agent_transitions INTEGER, epsilon REAL, intrinsic_weight REAL)"
-            )
-            connection.executemany("INSERT INTO episodes VALUES (?, ?, ?, ?, ?, ?)", [(0, 2, 5, 7, 0.0, 0.0), (1, 2, 5, 7, 0.0, 0.0)])
+            connection.commit()
+        finally:
+            connection.close()
+    else:
+        with DemoDatabase(run_dir / "demo.db") as database:
+            for episode in (0, 1):
+                database.insert_episode(
+                    episode_id=episode,
+                    timestamp=1.0,
+                    survival_time=2,
+                    batch_episode_steps=5,
+                    live_agent_transitions=7,
+                    completion_reason="authored_terminal",
+                    total_reward=0.0,
+                    extrinsic_reward=0.0,
+                    intrinsic_reward=0.0,
+                    shaping_reward=0.0,
+                    intrinsic_weight=0.0,
+                    curriculum_stage=0,
+                    epsilon=0.0,
+                    observation_schema_hash="accounting-test",
+                )
     writer = SummaryWriter(str(run_dir / "tensorboard"))
     try:
         for episode in (0, 1):

@@ -546,21 +546,29 @@ def _write_checkpoint(checkpoint_dir: Path, *, episode: int, completed: int) -> 
 
 
 def _write_run_database(run_dir: Path, rows: list[tuple[int, int, int, int, float, float]]) -> None:
-    import sqlite3
-
     from torch.utils.tensorboard import SummaryWriter
 
+    from townlet.demo.database import DemoDatabase
+
     run_dir.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(run_dir / "demo.db")
-    try:
-        conn.execute(
-            "CREATE TABLE episodes (episode_id INTEGER PRIMARY KEY, survival_time INTEGER, batch_episode_steps INTEGER, "
-            "live_agent_transitions INTEGER, epsilon REAL, intrinsic_weight REAL)"
-        )
-        conn.executemany("INSERT INTO episodes VALUES (?, ?, ?, ?, ?, ?)", rows)
-        conn.commit()
-    finally:
-        conn.close()
+    with DemoDatabase(run_dir / "demo.db") as database:
+        for episode, survival, batch, live, epsilon, weight in rows:
+            database.insert_episode(
+                episode_id=episode,
+                timestamp=1.0,
+                survival_time=survival,
+                batch_episode_steps=batch,
+                live_agent_transitions=live,
+                completion_reason="authored_terminal",
+                total_reward=0.0,
+                extrinsic_reward=0.0,
+                intrinsic_reward=0.0,
+                shaping_reward=0.0,
+                intrinsic_weight=weight,
+                curriculum_stage=0,
+                epsilon=epsilon,
+                observation_schema_hash="accounting-test",
+            )
     writer = SummaryWriter(str(run_dir / "tensorboard"))
     try:
         for episode, survival, batch, live, _, _ in rows:

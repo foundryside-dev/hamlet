@@ -19,6 +19,7 @@ from townlet.universe.dto import AffordanceInfo, AffordanceMetadata, MeterInfo, 
 from townlet.universe.error_codes import ErrorCode
 from townlet.universe.errors import CompilationError, CompilationMessage
 from townlet.universe.raw_configs_v21 import RawConfigsV21
+from townlet.universe.source_map import locate
 from townlet.universe.stages import CompilationStage
 
 
@@ -121,7 +122,7 @@ class MetadataCompiler:
                                 f"  Level: {primary_meta.level_name}\n"
                                 "Provide an explicit positive day_length; no defaults are applied."
                             ),
-                            location=f"levels/{primary_meta.level_name}/curriculum.yaml",
+                            location=locate(raw.source_map, f"levels/{primary_meta.level_name}/curriculum:day_length"),
                         )
                     ],
                 )
@@ -139,17 +140,22 @@ class MetadataCompiler:
         def _version_error(message: str) -> CompilationError:
             return CompilationError(
                 CompilationStage.LEVELS.label,
-                [CompilationMessage(code=ErrorCode.UAC_META_VERSION, message=message, location="experiment.yaml")],
+                [
+                    CompilationMessage(
+                        code=ErrorCode.UAC_META_VERSION, message=message, location=locate(raw.source_map, "experiment:version")
+                    )
+                ],
             )
 
         try:
             config_version = raw.experiment.experiment.version
         except AttributeError as exc:
             raise _version_error(
-                "experiment.version is required in experiment.yaml (no defaults allowed). Provide an explicit semantic version string."
+                "experiment.version is required in the experiment declaration (no defaults allowed). "
+                "Provide an explicit semantic version string."
             ) from exc
         if not config_version:
-            raise _version_error("experiment.version is required in experiment.yaml and cannot be empty.")
+            raise _version_error("experiment.version is required in the experiment declaration and cannot be empty.")
 
         return UniverseMetadata(
             universe_name=raw.experiment.experiment.metadata.name,

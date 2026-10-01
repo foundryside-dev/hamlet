@@ -1,0 +1,23 @@
+from pathlib import Path
+from townlet.oracle.harness import run_cell_safely, write_report, exit_code, _collect_run_meta, _git
+from townlet.oracle.matrix import default_cells
+root=Path.cwd()
+old=Path('/home/john/hamlet/.oracle/oracle-2026-08-17')
+tag='oracle-2026-08-17'
+assert _git(old,'rev-parse','HEAD')==_git(root,'rev-parse',f'{tag}^{{commit}}')
+assert not _git(old,'status','--porcelain')
+run_id='declaration-cut-a-cpu-144788f8'
+run_dir=root/'runs'/'differential'/run_id
+run_dir.mkdir(parents=True,exist_ok=False)
+meta=_collect_run_meta(root,tag,run_id)
+meta['oracle_worktree']=str(old)
+meta['oracle_access']='existing verified clean worktree; no writes or construction'
+verdicts=[]
+for cell in default_cells():
+ verdict=run_cell_safely(repo_root=root,old_src=old/'src',old_pack_root=root/'oracle_fixtures',new_src=root/'src',cell=cell,run_dir=run_dir,run_cuda=False,scripted=cell.scripted_actions)
+ print(verdict.kind,verdict.cell_id,verdict.detail,flush=True)
+ verdicts.append(verdict)
+report=write_report(run_dir,verdicts,meta)
+code=exit_code(verdicts)
+print(f'report: {report}\nexit: {code}',flush=True)
+raise SystemExit(code)

@@ -91,9 +91,9 @@ set in `docs/architecture/` — `HLD.md`, `STRATA.md`, `UAC.md`, `BAC.md`, `COMP
 "zzz. archive") swept it into the archive on a fast visual pass, and a follow-up sweep
 repointed every citation at the archive path. Both were reversed on 2026-08-26 — it is the
 reference tier the HLD set delegates to, and nothing replaced it. It is back at
-`docs/config-schemas/` and back on the trustworthy list, **with four exceptions that carry
-dated staleness banners of their own**: `variables.md` (2025-11, wholesale stale),
-`drive_as_code.md`, `enabled_actions.md`, and `training.md`. Trust a file in that directory
+`docs/config-schemas/` and back on the trustworthy list, **with three exceptions that carry
+dated staleness banners of their own**: `drive_as_code.md`, `enabled_actions.md`, and `training.md`.
+`variables.md` is the current Cut B canonical authoring contract. Trust a file in that directory
 unless it opens with a banner telling you not to.
 
 ### The oracle (strangler discipline)
@@ -120,6 +120,12 @@ the register says otherwise."* Accepted differences are registered in
   pre-push set mirrors the Lint job — `ruff check .`, `black --check src tests`,
   `mypy src/townlet --show-error-codes`, `scripts/no_defaults_lint.py` — plus
   `scripts/validate_compiler_cli.py` and `pytest` for the other two gates.
+  **Merging `project-recovery*` to `main` is autonomous under `PDR-0101`** once gate 1 (every CI
+  row green at the tip) and gate 2 (the `PDR-0039` README re-verification by method) are
+  discharged. `.claude/settings.json` allows `gh pr merge` and the read-only `gh pr` / `gh run`
+  commands; the rules are prefix matches, so run `gh pr merge <n> --merge` as its own plain
+  command, never inside a `;` or `&&` compound. Tags, releases and `gh pr close` are deliberately
+  not allowed — they escalate to the owner.
 
 ## Development Commands
 
@@ -287,24 +293,27 @@ TokenSpec → Runtime Registry + token publishers → Observations`
 `registry.get()` / `set()`. Roles are open strings, not a closed enum — `agent`, `engine`,
 `actions`, `vtc`, `social_model` are the common ones. ⚠ Caveat (2026-08-24 audit): the
 enforcement is real where it runs, but it currently has **no authoring surface** (the compiler
-hardcodes the role lists on both required config files) and the observation path bypasses the
+applies one fixed role policy to the canonical variable family) and the observation path bypasses the
 checked accessor entirely — see `docs/architecture/VFS.md` §6 caveat and
 `docs/architecture/archive/REVIEW-2026-08-24-vfs-implementation-vs-spec.md`.
 
-**Which files a pack needs** (corrected 2026-08-15 — the previous "all packs MUST include
-`variables_reference.yaml`" was **false**):
+**Which declarations a pack needs** (declaration-store Cut B):
 
-- `vfs_profiles.yaml` — **required**, pack root. Authoritative source for compiled global, agent
-  and item profiles. Level directories must NOT contain one.
-- `variables_reference.yaml` — **optional** static overlay for non-item variables and observation
-  marks. Static only: no expressions, no item-scoped variables. `configs/default_curriculum`
-  does not have one; `configs/L5_multi_agent` does.
+- One required pack-scope `variables:` declaration supplies the explicit registry-variable
+  roster, evaluator settings, scope extents and named item-profile groups.
+- Every variable declares type, scope, initialization, lifetime, semantic type and exposure.
+  Global/agent expressions and supported item state lower into internal compiled profiles.
+- Environment-variable, VFS-profile and static-overlay authoring languages are deleted.
+  Old payloads fail; no filename reader, alias, permission-field authoring or translation remains.
+- All variables enter the symbol inventory; item identities are profile-qualified. Token bindings
+  carry typed scope, which selects the publisher independently of reference-string shape.
+- Discovery reads all nested YAML/YML outside `.compiled`; duplicates and unknown declarations
+  name actual source locations. Arrays retain their authored order.
 
-**Documentation**: `docs/architecture/VFS.md` (the authoritative VFS document, reviewed
-2026-08-24), `docs/config-schemas/vfs-profiles.md`,
-`docs/config-schemas/variables.md` (⚠ **stale, 2025-11** — restored 2026-08-26 with a
-staleness banner; it is the only variables reference we have, but verify against source), and `docs/architecture/archive/vfs-current-implementation.md`
-(accurate per the 2026-08-24 audit except its access-control and `agent_private` claims).
+**Documentation:** [canonical variables](docs/config-schemas/variables.md),
+[declaration discovery](docs/config-schemas/declarations.md), and the Cut B acceptance evidence.
+`docs/architecture/VFS.md` retains dated architecture material; its October 1 boundary takes
+precedence over historical authoring/permission examples. PDR-0120 access design remains separate.
 
 ### Action Space (Composable)
 
@@ -329,25 +338,29 @@ Drive As Code (DAC) is a declarative reward function compiler that extracts all 
 
 ### Key Components
 
-**Files**: Each level requires `drive.yaml`. The real pack layout is pack-level shared files
-plus per-level overrides — **not** a flat `configs/<level>/` directory:
+**Declarations**: Each level requires a typed `drive` declaration. Pack versus
+`levels/<level>/` determines scope; filenames and additional subfolders are transport.
+The following filenames are a readable convention, not compiler dispatch:
 ```
 configs/default_curriculum/
 ├── stratum.yaml          # substrate: grid 8×8, shared by EVERY level
-├── environment.yaml      # VFS variable definitions, shared
-├── brain.yaml            # network architecture, shared (no per-level override exists)
-├── actions.yaml, effects.yaml, items.yaml, vfs_profiles.yaml
+├── environment.yaml      # shared runtime and observation settings
+├── brain.yaml            # required pack brain; complete level overrides allowed
+├── actions.yaml, effects.yaml, items.yaml, variables.yaml
 └── levels/<level>/
     ├── bars.yaml
     ├── affordances.yaml
-    ├── drive.yaml        # DAC reward specification (REQUIRED)
+    ├── drive.yaml        # required typed DAC reward declaration
     ├── training.yaml
     └── curriculum.yaml   # vision + temporal switches
 ```
-**No file named `drive_as_code.yaml` exists in any shipped pack.** A grep for that filename
-returns zero hits and will falsely "confirm" whatever you were checking.
+A declaration may move to `levels/<level>/mechanics/rewards.yml`, or share a multi-document
+file with other declarations. Keep the existing `drive:` wrapper: renaming a file does not
+change its content vocabulary. Required families are checked after discovery. Catalog fragments
+merge in sorted pack-relative path/document order, preserving each authored list's order;
+duplicates, even identical ones, refuse with both `file:line` origins.
 
-**Architecture**: Reward logic lives in each level's `drive.yaml` → compiled by UAC →
+**Architecture**: Each level's `drive` declaration → compiled by UAC →
 executed by `DACEngine` (`src/townlet/environment/dac_engine.py`). RewardStrategy classes
 fully removed. Checkpoint provenance via `drive_hash` (SHA256 of the compiled DAC config).
 
@@ -362,8 +375,8 @@ where:
 ### Components
 
 Modifier, extrinsic (9 types), intrinsic (5 types), and shaping (11 types) vocabularies:
-see `docs/config-schemas/drive_as_code.md` (⚠ carries a dated staleness banner: it names
-the file `drive_as_code.yaml`, which does not exist — the real file is `drive.yaml`).
+see `docs/config-schemas/drive_as_code.md`. Its `drive.yaml` examples use the filename
+convention; declaration identity supplies diagnostic locations.
 
 ### Pedagogical Pattern: "Low Energy Delirium" Bug
 
@@ -389,7 +402,7 @@ The intended design, for whoever authors it:
 - All legacy reward strategy tests → DELETED (349 lines removed)
 
 **New System** (REQUIRED):
-- `drive.yaml` required for every level (see pack layout above)
+- A `drive` declaration is required for every level (see pack layout above)
 - DACEngine compiles YAML → GPU computation graphs
 - Checkpoint provenance via `drive_hash` (SHA256 of DAC config)
 - All checkpoints must have matching `drive_hash`
@@ -429,10 +442,14 @@ Verified by diff, 2026-08-12 — the levels live under `configs/default_curricul
 | L0_5_dual_resource | 7×7 grid, 4 affordances | 8×8, 14 affordances — `training.yaml` **identical to L1** but for `output_subdir` |
 | L1_full_observability | 8×8, 14 affordances | as intended |
 | L2_partial_observability | token-filtered POMDP | genuinely differs (`active_vision: partial`) |
-| L3_temporal_mechanics | 24-tick day/night | genuinely differs (`active_temporal: true`, `day_length: 24`) |
+| L3_temporal_mechanics | 24-tick day/night | genuinely differs (`active_temporal: true`, `day_length: {period_of: day_phase}` resolves the authored clock period to 24) |
 
 `bars.yaml`, `affordances.yaml` and `drive.yaml` are **byte-identical across all five levels**.
-Grid size is set once in pack-level `stratum.yaml` (8×8) and **no level can override it**.
+Grid size is set once in the pack-scope `stratum` declaration (8×8) and **no level can override it**.
+For active temporal levels, `curriculum.day_length: {period_of: day_phase}` resolves the finite,
+positive integral period of the declared global temporal variable derived from ambient `tick`.
+An active literal day length duplicating that clock fact is refused; inactive levels keep
+`day_length: null`. See [clock references](docs/config-schemas/declarations.md#clock-period-reference).
 L0_0/L0_5/L1 differ from one another only in training hyperparameters; their `curriculum.yaml`
 files differ only in comments. Five documented levels are **three distinct universes**.
 
@@ -464,7 +481,7 @@ enforces this, with `ConfigDict(extra="forbid")` so stray keys fail at parse tim
 
 DTOs live in `src/townlet/config/` — `training_v2_config.py`, `environment_config.py`,
 `bars_v2_config.py`, `affordances_v2_config.py`, `stratum_config.py` (`SubstrateConfig`,
-`StratumConfig`), `curriculum_config.py`, `drive_as_code.py`, `vfs_profiles_config.py`,
+`StratumConfig`), `curriculum_config.py`, `drive_as_code.py`, `variables_config.py`,
 `effects_config.py`, `items_config.py` — plus
 `townlet.environment.action_config.ActionConfig`. (`townlet.substrate.config` does not exist;
 `SubstrateConfig` is in `config/stratum_config.py`.)

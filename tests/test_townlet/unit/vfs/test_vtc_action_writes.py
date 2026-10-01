@@ -93,7 +93,7 @@ def test_vtc_action_writes_applies_write_only_to_selected_active_agents() -> Non
         bars_state={},
         active_mask=torch.tensor([True, True, False]),
         device=torch.device("cpu"),
-    )
+    ).values
 
     assert torch.allclose(updated["energy"], torch.tensor([0.35, 0.2, 0.3]))
 
@@ -120,7 +120,7 @@ def test_vtc_action_writes_combines_action_mask_with_condition() -> None:
         bars_state={},
         active_mask=torch.tensor([True, True, True]),
         device=torch.device("cpu"),
-    )
+    ).values
 
     assert torch.allclose(updated["energy"], torch.tensor([0.6, 0.8, 0.8]))
 
@@ -147,7 +147,7 @@ def test_vtc_action_writes_can_target_meter_bars() -> None:
         bars_state={"energy": torch.tensor([0.2, 0.3])},
         active_mask=torch.tensor([True, True]),
         device=torch.device("cpu"),
-    )
+    ).values
 
     assert torch.allclose(updated["energy"], torch.tensor([0.45, 0.3]))
 
@@ -207,7 +207,7 @@ def test_vtc_action_writes_composes_additive_and_multiplicative_writes() -> None
         bars_state={},
         active_mask=torch.tensor([True, True]),
         device=torch.device("cpu"),
-    )
+    ).values
 
     assert torch.allclose(updated["energy"], torch.tensor([1.0, 0.7]))
     assert torch.allclose(updated["fatigue"], torch.tensor([0.8, 2.0]))
@@ -253,7 +253,7 @@ def test_vtc_action_writes_composes_min_max_and_clamp_writes() -> None:
         bars_state={},
         active_mask=torch.tensor([True, True]),
         device=torch.device("cpu"),
-    )
+    ).values
 
     assert torch.allclose(updated["floor_value"], torch.tensor([0.4, 0.2]))
     assert torch.allclose(updated["cap_value"], torch.tensor([0.7, 0.9]))
@@ -295,7 +295,7 @@ def test_vtc_action_writes_claim_if_free_keeps_existing_claim_and_first_writer()
         bars_state={},
         active_mask=torch.tensor([True, True, True]),
         device=torch.device("cpu"),
-    )
+    ).values
 
     assert torch.allclose(updated["bed_owner"], torch.tensor([100.0, -1.0, 7.0]))
 
@@ -325,7 +325,7 @@ def test_vtc_action_writes_capacity_claim_caps_claim_count_in_batch_order() -> N
         bars_state={},
         active_mask=torch.tensor([True, True, True, True]),
         device=torch.device("cpu"),
-    )
+    ).values
 
     assert torch.allclose(updated["has_queue_slot"], torch.tensor([1.0, 1.0, 0.0, 0.0]))
 
@@ -355,7 +355,7 @@ def test_vtc_action_writes_append_event_uses_first_empty_slot() -> None:
         bars_state={},
         active_mask=torch.tensor([True, True, True]),
         device=torch.device("cpu"),
-    )
+    ).values
 
     assert torch.allclose(
         updated["recent_message_tokens"],
@@ -418,7 +418,7 @@ def test_vtc_action_writes_resolves_priority_and_last_write_wins() -> None:
         bars_state={},
         active_mask=torch.tensor([True, True]),
         device=torch.device("cpu"),
-    )
+    ).values
 
     assert torch.allclose(updated["target"], torch.tensor([0.9, 0.0]))
     assert torch.allclose(updated["status"], torch.tensor([0.7, 0.0]))
@@ -459,7 +459,7 @@ def test_vtc_action_writes_reads_phase_snapshot_before_committing_writes() -> No
         bars_state={},
         active_mask=torch.tensor([True]),
         device=torch.device("cpu"),
-    )
+    ).values
 
     assert torch.allclose(updated["energy"], torch.tensor([2.0]))
     assert torch.allclose(updated["satiation"], torch.tensor([10.0]))
@@ -501,7 +501,7 @@ def test_vtc_action_writes_rejects_shape_changing_phase_commit() -> None:
             bars_state={},
             active_mask=torch.tensor([True, True]),
             device=torch.device("cpu"),
-        )
+        ).values
 
 
 def test_vtc_action_writes_uses_spec_phase_order_not_lexical_order() -> None:
@@ -539,7 +539,7 @@ def test_vtc_action_writes_uses_spec_phase_order_not_lexical_order() -> None:
         bars_state={},
         active_mask=torch.tensor([True]),
         device=torch.device("cpu"),
-    )
+    ).values
 
     assert torch.allclose(updated["energy"], torch.tensor([20.0]))
 
@@ -580,7 +580,7 @@ def test_vtc_action_writes_accepts_configured_transition_phase_order() -> None:
         bars_state={},
         active_mask=torch.tensor([True]),
         device=torch.device("cpu"),
-    )
+    ).values
 
     assert torch.allclose(updated["energy"], torch.tensor([11.0]))
 

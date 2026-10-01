@@ -1,0 +1,886 @@
+{
+  "meta": {
+    "oracle_ref": "oracle-2026-08-17",
+    "oracle_commit": "4222a9176e68e232a0e46c7004183440e27f22c3",
+    "new_commit": "144788f88b4e3c70ab0648e452672f9b61a5b7f2",
+    "new_dirty": false,
+    "generated": "declaration-cut-a-cpu-144788f8",
+    "oracle_worktree": "/home/john/hamlet/.oracle/oracle-2026-08-17",
+    "oracle_access": "existing verified clean worktree; no writes or construction"
+  },
+  "adjudication_note": "A cell passes only as AGREE, SKIPPED, or DIVERGED_AS_REGISTERED naming its known-divergences entry in register_refs. DIVERGED_AS_REGISTERED requires meeting every condition of exactly one of the three shapes below. Shape 1 (old-side-crash): old side crashed (nonzero exit) leaving no trace, with the registered signature inside the final exception text of its stderr; new side ran and produced a trace valid for the cell's own params from the declared src root. Shape 2 (hash-only): both sides ran, EXACTLY the enumerated provenance hashes differ \u2014 no more, no fewer \u2014 and every trace stream matches byte-for-byte. Shape 3 (stream-scoped): both sides ran, EXACTLY the enumerated trace streams diverge \u2014 shape changes included \u2014 and every other stream matches byte-for-byte. Everything else fails the run \u2014 an old-side failure without the signature or without a traceback, a non-crash failure, a crash that still wrote a trace, a registered divergence whose new side also fails (not yet built), a registered divergence that fails to manifest (REGISTERED_DIVERGENCE_ABSENT: stale register entry), and an all-SKIPPED run. A DIVERGE or HASH_MISMATCH with empty register_refs is a rebuild defect or a missing register entry. See docs/oracle/known-divergences.md.",
+  "verdicts": [
+    {
+      "kind": "DIVERGED_AS_REGISTERED",
+      "cell_id": "default_curriculum:L0_0_minimal:cpu:seed42",
+      "detail": {
+        "shape": "hash+stream",
+        "mismatched": {
+          "actions_hash": {
+            "old": "d1be5503dde776c44f3f28d9a9d078f5f7141011829e39ad8741056a6267a18e",
+            "new": "e0c20f212f05f3b36ee4f9ebb09a9b8c22b6b05b029d005d60af4fc721dc7f52"
+          },
+          "affordances_hash": {
+            "old": "af020ccd0e9f8754dcaf7425a163276859bdb00ae1f2584c27f970f48b25a341",
+            "new": "2bda63f6ad0e919402a1d8d84b1765a32874e65b0b959bea7321b00e8310f342"
+          },
+          "brain_hash": {
+            "old": "11141093b33e94301b6fe7433340e708eef29791c7066a0242d040f812529464",
+            "new": "e8092ac6be543f7546e7ae557ce23bb369efb977c84ebbb3bddd94581a8fe733"
+          },
+          "environment_hash": {
+            "old": "6788982a4510f0e2d284f2df1e247a057eabe6e78a3a58494cc04efb79d99730",
+            "new": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279"
+          },
+          "layout_hash": {
+            "old": "<absent>",
+            "new": "73b4f0737c49968989902be09f8fa9370e535f596cbfafaeabed6ab7a7f34cbd"
+          },
+          "observation_schema_hash": {
+            "old": "49374fe7ad318ffdfd12a43a6ad6067e16b0335fd4ff2b3aab57412a19896671",
+            "new": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d"
+          },
+          "pack_brain_hash": {
+            "old": "<absent>",
+            "new": "e8092ac6be543f7546e7ae557ce23bb369efb977c84ebbb3bddd94581a8fe733"
+          },
+          "stratum_hash": {
+            "old": "b48070cf243e5ed77d726c7c2788aa1a3d69ed52cd3658ee77749970472ac7ce",
+            "new": "bcbf09eb619adbe99423ece90163587b733825e68f75ac9184e84c8668cd6336"
+          },
+          "token_type_schema_hash": {
+            "old": "<absent>",
+            "new": "8ad2b59b502a905bf1a60f2e5743cac2c1f705f4a4143f5daf20bece38036d7d"
+          },
+          "transition_graph_hash": {
+            "old": "e2047c67013a05c460b8b41514fd3ed18183601e4fc935ef41673b9a74ff8da8",
+            "new": "27ed69c36b5a0c77e8647f0dc0d96f6f491c04eb6952f92c959de68f8c90f496"
+          },
+          "variable_schema_hash": {
+            "old": "f28f84faba9130bb789fbc52d1a746450895187eccd7a27b6c10423a74a76fde",
+            "new": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761"
+          },
+          "vfs_hash": {
+            "old": "2504f3def1bb4931c415ad3dcbc23ce14ac209338910960b49c3ec6ca7f14bf5",
+            "new": "8760b4c3e9507c01138f59f2f0f98db110d17a9af6cb68f17a192c0a2e8eb84c"
+          }
+        },
+        "streams": {
+          "obs": {
+            "step": 0,
+            "shape_changed": true,
+            "old_shape": [
+              4,
+              120
+            ],
+            "new_shape": [
+              4,
+              118
+            ],
+            "old_dtype": "float32",
+            "new_dtype": "float32",
+            "diff_entries": 101
+          }
+        }
+      },
+      "register_refs": [
+        "DIV-009",
+        "DIV-010",
+        "DIV-012",
+        "DIV-008"
+      ]
+    },
+    {
+      "kind": "DIVERGED_AS_REGISTERED",
+      "cell_id": "default_curriculum:L0_5_dual_resource:cpu:seed42",
+      "detail": {
+        "shape": "hash+stream",
+        "mismatched": {
+          "actions_hash": {
+            "old": "d1be5503dde776c44f3f28d9a9d078f5f7141011829e39ad8741056a6267a18e",
+            "new": "e0c20f212f05f3b36ee4f9ebb09a9b8c22b6b05b029d005d60af4fc721dc7f52"
+          },
+          "affordances_hash": {
+            "old": "af020ccd0e9f8754dcaf7425a163276859bdb00ae1f2584c27f970f48b25a341",
+            "new": "2bda63f6ad0e919402a1d8d84b1765a32874e65b0b959bea7321b00e8310f342"
+          },
+          "brain_hash": {
+            "old": "5650add3779632345e815ef6ac8883961875255679eaa92bf22a62a19ecf29aa",
+            "new": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f"
+          },
+          "environment_hash": {
+            "old": "6788982a4510f0e2d284f2df1e247a057eabe6e78a3a58494cc04efb79d99730",
+            "new": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279"
+          },
+          "layout_hash": {
+            "old": "<absent>",
+            "new": "73b4f0737c49968989902be09f8fa9370e535f596cbfafaeabed6ab7a7f34cbd"
+          },
+          "observation_schema_hash": {
+            "old": "49374fe7ad318ffdfd12a43a6ad6067e16b0335fd4ff2b3aab57412a19896671",
+            "new": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d"
+          },
+          "pack_brain_hash": {
+            "old": "<absent>",
+            "new": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f"
+          },
+          "stratum_hash": {
+            "old": "b48070cf243e5ed77d726c7c2788aa1a3d69ed52cd3658ee77749970472ac7ce",
+            "new": "bcbf09eb619adbe99423ece90163587b733825e68f75ac9184e84c8668cd6336"
+          },
+          "token_type_schema_hash": {
+            "old": "<absent>",
+            "new": "8ad2b59b502a905bf1a60f2e5743cac2c1f705f4a4143f5daf20bece38036d7d"
+          },
+          "transition_graph_hash": {
+            "old": "e2047c67013a05c460b8b41514fd3ed18183601e4fc935ef41673b9a74ff8da8",
+            "new": "27ed69c36b5a0c77e8647f0dc0d96f6f491c04eb6952f92c959de68f8c90f496"
+          },
+          "variable_schema_hash": {
+            "old": "f28f84faba9130bb789fbc52d1a746450895187eccd7a27b6c10423a74a76fde",
+            "new": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761"
+          },
+          "vfs_hash": {
+            "old": "fcd6479026912090419813f71b25f5cce29d3a69afd9f6d158e32dc47332344e",
+            "new": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3"
+          }
+        },
+        "streams": {
+          "obs": {
+            "step": 0,
+            "shape_changed": true,
+            "old_shape": [
+              4,
+              120
+            ],
+            "new_shape": [
+              4,
+              118
+            ],
+            "old_dtype": "float32",
+            "new_dtype": "float32",
+            "diff_entries": 101
+          }
+        }
+      },
+      "register_refs": [
+        "DIV-009",
+        "DIV-010",
+        "DIV-012",
+        "DIV-008"
+      ]
+    },
+    {
+      "kind": "DIVERGED_AS_REGISTERED",
+      "cell_id": "default_curriculum:L1_full_observability:cpu:seed42",
+      "detail": {
+        "shape": "hash+stream",
+        "mismatched": {
+          "actions_hash": {
+            "old": "d1be5503dde776c44f3f28d9a9d078f5f7141011829e39ad8741056a6267a18e",
+            "new": "e0c20f212f05f3b36ee4f9ebb09a9b8c22b6b05b029d005d60af4fc721dc7f52"
+          },
+          "affordances_hash": {
+            "old": "af020ccd0e9f8754dcaf7425a163276859bdb00ae1f2584c27f970f48b25a341",
+            "new": "2bda63f6ad0e919402a1d8d84b1765a32874e65b0b959bea7321b00e8310f342"
+          },
+          "brain_hash": {
+            "old": "5650add3779632345e815ef6ac8883961875255679eaa92bf22a62a19ecf29aa",
+            "new": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f"
+          },
+          "environment_hash": {
+            "old": "6788982a4510f0e2d284f2df1e247a057eabe6e78a3a58494cc04efb79d99730",
+            "new": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279"
+          },
+          "layout_hash": {
+            "old": "<absent>",
+            "new": "73b4f0737c49968989902be09f8fa9370e535f596cbfafaeabed6ab7a7f34cbd"
+          },
+          "observation_schema_hash": {
+            "old": "49374fe7ad318ffdfd12a43a6ad6067e16b0335fd4ff2b3aab57412a19896671",
+            "new": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d"
+          },
+          "pack_brain_hash": {
+            "old": "<absent>",
+            "new": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f"
+          },
+          "stratum_hash": {
+            "old": "b48070cf243e5ed77d726c7c2788aa1a3d69ed52cd3658ee77749970472ac7ce",
+            "new": "bcbf09eb619adbe99423ece90163587b733825e68f75ac9184e84c8668cd6336"
+          },
+          "token_type_schema_hash": {
+            "old": "<absent>",
+            "new": "8ad2b59b502a905bf1a60f2e5743cac2c1f705f4a4143f5daf20bece38036d7d"
+          },
+          "transition_graph_hash": {
+            "old": "e2047c67013a05c460b8b41514fd3ed18183601e4fc935ef41673b9a74ff8da8",
+            "new": "27ed69c36b5a0c77e8647f0dc0d96f6f491c04eb6952f92c959de68f8c90f496"
+          },
+          "variable_schema_hash": {
+            "old": "f28f84faba9130bb789fbc52d1a746450895187eccd7a27b6c10423a74a76fde",
+            "new": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761"
+          },
+          "vfs_hash": {
+            "old": "fcd6479026912090419813f71b25f5cce29d3a69afd9f6d158e32dc47332344e",
+            "new": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3"
+          }
+        },
+        "streams": {
+          "obs": {
+            "step": 0,
+            "shape_changed": true,
+            "old_shape": [
+              4,
+              120
+            ],
+            "new_shape": [
+              4,
+              118
+            ],
+            "old_dtype": "float32",
+            "new_dtype": "float32",
+            "diff_entries": 101
+          }
+        }
+      },
+      "register_refs": [
+        "DIV-009",
+        "DIV-010",
+        "DIV-012",
+        "DIV-008"
+      ]
+    },
+    {
+      "kind": "DIVERGED_AS_REGISTERED",
+      "cell_id": "default_curriculum:L2_partial_observability:cpu:seed42",
+      "detail": {
+        "shape": "hash+stream",
+        "mismatched": {
+          "actions_hash": {
+            "old": "d1be5503dde776c44f3f28d9a9d078f5f7141011829e39ad8741056a6267a18e",
+            "new": "e0c20f212f05f3b36ee4f9ebb09a9b8c22b6b05b029d005d60af4fc721dc7f52"
+          },
+          "affordances_hash": {
+            "old": "af020ccd0e9f8754dcaf7425a163276859bdb00ae1f2584c27f970f48b25a341",
+            "new": "2bda63f6ad0e919402a1d8d84b1765a32874e65b0b959bea7321b00e8310f342"
+          },
+          "brain_hash": {
+            "old": "5650add3779632345e815ef6ac8883961875255679eaa92bf22a62a19ecf29aa",
+            "new": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f"
+          },
+          "environment_hash": {
+            "old": "6788982a4510f0e2d284f2df1e247a057eabe6e78a3a58494cc04efb79d99730",
+            "new": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279"
+          },
+          "layout_hash": {
+            "old": "<absent>",
+            "new": "73b4f0737c49968989902be09f8fa9370e535f596cbfafaeabed6ab7a7f34cbd"
+          },
+          "observation_schema_hash": {
+            "old": "acf885d166176302417096cc5e38dd483b770f7f324c4fc6e8236dec132bc48c",
+            "new": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d"
+          },
+          "pack_brain_hash": {
+            "old": "<absent>",
+            "new": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f"
+          },
+          "stratum_hash": {
+            "old": "b48070cf243e5ed77d726c7c2788aa1a3d69ed52cd3658ee77749970472ac7ce",
+            "new": "bcbf09eb619adbe99423ece90163587b733825e68f75ac9184e84c8668cd6336"
+          },
+          "token_type_schema_hash": {
+            "old": "<absent>",
+            "new": "8ad2b59b502a905bf1a60f2e5743cac2c1f705f4a4143f5daf20bece38036d7d"
+          },
+          "transition_graph_hash": {
+            "old": "e2047c67013a05c460b8b41514fd3ed18183601e4fc935ef41673b9a74ff8da8",
+            "new": "27ed69c36b5a0c77e8647f0dc0d96f6f491c04eb6952f92c959de68f8c90f496"
+          },
+          "variable_schema_hash": {
+            "old": "f28f84faba9130bb789fbc52d1a746450895187eccd7a27b6c10423a74a76fde",
+            "new": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761"
+          },
+          "vfs_hash": {
+            "old": "24f6eef8553a2caf523e2be5fa4b0409ddabdf2e9f18e9b106d3775839db4821",
+            "new": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3"
+          }
+        },
+        "streams": {
+          "obs": {
+            "step": 0,
+            "shape_changed": true,
+            "old_shape": [
+              4,
+              120
+            ],
+            "new_shape": [
+              4,
+              118
+            ],
+            "old_dtype": "float32",
+            "new_dtype": "float32",
+            "diff_entries": 101
+          }
+        }
+      },
+      "register_refs": [
+        "DIV-009",
+        "DIV-010",
+        "DIV-012",
+        "DIV-008"
+      ]
+    },
+    {
+      "kind": "DIVERGED_AS_REGISTERED",
+      "cell_id": "default_curriculum:L3_temporal_mechanics:cpu:seed42",
+      "detail": {
+        "shape": "hash+stream",
+        "mismatched": {
+          "actions_hash": {
+            "old": "d1be5503dde776c44f3f28d9a9d078f5f7141011829e39ad8741056a6267a18e",
+            "new": "e0c20f212f05f3b36ee4f9ebb09a9b8c22b6b05b029d005d60af4fc721dc7f52"
+          },
+          "affordances_hash": {
+            "old": "af020ccd0e9f8754dcaf7425a163276859bdb00ae1f2584c27f970f48b25a341",
+            "new": "2bda63f6ad0e919402a1d8d84b1765a32874e65b0b959bea7321b00e8310f342"
+          },
+          "brain_hash": {
+            "old": "5650add3779632345e815ef6ac8883961875255679eaa92bf22a62a19ecf29aa",
+            "new": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f"
+          },
+          "environment_hash": {
+            "old": "6788982a4510f0e2d284f2df1e247a057eabe6e78a3a58494cc04efb79d99730",
+            "new": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279"
+          },
+          "layout_hash": {
+            "old": "<absent>",
+            "new": "73b4f0737c49968989902be09f8fa9370e535f596cbfafaeabed6ab7a7f34cbd"
+          },
+          "observation_schema_hash": {
+            "old": "9a33b4797a764f8100f08360cf2e13c17e265e7e09e0300143ec4fe5ebb79e55",
+            "new": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d"
+          },
+          "pack_brain_hash": {
+            "old": "<absent>",
+            "new": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f"
+          },
+          "stratum_hash": {
+            "old": "b48070cf243e5ed77d726c7c2788aa1a3d69ed52cd3658ee77749970472ac7ce",
+            "new": "bcbf09eb619adbe99423ece90163587b733825e68f75ac9184e84c8668cd6336"
+          },
+          "token_type_schema_hash": {
+            "old": "<absent>",
+            "new": "8ad2b59b502a905bf1a60f2e5743cac2c1f705f4a4143f5daf20bece38036d7d"
+          },
+          "transition_graph_hash": {
+            "old": "e2047c67013a05c460b8b41514fd3ed18183601e4fc935ef41673b9a74ff8da8",
+            "new": "27ed69c36b5a0c77e8647f0dc0d96f6f491c04eb6952f92c959de68f8c90f496"
+          },
+          "variable_schema_hash": {
+            "old": "f28f84faba9130bb789fbc52d1a746450895187eccd7a27b6c10423a74a76fde",
+            "new": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761"
+          },
+          "vfs_hash": {
+            "old": "5d6dc6dbb3327fa46e4de700ebbbab138531b7f677552e2dc27601b93ab983ee",
+            "new": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3"
+          }
+        },
+        "streams": {
+          "obs": {
+            "step": 0,
+            "shape_changed": true,
+            "old_shape": [
+              4,
+              120
+            ],
+            "new_shape": [
+              4,
+              118
+            ],
+            "old_dtype": "float32",
+            "new_dtype": "float32",
+            "diff_entries": 101
+          }
+        }
+      },
+      "register_refs": [
+        "DIV-009",
+        "DIV-010",
+        "DIV-012",
+        "DIV-008"
+      ]
+    },
+    {
+      "kind": "SKIPPED",
+      "cell_id": "default_curriculum:L0_0_minimal:cuda:seed42",
+      "detail": {
+        "reason": "cuda not requested"
+      },
+      "register_refs": []
+    },
+    {
+      "kind": "SKIPPED",
+      "cell_id": "default_curriculum:L0_5_dual_resource:cuda:seed42",
+      "detail": {
+        "reason": "cuda not requested"
+      },
+      "register_refs": []
+    },
+    {
+      "kind": "SKIPPED",
+      "cell_id": "default_curriculum:L1_full_observability:cuda:seed42",
+      "detail": {
+        "reason": "cuda not requested"
+      },
+      "register_refs": []
+    },
+    {
+      "kind": "SKIPPED",
+      "cell_id": "default_curriculum:L2_partial_observability:cuda:seed42",
+      "detail": {
+        "reason": "cuda not requested"
+      },
+      "register_refs": []
+    },
+    {
+      "kind": "SKIPPED",
+      "cell_id": "default_curriculum:L3_temporal_mechanics:cuda:seed42",
+      "detail": {
+        "reason": "cuda not requested"
+      },
+      "register_refs": []
+    },
+    {
+      "kind": "DIVERGED_AS_REGISTERED",
+      "cell_id": "boundary_wrap:L1_full_observability:cpu:seed42",
+      "detail": {
+        "shape": "hash+stream",
+        "mismatched": {
+          "actions_hash": {
+            "old": "d1be5503dde776c44f3f28d9a9d078f5f7141011829e39ad8741056a6267a18e",
+            "new": "e0c20f212f05f3b36ee4f9ebb09a9b8c22b6b05b029d005d60af4fc721dc7f52"
+          },
+          "affordances_hash": {
+            "old": "af020ccd0e9f8754dcaf7425a163276859bdb00ae1f2584c27f970f48b25a341",
+            "new": "2bda63f6ad0e919402a1d8d84b1765a32874e65b0b959bea7321b00e8310f342"
+          },
+          "brain_hash": {
+            "old": "5650add3779632345e815ef6ac8883961875255679eaa92bf22a62a19ecf29aa",
+            "new": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f"
+          },
+          "environment_hash": {
+            "old": "6788982a4510f0e2d284f2df1e247a057eabe6e78a3a58494cc04efb79d99730",
+            "new": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279"
+          },
+          "layout_hash": {
+            "old": "<absent>",
+            "new": "73b4f0737c49968989902be09f8fa9370e535f596cbfafaeabed6ab7a7f34cbd"
+          },
+          "observation_schema_hash": {
+            "old": "49374fe7ad318ffdfd12a43a6ad6067e16b0335fd4ff2b3aab57412a19896671",
+            "new": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d"
+          },
+          "pack_brain_hash": {
+            "old": "<absent>",
+            "new": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f"
+          },
+          "stratum_hash": {
+            "old": "51d88118e2fbf9fcc4c3ef96ae978621c1ed5e3ba70df05beccc24759403ea8b",
+            "new": "4a58653ad99193e46ad0f6428586a292d34c8167a98e3521b9d5c8d1f7e3cecf"
+          },
+          "token_type_schema_hash": {
+            "old": "<absent>",
+            "new": "8ad2b59b502a905bf1a60f2e5743cac2c1f705f4a4143f5daf20bece38036d7d"
+          },
+          "transition_graph_hash": {
+            "old": "e2047c67013a05c460b8b41514fd3ed18183601e4fc935ef41673b9a74ff8da8",
+            "new": "27ed69c36b5a0c77e8647f0dc0d96f6f491c04eb6952f92c959de68f8c90f496"
+          },
+          "variable_schema_hash": {
+            "old": "f28f84faba9130bb789fbc52d1a746450895187eccd7a27b6c10423a74a76fde",
+            "new": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761"
+          },
+          "vfs_hash": {
+            "old": "fcd6479026912090419813f71b25f5cce29d3a69afd9f6d158e32dc47332344e",
+            "new": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3"
+          }
+        },
+        "streams": {
+          "obs": {
+            "step": 0,
+            "shape_changed": true,
+            "old_shape": [
+              4,
+              120
+            ],
+            "new_shape": [
+              4,
+              118
+            ],
+            "old_dtype": "float32",
+            "new_dtype": "float32",
+            "diff_entries": 101
+          }
+        }
+      },
+      "register_refs": [
+        "DIV-009",
+        "DIV-010",
+        "DIV-012",
+        "DIV-008"
+      ]
+    },
+    {
+      "kind": "DIVERGED_AS_REGISTERED",
+      "cell_id": "div003_cubic_partial:L2_partial_observability:cpu:seed42",
+      "detail": {
+        "shape": "hash+stream",
+        "mismatched": {
+          "actions_hash": {
+            "old": "d1be5503dde776c44f3f28d9a9d078f5f7141011829e39ad8741056a6267a18e",
+            "new": "e0c20f212f05f3b36ee4f9ebb09a9b8c22b6b05b029d005d60af4fc721dc7f52"
+          },
+          "affordances_hash": {
+            "old": "af020ccd0e9f8754dcaf7425a163276859bdb00ae1f2584c27f970f48b25a341",
+            "new": "2bda63f6ad0e919402a1d8d84b1765a32874e65b0b959bea7321b00e8310f342"
+          },
+          "brain_hash": {
+            "old": "5650add3779632345e815ef6ac8883961875255679eaa92bf22a62a19ecf29aa",
+            "new": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f"
+          },
+          "environment_hash": {
+            "old": "6788982a4510f0e2d284f2df1e247a057eabe6e78a3a58494cc04efb79d99730",
+            "new": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279"
+          },
+          "layout_hash": {
+            "old": "<absent>",
+            "new": "36baa279dbc72741dacc0d348032dcf0b866bc2dd5d1630f33f47122a51784d8"
+          },
+          "observation_schema_hash": {
+            "old": "0947a6db269343ca3e57179bb31efa1f89e08d037aa3fab2174eb69d02b4ccd9",
+            "new": "a221e121044ef5c92091645eddab6820396a1782ff386a63ead1b136db8d0927"
+          },
+          "pack_brain_hash": {
+            "old": "<absent>",
+            "new": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f"
+          },
+          "stratum_hash": {
+            "old": "2fa2c88dbcad0c76d241592b77ad905597ebf11dd1ef90d3d18c029a91f5ea50",
+            "new": "13ff5fa8dccea8c4940f30a3328eab28033c99cb7e7c90ab6ddc38e1c86465e8"
+          },
+          "token_type_schema_hash": {
+            "old": "<absent>",
+            "new": "8ad2b59b502a905bf1a60f2e5743cac2c1f705f4a4143f5daf20bece38036d7d"
+          },
+          "transition_graph_hash": {
+            "old": "e2047c67013a05c460b8b41514fd3ed18183601e4fc935ef41673b9a74ff8da8",
+            "new": "27ed69c36b5a0c77e8647f0dc0d96f6f491c04eb6952f92c959de68f8c90f496"
+          },
+          "variable_schema_hash": {
+            "old": "46c4b5dfdf9f1f06bab5659adb5412b951861831553b65a83f7d391c2e2a0451",
+            "new": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761"
+          },
+          "vfs_hash": {
+            "old": "81854b054308ece102b184080648385046c8ac5f445ad8de8c566fd7c1c0dff6",
+            "new": "9563de51e767aa64bd7f426fd50936706de8b3998db3758770cbaa474440b339"
+          }
+        },
+        "streams": {
+          "obs": {
+            "step": 0,
+            "shape_changed": true,
+            "old_shape": [
+              4,
+              350
+            ],
+            "new_shape": [
+              4,
+              152
+            ],
+            "old_dtype": "float32",
+            "new_dtype": "float32",
+            "diff_entries": 101
+          }
+        }
+      },
+      "register_refs": [
+        "DIV-009",
+        "DIV-010",
+        "DIV-012",
+        "DIV-008"
+      ]
+    },
+    {
+      "kind": "DIVERGED_AS_REGISTERED",
+      "cell_id": "div003_rect:L1_full_observability:cpu:seed42",
+      "detail": {
+        "shape": "hash+stream",
+        "mismatched": {
+          "actions_hash": {
+            "old": "d1be5503dde776c44f3f28d9a9d078f5f7141011829e39ad8741056a6267a18e",
+            "new": "e0c20f212f05f3b36ee4f9ebb09a9b8c22b6b05b029d005d60af4fc721dc7f52"
+          },
+          "affordances_hash": {
+            "old": "af020ccd0e9f8754dcaf7425a163276859bdb00ae1f2584c27f970f48b25a341",
+            "new": "2bda63f6ad0e919402a1d8d84b1765a32874e65b0b959bea7321b00e8310f342"
+          },
+          "brain_hash": {
+            "old": "5650add3779632345e815ef6ac8883961875255679eaa92bf22a62a19ecf29aa",
+            "new": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f"
+          },
+          "environment_hash": {
+            "old": "6788982a4510f0e2d284f2df1e247a057eabe6e78a3a58494cc04efb79d99730",
+            "new": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279"
+          },
+          "layout_hash": {
+            "old": "<absent>",
+            "new": "73b4f0737c49968989902be09f8fa9370e535f596cbfafaeabed6ab7a7f34cbd"
+          },
+          "observation_schema_hash": {
+            "old": "6f48eb08ae8dfc1edee9c495cafff172406021356022b370731963ae6761aedc",
+            "new": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d"
+          },
+          "pack_brain_hash": {
+            "old": "<absent>",
+            "new": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f"
+          },
+          "stratum_hash": {
+            "old": "54f8b289cd06e04888d3aeb80783e72339c0c126fdb3c3269df6760c5344628f",
+            "new": "5db2b56880384f2de6767177b48d8dc3ff4d5fb8fac05d67e9c26739a3aa2176"
+          },
+          "token_type_schema_hash": {
+            "old": "<absent>",
+            "new": "8ad2b59b502a905bf1a60f2e5743cac2c1f705f4a4143f5daf20bece38036d7d"
+          },
+          "transition_graph_hash": {
+            "old": "e2047c67013a05c460b8b41514fd3ed18183601e4fc935ef41673b9a74ff8da8",
+            "new": "27ed69c36b5a0c77e8647f0dc0d96f6f491c04eb6952f92c959de68f8c90f496"
+          },
+          "variable_schema_hash": {
+            "old": "a591d7654400f16aee2b0d1967e27332ee1aff5397e7e667459c3488c3dab7c1",
+            "new": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761"
+          },
+          "vfs_hash": {
+            "old": "eab17e61316f9a89f972a199941c9d097a8f2050398cd6fa0c817d0ca8395552",
+            "new": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3"
+          }
+        },
+        "streams": {
+          "obs": {
+            "step": 0,
+            "shape_changed": true,
+            "old_shape": [
+              4,
+              104
+            ],
+            "new_shape": [
+              4,
+              118
+            ],
+            "old_dtype": "float32",
+            "new_dtype": "float32",
+            "diff_entries": 101
+          }
+        }
+      },
+      "register_refs": [
+        "DIV-009",
+        "DIV-010",
+        "DIV-012",
+        "DIV-008"
+      ]
+    },
+    {
+      "kind": "SKIPPED",
+      "cell_id": "boundary_wrap:L1_full_observability:cuda:seed42",
+      "detail": {
+        "reason": "cuda not requested"
+      },
+      "register_refs": []
+    },
+    {
+      "kind": "SKIPPED",
+      "cell_id": "div003_cubic_partial:L2_partial_observability:cuda:seed42",
+      "detail": {
+        "reason": "cuda not requested"
+      },
+      "register_refs": []
+    },
+    {
+      "kind": "SKIPPED",
+      "cell_id": "div003_rect:L1_full_observability:cuda:seed42",
+      "detail": {
+        "reason": "cuda not requested"
+      },
+      "register_refs": []
+    },
+    {
+      "kind": "DIVERGED_AS_REGISTERED",
+      "cell_id": "items_smoke:L0_smoke:cpu:seed42",
+      "detail": {
+        "shape": "hash+stream",
+        "mismatched": {
+          "actions_hash": {
+            "old": "db0384c24bd2015b702036bac35346292182321674733074998c4c942d354acc",
+            "new": "3f4f104a6140edf219ee3b181cb1f5ffb1e989f8ef45ff62ce4e7a4ff4338504"
+          },
+          "brain_hash": {
+            "old": "49279b91422adef7a2d9d90b8300aa53d23434db1fcd1ccd721709625b1b42d3",
+            "new": "20da2a7d8ab84ff8000800cd4f77b431216d33e61ffe75877b0ae82c7891640c"
+          },
+          "environment_hash": {
+            "old": "e36047b5ff6c4adf2bc210a5ef222a3fd1f47dd8c7d01f3741dec0d913eef9ec",
+            "new": "6bd3a9c0ff55b7978a72ab4bdd8b94ef2662e284d46fcab2726bf8bd61020016"
+          },
+          "layout_hash": {
+            "old": "<absent>",
+            "new": "21614072a5e52227e002f5215af72b629385dac05525b79f988b1a2c9c2680ce"
+          },
+          "observation_schema_hash": {
+            "old": "7f18e4477f25fd6972d7792e68859406b3fa7a022a8c8a573b9838939196b870",
+            "new": "302658b1450e8cfbb60d3119a79085bb2e1b0a664a83c3c6020680113344e7f0"
+          },
+          "pack_brain_hash": {
+            "old": "<absent>",
+            "new": "20da2a7d8ab84ff8000800cd4f77b431216d33e61ffe75877b0ae82c7891640c"
+          },
+          "stratum_hash": {
+            "old": "c3b8f3faa3397253f2f42b7c5c7f550c8756e4147744585de2fb9b2538a6148b",
+            "new": "38fda11ed81f3002e995aeda227221beb9e3674caa059fcdabf08fcddab3437e"
+          },
+          "token_type_schema_hash": {
+            "old": "<absent>",
+            "new": "8ad2b59b502a905bf1a60f2e5743cac2c1f705f4a4143f5daf20bece38036d7d"
+          },
+          "transition_graph_hash": {
+            "old": "52e176941a12bf9259fc410269538fd40f180ca1b34c5c76e32fffc21c9521cb",
+            "new": "d0819323e02dc89fde057cee50a2dcb06cb476b321c35e34628d1e4debf70c31"
+          },
+          "variable_schema_hash": {
+            "old": "966d7310298afe84e63a0e0abe7dc261381ad5db9be64beb14c03e90412627ea",
+            "new": "7a291a67154f3c6585c8ff385e34bf99fd3b3f7921a0a28d86af9168858b6f30"
+          },
+          "vfs_hash": {
+            "old": "38e5f3407672b29f2427ef36a02cd4254481e903704df55e45ac5d42cfcef10f",
+            "new": "a0407c5fe52374b53586842eb7957b8d8f2b29e24d5d0bb5227719e293b9a00f"
+          }
+        },
+        "streams": {
+          "obs": {
+            "step": 0,
+            "shape_changed": true,
+            "old_shape": [
+              4,
+              61
+            ],
+            "new_shape": [
+              4,
+              474
+            ],
+            "old_dtype": "float32",
+            "new_dtype": "float32",
+            "diff_entries": 101
+          }
+        }
+      },
+      "register_refs": [
+        "DIV-009",
+        "DIV-010",
+        "DIV-012",
+        "DIV-008"
+      ]
+    },
+    {
+      "kind": "DIVERGED_AS_REGISTERED",
+      "cell_id": "effects_smoke:L0_effects:cpu:seed42",
+      "detail": {
+        "shape": "hash+stream",
+        "mismatched": {
+          "actions_hash": {
+            "old": "4b90e3e3beebb2e49ff1912a892adb478c946ad26f6bcdd02882941ae1638412",
+            "new": "c30c921938089c76e150179bc5c95448c4bc6467ee08047dd2471ea2dcd73650"
+          },
+          "brain_hash": {
+            "old": "b1050299c98b8ee3e471995873266f371bf8f04354c367c9f30b65be6cfa18ce",
+            "new": "763522e4b362958d781a26128134bfad462561538ba4e840b862ea5c94fee98d"
+          },
+          "environment_hash": {
+            "old": "4fd25f6ff6dedb173e86c63cb30acc6f91e12c4400963fe42d7566b8fd910535",
+            "new": "50406e5bbad790769c140e91236f7018a16330c956d4f74456b2e7fa20849603"
+          },
+          "layout_hash": {
+            "old": "<absent>",
+            "new": "b6439360f70d9baae3e875e547a031805d3ed3f79200580d2140c120d1f78ab6"
+          },
+          "observation_schema_hash": {
+            "old": "3f2e8c5d01c708da37db1f93bc96008830c3a9003b531084c5fac605fcbf30fe",
+            "new": "dde5eaac7c48dbfac35ca1dfd707c78f3dd540eb7438a91956c696b04a1a2f02"
+          },
+          "pack_brain_hash": {
+            "old": "<absent>",
+            "new": "763522e4b362958d781a26128134bfad462561538ba4e840b862ea5c94fee98d"
+          },
+          "stratum_hash": {
+            "old": "c3b8f3faa3397253f2f42b7c5c7f550c8756e4147744585de2fb9b2538a6148b",
+            "new": "38fda11ed81f3002e995aeda227221beb9e3674caa059fcdabf08fcddab3437e"
+          },
+          "token_type_schema_hash": {
+            "old": "<absent>",
+            "new": "8ad2b59b502a905bf1a60f2e5743cac2c1f705f4a4143f5daf20bece38036d7d"
+          },
+          "transition_graph_hash": {
+            "old": "d8d033acc513f0b3e6ccafb702c9248a5554bde07c0bcc483983ab97c611bbd2",
+            "new": "630752dba565734de95adf0acab96a460b1710b6d5200d7b8e58fab2342fa78e"
+          },
+          "variable_schema_hash": {
+            "old": "fa1dbe44459a19394230eca4dd54951229dfcecfb0f69292a9929bc21f073eb1",
+            "new": "e1fc0ee0df0992be5f7708b0a74dfd4fbbeabe17948327cbafca4c210cfc0166"
+          },
+          "vfs_hash": {
+            "old": "aac239a3f749f891d77bf74b11fcfebc11cbe65705588bf6662c70e447b971ac",
+            "new": "9ddadaa124e951ddc583a71132ea0a8c2ce81eabcba0cec6bc22ebbbad073425"
+          }
+        },
+        "streams": {
+          "obs": {
+            "step": 0,
+            "shape_changed": true,
+            "old_shape": [
+              4,
+              59
+            ],
+            "new_shape": [
+              4,
+              61
+            ],
+            "old_dtype": "float32",
+            "new_dtype": "float32",
+            "diff_entries": 101
+          }
+        }
+      },
+      "register_refs": [
+        "DIV-009",
+        "DIV-010",
+        "DIV-012",
+        "DIV-008"
+      ]
+    },
+    {
+      "kind": "SKIPPED",
+      "cell_id": "items_smoke:L0_smoke:cuda:seed42",
+      "detail": {
+        "reason": "cuda not requested"
+      },
+      "register_refs": []
+    },
+    {
+      "kind": "SKIPPED",
+      "cell_id": "effects_smoke:L0_effects:cuda:seed42",
+      "detail": {
+        "reason": "cuda not requested"
+      },
+      "register_refs": []
+    }
+  ]
+}

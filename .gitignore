@@ -110,6 +110,9 @@ data/
 !frontend/package-lock.json
 !package.json
 !package-lock.json
+# Project-level Claude Code settings are policy, not data: they carry the PDR-0101 merge
+# permission and the session hooks. Tracked deliberately (2026-09-02); settings.local.json stays ignored.
+!.claude/settings.json
 *.pkl
 *.pickle
 
@@ -164,3 +167,4 @@ findings.jsonl
 
 # Product evidence records are versioned even where they are csv/json (M4 baselines, PDR-0141)
 !docs/product/baselines/**
+loomweave.yaml

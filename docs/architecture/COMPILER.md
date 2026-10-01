@@ -1,11 +1,14 @@
 # The Universe Compiler
 
-Document date: 2026-08-24
-Status: **Current** (reviewed 2026-08-24) — part of the six-document HLD set (PDR-0118).
+Document date: 2026-08-24; authoring front end updated 2026-10-01.
+Status: Part of the six-document HLD set (PDR-0118). The declaration-store Cut A sections below
+supersede the old filename/loading account; Cut B uses the single canonical variables family. Other architectural descriptions retain their
+original date; this update does not certify full compiler or runtime completeness.
 
 The compiler is the thing that turns a YAML pack into one frozen, hash-carrying
-`CompiledUniverse`. It is where "compile once, execute many" is enforced: **no YAML is read
-past compile time**, and the runtime consumes read-only DTO proxies.
+`CompiledUniverse`. The world-execution contract is "compile once, execute many": runtime
+consumes compiled world declarations. The observer's separate presentation loader remains an
+explicit exception for display metadata; see [its boundary](../config-schemas/declarations.md#observer-metadata-boundary).
 
 - **Source**: `src/townlet/universe/compiler.py` (+ `loaders/`, `validation/`, `compilers/`,
   `dto/`, `optimization.py`, `symbol_table.py`, `errors.py`, `source_map.py`)
@@ -20,10 +23,17 @@ past compile time**, and the runtime consumes read-only DTO proxies.
 
 ## 1. Scope
 
-- **Inputs**: one config pack — pack-level shared files plus `levels/<level>/` overrides. See
-  `UAC.md` §3 for the current filename convention. (⚠ The archived compiler guide lists
-  `cascades.yaml`, `cues.yaml`, `substrate.yaml` and a shared `configs/global_actions.yaml`.
-  **None of those paths exist**; that list predates several renames and deletions.)
+Variable authoring uses [one canonical contract](../config-schemas/variables.md). The old
+environment/profile/overlay declaration paths are removed. Every variable reaches common
+symbol resolution; compiled token scope is explicit and required through cache load.
+Other dated architecture descriptions below are not a current symbol inventory.
+
+- **Inputs**: one config pack of recursively discovered `.yaml`/`.yml` documents outside
+  `.compiled`. Content identifies the closed declaration family; pack root versus
+  `levels/<level>/` identifies scope. Additional subfolders and filenames are transport.
+  See [the authoring contract](../config-schemas/declarations.md) for required families,
+  fragments, source provenance and clock references. Conventional names such as `stratum.yaml`
+  remain useful examples; no filename reader or aliases select semantics.
 - **Outputs**: an immutable `CompiledUniverse` carrying canonical DTOs, the observation spec
   and activity mask, rich metadata, optimization tensors, and the declared provenance hashes.
 - **Consumers**: `VectorizedHamletEnv` (runtime), `DemoRunner` / the training pipeline,
@@ -45,7 +55,7 @@ metadata → optimization → emit/cache.
 
 | stage | what it does | where |
 | --- | --- | --- |
-| 1. **Parse** | Load every file via shared loaders, enforce no-defaults validation at the DTO layer | `loaders/preflight.py` (scoping + YAML-syntax preflight), `loaders/v21.py`, `raw_configs_v21.py` |
+| 1. **Parse** | Discover documents, classify closed content shapes, merge declarations with provenance, then validate existing strict DTOs | `declarations.py`, `loaders/preflight.py`, `raw_configs_v21.py` |
 | 2. **Symbol table** | Register meters, variables, actions, affordances, items, effects; fail fast on duplicates | `symbol_table.py` |
 | 3. **Resolve** | Walk every cross-file reference (affordance effects, action costs, training overrides) emitting UAC error codes | `validation/references.py` |
 | 4. **Cross-validate** | Safety limits, semantic checks, spatial feasibility (grid capacity), cascade cycles, temporal rules, substrate/action alignment, capability semantics | `validation/limits.py`, `validation/semantics.py`, `validation/feasibility.py` |
@@ -74,9 +84,11 @@ identity checking.
 
 ## 3. Key data structures
 
-- **`RawConfigs`** (`raw_configs_v21.py`) — staged DTO bundle exposing convenient properties
-  over the parsed configs. Its `shared_specs` table is one of the places the 16-filename
-  mandate is hardcoded (§7).
+- **Declaration store** (`declarations.py`) — content-classified declarations keyed by
+  scope, family and declared entity identity, with actual `file:line` origins. It merges catalog
+  fragments deterministically and resolves the explicit clock-period reference before DTO load.
+- **`RawConfigs`** (`raw_configs_v21.py`) — staged DTO bundle built from that store. Existing
+  strict config shapes remain the content vocabulary; transport names do not select loaders.
 - **`UniverseSymbolTable`** (`symbol_table.py`) — the central registry for stages 2→4.
 - **`CompiledUniverse`** (`compiled.py`) — frozen dataclass with DTO copies, observation spec,
   `ObservationActivity`, rich metadata, optimization tensors, and the seventeen declared `*_hash`
@@ -102,11 +114,12 @@ location, and an actionable hint. Any collector with accumulated issues calls
 `CompilationErrorCollector.check_and_raise()`, so contributors see **all** failures at once
 rather than one per run.
 
-⚠ **Locations are file-level only today.** `SourceMap` (`source_map.py`) is fully implemented —
-including a line-number-annotating YAML loader — and referenced **nowhere outside its own file**
-(verified 2026-08-24), so no diagnostic currently carries a line number. Wiring it is part of
-the in-flight cleanup (§7), and per-declaration `file:line` provenance is a hard requirement of
-PDR-0117.
+**Authoring provenance.** Discovery retains YAML node locations, keyed by declaration
+family/scope/entity rather than canonical filenames. Discovery, DTO and downstream validation
+diagnostics use the actual declaring `file:line`; duplicate declarations name both origins.
+Source-map consumers use this provenance after files move or multiple documents share a file.
+This closes the front-end provenance requirement; it does not assert that every runtime fault
+is a structured compiler diagnostic.
 
 ⚠ **The code vocabulary is not the one the archived guide documents.** That guide describes a
 `UAC-RES-*` / `UAC-VAL-*` / `UAC-ACT-*` numeric catalog (`UAC-RES-001`, `UAC-VAL-002`, …).
@@ -119,7 +132,7 @@ Representative, grouped by what they catch:
 
 | area | codes |
 | --- | --- |
-| pack scoping / loading | `SCOPING_MISSING_EXPERIMENT_FILE`, `SCOPING_LEVEL_DIRECTORY`, `SCOPING_FORBIDDEN_LEVEL_FILE`, `MISSING_FILE`, `MISSING_LEVELS_DIR`, `NO_CURRICULUM_LEVELS`, `YAML_SYNTAX_ERROR`, `LOAD_ERROR`, `LEVEL_LOAD_ERROR` |
+| declaration discovery / loading | Required-family, unknown/ambiguous document, duplicate identity, misplaced scope, escaping symlink, YAML syntax and typed-load diagnostics; see `error_codes.py` for the live codes |
 | reference resolution | `UAC-RES-VFS`, `UAC-RES-CASCADE`, `UAC-RES-ITEM`, `DAC-REF-001` … `DAC-REF-015` |
 | vocabulary agreement | `METER_VOCAB_MISMATCH`, `AFFORDANCE_VOCAB_MISMATCH`, `ENABLED_AFFORDANCES_INVALID` |
 | affordances & cascades | `AFFORDANCE_INVALID_METER`, `AFFORDANCE_OPENING_HOURS_MISSING`, `AFFORDANCE_DEPLOYMENT_POSITIONS_MISSING`, `CASCADE_CYCLE`, `CASCADE_MISSING`, `CASCADE_EXTRA`, `CASCADE_INVALID_METER`, `MODULATION_MISSING`, `MODULATION_EXTRA`, `MODULATION_INVALID_REFERENCE` |
@@ -127,10 +140,9 @@ Representative, grouped by what they catch:
 | substrate / temporal / vision | `SUBSTRATE_ACTION_INCOMPATIBLE`, `SUBSTRATE_ACTION_WARNING_AS_ERROR`, `INTERACTION_RADIUS_MISSING`, `TEMPORAL_DAY_LENGTH_MISSING`, `MULTI_TICK_REQUIRES_TEMPORAL`, `VISION_INCOMPATIBLE` |
 | safety limits | `CONFIG_LIMIT_EXCEEDED`, `GRID_SIZE_LIMIT_EXCEEDED`, `GRID_CAPACITY_EXCEEDED`, `ITEM_TYPES_LIMIT_EXCEEDED`, `SPAWN_RULE_LIMIT_EXCEEDED` |
 
-⚠ **Ghost filename in DAC diagnostics.** Every `DAC-REF-*` message cites `drive_as_code.yaml`
-as its location (`validation/references.py:77-224`) — a file that exists in no pack; the real
-file is `levels/<level>/drive.yaml`. The compiler's own diagnostics point authors at a
-nonexistent filename. Slated for fix in the in-flight cleanup (§7).
+**Drive diagnostics follow the declaration.** `DAC-REF-*` errors refer to the authored
+`drive` declaration's origin, including its location after transport relocation. `drive.yaml`
+is a convention, and no `drive_as_code.yaml` alias is used to construct locations.
 
 **Security limits.** Hard caps guard against accidental or malicious config explosion — meter
 and affordance counts, item types, spawn rules, and grid cells (a grid that would exceed the
@@ -176,8 +188,8 @@ compiler assessment and is slated for deletion by the in-flight cleanup (§7).
 - The compiler normalizes YAML (sorted keys) before hashing, then folds in file names to avoid
   collisions, producing `config_hash`. `provenance_id` folds in compiler version, git SHA, and
   Python / torch / pydantic versions.
-- Cache validation uses `config_hash` **plus** the maximum mtime across the pack's YAML files
-  (including `levels/*/*.yaml`). If the hash changes or any config is newer than the artifact,
+- Cache validation uses `config_hash` **plus** the maximum mtime across recursively discovered
+  `.yaml`/`.yml` files outside `.compiled`. If the hash changes or any config is newer than the artifact,
   the compiler recompiles rather than loading.
 - `CompiledUniverse.save_to_cache` / `load_from_cache` use MessagePack with defensive fallbacks:
   a corrupt cache triggers full recompilation plus a warning.
@@ -274,50 +286,43 @@ observation spec). Runtime integration is covered by
 
 ## 7. Forward
 
-### In flight: the cleanup unit (hamlet-af929afa06)
+### Declaration-store Cut A: discovery, merge and provenance
 
-The 2026-08-24 compiler assessment
-(`archive/REVIEW-2026-08-24-compiler-architecture-assessment.md`) inventoried the trunk's debt:
-dead seams with grep-verified zero callers (`CuesCompiler` + `config/cues.py`, the unwired
-`SourceMap`, `pipeline.py`'s discarded typed bundles, `OptimizationCompiler.resolve_day_length`,
-six unused `__init__` result fields, the hardcoded-`0.0` economics metadata), the
-self-disagreeing stage numbering, and the fragmented error-code namespaces. Its first buys —
-dead-seam deletion, one authoritative stage enum, an error-code registry (including the
-`drive_as_code.yaml` ghost-filename fix), and SourceMap wiring for line-level diagnostics — are
-being executed as `hamlet-af929afa06` in an isolated worktree at the time of writing. **This
-document describes the tree at HEAD; that unit has not landed.** The assessment's target shape,
-which PDR-0117 shares: a *declaration-store* compiler — a discovery/merge front end producing
-one provenance-carrying declaration store, a middle compiling typed declaration families
-against one symbol table, and an emission layer serializing the artifact and hash tree
-mechanically.
+The front end discovers every `.yaml`/`.yml` document recursively outside `.compiled`, including
+multiple YAML documents per file. Existing wrapped shapes (`experiment:`, `stratum:`,
+`environment:`, `actions:`, and the per-level sections) and distinctive bare brain/profile/
+effect/variable/transition shapes identify content. Unknown, ambiguous, misplaced or malformed
+declarations refuse; symlinks outside the pack refuse. No legacy filename reader remains.
 
-### Decided: the front end becomes discovery + merge
+Pack scope and `levels/<id>` scope remain explicit. Required families are checked after merge,
+not by file existence. Singleton identity is `(scope, family)`; catalog entries use declared
+identifiers qualified by family/profile, and cascades use ordered source/target pairs. Equal
+duplicates still fail, naming both `file:line` origins. Repeated structural catalog headers must
+agree. Appearance rules remain a singleton because they have no rule identifier.
 
-**PDR-0117 — decided, not yet implemented.** The pack layout today mandates 16 distinct
-filenames, hardcoded across roughly nine compiler modules — chiefly `loaders/preflight.py`
-(the `shared_files` / `optional_shared_files` lists), `raw_configs_v21.py` (the `shared_specs`
-table), and the error strings that name specific files.
+Fragments merge in sorted pack-relative path/document order; lists retain authored order.
+Renaming or moving a file may change transport `metadata.config_hash`, while preserving
+semantic identity for equivalent declarations and order. Reordering an authored array can
+change semantics and ABI and is not normalized away.
 
-The decided direction: the compiler **globs the pack** (subfolders included), parses every YAML
-document against the closed typed schemas, and merges into one compiled profile. Filenames
-become authoring convention, never semantics. "Required file" becomes "required declaration".
-Override and merge happen **by declared id**, with loud collision refusal — a compile error
-naming both declaring files.
+An active curriculum can resolve `day_length: {period_of: <variable id>}` from a declared global
+ambient-tick temporal variable's cyclical normalization period before constructing the existing
+DTO. The period must be finite, positive and integral; inactive levels remain explicitly null.
+Invalid targets and duplicated coupled clock facts fail with their origins. This is a narrow
+front-end reference, not a redesign of runtime clocks.
 
-Two constraints the implementation must hold, both squarely compiler concerns:
+See [the full authoring contract](../config-schemas/declarations.md),
+[the Cut A plan](../plans/2026-10-01-declaration-store-cut-a.md), and
+[PDR-0117](../product/decisions/0117-files-are-transport-declarations-are-the-unit.md).
 
-1. **Determinism must survive.** Canonical merge order (sorted paths) so `config_hash` stays
-   stable across runs and machines.
-2. **Provenance must survive.** Per-declaration `file:line` must reach diagnostics. The reversal
-   trigger for PDR-0117 is precisely a measurable degradation in compile-error quality that
-   per-declaration provenance cannot fix — in which case a thin `pack.yaml` index returns, not
-   the 16-filename mandate.
+### Remaining boundaries
 
-This pairs naturally with the variable-surface unification the 2026-08-24 VFS audit demands
-(`environment.yaml` / `vfs_profiles.yaml` / `variables_reference.yaml` declaring variables with
-divergent hardcoded semantics), because both land in the same front end. Sequencing: its own
-unit, after the token-observation migration. Full text: `UAC.md` §4 and
-`docs/product/decisions/0117-files-are-transport-declarations-are-the-unit.md`.
+Cut A preserves the current typed DTOs and compiled semantic hashes. It does not complete
+variable-surface unification, access/lifetime authoring, artifact round-trip fidelity, full BAC,
+rendering or convergence. Those require their own contracts and evidence. The wider accepted
+declaration-store direction must not be described as complete merely because discovery works.
+The original PRD calendar window remains unchanged; functional acceptance is reported separately
+from that expired window.
 
 ---
 

@@ -1,0 +1,52 @@
+{
+  "parent_origin": "/home/john/hamlet",
+  "parent_head": "bd34b5381050509af58e3e5c9cb2c2e7321ec801",
+  "repaired_origin": "/tmp/hamlet-static-epistemic-access",
+  "repaired_head": "b70fda104e5061ed2735e8b31b7f8f9caaf99f19",
+  "controls": {
+    "stochastic_loop": {
+      "identical_outputs_and_rng_bytes": true,
+      "energies": [
+        3.0,
+        9.0
+      ],
+      "rng_unchanged": false
+    },
+    "unselected_if": {
+      "identical_outputs_and_rng_bytes": true,
+      "energies": [
+        3.0,
+        3.0
+      ],
+      "rng_unchanged": true
+    },
+    "unselected_switch": {
+      "identical_outputs_and_rng_bytes": true,
+      "energies": [
+        3.0,
+        3.0
+      ],
+      "rng_unchanged": true
+    },
+    "nested_loop": {
+      "identical_outputs_and_rng_bytes": true,
+      "energies": [
+        3.0,
+        9.0
+      ],
+      "rng_unchanged": false
+    },
+    "earlier_sibling_state_flow": {
+      "identical_outputs_and_rng_bytes": true,
+      "energies": [
+        3.0,
+        9.0
+      ],
+      "rng_unchanged": true
+    }
+  },
+  "all_equal": true,
+  "parent_report": "/tmp/epistemic-real-parent-commands.json",
+  "repaired_report": "/tmp/epistemic-real-repaired-commands.json",
+  "note": "Fresh subprocesses use task-owned interpreter and explicit source PYTHONPATH. Full Torch RNG byte encodings and module origins/SHA256 are retained. Both source commits are clean and current repaired source is b70fda10."
+}

@@ -1,0 +1,68 @@
+{
+  "head_commit": "22924d0a6f11c0d9a3222567e4fb1188ea0071de",
+  "observed_at": "2026-09-30T22:12:26.362956+00:00",
+  "owner_authorization": {
+    "destination": "https://github.com/foundryside-dev/hamlet",
+    "request": "May I push feat/declaration-store-cut-b to GitHub foundryside-dev/hamlet and open a draft PR stacked on Cut A (#40)?",
+    "response": "yes",
+    "scope": [
+      "feature branch publication",
+      "stacked draft PR",
+      "associated verified delivery records"
+    ]
+  },
+  "pr": {
+    "baseRefName": "feat/declaration-store-cut-a",
+    "headRefName": "feat/declaration-store-cut-b",
+    "headRefOid": "22924d0a6f11c0d9a3222567e4fb1188ea0071de",
+    "isDraft": true,
+    "number": 41,
+    "state": "OPEN",
+    "url": "https://github.com/foundryside-dev/hamlet/pull/41"
+  },
+  "qualified": true,
+  "tests_summary": {
+    "coverage_percent": 84,
+    "elapsed_seconds": 1354.5,
+    "hosted_only_skip": "tests/test_townlet/integration/test_recording_video_export.py::TestVideoExport::test_export_episode_to_mp4",
+    "log_sha256": "0679c968b6e87b21a66bf07167576017c6724b26ab127cb39a4cbcf8fbf40f64",
+    "passed": 4054,
+    "skipped": 19,
+    "warnings": 15
+  },
+  "workflows": [
+    {
+      "conclusion": "success",
+      "createdAt": "2026-09-30T21:46:06Z",
+      "databaseId": 36781512796,
+      "event": "pull_request",
+      "headSha": "22924d0a6f11c0d9a3222567e4fb1188ea0071de",
+      "status": "completed",
+      "updatedAt": "2026-09-30T21:47:18Z",
+      "url": "https://github.com/foundryside-dev/hamlet/actions/runs/36781512796",
+      "workflowName": "Lint"
+    },
+    {
+      "conclusion": "success",
+      "createdAt": "2026-09-30T21:46:06Z",
+      "databaseId": 36781512698,
+      "event": "pull_request",
+      "headSha": "22924d0a6f11c0d9a3222567e4fb1188ea0071de",
+      "status": "completed",
+      "updatedAt": "2026-09-30T21:47:57Z",
+      "url": "https://github.com/foundryside-dev/hamlet/actions/runs/36781512698",
+      "workflowName": "Config Validation"
+    },
+    {
+      "conclusion": "success",
+      "createdAt": "2026-09-30T21:46:06Z",
+      "databaseId": 36781512782,
+      "event": "pull_request",
+      "headSha": "22924d0a6f11c0d9a3222567e4fb1188ea0071de",
+      "status": "completed",
+      "updatedAt": "2026-09-30T22:10:19Z",
+      "url": "https://github.com/foundryside-dev/hamlet/actions/runs/36781512782",
+      "workflowName": "Tests"
+    }
+  ]
+}

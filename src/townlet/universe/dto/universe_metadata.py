@@ -40,7 +40,7 @@ class UniverseMetadata:
     action_count: int = 0
     observation_dim: int = 0
 
-    # VFS scope extents (variables_reference.yaml `extents:` block). Zero means
+    # VFS scope extents (canonical variables `extents:` block). Zero means
     # the pack declares no variables of that scope — the loader rejects a
     # scoped variable whose extent is undeclared, so 0 never reaches a registry
     # that needs it.

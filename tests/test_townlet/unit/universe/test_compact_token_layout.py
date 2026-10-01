@@ -114,7 +114,15 @@ def _assembler(spec: TokenSpec) -> Any:
 
 def _single_type_spec(type_name: str, *, capacity: int = 2, effect_catalog_size: int = 2) -> TokenSpec:
     filler_kind = TOKEN_TYPE_FILLER_KIND[type_name]
-    bindings = tuple(SlotBinding(slot_index=slot, filler_kind=filler_kind, filler_ref=f"{type_name}:{slot}") for slot in range(capacity))
+    bindings = tuple(
+        SlotBinding(
+            slot_index=slot,
+            filler_kind=filler_kind,
+            filler_ref=f"{type_name}:{slot}",
+            scope="global" if type_name == "variable_element" else None,
+        )
+        for slot in range(capacity)
+    )
     if type_name == "effect":
         slot_context_payloads: tuple[tuple[float, ...], ...] = ()
         effect_catalog_contexts = tuple(
@@ -212,13 +220,7 @@ def test_a_rank_zero_variable_element_row_is_exactly_three_floats() -> None:
         types=(
             _build_token_type(
                 "variable_element",
-                (
-                    SlotBinding(
-                        slot_index=0,
-                        filler_kind="static",
-                        filler_ref="variable:clock[0]",
-                    ),
-                ),
+                (SlotBinding(slot_index=0, filler_kind="static", filler_ref="variable:clock[0]", scope="global"),),
                 slot_context_payloads=(_fixed_payload("variable_element"),),
             ),
         ),
@@ -331,13 +333,7 @@ def test_static_context_and_dynamic_state_assemble_the_fixed_input_exactly() -> 
         types=(
             _build_token_type(
                 "affordance",
-                (
-                    SlotBinding(
-                        slot_index=0,
-                        filler_kind="static",
-                        filler_ref="affordance:cafe[0]",
-                    ),
-                ),
+                (SlotBinding(slot_index=0, filler_kind="static", filler_ref="affordance:cafe[0]", scope=None),),
                 slot_context_payloads=(fixed_payload,),
             ),
         ),
@@ -378,13 +374,7 @@ def test_presence_gates_compiled_static_context() -> None:
         types=(
             _build_token_type(
                 "affordance",
-                (
-                    SlotBinding(
-                        slot_index=0,
-                        filler_kind="static",
-                        filler_ref="affordance:cafe[0]",
-                    ),
-                ),
+                (SlotBinding(slot_index=0, filler_kind="static", filler_ref="affordance:cafe[0]", scope=None),),
                 slot_context_payloads=(fixed_payload,),
             ),
         ),
@@ -415,7 +405,7 @@ def test_effect_context_selector_assembles_world_specific_static_identity_withou
         types=(
             _build_token_type(
                 "effect",
-                (SlotBinding(slot_index=0, filler_kind="dynamic", filler_ref="effect:0"),),
+                (SlotBinding(slot_index=0, filler_kind="dynamic", filler_ref="effect:0", scope=None),),
                 effect_catalog_contexts=tuple(
                     _context(context_ref=f"effect:{declaration.id}", fixed_payload=fixed_payload)
                     for declaration, fixed_payload in zip(declarations, fixed_payloads, strict=True)

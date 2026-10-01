@@ -47,27 +47,4 @@ environment:
       description: "Cook food to restore energy"
       category: sustenance
 
-  variables:
-    - name: deficit_energy
-      type: scalar
-      dims: 1
-      scope: agent
-      description: "How far below target energy (0.0 = at/above target)"
-      semantic_type: custom
-      normalization:
-        method: normalize
-        clip: true
-        range: [0.0, 1.0]
-
-    - name: time_since_last_sleep
-      type: scalar
-      dims: 1
-      scope: agent
-      description: "Timesteps since last SLEEP action"
-      semantic_type: custom
-      normalization:
-        method: normalize
-        clip: true
-        range: [0.0, 100.0]
-
   cues: []

@@ -45,8 +45,11 @@ status: current as of 2026-08-12 (WS-1(e), PDR-0016)
 > validator only enforces bounds containment.
 
 
-One file per curriculum level, at `configs/<pack>/levels/<level>/bars.yaml`. It defines
-the meters that level runs with and the cascades between them.
+Each curriculum level requires a `bars:` declaration defining its meters and cascades.
+`configs/<pack>/levels/<level>/bars.yaml` is a filename convention; fragments can live in other
+nested `.yaml`/`.yml` documents within the level scope. Authored meter/cascade list order is
+preserved; duplicate meter names or ordered cascade pairs refuse with both source locations.
+See [declaration discovery](declarations.md).
 
 Every field below is **required**. The no-defaults principle applies in full: a missing
 key is a compile error, not an implied zero.

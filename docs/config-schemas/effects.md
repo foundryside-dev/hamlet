@@ -56,7 +56,10 @@ The Effects System is HAMLET's foundational command pipeline language for all si
 
 ---
 
-**Location**: `<config_pack>/effects.yaml` (experiment-level)
+**Scope**: Optional pack-scope effects declaration, conventionally `<config_pack>/effects.yaml`.
+The bare `effect_definitions` shape is recognized by content; fragments may live in nested
+`.yaml`/`.yml` documents. Effect identifiers must be unique across the scope, with both origins
+reported on collision. See [declaration discovery](declarations.md).
 
 **Status**: Phase 3 Complete + Phase 4 Command Extensions Implemented
 
@@ -1511,22 +1514,30 @@ cascades:
           - spawn_effect: "energy_crash"
 ```
 
-### VFS Profiles
+### Declared variables
 
-VFS profiles define variables that effects modify:
+Effects read/write supported variables from the canonical pack-scope roster.
+The compiler supplies engine roles; authors do not declare readers or writers.
 
 ```yaml
-# variables_reference.yaml
 variables:
-  - id: "is_caffeinated"
+  version: '1.0'
+  evaluation_mode: mark_and_sweep
+  debug_logging: false
+  extents: {}
+  item_profiles: []
+  declarations:
+  - id: is_caffeinated
     scope: agent
     type: bool
-    default: false
-    readers: [agent, engine]
-    writers: [engine]  # Effects can modify via CommandExecutor
+    lifetime: episode
+    semantic_type: custom
+    initial_value: false
+    exposed_to: []
 ```
 
-**Integration**: Effect commands validated against VFS schema (paths must exist)
+See [variables](variables.md) for scope and consumer restrictions. A registered symbol
+is not a promise that every effect execution context supports every scope.
 
 ---
 
@@ -1658,7 +1669,7 @@ value: "target.bar.energy + (0.1 if intensity > 2.0 else 0.05)"
 - Verify commands are in correct lifecycle hook (on_spawn vs on_tick)
 
 **Q: Type check error for valid path**
-- Check VFS schema includes the path (`variables_reference.yaml`)
+- Check VFS schema includes the path (the canonical variables declaration)
 - Verify path accessible from effect scope
 - Ensure expression return type matches path type (bool vs float)
 

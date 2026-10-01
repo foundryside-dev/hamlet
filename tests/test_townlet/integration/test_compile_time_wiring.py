@@ -22,7 +22,7 @@ def test_compiler_wires_vfs_and_effects_together():
     # Verify: Effects schema includes VFS global variables
     # effects_smoke has day_count in global profile
     assert "vfs.day_count" in compiled.vfs_expression_schema
-    assert compiled.vfs_expression_schema["vfs.day_count"] == "int"
+    assert compiled.vfs_expression_schema["vfs.day_count"] == "float"
 
     # Verify: Effects catalog has effects that can reference VFS
     energy_regen = compiled.compiled_effect_catalog.get("energy_regen")
@@ -30,9 +30,9 @@ def test_compiler_wires_vfs_and_effects_together():
     assert len(energy_regen.on_tick) > 0
 
 
-def test_compiler_handles_minimal_config_without_vfs():
-    """UniverseCompiler should handle configs without VFS profiles."""
-    # Setup: Minimal config without vfs_profiles.yaml
+def test_compiler_handles_explicit_empty_variable_catalog():
+    """UniverseCompiler should handle an explicit empty variable catalog."""
+    # Setup: Minimal config with no variable declarations
     config_dir = Path(__file__).parent.parent.parent.parent / "configs" / "test" / "action_masking"
 
     # Exercise
@@ -64,4 +64,4 @@ def test_vfs_expression_schema_includes_bars():
     # Verify: Types are correct
     assert compiled.vfs_expression_schema["bar.energy"] == "float"
     assert compiled.vfs_expression_schema["bar.health"] == "float"
-    assert compiled.vfs_expression_schema["vfs.day_count"] == "int"
+    assert compiled.vfs_expression_schema["vfs.day_count"] == "float"

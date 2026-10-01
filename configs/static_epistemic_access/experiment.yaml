@@ -1,0 +1,15 @@
+experiment:
+  version: '1.0'
+  experiment_name: Static Epistemic Access
+  metadata:
+    name: Static Epistemic Access
+    description: Public observation, engine-only reward state and immutable literals
+      in a two-row static-access witness.
+    author: Townlet
+    created: '2026-10-01'
+    tags:
+    - static_access
+    - permissions
+    - witness
+  curriculum_levels:
+  - L0_simple

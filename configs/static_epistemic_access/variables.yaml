@@ -1,0 +1,57 @@
+variables:
+  version: '1.0'
+  evaluation_mode: mark_and_sweep
+  debug_logging: false
+  extents: {}
+  item_profiles: []
+  declarations:
+  - id: public_state
+    scope: agent
+    type: scalar
+    lifetime: episode
+    semantic_type: custom
+    readable_by:
+    - engine
+    - agent
+    writable_by:
+    - engine
+    exposed_to:
+    - agent
+    initial_value: 0.0
+    normalization:
+      kind: minmax
+      min: 0.0
+      max: 4.0
+      clip: true
+  - id: hidden_score
+    scope: agent
+    type: scalar
+    lifetime: episode
+    semantic_type: custom
+    readable_by:
+    - engine
+    writable_by:
+    - engine
+    exposed_to: []
+    initial_value: 2.0
+  - id: immutable_scale
+    scope: global
+    type: scalar
+    lifetime: persistent
+    semantic_type: custom
+    readable_by:
+    - engine
+    writable_by: []
+    exposed_to: []
+    initial_value: 0.5
+  - id: readable_unexposed
+    scope: agent
+    type: scalar
+    lifetime: episode
+    semantic_type: custom
+    readable_by:
+    - engine
+    - agent
+    writable_by: []
+    exposed_to: []
+    initial_value: 7.0

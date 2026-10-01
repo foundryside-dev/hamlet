@@ -23,27 +23,51 @@ from townlet.vfs.profiles import CompiledGlobalProfile
 
 def _write_profiles_with_agent(experiment_dir: Path) -> None:
     profiles = {
-        "version": "1.0",
-        "evaluation_mode": "mark_and_sweep",
-        "debug_logging": False,
-        "global_profile": {
-            "variables": [
-                {"semantic_type": "custom", "name": "day_count", "type": "int", "initial_value": 0},
-            ]
-        },
-        "agent_profile": {
-            "variables": [
-                {"semantic_type": "custom", "name": "inventory_weight", "type": "float", "initial_value": 0.0},
+        "variables": {
+            "version": "1.0",
+            "evaluation_mode": "mark_and_sweep",
+            "debug_logging": False,
+            "extents": {},
+            "item_profiles": [],
+            "declarations": [
                 {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
+                    "id": "day_count",
+                    "scope": "global",
+                    "type": "scalar",
+                    "lifetime": "persistent",
                     "semantic_type": "custom",
-                    "name": "is_encumbered",
+                    "exposed_to": [],
+                    "initial_value": 0,
+                },
+                {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
+                    "id": "inventory_weight",
+                    "scope": "agent",
+                    "type": "scalar",
+                    "lifetime": "episode",
+                    "semantic_type": "custom",
+                    "exposed_to": [],
+                    "initial_value": 0.0,
+                },
+                {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
+                    "id": "is_encumbered",
+                    "scope": "agent",
                     "type": "bool",
+                    "lifetime": "episode",
+                    "semantic_type": "custom",
+                    "exposed_to": [],
+                    "initial_value": False,
                     "expression": "inventory_weight > 1.0",
                 },
-            ]
-        },
+            ],
+        }
     }
-    (experiment_dir / "vfs_profiles.yaml").write_text(yaml.dump(profiles))
+    (experiment_dir / "variables.yaml").write_text(yaml.dump(profiles))
 
 
 @pytest.fixture
@@ -78,6 +102,7 @@ def test_agent_profile_round_trips_through_dict(compiled_with_agent_profile) -> 
     assert weight.type == "float"
     assert weight.initial_value == 0.0
     assert weight.semantic_type == "custom"
+    assert weight.lifetime == "episode"
 
     encumbered = by_name["is_encumbered"]
     assert encumbered.expression == "inventory_weight > 1.0"
@@ -93,6 +118,7 @@ def test_global_profile_round_trip_preserves_semantic_type(compiled_with_agent_p
     var = restored.compiled_vfs_profiles.global_profile.variables[0]
     assert var.name == "day_count"
     assert var.semantic_type == "custom"
+    assert var.lifetime == "persistent"
 
 
 def test_compile_writes_artifact_for_pack_with_agent_profile(tmp_path: Path) -> None:

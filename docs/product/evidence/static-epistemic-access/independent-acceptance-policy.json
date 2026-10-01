@@ -1,0 +1,357 @@
+{
+  "reviewer": "/root/epistemic_policy",
+  "source_commit": "b70fda104e5061ed2735e8b31b7f8f9caaf99f19",
+  "mode": "read-only source and retained-evidence review",
+  "overall": "GO_qualified_implementation_accepting_decision_and_local_merge_pending",
+  "provenance": {
+    "authored_tasks": [
+      2,
+      5
+    ],
+    "independent_review_of_tasks": [
+      3,
+      4,
+      6
+    ],
+    "cross_review_of_authored_tasks": "/root/epistemic_intent independently reviewed Tasks2/5 (182 Task2 and116 Task5 controls reported); root reviewed commits. This is cross-review, not an author-free whole-package review."
+  },
+  "criteria": [
+    {
+      "criterion": 1,
+      "name": "Authoring",
+      "status": "accepted_bounded_contract",
+      "finding": "Canonical authoring and compiled profiles require closed engine/agent reader and engine/empty writer policies. Validation rejects missing, duplicate, unsupported, engine-unreadable and exposure-conflicting roles with declaration provenance; live packs and executable fixtures are explicit. Retired aliases and registry implementation are absent.",
+      "evidence": [
+        "src/townlet/config/variables_config.py",
+        "src/townlet/vfs/access_policy.py",
+        "src/townlet/vfs/schema.py",
+        "src/townlet/vfs/profiles.py",
+        "tests/test_townlet/unit/config/test_variables_dto.py",
+        "tests/test_townlet/unit/universe/test_compiled_artifact_required_fields.py",
+        "/tmp/epistemic-final-fleet.log"
+      ]
+    },
+    {
+      "criterion": 2,
+      "name": "Runtime access",
+      "status": "accepted_bounded_contract",
+      "finding": "Checked get/set, convenience, item and fixed-engine writeback use one frozen registry policy. Public tensor reads clone storage, denied operations authorize before mutation, qualified item reads require a live matching profile. Exact production AST sites contain explicit actors; omitted-actor test calls are intentional TypeError controls.",
+      "evidence": [
+        "src/townlet/vfs/registry.py",
+        "src/townlet/effects/context.py",
+        "src/townlet/effects/executor.py",
+        "src/townlet/vfs/evaluator.py",
+        "src/townlet/items/manager.py",
+        "/tmp/epistemic-final-ast-closure.json",
+        "/tmp/epistemic-final-caller-closure.json",
+        "/tmp/epistemic-acceptance-policy-boundaries.log"
+      ]
+    },
+    {
+      "criterion": 3,
+      "name": "Write intent",
+      "status": "accepted_bounded_contract",
+      "finding": "Selected write targets survive action/social execution independent of value equality. Complete VFS target authorization precedes bars/dones/VFS transition publication. Immutable literals survive lifecycle initialization, WAIT and reset. Known write targets refuse at compile time, including conditional/nested commands. Dynamic compound command and spawn overrides preflight before their own mutation/allocation. The latest loop namespace fix preserves self while retargeting loop target into ordinary versus item namespaces; the final no-defaults change preserves that logic. The blocking stochastic FOR_EACH regression is repaired: ordinary loop metadata is authorized without collection evaluation; actual selected contexts resolve once at execution after earlier sibling writes. Qualified inventory profiles preflight before the first item mutation. Five permitted controls match unchanged parent outputs and exact Torch RNG bytes in fresh source-isolated processes; denied compound and mixed-profile controls pass separately.",
+      "evidence": [
+        "src/townlet/vfs/transition_schedule.py",
+        "src/townlet/vfs/vtc.py",
+        "src/townlet/environment/vectorized_env.py",
+        "src/townlet/universe/validation/static_access.py",
+        "src/townlet/items/manager.py",
+        "tests/test_townlet/unit/universe/test_static_write_authorization.py",
+        "tests/test_townlet/unit/effects/test_static_command_access.py",
+        "tests/test_townlet/integration/test_static_write_intent_runtime.py",
+        "/tmp/epistemic-acceptance-policy-boundaries.log",
+        "/tmp/epistemic-acceptance-final-namespace.log",
+        "/tmp/epistemic-for-each-double-resolution.log",
+        "/tmp/epistemic-for-each-double-resolution-fixed.log",
+        "/tmp/epistemic-preflight-semantic-countercases-fixed.log",
+        "/tmp/epistemic-real-parent-comparison.json",
+        "/tmp/epistemic-loop-fix-independent-green.log",
+        "tests/test_townlet/unit/effects/test_command_preflight_selection.py"
+      ]
+    },
+    {
+      "criterion": 4,
+      "name": "Observation",
+      "status": "accepted_bounded_contract",
+      "finding": "Publisher plans authorize exact ordinary/qualified item policy before building gather indices. Exposure and agent-read policy agree with checked getters under source-list mutation. Public values retain batched gathers and normalization; hidden state has no binding. Agent-readable but unexposed state remains absent. Item wrong-profile/liveness gates retain current behavior; malformed constructed bindings refuse.",
+      "evidence": [
+        "src/townlet/environment/token_publishers.py",
+        "src/townlet/environment/observation_encoder.py",
+        "src/townlet/universe/dto/token_spec.py",
+        "tests/test_townlet/unit/environment/test_token_publishers.py",
+        "tests/test_townlet/integration/test_item_vfs_observations.py",
+        "/tmp/epistemic-task5-green.log",
+        "/tmp/epistemic-task5-token-contract.log"
+      ]
+    },
+    {
+      "criterion": 5,
+      "name": "Witness",
+      "status": "accepted_bounded_contract",
+      "finding": "Committed complete pack exercises real ADVANCE/WAIT engine mutation, public normalized state, named hidden-score reward, denied agent access, agent-readable unexposed state and immutable literal. Cold and actual MessagePack variants run two rows and two episode resets. Qualified item probes explicitly remove initial appearance declaration and do not claim its known cache defect fixed.",
+      "evidence": [
+        "configs/static_epistemic_access/README.md",
+        "configs/static_epistemic_access/variables.yaml",
+        "configs/static_epistemic_access/actions.yaml",
+        "tests/test_townlet/integration/test_static_epistemic_access.py",
+        "tests/test_townlet/integration/test_item_vfs_observations.py",
+        "/tmp/epistemic-task5-green.log"
+      ]
+    },
+    {
+      "criterion": 6,
+      "name": "Identity",
+      "status": "accepted_bounded_contract",
+      "finding": "Tagged registry and profile-qualified item descriptors include hidden policies and sorted role sets in canonical variable identity. Load recomputes variable/VFS identity and checks both directions of ordinary registry/profile policy, roster and same-entity metadata coherence. Missing/tampered policy fails. Exact production serving and training resume refuse policy-only edits before weights mutate for flat and token architectures. Equivalent role order preserves semantic identity and reload/serving succeeds. Permissions do not add token one-hots or alter token ABI.",
+      "evidence": [
+        "src/townlet/vfs/schema_hashes.py",
+        "src/townlet/vfs/registry.py",
+        "src/townlet/universe/compiled.py",
+        "tests/test_townlet/unit/universe/test_compiled_token_coherence.py",
+        "tests/test_townlet/integration/test_static_epistemic_checkpoint_identity.py",
+        "/tmp/epistemic-acceptance-policy-task6-final.log"
+      ]
+    },
+    {
+      "criterion": 7,
+      "name": "Evidence and gates",
+      "status": "accepted_bounded_contract",
+      "finding": "Banked parent evidence predates product edits. Cleanb70fda10 terminal parent comparator exit0:31cases884readings10CPU11resets,150exact case/field/before/after changes matching committed attributions, no trace/reset failure, stale or unattributed change. Frozen clean CPU terminal exit0:10 DIVERGED_AS_REGISTERED and10CUDA SKIPPED. Ruff/Black/mypy/no-defaults/fleet all terminal0 at the same clean head. Complete local suite terminal0 at the same clean source:4250passed18skipped15warnings1561.29s and85%coverage. All required local implementation gates are complete; superseded137 partial runs remain excluded.",
+      "evidence": [
+        "docs/product/evidence/static-epistemic-access/before/manifest.json",
+        "docs/product/evidence/static-epistemic-access/attributions.json",
+        "docs/product/evidence/static-epistemic-access/canonical-schema-attribution.json",
+        "runs/static-epistemic-access/qualified-b70fda10/report.json",
+        "runs/differential/static-epistemic-b70fda10-frozen-clean-cpu/report.json",
+        "/tmp/epistemic-final-gates.json",
+        "/tmp/epistemic-final-full-suite.log",
+        "/tmp/epistemic-full-suite-terminal.json"
+      ]
+    },
+    {
+      "criterion": 8,
+      "name": "Independent acceptance",
+      "status": "accepted_cross_review",
+      "finding": "All eight criteria are reviewed against cleanb70fda10 source and terminal evidence. Five permitted real-parent comparisons match exact outputs/full Torch RNG bytes. Fresh Loom plus AST reconciles all70 receiver/dynamic candidates, zero unmatched, and expressly limits dynamic graph completeness. Cross-review provenance is accurate: this reviewer authoredTasks2/5; intent independently reviewed those tasks; this reviewer independently reviewedTasks3/4/6, loop fix, and Task7 retained evidence. Full suite and other gates terminal0. Qualified implementation GO; committed accepting decision and authorized local merge remain separate next stages. Push, hostedCI, deployment, CUDA, and learning claims remain unperformed/excluded.",
+      "evidence": [
+        "/tmp/epistemic-final-caller-closure.json",
+        "/tmp/epistemic-final-ast-closure.json",
+        "/tmp/epistemic-independent-acceptance-policy.json"
+      ]
+    }
+  ],
+  "actual_focused_controls": [
+    {
+      "command": "OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 .venv/bin/python -m pytest --no-cov tests/test_townlet/unit/environment/test_token_publishers.py tests/test_townlet/integration/test_item_vfs_observations.py tests/test_townlet/integration/test_static_epistemic_access.py -q",
+      "exit_code": 0,
+      "passed": 104,
+      "seconds": 1.07,
+      "phase": "Task5 after mechanical lint cleanup"
+    },
+    {
+      "command": "OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 .venv/bin/python -m pytest --no-cov tests/test_townlet/unit/vfs/test_static_access.py tests/test_townlet/unit/vfs/test_vtc_write_intent.py tests/test_townlet/unit/universe/test_static_write_authorization.py tests/test_townlet/integration/test_static_write_intent_runtime.py tests/test_townlet/unit/effects/test_static_command_access.py -q",
+      "exit_code": 0,
+      "passed": 40,
+      "seconds": 0.64,
+      "log": "/tmp/epistemic-acceptance-policy-boundaries.log"
+    },
+    {
+      "command": "OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 .venv/bin/python -m pytest --no-cov tests/test_townlet/unit/vfs/test_schema_hashes.py tests/test_townlet/unit/universe/test_compiled_token_coherence.py tests/test_townlet/integration/test_static_epistemic_checkpoint_identity.py tests/test_townlet/integration/test_live_inference_checkpoint_identity.py -q",
+      "exit_code": 0,
+      "passed": 119,
+      "seconds": 45.55,
+      "observed_head": "3db56521",
+      "log": "/tmp/epistemic-acceptance-policy-task6-final.log"
+    },
+    {
+      "command": "OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 .venv/bin/python -m pytest --no-cov tests/test_townlet/unit/universe/test_static_write_authorization.py tests/test_townlet/unit/effects/test_static_command_access.py -q",
+      "exit_code": 0,
+      "passed": 21,
+      "seconds": 0.53,
+      "observed_head": "6a0951ed",
+      "log": "/tmp/epistemic-acceptance-final-namespace.log"
+    },
+    {
+      "command": "OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 .venv/bin/python -m pytest --no-cov tests/test_townlet/unit/universe/test_token_spec.py -q",
+      "exit_code": 0,
+      "passed": 91,
+      "seconds": 0.21,
+      "log": "/tmp/epistemic-token-spec-fixture-green.log",
+      "note": "Frozen uncommitted fixture repair; earlier four-failure RED retained separately"
+    },
+    {
+      "command": "OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 .venv/bin/python -m pytest --no-cov tests/test_townlet/unit/effects/test_command_preflight_selection.py tests/test_townlet/unit/effects/test_static_command_access.py tests/test_townlet/unit/universe/test_static_write_authorization.py tests/test_townlet/integration/test_static_write_intent_runtime.py -q",
+      "exit_code": 0,
+      "passed": 31,
+      "seconds": 0.77,
+      "log": "/tmp/epistemic-loop-fix-independent-green.log",
+      "note": "Frozen uncommitted repair independently reviewed"
+    }
+  ],
+  "focused_evidence_limit": "Focused controls identify their exact source phase.31 loop and91 token controls covered exact bytes committed as45ba42bb/b70fda10. Five actual-parent comparisons reran at cleanb70fda10. Full suite and all required implementation gates then passed at that same source. No implicit hosted/CUDA/learning/local-merge claims.",
+  "final_gate_status": {
+    "ruff": {
+      "command": [
+        ".venv/bin/ruff",
+        "check"
+      ],
+      "exit_code": 0,
+      "log": "/tmp/epistemic-final-ruff.log"
+    },
+    "black": {
+      "command": [
+        ".venv/bin/black",
+        "--check",
+        "."
+      ],
+      "exit_code": 0,
+      "log": "/tmp/epistemic-final-black.log"
+    },
+    "mypy": {
+      "command": [
+        ".venv/bin/mypy",
+        "src"
+      ],
+      "exit_code": 0,
+      "log": "/tmp/epistemic-final-mypy.log"
+    },
+    "no-defaults": {
+      "command": [
+        ".venv/bin/python",
+        "scripts/no_defaults_lint.py",
+        "src",
+        "--whitelist",
+        ".defaults-whitelist.txt"
+      ],
+      "exit_code": 0,
+      "log": "/tmp/epistemic-final-no-defaults.log"
+    },
+    "fleet": {
+      "command": [
+        ".venv/bin/python",
+        "scripts/validate_compiler_cli.py"
+      ],
+      "exit_code": 0,
+      "log": "/tmp/epistemic-final-fleet.log"
+    }
+  },
+  "ast_summary": {
+    "python_files": 587,
+    "actor_sites": 253,
+    "production_actor_sites": 38,
+    "hash_sites": 22,
+    "production_hash_sites": 4,
+    "missing_actor_sites": 2,
+    "missing_production_actors": [],
+    "hash_calls_without_item_roster": [],
+    "retired_symbol_sites": 0,
+    "definition_mapping_sites": 7,
+    "fixed_engine_write_sites": 17,
+    "production_fixed_engine_write_sites": 4,
+    "pair_diagnostic_access_sites": 1,
+    "excluded_generic_production_get_set_sites": 314
+  },
+  "exclusions": [
+    "owner-specific/spatial privacy",
+    "engine-confidential state",
+    "Python tensor sandbox",
+    "held-item/locality/shared-world isolation",
+    "initial-item-appearance cache repair",
+    "BAC cognition/Murk/UX completion",
+    "learned convergence",
+    "CUDA qualification",
+    "publication/hosted CI"
+  ],
+  "claims_separated": [
+    "reviewed plan",
+    "implementation",
+    "local acceptance",
+    "local integration",
+    "publication",
+    "hosted CI",
+    "product learning"
+  ],
+  "resolved_source_findings": [
+    {
+      "id": "FOR-EACH-DOUBLE-RESOLUTION",
+      "severity": "blocking",
+      "file": "src/townlet/effects/executor.py",
+      "preflight_line": 173,
+      "execution_line": 463,
+      "trigger": "Supported stochastic collection_expr=uniform(0.0, 2.0) under a valid engine-owned FOR_EACH command",
+      "behavior": "Preflight consumes a random draw to authorize one target, execution consumes another draw and mutates another target; even fully permitted behavior/RNG changes. Seed1 expected[3,9], observed[9,3].",
+      "required_fix": "Authorize and execute the same resolved operation target plan; do not re-evaluate collection expressions for preflight and execution.",
+      "reproducer": "/tmp/epistemic-for-each-double-resolution.py",
+      "red_log": "/tmp/epistemic-for-each-double-resolution.log"
+    }
+  ],
+  "blocking_source_findings": [],
+  "graph_summary": {
+    "source_commit": "b70fda104e5061ed2735e8b31b7f8f9caaf99f19",
+    "staleness": "fresh",
+    "unresolved_candidates": 70,
+    "unmatched": [],
+    "limitations": [
+      "Python AST records syntactic sites, not runtime receiver types. Dynamic getattr test dispatch is separately retained.",
+      "General mapping get/set excluded unless registry receiver spelling or explicit role identifies VFS usage.",
+      "This supplements the Loomweave graph; it does not claim complete dynamic call-graph traversal."
+    ]
+  },
+  "terminal_parent_comparator": {
+    "baseline_source": "0fdb16eadfa7e4096a238959ba113e92e90fb5af",
+    "case_count": 31,
+    "cpu_count": 10,
+    "qualified": true,
+    "reading_count": 884,
+    "reset_count": 11,
+    "reset_failed": false,
+    "source_commit": "b70fda104e5061ed2735e8b31b7f8f9caaf99f19",
+    "stale_attributions": [],
+    "trace_failed": false,
+    "unattributed": [],
+    "exit_code": 0,
+    "terminal_exit_source": "root tool session83374",
+    "exact_attribution_count": 150
+  },
+  "terminal_frozen_comparator": {
+    "source_commit": "b70fda104e5061ed2735e8b31b7f8f9caaf99f19",
+    "clean": true,
+    "oracle_commit": "4222a9176e68e232a0e46c7004183440e27f22c3",
+    "counts": {
+      "DIVERGED_AS_REGISTERED": 10,
+      "SKIPPED": 10
+    },
+    "exit_code": 0,
+    "terminal_exit_source": "root tool session50962"
+  },
+  "full_suite_status": {
+    "session_id": 51439,
+    "exit_code": 0,
+    "source_commit": "b70fda104e5061ed2735e8b31b7f8f9caaf99f19",
+    "log": "/tmp/epistemic-final-full-suite.log",
+    "pending": false,
+    "passed": 4250,
+    "skipped": 18,
+    "warnings": 15,
+    "seconds": 1561.29,
+    "coverage_percent": 85
+  },
+  "decision": {
+    "implementation": "GO",
+    "source_commit": "b70fda104e5061ed2735e8b31b7f8f9caaf99f19",
+    "conditions_remaining_for_implementation_acceptance": [],
+    "delivery_stages_pending": [
+      "committed accepting decision",
+      "authorized local merge and preservation receipt"
+    ],
+    "unperformed": [
+      "push",
+      "hosted CI",
+      "deployment",
+      "CUDA qualification",
+      "learning convergence"
+    ]
+  }
+}

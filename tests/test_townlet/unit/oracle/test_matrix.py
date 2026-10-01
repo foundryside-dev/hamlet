@@ -7,8 +7,14 @@ from pathlib import Path
 
 import pytest
 
-from townlet.oracle.matrix import Cell, RegisteredDivergence, RegisteredHashDivergence, default_cells
+from townlet.oracle.matrix import (
+    Cell,
+    RegisteredDivergence,
+    RegisteredHashDivergence,
+    default_cells,
+)
 from townlet.oracle.trace_io import RunParams
+from townlet.universe.declarations import DeclarationStore
 
 LEVELS = (
     "L0_0_minimal",
@@ -164,7 +170,7 @@ def test_standing_and_differential_cells_bind_div009_narrowly() -> None:
         if c.params.pack in _PROFILE_VARIABLE_CELLS:
             continue
         assert c.expected is None, f"{c.cell_id} declares an old-side-crash expectation"
-        assert c.pack_divergence == "DIV-008", f"{c.cell_id}: the vfs_profiles.yaml drift is DIV-008's row"
+        assert c.pack_divergence == "DIV-015", f"{c.cell_id}: static access input inventory must retain inherited rows"
         div009 = [d for d in c.hash_divergences if d.register_ref == "DIV-009"]
         assert len(div009) == 1, f"{c.cell_id} does not bind exactly one DIV-009 entry"
         assert div009[0].declared == {
@@ -195,7 +201,10 @@ def test_standing_and_differential_cells_bind_div010_and_div008_narrowly() -> No
             continue
         div010 = [d for d in c.hash_divergences if d.register_ref == "DIV-010"]
         assert len(div010) == 1, f"{c.cell_id} does not bind exactly one DIV-010 entry"
-        assert div010[0].declared == {"variable_schema_hash", "vfs_hash"}, f"{c.cell_id}: DIV-010 hash_fields do not match measurement"
+        assert div010[0].declared == {
+            "variable_schema_hash",
+            "vfs_hash",
+        }, f"{c.cell_id}: DIV-010 hash_fields do not match measurement"
         assert not [
             d for d in c.hash_divergences if d.register_ref == "DIV-011"
         ], f"{c.cell_id} still binds DIV-011, which retired into DIV-008"
@@ -207,7 +216,9 @@ def test_standing_and_differential_cells_bind_div010_and_div008_narrowly() -> No
             "environment_hash",
             "stratum_hash",
         }, f"{c.cell_id}: DIV-012 hash_fields do not match measurement"
-        assert len(c.hash_divergences) == 4, f"{c.cell_id} should bind exactly DIV-009 + DIV-010 + DIV-012 + DIV-008"
+        assert (
+            len(c.hash_divergences) == 6
+        ), f"{c.cell_id} should bind historical four entries plus independently attributed DIV-014 and DIV-015"
 
 
 def test_every_cell_binds_div008_hash_and_stream_narrowly() -> None:
@@ -270,9 +281,10 @@ def test_profile_variable_cells_declare_their_pack_drift() -> None:
     What survives is the pack-drift declaration, re-pointed by measurement:
     effects_smoke drifts on effects.yaml (Task 10's required max_active_effects) AND
     vfs_profiles.yaml (DIV-006's old schema hold) -> DIV-008, which enumerates both rows.
-    items_smoke keeps DIV-007 — its fixture still carries the stale, never-loaded
+    items_smoke's prior DIV-007 row — its fixture still carries the stale, never-loaded
     levels/L0_smoke/brain.yaml stub the PDR-0027 cut deleted from the live pack; its own
-    effects.yaml row is enumerated in DIV-008's table, since pack_divergence is one string."""
+    effects.yaml row is enumerated in DIV-008's table. Cut A supersedes its input
+    binding with DIV-013, preserving all inherited rows."""
     profile = [c for c in default_cells() if c.params.pack in _PROFILE_VARIABLE_CELLS]
     assert len(profile) == 4
     for c in profile:
@@ -280,10 +292,7 @@ def test_profile_variable_cells_declare_their_pack_drift() -> None:
         assert not [
             d for d in c.hash_divergences if d.register_ref == "DIV-006"
         ], f"{c.cell_id} still binds DIV-006, which retired into DIV-008"
-        if c.params.pack == "configs/test/effects_smoke":
-            assert c.pack_divergence == "DIV-008"
-        else:
-            assert c.pack_divergence == "DIV-007", f"{c.cell_id}: items_smoke's fixture keeps the deleted brain.yaml stub (DIV-007)"
+        assert c.pack_divergence == "DIV-015", f"{c.cell_id}: static access preserves every inherited input row"
 
 
 def test_profile_variable_cells_bind_div009_narrowly() -> None:
@@ -297,7 +306,11 @@ def test_profile_variable_cells_bind_div009_narrowly() -> None:
     for c in profile:
         div009 = [d for d in c.hash_divergences if d.register_ref == "DIV-009"]
         assert len(div009) == 1, f"{c.cell_id} does not bind exactly one DIV-009 entry"
-        assert div009[0].declared == {"actions_hash", "pack_brain_hash", "transition_graph_hash"}
+        assert div009[0].declared == {
+            "actions_hash",
+            "pack_brain_hash",
+            "transition_graph_hash",
+        }
 
 
 def test_profile_variable_cells_bind_div010_narrowly() -> None:
@@ -326,7 +339,9 @@ def test_profile_variable_cells_bind_div010_narrowly() -> None:
             "environment_hash",
             "stratum_hash",
         }, f"{c.cell_id}: DIV-012 hash_fields do not match measurement (profile cells exclude affordances_hash)"
-        assert len(c.hash_divergences) == 4, f"{c.cell_id} should bind exactly DIV-009 + DIV-010 + DIV-012 + DIV-008"
+        assert (
+            len(c.hash_divergences) == 6
+        ), f"{c.cell_id} should bind historical four entries plus independently attributed DIV-014 and DIV-015"
 
 
 def test_differential_cells_run_their_declared_levels() -> None:
@@ -336,31 +351,28 @@ def test_differential_cells_run_their_declared_levels() -> None:
         assert c.params.level == _DIFFERENTIAL_LEVELS[Path(c.params.pack).name]
 
 
-def test_profile_variable_cells_are_the_packs_with_a_populated_obs_vfs_block() -> None:
-    """The profile-variable cells exist to see unit 3 (hamlet-f0ed709ecf). A
-    pack in this block whose vfs_profiles.yaml declares no variables would be
-    a cell that reads green about that cut while measuring nothing — the
-    silent-and-green failure PDR-0052 names. So each declared pack must
-    actually declare at least one profile variable, at the level the cell
-    runs."""
-    import yaml
-
+def test_profile_variable_cells_declare_world_or_item_state() -> None:
+    """The historical profile cells must still exercise variable publication
+    after Cut B replaces the profile transport with canonical declarations."""
     root = Path(__file__).resolve().parents[4]
     profile = [c for c in default_cells() if c.params.pack in _PROFILE_VARIABLE_CELLS]
     assert {c.params.pack for c in profile} == set(_PROFILE_VARIABLE_CELLS)
     for c in profile:
         assert c.params.level == _PROFILE_VARIABLE_CELLS[c.params.pack]
-        doc = yaml.safe_load((root / c.params.pack / "vfs_profiles.yaml").read_text())
+        store = DeclarationStore.discover(root / c.params.pack)
+        store.errors.check_and_raise()
+        declaration = store.get("variables", None)
+        assert declaration is not None
 
         def count(node: object) -> int:
             if isinstance(node, dict):
-                own = len(node["variables"]) if isinstance(node.get("variables"), list) else 0
+                own = len(node["declarations"]) if isinstance(node.get("declarations"), list) else 0
                 return own + sum(count(v) for v in node.values())
             if isinstance(node, list):
                 return sum(count(v) for v in node)
             return 0
 
-        assert count(doc) > 0, f"{c.params.pack} declares no profile variables — it cannot see the obs_vfs split"
+        assert count(declaration.payload) > 0, f"{c.params.pack} declares no variables — its observation witness is vacuous"
 
 
 def test_differential_packs_vary_only_the_declared_axis() -> None:
@@ -553,3 +565,38 @@ def test_stream_divergence_bindings_bind_entries_with_the_stream_scoped_shape() 
             f"cell {cell.cell_id} binds {sd.register_ref} as a stream-scoped divergence, but "
             f"that entry does not declare `Harness shape: stream-scoped`"
         )
+
+
+def test_cut_b_scope_binding_adds_attribution_without_widening_historical_outputs() -> None:
+    """Scope and canonical descriptor movements have separately measured causes."""
+    for cell in default_cells():
+        cut_b = [entry for entry in cell.hash_divergences if entry.register_ref == "DIV-014"]
+        assert len(cut_b) == 1
+        expected = {"environment_hash", "observation_schema_hash", "vfs_hash"}
+        if cell.params.pack in _PROFILE_VARIABLE_CELLS:
+            expected.add("variable_schema_hash")
+        assert cut_b[0].declared == expected
+        assert cell.stream_divergence is not None
+        assert cell.stream_divergence.register_ref == "DIV-008"
+        assert cell.stream_divergence.declared == {"obs"}
+        assert [entry.register_ref for entry in cell.hash_divergences] == [
+            "DIV-009",
+            "DIV-010",
+            "DIV-012",
+            "DIV-008",
+            "DIV-014",
+            "DIV-015",
+        ]
+
+
+def test_static_access_binding_adds_only_qualified_variable_identity_and_vfs() -> None:
+    """DIV-015 adds its own narrow cause while historical outputs remain pinned."""
+    for cell in default_cells():
+        static_access = [entry for entry in cell.hash_divergences if entry.register_ref == "DIV-015"]
+        assert len(static_access) == 1
+        assert static_access[0].declared == {"variable_schema_hash", "vfs_hash"}
+        assert cell.pack_divergence == "DIV-015"
+        assert cell.stream_divergence is not None
+        assert cell.stream_divergence.register_ref == "DIV-008"
+        assert cell.stream_divergence.declared == {"obs"}
+        assert cell.scripted_actions is False

@@ -70,7 +70,13 @@ def test_agent_ref_traversal_reads_target_bar_and_vfs():
 def test_item_ref_traversal_reads_item_vfs():
     class _Profile:
         def __init__(self):
-            self.variables = [type("Var", (), {"name": "quality", "type": "scalar"})()]
+            self.variables = [
+                type(
+                    "Var",
+                    (),
+                    {"name": "quality", "type": "scalar", "readable_by": ("engine", "agent"), "writable_by": ("engine",), "exposed_to": ()},
+                )()
+            ]
 
     registry = _registry_with_refs(max_items=2, item_profiles={"tool": _Profile()})
     registry.register_item_instance(vfs_index=0, profile_name="tool")

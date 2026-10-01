@@ -1477,3 +1477,213 @@ traceback-boilerplate signatures. Matrix-side tests require every declared ref t
 `## DIV-NNN` heading in this file **and** that entry to carry a machine-readable
 `Harness shape: old-side-crash` line — an entry predicting any other diff shape cannot be
 bound, which is what stops a typo-bind from certifying the wrong entry.
+
+## DIV-013 — Declaration-store Cut A: input transport drift only; compiled semantics preserved
+
+- **Status:** measured 2026-10-01 at `144788f8`: CPU matrix exit 0, ten CPU cells
+  `DIVERGED_AS_REGISTERED`, ten CUDA cells skipped. Report retained in
+  `docs/product/evidence/declaration-cut-a/cpu-matrix.json`; formal acceptance remains
+  separate from this engineering reading.
+- **Harness shape: pack-drift-only**. No hash fields or trace streams are declared by
+  this entry. The existing DIV-008/009/010/012 output bindings remain unchanged.
+- **Cause:** PRD-0002/PDR-0147 replaces filename dispatch with declaration discovery.
+  The original five ignored/misplaced `items_smoke` documents are banked in a refusal
+  fixture before deletion. Default L3's day length now references the existing declared
+  clock period; its effective value remains 24. The root VFS comment explains that reference.
+- **Binding:** default_curriculum and items_smoke name DIV-013 on the input axis only.
+  This supersedes their DIV-008/DIV-007 *input bindings*, preserving all inherited rows
+  below. Neither earlier output divergence is retired or broadened.
+
+Complete Cut A frozen/live input delta (before Cut B; the frozen tree is unchanged):
+
+| Pack | Delta | Attribution |
+|---|---|---|
+| default_curriculum | differing: levels/L3_temporal_mechanics/curriculum.yaml | Cut A period reference, same compiled 24 |
+| default_curriculum | differing: vfs_profiles.yaml | prior DIV-008 authored clock; Cut A comment only |
+| default_curriculum | differing: environment.yaml, stratum.yaml | inherited prior schema/content cuts, including DIV-012 |
+| default_curriculum | differing: levels/L2_partial_observability/curriculum.yaml | inherited pre-Cut-A curriculum drift |
+| test/items_smoke | only_in_frozen: affordances.yaml, bars.yaml, drive_as_code.yaml, substrate.yaml, training.yaml | Cut A deletes originally unconsumed/mis-scoped documents |
+| test/items_smoke | only_in_frozen: levels/L0_smoke/brain.yaml | inherited DIV-007 stale stub deletion |
+| test/items_smoke | differing: effects.yaml | inherited DIV-008 effect budgets |
+| test/items_smoke | differing: environment.yaml, stratum.yaml | inherited prior schema/content cuts, including DIV-012 |
+| test/items_smoke | differing: vfs_profiles.yaml | inherited unit-5 medical durability exposure |
+
+The before-snapshot is committed at `ee520090` before production edits: 31 cases,
+884 readings. Cut A must preserve all 853 semantic readings; only the raw input digest
+may move on these two packs. A new output mover invalidates this cut and cannot be
+covered by this input-only entry. The CPU matrix must still match every output
+outside the pre-existing registered sets.
+
+The harness's input flag is a boolean gate, not a row-wise validator. That existing
+limitation is retained explicitly: the table is checked against measured byte deltas,
+and new tests pin these two deltas. No new permissive harness mechanism is introduced.
+CUDA is unmeasured by this Cut A acceptance unless separately reported.
+
+## DIV-014 — Declaration-store Cut B: canonical variables and explicit token scope
+
+- **Status:** locally CPU-qualified at clean checkpoint
+  `baced7dba659ab2024a3f164f18c450695000362`. Both the exact direct-parent
+  comparator and frozen CPU matrix exit 0. Product acceptance and delivery
+  are recorded separately; this register is causal evidence.
+- **Harness shape: hash-only**. No trace-stream allowance is added by this entry.
+  The fixed oracle retains DIV-008's historical observation-stream binding; the
+  direct Cut A parent comparison inherits no observation allowance.
+- **Input binding:** all six matrix packs name DIV-014. It supersedes their
+  DIV-008/DIV-013 input bindings only, preserving inherited frozen/live rows.
+  `docs/oracle/declaration-cut-b-inputs.json` pins the complete byte inventory;
+  a boolean `pack_divergence` gate alone cannot validate it.
+- **Scope:** PRD-0003 / PDR-0147. One explicit variable declaration replaces the
+  environment/profile/overlay surfaces. Access-role authoring remains excluded.
+  Neither frozen fixtures nor the oracle worktree is modified.
+
+### Separately measured causes
+
+Task 2 (`8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3`), before canonical declarations
+changed, adds required `SlotBinding.scope`. Only variable-element binding scopes
+enter the semantic observation payload. Compact transport identity remains
+unchanged: scope selects an owner/publisher, not a row width or ordering. The
+complete 31-case / 884-reading scope-only census records **106 movers**,
+exclusively per-level `observation_schema_hash` and composite `vfs_hash`.
+All layout, variable-schema, environment and other readings remain identical.
+Evidence: `docs/product/evidence/declaration-cut-b/scope-only-hashes.json`.
+
+Task 3 (`8060ef19b820ddada047570825865b69e6b38b3b`) removes `EnvironmentConfigRoot.variables`, including empty lists. The raw
+`environment_hash` is computed over the resulting DTO dump, so it moves on every
+case even when that case declared no environment variables. This structural
+movement is isolated from Task 2: all 31 environment hashes were unchanged at
+`8a234b61`. Canonical transport replacement changes all 31 raw input digest
+readings (`metadata.config_hash`). Those digests are census/input evidence,
+not an additional driver output field.
+
+The variable schema moves on only **12 readings over nine packs**:
+
+| Pack | Canonical variable-schema change |
+|---|---|
+| `L5_multi_agent` | `trust` and `occupied_by` lose old reader/writer role metadata in favor of the one fixed engine policy |
+| `test/effects_smoke` | unexposed `position` loses inert normalization range and redundant fixed-vector `dims`; `digesting` loses the old `actions` writer |
+| `test/items_smoke` | unexposed `position` loses inert normalization range and redundant fixed-vector `dims`; `has_food` loses the old `actions`/`bac` writers |
+| `test/gridnd_4d_pack`, `test/model_config`, `test/token_set_smoke` | unexposed `position` loses inert normalization range |
+| `test/vfs_bar_access`, `test/vfs_dependency_chain`, `trial_k_cold` | unexposed `position` loses inert normalization range and redundant fixed-vector `dims` |
+
+The canonical schema includes `id`, type, scope, dimensions, lifetime, sorted
+reader/writer lists and normalization range. It excludes descriptions,
+`semantic_type` and `exposed_to`; descriptor order is sorted by ID. Consequently,
+the added semantic/exposure metadata, authored descriptions and one profile ID
+order correction produce product diffs without being variable-schema causes.
+No default value, lifetime, type, scope or registry capacity changes appear in
+the exhaustive product diffs. `canonical-schema-attribution.json` independently
+reconstructs each changed before/after canonical payload and verifies its SHA256
+against the measured hash. The role-policy simplification is intentional and
+bounded; it does not implement new privacy/access-role authoring.
+
+The final diagnostic inventory is **180 census hash changes**:
+53 observation-schema readings, 53 VFS composite readings, 31 raw environment
+readings, 31 transport digest readings and 12 variable-schema readings. Counts
+include repeated all-level projections across selected-primary compilation
+cases; they are not a count of distinct worlds. All observation hashes equal
+the separately measured scope-only hashes, so Task 3 adds no observation-identity
+movement. VFS differences arise from the observation input and, on those nine
+packs, the variable-schema input; action and transition inputs remain unchanged.
+
+The ten direct-parent CPU replays show **32 selected trace-hash changes**:
+observation, environment and VFS on all ten cells, plus variable schema on the
+two profile cells. Every observation/action/done/reward array remains byte-exact.
+The eleven reset/step/reset state censuses have zero differences. This working-tree
+diagnostic establishes attribution and behavior for its measured source; the
+final clean-tip run must repeat it before acceptance.
+
+### Exact matrix bindings
+
+| Block | DIV-014 fields |
+|---|---|
+| standing and differential (16 declared CPU/CUDA cells) | `environment_hash`, `observation_schema_hash`, `vfs_hash` |
+| profile (4 declared CPU/CUDA cells) | the same three, plus `variable_schema_hash` |
+
+Older DIV-008/009/010/012 hash sets remain unchanged. These fields already differ
+against the fixed oracle for older causes, so adding overlapping DIV-014 bindings
+records B's separately measured causes without enlarging the permitted union.
+No layout or token-type-schema movement is attributed to B. The parent comparison
+is essential: a green frozen matrix alone could not isolate this cut from the
+older registered changes.
+
+### Complete frozen/live input delta
+
+All packs replace frozen `vfs_profiles.yaml` with live `variables.yaml`.
+`effects_smoke` and `items_smoke` also remove frozen `variables_reference.yaml`.
+Every differing `environment.yaml` now combines inherited schema/content changes
+with removal of its old variable declaration field. All other rows below are
+inherited from DIV-007/008/012/013 and remain explicitly present:
+
+| Pack | Only in frozen | Only in live | Differing bytes |
+|---|---|---|---|
+| `default_curriculum` | `vfs_profiles.yaml` | `variables.yaml` | `environment.yaml`, `stratum.yaml`, `levels/L2_partial_observability/curriculum.yaml`, `levels/L3_temporal_mechanics/curriculum.yaml` |
+| `differential/boundary_wrap` | `vfs_profiles.yaml` | `variables.yaml` | `environment.yaml`, `stratum.yaml` |
+| `differential/div003_cubic_partial` | `vfs_profiles.yaml` | `variables.yaml` | `environment.yaml`, `stratum.yaml`, `levels/L2_partial_observability/curriculum.yaml` |
+| `differential/div003_rect` | `vfs_profiles.yaml` | `variables.yaml` | `environment.yaml`, `stratum.yaml` |
+| `test/effects_smoke` | `variables_reference.yaml`, `vfs_profiles.yaml` | `variables.yaml` | `effects.yaml`, `environment.yaml`, `stratum.yaml` |
+| `test/items_smoke` | `affordances.yaml`, `bars.yaml`, `drive_as_code.yaml`, `levels/L0_smoke/brain.yaml`, `substrate.yaml`, `training.yaml`, `variables_reference.yaml`, `vfs_profiles.yaml` | `variables.yaml` | `effects.yaml`, `environment.yaml`, `stratum.yaml` |
+
+The JSON inventory pins every frozen and live file's SHA256, including unchanged
+files, and the exact delta categories. Tests reject an unrelated content edit
+within an already-declared differing file as well as a new or removed file.
+This guard supplements the existing boolean harness mechanism; it does not
+create a new permissive adjudication shape.
+
+### Final local CPU qualification
+
+At clean checkpoint `baced7dba659ab2024a3f164f18c450695000362`, both CPU gates
+returned 0. The frozen matrix reported ten CPU `DIVERGED_AS_REGISTERED` cells and
+ten explicit CUDA skips. The direct-parent comparison qualified all 31 cases /
+884 readings and exactly 212 attributed identity movements, with no stale or
+unexplained entries. All four streams in ten trajectories and eleven reset
+censuses matched the parent byte-for-byte. Input provenance and canonical
+causes remain bound to `8060ef19`; final measured source is `baced7db`.
+Reports and commands are banked under `docs/product/evidence/declaration-cut-b`.
+Full local, integration and hosted product acceptance gates are recorded there
+separately; the CPU result does not imply their completion.
+No convergence, browser, CUDA execution or full variable/privacy-system
+completion is claimed by the registration.
+
+
+## DIV-015 — Static epistemic access: qualified policy identity
+
+- **Status:** qualified at clean source `b70fda104e5061ed2735e8b31b7f8f9caaf99f19`;
+  direct-parent and frozen CPU gates returned zero. All 150 identity changes are
+  exactly attributed; streams and resets remain unchanged. The earlier 91374849
+  diagnostic deliberately omitted attributions and exited 1; it is not a passing gate.
+- **Harness shape: hash-only**: `variable_schema_hash` and `vfs_hash` on every matrix cell.
+  No stream, observation, layout, action or transition allowance is introduced.
+- **Scope:** PRD-0004 static engine/agent roles. Owner, spatial and dynamic epistemic
+  propagation remain excluded. Frozen source and input fixtures are unchanged.
+- **Input binding:** DIV-015 supersedes DIV-014 for the six matrix packs. The
+  complete frozen/live file digests and exact drift rows are retained in
+  [frozen-live-inputs](../product/evidence/static-epistemic-access/frozen-live-inputs.json).
+  Existing inherited drift remains explicitly listed. The harness's boolean input
+  gate is unchanged; independent review and exact inventory tests pin these rows.
+  The harness gate itself is not a row-wise validator.
+
+### Measured causes
+
+The 31-case, 884-reading bank predates product edits. There are 130 census movers:
+53 variable-schema hashes, their 53 VFS composites, and 24 raw transport fingerprints.
+The ten CPU trajectories add 20 selected hash movers (variable schema and VFS).
+All observation/action/reward/done bytes and all eleven reset censuses remain exact.
+
+`30b6adaa3a53abf8e02ce7d053aca895eb5a7f6b` adds required authored role fields;
+existing variables keep their permitted policy. Only packs with variable declarations
+change YAML bytes; repeated primary-level projections account for the 24 transport
+readings. Empty declaration files do not acquire a behavioral default.
+
+`3db56521ff823c7108ae6a53688c95726efd9be5` adds tagged registry identities and `(item, profile, variable)` descriptors
+including hidden item permissions, type, dimensions, lifetime and normalization range.
+The [canonical reconstruction](../product/evidence/static-epistemic-access/canonical-schema-attribution.json)
+independently reproduces every before hash and verifies all 53 after hashes. Ordinary
+sorted descriptor payloads remain identical; namespace tags and the qualified item
+roster are the added semantic inputs. Observation, action and transition hash inputs
+remain identical. The existing four-term VFS composition is unchanged.
+
+Every exact case/field/before/after value and its causing commit is recorded in
+[attributions](../product/evidence/static-epistemic-access/attributions.json).
+Older DIV-008/009/010/012/014 field sets remain unchanged. Their overlaps with DIV-015
+record separate causes; they do not excuse a direct-parent numeric difference.
+The new witness pack is independently qualified, outside the inherited equivalence bank.

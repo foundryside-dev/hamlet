@@ -15,6 +15,7 @@ import yaml
 from townlet.config.brain_config import apply_training_overrides, compute_brain_hash
 from townlet.effects.catalog import EffectCatalog
 from townlet.universe.compiled import CompiledUniverse
+from townlet.universe.declarations import DeclarationStore, config_documents
 from townlet.universe.dto import UniverseMetadata
 from townlet.universe.error_codes import ErrorCode
 from townlet.universe.raw_configs_v21 import RawConfigsV21
@@ -41,10 +42,8 @@ from .compilers.observation import ObservationCompiler
 from .compilers.optimization import OptimizationCompiler
 from .compilers.vfs import VFSCompiler
 from .errors import CompilationError, CompilationMessage
-from .loaders.preflight import validate_config_dir, validate_scoping, validate_yaml_syntax
-from .loaders.v21 import load_v21_configs
+from .loaders.preflight import validate_config_dir
 from .pipeline import CompiledLevelBundle, SharedCompilerArtifacts
-from .source_map import build_pack_source_map
 from .stages import CompilationStage
 from .validation.limits import (
     MAX_CACHE_FILE_SIZE,
@@ -90,7 +89,7 @@ class UniverseCompiler:
         validate_config_dir(experiment_dir)
 
         # Stage 0 preflight: scoping (no YAML parsing yet)
-        validate_scoping(experiment_dir)
+        declarations = DeclarationStore.discover(experiment_dir)
 
         # The cache path is derived from primary_level, so an unknown level must be
         # rejected BEFORE it can name an artifact. Exact-name membership against the
@@ -137,16 +136,15 @@ class UniverseCompiler:
                     logger.info("Cached universe at %s missing fingerprint/provenance fields; recompiling.", cache_path)
 
         # Stage 0 preflight: YAML syntax validation (lightweight)
-        validate_yaml_syntax(experiment_dir)
 
         self._log_stage(CompilationStage.PARSE)
-        raw = load_v21_configs(experiment_dir)
-        # Parallel line-annotating parse for file:line diagnostics; the DTOs
-        # never see it (its __line__ keys would violate extra="forbid").
-        source_map = build_pack_source_map(experiment_dir)
+        raw = RawConfigsV21.from_declarations(declarations)
+        # Discovery retains source marks outside authored mapping keys;
+        # the typed declaration products never receive metadata fields.
+        source_map = declarations.source_map
 
         self._log_stage(CompilationStage.LIMITS)
-        validate_v21_limits(raw, experiment_dir)
+        validate_v21_limits(raw, experiment_dir, source_map)
 
         self._log_stage(CompilationStage.SEMANTICS)
         validate_v21_semantics(raw, experiment_dir, source_map)
@@ -156,6 +154,10 @@ class UniverseCompiler:
 
         self._log_stage(CompilationStage.RESOLVE)
         resolve_references(raw, symbol_table, experiment_dir, source_map)
+
+        from townlet.universe.validation.static_access import validate_static_write_targets
+
+        validate_static_write_targets(raw, source_map)
 
         temporal_supported = raw.stratum.stratum.temporal_support == "enabled"
 
@@ -174,7 +176,7 @@ class UniverseCompiler:
             raise self._vfs_domain_compilation_error(
                 CompilationStage.SHARED.label,
                 ErrorCode.VFS_PROFILE_COMPILE,
-                experiment_dir / "vfs_profiles.yaml",
+                Path(source_map.lookup("variables") or f"{experiment_dir}:1"),
                 exc,
             ) from exc
 
@@ -278,7 +280,7 @@ class UniverseCompiler:
         primary_level_config = raw.levels[primary_level]
         bar_schema: dict[str, str] = {meter.name: "float" for meter in primary_level_config.bars.meters}
 
-        compiled_vfs_profiles = self._vfs_compiler.compile_profiles(raw.vfs_profiles, experiment_dir, bar_schema)
+        compiled_vfs_profiles = self._vfs_compiler.compile_profiles(raw.variables, bar_schema)
         self._vfs_compiler.validate_item_profile_bindings(raw.items, compiled_vfs_profiles)
 
         from townlet.vfs.history import collect_history_requirements
@@ -287,7 +289,7 @@ class UniverseCompiler:
 
         effects_schema = self._effects_compiler.build_schema(
             bar_names=tuple(meter.name for meter in primary_level_config.bars.meters),
-            environment_variables=tuple(getattr(raw.environment.environment, "variables", ()) or ()),
+            variables=raw.variables,
             compiled_vfs_profiles=compiled_vfs_profiles,
         )
 
@@ -338,7 +340,7 @@ class UniverseCompiler:
             self._vfs_compiler.compile_item_spawn_conditions(
                 level.items_appearance,
                 bar_schema=bar_schema,
-                env_vars=getattr(raw.environment.environment, "variables", []) or [],
+                variables=raw.variables,
                 compiled_vfs_profiles=compiled_vfs_profiles,
                 temporal_supported=temporal_supported and level.curriculum.curriculum.active_temporal,
             )
@@ -348,13 +350,10 @@ class UniverseCompiler:
                 meter_metadata,
                 affordance_metadata,
                 action_metadata,
+                source_map=raw.source_map,
+                level_name=level_name,
             )
-            base_vfs_variables = self._observation_compiler.build_vfs_variables(raw.environment)
-            vfs_variables = self._vfs_compiler.build_runtime_variables(
-                base_vfs_variables,
-                compiled_vfs_profiles,
-                raw.variables_reference,
-            )
+            vfs_variables = self._vfs_compiler.build_runtime_variables(raw.variables)
 
             # The token observation artifact IS the compiler's observation product
             # (unit-3 Task-10 cut). It is built BEFORE `observation_schema_hash`, which
@@ -367,7 +366,6 @@ class UniverseCompiler:
                 level.affordances,
                 raw.items,
                 compiled_effect_catalog,
-                raw.environment,
                 compiled_vfs_profiles,
                 vfs_variables,
                 # The EFFECTIVE brain for this level (PDR-0027 selection, same as stage 8).
@@ -379,7 +377,8 @@ class UniverseCompiler:
                 logger.warning("[%s] %s", level_name, advisory)
 
             observation_schema_hash = compute_observation_schema_hash(token_spec)
-            variable_schema_hash = compute_variable_schema_hash(vfs_variables)
+            assert compiled_vfs_profiles is not None and compiled_vfs_profiles.item_profiles is not None
+            variable_schema_hash = compute_variable_schema_hash(vfs_variables, compiled_vfs_profiles.item_profiles)
             transition_schedule = build_vtc_transition_schedule(
                 runtime_action_space=runtime_action_space,
                 level=level,
@@ -453,7 +452,7 @@ class UniverseCompiler:
 
         vfs_expression_schema = self._vfs_compiler.build_expression_schema(primary_level_config.bars, compiled_vfs_profiles)
 
-        vfs_evaluation_marks = self._vfs_compiler.derive_evaluation_marks(raw.vfs_profiles, raw.variables_reference)
+        vfs_evaluation_marks = self._vfs_compiler.derive_evaluation_marks(raw.variables)
 
         return CompiledLevelBundle(
             all_levels=all_levels,
@@ -543,8 +542,10 @@ class UniverseCompiler:
     def _normalize_yaml(self, file_path: Path) -> str:
         try:
             with file_path.open() as handle:
-                data = yaml.safe_load(handle) or {}
-            return yaml.dump(data, sort_keys=True)
+                documents = list(yaml.safe_load_all(handle))
+            if len(documents) == 1:
+                return yaml.dump(documents[0] or {}, sort_keys=True)
+            return yaml.safe_dump_all(documents, sort_keys=True)
         except yaml.YAMLError as exc:
             # Transform raw YAML errors into friendly syntax errors
             error_msg = str(exc)
@@ -560,7 +561,7 @@ class UniverseCompiler:
                     CompilationMessage(
                         code=ErrorCode.YAML_SYNTAX_ERROR,
                         message=error_msg,
-                        location=str(file_path),
+                        location=f"{file_path}:{getattr(getattr(exc, 'problem_mark', None), 'line', 0) + 1}",
                     )
                 ],
                 hints=[
@@ -652,13 +653,7 @@ class UniverseCompiler:
 
     def _compute_config_hash(self, config_dir: Path) -> str:
         # Include root YAML files and any hierarchical level YAMLs.
-        yaml_files = sorted(config_dir.glob("*.yaml"))
-
-        levels_dir = config_dir / "levels"
-        if levels_dir.exists():
-            yaml_files.extend(sorted(levels_dir.rglob("*.yaml")))
-
-        # v2.1 actions are per-experiment via actions.yaml or embedded in training.yaml.
+        yaml_files = config_documents(config_dir)
 
         digest = hashlib.sha256()
         for file_path in yaml_files:
@@ -676,11 +671,7 @@ class UniverseCompiler:
         This ensures cache is invalidated when ANY config file changes
         (including comment/whitespace-only changes).
         """
-        yaml_files = sorted(config_dir.glob("*.yaml"))
-
-        levels_dir = config_dir / "levels"
-        if levels_dir.exists():
-            yaml_files.extend(sorted(levels_dir.rglob("*.yaml")))
+        yaml_files = config_documents(config_dir)
 
         max_mtime = 0.0
         for file_path in yaml_files:

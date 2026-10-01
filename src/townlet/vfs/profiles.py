@@ -7,15 +7,11 @@ from dataclasses import dataclass
 
 import networkx as nx  # type: ignore[import-untyped]
 
-from townlet.config.vfs_profiles_config import (
-    AgentVFSVariableConfig,
-    GlobalVFSProfileConfig,
-    GlobalVFSVariableConfig,
-    ItemVFSProfileConfig,
-    ItemVFSVariableConfig,
-)
-from townlet.vfs.schema import NormalizationSpec
+from townlet.config.variables_config import VariableDeclaration
+from townlet.vfs.access_policy import validate_static_access
+from townlet.vfs.schema import NormalizationSpec, VariableScope
 from townlet.world.expression import ASTNode, ExpressionParser, PathAccess, Variable
+from townlet.world.expression.ast_nodes import BinaryOp, Constant, FunctionCall, IfThenElse, UnaryOp
 from townlet.world.expression.type_checker import TypeChecker, TypeCheckError
 
 __all__ = [
@@ -43,6 +39,9 @@ class CompiledVariable:
     name: str
     type: str
     exposed_to: tuple[str, ...]
+    lifetime: str
+    readable_by: tuple[str, ...]
+    writable_by: tuple[str, ...]
     expression: str | None = None
     ast: ASTNode | None = None  # None if initial_value
     initial_value: int | float | bool | list | None = None
@@ -51,12 +50,17 @@ class CompiledVariable:
     initial_value_mode: str | None = None
     initial_value_params: dict | None = None
     dims: int | None = None
-    # The author's declared observation group. Set for global and agent profile variables;
-    # None for item variables (PDR-0075).
+    # The author's declared observation group, retained for every compiled scope.
     semantic_type: str | None = None
     # The declared normalization — REQUIRED at exposure, absent when unexposed
     # (token-obs spec §2, normalization authority; hamlet-b8ad2ffcd6).
     normalization: NormalizationSpec | None = None
+
+    def __post_init__(self) -> None:
+        validate_static_access(self.name, self.readable_by, self.writable_by, self.exposed_to)
+        self.readable_by = tuple(self.readable_by)
+        self.writable_by = tuple(self.writable_by)
+        self.exposed_to = tuple(self.exposed_to)
 
 
 @dataclass
@@ -89,20 +93,10 @@ class CircularDependencyError(Exception):
 class VFSProfileCompiler:
     """Compiles VFS profiles with expression dependency resolution."""
 
-    SUPPORTED_VERSIONS = ("1.0",)
-
     def __init__(self):
         self.parser = ExpressionParser()
 
-    def validate_version(self, version: str) -> None:
-        """Ensure the provided config version is supported."""
-        if version not in self.SUPPORTED_VERSIONS:
-            supported = ", ".join(self.SUPPORTED_VERSIONS)
-            raise ValueError(f"Unsupported VFS profiles version '{version}'. Supported versions: {supported}")
-
-    def build_dependency_graph(
-        self, variables: Sequence[GlobalVFSVariableConfig | AgentVFSVariableConfig | ItemVFSVariableConfig]
-    ) -> nx.DiGraph:
+    def build_dependency_graph(self, variables: Sequence[VariableDeclaration]) -> nx.DiGraph:
         """Build dependency graph for variables.
 
         Args:
@@ -115,11 +109,11 @@ class VFSProfileCompiler:
 
         # Add all variables as nodes
         for var in variables:
-            graph.add_node(var.name)
+            graph.add_node(var.id)
 
         # Add edges for expression dependencies
         # Pre-compute variable names as a set for O(1) lookup instead of O(n)
-        variable_names = {v.name for v in variables}
+        variable_names = {v.id for v in variables}
 
         for var in variables:
             if var.expression is not None:
@@ -128,7 +122,7 @@ class VFSProfileCompiler:
                 for dep in deps:
                     # Only add edge if dependency is in same profile
                     if dep in variable_names:
-                        graph.add_edge(dep, var.name)
+                        graph.add_edge(dep, var.id)
 
         return graph
 
@@ -182,9 +176,7 @@ class VFSProfileCompiler:
         visit(ast)
         return refs
 
-    def topological_sort(
-        self, variables: Sequence[GlobalVFSVariableConfig | AgentVFSVariableConfig | ItemVFSVariableConfig]
-    ) -> list[GlobalVFSVariableConfig | AgentVFSVariableConfig | ItemVFSVariableConfig]:
+    def topological_sort(self, variables: Sequence[VariableDeclaration]) -> list[VariableDeclaration]:
         """Sort variables in dependency order.
 
         Returns list of variables sorted topologically.
@@ -194,14 +186,14 @@ class VFSProfileCompiler:
         return sorted_vars
 
     def topological_sort_with_dependencies(
-        self, variables: Sequence[GlobalVFSVariableConfig | AgentVFSVariableConfig | ItemVFSVariableConfig]
-    ) -> tuple[list[GlobalVFSVariableConfig | AgentVFSVariableConfig | ItemVFSVariableConfig], dict[str, tuple[str, ...]]]:
+        self, variables: Sequence[VariableDeclaration]
+    ) -> tuple[list[VariableDeclaration], dict[str, tuple[str, ...]]]:
         """Return both sorted variables and dependency map."""
         return self._topological_sort_internal(variables)
 
     def _topological_sort_internal(
-        self, variables: Sequence[GlobalVFSVariableConfig | AgentVFSVariableConfig | ItemVFSVariableConfig]
-    ) -> tuple[list[GlobalVFSVariableConfig | AgentVFSVariableConfig | ItemVFSVariableConfig], dict[str, tuple[str, ...]]]:
+        self, variables: Sequence[VariableDeclaration]
+    ) -> tuple[list[VariableDeclaration], dict[str, tuple[str, ...]]]:
         graph = self.build_dependency_graph(variables)
 
         # Check for cycles
@@ -215,7 +207,7 @@ class VFSProfileCompiler:
             raise CircularDependencyError(f"Circular dependency detected in cycle: {cycle_str}")
 
         # Map names back to variable configs
-        name_to_var = {v.name: v for v in variables}
+        name_to_var = {v.id: v for v in variables}
         sorted_vars = [name_to_var[name] for name in sorted_names]
 
         dependencies: dict[str, tuple[str, ...]] = {}
@@ -227,7 +219,7 @@ class VFSProfileCompiler:
 
     def compile_variable(
         self,
-        var: GlobalVFSVariableConfig | AgentVFSVariableConfig | ItemVFSVariableConfig,
+        var: VariableDeclaration,
         schema: dict[str, str],
     ) -> CompiledVariable:
         """Compile a VFS variable (parse expression, type check).
@@ -249,13 +241,16 @@ class VFSProfileCompiler:
         # why this branch is keyed on the absence of an expression, not the presence of a value.
         if var.expression is None:
             return CompiledVariable(
-                name=var.name,
+                name=var.id,
                 exposed_to=tuple(var.exposed_to),
-                type=var.type,
+                lifetime=var.lifetime,
+                readable_by=tuple(var.readable_by),
+                writable_by=tuple(var.writable_by),
+                type="float" if var.type == "scalar" else var.type,
                 expression=None,
                 ast=None,
                 initial_value=var.initial_value,
-                result_type=var.type,
+                result_type="float" if var.type == "scalar" else var.type,
                 shape=getattr(var, "shape", None),
                 initial_value_mode=getattr(var, "initial_value_mode", None),
                 initial_value_params=getattr(var, "initial_value_params", None),
@@ -273,13 +268,16 @@ class VFSProfileCompiler:
         result_type = type_checker.check(ast)
 
         # Verify result type matches declared type
-        if result_type != var.type:
-            raise TypeCheckError(f"Variable '{var.name}' declared as {var.type} but expression returns {result_type}")
+        if result_type != var.type and not (var.type == "scalar" and result_type in {"int", "float"}):
+            raise TypeCheckError(f"Variable '{var.id}' declared as {var.type} but expression returns {result_type}")
 
         return CompiledVariable(
-            name=var.name,
+            name=var.id,
             exposed_to=tuple(var.exposed_to),
-            type=var.type,
+            lifetime=var.lifetime,
+            readable_by=tuple(var.readable_by),
+            writable_by=tuple(var.writable_by),
+            type="float" if var.type == "scalar" else var.type,
             expression=var.expression,
             ast=ast,
             initial_value=var.initial_value,
@@ -292,18 +290,20 @@ class VFSProfileCompiler:
             normalization=getattr(var, "normalization", None),
         )
 
-    def compile_global_profile(self, profile: GlobalVFSProfileConfig, bar_schema: dict[str, str] | None = None) -> CompiledGlobalProfile:
-        """Compile global VFS profile.
+    def compile_profile(
+        self, variables: Sequence[VariableDeclaration], bar_schema: dict[str, str] | None = None, *, evaluation_mode: str
+    ) -> CompiledGlobalProfile:
+        """Compile one global or agent expression group.
 
         Args:
-            profile: Global profile config
+            variables: Canonical declarations sharing the compiled storage scope
             bar_schema: Type schema for bars (e.g., {"energy": "float"})
 
         Returns:
             Compiled profile with variables in dependency order
         """
         # Sort variables in dependency order
-        sorted_vars, dependencies = self.topological_sort_with_dependencies(profile.variables)
+        sorted_vars, dependencies = self.topological_sort_with_dependencies(variables)
 
         # Build type schema for expression type checking. Ambient engine names (tick)
         # come first so an authored variable of the same name still fails loudly at the
@@ -317,24 +317,100 @@ class VFSProfileCompiler:
 
         # Compile each variable
         compiled_vars = []
+        shapes = {"tick": "scalar"}
+        if bar_schema:
+            shapes.update({f"bar.{bar_name}": "agent" for bar_name in bar_schema})
         for var in sorted_vars:
             compiled = self.compile_variable(var, schema)
+            if compiled.ast is not None:
+                if var.type not in {"scalar", "bool"}:
+                    raise TypeCheckError(f"Variable '{var.id}' expression shape supports scalar and bool outputs only")
+                output_shape = self._expression_shape(compiled.ast, shapes)
+                expected_shape = "agent" if var.scope == VariableScope.AGENT else "scalar"
+                if output_shape != expected_shape:
+                    raise TypeCheckError(
+                        f"Variable '{var.id}' expression shape is {output_shape}, expected {expected_shape} for {var.scope} scope"
+                    )
             compiled_vars.append(compiled)
 
             # Add this variable to schema for subsequent variables
-            schema[var.name] = var.type
+            schema[var.id] = "float" if var.type == "scalar" else var.type
+            if var.type not in {"scalar", "bool"}:
+                shapes[var.id] = "payload"
+            elif evaluation_mode == "eager" and compiled.ast is None:
+                # The existing EAGER evaluator reinitializes static context from the
+                # literal, which has no agent axis. Refuse dependent shape mismatches.
+                shapes[var.id] = "scalar"
+            else:
+                shapes[var.id] = "agent" if var.scope == VariableScope.AGENT else "scalar"
 
         return CompiledGlobalProfile(variables=compiled_vars, dependencies=dependencies)
 
+    @classmethod
+    def _expression_shape(cls, node: ASTNode, shapes: dict[str, str]) -> str:
+        """Prove the currently supported scalar/batch output shape without runtime sampling.
+
+        Batch size remains symbolic: a one-agent execution cannot establish global
+        versus per-agent compatibility. Unqualified shape-changing functions refuse.
+        """
+        if isinstance(node, Constant):
+            return "scalar"
+        if isinstance(node, Variable):
+            if node.name not in shapes:
+                raise TypeCheckError(f"Variable '{node.name}' has no qualified expression shape")
+            return shapes[node.name]
+        if isinstance(node, PathAccess):
+            path = ".".join(node.segments)
+            if path not in shapes:
+                raise TypeCheckError(f"Expression path '{path}' has no qualified variable output shape")
+            return shapes[path]
+        if isinstance(node, UnaryOp):
+            return cls._expression_shape(node.operand, shapes)
+        if isinstance(node, BinaryOp):
+            operands = [node.left, node.right]
+        elif isinstance(node, IfThenElse):
+            operands = [node.condition, node.true_branch, node.false_branch]
+        elif isinstance(node, FunctionCall):
+            pointwise = {
+                "max",
+                "min",
+                "abs",
+                "clamp",
+                "clamp01",
+                "sigmoid",
+                "tanh",
+                "smoothstep",
+                "threshold",
+                "where",
+                "time_in_window",
+                "phase_sin",
+                "phase_cos",
+            }
+            stacked = {"mean", "variance", "sum", "product", "min_all", "max_all", "count_where", "argmin", "argmax", "all", "any"}
+            if node.function_name not in pointwise | stacked:
+                raise TypeCheckError(f"Expression function '{node.function_name}' has no qualified variable output shape")
+            operands = list(node.arguments)
+            if node.function_name in stacked:
+                argument_shapes = {cls._expression_shape(argument, shapes) for argument in operands}
+                if len(argument_shapes) != 1:
+                    raise TypeCheckError(f"Expression function '{node.function_name}' requires equal argument shapes")
+        else:
+            raise TypeCheckError(f"Expression node '{type(node).__name__}' has no qualified variable output shape")
+        operand_shapes = {cls._expression_shape(operand, shapes) for operand in operands}
+        if "payload" in operand_shapes:
+            raise TypeCheckError("Expression shape with vector/tensor payloads is not supported")
+        return "agent" if "agent" in operand_shapes else "scalar"
+
     def compile_item_profile(
         self,
-        profile: ItemVFSProfileConfig,
+        profile_name: str,
+        variables: Sequence[VariableDeclaration],
         bar_schema: dict[str, str],
     ) -> CompiledItemProfile:
         """Compile item VFS profile.
 
         Args:
-            profile: Item profile config from vfs_profiles.yaml
+            profile_name: Named item schema from the variables declaration
             bar_schema: Type schema for bars (for expression type checking)
 
         Returns:
@@ -343,17 +419,17 @@ class VFSProfileCompiler:
         Raises:
             ValueError: If circular dependencies detected
         """
-        for item_var in profile.variables:
+        for item_var in variables:
             if item_var.expression is not None:
                 raise ValueError(
-                    f"Item-profile variable '{item_var.name}' declares an expression, but item-profile "
+                    f"Item-profile variable '{item_var.id}' declares an expression, but item-profile "
                     "expressions have no evaluator (hamlet-bc0a5deeff) — nothing would ever run it. "
                     "Declare initial_value and drive the variable via effects, or wait for the "
                     "evaluation build. Refusing loudly beats silent inertness."
                 )
 
         # Sort variables in dependency order
-        sorted_vars, _ = self.topological_sort_with_dependencies(profile.variables)
+        sorted_vars, _ = self.topological_sort_with_dependencies(variables)
 
         # Build variable schema (item profiles can reference bars)
         var_schema: dict[str, str] = {}
@@ -367,12 +443,14 @@ class VFSProfileCompiler:
 
         for var in sorted_vars:
             compiled = self.compile_variable(var, var_schema)
+            if var.type in {"agent_ref", "item_ref", "affordance_ref", "effect_ref"} and var.initial_value is None:
+                compiled.initial_value = -1
             compiled_vars.append(compiled)
 
             # Add this variable to schema for subsequent variables
-            var_schema[var.name] = var.type
+            var_schema[var.id] = "float" if var.type == "scalar" else var.type
 
         return CompiledItemProfile(
-            profile_name=profile.profile_name,
+            profile_name=profile_name,
             variables=compiled_vars,
         )

@@ -109,10 +109,10 @@ class TestWritesLandInArena:
     def test_reads_are_unchanged_by_the_arena(self, registry):
         registry.set("a_scalar", torch.tensor([0.1, 0.2, 0.3]), writer="engine")
         assert registry.get("a_scalar", reader="engine").tolist() == pytest.approx([0.1, 0.2, 0.3])
-        assert registry.get_agent("a_scalar").tolist() == pytest.approx([0.1, 0.2, 0.3])
+        assert registry.get_agent("a_scalar", reader="engine").tolist() == pytest.approx([0.1, 0.2, 0.3])
 
     def test_get_still_returns_a_clone_not_an_arena_view(self, registry):
-        value = registry.get_global("g_scalar")
+        value = registry.get_global("g_scalar", reader="engine")
         value.fill_(123.0)
         assert registry.scope_arenas["global"].tensor[0, 0].item() == 0.25
 

@@ -1,0 +1,726 @@
+{
+  "cells": [
+    {
+      "action_source": "seeded-random",
+      "cell_id": "default_curriculum:L0_0_minimal:cpu:seed42",
+      "code_root": "/tmp/hamlet-declaration-cut-b/src",
+      "file": "runs/differential/declaration-cut-b-before-599cad15/default_curriculum:L0_0_minimal:cpu:seed42.npz",
+      "file_sha256": "4a5fa8b4b9556672d763ed85ef5425eda1a4e8b902640478fc5a3f7c716a29ba",
+      "hashes": {
+        "action_schema_hash": "b8c4948d605f4806005bb0cd487742913d9a46a51b567d1d2b08353a3c11548e",
+        "actions_hash": "e0c20f212f05f3b36ee4f9ebb09a9b8c22b6b05b029d005d60af4fc721dc7f52",
+        "affordances_hash": "2bda63f6ad0e919402a1d8d84b1765a32874e65b0b959bea7321b00e8310f342",
+        "bars_hash": "fce5fc6f2131c152516bd13d2106e540ab57d0b955f21fd7d71a00404eafb3cf",
+        "brain_hash": "e8092ac6be543f7546e7ae557ce23bb369efb977c84ebbb3bddd94581a8fe733",
+        "curriculum_hash": "273adb8ecd2a1e3640cd2922a68d3eab85e4d0caa84259f5ededbfa23a00685c",
+        "drive_hash": "b02aa064b2a03720944acbe44aab8e55b6d123d968b55fedfe6a53a1ccf853b6",
+        "environment_hash": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279",
+        "experiment_hash": "48f6725f6e9fd0880f38f3b078287685ac8fdf8f9cad906299ae748758fc4092",
+        "items_hash": "a511f15412d258f09eb72788f61d7330ffa99c7e7efd92a87c18e5b737daf641",
+        "layout_hash": "73b4f0737c49968989902be09f8fa9370e535f596cbfafaeabed6ab7a7f34cbd",
+        "observation_schema_hash": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+        "pack_brain_hash": "e8092ac6be543f7546e7ae557ce23bb369efb977c84ebbb3bddd94581a8fe733",
+        "stratum_hash": "bcbf09eb619adbe99423ece90163587b733825e68f75ac9184e84c8668cd6336",
+        "token_type_schema_hash": "8ad2b59b502a905bf1a60f2e5743cac2c1f705f4a4143f5daf20bece38036d7d",
+        "training_hash": "9beb9f2bd57e1c73a06cd50ad2c0bcbc08da0ee34751515a7b693d462e0ea382",
+        "transition_graph_hash": "27ed69c36b5a0c77e8647f0dc0d96f6f491c04eb6952f92c959de68f8c90f496",
+        "variable_schema_hash": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761",
+        "vfs_hash": "8760b4c3e9507c01138f59f2f0f98db110d17a9af6cb68f17a192c0a2e8eb84c"
+      },
+      "pack_root": "/tmp/hamlet-declaration-cut-b",
+      "params": {
+        "device": "cpu",
+        "level": "L0_0_minimal",
+        "num_agents": 4,
+        "pack": "configs/default_curriculum",
+        "seed": 42,
+        "steps": 100
+      },
+      "streams": {
+        "actions": {
+          "dtype": "int64",
+          "sha256": "a8c1f8b2122f5c68ed1023dc7c5119f5bc0c04883b100d5b56a630cbffc63297",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "dones": {
+          "dtype": "bool",
+          "sha256": "80717a5fc244b2ce7b686c1449157abeb8028de1cb76806fcbae441a41137873",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "obs": {
+          "dtype": "float32",
+          "sha256": "1f097b4a1b3495e59c6f798b3a94abdb2ce1538cb4e0f2d247b893f4e2a8e45a",
+          "shape": [
+            101,
+            4,
+            118
+          ]
+        },
+        "rewards": {
+          "dtype": "float32",
+          "sha256": "9a988facc574565aad11a347058acc3075088d83ccf5bc19d40fa29cc10f17a4",
+          "shape": [
+            100,
+            4
+          ]
+        }
+      }
+    },
+    {
+      "action_source": "seeded-random",
+      "cell_id": "default_curriculum:L0_5_dual_resource:cpu:seed42",
+      "code_root": "/tmp/hamlet-declaration-cut-b/src",
+      "file": "runs/differential/declaration-cut-b-before-599cad15/default_curriculum:L0_5_dual_resource:cpu:seed42.npz",
+      "file_sha256": "8992f059a9f6341fb6fdf930ded12a41a21dfb23fd6ee54999f0ff56df0c0f8b",
+      "hashes": {
+        "action_schema_hash": "63b969e265a26f915b55be6f7855591af7185c8cd4ca20bcef02149c5b3ac9bb",
+        "actions_hash": "e0c20f212f05f3b36ee4f9ebb09a9b8c22b6b05b029d005d60af4fc721dc7f52",
+        "affordances_hash": "2bda63f6ad0e919402a1d8d84b1765a32874e65b0b959bea7321b00e8310f342",
+        "bars_hash": "fce5fc6f2131c152516bd13d2106e540ab57d0b955f21fd7d71a00404eafb3cf",
+        "brain_hash": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f",
+        "curriculum_hash": "273adb8ecd2a1e3640cd2922a68d3eab85e4d0caa84259f5ededbfa23a00685c",
+        "drive_hash": "b02aa064b2a03720944acbe44aab8e55b6d123d968b55fedfe6a53a1ccf853b6",
+        "environment_hash": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279",
+        "experiment_hash": "48f6725f6e9fd0880f38f3b078287685ac8fdf8f9cad906299ae748758fc4092",
+        "items_hash": "a511f15412d258f09eb72788f61d7330ffa99c7e7efd92a87c18e5b737daf641",
+        "layout_hash": "73b4f0737c49968989902be09f8fa9370e535f596cbfafaeabed6ab7a7f34cbd",
+        "observation_schema_hash": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+        "pack_brain_hash": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f",
+        "stratum_hash": "bcbf09eb619adbe99423ece90163587b733825e68f75ac9184e84c8668cd6336",
+        "token_type_schema_hash": "8ad2b59b502a905bf1a60f2e5743cac2c1f705f4a4143f5daf20bece38036d7d",
+        "training_hash": "5d149b49ddf7ba560a8a40b998d36f7ef34fca404fda9bc72119e3b32f381f7b",
+        "transition_graph_hash": "27ed69c36b5a0c77e8647f0dc0d96f6f491c04eb6952f92c959de68f8c90f496",
+        "variable_schema_hash": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761",
+        "vfs_hash": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3"
+      },
+      "pack_root": "/tmp/hamlet-declaration-cut-b",
+      "params": {
+        "device": "cpu",
+        "level": "L0_5_dual_resource",
+        "num_agents": 4,
+        "pack": "configs/default_curriculum",
+        "seed": 42,
+        "steps": 100
+      },
+      "streams": {
+        "actions": {
+          "dtype": "int64",
+          "sha256": "a8c1f8b2122f5c68ed1023dc7c5119f5bc0c04883b100d5b56a630cbffc63297",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "dones": {
+          "dtype": "bool",
+          "sha256": "80717a5fc244b2ce7b686c1449157abeb8028de1cb76806fcbae441a41137873",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "obs": {
+          "dtype": "float32",
+          "sha256": "1f097b4a1b3495e59c6f798b3a94abdb2ce1538cb4e0f2d247b893f4e2a8e45a",
+          "shape": [
+            101,
+            4,
+            118
+          ]
+        },
+        "rewards": {
+          "dtype": "float32",
+          "sha256": "9a988facc574565aad11a347058acc3075088d83ccf5bc19d40fa29cc10f17a4",
+          "shape": [
+            100,
+            4
+          ]
+        }
+      }
+    },
+    {
+      "action_source": "seeded-random",
+      "cell_id": "default_curriculum:L1_full_observability:cpu:seed42",
+      "code_root": "/tmp/hamlet-declaration-cut-b/src",
+      "file": "runs/differential/declaration-cut-b-before-599cad15/default_curriculum:L1_full_observability:cpu:seed42.npz",
+      "file_sha256": "fef80f3d2f5e2a24bf78337f672815239c3432d7780e3264a74be40959163b19",
+      "hashes": {
+        "action_schema_hash": "63b969e265a26f915b55be6f7855591af7185c8cd4ca20bcef02149c5b3ac9bb",
+        "actions_hash": "e0c20f212f05f3b36ee4f9ebb09a9b8c22b6b05b029d005d60af4fc721dc7f52",
+        "affordances_hash": "2bda63f6ad0e919402a1d8d84b1765a32874e65b0b959bea7321b00e8310f342",
+        "bars_hash": "fce5fc6f2131c152516bd13d2106e540ab57d0b955f21fd7d71a00404eafb3cf",
+        "brain_hash": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f",
+        "curriculum_hash": "273adb8ecd2a1e3640cd2922a68d3eab85e4d0caa84259f5ededbfa23a00685c",
+        "drive_hash": "b02aa064b2a03720944acbe44aab8e55b6d123d968b55fedfe6a53a1ccf853b6",
+        "environment_hash": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279",
+        "experiment_hash": "48f6725f6e9fd0880f38f3b078287685ac8fdf8f9cad906299ae748758fc4092",
+        "items_hash": "a511f15412d258f09eb72788f61d7330ffa99c7e7efd92a87c18e5b737daf641",
+        "layout_hash": "73b4f0737c49968989902be09f8fa9370e535f596cbfafaeabed6ab7a7f34cbd",
+        "observation_schema_hash": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+        "pack_brain_hash": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f",
+        "stratum_hash": "bcbf09eb619adbe99423ece90163587b733825e68f75ac9184e84c8668cd6336",
+        "token_type_schema_hash": "8ad2b59b502a905bf1a60f2e5743cac2c1f705f4a4143f5daf20bece38036d7d",
+        "training_hash": "bd9aba213f33f9c53cd6062998596e7dc289edda40e7a0086733dd2beb02cc83",
+        "transition_graph_hash": "27ed69c36b5a0c77e8647f0dc0d96f6f491c04eb6952f92c959de68f8c90f496",
+        "variable_schema_hash": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761",
+        "vfs_hash": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3"
+      },
+      "pack_root": "/tmp/hamlet-declaration-cut-b",
+      "params": {
+        "device": "cpu",
+        "level": "L1_full_observability",
+        "num_agents": 4,
+        "pack": "configs/default_curriculum",
+        "seed": 42,
+        "steps": 100
+      },
+      "streams": {
+        "actions": {
+          "dtype": "int64",
+          "sha256": "a8c1f8b2122f5c68ed1023dc7c5119f5bc0c04883b100d5b56a630cbffc63297",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "dones": {
+          "dtype": "bool",
+          "sha256": "80717a5fc244b2ce7b686c1449157abeb8028de1cb76806fcbae441a41137873",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "obs": {
+          "dtype": "float32",
+          "sha256": "1f097b4a1b3495e59c6f798b3a94abdb2ce1538cb4e0f2d247b893f4e2a8e45a",
+          "shape": [
+            101,
+            4,
+            118
+          ]
+        },
+        "rewards": {
+          "dtype": "float32",
+          "sha256": "9a988facc574565aad11a347058acc3075088d83ccf5bc19d40fa29cc10f17a4",
+          "shape": [
+            100,
+            4
+          ]
+        }
+      }
+    },
+    {
+      "action_source": "seeded-random",
+      "cell_id": "default_curriculum:L2_partial_observability:cpu:seed42",
+      "code_root": "/tmp/hamlet-declaration-cut-b/src",
+      "file": "runs/differential/declaration-cut-b-before-599cad15/default_curriculum:L2_partial_observability:cpu:seed42.npz",
+      "file_sha256": "33631b1ed6d5958f30ba3bd0f4a3bda01c74840f0f26eabd53521fe21494d92e",
+      "hashes": {
+        "action_schema_hash": "63b969e265a26f915b55be6f7855591af7185c8cd4ca20bcef02149c5b3ac9bb",
+        "actions_hash": "e0c20f212f05f3b36ee4f9ebb09a9b8c22b6b05b029d005d60af4fc721dc7f52",
+        "affordances_hash": "2bda63f6ad0e919402a1d8d84b1765a32874e65b0b959bea7321b00e8310f342",
+        "bars_hash": "fce5fc6f2131c152516bd13d2106e540ab57d0b955f21fd7d71a00404eafb3cf",
+        "brain_hash": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f",
+        "curriculum_hash": "e114176830bacabcceee388586a2407ab0136ce52511add9aa95bd4cec93fb91",
+        "drive_hash": "b02aa064b2a03720944acbe44aab8e55b6d123d968b55fedfe6a53a1ccf853b6",
+        "environment_hash": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279",
+        "experiment_hash": "48f6725f6e9fd0880f38f3b078287685ac8fdf8f9cad906299ae748758fc4092",
+        "items_hash": "a511f15412d258f09eb72788f61d7330ffa99c7e7efd92a87c18e5b737daf641",
+        "layout_hash": "73b4f0737c49968989902be09f8fa9370e535f596cbfafaeabed6ab7a7f34cbd",
+        "observation_schema_hash": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+        "pack_brain_hash": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f",
+        "stratum_hash": "bcbf09eb619adbe99423ece90163587b733825e68f75ac9184e84c8668cd6336",
+        "token_type_schema_hash": "8ad2b59b502a905bf1a60f2e5743cac2c1f705f4a4143f5daf20bece38036d7d",
+        "training_hash": "6abcb3eb2691e6c8d45029245b9fe1c40772470a7bd78352b85be804a7a1306b",
+        "transition_graph_hash": "27ed69c36b5a0c77e8647f0dc0d96f6f491c04eb6952f92c959de68f8c90f496",
+        "variable_schema_hash": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761",
+        "vfs_hash": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3"
+      },
+      "pack_root": "/tmp/hamlet-declaration-cut-b",
+      "params": {
+        "device": "cpu",
+        "level": "L2_partial_observability",
+        "num_agents": 4,
+        "pack": "configs/default_curriculum",
+        "seed": 42,
+        "steps": 100
+      },
+      "streams": {
+        "actions": {
+          "dtype": "int64",
+          "sha256": "a8c1f8b2122f5c68ed1023dc7c5119f5bc0c04883b100d5b56a630cbffc63297",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "dones": {
+          "dtype": "bool",
+          "sha256": "80717a5fc244b2ce7b686c1449157abeb8028de1cb76806fcbae441a41137873",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "obs": {
+          "dtype": "float32",
+          "sha256": "2d0f209d82dce052b72c499e55743acbeab98980f0a8650fe1e59349e80d283e",
+          "shape": [
+            101,
+            4,
+            118
+          ]
+        },
+        "rewards": {
+          "dtype": "float32",
+          "sha256": "9a988facc574565aad11a347058acc3075088d83ccf5bc19d40fa29cc10f17a4",
+          "shape": [
+            100,
+            4
+          ]
+        }
+      }
+    },
+    {
+      "action_source": "seeded-random",
+      "cell_id": "default_curriculum:L3_temporal_mechanics:cpu:seed42",
+      "code_root": "/tmp/hamlet-declaration-cut-b/src",
+      "file": "runs/differential/declaration-cut-b-before-599cad15/default_curriculum:L3_temporal_mechanics:cpu:seed42.npz",
+      "file_sha256": "47eb0f6205e30e399d2f46a598524dca1ce5017f9de1902ff687fabe504e94fb",
+      "hashes": {
+        "action_schema_hash": "63b969e265a26f915b55be6f7855591af7185c8cd4ca20bcef02149c5b3ac9bb",
+        "actions_hash": "e0c20f212f05f3b36ee4f9ebb09a9b8c22b6b05b029d005d60af4fc721dc7f52",
+        "affordances_hash": "2bda63f6ad0e919402a1d8d84b1765a32874e65b0b959bea7321b00e8310f342",
+        "bars_hash": "fce5fc6f2131c152516bd13d2106e540ab57d0b955f21fd7d71a00404eafb3cf",
+        "brain_hash": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f",
+        "curriculum_hash": "de1755f13037e85ca6d2f37d013d3ee7d07d791053e866cfdc3c33adac03ee83",
+        "drive_hash": "b02aa064b2a03720944acbe44aab8e55b6d123d968b55fedfe6a53a1ccf853b6",
+        "environment_hash": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279",
+        "experiment_hash": "48f6725f6e9fd0880f38f3b078287685ac8fdf8f9cad906299ae748758fc4092",
+        "items_hash": "a511f15412d258f09eb72788f61d7330ffa99c7e7efd92a87c18e5b737daf641",
+        "layout_hash": "73b4f0737c49968989902be09f8fa9370e535f596cbfafaeabed6ab7a7f34cbd",
+        "observation_schema_hash": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+        "pack_brain_hash": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f",
+        "stratum_hash": "bcbf09eb619adbe99423ece90163587b733825e68f75ac9184e84c8668cd6336",
+        "token_type_schema_hash": "8ad2b59b502a905bf1a60f2e5743cac2c1f705f4a4143f5daf20bece38036d7d",
+        "training_hash": "35c12ee97a8bc947db3b14eee15ce0442495f96c4091570bae71d143bd0d3ea1",
+        "transition_graph_hash": "27ed69c36b5a0c77e8647f0dc0d96f6f491c04eb6952f92c959de68f8c90f496",
+        "variable_schema_hash": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761",
+        "vfs_hash": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3"
+      },
+      "pack_root": "/tmp/hamlet-declaration-cut-b",
+      "params": {
+        "device": "cpu",
+        "level": "L3_temporal_mechanics",
+        "num_agents": 4,
+        "pack": "configs/default_curriculum",
+        "seed": 42,
+        "steps": 100
+      },
+      "streams": {
+        "actions": {
+          "dtype": "int64",
+          "sha256": "a8c1f8b2122f5c68ed1023dc7c5119f5bc0c04883b100d5b56a630cbffc63297",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "dones": {
+          "dtype": "bool",
+          "sha256": "93208a950482d4e03cbf3d9c58dcde7fdddc7c7e708dff1e2579d1df116ca64e",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "obs": {
+          "dtype": "float32",
+          "sha256": "f4b7e9c27a83a3b3e7f1b3aab77c762212fb499bc23316f09707188cecaa16d7",
+          "shape": [
+            101,
+            4,
+            118
+          ]
+        },
+        "rewards": {
+          "dtype": "float32",
+          "sha256": "d41ae43a4e8058c0744742fd9c71891dafb6f57033cfaa9a0b7d3fb579f46b75",
+          "shape": [
+            100,
+            4
+          ]
+        }
+      }
+    },
+    {
+      "action_source": "seeded-random",
+      "cell_id": "boundary_wrap:L1_full_observability:cpu:seed42",
+      "code_root": "/tmp/hamlet-declaration-cut-b/src",
+      "file": "runs/differential/declaration-cut-b-before-599cad15/boundary_wrap:L1_full_observability:cpu:seed42.npz",
+      "file_sha256": "bc2aa27e183affa3a85594c23dbefb8b41048a40b6a6df6780fe268e8688ffb5",
+      "hashes": {
+        "action_schema_hash": "63b969e265a26f915b55be6f7855591af7185c8cd4ca20bcef02149c5b3ac9bb",
+        "actions_hash": "e0c20f212f05f3b36ee4f9ebb09a9b8c22b6b05b029d005d60af4fc721dc7f52",
+        "affordances_hash": "2bda63f6ad0e919402a1d8d84b1765a32874e65b0b959bea7321b00e8310f342",
+        "bars_hash": "fce5fc6f2131c152516bd13d2106e540ab57d0b955f21fd7d71a00404eafb3cf",
+        "brain_hash": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f",
+        "curriculum_hash": "273adb8ecd2a1e3640cd2922a68d3eab85e4d0caa84259f5ededbfa23a00685c",
+        "drive_hash": "b02aa064b2a03720944acbe44aab8e55b6d123d968b55fedfe6a53a1ccf853b6",
+        "environment_hash": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279",
+        "experiment_hash": "2a35eab54a8647f4c57114bd7b2b72f3f5b0d572ea3ca88e8bd750cb990af6fb",
+        "items_hash": "a511f15412d258f09eb72788f61d7330ffa99c7e7efd92a87c18e5b737daf641",
+        "layout_hash": "73b4f0737c49968989902be09f8fa9370e535f596cbfafaeabed6ab7a7f34cbd",
+        "observation_schema_hash": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+        "pack_brain_hash": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f",
+        "stratum_hash": "4a58653ad99193e46ad0f6428586a292d34c8167a98e3521b9d5c8d1f7e3cecf",
+        "token_type_schema_hash": "8ad2b59b502a905bf1a60f2e5743cac2c1f705f4a4143f5daf20bece38036d7d",
+        "training_hash": "bd9aba213f33f9c53cd6062998596e7dc289edda40e7a0086733dd2beb02cc83",
+        "transition_graph_hash": "27ed69c36b5a0c77e8647f0dc0d96f6f491c04eb6952f92c959de68f8c90f496",
+        "variable_schema_hash": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761",
+        "vfs_hash": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3"
+      },
+      "pack_root": "/tmp/hamlet-declaration-cut-b",
+      "params": {
+        "device": "cpu",
+        "level": "L1_full_observability",
+        "num_agents": 4,
+        "pack": "configs/differential/boundary_wrap",
+        "seed": 42,
+        "steps": 100
+      },
+      "streams": {
+        "actions": {
+          "dtype": "int64",
+          "sha256": "a8c1f8b2122f5c68ed1023dc7c5119f5bc0c04883b100d5b56a630cbffc63297",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "dones": {
+          "dtype": "bool",
+          "sha256": "7a12ee729458c183f2ebc735d546e585878aa64a84525025e2762fad249c3a53",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "obs": {
+          "dtype": "float32",
+          "sha256": "2e71e65bf03105467a962275a56a4fa705eb75723e8752aeeda36de3615645f5",
+          "shape": [
+            101,
+            4,
+            118
+          ]
+        },
+        "rewards": {
+          "dtype": "float32",
+          "sha256": "7731b29b5a820dfc050320d4605d0f5d01444afb0d698f25cf4f73caadf0e0a3",
+          "shape": [
+            100,
+            4
+          ]
+        }
+      }
+    },
+    {
+      "action_source": "seeded-random",
+      "cell_id": "div003_cubic_partial:L2_partial_observability:cpu:seed42",
+      "code_root": "/tmp/hamlet-declaration-cut-b/src",
+      "file": "runs/differential/declaration-cut-b-before-599cad15/div003_cubic_partial:L2_partial_observability:cpu:seed42.npz",
+      "file_sha256": "ec4db013dfbd2143bb47726615f558dc30ffd53ea8dd1a5a987372aa7e22b65d",
+      "hashes": {
+        "action_schema_hash": "c84a23c77e64935d5fe577c47078514e725099e8fbf14770e447def768080ec4",
+        "actions_hash": "e0c20f212f05f3b36ee4f9ebb09a9b8c22b6b05b029d005d60af4fc721dc7f52",
+        "affordances_hash": "2bda63f6ad0e919402a1d8d84b1765a32874e65b0b959bea7321b00e8310f342",
+        "bars_hash": "fce5fc6f2131c152516bd13d2106e540ab57d0b955f21fd7d71a00404eafb3cf",
+        "brain_hash": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f",
+        "curriculum_hash": "e114176830bacabcceee388586a2407ab0136ce52511add9aa95bd4cec93fb91",
+        "drive_hash": "b02aa064b2a03720944acbe44aab8e55b6d123d968b55fedfe6a53a1ccf853b6",
+        "environment_hash": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279",
+        "experiment_hash": "05c105c3e9976009d2bf18d6dce3f61ce3e90dbe3be347fa5e69926e3d520e3b",
+        "items_hash": "a511f15412d258f09eb72788f61d7330ffa99c7e7efd92a87c18e5b737daf641",
+        "layout_hash": "36baa279dbc72741dacc0d348032dcf0b866bc2dd5d1630f33f47122a51784d8",
+        "observation_schema_hash": "a221e121044ef5c92091645eddab6820396a1782ff386a63ead1b136db8d0927",
+        "pack_brain_hash": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f",
+        "stratum_hash": "13ff5fa8dccea8c4940f30a3328eab28033c99cb7e7c90ab6ddc38e1c86465e8",
+        "token_type_schema_hash": "8ad2b59b502a905bf1a60f2e5743cac2c1f705f4a4143f5daf20bece38036d7d",
+        "training_hash": "6abcb3eb2691e6c8d45029245b9fe1c40772470a7bd78352b85be804a7a1306b",
+        "transition_graph_hash": "27ed69c36b5a0c77e8647f0dc0d96f6f491c04eb6952f92c959de68f8c90f496",
+        "variable_schema_hash": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761",
+        "vfs_hash": "9563de51e767aa64bd7f426fd50936706de8b3998db3758770cbaa474440b339"
+      },
+      "pack_root": "/tmp/hamlet-declaration-cut-b",
+      "params": {
+        "device": "cpu",
+        "level": "L2_partial_observability",
+        "num_agents": 4,
+        "pack": "configs/differential/div003_cubic_partial",
+        "seed": 42,
+        "steps": 100
+      },
+      "streams": {
+        "actions": {
+          "dtype": "int64",
+          "sha256": "bee7792e4af0c4ccba7d47b5ff63ebf4cd166639feec6820fc035e7f24849576",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "dones": {
+          "dtype": "bool",
+          "sha256": "c4271d491b15703529d9ef1c23937e5890b0a21dd21aea959efd74949a0c8d54",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "obs": {
+          "dtype": "float32",
+          "sha256": "1cfe4bd7ce2264c97a581a84bb7ca3a5f3e3beb26d14ff91b1b852c423de983c",
+          "shape": [
+            101,
+            4,
+            152
+          ]
+        },
+        "rewards": {
+          "dtype": "float32",
+          "sha256": "628b97ad29b187d670d9d736141368fb866333b688a2eacef1b2d450607217b8",
+          "shape": [
+            100,
+            4
+          ]
+        }
+      }
+    },
+    {
+      "action_source": "seeded-random",
+      "cell_id": "div003_rect:L1_full_observability:cpu:seed42",
+      "code_root": "/tmp/hamlet-declaration-cut-b/src",
+      "file": "runs/differential/declaration-cut-b-before-599cad15/div003_rect:L1_full_observability:cpu:seed42.npz",
+      "file_sha256": "04b3d6ac20ef1cf081bf2ad7b29cd6505e2f08a7226caf30307dc0d15a1b0909",
+      "hashes": {
+        "action_schema_hash": "63b969e265a26f915b55be6f7855591af7185c8cd4ca20bcef02149c5b3ac9bb",
+        "actions_hash": "e0c20f212f05f3b36ee4f9ebb09a9b8c22b6b05b029d005d60af4fc721dc7f52",
+        "affordances_hash": "2bda63f6ad0e919402a1d8d84b1765a32874e65b0b959bea7321b00e8310f342",
+        "bars_hash": "fce5fc6f2131c152516bd13d2106e540ab57d0b955f21fd7d71a00404eafb3cf",
+        "brain_hash": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f",
+        "curriculum_hash": "273adb8ecd2a1e3640cd2922a68d3eab85e4d0caa84259f5ededbfa23a00685c",
+        "drive_hash": "b02aa064b2a03720944acbe44aab8e55b6d123d968b55fedfe6a53a1ccf853b6",
+        "environment_hash": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279",
+        "experiment_hash": "142dd7dc7a3b5343708bbe59f9bbf6629a43c62e01d13d45ef0adf1a02f95a2a",
+        "items_hash": "a511f15412d258f09eb72788f61d7330ffa99c7e7efd92a87c18e5b737daf641",
+        "layout_hash": "73b4f0737c49968989902be09f8fa9370e535f596cbfafaeabed6ab7a7f34cbd",
+        "observation_schema_hash": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+        "pack_brain_hash": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f",
+        "stratum_hash": "5db2b56880384f2de6767177b48d8dc3ff4d5fb8fac05d67e9c26739a3aa2176",
+        "token_type_schema_hash": "8ad2b59b502a905bf1a60f2e5743cac2c1f705f4a4143f5daf20bece38036d7d",
+        "training_hash": "bd9aba213f33f9c53cd6062998596e7dc289edda40e7a0086733dd2beb02cc83",
+        "transition_graph_hash": "27ed69c36b5a0c77e8647f0dc0d96f6f491c04eb6952f92c959de68f8c90f496",
+        "variable_schema_hash": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761",
+        "vfs_hash": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3"
+      },
+      "pack_root": "/tmp/hamlet-declaration-cut-b",
+      "params": {
+        "device": "cpu",
+        "level": "L1_full_observability",
+        "num_agents": 4,
+        "pack": "configs/differential/div003_rect",
+        "seed": 42,
+        "steps": 100
+      },
+      "streams": {
+        "actions": {
+          "dtype": "int64",
+          "sha256": "2a0799b319316b8a300b35139729115a853a1df1babbfd07472d38def7232401",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "dones": {
+          "dtype": "bool",
+          "sha256": "5cadb20245fb72e7b0f3ff555af446bad55cec5125d996a8950a9dec5507c616",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "obs": {
+          "dtype": "float32",
+          "sha256": "5d0cf08353ab98134bb612a492ffcb754d2c7818063ceb60f1590d2f4fd1038d",
+          "shape": [
+            101,
+            4,
+            118
+          ]
+        },
+        "rewards": {
+          "dtype": "float32",
+          "sha256": "825d620d3b2593f4f254b016a74de4fab5ec09d4bf4f55461030dfc03d379ad2",
+          "shape": [
+            100,
+            4
+          ]
+        }
+      }
+    },
+    {
+      "action_source": "seeded-random",
+      "cell_id": "items_smoke:L0_smoke:cpu:seed42",
+      "code_root": "/tmp/hamlet-declaration-cut-b/src",
+      "file": "runs/differential/declaration-cut-b-before-599cad15/items_smoke:L0_smoke:cpu:seed42.npz",
+      "file_sha256": "d72899a134f849d894f222eb34e835968b9800b18d78878f1d7836156d21cebf",
+      "hashes": {
+        "action_schema_hash": "d240b3090ab7a5431d229e2b82e51a41dd49e75edb3dde121f84f824cfd2c7a2",
+        "actions_hash": "3f4f104a6140edf219ee3b181cb1f5ffb1e989f8ef45ff62ce4e7a4ff4338504",
+        "affordances_hash": "f875f39bade6d906cd8c9e6128b7d106973d389726eb33c0efbf6042cda71770",
+        "bars_hash": "635d70601f282bbae65b8bc5a2b9ded3dcda01b75363f16eb5409ad35cd367a6",
+        "brain_hash": "20da2a7d8ab84ff8000800cd4f77b431216d33e61ffe75877b0ae82c7891640c",
+        "curriculum_hash": "273adb8ecd2a1e3640cd2922a68d3eab85e4d0caa84259f5ededbfa23a00685c",
+        "drive_hash": "0b45d44b4f358b44a1b9fd9294a6b7aa437728a3ddb240235c7c9129b75f914b",
+        "environment_hash": "6bd3a9c0ff55b7978a72ab4bdd8b94ef2662e284d46fcab2726bf8bd61020016",
+        "experiment_hash": "5c734051bd7a5a3a502ab6f43349ddbc75aa2505d268a9f77384d2e241f9a7c9",
+        "items_hash": "2f350167d0a67884fd1acc471418d4d4486f4d82027dc708533f953d5b46a45c",
+        "layout_hash": "21614072a5e52227e002f5215af72b629385dac05525b79f988b1a2c9c2680ce",
+        "observation_schema_hash": "302658b1450e8cfbb60d3119a79085bb2e1b0a664a83c3c6020680113344e7f0",
+        "pack_brain_hash": "20da2a7d8ab84ff8000800cd4f77b431216d33e61ffe75877b0ae82c7891640c",
+        "stratum_hash": "38fda11ed81f3002e995aeda227221beb9e3674caa059fcdabf08fcddab3437e",
+        "token_type_schema_hash": "8ad2b59b502a905bf1a60f2e5743cac2c1f705f4a4143f5daf20bece38036d7d",
+        "training_hash": "3c99e249ad0706a7a14f72b440d21dbb77bddad5468280c27cf0baccf1777124",
+        "transition_graph_hash": "d0819323e02dc89fde057cee50a2dcb06cb476b321c35e34628d1e4debf70c31",
+        "variable_schema_hash": "7a291a67154f3c6585c8ff385e34bf99fd3b3f7921a0a28d86af9168858b6f30",
+        "vfs_hash": "a0407c5fe52374b53586842eb7957b8d8f2b29e24d5d0bb5227719e293b9a00f"
+      },
+      "pack_root": "/tmp/hamlet-declaration-cut-b",
+      "params": {
+        "device": "cpu",
+        "level": "L0_smoke",
+        "num_agents": 4,
+        "pack": "configs/test/items_smoke",
+        "seed": 42,
+        "steps": 100
+      },
+      "streams": {
+        "actions": {
+          "dtype": "int64",
+          "sha256": "4e023b53426044bf6a78d4b8f153800a614d7db78cc97ef04c196fb9df7c117a",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "dones": {
+          "dtype": "bool",
+          "sha256": "8570c0b3dc0380bdbb46b91ce546652db38bf10686d8b4de32dae9884fff080c",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "obs": {
+          "dtype": "float32",
+          "sha256": "1344c533473a20d71a100538bcdbdabb4ed3d04429f51dedb812730898599911",
+          "shape": [
+            101,
+            4,
+            474
+          ]
+        },
+        "rewards": {
+          "dtype": "float32",
+          "sha256": "aec44a9ccb19b724ec8d407d308030943164ff389ac7457bea71864f41932a51",
+          "shape": [
+            100,
+            4
+          ]
+        }
+      }
+    },
+    {
+      "action_source": "seeded-random",
+      "cell_id": "effects_smoke:L0_effects:cpu:seed42",
+      "code_root": "/tmp/hamlet-declaration-cut-b/src",
+      "file": "runs/differential/declaration-cut-b-before-599cad15/effects_smoke:L0_effects:cpu:seed42.npz",
+      "file_sha256": "733eb867c4f20a936840b62ce40773fe0e6436877e0c3d47054019d0ecc526dd",
+      "hashes": {
+        "action_schema_hash": "93e9bac60c3d2b1cdfd502e23330cb9641e57da9d1e0d4f1ffc5f8590b76dca4",
+        "actions_hash": "c30c921938089c76e150179bc5c95448c4bc6467ee08047dd2471ea2dcd73650",
+        "affordances_hash": "6c529dea90e22ece0a6bc7ab6fd16855f9032f0100f91828a4457a0058853c8c",
+        "bars_hash": "008a6278e84d8c8e17c98fcd38969906f84c83cdbe6f7a6c62f941f42a7cb6af",
+        "brain_hash": "763522e4b362958d781a26128134bfad462561538ba4e840b862ea5c94fee98d",
+        "curriculum_hash": "1659f19eb7b6907a42206eaf59a74852ebe15e4ded5a8e818eae148326335e86",
+        "drive_hash": "459d815b9071de8208e705333ef01bfc24afbe9d509369b6193938f300e16edf",
+        "environment_hash": "50406e5bbad790769c140e91236f7018a16330c956d4f74456b2e7fa20849603",
+        "experiment_hash": "e924ed177158834ce07f09494cb0b7c84ca29c71a6f6fc1be492ecc4c96d30ea",
+        "items_hash": "a511f15412d258f09eb72788f61d7330ffa99c7e7efd92a87c18e5b737daf641",
+        "layout_hash": "b6439360f70d9baae3e875e547a031805d3ed3f79200580d2140c120d1f78ab6",
+        "observation_schema_hash": "dde5eaac7c48dbfac35ca1dfd707c78f3dd540eb7438a91956c696b04a1a2f02",
+        "pack_brain_hash": "763522e4b362958d781a26128134bfad462561538ba4e840b862ea5c94fee98d",
+        "stratum_hash": "38fda11ed81f3002e995aeda227221beb9e3674caa059fcdabf08fcddab3437e",
+        "token_type_schema_hash": "8ad2b59b502a905bf1a60f2e5743cac2c1f705f4a4143f5daf20bece38036d7d",
+        "training_hash": "711f240c948fe55dfad0be1ce233ebc1e68c3d9c6713867ecab0ed2bb7882e0c",
+        "transition_graph_hash": "630752dba565734de95adf0acab96a460b1710b6d5200d7b8e58fab2342fa78e",
+        "variable_schema_hash": "e1fc0ee0df0992be5f7708b0a74dfd4fbbeabe17948327cbafca4c210cfc0166",
+        "vfs_hash": "9ddadaa124e951ddc583a71132ea0a8c2ce81eabcba0cec6bc22ebbbad073425"
+      },
+      "pack_root": "/tmp/hamlet-declaration-cut-b",
+      "params": {
+        "device": "cpu",
+        "level": "L0_effects",
+        "num_agents": 4,
+        "pack": "configs/test/effects_smoke",
+        "seed": 42,
+        "steps": 100
+      },
+      "streams": {
+        "actions": {
+          "dtype": "int64",
+          "sha256": "6a242d4ad5560c5b883184bad0930426ac5a5ab22e049f31f0975330d7db540e",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "dones": {
+          "dtype": "bool",
+          "sha256": "945341520a34b2afd00941d6abb505d561e3f7bedb6cdf0d2d6025c4f76e79e6",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "obs": {
+          "dtype": "float32",
+          "sha256": "dbc4bf8d1acf296d2ba68d024a769ec6a972d80aac756d0538366e0c015006c1",
+          "shape": [
+            101,
+            4,
+            61
+          ]
+        },
+        "rewards": {
+          "dtype": "float32",
+          "sha256": "d44318e97a53f0a4c608ec9e85512c7727ba97ca9f0f0e53951342871f4e6f2f",
+          "shape": [
+            100,
+            4
+          ]
+        }
+      }
+    }
+  ],
+  "cuda": "not executed; ten declared CUDA cells remain to be reported as skips by the acceptance matrix",
+  "source_commit": "599cad15706ac8824c3f8e38276da6440c4816a3"
+}

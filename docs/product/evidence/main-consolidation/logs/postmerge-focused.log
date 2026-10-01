@@ -1,0 +1,26 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.1, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /tmp/hamlet-main-integration
+configfile: pyproject.toml
+plugins: hypothesis-6.165.3, anyio-4.14.2, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 201 items
+
+tests/test_townlet/unit/vfs/test_static_access.py ..........             [  4%]
+tests/test_townlet/unit/universe/test_static_write_authorization.py .... [  6%]
+............                                                             [ 12%]
+tests/test_townlet/unit/effects/test_command_preflight_selection.py .... [ 14%]
+...                                                                      [ 16%]
+tests/test_townlet/unit/oracle/test_matrix.py .......................... [ 29%]
+...................                                                      [ 38%]
+tests/test_townlet/unit/universe/test_token_spec.py .................... [ 48%]
+.......................................................................  [ 84%]
+tests/test_townlet/integration/test_static_epistemic_access.py ...       [ 85%]
+tests/test_townlet/integration/test_static_write_intent_runtime.py ...   [ 87%]
+tests/test_townlet/integration/test_live_inference_checkpoint_identity.py . [ 87%]
+...........                                                              [ 93%]
+tests/test_townlet/integration/test_static_epistemic_checkpoint_identity.py . [ 93%]
+.............                                                            [100%]
+
+============================= 201 passed in 24.12s =============================

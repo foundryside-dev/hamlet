@@ -130,7 +130,7 @@ def test_vtc_directed_pair_write_moves_trust_ij_without_trust_ji() -> None:
         },
         active_mask=torch.tensor([True, True]),
         device=torch.device("cpu"),
-    )
+    ).values
 
     assert updated["trust"][0, 1].item() == pytest.approx(0.65)
     assert updated["trust"][1, 0].item() == pytest.approx(0.8)
@@ -172,7 +172,7 @@ def test_vtc_visibility_effect_updates_directed_pair_state_for_observed_actor_ac
         },
         active_mask=torch.tensor([True, True, False]),
         device=torch.device("cpu"),
-    )
+    ).values
 
     expected = torch.full((3, 3), 0.8)
     expected[0, 1] = 0.65
@@ -242,7 +242,7 @@ def test_vtc_social_and_institutional_residue_updates_pair_and_agent_variables()
         },
         active_mask=torch.tensor([True, True, True]),
         device=torch.device("cpu"),
-    )
+    ).values
 
     expected_obligation = torch.zeros((3, 3))
     expected_obligation[1, 0] = 0.2

@@ -84,7 +84,7 @@ class _TargetAwareExecutionContext(ExprExecutionContext):
                 profile_name = self.vfs_registry.get_item_profile_for_index(self.self_index)
                 if profile_name is None:
                     raise KeyError(f"No item profile registered for vfs_index {self.self_index}")
-                value = self.vfs_registry.read_item(profile_name, var_name, self.self_index)
+                value = self.vfs_registry.read_item(profile_name, var_name, self.self_index, reader="engine")
                 # Convert to tensor if needed
                 if not isinstance(value, torch.Tensor):
                     value = torch.tensor(value, dtype=torch.float32, device=self.device)
@@ -123,6 +123,7 @@ class CommandExecutor:
         Raises:
             NotImplementedError: For unimplemented command types
         """
+        self._preflight_command(command, context)
         if command.type == CommandType.MODIFY:
             self._execute_modify(command, context)
         elif command.type == CommandType.SPAWN_EFFECT:
@@ -145,6 +146,52 @@ class CommandExecutor:
             self._execute_delay(command, context)
         else:
             raise NotImplementedError(f"Command type {command.type} not implemented")
+
+    def _preflight_command(self, command: CommandNode, context: ExecutionContext) -> None:
+        """Authorize compound command targets before this command mutates state.
+
+        Constructed conditional branches are conservatively checked just like
+        authored branches. Delayed work is checked when it executes, against its
+        then-current target. This does not roll back earlier independent commands.
+        """
+        path = None
+        if command.type == CommandType.MODIFY:
+            path = command.path
+        elif command.type == CommandType.SAMPLE:
+            path = command.sample_store_path
+        elif command.type == CommandType.REDUCE:
+            path = command.reduce_target
+        if path is not None:
+            context.authorize_write_path(path)
+        if command.type == CommandType.SPAWN_ITEM and command.initial_state:
+            if command.item_type is None:
+                raise ValueError("spawn_item overrides require a declared item type")
+            if context.item_manager is None:
+                raise ValueError("spawn_item overrides require an item manager")
+            context.item_manager._authorize_spawn_state(command.item_type, command.initial_state)
+        if command.type == CommandType.FOR_EACH:
+            if command.collection == "inventory_items":
+                children = self._inventory_item_contexts(context)
+            else:
+                # Ordinary agent roles are independent of the selected row.
+                # Do not evaluate a collection expression or resolver while
+                # scanning a compound command's possible write policies.
+                children = [context.copy(target_index=None, target_is_item=False)]
+            for child in children:
+                for nested in command.body or []:
+                    self._preflight_command(nested, child)
+        elif command.type == CommandType.PARALLEL:
+            for nested in command.parallel_commands or []:
+                self._preflight_command(nested, context)
+        elif command.type == CommandType.IF:
+            for nested in [*(command.then_commands or []), *(command.else_commands or [])]:
+                self._preflight_command(nested, context)
+        elif command.type == CommandType.SWITCH:
+            for _, branch in command.case_asts or []:
+                for nested in branch:
+                    self._preflight_command(nested, context)
+            for nested in command.default_commands or []:
+                self._preflight_command(nested, context)
 
     def _execute_modify(self, command: CommandNode, context: ExecutionContext) -> None:
         """Execute modify command.
@@ -419,12 +466,37 @@ class CommandExecutor:
                 self.execute(cmd, context)
 
     def _execute_for_each(self, command: CommandNode, context: ExecutionContext) -> None:
-        """Execute for_each command.
+        """Execute a preauthorized body for each resolved target."""
+        children = self._for_each_contexts(command, context)
+        # Resolve only when this loop executes, after earlier sibling writes.
+        # Authorize all selected bodies before mutating the first selected row.
+        for child_context in children:
+            for body_cmd in command.body or []:
+                self._preflight_command(body_cmd, child_context)
+        for child_context in children:
+            for body_cmd in command.body or []:
+                self.execute(body_cmd, child_context)
 
-        Args:
-            command: For each command node with collection, iterator, body
-            context: Execution context
-        """
+    def _inventory_item_contexts(self, context: ExecutionContext) -> list[ExecutionContext]:
+        """Inspect current qualified inventory policies without evaluating expressions."""
+        inventory = context.inventory
+        if inventory is None:
+            raise ValueError("inventory required for 'inventory_items' collection")
+        if context.self_index is None:
+            raise ValueError("self_index required for 'inventory_items' collection")
+        contexts = []
+        for slot in inventory.slots[context.self_index]:
+            instance_id = int(slot.item())
+            if instance_id < 0:
+                continue
+            item = inventory.items.get(instance_id)
+            if item is None:
+                raise ValueError(f"Item instance {instance_id} not found in inventory metadata")
+            contexts.append(context.copy(target_index=item.vfs_index, target_is_item=True, iterator_value=instance_id))
+        return contexts
+
+    def _for_each_contexts(self, command: CommandNode, context: ExecutionContext) -> list[ExecutionContext]:
+        """Resolve the complete target set without mutating any target."""
         from townlet.effects.collections import MAX_COLLECTION_SIZE, resolve_collection
         from townlet.world.expression.evaluator import Evaluator
 
@@ -455,7 +527,7 @@ class CommandExecutor:
         if len(indices) > MAX_COLLECTION_SIZE:
             raise RuntimeError(f"for_each collection size {len(indices)} exceeds cap {MAX_COLLECTION_SIZE}")
 
-        # Execute body commands for each index
+        contexts: list[ExecutionContext] = []
         for idx in indices:
             target_idx = idx
             target_is_item = collection_type == "inventory_items"
@@ -476,10 +548,8 @@ class CommandExecutor:
                 iterator_value=idx,
             )
 
-            # Execute body commands with child context
-            body = command.body or []
-            for body_cmd in body:
-                self.execute(body_cmd, child_context)
+            contexts.append(child_context)
+        return contexts
 
     def _execute_switch(self, command: CommandNode, context: ExecutionContext) -> None:
         """Execute switch/case (equality-based, first-match wins)."""

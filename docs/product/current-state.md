@@ -1,75 +1,59 @@
-# Current State — HAMLET / Townlet        Checkpoint: 2026-09-02 (later) · M4 and unit 5 accepted, token umbrella closed (`PDR-0144`)
+# Current state — Townlet · 2026-10-01
 
-## The bets right now
+## Delivered and verified
 
-**1. Strangler rewrite behind the compiled-universe contract** (`PDR-0006`) remains the Now bet.
+Declaration-store **Cut A**, canonical-variable **Cut B** and **static epistemic access**
+are accepted and consolidated on local `main` at **`bb88beb84a8dfdb6e2851c16140b7d65054efb14`**. All 20 pre-consolidation
+local branch tips are contained; no additional committed branch work was found.
+[PDR-0154](decisions/0154-main-consolidation-and-product-checkpoint.md) records this checkpoint and its boundaries.
 
-- `main` remains at the fourth recovery merge (`9efadd3c`). Active branch `project-recovery-3`,
-  tip `a07b889b` plus this checkpoint, pushed.
-- WS-7 closed; WS-3/WS-4 open; oracle still required. Critical path unchanged: WS-6
-  `hamlet-5e39fcccb0` → WS-2 `hamlet-337b9e80fb` → WS-3 `hamlet-1f89714685` → WS-4
-  `hamlet-15050f280a`. Docs rewrite `hamlet-7a52a63e0b` stays gated on WS-4 (`PDR-0125`).
+| Package | Accepted contract | Qualification |
+| --- | --- | --- |
+| A | Content discovery, scoped declaration merge, collision/provenance diagnostics, single authored clock authority | [PDR-0149](decisions/0149-owner-extends-cut-a-acceptance-to-october-1-and-cut-a-is-accepted.md); exact implementation `75383d18` hosted gates accepted |
+| B | Canonical variables, explicit lifetime/default/expression semantics, complete supported symbols and typed token scope | [PDR-0151](decisions/0151-cut-b-accepted-against-prd-0003.md); published implementation `22924d0a` hosted gates accepted |
+| Static access | Required finite engine/agent read policies, engine/empty writers, independent exposure, checked ordinary/item access, immutable authority and policy-bearing cache/checkpoint identity | [PDR-0153](decisions/0153-static-epistemic-access-accepted-against-prd-0004.md); qualified execution `b70fda10` |
 
-**2. Token-observation engineering — COMPLETE.** `hamlet-fa6bb6da4a` closed with all five
-milestones terminal (`PDR-0133`–`0136`, `0141`, `0144`). This session accepted M4 (four cells
-pass the 79.1947 floor at the frozen budget) and unit 5 (every pack runs under one
-discovery-driven test; every live token type and scope exercised from a committed pack; L3 is one
-authored `day_phase` token; `observation_mode` and nine retired trial packs deleted). No horizon
-change: the next unit is the top of Next — the declaration-store compiler unit (`PDR-0117`) or the
-epistemic-access unit (`PDR-0120`) — and is a DECIDE for the next session, not preauthorised.
+The static source passed **4,250 tests / 18 skips / 85% coverage**, all local lint/fleet gates,
+31-case direct-parent comparison and ten frozen CPU cells. This is retained source qualification,
+not a new full-suite run at the local merge. **201 postmerge checks passed** against
+actual main-worktree imports. [Main integration receipt](evidence/main-consolidation/local-integration.json)
+records identities, commands and preservation checks. Exact-head GitHub publication/checks are
+recorded separately in delivery issue **`hamlet-dd9a03f787`** and its consolidation PR; this
+committed snapshot precedes that publication. Local merge, push, hosted success and GitHub merge
+are separate gates. No release, tag or deployment is part of this task.
 
-**3. Two P1 engine defects outside any unit:** `hamlet-d6fc84d147` (env step counter increments
-for dead agents; feeds rewards/curriculum under the oracle, needs its own differential run,
-`PDR-0140`) and `hamlet-4b931faaf4` (held/exclusive items invisible to the whole `item` token
-type; `layout_hash`-moving fix, `PDR-0144`). Both triage.
+Three historical access defects are closed with bounded source/runtime evidence:
+`hamlet-fc78bb49d3`, `hamlet-1a520475f4`, `hamlet-c78fbf32a3`. Owner/per-observer privacy
+`hamlet-83a043a9b9` remains open. Unknown historical roles are refused, not implemented.
 
-**4. Documentation truth** (`PDR-0125`): schema docs realigned this session; `CLAUDE.md:116`
-false claim still an observation (`hamlet-obs-5f1ea6c254`, expires 2026-09-15); new observation
-`hamlet-obs-b959ce55c0` (dead-weight durability rows).
+## Product judgment
 
-**5. Weft tooling** (`PDR-0139`): held at resume (doctors clean, probe 200, index fresh). The
-loomweave index is now stale by 12 commits — re-analyse at next resume.
+The supported declaration → compiled state → checked runtime contract is stronger. The product
+still has no freshly qualified multi-scenario compile → render → converge milestone. Static
+policy tests do not establish trustworthy episode outcomes, full BAC cognition, browser behavior,
+Murk integration, item ownership/locality, effect reset or portable model export.
 
-## What this checkpoint did
+Historical M4 remains four passing token architecture/aggregation cells at training `9d4e942f`,
+one training seed and its fixed evaluation/budget protocol. It is not current-main multi-seed
+convergence evidence. [Metrics](metrics.md) keeps those readings separate.
 
-- Owner directed *"lets finish M4"* and preauthorised the roll into M5. Grant re-confirmed
-  unchanged.
-- M4: resumed both recurrent cells on the pinned `9d4e942f` worktree, evaluated, repaired the
-  evidence path test-first (`PDR-0140`), accepted (`PDR-0141`), evidence versioned under
-  `docs/product/baselines/2026-09-m4-token-regression/`.
-- Unit 5: ruled the trial-pack disposition (`PDR-0142`) and unit scope (`PDR-0143`); executed a
-  five-task plan by subagent-driven development (fresh implementer + task review per task, whole-
-  branch review, one fix wave); accepted (`PDR-0144`). Eleven code commits `5973f79b`…`a07b889b`.
-- Closed `hamlet-25fc3fb955`, `hamlet-55b2826a02`, `hamlet-fa6bb6da4a`, `hamlet-5a87550adb`;
-  filed `hamlet-d6fc84d147`, `hamlet-4b931faaf4`, one observation.
+## Recovery exit and next step
 
-## Standing gates
+Recovery remains open. **PDR-0058's register-growth trigger has fired:** A/B/static added
+DIV-013/014/015 without terminalizing existing divergences. Reopen the oracle-retirement exit
+framing for review; do not erase evidence, re-freeze the oracle or call registered differences
+terminal because qualification passes. The existing exit is not met, and a main merge does not
+meet it. [Checkpoint assessment](assessments/2026-10-01-main-product-checkpoint.md) records this
+reading. No new exit definition or deadline is invented here.
 
-1. `PDR-0127` gate set last executed on `a07b889b`: all static gates green; pytest 3,846 passed /
-   11 skipped (run as two foreground tiers — the host killed two background runs).
-2. Dependabot #33 (torch) and #34 (pytest) remain open since 2026-08-15.
-3. No release, tag, announcement, 1.0 declaration or external coordination is authorized here.
+The recommended next package is **truthful episode lanes**, starting from
+`hamlet-d6fc84d147`: reproduce current main, then plan a bounded lifecycle/accounting contract
+before another learning campaign. Proposed fixture: deaths at steps 2/5 give survival `[2,5]`,
+seven live transitions, five vector ticks, one terminal/finalization each, and no post-death
+replay/RND/annealing/bonus. Adjacent learner defects require reproduction before being treated
+as confirmed scope. This recommendation is not authorization to implement it.
 
-## Open questions / blocked on owner
-
-- **Nothing escalated.** Every action (pushes, tracker closes, deletions of retired packs
-  already ruled by `PDR-0082`–`0085`/PRD-0001 §9, the `.filigree/`-style cleanups) is inside the
-  grant. Primary experimental evidence untouched.
-- **Merge to `main`:** autonomous under `PDR-0101` but owes the `PDR-0039` gate-2 README
-  re-verification by method. Not done this session; the branch is 13 commits ahead of `main`.
-
-## Decision checks
-
-- `PDR-0132`: each milestone accepted and checkpointed before its successor — held for M4→M5.
-- `PDR-0143` / `PDR-0144` reversal triggers armed: L2 four-cell floor on any post-unit-5 commit;
-  a shared-world declaration surface makes agent tokens live.
-- `PDR-0139`: tool health rule held at resume.
-
-## Next session starts here
-
-1. `/own-product`: re-analyse the loomweave index; confirm the grant.
-2. DECIDE the next unit from Next: declaration-store compiler unit (`PDR-0117`; two inputs from
-   this session — `period`/`day_length` duplication, `filler_ref` string contract) versus
-   epistemic-access unit (`PDR-0120`). Or the merge to `main` with gate 2 first.
-3. Triage `hamlet-4b931faaf4` and `hamlet-d6fc84d147` — both are engine changes under the oracle
-   and need a register entry before landing.
+Next session: read the completed publication receipt, adjudicate the fired exit trigger,
+then source-reproduce and scope the episode-lane PRD. Keep effects reset and item fidelity as
+separate packages unless the chosen scenario explicitly depends on them. The frozen oracle,
+raw evidence and two unrelated dirty skill files remain preserved.

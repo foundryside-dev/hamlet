@@ -1,0 +1,81 @@
+{
+  "final_test_source_commit": "baced7dba659ab2024a3f164f18c450695000362",
+  "full_pytest": {
+    "command": "OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 .venv/bin/pytest",
+    "coverage_percent": 84,
+    "coverage_total": "TOTAL                                                   21357   2599   8070   1474    84%",
+    "elapsed_seconds": 977.17,
+    "exit_code": 0,
+    "log": "/tmp/cut-b-full-suite-final-clock-fixed.log",
+    "log_sha256": "11625a0bfd949f0307c62c902607eaeed76d7767b791284f282325058c2f03e1",
+    "passed": 4055,
+    "skipped": 18,
+    "source_commit": "baced7dba659ab2024a3f164f18c450695000362",
+    "status": "passed",
+    "warnings": 15
+  },
+  "gate_source_commit": "73f52c20e16e31ddbda9ec4ac637e02840ffb9de",
+  "gates": [
+    {
+      "command": [
+        ".venv/bin/ruff",
+        "check",
+        "."
+      ],
+      "elapsed_seconds": 0.01,
+      "exit_code": 0,
+      "log": "/tmp/cut-b-final-gate-0.log"
+    },
+    {
+      "command": [
+        ".venv/bin/black",
+        "--check",
+        "src",
+        "tests"
+      ],
+      "elapsed_seconds": 1.91,
+      "exit_code": 0,
+      "log": "/tmp/cut-b-final-gate-1.log"
+    },
+    {
+      "command": [
+        ".venv/bin/mypy",
+        "src/townlet",
+        "--show-error-codes"
+      ],
+      "elapsed_seconds": 0.91,
+      "exit_code": 0,
+      "log": "/tmp/cut-b-final-gate-2.log"
+    },
+    {
+      "command": [
+        ".venv/bin/python",
+        "scripts/no_defaults_lint.py",
+        "src/townlet/",
+        "--whitelist",
+        ".defaults-whitelist.txt"
+      ],
+      "elapsed_seconds": 0.39,
+      "exit_code": 0,
+      "log": "/tmp/cut-b-final-gate-3.log"
+    },
+    {
+      "command": [
+        ".venv/bin/python",
+        "scripts/validate_compiler_cli.py"
+      ],
+      "elapsed_seconds": 47.44,
+      "exit_code": 0,
+      "log": "/tmp/cut-b-final-gate-4.log"
+    }
+  ],
+  "no_defaults_whitelist_sha256": "c609e7a9c16c7cd8a07b2a3e2848569e643b09fb0d33985e405d8766fbada261",
+  "outputs": {
+    "gate-0": "All checks passed!\n",
+    "gate-1": "All done! \u2728 \ud83c\udf70 \u2728\n561 files would be left unchanged.\n",
+    "gate-2": "src/townlet/demo/runner.py:276: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]\nsrc/townlet/demo/runner.py:578: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]\nSuccess: no issues found in 176 source files\n",
+    "gate-3": "Scanning 176 Python file(s)...\nProgress: 1/176 files scanned\nProgress: 10/176 files scanned\nProgress: 20/176 files scanned\nProgress: 30/176 files scanned\nProgress: 40/176 files scanned\nProgress: 50/176 files scanned\nProgress: 60/176 files scanned\nProgress: 70/176 files scanned\nProgress: 80/176 files scanned\nProgress: 90/176 files scanned\nProgress: 100/176 files scanned\nProgress: 110/176 files scanned\nProgress: 120/176 files scanned\nProgress: 130/176 files scanned\nProgress: 140/176 files scanned\nProgress: 150/176 files scanned\nProgress: 160/176 files scanned\nProgress: 170/176 files scanned\nProgress: 176/176 files scanned\nLoaded 122 whitelist pattern(s) from .defaults-whitelist.txt\n  - 113 structural pattern(s)\n  - 9 line-based pattern(s)\nNo defaults detected. Clean.\n(692 violation(s) whitelisted)\n",
+    "gate-4": "Validation succeeded in 111.7 ms (no cache artifacts written)\nValidation succeeded in 1479.7 ms (no cache artifacts written)\nValidation succeeded in 439.8 ms (no cache artifacts written)\nValidation succeeded in 295.5 ms (no cache artifacts written)\nValidation succeeded in 302.5 ms (no cache artifacts written)\nValidation succeeded in 150.1 ms (no cache artifacts written)\nValidation succeeded in 121.0 ms (no cache artifacts written)\nValidation succeeded in 131.9 ms (no cache artifacts written)\nValidation succeeded in 68.5 ms (no cache artifacts written)\nValidation succeeded in 71.2 ms (no cache artifacts written)\nValidation succeeded in 77.8 ms (no cache artifacts written)\nValidation succeeded in 91.5 ms (no cache artifacts written)\nValidation succeeded in 100.7 ms (no cache artifacts written)\nValidation succeeded in 95.0 ms (no cache artifacts written)\nValidation succeeded in 304.3 ms (no cache artifacts written)\nValidation succeeded in 329.3 ms (no cache artifacts written)\nValidation succeeded in 259.0 ms (no cache artifacts written)\nValidation succeeded in 673.3 ms (no cache artifacts written)\nValidation succeeded in 75.0 ms (no cache artifacts written)\nValidation succeeded in 73.3 ms (no cache artifacts written)\nValidation succeeded in 74.4 ms (no cache artifacts written)\nValidation succeeded in 62.3 ms (no cache artifacts written)\nCompilation failed: Stage 6: Enrich shared schemas and effects failed:\n  - [VFS-PROFILE-COMPILE] /tmp/hamlet-declaration-cut-b/configs/test/vfs_circular_dependency/variables.yaml:1 - Circular dependency detected in cycle: b -> a -> b\nValidation succeeded in 65.5 ms (no cache artifacts written)\nCompilation failed: Stage 6: Enrich shared schemas and effects failed:\n  - [VFS-PROFILE-COMPILE] /tmp/hamlet-declaration-cut-b/configs/test/vfs_type_mismatch/variables.yaml:1 - Variable 'my_int_var' declared as scalar but expression returns bool\nCompilation failed: Stage 6: Enrich shared schemas and effects failed:\n  - [VFS-PROFILE-COMPILE] /tmp/hamlet-declaration-cut-b/configs/test/vfs_undefined_var/variables.yaml:1 - Variable 'undefined_var' not found in schema. Available variables: ['tick', 'bar.energy']\nValidation succeeded in 120.8 ms (no cache artifacts written)\nValidation succeeded in 116.8 ms (no cache artifacts written)\n\ud83d\udd27 Validating configs/L5_multi_agent via CLI ...\n\ud83d\udd27 Validating configs/default_curriculum via CLI ...\n\ud83d\udd27 Validating configs/differential/boundary_wrap via CLI ...\n\ud83d\udd27 Validating configs/differential/div003_cubic_partial via CLI ...\n\ud83d\udd27 Validating configs/differential/div003_rect via CLI ...\n\ud83d\udd27 Validating configs/reference/model_pack via CLI ...\n\ud83d\udd27 Validating configs/simple via CLI ...\n\ud83d\udd27 Validating configs/test/action_masking via CLI ...\n\ud83d\udd27 Validating configs/test/action_space/aspatial via CLI ...\n\ud83d\udd27 Validating configs/test/action_space/continuous1d via CLI ...\n\ud83d\udd27 Validating configs/test/action_space/grid2d via CLI ...\n\ud83d\udd27 Validating configs/test/effects_smoke via CLI ...\n\ud83d\udd27 Validating configs/test/gridnd_4d_pack via CLI ...\n\ud83d\udd27 Validating configs/test/items_smoke via CLI ...\n\ud83d\udd27 Validating configs/test/model_config via CLI ...\n\ud83d\udd27 Validating configs/test/model_config_12meter via CLI ...\n\ud83d\udd27 Validating configs/test/model_config_4meter via CLI ...\n\ud83d\udd27 Validating configs/test/token_set_smoke via CLI ...\n\ud83d\udd27 Validating configs/test/token_transfer_a via CLI ...\n\ud83d\udd27 Validating configs/test/token_transfer_b via CLI ...\n\ud83d\udd27 Validating configs/test/token_transfer_c via CLI ...\n\ud83d\udd27 Validating configs/test/vfs_bar_access via CLI ...\n\ud83d\udd27 Validating configs/test/vfs_circular_dependency via CLI ... (expected failure fixture)\n\ud83d\udd27 Validating configs/test/vfs_dependency_chain via CLI ...\n\ud83d\udd27 Validating configs/test/vfs_type_mismatch via CLI ... (expected failure fixture)\n\ud83d\udd27 Validating configs/test/vfs_undefined_var via CLI ... (expected failure fixture)\n\ud83d\udd27 Validating configs/trial002_money_log_gdp via CLI ...\n\ud83d\udd27 Validating configs/trial_k_cold via CLI ...\n\u2705 Universe compiler CLI validation passed\n"
+  },
+  "reuse_basis": "Only the hidden-boolean clock negative fixture changed after gate source 73f52c20; production/config/scripts unchanged. Ruff and Black on that modified test both exit0; focused module25pass and independent clock14pass."
+}

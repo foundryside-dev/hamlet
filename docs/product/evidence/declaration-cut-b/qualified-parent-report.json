@@ -1,0 +1,3198 @@
+{
+  "case_count": 31,
+  "changes": [
+    {
+      "after": "6a5339db671d8a572b842f7df9c76689332f5f5129abd5d84c5850eed77b597b",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "2a1cbb27975a61c6a46e1887d73ac657a782c2d58f3b3c693e50eebaf158e553",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L5_multi_agent",
+      "pack": "configs/L5_multi_agent",
+      "path": "/all_levels.L5_multi_agent.observation_schema_hash"
+    },
+    {
+      "after": "ee3da65a9d2208f249e8d8794ea1b72ed16ea36e7a73f7753bb17a967725ca03",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 canonical_variable_schema: trust/occupied_by legacy reader/writer roles replaced by fixed agent/engine read and engine write policy",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "9feb74ef42ff8e8315e0e73c13b5999cdba83b9099c0a4d31af261de2b8fe1ab",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L5_multi_agent",
+      "pack": "configs/L5_multi_agent",
+      "path": "/all_levels.L5_multi_agent.variable_schema_hash"
+    },
+    {
+      "after": "f3ec872532110647f9c4876c9dc002c130869d957dfcc15bcc4c15d1e7bf56f0",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity: Task2 observation scope change at8a234b61 plus Task3 trust/occupied_by legacy reader/writer roles replaced by fixed agent/engine read and engine write policy",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "ca5e270ffe7ae418799b062af617462c254e914077529d030c311807903b4f32",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L5_multi_agent",
+      "pack": "configs/L5_multi_agent",
+      "path": "/all_levels.L5_multi_agent.vfs_hash"
+    },
+    {
+      "after": "9f52d9431dffada4c8affa61cd46c531ebbd0869b27749ec8a2f3d4f30a983bf",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "196ca39aad9750a5b77a42f016a7ec16bb9c32d620074a4fba4ff48e09e9ef8c",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L5_multi_agent",
+      "pack": "configs/L5_multi_agent",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "01a14bacf8cd16ecbab78e91e351b7909ddd2e74264fbe84dc0897d25bb040f5",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 explicit transport replacement: legacy vfs_profiles/variables_reference and environment.variables replaced by canonical variables declaration; see complete input inventory",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "2058be5436eccde7f313ff4455c5232c36454e9096c98accb0f61c3db21c40c0",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L5_multi_agent",
+      "pack": "configs/L5_multi_agent",
+      "path": "/metadata.config_hash"
+    },
+    {
+      "after": "52821e1d116e3bfce50abda98be02d50fc4d290c0ce99c4911fa8d467200f0a0",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "d862761143045c39280b539851d6ea1c7458d643e66b2ea5415f1484330b6ce1",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0",
+      "pack": "configs/aspatial_test",
+      "path": "/all_levels.L0.observation_schema_hash"
+    },
+    {
+      "after": "6aad1e365a731596fefa129d0dd2e5db825e96fb0fd9250de704dd4162b2d8b7",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "7c0d3995f0f4c5bf8bd52030cc381e9133ca9fee484e37166f5707005ea85e71",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0",
+      "pack": "configs/aspatial_test",
+      "path": "/all_levels.L0.vfs_hash"
+    },
+    {
+      "after": "07e98ff9c670391846af10d0fb41fe5139e15ad058ebe6a3efd47ba9da02a35b",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "15a6b503ac234819e40442a4c76a7e059b31247c6f35391b3ad8751996e49011",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0",
+      "pack": "configs/aspatial_test",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "23614309627e7116b36d082a45bbd43e4443f4042d82cc4b41c835b9c344c1f8",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 explicit transport replacement: legacy vfs_profiles/variables_reference and environment.variables replaced by canonical variables declaration; see complete input inventory",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "2a302360a60dddd7fc6378f9c0575b1e75635e7c5950e8f166133143f5753615",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0",
+      "pack": "configs/aspatial_test",
+      "path": "/metadata.config_hash"
+    },
+    {
+      "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_0_minimal",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L0_0_minimal.observation_schema_hash"
+    },
+    {
+      "after": "1a696caab82b87388534e72429b9f97710b9b13453891e81c2cda12220fad8ae",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "8760b4c3e9507c01138f59f2f0f98db110d17a9af6cb68f17a192c0a2e8eb84c",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_0_minimal",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L0_0_minimal.vfs_hash"
+    },
+    {
+      "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_0_minimal",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L0_5_dual_resource.observation_schema_hash"
+    },
+    {
+      "after": "05e73e6eb8757a224670aabf9df07657ce0601bf75d80dbf48f633f5b307ed4d",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_0_minimal",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L0_5_dual_resource.vfs_hash"
+    },
+    {
+      "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_0_minimal",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L1_full_observability.observation_schema_hash"
+    },
+    {
+      "after": "05e73e6eb8757a224670aabf9df07657ce0601bf75d80dbf48f633f5b307ed4d",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_0_minimal",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L1_full_observability.vfs_hash"
+    },
+    {
+      "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_0_minimal",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L2_partial_observability.observation_schema_hash"
+    },
+    {
+      "after": "05e73e6eb8757a224670aabf9df07657ce0601bf75d80dbf48f633f5b307ed4d",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_0_minimal",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L2_partial_observability.vfs_hash"
+    },
+    {
+      "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_0_minimal",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L3_temporal_mechanics.observation_schema_hash"
+    },
+    {
+      "after": "05e73e6eb8757a224670aabf9df07657ce0601bf75d80dbf48f633f5b307ed4d",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_0_minimal",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L3_temporal_mechanics.vfs_hash"
+    },
+    {
+      "after": "2accfd2d6c800f3a9711d447e910616eff9d41d35542c2739c81cf398cdcea41",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_0_minimal",
+      "pack": "configs/default_curriculum",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "b3bd5eca42ace74c9087b1d24c6d7092645f8afe30f54a740d56aa3006b8ef07",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 explicit transport replacement: legacy vfs_profiles/variables_reference and environment.variables replaced by canonical variables declaration; see complete input inventory",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "e1894a70af5944fc0ba7ce101194617cfffa573d64fc9763fad49de26edc59dd",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_0_minimal",
+      "pack": "configs/default_curriculum",
+      "path": "/metadata.config_hash"
+    },
+    {
+      "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_5_dual_resource",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L0_0_minimal.observation_schema_hash"
+    },
+    {
+      "after": "1a696caab82b87388534e72429b9f97710b9b13453891e81c2cda12220fad8ae",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "8760b4c3e9507c01138f59f2f0f98db110d17a9af6cb68f17a192c0a2e8eb84c",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_5_dual_resource",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L0_0_minimal.vfs_hash"
+    },
+    {
+      "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_5_dual_resource",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L0_5_dual_resource.observation_schema_hash"
+    },
+    {
+      "after": "05e73e6eb8757a224670aabf9df07657ce0601bf75d80dbf48f633f5b307ed4d",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_5_dual_resource",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L0_5_dual_resource.vfs_hash"
+    },
+    {
+      "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_5_dual_resource",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L1_full_observability.observation_schema_hash"
+    },
+    {
+      "after": "05e73e6eb8757a224670aabf9df07657ce0601bf75d80dbf48f633f5b307ed4d",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_5_dual_resource",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L1_full_observability.vfs_hash"
+    },
+    {
+      "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_5_dual_resource",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L2_partial_observability.observation_schema_hash"
+    },
+    {
+      "after": "05e73e6eb8757a224670aabf9df07657ce0601bf75d80dbf48f633f5b307ed4d",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_5_dual_resource",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L2_partial_observability.vfs_hash"
+    },
+    {
+      "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_5_dual_resource",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L3_temporal_mechanics.observation_schema_hash"
+    },
+    {
+      "after": "05e73e6eb8757a224670aabf9df07657ce0601bf75d80dbf48f633f5b307ed4d",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_5_dual_resource",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L3_temporal_mechanics.vfs_hash"
+    },
+    {
+      "after": "2accfd2d6c800f3a9711d447e910616eff9d41d35542c2739c81cf398cdcea41",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_5_dual_resource",
+      "pack": "configs/default_curriculum",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "b3bd5eca42ace74c9087b1d24c6d7092645f8afe30f54a740d56aa3006b8ef07",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 explicit transport replacement: legacy vfs_profiles/variables_reference and environment.variables replaced by canonical variables declaration; see complete input inventory",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "e1894a70af5944fc0ba7ce101194617cfffa573d64fc9763fad49de26edc59dd",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_5_dual_resource",
+      "pack": "configs/default_curriculum",
+      "path": "/metadata.config_hash"
+    },
+    {
+      "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L1_full_observability",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L0_0_minimal.observation_schema_hash"
+    },
+    {
+      "after": "1a696caab82b87388534e72429b9f97710b9b13453891e81c2cda12220fad8ae",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "8760b4c3e9507c01138f59f2f0f98db110d17a9af6cb68f17a192c0a2e8eb84c",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L1_full_observability",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L0_0_minimal.vfs_hash"
+    },
+    {
+      "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L1_full_observability",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L0_5_dual_resource.observation_schema_hash"
+    },
+    {
+      "after": "05e73e6eb8757a224670aabf9df07657ce0601bf75d80dbf48f633f5b307ed4d",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L1_full_observability",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L0_5_dual_resource.vfs_hash"
+    },
+    {
+      "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L1_full_observability",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L1_full_observability.observation_schema_hash"
+    },
+    {
+      "after": "05e73e6eb8757a224670aabf9df07657ce0601bf75d80dbf48f633f5b307ed4d",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L1_full_observability",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L1_full_observability.vfs_hash"
+    },
+    {
+      "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L1_full_observability",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L2_partial_observability.observation_schema_hash"
+    },
+    {
+      "after": "05e73e6eb8757a224670aabf9df07657ce0601bf75d80dbf48f633f5b307ed4d",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L1_full_observability",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L2_partial_observability.vfs_hash"
+    },
+    {
+      "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L1_full_observability",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L3_temporal_mechanics.observation_schema_hash"
+    },
+    {
+      "after": "05e73e6eb8757a224670aabf9df07657ce0601bf75d80dbf48f633f5b307ed4d",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L1_full_observability",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L3_temporal_mechanics.vfs_hash"
+    },
+    {
+      "after": "2accfd2d6c800f3a9711d447e910616eff9d41d35542c2739c81cf398cdcea41",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L1_full_observability",
+      "pack": "configs/default_curriculum",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "b3bd5eca42ace74c9087b1d24c6d7092645f8afe30f54a740d56aa3006b8ef07",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 explicit transport replacement: legacy vfs_profiles/variables_reference and environment.variables replaced by canonical variables declaration; see complete input inventory",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "e1894a70af5944fc0ba7ce101194617cfffa573d64fc9763fad49de26edc59dd",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L1_full_observability",
+      "pack": "configs/default_curriculum",
+      "path": "/metadata.config_hash"
+    },
+    {
+      "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L2_partial_observability",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L0_0_minimal.observation_schema_hash"
+    },
+    {
+      "after": "1a696caab82b87388534e72429b9f97710b9b13453891e81c2cda12220fad8ae",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "8760b4c3e9507c01138f59f2f0f98db110d17a9af6cb68f17a192c0a2e8eb84c",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L2_partial_observability",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L0_0_minimal.vfs_hash"
+    },
+    {
+      "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L2_partial_observability",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L0_5_dual_resource.observation_schema_hash"
+    },
+    {
+      "after": "05e73e6eb8757a224670aabf9df07657ce0601bf75d80dbf48f633f5b307ed4d",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L2_partial_observability",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L0_5_dual_resource.vfs_hash"
+    },
+    {
+      "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L2_partial_observability",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L1_full_observability.observation_schema_hash"
+    },
+    {
+      "after": "05e73e6eb8757a224670aabf9df07657ce0601bf75d80dbf48f633f5b307ed4d",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L2_partial_observability",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L1_full_observability.vfs_hash"
+    },
+    {
+      "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L2_partial_observability",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L2_partial_observability.observation_schema_hash"
+    },
+    {
+      "after": "05e73e6eb8757a224670aabf9df07657ce0601bf75d80dbf48f633f5b307ed4d",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L2_partial_observability",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L2_partial_observability.vfs_hash"
+    },
+    {
+      "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L2_partial_observability",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L3_temporal_mechanics.observation_schema_hash"
+    },
+    {
+      "after": "05e73e6eb8757a224670aabf9df07657ce0601bf75d80dbf48f633f5b307ed4d",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L2_partial_observability",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L3_temporal_mechanics.vfs_hash"
+    },
+    {
+      "after": "2accfd2d6c800f3a9711d447e910616eff9d41d35542c2739c81cf398cdcea41",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L2_partial_observability",
+      "pack": "configs/default_curriculum",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "b3bd5eca42ace74c9087b1d24c6d7092645f8afe30f54a740d56aa3006b8ef07",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 explicit transport replacement: legacy vfs_profiles/variables_reference and environment.variables replaced by canonical variables declaration; see complete input inventory",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "e1894a70af5944fc0ba7ce101194617cfffa573d64fc9763fad49de26edc59dd",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L2_partial_observability",
+      "pack": "configs/default_curriculum",
+      "path": "/metadata.config_hash"
+    },
+    {
+      "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L3_temporal_mechanics",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L0_0_minimal.observation_schema_hash"
+    },
+    {
+      "after": "1a696caab82b87388534e72429b9f97710b9b13453891e81c2cda12220fad8ae",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "8760b4c3e9507c01138f59f2f0f98db110d17a9af6cb68f17a192c0a2e8eb84c",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L3_temporal_mechanics",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L0_0_minimal.vfs_hash"
+    },
+    {
+      "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L3_temporal_mechanics",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L0_5_dual_resource.observation_schema_hash"
+    },
+    {
+      "after": "05e73e6eb8757a224670aabf9df07657ce0601bf75d80dbf48f633f5b307ed4d",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L3_temporal_mechanics",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L0_5_dual_resource.vfs_hash"
+    },
+    {
+      "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L3_temporal_mechanics",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L1_full_observability.observation_schema_hash"
+    },
+    {
+      "after": "05e73e6eb8757a224670aabf9df07657ce0601bf75d80dbf48f633f5b307ed4d",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L3_temporal_mechanics",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L1_full_observability.vfs_hash"
+    },
+    {
+      "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L3_temporal_mechanics",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L2_partial_observability.observation_schema_hash"
+    },
+    {
+      "after": "05e73e6eb8757a224670aabf9df07657ce0601bf75d80dbf48f633f5b307ed4d",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L3_temporal_mechanics",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L2_partial_observability.vfs_hash"
+    },
+    {
+      "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L3_temporal_mechanics",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L3_temporal_mechanics.observation_schema_hash"
+    },
+    {
+      "after": "05e73e6eb8757a224670aabf9df07657ce0601bf75d80dbf48f633f5b307ed4d",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L3_temporal_mechanics",
+      "pack": "configs/default_curriculum",
+      "path": "/all_levels.L3_temporal_mechanics.vfs_hash"
+    },
+    {
+      "after": "2accfd2d6c800f3a9711d447e910616eff9d41d35542c2739c81cf398cdcea41",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L3_temporal_mechanics",
+      "pack": "configs/default_curriculum",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "b3bd5eca42ace74c9087b1d24c6d7092645f8afe30f54a740d56aa3006b8ef07",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 explicit transport replacement: legacy vfs_profiles/variables_reference and environment.variables replaced by canonical variables declaration; see complete input inventory",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "e1894a70af5944fc0ba7ce101194617cfffa573d64fc9763fad49de26edc59dd",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L3_temporal_mechanics",
+      "pack": "configs/default_curriculum",
+      "path": "/metadata.config_hash"
+    },
+    {
+      "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L1_full_observability",
+      "pack": "configs/differential/boundary_wrap",
+      "path": "/all_levels.L1_full_observability.observation_schema_hash"
+    },
+    {
+      "after": "05e73e6eb8757a224670aabf9df07657ce0601bf75d80dbf48f633f5b307ed4d",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L1_full_observability",
+      "pack": "configs/differential/boundary_wrap",
+      "path": "/all_levels.L1_full_observability.vfs_hash"
+    },
+    {
+      "after": "2accfd2d6c800f3a9711d447e910616eff9d41d35542c2739c81cf398cdcea41",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L1_full_observability",
+      "pack": "configs/differential/boundary_wrap",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "475fb0fb1d070351eacc5b85d4b306a39422fe8e9626cf682ae1b841eb471130",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 explicit transport replacement: legacy vfs_profiles/variables_reference and environment.variables replaced by canonical variables declaration; see complete input inventory",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "e52fa140a9f5b9a47a09f13990804fd58987830cc3fc0c42365689cfd8b6c8b9",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L1_full_observability",
+      "pack": "configs/differential/boundary_wrap",
+      "path": "/metadata.config_hash"
+    },
+    {
+      "after": "88b72261226dccd95c5717aacefdaec0e4bbf4a2decf8b8439df80b69337cc07",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "a221e121044ef5c92091645eddab6820396a1782ff386a63ead1b136db8d0927",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L2_partial_observability",
+      "pack": "configs/differential/div003_cubic_partial",
+      "path": "/all_levels.L2_partial_observability.observation_schema_hash"
+    },
+    {
+      "after": "2163b37fde594ff2f1d3916d987314e7c75838b96d352b210e362d6053f9a150",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "9563de51e767aa64bd7f426fd50936706de8b3998db3758770cbaa474440b339",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L2_partial_observability",
+      "pack": "configs/differential/div003_cubic_partial",
+      "path": "/all_levels.L2_partial_observability.vfs_hash"
+    },
+    {
+      "after": "2accfd2d6c800f3a9711d447e910616eff9d41d35542c2739c81cf398cdcea41",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L2_partial_observability",
+      "pack": "configs/differential/div003_cubic_partial",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "15c9d6a10b5578625f865399e9067672884fc253dd4f719a64e59614615671cd",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 explicit transport replacement: legacy vfs_profiles/variables_reference and environment.variables replaced by canonical variables declaration; see complete input inventory",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "203417881f155694355a1a62f042c60f37f198339d1d9a2402f5728f30527dc7",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L2_partial_observability",
+      "pack": "configs/differential/div003_cubic_partial",
+      "path": "/metadata.config_hash"
+    },
+    {
+      "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L1_full_observability",
+      "pack": "configs/differential/div003_rect",
+      "path": "/all_levels.L1_full_observability.observation_schema_hash"
+    },
+    {
+      "after": "05e73e6eb8757a224670aabf9df07657ce0601bf75d80dbf48f633f5b307ed4d",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L1_full_observability",
+      "pack": "configs/differential/div003_rect",
+      "path": "/all_levels.L1_full_observability.vfs_hash"
+    },
+    {
+      "after": "2accfd2d6c800f3a9711d447e910616eff9d41d35542c2739c81cf398cdcea41",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L1_full_observability",
+      "pack": "configs/differential/div003_rect",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "ae17921491ff9fce2a34e5767c6b2bda17c72af2a5cf186d93e444fdc0d5ed84",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 explicit transport replacement: legacy vfs_profiles/variables_reference and environment.variables replaced by canonical variables declaration; see complete input inventory",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "a05e8733014cb936e0d87782d2dd3bacdd6e80c512f66827212122baaad9cd04",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L1_full_observability",
+      "pack": "configs/differential/div003_rect",
+      "path": "/metadata.config_hash"
+    },
+    {
+      "after": "cb083b673034700a39da4fc75d78e4c5dbe5c3179f9ca97adb4859095d167253",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "4a066b6c03572251bcf1d859d8f54b822a1fe27233b6e9cbb8da03d1a629754b",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_demo",
+      "pack": "configs/reference/model_pack",
+      "path": "/all_levels.L0_demo.observation_schema_hash"
+    },
+    {
+      "after": "31d734bbd034b421e857469da7f6f1f9500c4b937cc3a943a61bfd07a376b6e4",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "5b7dff72f77a0d2c5e5c42373b91aa0858984f77d0635539fd6e0c325cd05d85",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_demo",
+      "pack": "configs/reference/model_pack",
+      "path": "/all_levels.L0_demo.vfs_hash"
+    },
+    {
+      "after": "c1dc0cdfe488aec107b64b75d838b3fafe38f3b834b74e4af999fd52b2a858e3",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "d534fc8d208243190d7ca0110af398a0ae6dc8b67e33e678267b278e68119ec0",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_demo",
+      "pack": "configs/reference/model_pack",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "7de6cd79ca8f3d48a7306653caad3de4865b0822ca4232af94a0119eeee7449d",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 explicit transport replacement: legacy vfs_profiles/variables_reference and environment.variables replaced by canonical variables declaration; see complete input inventory",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "f7d0422545ea88e9968091b764ceeffaca45aed27db21ef17ac8245f877da7a3",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_demo",
+      "pack": "configs/reference/model_pack",
+      "path": "/metadata.config_hash"
+    },
+    {
+      "after": "6a5339db671d8a572b842f7df9c76689332f5f5129abd5d84c5850eed77b597b",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "2a1cbb27975a61c6a46e1887d73ac657a782c2d58f3b3c693e50eebaf158e553",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_simple",
+      "pack": "configs/simple",
+      "path": "/all_levels.L0_simple.observation_schema_hash"
+    },
+    {
+      "after": "8a19cf012fa54eb37a2e615577c020630d035d573f64e38a942bf3950d05c366",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "15bf8b195a8726317e5c284210c24ae7fc5beed9cc30e1a43302d66d64ee44de",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_simple",
+      "pack": "configs/simple",
+      "path": "/all_levels.L0_simple.vfs_hash"
+    },
+    {
+      "after": "9f52d9431dffada4c8affa61cd46c531ebbd0869b27749ec8a2f3d4f30a983bf",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "196ca39aad9750a5b77a42f016a7ec16bb9c32d620074a4fba4ff48e09e9ef8c",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_simple",
+      "pack": "configs/simple",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "c2449e9e523c0bb3a7396b3625fab9fd6f68a4aa9d0c8b0858b6c79ed5b43f73",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 explicit transport replacement: legacy vfs_profiles/variables_reference and environment.variables replaced by canonical variables declaration; see complete input inventory",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "2c12d2ab8c487964eb3f5a518be15510033413e07391c3d07d0a1457b5cd53a7",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_simple",
+      "pack": "configs/simple",
+      "path": "/metadata.config_hash"
+    },
+    {
+      "after": "6affae973dd22f06f4889069ded46be50c43357132ee4b7ea8f511f94650d2a0",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "d13235d23c79f92624e76b7b015a31cdef46d68b135c8cb28452071b3ba71490",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_masking",
+      "pack": "configs/test/action_masking",
+      "path": "/all_levels.L0_masking.observation_schema_hash"
+    },
+    {
+      "after": "8d495b76d24ac07c2397f04aa5137a8b71f2c9ed872e12216065c49f9e22ae71",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "2abfd88b6f419c07655c30b1c4a0a8ed33e75ad4140a0d813588698b9ace2f26",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_masking",
+      "pack": "configs/test/action_masking",
+      "path": "/all_levels.L0_masking.vfs_hash"
+    },
+    {
+      "after": "d63722ac5e9fbc58c6e6bfd21b660934626bfca5134e71e279ab8d9dafd2c080",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "d283a329fe4f87e665fc890e39322da8747f87f2482733bd6f88fb1cf8121748",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_masking",
+      "pack": "configs/test/action_masking",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "be78cf800cf1a9409b74f111a84c19369e8ee041141b0878f5f10a14d2c0a195",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 explicit transport replacement: legacy vfs_profiles/variables_reference and environment.variables replaced by canonical variables declaration; see complete input inventory",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "c4b61352beb28efccd283c6691f3e5b1336b6aa9755c91bf4ecf2543efe3f1f7",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_masking",
+      "pack": "configs/test/action_masking",
+      "path": "/metadata.config_hash"
+    },
+    {
+      "after": "52821e1d116e3bfce50abda98be02d50fc4d290c0ce99c4911fa8d467200f0a0",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "d862761143045c39280b539851d6ea1c7458d643e66b2ea5415f1484330b6ce1",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0",
+      "pack": "configs/test/action_space/aspatial",
+      "path": "/all_levels.L0.observation_schema_hash"
+    },
+    {
+      "after": "6aad1e365a731596fefa129d0dd2e5db825e96fb0fd9250de704dd4162b2d8b7",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "7c0d3995f0f4c5bf8bd52030cc381e9133ca9fee484e37166f5707005ea85e71",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0",
+      "pack": "configs/test/action_space/aspatial",
+      "path": "/all_levels.L0.vfs_hash"
+    },
+    {
+      "after": "07e98ff9c670391846af10d0fb41fe5139e15ad058ebe6a3efd47ba9da02a35b",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "15a6b503ac234819e40442a4c76a7e059b31247c6f35391b3ad8751996e49011",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0",
+      "pack": "configs/test/action_space/aspatial",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "b60874b0da36831d7980a37006c729543790402f18c981ab9187e853a9f06bff",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 explicit transport replacement: legacy vfs_profiles/variables_reference and environment.variables replaced by canonical variables declaration; see complete input inventory",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "2334f8350c17eff2a81044428b5cd7dbb8f045daacd2077b7fd439bcfde0492c",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0",
+      "pack": "configs/test/action_space/aspatial",
+      "path": "/metadata.config_hash"
+    },
+    {
+      "after": "5e7b743952f3598d8c67fbc4f5246797e7acdc5e920c76616ab58fe51aec516a",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "5ea0c8a0eb059eea8884f91b606e70d9e15cc599d112272b8f3f68eaf18f336a",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0",
+      "pack": "configs/test/action_space/continuous1d",
+      "path": "/all_levels.L0.observation_schema_hash"
+    },
+    {
+      "after": "09f66251bb16a06e036f2105f74debc006b63f3f81dc40a84a3802da1dfb08f9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "62c281b0291f8e1c43ae0b43efb8e41db0170145e08676d4d7ac18997d48546a",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0",
+      "pack": "configs/test/action_space/continuous1d",
+      "path": "/all_levels.L0.vfs_hash"
+    },
+    {
+      "after": "07e98ff9c670391846af10d0fb41fe5139e15ad058ebe6a3efd47ba9da02a35b",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "15a6b503ac234819e40442a4c76a7e059b31247c6f35391b3ad8751996e49011",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0",
+      "pack": "configs/test/action_space/continuous1d",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "33effc6ef9f55f111c21c251cfd2daef73606af42f8203686a3f6255d97366ee",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 explicit transport replacement: legacy vfs_profiles/variables_reference and environment.variables replaced by canonical variables declaration; see complete input inventory",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "5497d2f0fc3db2e110ef4d3f415e3d5b73f6834940543158a598b063488f113b",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0",
+      "pack": "configs/test/action_space/continuous1d",
+      "path": "/metadata.config_hash"
+    },
+    {
+      "after": "f8ebf05e7d1a68fc95c807927869ffa79131b86895f3e0bc479ed98754b2033d",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "7a953f8f4072c907428048e8b3ea2ea2a9f28b81efa3074b7c597eb0566ac82b",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0",
+      "pack": "configs/test/action_space/grid2d",
+      "path": "/all_levels.L0.observation_schema_hash"
+    },
+    {
+      "after": "70262ca836556aa60176f23e0f165b333e76c7ae62b7cd58eea35bfabab11723",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "3e078d61b410cb99bdd76fe8f6f41537d6c6c6531861706a72340ae85b6483e6",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0",
+      "pack": "configs/test/action_space/grid2d",
+      "path": "/all_levels.L0.vfs_hash"
+    },
+    {
+      "after": "90230131dcecd120e8cd9c2986bbc9335bca71b0855f91a18768f8323b71d9d2",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "132444f0ad2824a55e24e4c5c900146f8a3d66237cbcc08f26af6fd7f3d6978e",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0",
+      "pack": "configs/test/action_space/grid2d",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "2b0234094eed93876779b2d5069792644dac613123bbd7b48131bde60b5a425a",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 explicit transport replacement: legacy vfs_profiles/variables_reference and environment.variables replaced by canonical variables declaration; see complete input inventory",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "d14be3d4b9cbee2e8faa1448dff73e62f403819a804ba6978949954cc6a1df24",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0",
+      "pack": "configs/test/action_space/grid2d",
+      "path": "/metadata.config_hash"
+    },
+    {
+      "after": "2e6077c4248ab88e5b10588d320d411dcf81cefe48270474b30d0317c65ee387",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "dde5eaac7c48dbfac35ca1dfd707c78f3dd540eb7438a91956c696b04a1a2f02",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_effects",
+      "pack": "configs/test/effects_smoke",
+      "path": "/all_levels.L0_effects.observation_schema_hash"
+    },
+    {
+      "after": "a95ac3cdd865c746543005af56bcbcef8a7dfa181373791076bb891f003ea820",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 canonical_variable_schema: unexposed position loses inert normalization range and redundant vec2f dims; digesting loses legacy actions writer",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "e1fc0ee0df0992be5f7708b0a74dfd4fbbeabe17948327cbafca4c210cfc0166",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_effects",
+      "pack": "configs/test/effects_smoke",
+      "path": "/all_levels.L0_effects.variable_schema_hash"
+    },
+    {
+      "after": "b7340cb5915799af269ea7c1ed4ec9d8c44239282664441ab2748466c2b629a4",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity: Task2 observation scope change at8a234b61 plus Task3 unexposed position loses inert normalization range and redundant vec2f dims; digesting loses legacy actions writer",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "9ddadaa124e951ddc583a71132ea0a8c2ce81eabcba0cec6bc22ebbbad073425",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_effects",
+      "pack": "configs/test/effects_smoke",
+      "path": "/all_levels.L0_effects.vfs_hash"
+    },
+    {
+      "after": "077adada9fdb74469368761c3545e34767a25007129f177c50e5520ba2b7bcb5",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "50406e5bbad790769c140e91236f7018a16330c956d4f74456b2e7fa20849603",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_effects",
+      "pack": "configs/test/effects_smoke",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "c4e042b0474deb54ec99b7c4cf7a06976e3cbb4e1098c44ab1d470fc297d7113",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 explicit transport replacement: legacy vfs_profiles/variables_reference and environment.variables replaced by canonical variables declaration; see complete input inventory",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "8ddb9cc1cf1fb0e9492da140a6885e48ed345603935b8d74d188dc744d1e4af2",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_effects",
+      "pack": "configs/test/effects_smoke",
+      "path": "/metadata.config_hash"
+    },
+    {
+      "after": "88938aa2590156442c0f56d552bb0f70cb13d2114b939a7c3b39eac4117379ab",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "bf01aa1f503742004e9253e016450e24e08cc185804c8a4c449039285f2467b8",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_test",
+      "pack": "configs/test/gridnd_4d_pack",
+      "path": "/all_levels.L0_test.observation_schema_hash"
+    },
+    {
+      "after": "942b13b6ad2afed3d88be225213a2286ebd1261b3205c464cf54dad114cc5b0b",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 canonical_variable_schema: unexposed position loses inert normalization range",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "6742331c9b31591b754dc0a018fbf85a840812b3208f7a44da835828096a8407",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_test",
+      "pack": "configs/test/gridnd_4d_pack",
+      "path": "/all_levels.L0_test.variable_schema_hash"
+    },
+    {
+      "after": "4c8a8fc2bf73e95ee4968f82c3addabf05704227b03ffa16178b403c8d3dd496",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity: Task2 observation scope change at8a234b61 plus Task3 unexposed position loses inert normalization range",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "00b536d76a2320a75c42844cebed81afb569e3fec2417c673158d09a0c2150ce",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_test",
+      "pack": "configs/test/gridnd_4d_pack",
+      "path": "/all_levels.L0_test.vfs_hash"
+    },
+    {
+      "after": "321bb3b65a65b4472e49b59c196136bd4ca3e1ee5a52c2990eb63fe0fd06205a",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "45eaf3381c6f94b9b8e792a302a22cfe9e31550cf2d14e4a4c5c956becee9932",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_test",
+      "pack": "configs/test/gridnd_4d_pack",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "c48770af1c55c5db0d318c07b748cc95771db54c8e16b57a8fb3d2d5e2e156ba",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 explicit transport replacement: legacy vfs_profiles/variables_reference and environment.variables replaced by canonical variables declaration; see complete input inventory",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "865fcf8dc60e7260000f87c2ab076e00aa82849b06104df440667d42040e6722",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_test",
+      "pack": "configs/test/gridnd_4d_pack",
+      "path": "/metadata.config_hash"
+    },
+    {
+      "after": "0d2986acc1af11801febda48d34e48fd4627ccb63f860141d746c2a53eda0ec4",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "302658b1450e8cfbb60d3119a79085bb2e1b0a664a83c3c6020680113344e7f0",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_smoke",
+      "pack": "configs/test/items_smoke",
+      "path": "/all_levels.L0_smoke.observation_schema_hash"
+    },
+    {
+      "after": "6818530d1b2a24bd939d6e2121f332a84be18de20f5e88328cb8384b57f4a828",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 canonical_variable_schema: unexposed position loses inert normalization range and redundant vec2f dims; has_food loses legacy actions/bac writers",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "7a291a67154f3c6585c8ff385e34bf99fd3b3f7921a0a28d86af9168858b6f30",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_smoke",
+      "pack": "configs/test/items_smoke",
+      "path": "/all_levels.L0_smoke.variable_schema_hash"
+    },
+    {
+      "after": "97865ee79712555ee895ec56a2b360977823bd1efd66fa55a3554cfb42158e86",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity: Task2 observation scope change at8a234b61 plus Task3 unexposed position loses inert normalization range and redundant vec2f dims; has_food loses legacy actions/bac writers",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "a0407c5fe52374b53586842eb7957b8d8f2b29e24d5d0bb5227719e293b9a00f",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_smoke",
+      "pack": "configs/test/items_smoke",
+      "path": "/all_levels.L0_smoke.vfs_hash"
+    },
+    {
+      "after": "90fa23dd5c64f2fcf561673370836c698e0729774113f5b6f42bb004b3c55388",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "6bd3a9c0ff55b7978a72ab4bdd8b94ef2662e284d46fcab2726bf8bd61020016",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_smoke",
+      "pack": "configs/test/items_smoke",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "1a6bc7d1435419b8d981a2ddae9a5367f472eeb25793253b34814991a41ea41f",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 explicit transport replacement: legacy vfs_profiles/variables_reference and environment.variables replaced by canonical variables declaration; see complete input inventory",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "8903136d61d9868a9234e7769857428c4e4a90cb81cc81b4c985fd68975891cc",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_smoke",
+      "pack": "configs/test/items_smoke",
+      "path": "/metadata.config_hash"
+    },
+    {
+      "after": "6811aebebd4ad89d92c5f082bbe2b42a9b1d7d1f5b71209246aecb708a9dfa73",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "14223fd36b77e215b0e1b24a9fa807de4c19b09a788a6493862077f42691dfe3",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_test",
+      "pack": "configs/test/model_config",
+      "path": "/all_levels.L0_test.observation_schema_hash"
+    },
+    {
+      "after": "f13a474d1682366b5d19db67743a01d17664d5b6a413298eb00086636a27a466",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 canonical_variable_schema: unexposed position loses inert normalization range",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "c2590793228ad27b8b42dba066402ac547eb97c6531d26405e4b5d7f14df5e85",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_test",
+      "pack": "configs/test/model_config",
+      "path": "/all_levels.L0_test.variable_schema_hash"
+    },
+    {
+      "after": "5973dedf23740c93443a61b843efcf090042e3707f1f51fa71679a0907a2181a",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity: Task2 observation scope change at8a234b61 plus Task3 unexposed position loses inert normalization range",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "cd680d6fd27ddf304dccfde5c828c8a12b18164343a66117ac58157170ac5937",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_test",
+      "pack": "configs/test/model_config",
+      "path": "/all_levels.L0_test.vfs_hash"
+    },
+    {
+      "after": "2accfd2d6c800f3a9711d447e910616eff9d41d35542c2739c81cf398cdcea41",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "b2add20d1cbc0f60441f62e223f233120844e93f1892e06aab53d378548b0ea5",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_test",
+      "pack": "configs/test/model_config",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "4cf937431564713eff56028000e255d34e43381e7508194e00e9dbfd6ba6170f",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 explicit transport replacement: legacy vfs_profiles/variables_reference and environment.variables replaced by canonical variables declaration; see complete input inventory",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "8fc3a65e4fa3c2bd0a5187a7e4134112974e57b5a6643cd09433c5b4f38880cf",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_test",
+      "pack": "configs/test/model_config",
+      "path": "/metadata.config_hash"
+    },
+    {
+      "after": "6a087604ca2aa8a4f5f5cf3a5de436a970bd97e737e3f9978b796fb7fef0fea2",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "b4bbcd389bf3aa3deef193e61405d93fb1d867701ae3b006f5c53adb8c6c676c",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_12meter",
+      "pack": "configs/test/model_config_12meter",
+      "path": "/all_levels.L0_12meter.observation_schema_hash"
+    },
+    {
+      "after": "d255ad9f19f354e01213c9b21a5a3df49b9975dc04bf075926e605bf2e46e779",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "2f0a41b8498b4f8f4cdf2d46d626fc5099d7f7e6c4d0033ff52cb2e9fde39e8c",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_12meter",
+      "pack": "configs/test/model_config_12meter",
+      "path": "/all_levels.L0_12meter.vfs_hash"
+    },
+    {
+      "after": "053564b9b2aad8338f613758c0bdb61d67a7092472c4ab60bd784a8a1876d5be",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "613204ec283a4b56634a30707b39f0b03f7c07c23c10eb6b65291edabad9d513",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_12meter",
+      "pack": "configs/test/model_config_12meter",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "9b4cd66974aac157fddcfb0e9c5261b0aa7fe052ea465fb7a03be8e68c813660",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 explicit transport replacement: legacy vfs_profiles/variables_reference and environment.variables replaced by canonical variables declaration; see complete input inventory",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "ad96a48039f681fd407336916c08d42d88d20b09c8832f8a4cfee088dcbdee25",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_12meter",
+      "pack": "configs/test/model_config_12meter",
+      "path": "/metadata.config_hash"
+    },
+    {
+      "after": "dc55614a383f6a56962b4b073fc1f6a531ac7186decf7ab549cbefbc0dcbacac",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "6677b9a6fba7e27ce23f9cd2fb03a38e8b89ca75d774a4925d88ef5303bd9a4e",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_4meter",
+      "pack": "configs/test/model_config_4meter",
+      "path": "/all_levels.L0_4meter.observation_schema_hash"
+    },
+    {
+      "after": "bff226b2e15f4b271db3b6f193e952b9def443190ef6345f9d48c7af2c9efd3f",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "300ce31aa5acfbd0b7cea1f05e2d82748f19a7b3f12aadcf7390f8e16156016c",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_4meter",
+      "pack": "configs/test/model_config_4meter",
+      "path": "/all_levels.L0_4meter.vfs_hash"
+    },
+    {
+      "after": "47a1451e1570a439dbf4c33f56cbaf0e58759e62c28c27cd3c19f5791151dbbb",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "522372c35fd718688b11c191c8c44a66c3cde0dd51fa89b4e378805936228f36",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_4meter",
+      "pack": "configs/test/model_config_4meter",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "43426966760bbdd0f0a959a23a440c8c6ac0834c70ff23aa6d7efb854a2ba3a3",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 explicit transport replacement: legacy vfs_profiles/variables_reference and environment.variables replaced by canonical variables declaration; see complete input inventory",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "df4cba8bd9ef23f2ec4c662eb6a863fb236e0b92763a5680733b1adeb8cda12a",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_4meter",
+      "pack": "configs/test/model_config_4meter",
+      "path": "/metadata.config_hash"
+    },
+    {
+      "after": "951a05a6cb8d1bee68ca7784d8a881b6250042cd4b92915dd2b306a96d56b81d",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "39c58e72e300a4639751cc189a484a30dbe30ad8f1394111cb8487b8d72718c0",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_test",
+      "pack": "configs/test/token_set_smoke",
+      "path": "/all_levels.L0_test.observation_schema_hash"
+    },
+    {
+      "after": "aa24aa65759d6e51ec93517d863f75c1c6f8e5734e4cd0eed1122e47ebaa85cb",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 canonical_variable_schema: unexposed position loses inert normalization range at both levels",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "f09e7081297112f4a4be64da3753300586c6640aa8bdd71a5620731baddcdb4e",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_test",
+      "pack": "configs/test/token_set_smoke",
+      "path": "/all_levels.L0_test.variable_schema_hash"
+    },
+    {
+      "after": "f2ffad916b590b28dc48d14507e1a6bf647dac3c5869e7e5b0163020367aaaa9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity: Task2 observation scope change at8a234b61 plus Task3 unexposed position loses inert normalization range at both levels",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "289ffb05a44cf808071dcbdce5b27a30b923a4c15c5c33105d361961318217f1",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_test",
+      "pack": "configs/test/token_set_smoke",
+      "path": "/all_levels.L0_test.vfs_hash"
+    },
+    {
+      "after": "951a05a6cb8d1bee68ca7784d8a881b6250042cd4b92915dd2b306a96d56b81d",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "39c58e72e300a4639751cc189a484a30dbe30ad8f1394111cb8487b8d72718c0",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_test",
+      "pack": "configs/test/token_set_smoke",
+      "path": "/all_levels.L1_attention.observation_schema_hash"
+    },
+    {
+      "after": "aa24aa65759d6e51ec93517d863f75c1c6f8e5734e4cd0eed1122e47ebaa85cb",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 canonical_variable_schema: unexposed position loses inert normalization range at both levels",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "f09e7081297112f4a4be64da3753300586c6640aa8bdd71a5620731baddcdb4e",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_test",
+      "pack": "configs/test/token_set_smoke",
+      "path": "/all_levels.L1_attention.variable_schema_hash"
+    },
+    {
+      "after": "f2ffad916b590b28dc48d14507e1a6bf647dac3c5869e7e5b0163020367aaaa9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity: Task2 observation scope change at8a234b61 plus Task3 unexposed position loses inert normalization range at both levels",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "289ffb05a44cf808071dcbdce5b27a30b923a4c15c5c33105d361961318217f1",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_test",
+      "pack": "configs/test/token_set_smoke",
+      "path": "/all_levels.L1_attention.vfs_hash"
+    },
+    {
+      "after": "2accfd2d6c800f3a9711d447e910616eff9d41d35542c2739c81cf398cdcea41",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "b2add20d1cbc0f60441f62e223f233120844e93f1892e06aab53d378548b0ea5",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_test",
+      "pack": "configs/test/token_set_smoke",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "43566da51263531981d12c8cddf2447cb210500502549d2a970667f3f0b5cf7d",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 explicit transport replacement: legacy vfs_profiles/variables_reference and environment.variables replaced by canonical variables declaration; see complete input inventory",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "e358c68e1d9d99db01cc785c11be8ef1d1fb7f7f15add2d6d2eed16ed1b564e6",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_test",
+      "pack": "configs/test/token_set_smoke",
+      "path": "/metadata.config_hash"
+    },
+    {
+      "after": "951a05a6cb8d1bee68ca7784d8a881b6250042cd4b92915dd2b306a96d56b81d",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "39c58e72e300a4639751cc189a484a30dbe30ad8f1394111cb8487b8d72718c0",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L1_attention",
+      "pack": "configs/test/token_set_smoke",
+      "path": "/all_levels.L0_test.observation_schema_hash"
+    },
+    {
+      "after": "aa24aa65759d6e51ec93517d863f75c1c6f8e5734e4cd0eed1122e47ebaa85cb",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 canonical_variable_schema: unexposed position loses inert normalization range at both levels",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "f09e7081297112f4a4be64da3753300586c6640aa8bdd71a5620731baddcdb4e",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L1_attention",
+      "pack": "configs/test/token_set_smoke",
+      "path": "/all_levels.L0_test.variable_schema_hash"
+    },
+    {
+      "after": "f2ffad916b590b28dc48d14507e1a6bf647dac3c5869e7e5b0163020367aaaa9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity: Task2 observation scope change at8a234b61 plus Task3 unexposed position loses inert normalization range at both levels",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "289ffb05a44cf808071dcbdce5b27a30b923a4c15c5c33105d361961318217f1",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L1_attention",
+      "pack": "configs/test/token_set_smoke",
+      "path": "/all_levels.L0_test.vfs_hash"
+    },
+    {
+      "after": "951a05a6cb8d1bee68ca7784d8a881b6250042cd4b92915dd2b306a96d56b81d",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "39c58e72e300a4639751cc189a484a30dbe30ad8f1394111cb8487b8d72718c0",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L1_attention",
+      "pack": "configs/test/token_set_smoke",
+      "path": "/all_levels.L1_attention.observation_schema_hash"
+    },
+    {
+      "after": "aa24aa65759d6e51ec93517d863f75c1c6f8e5734e4cd0eed1122e47ebaa85cb",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 canonical_variable_schema: unexposed position loses inert normalization range at both levels",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "f09e7081297112f4a4be64da3753300586c6640aa8bdd71a5620731baddcdb4e",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L1_attention",
+      "pack": "configs/test/token_set_smoke",
+      "path": "/all_levels.L1_attention.variable_schema_hash"
+    },
+    {
+      "after": "f2ffad916b590b28dc48d14507e1a6bf647dac3c5869e7e5b0163020367aaaa9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity: Task2 observation scope change at8a234b61 plus Task3 unexposed position loses inert normalization range at both levels",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "289ffb05a44cf808071dcbdce5b27a30b923a4c15c5c33105d361961318217f1",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L1_attention",
+      "pack": "configs/test/token_set_smoke",
+      "path": "/all_levels.L1_attention.vfs_hash"
+    },
+    {
+      "after": "2accfd2d6c800f3a9711d447e910616eff9d41d35542c2739c81cf398cdcea41",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "b2add20d1cbc0f60441f62e223f233120844e93f1892e06aab53d378548b0ea5",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L1_attention",
+      "pack": "configs/test/token_set_smoke",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "43566da51263531981d12c8cddf2447cb210500502549d2a970667f3f0b5cf7d",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 explicit transport replacement: legacy vfs_profiles/variables_reference and environment.variables replaced by canonical variables declaration; see complete input inventory",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "e358c68e1d9d99db01cc785c11be8ef1d1fb7f7f15add2d6d2eed16ed1b564e6",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L1_attention",
+      "pack": "configs/test/token_set_smoke",
+      "path": "/metadata.config_hash"
+    },
+    {
+      "after": "86775d7387190abb1798dc68d106af13487e747a2f52d5168470a8b98b0483f8",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "38ff17618eff20f3faa1310d26afc0554236ab94343a3be3c0d638792f3d356b",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_transfer",
+      "pack": "configs/test/token_transfer_a",
+      "path": "/all_levels.L0_transfer.observation_schema_hash"
+    },
+    {
+      "after": "8eec1a84551c9ba9bdc0931efb56b7f6920e0beb86e89581b21ef04aadb0be30",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "85fcf467e505af47c18b8acb77d873d0074e07452b24cccabac509473427d4f9",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_transfer",
+      "pack": "configs/test/token_transfer_a",
+      "path": "/all_levels.L0_transfer.vfs_hash"
+    },
+    {
+      "after": "077adada9fdb74469368761c3545e34767a25007129f177c50e5520ba2b7bcb5",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "6ea7204850a69e1a1c7d2d04a23ab3cfe631fd3388e1b10bee1cd80401ce1f34",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_transfer",
+      "pack": "configs/test/token_transfer_a",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "85c7433e5fa74a3ce4ef68cedda5bfa67bcd32e660ccaa603354deaa4fcbe395",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 explicit transport replacement: legacy vfs_profiles/variables_reference and environment.variables replaced by canonical variables declaration; see complete input inventory",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "0bdfc2257ba231348f3f023ef5bf6bfd703e80631b885a5e6e27d13dc0b227d6",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_transfer",
+      "pack": "configs/test/token_transfer_a",
+      "path": "/metadata.config_hash"
+    },
+    {
+      "after": "0738754577b13cdb651e9ae12ded1e11a6646256832d72dbe2f1c9b0f3152140",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "8d3bad863431af2c3e86e82edb7397b875fba456c0ed90a6582af05fb53f7a23",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_transfer",
+      "pack": "configs/test/token_transfer_b",
+      "path": "/all_levels.L0_transfer.observation_schema_hash"
+    },
+    {
+      "after": "3355fbbd950680d3942176662141bab45144d7bb0b0dd9ebb21a32c11b3b96aa",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "cc6f112eb6817ca51a593e591fd58dfbe43b370a3dfd671b4b0ac488476c4c37",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_transfer",
+      "pack": "configs/test/token_transfer_b",
+      "path": "/all_levels.L0_transfer.vfs_hash"
+    },
+    {
+      "after": "077adada9fdb74469368761c3545e34767a25007129f177c50e5520ba2b7bcb5",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "50406e5bbad790769c140e91236f7018a16330c956d4f74456b2e7fa20849603",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_transfer",
+      "pack": "configs/test/token_transfer_b",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "e7debb0bd123911f0e24a55b3f79aa69345d2509081435835102ec8143586ea9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 explicit transport replacement: legacy vfs_profiles/variables_reference and environment.variables replaced by canonical variables declaration; see complete input inventory",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "733e68d62b19c2ffd9368d23ae11a9c110529cfc9997f3253a3c6049cb0ba349",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_transfer",
+      "pack": "configs/test/token_transfer_b",
+      "path": "/metadata.config_hash"
+    },
+    {
+      "after": "97a2aed1db7f27190ca626079b13323cf7254f85929b33ac241130e245f90ab4",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "f13c874ab904d8788766f6349104044256e4267f9193d0b666f1f172a2bdaff7",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_transfer",
+      "pack": "configs/test/token_transfer_c",
+      "path": "/all_levels.L0_transfer.observation_schema_hash"
+    },
+    {
+      "after": "bac52585e69ccaeadb5ec28496d6fd1b686ec55d25ed2bd4a2cbd0e5aeb723ad",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "c0f329f6a0a6a4bbadd7e4826e2becd3cb3eee36cec6dff60341769362817234",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_transfer",
+      "pack": "configs/test/token_transfer_c",
+      "path": "/all_levels.L0_transfer.vfs_hash"
+    },
+    {
+      "after": "077adada9fdb74469368761c3545e34767a25007129f177c50e5520ba2b7bcb5",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "50406e5bbad790769c140e91236f7018a16330c956d4f74456b2e7fa20849603",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_transfer",
+      "pack": "configs/test/token_transfer_c",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "4a7448acc22b530e84043c0ab8f67d914886a26ccafae929507a33adda7468a3",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 explicit transport replacement: legacy vfs_profiles/variables_reference and environment.variables replaced by canonical variables declaration; see complete input inventory",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "8bf3906fcd77c7f8542ae6d6066e931e287d21662228e35dee65d346273cc68d",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_transfer",
+      "pack": "configs/test/token_transfer_c",
+      "path": "/metadata.config_hash"
+    },
+    {
+      "after": "e0a8c33437141af368f99c299ce48c1a4d350bd17fc2464ad8e492c1156a1879",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "6e8404635835b4ed8117dcba01cc134e4611a8d596a04f3d48549a07a7ffe4c0",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_bars",
+      "pack": "configs/test/vfs_bar_access",
+      "path": "/all_levels.L0_bars.observation_schema_hash"
+    },
+    {
+      "after": "9e562f1f7e30eff92f7d971c7520bad4d6d129d4b907c52a46d290f17a7b8fa2",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 canonical_variable_schema: unexposed position loses inert normalization range and redundant vec2f dims",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "e70afc3c9863621286e341c6bc630e67f4471c7698b6c38c4011f7b92c096a9d",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_bars",
+      "pack": "configs/test/vfs_bar_access",
+      "path": "/all_levels.L0_bars.variable_schema_hash"
+    },
+    {
+      "after": "03c6563aec91cb8e156f1da6864ddc99a266fa4291a7d6d84cc5eb496274d565",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity: Task2 observation scope change at8a234b61 plus Task3 unexposed position loses inert normalization range and redundant vec2f dims",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "4469314ca37c4ce300579b769d057a3ec2ea2eb6de4cb9fd9a1d2bd14224ee3f",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_bars",
+      "pack": "configs/test/vfs_bar_access",
+      "path": "/all_levels.L0_bars.vfs_hash"
+    },
+    {
+      "after": "e2fdde7949dfb15fb89a6b62519e06731dfc50a1c0fae651aeb6405fb6cbc88c",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "7a6aec29112bf6ae904f5a7ad345317253ad2f04534f27fd021f7a5aca43b3e5",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_bars",
+      "pack": "configs/test/vfs_bar_access",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "71bd79b8e3f6b4ec5835c2afe8f90904d1d3fd210a98ec27bd4169c73c28cbef",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 explicit transport replacement: legacy vfs_profiles/variables_reference and environment.variables replaced by canonical variables declaration; see complete input inventory",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "107d58db3bed66ec509c7f7d0b37e748a99faf00c8c79bd9b340956963a0e465",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_bars",
+      "pack": "configs/test/vfs_bar_access",
+      "path": "/metadata.config_hash"
+    },
+    {
+      "after": "e0a8c33437141af368f99c299ce48c1a4d350bd17fc2464ad8e492c1156a1879",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "6e8404635835b4ed8117dcba01cc134e4611a8d596a04f3d48549a07a7ffe4c0",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_deps",
+      "pack": "configs/test/vfs_dependency_chain",
+      "path": "/all_levels.L0_deps.observation_schema_hash"
+    },
+    {
+      "after": "4bbaa26ca131fb304a9c627b66479b8cec813edd71518937ed3a09e64b19f4e1",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 canonical_variable_schema: unexposed position loses inert normalization range and redundant vec2f dims",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "cd78b3b2ab55e1d29053d5e9bec978717af9b8dc506d16efed87a510ca6995b2",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_deps",
+      "pack": "configs/test/vfs_dependency_chain",
+      "path": "/all_levels.L0_deps.variable_schema_hash"
+    },
+    {
+      "after": "a4aee09ed1c79badd701fb81d18f22fdd65ad18ddf13187e6dc028a8ec3f034c",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity: Task2 observation scope change at8a234b61 plus Task3 unexposed position loses inert normalization range and redundant vec2f dims",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "48f951808ddd858008223091eafe605a77b455fe139272ddbc80b045349afd80",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_deps",
+      "pack": "configs/test/vfs_dependency_chain",
+      "path": "/all_levels.L0_deps.vfs_hash"
+    },
+    {
+      "after": "e2fdde7949dfb15fb89a6b62519e06731dfc50a1c0fae651aeb6405fb6cbc88c",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "7a6aec29112bf6ae904f5a7ad345317253ad2f04534f27fd021f7a5aca43b3e5",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_deps",
+      "pack": "configs/test/vfs_dependency_chain",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "d021abb8eba7c2b43da36f8d43ee72de4680697278236356f9359bde5c1af936",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 explicit transport replacement: legacy vfs_profiles/variables_reference and environment.variables replaced by canonical variables declaration; see complete input inventory",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "8719266fb58489a50f79f673253b055eb091d384b683bd5d6a58ce1f7f2ee8dc",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_deps",
+      "pack": "configs/test/vfs_dependency_chain",
+      "path": "/metadata.config_hash"
+    },
+    {
+      "after": "0f62e9c0ebbe6e3aa19a2766c7a70445f9c4a7f6a75eb6c9fe104439ffd646b2",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "702a02ccc0faa9dfe96ea180e480656b83c33c18ad591b8a997c132db627e42c",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_simple",
+      "pack": "configs/trial002_money_log_gdp",
+      "path": "/all_levels.L0_simple.observation_schema_hash"
+    },
+    {
+      "after": "5d2eaae7ec0b37e8299167cbf7296409ab935fedba39642a0427fda9be8491a6",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "d662515aacba2bd44300138e522105ce87a972ee01226ea56fb95c946f766454",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_simple",
+      "pack": "configs/trial002_money_log_gdp",
+      "path": "/all_levels.L0_simple.vfs_hash"
+    },
+    {
+      "after": "cd012170fe91070e1f987d58cc67594bf1812aaf4ad8e7cd36f195809ff42dab",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "842ae899881e1347eb9b4bc10ec81ae2845a12e660c23902a1b31e3a734d6bdd",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_simple",
+      "pack": "configs/trial002_money_log_gdp",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "03c51d9e9fb9f5217e8b172a87986408a3d8519e8ce33a2b5718d4edf9c254e8",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 explicit transport replacement: legacy vfs_profiles/variables_reference and environment.variables replaced by canonical variables declaration; see complete input inventory",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "4c9c5bb53e4b697d82c0d524009bfb4ad55006620b6c1896107a6ad6280b7c11",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_simple",
+      "pack": "configs/trial002_money_log_gdp",
+      "path": "/metadata.config_hash"
+    },
+    {
+      "after": "79cf9019f5a9a148999c03c6ffaec01d56f72e3a42293b1609a1decfb97f480c",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "158bae5e6b05cdb179de8986148ed2c24fa76bc983f3c38752de88a8fd0ab7d0",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_cold",
+      "pack": "configs/trial_k_cold",
+      "path": "/all_levels.L0_cold.observation_schema_hash"
+    },
+    {
+      "after": "e483724eb50988e0c81c9381cc2f39f2cb499f68aff1d4ce721d1c5db571a7d9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 canonical_variable_schema: unexposed position loses inert normalization range and redundant vec2f dims",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "0544a5ac47479d09b56e1a8c42ee5278d3b15a6050dd09104d090e782520d7ee",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_cold",
+      "pack": "configs/trial_k_cold",
+      "path": "/all_levels.L0_cold.variable_schema_hash"
+    },
+    {
+      "after": "a19c5ea6923aa928639eae5ca1ad1a677dd78b696577bfbf44c8756a704ff173",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity: Task2 observation scope change at8a234b61 plus Task3 unexposed position loses inert normalization range and redundant vec2f dims",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "6daf495cb2bce552205019fd0aaeade175acaf6735f4ee0c1c78a3395add0fab",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_cold",
+      "pack": "configs/trial_k_cold",
+      "path": "/all_levels.L0_cold.vfs_hash"
+    },
+    {
+      "after": "82567169516145d654e3f7d372dcef65db08f0e7c588fdf0684ae5bc6994fbe8",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "8bfebd39d0dde2557a2d412e4196e7c05f07ccde8666e30fd6b010b96be5202c",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_cold",
+      "pack": "configs/trial_k_cold",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "e7add5cac1c2e1d5b0bfc60399c75ce3fbcb8a6a0ff487db7b2c08295a6bfc59",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 explicit transport replacement: legacy vfs_profiles/variables_reference and environment.variables replaced by canonical variables declaration; see complete input inventory",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "cad2c82e4ac797a53f1906f82aa00c9af84ee5a53d7201c6d09d10f8e64525a7",
+      "before_present": true,
+      "kind": "hash",
+      "level": "L0_cold",
+      "pack": "configs/trial_k_cold",
+      "path": "/metadata.config_hash"
+    },
+    {
+      "after": "2accfd2d6c800f3a9711d447e910616eff9d41d35542c2739c81cf398cdcea41",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279",
+      "before_present": true,
+      "kind": "trace_hash",
+      "level": "L0_0_minimal",
+      "pack": "configs/default_curriculum",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+      "before_present": true,
+      "kind": "trace_hash",
+      "level": "L0_0_minimal",
+      "pack": "configs/default_curriculum",
+      "path": "/observation_schema_hash"
+    },
+    {
+      "after": "1a696caab82b87388534e72429b9f97710b9b13453891e81c2cda12220fad8ae",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "8760b4c3e9507c01138f59f2f0f98db110d17a9af6cb68f17a192c0a2e8eb84c",
+      "before_present": true,
+      "kind": "trace_hash",
+      "level": "L0_0_minimal",
+      "pack": "configs/default_curriculum",
+      "path": "/vfs_hash"
+    },
+    {
+      "after": "2accfd2d6c800f3a9711d447e910616eff9d41d35542c2739c81cf398cdcea41",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279",
+      "before_present": true,
+      "kind": "trace_hash",
+      "level": "L0_5_dual_resource",
+      "pack": "configs/default_curriculum",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+      "before_present": true,
+      "kind": "trace_hash",
+      "level": "L0_5_dual_resource",
+      "pack": "configs/default_curriculum",
+      "path": "/observation_schema_hash"
+    },
+    {
+      "after": "05e73e6eb8757a224670aabf9df07657ce0601bf75d80dbf48f633f5b307ed4d",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3",
+      "before_present": true,
+      "kind": "trace_hash",
+      "level": "L0_5_dual_resource",
+      "pack": "configs/default_curriculum",
+      "path": "/vfs_hash"
+    },
+    {
+      "after": "2accfd2d6c800f3a9711d447e910616eff9d41d35542c2739c81cf398cdcea41",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279",
+      "before_present": true,
+      "kind": "trace_hash",
+      "level": "L1_full_observability",
+      "pack": "configs/default_curriculum",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+      "before_present": true,
+      "kind": "trace_hash",
+      "level": "L1_full_observability",
+      "pack": "configs/default_curriculum",
+      "path": "/observation_schema_hash"
+    },
+    {
+      "after": "05e73e6eb8757a224670aabf9df07657ce0601bf75d80dbf48f633f5b307ed4d",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3",
+      "before_present": true,
+      "kind": "trace_hash",
+      "level": "L1_full_observability",
+      "pack": "configs/default_curriculum",
+      "path": "/vfs_hash"
+    },
+    {
+      "after": "2accfd2d6c800f3a9711d447e910616eff9d41d35542c2739c81cf398cdcea41",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279",
+      "before_present": true,
+      "kind": "trace_hash",
+      "level": "L2_partial_observability",
+      "pack": "configs/default_curriculum",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+      "before_present": true,
+      "kind": "trace_hash",
+      "level": "L2_partial_observability",
+      "pack": "configs/default_curriculum",
+      "path": "/observation_schema_hash"
+    },
+    {
+      "after": "05e73e6eb8757a224670aabf9df07657ce0601bf75d80dbf48f633f5b307ed4d",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3",
+      "before_present": true,
+      "kind": "trace_hash",
+      "level": "L2_partial_observability",
+      "pack": "configs/default_curriculum",
+      "path": "/vfs_hash"
+    },
+    {
+      "after": "2accfd2d6c800f3a9711d447e910616eff9d41d35542c2739c81cf398cdcea41",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279",
+      "before_present": true,
+      "kind": "trace_hash",
+      "level": "L3_temporal_mechanics",
+      "pack": "configs/default_curriculum",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+      "before_present": true,
+      "kind": "trace_hash",
+      "level": "L3_temporal_mechanics",
+      "pack": "configs/default_curriculum",
+      "path": "/observation_schema_hash"
+    },
+    {
+      "after": "05e73e6eb8757a224670aabf9df07657ce0601bf75d80dbf48f633f5b307ed4d",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3",
+      "before_present": true,
+      "kind": "trace_hash",
+      "level": "L3_temporal_mechanics",
+      "pack": "configs/default_curriculum",
+      "path": "/vfs_hash"
+    },
+    {
+      "after": "2accfd2d6c800f3a9711d447e910616eff9d41d35542c2739c81cf398cdcea41",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279",
+      "before_present": true,
+      "kind": "trace_hash",
+      "level": "L1_full_observability",
+      "pack": "configs/differential/boundary_wrap",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+      "before_present": true,
+      "kind": "trace_hash",
+      "level": "L1_full_observability",
+      "pack": "configs/differential/boundary_wrap",
+      "path": "/observation_schema_hash"
+    },
+    {
+      "after": "05e73e6eb8757a224670aabf9df07657ce0601bf75d80dbf48f633f5b307ed4d",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3",
+      "before_present": true,
+      "kind": "trace_hash",
+      "level": "L1_full_observability",
+      "pack": "configs/differential/boundary_wrap",
+      "path": "/vfs_hash"
+    },
+    {
+      "after": "2accfd2d6c800f3a9711d447e910616eff9d41d35542c2739c81cf398cdcea41",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279",
+      "before_present": true,
+      "kind": "trace_hash",
+      "level": "L2_partial_observability",
+      "pack": "configs/differential/div003_cubic_partial",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "88b72261226dccd95c5717aacefdaec0e4bbf4a2decf8b8439df80b69337cc07",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "a221e121044ef5c92091645eddab6820396a1782ff386a63ead1b136db8d0927",
+      "before_present": true,
+      "kind": "trace_hash",
+      "level": "L2_partial_observability",
+      "pack": "configs/differential/div003_cubic_partial",
+      "path": "/observation_schema_hash"
+    },
+    {
+      "after": "2163b37fde594ff2f1d3916d987314e7c75838b96d352b210e362d6053f9a150",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "9563de51e767aa64bd7f426fd50936706de8b3998db3758770cbaa474440b339",
+      "before_present": true,
+      "kind": "trace_hash",
+      "level": "L2_partial_observability",
+      "pack": "configs/differential/div003_cubic_partial",
+      "path": "/vfs_hash"
+    },
+    {
+      "after": "2accfd2d6c800f3a9711d447e910616eff9d41d35542c2739c81cf398cdcea41",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "5bbd38d3d2d94af19a83b76adb9563f1776fe1ffd0d242b910a8398784604279",
+      "before_present": true,
+      "kind": "trace_hash",
+      "level": "L1_full_observability",
+      "pack": "configs/differential/div003_rect",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "3ea63bd62711dca5c3ebc68d7b366b8fa258edb91dcfafad96dab8c0d3824b3d",
+      "before_present": true,
+      "kind": "trace_hash",
+      "level": "L1_full_observability",
+      "pack": "configs/differential/div003_rect",
+      "path": "/observation_schema_hash"
+    },
+    {
+      "after": "05e73e6eb8757a224670aabf9df07657ce0601bf75d80dbf48f633f5b307ed4d",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity follows only Task2 observation schema movement; variable/action/transition inputs unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "8955c6440feeff8042b2d003c7d7e2775fe137b3cd5ddcfacebe67ba97d7e7a3",
+      "before_present": true,
+      "kind": "trace_hash",
+      "level": "L1_full_observability",
+      "pack": "configs/differential/div003_rect",
+      "path": "/vfs_hash"
+    },
+    {
+      "after": "90fa23dd5c64f2fcf561673370836c698e0729774113f5b6f42bb004b3c55388",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "6bd3a9c0ff55b7978a72ab4bdd8b94ef2662e284d46fcab2726bf8bd61020016",
+      "before_present": true,
+      "kind": "trace_hash",
+      "level": "L0_smoke",
+      "pack": "configs/test/items_smoke",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "0d2986acc1af11801febda48d34e48fd4627ccb63f860141d746c2a53eda0ec4",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "302658b1450e8cfbb60d3119a79085bb2e1b0a664a83c3c6020680113344e7f0",
+      "before_present": true,
+      "kind": "trace_hash",
+      "level": "L0_smoke",
+      "pack": "configs/test/items_smoke",
+      "path": "/observation_schema_hash"
+    },
+    {
+      "after": "6818530d1b2a24bd939d6e2121f332a84be18de20f5e88328cb8384b57f4a828",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 canonical_variable_schema: unexposed position loses inert normalization range and redundant vec2f dims; has_food loses legacy actions/bac writers",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "7a291a67154f3c6585c8ff385e34bf99fd3b3f7921a0a28d86af9168858b6f30",
+      "before_present": true,
+      "kind": "trace_hash",
+      "level": "L0_smoke",
+      "pack": "configs/test/items_smoke",
+      "path": "/variable_schema_hash"
+    },
+    {
+      "after": "97865ee79712555ee895ec56a2b360977823bd1efd66fa55a3554cfb42158e86",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity: Task2 observation scope change at8a234b61 plus Task3 unexposed position loses inert normalization range and redundant vec2f dims; has_food loses legacy actions/bac writers",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "a0407c5fe52374b53586842eb7957b8d8f2b29e24d5d0bb5227719e293b9a00f",
+      "before_present": true,
+      "kind": "trace_hash",
+      "level": "L0_smoke",
+      "pack": "configs/test/items_smoke",
+      "path": "/vfs_hash"
+    },
+    {
+      "after": "077adada9fdb74469368761c3545e34767a25007129f177c50e5520ba2b7bcb5",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 removes EnvironmentConfigRoot.variables from raw DTO/model dump, including formerly empty lists; explicit variables now separate authority",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "50406e5bbad790769c140e91236f7018a16330c956d4f74456b2e7fa20849603",
+      "before_present": true,
+      "kind": "trace_hash",
+      "level": "L0_effects",
+      "pack": "configs/test/effects_smoke",
+      "path": "/environment_hash"
+    },
+    {
+      "after": "2e6077c4248ab88e5b10588d320d411dcf81cefe48270474b30d0317c65ee387",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task2 required typed variable-element SlotBinding.scope enters semantic observation schema; layout/payload byte contract unchanged",
+        "causing_commit": "8a234b61acdff44ccef5939db7cb1dc8f8ebb9f3",
+        "register_ref": "DIV-014"
+      },
+      "before": "dde5eaac7c48dbfac35ca1dfd707c78f3dd540eb7438a91956c696b04a1a2f02",
+      "before_present": true,
+      "kind": "trace_hash",
+      "level": "L0_effects",
+      "pack": "configs/test/effects_smoke",
+      "path": "/observation_schema_hash"
+    },
+    {
+      "after": "a95ac3cdd865c746543005af56bcbcef8a7dfa181373791076bb891f003ea820",
+      "after_present": true,
+      "attribution": {
+        "cause": "Task3 canonical_variable_schema: unexposed position loses inert normalization range and redundant vec2f dims; digesting loses legacy actions writer",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "e1fc0ee0df0992be5f7708b0a74dfd4fbbeabe17948327cbafca4c210cfc0166",
+      "before_present": true,
+      "kind": "trace_hash",
+      "level": "L0_effects",
+      "pack": "configs/test/effects_smoke",
+      "path": "/variable_schema_hash"
+    },
+    {
+      "after": "b7340cb5915799af269ea7c1ed4ec9d8c44239282664441ab2748466c2b629a4",
+      "after_present": true,
+      "attribution": {
+        "cause": "Composite VFS identity: Task2 observation scope change at8a234b61 plus Task3 unexposed position loses inert normalization range and redundant vec2f dims; digesting loses legacy actions writer",
+        "causing_commit": "8060ef19b820ddada047570825865b69e6b38b3b",
+        "register_ref": "DIV-014"
+      },
+      "before": "9ddadaa124e951ddc583a71132ea0a8c2ce81eabcba0cec6bc22ebbbad073425",
+      "before_present": true,
+      "kind": "trace_hash",
+      "level": "L0_effects",
+      "pack": "configs/test/effects_smoke",
+      "path": "/vfs_hash"
+    }
+  ],
+  "provenance": {
+    "baseline_source": "599cad15706ac8824c3f8e38276da6440c4816a3",
+    "clean_execution_tree": true,
+    "cpu_executed": true,
+    "source_commit": "baced7dba659ab2024a3f164f18c450695000362",
+    "uncommitted_execution_files": [],
+    "working_tree_status": ""
+  },
+  "qualified": true,
+  "reading_count": 884,
+  "stale_attributions": [],
+  "trace_failed": false,
+  "unattributed": []
+}

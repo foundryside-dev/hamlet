@@ -243,13 +243,21 @@ not (bar.health > 50)                       # Health not above 50
 ### VFS Variables
 
 ```yaml
-vfs_profiles:
-  agent_profiles:
-    player:
-      variables:
-        is_critical:
-          type: bool
-          expression: "bar.energy < 0.2 or bar.health < 0.3"
+variables:
+  version: '1.0'
+  evaluation_mode: mark_and_sweep
+  debug_logging: false
+  extents: {}
+  item_profiles: []
+  declarations:
+  - id: is_critical
+    scope: agent
+    type: bool
+    lifetime: episode
+    semantic_type: custom
+    initial_value: false
+    exposed_to: []
+    expression: "bar.energy < 0.2 or bar.health < 0.3"
 ```
 
 ### Effect Conditions
@@ -563,7 +571,7 @@ expression: "bar.energy < 0.1 and bar.health < 0.1"
 expression: "temporal.tick % 24 >= 18 or temporal.tick % 24 < 6"
 
 # Simplified night check (using modulo wrap)
-expression: "temporal.tick % 24 >= 18"
+expression: "tick % 24 >= 18"
 
 # Day time
 expression: "temporal.tick % 24 >= 6 and temporal.tick % 24 < 18"
@@ -605,20 +613,35 @@ expression: "if vfs.is_night and bar.energy < 0.3 then 3.0 else 1.0"
 
 **VFS computed variables:**
 ```yaml
-# Global profile - night detection
-- name: is_night
+# Global derived state - night detection
+- id: is_night
+  scope: global
   type: bool
-  expression: "temporal.tick % 24 >= 18"
+  lifetime: episode
+  semantic_type: custom
+  initial_value: false
+  exposed_to: []
+  expression: "tick % 24 >= 18"
 
-# Agent profile - crisis state
-- name: is_crisis
+# Agent derived state - crisis state
+- id: is_crisis
+  scope: agent
   type: bool
+  lifetime: episode
+  semantic_type: custom
+  initial_value: false
+  exposed_to: []
   expression: "bar.energy < 0.2 or bar.health < 0.2"
 
-# Agent profile - motivation decay
-- name: motivation
-  type: float
-  expression: "max(0.1, 1.0 - (temporal.tick / 10000.0))"
+# Global derived state - shared motivation decay
+- id: motivation
+  scope: global
+  type: scalar
+  lifetime: episode
+  semantic_type: custom
+  initial_value: 1.0
+  exposed_to: []
+  expression: "max(0.1, 1.0 - (tick / 10000.0))"
 ```
 
 **Effect modifications:**
@@ -838,14 +861,14 @@ Break complex expressions into VFS computed variables:
 expression: "if (bar.energy < 0.2 or bar.health < 0.2) and (temporal.tick % 24 >= 18) then 2.0 else (if bar.energy < 0.5 then 1.0 else 0.0)"
 
 # Good - use VFS variables
-# In vfs_profiles.yaml:
-- name: is_crisis
+# In variables.declarations (complete required fields shown in variables.md):
+- id: is_crisis
   type: bool
   expression: "bar.energy < 0.2 or bar.health < 0.2"
 
-- name: is_night
+- id: is_night
   type: bool
-  expression: "temporal.tick % 24 >= 18"
+  expression: "tick % 24 >= 18"
 
 # In effects.yaml:
 expression: "if vfs.is_crisis and vfs.is_night then 2.0 else (if bar.energy < 0.5 then 1.0 else 0.0)"
@@ -873,9 +896,9 @@ Add YAML comments explaining non-obvious expressions:
 
 ```yaml
 # Night time: ticks 18-23 in 24-tick day cycle
-- name: is_night
+- id: is_night
   type: bool
-  expression: "temporal.tick % 24 >= 18"
+  expression: "tick % 24 >= 18"
 
 # Tiered crisis bonuses: 2x for severe (<0.1), 1.5x for moderate (<0.2)
 value: "if bar.energy < 0.1 then 2.0 else (if bar.energy < 0.2 then 1.5 else 1.0)"

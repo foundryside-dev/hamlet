@@ -418,6 +418,14 @@ class VTCInteractionProgressResult:
 
 
 @dataclass(frozen=True)
+class VTCWriteResult:
+    """A snapshot plus selected write targets, before composition or equality."""
+
+    values: dict[str, torch.Tensor]
+    attempted_targets: frozenset[str]
+
+
+@dataclass(frozen=True)
 class VTCActionWriteProgram:
     """Executable collection of compiled VTC action writes."""
 
@@ -431,7 +439,7 @@ class VTCActionWriteProgram:
         bars_state: Mapping[str, torch.Tensor],
         active_mask: torch.Tensor,
         device: torch.device,
-    ) -> dict[str, torch.Tensor]:
+    ) -> VTCWriteResult:
         """Apply compiled VTC writes to a VFS state snapshot using action and active-agent masks."""
         if actions.shape != active_mask.shape:
             raise ValueError(f"actions shape {tuple(actions.shape)} must match active_mask shape {tuple(active_mask.shape)}")
@@ -445,6 +453,7 @@ class VTCActionWriteProgram:
         actions_on_device = actions.to(device=device)
         active_mask_on_device = active_mask.to(device=device)
 
+        attempted_targets: set[str] = set()
         for phase_writes in self._iter_phase_groups():
             phase_snapshot = dict(updated)
             phase_effects = self._compute_phase_effects(
@@ -455,9 +464,10 @@ class VTCActionWriteProgram:
                 active_mask=active_mask_on_device,
                 device=device,
             )
+            attempted_targets.update(effect.write.variable_id for effect in phase_effects if bool(effect.write_mask.any()))
             updated = self._commit_phase_effects(phase_snapshot, phase_effects)
 
-        return updated
+        return VTCWriteResult(updated, frozenset(attempted_targets))
 
     def _iter_phase_groups(self) -> list[tuple[CompiledVTCActionWrite, ...]]:
         phase_groups: list[tuple[CompiledVTCActionWrite, ...]] = []
@@ -1485,7 +1495,7 @@ class VTCSocialResidueProgram:
         active_mask: torch.Tensor,
         device: torch.device,
         bars_state: Mapping[str, torch.Tensor] | None = None,
-    ) -> dict[str, torch.Tensor]:
+    ) -> VTCWriteResult:
         """Apply compiled social-state writes using phase snapshots and masked commits."""
         if active_mask.dim() != 1:
             raise ValueError(f"active_mask must be rank-1, got shape {tuple(active_mask.shape)}")
@@ -1498,6 +1508,7 @@ class VTCSocialResidueProgram:
             raise ValueError(f"VTC social residue state has ambiguous bar/VFS variable(s): {ambiguous}")
 
         active = active_mask.to(device=device, dtype=torch.bool)
+        attempted_targets: set[str] = set()
         for phase_rules in self._iter_phase_groups(self.rules):
             phase_snapshot = dict(updated)
             phase_effects = self._compute_phase_effects(
@@ -1507,9 +1518,10 @@ class VTCSocialResidueProgram:
                 active_mask=active,
                 device=device,
             )
+            attempted_targets.update(effect.rule.variable_id for effect in phase_effects if bool(effect.write_mask.any()))
             updated = self._commit_phase_effects(phase_snapshot, phase_effects)
 
-        return updated
+        return VTCWriteResult(updated, frozenset(attempted_targets))
 
     @staticmethod
     def _iter_phase_groups(rules: Sequence[CompiledVTCSocialResidueRule]) -> list[tuple[CompiledVTCSocialResidueRule, ...]]:
@@ -1771,7 +1783,7 @@ class VTCSocialResidueProgram:
     ) -> torch.Tensor:
         active = active_mask.to(device=target.device, dtype=torch.bool)
         if target.dim() == 0:
-            return torch.ones_like(target, dtype=torch.bool, device=target.device)
+            return torch.full_like(target, bool(active.any()), dtype=torch.bool, device=target.device)
 
         num_agents = active.shape[0]
         is_pair_scope = rule.scope == "pair" or (
@@ -1800,7 +1812,7 @@ class VTCSocialResidueProgram:
                 agent_mask = agent_mask.unsqueeze(-1)
             return agent_mask.expand_as(target)
 
-        return torch.ones_like(target, dtype=torch.bool, device=target.device)
+        return torch.full_like(target, bool(active.any()), dtype=torch.bool, device=target.device)
 
 
 @dataclass(frozen=True)

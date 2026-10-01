@@ -1,0 +1,50 @@
+{
+  "baseline_source": "64f5d3f503f605247d0517ed1f2eb3c7e9233818",
+  "cases": 31,
+  "readings": 884,
+  "changes": [
+    {
+      "pack": "configs/default_curriculum",
+      "level": "L0_0_minimal",
+      "field": "metadata.config_hash",
+      "before": "27dcca1f0e6be33278f875a90b57d7f9c0abcf49d5d22cc36f80d5776a2d8ba6",
+      "after": "e1894a70af5944fc0ba7ce101194617cfffa573d64fc9763fad49de26edc59dd"
+    },
+    {
+      "pack": "configs/default_curriculum",
+      "level": "L0_5_dual_resource",
+      "field": "metadata.config_hash",
+      "before": "27dcca1f0e6be33278f875a90b57d7f9c0abcf49d5d22cc36f80d5776a2d8ba6",
+      "after": "e1894a70af5944fc0ba7ce101194617cfffa573d64fc9763fad49de26edc59dd"
+    },
+    {
+      "pack": "configs/default_curriculum",
+      "level": "L1_full_observability",
+      "field": "metadata.config_hash",
+      "before": "27dcca1f0e6be33278f875a90b57d7f9c0abcf49d5d22cc36f80d5776a2d8ba6",
+      "after": "e1894a70af5944fc0ba7ce101194617cfffa573d64fc9763fad49de26edc59dd"
+    },
+    {
+      "pack": "configs/default_curriculum",
+      "level": "L2_partial_observability",
+      "field": "metadata.config_hash",
+      "before": "27dcca1f0e6be33278f875a90b57d7f9c0abcf49d5d22cc36f80d5776a2d8ba6",
+      "after": "e1894a70af5944fc0ba7ce101194617cfffa573d64fc9763fad49de26edc59dd"
+    },
+    {
+      "pack": "configs/default_curriculum",
+      "level": "L3_temporal_mechanics",
+      "field": "metadata.config_hash",
+      "before": "27dcca1f0e6be33278f875a90b57d7f9c0abcf49d5d22cc36f80d5776a2d8ba6",
+      "after": "e1894a70af5944fc0ba7ce101194617cfffa573d64fc9763fad49de26edc59dd"
+    },
+    {
+      "pack": "configs/test/items_smoke",
+      "level": "L0_smoke",
+      "field": "metadata.config_hash",
+      "before": "847a09d024552e5044e0721085d3895bedbe7a1286d4e535e1679271fb3be56e",
+      "after": "8903136d61d9868a9234e7769857428c4e4a90cb81cc81b4c985fd68975891cc"
+    }
+  ],
+  "unexpected": []
+}

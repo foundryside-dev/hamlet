@@ -1,9 +1,11 @@
 """Integration tests for VFS runtime evaluation."""
 
+import shutil
 from pathlib import Path
 from unittest.mock import patch
 
 import torch
+import yaml
 
 from townlet.universe.compiler import UniverseCompiler
 from townlet.vfs.evaluator import VFSEvaluator
@@ -35,11 +37,16 @@ def test_vfs_expressions_evaluated_at_runtime():
     assert "day_count" in env.vfs_registry._storage or "day_count" in env.vfs_registry.variables
 
 
-def test_mark_and_sweep_only_evaluates_observed_vars():
-    """Mark-and-sweep should only evaluate variables in observations."""
-    # Setup: Use effects_smoke config which has VFS profiles
-    # We'll track which variables get evaluated by mocking the evaluator
-    config_dir = Path(__file__).parent.parent.parent.parent / "configs" / "test" / "effects_smoke"
+def test_mark_and_sweep_evaluates_unexposed_authored_expressions(tmp_path):
+    """Expressions execute because they are state, independently of observation exposure."""
+    config_dir = tmp_path / "world"
+    shutil.copytree("configs/test/effects_smoke", config_dir)
+    variables_path = config_dir / "variables.yaml"
+    variables = yaml.safe_load(variables_path.read_text())
+    day_count = next(variable for variable in variables["variables"]["declarations"] if variable["id"] == "day_count")
+    day_count["expression"] = "tick"
+    assert day_count["exposed_to"] == []
+    variables_path.write_text(yaml.safe_dump(variables))
 
     compiler = UniverseCompiler()
     compiled = compiler.compile(config_dir, primary_level="L0_effects", use_cache=False)
@@ -51,7 +58,8 @@ def test_mark_and_sweep_only_evaluates_observed_vars():
     def track_evaluation(self, profile, bars, vfs_state, marks=None, device=None, **kwargs):
         """Track which variables are evaluated."""
         result = original_evaluate(self, profile, bars, vfs_state, marks, device, **kwargs)
-        evaluated_vars.extend(result.keys())
+        if profile is compiled.compiled_vfs_profiles.global_profile:
+            evaluated_vars.extend(result.keys())
         return result
 
     with patch.object(VFSEvaluator, "evaluate_global_profile", track_evaluation):
@@ -67,19 +75,9 @@ def test_mark_and_sweep_only_evaluates_observed_vars():
         evaluated_vars.clear()  # Clear any evaluation from reset
         env.step(torch.zeros(4, dtype=torch.long))
 
-    # Verify: Only variables marked as observed should be evaluated
-    # In effects_smoke, we need to check the observation marks
-    if compiled.vfs_evaluation_marks is not None:
-        expected_vars = compiled.vfs_evaluation_marks.get("global", set())
-        # In mark-and-sweep mode, only marked variables should be evaluated
-        # If there are no marks, no variables should be evaluated
-        if len(expected_vars) > 0:
-            assert len(evaluated_vars) > 0, "Expected some variables to be evaluated"
-            for var in evaluated_vars:
-                assert var in expected_vars, f"Unexpected variable {var} was evaluated"
-        else:
-            # No variables should be evaluated if nothing is marked
-            pass  # effects_smoke may not have any observed VFS vars
+    assert compiled.vfs_evaluation_marks is not None
+    assert compiled.vfs_evaluation_marks["global"] == {"day_count"}
+    assert set(evaluated_vars) == {"day_count"}
 
 
 def test_eager_mode_evaluates_all_vars():
@@ -95,7 +93,8 @@ def test_eager_mode_evaluates_all_vars():
     def track_evaluation(self, profile, bars, vfs_state, marks=None, device=None, **kwargs):
         """Track which variables are evaluated."""
         result = original_evaluate(self, profile, bars, vfs_state, marks, device, **kwargs)
-        evaluated_vars.extend(result.keys())
+        if profile is compiled.compiled_vfs_profiles.global_profile:
+            evaluated_vars.extend(result.keys())
         return result
 
     with patch.object(VFSEvaluator, "evaluate_global_profile", track_evaluation):
@@ -122,7 +121,7 @@ def test_vfs_expression_dependency_chain():
     Tests:
     - Multi-level dependencies (a → b → c)
     - Expression reuse across variables
-    - Eager evaluation (mark-and-sweep would skip unobserved vars)
+    - Eager evaluation includes static inputs as well as derived variables
     """
     # Setup: Use vfs_dependency_chain which has dependency chains
     config_dir = Path(__file__).parent.parent.parent.parent / "configs" / "test" / "vfs_dependency_chain"

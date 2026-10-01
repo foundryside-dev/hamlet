@@ -1,0 +1,23 @@
+{
+  "execution_diff_against_tested_source": [],
+  "feature_publication": "not performed; explicit authorization required after automatic approval review rejection",
+  "full_test_source": "baced7dba659ab2024a3f164f18c450695000362",
+  "hosted_acceptance": "pending",
+  "import_origin": "/home/john/hamlet/src/townlet/__init__.py",
+  "local_integrated_commit": "ded73a68c0b91a9e7209a1f2588ca660d236eba7",
+  "local_parent": "project-recovery-4",
+  "post_integration_gate": {
+    "command": "OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 .venv/bin/pytest --no-cov -q tests/test_townlet/integration/test_canonical_variable_runtime.py tests/test_townlet/integration/test_canonical_variable_consumer_shapes.py tests/test_townlet/unit/universe/test_canonical_variable_compilation.py tests/test_townlet/unit/environment/test_token_binding_scope.py tests/test_townlet/unit/universe/test_declaration_store.py tests/test_townlet/unit/universe/test_declaration_edges.py tests/test_townlet/unit/oracle/test_declaration_input_drift.py",
+    "elapsed_seconds": 21.11,
+    "exit_code": 0,
+    "log": "/tmp/cut-b-parent-post-integration.log",
+    "log_sha256": "ec9d3887b018ced76bf83fd97c65c66388064c6ee58da771726564cffdb763ca",
+    "passed": 87
+  },
+  "pydantic": "2.13.4",
+  "torch": "2.11.0+cu130",
+  "unrelated_state": {
+    ".agents/skills/filigree-workflow/references/error-codes.md": "27b0487e302939f67d6e1e2a4e1b66b531904944e9bf41b88e8c125e2ec0846a",
+    ".claude/skills/filigree-workflow/references/error-codes.md": "27b0487e302939f67d6e1e2a4e1b66b531904944e9bf41b88e8c125e2ec0846a"
+  }
+}

@@ -1,0 +1,342 @@
+{
+  "census": [
+    {
+      "pack": "configs/L5_multi_agent",
+      "primary_level": "L5_multi_agent"
+    },
+    {
+      "pack": "configs/aspatial_test",
+      "primary_level": "L0"
+    },
+    {
+      "pack": "configs/default_curriculum",
+      "primary_level": "L0_0_minimal"
+    },
+    {
+      "pack": "configs/default_curriculum",
+      "primary_level": "L0_5_dual_resource"
+    },
+    {
+      "pack": "configs/default_curriculum",
+      "primary_level": "L1_full_observability"
+    },
+    {
+      "pack": "configs/default_curriculum",
+      "primary_level": "L2_partial_observability"
+    },
+    {
+      "pack": "configs/default_curriculum",
+      "primary_level": "L3_temporal_mechanics"
+    },
+    {
+      "pack": "configs/differential/boundary_wrap",
+      "primary_level": "L1_full_observability"
+    },
+    {
+      "pack": "configs/differential/div003_cubic_partial",
+      "primary_level": "L2_partial_observability"
+    },
+    {
+      "pack": "configs/differential/div003_rect",
+      "primary_level": "L1_full_observability"
+    },
+    {
+      "pack": "configs/reference/model_pack",
+      "primary_level": "L0_demo"
+    },
+    {
+      "pack": "configs/simple",
+      "primary_level": "L0_simple"
+    },
+    {
+      "pack": "configs/test/action_masking",
+      "primary_level": "L0_masking"
+    },
+    {
+      "pack": "configs/test/action_space/aspatial",
+      "primary_level": "L0"
+    },
+    {
+      "pack": "configs/test/action_space/continuous1d",
+      "primary_level": "L0"
+    },
+    {
+      "pack": "configs/test/action_space/grid2d",
+      "primary_level": "L0"
+    },
+    {
+      "pack": "configs/test/effects_smoke",
+      "primary_level": "L0_effects"
+    },
+    {
+      "pack": "configs/test/gridnd_4d_pack",
+      "primary_level": "L0_test"
+    },
+    {
+      "pack": "configs/test/items_smoke",
+      "primary_level": "L0_smoke"
+    },
+    {
+      "pack": "configs/test/model_config",
+      "primary_level": "L0_test"
+    },
+    {
+      "pack": "configs/test/model_config_12meter",
+      "primary_level": "L0_12meter"
+    },
+    {
+      "pack": "configs/test/model_config_4meter",
+      "primary_level": "L0_4meter"
+    },
+    {
+      "pack": "configs/test/token_set_smoke",
+      "primary_level": "L0_test"
+    },
+    {
+      "pack": "configs/test/token_set_smoke",
+      "primary_level": "L1_attention"
+    },
+    {
+      "pack": "configs/test/token_transfer_a",
+      "primary_level": "L0_transfer"
+    },
+    {
+      "pack": "configs/test/token_transfer_b",
+      "primary_level": "L0_transfer"
+    },
+    {
+      "pack": "configs/test/token_transfer_c",
+      "primary_level": "L0_transfer"
+    },
+    {
+      "pack": "configs/test/vfs_bar_access",
+      "primary_level": "L0_bars"
+    },
+    {
+      "pack": "configs/test/vfs_dependency_chain",
+      "primary_level": "L0_deps"
+    },
+    {
+      "pack": "configs/trial002_money_log_gdp",
+      "primary_level": "L0_simple"
+    },
+    {
+      "pack": "configs/trial_k_cold",
+      "primary_level": "L0_cold"
+    }
+  ],
+  "resets": [
+    {
+      "action": 9,
+      "action_basis": "existing fleet smoke's final action index, not assumed WAIT",
+      "level": "L5_multi_agent",
+      "num_agents": 4,
+      "pack": "configs/L5_multi_agent",
+      "seed": 42,
+      "steps": 3
+    },
+    {
+      "action": 14,
+      "action_basis": "existing fleet smoke's final action index, not assumed WAIT",
+      "level": "L0_0_minimal",
+      "num_agents": 4,
+      "pack": "configs/default_curriculum",
+      "seed": 42,
+      "steps": 3
+    },
+    {
+      "action": 14,
+      "action_basis": "existing fleet smoke's final action index, not assumed WAIT",
+      "level": "L0_5_dual_resource",
+      "num_agents": 4,
+      "pack": "configs/default_curriculum",
+      "seed": 42,
+      "steps": 3
+    },
+    {
+      "action": 14,
+      "action_basis": "existing fleet smoke's final action index, not assumed WAIT",
+      "level": "L1_full_observability",
+      "num_agents": 4,
+      "pack": "configs/default_curriculum",
+      "seed": 42,
+      "steps": 3
+    },
+    {
+      "action": 14,
+      "action_basis": "existing fleet smoke's final action index, not assumed WAIT",
+      "level": "L2_partial_observability",
+      "num_agents": 4,
+      "pack": "configs/default_curriculum",
+      "seed": 42,
+      "steps": 3
+    },
+    {
+      "action": 14,
+      "action_basis": "existing fleet smoke's final action index, not assumed WAIT",
+      "level": "L3_temporal_mechanics",
+      "num_agents": 4,
+      "pack": "configs/default_curriculum",
+      "seed": 42,
+      "steps": 3
+    },
+    {
+      "action": 14,
+      "action_basis": "existing fleet smoke's final action index, not assumed WAIT",
+      "level": "L1_full_observability",
+      "num_agents": 4,
+      "pack": "configs/differential/boundary_wrap",
+      "seed": 42,
+      "steps": 3
+    },
+    {
+      "action": 16,
+      "action_basis": "existing fleet smoke's final action index, not assumed WAIT",
+      "level": "L2_partial_observability",
+      "num_agents": 4,
+      "pack": "configs/differential/div003_cubic_partial",
+      "seed": 42,
+      "steps": 3
+    },
+    {
+      "action": 14,
+      "action_basis": "existing fleet smoke's final action index, not assumed WAIT",
+      "level": "L1_full_observability",
+      "num_agents": 4,
+      "pack": "configs/differential/div003_rect",
+      "seed": 42,
+      "steps": 3
+    },
+    {
+      "action": 8,
+      "action_basis": "existing fleet smoke's final action index, not assumed WAIT",
+      "level": "L0_effects",
+      "num_agents": 4,
+      "pack": "configs/test/effects_smoke",
+      "seed": 42,
+      "steps": 3
+    },
+    {
+      "action": 12,
+      "action_basis": "existing fleet smoke's final action index, not assumed WAIT",
+      "level": "L0_smoke",
+      "num_agents": 4,
+      "pack": "configs/test/items_smoke",
+      "seed": 42,
+      "steps": 3
+    }
+  ],
+  "source_commit": "0fdb16eadfa7e4096a238959ba113e92e90fb5af",
+  "traces": [
+    {
+      "cell_id": "default_curriculum:L0_0_minimal:cpu:seed42",
+      "params": {
+        "device": "cpu",
+        "level": "L0_0_minimal",
+        "num_agents": 4,
+        "pack": "configs/default_curriculum",
+        "seed": 42,
+        "steps": 100
+      }
+    },
+    {
+      "cell_id": "default_curriculum:L0_5_dual_resource:cpu:seed42",
+      "params": {
+        "device": "cpu",
+        "level": "L0_5_dual_resource",
+        "num_agents": 4,
+        "pack": "configs/default_curriculum",
+        "seed": 42,
+        "steps": 100
+      }
+    },
+    {
+      "cell_id": "default_curriculum:L1_full_observability:cpu:seed42",
+      "params": {
+        "device": "cpu",
+        "level": "L1_full_observability",
+        "num_agents": 4,
+        "pack": "configs/default_curriculum",
+        "seed": 42,
+        "steps": 100
+      }
+    },
+    {
+      "cell_id": "default_curriculum:L2_partial_observability:cpu:seed42",
+      "params": {
+        "device": "cpu",
+        "level": "L2_partial_observability",
+        "num_agents": 4,
+        "pack": "configs/default_curriculum",
+        "seed": 42,
+        "steps": 100
+      }
+    },
+    {
+      "cell_id": "default_curriculum:L3_temporal_mechanics:cpu:seed42",
+      "params": {
+        "device": "cpu",
+        "level": "L3_temporal_mechanics",
+        "num_agents": 4,
+        "pack": "configs/default_curriculum",
+        "seed": 42,
+        "steps": 100
+      }
+    },
+    {
+      "cell_id": "boundary_wrap:L1_full_observability:cpu:seed42",
+      "params": {
+        "device": "cpu",
+        "level": "L1_full_observability",
+        "num_agents": 4,
+        "pack": "configs/differential/boundary_wrap",
+        "seed": 42,
+        "steps": 100
+      }
+    },
+    {
+      "cell_id": "div003_cubic_partial:L2_partial_observability:cpu:seed42",
+      "params": {
+        "device": "cpu",
+        "level": "L2_partial_observability",
+        "num_agents": 4,
+        "pack": "configs/differential/div003_cubic_partial",
+        "seed": 42,
+        "steps": 100
+      }
+    },
+    {
+      "cell_id": "div003_rect:L1_full_observability:cpu:seed42",
+      "params": {
+        "device": "cpu",
+        "level": "L1_full_observability",
+        "num_agents": 4,
+        "pack": "configs/differential/div003_rect",
+        "seed": 42,
+        "steps": 100
+      }
+    },
+    {
+      "cell_id": "items_smoke:L0_smoke:cpu:seed42",
+      "params": {
+        "device": "cpu",
+        "level": "L0_smoke",
+        "num_agents": 4,
+        "pack": "configs/test/items_smoke",
+        "seed": 42,
+        "steps": 100
+      }
+    },
+    {
+      "cell_id": "effects_smoke:L0_effects:cpu:seed42",
+      "params": {
+        "device": "cpu",
+        "level": "L0_effects",
+        "num_agents": 4,
+        "pack": "configs/test/effects_smoke",
+        "seed": 42,
+        "steps": 100
+      }
+    }
+  ]
+}

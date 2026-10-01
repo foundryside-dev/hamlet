@@ -23,7 +23,7 @@ def _build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     compile_parser = subparsers.add_parser("compile", help="Compile a config pack and optionally cache the artifact.")
-    compile_parser.add_argument("config_dir", help="Path to config directory (contains training.yaml, bars.yaml, etc.)")
+    compile_parser.add_argument("config_dir", help="Path to config pack (nested YAML declarations, with levels/<id> scope)")
     compile_parser.add_argument("--primary-level", required=True, help="Curriculum level to compile as the primary level.")
     compile_parser.add_argument(
         "--no-cache",

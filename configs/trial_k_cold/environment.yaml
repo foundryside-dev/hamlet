@@ -47,5 +47,4 @@ environment:
       description: "A landmark inside the indoor region"
       category: shelter
 
-  variables: []
   cues: []

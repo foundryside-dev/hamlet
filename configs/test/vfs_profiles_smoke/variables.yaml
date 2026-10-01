@@ -1,0 +1,105 @@
+variables:
+  version: '1.0'
+  evaluation_mode: mark_and_sweep
+  debug_logging: false
+  extents: {}
+  item_profiles:
+  - food_stats
+  - weapon_stats
+  declarations:
+  - id: day_count
+    readable_by: [engine, agent]
+    writable_by: [engine]
+    scope: global
+    type: scalar
+    lifetime: persistent
+    semantic_type: temporal
+    exposed_to: []
+    description: Number of days elapsed
+    initial_value: 0
+  - id: is_night
+    readable_by: [engine, agent]
+    writable_by: [engine]
+    scope: global
+    type: bool
+    lifetime: persistent
+    semantic_type: temporal
+    exposed_to: []
+    expression: tick % 24 >= 18
+    description: True during night hours (18:00-6:00)
+    initial_value: false
+  - id: motivation
+    readable_by: [engine, agent]
+    writable_by: [engine]
+    scope: agent
+    type: scalar
+    lifetime: episode
+    semantic_type: custom
+    exposed_to: []
+    description: Agent's intrinsic motivation multiplier
+    initial_value: 1.0
+  - id: is_crisis
+    readable_by: [engine, agent]
+    writable_by: [engine]
+    scope: agent
+    type: bool
+    lifetime: episode
+    semantic_type: custom
+    exposed_to: []
+    expression: bar.energy < 0.2 or bar.health < 0.2
+    description: True when agent is in resource crisis
+    initial_value: false
+  - id: crisis_duration
+    readable_by: [engine, agent]
+    writable_by: [engine]
+    scope: agent
+    type: scalar
+    lifetime: episode
+    semantic_type: custom
+    exposed_to: []
+    description: Ticks spent in crisis state
+    initial_value: 0
+  - id: nutrition
+    readable_by: [engine, agent]
+    writable_by: [engine]
+    scope: item
+    type: scalar
+    lifetime: episode
+    semantic_type: custom
+    exposed_to: []
+    profile: food_stats
+    description: Energy restored when consumed
+    initial_value: 0.5
+  - id: is_spoiled
+    readable_by: [engine, agent]
+    writable_by: [engine]
+    scope: item
+    type: bool
+    lifetime: episode
+    semantic_type: custom
+    exposed_to: []
+    profile: food_stats
+    description: True when food has spoiled
+    initial_value: false
+  - id: damage
+    readable_by: [engine, agent]
+    writable_by: [engine]
+    scope: item
+    type: scalar
+    lifetime: episode
+    semantic_type: custom
+    exposed_to: []
+    profile: weapon_stats
+    description: Damage dealt per use
+    initial_value: 10.0
+  - id: durability
+    readable_by: [engine, agent]
+    writable_by: [engine]
+    scope: item
+    type: scalar
+    lifetime: episode
+    semantic_type: custom
+    exposed_to: []
+    profile: weapon_stats
+    description: Remaining uses before breaking
+    initial_value: 100

@@ -32,18 +32,11 @@ from townlet.universe.dto.token_spec import (
 
 
 def _static(count: int, type_name: str) -> tuple[SlotBinding, ...]:
-    return tuple(
-        SlotBinding(
-            slot_index=i,
-            filler_kind="static",
-            filler_ref=f"{type_name}:{i}",
-        )
-        for i in range(count)
-    )
+    return tuple(SlotBinding(slot_index=i, filler_kind="static", filler_ref=f"{type_name}:{i}", scope=None) for i in range(count))
 
 
 def _dynamic(count: int, prefix: str) -> tuple[SlotBinding, ...]:
-    return tuple(SlotBinding(slot_index=i, filler_kind="dynamic", filler_ref=f"{prefix}:{i}") for i in range(count))
+    return tuple(SlotBinding(slot_index=i, filler_kind="dynamic", filler_ref=f"{prefix}:{i}", scope=None) for i in range(count))
 
 
 def _type(type_name: str, bindings: tuple[SlotBinding, ...]):

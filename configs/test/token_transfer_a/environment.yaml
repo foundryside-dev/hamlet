@@ -26,16 +26,4 @@ environment:
   # The one roster member pack B lacks: an exposed variable whose declarations
   # SATISFY the exposure rules (bounded minmax with clip: true), so it binds a
   # variable_element slot in the compiled TokenSpec.
-  variables:
-    - name: threat_level
-      type: scalar
-      dims: 1
-      scope: agent
-      description: "Bounded scalar that binds a variable_element token slot"
-      semantic_type: custom
-      normalization:
-        method: normalize
-        clip: true
-        range: [0.0, 1.0]
-
   cues: []

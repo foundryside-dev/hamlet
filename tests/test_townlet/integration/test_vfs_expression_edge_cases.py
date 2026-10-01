@@ -35,11 +35,10 @@ def test_missing_vfs_variable_reference():
 
 def test_type_mismatch_in_vfs_expression():
     """VFS expression with type mismatch should fail at compile time."""
-    # Setup: Config with int var assigned bool expression
-    # my_int_var = 10 < 5  # Returns bool, not int
+    # Setup: Canonical scalar state assigned a boolean expression.
     config_dir = Path(__file__).parent.parent.parent.parent / "configs" / "test" / "vfs_type_mismatch"
 
     # Exercise & Verify: Compilation should fail with type error
-    with pytest.raises(CompilationError, match="declared as int but expression returns bool"):
+    with pytest.raises(CompilationError, match="declared as scalar but expression returns bool"):
         compiler = UniverseCompiler()
         compiler.compile(config_dir, primary_level="L0_type_mismatch", use_cache=False)

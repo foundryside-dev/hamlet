@@ -8,7 +8,6 @@ each moves exactly when its declared content moves, both directions pinned below
 """
 
 from pathlib import Path
-from types import SimpleNamespace
 
 import msgpack
 import pytest
@@ -211,18 +210,15 @@ def _spec_with(meter_refs: tuple[str, ...], *, item_capacity: int = 0) -> TokenS
     types = []
     for type_name in TOKEN_TYPE_ROSTER:
         if type_name == "self":
-            bindings = (SlotBinding(slot_index=0, filler_kind="static", filler_ref="self"),)
+            bindings = (SlotBinding(slot_index=0, filler_kind="static", filler_ref="self", scope=None),)
         elif type_name == "meter":
             bindings = tuple(
-                SlotBinding(
-                    slot_index=i,
-                    filler_kind="static",
-                    filler_ref=ref,
-                )
-                for i, ref in enumerate(meter_refs)
+                SlotBinding(slot_index=i, filler_kind="static", filler_ref=ref, scope=None) for i, ref in enumerate(meter_refs)
             )
         elif type_name == "item":
-            bindings = tuple(SlotBinding(slot_index=i, filler_kind="dynamic", filler_ref=f"item:{i}") for i in range(item_capacity))
+            bindings = tuple(
+                SlotBinding(slot_index=i, filler_kind="dynamic", filler_ref=f"item:{i}", scope=None) for i in range(item_capacity)
+            )
         else:
             bindings = ()
         contexts = () if type_name == "effect" else tuple((0.0,) * len(PAYLOAD_SCHEMAS[type_name]) for _ in bindings)
@@ -284,7 +280,7 @@ class TestHashNarrowness:
             type_name="meter",
             payload_features=PAYLOAD_SCHEMAS["meter"],
             capacity=1,
-            slot_bindings=(SlotBinding(slot_index=0, filler_kind="static", filler_ref="energy"),),
+            slot_bindings=(SlotBinding(slot_index=0, filler_kind="static", filler_ref="energy", scope=None),),
             slot_context_payloads=(context_a,),
             effect_catalog_contexts=(),
         )
@@ -292,7 +288,7 @@ class TestHashNarrowness:
             type_name="meter",
             payload_features=PAYLOAD_SCHEMAS["meter"],
             capacity=1,
-            slot_bindings=(SlotBinding(slot_index=0, filler_kind="static", filler_ref="energy"),),
+            slot_bindings=(SlotBinding(slot_index=0, filler_kind="static", filler_ref="energy", scope=None),),
             slot_context_payloads=(context_b,),
             effect_catalog_contexts=(),
         )
@@ -363,23 +359,20 @@ class TestSerialization:
             CompiledUniverse.from_dict(payload)
 
 
-def _env_stub(*names_and_types: tuple[str, str]):
-    """Minimal EnvConfigV21 stand-in: `variable_element_bindings` reads only
-    `environment.environment.variables[*].name / .semantic_type`."""
-    return SimpleNamespace(environment=SimpleNamespace(variables=[SimpleNamespace(name=n, semantic_type=t) for n, t in names_and_types]))
-
-
 def _variable_def(
     name: str,
     *,
     dims: int | None = None,
     normalization: NormalizationSpec | None,
     default: object = 0.0,
+    exposed_to: tuple[str, ...] = ("agent",),
     initial_value_mode: str | None = None,
     initial_value_params: dict[str, float] | None = None,
 ) -> VariableDef:
     return VariableDef(
         id=name,
+        semantic_type="custom",
+        exposed_to=list(exposed_to),
         scope="agent",
         type="vecNf" if dims and dims > 1 else "scalar",
         dims=dims,
@@ -402,12 +395,11 @@ class TestVariableElementBindings:
     while the token path ran alongside the old one is a compile REFUSAL since the cut."""
 
     def test_passing_declarations_bind_slots_in_registry_order(self):
-        env = _env_stub(("temp", "custom"), ("wind", "custom"))
         defs = (
             _variable_def("temp", normalization=_BOUNDED),
             _variable_def("wind", dims=3, normalization=NormalizationSpec(kind="minmax", min=0.0, max=10.0, clip=True)),
         )
-        bindings = variable_element_bindings(env, None, defs, item_capacity_value=0)
+        bindings = variable_element_bindings(None, defs, item_capacity_value=0)
         assert [b.filler_ref for b in bindings] == ["temp", "wind[0]", "wind[1]", "wind[2]"]
         assert [b.slot_index for b in bindings] == [0, 1, 2, 3]
         assert all(b.filler_kind == "static" for b in bindings)
@@ -424,43 +416,37 @@ class TestVariableElementBindings:
         )
 
     def test_unnormalized_variable_refuses(self):
-        env = _env_stub(("raw_var", "custom"))
         defs = (_variable_def("raw_var", normalization=None),)
         with pytest.raises(ValueError, match="declares no normalization"):
-            variable_element_bindings(env, None, defs, item_capacity_value=0)
+            variable_element_bindings(None, defs, item_capacity_value=0)
 
     def test_unbounded_kind_refuses_with_the_boundedness_rule(self):
-        env = _env_stub(("z", "custom"))
         defs = (_variable_def("z", normalization=NormalizationSpec(kind="zscore", mean=0.0, std=1.0)),)
         with pytest.raises(ValueError, match="bounded normalization kind"):
-            variable_element_bindings(env, None, defs, item_capacity_value=0)
+            variable_element_bindings(None, defs, item_capacity_value=0)
 
     def test_rank_scaled_refuses_at_exposure(self):
-        env = _env_stub(("r", "custom"))
         defs = (_variable_def("r", normalization=NormalizationSpec(kind="rank_scaled")),)
         with pytest.raises(ValueError, match="rank_scaled"):
-            variable_element_bindings(env, None, defs, item_capacity_value=0)
+            variable_element_bindings(None, defs, item_capacity_value=0)
 
     def test_indistinguishable_pair_refuses_naming_both(self):
         # Identical declarations apart from the id: identical static signatures.
-        env = _env_stub(("twin_a", "custom"), ("twin_b", "custom"))
         defs = (_variable_def("twin_a", normalization=_BOUNDED), _variable_def("twin_b", normalization=_BOUNDED))
         with pytest.raises(ValueError, match="indistinguishable") as excinfo:
-            variable_element_bindings(env, None, defs, item_capacity_value=0)
+            variable_element_bindings(None, defs, item_capacity_value=0)
         assert "twin_a" in str(excinfo.value) and "twin_b" in str(excinfo.value)
 
     def test_unexposed_variable_binds_nothing(self):
-        # Explicit exposure: a registry variable no environment.yaml or profile exposure
-        # names is UNEXPOSED and occupies no slot (the fail-open default is deleted).
-        defs = (_variable_def("hidden", normalization=None),)
-        assert variable_element_bindings(_env_stub(), None, defs, item_capacity_value=0) == ()
+        # Empty exposure is explicit on the canonical variable and occupies no slot.
+        defs = (_variable_def("hidden", normalization=None, exposed_to=()),)
+        assert variable_element_bindings(None, defs, item_capacity_value=0) == ()
 
     def test_exposed_variable_without_explicit_default_refuses(self):
-        env = _env_stub(("implicit", "custom"))
         defs = (_variable_def("implicit", normalization=_BOUNDED, default=None),)
 
         with pytest.raises(ValueError, match=r"implicit.*explicit declared default"):
-            variable_element_bindings(env, None, defs, item_capacity_value=0)
+            variable_element_bindings(None, defs, item_capacity_value=0)
 
     @pytest.mark.parametrize(
         ("mode", "params"),
@@ -475,7 +461,6 @@ class TestVariableElementBindings:
         mode: str | None,
         params: dict[str, float] | None,
     ):
-        env = _env_stub(("parallel_init", "custom"))
         defs = (
             _variable_def(
                 "parallel_init",
@@ -486,7 +471,7 @@ class TestVariableElementBindings:
         )
 
         with pytest.raises(ValueError, match=r"parallel_init.*initial_value_mode.*initial_value_params"):
-            variable_element_bindings(env, None, defs, item_capacity_value=0)
+            variable_element_bindings(None, defs, item_capacity_value=0)
 
 
 class TestMeanCensusAdvisoryWiring:
@@ -557,7 +542,6 @@ class TestMeanCensusAdvisoryWiring:
             AffordancesV2Config(version="1.0", affordances=[], modulations=[]),
             None,
             None,
-            environment,
             None,
             (),
             brain,

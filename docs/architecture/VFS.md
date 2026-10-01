@@ -1,5 +1,19 @@
 # Townlet Variable & Feature System (VFS) — Updated Design and Integration Specification
 
+> **Current authoring and access boundary — 1 October 2026:** the canonical
+> [variables declaration](../config-schemas/variables.md) replaces every historical
+> environment-variable, VFS-profile and static-overlay authoring example below.
+> Type, lifetime, initialization and exposure are explicit in one roster; all variables
+> enter common resolution. Internal compiled profiles remain execution products.
+> Typed token binding scope selects storage. PRD-0004 adds required finite static role
+> policies, checked ordinary/item access, authorized batched publication and attempted-write
+> provenance. `VariableRegistry` is the sole runtime registry; the unchecked
+> `ScopedVariableRegistry` has been deleted. Read the current schema for explicit actors,
+> immutable literal/reset semantics, qualified item identity and artifact schema 1.29.
+> Owner/spatial/dynamic epistemic propagation remains separate PDR-0120 work.
+> The dated architecture and audit caveats below are historical where they describe those
+> removed authoring languages; they do not supply alternative supported payloads.
+
 **Document Type**: Design Specification + Integration Specification  
 **Status**: Phase 1 Complete; observation path fully VFS-driven in production (shadow migration finished, old path deleted); VTC partially unified (Phase 2.x)  
 **Version**: 1.1 Draft  
@@ -31,8 +45,8 @@ The Variable & Feature System (VFS) is the formal state, feature, observation, a
 In its current Phase 1 form, VFS provides:
 
 1. **Schema definitions** for variables and compiled token exposure.
-2. **A required experiment-level `vfs_profiles.yaml` catalog** for compiled global, agent, and item profiles.
-3. **An optional experiment-level `variables_reference.yaml` static registry overlay** for non-item variables and observation marks; item-scoped variables and expressions belong in `vfs_profiles.yaml`.
+2. **One required pack-scope canonical variable declaration** with explicit state/exposure semantics.
+3. **Internal compiled global, agent and item profiles**, produced from that same declaration roster.
 4. **A runtime variable registry** that stores state tensors and enforces read/write access control.
 5. **TokenSpec compilation** that binds agent-facing token slots from declarative exposures.
 6. **ActionConfig dependency tracking** through declared `reads` and `writes` fields.
@@ -671,21 +685,12 @@ Key points:
 
 ### 7.2 Repo-side registry surfaces
 
-The current repo has two registry surfaces:
-
-- `VariableRegistry` is the compiled runtime registry used by `VectorizedHamletEnv`. It owns declared VFS variables, permission checks, lifetime resets, item-profile tensor storage, and engine writeback.
-- `ScopedVariableRegistry` is a simpler global/agent/item utility registry that implements
-  the same protocol shape for observation-builder tests, item-observation tests, and
-  component benchmarks. It is not the environment hot path, but the class itself is still an
-  intentional adapter/test surface rather than dead code. ⚠ Its `check_access`
-  (`registry.py:1018+`) implements a **different access-control philosophy** from the declared
-  `readable_by`/`writable_by` role lists this chapter documents: fixed scope-based rules
-  (globals read-only, agent variables writable only by agent scope). It is also **dead in
-  `src/`** (sharpened 2026-08-25, pass 3): none of the class's own `get_*`/`set_*` accessors
-  call it and nothing outside `registry.py` does — its only callers are
-  `tests/test_townlet/unit/vfs/test_scoped_registry.py`. It enforces nothing anywhere. Do
-  not read it as the VFS access model — that lives in `VariableRegistry` (2026-08-24 audit,
-  noted here 2026-08-25).
+The runtime has one registry: `VariableRegistry`, used by `VectorizedHamletEnv`,
+observation fixtures and component benchmarks. The old unchecked utility registry
+and its access-error type are deleted. Convenience and item APIs require explicit
+reader/writer actors; item reads/writes also require a live matching profile.
+Checked access and publisher plans use the same frozen policy snapshot. Dynamic
+addition validates a new policy and cannot replace an existing variable's authority.
 
 Runtime VFS evaluation uses `VariableRegistry.set_engine_value()` for evaluator writeback. This
 method is deliberately narrower than direct storage mutation: it requires the variable to exist
@@ -2500,23 +2505,12 @@ Condensed from the archived implementation overview
 (`archive/vfs-current-implementation.md`, "How To Extend VFS Safely"), with the current
 caveats bound in:
 
-**Add a static runtime variable** (`variables_reference.yaml`): keep it static (no
-expressions); set explicit `readable_by`, `writable_by`, `lifetime`, `scope`, and default;
-declare the matching `extents:` entry for zone/group/message/affordance scopes (§5.1). ⚠ Know
-the door you are using: this is the only surface where `readable_by`/`writable_by`/`lifetime`
-are author-settable, and its variables are invisible to the compiler symbol table — no effect,
-affordance, action write, or `drive.yaml` can reference them (§5.1 caveat,
-`hamlet-33e520cebd`).
-
-**Add a derived profile variable** (`vfs_profiles.yaml`): choose global/agent/item profile
-scope; provide exactly one initialization source (`initial_value` / `initial_value_mode` /
-`expression` for global and agent profiles — the item-profile DTO has no
-`initial_value_mode` at all and refuses `expression` at compile, so an item variable is
-`initial_value` only; `config/vfs_profiles_config.py:22-60,245-275`); the profile compiler
-parses, type-checks, and topologically sorts dependencies. If it should be observed, declare
-`exposed_to` and — on global/agent variables only; item variables carry no `semantic_type`
-(`PDR-0066`) — `semantic_type`; and remember `exposed_to: []` currently fails open to
-`["agent"]` (§5.3 caveat).
+**Add authored state:** use the canonical `variables.declarations` roster with explicit
+`id`, `scope`, `type`, `lifetime`, `semantic_type`, `exposed_to` and initialization.
+Add `expression` for supported global/agent derived state, and `profile` for item state.
+Declare `readable_by` (`[engine]` or `[engine, agent]`) and `writable_by`
+(`[engine]` or `[]`) explicitly. Exposure requires agent-read permission.
+See [the current variable schema](../config-schemas/variables.md) for validation and consumer limits.
 
 **Add a new transition rule family** (`vtc.py`): compile source config into immutable
 `CompiledVTC...` records with parsed expression ASTs; sort by
@@ -2683,11 +2677,8 @@ This would make VFS teachable and debuggable.
   per the 2026-08-24 audit except its access-control and `agent_private` claims
 - `docs/architecture/archive/REVIEW-2026-08-24-vfs-implementation-vs-spec.md` — the two-auditor
   claim-by-claim verdict tables behind this document's §5/§6 caveats
-- `docs/config-schemas/vfs-profiles.md` (archived 2026-08-24; schema concepts
-  remain useful)
-- `docs/config-schemas/variables.md` — optional static variable and observation
-  metadata overlay (⚠ broadly stale, 2025-11: three scopes, dead file paths, retracted
-  dimension counts)
+- `docs/config-schemas/variables.md` — current canonical variable authoring contract
+  introduced by declaration-store Cut B
 - `docs/zzz. archive/plans/archive/vfs_uplift/2025-11-18-items-and-vfs-profiles.md`
 - `docs/zzz. archive/plans/archive/vfs_uplift/master_requirements.md`
 - `CLAUDE.md` VFS section

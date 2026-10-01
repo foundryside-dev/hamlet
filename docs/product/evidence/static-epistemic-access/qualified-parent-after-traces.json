@@ -1,0 +1,1525 @@
+{
+  "cells": [
+    {
+      "action_source": "scripted:a8c1f8b2122f5c68",
+      "cell_id": "default_curriculum:L0_0_minimal:cpu:seed42",
+      "code_root": "/tmp/hamlet-static-epistemic-access/src",
+      "comparison": {
+        "actions": {
+          "after": {
+            "dtype": "int64",
+            "sha256": "a8c1f8b2122f5c68ed1023dc7c5119f5bc0c04883b100d5b56a630cbffc63297",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "int64",
+            "sha256": "a8c1f8b2122f5c68ed1023dc7c5119f5bc0c04883b100d5b56a630cbffc63297",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "dones": {
+          "after": {
+            "dtype": "bool",
+            "sha256": "80717a5fc244b2ce7b686c1449157abeb8028de1cb76806fcbae441a41137873",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "bool",
+            "sha256": "80717a5fc244b2ce7b686c1449157abeb8028de1cb76806fcbae441a41137873",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "obs": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "1f097b4a1b3495e59c6f798b3a94abdb2ce1538cb4e0f2d247b893f4e2a8e45a",
+            "shape": [
+              101,
+              4,
+              118
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "1f097b4a1b3495e59c6f798b3a94abdb2ce1538cb4e0f2d247b893f4e2a8e45a",
+            "shape": [
+              101,
+              4,
+              118
+            ]
+          },
+          "equal": true
+        },
+        "rewards": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "9a988facc574565aad11a347058acc3075088d83ccf5bc19d40fa29cc10f17a4",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "9a988facc574565aad11a347058acc3075088d83ccf5bc19d40fa29cc10f17a4",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        }
+      },
+      "file": "cpu-00.npz",
+      "file_sha256": "bc08d5c2d2af464986f75cfb2019b30c2ce6352f088aa466796c81d1b46eb1b3",
+      "hashes": {
+        "action_schema_hash": "b8c4948d605f4806005bb0cd487742913d9a46a51b567d1d2b08353a3c11548e",
+        "actions_hash": "e0c20f212f05f3b36ee4f9ebb09a9b8c22b6b05b029d005d60af4fc721dc7f52",
+        "affordances_hash": "2bda63f6ad0e919402a1d8d84b1765a32874e65b0b959bea7321b00e8310f342",
+        "bars_hash": "fce5fc6f2131c152516bd13d2106e540ab57d0b955f21fd7d71a00404eafb3cf",
+        "brain_hash": "e8092ac6be543f7546e7ae557ce23bb369efb977c84ebbb3bddd94581a8fe733",
+        "curriculum_hash": "273adb8ecd2a1e3640cd2922a68d3eab85e4d0caa84259f5ededbfa23a00685c",
+        "drive_hash": "b02aa064b2a03720944acbe44aab8e55b6d123d968b55fedfe6a53a1ccf853b6",
+        "environment_hash": "2accfd2d6c800f3a9711d447e910616eff9d41d35542c2739c81cf398cdcea41",
+        "experiment_hash": "48f6725f6e9fd0880f38f3b078287685ac8fdf8f9cad906299ae748758fc4092",
+        "items_hash": "a511f15412d258f09eb72788f61d7330ffa99c7e7efd92a87c18e5b737daf641",
+        "layout_hash": "73b4f0737c49968989902be09f8fa9370e535f596cbfafaeabed6ab7a7f34cbd",
+        "observation_schema_hash": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+        "pack_brain_hash": "e8092ac6be543f7546e7ae557ce23bb369efb977c84ebbb3bddd94581a8fe733",
+        "stratum_hash": "bcbf09eb619adbe99423ece90163587b733825e68f75ac9184e84c8668cd6336",
+        "token_type_schema_hash": "8ad2b59b502a905bf1a60f2e5743cac2c1f705f4a4143f5daf20bece38036d7d",
+        "training_hash": "9beb9f2bd57e1c73a06cd50ad2c0bcbc08da0ee34751515a7b693d462e0ea382",
+        "transition_graph_hash": "27ed69c36b5a0c77e8647f0dc0d96f6f491c04eb6952f92c959de68f8c90f496",
+        "variable_schema_hash": "65564174ed8f79ff09e9d7db5b0f3d939717084611a3d314f2f810c7148402c7",
+        "vfs_hash": "e66a0d1969376e6cf66ac3390535cee8c6bf6747975f1d40b34435e92cb3a157"
+      },
+      "pack_root": "/tmp/hamlet-static-epistemic-access",
+      "params": {
+        "device": "cpu",
+        "level": "L0_0_minimal",
+        "num_agents": 4,
+        "pack": "configs/default_curriculum",
+        "seed": 42,
+        "steps": 100
+      },
+      "streams": {
+        "actions": {
+          "dtype": "int64",
+          "sha256": "a8c1f8b2122f5c68ed1023dc7c5119f5bc0c04883b100d5b56a630cbffc63297",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "dones": {
+          "dtype": "bool",
+          "sha256": "80717a5fc244b2ce7b686c1449157abeb8028de1cb76806fcbae441a41137873",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "obs": {
+          "dtype": "float32",
+          "sha256": "1f097b4a1b3495e59c6f798b3a94abdb2ce1538cb4e0f2d247b893f4e2a8e45a",
+          "shape": [
+            101,
+            4,
+            118
+          ]
+        },
+        "rewards": {
+          "dtype": "float32",
+          "sha256": "9a988facc574565aad11a347058acc3075088d83ccf5bc19d40fa29cc10f17a4",
+          "shape": [
+            100,
+            4
+          ]
+        }
+      }
+    },
+    {
+      "action_source": "scripted:a8c1f8b2122f5c68",
+      "cell_id": "default_curriculum:L0_5_dual_resource:cpu:seed42",
+      "code_root": "/tmp/hamlet-static-epistemic-access/src",
+      "comparison": {
+        "actions": {
+          "after": {
+            "dtype": "int64",
+            "sha256": "a8c1f8b2122f5c68ed1023dc7c5119f5bc0c04883b100d5b56a630cbffc63297",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "int64",
+            "sha256": "a8c1f8b2122f5c68ed1023dc7c5119f5bc0c04883b100d5b56a630cbffc63297",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "dones": {
+          "after": {
+            "dtype": "bool",
+            "sha256": "80717a5fc244b2ce7b686c1449157abeb8028de1cb76806fcbae441a41137873",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "bool",
+            "sha256": "80717a5fc244b2ce7b686c1449157abeb8028de1cb76806fcbae441a41137873",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "obs": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "1f097b4a1b3495e59c6f798b3a94abdb2ce1538cb4e0f2d247b893f4e2a8e45a",
+            "shape": [
+              101,
+              4,
+              118
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "1f097b4a1b3495e59c6f798b3a94abdb2ce1538cb4e0f2d247b893f4e2a8e45a",
+            "shape": [
+              101,
+              4,
+              118
+            ]
+          },
+          "equal": true
+        },
+        "rewards": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "9a988facc574565aad11a347058acc3075088d83ccf5bc19d40fa29cc10f17a4",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "9a988facc574565aad11a347058acc3075088d83ccf5bc19d40fa29cc10f17a4",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        }
+      },
+      "file": "cpu-01.npz",
+      "file_sha256": "541450aead23997a8a6c79c873191404fce78dfaee8a10fab2d6396c46515872",
+      "hashes": {
+        "action_schema_hash": "63b969e265a26f915b55be6f7855591af7185c8cd4ca20bcef02149c5b3ac9bb",
+        "actions_hash": "e0c20f212f05f3b36ee4f9ebb09a9b8c22b6b05b029d005d60af4fc721dc7f52",
+        "affordances_hash": "2bda63f6ad0e919402a1d8d84b1765a32874e65b0b959bea7321b00e8310f342",
+        "bars_hash": "fce5fc6f2131c152516bd13d2106e540ab57d0b955f21fd7d71a00404eafb3cf",
+        "brain_hash": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f",
+        "curriculum_hash": "273adb8ecd2a1e3640cd2922a68d3eab85e4d0caa84259f5ededbfa23a00685c",
+        "drive_hash": "b02aa064b2a03720944acbe44aab8e55b6d123d968b55fedfe6a53a1ccf853b6",
+        "environment_hash": "2accfd2d6c800f3a9711d447e910616eff9d41d35542c2739c81cf398cdcea41",
+        "experiment_hash": "48f6725f6e9fd0880f38f3b078287685ac8fdf8f9cad906299ae748758fc4092",
+        "items_hash": "a511f15412d258f09eb72788f61d7330ffa99c7e7efd92a87c18e5b737daf641",
+        "layout_hash": "73b4f0737c49968989902be09f8fa9370e535f596cbfafaeabed6ab7a7f34cbd",
+        "observation_schema_hash": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+        "pack_brain_hash": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f",
+        "stratum_hash": "bcbf09eb619adbe99423ece90163587b733825e68f75ac9184e84c8668cd6336",
+        "token_type_schema_hash": "8ad2b59b502a905bf1a60f2e5743cac2c1f705f4a4143f5daf20bece38036d7d",
+        "training_hash": "5d149b49ddf7ba560a8a40b998d36f7ef34fca404fda9bc72119e3b32f381f7b",
+        "transition_graph_hash": "27ed69c36b5a0c77e8647f0dc0d96f6f491c04eb6952f92c959de68f8c90f496",
+        "variable_schema_hash": "65564174ed8f79ff09e9d7db5b0f3d939717084611a3d314f2f810c7148402c7",
+        "vfs_hash": "4998d9d1afc55bb3b522b8f1944f3960e3555aa39986658ca02c86f2e8b24250"
+      },
+      "pack_root": "/tmp/hamlet-static-epistemic-access",
+      "params": {
+        "device": "cpu",
+        "level": "L0_5_dual_resource",
+        "num_agents": 4,
+        "pack": "configs/default_curriculum",
+        "seed": 42,
+        "steps": 100
+      },
+      "streams": {
+        "actions": {
+          "dtype": "int64",
+          "sha256": "a8c1f8b2122f5c68ed1023dc7c5119f5bc0c04883b100d5b56a630cbffc63297",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "dones": {
+          "dtype": "bool",
+          "sha256": "80717a5fc244b2ce7b686c1449157abeb8028de1cb76806fcbae441a41137873",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "obs": {
+          "dtype": "float32",
+          "sha256": "1f097b4a1b3495e59c6f798b3a94abdb2ce1538cb4e0f2d247b893f4e2a8e45a",
+          "shape": [
+            101,
+            4,
+            118
+          ]
+        },
+        "rewards": {
+          "dtype": "float32",
+          "sha256": "9a988facc574565aad11a347058acc3075088d83ccf5bc19d40fa29cc10f17a4",
+          "shape": [
+            100,
+            4
+          ]
+        }
+      }
+    },
+    {
+      "action_source": "scripted:a8c1f8b2122f5c68",
+      "cell_id": "default_curriculum:L1_full_observability:cpu:seed42",
+      "code_root": "/tmp/hamlet-static-epistemic-access/src",
+      "comparison": {
+        "actions": {
+          "after": {
+            "dtype": "int64",
+            "sha256": "a8c1f8b2122f5c68ed1023dc7c5119f5bc0c04883b100d5b56a630cbffc63297",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "int64",
+            "sha256": "a8c1f8b2122f5c68ed1023dc7c5119f5bc0c04883b100d5b56a630cbffc63297",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "dones": {
+          "after": {
+            "dtype": "bool",
+            "sha256": "80717a5fc244b2ce7b686c1449157abeb8028de1cb76806fcbae441a41137873",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "bool",
+            "sha256": "80717a5fc244b2ce7b686c1449157abeb8028de1cb76806fcbae441a41137873",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "obs": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "1f097b4a1b3495e59c6f798b3a94abdb2ce1538cb4e0f2d247b893f4e2a8e45a",
+            "shape": [
+              101,
+              4,
+              118
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "1f097b4a1b3495e59c6f798b3a94abdb2ce1538cb4e0f2d247b893f4e2a8e45a",
+            "shape": [
+              101,
+              4,
+              118
+            ]
+          },
+          "equal": true
+        },
+        "rewards": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "9a988facc574565aad11a347058acc3075088d83ccf5bc19d40fa29cc10f17a4",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "9a988facc574565aad11a347058acc3075088d83ccf5bc19d40fa29cc10f17a4",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        }
+      },
+      "file": "cpu-02.npz",
+      "file_sha256": "12ae6e017f5c7b659e5b7dc12ef4dbf0d36d056416d0da94ce64fbff40a34655",
+      "hashes": {
+        "action_schema_hash": "63b969e265a26f915b55be6f7855591af7185c8cd4ca20bcef02149c5b3ac9bb",
+        "actions_hash": "e0c20f212f05f3b36ee4f9ebb09a9b8c22b6b05b029d005d60af4fc721dc7f52",
+        "affordances_hash": "2bda63f6ad0e919402a1d8d84b1765a32874e65b0b959bea7321b00e8310f342",
+        "bars_hash": "fce5fc6f2131c152516bd13d2106e540ab57d0b955f21fd7d71a00404eafb3cf",
+        "brain_hash": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f",
+        "curriculum_hash": "273adb8ecd2a1e3640cd2922a68d3eab85e4d0caa84259f5ededbfa23a00685c",
+        "drive_hash": "b02aa064b2a03720944acbe44aab8e55b6d123d968b55fedfe6a53a1ccf853b6",
+        "environment_hash": "2accfd2d6c800f3a9711d447e910616eff9d41d35542c2739c81cf398cdcea41",
+        "experiment_hash": "48f6725f6e9fd0880f38f3b078287685ac8fdf8f9cad906299ae748758fc4092",
+        "items_hash": "a511f15412d258f09eb72788f61d7330ffa99c7e7efd92a87c18e5b737daf641",
+        "layout_hash": "73b4f0737c49968989902be09f8fa9370e535f596cbfafaeabed6ab7a7f34cbd",
+        "observation_schema_hash": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+        "pack_brain_hash": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f",
+        "stratum_hash": "bcbf09eb619adbe99423ece90163587b733825e68f75ac9184e84c8668cd6336",
+        "token_type_schema_hash": "8ad2b59b502a905bf1a60f2e5743cac2c1f705f4a4143f5daf20bece38036d7d",
+        "training_hash": "bd9aba213f33f9c53cd6062998596e7dc289edda40e7a0086733dd2beb02cc83",
+        "transition_graph_hash": "27ed69c36b5a0c77e8647f0dc0d96f6f491c04eb6952f92c959de68f8c90f496",
+        "variable_schema_hash": "65564174ed8f79ff09e9d7db5b0f3d939717084611a3d314f2f810c7148402c7",
+        "vfs_hash": "4998d9d1afc55bb3b522b8f1944f3960e3555aa39986658ca02c86f2e8b24250"
+      },
+      "pack_root": "/tmp/hamlet-static-epistemic-access",
+      "params": {
+        "device": "cpu",
+        "level": "L1_full_observability",
+        "num_agents": 4,
+        "pack": "configs/default_curriculum",
+        "seed": 42,
+        "steps": 100
+      },
+      "streams": {
+        "actions": {
+          "dtype": "int64",
+          "sha256": "a8c1f8b2122f5c68ed1023dc7c5119f5bc0c04883b100d5b56a630cbffc63297",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "dones": {
+          "dtype": "bool",
+          "sha256": "80717a5fc244b2ce7b686c1449157abeb8028de1cb76806fcbae441a41137873",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "obs": {
+          "dtype": "float32",
+          "sha256": "1f097b4a1b3495e59c6f798b3a94abdb2ce1538cb4e0f2d247b893f4e2a8e45a",
+          "shape": [
+            101,
+            4,
+            118
+          ]
+        },
+        "rewards": {
+          "dtype": "float32",
+          "sha256": "9a988facc574565aad11a347058acc3075088d83ccf5bc19d40fa29cc10f17a4",
+          "shape": [
+            100,
+            4
+          ]
+        }
+      }
+    },
+    {
+      "action_source": "scripted:a8c1f8b2122f5c68",
+      "cell_id": "default_curriculum:L2_partial_observability:cpu:seed42",
+      "code_root": "/tmp/hamlet-static-epistemic-access/src",
+      "comparison": {
+        "actions": {
+          "after": {
+            "dtype": "int64",
+            "sha256": "a8c1f8b2122f5c68ed1023dc7c5119f5bc0c04883b100d5b56a630cbffc63297",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "int64",
+            "sha256": "a8c1f8b2122f5c68ed1023dc7c5119f5bc0c04883b100d5b56a630cbffc63297",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "dones": {
+          "after": {
+            "dtype": "bool",
+            "sha256": "80717a5fc244b2ce7b686c1449157abeb8028de1cb76806fcbae441a41137873",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "bool",
+            "sha256": "80717a5fc244b2ce7b686c1449157abeb8028de1cb76806fcbae441a41137873",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "obs": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "2d0f209d82dce052b72c499e55743acbeab98980f0a8650fe1e59349e80d283e",
+            "shape": [
+              101,
+              4,
+              118
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "2d0f209d82dce052b72c499e55743acbeab98980f0a8650fe1e59349e80d283e",
+            "shape": [
+              101,
+              4,
+              118
+            ]
+          },
+          "equal": true
+        },
+        "rewards": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "9a988facc574565aad11a347058acc3075088d83ccf5bc19d40fa29cc10f17a4",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "9a988facc574565aad11a347058acc3075088d83ccf5bc19d40fa29cc10f17a4",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        }
+      },
+      "file": "cpu-03.npz",
+      "file_sha256": "04d6cb7178acd0084742031dbe5630cdc54b3a10f7314d1ee724f9f0d4657d69",
+      "hashes": {
+        "action_schema_hash": "63b969e265a26f915b55be6f7855591af7185c8cd4ca20bcef02149c5b3ac9bb",
+        "actions_hash": "e0c20f212f05f3b36ee4f9ebb09a9b8c22b6b05b029d005d60af4fc721dc7f52",
+        "affordances_hash": "2bda63f6ad0e919402a1d8d84b1765a32874e65b0b959bea7321b00e8310f342",
+        "bars_hash": "fce5fc6f2131c152516bd13d2106e540ab57d0b955f21fd7d71a00404eafb3cf",
+        "brain_hash": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f",
+        "curriculum_hash": "e114176830bacabcceee388586a2407ab0136ce52511add9aa95bd4cec93fb91",
+        "drive_hash": "b02aa064b2a03720944acbe44aab8e55b6d123d968b55fedfe6a53a1ccf853b6",
+        "environment_hash": "2accfd2d6c800f3a9711d447e910616eff9d41d35542c2739c81cf398cdcea41",
+        "experiment_hash": "48f6725f6e9fd0880f38f3b078287685ac8fdf8f9cad906299ae748758fc4092",
+        "items_hash": "a511f15412d258f09eb72788f61d7330ffa99c7e7efd92a87c18e5b737daf641",
+        "layout_hash": "73b4f0737c49968989902be09f8fa9370e535f596cbfafaeabed6ab7a7f34cbd",
+        "observation_schema_hash": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+        "pack_brain_hash": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f",
+        "stratum_hash": "bcbf09eb619adbe99423ece90163587b733825e68f75ac9184e84c8668cd6336",
+        "token_type_schema_hash": "8ad2b59b502a905bf1a60f2e5743cac2c1f705f4a4143f5daf20bece38036d7d",
+        "training_hash": "6abcb3eb2691e6c8d45029245b9fe1c40772470a7bd78352b85be804a7a1306b",
+        "transition_graph_hash": "27ed69c36b5a0c77e8647f0dc0d96f6f491c04eb6952f92c959de68f8c90f496",
+        "variable_schema_hash": "65564174ed8f79ff09e9d7db5b0f3d939717084611a3d314f2f810c7148402c7",
+        "vfs_hash": "4998d9d1afc55bb3b522b8f1944f3960e3555aa39986658ca02c86f2e8b24250"
+      },
+      "pack_root": "/tmp/hamlet-static-epistemic-access",
+      "params": {
+        "device": "cpu",
+        "level": "L2_partial_observability",
+        "num_agents": 4,
+        "pack": "configs/default_curriculum",
+        "seed": 42,
+        "steps": 100
+      },
+      "streams": {
+        "actions": {
+          "dtype": "int64",
+          "sha256": "a8c1f8b2122f5c68ed1023dc7c5119f5bc0c04883b100d5b56a630cbffc63297",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "dones": {
+          "dtype": "bool",
+          "sha256": "80717a5fc244b2ce7b686c1449157abeb8028de1cb76806fcbae441a41137873",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "obs": {
+          "dtype": "float32",
+          "sha256": "2d0f209d82dce052b72c499e55743acbeab98980f0a8650fe1e59349e80d283e",
+          "shape": [
+            101,
+            4,
+            118
+          ]
+        },
+        "rewards": {
+          "dtype": "float32",
+          "sha256": "9a988facc574565aad11a347058acc3075088d83ccf5bc19d40fa29cc10f17a4",
+          "shape": [
+            100,
+            4
+          ]
+        }
+      }
+    },
+    {
+      "action_source": "scripted:a8c1f8b2122f5c68",
+      "cell_id": "default_curriculum:L3_temporal_mechanics:cpu:seed42",
+      "code_root": "/tmp/hamlet-static-epistemic-access/src",
+      "comparison": {
+        "actions": {
+          "after": {
+            "dtype": "int64",
+            "sha256": "a8c1f8b2122f5c68ed1023dc7c5119f5bc0c04883b100d5b56a630cbffc63297",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "int64",
+            "sha256": "a8c1f8b2122f5c68ed1023dc7c5119f5bc0c04883b100d5b56a630cbffc63297",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "dones": {
+          "after": {
+            "dtype": "bool",
+            "sha256": "93208a950482d4e03cbf3d9c58dcde7fdddc7c7e708dff1e2579d1df116ca64e",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "bool",
+            "sha256": "93208a950482d4e03cbf3d9c58dcde7fdddc7c7e708dff1e2579d1df116ca64e",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "obs": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "f4b7e9c27a83a3b3e7f1b3aab77c762212fb499bc23316f09707188cecaa16d7",
+            "shape": [
+              101,
+              4,
+              118
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "f4b7e9c27a83a3b3e7f1b3aab77c762212fb499bc23316f09707188cecaa16d7",
+            "shape": [
+              101,
+              4,
+              118
+            ]
+          },
+          "equal": true
+        },
+        "rewards": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "d41ae43a4e8058c0744742fd9c71891dafb6f57033cfaa9a0b7d3fb579f46b75",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "d41ae43a4e8058c0744742fd9c71891dafb6f57033cfaa9a0b7d3fb579f46b75",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        }
+      },
+      "file": "cpu-04.npz",
+      "file_sha256": "814bf8413c609dad0aa8fc9efffc232b6485bcf0ffe915f888e57e53419fe980",
+      "hashes": {
+        "action_schema_hash": "63b969e265a26f915b55be6f7855591af7185c8cd4ca20bcef02149c5b3ac9bb",
+        "actions_hash": "e0c20f212f05f3b36ee4f9ebb09a9b8c22b6b05b029d005d60af4fc721dc7f52",
+        "affordances_hash": "2bda63f6ad0e919402a1d8d84b1765a32874e65b0b959bea7321b00e8310f342",
+        "bars_hash": "fce5fc6f2131c152516bd13d2106e540ab57d0b955f21fd7d71a00404eafb3cf",
+        "brain_hash": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f",
+        "curriculum_hash": "de1755f13037e85ca6d2f37d013d3ee7d07d791053e866cfdc3c33adac03ee83",
+        "drive_hash": "b02aa064b2a03720944acbe44aab8e55b6d123d968b55fedfe6a53a1ccf853b6",
+        "environment_hash": "2accfd2d6c800f3a9711d447e910616eff9d41d35542c2739c81cf398cdcea41",
+        "experiment_hash": "48f6725f6e9fd0880f38f3b078287685ac8fdf8f9cad906299ae748758fc4092",
+        "items_hash": "a511f15412d258f09eb72788f61d7330ffa99c7e7efd92a87c18e5b737daf641",
+        "layout_hash": "73b4f0737c49968989902be09f8fa9370e535f596cbfafaeabed6ab7a7f34cbd",
+        "observation_schema_hash": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+        "pack_brain_hash": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f",
+        "stratum_hash": "bcbf09eb619adbe99423ece90163587b733825e68f75ac9184e84c8668cd6336",
+        "token_type_schema_hash": "8ad2b59b502a905bf1a60f2e5743cac2c1f705f4a4143f5daf20bece38036d7d",
+        "training_hash": "35c12ee97a8bc947db3b14eee15ce0442495f96c4091570bae71d143bd0d3ea1",
+        "transition_graph_hash": "27ed69c36b5a0c77e8647f0dc0d96f6f491c04eb6952f92c959de68f8c90f496",
+        "variable_schema_hash": "65564174ed8f79ff09e9d7db5b0f3d939717084611a3d314f2f810c7148402c7",
+        "vfs_hash": "4998d9d1afc55bb3b522b8f1944f3960e3555aa39986658ca02c86f2e8b24250"
+      },
+      "pack_root": "/tmp/hamlet-static-epistemic-access",
+      "params": {
+        "device": "cpu",
+        "level": "L3_temporal_mechanics",
+        "num_agents": 4,
+        "pack": "configs/default_curriculum",
+        "seed": 42,
+        "steps": 100
+      },
+      "streams": {
+        "actions": {
+          "dtype": "int64",
+          "sha256": "a8c1f8b2122f5c68ed1023dc7c5119f5bc0c04883b100d5b56a630cbffc63297",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "dones": {
+          "dtype": "bool",
+          "sha256": "93208a950482d4e03cbf3d9c58dcde7fdddc7c7e708dff1e2579d1df116ca64e",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "obs": {
+          "dtype": "float32",
+          "sha256": "f4b7e9c27a83a3b3e7f1b3aab77c762212fb499bc23316f09707188cecaa16d7",
+          "shape": [
+            101,
+            4,
+            118
+          ]
+        },
+        "rewards": {
+          "dtype": "float32",
+          "sha256": "d41ae43a4e8058c0744742fd9c71891dafb6f57033cfaa9a0b7d3fb579f46b75",
+          "shape": [
+            100,
+            4
+          ]
+        }
+      }
+    },
+    {
+      "action_source": "scripted:a8c1f8b2122f5c68",
+      "cell_id": "boundary_wrap:L1_full_observability:cpu:seed42",
+      "code_root": "/tmp/hamlet-static-epistemic-access/src",
+      "comparison": {
+        "actions": {
+          "after": {
+            "dtype": "int64",
+            "sha256": "a8c1f8b2122f5c68ed1023dc7c5119f5bc0c04883b100d5b56a630cbffc63297",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "int64",
+            "sha256": "a8c1f8b2122f5c68ed1023dc7c5119f5bc0c04883b100d5b56a630cbffc63297",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "dones": {
+          "after": {
+            "dtype": "bool",
+            "sha256": "7a12ee729458c183f2ebc735d546e585878aa64a84525025e2762fad249c3a53",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "bool",
+            "sha256": "7a12ee729458c183f2ebc735d546e585878aa64a84525025e2762fad249c3a53",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "obs": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "2e71e65bf03105467a962275a56a4fa705eb75723e8752aeeda36de3615645f5",
+            "shape": [
+              101,
+              4,
+              118
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "2e71e65bf03105467a962275a56a4fa705eb75723e8752aeeda36de3615645f5",
+            "shape": [
+              101,
+              4,
+              118
+            ]
+          },
+          "equal": true
+        },
+        "rewards": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "7731b29b5a820dfc050320d4605d0f5d01444afb0d698f25cf4f73caadf0e0a3",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "7731b29b5a820dfc050320d4605d0f5d01444afb0d698f25cf4f73caadf0e0a3",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        }
+      },
+      "file": "cpu-05.npz",
+      "file_sha256": "4bff22d3c3c5a6f05804e1530b32f3c5bf3841439f01a4ed0f23d17432f3b79f",
+      "hashes": {
+        "action_schema_hash": "63b969e265a26f915b55be6f7855591af7185c8cd4ca20bcef02149c5b3ac9bb",
+        "actions_hash": "e0c20f212f05f3b36ee4f9ebb09a9b8c22b6b05b029d005d60af4fc721dc7f52",
+        "affordances_hash": "2bda63f6ad0e919402a1d8d84b1765a32874e65b0b959bea7321b00e8310f342",
+        "bars_hash": "fce5fc6f2131c152516bd13d2106e540ab57d0b955f21fd7d71a00404eafb3cf",
+        "brain_hash": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f",
+        "curriculum_hash": "273adb8ecd2a1e3640cd2922a68d3eab85e4d0caa84259f5ededbfa23a00685c",
+        "drive_hash": "b02aa064b2a03720944acbe44aab8e55b6d123d968b55fedfe6a53a1ccf853b6",
+        "environment_hash": "2accfd2d6c800f3a9711d447e910616eff9d41d35542c2739c81cf398cdcea41",
+        "experiment_hash": "2a35eab54a8647f4c57114bd7b2b72f3f5b0d572ea3ca88e8bd750cb990af6fb",
+        "items_hash": "a511f15412d258f09eb72788f61d7330ffa99c7e7efd92a87c18e5b737daf641",
+        "layout_hash": "73b4f0737c49968989902be09f8fa9370e535f596cbfafaeabed6ab7a7f34cbd",
+        "observation_schema_hash": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+        "pack_brain_hash": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f",
+        "stratum_hash": "4a58653ad99193e46ad0f6428586a292d34c8167a98e3521b9d5c8d1f7e3cecf",
+        "token_type_schema_hash": "8ad2b59b502a905bf1a60f2e5743cac2c1f705f4a4143f5daf20bece38036d7d",
+        "training_hash": "bd9aba213f33f9c53cd6062998596e7dc289edda40e7a0086733dd2beb02cc83",
+        "transition_graph_hash": "27ed69c36b5a0c77e8647f0dc0d96f6f491c04eb6952f92c959de68f8c90f496",
+        "variable_schema_hash": "65564174ed8f79ff09e9d7db5b0f3d939717084611a3d314f2f810c7148402c7",
+        "vfs_hash": "4998d9d1afc55bb3b522b8f1944f3960e3555aa39986658ca02c86f2e8b24250"
+      },
+      "pack_root": "/tmp/hamlet-static-epistemic-access",
+      "params": {
+        "device": "cpu",
+        "level": "L1_full_observability",
+        "num_agents": 4,
+        "pack": "configs/differential/boundary_wrap",
+        "seed": 42,
+        "steps": 100
+      },
+      "streams": {
+        "actions": {
+          "dtype": "int64",
+          "sha256": "a8c1f8b2122f5c68ed1023dc7c5119f5bc0c04883b100d5b56a630cbffc63297",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "dones": {
+          "dtype": "bool",
+          "sha256": "7a12ee729458c183f2ebc735d546e585878aa64a84525025e2762fad249c3a53",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "obs": {
+          "dtype": "float32",
+          "sha256": "2e71e65bf03105467a962275a56a4fa705eb75723e8752aeeda36de3615645f5",
+          "shape": [
+            101,
+            4,
+            118
+          ]
+        },
+        "rewards": {
+          "dtype": "float32",
+          "sha256": "7731b29b5a820dfc050320d4605d0f5d01444afb0d698f25cf4f73caadf0e0a3",
+          "shape": [
+            100,
+            4
+          ]
+        }
+      }
+    },
+    {
+      "action_source": "scripted:bee7792e4af0c4cc",
+      "cell_id": "div003_cubic_partial:L2_partial_observability:cpu:seed42",
+      "code_root": "/tmp/hamlet-static-epistemic-access/src",
+      "comparison": {
+        "actions": {
+          "after": {
+            "dtype": "int64",
+            "sha256": "bee7792e4af0c4ccba7d47b5ff63ebf4cd166639feec6820fc035e7f24849576",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "int64",
+            "sha256": "bee7792e4af0c4ccba7d47b5ff63ebf4cd166639feec6820fc035e7f24849576",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "dones": {
+          "after": {
+            "dtype": "bool",
+            "sha256": "c4271d491b15703529d9ef1c23937e5890b0a21dd21aea959efd74949a0c8d54",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "bool",
+            "sha256": "c4271d491b15703529d9ef1c23937e5890b0a21dd21aea959efd74949a0c8d54",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "obs": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "1cfe4bd7ce2264c97a581a84bb7ca3a5f3e3beb26d14ff91b1b852c423de983c",
+            "shape": [
+              101,
+              4,
+              152
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "1cfe4bd7ce2264c97a581a84bb7ca3a5f3e3beb26d14ff91b1b852c423de983c",
+            "shape": [
+              101,
+              4,
+              152
+            ]
+          },
+          "equal": true
+        },
+        "rewards": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "628b97ad29b187d670d9d736141368fb866333b688a2eacef1b2d450607217b8",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "628b97ad29b187d670d9d736141368fb866333b688a2eacef1b2d450607217b8",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        }
+      },
+      "file": "cpu-06.npz",
+      "file_sha256": "58c6b970ce09163a3d5544d035f4e50f5b5f46f5171a3c702ccefe29d31e3957",
+      "hashes": {
+        "action_schema_hash": "c84a23c77e64935d5fe577c47078514e725099e8fbf14770e447def768080ec4",
+        "actions_hash": "e0c20f212f05f3b36ee4f9ebb09a9b8c22b6b05b029d005d60af4fc721dc7f52",
+        "affordances_hash": "2bda63f6ad0e919402a1d8d84b1765a32874e65b0b959bea7321b00e8310f342",
+        "bars_hash": "fce5fc6f2131c152516bd13d2106e540ab57d0b955f21fd7d71a00404eafb3cf",
+        "brain_hash": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f",
+        "curriculum_hash": "e114176830bacabcceee388586a2407ab0136ce52511add9aa95bd4cec93fb91",
+        "drive_hash": "b02aa064b2a03720944acbe44aab8e55b6d123d968b55fedfe6a53a1ccf853b6",
+        "environment_hash": "2accfd2d6c800f3a9711d447e910616eff9d41d35542c2739c81cf398cdcea41",
+        "experiment_hash": "05c105c3e9976009d2bf18d6dce3f61ce3e90dbe3be347fa5e69926e3d520e3b",
+        "items_hash": "a511f15412d258f09eb72788f61d7330ffa99c7e7efd92a87c18e5b737daf641",
+        "layout_hash": "36baa279dbc72741dacc0d348032dcf0b866bc2dd5d1630f33f47122a51784d8",
+        "observation_schema_hash": "88b72261226dccd95c5717aacefdaec0e4bbf4a2decf8b8439df80b69337cc07",
+        "pack_brain_hash": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f",
+        "stratum_hash": "13ff5fa8dccea8c4940f30a3328eab28033c99cb7e7c90ab6ddc38e1c86465e8",
+        "token_type_schema_hash": "8ad2b59b502a905bf1a60f2e5743cac2c1f705f4a4143f5daf20bece38036d7d",
+        "training_hash": "6abcb3eb2691e6c8d45029245b9fe1c40772470a7bd78352b85be804a7a1306b",
+        "transition_graph_hash": "27ed69c36b5a0c77e8647f0dc0d96f6f491c04eb6952f92c959de68f8c90f496",
+        "variable_schema_hash": "65564174ed8f79ff09e9d7db5b0f3d939717084611a3d314f2f810c7148402c7",
+        "vfs_hash": "2eebe43c9510d581fc2fc2416d58d22a0c33a10c1cdf9aaf5461533d1438e5cc"
+      },
+      "pack_root": "/tmp/hamlet-static-epistemic-access",
+      "params": {
+        "device": "cpu",
+        "level": "L2_partial_observability",
+        "num_agents": 4,
+        "pack": "configs/differential/div003_cubic_partial",
+        "seed": 42,
+        "steps": 100
+      },
+      "streams": {
+        "actions": {
+          "dtype": "int64",
+          "sha256": "bee7792e4af0c4ccba7d47b5ff63ebf4cd166639feec6820fc035e7f24849576",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "dones": {
+          "dtype": "bool",
+          "sha256": "c4271d491b15703529d9ef1c23937e5890b0a21dd21aea959efd74949a0c8d54",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "obs": {
+          "dtype": "float32",
+          "sha256": "1cfe4bd7ce2264c97a581a84bb7ca3a5f3e3beb26d14ff91b1b852c423de983c",
+          "shape": [
+            101,
+            4,
+            152
+          ]
+        },
+        "rewards": {
+          "dtype": "float32",
+          "sha256": "628b97ad29b187d670d9d736141368fb866333b688a2eacef1b2d450607217b8",
+          "shape": [
+            100,
+            4
+          ]
+        }
+      }
+    },
+    {
+      "action_source": "scripted:2a0799b319316b8a",
+      "cell_id": "div003_rect:L1_full_observability:cpu:seed42",
+      "code_root": "/tmp/hamlet-static-epistemic-access/src",
+      "comparison": {
+        "actions": {
+          "after": {
+            "dtype": "int64",
+            "sha256": "2a0799b319316b8a300b35139729115a853a1df1babbfd07472d38def7232401",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "int64",
+            "sha256": "2a0799b319316b8a300b35139729115a853a1df1babbfd07472d38def7232401",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "dones": {
+          "after": {
+            "dtype": "bool",
+            "sha256": "5cadb20245fb72e7b0f3ff555af446bad55cec5125d996a8950a9dec5507c616",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "bool",
+            "sha256": "5cadb20245fb72e7b0f3ff555af446bad55cec5125d996a8950a9dec5507c616",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "obs": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "5d0cf08353ab98134bb612a492ffcb754d2c7818063ceb60f1590d2f4fd1038d",
+            "shape": [
+              101,
+              4,
+              118
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "5d0cf08353ab98134bb612a492ffcb754d2c7818063ceb60f1590d2f4fd1038d",
+            "shape": [
+              101,
+              4,
+              118
+            ]
+          },
+          "equal": true
+        },
+        "rewards": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "825d620d3b2593f4f254b016a74de4fab5ec09d4bf4f55461030dfc03d379ad2",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "825d620d3b2593f4f254b016a74de4fab5ec09d4bf4f55461030dfc03d379ad2",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        }
+      },
+      "file": "cpu-07.npz",
+      "file_sha256": "1e7fe8f1389decbf248e3cf9c7e2042c2e59b4b3e2ef5a4787407a8a965b3b47",
+      "hashes": {
+        "action_schema_hash": "63b969e265a26f915b55be6f7855591af7185c8cd4ca20bcef02149c5b3ac9bb",
+        "actions_hash": "e0c20f212f05f3b36ee4f9ebb09a9b8c22b6b05b029d005d60af4fc721dc7f52",
+        "affordances_hash": "2bda63f6ad0e919402a1d8d84b1765a32874e65b0b959bea7321b00e8310f342",
+        "bars_hash": "fce5fc6f2131c152516bd13d2106e540ab57d0b955f21fd7d71a00404eafb3cf",
+        "brain_hash": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f",
+        "curriculum_hash": "273adb8ecd2a1e3640cd2922a68d3eab85e4d0caa84259f5ededbfa23a00685c",
+        "drive_hash": "b02aa064b2a03720944acbe44aab8e55b6d123d968b55fedfe6a53a1ccf853b6",
+        "environment_hash": "2accfd2d6c800f3a9711d447e910616eff9d41d35542c2739c81cf398cdcea41",
+        "experiment_hash": "142dd7dc7a3b5343708bbe59f9bbf6629a43c62e01d13d45ef0adf1a02f95a2a",
+        "items_hash": "a511f15412d258f09eb72788f61d7330ffa99c7e7efd92a87c18e5b737daf641",
+        "layout_hash": "73b4f0737c49968989902be09f8fa9370e535f596cbfafaeabed6ab7a7f34cbd",
+        "observation_schema_hash": "fc5c16545025dd4346ea72d0ef367429bee48e8221feef732c36bd8bb86010b9",
+        "pack_brain_hash": "4f10939daf7a1bbd23ab0084fed2f7bc4da18bcc6993d092c2aded1a64b9125f",
+        "stratum_hash": "5db2b56880384f2de6767177b48d8dc3ff4d5fb8fac05d67e9c26739a3aa2176",
+        "token_type_schema_hash": "8ad2b59b502a905bf1a60f2e5743cac2c1f705f4a4143f5daf20bece38036d7d",
+        "training_hash": "bd9aba213f33f9c53cd6062998596e7dc289edda40e7a0086733dd2beb02cc83",
+        "transition_graph_hash": "27ed69c36b5a0c77e8647f0dc0d96f6f491c04eb6952f92c959de68f8c90f496",
+        "variable_schema_hash": "65564174ed8f79ff09e9d7db5b0f3d939717084611a3d314f2f810c7148402c7",
+        "vfs_hash": "4998d9d1afc55bb3b522b8f1944f3960e3555aa39986658ca02c86f2e8b24250"
+      },
+      "pack_root": "/tmp/hamlet-static-epistemic-access",
+      "params": {
+        "device": "cpu",
+        "level": "L1_full_observability",
+        "num_agents": 4,
+        "pack": "configs/differential/div003_rect",
+        "seed": 42,
+        "steps": 100
+      },
+      "streams": {
+        "actions": {
+          "dtype": "int64",
+          "sha256": "2a0799b319316b8a300b35139729115a853a1df1babbfd07472d38def7232401",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "dones": {
+          "dtype": "bool",
+          "sha256": "5cadb20245fb72e7b0f3ff555af446bad55cec5125d996a8950a9dec5507c616",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "obs": {
+          "dtype": "float32",
+          "sha256": "5d0cf08353ab98134bb612a492ffcb754d2c7818063ceb60f1590d2f4fd1038d",
+          "shape": [
+            101,
+            4,
+            118
+          ]
+        },
+        "rewards": {
+          "dtype": "float32",
+          "sha256": "825d620d3b2593f4f254b016a74de4fab5ec09d4bf4f55461030dfc03d379ad2",
+          "shape": [
+            100,
+            4
+          ]
+        }
+      }
+    },
+    {
+      "action_source": "scripted:4e023b53426044bf",
+      "cell_id": "items_smoke:L0_smoke:cpu:seed42",
+      "code_root": "/tmp/hamlet-static-epistemic-access/src",
+      "comparison": {
+        "actions": {
+          "after": {
+            "dtype": "int64",
+            "sha256": "4e023b53426044bf6a78d4b8f153800a614d7db78cc97ef04c196fb9df7c117a",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "int64",
+            "sha256": "4e023b53426044bf6a78d4b8f153800a614d7db78cc97ef04c196fb9df7c117a",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "dones": {
+          "after": {
+            "dtype": "bool",
+            "sha256": "8570c0b3dc0380bdbb46b91ce546652db38bf10686d8b4de32dae9884fff080c",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "bool",
+            "sha256": "8570c0b3dc0380bdbb46b91ce546652db38bf10686d8b4de32dae9884fff080c",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "obs": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "1344c533473a20d71a100538bcdbdabb4ed3d04429f51dedb812730898599911",
+            "shape": [
+              101,
+              4,
+              474
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "1344c533473a20d71a100538bcdbdabb4ed3d04429f51dedb812730898599911",
+            "shape": [
+              101,
+              4,
+              474
+            ]
+          },
+          "equal": true
+        },
+        "rewards": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "aec44a9ccb19b724ec8d407d308030943164ff389ac7457bea71864f41932a51",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "aec44a9ccb19b724ec8d407d308030943164ff389ac7457bea71864f41932a51",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        }
+      },
+      "file": "cpu-08.npz",
+      "file_sha256": "82033b3428d7ee08fa0350a651aef25bb6b3a0e72fa5fe56f84650062bad2096",
+      "hashes": {
+        "action_schema_hash": "d240b3090ab7a5431d229e2b82e51a41dd49e75edb3dde121f84f824cfd2c7a2",
+        "actions_hash": "3f4f104a6140edf219ee3b181cb1f5ffb1e989f8ef45ff62ce4e7a4ff4338504",
+        "affordances_hash": "f875f39bade6d906cd8c9e6128b7d106973d389726eb33c0efbf6042cda71770",
+        "bars_hash": "635d70601f282bbae65b8bc5a2b9ded3dcda01b75363f16eb5409ad35cd367a6",
+        "brain_hash": "20da2a7d8ab84ff8000800cd4f77b431216d33e61ffe75877b0ae82c7891640c",
+        "curriculum_hash": "273adb8ecd2a1e3640cd2922a68d3eab85e4d0caa84259f5ededbfa23a00685c",
+        "drive_hash": "0b45d44b4f358b44a1b9fd9294a6b7aa437728a3ddb240235c7c9129b75f914b",
+        "environment_hash": "90fa23dd5c64f2fcf561673370836c698e0729774113f5b6f42bb004b3c55388",
+        "experiment_hash": "5c734051bd7a5a3a502ab6f43349ddbc75aa2505d268a9f77384d2e241f9a7c9",
+        "items_hash": "2f350167d0a67884fd1acc471418d4d4486f4d82027dc708533f953d5b46a45c",
+        "layout_hash": "21614072a5e52227e002f5215af72b629385dac05525b79f988b1a2c9c2680ce",
+        "observation_schema_hash": "0d2986acc1af11801febda48d34e48fd4627ccb63f860141d746c2a53eda0ec4",
+        "pack_brain_hash": "20da2a7d8ab84ff8000800cd4f77b431216d33e61ffe75877b0ae82c7891640c",
+        "stratum_hash": "38fda11ed81f3002e995aeda227221beb9e3674caa059fcdabf08fcddab3437e",
+        "token_type_schema_hash": "8ad2b59b502a905bf1a60f2e5743cac2c1f705f4a4143f5daf20bece38036d7d",
+        "training_hash": "3c99e249ad0706a7a14f72b440d21dbb77bddad5468280c27cf0baccf1777124",
+        "transition_graph_hash": "d0819323e02dc89fde057cee50a2dcb06cb476b321c35e34628d1e4debf70c31",
+        "variable_schema_hash": "cb092927d53ef9094fdcf8cf74d315449efb687a4e6c02ce5a311d75e327cdbb",
+        "vfs_hash": "ec2aa7adfe49fe6ed14803f517a38c235df2d3487875ea4bb143ce03013afb97"
+      },
+      "pack_root": "/tmp/hamlet-static-epistemic-access",
+      "params": {
+        "device": "cpu",
+        "level": "L0_smoke",
+        "num_agents": 4,
+        "pack": "configs/test/items_smoke",
+        "seed": 42,
+        "steps": 100
+      },
+      "streams": {
+        "actions": {
+          "dtype": "int64",
+          "sha256": "4e023b53426044bf6a78d4b8f153800a614d7db78cc97ef04c196fb9df7c117a",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "dones": {
+          "dtype": "bool",
+          "sha256": "8570c0b3dc0380bdbb46b91ce546652db38bf10686d8b4de32dae9884fff080c",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "obs": {
+          "dtype": "float32",
+          "sha256": "1344c533473a20d71a100538bcdbdabb4ed3d04429f51dedb812730898599911",
+          "shape": [
+            101,
+            4,
+            474
+          ]
+        },
+        "rewards": {
+          "dtype": "float32",
+          "sha256": "aec44a9ccb19b724ec8d407d308030943164ff389ac7457bea71864f41932a51",
+          "shape": [
+            100,
+            4
+          ]
+        }
+      }
+    },
+    {
+      "action_source": "scripted:6a242d4ad5560c5b",
+      "cell_id": "effects_smoke:L0_effects:cpu:seed42",
+      "code_root": "/tmp/hamlet-static-epistemic-access/src",
+      "comparison": {
+        "actions": {
+          "after": {
+            "dtype": "int64",
+            "sha256": "6a242d4ad5560c5b883184bad0930426ac5a5ab22e049f31f0975330d7db540e",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "int64",
+            "sha256": "6a242d4ad5560c5b883184bad0930426ac5a5ab22e049f31f0975330d7db540e",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "dones": {
+          "after": {
+            "dtype": "bool",
+            "sha256": "945341520a34b2afd00941d6abb505d561e3f7bedb6cdf0d2d6025c4f76e79e6",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "bool",
+            "sha256": "945341520a34b2afd00941d6abb505d561e3f7bedb6cdf0d2d6025c4f76e79e6",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        },
+        "obs": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "dbc4bf8d1acf296d2ba68d024a769ec6a972d80aac756d0538366e0c015006c1",
+            "shape": [
+              101,
+              4,
+              61
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "dbc4bf8d1acf296d2ba68d024a769ec6a972d80aac756d0538366e0c015006c1",
+            "shape": [
+              101,
+              4,
+              61
+            ]
+          },
+          "equal": true
+        },
+        "rewards": {
+          "after": {
+            "dtype": "float32",
+            "sha256": "d44318e97a53f0a4c608ec9e85512c7727ba97ca9f0f0e53951342871f4e6f2f",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "before": {
+            "dtype": "float32",
+            "sha256": "d44318e97a53f0a4c608ec9e85512c7727ba97ca9f0f0e53951342871f4e6f2f",
+            "shape": [
+              100,
+              4
+            ]
+          },
+          "equal": true
+        }
+      },
+      "file": "cpu-09.npz",
+      "file_sha256": "84bf158b486b6e96a7070292dfd8710e330f94cc1dc6a2704a2f068b4e5037ce",
+      "hashes": {
+        "action_schema_hash": "93e9bac60c3d2b1cdfd502e23330cb9641e57da9d1e0d4f1ffc5f8590b76dca4",
+        "actions_hash": "c30c921938089c76e150179bc5c95448c4bc6467ee08047dd2471ea2dcd73650",
+        "affordances_hash": "6c529dea90e22ece0a6bc7ab6fd16855f9032f0100f91828a4457a0058853c8c",
+        "bars_hash": "008a6278e84d8c8e17c98fcd38969906f84c83cdbe6f7a6c62f941f42a7cb6af",
+        "brain_hash": "763522e4b362958d781a26128134bfad462561538ba4e840b862ea5c94fee98d",
+        "curriculum_hash": "1659f19eb7b6907a42206eaf59a74852ebe15e4ded5a8e818eae148326335e86",
+        "drive_hash": "459d815b9071de8208e705333ef01bfc24afbe9d509369b6193938f300e16edf",
+        "environment_hash": "077adada9fdb74469368761c3545e34767a25007129f177c50e5520ba2b7bcb5",
+        "experiment_hash": "e924ed177158834ce07f09494cb0b7c84ca29c71a6f6fc1be492ecc4c96d30ea",
+        "items_hash": "a511f15412d258f09eb72788f61d7330ffa99c7e7efd92a87c18e5b737daf641",
+        "layout_hash": "b6439360f70d9baae3e875e547a031805d3ed3f79200580d2140c120d1f78ab6",
+        "observation_schema_hash": "2e6077c4248ab88e5b10588d320d411dcf81cefe48270474b30d0317c65ee387",
+        "pack_brain_hash": "763522e4b362958d781a26128134bfad462561538ba4e840b862ea5c94fee98d",
+        "stratum_hash": "38fda11ed81f3002e995aeda227221beb9e3674caa059fcdabf08fcddab3437e",
+        "token_type_schema_hash": "8ad2b59b502a905bf1a60f2e5743cac2c1f705f4a4143f5daf20bece38036d7d",
+        "training_hash": "711f240c948fe55dfad0be1ce233ebc1e68c3d9c6713867ecab0ed2bb7882e0c",
+        "transition_graph_hash": "630752dba565734de95adf0acab96a460b1710b6d5200d7b8e58fab2342fa78e",
+        "variable_schema_hash": "90365f83fa8cd1f5992f3c5d1f88c9ec9564aa497718e99e3a023cbd0d7ebfc5",
+        "vfs_hash": "012ecc9aac30829a622c6d4529ba4dddb678c7af927cd1b94e941658104bea90"
+      },
+      "pack_root": "/tmp/hamlet-static-epistemic-access",
+      "params": {
+        "device": "cpu",
+        "level": "L0_effects",
+        "num_agents": 4,
+        "pack": "configs/test/effects_smoke",
+        "seed": 42,
+        "steps": 100
+      },
+      "streams": {
+        "actions": {
+          "dtype": "int64",
+          "sha256": "6a242d4ad5560c5b883184bad0930426ac5a5ab22e049f31f0975330d7db540e",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "dones": {
+          "dtype": "bool",
+          "sha256": "945341520a34b2afd00941d6abb505d561e3f7bedb6cdf0d2d6025c4f76e79e6",
+          "shape": [
+            100,
+            4
+          ]
+        },
+        "obs": {
+          "dtype": "float32",
+          "sha256": "dbc4bf8d1acf296d2ba68d024a769ec6a972d80aac756d0538366e0c015006c1",
+          "shape": [
+            101,
+            4,
+            61
+          ]
+        },
+        "rewards": {
+          "dtype": "float32",
+          "sha256": "d44318e97a53f0a4c608ec9e85512c7727ba97ca9f0f0e53951342871f4e6f2f",
+          "shape": [
+            100,
+            4
+          ]
+        }
+      }
+    }
+  ],
+  "failed": false
+}

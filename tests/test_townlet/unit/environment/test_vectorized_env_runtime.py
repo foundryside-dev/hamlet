@@ -34,7 +34,7 @@ def test_vectorized_env_avoids_runtime_yaml_reads(monkeypatch, config_name: str)
 
     compiled = compiler.compile(experiment_dir, primary_level=level_name)
 
-    blocked = {"bars.yaml", "variables_reference.yaml", "action_labels.yaml"}
+    blocked = {"bars.yaml", "variables.yaml", "action_labels.yaml"}
     original_open = Path.open
 
     def guarded_open(self: Path, *args, **kwargs):  # type: ignore[override]
@@ -52,13 +52,39 @@ def test_vectorized_env_uses_compiled_vfs_variables_without_profile_synthesis(tm
     """Runtime VFS registry should consume compiler-emitted variables directly."""
     experiment_dir = prepare_config_dir(tmp_path, name="experiment")
     profiles = {
-        "version": "1.0",
-        "evaluation_mode": "mark_and_sweep",
-        "debug_logging": False,
-        "global_profile": {"variables": [{"semantic_type": "custom", "name": "day_count", "type": "int", "initial_value": 0}]},
-        "agent_profile": {"variables": [{"semantic_type": "custom", "name": "motivation", "type": "float", "initial_value": 0.5}]},
+        "variables": {
+            "version": "1.0",
+            "evaluation_mode": "mark_and_sweep",
+            "debug_logging": False,
+            "extents": {},
+            "item_profiles": [],
+            "declarations": [
+                {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
+                    "id": "day_count",
+                    "scope": "global",
+                    "type": "scalar",
+                    "lifetime": "persistent",
+                    "semantic_type": "custom",
+                    "initial_value": 0,
+                    "exposed_to": [],
+                },
+                {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
+                    "id": "motivation",
+                    "scope": "agent",
+                    "type": "scalar",
+                    "lifetime": "episode",
+                    "semantic_type": "custom",
+                    "initial_value": 0.5,
+                    "exposed_to": [],
+                },
+            ],
+        }
     }
-    (experiment_dir / "vfs_profiles.yaml").write_text(yaml.dump(profiles))
+    (experiment_dir / "variables.yaml").write_text(yaml.dump(profiles))
 
     compiled = UniverseCompiler().compile(experiment_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
 
@@ -76,13 +102,39 @@ def test_vectorized_env_uses_compiled_effects_schema(tmp_path: Path) -> None:
     """Runtime effect schema should be consumed from the compiled artifact."""
     experiment_dir = prepare_config_dir(tmp_path, name="experiment")
     profiles = {
-        "version": "1.0",
-        "evaluation_mode": "mark_and_sweep",
-        "debug_logging": False,
-        "global_profile": {"variables": [{"semantic_type": "custom", "name": "day_count", "type": "int", "initial_value": 0}]},
-        "agent_profile": {"variables": [{"semantic_type": "custom", "name": "motivation", "type": "float", "initial_value": 0.5}]},
+        "variables": {
+            "version": "1.0",
+            "evaluation_mode": "mark_and_sweep",
+            "debug_logging": False,
+            "extents": {},
+            "item_profiles": [],
+            "declarations": [
+                {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
+                    "id": "day_count",
+                    "scope": "global",
+                    "type": "scalar",
+                    "lifetime": "persistent",
+                    "semantic_type": "custom",
+                    "initial_value": 0,
+                    "exposed_to": [],
+                },
+                {
+                    "readable_by": ["engine", "agent"],
+                    "writable_by": ["engine"],
+                    "id": "motivation",
+                    "scope": "agent",
+                    "type": "scalar",
+                    "lifetime": "episode",
+                    "semantic_type": "custom",
+                    "initial_value": 0.5,
+                    "exposed_to": [],
+                },
+            ],
+        }
     }
-    (experiment_dir / "vfs_profiles.yaml").write_text(yaml.dump(profiles))
+    (experiment_dir / "variables.yaml").write_text(yaml.dump(profiles))
 
     compiled = UniverseCompiler().compile(experiment_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
     assert compiled.effects_schema is not None

@@ -4,10 +4,10 @@ from dataclasses import dataclass
 
 import pytest
 
+from townlet.config.variables_config import VariableDeclaration
 from townlet.environment.action_config import ActionConfig
 from townlet.universe.errors import CompilationError
 from townlet.universe.symbol_table import UniverseSymbolTable
-from townlet.vfs.schema import VariableDef
 
 
 @dataclass
@@ -48,16 +48,16 @@ def test_duplicate_meter_registration_raises():
 
 def test_duplicate_variable_registration_raises():
     table = UniverseSymbolTable()
-    var = VariableDef(
+    var = VariableDeclaration(
+        readable_by=["engine", "agent"],
+        writable_by=["engine"],
         id="energy",
         scope="agent",
         type="scalar",
-        dims=None,
         lifetime="episode",
-        readable_by=["agent"],
-        writable_by=["engine"],
-        default=1.0,
-        description=None,
+        semantic_type="custom",
+        exposed_to=[],
+        initial_value=1.0,
     )
 
     table.register_variable(var)

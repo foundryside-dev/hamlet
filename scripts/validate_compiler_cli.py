@@ -8,7 +8,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-import yaml
+from townlet.config.experiment_config import ExperimentConfig
+from townlet.universe.declarations import DeclarationStore
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CONFIGS_ROOT = REPO_ROOT / "configs"
@@ -24,42 +25,37 @@ EXPECTED_FAIL_DIRS = {"vfs_circular_dependency", "vfs_type_mismatch", "vfs_undef
 
 
 def iter_config_dirs(base: Path) -> list[Path]:
-    """Recursively find all v2.1 experiment directories (containing experiment.yaml)."""
+    """Recursively find pack roots at the levels/ scope boundary."""
     dirs: list[Path] = []
 
     def scan_dir(path: Path) -> None:
-        """Recursively scan for experiment directories."""
+        if (path / "levels").is_dir():
+            dirs.append(path)
+            return
         for entry in sorted(path.iterdir()):
             if not entry.is_dir() or entry.name in EXCLUDED_DIRS:
                 continue
-
-            # v2.1 experiment directories contain experiment.yaml
-            if (entry / "experiment.yaml").exists():
-                dirs.append(entry)
-            else:
-                # Recurse into subdirectories to find nested experiment packs
-                # (e.g., configs/test/action_space/grid2d/)
-                scan_dir(entry)
+            scan_dir(entry)
 
     scan_dir(base)
     return dirs
 
 
 def resolve_primary_level(config_dir: Path) -> str:
-    """Return the first declared curriculum level for a v2.1 experiment pack."""
-    experiment_path = config_dir / "experiment.yaml"
-    data = yaml.safe_load(experiment_path.read_text()) or {}
-    experiment = data.get("experiment")
-    if not isinstance(experiment, dict):
-        raise ValueError(f"{experiment_path} must contain an 'experiment' mapping")
-
-    curriculum_levels = experiment.get("curriculum_levels")
-    if not isinstance(curriculum_levels, list) or not curriculum_levels:
-        raise ValueError(f"{experiment_path} must declare a non-empty experiment.curriculum_levels list")
+    """Return the first authored curriculum level, independent of transport paths."""
+    store = DeclarationStore.discover(config_dir)
+    experiment = store.parse("experiment", None, ExperimentConfig, True)
+    store.errors.check_and_raise()
+    assert experiment is not None  # Discovery requires the experiment declaration.
+    declaration = store.get("experiment", None)
+    assert declaration is not None
+    curriculum_levels = experiment.experiment.curriculum_levels
+    if not curriculum_levels:
+        raise ValueError(f"{declaration.origin} must declare a non-empty experiment.curriculum_levels list")
 
     primary_level = curriculum_levels[0]
-    if not isinstance(primary_level, str) or not primary_level:
-        raise ValueError(f"{experiment_path} has an invalid first curriculum level: {primary_level!r}")
+    if not primary_level:
+        raise ValueError(f"{declaration.origin} has an invalid first curriculum level: {primary_level!r}")
 
     return primary_level
 

@@ -40,7 +40,10 @@ def test_effect_on_despawn_spawns_item_with_real_itemmanager():
             profile_name="treasure",
             variables=[
                 CompiledVariable(
+                    readable_by=("engine", "agent"),
+                    writable_by=("engine",),
                     name="durability",
+                    lifetime="episode",
                     type="float",
                     expression=None,
                     ast=None,
@@ -49,7 +52,10 @@ def test_effect_on_despawn_spawns_item_with_real_itemmanager():
                     exposed_to=("agent",),
                 ),
                 CompiledVariable(
+                    readable_by=("engine", "agent"),
+                    writable_by=("engine",),
                     name="quality",
+                    lifetime="episode",
                     type="float",
                     expression=None,
                     ast=None,
@@ -199,8 +205,8 @@ def test_effect_on_despawn_spawns_item_with_real_itemmanager():
 
     # Verify rare gem has custom initial_state
     gem = rare_gems[0]
-    durability = vfs_registry.read_item(gem.vfs_profile, "durability", gem.vfs_index)
-    quality = vfs_registry.read_item(gem.vfs_profile, "quality", gem.vfs_index)
+    durability = vfs_registry.read_item(gem.vfs_profile, "durability", gem.vfs_index, reader="engine")
+    quality = vfs_registry.read_item(gem.vfs_profile, "quality", gem.vfs_index, reader="engine")
 
     assert abs(durability - 80.0) < 0.01
     assert abs(quality - 0.9) < 0.01

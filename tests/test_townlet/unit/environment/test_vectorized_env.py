@@ -35,6 +35,7 @@ from townlet.environment.env_factory import (
 from townlet.universe.compiled import CompiledVFSProfiles
 from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.dto import MeterInfo, MeterMetadata
+from townlet.universe.error_codes import ErrorCode
 from townlet.universe.errors import CompilationError
 from townlet.vfs.profiles import CompiledGlobalProfile, CompiledVariable
 from townlet.vfs.schema import WriteSpec
@@ -174,13 +175,18 @@ class TestResolveDeployableAffordances:
 class TestVectorizedHamletEnvInitialization:
     """Test VectorizedHamletEnv.__init__ with various configurations."""
 
-    def test_init_requires_stratum_yaml(self, config_pack_factory):
-        """Should raise CompilationError if stratum.yaml is missing (v2.1 experiment root)."""
+    def test_init_requires_stratum_declaration(self, config_pack_factory):
+        """A missing pack-scope stratum declaration fails before environment construction."""
         config_pack = config_pack_factory(name="missing_stratum")
         (config_pack / "stratum.yaml").unlink()
 
-        with pytest.raises(CompilationError, match="stratum.yaml.*not found"):
+        with pytest.raises(CompilationError) as caught:
             UniverseCompiler().compile(config_pack, primary_level="L0_test")
+        assert len(caught.value.issues) == 1
+        issue = caught.value.issues[0]
+        assert issue.code == ErrorCode.DECLARATION_MISSING
+        assert issue.location == f"{config_pack}:1"
+        assert issue.message == "Missing required stratum declaration"
 
     def test_init_raises_if_config_pack_not_found(self, compile_universe):
         """Should raise CompilationError if config pack directory doesn't exist."""
@@ -546,7 +552,10 @@ class TestVectorizedHamletEnvStep:
         profile = CompiledGlobalProfile(
             variables=[
                 CompiledVariable(
+                    readable_by=("engine", "agent"),
+                    writable_by=("engine",),
                     name="context_probe",
+                    lifetime="persistent",
                     type="bool",
                     exposed_to=("agent",),
                     initial_value=True,
@@ -602,11 +611,12 @@ class TestVFSWriteBackLoudness:
 
         state = VTCTransitionState(
             vfs_state={"__definitely_not_a_registered_variable__": torch.zeros(env.num_agents)},
+            attempted_vfs_targets=frozenset({"__definitely_not_a_registered_variable__"}),
             bars_state={},
             dones=None,
         )
 
-        with pytest.raises(KeyError, match=r"__definitely_not_a_registered_variable__.*Write source: VTC transition state commit"):
+        with pytest.raises(KeyError, match=r"__definitely_not_a_registered_variable__"):
             env._commit_vtc_transition_state(state)
 
     def test_global_profile_write_back_raises_on_unknown_id(self, custom_env_builder, monkeypatch):
@@ -616,7 +626,10 @@ class TestVFSWriteBackLoudness:
         profile = CompiledGlobalProfile(
             variables=[
                 CompiledVariable(
+                    readable_by=("engine", "agent"),
+                    writable_by=("engine",),
                     name="__unknown_global_expr__",
+                    lifetime="persistent",
                     type="bool",
                     exposed_to=("agent",),
                     ast=object(),  # any non-None marks it as an expression var
@@ -652,7 +665,10 @@ class TestVFSWriteBackLoudness:
         agent_profile = CompiledGlobalProfile(
             variables=[
                 CompiledVariable(
+                    readable_by=("engine", "agent"),
+                    writable_by=("engine",),
                     name="__unknown_agent_expr__",
+                    lifetime="episode",
                     type="bool",
                     exposed_to=("agent",),
                     ast=object(),

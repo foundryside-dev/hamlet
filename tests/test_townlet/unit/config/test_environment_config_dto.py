@@ -25,7 +25,7 @@ class TestEnvironmentConfigLoading:
         assert len(root.cascade_graph) > 0
         assert len(root.modulation_graph) > 0
         assert len(root.affordances) >= 1
-        assert len(root.variables) >= 1
+        assert "variables" not in type(root).model_fields
         assert len(root.cues) >= 1
 
         # Meters and affordances match expected vocabulary
@@ -57,8 +57,13 @@ class TestEnvironmentConfigLoading:
         config = EnvironmentConfig.from_yaml(env_path)
         root = config.environment
 
-        variable_names = {v.name for v in root.variables}
-        assert variable_names == set(), f"writerless variables declared: {variable_names}"
+        import yaml
+
+        from townlet.config.variables_config import VariablesConfig
+
+        catalog = VariablesConfig.model_validate(yaml.safe_load(Path("configs/default_curriculum/variables.yaml").read_text())["variables"])
+        forbidden = {"deficit_energy", "deficit_satiation", "time_since_last_eat", "time_since_last_sleep"}
+        assert not forbidden.intersection(variable.id for variable in catalog.declarations)
 
         meter_names = {m.name for m in root.meters}
         assert "energy" in meter_names
@@ -80,7 +85,6 @@ environment:
   cascade_graph: []
   modulation_graph: []
   affordances: []
-  variables: []
   cues: []
 """)
 
@@ -136,48 +140,15 @@ def test_meter_range_type_rejects_non_finite_parameters(range_type: dict[str, ob
         MeterConfig(name="m", description="d", range_type=range_type)
 
 
-def test_variable_normalization_range_requires_two_values(tmp_path: Path):
-    """Normalization.range must contain exactly two values [min, max]."""
-    env_yaml = tmp_path / "environment.yaml"
-    env_yaml.write_text("""
-environment:
-  version: "1.0"
-  meters:
-    - name: energy
-      description: "Energy"
-      range_type:
-        kind: minmax
-        clip: true
-  cascade_graph: []
-  modulation_graph: []
-  affordances: []
-  variables:
-    - name: deficit_energy
-      type: scalar
-      dims: 1
-      scope: agent
-      description: "How far below target energy"
-      semantic_type: custom
-      normalization:
-        method: normalize
-        clip: true
-        range: [0.0]
-  cues: []
-""")
+def test_environment_rejects_the_removed_variable_authoring_surface(tmp_path: Path):
+    import yaml
 
-    with pytest.raises(ValidationError):
-        EnvironmentConfig.from_yaml(env_yaml)
-
-
-# --- hamlet-1dba1910c0: the normalization vocabulary must be honest ----------
-#
-# `clip` and `normalize` used to be four-member siblings that compiled to
-# byte-identical minmax specs, and `minmax` is (v-min)/(max-min) — pure
-# rescaling. So `method: clip` promised clamping and delivered none: an author
-# declaring clip on [0,1] and feeding 7.0 got 7.0 back. `none` was in the
-# approved vocabulary and rejected unconditionally by the compiler. Both are
-# the ambiguity PDR-0047 rule 1 forbids: a closed vocabulary whose members must
-# be distinct and must do what their names say.
+    payload = yaml.safe_load(Path("configs/simple/environment.yaml").read_text())
+    payload["environment"]["variables"] = []
+    path = tmp_path / "environment.yaml"
+    path.write_text(yaml.safe_dump(payload))
+    with pytest.raises(ValidationError, match="Extra inputs"):
+        EnvironmentConfig.from_yaml(path)
 
 
 def _normalizer(spec):
@@ -189,74 +160,25 @@ def _normalizer(spec):
     return CompiledValueNormalizer([("v", spec, 0, 1)], torch.device("cpu"))
 
 
-def test_removed_vocabulary_members_are_rejected() -> None:
-    """`clip` and `none` are gone from the authoring vocabulary, and the error
-    names what IS allowed — an author who wrote either must be told, not
-    silently given rescaling under a clamping name."""
-    from townlet.config.environment_config import NormalizationConfig
+def test_variable_normalization_uses_one_closed_spec() -> None:
+    from townlet.vfs.schema import NormalizationSpec
 
-    for dead in ("clip", "none"):
-        with pytest.raises(ValidationError) as excinfo:
-            NormalizationConfig(method=dead, range=[0.0, 1.0])
-        message = str(excinfo.value)
-        assert "normalize" in message and "standardize" in message
+    for dead in ("clip", "normalize", "standardize"):
+        with pytest.raises(ValidationError):
+            NormalizationSpec(kind=dead)
+    with pytest.raises(ValidationError):
+        NormalizationSpec(kind="minmax", min=0.0)
 
 
-def test_every_surviving_member_compiles_to_a_distinct_spec() -> None:
-    """The point of the removal: two names must never mean one behaviour."""
-    from townlet.config.environment_config import NormalizationConfig
-    from townlet.universe.compilers.observation import ObservationCompiler
-
-    convert = ObservationCompiler._convert_normalization
-    specs = {
-        "normalize": convert("v", NormalizationConfig(method="normalize", range=[0.0, 1.0], clip=False)),
-        "standardize": convert("v", NormalizationConfig(method="standardize", range=[0.0, 1.0], mean=0.5, std=0.25)),
-    }
-    assert specs["normalize"].kind != specs["standardize"].kind
-    assert len({s.kind for s in specs.values()}) == len(specs)
-
-
-def test_normalize_rescales_and_clamps_only_when_the_author_says_so() -> None:
-    """REPLACED, not relaxed — as its predecessor instructed.
-
-    The old test pinned that `normalize` lets out-of-range values through and
-    said: *"if this assertion ever starts failing because values ARE clamped,
-    the vocabulary gained a member and this test must be replaced rather than
-    relaxed."* It gained a PARAMETER instead (`hamlet-fba56feca5`), so both
-    halves are now pinned: the un-clamped behaviour is unchanged, and clamping
-    is reachable — the thing the `clip` member falsely promised and never did.
-    """
+def test_declared_minmax_clamps_through_the_live_normalizer() -> None:
     import torch
 
-    from townlet.config.environment_config import NormalizationConfig
-    from townlet.universe.compilers.observation import ObservationCompiler
+    from townlet.vfs.schema import NormalizationSpec
 
-    # The compiler's job is to carry the author's `clip` through into the VFS spec
-    # UNCHANGED. What clamps is the live normalizer (`CompiledValueNormalizer`), and
-    # since the unit-3 cut it only ever sees clip: true — boundedness is certified at
-    # exposure, so an unclipped minmax refuses before it can reach a token.
-    loose = ObservationCompiler._convert_normalization("v", NormalizationConfig(method="normalize", range=[0.0, 1.0], clip=False))
-    assert loose.kind == "minmax" and loose.clip is False
-    clamped = ObservationCompiler._convert_normalization("v", NormalizationConfig(method="normalize", range=[0.0, 1.0], clip=True))
-    assert clamped.kind == "minmax" and clamped.clip is True
-
+    clamped = NormalizationSpec(kind="minmax", min=0.0, max=1.0, clip=True)
     normalizer = _normalizer(clamped)
     values = torch.tensor([[-5.0], [0.0], [0.5], [1.0], [7.0]])
     assert normalizer.apply(values)[:, 0, 0].tolist() == [0.0, 0.0, 0.5, 1.0, 1.0]
-
-
-def test_clip_must_be_declared_and_only_where_it_applies() -> None:
-    """No-Defaults, both directions: omitting `clip` on `normalize` is a compile
-    error rather than a silent false, and offering it to `standardize` — which
-    has no range to clamp against — is rejected rather than ignored.
-    """
-    from townlet.config.environment_config import NormalizationConfig
-
-    with pytest.raises(ValidationError, match="requires an explicit 'clip'"):
-        NormalizationConfig(method="normalize", range=[0.0, 1.0])
-
-    with pytest.raises(ValidationError, match="does not accept 'clip'"):
-        NormalizationConfig(method="standardize", range=[0.0, 1.0], mean=0.5, std=0.2, clip=True)
 
 
 def test_the_deleted_clamping_member_stays_deleted() -> None:

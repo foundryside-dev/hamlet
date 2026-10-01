@@ -43,7 +43,7 @@ class TestVariableDef:
             type="vecNf",
             dims=2,
             lifetime="episode",
-            readable_by=["agent"],
+            readable_by=["agent", "engine"],
             writable_by=["engine"],
             default=[0.0, 0.0],
         )
@@ -62,7 +62,7 @@ class TestVariableDef:
             type="vecNi",
             dims=2,
             lifetime="episode",
-            readable_by=["agent"],
+            readable_by=["agent", "engine"],
             writable_by=["engine"],
             default=[0, 0],
         )
@@ -79,7 +79,7 @@ class TestVariableDef:
             scope="agent",
             type="bool",
             lifetime="tick",
-            readable_by=["agent"],
+            readable_by=["agent", "engine"],
             writable_by=["engine"],
             default=False,
         )
@@ -96,7 +96,7 @@ class TestVariableDef:
             scope="global",
             type="scalar",
             lifetime="tick",
-            readable_by=["agent"],
+            readable_by=["agent", "engine"],
             writable_by=["engine"],
             default=0.0,
         )
@@ -113,7 +113,7 @@ class TestVariableDef:
             type="vecNf",
             dims=2,
             lifetime="episode",
-            readable_by=["agent"],  # Owner agent only
+            readable_by=["agent", "engine"],
             writable_by=["engine"],
             default=[0.0, 0.0],
         )
@@ -130,7 +130,7 @@ class TestVariableDef:
                 scope="invalid_scope",
                 type="scalar",
                 lifetime="episode",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],
                 default=0.0,
             )
@@ -145,7 +145,7 @@ class TestVariableDef:
                 scope="agent",
                 type="invalid_type",
                 lifetime="episode",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],
                 default=0.0,
             )
@@ -161,7 +161,7 @@ class TestVariableDef:
                 type="vecNf",
                 # Missing dims!
                 lifetime="episode",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],
                 default=[0.0],
             )
@@ -177,7 +177,7 @@ class TestVariableDef:
                 type="scalar",
                 dims=1,  # Should not be present!
                 lifetime="episode",
-                readable_by=["agent"],
+                readable_by=["agent", "engine"],
                 writable_by=["engine"],
                 default=0.0,
             )

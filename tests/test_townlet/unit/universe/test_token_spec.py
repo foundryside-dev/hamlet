@@ -125,11 +125,11 @@ def _meter(name: str = "energy", initial: float = 1.0, lo: float = 0.0, hi: floa
 
 def _static_bindings(n: int, prefix: str, *, signature_width: int | None = None) -> tuple[SlotBinding, ...]:
     del signature_width
-    return tuple(SlotBinding(slot_index=i, filler_kind="static", filler_ref=f"{prefix}:{i}") for i in range(n))
+    return tuple(SlotBinding(slot_index=i, filler_kind="static", filler_ref=f"{prefix}:{i}", scope=None) for i in range(n))
 
 
 def _dynamic_bindings(n: int, prefix: str) -> tuple[SlotBinding, ...]:
-    return tuple(SlotBinding(slot_index=i, filler_kind="dynamic", filler_ref=f"{prefix}:{i}") for i in range(n))
+    return tuple(SlotBinding(slot_index=i, filler_kind="dynamic", filler_ref=f"{prefix}:{i}", scope=None) for i in range(n))
 
 
 def build_token_type(type_name: str, bindings: tuple[SlotBinding, ...]) -> TokenTypeSchema:
@@ -750,14 +750,16 @@ class TestTokenSpecArtifact:
             )
 
     def test_slot_binding_indices_are_dense_from_zero(self):
-        bad = (SlotBinding(slot_index=1, filler_kind="static", filler_ref="m:1"),)
+        bad = (SlotBinding(slot_index=1, filler_kind="static", filler_ref="m:1", scope=None),)
         with pytest.raises(ValueError, match="slot_index"):
             build_token_type("meter", bad)
 
     @pytest.mark.parametrize("type_name", ("self", "meter", "affordance", "agent", "item", "variable_element"))
     def test_non_effect_slot_requires_one_complete_context(self, type_name: str):
         filler_kind = "static" if type_name in {"self", "meter", "affordance", "variable_element"} else "dynamic"
-        binding = SlotBinding(slot_index=0, filler_kind=filler_kind, filler_ref="decl")
+        binding = SlotBinding(
+            slot_index=0, filler_kind=filler_kind, filler_ref="decl", scope="global" if type_name == "variable_element" else None
+        )
 
         with pytest.raises(ValueError, match=rf"{type_name}.*slot context"):
             _build_token_type(type_name, (binding,), slot_context_payloads=(), effect_catalog_contexts=())
@@ -765,21 +767,23 @@ class TestTokenSpecArtifact:
     @pytest.mark.parametrize("type_name", ("self", "meter", "affordance", "agent", "item", "variable_element"))
     def test_non_effect_slot_rejects_wrong_context_width(self, type_name: str):
         filler_kind = "static" if type_name in {"self", "meter", "affordance", "variable_element"} else "dynamic"
-        binding = SlotBinding(slot_index=0, filler_kind=filler_kind, filler_ref="decl")
+        binding = SlotBinding(
+            slot_index=0, filler_kind=filler_kind, filler_ref="decl", scope="global" if type_name == "variable_element" else None
+        )
 
         with pytest.raises(ValueError, match=rf"{type_name}.*expected"):
             _build_token_type(type_name, (binding,), slot_context_payloads=((0.0,),), effect_catalog_contexts=())
 
     @pytest.mark.parametrize("non_finite", (float("nan"), float("inf"), float("-inf")))
     def test_context_payload_rejects_non_finite_features(self, non_finite: float):
-        binding = SlotBinding(slot_index=0, filler_kind="static", filler_ref="decl")
+        binding = SlotBinding(slot_index=0, filler_kind="static", filler_ref="decl", scope=None)
         payload = (non_finite,) + (0.0,) * (len(PAYLOAD_SCHEMAS["meter"]) - 1)
 
         with pytest.raises(ValueError, match=r"meter.*context payload.*finite"):
             _build_token_type("meter", (binding,), slot_context_payloads=(payload,), effect_catalog_contexts=())
 
     def test_effect_uses_named_catalog_contexts_only(self):
-        binding = SlotBinding(slot_index=0, filler_kind="dynamic", filler_ref="effect:agent:0")
+        binding = SlotBinding(slot_index=0, filler_kind="dynamic", filler_ref="effect:agent:0", scope=None)
         payload = (0.0,) * len(PAYLOAD_SCHEMAS["effect"])
 
         with pytest.raises(ValueError, match="slot_context_payloads must be empty"):
@@ -839,16 +843,14 @@ class TestCensusAdvisory:
 # --------------------------------------------------------------------------- item-profile exposure refusals
 
 
-def _env_stub() -> SimpleNamespace:
-    """Minimal EnvConfigV21 stand-in: `variable_element_bindings` reads only
-    `environment.environment.variables[*].name / .semantic_type`, unused by these tests."""
-    return SimpleNamespace(environment=SimpleNamespace(variables=[]))
-
-
 def _compiled_item_profiles(profile_name: str, var_name: str, var_type: str) -> SimpleNamespace:
     """Minimal CompiledVFSProfiles stand-in with one exposed item-profile variable."""
     item_var = SimpleNamespace(
         name=var_name,
+        semantic_type="custom",
+        lifetime="episode",
+        readable_by=["engine", "agent"],
+        writable_by=["engine"],
         exposed_to=["agent"],
         type=var_type,
         initial_value=0.0,
@@ -866,6 +868,12 @@ class TestItemProfileExposureRefusals:
     added at the unit-5 item-profile-exposure landing (token_spec.py). Both were
     previously reachable only through a full compiler run; these hit them directly."""
 
+    def test_exposed_item_variable_without_agent_read_access_refuses(self):
+        compiled_vfs_profiles = _compiled_item_profiles("medical", "durability", "float")
+        compiled_vfs_profiles.item_profiles["medical"].variables[0].readable_by = ["engine"]
+        with pytest.raises(ValueError, match=r"medical\.durability.*exposure requires read access"):
+            variable_element_bindings(compiled_vfs_profiles, (), item_capacity_value=1)
+
     def test_exposed_item_variable_with_zero_item_capacity_refuses(self):
         # token_spec.py:1436-1442: an exposed item-profile variable declares
         # `exposed_to`, but this universe's compiled `item` token capacity is 0 (no
@@ -873,13 +881,12 @@ class TestItemProfileExposureRefusals:
         # slot to bind it against.
         compiled_vfs_profiles = _compiled_item_profiles("medical", "durability", "float")
         with pytest.raises(ValueError, match=r"medical\.durability.*compiled `item` token capacity is 0"):
-            variable_element_bindings(_env_stub(), compiled_vfs_profiles, (), item_capacity_value=0)
+            variable_element_bindings(compiled_vfs_profiles, (), item_capacity_value=0)
 
-    def test_exposed_item_variable_with_unmapped_type_refuses(self):
-        # token_spec.py:1526-1530 (now ~1528-1534): an item-profile variable type with
-        # no token dtype landing (e.g. plain "int" — `VariableDef` has no scalar-int
-        # member; see `_ITEM_VAR_TYPE_TO_TOKEN_TYPE`'s own docstring) refuses naming the
-        # variable and its declared type.
-        compiled_vfs_profiles = _compiled_item_profiles("medical", "durability", "int")
-        with pytest.raises(ValueError, match=r"medical\.durability.*'int'.*no token dtype landing yet"):
-            variable_element_bindings(_env_stub(), compiled_vfs_profiles, (), item_capacity_value=1)
+    @pytest.mark.parametrize("var_type", ["int", "vec2i", "vec3i"])
+    def test_exposed_item_variable_with_unmapped_type_refuses(self, var_type):
+        # These types cannot be produced by canonical scalar-like item declarations.
+        # Invalid internal products must refuse rather than acquire a compatibility landing.
+        compiled_vfs_profiles = _compiled_item_profiles("medical", "durability", var_type)
+        with pytest.raises(ValueError, match=rf"medical\.durability.*'{var_type}'.*no token dtype landing yet"):
+            variable_element_bindings(compiled_vfs_profiles, (), item_capacity_value=1)

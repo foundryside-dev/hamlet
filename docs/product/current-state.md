@@ -30,9 +30,10 @@ and included in PR #44. The three review repair issues remain closed:
 ## Selected package: truthful episode lanes
 
 The owner's new branch **`fix/episode-lane-accounting`** starts from main
-`95b2f828`. This session records product discovery/specification; no runtime fix
+`95b2f828`. Product discovery and source-validated implementation planning are complete; no runtime fix
 or learning campaign has run. [PRD-0005](prds/0005-truthful-episode-lanes.md) is
-**ready for planning**, with handoff **`hamlet-87d3ef8e23`**. Product scope task:
+**planned; implementation unaccepted**. Planning **`hamlet-87d3ef8e23`**
+hands off to execution **`hamlet-78ad37dd49`** (unclaimed). Product scope task:
 `hamlet-e484af6168`. Existing engine bug **`hamlet-d6fc84d147` is confirmed**.
 
 Fresh real-runtime probes reproduce deterministic deaths at ticks 2/5:
@@ -49,8 +50,17 @@ Fresh real-runtime probes reproduce deterministic deaths at ticks 2/5:
 copies, raw-log digests and source closure. The coordinator repeated both probes
 with byte-identical logs. Runner live-transition budgeting already counts on entry
 correctly; curriculum currently completes once at batch end with wrong survival,
-not repeatedly on death. Persisted DB/TensorBoard/recording outputs remain
-source-traced, not freshly executed.
+not repeatedly on death. Planning subsequently executed real DB/TensorBoard/recording and both exporters:
+DB slot0/TB early survival is five instead of two; two batches contain14 live
+transitions but baseline curves claim20. Recorded slot0 contains post-death
+rows, and CPU final-meter aliasing changes `.9900000095` to `.9750000238`.
+The checkpoint-backed regression transition export remains correct.
+
+[Planning receipt](evidence/episode-lanes/planning/receipt.md) adds a configuration-authored
+END_LANE witness through the compiled brain, actual Q/RND updates with identifiable
+phantom samples, and a controlled pinned-oracle reproduction. These are parent
+defects/setup feasibility, not corrected behavior. The sink probe waited for writer
+persistence; ordinary shutdown remains a separate unqualified prerequisite.
 
 The package requires one terminal transition/finalization per lane, correct
 replay/RND eligibility, stable completed outcomes, truthful consumers, explicit
@@ -77,8 +87,11 @@ seed and its fixed protocol. Static access is not per-owner privacy
 RNG isolation, complete BAC cognition, viewer behavior, Murk and model export
 remain separate work. No north-star authoring success rate is revived.
 
-Next action: atomically start the PRD-0005 planning handoff and resolve its
-prerequisite witnesses and truncation semantics before runtime implementation.
+Next action: atomically claim `hamlet-78ad37dd49` and execute the
+[reviewed plan](../plans/2026-10-02-truthful-episode-lanes.md).
+[PDR-0158](decisions/0158-episode-lane-plan-and-boundary-semantics.md) resolves
+truncation/bootstrap, scheduling units, reset guard and strict artifact cuts.
+Planning probes and the 20-pass/one-skip prerequisite gate do not accept the fix.
 Keep the exit review separate; reopen scope if an actual dependency requires it.
 This checkpoint is local to the new branch, with no new push or hosted reading
 of its documentation commit.

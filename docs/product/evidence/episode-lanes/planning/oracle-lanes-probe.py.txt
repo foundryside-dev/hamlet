@@ -1,0 +1,64 @@
+"""Read-only old-engine lifecycle witness; no frozen input files are altered."""
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+import torch
+import townlet
+from townlet.determinism import seed_all
+from townlet.environment.vectorized_env import VectorizedHamletEnv
+from townlet.universe.compiler import UniverseCompiler
+
+root = Path('/home/john/hamlet')
+oracle = root / '.oracle/oracle-2026-08-17'
+actual_module = Path(townlet.__file__).resolve()
+assert actual_module.is_relative_to(oracle / 'src'), actual_module
+oracle_sha = subprocess.check_output(['git','-C',str(oracle),'rev-parse','HEAD'],text=True).strip()
+assert oracle_sha == '4222a9176e68e232a0e46c7004183440e27f22c3'
+config = root / 'oracle_fixtures/configs/default_curriculum'
+level = 'L0_0_minimal'
+def inventory():
+    return {str(p.relative_to(config)):hashlib.sha256(p.read_bytes()).hexdigest()
+            for p in sorted(config.rglob('*')) if p.is_file()}
+before = inventory()
+
+universe = UniverseCompiler().compile(config, primary_level=level, use_cache=False)
+
+def probe(lifespan_override):
+    seed_all(42)
+    env = VectorizedHamletEnv(universe=universe,level_name=level,num_agents=2,device=torch.device('cpu'))
+    env.reset()
+    configured_lifespan = env.agent_lifespan
+    if lifespan_override is not None:
+        # Deliberate runtime-fixture parameter override, not a file/config change.
+        env.agent_lifespan = lifespan_override
+    env.meters[:,env.meter_name_to_index['energy']] = torch.tensor([.015,.045])
+    actions = torch.full((2,),env.action_space.get_action_by_name('WAIT').id,dtype=torch.long)
+    live=torch.zeros(2,dtype=torch.long)
+    newly=torch.zeros(2,dtype=torch.long)
+    trace=[]
+    for tick in range(1,6):
+        active=~env.dones.clone()
+        live+=active.long()
+        _,rewards,dones,info=env.step(actions)
+        new=active & dones
+        newly+=new.long()
+        trace.append({'tick':tick,'active_on_entry':active.tolist(),'newly_terminal':new.tolist(),
+          'dones':dones.tolist(),'step_counts':env.step_counts.tolist(),
+          'energy':env.meters[:,env.meter_name_to_index['energy']].tolist(),
+          'rewards':rewards.tolist()})
+    assert live.tolist()==[2,5]
+    assert newly.tolist()==[1,1]
+    return {'configured_lifespan':configured_lifespan,'runtime_lifespan':env.agent_lifespan,
+      'live_transition_counts':live.tolist(),'reported_survival':env.step_counts.tolist(),
+      'global_tick':env.global_tick,'trace':trace}
+
+result={'oracle_sha':oracle_sha,'townlet_file':str(actual_module),'config_root':str(config),
+        'device':'cpu','seed':42,'config_file_changes':[],
+        'runtime_fixture_changes':['energy after reset [.015,.045] in both cases',
+             'second case only: agent_lifespan1000->5'],
+        'config_inventory':before,'cases':[probe(None),probe(5)]}
+after=inventory()
+assert before==after,'Frozen inputs changed'
+result['frozen_inventory_unchanged']=True
+print(json.dumps(result,indent=2))

@@ -23,6 +23,10 @@ refer to their dated source, not the consolidated main.
 | Repair hosted delivery — October 2 resume | PR #44 merged; exact-main Lint, Config Validation and Tests completed/success; 4,276 passed / 19 skipped / 15 warnings / 85% coverage | Actual main `95b2f828`; published head `171318c8`; 4,295 collected, 1504.18s; separate from local 4,277/18; extra MP4 test skip; no fresh local suite |
 | Episode accounting error — input metric | Baseline **3**: returned survival sums ten versus seven independently counted live transitions; individual counters `[5,5]` versus `[2,5]` | Real CPU compiled environment `95b2f828`, deaths 2/5; target **0** with exact individual survival; PRD-0005 review October 9 or first candidate, no delivery forecast |
 | Episode consumer baseline | All three replay variants store ten transitions / five terminal rows; recurrent lengths `[2,1,1,1,5]`; registry `[1,5]`; RND sample delta ten; adaptive history `[2,1,1,1,5]`, weight 1.0 | Real population/replay/statistics/finalizers; gradients suppressed; no learner/predictor update, persisted-sink or convergence qualification |
+| Episode planning — authored/oracle | Compiled END_LANE deaths2/5 without meter injection, seven eligible/five ticks but reported `[5,5]`; pinned oracle reproduces count/bonus defects | Parent `ec463fda`, oracle `4222a917`; no frozen-byte changes; feasibility/defects, not candidate acceptance |
+| Episode planning — real learning | Standard/PER five Q/one predictor updates; recurrent23/11; both weights change. Seq1 consumes15 phantom Q rows/46 and23 predictor rows/77 | Actual original sampler/predictor hooks; parent defects, no target-value qualification |
+| Episode planning — persisted sinks | Two batches14 live transitions, DB/TB `[5,5]` each, baseline curves20; budget6 publishes `[4,4]` vs `[2,4]`; checkpoint-backed transition export remains correct | Real DB/TB/LZ4/curriculum/exporters; gradients suppressed; writer persistence wait isolates shutdown |
+| Episode planning prerequisite gate | 20 passed / one existing stochastic-affordance skip /58.42s, exit0 | Existing recurrent bootstrap/BPTT and runner integration; no new full suite, hosted CI or convergence |
 
 [PDR-0155](decisions/0155-resume-reconciles-completed-main-publication.md) and the
 [publication reading](evidence/main-consolidation/hosted-publication.json) record the resume
@@ -33,7 +37,11 @@ the subsequent refusal/identity repair. Its bounded verification is separate fro
 the original published-main baseline; a repaired access contract is not convergence evidence.
 [PDR-0157](decisions/0157-episode-lane-package-and-merged-repair-delivery.md) now
 reconciles PR #44's completed [hosted delivery](evidence/static-access-review/hosted-delivery.md)
-and selects the episode-integrity planning scope. [Baseline probes](evidence/episode-lanes/baseline.md)
+and selects the episode-integrity planning scope.
+[PDR-0158](decisions/0158-episode-lane-plan-and-boundary-semantics.md) completes its
+[implementation plan](../plans/2026-10-02-truthful-episode-lanes.md);
+[planning receipts](evidence/episode-lanes/planning/receipt.md) add executed prerequisite
+witnesses. The zero-error target is still unmet and runtime implementation unaccepted. [Baseline probes](evidence/episode-lanes/baseline.md)
 are discovery evidence: the metric target is not met, the bug is confirmed and
 unfixed, and implementation remains unaccepted. Baseline error uses environment
 publication, not a fresh database/TensorBoard output reproduction. Exact lane values

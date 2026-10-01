@@ -1,0 +1,60 @@
+import json
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+import tempfile
+import torch
+import yaml
+sys.path.insert(0, '/home/john/hamlet')
+from townlet.curriculum.static import StaticCurriculum
+from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
+from townlet.population.vectorized import VectorizedPopulation
+from townlet.universe.compiler import UniverseCompiler
+root=Path('/home/john/hamlet')
+head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=root,text=True).strip()
+assert head=='ec463fdaaa632e4e1f778b938ace94f53a73a745'
+level='L0_0_minimal'
+torch.manual_seed(42)
+with tempfile.TemporaryDirectory(prefix='townlet-authored-lanes-') as tmp:
+    tmp=Path(tmp)
+    pack=tmp/'world'
+    shutil.copytree(root/'configs/default_curriculum',pack)
+    actions_path=pack/'actions.yaml'
+    actions=yaml.safe_load(actions_path.read_text())
+    actions['actions']['custom_actions'].append({
+      'name':'END_LANE','description':'Deterministic lifecycle witness', 'enabled_by_default':True,
+      'writes':[{'variable_id':'energy','expression':'0.0','condition':None,
+                 'composition':'overwrite','phase':'apply_action_effects','priority':0,
+                 'clamp':None,'telemetry_label':'end_lane'}]})
+    actions_path.write_text(yaml.safe_dump(actions,sort_keys=False))
+    training_path=pack/'levels'/level/'training.yaml'
+    training=yaml.safe_load(training_path.read_text())
+    training['training']['enabled_actions']['custom'].append('END_LANE')
+    training_path.write_text(yaml.safe_dump(training,sort_keys=False))
+    universe=UniverseCompiler().compile(pack,primary_level=level,use_cache=False)
+    env=universe.create_environment(num_agents=2,level_name=level,device='cpu')
+    brain=universe.brain
+    exploration=EpsilonGreedyExploration(epsilon=0.0,epsilon_min=0.0,epsilon_decay=1.0)
+    wait=env.action_space.get_action_by_name('WAIT').id
+    end=env.action_space.get_action_by_name('END_LANE').id
+    schedule=[torch.tensor([wait,wait]),torch.tensor([end,wait]),torch.tensor([wait,wait]),torch.tensor([wait,wait]),torch.tensor([wait,end])]
+    exploration.select_actions=lambda q_values,state,masks: schedule[env.global_tick].clone()
+    pop=VectorizedPopulation(env=env,curriculum=StaticCurriculum(difficulty_level=1.0),exploration=exploration,
+      agent_ids=['early','late'],device=torch.device('cpu'),brain_config=brain,obs_dim=env.observation_dim,
+      train_frequency=1,batch_size=128,sequence_length=1,max_grad_norm=1.0,action_dim=env.action_dim)
+    pop.reset()
+    initial_energy=env.meters[:,env.meter_name_to_index['energy']].tolist()
+    trace=[]
+    live=0
+    for tick in range(1,6):
+      active=~env.dones.clone()
+      live+=int(active.sum())
+      state=pop.step_population(env)
+      trace.append({'tick':tick,'active_on_entry':active.tolist(),'actions':state.actions.tolist(),
+         'dones':state.dones.tolist(),'energy':env.meters[:,env.meter_name_to_index['energy']].tolist(),
+         'survival':state.survival_times.tolist(),'rewards':state.rewards.tolist()})
+    print(json.dumps({'head':head,'initial_energy':initial_energy,'wait_id':wait,'end_lane_id':end,
+      'newly_dead_at':[next(t['tick'] for t in trace if t['dones'][i]) for i in range(2)],
+      'live_transitions':live,'world_ticks':env.global_tick,'brain_network':str(type(pop.q_network)),
+      'brain':brain.model_dump(mode='json'),'learner_updates':pop.training_step_counter,'trace':trace},indent=2))

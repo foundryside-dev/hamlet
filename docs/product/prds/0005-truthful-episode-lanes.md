@@ -1,8 +1,8 @@
 # PRD-0005 — Truthful episode lanes
 
-Status: **ready for planning; implementation unaccepted**.
+Status: **implementation planned; implementation unaccepted**.
 Prepared: 2026-10-02 Australia/Canberra. Source baseline: `95b2f828` (PR #44 main).
-Decision: PDR-0157. Bet: bounded integrity package inside continuing recovery.
+Decision: PDR-0157; planning resolution: PDR-0158. Bet: bounded integrity package inside continuing recovery.
 Existing engine bug: `hamlet-d6fc84d147` (confirmed). Product scoping:
 `hamlet-e484af6168`; planning handoff: `hamlet-87d3ef8e23`.
 
@@ -153,3 +153,24 @@ only where the plan establishes a design choice; route delivery forecast to
 **axiom-program-management**. No file list, architecture or implementation sequence
 is prescribed here. The existing engine bug remains open until its runtime fix is
 verified; this product checkpoint dispatches planning, not a learning campaign.
+
+## Planning resolution — October 2
+
+[Implementation plan](../../plans/2026-10-02-truthful-episode-lanes.md) and
+[planning evidence](../evidence/episode-lanes/planning/receipt.md) complete
+`hamlet-87d3ef8e23`; execution is `hamlet-78ad37dd49`, unclaimed.
+Actual authored construction, real updates, persisted sinks and pinned-oracle
+probes now establish feasibility/parent defects; candidate acceptance remains absent.
+
+Runner truncation closes a nonempty surviving episode without changing replay
+MDP done, so stored-successor bootstrap remains valid. Normal configured cap
+equals environment lifespan and remains retirement. Existing vector/optimizer/
+batch clocks retain their units; RND cadence follows eligible sample occupancy.
+Population owns completion snapshots; reset refuses an unfinished nonempty lane
+before mutation until explicit completion. Checkpoint resume remains learned-state
+at a fresh episode, with old population state refused.
+
+Strict new DB/recording contracts and the ordinary producer-to-playback witness
+are required; old historical artifacts remain unchanged. Ordinary recorder
+shutdown was isolated in the probe, not qualified. No acceptance criterion or
+October9 review window changes, and no convergence campaign is dispatched.

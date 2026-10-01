@@ -1,0 +1,93 @@
+"""Current-parent feasibility probe; does not implement proposed eligibility fix."""
+import hashlib
+import json
+import random
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+import tempfile
+
+import torch
+import numpy as np
+sys.path.insert(0, '/home/john/hamlet')
+from tests.test_townlet._fixtures.brain_configs import minimal_brain_config, recurrent_brain_config
+from townlet.curriculum.static import StaticCurriculum
+from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
+from townlet.population.vectorized import VectorizedPopulation
+from townlet.universe.compiler import UniverseCompiler
+
+ROOT = Path('/home/john/hamlet')
+head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
+def digest(t):
+    return hashlib.sha256(t.detach().cpu().contiguous().numpy().tobytes()).hexdigest()
+
+def case(universe, mode, tmp):
+    torch.manual_seed(42)
+    random.seed(42)
+    np.random.seed(42)
+    env = universe.create_environment(num_agents=2, level_name='L0_0_minimal', device='cpu')
+    brain_dir=tmp/mode
+    brain_dir.mkdir()
+    brain=(recurrent_brain_config if mode=='recurrent' else minimal_brain_config).__wrapped__(brain_dir)
+    if mode=='prioritized':
+        replay=brain.replay.model_dump()
+        replay.update(prioritized=True, priority_alpha=.6, priority_beta=.4, priority_beta_annealing=False)
+        brain=brain.model_copy(update={'replay':type(brain.replay).model_validate(replay)})
+    exploration=AdaptiveIntrinsicExploration(obs_dim=env.observation_dim,rnd_training_batch_size=7,device=torch.device('cpu'))
+    wait_id=env.action_space.get_action_by_name('WAIT').id
+    exploration.select_actions=lambda q,s,m:torch.full((2,),wait_id,dtype=torch.long)
+    pop=VectorizedPopulation(env=env,curriculum=StaticCurriculum(difficulty_level=1),exploration=exploration,
+        agent_ids=['early','late'],device=torch.device('cpu'),brain_config=brain,obs_dim=env.observation_dim,
+        train_frequency=1,batch_size=2,sequence_length=int(sys.argv[1]) if len(sys.argv)>1 else 2,max_grad_norm=1,action_dim=env.action_dim)
+    sample_rows=[]
+    if mode=='recurrent':
+        original=pop.replay_buffer.sample_sequences
+        def capture_sample(*args,**kwargs):
+            batch=original(*args,**kwargs)
+            sample_rows.extend(digest(row) for row in batch['observations'].reshape(-1,env.observation_dim))
+            return batch
+        pop.replay_buffer.sample_sequences=capture_sample
+    else:
+        original=pop.replay_buffer.sample
+        def capture_sample(*args,**kwargs):
+            batch=original(*args,**kwargs)
+            sample_rows.extend(digest(row) for row in batch['observations'])
+            return batch
+        pop.replay_buffer.sample=capture_sample
+    predictor_rows=[]
+    def capture_predictor(module, inputs):
+        if torch.is_grad_enabled():
+            predictor_rows.append([digest(row) for row in inputs[0]])
+    exploration.rnd.predictor_network.register_forward_pre_hook(capture_predictor)
+    before_q={k:v.detach().clone() for k,v in pop.q_network.state_dict().items()}
+    before_rnd={k:v.detach().clone() for k,v in exploration.rnd.predictor_network.state_dict().items()}
+    eligible=set()
+    phantom=set()
+    for ep in range(8 if mode=='recurrent' else 1):
+        pop.reset()
+        env.meters[:,env.meter_name_to_index['energy']]=torch.tensor([.015,.045])
+        pop.current_obs=env._get_observations()
+        for tick in range(5):
+            active=~env.dones.clone()
+            for i,row in enumerate(pop.current_obs):
+                (eligible if bool(active[i]) else phantom).add(digest(row))
+            pop.step_population(env)
+    exclusive_phantom=phantom-eligible
+    return {'mode':mode,'sequence_length':pop.sequence_length,'episodes_executed':8 if mode=='recurrent' else 1,
+        'actual_q_updates':pop.training_step_counter,'actual_predictor_updates':len(predictor_rows),
+        'q_parameters_changed':any(not torch.equal(v,pop.q_network.state_dict()[k]) for k,v in before_q.items()),
+        'predictor_parameters_changed':any(not torch.equal(v,exploration.rnd.predictor_network.state_dict()[k]) for k,v in before_rnd.items()),
+        'sampled_q_rows':len(sample_rows),'sampled_q_exclusive_phantom_rows':sum(h in exclusive_phantom for h in sample_rows),
+        'predictor_consumed_rows':sum(map(len,predictor_rows)),
+        'predictor_exclusive_phantom_rows':sum(h in exclusive_phantom for batch in predictor_rows for h in batch),
+        'exclusive_phantom_row_identities':len(exclusive_phantom),'ambiguous_identities':len(phantom&eligible),
+        'latest_loss':pop.last_loss,'latest_rnd_loss':pop.last_rnd_loss}
+
+with tempfile.TemporaryDirectory(prefix='townlet-gradient-setup-') as temp:
+    tmp=Path(temp)
+    config=tmp/'default_curriculum'
+    shutil.copytree(ROOT/'configs/default_curriculum',config)
+    universe=UniverseCompiler().compile(config,primary_level='L0_0_minimal',use_cache=False)
+    print(json.dumps({'source_head':head,'limits':'Unfixed parent setup feasibility only, no target assertions or sinks',
+        'cases':[case(universe,m,tmp) for m in ['standard','prioritized','recurrent']]},indent=2))

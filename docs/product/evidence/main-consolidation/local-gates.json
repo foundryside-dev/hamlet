@@ -1,0 +1,54 @@
+{
+  "source_commit": "bb88beb84a8dfdb6e2851c16140b7d65054efb14",
+  "working_directory": "/tmp/hamlet-main-integration",
+  "gates": {
+    "ruff": {
+      "command": [
+        "/tmp/hamlet-static-epistemic-access/.venv/bin/ruff",
+        "check",
+        "."
+      ],
+      "exit_code": 0,
+      "log": "logs/ruff.log"
+    },
+    "black": {
+      "command": [
+        "/tmp/hamlet-static-epistemic-access/.venv/bin/black",
+        "--check",
+        "src",
+        "tests"
+      ],
+      "exit_code": 0,
+      "log": "logs/black.log"
+    },
+    "mypy": {
+      "command": [
+        "/tmp/hamlet-static-epistemic-access/.venv/bin/mypy",
+        "src/townlet",
+        "--show-error-codes"
+      ],
+      "exit_code": 0,
+      "log": "logs/mypy.log"
+    },
+    "no-defaults": {
+      "command": [
+        "/tmp/hamlet-static-epistemic-access/.venv/bin/python",
+        "scripts/no_defaults_lint.py",
+        "src/townlet",
+        "--whitelist",
+        ".defaults-whitelist.txt"
+      ],
+      "exit_code": 0,
+      "log": "logs/no-defaults.log"
+    },
+    "fleet": {
+      "command": [
+        "/tmp/hamlet-static-epistemic-access/.venv/bin/python",
+        "scripts/validate_compiler_cli.py"
+      ],
+      "exit_code": 0,
+      "log": "logs/fleet.log"
+    }
+  },
+  "execution_source_unchanged_from": "b70fda104e5061ed2735e8b31b7f8f9caaf99f19"
+}

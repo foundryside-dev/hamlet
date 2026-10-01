@@ -1,4 +1,36 @@
-# Metrics — HAMLET / Townlet        Last read: 2026-09-02 (recovery progress reading) · gates read at `main@ea3648db` (all green) · config-surface row refreshed (assessment `2026-09-02-recovery-progress-reading.md`)
+# Metrics — Townlet · Latest reading 2026-10-01
+
+This is a source/evidence/tracker reading, not a new training campaign. New readings are
+separate from the retained chronological tables below; historical “current” cells there
+refer to their dated source, not the consolidated main.
+
+| Reading | Result | Identity / limit |
+| --- | --- | --- |
+| Local consolidation | All 20 local branch tips contained; 201 postmerge checks pass | Merge `bb88beb84a8dfdb6e2851c16140b7d65054efb14`; actual main-worktree imports; no new full local suite |
+| Static execution suite | 4,250 passed / 18 skipped / 15 warnings; 85% coverage | Qualified `b70fda10`, 1561.29s, exit 0; Ruff/Black/mypy/no-defaults/fleet also zero |
+| Direct-parent preservation | 31 cases, 884 readings, 150 exactly attributed identity changes; no numeric/reset changes | Ten CPU trajectories, eleven reset recipes; independent raw reconstruction |
+| Frozen preservation | Ten CPU cells DIVERGED_AS_REGISTERED; ten CUDA skips, exit 0 | Unchanged oracle `4222a917`; not AGREE, CUDA or performance evidence |
+| Authoring/access capability | A/B/static accepted; canonical policy authoring, checked ordinary/item access and independent empty exposure | PDR-0149/0151/0153; finite roles only, not arbitrary actors or per-owner privacy |
+| Historical bug reconciliation | Three source/runtime-verified defects closed; broader privacy remains open | fc78bb49d3 / 1a520475f4 / c78fbf32a3; independent 55-test pass at ea9fc5fa |
+| Tracker census before delivery-task closure | 266 issues: 158 done, 107 open, one in progress; WS-4 direct children 61 total / 21 done | Local tracker 2026-10-01; bookkeeping, not completeness percentages |
+| Recovery workstreams | WS-1 and WS-7 closed; six others open | Two of eight is status count, not product progress fraction |
+| Divergence exit reading | 15 entries: five retired, two tag-stamped, five built, three qualified additions | Not all terminal; PDR-0058 register-growth reversal review is triggered |
+| Learning evidence | Historical M4 four of four cells passed | Training `9d4e942f`, seed45, fixed protocol; no current-main/multi-seed rerun |
+| Hosted delivery | Separate exact published-head/main receipt required | Recorded in consolidation PR / hamlet-dd9a03f787 after this snapshot; old green is not new-head green |
+
+No aggregate seven-surface completion percentage is recalculated: the old ledger predates
+canonical declaration discovery, variable unification, action-write witnesses and checked
+static access. No new north-star authoring success rate, default-scenario convergence,
+browser/CUDA acceptance or Murk performance reading is asserted. No-defaults whitelist,
+frozen fixtures, unrelated dirty files and qualified raw evidence are preserved.
+
+The next discriminating measurement is exact episode-lane accounting, then task-specific
+held-out learning evidence from a declared scenario. See
+[checkpoint assessment](assessments/2026-10-01-main-product-checkpoint.md).
+
+## Historical readings and metric definitions
+
+Previous checkpoint last read: 2026-09-02 (recovery progress reading) · gates read at `main@ea3648db` (all green) · config-surface row refreshed (assessment `2026-09-02-recovery-progress-reading.md`)
 
 > **Recovery progress reading — 2026-09-02, `project-recovery-4@ca0378ac`, `main@ea3648db`.**
 > Owner-requested, recorded in full at

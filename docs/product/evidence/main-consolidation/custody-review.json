@@ -1,0 +1,42 @@
+{
+  "PDR_0058": "fired and explicitly under unresolved framing review in all five checkpoint docs; merge and registered qualification do not close it",
+  "all_20_premerge_local_tips_in_main": true,
+  "banked_files_validated": 49,
+  "checkpoint_document_sha256": {
+    "assessments/2026-10-01-main-product-checkpoint.md": "efd2e8cfc1f7b3543a0c0d6affa99d19ddc5934d70618de75d6c8fb0e7be3775",
+    "current-state.md": "2b89cf361bf29dc1ec7539fb0c69a9413379b5c600bbfde28ec4ef459e51ff81",
+    "decisions/0154-main-consolidation-and-product-checkpoint.md": "7a5917e20b92ef68983b80a1a5ebdba4ec1d5ff170f0473da4140605fbb8ffd8",
+    "metrics.md": "2af4715cef2c583bf060656bdc9c15df3b6f6851ff7207db8d64b308c469bc44",
+    "roadmap.md": "6d6c45259ff2640473b33a6b21305a4dc243475deb5af4e34b5a45e8a79d1d43"
+  },
+  "execution_paths_unchanged_from_qualified_source": true,
+  "frozen_oracle_clean": true,
+  "frozen_oracle_head": "4222a9176e68e232a0e46c7004183440e27f22c3",
+  "main_head_at_review": "bb88beb84a8dfdb6e2851c16140b7d65054efb14",
+  "main_merge_parents_verified": [
+    "ea3648dbbd184e992d9c57b609c908f1bcb9055c",
+    "db00f7fcef04e30f1a6222cbc084d034491f7cf6"
+  ],
+  "main_postmerge": {
+    "exit_code": 0,
+    "import_origin": "/tmp/hamlet-main-integration/src/townlet/__init__.py",
+    "passed": 201,
+    "seconds": 24.12
+  },
+  "main_worktree": "/tmp/hamlet-main-integration",
+  "merge_tree_equals_reviewed_recovery_tip": true,
+  "oracle_fixtures_unchanged": true,
+  "preserved_dirty_file_sha256": {
+    ".agents/skills/filigree-workflow/references/error-codes.md": "27b0487e302939f67d6e1e2a4e1b66b531904944e9bf41b88e8c125e2ec0846a",
+    ".claude/skills/filigree-workflow/references/error-codes.md": "27b0487e302939f67d6e1e2a4e1b66b531904944e9bf41b88e8c125e2ec0846a"
+  },
+  "product_documentary_review": "GO: five actual checkpoint docs read independently; no unsupported completion, convergence, publication or successor authorization claim",
+  "publication_stage": "committed snapshot explicitly predates publication; exact remote outcome receipt still separate",
+  "qualified_execution_source": "b70fda104e5061ed2735e8b31b7f8f9caaf99f19",
+  "raw_files_validated": 30,
+  "read_only_review": true,
+  "recovery_sha": "ea9fc5fafe451cd59e7231ccef06d221e73ff99d",
+  "retained_raw_root": "/tmp/hamlet-static-epistemic-access",
+  "reviewed_at_utc": "2026-10-01T02:13:18.034572+00:00",
+  "whitelist_unchanged": true
+}

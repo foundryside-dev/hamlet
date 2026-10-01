@@ -1,298 +1,98 @@
-# Roadmap — HAMLET / Townlet · Updated: 2026-10-01 · declaration-store delivered; next package remains shaped
+# Roadmap — Townlet · Updated 2026-10-01
 
-> Sequencing, WSJF / cost-of-delay, and dated forecasts are produced by
-> /axiom-program-management. This file records bets as INTENT, not a delivery
-> schedule. Do not compute WSJF here; hand the committed bet over for sequencing.
+This records product intent, not a delivery schedule. Workstream numbers are an inventory,
+not an execution order. One bounded recovery unit is selected at a time; forecasts and
+program sequencing require their own evidence. See [current state](current-state.md),
+[metrics](metrics.md) and [PDR-0154](decisions/0154-main-consolidation-and-product-checkpoint.md).
 
-> **Current checkpoint — 2026-10-01:** declaration-store A is accepted by PDR-0149;
-> B is accepted at published implementation `22924d0a` by
-> [PDR-0151](decisions/0151-cut-b-accepted-against-prd-0003.md). All three exact implementation-head
-> hosted workflows passed; local integration is complete. Draft PR #41 stacks on Cut A #40.
-> Final published head `bdf64fad` also passed all three hosted workflows; acceptance
-> issue `hamlet-61e3de957f` is closed. This is no main merge or
-> broader bet-exit reading. The epistemic-access package remains shaped and uncommitted;
-> its rebased static scope and acceptance plan are proposed in
-> [PRD-0004](prds/0004-static-epistemic-access.md) and
-> [PDR-0152](decisions/0152-static-epistemic-access-planning-boundary.md).
-> Planning is authorized; implementation remains open and unstarted.
->
-> **Within Now, the order is open (`PDR-0019`, owner-stated).** The WS-0…WS-7 work streams are an
-> **inventory, not a sequence**. One system is pinned at a time; the next is chosen on the
-> strangler's selection criterion — *where does the runtime still know what the game is?* — not by
-> stream number. Two constraints hold: one system at a time, and the work must be replacing,
-> refactoring or fixing. Real blocking edges come from Filigree's current dependency graph; WS-7
-> is now closed.
+## Now — continuing recovery
 
-> **Bootstrap seed.** Now is derived from observed tracker + git state. Next/Later are derived
-> from the three-pivot arc in `vision.md` and the HLD, and are **proposals awaiting the owner's
-> DECIDE** — nothing below Now is committed. `docs/architecture/archive/ROADMAP.md` is a *different,
-> stale* file (last updated 2025-10-30, "Phase 3 Complete") describing an engineering phase plan
-> that predates the VFS/VTC/DAC era. This file does not supersede or edit it; retiring it is part
-> of the Now bet.
+**Strangler rewrite behind the compiled-universe contract** remains the committed bet
+(PDR-0006). Main consolidation is publication inside the bet, not its exit. WS-1 and WS-7
+are closed; WS-0/2/3/4/5/6 remain open. Tracker dependency path remains WS-6 → WS-2 → WS-3 →
+WS-4. The documentation-replacement program remains separately gated under PDR-0125;
+this factual checkpoint and unconditional merge README review do not complete it.
 
-> **Previous checkpoint — 2026-09-02 (fifth merge), `PDR-0145`/`PDR-0146`:** no horizon change.
-> **The fifth merge is on `main` at `ea3648db`** (PR #38, 36 commits, both gates discharged —
-> gate 2 found 29 stale claims, 22 omissions and nine defects in its own draft). Active branch is
-> `project-recovery-4`. The owner's DECIDE at this resume: *merge, then the declaration-store
-> compiler unit (`PDR-0117`)* — so that unit is now the **committed next unit of the Now bet**,
-> with its scope ruling the next session's first act. Three inputs are banked for it: the
-> `period`/`day_length` duplication, the `filler_ref` string contract, and the silently-ignored
-> stray files in `items_smoke` (`hamlet-obs-982755441c`).
->
-> **Previous checkpoint — 2026-09-02 (later), `PDR-0144`:** no horizon change. **Unit 5 is accepted and
-> the token-observation engineering umbrella (`hamlet-fa6bb6da4a`) is closed** — all five milestones
-> terminal. Every surviving pack compiles, constructs and steps under one discovery-driven test;
-> every live token type and scope has a committed config-in/behaviour-out exercise; L3 temporality
-> is one authored `day_phase` token; `observation_mode` and the nine retired trial packs are gone
-> (`PDR-0142`, `PDR-0143`). Two P1 engine defects stand outside any unit: `hamlet-d6fc84d147`
-> (survival counter) and `hamlet-4b931faaf4` (held items invisible to item tokens). The Now bet
-> is the strangler rewrite; its next unit is the top of Next.
+Delivered within the bet:
 
-## Now  (committed, in-flight)
+- Token observation engineering, all five milestones, including compact replay, declared
+  attention, recurrent learning machinery, shipped-pack migration and historical M4
+  qualification (PDR-0133 through PDR-0144). M4's four passing cells are one versioned
+  engineering cohort, not a fresh general convergence claim.
+- Declaration-store Cut A: files are transport, declaration discovery/merge/provenance and
+  one authored clock authority (PDR-0149). Cut B: canonical variables, explicit lifecycle,
+  supported symbols and typed token scopes (PDR-0151). Their original planning is complete.
+- Static epistemic access: required finite roles, checked runtime/publication, immutable
+  policy, attempted-write authorization and policy-bearing persistence/identity (PDR-0153).
+  Permission authoring is no longer absent. Custom action writes are declared and exercised
+  by the committed ADVANCE witness. No old profile/overlay authoring reader is preserved.
 
-- **Strangler rewrite behind the compiled-universe contract** (`PDR-0006`) — the recovery
-  execution model. Preserve behaviour against the pinned oracle, then replace one design-space
-  unit at a time; differential tests answer “did behaviour change?” and WS-3 wiring tests answer
-  “does the declaration do anything?”
-  · **Delivered:** WS-1 is closed; WS-7 is closed as of 2026-08-31 after delivering determinism,
-  oracle pinning, the differential harness, divergence register and the first seam cut. Its
-  standalone P3 `--oracle-ref` hardening item remains visible under the recovery milestone.
-  · **Current branch state:** the fifth merge is on `main` at `ea3648db` (`PDR-0146`); active
-  work is `project-recovery-4`. The bet has not exited: the oracle is still required and
-  WS-3/WS-4 are open. **Next unit (owner-chosen 2026-09-02): the declaration-store compiler
-  unit, `PDR-0117`** — see Next.
-  · **Critical path:** WS-6 `hamlet-5e39fcccb0` → WS-2 `hamlet-337b9e80fb` → WS-3
-  `hamlet-1f89714685` → WS-4 `hamlet-15050f280a`.
-  · **Exit:** retire the oracle only when every registered divergence is terminal, the harness
-  verdict contract is trustworthy, and the authoring surface is protected by config-in /
-  behaviour-out wiring tests (`PDR-0058`).
-  · **Gates:** product-source pushes run the CI-equivalent local lint set; every merge still owes
-  the source-verified README gate. The documentation rewrite remains gated on WS-4 even though its
-  tracker item appears ready.
-  · metric: terminal divergence register, wiring-test coverage, trustworthy CI conclusions
-  · Updated: 2026-09-02 (`PDR-0146`)
+**Exit review required.** PDR-0058's trigger fired as DIV-013/014/015 were added without an
+entry becoming terminal across successive checkpoints. Keep the oracle and the current
+non-exit status; adjudicate the exit/instrument framing before treating the next unit as
+progress toward a settled retirement criterion. Qualification of a registered divergence
+is not a terminal disposition. Do not widen allowances or change frozen inputs to conceal it.
 
-> **Retired record, not active delivery:** the authoring-trial instrument is terminal for its
-> corpus (`PDR-0111`). No rate publishes from it and redesign remains parked. Its only live
-> sequencing consequence is the 2026-10-06 trial-pack disposition deadline before token unit 5.
+**Recommended next unit: truthful episode lanes.** Reproduce current main starting with
+`hamlet-d6fc84d147`, then scope a lifecycle/accounting PRD. Acceptance should share active-on-entry
+and newly-terminal events across runtime, replay, exploration and output sinks: one terminal
+transition/finalization, frozen post-death outcomes, exact live-transition versus vector-tick
+units. This is a recommendation under the compile → render → converge objective; no new
+implementation, deadline or training campaign is authorized by the checkpoint.
 
-- **Token-based observation engineering — IN SCOPE, owner-directed** (`PDR-0108`,
-  `PDR-0114`, `PDR-0131`, `PDR-0132`, `PDR-0133`, `PDR-0134`, `PDR-0135`, `PDR-0136`,
-  `PDR-0137`, `PDR-0138`, `PDR-0140`, `PDR-0141`;
-  `hamlet-fa6bb6da4a`). Phase A, the declared attention choice, the full token cut, compact
-  replay and the four-cell recurrent/feedforward qualification are landed. The open work is
-  shipped-pack migration (unit 5).
-  · **The 9.43× decision is re-ruled (`PDR-0131`, superseding `PDR-0126`).** At the default
-  100,000-transition capacity, the historical 1,132-float serialization spent 863.6 MiB on
-  observation pairs versus 91.6 MiB before the cut. The later 1,580-float line was an intermediate
-  meter-only reading. Exact five-entry executable identity and the exposed-initializer correction
-  put the fixed L1 projection boundary at 4,090 floats: 3,272,000,000 bytes, or 3,120.4 MiB, if it
-  were repeated in a 100,000-transition observation pair. `PDR-0136` removes that immutable
-  compiler context from transitions: current L1 replay is 115 floats and 92,000,000 bytes.
-  · **Milestone 1 delivered (`PDR-0133`):** the old position selector, all mode branches and the
-  vacuous `div003_scaled` cell are gone. Current config rejects the old key; positions are
-  `[0,1]`, egocentric deltas `[-1,1]`, with no compatibility path.
-  · **Milestone 2 delivered and closed (`PDR-0134`/`PDR-0135`, `c6c6b524`):** meter `range_type`
-  now reaches
-  both live token values and static identity through exactly four bounded transformations:
-  `minmax` (`clip: true`), `log_scaled` (`clip: true`), `cyclical_sin_cos`, and `binary`. The meter
-  surface deletes `none`, `zscore`, `one_hot`, `rank_scaled` and `masked_value`; all 39 current
-  config declarations are updated with no alias, translation or fallback. Frozen oracle fixtures
-  keep old declarations only as historical evidence. Each level's compiled `TokenSpec` carries the
-  meter signatures and recursive affordance target signatures; the selected environment, encoder,
-  population and token network consume that level's spec with no primary-level fallback. Non-finite
-  declared meter values, bounds, rates, normalization parameters and affordance deltas refuse
-  loudly. `dual`, dead definition intensity and catalog overrides of effect scope/duration are
-  deleted; executable lifecycle and spawned-effect distinctions enter the compiled identity.
-  Compiled schema 1.25 / token encoding `token-1.1`. Acceptance: 3,675 passed / 11 skipped / 84%
-  coverage; Ruff, Black, mypy, no-defaults, compiler-pack validation and diff integrity green.
-  The former focused 181 / oracle-seam 158 / population 24 readings predate this expanded boundary
-  and remain historical only.
-  · **Milestone 3 accepted (`PDR-0136`, `d554fb7f`):** Grid2D is `115 / 4,090`, Grid3D
-  `149 / 4,090`, and aspatial `19 / 394` compact/fixed. Batch-256 feedforward, dueling,
-  token-set mean/attention, RND and four-step recurrent BPTT execute; all three replay variants
-  round-trip and reject their previous versions. No whole fixed-observation runtime ABI remains.
-  Exact clean-SHA encoding ratios are `0.1618647585026199` and `0.16272129673268468`.
-  · **Milestone 4 accepted (`PDR-0141`, training `9d4e942f`, evidence `e1615648`):** all four
-  seed-45 cells pass the 79.1947 floor at the exact frozen budget (feedforward mean/attention
-  98.9925/99.0, recurrent mean/attention 97.315/99.0), one cohort identity, raw 800-outcome arrays
-  re-validated by `summarize`; durable copies under `docs/product/baselines/2026-09-m4-token-regression/`.
-  Evidence path repaired under `PDR-0140`: transition accounting from the checkpoint-persisted
-  counter only, honest curve column, truthful terminal status. Engine survival-counter defect
-  filed as `hamlet-d6fc84d147`, deliberately outside M4.
-  · **Milestone 5 accepted (`PDR-0144`, `5973f79b`…`a07b889b`):** trial packs dispositioned
-  (`PDR-0142`); `observation_mode` deleted; `day_phase` authored as one cyclical token with the
-  compiler admitting an exposed expression variable that declares its reset value; item commands
-  validated through the effects grammar and the reference pack stepped; a discovery-driven smoke
-  test over 31 pack/level cases; effect and item-arena rows exercised from committed packs, with
-  the item-arena profile-match leak fixed and pinned; `DIV-012` bisected and bound on every cpu
-  cell. Umbrella closed. Downstream of this unit: `hamlet-4b931faaf4`, `hamlet-obs-b959ce55c0`,
-  the `period`/`day_length` duplication and the `filler_ref` string contract (both feed the
-  declaration-store unit).
-  · **Checkpointed sequence (`PDR-0132`):** canonical bounded positions
-  (`hamlet-6a4a6596bd`, complete) → meter `range_type` wiring (`hamlet-1e335e0363`, closed) →
-  compact ABI (`hamlet-1b1caf552a`, accepted) → Unit 4 engineering regression
-  (`hamlet-25fc3fb955`, accepted `PDR-0141`) → Unit 5 shipped-pack migration (`hamlet-55b2826a02`, accepted `PDR-0144`). Each milestone
-  needs terminal tracker evidence and a committed
-  product checkpoint before its successor begins. Relational/message exposure and dynamic
-  variables remain downstream, not silently folded into this unit.
-  · metric: replay resident bytes, viable batch size, observation-encoding share, unit-4
-  regression floor
-  · Updated: 2026-09-02 (`PDR-0144`)
+## Next — shaped, separately scoped
 
-## Next (shaped, decreasing certainty)
+- **Reset isolation:** active effects must not survive a new episode (`hamlet-d76684f549`).
+  Use actual mutation/reset witnesses and explicit callback/persistence semantics. Keep this
+  out of the episode-lane package unless an evidenced dependency requires it.
+- **Item fidelity:** initial appearances must survive cold/cache artifacts; carried items,
+  type identity, locality, capacities and per-world mutable state need coherent contracts.
+  Held-item issue `hamlet-4b931faaf4` remains open. Item-bearing scenarios must qualify these
+  seams rather than relying on static role authorization alone.
+- **Experiment-control and viewer truth:** replay warmup, evaluation cadence, checkpoint
+  publication/retention, RNG isolation, resume boundaries and error propagation must match
+  declarations. The browser must identify waiting/baseline/loaded/stale/failed models and
+  actual evaluation evidence; a spent budget is not convergence.
+- **A genuinely different domain witness:** author one scoped task through the normal
+  compiler/BAC path, without privileged Python. Predeclare task success, attainable scripted
+  behavior, baselines, seeds, budgets and checkpoint-selection rule; render the exact
+  checkpoint that passed independent evaluation. Reconcile default scenario descriptions
+  and intended brains rather than treating their old names as distinct-world evidence.
+- **Close remaining authoring gaps (WS-4):** use an updated capability/consumer inventory,
+  not the old approximately-two-of-seven fraction. Canonical variables, static permissions,
+  custom writes and token configuration are delivered slices, while reward/lifecycle,
+  spatial edge semantics, curriculum and broader world authoring still require inspection.
+  A low-level class, parsed setting or rejected feature is not a completed authored capability.
+- **Dynamic epistemic propagation (PDR-0120):** shaped and unbuilt. Define observer/source
+  visibility, ownership, brightness/floors and world axes separately from delivered static
+  engine/agent roles. `hamlet-83a043a9b9` remains the broader privacy boundary; static
+  permission acceptance does not automatically schedule this extension.
+- **BAC Layers 1 and 3:** topology, personality, goals, panic/compliance, composable faculties
+  and think-loop graph remain unbuilt. Supported Q-network configuration and recurrent
+  BPTT are useful Layer-2 machinery, not a complete declarative mind.
 
-- **The epistemic-access unit — authorable permissions and enforced observation access.**
-  PDR-0120 remains shaped intent, not scheduled implementation. The canonical variable
-  declaration still has no `readable_by`/`writable_by`; lowering uses fixed engine/agent
-  policies. Checked registry access must cover convenience getters and item access, and
-  observation publication must apply the same declared policy with truthful presence/payload.
-  Lifetime, symbol registration and explicit fail-closed exposure are already delivered;
-  preserve them as regressions rather than implementing their old audit findings again.
-  Separate role permissions from observer/source visibility. Shared item arenas and current
-  independent-world batch semantics need an explicit observer contract before owner/spatial
-  privacy is promised. Design for the owner's declared-propagation proposal (brightness,
-  floors and other per-observer/source rules); a proposed first static slice can qualify
-  before dynamic gates, subject to a fresh scope ruling and acceptance plan.
-  · authority: `PDR-0120`; candidates: `hamlet-fc78bb49d3`, `hamlet-1a520475f4`,
-  `hamlet-d97b4d6b4a`, `hamlet-c78fbf32a3` · broader historical candidates require retriage
-  against current source · metric: declared-but-inert access surfaces.
+## Later — directional, no dates or implied authorization
 
-- **Close the "you must write Python" gaps — WS-4, the actual product work.** The assessment's
-  authorability ledger replaced the earlier guess (substrate topology as sole holdout) with a real
-  list, and it is longer than hoped: **Config-surface coverage is ~2 of 7, not 6 of 7.** VTC
-  action-writes have no YAML path at all; custom actions are structural no-ops; 3 of 4 effect
-  scopes are inert; curriculum stages are a Python literal capped at 6 meters.
-  · tracker: `hamlet-15050f280a` (WS-4), blocked by WS-1 and WS-3
-  · metric: input **Config-surface coverage** (~2 of 7 → 7 of 7)
-  · **narrowed by one item, `PDR-0035`:** *delegate substrate observation dims to the substrate
-  instance* (assessment line 227) is subsumed by WS-7's first knockdown and no longer waits on
-  WS-3 — the knockdown carries its own instrument. Exactly one item moves; every other
-  ledger item stays here and stays behind WS-3 (`PDR-0034` unchanged).
-  · **unit 4 LANDED (`PDR-0076`, `ebd16fce`, 2026-08-17): every compiled observation field
-  declares its `feature` from one closed vocabulary (`variable` + nine engine-published members;
-  `meter` fields name their meter), and nothing in `src/townlet/` outside the compiler's own emit
-  sites compares an observation field's name to a literal — the encoder is one loop and one
-  publisher table, the recurrent network finds its blocks by feature under any name, the demo has
-  one window helper.** `hamlet-39e1fe3c6d` closed. The discriminator lives on the DTO, not the
-  hash-bearing mirror, so the harness read the cut as invisible (16 `AGREE` + 4 DIV-006 unchanged)
-  and the register did not grow. Next candidates in this queue: the `exposed_to` hidden default in
-  the profile validators (unfiled), `hamlet-1ad6383186` (item layout), `hamlet-7cd887c9e5`
-  (reference pack rot).
-  · **unit 3 LANDED (`PDR-0075`, `8c5fa2c8`, 2026-08-17): every exposed global/agent VFS profile
-  variable is its own observation field, named after the variable, in its declared scope, carrying
-  the author's `semantic_type` (required, closed vocabulary, `bars` reserved, collisions a compile
-  error); the item slots are ONE compiler feature `obs_item_slots`; the runtime reads every field
-  by declared scope — the `obs_vfs` name branch is deleted.** `hamlet-f0ed709ecf` closed. Item
-  variables carry no `semantic_type` on purpose (a declaration that can reach nothing is removed,
-  `PDR-0066`); the item-layout question is `hamlet-1ad6383186`. Sibling primitive name-syncs
-  (`obs_grid_encoding`, `obs_temporal`, `obs_affordance_*`, `obs_effects`, now `obs_item_slots`)
-  are the same shape and the next candidate in this queue.
-  · **unit 2 LANDED (`PDR-0069`/`PDR-0070`, `fb791193`, 2026-08-17): presentation is declared
-  (`presentation.yaml`, observer-only), honest by default (declared bounds, no `%`/`$`), never inferred —
-  every live name-branch in server and frontend gone; `hamlet-0dd4ac24d9` closed.** Next in the queue:
-  `hamlet-f0ed709ecf` — but read `PDR-0068`'s trigger first: 26 commits sit ahead of `main`.
-  · **first two units under `PDR-0047` LANDED (`PDR-0066`, `a2f349d7`, 2026-08-16):** the
-  `semantic_type` vocabulary has one definition and the author's declaration reaches the compiled
-  field for `environment.yaml` variables; `interaction_type` is required from one vocabulary.
-  Follow-up filed inside this bet: `hamlet-f0ed709ecf` — split the `obs_vfs` block into
-  per-variable fields (vfs.md §8.1) so profile variables can declare their group and the
-  runtime's `obs_vfs` name branch dies. Next in the queue: `hamlet-0dd4ac24d9` (presentation
-  hardcoded by variable name).
-  · largest single win: populate `RuntimeAction.reads/writes` from config — the entire 11-mode
-  composition engine already exists and is tested; only the YAML door is missing
-  · note: `hamlet-030f2ce0aa` (EnvFactory) is *not* this bet, but its framing here is **corrected
-  by `PDR-0006`** — under a strangler, changeability *is* the enabling constraint, so seam-cutting
-  is strategic rather than incidental. Per `PDR-0006` §2b it is nonetheless cut **per knockdown
-  unit inside WS-7**, not as an up-front global gate, so it stays out of this bet.
-  · added `PDR-0009`: **per-level `architecture` is unauthorable** (`hamlet-0d0115383e`) — no pack
-  can express the documented MLP→LSTM progression. Sequenced *after* WS-1(b)/(c), because enabling
-  recurrent authoring before the recurrent training path is fixed would ship an option whose
-  observable behaviour is wrong. **Fork RESOLVED by `PDR-0027`** (owner, 2026-08-13): `brain.yaml`
-  becomes level-overridable the way `training.yaml` is, PLUS a lineage-legibility acceptance
-  criterion — a brain override forks the lineage, and the fork must be stated at load, never
-  discovered at runtime.
+- Model plus observation/action contract export into another engine or pipeline
+  (`hamlet-0cdb8a6d1a`); first-class world/brain bundles, explicit transfer versus exact resume.
+- Tech-demo suite and locked showcase experiments, preserving Townlet Town as a first-class
+  demonstration and the historical six-dimensional substrate witness (PDR-0003/0025/0026).
+  Distributable showcases and releases need their separate owner boundary.
+- Tick-level governance proof, exact continuation, run lineage and evidence custody.
+- Authoring workbench: templates, scaffolding, diagnostic navigation and live preview,
+  shaped for the intended researcher/prototyping audience rather than an invented user base.
+- Recording/replay: preserve intended capture, playback and export capability before any
+  deletion (`hamlet-16ae192d42`, PDR-0007); decide its supported/replacement path explicitly.
+- Murk as the intended CPU/RAM substrate below Townlet. Qualify state/action/observation,
+  reward/reset/identity and PyTorch boundary parity; CPU execution is deliberate. Migration
+  is not a prerequisite for proving the current narrow Townlet slice.
+- Wardline adoption as a real declared-boundary hygiene gate; external adoption readiness
+  after authoring evidence and documentation truth. No outward release is implied.
 
-- **Prove generality — substrate axis DONE, domain axis outstanding.** `PDR-0003` obligation B.
-  The **"Sims in six dimensions"** witness passed on 2026-08-11 (one file, ~6 lines, zero
-  `src/townlet/` changes; compiles, resets, 50 steps; action vocabulary auto-expands to
-  `DIM0_NEG…DIM5_POS`). See `metrics.md` → Trial 001. Still wanted: a **domain**-varying witness
-  sharing no vocabulary with Townlet Town. Existing non-Town packs are candidates of unverified
-  depth.
-  · tracker: not yet filed · metric: north-star **Zero-Python authoring rate (world)** (1 of 1)
-  · unblocks the 6-D demo's only caveat: TASK-009 ND-POMDP, folded into WS-4
+## Retained decision history
 
-- **Close the demo's privileged-Python paths** — enforce the dogfooding rule so Townlet Town is
-  authored through the same door as any user. Cheapest honest read on the central claim, and
-  measurable today. `PDR-0003` obligation A.
-  · tracker: not yet filed — scope from the assessment's authorability ledger
-  · metric: input **Demo dogfooding — privileged-Python count** (→ 0)
-
-- **Brain as Code, Layer 1 + Layer 3** — the behaviour contract (ethics, panic, personality) and
-  the think-loop execution graph. This is the half of the vision that is specified in the HLD and
-  not built; it is what makes the *mind* authorable rather than just tunable.
-  · tracker: `docs/tasks/TASK-005-BRAIN-AS-CODE.md` (spec, unfiled) · metric: input
-  **Config-surface coverage** extended to cognition
-  · known debt: `docs/bugs/JANK-08-population-structured-and-dueling-flags-unused-in-training-logic.md`
-  — declared brain flags unused by training logic (declared-but-
-  inert config is the worst failure mode for a declarative product)
-
-## Later (directional bets, no order, no dates)
-
-- **Model + interface-contract export** — a trained agent leaves HAMLET and runs in someone
-  else's engine or pipeline. Serves **the prototyping modeller** — game dev, simulation, and
-  abstract real-world modelling (`PDR-0024` **accepted with alteration** 2026-08-13; audience
-  widened by the owner beyond game devs; `vision.md` amended). Half of it already exists: the
-  "interface contract" is the observation/action schema and its hashes, which WS-1 has been
-  hardening. The other half — a standalone model, decoupled from the training stack — is designed
-  and unbuilt (`TASK-008`, *Planned* since 2025-11-05, needs re-specifying under `PDR-0012`;
-  `hamlet-0cdb8a6d1a`). Sequence after the oracle freeze: the contract must be stable before it
-  is handed to anyone.
-- **The tech-demo suite at release** — what *"one of several tech demos we'll provide at the
-  end"* means concretely (`PDR-0026`, owner-resolved). Obvious members already on the board:
-  Townlet Town with the LED contrast actually authored for the first time (`hamlet-e979f2ba37`),
-  the "Sims in six dimensions" substrate witness (Trial 001, passed), and the still-wanted
-  domain-varying witness. Townlet Town remains first-class among them (`PDR-0003` unchanged).
-  Intent only; anything distributable is outward-facing and gates to the owner.
-- **The "locked" showcase experiment** — a distributable, frozen artefact for sharing a design:
-  *"look at this cool thing I designed."* Distinct from the oracle freeze (internal reference) and
-  from model export (a model for someone else's engine). This is the one place prettified
-  presentation is appropriate — currency rendered as currency — because the audience is looking at
-  a designed artefact, not learning what the substrate is (`PDR-0025`). Intent only; building or
-  distributing one is outward-facing and gates to the owner.
-  **2026-08-17: the declared surface it needs now EXISTS** — `presentation.yaml` (`PDR-0069`), currency
-  formatting is one `format: {kind: currency, …}` away for a showcase pack; the curriculum packs
-  ship none. Building the pack itself is unchanged: outward-facing, owner's call.
-- **BAC as a first-class compiled artefact** — brain and universe through one standard
-  experimental compiler, symmetric hashing and provenance, so an experiment is a single
-  content-addressed pair.
-- **Governance axis of the HLD success criteria** — tick-level proof, checkpoint replay, lineage
-  rules, chain-of-custody. Currently the least-served of the three axes.
-- **The authoring surface itself** — whatever makes writing a universe feel like writing a game
-  rather than editing YAML by hand (templates, scaffolding, validation feedback, live preview).
-  Directional only; unshaped. This is where "writing a game as experience" stops being an
-  architecture claim and becomes a user experience.
-- **Re-enable episode recording and replay** — deferred, not rejected. The implementation is being
-  deleted in WS-2 (unreachable at three points, 9 months stale), but the *capability* was real and
-  advertised: episode capture, real-time replay, export for teaching and demo material. It serves
-  `PDR-0003`'s tech-demo obligation — showing what agents actually do is how the demo makes its
-  "powerful example" claim. Intent captured before deletion by `hamlet-16ae192d42`; rebuild against
-  the compiled-universe contract rather than restoring. `PDR-0007` reading: an option not yet
-  enabled.
-  · tracker: `hamlet-16ae192d42` (capture) · metric: none yet
-
-- **Adopt wardline as a hygiene activity** — declare real trust boundaries in `src/townlet/`
-  so a taint gate can actually fail, then re-instate the agent instruction. Owner-stated
-  intent, 2026-08-14: *"we'll adopt wardline as a hygiene activity later on."* The mandated
-  gate was **deleted** from `CLAUDE.md`/`AGENTS.md` this session (`PDR-0038`) because it was
-  unfalsifiable — 0 boundaries across 1555 functions, no decorators, not even a dependency, so
-  no code change could make it fail. Deferred capability under `PDR-0007`, not a rejection: the
-  `wardline-gate` skill and the `weft.toml` references are deliberately left in place because
-  they are what adoption will need. Intent only, unshaped.
-  · tracker: `hamlet-f894ade20a` (closed as deleted-with-intent-captured) · metric: guardrail
-  **Gates green** — a fifth gate becomes real only when `--fail-on-inert` can pass
-
-- **External adoption readiness** — the secondary audience (other RL researchers / OSS users)
-  becomes real only after the authoring claim is measured and the docs are true. Deliberately
-  last; note that anything user-facing here crosses the authority boundary and needs owner
-  sign-off.
+Earlier detailed unit histories remain in their dated PDRs and metrics. Presentation/name-blind
+observation units (PDR-0066/0069/0075/0076), per-level brain/lineage ruling (PDR-0027), token
+milestones (PDR-0132 through PDR-0144), fifth main merge (PDR-0146), A/B (PDR-0149/0151)
+and static access (PDR-0153) are accepted history, not current dispatch instructions. The
+retired authoring-trial corpus publishes no revived success rate (PDR-0111/0142).

@@ -1,123 +1,59 @@
-# Current State — HAMLET / Townlet · Checkpoint: 2026-10-01 · declaration-store A+B accepted
+# Current state — Townlet · 2026-10-01
 
-## Latest delivered checkpoint
+## Delivered and verified
 
-Cut A is accepted by [PDR-0149](decisions/0149-owner-extends-cut-a-acceptance-to-october-1-and-cut-a-is-accepted.md).
-Cut B is accepted at published implementation `22924d0a` by
-[PDR-0151](decisions/0151-cut-b-accepted-against-prd-0003.md): canonical variable semantics,
-complete symbols and typed token scope. Local suite: 4,055 passed / 18 skipped / 84% coverage;
-hosted implementation suite: 4,054 passed / 19 skipped / 84% coverage. All three implementation-head
-hosted workflows passed. Direct-parent and frozen CPU comparisons qualified with exact attribution.
-Local `project-recovery-4` includes B; [draft PR #41](https://github.com/foundryside-dev/hamlet/pull/41)
-stacks on Cut A #40. Parent/main were not pushed. Final acceptance-record head verification passed at published `bdf64fad`: Tests, Lint and Config Validation completed
-successfully; acceptance issue `hamlet-61e3de957f` is closed. This remains a draft PR,
-not a GitHub main/parent merge.
+Declaration-store **Cut A**, canonical-variable **Cut B** and **static epistemic access**
+are accepted and consolidated on local `main` at **`bb88beb84a8dfdb6e2851c16140b7d65054efb14`**. All 20 pre-consolidation
+local branch tips are contained; no additional committed branch work was found.
+[PDR-0154](decisions/0154-main-consolidation-and-product-checkpoint.md) records this checkpoint and its boundaries.
 
-The next **shaped, uncommitted** package is epistemic access (PDR-0120). Rebase its scope against
-the delivered lifetime, symbol and fail-closed exposure contracts; those are regression gates.
-Remaining seams are authorable permissions, consistent checked runtime access and observation
-publication. Role permission and observer/source visibility need distinct contracts before
-ownership/spatial privacy is promised. A suggested first static slice precedes dynamic propagation;
-[PRD-0004](prds/0004-static-epistemic-access.md) and the
-[reviewed plan](../plans/2026-10-01-static-epistemic-access.md) now propose that slice
-under [PDR-0152](decisions/0152-static-epistemic-access-planning-boundary.md).
-The owner authorized planning only. Implementation/acceptance tasks are open;
-no static-access behavior is implemented by this checkpoint.
+| Package | Accepted contract | Qualification |
+| --- | --- | --- |
+| A | Content discovery, scoped declaration merge, collision/provenance diagnostics, single authored clock authority | [PDR-0149](decisions/0149-owner-extends-cut-a-acceptance-to-october-1-and-cut-a-is-accepted.md); exact implementation `75383d18` hosted gates accepted |
+| B | Canonical variables, explicit lifetime/default/expression semantics, complete supported symbols and typed token scope | [PDR-0151](decisions/0151-cut-b-accepted-against-prd-0003.md); published implementation `22924d0a` hosted gates accepted |
+| Static access | Required finite engine/agent read policies, engine/empty writers, independent exposure, checked ordinary/item access, immutable authority and policy-bearing cache/checkpoint identity | [PDR-0153](decisions/0153-static-epistemic-access-accepted-against-prd-0004.md); qualified execution `b70fda10` |
 
-The recovery counts and main/nightly claims below are the historical **2026-09-02** reading.
-They were not re-audited by Cut B; do not treat them as current fleet or workstream measurements.
+The static source passed **4,250 tests / 18 skips / 85% coverage**, all local lint/fleet gates,
+31-case direct-parent comparison and ten frozen CPU cells. This is retained source qualification,
+not a new full-suite run at the local merge. **201 postmerge checks passed** against
+actual main-worktree imports. [Main integration receipt](evidence/main-consolidation/local-integration.json)
+records identities, commands and preservation checks. Exact-head GitHub publication/checks are
+recorded separately in delivery issue **`hamlet-dd9a03f787`** and its consolidation PR; this
+committed snapshot precedes that publication. Local merge, push, hosted success and GitHub merge
+are separate gates. No release, tag or deployment is part of this task.
 
-## Historical recovery reading — 2026-09-02
+Three historical access defects are closed with bounded source/runtime evidence:
+`hamlet-fc78bb49d3`, `hamlet-1a520475f4`, `hamlet-c78fbf32a3`. Owner/per-observer privacy
+`hamlet-83a043a9b9` remains open. Unknown historical roles are refused, not implemented.
 
-## The bets right now
+## Product judgment
 
-**1. Strangler rewrite behind the compiled-universe contract** (`PDR-0006`) remains the Now bet.
+The supported declaration → compiled state → checked runtime contract is stronger. The product
+still has no freshly qualified multi-scenario compile → render → converge milestone. Static
+policy tests do not establish trustworthy episode outcomes, full BAC cognition, browser behavior,
+Murk integration, item ownership/locality, effect reset or portable model export.
 
-- **`main` at `ea3648db` is fully green** (Lint, Config Validation, Tests 33m36s; nightly ✅
-  2026-09-01). Active branch **`project-recovery-4`**; at this checkpoint it carries the two
-  workspace commits, `a55b5a3f` (settings tracked, `gh pr merge` allowed) and `a8b66984`
-  (`loomweave.yaml` untracked), plus this checkpoint. Nothing under `src/townlet/` has changed
-  since the merge.
-- WS-1/WS-7 closed; WS-0/2/3/4/5/6 open; oracle still required. Critical path unchanged: WS-6
-  `hamlet-5e39fcccb0` → WS-2 `hamlet-337b9e80fb` → WS-3 `hamlet-1f89714685` → WS-4
-  `hamlet-15050f280a`. Docs rewrite `hamlet-7a52a63e0b` stays gated on WS-4 (`PDR-0125`).
-- **Next unit: the declaration-store compiler unit (`PDR-0117`), scope RULED (`PDR-0147`,
-  owner-confirmed): one unit, two checkpointed cuts.** Cut A *files are transport* — discovery,
-  merge by declared id, loud collision refusal, canonical order, per-declaration file:line,
-  "required file" → "required declaration"; bar: every compiled hash byte-identical across every
-  shipped level; `items_smoke` strays refused by name (`hamlet-obs-982755441c`); `period`/
-  `day_length` collapsed to one declaration. Cut B *one variable declaration semantics* —
-  `environment.yaml` / `vfs_profiles.yaml` / `variables_reference.yaml` become one; every
-  declared variable enters the symbol table (`hamlet-33e520cebd`); `filler_ref` → typed `scope`;
-  expected to move `variable_schema_hash`, lands only with a harness run and a `DIV-0xx` entry.
-  Not in either cut: orchestrator tiers, sub-compiler graph engine, incremental compilation,
-  `readable_by`/`writable_by` authoring (`PDR-0120` stays second in Next). **Implementation and
-  acceptance issues are not yet filed** — that is DISPATCH, per `PDR-0117`.
+Historical M4 remains four passing token architecture/aggregation cells at training `9d4e942f`,
+one training seed and its fixed evaluation/budget protocol. It is not current-main multi-seed
+convergence evidence. [Metrics](metrics.md) keeps those readings separate.
 
-**2. Recovery progress — read at source 2026-09-02** (`assessments/2026-09-02-recovery-progress-reading.md`).
-Midpoint by the program's own yardsticks: 2 of 8 workstreams closed, the critical path unstarted,
-WS-4 at 11 of 54 children closed, bet exit (`PDR-0058`) 0 of 3. Config-surface coverage re-read
-for the first time since 2026-08-17: **2 closed / 3 partly wired / 2 not started** (DAC and VTC
-writes closed-but-unproven; VFS, effects, items partial; substrate topology authoring and
-curriculum untouched). BAC 1 of 3 layers; export path absent. The `PDR-0147` unit is the first
-that closes a whole surface rather than widening one.
+## Recovery exit and next step
 
-**3. Fifteen P1 bugs in `triage`, none inside a unit.** `hamlet-d6fc84d147` (dead-agent step
-counter, needs a register entry, `PDR-0140`) and `hamlet-4b931faaf4` (held items invisible to the
-`item` token type, `layout_hash`-moving) still owe a divergence-register triage before any engine
-change. The rest are WS-4 authorability gaps; `hamlet-fc78bb49d3`, `hamlet-83a043a9b9`,
-`hamlet-33e520cebd` belong to the epistemic-access or declaration-store units.
-**Tracker truth:** `hamlet-3381043d2e` (action writes) carries a compiler claim false since
-`7cbfbff8`; annotated, reclassified WIRED-UNPROVEN, left in triage. A source pass over the 35
-WS-4 triage items is owed before WS-6 assigns causes.
+Recovery remains open. **PDR-0058's register-growth trigger has fired:** A/B/static added
+DIV-013/014/015 without terminalizing existing divergences. Reopen the oracle-retirement exit
+framing for review; do not erase evidence, re-freeze the oracle or call registered differences
+terminal because qualification passes. The existing exit is not met, and a main merge does not
+meet it. [Checkpoint assessment](assessments/2026-10-01-main-product-checkpoint.md) records this
+reading. No new exit definition or deadline is invented here.
 
-**4. Documentation truth** (`PDR-0125`): README stamped at `1eb347f7` (`PDR-0145`). Pending
-observations: `hamlet-obs-982755441c` (stray files, discharged by cut A's refusal test) and
-`hamlet-obs-b959ce55c0` (dead durability rows, read at cut A's capacity review); both expire
-2026-09-16.
+The recommended next package is **truthful episode lanes**, starting from
+`hamlet-d6fc84d147`: reproduce current main, then plan a bounded lifecycle/accounting contract
+before another learning campaign. Proposed fixture: deaths at steps 2/5 give survival `[2,5]`,
+seven live transitions, five vector ticks, one terminal/finalization each, and no post-death
+replay/RND/annealing/bonus. Adjacent learner defects require reproduction before being treated
+as confirmed scope. This recommendation is not authorization to implement it.
 
-**5. Weft tooling** (`PDR-0139`): loomweave index fresh at `a8b66984` (8,166 entities). Wardline
-still uninstalled (server configured, executable absent).
-
-## What this checkpoint did
-
-- Committed `PDR-0147` (written and owner-confirmed at the resume — *"One unit, two cuts"* — but
-  left untracked on disk); the brief now reads the scope as ruled, not pending.
-- Took the owner-requested recovery progress reading against tracker and source; recorded it as
-  an assessment and refreshed `metrics.md`'s config-surface row, unread since 2026-08-17.
-- Tracker: one comment (`hamlet-3381043d2e`, stale compiler claim). No issues opened or closed;
-  no new PDR — the reading is not a decision.
-
-## Standing gates
-
-1. `PDR-0127` gate set: `main@ea3648db` all green; no local re-run (docs-only commits since the
-   3,846-pass reading at `a07b889b`).
-2. Dependabot #33 (torch) and #34 (pytest) remain open since 2026-08-15.
-3. No release, tag, announcement, 1.0 declaration or external coordination is authorized here.
-
-## Open questions / blocked on owner
-
-- **Nothing escalated.** The reading, the metrics refresh, the tracker comment and this commit
-  are inside the grant. `vision.md` untouched.
-
-## Decision checks
-
-- `PDR-0147` trigger 1 is now the live one: if cut A cannot land hash-identical, stop and record
-  why before folding movement into cut B.
-- `PDR-0143`/`0144` reversal trigger (L2 four-cell floor on a post-unit-5 commit) is **armed and
-  unread** — no harness run since unit 5.
-- `PDR-0058` trigger 2 (register grows two checkpoints without an entry going terminal): the
-  register has grown once since `DIV-011` (`DIV-012`, built) with none terminal; cut B will add
-  another. Watch it — a second growth without a terminal entry fires the trigger.
-- `PDR-0145` trigger 3: a second "fix at next touch" observation surviving a touch converts
-  file-triggered observations into filed issues.
-
-## Next session starts here
-
-1. `/own-product`: confirm the grant; index is fresh, `main` is green — nothing to read there.
-2. **DISPATCH cut A of the declaration-store unit** (`PDR-0147`): `/write-prd` against the cut-A
-   bar (hash-identical across every shipped level, stray-file refusal, single-source
-   `period`/`day_length`, file:line on every refusal) → plan → file implementation and
-   acceptance issues under `hamlet-15050f280a` → execute in a worktree, the `PDR-0121` shape.
-3. Before cut B or any engine change: triage `hamlet-4b931faaf4` and `hamlet-d6fc84d147` into
-   the divergence register.
+Next session: read the completed publication receipt, adjudicate the fired exit trigger,
+then source-reproduce and scope the episode-lane PRD. Keep effects reset and item fidelity as
+separate packages unless the chosen scenario explicitly depends on them. The frozen oracle,
+raw evidence and two unrelated dirty skill files remain preserved.

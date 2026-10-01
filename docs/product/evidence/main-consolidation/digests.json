@@ -1,0 +1,20 @@
+{
+  "scope": "local integration and review payloads; publication recorded separately",
+  "sha256": {
+    "branch-inventory.json": "75faa8bd801b56ff3c24ce178edc6c0d8a422bea514797e6de7b9e6714a62583",
+    "custody-review.json": "7391dbe22521810e7164f7eaa65e0ab90f99add0e22c9480b52ee757fb6711cc",
+    "custody-review.md": "adcf88b1e0c6960c3bc7caa42d4d3668ea0fde6ab0c31de4e9b25a753b8e5b82",
+    "historical-static-bugs-review.md": "f681a46a5979e40782bf00575b5a2ed3e33020aca571e59d2808c04dc79ad9e2",
+    "local-gates.json": "3f7a5d675b1c309ed65d39b9d9cf731974a1d8754ef8abc7f5383bd2ea6c0b21",
+    "local-integration.json": "23fbf723402b7e4c477f31f9e73aa8f37711042bcdc5579889cbc599304c4591",
+    "logs/black.log": "ae293d3c6d0cf682aa30e3ad5fa40b5e69d1dc76414f84b47b94f1f1be7f6777",
+    "logs/fleet.log": "275258d083847f846c8904a1a62a37131976acf72000f5f8c42a643ffb1938d9",
+    "logs/historical-static-bugs.log": "0affebd00f2f952db6feb09446fbd75059d4546dd9dc562fe2d35e7195441246",
+    "logs/mypy.log": "585737b285c256d2b87c2fc41f2aa0cc74f0d139b8a4585725dab0fd38b55158",
+    "logs/no-defaults.log": "ac9715d0815517df0d2aa7aae44b573ca6bc15c762cf356c85da6eac421e0c0c",
+    "logs/postmerge-focused.log": "4c38d806f69987d1802c97113e68ae507a3e3e3173638eb1d4dc4daf71cf6a95",
+    "logs/ruff.log": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+    "readme-adversarial-review.md": "ae544fe97ba27ffef000a671407161454369dbb85872da01b41411701afcda6c",
+    "readme-source-review.md": "cbac5abb16244ae97334e4894e7ef1def0513f788b866e55c5a0010492ce9d38"
+  }
+}

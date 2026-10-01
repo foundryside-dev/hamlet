@@ -1,0 +1,448 @@
+{
+  "all_local_branch_tips_are_exact_ancestors_of_recovery": true,
+  "audit_timestamp_utc": "2026-10-01T01:58:15.171296+00:00",
+  "branches": [
+    {
+      "ancestor_of_main": false,
+      "ancestor_of_recovery": true,
+      "branch": "feat/declaration-store-cut-a",
+      "cherry_against_main_counts": {
+        "+": 192
+      },
+      "cherry_against_recovery": [],
+      "classification": "completed_or_historical_work_exact_ancestor_of_recovery",
+      "commits_outside_main": 196,
+      "commits_outside_recovery": 0,
+      "committed_date": "2026-10-01T04:51:58+10:00",
+      "sha": "599cad15706ac8824c3f8e38276da6440c4816a3",
+      "subject": "docs(compiler): extend cut A acceptance to October 1",
+      "tree": "43f0ae3ceecf27c7b997a766c7622520e0aed811"
+    },
+    {
+      "ancestor_of_main": false,
+      "ancestor_of_recovery": true,
+      "branch": "feat/declaration-store-cut-b",
+      "cherry_against_main_counts": {
+        "+": 203
+      },
+      "cherry_against_recovery": [],
+      "classification": "completed_or_historical_work_exact_ancestor_of_recovery",
+      "commits_outside_main": 207,
+      "commits_outside_recovery": 0,
+      "committed_date": "2026-10-01T08:18:35+10:00",
+      "sha": "bdf64fadc69739c3e204845f9797d08500f46d46",
+      "subject": "docs(compiler): accept cut B at hosted checkpoint",
+      "tree": "27192d1c47cd1e1d229625f2f09bed4d36b6b158"
+    },
+    {
+      "ancestor_of_main": false,
+      "ancestor_of_recovery": true,
+      "branch": "feat/static-epistemic-access",
+      "cherry_against_main_counts": {
+        "+": 221
+      },
+      "cherry_against_recovery": [],
+      "classification": "completed_or_historical_work_exact_ancestor_of_recovery",
+      "commits_outside_main": 225,
+      "commits_outside_recovery": 0,
+      "committed_date": "2026-10-01T11:34:05+10:00",
+      "sha": "2695962be170ec3705e6e7303d5a6c1c8067fa12",
+      "subject": "docs(vfs): accept static epistemic access qualification",
+      "tree": "ff55980dad26ac694c2aeafa349e74bb7f24cb35"
+    },
+    {
+      "ancestor_of_main": true,
+      "ancestor_of_recovery": true,
+      "branch": "main",
+      "cherry_against_main_counts": {},
+      "cherry_against_recovery": [],
+      "classification": "already_in_main",
+      "commits_outside_main": 0,
+      "commits_outside_recovery": 0,
+      "committed_date": "2026-08-20T04:48:31+10:00",
+      "sha": "04062872a57493769c5ca452ee764a6fa877954e",
+      "subject": "Recovery: third merge \u2014 blind re-run instrument, protocol Appendices A.6.1/B, and gate 2 (PR #36)",
+      "tree": "ea10be91a19c2c57f88c9764d78f8bba2d198e06"
+    },
+    {
+      "ancestor_of_main": false,
+      "ancestor_of_recovery": true,
+      "branch": "plan/epistemic-access",
+      "cherry_against_main_counts": {
+        "+": 205
+      },
+      "cherry_against_recovery": [],
+      "classification": "completed_or_historical_work_exact_ancestor_of_recovery",
+      "commits_outside_main": 209,
+      "commits_outside_recovery": 0,
+      "committed_date": "2026-10-01T09:03:09+10:00",
+      "sha": "bd34b5381050509af58e3e5c9cb2c2e7321ec801",
+      "subject": "docs(vfs): retain epistemic plan review evidence",
+      "tree": "d33ccf9dd6e14d3ab627156b9219825b7ffdf5b1"
+    },
+    {
+      "ancestor_of_main": true,
+      "ancestor_of_recovery": true,
+      "branch": "project-recovery",
+      "cherry_against_main_counts": {},
+      "cherry_against_recovery": [],
+      "classification": "already_in_main",
+      "commits_outside_main": 0,
+      "commits_outside_recovery": 0,
+      "committed_date": "2026-08-15T13:44:17+10:00",
+      "sha": "33bfff5124ee81ea7539170478d5d71b0a4e8eb2",
+      "subject": "chore: satisfy both merge conditions \u2014 nightly restored, README re-swept at the merge commit, CI triggers globbed",
+      "tree": "1474e0cdef75e90921325eeccaea1e21091768b0"
+    },
+    {
+      "ancestor_of_main": false,
+      "ancestor_of_recovery": true,
+      "branch": "project-recovery-2",
+      "cherry_against_main_counts": {
+        "+": 144
+      },
+      "cherry_against_recovery": [],
+      "classification": "completed_or_historical_work_exact_ancestor_of_recovery",
+      "commits_outside_main": 146,
+      "commits_outside_recovery": 0,
+      "committed_date": "2026-08-29T18:57:04+10:00",
+      "sha": "1b4020aaf2d46eab847cd13cfeca487db2ffb9f4",
+      "subject": "Merge main (04062872, PR #36's merge commit) into project-recovery-2 \u2014 content-empty; required by the Protect Main ruleset's up-to-date rule before PR #37 can land",
+      "tree": "dfc392a3ec565173b6aed6983ab2fac19260c909"
+    },
+    {
+      "ancestor_of_main": false,
+      "ancestor_of_recovery": true,
+      "branch": "project-recovery-3",
+      "cherry_against_main_counts": {
+        "+": 179
+      },
+      "cherry_against_recovery": [],
+      "classification": "completed_or_historical_work_exact_ancestor_of_recovery",
+      "commits_outside_main": 182,
+      "commits_outside_recovery": 0,
+      "committed_date": "2026-09-02T15:26:56+10:00",
+      "sha": "4e23b3eadabb2a493183705008b8b8bdb4584131",
+      "subject": "docs(readme): PDR-0039 gate 2 for the fifth merge \u2014 re-verify README at 1eb347f7 by method; correct CLAUDE.md's dead CI and CuesCompiler claims (PDR-0101)",
+      "tree": "e6569df95551bdc14d5ab8c73e5da015ee0372b6"
+    },
+    {
+      "ancestor_of_main": false,
+      "ancestor_of_recovery": true,
+      "branch": "project-recovery-4",
+      "cherry_against_main_counts": {
+        "+": 222
+      },
+      "cherry_against_recovery": [],
+      "classification": "integration_target_contains_all_local_branch_tips",
+      "commits_outside_main": 227,
+      "commits_outside_recovery": 0,
+      "committed_date": "2026-10-01T11:36:56+10:00",
+      "sha": "ea9fc5fafe451cd59e7231ccef06d221e73ff99d",
+      "subject": "docs(vfs): record verified local integration",
+      "tree": "81c941c59a96cf96d95a6d62858c1551b079262a"
+    },
+    {
+      "ancestor_of_main": false,
+      "ancestor_of_recovery": true,
+      "branch": "worktree-agent-a6d315f5cbb048e3e",
+      "cherry_against_main_counts": {
+        "+": 68
+      },
+      "cherry_against_recovery": [],
+      "classification": "historical_agent_work_exact_ancestor_of_recovery",
+      "commits_outside_main": 68,
+      "commits_outside_recovery": 0,
+      "committed_date": "2026-08-24T13:19:12+10:00",
+      "sha": "1b0e9f6858c06c22541f6057b29a12e4751df1a1",
+      "subject": "docs: compiler architecture assessment \u2014 two eras verified, declaration-store target shape (PDR-0117 alignment)",
+      "tree": "21c69dd5bedfc40568174cf70a68876b886824fb"
+    },
+    {
+      "ancestor_of_main": true,
+      "ancestor_of_recovery": true,
+      "branch": "worktree-wf_5eb6ee94-95a-48",
+      "cherry_against_main_counts": {},
+      "cherry_against_recovery": [],
+      "classification": "ancient_workflow_ref_already_in_main",
+      "commits_outside_main": 0,
+      "commits_outside_recovery": 0,
+      "committed_date": "2025-11-28T17:04:21+11:00",
+      "sha": "f0a9ae8ab6512e99c9ebf0a52db83af4f85473fd",
+      "subject": "Merge pull request #31 from tachyon-beep/reward-tensor-wiring",
+      "tree": "cf10d6598a8e41582f985efd98b90c1e6ac25407"
+    },
+    {
+      "ancestor_of_main": true,
+      "ancestor_of_recovery": true,
+      "branch": "worktree-wf_5eb6ee94-95a-49",
+      "cherry_against_main_counts": {},
+      "cherry_against_recovery": [],
+      "classification": "ancient_workflow_ref_already_in_main",
+      "commits_outside_main": 0,
+      "commits_outside_recovery": 0,
+      "committed_date": "2025-11-28T17:04:21+11:00",
+      "sha": "f0a9ae8ab6512e99c9ebf0a52db83af4f85473fd",
+      "subject": "Merge pull request #31 from tachyon-beep/reward-tensor-wiring",
+      "tree": "cf10d6598a8e41582f985efd98b90c1e6ac25407"
+    },
+    {
+      "ancestor_of_main": true,
+      "ancestor_of_recovery": true,
+      "branch": "worktree-wf_5eb6ee94-95a-5",
+      "cherry_against_main_counts": {},
+      "cherry_against_recovery": [],
+      "classification": "ancient_workflow_ref_already_in_main",
+      "commits_outside_main": 0,
+      "commits_outside_recovery": 0,
+      "committed_date": "2026-08-14T11:45:31+10:00",
+      "sha": "380904fa1c88416d091d8ee12f7a34d53067e0a7",
+      "subject": "product: checkpoint \u2014 escalation queue emptied, README shipped branch-scoped, CI found dead; PDR-0038, PDR-0039",
+      "tree": "727203011f2c03dd1b675d9d64cbede904b416e6"
+    },
+    {
+      "ancestor_of_main": true,
+      "ancestor_of_recovery": true,
+      "branch": "worktree-wf_5eb6ee94-95a-50",
+      "cherry_against_main_counts": {},
+      "cherry_against_recovery": [],
+      "classification": "ancient_workflow_ref_already_in_main",
+      "commits_outside_main": 0,
+      "commits_outside_recovery": 0,
+      "committed_date": "2025-11-28T17:04:21+11:00",
+      "sha": "f0a9ae8ab6512e99c9ebf0a52db83af4f85473fd",
+      "subject": "Merge pull request #31 from tachyon-beep/reward-tensor-wiring",
+      "tree": "cf10d6598a8e41582f985efd98b90c1e6ac25407"
+    },
+    {
+      "ancestor_of_main": true,
+      "ancestor_of_recovery": true,
+      "branch": "worktree-wf_5eb6ee94-95a-51",
+      "cherry_against_main_counts": {},
+      "cherry_against_recovery": [],
+      "classification": "ancient_workflow_ref_already_in_main",
+      "commits_outside_main": 0,
+      "commits_outside_recovery": 0,
+      "committed_date": "2025-11-28T17:04:21+11:00",
+      "sha": "f0a9ae8ab6512e99c9ebf0a52db83af4f85473fd",
+      "subject": "Merge pull request #31 from tachyon-beep/reward-tensor-wiring",
+      "tree": "cf10d6598a8e41582f985efd98b90c1e6ac25407"
+    },
+    {
+      "ancestor_of_main": true,
+      "ancestor_of_recovery": true,
+      "branch": "worktree-wf_5eb6ee94-95a-52",
+      "cherry_against_main_counts": {},
+      "cherry_against_recovery": [],
+      "classification": "ancient_workflow_ref_already_in_main",
+      "commits_outside_main": 0,
+      "commits_outside_recovery": 0,
+      "committed_date": "2025-11-28T17:04:21+11:00",
+      "sha": "f0a9ae8ab6512e99c9ebf0a52db83af4f85473fd",
+      "subject": "Merge pull request #31 from tachyon-beep/reward-tensor-wiring",
+      "tree": "cf10d6598a8e41582f985efd98b90c1e6ac25407"
+    },
+    {
+      "ancestor_of_main": true,
+      "ancestor_of_recovery": true,
+      "branch": "worktree-wf_5eb6ee94-95a-54",
+      "cherry_against_main_counts": {},
+      "cherry_against_recovery": [],
+      "classification": "ancient_workflow_ref_already_in_main",
+      "commits_outside_main": 0,
+      "commits_outside_recovery": 0,
+      "committed_date": "2025-11-28T17:04:21+11:00",
+      "sha": "f0a9ae8ab6512e99c9ebf0a52db83af4f85473fd",
+      "subject": "Merge pull request #31 from tachyon-beep/reward-tensor-wiring",
+      "tree": "cf10d6598a8e41582f985efd98b90c1e6ac25407"
+    },
+    {
+      "ancestor_of_main": true,
+      "ancestor_of_recovery": true,
+      "branch": "worktree-wf_5eb6ee94-95a-55",
+      "cherry_against_main_counts": {},
+      "cherry_against_recovery": [],
+      "classification": "ancient_workflow_ref_already_in_main",
+      "commits_outside_main": 0,
+      "commits_outside_recovery": 0,
+      "committed_date": "2025-11-28T17:04:21+11:00",
+      "sha": "f0a9ae8ab6512e99c9ebf0a52db83af4f85473fd",
+      "subject": "Merge pull request #31 from tachyon-beep/reward-tensor-wiring",
+      "tree": "cf10d6598a8e41582f985efd98b90c1e6ac25407"
+    },
+    {
+      "ancestor_of_main": true,
+      "ancestor_of_recovery": true,
+      "branch": "worktree-wf_5eb6ee94-95a-56",
+      "cherry_against_main_counts": {},
+      "cherry_against_recovery": [],
+      "classification": "ancient_workflow_ref_already_in_main",
+      "commits_outside_main": 0,
+      "commits_outside_recovery": 0,
+      "committed_date": "2025-11-28T17:04:21+11:00",
+      "sha": "f0a9ae8ab6512e99c9ebf0a52db83af4f85473fd",
+      "subject": "Merge pull request #31 from tachyon-beep/reward-tensor-wiring",
+      "tree": "cf10d6598a8e41582f985efd98b90c1e6ac25407"
+    },
+    {
+      "ancestor_of_main": true,
+      "ancestor_of_recovery": true,
+      "branch": "worktree-wf_5eb6ee94-95a-57",
+      "cherry_against_main_counts": {},
+      "cherry_against_recovery": [],
+      "classification": "ancient_workflow_ref_already_in_main",
+      "commits_outside_main": 0,
+      "commits_outside_recovery": 0,
+      "committed_date": "2025-11-28T17:04:21+11:00",
+      "sha": "f0a9ae8ab6512e99c9ebf0a52db83af4f85473fd",
+      "subject": "Merge pull request #31 from tachyon-beep/reward-tensor-wiring",
+      "tree": "cf10d6598a8e41582f985efd98b90c1e6ac25407"
+    }
+  ],
+  "cached_origin_main": {
+    "ancestor_of_recovery": true,
+    "commits_ahead_of_local_main": 183,
+    "freshness": "local cached remote tracking ref only; no fetch performed",
+    "sha": "ea3648dbbd184e992d9c57b609c908f1bcb9055c"
+  },
+  "completed_delivery_tips_in_recovery": {
+    "feat/declaration-store-cut-a": "599cad15706ac8824c3f8e38276da6440c4816a3",
+    "feat/declaration-store-cut-b": "bdf64fadc69739c3e204845f9797d08500f46d46",
+    "feat/static-epistemic-access": "2695962be170ec3705e6e7303d5a6c1c8067fa12",
+    "plan/epistemic-access": "bd34b5381050509af58e3e5c9cb2c2e7321ec801"
+  },
+  "integration_advice": "Integrating project-recovery-4@ea9fc5fa includes Cut A, Cut B, static access planning, qualified static access implementation and local integration receipt, along with every older local branch tip. No additional feature-branch merge is required. Preserve frozen/raw-evidence worktrees and unrelated dirty files; branch refs and prunable registrations need no deletion. Main is an exact ancestor, so content integration can be lossless; root owns authorized merge and checkpoint.",
+  "main_is_ancestor_of_recovery": true,
+  "main_sha": "04062872a57493769c5ca452ee764a6fa877954e",
+  "recovery_commits_not_in_main": 227,
+  "recovery_sha": "ea9fc5fafe451cd59e7231ccef06d221e73ff99d",
+  "root": "/home/john/hamlet",
+  "scope": "read_only_all_local_branch_refs_and_worktree_registrations; no remote fetch; no merge/checkout/prune/delete",
+  "unique_local_branch_work_outside_recovery": [],
+  "worktrees": [
+    {
+      "HEAD": "ea9fc5fafe451cd59e7231ccef06d221e73ff99d",
+      "ancestor_of_main": false,
+      "ancestor_of_recovery": true,
+      "branch": "refs/heads/project-recovery-4",
+      "commits_outside_recovery": 0,
+      "custody": "preserve_existing_worktree_and_dirty_or_ignored_payloads",
+      "dirty_file_sha256": {
+        ".agents/skills/filigree-workflow/references/error-codes.md": "27b0487e302939f67d6e1e2a4e1b66b531904944e9bf41b88e8c125e2ec0846a",
+        ".claude/skills/filigree-workflow/references/error-codes.md": "27b0487e302939f67d6e1e2a4e1b66b531904944e9bf41b88e8c125e2ec0846a"
+      },
+      "path_exists": true,
+      "status_porcelain": [
+        " M .agents/skills/filigree-workflow/references/error-codes.md",
+        " M .claude/skills/filigree-workflow/references/error-codes.md"
+      ],
+      "worktree": "/home/john/hamlet"
+    },
+    {
+      "HEAD": "0e875d7ae42aa3d90baac945a882223cb3ace5b8",
+      "ancestor_of_main": true,
+      "ancestor_of_recovery": true,
+      "commits_outside_recovery": 0,
+      "custody": "preserve_frozen_source_worktree_do_not_modify",
+      "detached": "",
+      "dirty_file_sha256": {},
+      "path_exists": true,
+      "status_porcelain": [],
+      "worktree": "/home/john/hamlet/.oracle/oracle-2026-08-13"
+    },
+    {
+      "HEAD": "4222a9176e68e232a0e46c7004183440e27f22c3",
+      "ancestor_of_main": true,
+      "ancestor_of_recovery": true,
+      "commits_outside_recovery": 0,
+      "custody": "preserve_frozen_source_worktree_do_not_modify",
+      "detached": "",
+      "dirty_file_sha256": {},
+      "path_exists": true,
+      "status_porcelain": [],
+      "worktree": "/home/john/hamlet/.oracle/oracle-2026-08-17"
+    },
+    {
+      "HEAD": "4a313b282ed3e65214bc21904bff1d3a3a4d4426",
+      "ancestor_of_main": false,
+      "ancestor_of_recovery": true,
+      "commits_outside_recovery": 0,
+      "custody": "stale_missing_detached_worktree_registration_no_cleanup_authorized",
+      "detached": "",
+      "path_exists": false,
+      "prunable": "gitdir file points to non-existent location",
+      "worktree": "/tmp/claude-1000/-home-john-hamlet/3bebbed0-2652-406a-8be2-cffcf657b6ac/scratchpad/precut"
+    },
+    {
+      "HEAD": "1ef1d9508b8908b533f901438bbf8aa9c13ccffd",
+      "ancestor_of_main": true,
+      "ancestor_of_recovery": true,
+      "commits_outside_recovery": 0,
+      "custody": "stale_missing_detached_worktree_registration_no_cleanup_authorized",
+      "detached": "",
+      "path_exists": false,
+      "prunable": "gitdir file points to non-existent location",
+      "worktree": "/tmp/claude-1000/-home-john-hamlet/84dcd306-811c-47d2-a7ba-57605a7641be/scratchpad/trial-B-blind"
+    },
+    {
+      "HEAD": "1ef1d9508b8908b533f901438bbf8aa9c13ccffd",
+      "ancestor_of_main": true,
+      "ancestor_of_recovery": true,
+      "commits_outside_recovery": 0,
+      "custody": "stale_missing_detached_worktree_registration_no_cleanup_authorized",
+      "detached": "",
+      "path_exists": false,
+      "prunable": "gitdir file points to non-existent location",
+      "worktree": "/tmp/claude-1000/-home-john-hamlet/e2011576-c34c-4ad0-af75-30cd3c19c2d7/scratchpad/tensornd-audit"
+    },
+    {
+      "HEAD": "599cad15706ac8824c3f8e38276da6440c4816a3",
+      "ancestor_of_main": false,
+      "ancestor_of_recovery": true,
+      "branch": "refs/heads/feat/declaration-store-cut-a",
+      "commits_outside_recovery": 0,
+      "custody": "preserve_existing_worktree_and_dirty_or_ignored_payloads",
+      "dirty_file_sha256": {},
+      "path_exists": true,
+      "status_porcelain": [],
+      "worktree": "/tmp/hamlet-declaration-cut-a"
+    },
+    {
+      "HEAD": "bdf64fadc69739c3e204845f9797d08500f46d46",
+      "ancestor_of_main": false,
+      "ancestor_of_recovery": true,
+      "branch": "refs/heads/feat/declaration-store-cut-b",
+      "commits_outside_recovery": 0,
+      "custody": "preserve_existing_worktree_and_dirty_or_ignored_payloads",
+      "dirty_file_sha256": {},
+      "path_exists": true,
+      "status_porcelain": [],
+      "worktree": "/tmp/hamlet-declaration-cut-b"
+    },
+    {
+      "HEAD": "bd34b5381050509af58e3e5c9cb2c2e7321ec801",
+      "ancestor_of_main": false,
+      "ancestor_of_recovery": true,
+      "branch": "refs/heads/plan/epistemic-access",
+      "commits_outside_recovery": 0,
+      "custody": "preserve_existing_worktree_and_dirty_or_ignored_payloads",
+      "dirty_file_sha256": {},
+      "path_exists": true,
+      "status_porcelain": [],
+      "worktree": "/tmp/hamlet-epistemic-access-plan"
+    },
+    {
+      "HEAD": "2695962be170ec3705e6e7303d5a6c1c8067fa12",
+      "ancestor_of_main": false,
+      "ancestor_of_recovery": true,
+      "branch": "refs/heads/feat/static-epistemic-access",
+      "commits_outside_recovery": 0,
+      "custody": "preserve_qualified_raw_evidence_worktree_and_own_environment",
+      "dirty_file_sha256": {},
+      "path_exists": true,
+      "static_access_raw_npz_count": 50,
+      "status_porcelain": [],
+      "worktree": "/tmp/hamlet-static-epistemic-access"
+    }
+  ]
+}

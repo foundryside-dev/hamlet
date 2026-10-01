@@ -396,6 +396,7 @@ superseded failures; no partial run is counted as a pass. See the
 [acceptance report](../product/evidence/static-epistemic-access/acceptance.md) and
 [PDR-0153](../product/decisions/0153-static-epistemic-access-accepted-against-prd-0004.md).
 
-This documentation records implementation acceptance. Authorized local merge and
-postmerge verification are recorded separately after they occur. Publication,
+This documentation records implementation acceptance. Authorized local merge into
+`project-recovery-4` and 201 passing postmerge checks are complete; see the
+[separate receipt](../product/evidence/static-epistemic-access/local-integration.md). Publication,
 hosted CI, learning/convergence and broader privacy remain outside this completion.

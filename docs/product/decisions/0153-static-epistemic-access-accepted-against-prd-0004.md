@@ -1,7 +1,7 @@
 # PDR-0153 — Static epistemic access accepted against PRD-0004
 
 Date: 2026-10-01 Australia/Canberra
-Status: **accepted at local implementation checkpoint; local integration recorded separately**
+Status: **accepted and locally integrated; execution and integration checkpoints recorded separately**
 Author: Codex
 Owner instruction: “please execute the plan and commit and merge the changes”.
 Related: [PRD-0004](../prds/0004-static-epistemic-access.md),
@@ -46,8 +46,10 @@ This is cross-review, not an author-free whole-package review.
 ## Delivery boundary
 
 Implementation commits and local merge into `project-recovery-4` are authorized.
-Local integration will be recorded in a separate receipt after the actual merge and
-postmerge checks. This accepting documentation changes no execution source from the
+Local integration is complete at `7c8e18ccbfbdfe91d0a1bbf86ffc01dee91ea4ba`;
+201 postmerge checks passed against actual parent imports. The
+[separate integration receipt](../evidence/static-epistemic-access/local-integration.md)
+records merge, source and preservation checks. This accepting documentation changes no execution source from the
 qualified checkpoint. Nothing is pushed, published, deployed or accepted through
 hosted CI by this decision. No frozen oracle source/tag/fixture or defaults-whitelist
 change is permitted; unrelated parent edits remain preserved.

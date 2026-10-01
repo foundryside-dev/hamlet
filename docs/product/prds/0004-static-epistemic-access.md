@@ -3,7 +3,8 @@
 Status: **accepted at local implementation checkpoint**.
 Qualified source: `b70fda104e5061ed2735e8b31b7f8f9caaf99f19`;
 [PDR-0153](../decisions/0153-static-epistemic-access-accepted-against-prd-0004.md) records
-all eight criteria. Local integration is recorded separately after the merge.
+all eight criteria. Authorized local integration is complete; see the
+[postmerge receipt](../evidence/static-epistemic-access/local-integration.md).
 Prepared: 2026-10-01 Australia/Sydney. Source baseline:
 `bdf64fadc69739c3e204845f9797d08500f46d46` (completed Cut B).
 Authority: PDR-0120 intent, rebased after PDR-0151. The planning package was

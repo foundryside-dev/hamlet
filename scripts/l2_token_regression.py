@@ -23,7 +23,6 @@ import json
 import math
 import platform
 import shutil
-import sqlite3
 import subprocess
 import sys
 import time
@@ -43,6 +42,7 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from townlet.determinism import seed_all  # noqa: E402
 from townlet.training.checkpoint_utils import safe_torch_load, verify_checkpoint_digest  # noqa: E402
+from townlet.training.episode_accounting import read_episode_accounting  # noqa: E402
 
 ARCHITECTURES = ("token_feedforward", "token_recurrent")
 AGGREGATORS = ("mean", "attention")
@@ -368,35 +368,53 @@ def read_transition_artifact(run_dir: Path) -> list[tuple[int, int]]:
 def write_training_curves(run_dir: Path) -> None:
     """Write the per-episode curve and the authoritative transition accounting for one run.
 
-    ``curves.csv`` carries what the run database actually records per episode: the
-    runner's ``survival_time`` is the environment's unmasked step counter, i.e. the
-    batch episode length, so it is written under that name. ``transitions.csv`` is the
-    only transition accounting: ``completed_live_agent_steps`` as persisted in every
-    digest-verified checkpoint, which must end exactly at the metadata's realized count.
+    ``curves.csv`` distinguishes slot-zero survival, vector ticks and live-agent
+    transitions, reconciled with actual per-lane TensorBoard events.
+    ``transitions.csv`` retains the digest-verified checkpoint counters, which must
+    agree with episode accounting and end at the metadata's realized count.
     """
-    conn = sqlite3.connect(run_dir / "demo.db")
-    try:
-        rows = conn.execute("SELECT episode_id, survival_time, epsilon, intrinsic_weight FROM episodes ORDER BY episode_id").fetchall()
-    finally:
-        conn.close()
-    with (run_dir / "curves.csv").open("w") as handle:
-        handle.write("episode,batch_episode_steps,epsilon,intrinsic_weight\n")
-        for episode_id, batch_steps, epsilon, intrinsic_weight in rows:
-            handle.write(f"{episode_id},{batch_steps},{epsilon:.6f},{intrinsic_weight:.6f}\n")
-
+    rows = read_episode_accounting(run_dir)
     counters: list[tuple[int, int]] = []
     for checkpoint_path in sorted((run_dir / "checkpoints").glob("checkpoint_ep*.pt")):
         verify_checkpoint_digest(checkpoint_path, required=True)
         checkpoint = safe_torch_load(checkpoint_path, map_location="cpu", allow_unsafe_pickle=True)
-        counters.append((int(checkpoint["episode"]), int(checkpoint["completed_live_agent_steps"])))
+        episode = checkpoint["episode"]
+        completed = checkpoint["completed_live_agent_steps"]
+        if any(type(value) is not int or value < 0 for value in (episode, completed)):
+            raise ValueError(f"{checkpoint_path}: episode and completed_live_agent_steps must be nonnegative integers")
+        counters.append((episode, completed))
     if not counters:
         raise FileNotFoundError(f"no checkpoint under {run_dir / 'checkpoints'}")
     _require_monotone_counters(counters, context=str(run_dir / "checkpoints"))
     realized = json.loads((run_dir / "meta.json").read_text()).get("realized_live_agent_steps")
+    if type(realized) is not int or realized < 0:
+        raise ValueError(f"{run_dir}: realized_live_agent_steps must be a nonnegative integer")
     if counters[-1][1] != realized:
         raise ValueError(
             f"{run_dir}: latest checkpoint counter {counters[-1][1]} does not match meta.json realized_live_agent_steps={realized!r}"
         )
+    episode_counters = {}
+    cumulative = 0
+    for row in rows:
+        cumulative += row.live_agent_transitions
+        episode_counters[row.episode_id] = cumulative
+    # Periodic checkpoints use the just-published episode index; the final
+    # checkpoint uses the next index. Both carry all published rows through
+    # their cursor, without changing the existing checkpoint clock.
+    if any(
+        episode > rows[-1].episode_id + 1 or sum(row.live_agent_transitions for row in rows if row.episode_id <= episode) != counter
+        for episode, counter in counters
+    ):
+        raise ValueError(f"{run_dir}: checkpoint/episode live-agent transition accounting disagreement")
+    with (run_dir / "curves.csv").open("w") as handle:
+        handle.write(
+            "episode,survival_steps_agent0,batch_episode_steps,live_agent_transitions,total_live_agent_transitions_cumulative,epsilon,intrinsic_weight\n"
+        )
+        for row in rows:
+            handle.write(
+                f"{row.episode_id},{row.survival_steps_agent0},{row.batch_episode_steps},{row.live_agent_transitions},"
+                f"{episode_counters[row.episode_id]},{row.epsilon:.6f},{row.intrinsic_weight:.6f}\n"
+            )
     with (run_dir / "transitions.csv").open("w") as handle:
         handle.write("episode,completed_live_agent_steps\n")
         for episode, counter in counters:

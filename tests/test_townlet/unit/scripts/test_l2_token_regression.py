@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import csv
 import importlib.util
 import json
 from argparse import Namespace
@@ -544,17 +545,30 @@ def _write_checkpoint(checkpoint_dir: Path, *, episode: int, completed: int) -> 
     return path
 
 
-def _write_run_database(run_dir: Path, rows: list[tuple[int, int, float, float]]) -> None:
+def _write_run_database(run_dir: Path, rows: list[tuple[int, int, int, int, float, float]]) -> None:
     import sqlite3
+
+    from torch.utils.tensorboard import SummaryWriter
 
     run_dir.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(run_dir / "demo.db")
     try:
-        conn.execute("CREATE TABLE episodes (episode_id INTEGER PRIMARY KEY, survival_time INTEGER, epsilon REAL, intrinsic_weight REAL)")
-        conn.executemany("INSERT INTO episodes VALUES (?, ?, ?, ?)", rows)
+        conn.execute(
+            "CREATE TABLE episodes (episode_id INTEGER PRIMARY KEY, survival_time INTEGER, batch_episode_steps INTEGER, "
+            "live_agent_transitions INTEGER, epsilon REAL, intrinsic_weight REAL)"
+        )
+        conn.executemany("INSERT INTO episodes VALUES (?, ?, ?, ?, ?, ?)", rows)
         conn.commit()
     finally:
         conn.close()
+    writer = SummaryWriter(str(run_dir / "tensorboard"))
+    try:
+        for episode, survival, batch, live, _, _ in rows:
+            assert survival + batch == live
+            writer.add_scalar("agent_0/Episode/Survival_Time", survival, episode)
+            writer.add_scalar("agent_1/Episode/Survival_Time", batch, episode)
+    finally:
+        writer.close()
 
 
 class TestTrainingCurves:
@@ -566,44 +580,116 @@ class TestTrainingCurves:
 
     def test_curves_and_transitions_come_from_database_and_verified_checkpoints(self, regression, tmp_path):
         run_dir = tmp_path / "run"
-        _write_run_database(run_dir, [(0, 1000, 1.0, 0.1), (1, 640, 0.99, 0.1), (2, 1000, 0.98, 0.1)])
-        _write_checkpoint(run_dir / "checkpoints", episode=0, completed=350)
-        _write_checkpoint(run_dir / "checkpoints", episode=2, completed=1_200)
-        (run_dir / "meta.json").write_text(json.dumps({"realized_live_agent_steps": 1_200}))
+        _write_run_database(run_dir, [(0, 2, 5, 7, 1.0, 0.1), (1, 2, 4, 6, 0.99, 0.1), (2, 2, 5, 7, 0.98, 0.1)])
+        _write_checkpoint(run_dir / "checkpoints", episode=0, completed=7)
+        _write_checkpoint(run_dir / "checkpoints", episode=2, completed=20)
+        (run_dir / "meta.json").write_text(json.dumps({"realized_live_agent_steps": 20}))
 
         regression.write_training_curves(run_dir)
 
         assert (run_dir / "curves.csv").read_text() == (
-            "episode,batch_episode_steps,epsilon,intrinsic_weight\n"
-            "0,1000,1.000000,0.100000\n"
-            "1,640,0.990000,0.100000\n"
-            "2,1000,0.980000,0.100000\n"
+            "episode,survival_steps_agent0,batch_episode_steps,live_agent_transitions,total_live_agent_transitions_cumulative,epsilon,intrinsic_weight\n"
+            "0,2,5,7,7,1.000000,0.100000\n"
+            "1,2,4,6,13,0.990000,0.100000\n"
+            "2,2,5,7,20,0.980000,0.100000\n"
         )
-        assert (run_dir / "transitions.csv").read_text() == "episode,completed_live_agent_steps\n0,350\n2,1200\n"
+        assert (run_dir / "transitions.csv").read_text() == "episode,completed_live_agent_steps\n0,7\n2,20\n"
 
     def test_transitions_refuse_counter_regression_or_final_mismatch(self, regression, tmp_path):
         run_dir = tmp_path / "run"
-        _write_run_database(run_dir, [(0, 10, 1.0, 0.1)])
-        _write_checkpoint(run_dir / "checkpoints", episode=0, completed=350)
-        _write_checkpoint(run_dir / "checkpoints", episode=1, completed=300)
-        (run_dir / "meta.json").write_text(json.dumps({"realized_live_agent_steps": 300}))
+        _write_run_database(run_dir, [(0, 2, 5, 7, 1.0, 0.1)])
+        _write_checkpoint(run_dir / "checkpoints", episode=0, completed=7)
+        _write_checkpoint(run_dir / "checkpoints", episode=1, completed=6)
+        (run_dir / "meta.json").write_text(json.dumps({"realized_live_agent_steps": 6}))
         with pytest.raises(ValueError, match="monotone"):
             regression.write_training_curves(run_dir)
 
         (run_dir / "checkpoints" / "checkpoint_ep00001.pt").unlink()
         (run_dir / "checkpoints" / "checkpoint_ep00001.pt.sha256").unlink()
-        (run_dir / "meta.json").write_text(json.dumps({"realized_live_agent_steps": 351}))
+        (run_dir / "meta.json").write_text(json.dumps({"realized_live_agent_steps": 8}))
         with pytest.raises(ValueError, match="realized_live_agent_steps"):
             regression.write_training_curves(run_dir)
 
     def test_transitions_refuse_checkpoint_without_digest(self, regression, tmp_path):
         run_dir = tmp_path / "run"
-        _write_run_database(run_dir, [(0, 10, 1.0, 0.1)])
-        path = _write_checkpoint(run_dir / "checkpoints", episode=0, completed=350)
+        _write_run_database(run_dir, [(0, 2, 5, 7, 1.0, 0.1)])
+        path = _write_checkpoint(run_dir / "checkpoints", episode=0, completed=7)
         path.with_suffix(".pt.sha256").unlink()
-        (run_dir / "meta.json").write_text(json.dumps({"realized_live_agent_steps": 350}))
+        (run_dir / "meta.json").write_text(json.dumps({"realized_live_agent_steps": 7}))
         with pytest.raises(FileNotFoundError, match="checksum"):
             regression.write_training_curves(run_dir)
+
+
+class TestEpisodeAccountingCurves:
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [("episode", 1.9), ("episode", "1"), ("episode", True), ("completed", 14.9), ("completed", "14"), ("realized", 14.0)],
+    )
+    def test_noninteger_checkpoint_or_metadata_units_refuse_before_export(self, regression, tmp_path, field, value):
+        from tests.test_townlet.unit.scripts.test_l2_baseline import _write_accounting_run
+
+        run_dir = tmp_path / "run"
+        _write_accounting_run(run_dir, duplicate=False, wrong_survival=False, old_columns=False)
+        checkpoint_path = _write_checkpoint(run_dir / "checkpoints", episode=1, completed=14)
+        if field in {"episode", "completed"}:
+            from townlet.training.checkpoint_utils import persist_checkpoint_digest
+
+            torch = pytest.importorskip("torch")
+            payload = {"episode": value if field == "episode" else 1, "completed_live_agent_steps": value if field == "completed" else 14}
+            torch.save(payload, checkpoint_path)
+            persist_checkpoint_digest(checkpoint_path)
+        (run_dir / "meta.json").write_text(json.dumps({"realized_live_agent_steps": value if field == "realized" else 14}))
+        before = {path: path.read_bytes() for path in run_dir.rglob("*") if path.is_file()}
+        with pytest.raises(ValueError):
+            regression.write_training_curves(run_dir)
+        assert all(path.read_bytes() == data for path, data in before.items())
+        assert not (run_dir / "curves.csv").exists() and not (run_dir / "transitions.csv").exists()
+
+    def test_lane_batch_and_live_units_reconcile_real_events_and_checkpoints(self, regression, tmp_path):
+        from tests.test_townlet.unit.scripts.test_l2_baseline import _write_accounting_run
+
+        run_dir = tmp_path / "run"
+        _write_accounting_run(run_dir, duplicate=False, wrong_survival=False, old_columns=False)
+        _write_checkpoint(run_dir / "checkpoints", episode=0, completed=7)
+        _write_checkpoint(run_dir / "checkpoints", episode=1, completed=14)
+        (run_dir / "meta.json").write_text(json.dumps({"realized_live_agent_steps": 14}))
+        regression.write_training_curves(run_dir)
+        with (run_dir / "curves.csv").open() as stream:
+            rows = list(csv.DictReader(stream))
+        assert [row["survival_steps_agent0"] for row in rows] == ["2", "2"]
+        assert [row["batch_episode_steps"] for row in rows] == ["5", "5"]
+        assert [row["live_agent_transitions"] for row in rows] == ["7", "7"]
+        assert [row["total_live_agent_transitions_cumulative"] for row in rows] == ["7", "14"]
+        assert regression.read_transition_artifact(run_dir) == [(0, 7), (1, 14)]
+
+    def test_final_checkpoint_cursor_follows_last_published_episode(self, regression, tmp_path):
+        from tests.test_townlet.unit.scripts.test_l2_baseline import _write_accounting_run
+
+        run_dir = tmp_path / "run"
+        _write_accounting_run(run_dir, duplicate=False, wrong_survival=False, old_columns=False)
+        _write_checkpoint(run_dir / "checkpoints", episode=0, completed=7)
+        _write_checkpoint(run_dir / "checkpoints", episode=2, completed=14)
+        (run_dir / "meta.json").write_text(json.dumps({"realized_live_agent_steps": 14}))
+        regression.write_training_curves(run_dir)
+        assert regression.read_transition_artifact(run_dir) == [(0, 7), (2, 14)]
+
+    @pytest.mark.parametrize("control", ["duplicate", "wrong_survival", "old_columns", "checkpoint_disagreement"])
+    def test_inconsistent_or_incompatible_input_refuses_preserving_artifacts(self, regression, tmp_path, control):
+        import sqlite3
+
+        from tests.test_townlet.unit.scripts.test_l2_baseline import _write_accounting_run
+
+        run_dir = tmp_path / "run"
+        _write_accounting_run(
+            run_dir, duplicate=control == "duplicate", wrong_survival=control == "wrong_survival", old_columns=control == "old_columns"
+        )
+        completed = 15 if control == "checkpoint_disagreement" else 14
+        _write_checkpoint(run_dir / "checkpoints", episode=1, completed=completed)
+        (run_dir / "meta.json").write_text(json.dumps({"realized_live_agent_steps": completed}))
+        inputs = {path: path.read_bytes() for path in run_dir.rglob("*") if path.is_file()}
+        with pytest.raises((ValueError, sqlite3.OperationalError)):
+            regression.write_training_curves(run_dir)
+        assert all(path.read_bytes() == value for path, value in inputs.items())
 
 
 class TestSummaryTransitionArtifact:

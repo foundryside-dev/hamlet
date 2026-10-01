@@ -5,7 +5,10 @@ greedy eval and curve extraction are exercised operationally in Task 2 (they nee
 real GPU runs and are not unit-testable without violating the Phase-0 src freeze).
 """
 
+import csv
 import importlib.util
+import sqlite3
+from argparse import Namespace
 from pathlib import Path
 
 import pytest
@@ -85,3 +88,58 @@ class TestIQM:
     def test_iqm_empty_refuses(self, baseline):
         with pytest.raises(ValueError):
             baseline.iqm([])
+
+
+def _write_accounting_run(run_dir: Path, *, duplicate: bool, wrong_survival: bool, old_columns: bool) -> None:
+    """Persist real SQL and event files; the exporter consumes both boundaries."""
+    from torch.utils.tensorboard import SummaryWriter
+
+    run_dir.mkdir()
+    with sqlite3.connect(run_dir / "demo.db") as connection:
+        if old_columns:
+            connection.execute("CREATE TABLE episodes (episode_id INTEGER, survival_time INTEGER, epsilon REAL, intrinsic_weight REAL)")
+            connection.execute("INSERT INTO episodes VALUES (0, 2, 0.0, 0.0)")
+        else:
+            connection.execute(
+                "CREATE TABLE episodes (episode_id INTEGER, survival_time INTEGER, batch_episode_steps INTEGER, "
+                "live_agent_transitions INTEGER, epsilon REAL, intrinsic_weight REAL)"
+            )
+            connection.executemany("INSERT INTO episodes VALUES (?, ?, ?, ?, ?, ?)", [(0, 2, 5, 7, 0.0, 0.0), (1, 2, 5, 7, 0.0, 0.0)])
+    writer = SummaryWriter(str(run_dir / "tensorboard"))
+    try:
+        for episode in (0, 1):
+            writer.add_scalar("agent_0/Episode/Survival_Time", 3 if wrong_survival else 2, episode)
+            writer.add_scalar("agent_1/Episode/Survival_Time", 5, episode)
+        if duplicate:
+            writer.add_scalar("agent_0/Episode/Survival_Time", 2, 0)
+    finally:
+        writer.close()
+
+
+class TestEpisodeAccountingCurves:
+    def test_lane_batch_and_live_units_are_distinct(self, baseline, tmp_path):
+        run_dir = tmp_path / "run"
+        _write_accounting_run(run_dir, duplicate=False, wrong_survival=False, old_columns=False)
+        baseline.cmd_curves(Namespace(run_dir=str(run_dir)))
+        with (run_dir / "curves.csv").open() as stream:
+            rows = list(csv.DictReader(stream))
+        assert [row["survival_steps_agent0"] for row in rows] == ["2", "2"]
+        assert [row["batch_episode_steps"] for row in rows] == ["5", "5"]
+        assert [row["live_agent_transitions"] for row in rows] == ["7", "7"]
+        assert [row["total_live_agent_transitions_cumulative"] for row in rows] == ["7", "14"]
+
+    @pytest.mark.parametrize("control", ["duplicate", "wrong_survival", "old_columns", "missing_events"])
+    def test_incompatible_or_inconsistent_accounting_refuses_without_input_changes(self, baseline, tmp_path, control):
+        run_dir = tmp_path / "run"
+        _write_accounting_run(
+            run_dir, duplicate=control == "duplicate", wrong_survival=control == "wrong_survival", old_columns=control == "old_columns"
+        )
+        if control == "missing_events":
+            for path in (run_dir / "tensorboard").iterdir():
+                path.unlink()
+        inputs = {path: path.read_bytes() for path in run_dir.rglob("*") if path.is_file()}
+        with pytest.raises((ValueError, sqlite3.OperationalError)):
+            baseline.cmd_curves(Namespace(run_dir=str(run_dir)))
+        assert all(path.read_bytes() == value for path, value in inputs.items())
+        assert not (run_dir / "demo.db-wal").exists()
+        assert not (run_dir / "demo.db-shm").exists()

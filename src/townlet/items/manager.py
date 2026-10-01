@@ -341,29 +341,17 @@ class ItemManager:
             if profile_name not in self.vfs_registry.item_profile_map:
                 raise ValueError(f"VFS profile '{profile_name}' not found in registry")
 
-            profile_map = self.vfs_registry.item_profile_map[profile_name]
-
             item_vfs = getattr(self.vfs_registry, "item_vfs", None)
             if item_vfs is None:
                 raise ValueError("Item VFS storage not allocated in registry")
 
-            # Get compiled profile to access initial_value defaults
-            if hasattr(self.vfs_registry, "item_profiles") and self.vfs_registry.item_profiles:
-                compiled_profile = self.vfs_registry.item_profiles.get(profile_name)
-                if compiled_profile:
-                    # Initialize with defaults from compiled profile
-                    for compiled_var in compiled_profile.variables:
-                        if compiled_var.initial_value is not None:
-                            var_idx = profile_map[compiled_var.name]
-                            item_vfs[vfs_index, var_idx] = float(compiled_var.initial_value)
+            self.vfs_registry._initialize_item_row(profile_name, vfs_index)
+            self.vfs_registry.register_item_instance(vfs_index, profile_name)
 
-            # Apply initial_state overrides if provided
+            # Authored overrides are writes, including overrides equal to a default.
             if initial_state is not None:
                 for var_name, value in initial_state.items():
-                    if var_name not in profile_map:
-                        raise ValueError(f"Variable '{var_name}' not in profile '{profile_name}'")
-                    var_idx = profile_map[var_name]
-                    item_vfs[vfs_index, var_idx] = float(value)
+                    self.vfs_registry.write_item(profile_name, var_name, float(value), vfs_index, writer="engine")
 
         # Create instance
         instance = ItemInstance(
@@ -619,7 +607,7 @@ class ItemManager:
         vfs_state: dict[str, torch.Tensor] = {}
         if self.vfs_registry is not None:
             for var_id, _ in self.vfs_registry.variables.items():
-                vfs_state[var_id] = self.vfs_registry._storage[var_id]
+                vfs_state[var_id] = self.vfs_registry.get(var_id, reader="engine")
 
         temporal_context = temporal or {"tick": torch.tensor(current_tick, device=self.device)}
 

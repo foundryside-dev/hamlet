@@ -8,16 +8,18 @@ from townlet.effects.catalog import CompiledEffect, EffectCatalog
 from townlet.effects.executor import CommandExecutor
 from townlet.effects.manager import EffectManager
 from townlet.vfs.evaluator import EvaluationMode, VFSEvaluator
-from townlet.vfs.registry import ScopedVariableRegistry
+from townlet.vfs.registry import VariableRegistry
+from townlet.vfs.schema import VariableDef
 
 
-def _make_vfs_registry(num_agents: int = 8) -> ScopedVariableRegistry:
-    registry = ScopedVariableRegistry(device=torch.device("cpu"))
-    # Populate some globals/agents for evaluation
-    registry.set_global("day_count", torch.tensor(0.0))
-    registry.set_agent("energy", torch.ones(num_agents))
-    registry.set_agent("health", torch.full((num_agents,), 0.5))
-    return registry
+def _make_vfs_registry(num_agents: int = 8) -> VariableRegistry:
+    variables = [
+        VariableDef(
+            id=name, scope=scope, type="scalar", lifetime="episode", default=value, readable_by=["engine", "agent"], writable_by=["engine"]
+        )
+        for name, scope, value in [("day_count", "global", 0.0), ("energy", "agent", 1.0), ("health", "agent", 0.5)]
+    ]
+    return VariableRegistry(variables, num_agents, torch.device("cpu"))
 
 
 class TestVFSBenchmarks:

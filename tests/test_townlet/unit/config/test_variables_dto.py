@@ -124,7 +124,7 @@ def test_item_reference_null_initializes_actual_arena_as_unbound(tmp_path):
         env.reset()
         item = env.item_manager.spawn_item(item_type="apple", position=(0, 0), current_tick=0)
         assert item is not None
-        assert env.vfs_registry.read_item("food", "claimant", item.vfs_index) == -1
+        assert env.vfs_registry.read_item("food", "claimant", item.vfs_index, reader="engine") == -1
 
 
 @pytest.mark.parametrize(

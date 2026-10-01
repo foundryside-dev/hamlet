@@ -22,17 +22,8 @@ def test_item_durability_roundtrips_through_vfs_registry():
 
     # Spawn item and modify durability
     item = env.item_manager.spawn_item("medkit", (3, 4), current_tick=0)
-    env.vfs_registry.write_item(
-        profile_name=item.vfs_profile,
-        var_name="durability",
-        value=75.0,
-        vfs_index=item.vfs_index,
-    )
+    env.vfs_registry.write_item(profile_name=item.vfs_profile, var_name="durability", value=75.0, vfs_index=item.vfs_index, writer="engine")
 
-    durability = env.vfs_registry.read_item(
-        profile_name=item.vfs_profile,
-        var_name="durability",
-        vfs_index=item.vfs_index,
-    )
+    durability = env.vfs_registry.read_item(profile_name=item.vfs_profile, var_name="durability", vfs_index=item.vfs_index, reader="engine")
 
     assert durability == 75.0

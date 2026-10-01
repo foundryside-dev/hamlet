@@ -1,6 +1,9 @@
 # PRD-0004 — Static epistemic access
 
-Status: **implementation authorized; acceptance pending**.
+Status: **accepted at local implementation checkpoint**.
+Qualified source: `b70fda104e5061ed2735e8b31b7f8f9caaf99f19`;
+[PDR-0153](../decisions/0153-static-epistemic-access-accepted-against-prd-0004.md) records
+all eight criteria. Local integration is recorded separately after the merge.
 Prepared: 2026-10-01 Australia/Sydney. Source baseline:
 `bdf64fadc69739c3e204845f9797d08500f46d46` (completed Cut B).
 Authority: PDR-0120 intent, rebased after PDR-0151. The planning package was
@@ -23,7 +26,7 @@ against Python code with access to internal tensors. Rewards or deliberately pub
 derived values can reveal information about hidden inputs; no information-theoretic
 noninterference claim is made.
 
-## Proposed bounded contract
+## Accepted bounded contract
 
 Every canonical variable, including item-profile variables, explicitly declares:
 
@@ -52,10 +55,12 @@ scope/type/expression restrictions stay in force, including private-scope exposu
 refusal. Permissions never broaden an unsupported observation shape or scope.
 
 Default construction and tick/episode reset initialize declared storage through
-private lifecycle operations. They can initialize immutable state. Authored item
+private lifecycle operations. They can initialize immutable state. Runtime item
 `initial_state` overrides are explicit writes: they require engine-write permission,
-even when the override equals the default. Dynamically constructed commands receive
-the same check before mutation. Runtime immutable means no authored/runtime write;
+even when the override equals the default. Current authored item appearance/command
+DTOs do not admit this field; unsupported authored forms refuse. Dynamically
+constructed commands and direct runtime overrides receive the same check before
+mutation. Runtime immutable means no authored/runtime write;
 it does not mean persistent across reset.
 
 All general ordinary and item access entry points require an explicit actor.

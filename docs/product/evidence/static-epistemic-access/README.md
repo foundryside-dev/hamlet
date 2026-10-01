@@ -2,7 +2,8 @@
 
 Implementation and local integration are authorized by the owner's explicit
 "execute the plan and commit and merge the changes" instruction. Publication is
-outside that authorization. PRD-0004 acceptance remains pending.
+outside that authorization. PRD-0004 is accepted at qualified source
+`b70fda104e5061ed2735e8b31b7f8f9caaf99f19`; local integration is recorded separately.
 
 ## Before bank
 
@@ -28,5 +29,19 @@ missing/duplicate cases, missing identity readings, substituted recipes, invalid
 source/config bytes, altered raw trace digests, missing/stale attribution and changed
 observation/action/reward/done streams. No learned-convergence claim is made.
 
-Implementation, after comparison, frozen CPU qualification, full local gates and
-independent acceptance will be recorded separately after execution.
+## Qualified evidence
+
+- [Acceptance report](acceptance.md): eight criteria, actual measured outcomes and scope.
+- [Accepting decision](../../decisions/0153-static-epistemic-access-accepted-against-prd-0004.md).
+- [Commands](qualification-commands.md), [terminal gate receipt](local-gates.json) and `logs/`.
+- [Direct-parent result](qualified-parent-report.json) and [frozen CPU result](qualified-frozen-report.json).
+- [Exact attribution](attributions.json), [canonical reconstruction](canonical-schema-attribution.json), [frozen/live inputs](frozen-live-inputs.json).
+- [Independent policy review](independent-acceptance-policy.json), [intent review](independent-acceptance-intent.json), [raw-evidence reconstruction](final-review-b70fda10.json).
+- [Fresh graph](final-caller-closure.json), [AST closure](final-ast-closure.json), [actual-parent permitted-command comparison](real-parent-comparison.json).
+- [Banked and retained raw digests](qualified-evidence-digests.json).
+
+Raw trajectories remain in the ignored execution worktree runs directories named
+by the manifests. Preserve that worktree while these receipts depend on it. The
+acceptance documentation is a descendant of the tested execution source; later
+documentation heads are not substituted for the actual qualified source identity.
+Local integration receives its own receipt after merge and postmerge checks.

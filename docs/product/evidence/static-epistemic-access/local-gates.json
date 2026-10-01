@@ -1,0 +1,83 @@
+{
+  "source_commit": "b70fda104e5061ed2735e8b31b7f8f9caaf99f19",
+  "working_directory": "/tmp/hamlet-static-epistemic-access",
+  "environment": {
+    "python": "3.13.1",
+    "torch": "2.11.0+cu130",
+    "pydantic": "2.13.4",
+    "installation": "separate locked all-extras execution-worktree environment"
+  },
+  "gates": {
+    "ruff": {
+      "command": [
+        ".venv/bin/ruff",
+        "check"
+      ],
+      "exit_code": 0,
+      "log": "logs/ruff.log"
+    },
+    "black": {
+      "command": [
+        ".venv/bin/black",
+        "--check",
+        "."
+      ],
+      "exit_code": 0,
+      "log": "logs/black.log"
+    },
+    "mypy": {
+      "command": [
+        ".venv/bin/mypy",
+        "src"
+      ],
+      "exit_code": 0,
+      "log": "logs/mypy.log"
+    },
+    "no-defaults": {
+      "command": [
+        ".venv/bin/python",
+        "scripts/no_defaults_lint.py",
+        "src",
+        "--whitelist",
+        ".defaults-whitelist.txt"
+      ],
+      "exit_code": 0,
+      "log": "logs/no-defaults.log"
+    },
+    "fleet": {
+      "command": [
+        ".venv/bin/python",
+        "scripts/validate_compiler_cli.py"
+      ],
+      "exit_code": 0,
+      "log": "logs/fleet.log"
+    }
+  },
+  "full_suite": {
+    "command": "OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 .venv/bin/python -m pytest",
+    "exit_code": 0,
+    "passed": 4250,
+    "skipped": 18,
+    "warnings": 15,
+    "seconds": 1561.29,
+    "coverage_percent": 85,
+    "log": "logs/full-suite.log"
+  },
+  "parent_comparison": {
+    "exit_code": 0,
+    "case_count": 31,
+    "reading_count": 884,
+    "cpu_count": 10,
+    "reset_count": 11,
+    "changes": 150,
+    "qualified": true
+  },
+  "frozen_cpu": {
+    "exit_code": 0,
+    "cpu_registered": 10,
+    "cuda_skipped": 10,
+    "source_dirty": false
+  },
+  "publication": "not authorized or performed",
+  "integration": "pending local merge, recorded separately"
+}

@@ -1,0 +1,182 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.1, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /tmp/hamlet-static-epistemic-access
+configfile: pyproject.toml
+plugins: hypothesis-6.165.3, anyio-4.14.2, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 4 items
+
+tests/test_townlet/unit/universe/test_token_spec.py FFFF                 [100%]
+
+=================================== FAILURES ===================================
+_ TestItemProfileExposureRefusals.test_exposed_item_variable_with_zero_item_capacity_refuses _
+
+self = <test_token_spec.TestItemProfileExposureRefusals object at 0x71c574d3f4d0>
+
+    def test_exposed_item_variable_with_zero_item_capacity_refuses(self):
+        # token_spec.py:1436-1442: an exposed item-profile variable declares
+        # `exposed_to`, but this universe's compiled `item` token capacity is 0 (no
+        # items.yaml, or the item-count arithmetic sums to 0) — there is no item-arena
+        # slot to bind it against.
+        compiled_vfs_profiles = _compiled_item_profiles("medical", "durability", "float")
+        with pytest.raises(ValueError, match=r"medical\.durability.*compiled `item` token capacity is 0"):
+>           variable_element_bindings(compiled_vfs_profiles, (), item_capacity_value=0)
+
+tests/test_townlet/unit/universe/test_token_spec.py:876: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/universe/dto/token_spec.py:1388: in variable_element_bindings
+    bindings, _contexts = _variable_element_artifacts(compiled_vfs_profiles, vfs_variables, item_capacity_value=item_capacity_value)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+compiled_vfs_profiles = namespace(global_profile=None, agent_profile=None, item_profiles={'medical': namespace(variables=[namespace(name='dura...0, mean=None, std=None, period=None, categories=None, threshold=None, mask_value=None, fill_value=None, clip=True))])})
+vfs_variables = ()
+
+    def _variable_element_artifacts(
+        compiled_vfs_profiles: CompiledVFSProfiles | None,
+        vfs_variables: tuple[VariableDef, ...],
+        *,
+        item_capacity_value: int,
+    ) -> tuple[tuple[SlotBinding, ...], tuple[tuple[float, ...], ...]]:
+        """Derive variable bindings and their complete fixed payloads in one pass."""
+        exposed_item_vars: list[tuple[str, CompiledVariable]] = []  # (id "<profile>.<var>", declaration)
+        if compiled_vfs_profiles is not None:
+            for profile_name, item_profile in (compiled_vfs_profiles.item_profiles or {}).items():
+                for compiled_var in item_profile.variables:
+                    validate_static_access(
+>                       f"{profile_name}.{compiled_var.name}", compiled_var.readable_by, compiled_var.writable_by, compiled_var.exposed_to
+                                                               ^^^^^^^^^^^^^^^^^^^^^^^^
+                    )
+E                   AttributeError: 'types.SimpleNamespace' object has no attribute 'readable_by'
+
+src/townlet/universe/dto/token_spec.py:1415: AttributeError
+_ TestItemProfileExposureRefusals.test_exposed_item_variable_with_unmapped_type_refuses[int] _
+
+self = <test_token_spec.TestItemProfileExposureRefusals object at 0x71c574b282d0>
+var_type = 'int'
+
+    @pytest.mark.parametrize("var_type", ["int", "vec2i", "vec3i"])
+    def test_exposed_item_variable_with_unmapped_type_refuses(self, var_type):
+        # These types cannot be produced by canonical scalar-like item declarations.
+        # Invalid internal products must refuse rather than acquire a compatibility landing.
+        compiled_vfs_profiles = _compiled_item_profiles("medical", "durability", var_type)
+        with pytest.raises(ValueError, match=rf"medical\.durability.*'{var_type}'.*no token dtype landing yet"):
+>           variable_element_bindings(compiled_vfs_profiles, (), item_capacity_value=1)
+
+tests/test_townlet/unit/universe/test_token_spec.py:884: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/universe/dto/token_spec.py:1388: in variable_element_bindings
+    bindings, _contexts = _variable_element_artifacts(compiled_vfs_profiles, vfs_variables, item_capacity_value=item_capacity_value)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+compiled_vfs_profiles = namespace(global_profile=None, agent_profile=None, item_profiles={'medical': namespace(variables=[namespace(name='dura...0, mean=None, std=None, period=None, categories=None, threshold=None, mask_value=None, fill_value=None, clip=True))])})
+vfs_variables = ()
+
+    def _variable_element_artifacts(
+        compiled_vfs_profiles: CompiledVFSProfiles | None,
+        vfs_variables: tuple[VariableDef, ...],
+        *,
+        item_capacity_value: int,
+    ) -> tuple[tuple[SlotBinding, ...], tuple[tuple[float, ...], ...]]:
+        """Derive variable bindings and their complete fixed payloads in one pass."""
+        exposed_item_vars: list[tuple[str, CompiledVariable]] = []  # (id "<profile>.<var>", declaration)
+        if compiled_vfs_profiles is not None:
+            for profile_name, item_profile in (compiled_vfs_profiles.item_profiles or {}).items():
+                for compiled_var in item_profile.variables:
+                    validate_static_access(
+>                       f"{profile_name}.{compiled_var.name}", compiled_var.readable_by, compiled_var.writable_by, compiled_var.exposed_to
+                                                               ^^^^^^^^^^^^^^^^^^^^^^^^
+                    )
+E                   AttributeError: 'types.SimpleNamespace' object has no attribute 'readable_by'
+
+src/townlet/universe/dto/token_spec.py:1415: AttributeError
+_ TestItemProfileExposureRefusals.test_exposed_item_variable_with_unmapped_type_refuses[vec2i] _
+
+self = <test_token_spec.TestItemProfileExposureRefusals object at 0x71c574a810f0>
+var_type = 'vec2i'
+
+    @pytest.mark.parametrize("var_type", ["int", "vec2i", "vec3i"])
+    def test_exposed_item_variable_with_unmapped_type_refuses(self, var_type):
+        # These types cannot be produced by canonical scalar-like item declarations.
+        # Invalid internal products must refuse rather than acquire a compatibility landing.
+        compiled_vfs_profiles = _compiled_item_profiles("medical", "durability", var_type)
+        with pytest.raises(ValueError, match=rf"medical\.durability.*'{var_type}'.*no token dtype landing yet"):
+>           variable_element_bindings(compiled_vfs_profiles, (), item_capacity_value=1)
+
+tests/test_townlet/unit/universe/test_token_spec.py:884: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/universe/dto/token_spec.py:1388: in variable_element_bindings
+    bindings, _contexts = _variable_element_artifacts(compiled_vfs_profiles, vfs_variables, item_capacity_value=item_capacity_value)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+compiled_vfs_profiles = namespace(global_profile=None, agent_profile=None, item_profiles={'medical': namespace(variables=[namespace(name='dura...0, mean=None, std=None, period=None, categories=None, threshold=None, mask_value=None, fill_value=None, clip=True))])})
+vfs_variables = ()
+
+    def _variable_element_artifacts(
+        compiled_vfs_profiles: CompiledVFSProfiles | None,
+        vfs_variables: tuple[VariableDef, ...],
+        *,
+        item_capacity_value: int,
+    ) -> tuple[tuple[SlotBinding, ...], tuple[tuple[float, ...], ...]]:
+        """Derive variable bindings and their complete fixed payloads in one pass."""
+        exposed_item_vars: list[tuple[str, CompiledVariable]] = []  # (id "<profile>.<var>", declaration)
+        if compiled_vfs_profiles is not None:
+            for profile_name, item_profile in (compiled_vfs_profiles.item_profiles or {}).items():
+                for compiled_var in item_profile.variables:
+                    validate_static_access(
+>                       f"{profile_name}.{compiled_var.name}", compiled_var.readable_by, compiled_var.writable_by, compiled_var.exposed_to
+                                                               ^^^^^^^^^^^^^^^^^^^^^^^^
+                    )
+E                   AttributeError: 'types.SimpleNamespace' object has no attribute 'readable_by'
+
+src/townlet/universe/dto/token_spec.py:1415: AttributeError
+_ TestItemProfileExposureRefusals.test_exposed_item_variable_with_unmapped_type_refuses[vec3i] _
+
+self = <test_token_spec.TestItemProfileExposureRefusals object at 0x71c574a81940>
+var_type = 'vec3i'
+
+    @pytest.mark.parametrize("var_type", ["int", "vec2i", "vec3i"])
+    def test_exposed_item_variable_with_unmapped_type_refuses(self, var_type):
+        # These types cannot be produced by canonical scalar-like item declarations.
+        # Invalid internal products must refuse rather than acquire a compatibility landing.
+        compiled_vfs_profiles = _compiled_item_profiles("medical", "durability", var_type)
+        with pytest.raises(ValueError, match=rf"medical\.durability.*'{var_type}'.*no token dtype landing yet"):
+>           variable_element_bindings(compiled_vfs_profiles, (), item_capacity_value=1)
+
+tests/test_townlet/unit/universe/test_token_spec.py:884: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/universe/dto/token_spec.py:1388: in variable_element_bindings
+    bindings, _contexts = _variable_element_artifacts(compiled_vfs_profiles, vfs_variables, item_capacity_value=item_capacity_value)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+compiled_vfs_profiles = namespace(global_profile=None, agent_profile=None, item_profiles={'medical': namespace(variables=[namespace(name='dura...0, mean=None, std=None, period=None, categories=None, threshold=None, mask_value=None, fill_value=None, clip=True))])})
+vfs_variables = ()
+
+    def _variable_element_artifacts(
+        compiled_vfs_profiles: CompiledVFSProfiles | None,
+        vfs_variables: tuple[VariableDef, ...],
+        *,
+        item_capacity_value: int,
+    ) -> tuple[tuple[SlotBinding, ...], tuple[tuple[float, ...], ...]]:
+        """Derive variable bindings and their complete fixed payloads in one pass."""
+        exposed_item_vars: list[tuple[str, CompiledVariable]] = []  # (id "<profile>.<var>", declaration)
+        if compiled_vfs_profiles is not None:
+            for profile_name, item_profile in (compiled_vfs_profiles.item_profiles or {}).items():
+                for compiled_var in item_profile.variables:
+                    validate_static_access(
+>                       f"{profile_name}.{compiled_var.name}", compiled_var.readable_by, compiled_var.writable_by, compiled_var.exposed_to
+                                                               ^^^^^^^^^^^^^^^^^^^^^^^^
+                    )
+E                   AttributeError: 'types.SimpleNamespace' object has no attribute 'readable_by'
+
+src/townlet/universe/dto/token_spec.py:1415: AttributeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/unit/universe/test_token_spec.py::TestItemProfileExposureRefusals::test_exposed_item_variable_with_zero_item_capacity_refuses
+FAILED tests/test_townlet/unit/universe/test_token_spec.py::TestItemProfileExposureRefusals::test_exposed_item_variable_with_unmapped_type_refuses[int]
+FAILED tests/test_townlet/unit/universe/test_token_spec.py::TestItemProfileExposureRefusals::test_exposed_item_variable_with_unmapped_type_refuses[vec2i]
+FAILED tests/test_townlet/unit/universe/test_token_spec.py::TestItemProfileExposureRefusals::test_exposed_item_variable_with_unmapped_type_refuses[vec3i]
+============================== 4 failed in 0.23s ===============================

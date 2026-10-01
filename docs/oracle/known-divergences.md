@@ -1647,9 +1647,10 @@ completion is claimed by the registration.
 
 ## DIV-015 — Static epistemic access: qualified policy identity
 
-- **Status:** measured at clean source `9137484965b05c26ceed1740ee9aab39a364a61c`;
-  final qualification pending. The diagnostic deliberately used no attributions and
-  exited 1 for 150 unexplained identities, with no trace/reset differences.
+- **Status:** qualified at clean source `b70fda104e5061ed2735e8b31b7f8f9caaf99f19`;
+  direct-parent and frozen CPU gates returned zero. All 150 identity changes are
+  exactly attributed; streams and resets remain unchanged. The earlier 91374849
+  diagnostic deliberately omitted attributions and exited 1; it is not a passing gate.
 - **Harness shape: hash-only**: `variable_schema_hash` and `vfs_hash` on every matrix cell.
   No stream, observation, layout, action or transition allowance is introduced.
 - **Scope:** PRD-0004 static engine/agent roles. Owner, spatial and dynamic epistemic
@@ -1658,7 +1659,8 @@ completion is claimed by the registration.
   complete frozen/live file digests and exact drift rows are retained in
   [frozen-live-inputs](../product/evidence/static-epistemic-access/frozen-live-inputs.json).
   Existing inherited drift remains explicitly listed. The harness's boolean input
-  gate is unchanged; this inventory needs review and is not a new row-wise validator.
+  gate is unchanged; independent review and exact inventory tests pin these rows.
+  The harness gate itself is not a row-wise validator.
 
 ### Measured causes
 
@@ -1672,7 +1674,7 @@ existing variables keep their permitted policy. Only packs with variable declara
 change YAML bytes; repeated primary-level projections account for the 24 transport
 readings. Empty declaration files do not acquire a behavioral default.
 
-`3db56521` adds tagged registry identities and `(item, profile, variable)` descriptors
+`3db56521ff823c7108ae6a53688c95726efd9be5` adds tagged registry identities and `(item, profile, variable)` descriptors
 including hidden item permissions, type, dimensions, lifetime and normalization range.
 The [canonical reconstruction](../product/evidence/static-epistemic-access/canonical-schema-attribution.json)
 independently reproduces every before hash and verifies all 53 after hashes. Ordinary

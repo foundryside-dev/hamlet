@@ -1,0 +1,26 @@
+{
+  "controls": "56 passed in0.43s",
+  "direct_parent": {
+    "attributed_changes": 150,
+    "byte_exact_streams": 40,
+    "cases": 31,
+    "readings": 884,
+    "unchanged_resets": 11
+  },
+  "frozen": {
+    "cpu_verdicts_recomputed": 10,
+    "cuda_skipped": 10,
+    "div015_only": [
+      "variable_schema_hash",
+      "vfs_hash"
+    ],
+    "old_allowances_unchanged": true
+  },
+  "full_acceptance": "pending full gate terminal results",
+  "report_sha256": {
+    "runs/differential/static-epistemic-b70fda10-frozen-clean-cpu/report.json": "e4e8d39d61a76dc7c0b1fff5466314a6bfc3e3718abba39dc7bbb39325d41119",
+    "runs/static-epistemic-access/qualified-b70fda10/report.json": "2a6f10a0e618d66fd7d54b2c46239cb9f64c0702efba01f5c415cbcb325df5df"
+  },
+  "reviewed_source": "b70fda104e5061ed2735e8b31b7f8f9caaf99f19",
+  "source_clean": true
+}

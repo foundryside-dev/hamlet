@@ -3,8 +3,10 @@
 ## Delivered and verified
 
 Declaration-store **Cut A**, canonical-variable **Cut B** and **static epistemic access**
-are accepted and consolidated on local and GitHub `main` at **`729779280820a31294013f9f7c839fbf23732ced`** (PR #42). All 20 pre-consolidation
-local branch tips are contained; no additional committed branch work was found.
+are accepted and consolidated on GitHub `main` at **`729779280820a31294013f9f7c839fbf23732ced`** (PR #42), as read at 08:17 UTC.
+At that reading, local main matched publication, all 20 pre-consolidation local branch tips
+were contained, and no additional committed branch work was found. Local main subsequently
+advanced to documentation checkpoint **`792c6704`**; the repair branch is identified below.
 [PDR-0154](decisions/0154-main-consolidation-and-product-checkpoint.md) records the pre-publication checkpoint;
 [PDR-0155](decisions/0155-resume-reconciles-completed-main-publication.md) reconciles delivery at the 08:17 UTC resume.
 
@@ -29,6 +31,22 @@ update is outside the delivery verdict. No release, tag or deployment is part of
 Three historical access defects are closed with bounded source/runtime evidence:
 `hamlet-fc78bb49d3`, `hamlet-1a520475f4`, `hamlet-c78fbf32a3`. Owner/per-observer privacy
 `hamlet-83a043a9b9` remains open. Unknown historical roles are refused, not implemented.
+
+The owner's review of `72977928` exposed effect-admission refusal and canonical
+variable-identity defects. Both reproduced. Local branch `fix/static-access-review`
+now contains implementation **`7eb7ded3`** (following `c3faa4bf`): selected lifecycle writes authorize before
+admission/reapplication, immediate nested denials restore runtime state, and structured
+canonical identities retain distinct variables and origins. Deterministic lowest-free
+item rows prevent rejected cascades from changing later allocation. **397 focused
+item/effect checks and 988 compiler/oracle/access checks pass**; lint/type/no-defaults/fleet gates
+pass. The final source's full suite passed **4,277 tests / 18 skips / 15 warnings /
+85% coverage** in 989.23s, exit 0. `hamlet-f75ff623be`, `hamlet-bae419a592` and the
+additional cascade defect `hamlet-940089c925` are closed against this local source. The repair is local;
+published main's source and hosted qualification remain the historical readings above.
+[PDR-0156](decisions/0156-static-access-review-refusal-and-identity-repairs.md) records
+the repair scope, independent counterexamples and acceptance limits.
+[Verification receipt](evidence/static-access-review/verification.md) banks the full
+reading and skip disposition. No frozen trajectory or convergence campaign was rerun.
 
 ## Product judgment
 
@@ -57,9 +75,9 @@ seven live transitions, five vector ticks, one terminal/finalization each, and n
 replay/RND/annealing/bonus. Adjacent learner defects require reproduction before being treated
 as confirmed scope. This recommendation is not authorization to implement it.
 
-This resume reconciled publication, confirmed delivery closed and recovery open, and checked
-retained publication/dirty-file digests. No bet moved horizon or implementation was dispatched.
-The standing authority grant remains unchanged; this documentation checkpoint is local only.
+The initial resume reconciled publication. The subsequent owner review dispatched these
+bounded contract repairs; no bet moved horizon and the standing authority grant remains
+unchanged. Recovery is open. The repair/checkpoint branch is local only.
 
 Next session: adjudicate the fired exit trigger, then source-reproduce and scope the episode-lane PRD. Keep effects reset and item fidelity as
 separate packages unless the chosen scenario explicitly depends on them. The frozen oracle,

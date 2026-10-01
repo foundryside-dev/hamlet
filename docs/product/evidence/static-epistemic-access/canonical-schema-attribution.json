@@ -1,0 +1,5781 @@
+{
+  "cases": [
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "deficit_energy",
+            "lifetime": "tick",
+            "range": [
+              0.0,
+              1.0
+            ],
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "deficit_energy"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "occupied_by",
+            "lifetime": "tick",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "affordance",
+            "type": "agent_ref",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "occupied_by"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "time_since_last_sleep",
+            "lifetime": "tick",
+            "range": [
+              0.0,
+              100.0
+            ],
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "time_since_last_sleep"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "trust",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "pair",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "trust"
+          ]
+        }
+      ],
+      "after_hash": "88cbe1f07615ea19542c9553941e41a54f2cf43636f4b880a29daf5608bc6efc",
+      "before": [
+        {
+          "dims": null,
+          "id": "deficit_energy",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "occupied_by",
+          "lifetime": "tick",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "affordance",
+          "type": "agent_ref",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "time_since_last_sleep",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            100.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "trust",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "pair",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "ee3da65a9d2208f249e8d8794ea1b72ed16ea36e7a73f7753bb17a967725ca03",
+      "level": "L5_multi_agent",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/L5_multi_agent",
+      "primary_level": "L5_multi_agent"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "3afcc39ae7d125759aaf31cd165b32c1386b72d887ab87679a994a117879d8e4",
+      "before": [
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "c5d414c9ddaa662fceca4772c53d3f649ed51ed92d523bbd39308692057e7b55",
+      "level": "L0",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/aspatial_test",
+      "primary_level": "L0"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "day_phase",
+            "lifetime": "persistent",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "day_phase"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "65564174ed8f79ff09e9d7db5b0f3d939717084611a3d314f2f810c7148402c7",
+      "before": [
+        {
+          "dims": null,
+          "id": "day_phase",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761",
+      "level": "L0_0_minimal",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/default_curriculum",
+      "primary_level": "L0_0_minimal"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "day_phase",
+            "lifetime": "persistent",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "day_phase"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "65564174ed8f79ff09e9d7db5b0f3d939717084611a3d314f2f810c7148402c7",
+      "before": [
+        {
+          "dims": null,
+          "id": "day_phase",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761",
+      "level": "L0_5_dual_resource",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/default_curriculum",
+      "primary_level": "L0_0_minimal"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "day_phase",
+            "lifetime": "persistent",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "day_phase"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "65564174ed8f79ff09e9d7db5b0f3d939717084611a3d314f2f810c7148402c7",
+      "before": [
+        {
+          "dims": null,
+          "id": "day_phase",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761",
+      "level": "L1_full_observability",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/default_curriculum",
+      "primary_level": "L0_0_minimal"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "day_phase",
+            "lifetime": "persistent",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "day_phase"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "65564174ed8f79ff09e9d7db5b0f3d939717084611a3d314f2f810c7148402c7",
+      "before": [
+        {
+          "dims": null,
+          "id": "day_phase",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761",
+      "level": "L2_partial_observability",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/default_curriculum",
+      "primary_level": "L0_0_minimal"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "day_phase",
+            "lifetime": "persistent",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "day_phase"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "65564174ed8f79ff09e9d7db5b0f3d939717084611a3d314f2f810c7148402c7",
+      "before": [
+        {
+          "dims": null,
+          "id": "day_phase",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761",
+      "level": "L3_temporal_mechanics",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/default_curriculum",
+      "primary_level": "L0_0_minimal"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "day_phase",
+            "lifetime": "persistent",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "day_phase"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "65564174ed8f79ff09e9d7db5b0f3d939717084611a3d314f2f810c7148402c7",
+      "before": [
+        {
+          "dims": null,
+          "id": "day_phase",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761",
+      "level": "L0_0_minimal",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/default_curriculum",
+      "primary_level": "L0_5_dual_resource"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "day_phase",
+            "lifetime": "persistent",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "day_phase"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "65564174ed8f79ff09e9d7db5b0f3d939717084611a3d314f2f810c7148402c7",
+      "before": [
+        {
+          "dims": null,
+          "id": "day_phase",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761",
+      "level": "L0_5_dual_resource",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/default_curriculum",
+      "primary_level": "L0_5_dual_resource"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "day_phase",
+            "lifetime": "persistent",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "day_phase"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "65564174ed8f79ff09e9d7db5b0f3d939717084611a3d314f2f810c7148402c7",
+      "before": [
+        {
+          "dims": null,
+          "id": "day_phase",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761",
+      "level": "L1_full_observability",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/default_curriculum",
+      "primary_level": "L0_5_dual_resource"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "day_phase",
+            "lifetime": "persistent",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "day_phase"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "65564174ed8f79ff09e9d7db5b0f3d939717084611a3d314f2f810c7148402c7",
+      "before": [
+        {
+          "dims": null,
+          "id": "day_phase",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761",
+      "level": "L2_partial_observability",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/default_curriculum",
+      "primary_level": "L0_5_dual_resource"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "day_phase",
+            "lifetime": "persistent",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "day_phase"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "65564174ed8f79ff09e9d7db5b0f3d939717084611a3d314f2f810c7148402c7",
+      "before": [
+        {
+          "dims": null,
+          "id": "day_phase",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761",
+      "level": "L3_temporal_mechanics",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/default_curriculum",
+      "primary_level": "L0_5_dual_resource"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "day_phase",
+            "lifetime": "persistent",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "day_phase"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "65564174ed8f79ff09e9d7db5b0f3d939717084611a3d314f2f810c7148402c7",
+      "before": [
+        {
+          "dims": null,
+          "id": "day_phase",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761",
+      "level": "L0_0_minimal",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/default_curriculum",
+      "primary_level": "L1_full_observability"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "day_phase",
+            "lifetime": "persistent",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "day_phase"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "65564174ed8f79ff09e9d7db5b0f3d939717084611a3d314f2f810c7148402c7",
+      "before": [
+        {
+          "dims": null,
+          "id": "day_phase",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761",
+      "level": "L0_5_dual_resource",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/default_curriculum",
+      "primary_level": "L1_full_observability"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "day_phase",
+            "lifetime": "persistent",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "day_phase"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "65564174ed8f79ff09e9d7db5b0f3d939717084611a3d314f2f810c7148402c7",
+      "before": [
+        {
+          "dims": null,
+          "id": "day_phase",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761",
+      "level": "L1_full_observability",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/default_curriculum",
+      "primary_level": "L1_full_observability"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "day_phase",
+            "lifetime": "persistent",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "day_phase"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "65564174ed8f79ff09e9d7db5b0f3d939717084611a3d314f2f810c7148402c7",
+      "before": [
+        {
+          "dims": null,
+          "id": "day_phase",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761",
+      "level": "L2_partial_observability",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/default_curriculum",
+      "primary_level": "L1_full_observability"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "day_phase",
+            "lifetime": "persistent",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "day_phase"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "65564174ed8f79ff09e9d7db5b0f3d939717084611a3d314f2f810c7148402c7",
+      "before": [
+        {
+          "dims": null,
+          "id": "day_phase",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761",
+      "level": "L3_temporal_mechanics",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/default_curriculum",
+      "primary_level": "L1_full_observability"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "day_phase",
+            "lifetime": "persistent",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "day_phase"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "65564174ed8f79ff09e9d7db5b0f3d939717084611a3d314f2f810c7148402c7",
+      "before": [
+        {
+          "dims": null,
+          "id": "day_phase",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761",
+      "level": "L0_0_minimal",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/default_curriculum",
+      "primary_level": "L2_partial_observability"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "day_phase",
+            "lifetime": "persistent",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "day_phase"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "65564174ed8f79ff09e9d7db5b0f3d939717084611a3d314f2f810c7148402c7",
+      "before": [
+        {
+          "dims": null,
+          "id": "day_phase",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761",
+      "level": "L0_5_dual_resource",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/default_curriculum",
+      "primary_level": "L2_partial_observability"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "day_phase",
+            "lifetime": "persistent",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "day_phase"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "65564174ed8f79ff09e9d7db5b0f3d939717084611a3d314f2f810c7148402c7",
+      "before": [
+        {
+          "dims": null,
+          "id": "day_phase",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761",
+      "level": "L1_full_observability",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/default_curriculum",
+      "primary_level": "L2_partial_observability"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "day_phase",
+            "lifetime": "persistent",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "day_phase"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "65564174ed8f79ff09e9d7db5b0f3d939717084611a3d314f2f810c7148402c7",
+      "before": [
+        {
+          "dims": null,
+          "id": "day_phase",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761",
+      "level": "L2_partial_observability",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/default_curriculum",
+      "primary_level": "L2_partial_observability"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "day_phase",
+            "lifetime": "persistent",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "day_phase"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "65564174ed8f79ff09e9d7db5b0f3d939717084611a3d314f2f810c7148402c7",
+      "before": [
+        {
+          "dims": null,
+          "id": "day_phase",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761",
+      "level": "L3_temporal_mechanics",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/default_curriculum",
+      "primary_level": "L2_partial_observability"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "day_phase",
+            "lifetime": "persistent",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "day_phase"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "65564174ed8f79ff09e9d7db5b0f3d939717084611a3d314f2f810c7148402c7",
+      "before": [
+        {
+          "dims": null,
+          "id": "day_phase",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761",
+      "level": "L0_0_minimal",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/default_curriculum",
+      "primary_level": "L3_temporal_mechanics"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "day_phase",
+            "lifetime": "persistent",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "day_phase"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "65564174ed8f79ff09e9d7db5b0f3d939717084611a3d314f2f810c7148402c7",
+      "before": [
+        {
+          "dims": null,
+          "id": "day_phase",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761",
+      "level": "L0_5_dual_resource",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/default_curriculum",
+      "primary_level": "L3_temporal_mechanics"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "day_phase",
+            "lifetime": "persistent",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "day_phase"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "65564174ed8f79ff09e9d7db5b0f3d939717084611a3d314f2f810c7148402c7",
+      "before": [
+        {
+          "dims": null,
+          "id": "day_phase",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761",
+      "level": "L1_full_observability",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/default_curriculum",
+      "primary_level": "L3_temporal_mechanics"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "day_phase",
+            "lifetime": "persistent",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "day_phase"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "65564174ed8f79ff09e9d7db5b0f3d939717084611a3d314f2f810c7148402c7",
+      "before": [
+        {
+          "dims": null,
+          "id": "day_phase",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761",
+      "level": "L2_partial_observability",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/default_curriculum",
+      "primary_level": "L3_temporal_mechanics"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "day_phase",
+            "lifetime": "persistent",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "day_phase"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "65564174ed8f79ff09e9d7db5b0f3d939717084611a3d314f2f810c7148402c7",
+      "before": [
+        {
+          "dims": null,
+          "id": "day_phase",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761",
+      "level": "L3_temporal_mechanics",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/default_curriculum",
+      "primary_level": "L3_temporal_mechanics"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "day_phase",
+            "lifetime": "persistent",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "day_phase"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "65564174ed8f79ff09e9d7db5b0f3d939717084611a3d314f2f810c7148402c7",
+      "before": [
+        {
+          "dims": null,
+          "id": "day_phase",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761",
+      "level": "L1_full_observability",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/differential/boundary_wrap",
+      "primary_level": "L1_full_observability"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "day_phase",
+            "lifetime": "persistent",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "day_phase"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "65564174ed8f79ff09e9d7db5b0f3d939717084611a3d314f2f810c7148402c7",
+      "before": [
+        {
+          "dims": null,
+          "id": "day_phase",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761",
+      "level": "L2_partial_observability",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/differential/div003_cubic_partial",
+      "primary_level": "L2_partial_observability"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "day_phase",
+            "lifetime": "persistent",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "day_phase"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "65564174ed8f79ff09e9d7db5b0f3d939717084611a3d314f2f810c7148402c7",
+      "before": [
+        {
+          "dims": null,
+          "id": "day_phase",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "c2643e4429d4eeca2c3997e4dd1b360be36d14e81803c8192ea289f502a79761",
+      "level": "L1_full_observability",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/differential/div003_rect",
+      "primary_level": "L1_full_observability"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "calories",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "item",
+            "type": "float",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "item",
+            "default_item",
+            "calories"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "freshness",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "item",
+            "type": "float",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "item",
+            "default_item",
+            "freshness"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "inventory_weight",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "inventory_weight"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "is_digesting",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "bool",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "is_digesting"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "is_encumbered",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "bool",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "is_encumbered"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "is_night",
+            "lifetime": "persistent",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "is_night"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "5cb88de96c716f5347b7789cbfa60655072317d4d22845ffae5285e3ec2100ce",
+      "before": [
+        {
+          "dims": null,
+          "id": "inventory_weight",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "is_digesting",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "bool",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "is_encumbered",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "bool",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "is_night",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "ad9e83858175a0d587679953e09e19bbdde19ff3b29f132b80306d5d7bd21fd3",
+      "level": "L0_demo",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/reference/model_pack",
+      "primary_level": "L0_demo"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "deficit_energy",
+            "lifetime": "tick",
+            "range": [
+              0.0,
+              1.0
+            ],
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "deficit_energy"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "time_since_last_sleep",
+            "lifetime": "tick",
+            "range": [
+              0.0,
+              100.0
+            ],
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "time_since_last_sleep"
+          ]
+        }
+      ],
+      "after_hash": "ca7e13b8784553e228f548dab312ccd5988cc9010d719cfafae070a96be869bd",
+      "before": [
+        {
+          "dims": null,
+          "id": "deficit_energy",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "time_since_last_sleep",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            100.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "d4683017afdb710ecb2ce81f3d69b507eb4134cd7f032944c0b5d2be856e5172",
+      "level": "L0_simple",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/simple",
+      "primary_level": "L0_simple"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "3afcc39ae7d125759aaf31cd165b32c1386b72d887ab87679a994a117879d8e4",
+      "before": [
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "c5d414c9ddaa662fceca4772c53d3f649ed51ed92d523bbd39308692057e7b55",
+      "level": "L0_masking",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/test/action_masking",
+      "primary_level": "L0_masking"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "3afcc39ae7d125759aaf31cd165b32c1386b72d887ab87679a994a117879d8e4",
+      "before": [
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "c5d414c9ddaa662fceca4772c53d3f649ed51ed92d523bbd39308692057e7b55",
+      "level": "L0",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/test/action_space/aspatial",
+      "primary_level": "L0"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "3afcc39ae7d125759aaf31cd165b32c1386b72d887ab87679a994a117879d8e4",
+      "before": [
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "c5d414c9ddaa662fceca4772c53d3f649ed51ed92d523bbd39308692057e7b55",
+      "level": "L0",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/test/action_space/continuous1d",
+      "primary_level": "L0"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "3afcc39ae7d125759aaf31cd165b32c1386b72d887ab87679a994a117879d8e4",
+      "before": [
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "c5d414c9ddaa662fceca4772c53d3f649ed51ed92d523bbd39308692057e7b55",
+      "level": "L0",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/test/action_space/grid2d",
+      "primary_level": "L0"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "day_count",
+            "lifetime": "persistent",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "day_count"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "digesting",
+            "lifetime": "tick",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "bool",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "digesting"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "is_wet",
+            "lifetime": "tick",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "bool",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "is_wet"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "position",
+            "lifetime": "tick",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "vec2f",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "position"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "90365f83fa8cd1f5992f3c5d1f88c9ec9564aa497718e99e3a023cbd0d7ebfc5",
+      "before": [
+        {
+          "dims": null,
+          "id": "day_count",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "digesting",
+          "lifetime": "tick",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "bool",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "is_wet",
+          "lifetime": "tick",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "bool",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "position",
+          "lifetime": "tick",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "vec2f",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "a95ac3cdd865c746543005af56bcbcef8a7dfa181373791076bb891f003ea820",
+      "level": "L0_effects",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/test/effects_smoke",
+      "primary_level": "L0_effects"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": 4,
+            "id": "position",
+            "lifetime": "tick",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "vecNf",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "position"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "042febd2003fee634c4d4cbc77c4f0c3803ecb94df05a59b9e3923aa38249805",
+      "before": [
+        {
+          "dims": 4,
+          "id": "position",
+          "lifetime": "tick",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "vecNf",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "942b13b6ad2afed3d88be225213a2286ebd1261b3205c464cf54dad114cc5b0b",
+      "level": "L0_test",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/test/gridnd_4d_pack",
+      "primary_level": "L0_test"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "freshness",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "item",
+            "type": "float",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "item",
+            "food",
+            "freshness"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "durability",
+            "lifetime": "episode",
+            "range": [
+              0.0,
+              100.0
+            ],
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "item",
+            "type": "float",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "item",
+            "medical",
+            "durability"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "has_food",
+            "lifetime": "tick",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "bool",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "has_food"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "position",
+            "lifetime": "tick",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "vec2f",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "position"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "cb092927d53ef9094fdcf8cf74d315449efb687a4e6c02ce5a311d75e327cdbb",
+      "before": [
+        {
+          "dims": null,
+          "id": "has_food",
+          "lifetime": "tick",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "bool",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "position",
+          "lifetime": "tick",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "vec2f",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "6818530d1b2a24bd939d6e2121f332a84be18de20f5e88328cb8384b57f4a828",
+      "level": "L0_smoke",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/test/items_smoke",
+      "primary_level": "L0_smoke"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "deficit_energy",
+            "lifetime": "tick",
+            "range": [
+              0.0,
+              1.0
+            ],
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "deficit_energy"
+          ]
+        },
+        {
+          "definition": {
+            "dims": 2,
+            "id": "position",
+            "lifetime": "tick",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "vecNf",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "position"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "time_since_last_eat",
+            "lifetime": "tick",
+            "range": [
+              0.0,
+              100.0
+            ],
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "time_since_last_eat"
+          ]
+        }
+      ],
+      "after_hash": "43b0104bad589a67f500dd5d7b2943fc94a935d19568b6d8ecdf467505ef6f92",
+      "before": [
+        {
+          "dims": null,
+          "id": "deficit_energy",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": 2,
+          "id": "position",
+          "lifetime": "tick",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "vecNf",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "time_since_last_eat",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            100.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "f13a474d1682366b5d19db67743a01d17664d5b6a413298eb00086636a27a466",
+      "level": "L0_test",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/test/model_config",
+      "primary_level": "L0_test"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "deficit_energy",
+            "lifetime": "tick",
+            "range": [
+              0.0,
+              1.0
+            ],
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "deficit_energy"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "time_since_last_eat",
+            "lifetime": "tick",
+            "range": [
+              0.0,
+              100.0
+            ],
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "time_since_last_eat"
+          ]
+        }
+      ],
+      "after_hash": "2b89924d841608cdc1b1d1dc001d36a3ffd69e1a61e08874750e412f6b2e0f63",
+      "before": [
+        {
+          "dims": null,
+          "id": "deficit_energy",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "time_since_last_eat",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            100.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "9c4648bee0b33f9dcc700230e16e9eb5a43728085ddb3b7919d1aa072e446142",
+      "level": "L0_12meter",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/test/model_config_12meter",
+      "primary_level": "L0_12meter"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "deficit_energy",
+            "lifetime": "tick",
+            "range": [
+              0.0,
+              1.0
+            ],
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "deficit_energy"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "time_since_last_sleep",
+            "lifetime": "tick",
+            "range": [
+              0.0,
+              100.0
+            ],
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "time_since_last_sleep"
+          ]
+        }
+      ],
+      "after_hash": "ca7e13b8784553e228f548dab312ccd5988cc9010d719cfafae070a96be869bd",
+      "before": [
+        {
+          "dims": null,
+          "id": "deficit_energy",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "time_since_last_sleep",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            100.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "d4683017afdb710ecb2ce81f3d69b507eb4134cd7f032944c0b5d2be856e5172",
+      "level": "L0_4meter",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/test/model_config_4meter",
+      "primary_level": "L0_4meter"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "deficit_energy",
+            "lifetime": "tick",
+            "range": [
+              0.0,
+              1.0
+            ],
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "deficit_energy"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "need_tokens",
+            "lifetime": "episode",
+            "range": [
+              0.0,
+              1.0
+            ],
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "tensor2d",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "need_tokens"
+          ]
+        },
+        {
+          "definition": {
+            "dims": 2,
+            "id": "position",
+            "lifetime": "tick",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "vecNf",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "position"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "time_since_last_eat",
+            "lifetime": "tick",
+            "range": [
+              0.0,
+              100.0
+            ],
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "time_since_last_eat"
+          ]
+        }
+      ],
+      "after_hash": "2051509018dee3a53168f3e5dd11a587f543f684f9c4584a515736e54d0b2a0a",
+      "before": [
+        {
+          "dims": null,
+          "id": "deficit_energy",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "need_tokens",
+          "lifetime": "episode",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "tensor2d",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": 2,
+          "id": "position",
+          "lifetime": "tick",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "vecNf",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "time_since_last_eat",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            100.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "aa24aa65759d6e51ec93517d863f75c1c6f8e5734e4cd0eed1122e47ebaa85cb",
+      "level": "L0_test",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/test/token_set_smoke",
+      "primary_level": "L0_test"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "deficit_energy",
+            "lifetime": "tick",
+            "range": [
+              0.0,
+              1.0
+            ],
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "deficit_energy"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "need_tokens",
+            "lifetime": "episode",
+            "range": [
+              0.0,
+              1.0
+            ],
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "tensor2d",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "need_tokens"
+          ]
+        },
+        {
+          "definition": {
+            "dims": 2,
+            "id": "position",
+            "lifetime": "tick",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "vecNf",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "position"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "time_since_last_eat",
+            "lifetime": "tick",
+            "range": [
+              0.0,
+              100.0
+            ],
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "time_since_last_eat"
+          ]
+        }
+      ],
+      "after_hash": "2051509018dee3a53168f3e5dd11a587f543f684f9c4584a515736e54d0b2a0a",
+      "before": [
+        {
+          "dims": null,
+          "id": "deficit_energy",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "need_tokens",
+          "lifetime": "episode",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "tensor2d",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": 2,
+          "id": "position",
+          "lifetime": "tick",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "vecNf",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "time_since_last_eat",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            100.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "aa24aa65759d6e51ec93517d863f75c1c6f8e5734e4cd0eed1122e47ebaa85cb",
+      "level": "L1_attention",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/test/token_set_smoke",
+      "primary_level": "L0_test"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "deficit_energy",
+            "lifetime": "tick",
+            "range": [
+              0.0,
+              1.0
+            ],
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "deficit_energy"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "need_tokens",
+            "lifetime": "episode",
+            "range": [
+              0.0,
+              1.0
+            ],
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "tensor2d",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "need_tokens"
+          ]
+        },
+        {
+          "definition": {
+            "dims": 2,
+            "id": "position",
+            "lifetime": "tick",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "vecNf",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "position"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "time_since_last_eat",
+            "lifetime": "tick",
+            "range": [
+              0.0,
+              100.0
+            ],
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "time_since_last_eat"
+          ]
+        }
+      ],
+      "after_hash": "2051509018dee3a53168f3e5dd11a587f543f684f9c4584a515736e54d0b2a0a",
+      "before": [
+        {
+          "dims": null,
+          "id": "deficit_energy",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "need_tokens",
+          "lifetime": "episode",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "tensor2d",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": 2,
+          "id": "position",
+          "lifetime": "tick",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "vecNf",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "time_since_last_eat",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            100.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "aa24aa65759d6e51ec93517d863f75c1c6f8e5734e4cd0eed1122e47ebaa85cb",
+      "level": "L0_test",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/test/token_set_smoke",
+      "primary_level": "L1_attention"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "deficit_energy",
+            "lifetime": "tick",
+            "range": [
+              0.0,
+              1.0
+            ],
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "deficit_energy"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "need_tokens",
+            "lifetime": "episode",
+            "range": [
+              0.0,
+              1.0
+            ],
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "tensor2d",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "need_tokens"
+          ]
+        },
+        {
+          "definition": {
+            "dims": 2,
+            "id": "position",
+            "lifetime": "tick",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "vecNf",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "position"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "time_since_last_eat",
+            "lifetime": "tick",
+            "range": [
+              0.0,
+              100.0
+            ],
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "time_since_last_eat"
+          ]
+        }
+      ],
+      "after_hash": "2051509018dee3a53168f3e5dd11a587f543f684f9c4584a515736e54d0b2a0a",
+      "before": [
+        {
+          "dims": null,
+          "id": "deficit_energy",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "need_tokens",
+          "lifetime": "episode",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "tensor2d",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": 2,
+          "id": "position",
+          "lifetime": "tick",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "vecNf",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "time_since_last_eat",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            100.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "aa24aa65759d6e51ec93517d863f75c1c6f8e5734e4cd0eed1122e47ebaa85cb",
+      "level": "L1_attention",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/test/token_set_smoke",
+      "primary_level": "L1_attention"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "threat_level",
+            "lifetime": "tick",
+            "range": [
+              0.0,
+              1.0
+            ],
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "threat_level"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "922b80d1f90264ff50b3e6c62557992434794f8dcab5a48638c05f917bd55856",
+      "before": [
+        {
+          "dims": null,
+          "id": "threat_level",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "f8063a31ce3dfc3735e7e1caf12d696d2bebc1ec3731d2274b969760d1dde797",
+      "level": "L0_transfer",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/test/token_transfer_a",
+      "primary_level": "L0_transfer"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "3afcc39ae7d125759aaf31cd165b32c1386b72d887ab87679a994a117879d8e4",
+      "before": [
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "c5d414c9ddaa662fceca4772c53d3f649ed51ed92d523bbd39308692057e7b55",
+      "level": "L0_transfer",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/test/token_transfer_b",
+      "primary_level": "L0_transfer"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "3afcc39ae7d125759aaf31cd165b32c1386b72d887ab87679a994a117879d8e4",
+      "before": [
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "c5d414c9ddaa662fceca4772c53d3f649ed51ed92d523bbd39308692057e7b55",
+      "level": "L0_transfer",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/test/token_transfer_c",
+      "primary_level": "L0_transfer"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "low_energy_flag",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "bool",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "low_energy_flag"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "position",
+            "lifetime": "tick",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "vec2f",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "position"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "3a34fadf4c8cac12f28d2f05bcd9c9119a2af63d839b558de0374ee727102db7",
+      "before": [
+        {
+          "dims": null,
+          "id": "low_energy_flag",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "bool",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "position",
+          "lifetime": "tick",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "vec2f",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "9e562f1f7e30eff92f7d971c7520bad4d6d129d4b907c52a46d290f17a7b8fa2",
+      "level": "L0_bars",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/test/vfs_bar_access",
+      "primary_level": "L0_bars"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "a",
+            "lifetime": "persistent",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "a"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "b",
+            "lifetime": "persistent",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "b"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "c",
+            "lifetime": "persistent",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "c"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "position",
+            "lifetime": "tick",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "vec2f",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "position"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        }
+      ],
+      "after_hash": "5782554a481ad4c589b2d0262d85f4f0a78523cebbfb847b4b0f2c682e6c2024",
+      "before": [
+        {
+          "dims": null,
+          "id": "a",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "b",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "c",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "position",
+          "lifetime": "tick",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "vec2f",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "4bbaa26ca131fb304a9c627b66479b8cec813edd71518937ed3a09e64b19f4e1",
+      "level": "L0_deps",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/test/vfs_dependency_chain",
+      "primary_level": "L0_deps"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "deficit_energy",
+            "lifetime": "tick",
+            "range": [
+              0.0,
+              1.0
+            ],
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "deficit_energy"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "time_since_last_sleep",
+            "lifetime": "tick",
+            "range": [
+              0.0,
+              100.0
+            ],
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "time_since_last_sleep"
+          ]
+        }
+      ],
+      "after_hash": "ca7e13b8784553e228f548dab312ccd5988cc9010d719cfafae070a96be869bd",
+      "before": [
+        {
+          "dims": null,
+          "id": "deficit_energy",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            1.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "time_since_last_sleep",
+          "lifetime": "tick",
+          "range": [
+            0.0,
+            100.0
+          ],
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "d4683017afdb710ecb2ce81f3d69b507eb4134cd7f032944c0b5d2be856e5172",
+      "level": "L0_simple",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/trial002_money_log_gdp",
+      "primary_level": "L0_simple"
+    },
+    {
+      "after": [
+        {
+          "definition": {
+            "dims": null,
+            "id": "insulation",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "item",
+            "type": "float",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "item",
+            "garment_stats",
+            "insulation"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "position",
+            "lifetime": "tick",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "agent",
+            "type": "vec2f",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "position"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "season_clock",
+            "lifetime": "persistent",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "season_clock"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "tick",
+            "lifetime": "episode",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "tick"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "winter_ticks",
+            "lifetime": "persistent",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "winter_ticks"
+          ]
+        },
+        {
+          "definition": {
+            "dims": null,
+            "id": "world_temp",
+            "lifetime": "persistent",
+            "range": null,
+            "readable_by": [
+              "agent",
+              "engine"
+            ],
+            "scope": "global",
+            "type": "scalar",
+            "writable_by": [
+              "engine"
+            ]
+          },
+          "identity": [
+            "registry",
+            "world_temp"
+          ]
+        }
+      ],
+      "after_hash": "139b7c949127904523813a4e6c5915380a99511838a933e693be5d08bebecfcd",
+      "before": [
+        {
+          "dims": null,
+          "id": "position",
+          "lifetime": "tick",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "agent",
+          "type": "vec2f",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "season_clock",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "tick",
+          "lifetime": "episode",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "winter_ticks",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        },
+        {
+          "dims": null,
+          "id": "world_temp",
+          "lifetime": "persistent",
+          "range": null,
+          "readable_by": [
+            "agent",
+            "engine"
+          ],
+          "scope": "global",
+          "type": "scalar",
+          "writable_by": [
+            "engine"
+          ]
+        }
+      ],
+      "before_hash": "e483724eb50988e0c81c9381cc2f39f2cb499f68aff1d4ce721d1c5db571a7d9",
+      "level": "L0_cold",
+      "ordinary_semantics_unchanged": true,
+      "other_vfs_inputs_unchanged": true,
+      "pack": "configs/trial_k_cold",
+      "primary_level": "L0_cold"
+    }
+  ],
+  "source_commit": "9137484965b05c26ceed1740ee9aab39a364a61c"
+}

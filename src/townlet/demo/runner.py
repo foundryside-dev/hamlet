@@ -573,7 +573,6 @@ class DemoRunner:
                 episode_shaping_reward = torch.zeros(num_agents, device=self.env.device)
                 batch_episode_steps = 0
                 episode_live_agent_transitions = 0
-                final_meters = [None for _ in range(num_agents)]
                 affordance_visits = [defaultdict(int) for _ in range(num_agents)]
                 custom_action_uses = [defaultdict(int) for _ in range(num_agents)]  # Track REST, MEDITATE, etc.
                 # NEW: Transition tracking
@@ -639,7 +638,7 @@ class DemoRunner:
 
                     if "successful_interactions" in agent_state.info:
                         for agent_idx, affordance_name in agent_state.info["successful_interactions"].items():
-                            if 0 <= agent_idx < num_agents:
+                            if 0 <= agent_idx < num_agents and bool(active_on_entry[agent_idx].item()):
                                 # Existing: count tracking
                                 affordance_visits[agent_idx][affordance_name] += 1
 
@@ -654,15 +653,13 @@ class DemoRunner:
 
                     # Track custom action uses (REST, MEDITATE, etc.)
                     for idx in range(num_agents):
+                        if not bool(active_on_entry[idx].item()):
+                            continue
                         action_id = int(agent_state.actions[idx].item())
                         # Custom actions start after substrate actions
                         if action_id >= self.env.action_space.substrate_action_count:
                             action = self.env.action_space.get_action_by_id(action_id)
                             custom_action_uses[idx][action.name] += 1
-
-                    for idx in range(num_agents):
-                        if agent_state.dones[idx] and final_meters[idx] is None:
-                            final_meters[idx] = self.env.meters[idx].detach().cpu()
 
                     # Record step if recording enabled (only agent 0 for now)
                     if self.recorder is not None and bool(active_on_entry[0].item()):
@@ -699,16 +696,6 @@ class DemoRunner:
                 if last_agent_state is None:
                     continue
 
-                for idx in range(num_agents):
-                    if final_meters[idx] is None:
-                        final_meters[idx] = self.env.meters[idx].detach().cpu()
-
-                step_counts = last_agent_state.info.get("step_counts", self.population.episode_step_counts.clone())
-                step_counts = step_counts.to(self.env.device)
-                curriculum_survival_tensor = step_counts.float()
-                curriculum_done_tensor = torch.ones_like(last_agent_state.dones, dtype=torch.bool, device=self.env.device)
-                self.population.update_curriculum_tracker(curriculum_survival_tensor, curriculum_done_tensor)
-
                 # Close surviving lanes before publishing for the actual external stop.
                 completion_reason: RunnerCompletionReason
                 if self.environment_step_budget_reached:
@@ -720,6 +707,18 @@ class DemoRunner:
                 for agent_idx in range(self.population.num_agents):
                     if not last_agent_state.dones[agent_idx]:
                         self.population.flush_episode(agent_idx=agent_idx, reason=completion_reason)
+
+                completions = self.population.episode_completions
+                if any(outcome is None for outcome in completions):
+                    raise RuntimeError("Cannot publish a participated lane without its completion")
+                completed_outcomes = [outcome for outcome in completions if outcome is not None]
+                step_counts = torch.tensor(
+                    [outcome.survival_time for outcome in completed_outcomes], dtype=torch.long, device=self.env.device
+                )
+                final_meters = [outcome.final_meters.detach().cpu().clone() for outcome in completed_outcomes]
+                curriculum_survival_tensor = step_counts.float()
+                curriculum_done_tensor = torch.ones(num_agents, dtype=torch.bool, device=self.env.device)
+                self.population.update_curriculum_tracker(curriculum_survival_tensor, curriculum_done_tensor)
 
                 epsilon_value = self.population._get_current_epsilon_value()
                 intrinsic_weight_value = self.population._get_current_intrinsic_weight_value()
@@ -808,6 +807,8 @@ class DemoRunner:
                     episode=self.current_episode,
                     agents=agent_metrics,
                 )
+                self.tb_logger.writer.add_scalar("Batch/Vector_Ticks", batch_episode_steps, self.current_episode)
+                self.tb_logger.writer.add_scalar("Batch/Live_Agent_Transitions", episode_live_agent_transitions, self.current_episode)
 
                 # Phase 2 - Training metrics (if training occurred this episode)
                 training_metrics = self.population.get_training_metrics()
@@ -857,13 +858,13 @@ class DemoRunner:
                     total_reward = episode_reward_cpu[0].item()
                     extrinsic_reward = episode_extrinsic_cpu[0].item()
                     intrinsic_reward = episode_intrinsic_cpu[0].item()
-                    weighted_intrinsic = intrinsic_reward * intrinsic_weight_value
+                    shaping_reward = episode_shaping_cpu[0].item()
 
                     logger.info(
                         f"Episode {self.current_episode}/{self.max_episodes} | "
                         f"Survival: {int(step_counts_cpu[0].item())} steps | "
                         f"Reward: {total_reward:.2f} (Extrinsic: {extrinsic_reward:.2f}, "
-                        f"Intrinsic: {intrinsic_reward:.2f}×{intrinsic_weight_value:.3f}={weighted_intrinsic:.2f}) | "
+                        f"Intrinsic: {intrinsic_reward:.2f}, Shaping: {shaping_reward:.2f}) | "
                         f"ε: {epsilon_value:.3f} | "
                         f"Stage: {stage_overview} | "
                         f"Time: {elapsed:.2f}s"
@@ -899,7 +900,7 @@ class DemoRunner:
                     logger.info(f"Performance:    Survival: {int(step_counts_cpu[0].item())} steps | Stage: {stage_overview}")
                     logger.info(
                         f"Rewards:        Total: {total_reward:.2f} | "
-                        f"Extrinsic: {extrinsic_reward:.2f} | Intrinsic: {weighted_intrinsic:.2f}"
+                        f"Extrinsic: {extrinsic_reward:.2f} | Intrinsic: {intrinsic_reward:.2f} | Shaping: {shaping_reward:.2f}"
                     )
                     # Check if annealing would trigger (for status display)
                     annealing_active = self.exploration.should_anneal() if hasattr(self.exploration, "should_anneal") else False

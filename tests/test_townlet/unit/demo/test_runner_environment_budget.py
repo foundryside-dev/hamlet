@@ -1,5 +1,7 @@
 """DemoRunner contracts for the summed-live-agent transition budget."""
 
+import sqlite3
+from contextlib import closing
 from pathlib import Path
 
 import pytest
@@ -43,6 +45,11 @@ def test_runner_stops_before_partial_vector_step(tmp_path: Path) -> None:
     assert runner.environment_step_budget_shortfall == 1
     assert runner.environment_step_budget_reached is True
     assert runner.current_episode == 0
+    with closing(sqlite3.connect(runner.db_path)) as connection:
+        assert connection.execute("SELECT COUNT(*) FROM episodes").fetchone()[0] == 0
+        assert connection.execute("SELECT COUNT(*) FROM episode_recordings").fetchone()[0] == 0
+    assert runner.population is not None
+    assert all(outcome is None for outcome in runner.population.episode_completions)
 
 
 def test_budget_counter_round_trips_and_prevents_resume_overshoot(tmp_path: Path) -> None:
@@ -57,6 +64,12 @@ def test_budget_counter_round_trips_and_prevents_resume_overshoot(tmp_path: Path
     )
     first.run()
     assert first.completed_live_agent_steps == 8
+    with closing(sqlite3.connect(first.db_path)) as connection:
+        assert connection.execute(
+            "SELECT survival_time,batch_episode_steps,live_agent_transitions,completion_reason FROM episodes"
+        ).fetchall() == [(1, 1, 8, "budget")]
+    assert first.population is not None
+    assert [(outcome.survival_time, outcome.reason) for outcome in first.population.episode_completions] == [(1, "budget")] * 8
 
     resumed = DemoRunner(
         config_dir=Path("configs/test/model_config"),
@@ -71,3 +84,5 @@ def test_budget_counter_round_trips_and_prevents_resume_overshoot(tmp_path: Path
     assert resumed.completed_live_agent_steps == 8
     assert resumed.environment_step_budget_shortfall == 0
     assert resumed.environment_step_budget_reached is True
+    with closing(sqlite3.connect(resumed.db_path)) as connection:
+        assert connection.execute("SELECT COUNT(*) FROM episodes").fetchone()[0] == 0

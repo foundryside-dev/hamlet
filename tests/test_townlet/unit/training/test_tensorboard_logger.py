@@ -126,11 +126,121 @@ def test_log_multi_agent_episode_counts_agents(temp_test_dir):
         logger.log_multi_agent_episode(
             episode=5,
             agents=[
-                {"agent_id": "agent_0", "survival_time": 10, "total_reward": 5.0},
-                {"agent_id": "agent_1", "survival_time": 20, "total_reward": 8.0},
+                {
+                    "agent_id": "agent_0",
+                    "survival_time": 10,
+                    "completion_reason": "cap",
+                    "total_reward": 5.0,
+                    "extrinsic_reward": 3.0,
+                    "intrinsic_reward": 1.0,
+                    "shaping_reward": 1.0,
+                },
+                {
+                    "agent_id": "agent_1",
+                    "survival_time": 20,
+                    "completion_reason": "budget",
+                    "total_reward": 8.0,
+                    "extrinsic_reward": 6.0,
+                    "intrinsic_reward": 2.0,
+                    "shaping_reward": 0.0,
+                },
             ],
         )
         assert logger.episodes_logged == 2
+
+
+def _canonical_agent() -> dict:
+    return {
+        "agent_id": "lane-0",
+        "survival_time": 2,
+        "completion_reason": "authored_terminal",
+        "total_reward": 5.0,
+        "extrinsic_reward": 2.0,
+        "intrinsic_reward": 1.0,
+        "shaping_reward": 2.0,
+        "curriculum_stage": 2,
+        "epsilon": 0.4,
+        "intrinsic_weight": 0.6,
+    }
+
+
+@pytest.mark.parametrize(
+    "field", ["agent_id", "survival_time", "completion_reason", "total_reward", "extrinsic_reward", "intrinsic_reward", "shaping_reward"]
+)
+def test_canonical_episode_requires_fields_before_any_agent_publication(temp_test_dir, field):
+    good = _canonical_agent()
+    bad = {**_canonical_agent(), "agent_id": "lane-1"}
+    del bad[field]
+    with logger_with_writer(temp_test_dir) as (logger, writer, _):
+        with pytest.raises(ValueError, match=field):
+            logger.log_multi_agent_episode(3, [good, bad])
+        writer.add_scalar.assert_not_called()
+        writer.add_text.assert_not_called()
+        assert logger.episodes_logged == 0
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("survival_time", True),
+        ("survival_time", 2.0),
+        ("survival_time", "2"),
+        ("survival_time", 0),
+        ("survival_time", -2),
+        ("total_reward", float("nan")),
+        ("extrinsic_reward", float("inf")),
+        ("intrinsic_reward", -float("inf")),
+        ("shaping_reward", True),
+        ("intrinsic_reward", "1.0"),
+        ("total_reward", 9.0),
+        ("completion_reason", "death"),
+        ("completion_reason", None),
+        ("completion_reason", True),
+        ("agent_id", ""),
+        ("agent_id", None),
+        ("epsilon", float("nan")),
+        ("intrinsic_weight", float("inf")),
+        ("curriculum_stage", True),
+    ],
+)
+def test_canonical_episode_refuses_bad_later_row_without_partial_publication(temp_test_dir, field, value):
+    good = _canonical_agent()
+    bad = {**_canonical_agent(), "agent_id": "lane-1", field: value}
+    with logger_with_writer(temp_test_dir) as (logger, writer, _):
+        with pytest.raises(ValueError):
+            logger.log_multi_agent_episode(3, [good, bad])
+        writer.add_scalar.assert_not_called()
+        writer.add_text.assert_not_called()
+        assert logger.episodes_logged == 0
+
+
+@pytest.mark.parametrize("reason", ["authored_terminal", "retirement", "cap", "budget", "shutdown", "checkpoint"])
+def test_canonical_episode_forwards_components_and_shared_reason(temp_test_dir, reason):
+    data = {**_canonical_agent(), "completion_reason": reason}
+    with logger_with_writer(temp_test_dir) as (logger, writer, _):
+        logger.log_multi_agent_episode(3, [data])
+        logged = {call.args[0]: call.args[1] for call in writer.add_scalar.call_args_list}
+        assert logged["lane-0/Episode/Total_Reward"] == 5.0
+        assert logged["lane-0/Episode/Extrinsic_Reward"] == 2.0
+        assert logged["lane-0/Episode/Intrinsic_Reward"] == 1.0
+        assert logged["lane-0/Episode/Shaping_Reward"] == 2.0
+        writer.add_text.assert_called_once_with("lane-0/Episode/Completion_Reason", reason, 3)
+
+
+@pytest.mark.parametrize("episode", [True, -1, 1.5, "3"])
+def test_canonical_episode_requires_nonnegative_integer_episode_before_publication(temp_test_dir, episode):
+    with logger_with_writer(temp_test_dir) as (logger, writer, _):
+        with pytest.raises(ValueError, match="episode"):
+            logger.log_multi_agent_episode(episode, [_canonical_agent()])
+        writer.add_scalar.assert_not_called()
+        writer.add_text.assert_not_called()
+
+
+def test_canonical_episode_accepts_float_rounding_and_emits_zero_shaping(temp_test_dir):
+    data = {**_canonical_agent(), "total_reward": 0.1 + 0.2, "extrinsic_reward": 0.1, "intrinsic_reward": 0.2, "shaping_reward": 0.0}
+    with logger_with_writer(temp_test_dir) as (logger, writer, _):
+        logger.log_multi_agent_episode(3, [data])
+        writer.add_scalar.assert_any_call("lane-0/Episode/Shaping_Reward", 0.0, 3)
 
 
 def test_log_training_step_logs_histograms(temp_test_dir):

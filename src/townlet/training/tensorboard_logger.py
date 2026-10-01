@@ -10,11 +10,34 @@ Integration:
     - Safe for multi-agent scenarios
 """
 
+import math
 from pathlib import Path
-from typing import Any
+from typing import Any, get_args
 
 import torch
 from torch.utils.tensorboard import SummaryWriter
+
+from townlet.training.episode import CompletionReason
+
+
+def _finite_episode_metric(value: object, field: str) -> float:
+    """Accept finite numeric episode fields without coercing strings or booleans."""
+    if type(value) not in (int, float):
+        raise ValueError(f"Episode {field} must be numeric and not bool")
+    try:
+        result = float(value)  # type: ignore[arg-type]
+    except OverflowError as error:
+        raise ValueError(f"Episode {field} must be finite") from error
+    if not math.isfinite(result):
+        raise ValueError(f"Episode {field} must be finite")
+    return result
+
+
+def _episode_count(value: object, field: str, minimum: int) -> int:
+    """Require exact integer counts before publishing a completed episode."""
+    if type(value) is not int or value < minimum:
+        raise ValueError(f"Episode {field} must be an integer >= {minimum}")
+    return value
 
 
 class TensorBoardLogger:
@@ -110,9 +133,7 @@ class TensorBoardLogger:
         self.writer.add_scalar(f"{prefix}Episode/Extrinsic_Reward", extrinsic_reward, episode)
         self.writer.add_scalar(f"{prefix}Episode/Intrinsic_Reward", intrinsic_reward, episode)
 
-        # MED-09: Log shaping reward if provided (DAC 3-component breakdown)
-        if shaping_reward != 0.0:
-            self.writer.add_scalar(f"{prefix}Episode/Shaping_Reward", shaping_reward, episode)
+        self.writer.add_scalar(f"{prefix}Episode/Shaping_Reward", shaping_reward, episode)
 
         # Learning progress indicators
         self.writer.add_scalar(f"{prefix}Curriculum/Stage", curriculum_stage, episode)
@@ -133,26 +154,59 @@ class TensorBoardLogger:
             self.last_flush_episode = episode
 
     def log_multi_agent_episode(self, episode: int, agents: list[dict[str, Any]]) -> None:
-        """Log per-episode metrics for multiple agents.
+        """Validate the complete canonical batch before publishing any agent outcome.
 
         MED-19: Flush counter increments per agent, not per episode. This means flush
         happens every N agent logs (e.g., 10 agents × 1 episode = flush every episode
         if flush_every=10). This is intentional - allows finer flush granularity in
         multi-agent scenarios.
         """
+        _episode_count(episode, "episode", 0)
+        prepared: list[tuple[dict[str, Any], str]] = []
+        required_fields = (
+            "agent_id",
+            "survival_time",
+            "total_reward",
+            "extrinsic_reward",
+            "intrinsic_reward",
+            "shaping_reward",
+            "completion_reason",
+        )
         for data in agents:
-            agent_identifier = str(data.get("agent_id", ""))
-            self.log_episode(
-                episode=episode,
-                survival_time=int(data.get("survival_time", 0)),
-                total_reward=float(data.get("total_reward", 0.0)),
-                extrinsic_reward=float(data.get("extrinsic_reward", 0.0)),
-                intrinsic_reward=float(data.get("intrinsic_reward", 0.0)),
-                curriculum_stage=int(data.get("curriculum_stage", 1)),
-                epsilon=float(data.get("epsilon", 0.0)),
-                intrinsic_weight=float(data.get("intrinsic_weight", 0.0)),
-                agent_id=agent_identifier,
-            )
+            if not isinstance(data, dict):
+                raise ValueError("Episode agent metrics must be a dictionary")
+            for field in required_fields:
+                if field not in data:
+                    raise ValueError(f"Episode missing required {field}")
+            agent_identifier = data["agent_id"]
+            if not isinstance(agent_identifier, str) or not agent_identifier.strip():
+                raise ValueError("Episode agent_id must be a nonempty string")
+            reason = data["completion_reason"]
+            if type(reason) is not str or reason not in get_args(CompletionReason):
+                raise ValueError("Episode completion_reason is outside the shared vocabulary")
+            metrics: dict[str, Any] = {
+                "agent_id": agent_identifier,
+                "survival_time": _episode_count(data["survival_time"], "survival_time", 1),
+                "total_reward": _finite_episode_metric(data["total_reward"], "total_reward"),
+                "extrinsic_reward": _finite_episode_metric(data["extrinsic_reward"], "extrinsic_reward"),
+                "intrinsic_reward": _finite_episode_metric(data["intrinsic_reward"], "intrinsic_reward"),
+                "shaping_reward": _finite_episode_metric(data["shaping_reward"], "shaping_reward"),
+                "curriculum_stage": _episode_count(data.get("curriculum_stage", 1), "curriculum_stage", 0),
+                "epsilon": _finite_episode_metric(data.get("epsilon", 0.0), "epsilon"),
+                "intrinsic_weight": _finite_episode_metric(data.get("intrinsic_weight", 0.0), "intrinsic_weight"),
+            }
+            try:
+                component_total = math.fsum(metrics[field] for field in ("extrinsic_reward", "intrinsic_reward", "shaping_reward"))
+            except OverflowError as error:
+                raise ValueError("Episode reward component sum must be finite") from error
+            if not math.isclose(metrics["total_reward"], component_total, rel_tol=1e-5, abs_tol=1e-6):
+                raise ValueError("Episode reward component sum does not match total_reward")
+            if metrics["total_reward"] != 0 and not math.isfinite(metrics["intrinsic_reward"] / metrics["total_reward"]):
+                raise ValueError("Episode intrinsic reward ratio must be finite")
+            prepared.append((metrics, reason))
+        for metrics, reason in prepared:
+            self.log_episode(episode=episode, **metrics)
+            self.writer.add_text(f"{metrics['agent_id']}/Episode/Completion_Reason", reason, episode)
 
     def log_curriculum_transitions(self, episode: int, events: list[dict[str, Any]]) -> None:
         """Log curriculum transition rationale events."""

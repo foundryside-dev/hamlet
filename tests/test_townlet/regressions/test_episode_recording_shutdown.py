@@ -134,6 +134,7 @@ def test_ordinary_runner_shutdown_persists_accepted_episode(
         )
         assert decoded["metadata"] == expected["metadata"]
         assert decoded["steps"] == expected["steps"]
+        assert decoded["version"] == 2
         assert [frame["step"] for frame in decoded["steps"]] == [0, 1]
         assert decoded["metadata"]["survival_steps"] == 2
         assert rows[0]["episode_id"] == decoded["metadata"]["episode_id"] == 0
@@ -143,6 +144,8 @@ def test_ordinary_runner_shutdown_persists_accepted_episode(
             "total_reward",
             "extrinsic_reward",
             "intrinsic_reward",
+            "shaping_reward",
+            "completion_reason",
             "curriculum_stage",
             "epsilon",
             "intrinsic_weight",

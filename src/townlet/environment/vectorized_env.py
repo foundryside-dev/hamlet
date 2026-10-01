@@ -1066,13 +1066,14 @@ class VectorizedHamletEnv:
         # and any read of the registry's tick returns the same.
         self.vfs_registry.set_engine_value("tick", torch.tensor(float(self.global_tick), device=self.device))
         prev_dones = self.dones.clone()
+        active_on_entry = ~prev_dones
         self.vfs_registry.reset_tick_scoped()
         # 1. Execute actions and track successful interactions
         successful_interactions = self._action_executor._execute_actions(actions)
         self._run_vtc_transition_phases(
             self.vtc_transition_runner.phases_through("apply_completion_bonuses"),
             actions=actions,
-            active_mask=torch.logical_not(prev_dones),
+            active_mask=active_on_entry,
         )
 
         # 2. Deplete meters (base passive decay with curriculum difficulty)
@@ -1168,14 +1169,15 @@ class VectorizedHamletEnv:
 
         self._run_vtc_transition_phases(
             self.vtc_transition_runner.phases_between("apply_threshold_cascades", "evaluate_terminal_conditions"),
-            active_mask=torch.logical_not(prev_dones),
+            active_mask=active_on_entry,
         )
 
         # 4. Evaluate VTC terminal conditions
         self._apply_vtc_terminal_conditions()
+        authored_terminal = active_on_entry & self.dones
 
-        # 5. Increment step counts (before retirement check)
-        self.step_counts += 1
+        # 5. Count eligible transitions, including the transition that ends a lane.
+        self.step_counts += active_on_entry.to(dtype=self.step_counts.dtype)
         self.global_tick += 1  # HIGH-01: Increment global time counter
 
         # 5.1. Age items and process periodic respawning (after step count increment)
@@ -1190,19 +1192,19 @@ class VectorizedHamletEnv:
             self.item_manager.process_respawns(self.global_tick, bars=bars_dict_spawn, temporal=temporal_context)
 
         # 5.5. Check for retirement (reached maximum lifespan)
-        # Agents that reach their lifespan retire with a bonus reward
-        retired = self.step_counts >= self.agent_lifespan
+        # Authored termination wins coincidence with the configured lifespan.
+        newly_retired = active_on_entry & ~authored_terminal & (self.step_counts >= self.agent_lifespan)
 
         # 6. Calculate rewards (interoception-aware)
         rewards = self._reward_calculator._calculate_shaped_rewards()
-        rewards = torch.where(retired, rewards + 1.0, rewards)  # +1 retirement bonus
-        self.dones = torch.logical_or(self.dones, retired)
+        rewards = torch.where(newly_retired, rewards + 1.0, rewards)  # +1 retirement bonus
+        self.dones = torch.logical_or(self.dones, newly_retired)
+        newly_terminal = authored_terminal | newly_retired
 
         # Cancel any pending agent-scoped delayed work for agents that just became done
         if self.effect_manager is not None and self.effect_manager.scheduler is not None:
-            newly_done = torch.logical_and(self.dones, ~prev_dones)
-            if newly_done.any():
-                for idx in torch.nonzero(newly_done, as_tuple=False).flatten():
+            if newly_terminal.any():
+                for idx in torch.nonzero(newly_terminal, as_tuple=False).flatten():
                     self.effect_manager.cancel_scheduled_for_entity(scope="agent", entity_id=int(idx))
 
         # 6. time_of_day is DERIVED from global_tick at this same point in the step —
@@ -1214,6 +1216,9 @@ class VectorizedHamletEnv:
         observations = self._get_observations()
 
         info = {
+            "active_on_entry": active_on_entry.clone(),
+            "newly_terminal": newly_terminal.clone(),
+            "newly_retired": newly_retired.clone(),
             "step_counts": self.step_counts.clone(),
             "positions": self.positions.clone(),
             "successful_interactions": successful_interactions,  # {agent_idx: affordance_name}

@@ -1,0 +1,159 @@
+{
+  "pr": "https://github.com/foundryside-dev/hamlet/pull/42",
+  "merged_at": "2026-10-01T02:54:56Z",
+  "github_merge_commit": "729779280820a31294013f9f7c839fbf23732ced",
+  "published_head": "99d3d86b449deccfb980237562ee5132de0baa9f",
+  "execution_source_unchanged_from": "b70fda104e5061ed2735e8b31b7f8f9caaf99f19",
+  "published_head_workflows": {
+    "head_sha": "99d3d86b449deccfb980237562ee5132de0baa9f",
+    "branch": "project-recovery-4",
+    "runs": [
+      {
+        "id": 36805188108,
+        "name": "Lint",
+        "head_sha": "99d3d86b449deccfb980237562ee5132de0baa9f",
+        "head_branch": "project-recovery-4",
+        "event": "pull_request",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/foundryside-dev/hamlet/actions/runs/36805188108",
+        "run_started_at": "2026-10-01T02:18:10Z",
+        "updated_at": "2026-10-01T02:19:26Z"
+      },
+      {
+        "id": 36805188146,
+        "name": "Config Validation",
+        "head_sha": "99d3d86b449deccfb980237562ee5132de0baa9f",
+        "head_branch": "project-recovery-4",
+        "event": "pull_request",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/foundryside-dev/hamlet/actions/runs/36805188146",
+        "run_started_at": "2026-10-01T02:18:10Z",
+        "updated_at": "2026-10-01T02:19:49Z"
+      },
+      {
+        "id": 36805188101,
+        "name": "Tests",
+        "head_sha": "99d3d86b449deccfb980237562ee5132de0baa9f",
+        "head_branch": "project-recovery-4",
+        "event": "pull_request",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/foundryside-dev/hamlet/actions/runs/36805188101",
+        "run_started_at": "2026-10-01T02:18:10Z",
+        "updated_at": "2026-10-01T02:53:41Z"
+      },
+      {
+        "id": 36805137705,
+        "name": "Lint",
+        "head_sha": "99d3d86b449deccfb980237562ee5132de0baa9f",
+        "head_branch": "project-recovery-4",
+        "event": "push",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/foundryside-dev/hamlet/actions/runs/36805137705",
+        "run_started_at": "2026-10-01T02:17:32Z",
+        "updated_at": "2026-10-01T02:18:44Z"
+      },
+      {
+        "id": 36805137602,
+        "name": "Config Validation",
+        "head_sha": "99d3d86b449deccfb980237562ee5132de0baa9f",
+        "head_branch": "project-recovery-4",
+        "event": "push",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/foundryside-dev/hamlet/actions/runs/36805137602",
+        "run_started_at": "2026-10-01T02:17:32Z",
+        "updated_at": "2026-10-01T02:19:29Z"
+      },
+      {
+        "id": 36805137613,
+        "name": "Tests",
+        "head_sha": "99d3d86b449deccfb980237562ee5132de0baa9f",
+        "head_branch": "project-recovery-4",
+        "event": "push",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/foundryside-dev/hamlet/actions/runs/36805137613",
+        "run_started_at": "2026-10-01T02:17:32Z",
+        "updated_at": "2026-10-01T02:51:30Z"
+      }
+    ],
+    "all_terminal_success": true
+  },
+  "main_workflows": {
+    "head_sha": "729779280820a31294013f9f7c839fbf23732ced",
+    "branch": "main",
+    "runs": [
+      {
+        "id": 36808063663,
+        "name": "Lint",
+        "head_sha": "729779280820a31294013f9f7c839fbf23732ced",
+        "head_branch": "main",
+        "event": "push",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/foundryside-dev/hamlet/actions/runs/36808063663",
+        "run_started_at": "2026-10-01T02:54:58Z",
+        "updated_at": "2026-10-01T02:56:19Z"
+      },
+      {
+        "id": 36808063655,
+        "name": "Config Validation",
+        "head_sha": "729779280820a31294013f9f7c839fbf23732ced",
+        "head_branch": "main",
+        "event": "push",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/foundryside-dev/hamlet/actions/runs/36808063655",
+        "run_started_at": "2026-10-01T02:54:58Z",
+        "updated_at": "2026-10-01T02:56:34Z"
+      },
+      {
+        "id": 36808063683,
+        "name": "Tests",
+        "head_sha": "729779280820a31294013f9f7c839fbf23732ced",
+        "head_branch": "main",
+        "event": "push",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/foundryside-dev/hamlet/actions/runs/36808063683",
+        "run_started_at": "2026-10-01T02:54:58Z",
+        "updated_at": "2026-10-01T03:29:29Z"
+      }
+    ],
+    "all_terminal_success": true
+  },
+  "main_hosted_suite": {
+    "passed": 4249,
+    "skipped": 19,
+    "warnings": 15,
+    "seconds": 1955.24,
+    "log": "main-tests.log"
+  },
+  "artifact_sha256": {
+    "main-ci.json": "42dceba226b825d712a9c452d665a8fc3653380c2987d2c17d437d7f71d5ca2a",
+    "main-config-validation.log": "6846e71ba35050cdb79edbfcbc7bafac5bf93a9f397595ec8d8fa46e11db2395",
+    "main-lint.log": "d88b5d2a4c847ceab8d80f6897d3175b27a6c7de35bdefb95d82c034242881a1",
+    "main-tests.log": "e6e1fe32816bbf41aef2d3f5265abd1dd7ff79f4beecc29940a0fac0a2713924",
+    "pr-tests.log": "167dd3928fb19308864ac35b5af45029cc3340c6df00101c6bbe01e30ed1512a",
+    "published-head-ci.json": "347352651805d0124231101ef53dbd2388f970ebc5fc5a96a75c470046e7a293",
+    "push-tests.log": "b2cdae3e5e8960ee58cd8bdd14c89013b6121b441a7450bfb2101732572e0fff"
+  },
+  "resume_read_at_utc": "2026-10-01T08:17:16Z",
+  "receipt_recorded_at_utc": "2026-10-01T03:30:02.563765+00:00",
+  "github_read_verified": true,
+  "retained_artifact_digests_verified": 7,
+  "unrelated_dirty_file_digests_verified": 2,
+  "other_workflow": {
+    "id": 36808968679,
+    "name": "uv in /. for setuptools - Update #1601499545",
+    "status": "completed",
+    "conclusion": "failure",
+    "url": "https://github.com/foundryside-dev/hamlet/actions/runs/36808968679",
+    "scope": "Separate Dependabot automation, not a delivery qualification workflow"
+  },
+  "scope": "Resume reading; no new suite, implementation, release or deployment"
+}

@@ -3,9 +3,10 @@
 ## Delivered and verified
 
 Declaration-store **Cut A**, canonical-variable **Cut B** and **static epistemic access**
-are accepted and consolidated on local `main` at **`bb88beb84a8dfdb6e2851c16140b7d65054efb14`**. All 20 pre-consolidation
+are accepted and consolidated on local and GitHub `main` at **`729779280820a31294013f9f7c839fbf23732ced`** (PR #42). All 20 pre-consolidation
 local branch tips are contained; no additional committed branch work was found.
-[PDR-0154](decisions/0154-main-consolidation-and-product-checkpoint.md) records this checkpoint and its boundaries.
+[PDR-0154](decisions/0154-main-consolidation-and-product-checkpoint.md) records the pre-publication checkpoint;
+[PDR-0155](decisions/0155-resume-reconciles-completed-main-publication.md) reconciles delivery at the 08:17 UTC resume.
 
 | Package | Accepted contract | Qualification |
 | --- | --- | --- |
@@ -18,9 +19,12 @@ The static source passed **4,250 tests / 18 skips / 85% coverage**, all local li
 not a new full-suite run at the local merge. **201 postmerge checks passed** against
 actual main-worktree imports. [Main integration receipt](evidence/main-consolidation/local-integration.json)
 records identities, commands and preservation checks. Exact-head GitHub publication/checks are
-recorded separately in delivery issue **`hamlet-dd9a03f787`** and its consolidation PR; this
-committed snapshot precedes that publication. Local merge, push, hosted success and GitHub merge
-are separate gates. No release, tag or deployment is part of this task.
+verified separately in closed delivery issue **`hamlet-dd9a03f787`** and
+[PR #42](https://github.com/foundryside-dev/hamlet/pull/42). Actual-main Lint, Config Validation
+and Tests completed successfully; the retained hosted suite records **4,249 passed / 19 skips /
+15 warnings**. [Publication reading](evidence/main-consolidation/hosted-publication.json)
+records exact identities and run links. The resume reran no suite; a separate failed Dependabot
+update is outside the delivery verdict. No release, tag or deployment is part of this task.
 
 Three historical access defects are closed with bounded source/runtime evidence:
 `hamlet-fc78bb49d3`, `hamlet-1a520475f4`, `hamlet-c78fbf32a3`. Owner/per-observer privacy
@@ -53,7 +57,10 @@ seven live transitions, five vector ticks, one terminal/finalization each, and n
 replay/RND/annealing/bonus. Adjacent learner defects require reproduction before being treated
 as confirmed scope. This recommendation is not authorization to implement it.
 
-Next session: read the completed publication receipt, adjudicate the fired exit trigger,
-then source-reproduce and scope the episode-lane PRD. Keep effects reset and item fidelity as
+This resume reconciled publication, confirmed delivery closed and recovery open, and checked
+retained publication/dirty-file digests. No bet moved horizon or implementation was dispatched.
+The standing authority grant remains unchanged; this documentation checkpoint is local only.
+
+Next session: adjudicate the fired exit trigger, then source-reproduce and scope the episode-lane PRD. Keep effects reset and item fidelity as
 separate packages unless the chosen scenario explicitly depends on them. The frozen oracle,
 raw evidence and two unrelated dirty skill files remain preserved.

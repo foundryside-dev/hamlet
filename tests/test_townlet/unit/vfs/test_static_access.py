@@ -39,6 +39,7 @@ def test_convenience_accessors_enforce_actor_and_clone(scope: str, accessor: str
 def test_mutating_source_policy_cannot_change_runtime_authority() -> None:
     variable = _variable("public", "agent", ["engine", "agent"], ["engine"])
     registry = VariableRegistry([variable], 2, torch.device("cpu"))
+    identity = registry.variable_schema_hash
     variable.readable_by.clear()
     variable.writable_by.clear()
     registry.variables["public"].readable_by.clear()
@@ -46,6 +47,7 @@ def test_mutating_source_policy_cannot_change_runtime_authority() -> None:
     assert torch.all(registry.get("public", reader="agent") == 2.0)
     registry.set("public", torch.full((2,), 3.0), writer="engine")
     assert torch.all(registry.get_agent("public", reader="engine") == 3.0)
+    assert registry.variable_schema_hash == identity
 
 
 def test_mutated_unknown_policy_is_rejected_before_storage_allocation() -> None:
@@ -117,11 +119,13 @@ def test_item_policies_are_qualified_and_denials_preserve_storage() -> None:
 def test_item_policy_mutation_cannot_change_access_authority() -> None:
     registry = _items()
     registry.register_item_instance(0, "public")
+    identity = registry.variable_schema_hash
     variable = registry.item_profiles["public"].variables[0]
     variable.readable_by = ("engine",)
     variable.writable_by = ()
     registry.write_item("public", "value", 3.0, 0, writer="engine")
     assert registry.read_item("public", "value", 0, reader="agent") == 3.0
+    assert registry.variable_schema_hash == identity
 
 
 def test_unregistered_item_row_cannot_borrow_public_profile() -> None:

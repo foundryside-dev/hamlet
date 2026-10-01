@@ -54,9 +54,9 @@ from townlet.universe.token_hashes import (
     compute_token_layout_hash,
     compute_token_type_schema_hash,
 )
-from townlet.vfs.profiles import CompiledGlobalProfile
-from townlet.vfs.schema import NormalizationSpec, VariableDef
-from townlet.vfs.schema_hashes import compute_vfs_hash
+from townlet.vfs.profiles import AMBIENT_ENGINE_NAMES, CompiledGlobalProfile, CompiledItemProfile
+from townlet.vfs.schema import NormalizationSpec, VariableDef, VariableScope
+from townlet.vfs.schema_hashes import compute_variable_schema_hash, compute_vfs_hash
 from townlet.vfs.transition_schedule import (
     VTCTransitionSchedule,
     build_vtc_transition_schedule,
@@ -646,9 +646,72 @@ def _require_exact_keys(payload: Mapping[str, Any], expected: set[str], *, field
         )
 
 
+def _validate_compiled_policy_coherence(
+    compiled: CompiledUniverse, level_name: str, level: CompiledUniverse.LevelMetadata
+) -> Mapping[str, CompiledItemProfile]:
+    """Both products of each ordinary declaration must agree before publication.
+
+    Global/agent profiles own expression products; the registry owns ordinary
+    storage and access. Their same-entity type, shape, lifetime, normalization and
+    policy must agree. Item policies have one qualified compiled authority and
+    enter identity below.
+    """
+    definitions = {variable.id: variable for variable in level.vfs_variables}
+    if len(definitions) != len(level.vfs_variables):
+        raise ValueError(f"Compiled universe cache policy coherence failure for {level_name!r}: duplicate registry identity")
+    profiles = compiled.compiled_vfs_profiles
+    for scope, profile in (
+        (VariableScope.GLOBAL, None if profiles is None else profiles.global_profile),
+        (VariableScope.AGENT, None if profiles is None else profiles.agent_profile),
+    ):
+        expected = {
+            variable.id: variable
+            for variable in level.vfs_variables
+            if variable.scope == scope and not (scope == VariableScope.GLOBAL and variable.id in AMBIENT_ENGINE_NAMES)
+        }
+        variables = () if profile is None else profile.variables
+        actual = {variable.name: variable for variable in variables}
+        if len(actual) != len(variables) or set(actual) != set(expected):
+            raise ValueError(
+                f"Compiled universe cache policy coherence failure for {level_name!r}: " f"{scope.value} profile/registry rosters disagree"
+            )
+        for name, variable in actual.items():
+            definition = expected[name]
+            # Expression products spell scalar storage as float. The remaining
+            # same-entity metadata is copied directly from the declaration.
+            # Initializers are intentionally not compared: exposed deterministic
+            # tensor modes are lowered to literals only in the registry product.
+            profile_type = "scalar" if variable.type == "float" else variable.type
+            if profile_type != definition.type:
+                raise ValueError(
+                    f"Compiled universe cache policy coherence failure for {level_name!r}: "
+                    f"{scope.value} variable {name!r} type disagrees"
+                )
+            for field in ("lifetime", "dims", "shape", "normalization"):
+                if getattr(variable, field) != getattr(definition, field):
+                    raise ValueError(
+                        f"Compiled universe cache policy coherence failure for {level_name!r}: "
+                        f"{scope.value} variable {name!r} {field} disagrees"
+                    )
+            for field in ("readable_by", "writable_by", "exposed_to"):
+                if tuple(sorted(getattr(variable, field))) != tuple(sorted(getattr(definition, field))):
+                    raise ValueError(
+                        f"Compiled universe cache policy coherence failure for {level_name!r}: "
+                        f"{scope.value} variable {name!r} {field} disagrees"
+                    )
+    if profiles is None:
+        # Explicit absence of every compiled profile is valid only with the
+        # empty ordinary roster proved above; this is not an old-artifact reader.
+        return {}
+    if profiles.item_profiles is None:
+        raise ValueError("Compiled universe cache policy coherence failure: missing qualified item profile roster")
+    return profiles.item_profiles
+
+
 def _validate_compiled_token_coherence(compiled: CompiledUniverse) -> None:
     """Refuse a deserialized artifact whose derived token products disagree."""
     for level_name, level in compiled.all_levels.items():
+        item_profiles = _validate_compiled_policy_coherence(compiled, level_name, level)
         if level.token_spec.position_rank != compiled.metadata.position_dim:
             raise _token_coherence_error(
                 level_name,
@@ -705,12 +768,13 @@ def _validate_compiled_token_coherence(compiled: CompiledUniverse) -> None:
                 )
 
         computed_hashes = {
+            "variable_schema_hash": compute_variable_schema_hash(level.vfs_variables, item_profiles),
             "token_type_schema_hash": compute_token_type_schema_hash(level.token_spec),
             "layout_hash": compute_token_layout_hash(level.token_spec),
             "observation_schema_hash": compute_observation_schema_hash(level.token_spec),
         }
         computed_hashes["vfs_hash"] = compute_vfs_hash(
-            level.variable_schema_hash,
+            computed_hashes["variable_schema_hash"],
             computed_hashes["observation_schema_hash"],
             level.action_schema_hash,
             level.transition_graph_hash,

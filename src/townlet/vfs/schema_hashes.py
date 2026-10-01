@@ -7,6 +7,7 @@ import json
 from collections.abc import Iterable, Mapping
 from typing import Any
 
+from townlet.vfs.profiles import CompiledItemProfile
 from townlet.vfs.schema import NormalizationSpec, VariableDef, VariableScope
 from townlet.vfs.transition_graph import TransitionPhaseGraph
 
@@ -21,14 +22,42 @@ __all__ = [
 ]
 
 
-def canonical_variable_schema(variables: Iterable[VariableDef]) -> list[dict[str, Any]]:
-    """Return the canonical variable-schema payload used for provenance."""
-    return [_canonical_variable_entry(variable) for variable in sorted(variables, key=lambda item: item.id)]
+def canonical_variable_schema(variables: Iterable[VariableDef], item_profiles: Mapping[str, CompiledItemProfile]) -> list[dict[str, Any]]:
+    """Bind ordinary and qualified item declarations to one collision-free identity.
+
+    Permissions contribute even for hidden item state. Namespace tags keep a legal
+    registry id such as ``food.energy`` distinct from item profile ``food``'s
+    ``energy``. Supplying the complete item roster is required, including empty {}.
+    """
+    entries = [{"identity": ("registry", variable.id), "definition": _canonical_variable_entry(variable)} for variable in variables]
+    for name, profile in item_profiles.items():
+        if name != profile.profile_name:
+            raise ValueError(f"Item profile mapping key {name!r} disagrees with profile identity {profile.profile_name!r}")
+        names = [variable.name for variable in profile.variables]
+        if len(names) != len(set(names)):
+            raise ValueError(f"Item profile {name!r} has duplicate variable identity")
+        for variable in profile.variables:
+            entries.append(
+                {
+                    "identity": ("item", name, variable.name),
+                    "definition": {
+                        "id": variable.name,
+                        "type": variable.type,
+                        "scope": "item",
+                        "dims": variable.dims,
+                        "lifetime": variable.lifetime,
+                        "readable_by": sorted(variable.readable_by),
+                        "writable_by": sorted(variable.writable_by),
+                        "range": _normalization_range(variable.normalization),
+                    },
+                }
+            )
+    return sorted(entries, key=lambda entry: entry["identity"])
 
 
-def compute_variable_schema_hash(variables: Iterable[VariableDef]) -> str:
-    """Return the SHA-256 digest of the canonical variable-schema payload."""
-    return _hash_payload(canonical_variable_schema(variables))
+def compute_variable_schema_hash(variables: Iterable[VariableDef], item_profiles: Mapping[str, CompiledItemProfile]) -> str:
+    """Hash the complete registry and qualified item state identity."""
+    return _hash_payload(canonical_variable_schema(variables, item_profiles))
 
 
 def canonical_action_schema(actions: Iterable[Any]) -> list[dict[str, Any]]:

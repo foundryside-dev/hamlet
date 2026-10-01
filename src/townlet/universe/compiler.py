@@ -377,7 +377,8 @@ class UniverseCompiler:
                 logger.warning("[%s] %s", level_name, advisory)
 
             observation_schema_hash = compute_observation_schema_hash(token_spec)
-            variable_schema_hash = compute_variable_schema_hash(vfs_variables)
+            assert compiled_vfs_profiles is not None and compiled_vfs_profiles.item_profiles is not None
+            variable_schema_hash = compute_variable_schema_hash(vfs_variables, compiled_vfs_profiles.item_profiles)
             transition_schedule = build_vtc_transition_schedule(
                 runtime_action_space=runtime_action_space,
                 level=level,

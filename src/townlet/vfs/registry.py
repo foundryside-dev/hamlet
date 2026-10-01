@@ -17,6 +17,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from collections.abc import Set as AbstractSet
+from copy import deepcopy
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Literal, Protocol, runtime_checkable
 
@@ -189,6 +190,15 @@ class VariableRegistry:
                     raise ValueError(f"Duplicate item variable {key!r}")
                 self._item_access_policies[key] = _snapshot_access_policy(f"{profile_name}.{variable.name}", variable)
 
+        # Hash the same sealed policies used by checked access and publishers.
+        self._identity_item_profiles = deepcopy(self.item_profiles)
+        for profile_name, profile in self._identity_item_profiles.items():
+            for variable in profile.variables:
+                policy = self._item_access_policies[(profile_name, variable.name)]
+                variable.readable_by = policy.readable_by
+                variable.writable_by = policy.writable_by
+                variable.exposed_to = policy.exposed_to
+
         self._pair_edges: torch.Tensor | None = None
         self._pair_edge_to_index: dict[tuple[int, int], int] = {}
         self._initialize_pair_storage_index(pair_edges)
@@ -243,7 +253,17 @@ class VariableRegistry:
     @property
     def variable_schema_hash(self) -> str:
         """Return the current variable schema hash for this registry."""
-        return compute_variable_schema_hash(self._definitions.values())
+        definitions = [
+            definition.model_copy(
+                update={
+                    "readable_by": list(self._access_policies[name].readable_by),
+                    "writable_by": list(self._access_policies[name].writable_by),
+                    "exposed_to": list(self._access_policies[name].exposed_to),
+                }
+            )
+            for name, definition in self._definitions.items()
+        ]
+        return compute_variable_schema_hash(definitions, self._identity_item_profiles)
 
     def _initialize_pair_storage_index(self, pair_edges: torch.Tensor | Sequence[Sequence[int]] | None) -> None:
         """Validate and store sparse pair topology metadata."""

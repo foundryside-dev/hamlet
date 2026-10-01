@@ -125,22 +125,28 @@ def test_training_does_not_clobber_mid_episode_rollout_memory(tmp_path: Path, mo
 
     monkeypatch.setattr(RecurrentTokenQNetwork, "__init__", instrumented_init)
 
-    observed: list[tuple[torch.Tensor, torch.Tensor]] = []
+    observed: list[tuple[torch.Tensor, torch.Tensor, torch.Tensor]] = []
     original_step = VectorizedPopulation.step_population
 
     def instrumented_step(self, env):
         start = len(lstm_calls)
         counts_before = self.episode_step_counts.clone()
+        active_before = (~env.dones).clone()
         result = original_step(self, env)
         for batch_size, sequence_length, zero_mask in lstm_calls[start:]:
             if batch_size == self.num_agents and sequence_length == 1:
-                observed.append((counts_before, zero_mask))
+                observed.append((counts_before, active_before, zero_mask))
         return result
 
     monkeypatch.setattr(VectorizedPopulation, "step_population", instrumented_step)
     population = _run(_make_pack(tmp_path, "rollout-memory", sequence_length=8), tmp_path / "rollout-memory-output")
 
     assert population.last_training_step > 0, "training never ran"
-    mid_episode = [(counts, zeros) for counts, zeros in observed if bool((counts > 0).any())]
+    mid_episode = [(counts, active, zeros) for counts, active, zeros in observed if bool(((counts > 0) & active).any())]
     assert mid_episode, "no mid-episode rollout forward was observed"
-    assert not any(bool((zeros & (counts > 0)).any()) for counts, zeros in mid_episode)
+    assert not any(bool((zeros & (counts > 0) & active).any()) for counts, active, zeros in mid_episode)
+    # Completed lanes retain their survival count and clear their hidden state.
+    # They are no longer mid-episode forwards, even while another lane is live.
+    completed = [(counts, active, zeros) for counts, active, zeros in observed if bool(((counts > 0) & ~active).any())]
+    assert completed, "no completed lane was observed alongside a live lane"
+    assert all(bool(zeros[(counts > 0) & ~active].all()) for counts, active, zeros in completed)

@@ -5,6 +5,7 @@ from __future__ import annotations
 import math
 import sqlite3
 from collections import Counter
+from contextlib import closing
 from pathlib import Path
 from unittest.mock import patch
 
@@ -139,7 +140,7 @@ def test_ordinary_runner_db_tb_curriculum_and_snapshots_match_two_episode_ledger
     runner, ticks, curricula = run_lane_runner(
         tmp_path / "run", episodes=2, budget=None, cap=None, end_ticks=end_ticks, real_dac=False, recording=False
     )
-    with sqlite3.connect(runner.db_path) as connection:
+    with closing(sqlite3.connect(runner.db_path)) as connection:
         connection.row_factory = sqlite3.Row
         rows = [dict(row) for row in connection.execute("SELECT * FROM episodes ORDER BY episode_id")]
     assert len(rows) == len(curricula) == 2
@@ -186,7 +187,7 @@ def test_real_dac_db_and_tb_publish_effective_components_and_zero_terminal_frame
         for item in ticks
         for agent in range(2)
     )
-    with sqlite3.connect(runner.db_path) as connection:
+    with closing(sqlite3.connect(runner.db_path)) as connection:
         connection.row_factory = sqlite3.Row
         row = dict(connection.execute("SELECT * FROM episodes").fetchone())
     for agent in range(2):
@@ -238,7 +239,7 @@ def test_caller_cap_keeps_authored_terminal_and_live_bootstrap(tmp_path: Path, e
     ]
     replay = runner.population.replay_buffer
     assert len(replay) == 5 and replay.dones[:5].sum() == 1 and not replay.dones[4]
-    with sqlite3.connect(runner.db_path) as connection:
+    with closing(sqlite3.connect(runner.db_path)) as connection:
         row = connection.execute(
             "SELECT survival_time,batch_episode_steps,live_agent_transitions,completion_reason FROM episodes"
         ).fetchone()
@@ -252,7 +253,7 @@ def test_indivisible_zero_work_budget_publishes_no_episode(tmp_path: Path) -> No
     assert not ticks and not curricula
     assert runner.current_episode == runner.completed_live_agent_steps == 0
     assert runner.environment_step_budget_shortfall == 1
-    with sqlite3.connect(runner.db_path) as connection:
+    with closing(sqlite3.connect(runner.db_path)) as connection:
         assert connection.execute("SELECT COUNT(*) FROM episodes").fetchone()[0] == 0
         assert connection.execute("SELECT COUNT(*) FROM episode_recordings").fetchone()[0] == 0
     acc = events_for(runner)

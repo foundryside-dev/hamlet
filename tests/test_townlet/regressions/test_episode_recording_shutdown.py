@@ -9,6 +9,7 @@ import queue
 import shutil
 import sqlite3
 from collections.abc import Callable
+from contextlib import closing
 from dataclasses import asdict
 from pathlib import Path
 from typing import Any
@@ -90,7 +91,7 @@ def test_ordinary_runner_shutdown_persists_accepted_episode(
         recorder = runner.recorder
         with recorder.queue.mutex:
             outstanding = list(recorder.queue.queue)
-        with sqlite3.connect(db_path) as connection:
+        with closing(sqlite3.connect(db_path)) as connection:
             connection.row_factory = sqlite3.Row
             rows = [dict(row) for row in connection.execute("SELECT * FROM episode_recordings")]
             episodes = [dict(row) for row in connection.execute("SELECT * FROM episodes")]

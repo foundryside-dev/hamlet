@@ -27,7 +27,7 @@ Both requested Filigree Markdown reference files were committed as `80d6a5ce`
 and included in PR #44. The three review repair issues remain closed:
 `hamlet-f75ff623be`, `hamlet-bae419a592`, `hamlet-940089c925`.
 
-## Selected package: truthful episode lanes
+## Accepted local package: truthful episode lanes
 
 The owner's branch **`fix/episode-lane-accounting`** implements
 [PRD-0005](prds/0005-truthful-episode-lanes.md). Complete production candidate
@@ -38,7 +38,8 @@ two test readers changed after that full suite; 30 strict affected cases pass
 with zero warnings and all other 1,059 execution files remain exact.
 [Astra accepts criteria1–8](evidence/episode-lanes/implementation-review.md),
 with no blocking findings. Execution `hamlet-78ad37dd49` and engine bug
-`hamlet-d6fc84d147` qualify for closure at the local documentation landing. [Verification](evidence/episode-lanes/verification.md) retains the
+`hamlet-d6fc84d147` are **closed**, anchored to local landing
+`fix/episode-lane-accounting@225aad3f`. [Verification](evidence/episode-lanes/verification.md) retains the
 full source/evidence identities, actual commands, skipped cases and limits.
 
 The authored two/five fixture now reports survival **`[2,5]`**, five vector ticks,
@@ -101,3 +102,25 @@ local acceptance and reversal conditions. This checkpoint is local to the featur
 branch. There is no new main merge, push/PR, hosted CI, CUDA or convergence
 reading for this package. Keep the recovery exit review and effect-reset task
 open; accept any later scope change only from a concrete dependency witness.
+
+## Next product task and engineering handoff
+
+[PDR-0163](decisions/0163-reconcile-episode-acceptance-and-next-product-task.md)
+reconciles the stale roadmap and selects the existing oracle-exit proposal
+`hamlet-4554a428b2` as the next product task. It remains open/unclaimed; its
+tracker context now includes all sixteen entries and the exact local qualification
+limits. Require an evidence-backed disposition/coverage inventory and falsifiable
+instrument proposal. The current retirement exit and pinned inputs stay intact;
+an owner decision is required before any strategy/exit replacement.
+
+The next engineering package is **effect-reset isolation**, `hamlet-d76684f549`,
+which remains triage/unclaimed. Its historical trial proves why the question
+matters, but a fresh current-source authored reproduction is required before
+planning. The target is zero previous-episode effect carryover under repeated
+reset, preserving legitimate new-episode initialization and within-episode
+behavior. Item-cache fidelity, production RNG isolation and BAC remain separate.
+No new code or learning campaign is dispatched by this product checkpoint.
+
+The accepted integrity metric is now met; the broader compile → render → reliably
+converge claim remains unqualified. Vision and authority grant are unchanged.
+This resume adds no new full-suite, hosted, CUDA or learning reading.

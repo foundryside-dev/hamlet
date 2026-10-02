@@ -6,6 +6,7 @@ refer to their dated source, not the consolidated main.
 
 | Reading | Result | Identity / limit |
 | --- | --- | --- |
+| Recovery exit guardrail — product resume | **16 register entries: five retired, eleven nonterminal**; fired register-growth trigger remains open | Current source `225aad3f`, direct register read; DIV-016 qualification is not terminal disposition. Next product task4554a428b2; no new runtime/learning reading |
 | Episode candidate full suite | 4,652 passed / 18 skipped / 31 warnings; 85% branch coverage; 1,187.28s, exit0 | `462e8a39`; 4,670 collected, unfiltered `pytest -rs`, default branch coverage; final7dc1 test cleanup:30 strict affected/pipeline cases pass, zero warnings; other1059 files exact; Astra criteria1–8 accepted |
 | Episode accounting — candidate | **0 error**, exact survival `[2,5]`, five ticks / seven eligible transitions; once-only terminal/completion | Authored END_LANE compiler/brain path and independent ledger; normal standard/PER/recurrent, actual Q/RND updates and terminal/cap targets; no convergence claim |
 | Episode persisted consumers — candidate | Two episodes, 14 live transitions, lane survival `[2,5]`; canonical reward components and eligible playback prefixes agree | Actual ordinary DB/TB/LZ4/index/ReplayManager/observer/two exporters; 11 pipeline checks and strict original-family custody controls |
@@ -63,9 +64,13 @@ static access. No new north-star authoring success rate, default-scenario conver
 browser/CUDA acceptance or Murk performance reading is asserted. No-defaults whitelist,
 frozen fixtures, unrelated dirty files and qualified raw evidence are preserved.
 
-After independent episode-lane acceptance, the next discriminating measurement
-is task-specific held-out learning evidence from a declared scenario, once its
-remaining prerequisites are qualified. See
+Episode-lane acceptance meets the input integrity target. The immediate product
+review is the existing retirement/instrument proposal; the next engineering
+measurement is effect-reset isolation, with a fresh current-source baseline still
+required. Task-specific held-out learning remains a later measurement once its
+prerequisites and protocol are qualified.
+[PDR-0163](decisions/0163-reconcile-episode-acceptance-and-next-product-task.md)
+records this distinction; no new success rate or convergence evidence is inferred. See
 [checkpoint assessment](assessments/2026-10-01-main-product-checkpoint.md).
 
 ## Historical readings and metric definitions

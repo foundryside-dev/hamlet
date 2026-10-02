@@ -1,6 +1,6 @@
 # PRD-0005 — Truthful episode lanes
 
-Status: **implementation planned; implementation unaccepted**.
+Status: **accepted — bounded local implementation at7dc1d02e**.
 Prepared: 2026-10-02 Australia/Canberra. Source baseline: `95b2f828` (PR #44 main).
 Decision: PDR-0157; planning resolution: PDR-0158; Astra revision: PDR-0159.
 Bet: bounded integrity package inside continuing recovery.
@@ -10,7 +10,7 @@ Existing engine bug: `hamlet-d6fc84d147` (confirmed). Product scoping:
 ## Problem
 
 An author comparing declared worlds or brains needs episode outcomes and learning
-budgets to describe what agents actually experienced. On current main, two agents
+budgets to describe what agents actually experienced. On the retained main baseline, two agents
 dying at ticks 2 and 5 publish survival `[5,5]`, although only seven live transitions
 occurred. Real runtime probes also reproduce a later retirement reward, continued
 replay, novelty ingestion and episode completion after death.
@@ -155,7 +155,7 @@ only where the plan establishes a design choice; route delivery forecast to
 is prescribed here. The existing engine bug remains open until its runtime fix is
 verified; this product checkpoint dispatches planning, not a learning campaign.
 
-## Planning resolution — October 2
+## Historical planning resolution — October 2
 
 [Implementation plan](../../plans/2026-10-02-truthful-episode-lanes.md) and
 [planning evidence](../evidence/episode-lanes/planning/receipt.md) complete
@@ -176,7 +176,7 @@ are required; old historical artifacts remain unchanged. Ordinary recorder
 shutdown was isolated in the probe, not qualified. No acceptance criterion or
 October9 review window changes, and no convergence campaign is dispatched.
 
-## Independent review resolution — October 2
+## Historical independent plan-review resolution — October 2
 
 [PDR-0159](../decisions/0159-episode-lane-astra-plan-revisions.md) and the revised
 plan resolve Astra's concrete findings without accepting runtime behavior. Existing
@@ -193,3 +193,30 @@ positive reward followed by a zero terminal frame and nonzero intrinsic modifier
 shaping make the witness non-vacuous. Floating-point rounding tolerances are explicit
 in the plan; all lifecycle counts, identities and presence assertions stay exact.
 All eight criteria and the review window remain in force, with implementation unaccepted.
+
+## Implementation verification — October 2
+
+Production candidate `462e8a3980845d76e7987cfea67fb63432bcb847` passes the complete
+unfiltered suite: 4,652 passed, 18 skipped, 31 warnings, 85% branch coverage.
+[Verification](../evidence/episode-lanes/verification.md) binds each criterion to
+actual authored lifecycle, sampled/learned targets, eligible RND/predictor rows,
+owned outcomes, ordinary persisted/replayed/observed sinks, explicit truncations,
+strict refusal and negative controls. Accounting error is zero with exact `[2,5]`.
+Astra found and independently verified the repair of exporter-side original WAL
+family mutation. The [final Astra review](../evidence/episode-lanes/implementation-review.md)
+accepts all eight criteria at `7dc1d02e78d8b70bd096fc4c84b4d95a9822c94f`,
+with no blocking findings. That commit closes five test-only SQLite reader
+contexts; all 1,059 other execution files stay exact. Owning and independent
+30-case strict forced-GC gates pass with zero warnings. Plan F explicitly permits
+these affected gates; no fresh full-suite run at7dc1 is claimed.
+[PDR-0162](../decisions/0162-accept-bounded-truthful-episode-lanes.md) records
+acceptance separately from future delivery.
+
+[PDR-0160](../decisions/0160-align-controlled-reset-inputs-without-changing-production-rng.md)
+qualifies only CPU-controlled reset comparison; the original natural-reset bank
+remains failed. [PDR-0161](../decisions/0161-adjudicate-exact-inherited-terminal-bonus-coordinates.md)
+qualifies seven false-bonus removals with 42 rejected corruption controls while
+preserving both original inherited nonzero gates. Neither decision alone accepts
+this PRD. Production RNG, effects reset, warmup redesign, convergence and recovery
+exit remain excluded. Local implementation acceptance is separate from later
+main integration or hosted delivery.

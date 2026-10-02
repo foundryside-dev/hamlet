@@ -6,6 +6,11 @@ refer to their dated source, not the consolidated main.
 
 | Reading | Result | Identity / limit |
 | --- | --- | --- |
+| Episode candidate full suite | 4,652 passed / 18 skipped / 31 warnings; 85% branch coverage; 1,187.28s, exit0 | `462e8a39`; 4,670 collected, unfiltered `pytest -rs`, default branch coverage; final7dc1 test cleanup:30 strict affected/pipeline cases pass, zero warnings; other1059 files exact; Astra criteria1–8 accepted |
+| Episode accounting — candidate | **0 error**, exact survival `[2,5]`, five ticks / seven eligible transitions; once-only terminal/completion | Authored END_LANE compiler/brain path and independent ledger; normal standard/PER/recurrent, actual Q/RND updates and terminal/cap targets; no convergence claim |
+| Episode persisted consumers — candidate | Two episodes, 14 live transitions, lane survival `[2,5]`; canonical reward components and eligible playback prefixes agree | Actual ordinary DB/TB/LZ4/index/ReplayManager/observer/two exporters; 11 pipeline checks and strict original-family custody controls |
+| Episode exact attribution | 799 declared lifecycle changes, 4,008 parent readings preserved; 8 learned recipes each normalize/admit/train63, finish18 lanes, leave0 pending | Five-cut CPU-controlled-reset evidence under PDR-0160; production RNG equivalence remains unqualified |
+| Episode inherited boundaries | Seven exact false retirement bonuses removed; prospective exact checker exit0 / 42 corruptions rejected | PDR-0161; original static-access/scripted commands remain exit1, frozen/matrix allowances unchanged; no CUDA/recovery-exit claim |
 | Local consolidation | All 20 local branch tips contained; 201 postmerge checks pass | Merge `bb88beb84a8dfdb6e2851c16140b7d65054efb14`; actual main-worktree imports; no new full local suite |
 | Static execution suite | 4,250 passed / 18 skipped / 15 warnings; 85% coverage | Qualified `b70fda10`, 1561.29s, exit 0; Ruff/Black/mypy/no-defaults/fleet also zero |
 | Direct-parent preservation | 31 cases, 884 readings, 150 exactly attributed identity changes; no numeric/reset changes | Ten CPU trajectories, eleven reset recipes; independent raw reconstruction |
@@ -43,11 +48,12 @@ and selects the episode-integrity planning scope.
 [planning receipts](evidence/episode-lanes/planning/receipt.md) add executed prerequisite
 witnesses. [PDR-0159](decisions/0159-episode-lane-astra-plan-revisions.md) adds
 nonmutating DB proposal controls and explicit ordinary-shutdown/reward-prefix gates.
-These are planning evidence; the candidate measurements remain outstanding. The
-zero-error target is still unmet and runtime implementation unaccepted.
+These remain historical planning evidence. The separate candidate readings above
+meet the zero-error target and are independently accepted at7dc1 under
+[PDR-0162](decisions/0162-accept-bounded-truthful-episode-lanes.md).
 [Baseline probes](evidence/episode-lanes/baseline.md)
-are discovery evidence: the metric target is not met, the bug is confirmed and
-unfixed, and implementation remains unaccepted. Baseline error uses environment
+are discovery evidence from the unfixed parent; they do not supersede the
+separate implemented candidate readings above. Baseline error uses environment
 publication, not a fresh database/TensorBoard output reproduction. Exact lane values
 and zero post-terminal contributions guard against gaming a correct aggregate.
 
@@ -57,8 +63,9 @@ static access. No new north-star authoring success rate, default-scenario conver
 browser/CUDA acceptance or Murk performance reading is asserted. No-defaults whitelist,
 frozen fixtures, unrelated dirty files and qualified raw evidence are preserved.
 
-The next discriminating measurement is candidate acceptance of exact episode-lane accounting, then task-specific
-held-out learning evidence from a declared scenario. See
+After independent episode-lane acceptance, the next discriminating measurement
+is task-specific held-out learning evidence from a declared scenario, once its
+remaining prerequisites are qualified. See
 [checkpoint assessment](assessments/2026-10-01-main-product-checkpoint.md).
 
 ## Historical readings and metric definitions

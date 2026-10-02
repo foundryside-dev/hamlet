@@ -1,0 +1,579 @@
+{
+  "schema": "episode-lanes.local-verification.v1",
+  "prepared_at_utc": "2026-10-02T00:12:54.291188+00:00",
+  "candidate_sha": "462e8a3980845d76e7987cfea67fb63432bcb847",
+  "candidate_tree": "a1b355aa6083b957e0dfc74cf2c5b01dab07e30d",
+  "test_candidate_sha": "7dc1d02e78d8b70bd096fc4c84b4d95a9822c94f",
+  "test_candidate_tree": "6551ba43c94a2a942ea0ecf04e3e3f8b8659cba1",
+  "test_reader_cleanup": {
+    "path": "repair/episode-reader-gc-receipt.json",
+    "sha256": "72a6b236c56ac7b2ee43428ea0d6a1bfabe15498a7beb19cfc0f6cc19ef0a48f",
+    "receipt": {
+      "schema": "episode-lanes.test-reader-closure.v1",
+      "source_base": "462e8a3980845d76e7987cfea67fb63432bcb847",
+      "head_at_receipt": "7dc1d02e78d8b70bd096fc4c84b4d95a9822c94f",
+      "scope": "Only two test reader imports and five closing wrappers; no production, query, producer, assertion, config, script, lockfile, or other test change.",
+      "changed_execution_files": [
+        "tests/test_townlet/regressions/test_episode_lane_sinks.py",
+        "tests/test_townlet/regressions/test_episode_recording_shutdown.py"
+      ],
+      "test_identity": {
+        "tests/test_townlet/regressions/test_episode_recording_shutdown.py": {
+          "before_sha256": "ed8c3e1ac744b998a19106b0f8b68205395061273198b8eed4b4b55cd37c8e6d",
+          "after_sha256": "e8b319b52fc43bf603622c20fd6c0b1c67fd054739353794e58fe2aac0ec241b",
+          "entire_ast_exact_after_removing_only_closing": true
+        },
+        "tests/test_townlet/regressions/test_episode_lane_sinks.py": {
+          "before_sha256": "cd3e837331b5a004e34028de07b49d04e8e57fc493855491e6f2851f9a8c091b",
+          "after_sha256": "c7ee6942a670cfcf39ff387c6bda095fc1c8e9eb5cb51289c821ed936a48c228",
+          "entire_ast_exact_after_removing_only_closing": true
+        }
+      },
+      "all_other_execution_files_identical_to_base": true,
+      "red": {
+        "passed": 19,
+        "strict_warning_errors": 16,
+        "tracemalloc_depth": 10,
+        "gc_calls": 19,
+        "gc_teardowns": 19,
+        "actual_allocations": [
+          {
+            "file": "test_episode_lane_sinks.py",
+            "original_line": 142,
+            "native_allocation_traces": 2
+          },
+          {
+            "file": "test_episode_lane_sinks.py",
+            "original_line": 189,
+            "native_allocation_traces": 1
+          },
+          {
+            "file": "test_episode_lane_sinks.py",
+            "original_line": 241,
+            "native_allocation_traces": 2
+          },
+          {
+            "file": "test_episode_lane_sinks.py",
+            "original_line": 255,
+            "native_allocation_traces": 1
+          },
+          {
+            "file": "test_episode_recording_shutdown.py",
+            "original_line": 93,
+            "native_allocation_traces": 10
+          }
+        ],
+        "execution": {
+          "argv": [
+            ".venv/bin/pytest",
+            "-q",
+            "--no-cov",
+            "-p",
+            "episode_reader_gc_probe",
+            "-W",
+            "error::ResourceWarning",
+            "-W",
+            "error::pytest.PytestUnraisableExceptionWarning",
+            "tests/test_townlet/regressions/test_episode_recording_shutdown.py",
+            "tests/test_townlet/regressions/test_episode_lane_sinks.py"
+          ],
+          "cwd": "/home/john/hamlet/.worktrees/episode-lane-implementation",
+          "environment": {
+            "OMP_NUM_THREADS": "1",
+            "MKL_NUM_THREADS": "1",
+            "PYTHONPATH": "runs/episode-lanes/2026-10-02/implementation/repair",
+            "EPISODE_READER_GC_RECEIPT": "runs/episode-lanes/2026-10-02/implementation/repair/episode-reader-gc-red.json",
+            "PYTHONTRACEMALLOC": "10"
+          },
+          "stdout_stderr_combined": "runs/episode-lanes/2026-10-02/implementation/repair/episode-reader-gc-red.log",
+          "raw_exit_code": 1,
+          "pytest_reported_elapsed_seconds": 222.6,
+          "utc_start_finish": "Not recorded; no timestamps inferred.",
+          "source_HEAD_at_run": "462e8a3980845d76e7987cfea67fb63432bcb847",
+          "tests_at_run": "Base bytes"
+        }
+      },
+      "green": {
+        "passed": 30,
+        "warnings": 0,
+        "gc_calls": 30,
+        "gc_teardowns": 30,
+        "tracemalloc_enabled": false,
+        "modules": [
+          "tests/test_townlet/regressions/test_episode_recording_shutdown.py",
+          "tests/test_townlet/regressions/test_episode_lane_sinks.py",
+          "tests/test_townlet/regressions/test_episode_lane_artifact_pipeline.py"
+        ],
+        "execution": {
+          "argv": [
+            ".venv/bin/pytest",
+            "-q",
+            "--no-cov",
+            "-p",
+            "episode_reader_gc_probe",
+            "-W",
+            "error::ResourceWarning",
+            "-W",
+            "error::pytest.PytestUnraisableExceptionWarning",
+            "tests/test_townlet/regressions/test_episode_recording_shutdown.py",
+            "tests/test_townlet/regressions/test_episode_lane_sinks.py",
+            "tests/test_townlet/regressions/test_episode_lane_artifact_pipeline.py"
+          ],
+          "cwd": "/home/john/hamlet/.worktrees/episode-lane-implementation",
+          "environment": {
+            "OMP_NUM_THREADS": "1",
+            "MKL_NUM_THREADS": "1",
+            "PYTHONPATH": "runs/episode-lanes/2026-10-02/implementation/repair",
+            "EPISODE_READER_GC_RECEIPT": "runs/episode-lanes/2026-10-02/implementation/repair/episode-reader-gc-green.json",
+            "PYTHONTRACEMALLOC": null
+          },
+          "stdout_stderr_combined": "runs/episode-lanes/2026-10-02/implementation/repair/episode-reader-gc-green.log",
+          "raw_exit_code": 0,
+          "pytest_reported_elapsed_seconds": 30.26,
+          "utc_start_finish": "Not recorded; no timestamps inferred.",
+          "source_HEAD_at_run": "462e8a3980845d76e7987cfea67fb63432bcb847",
+          "tests_at_run": "Two closing-only changes; bytes now identical to committed 7dc1d02e tests"
+        }
+      },
+      "warning_policy": [
+        "error::ResourceWarning",
+        "error::pytest.PytestUnraisableExceptionWarning"
+      ],
+      "probe": "Real gc.collect after each pytest call and teardown. No warnings filtered or suppressed; original producers and event/database readers execute.",
+      "static_checks": {
+        "ruff": {
+          "argv": [
+            ".venv/bin/ruff",
+            "check",
+            "tests/test_townlet/regressions/test_episode_recording_shutdown.py",
+            "tests/test_townlet/regressions/test_episode_lane_sinks.py"
+          ],
+          "cwd": "/home/john/hamlet/.worktrees/episode-lane-implementation",
+          "exit_code": 0,
+          "result": "All checks passed!"
+        },
+        "black": {
+          "argv": [
+            ".venv/bin/black",
+            "--check",
+            "tests/test_townlet/regressions/test_episode_recording_shutdown.py",
+            "tests/test_townlet/regressions/test_episode_lane_sinks.py"
+          ],
+          "cwd": "/home/john/hamlet/.worktrees/episode-lane-implementation",
+          "exit_code": 0,
+          "result": "2 files would be left unchanged."
+        }
+      },
+      "artifacts_sha256": {
+        "episode_reader_gc_probe.py": "ef14c65eeff129cd49b8b4d1591eecfbc7520f26e11853c7b2fc5e7255baeff2",
+        "episode-reader-gc-red.log": "875dbc1cfb9e94e9da13fec8944194ecd9a4bb05d3984b5ba5f51133db29e70c",
+        "episode-reader-gc-red.json": "c7b741a8ab6b4f3d2e7e5f899360bc6b5984cf29fac33666b51e07a9b6f42757",
+        "episode-reader-gc-green.log": "02488eae32dcee9929972975ea9d8514574c77554ea913691568ba4b99488088",
+        "episode-reader-gc-green.json": "01e1669e1c08df874d9adbe6ff1008f0a423cd71bf72b0b587590dfc936d5ff8"
+      },
+      "full_suite": "Original root full suite at source 462e retained unchanged; this receipt reports the affected 30-case strict gate, not a fresh full suite.",
+      "final_test_commit": "7dc1d02e78d8b70bd096fc4c84b4d95a9822c94f",
+      "final_test_tree": "6551ba43c94a2a942ea0ecf04e3e3f8b8659cba1",
+      "supplemental_gate_binding": {
+        "full_runtime_suite_source": "462e8a3980845d76e7987cfea67fb63432bcb847",
+        "final_test_commit": "7dc1d02e78d8b70bd096fc4c84b4d95a9822c94f",
+        "green_test_files_exact_final_commit": true,
+        "runtime_and_all_other_tests_exact_source": true,
+        "unchanged_execution_file_count": 1059,
+        "original_source_closure_path": "runs/episode-lanes/2026-10-02/implementation/qualification/repaired-candidate-execution-closure.json",
+        "original_source_closure_sha256": "695dd5e7e84384af16e6f2e80536f6e8e02bfe5327edade60af1e8c12b687859",
+        "unchanged_files_inventory_sha256": "7ec9749907fe8125e6749132864243ce54756e9d629fe551333595555da395ff"
+      },
+      "inherited_full_suite": {
+        "source_commit": "462e8a3980845d76e7987cfea67fb63432bcb847",
+        "collected": 4670,
+        "passed": 4652,
+        "skipped": 18,
+        "warnings": 31,
+        "log": "runs/episode-lanes/2026-10-02/implementation/qualification/full-suite-repaired/output.log",
+        "log_sha256": "8005c7973553b75b69d4e7f33295aa77ccf074b42655d3a64c11fd783a16d307",
+        "receipt": "runs/episode-lanes/2026-10-02/implementation/qualification/full-suite-repaired/receipt.json",
+        "receipt_sha256": "dd043d1c5e20a0f0d7cbd794276cd5be2b822557cec47c5c5f03ca53304760fa",
+        "coverage_report_total_line": [
+          "TOTAL                                                   22302   2554   8504   1528    85%"
+        ],
+        "qualification": "Retained original full suite; not reclassified as warning-free. Supplemental strict30 proves the reader closing repair."
+      },
+      "initial_receipt_head": "7dc1d02e78d8b70bd096fc4c84b4d95a9822c94f"
+    },
+    "unchanged_execution_files": 1059
+  },
+  "source_tree": "325acd476544463f8c3e2b9dddd5c68310775a44",
+  "source_execution_closure": {
+    "path": "qualification/repaired-candidate-execution-closure.json",
+    "sha256": "695dd5e7e84384af16e6f2e80536f6e8e02bfe5327edade60af1e8c12b687859",
+    "files_verified": 1061,
+    "basis": "1059 unchanged files and two precisely reviewed, strictly tested connection-close edits",
+    "python": "3.13.15 (main, Sep 29 2026, 15:01:28) [Clang 22.1.3 ]",
+    "executable": "/home/john/hamlet/.worktrees/episode-lane-implementation/.venv/bin/python",
+    "torch": "2.11.0+cu130",
+    "sqlite": "3.53.1",
+    "townlet_import": "/home/john/hamlet/.worktrees/episode-lane-implementation/src/townlet/__init__.py",
+    "lock_sha256": "ca5ef261863c57ad4d67bdc8e8aa9fee341bca71f026cdaabf974fd22fa90e77",
+    "whitelist_sha256": "c609e7a9c16c7cd8a07b2a3e2848569e643b09fb0d33985e405d8766fbada261"
+  },
+  "gates": {
+    "ruff-repaired": {
+      "name": "ruff-repaired",
+      "argv": [
+        ".venv/bin/ruff",
+        "check",
+        "."
+      ],
+      "cwd": "/home/john/hamlet/.worktrees/episode-lane-implementation",
+      "before_sha": "462e8a3980845d76e7987cfea67fb63432bcb847",
+      "before_tree": "a1b355aa6083b957e0dfc74cf2c5b01dab07e30d",
+      "before_status": "M docs/config-schemas/brain.md\n?? docs/product/decisions/0161-adjudicate-exact-inherited-terminal-bonus-coordinates.md\n?? docs/product/evidence/episode-lanes/verification.md",
+      "started_at_utc": "2026-10-01T23:33:37.108009+00:00",
+      "python": "/home/john/hamlet/.worktrees/episode-lane-implementation/.venv/bin/python",
+      "lock_sha256": "ca5ef261863c57ad4d67bdc8e8aa9fee341bca71f026cdaabf974fd22fa90e77",
+      "environment": {
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1",
+        "PYTHONPATH": null
+      },
+      "exit_code": 0,
+      "finished_at_utc": "2026-10-01T23:33:37.156600+00:00",
+      "elapsed_seconds": 0.047935669077560306,
+      "after_sha": "462e8a3980845d76e7987cfea67fb63432bcb847",
+      "after_status": "M docs/config-schemas/brain.md\n?? docs/product/decisions/0161-adjudicate-exact-inherited-terminal-bonus-coordinates.md\n?? docs/product/evidence/episode-lanes/verification.md",
+      "log_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    "black-repaired": {
+      "name": "black-repaired",
+      "argv": [
+        ".venv/bin/black",
+        "--check",
+        "src",
+        "tests"
+      ],
+      "cwd": "/home/john/hamlet/.worktrees/episode-lane-implementation",
+      "before_sha": "462e8a3980845d76e7987cfea67fb63432bcb847",
+      "before_tree": "a1b355aa6083b957e0dfc74cf2c5b01dab07e30d",
+      "before_status": "M docs/config-schemas/brain.md\n?? docs/product/decisions/0161-adjudicate-exact-inherited-terminal-bonus-coordinates.md\n?? docs/product/evidence/episode-lanes/verification.md",
+      "started_at_utc": "2026-10-01T23:33:37.108356+00:00",
+      "python": "/home/john/hamlet/.worktrees/episode-lane-implementation/.venv/bin/python",
+      "lock_sha256": "ca5ef261863c57ad4d67bdc8e8aa9fee341bca71f026cdaabf974fd22fa90e77",
+      "environment": {
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1",
+        "PYTHONPATH": null
+      },
+      "exit_code": 0,
+      "finished_at_utc": "2026-10-01T23:33:40.042717+00:00",
+      "elapsed_seconds": 2.933881869073957,
+      "after_sha": "462e8a3980845d76e7987cfea67fb63432bcb847",
+      "after_status": "M docs/config-schemas/brain.md\n?? docs/product/decisions/0161-adjudicate-exact-inherited-terminal-bonus-coordinates.md\n?? docs/product/evidence/episode-lanes/verification.md",
+      "log_sha256": "2bcb9e6b655fa3c8dd49e59d95d084fee9e388cfab6c5a3e9204c03638de620a"
+    },
+    "mypy-repaired": {
+      "name": "mypy-repaired",
+      "argv": [
+        ".venv/bin/mypy",
+        "src/townlet",
+        "--show-error-codes"
+      ],
+      "cwd": "/home/john/hamlet/.worktrees/episode-lane-implementation",
+      "before_sha": "462e8a3980845d76e7987cfea67fb63432bcb847",
+      "before_tree": "a1b355aa6083b957e0dfc74cf2c5b01dab07e30d",
+      "before_status": "M docs/config-schemas/brain.md\n?? docs/product/decisions/0161-adjudicate-exact-inherited-terminal-bonus-coordinates.md\n?? docs/product/evidence/episode-lanes/verification.md",
+      "started_at_utc": "2026-10-01T23:33:37.139841+00:00",
+      "python": "/home/john/hamlet/.worktrees/episode-lane-implementation/.venv/bin/python",
+      "lock_sha256": "ca5ef261863c57ad4d67bdc8e8aa9fee341bca71f026cdaabf974fd22fa90e77",
+      "environment": {
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1",
+        "PYTHONPATH": null
+      },
+      "exit_code": 0,
+      "finished_at_utc": "2026-10-01T23:33:39.148524+00:00",
+      "elapsed_seconds": 2.008075633086264,
+      "after_sha": "462e8a3980845d76e7987cfea67fb63432bcb847",
+      "after_status": "M docs/config-schemas/brain.md\n?? docs/product/decisions/0161-adjudicate-exact-inherited-terminal-bonus-coordinates.md\n?? docs/product/evidence/episode-lanes/verification.md",
+      "log_sha256": "9608feb3b322dc01cb5adc1f6f1a22683a6720f26ac382a96b537917505d6004"
+    },
+    "no-defaults-repaired": {
+      "name": "no-defaults-repaired",
+      "argv": [
+        ".venv/bin/python",
+        "scripts/no_defaults_lint.py",
+        "src/townlet/",
+        "--whitelist",
+        ".defaults-whitelist.txt"
+      ],
+      "cwd": "/home/john/hamlet/.worktrees/episode-lane-implementation",
+      "before_sha": "462e8a3980845d76e7987cfea67fb63432bcb847",
+      "before_tree": "a1b355aa6083b957e0dfc74cf2c5b01dab07e30d",
+      "before_status": "M docs/config-schemas/brain.md\n?? docs/product/decisions/0161-adjudicate-exact-inherited-terminal-bonus-coordinates.md\n?? docs/product/evidence/episode-lanes/verification.md",
+      "started_at_utc": "2026-10-01T23:33:37.108574+00:00",
+      "python": "/home/john/hamlet/.worktrees/episode-lane-implementation/.venv/bin/python",
+      "lock_sha256": "ca5ef261863c57ad4d67bdc8e8aa9fee341bca71f026cdaabf974fd22fa90e77",
+      "environment": {
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1",
+        "PYTHONPATH": null
+      },
+      "exit_code": 0,
+      "finished_at_utc": "2026-10-01T23:33:37.809104+00:00",
+      "elapsed_seconds": 0.6999723049812019,
+      "after_sha": "462e8a3980845d76e7987cfea67fb63432bcb847",
+      "after_status": "M docs/config-schemas/brain.md\n?? docs/product/decisions/0161-adjudicate-exact-inherited-terminal-bonus-coordinates.md\n?? docs/product/evidence/episode-lanes/verification.md",
+      "log_sha256": "8db039e5c23b00b31f726e7d06aa4511a73f0dddb21191b148a49f49fce3fa48"
+    },
+    "compiler-repaired": {
+      "name": "compiler-repaired",
+      "argv": [
+        ".venv/bin/python",
+        "scripts/validate_compiler_cli.py"
+      ],
+      "cwd": "/home/john/hamlet/.worktrees/episode-lane-implementation",
+      "before_sha": "462e8a3980845d76e7987cfea67fb63432bcb847",
+      "before_tree": "a1b355aa6083b957e0dfc74cf2c5b01dab07e30d",
+      "before_status": "M docs/config-schemas/brain.md\n?? docs/product/decisions/0161-adjudicate-exact-inherited-terminal-bonus-coordinates.md\n?? docs/product/evidence/episode-lanes/verification.md",
+      "started_at_utc": "2026-10-01T23:33:37.107880+00:00",
+      "python": "/home/john/hamlet/.worktrees/episode-lane-implementation/.venv/bin/python",
+      "lock_sha256": "ca5ef261863c57ad4d67bdc8e8aa9fee341bca71f026cdaabf974fd22fa90e77",
+      "environment": {
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1",
+        "PYTHONPATH": null
+      },
+      "exit_code": 0,
+      "finished_at_utc": "2026-10-01T23:34:45.252060+00:00",
+      "elapsed_seconds": 68.14340451697353,
+      "after_sha": "462e8a3980845d76e7987cfea67fb63432bcb847",
+      "after_status": "M docs/config-schemas/brain.md\n?? docs/product/decisions/0161-adjudicate-exact-inherited-terminal-bonus-coordinates.md\n?? docs/product/evidence/episode-lanes/verification.md",
+      "log_sha256": "034df65ec505ed69c951f050a4f02b527f1af88093b69ea8a44cf833292260fd"
+    },
+    "pack-smoke-repaired": {
+      "name": "pack-smoke-repaired",
+      "argv": [
+        ".venv/bin/pytest",
+        "--no-cov",
+        "-q",
+        "-rs",
+        "tests/test_townlet/integration/test_pack_smoke.py"
+      ],
+      "cwd": "/home/john/hamlet/.worktrees/episode-lane-implementation",
+      "before_sha": "462e8a3980845d76e7987cfea67fb63432bcb847",
+      "before_tree": "a1b355aa6083b957e0dfc74cf2c5b01dab07e30d",
+      "before_status": "M docs/config-schemas/brain.md\n?? docs/product/decisions/0161-adjudicate-exact-inherited-terminal-bonus-coordinates.md\n?? docs/product/evidence/episode-lanes/verification.md",
+      "started_at_utc": "2026-10-01T23:33:37.128714+00:00",
+      "python": "/home/john/hamlet/.worktrees/episode-lane-implementation/.venv/bin/python",
+      "lock_sha256": "ca5ef261863c57ad4d67bdc8e8aa9fee341bca71f026cdaabf974fd22fa90e77",
+      "environment": {
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1",
+        "PYTHONPATH": null
+      },
+      "exit_code": 0,
+      "finished_at_utc": "2026-10-01T23:33:56.233225+00:00",
+      "elapsed_seconds": 19.104012944037095,
+      "after_sha": "462e8a3980845d76e7987cfea67fb63432bcb847",
+      "after_status": "M docs/config-schemas/brain.md\n?? docs/product/decisions/0161-adjudicate-exact-inherited-terminal-bonus-coordinates.md\n?? docs/product/evidence/episode-lanes/verification.md",
+      "log_sha256": "3d8df99c2804435f0775285b0942cccbf07482137c95f4a1d5edba60eef8c97f"
+    },
+    "full-suite-repaired": {
+      "name": "full-suite-repaired",
+      "argv": [
+        ".venv/bin/pytest",
+        "-rs"
+      ],
+      "cwd": "/home/john/hamlet/.worktrees/episode-lane-implementation",
+      "before_sha": "462e8a3980845d76e7987cfea67fb63432bcb847",
+      "before_tree": "a1b355aa6083b957e0dfc74cf2c5b01dab07e30d",
+      "before_status": "M docs/config-schemas/brain.md\n?? docs/product/decisions/0161-adjudicate-exact-inherited-terminal-bonus-coordinates.md\n?? docs/product/evidence/episode-lanes/verification.md",
+      "started_at_utc": "2026-10-01T23:34:15.243286+00:00",
+      "python": "/home/john/hamlet/.worktrees/episode-lane-implementation/.venv/bin/python",
+      "lock_sha256": "ca5ef261863c57ad4d67bdc8e8aa9fee341bca71f026cdaabf974fd22fa90e77",
+      "environment": {
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1",
+        "PYTHONPATH": null
+      },
+      "exit_code": 0,
+      "finished_at_utc": "2026-10-01T23:54:06.230774+00:00",
+      "elapsed_seconds": 1190.9870523940772,
+      "after_sha": "462e8a3980845d76e7987cfea67fb63432bcb847",
+      "after_status": "M docs/config-schemas/brain.md\n?? docs/product/decisions/0161-adjudicate-exact-inherited-terminal-bonus-coordinates.md\n?? docs/product/evidence/episode-lanes/implementation-supplemental-reviews.md\n?? docs/product/evidence/episode-lanes/inherited-terminal-registration.md\n?? docs/product/evidence/episode-lanes/verification.md",
+      "log_sha256": "8005c7973553b75b69d4e7f33295aa77ccf074b42655d3a64c11fd783a16d307"
+    }
+  },
+  "literal_gate_failures_retained": {
+    "static-access": {
+      "name": "static-access",
+      "argv": [
+        ".venv/bin/python",
+        "-P",
+        "scripts/check_epistemic_access.py",
+        "compare",
+        "--before",
+        "runs/episode-lanes/2026-10-02/implementation/parent/static-access",
+        "--output",
+        "runs/episode-lanes/2026-10-02/implementation/candidate/static-access",
+        "--attributions",
+        "runs/episode-lanes/2026-10-02/implementation/attributions.json"
+      ],
+      "cwd": "/home/john/hamlet/.worktrees/episode-lane-implementation",
+      "before_sha": "8e3ca306d6f615bd272bb1c8d51b071b74686877",
+      "before_tree": "5b3f49ca4c5571f07c536e781af92bbee316ecc1",
+      "before_status": "",
+      "started_at_utc": "2026-10-01T22:59:30.118220+00:00",
+      "python": "/home/john/hamlet/.worktrees/episode-lane-implementation/.venv/bin/python",
+      "lock_sha256": "ca5ef261863c57ad4d67bdc8e8aa9fee341bca71f026cdaabf974fd22fa90e77",
+      "environment": {
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1",
+        "PYTHONPATH": "/home/john/hamlet/.worktrees/episode-lane-implementation/src"
+      },
+      "exit_code": 1,
+      "finished_at_utc": "2026-10-01T23:00:32.509747+00:00",
+      "elapsed_seconds": 62.39098825096153,
+      "after_sha": "8e3ca306d6f615bd272bb1c8d51b071b74686877",
+      "after_status": "M docs/config-schemas/brain.md",
+      "log_sha256": "ccd2879d66f7c2b7ea557366f8692665d3312d3b6ea4dcda04065d400a9ed9bb"
+    },
+    "frozen-oracle": {
+      "name": "frozen-oracle",
+      "argv": [
+        ".venv/bin/python",
+        "-m",
+        "townlet.oracle.harness",
+        "--scripted"
+      ],
+      "cwd": "/home/john/hamlet/.worktrees/episode-lane-implementation",
+      "before_sha": "8e3ca306d6f615bd272bb1c8d51b071b74686877",
+      "before_tree": "5b3f49ca4c5571f07c536e781af92bbee316ecc1",
+      "before_status": "M docs/config-schemas/brain.md",
+      "started_at_utc": "2026-10-01T23:00:08.244530+00:00",
+      "python": "/home/john/hamlet/.worktrees/episode-lane-implementation/.venv/bin/python",
+      "lock_sha256": "ca5ef261863c57ad4d67bdc8e8aa9fee341bca71f026cdaabf974fd22fa90e77",
+      "environment": {
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1",
+        "PYTHONPATH": null
+      },
+      "exit_code": 1,
+      "finished_at_utc": "2026-10-01T23:01:10.193288+00:00",
+      "elapsed_seconds": 61.94809047691524,
+      "after_sha": "8e3ca306d6f615bd272bb1c8d51b071b74686877",
+      "after_status": "M docs/config-schemas/brain.md",
+      "log_sha256": "4c1c398f5eb75dcd0b2c97cb2653fce5773e10821f83cd17a825f316217edec7"
+    }
+  },
+  "scoped_adjudication": {
+    "path": "causal/inherited-terminal-streams/qualification-attempts/20261001T233600045324Z/scoped-result.json",
+    "sha256": "de959b9badd4b76ed85c3658dd9913c4ad778c2313e97ca72aaec4d81b772b2a",
+    "reading": {
+      "static_cpu_cells": 10,
+      "standing_cpu_cells": 10,
+      "census_inventories": 31,
+      "identity_readings": 884,
+      "reset_recipes": 11,
+      "standing_registered_cpu_verdicts_retained": 8,
+      "explicit_cuda_skips": 10,
+      "unique_literal_reward_changes": 7,
+      "source_bridges": 4,
+      "causal_source_executions": 20,
+      "mandatory_final_source_bridges": 4,
+      "final_source_sha": "462e8a3980845d76e7987cfea67fb63432bcb847",
+      "changed_live_rewards": 0,
+      "residual_reward_bytes_exact": true,
+      "source_of_delta": "10cfc83495146f49d8fd8aeb7f3ba149ab087f54",
+      "original_gate_verdicts_replaced": false
+    },
+    "controls_rejected": 42
+  },
+  "lifecycle": {
+    "path": "causal/final-repair-candidate-lifecycle/qualification.json",
+    "sha256": "3147266233a306e7fa736e9b3bb50a661fb5860a82c835ef82a6f10bc1bec3be",
+    "summary": {
+      "lifecycle_recipes": 6,
+      "numeric_recipes": 8,
+      "exact_preregistered_changed_coordinates": 799,
+      "all_other_parent_readings_exact": 4008,
+      "all_P1_and_58a_candidate_readings_exact": 4807,
+      "all_numeric_captures_exact_P1_and_58a": true,
+      "unexplained_differences": 0,
+      "original_preserved_file_count": 246
+    }
+  },
+  "numerical": {
+    "path": "causal/population-numerics/controlled-reset-attribution-final-repair.json",
+    "sha256": "f7d22229ddee4c183cc7c3c8b6076d10c2b6002ac2ea5dc5665b1af696552658",
+    "summary": {
+      "recipes": 8,
+      "source_recipe_captures": 40,
+      "world_field_exact_checks": 36000,
+      "reset_field_exact_checks": 3240,
+      "exact_cpu_rng_restorations": 320,
+      "numerical_coordinate_chains": 5928,
+      "raw_mse_and_rms_coordinate_chains": 6848,
+      "independent_raw_normalization_references": 6120,
+      "independent_geometry_dac_rows": 3600,
+      "actual_insertion_queue_calls": 1800,
+      "unexplained_differences": 0,
+      "final_candidate_captured": true,
+      "original_failed_banks_preserved": true
+    },
+    "source_revisions": {
+      "parent": "880f9c90f65aa646a0da04d7ca2ef92e48f85caa",
+      "E2": "10cfc83495146f49d8fd8aeb7f3ba149ab087f54",
+      "E3": "904f166ad17f201619e60e6284fd1e41c492c77b",
+      "P1": "ec52c31787f8146056d3a9d9ddeb30b6d2433eae",
+      "final": "462e8a3980845d76e7987cfea67fb63432bcb847"
+    }
+  },
+  "full_suite": {
+    "collection": 4670,
+    "passed": 4652,
+    "skipped": 18,
+    "result_lines": [
+      "========== 4652 passed, 18 skipped, 31 warnings in 1187.28s (0:19:47) =========="
+    ],
+    "coverage_line": "TOTAL                                                   22302   2554   8504   1528    85%",
+    "individual_skip_dispositions": [
+      "SKIPPED [1] tests/test_townlet/integration/test_determinism.py:70: CUDA not available",
+      "SKIPPED [1] tests/test_townlet/integration/test_determinism.py:83: CUDA not available",
+      "SKIPPED [1] tests/test_townlet/integration/test_episode_execution.py:108: Flaky test - agent dies from cascade effects intermittently (see git history: c6dbd12, 930b201, 3158cd7)",
+      "SKIPPED [1] tests/test_townlet/integration/test_runner_integration.py:242: Flaky: depends on stochastic agent behavior to interact with affordances",
+      "SKIPPED [1] tests/test_townlet/integration/test_substrate_factory_nd.py:36: v2.1 GridNDConfig doesn't enforce minimum dimensions at DTO level",
+      "SKIPPED [1] tests/test_townlet/unit/environment/test_vectorized_env.py:893: Test config missing 'Bar' affordance",
+      "SKIPPED [1] tests/test_townlet/unit/substrate/test_config_nd.py:58: v2.1 GridNDConfig doesn't enforce minimum 4 dimensions at DTO level",
+      "SKIPPED [1] tests/test_townlet/unit/substrate/test_config_nd.py:100: v2.1 GridNDConfig doesn't enforce maximum 100 dimensions at DTO level",
+      "SKIPPED [1] tests/test_townlet/unit/substrate/test_config_nd.py:253: v2.1 ContinuousConfig doesn't validate range vs interaction_radius",
+      "SKIPPED [1] tests/test_townlet/unit/substrate/test_config_nd.py:371: v2.1 SubstrateConfig doesn't validate continuous/continuousnd dimension ranges",
+      "SKIPPED [1] tests/test_townlet/unit/substrate/test_config_nd.py:392: v2.1 SubstrateConfig doesn't validate continuous/continuousnd dimension ranges",
+      "SKIPPED [1] tests/test_townlet/unit/training/test_prioritized_replay_buffer.py:841: CUDA not available",
+      "SKIPPED [1] tests/test_townlet/unit/training/test_replay_buffers.py:373: CUDA not available",
+      "SKIPPED [1] tests/test_townlet/unit/training/test_replay_buffers.py:389: CUDA not available",
+      "SKIPPED [1] tests/test_townlet/unit/training/test_replay_buffers.py:571: CUDA not available",
+      "SKIPPED [1] tests/test_townlet/unit/training/test_replay_buffers.py:1266: CUDA not available",
+      "SKIPPED [1] tests/test_townlet/unit/world/expression/test_integration.py:86: Function call type checking deferred to Phase 2",
+      "SKIPPED [1] tests/test_townlet/unit/world/expression/test_integration.py:136: Index access type checking deferred to Phase 4"
+    ]
+  },
+  "independent_review": {
+    "path": "docs/product/evidence/episode-lanes/implementation-review.md",
+    "sha256": "5a6518febaf3cfcb0606bc20f4abfd3550aa5f235797aa9c346044cc66a3528b",
+    "json_path": "docs/product/evidence/episode-lanes/final-review-at-7dc1.json",
+    "json_sha256": "ad38ebab90a9a1695d3e548b44c39ce9898fd6060d14e697f5dabc21ba290d62",
+    "verdict": "ACCEPTED FOR PRD-0005 CRITERIA 1\u20138; LOCAL BOUNDED IMPLEMENTATION"
+  },
+  "artifact_manifest": {
+    "path": "runs/episode-lanes/2026-10-02/implementation/qualification/verification-artifact-manifest.json",
+    "sha256": "1a7aea966ab0a927ff3ee114d4fb7267afaaa43e8bd12036bb642c253bde4f2f",
+    "files": 2339
+  },
+  "limits": [
+    "local execution environment",
+    "original literal gate failures remain nonzero",
+    "controlled CPU comparison is not production RNG isolation",
+    "no main merge/push/PR/hosted CI/CUDA/convergence/recovery-exit acceptance"
+  ]
+}

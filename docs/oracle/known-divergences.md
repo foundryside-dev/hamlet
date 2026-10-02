@@ -1691,7 +1691,9 @@ The new witness pack is independently qualified, outside the inherited equivalen
 ## DIV-016 — Eligible episode lanes and one-shot completion
 
 - **Status:** registered before runtime changes against clean direct parent
-  `880f9c90f65aa646a0da04d7ca2ef92e48f85caa`; implementation qualification pending.
+  `880f9c90f65aa646a0da04d7ca2ef92e48f85caa`; bounded implementation qualified
+  at `7dc1d02e78d8b70bd096fc4c84b4d95a9822c94f`. This entry remains nonterminal
+  under the recovery exit, with no broadened standing matrix allowance.
 - **Scope:** PRD-0005. A lane contributes its genuine terminal transition, then
   freezes survival and admits no later replay, predictor or normalization sample.
   Completion occurs once, with an owned final outcome and an explicit reason.
@@ -1719,3 +1721,21 @@ The new witness pack is independently qualified, outside the inherited equivalen
   calculations and exact causal receipts. Real learning, retained sinks, current
   artifact refusal and negative controls remain separate gates. PDR-0058 recovery
   exit, effect reset, RNG isolation, BAC cognition and convergence remain open.
+
+### DIV-016 bounded qualification — October 2
+
+[Verification](../product/evidence/episode-lanes/verification.md) records all799
+prospectively registered lifecycle changes and4,008 preserved parent readings,
+actual replay/learner/predictor and persisted consumer controls. The preregistration
+remains immutable. Eight real numerical recipes are qualified only through the
+prospectively reviewed external CPU reset fixture in PDR-0160; the original
+natural-reset bank remains failed and production RNG isolation remains open.
+
+The unchanged inherited static-access and scripted frozen commands retain exit1.
+Seven row99 false retirement bonuses in the items/effects cells are removed by
+E2, with no additional E3 stream changes. PDR-0161 prospectively freezes an exact
+seven-coordinate checker; its separate first gate exits0 and rejects all42
+corruption controls. Original command outputs/dirty flags and full frozen inputs
+remain unchanged. No stream wildcard or matrix binding is added. Astra accepts
+PRD-0005 criteria1–8 locally at7dc1; this is neither AGREE nor recovery-exit or
+convergence acceptance.

@@ -608,10 +608,14 @@ Key points:
 - `writer` enforces write permissions.
 - Tensors are automatically moved to the registry device.
 - `registry.set()` validates shape and dtype against the declaration and raises on mismatch.
-- `set_engine_value()` — the engine/VTC writeback path (§7.2) — **also enforces the declared
-  element shape since 2026-08-25** (`hamlet-d970ef83f0`); it differs from `set()` in that the
-  writer role is fixed to `"engine"` and dtype is coerced rather than rejected.
-- Future compiler stages should perform shape validation at compile time.
+- `set_engine_value()` — the engine/VTC writeback path (§7.2) — runs the same shape-and-dtype
+  check as `set()` (one shared `_validate_write`, VFS WP7); it differs from `set()` only in
+  that the writer role is fixed to `"engine"`. Nothing in the registry coerces dtype.
+- A VTC action write or transition rule whose expression (or condition) type-checks against
+  a target of another declared type is a located compile error (`VTC-WRITE-TYPE`,
+  `actions.yaml` / `transition_rules.yaml` `file:line`); `townlet.vfs.storage_dtype` holds
+  the admitted result types per declared type and the one runtime conversion, an
+  integer DSL result widening into float32 storage.
 
 ### 6.4 Principle of least privilege
 
@@ -688,8 +692,10 @@ addition validates a new policy and cannot replace an existing variable's author
 
 Runtime VFS evaluation uses `VariableRegistry.set_engine_value()` for evaluator writeback. This
 method is deliberately narrower than direct storage mutation: it requires the variable to exist
-and requires `engine` write permission, with dtype coerced to the declaration rather than
-rejected.
+and requires `engine` write permission, and validates shape and dtype exactly as `set()` does
+(VFS WP7). The evaluator settles each expression result into the declared storage dtype first
+(`to_storage_dtype`), so an int-typed scalar expression widens into float32 and anything else
+mismatched refuses.
 
 > **Corrected 2026-08-25** (`hamlet-d970ef83f0`, token-obs unit 3 Task 5b). This paragraph
 > previously said `set_engine_value()` "bypasses declaration-shape checks so derived global VFS
@@ -718,24 +724,23 @@ The registry should guarantee:
 
 ### 7.4 Shape validation
 
-Current state (re-audited 2026-08-25): manual `registry.set()` is strict — shape and dtype
-are validated against the declaration — and `set_engine_value()` is now strict on shape too
-(`hamlet-d970ef83f0`; dtype is coerced, not rejected — see §7.2). The remaining gap is
-compile-time: VTC write expressions validate their candidates against the **phase-snapshot
-tensor's** shape mid-phase, not the declared schema (`vtc.py:504-513`,
-`_coerce_expression_tensor`). Because the commit boundary now enforces declared shapes, a
-mis-shaped candidate can no longer be silently stored — it raises at commit — but the error
-surfaces at the first `env.step`, not at compile. Phase 2+ should move declared-schema checks
-into the compiler.
+Current state (VFS WP7): `registry.set()` and `set_engine_value()` share one strict
+shape-and-dtype check against the declaration. Write **types** are checked at compile: each
+VTC write expression and condition is type-checked against its target's declared type
+(`VTC-WRITE-TYPE`). The remaining gap is compile-time **shape**: VTC write expressions validate
+their candidates against the **phase-snapshot tensor's** shape mid-phase, not the declared
+schema (`_coerce_expression_tensor`). Because the commit boundary enforces declared shapes, a
+mis-shaped candidate can no longer be silently stored — it raises at commit — but that error
+surfaces at the first `env.step`, not at compile.
 
-Suggested rule:
+Rule:
 
 ```text
 Manual registry.set() in engine code:
     strict (shape + dtype against the declaration)
 
 Engine/VTC writeback (set_engine_value):
-    strict on shape since 2026-08-25; dtype coerced
+    the same strict check; writer fixed to "engine"
 
 Compiler-generated writes:
     validate against the declared schema at compile time (still open);

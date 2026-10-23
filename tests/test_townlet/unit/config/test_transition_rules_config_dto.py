@@ -14,7 +14,7 @@ from townlet.config.transition_rules_config import (
     SocialResidueWriteConfig,
     TransitionRulesConfig,
 )
-from townlet.vfs import compile_vtc_social_residue_rules
+from townlet.vfs import VTCWriteTarget, compile_vtc_social_residue_rules
 from townlet.vfs.schema import VariableScope
 from townlet.vfs.vtc import _SOCIAL_RESIDUE_RULE_KINDS
 
@@ -166,7 +166,12 @@ class TestTransitionRulesConfig:
         """The DTO's compiler-facing dump must be accepted verbatim by the
         existing VTC social-residue compiler."""
         config = TransitionRulesConfig(**_config_payload())
-        program = compile_vtc_social_residue_rules(config.social_residue_sources(), {"trust": VariableScope.PAIR})
+        targets = {
+            "trust": VTCWriteTarget(VariableScope.PAIR, "scalar", meter=False),
+            "chosen_action": VTCWriteTarget(VariableScope.AGENT, "scalar", meter=False),
+            "observer_mask": VTCWriteTarget(VariableScope.PAIR, "bool", meter=False),
+        }
+        program = compile_vtc_social_residue_rules(config.social_residue_sources(), targets)
         assert len(program.rules) == 1
         assert program.rules[0].rule_id == "seen_stealing_damages_trust"
         assert program.rules[0].target_scope == VariableScope.PAIR

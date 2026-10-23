@@ -5,9 +5,9 @@ import torch
 
 from tests.test_townlet.unit.vfs.test_vtc_action_writes import _action, _write
 from townlet.vfs.schema import VariableScope
-from townlet.vfs.vtc import compile_vtc_action_writes, compile_vtc_social_residue_rules
+from townlet.vfs.vtc import VTCWriteTarget, compile_vtc_action_writes, compile_vtc_social_residue_rules
 
-STATE_SCOPES = {"state": VariableScope.AGENT}
+STATE_SCOPES = {"state": VTCWriteTarget(VariableScope.AGENT, "scalar", meter=False)}
 
 
 @pytest.mark.parametrize("composition,expression", [("overwrite", "state"), ("additive_delta", "0"), ("claim_if_free", "7")])
@@ -59,7 +59,7 @@ def test_scalar_social_write_respects_active_selection(active, condition, attemp
                 writes=[dict(variable_id="state", expression="state", composition="overwrite")],
             )
         ],
-        {"state": VariableScope.GLOBAL},
+        {"state": VTCWriteTarget(VariableScope.GLOBAL, "scalar", meter=False)},
     )
     result = program.apply(vfs_state={"state": torch.tensor(5.0)}, active_mask=torch.tensor([active]), device=torch.device("cpu"))
     assert result.attempted_targets == (frozenset({"state"}) if attempted else frozenset())

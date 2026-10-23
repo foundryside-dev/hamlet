@@ -52,6 +52,7 @@ from townlet.vfs.vtc import (
     VTCTerminalConditionSource,
     VTCThresholdCascadeProgram,
     VTCThresholdCascadeSource,
+    VTCWriteTarget,
     compile_vtc_action_writes,
     compile_vtc_action_writes_with_phase_graph,
     compile_vtc_affordance_gates,
@@ -70,6 +71,7 @@ from townlet.vfs.vtc import (
     compile_vtc_terminal_conditions_with_phase_graph,
     compile_vtc_threshold_cascades,
     compile_vtc_threshold_cascades_with_phase_graph,
+    vtc_write_targets,
 )
 
 __all__ = [
@@ -105,6 +107,7 @@ __all__ = [
     "VTCTerminalConditionSource",
     "VTCThresholdCascadeProgram",
     "VTCThresholdCascadeSource",
+    "VTCWriteTarget",
     "WriteSpec",
     "canonical_action_schema",
     "canonical_transition_graph_schema",
@@ -132,4 +135,5 @@ __all__ = [
     "compile_vtc_threshold_cascades",
     "compile_vtc_threshold_cascades_with_phase_graph",
     "vtc_kernels",
+    "vtc_write_targets",
 ]

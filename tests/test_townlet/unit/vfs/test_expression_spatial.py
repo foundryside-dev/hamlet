@@ -5,14 +5,14 @@ from townlet.vfs.profiles import CompiledGlobalProfile, CompiledVariable
 from townlet.world.expression import ExpressionParser
 
 
-def _profile(expr: str, name: str = "var") -> CompiledGlobalProfile:
+def _profile(expr: str, name: str = "var", var_type: str = "float") -> CompiledGlobalProfile:
     ast = ExpressionParser().parse(expr)
     var = CompiledVariable(
         readable_by=("engine", "agent"),
         writable_by=("engine",),
         name=name,
         lifetime="episode",
-        type="float",
+        type=var_type,
         exposed_to=("agent",),
         expression=expr,
         ast=ast,
@@ -39,7 +39,7 @@ def test_distance_and_in_range_static_affordance():
 
     assert torch.allclose(res["dist"], torch.tensor([1.0, 1.0]))
 
-    profile_range = _profile('in_range("Fridge", 1.0)', name="in_range")
+    profile_range = _profile('in_range("Fridge", 1.0)', name="in_range", var_type="bool")
     res_range = evaluator.evaluate_global_profile(
         profile_range,
         bars={},

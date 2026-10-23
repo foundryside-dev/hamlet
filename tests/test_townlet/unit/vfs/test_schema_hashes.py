@@ -23,9 +23,14 @@ from townlet.vfs.schema_hashes import (
     compute_vfs_hash,
 )
 from townlet.vfs.transition_graph import TransitionPhaseGraph
-from townlet.vfs.vtc import compile_vtc_action_writes_with_phase_graph, compile_vtc_threshold_cascades_with_phase_graph
+from townlet.vfs.vtc import (
+    VTCWriteTarget,
+    compile_vtc_action_writes_with_phase_graph,
+    compile_vtc_threshold_cascades_with_phase_graph,
+    vtc_write_targets,
+)
 
-ENERGY_SCOPES = {"energy": VariableScope.AGENT}
+ENERGY_SCOPES = {"energy": VTCWriteTarget(VariableScope.AGENT, "scalar", meter=False)}
 
 
 def test_canonical_variable_schema_uses_sorted_contract_fields() -> None:
@@ -50,7 +55,11 @@ def test_canonical_variable_schema_uses_sorted_contract_fields() -> None:
                 "type": "scalar",
                 "scope": "agent",
                 "dims": None,
+                "shape": None,
                 "lifetime": "tick",
+                "initial_value": 1.0,
+                "initial_value_mode": None,
+                "initial_value_params": None,
                 "readable_by": ["agent", "engine"],
                 "writable_by": ["engine"],
                 "range": [0.0, 1.0],
@@ -532,7 +541,11 @@ def test_transition_graph_hash_binds_social_residue_rules() -> None:
                     ],
                 }
             ],
-            {"trust": VariableScope.PAIR},
+            {
+                "trust": VTCWriteTarget(VariableScope.PAIR, "scalar", meter=False),
+                "chosen_action": VTCWriteTarget(VariableScope.AGENT, "scalar", meter=False),
+                "observer_mask": VTCWriteTarget(VariableScope.PAIR, "bool", meter=False),
+            },
             phase_graph,
         )
 
@@ -603,10 +616,7 @@ def test_compiler_surfaces_vfs_hash(tmp_path: Path) -> None:
         phase_graph,
         compile_vtc_action_writes_with_phase_graph(
             level.runtime_action_space.actions,
-            {
-                **{variable.id: VariableScope(variable.scope) for variable in level.vfs_variables},
-                **{meter.name: VariableScope.AGENT for meter in level.bars.meters},
-            },
+            vtc_write_targets(level.vfs_variables, (meter.name for meter in level.bars.meters)),
             phase_graph,
         ),
         affordance_gate_program=vtc.compile_vtc_affordance_gates_with_phase_graph(

@@ -23,6 +23,7 @@ import torch
 from townlet.vfs.access_policy import validate_static_access
 from townlet.vfs.schema import VariableDef, VariableScope
 from townlet.vfs.schema_hashes import compute_variable_schema_hash
+from townlet.vfs.storage_dtype import storage_dtype
 
 __all__ = [
     "VariableRegistry",
@@ -151,7 +152,6 @@ class VariableRegistry:
         self._arena_backed: dict[str, str] = {}  # variable id -> arena scope key
         self._initialize_scope_arenas()
         self._initialize_storage()
-        self._initial_storage: dict[str, torch.Tensor] = {name: value.clone() for name, value in self._storage.items()}
 
         # Initialize item-scoped storage
         self.item_vfs: torch.Tensor | None = None
@@ -224,11 +224,7 @@ class VariableRegistry:
     @staticmethod
     def _storage_dtype(var_def: VariableDef) -> torch.dtype:
         """The dtype _build_storage_tensor will allocate, decided without building it."""
-        if var_def.type in ("agent_ref", "item_ref", "affordance_ref", "effect_ref", "vecNi", "vec2i", "vec3i"):
-            return torch.long
-        if var_def.type == "bool":
-            return torch.bool
-        return torch.float32
+        return storage_dtype(var_def.type)
 
     def _arena_element_count(self, var_def: VariableDef) -> int:
         """Per-row element count: the declared shape with the scope prefix stripped."""
@@ -434,60 +430,55 @@ class VariableRegistry:
             raise KeyError(f"Variable '{variable_id}' not found in registry")
 
         self.authorize_write(variable_id, writer=writer)
-
-        expected_shape = self._expected_shapes[variable_id]
-        expected_dtype = self._expected_dtypes[variable_id]
-
-        if value.shape != expected_shape:
-            raise ValueError(f"Value for '{variable_id}' has shape {tuple(value.shape)}, expected {tuple(expected_shape)}")
-
-        if value.dtype != expected_dtype:
-            raise ValueError(f"Value for '{variable_id}' has dtype {value.dtype}, expected {expected_dtype}")
-
-        # Update storage (in place for arena-backed variables; defensive copy otherwise)
+        self._validate_write(variable_id, value)
         self._write_storage(variable_id, value.to(self.device))
 
     def set_engine_value(self, variable_id: str, value: torch.Tensor) -> None:
-        """Write evaluator output as the engine, enforcing the declared element shape.
+        """Write evaluator/VTC output as the engine under the same checks as ``set``.
 
-        Public, permission-checked writeback path for VTC/evaluator write-backs, kept
-        separate from the environment hot path's direct storage mutation. Prior to
-        hamlet-d970ef83f0 this bypassed the declared-shape check for non-sparse-pair
-        variables (docstring used to bless "per-agent batches for variables declared as
-        global scalars"); that bypass let storage drift permanently from
-        `_expected_shapes`, corrupting state whose shape then depended on writer identity.
-        A variable whose expression is genuinely per-agent must be declared agent-scoped,
-        not written through a global declaration.
+        Public, permission-checked write-back path for VTC commits and profile
+        expression write-backs. It validates the declared shape and dtype exactly as
+        ``set`` does — it neither bypasses the element shape (hamlet-d970ef83f0: a
+        global scalar cannot hold a per-agent batch; declare the variable agent-scoped)
+        nor coerces dtype (hamlet-2ca2cb373f: a float into a bool target is refused,
+        not truncated). Callers produce storage-typed values; the one admitted
+        conversion, integer widening into float32, lives in ``to_storage_dtype``.
         """
         if variable_id not in self._definitions:
             raise KeyError(f"Variable '{variable_id}' not found in registry")
 
         self.authorize_write(variable_id, writer="engine")
+        self._validate_write(variable_id, value)
+        self._write_storage(variable_id, value.to(self.device))
 
-        expected_dtype = self._expected_dtypes[variable_id]
+    def _validate_write(self, variable_id: str, value: torch.Tensor) -> None:
+        """The one shape-and-dtype check every registry write passes through."""
         expected_shape = self._expected_shapes[variable_id]
+        expected_dtype = self._expected_dtypes[variable_id]
         if value.shape != expected_shape:
-            raise ValueError(
-                f"Engine write for '{variable_id}' has shape {tuple(value.shape)}, expected {tuple(expected_shape)}.\n"
-                "  Rule: set_engine_value no longer bypasses the declared element shape "
-                "(hamlet-d970ef83f0) — a global scalar can no longer legally hold a per-agent "
-                "batch. If the expression is genuinely per-agent, declare the variable "
-                "agent-scoped instead of global."
-            )
-        self._write_storage(variable_id, value.to(device=self.device, dtype=expected_dtype))
+            raise ValueError(f"Value for '{variable_id}' has shape {tuple(value.shape)}, expected {tuple(expected_shape)}")
+        if value.dtype != expected_dtype:
+            raise ValueError(f"Value for '{variable_id}' has dtype {value.dtype}, expected {expected_dtype}")
 
     def reset_tick_scoped(self) -> None:
-        """Restore tick-lifetime variables to their configured defaults."""
+        """Re-initialize tick-lifetime variables."""
         self._reset_lifetimes({"tick"})
 
     def reset_episode_scoped(self) -> None:
-        """Restore episode-start variables while preserving persistent state."""
+        """Re-initialize tick- and episode-lifetime variables; persistent state is kept."""
         self._reset_lifetimes({"tick", "episode"})
 
     def _reset_lifetimes(self, lifetimes: AbstractSet[str]) -> None:
+        """A reset IS re-initialization: the declared initializer runs again.
+
+        A literal or deterministic mode (zeros/ones/eye) therefore restores the same
+        value; a random mode (random_normal/random_uniform) draws afresh from torch's
+        global RNG, the stream ``seed_all`` seeds and that agent placement also samples,
+        so each reset is reproducible per seed rather than a frozen first draw.
+        """
         for var_id, var_def in self._definitions.items():
             if str(var_def.lifetime) in lifetimes:
-                self._write_storage(var_id, self._initial_storage[var_id])
+                self._write_storage(var_id, self._build_storage_tensor(var_def))
 
     def _get_vector_dims(self, var_def: VariableDef) -> int:
         """Return expected dimensionality for vector variables."""

@@ -5,15 +5,24 @@ import torch
 
 from townlet.vfs import compile_vtc_social_residue_rules
 from townlet.vfs.schema import VariableScope
-from townlet.vfs.vtc import VTCSocialResidueProgram, VTCWriteRefusalError
+from townlet.vfs.vtc import VTCSocialResidueProgram, VTCWriteRefusalError, VTCWriteTarget
 
-#: Declared scopes of the variables these rules write.
+
+def _target(scope: VariableScope, var_type: str = "scalar") -> VTCWriteTarget:
+    return VTCWriteTarget(scope, var_type, meter=False)
+
+
+#: Declared scope and type of every state these rules write or read.
 TARGET_SCOPES = {
-    "trust": VariableScope.PAIR,
-    "obligation": VariableScope.PAIR,
-    "public_reputation": VariableScope.AGENT,
-    "pressure": VariableScope.GLOBAL,
-    "wear": VariableScope.AFFORDANCE,
+    "trust": _target(VariableScope.PAIR),
+    "obligation": _target(VariableScope.PAIR),
+    "public_reputation": _target(VariableScope.AGENT),
+    "pressure": _target(VariableScope.GLOBAL),
+    "wear": _target(VariableScope.AFFORDANCE),
+    "chosen_action": _target(VariableScope.AGENT),
+    "observer_mask": _target(VariableScope.PAIR, "bool"),
+    "recipient_actor_mask": _target(VariableScope.PAIR, "bool"),
+    "was_observed": _target(VariableScope.AGENT, "bool"),
 }
 
 

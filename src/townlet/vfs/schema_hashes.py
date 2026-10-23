@@ -47,6 +47,7 @@ def canonical_variable_schema(variables: Iterable[VariableDef], item_profiles: M
                         "scope": "item",
                         "dims": variable.dims,
                         "lifetime": variable.lifetime,
+                        "initial_value": _plain_payload(variable.initial_value),
                         "readable_by": sorted(variable.readable_by),
                         "writable_by": sorted(variable.writable_by),
                         "range": _normalization_range(variable.normalization),
@@ -157,12 +158,22 @@ def compute_vfs_hash(
 
 
 def _canonical_variable_entry(variable: VariableDef) -> dict[str, Any]:
+    """Every declared fact that fixes a variable's storage and reset identity.
+
+    ``shape`` fixes the tensor extent; ``initial_value`` (the DTO's ``default``),
+    ``initial_value_mode`` and ``initial_value_params`` fix what a reset restores or
+    redraws. Two declarations differing in any of them are different state.
+    """
     return {
         "id": variable.id,
         "type": variable.type,
         "scope": _scope_value(variable.scope),
         "dims": variable.dims,
+        "shape": list(variable.shape) if variable.shape is not None else None,
         "lifetime": variable.lifetime,
+        "initial_value": _plain_payload(variable.default),
+        "initial_value_mode": variable.initial_value_mode,
+        "initial_value_params": _plain_payload(variable.initial_value_params),
         "readable_by": sorted(variable.readable_by),
         "writable_by": sorted(variable.writable_by),
         "range": _normalization_range(variable.normalization),

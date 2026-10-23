@@ -7,6 +7,7 @@ from typing import Any
 import torch
 
 from townlet.vfs.profiles import CompiledGlobalProfile
+from townlet.vfs.storage_dtype import storage_dtype, to_storage_dtype
 from townlet.world.expression.context import ExecutionContext
 from townlet.world.expression.evaluator import Evaluator
 from townlet.world.expression.history import TemporalHistory
@@ -164,8 +165,14 @@ class VFSEvaluator:
                 result[var.name] = torch.tensor(var.initial_value, device=device)
                 continue
 
-            # Evaluate expression using current context
-            value = evaluator.evaluate(var.ast)
+            # Evaluate, then settle the DSL result into the variable's storage dtype: a
+            # scalar expression may type-check to int (``where(c, 1, 0)``) and lands in
+            # float32 storage; any other dtype disagreement is refused, never cast.
+            value = to_storage_dtype(
+                evaluator.evaluate(var.ast),
+                torch.float32 if var.type == "float" else storage_dtype(var.type),
+                f"Expression variable '{var.name}'",
+            )
 
             # Store result and update context so later variables can reference this one
             result[var.name] = value

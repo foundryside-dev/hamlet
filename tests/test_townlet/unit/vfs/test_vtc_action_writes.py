@@ -6,7 +6,7 @@ import torch
 from townlet.environment.action_config import ActionConfig
 from townlet.vfs.schema import VariableScope, WriteSpec
 from townlet.vfs.transition_graph import TransitionPhaseGraph
-from townlet.vfs.vtc import VTCWriteRefusalError, compile_vtc_action_writes, compile_vtc_action_writes_with_phase_graph
+from townlet.vfs.vtc import VTCWriteRefusalError, VTCWriteTarget, compile_vtc_action_writes, compile_vtc_action_writes_with_phase_graph
 
 
 def _write(
@@ -71,9 +71,9 @@ def _action(*, action_id: int, name: str, writes: list[WriteSpec]) -> ActionConf
     )
 
 
-def _agent_scopes(action: ActionConfig) -> dict[str, VariableScope]:
-    """Every target in these kernel tests is per-agent storage."""
-    return {write.variable_id: VariableScope.AGENT for write in action.writes}
+def _agent_scopes(action: ActionConfig) -> dict[str, VTCWriteTarget]:
+    """Every target in these kernel tests is per-agent float storage."""
+    return {write.variable_id: VTCWriteTarget(VariableScope.AGENT, "scalar", meter=False) for write in action.writes}
 
 
 def test_vtc_action_writes_applies_write_only_to_selected_active_agents() -> None:
@@ -145,7 +145,7 @@ def test_vtc_action_writes_can_target_meter_bars() -> None:
         ],
     )
 
-    program = compile_vtc_action_writes([action], _agent_scopes(action))
+    program = compile_vtc_action_writes([action], {"energy": VTCWriteTarget(VariableScope.AGENT, "scalar", meter=True)})
     updated = program.apply(
         actions=torch.tensor([11, 0]),
         vfs_state={},
@@ -486,8 +486,8 @@ def test_vtc_action_writes_rejects_shape_changing_phase_commit() -> None:
                 telemetry_label="valid_energy_increment",
             ),
             _write_with_metadata(
-                variable_id="status",
-                expression="one_hot(status, 3)",
+                variable_id="energy",
+                expression="one_hot(agent_id, 3)",
                 condition=None,
                 composition="overwrite",
                 phase="apply_action_effects",
@@ -498,11 +498,13 @@ def test_vtc_action_writes_rejects_shape_changing_phase_commit() -> None:
         ],
     )
 
+    # one_hot type-checks as a float over the integer agent index; its [agents, 3]
+    # shape is what the phase commit refuses.
     program = compile_vtc_action_writes([action], _agent_scopes(action))
     with pytest.raises(ValueError, match="invalid_status_one_hot.*shape"):
         program.apply(
             actions=torch.tensor([12, 12]),
-            vfs_state={"energy": torch.tensor([1.0, 1.0]), "status": torch.tensor([0.0, 1.0])},
+            vfs_state={"energy": torch.tensor([1.0, 1.0])},
             bars_state={},
             active_mask=torch.tensor([True, True]),
             device=torch.device("cpu"),

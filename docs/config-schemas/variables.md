@@ -51,7 +51,13 @@ entry remains a valid schema group for item types with no state variables.
   of filename or scope, subject to item-arena restrictions below.
 - **Initialization:** an explicit `initial_value`, or a supported tensor
   `initial_value_mode`. Reference null is an explicitly unbound value. Omitting a
-  reference initial value is not the same as declaring null.
+  reference initial value is not the same as declaring null. A lifetime reset re-runs
+  the declared initializer: a literal and the deterministic modes (`zeros`, `ones`,
+  `eye`) restore the same value; `random_normal` and `random_uniform` draw afresh on
+  every reset of the variable's lifetime from torch's global RNG, the stream
+  `seed_all` seeds, so a run is reproducible per seed rather than frozen to its first
+  draw. `shape`, `initial_value`, `initial_value_mode` and `initial_value_params` all
+  enter `variable_schema_hash`.
 - **Expression:** optional for global/agent variables; it must have an explicit initial
   value. Dependencies are resolved and ordered before execution. Scalar expressions use
   the expression DSL's numeric types; they do not promise integer registry storage.
@@ -72,8 +78,9 @@ entry remains a valid schema group for item types with no state variables.
   `effects` named groups of the deleted grouped observation vector and fail validation.
 
 Tensor modes `zeros`, `ones` and `eye` can lower to exact declared literals for token
-identity. Exposed random initializers are refused because they have no exact static reset
-identity. Irrelevant, conflicting or malformed initialization parameters fail validation.
+identity. Exposed random initializers are refused because token identity needs an exact
+literal initial value and a random draw has none. Irrelevant, conflicting or malformed
+initialization parameters fail validation.
 
 ## Item state and supported consumers
 

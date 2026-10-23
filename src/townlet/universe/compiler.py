@@ -404,7 +404,7 @@ class UniverseCompiler:
                     CompilationStage.LEVELS.label,
                     [
                         CompilationMessage(
-                            code=ErrorCode.UAC_STATIC_WRITE,
+                            code=ErrorCode.VTC_WRITE_TYPE if refusal.kind == "type" else ErrorCode.UAC_STATIC_WRITE,
                             message=refusal.message,
                             location=locate(raw.source_map, refusal.origin_key),
                         )

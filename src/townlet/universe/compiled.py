@@ -120,7 +120,13 @@ from townlet.vfs.transition_schedule import (
 # 1.30: `evaluation_mode` and `debug_logging` are deleted from the compiled VFS profiles;
 # mark-and-sweep is the only evaluator. A 1.29 cache of a pack that still declares them
 # would load without the parse refusal, so it is refused as stale.
-COMPILED_SCHEMA_VERSION = "1.31"
+# 1.31: the zone/group scopes, the sparse-pair and dynamic-variable modes and the inert
+# `num_affordances` extent are deleted from the compiled products.
+# 1.32: `variable_schema_hash` (slot 1 of `vfs_hash`) binds `shape`, `initial_value`,
+# `initial_value_mode` and `initial_value_params`. The cache is keyed on source config
+# hash and mtime, so a 1.31 artifact of an unchanged pack would serve the old
+# `vfs_hash`; refuse it as stale.
+COMPILED_SCHEMA_VERSION = "1.32"
 
 REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "compiled_schema_version",

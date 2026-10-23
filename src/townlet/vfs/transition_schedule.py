@@ -8,7 +8,7 @@ from typing import Any
 
 import torch
 
-from townlet.vfs.schema import VariableDef, VariableScope
+from townlet.vfs.schema import VariableDef
 from townlet.vfs.transition_graph import TransitionPhaseGraph
 from townlet.vfs.vtc import (
     VTCActionWriteProgram,
@@ -29,6 +29,7 @@ from townlet.vfs.vtc import (
     compile_vtc_social_residue_rules_with_phase_graph,
     compile_vtc_terminal_conditions_with_phase_graph,
     compile_vtc_threshold_cascades_with_phase_graph,
+    vtc_write_targets,
 )
 
 
@@ -230,9 +231,10 @@ def build_vtc_transition_schedule(
     # row. The id order below is the registry's affordance-scope row order
     # (build_affordance_metadata enumerates the same sequence).
     affordance_ids = tuple(aff.name for aff in level.affordances.affordances)
+    targets = vtc_write_targets(vfs_variables, (meter.name for meter in level.bars.meters))
     action_writes = compile_vtc_affordance_occupancy_with_phase_graph(
         runtime_action_space.actions,
-        _action_write_target_scopes(vfs_variables, (meter.name for meter in level.bars.meters)),
+        targets,
         affordance_ids,
         phase_graph,
     )
@@ -242,11 +244,7 @@ def build_vtc_transition_schedule(
     passive_depletions = compile_vtc_passive_depletions_with_phase_graph(level.bars.meters, phase_graph)
     modulations = compile_vtc_modulations_with_phase_graph(level.affordances.modulations, phase_graph)
     threshold_cascades = compile_vtc_threshold_cascades_with_phase_graph(level.bars.cascades, level.bars.meters, phase_graph)
-    social_program = compile_vtc_social_residue_rules_with_phase_graph(
-        social_residue_rules,
-        {variable.id: VariableScope(variable.scope) for variable in vfs_variables},
-        phase_graph,
-    )
+    social_program = compile_vtc_social_residue_rules_with_phase_graph(social_residue_rules, targets, phase_graph)
     bounds_clamps = compile_vtc_bounds_clamps_with_phase_graph(level.bars.meters, phase_graph)
     return VTCTransitionSchedule(
         phase_graph=phase_graph,
@@ -310,13 +308,6 @@ def _split_vfs_and_bars(
         else:
             raise KeyError(f"VTC transition produced unknown state variable '{name}'")
     return vfs_state, bars_state
-
-
-def _action_write_target_scopes(vfs_variables: Sequence[VariableDef], meter_names: Iterable[str]) -> dict[str, VariableScope]:
-    """Declared scope of every state an action write may name; a meter bar is per-agent storage."""
-    scopes = {variable.id: VariableScope(variable.scope) for variable in vfs_variables}
-    scopes.update({name: VariableScope.AGENT for name in meter_names})
-    return scopes
 
 
 def _social_rule_to_source(rule: Any) -> dict[str, Any]:

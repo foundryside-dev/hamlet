@@ -626,6 +626,12 @@ All command types are fully implemented and production-ready.
   - `global.vfs.is_night`: Global boolean flag
   - `global.bar.economy`: Global economy meter (if exists)
 - `self.*`: Effect instance state (for effect-local variables)
+- `vfs.*` (bare): a global variable is its one shared value. A bare `vfs.X` naming an
+  **agent-scoped** variable is the interacting agent's row, never the batch: wherever the
+  pipeline runs with an agent target (affordance and item interactions, agent-scoped effects,
+  `for_each` bodies over agents) the compiler resolves it to `target.vfs.X`, for reads and
+  writes alike; a write to it from a pipeline with no agent target (a global, item or
+  affordance-scoped effect, a `for_each: inventory_items` body) is refused at compile.
 - `temporal.*`: Time context
   - `temporal.tick`: Current environment step count
   - `temporal.time_of_day`: Hour in 24-hour cycle

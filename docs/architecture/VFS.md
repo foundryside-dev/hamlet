@@ -534,29 +534,19 @@ That divergence is the basis for partial observability, role-based knowledge, mi
 
 ## 6. Access control
 
-> ⚠ **Caveat (2026-08-24 audit; re-verified 2026-08-25): the enforcement machinery below is
-> real in `registry.py` but is not currently a live policy layer.** Three qualifications, each
-> verified at line level: (1) the checked `get()`/`set()` path this chapter documents is
-> **bypassed on the observation path** — observations are built through
-> `get_agent()`/`get_global()`, which perform no access check and treat `agent_private`
-> identically to `agent` (`registry.py:754-796`; `observation_builder.py:359,374`;
-> `observation_encoder.py:86`; `hamlet-83a043a9b9`), so the `PermissionError` examples below
-> never fire for observation reads — the one real `agent_private` block, inside `get()`
-> (`registry.py:514-517`), is never on the observation route; (2) no runtime call site
-> anywhere passes a reader/writer role other than `"engine"` (`vectorized_env.py:1282`;
-> `hamlet-1a520475f4`), so the role vocabulary is binary in practice; (3) there is **no
-> authoring surface** for `readable_by`/`writable_by` on either required config file (§5.3
-> caveat). The enforcement code is correct where it runs; it is not yet wired to an author's
-> intent. Fix vehicle: the token-observation migration's explicit-exposure work plus a
-> registry-read-path/role-wiring unit. Source of truth:
-> `archive/REVIEW-2026-08-24-vfs-implementation-vs-spec.md`.
->
-> A neighbouring hazard from the same audit is **fixed** (2026-08-25, `hamlet-0ddc83e377`):
-> the three VFS write-back sites in `environment/vectorized_env.py` that silently dropped
-> writes to unknown variable ids now raise `KeyError` naming the id and the write source
-> (global-profile write-back `:1099`, agent-profile write-back `:1138`,
-> `_commit_vtc_transition_state` `:1271`). That is a loudness fix, not access control — the
-> three qualifications above are untouched by it.
+> Corrected 2026-10-24 (review F12). The 2026-08-24/25 caveat that stood here — "the
+> observation path bypasses the checked accessor", "no call site passes a role other than
+> `engine`", "no authoring surface for `readable_by`/`writable_by`" — described a system
+> that no longer exists. What exists: every registry variable declares `readable_by`,
+> `writable_by` and `exposed_to` in the pack's `variables` declaration; the vocabulary is
+> closed by `vfs/access_policy.py` (`validate_static_access`: readers `engine`/`agent`,
+> writers `engine` or empty, exposure `agent`, `engine` always a reader, exposure ⊆
+> readers); the registry freezes one policy per variable at construction and checks it in
+> `get()`/`set()`/`set_engine_value()` and the item accessors; and the `variable_element`
+> token publisher binds each exposed slot through `authorize_read(reader="agent")` plus the
+> `exposed_to` check at construction, so an unexposed or engine-only variable never reaches
+> an observation. Effect-command writes preflight every resolved target with
+> `authorize_write(writer="engine")` before mutating anything.
 
 ### 6.1 Purpose
 
@@ -591,17 +581,14 @@ Key points:
 - `PermissionError` is raised if access is denied.
 - Runtime cost is dictionary lookup plus permission check.
 - Access policies should be part of run provenance.
-- **`item`-scoped variables never enter this surface at all** (2026-08-25 note; mechanism
-  corrected same day): item state is never a registry `VariableDef` — an item-scoped
-  variable arriving as one is refused first at config load
-  (`config/vfs_config.py:15-19`, the `variables_reference.yaml` wrapper's validator) and
-  again, belt-and-braces, at registry construction (`registry.py:467-471,717-721`);
-  compiled item-profile state
-  lives in the separate `item_vfs` tensor instead. `registry.get()` on an item variable id
-  therefore raises `KeyError`. Item state is reached only through the separate
-  `write_item` / `read_item` / `register_item_instance` API (`registry.py:798-866`), which
-  takes no reader/writer role and is not checked against `readable_by`/`writable_by`
-  (`hamlet-f2a37a8c8a`).
+- **`item`-scoped variables never enter this surface at all**: item state is never a
+  registry `VariableDef` — the VFS compiler keeps item declarations out of the registry
+  roster and the registry refuses one at construction; compiled item-profile state lives in
+  the separate `item_vfs` arena. `registry.get()` on an item variable id therefore raises
+  `KeyError`. Item state is reached through `read_item(profile, var, vfs_index, *,
+  reader=...)` / `write_item(profile, var, value, vfs_index, *, writer=...)`, which are
+  checked against the profile variable's `readable_by`/`writable_by` by
+  `authorize_item_read` / `authorize_item_write` exactly as `get()`/`set()` are.
 
 ### 6.3 Writing variables
 
@@ -633,19 +620,31 @@ Key points:
 
 ### 6.4 Principle of least privilege
 
-```yaml
-# Good: agent can read energy but not write it
-- id: "energy"
-  readable_by: ["agent", "engine"]
-  writable_by: ["engine", "vtc"]
+The role vocabulary is closed, so "least privilege" is a choice among three shapes:
 
-# Bad: agent can directly write its own energy
-- id: "energy"
-  readable_by: ["agent", "engine"]
-  writable_by: ["agent", "engine"]
+```yaml
+# Engine-mutable, agent-observable
+- id: "public_state"
+  readable_by: ["engine", "agent"]
+  writable_by: ["engine"]
+  exposed_to: ["agent"]
+
+# Engine-only state: readable by the engine, never observed
+- id: "hidden_score"
+  readable_by: ["engine"]
+  writable_by: ["engine"]
+  exposed_to: []
+
+# Runtime-immutable literal: no writer at all (every write path refuses, VTC included)
+- id: "immutable_scale"
+  readable_by: ["engine"]
+  writable_by: []
+  exposed_to: []
 ```
 
-For multi-agent worlds, also avoid granting generic `other_agents` access to private or exact internal state unless that exposure is an intentional part of the scenario.
+`writable_by: ["agent"]` or `["engine", "vtc"]` is refused at parse by
+`validate_static_access`: agents never write registry state directly, and engine-side
+writers (effects, VTC, cascades) all act as the one `engine` role.
 
 ---
 

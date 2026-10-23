@@ -80,7 +80,6 @@ class EffectCatalog:
             Compiled catalog with validated command pipelines
         """
         parser = CommandParser()
-        compiler = CommandCompiler(schema, time_enabled=time_enabled) if schema else None
 
         effects = {}
         for defn in config.effect_definitions:
@@ -90,8 +89,11 @@ class EffectCatalog:
             on_despawn = parser.parse_commands(defn.on_despawn)
             on_interrupt = parser.parse_commands(defn.on_interrupt)
 
-            # Compile (validate) if schema provided
-            if compiler:
+            # Compile (validate) if schema provided. Only an agent-scoped effect runs
+            # with `target` bound to an agent row (EffectManager._lifecycle_context);
+            # global, item and affordance effects have no interacting agent.
+            if schema:
+                compiler = CommandCompiler(schema, time_enabled=time_enabled, agent_target=defn.scope == EffectScope.AGENT)
                 try:
                     compiler.compile_commands(on_spawn)
                     compiler.compile_commands(on_tick)

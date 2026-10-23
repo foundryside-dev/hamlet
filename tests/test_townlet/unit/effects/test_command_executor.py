@@ -123,7 +123,7 @@ def test_executor_if_then():
         bars=bar_storage,
         vfs_registry=registry,
         self_index=None,
-        target_index=None,
+        target_index=0,  # the interacting agent: a bare agent-scoped write is its row, never the batch
         effect_manager=DummyEffectManager(),
         item_manager=DummyItemManager(),
     )
@@ -131,24 +131,22 @@ def test_executor_if_then():
     # Create and compile if command
     command = CommandNode(
         type=CommandType.IF,
-        condition_expr="bar.energy < 0.2",  # Will match [0.1, _, _]
+        condition_expr="target.bar.energy < 0.2",  # agent 0 has 0.1
         then_commands=[CommandNode(type=CommandType.MODIFY, path="vfs.is_crisis", value_expr="true")],
         else_commands=[],
     )
 
-    # Compile the command and nested commands
-    schema = {"bar.energy": "float", "vfs.is_crisis": "bool"}
+    # Compile the command and nested commands; the agent twin marks is_crisis agent-scoped
+    schema = {"bar.energy": "float", "target.bar.energy": "float", "vfs.is_crisis": "bool", "target.vfs.is_crisis": "bool"}
     compiler = CommandCompiler(schema=schema)
     compiler.compile_command(command)
+    assert command.then_commands[0].path == "target.vfs.is_crisis"
 
     executor = CommandExecutor()
     executor.execute(command, context)
 
-    # First agent should have is_crisis set to true
-    # But this is a vectorized operation, so ALL will be set
-    # For proper per-agent logic, need target_index
     is_crisis = registry.get("is_crisis", reader="agent")
-    assert is_crisis.any()  # At least one true
+    assert is_crisis.tolist() == [True, False, False]
 
 
 def test_executor_if_else():
@@ -175,7 +173,7 @@ def test_executor_if_else():
         bars=bar_storage,
         vfs_registry=registry,
         self_index=None,
-        target_index=None,
+        target_index=0,
         effect_manager=DummyEffectManager(),
         item_manager=DummyItemManager(),
     )
@@ -189,7 +187,7 @@ def test_executor_if_else():
     )
 
     # Compile the command and nested commands
-    schema = {"bar.energy": "float", "vfs.status": "float"}
+    schema = {"bar.energy": "float", "vfs.status": "float", "target.vfs.status": "float"}
     compiler = CommandCompiler(schema=schema)
     compiler.compile_command(command)
 

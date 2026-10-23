@@ -8,8 +8,11 @@ from typing import Any
 import torch
 
 from townlet.vfs.registry import VariableRegistry
+from townlet.vfs.schema import VariableScope
 
 __all__ = ["ExecutionContext"]
+
+_AGENT_SCOPES = frozenset({VariableScope.AGENT, VariableScope.AGENT_PRIVATE})
 
 
 class _NullEffectManager:
@@ -295,18 +298,30 @@ class ExecutionContext:
             self.affordance_overrides[aff_name] = scalar_value
             return
 
-        # Handle vfs.* paths
+        # Handle bare vfs.* paths
         if path.startswith("vfs."):
             if self.vfs_registry is None:
                 raise ValueError("VFS registry not set in context")
 
             var_name = path[len("vfs.") :]
+            var_def = self.vfs_registry.variables.get(var_name)
+            if var_def is None:
+                raise KeyError(f"VFS variable '{var_name}' not found")
 
-            if var_name in self.vfs_registry.variables:
-                self.vfs_registry.set(var_name, value, writer="engine")
+            if var_def.scope in _AGENT_SCOPES:
+                # An agent-scoped bare write is one agent's row, never the batch. The
+                # compiler resolves it to target.vfs.X; a node reaching here unresolved
+                # is routed to the agent target or refused.
+                if self.target_index is None or self.target_is_item:
+                    raise ValueError(
+                        f"Bare write '{path}' names agent-scoped variable '{var_name}' but this context has no agent "
+                        f"target; an agent-scoped write is never a batch write. Write it as 'target.{path}'."
+                    )
+                self._write_agent_vfs_value(var_name, self.target_index, value)
                 return
 
-            raise KeyError(f"VFS variable '{var_name}' not found")
+            self.vfs_registry.set(var_name, value, writer="engine")
+            return
 
         raise ValueError(f"Invalid path: {path}")
 
@@ -343,8 +358,9 @@ class ExecutionContext:
         tail = segments[2:]
         ref_idx = int(value.item() if isinstance(value, torch.Tensor) else value)
 
+        assert self.vfs_registry is not None  # _read_vfs_value above required it
         if var_type == "agent_ref":
-            if ref_idx < 0 or ref_idx >= getattr(self.vfs_registry, "num_agents", 0):
+            if ref_idx < 0 or ref_idx >= self.vfs_registry.num_agents:
                 raise ValueError(f"Invalid agent reference index {ref_idx}")
             if ref_kind == "bar":
                 if not tail:
@@ -364,7 +380,7 @@ class ExecutionContext:
         # item_ref
         if ref_kind != "vfs":
             raise ValueError("Item references only support '.vfs.<name>' traversal")
-        if ref_idx < 0 or ref_idx >= getattr(self.vfs_registry, "max_items", 0):
+        if ref_idx < 0 or ref_idx >= self.vfs_registry.max_items:
             raise ValueError(f"Invalid item reference index {ref_idx}")
         return self._resolve_vfs_path(scope="item", index=ref_idx, segments=tail)
 
@@ -414,7 +430,7 @@ class ExecutionContext:
         if self.vfs_registry is None:
             raise RuntimeError("VFS registry is not configured; cannot write VFS variable")
         var_def = self.vfs_registry.variables.get(var_name)
-        if var_def is not None and str(getattr(var_def, "scope", "")) == "global":
+        if var_def is not None and var_def.scope == VariableScope.GLOBAL:
             # A global variable has no per-agent axis; indexing it here would write
             # a slab of its first spatial axis (hamlet-cf16cdb6c4 / hamlet-57a5126baa).
             raise ValueError(
@@ -423,5 +439,9 @@ class ExecutionContext:
         batch = self.vfs_registry.get(var_name, reader="engine")
         if batch.dim() == 0:
             raise ValueError(f"VFS variable '{var_name}' is not agent-scoped; cannot index by agent.")
+        if isinstance(value, torch.Tensor) and value.dim() > 0 and value.shape == batch.shape:
+            # A batch-shaped value is the expression evaluated over every row (a bare
+            # read reaching the runtime unresolved); the agent's row is its value.
+            value = value[index]
         batch[index] = value
         self.vfs_registry.set(var_name, batch, writer="engine")

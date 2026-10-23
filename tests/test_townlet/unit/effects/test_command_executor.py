@@ -35,7 +35,7 @@ def test_executor_modify_bar():
     command = CommandNode(type=CommandType.MODIFY, path="bar.energy", value_expr="bar.energy + 0.1")
 
     schema = {"bar.energy": "float"}
-    compiler = CommandCompiler(schema=schema)
+    compiler = CommandCompiler(schema=schema, agent_target=True)
     compiler.compile_command(command)
 
     executor = CommandExecutor()
@@ -62,7 +62,7 @@ def test_executor_modify_with_target():
     command = CommandNode(type=CommandType.MODIFY, path="target.bar.energy", value_expr="target.bar.energy + 0.2")
 
     schema = {"target.bar.energy": "float"}
-    compiler = CommandCompiler(schema=schema)
+    compiler = CommandCompiler(schema=schema, agent_target=True)
     compiler.compile_command(command)
 
     executor = CommandExecutor()
@@ -89,7 +89,7 @@ def test_executor_modify_constant():
     command = CommandNode(type=CommandType.MODIFY, path="bar.energy", value_expr="0.5")
 
     schema = {"bar.energy": "float"}
-    compiler = CommandCompiler(schema=schema)
+    compiler = CommandCompiler(schema=schema, agent_target=True)
     compiler.compile_command(command)
 
     executor = CommandExecutor()
@@ -138,7 +138,7 @@ def test_executor_if_then():
 
     # Compile the command and nested commands; the agent twin marks is_crisis agent-scoped
     schema = {"bar.energy": "float", "target.bar.energy": "float", "vfs.is_crisis": "bool", "target.vfs.is_crisis": "bool"}
-    compiler = CommandCompiler(schema=schema)
+    compiler = CommandCompiler(schema=schema, agent_target=True)
     compiler.compile_command(command)
     assert command.then_commands[0].path == "target.vfs.is_crisis"
 
@@ -188,7 +188,7 @@ def test_executor_if_else():
 
     # Compile the command and nested commands
     schema = {"bar.energy": "float", "vfs.status": "float", "target.vfs.status": "float"}
-    compiler = CommandCompiler(schema=schema)
+    compiler = CommandCompiler(schema=schema, agent_target=True)
     compiler.compile_command(command)
 
     executor = CommandExecutor()

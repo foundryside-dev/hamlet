@@ -22,7 +22,7 @@ def test_reduce_sum_static_list():
     )
 
     schema = {"bar.energy": "int", "bar.col": "tensor"}
-    compiler = CommandCompiler(schema)
+    compiler = CommandCompiler(schema, agent_target=True)
     compiled = compiler.compile_command(node)
 
     context = ExecutionContext(bars={"energy": torch.tensor(0), "col": torch.tensor([1, 2, 3])})
@@ -45,7 +45,7 @@ def test_reduce_rejects_collection_type():
     )
 
     schema = {"bar.energy": "int"}
-    compiler = CommandCompiler(schema)
+    compiler = CommandCompiler(schema, agent_target=True)
 
     with pytest.raises(TypeCheckError, match="collection must be fixed-size"):
         compiler.compile_command(node)
@@ -63,7 +63,7 @@ def test_reduce_type_mismatch_body():
     )
 
     schema = {"bar.energy": "int", "bar.col": "tensor"}
-    compiler = CommandCompiler(schema)
+    compiler = CommandCompiler(schema, agent_target=True)
 
     with pytest.raises(TypeCheckError, match="body must return accumulator"):
         compiler.compile_command(node)

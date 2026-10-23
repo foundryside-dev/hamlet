@@ -21,10 +21,10 @@ def _variable(identifier: str, scope: str, readers: list[str], writers: list[str
     )
 
 
-@pytest.mark.parametrize("scope,accessor", [("global", "get_global"), ("agent", "get_agent")])
-def test_convenience_accessors_enforce_actor_and_clone(scope: str, accessor: str) -> None:
+@pytest.mark.parametrize("scope", ["global", "agent"])
+def test_checked_read_enforces_actor_and_clone(scope: str) -> None:
     registry = VariableRegistry([_variable("hidden", scope, ["engine"], ["engine"])], 2, torch.device("cpu"))
-    method = getattr(registry, accessor)
+    method = registry.get
     with pytest.raises(PermissionError, match="agent.*hidden|hidden.*agent"):
         method("hidden", reader="agent")
     with pytest.raises(PermissionError, match="unknown|Unknown"):
@@ -46,7 +46,7 @@ def test_mutating_source_policy_cannot_change_runtime_authority() -> None:
     registry.variables["public"].writable_by.clear()
     assert torch.all(registry.get("public", reader="agent") == 2.0)
     registry.set("public", torch.full((2,), 3.0), writer="engine")
-    assert torch.all(registry.get_agent("public", reader="engine") == 3.0)
+    assert torch.all(registry.get("public", reader="engine") == 3.0)
     assert registry.variable_schema_hash == identity
 
 
@@ -68,17 +68,6 @@ def test_same_value_write_denies_without_mutation(method: str) -> None:
     registry.reset_tick_scoped()
     registry.reset_episode_scoped()
     assert torch.equal(before, registry.get("constant", reader="engine"))
-
-
-def test_dynamic_add_snapshots_new_policy_and_cannot_replace_old_policy() -> None:
-    variable = _variable("new", "agent", ["engine"], ["engine"])
-    registry = VariableRegistry([], 2, torch.device("cpu"), dynamic_variable_mode=True)
-    registry.add_variable(variable, network_shape_effect="shape_stable_internal")
-    variable.readable_by.append("agent")
-    with pytest.raises(PermissionError, match="agent"):
-        registry.get("new", reader="agent")
-    with pytest.raises(ValueError, match="already exists"):
-        registry.add_variable(variable, network_shape_effect="shape_stable_internal")
 
 
 def _items() -> VariableRegistry:

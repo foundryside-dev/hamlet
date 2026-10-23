@@ -62,7 +62,8 @@ def _services(
             "self.vfs.agent_state": "float",
             "vfs.private_state": "float",
             "affordance.bank.available": "bool",
-        }
+        },
+        agent_target=True,
     )
     effects = {
         "parent": CompiledEffect(

@@ -9,7 +9,15 @@ from townlet.effects.compiler import CommandCompiler
 from townlet.effects.parser import CommandParser
 from townlet.effects.schema import CommandNode
 
-__all__ = ["CompiledEffect", "EffectCatalog"]
+__all__ = ["CompiledEffect", "EffectCatalog", "EffectCompileError"]
+
+
+class EffectCompileError(Exception):
+    """An effect definition failed to compile; carries its id so the diagnostic is located."""
+
+    def __init__(self, effect_id: str, message: str) -> None:
+        super().__init__(message)
+        self.effect_id = effect_id
 
 
 @dataclass
@@ -99,8 +107,8 @@ class EffectCatalog:
                     compiler.compile_commands(on_tick)
                     compiler.compile_commands(on_despawn)
                     compiler.compile_commands(on_interrupt)
-                except Exception as exc:  # pragma: no cover - error path
-                    raise type(exc)(f"Effect '{defn.id}' failed to compile: {exc}") from exc
+                except Exception as exc:
+                    raise EffectCompileError(defn.id, f"Effect '{defn.id}' failed to compile: {exc}") from exc
 
             compiled = CompiledEffect(
                 id=defn.id,

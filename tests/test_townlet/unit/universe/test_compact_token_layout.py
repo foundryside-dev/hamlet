@@ -204,7 +204,7 @@ def test_current_l1_dynamic_census_is_exactly_118_and_below_the_120_cap(l1_token
         "variable_element": 1,
     }
     assert l1_token_spec.total_dims == layout.dynamic_total_dims == 5 + 24 + 70 + 16 + 3 == 118
-    assert l1_token_spec.fixed_total_dims == 4140
+    assert l1_token_spec.fixed_total_dims == 4136
     assert l1_token_spec.row_layout()[-1][3] == l1_token_spec.total_dims
     assert l1_token_spec.fixed_row_layout()[-1][3] == l1_token_spec.fixed_total_dims
     assert l1_token_spec.total_dims <= 120

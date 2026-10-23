@@ -73,7 +73,7 @@ from townlet.universe.dto.token_spec import (
 )
 from townlet.universe.dto.token_spec import build_token_type as _build_token_type
 from townlet.vfs.schema import NormalizationSpec, VariableDef, VariableScope
-from townlet.vfs.semantic_type import SEMANTIC_TYPES
+from townlet.vfs.semantic_type import SemanticType
 
 # --------------------------------------------------------------------------- fixtures
 
@@ -213,7 +213,7 @@ class TestDescriptorBlock:
         # Per-component sizes come from the enums, never from literals; the one literal pin is
         # DESCRIPTOR_BLOCK_WIDTH below.
         assert SCOPE_ONE_HOT_WIDTH == len(VariableScope)
-        assert SEMANTIC_TYPE_ONE_HOT_WIDTH == len(SEMANTIC_TYPES)
+        assert SEMANTIC_TYPE_ONE_HOT_WIDTH == len(get_args(SemanticType)) == 2
         assert NORMALIZATION_KIND_ONE_HOT_WIDTH == len(get_args(NormalizationSpec.model_fields["kind"].annotation))
         assert NORMALIZATION_PARAM_VECTOR_WIDTH == len(NORMALIZATION_PARAM_SLOTS) + 1  # + params-absent flag
         assert DTYPE_FLAG_WIDTH == len(DTYPE_VOCABULARY)
@@ -239,8 +239,8 @@ class TestDescriptorBlock:
             describe_variable(var, element_index=0, owner_capacity=None)
 
     def test_descriptor_block_width_is_pinned(self):
-        # Single pin so drift is loud: 7 (scope) + 6 + 9 + 5 + 3 + 3 + 1 (initial) + 1 (log count) + 2.
-        assert DESCRIPTOR_BLOCK_WIDTH == 37
+        # Single pin so drift is loud: 7 (scope) + 2 (semantic) + 9 + 5 + 3 + 3 + 1 (initial) + 1 (log count) + 2.
+        assert DESCRIPTOR_BLOCK_WIDTH == 33
         assert len(PAYLOAD_SCHEMAS["variable_element"]) == (MAX_POSITION_RANK + 1) + (VALUE_BLOCK_WIDTH + 1) + DESCRIPTOR_BLOCK_WIDTH
 
     def test_describe_variable_has_descriptor_width_and_marks_declaration(self):

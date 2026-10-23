@@ -38,7 +38,6 @@ _INCREMENT_GCOUNT = {
                     "condition": None,
                     "clamp": None,
                     "effect": None,
-                    "scope": None,
                 }
             ],
         }

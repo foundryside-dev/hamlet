@@ -1,10 +1,12 @@
-"""Config-in/behaviour-out tests for message/affordance scope extents (hamlet-9e1ae3b7a2).
+"""Config-in/behaviour-out tests for scope extents (hamlet-9e1ae3b7a2).
 
 These tests pin the extent contract from both ends:
-- Declaring a message/affordance-scoped variable WITHOUT its extent fails loudly
+- Declaring a message-scoped variable WITHOUT `num_message_slots` fails loudly
   at compile time (not at env construction).
 - Declaring the extent in variables.yaml `extents:` reaches the runtime
   registry, so the scope actually works end-to-end.
+- Affordance-scope rows have no authored extent: the level's affordance count is
+  the authority, and `num_affordances` is an unknown key (VFS WP6, findings F4).
 
 The zone and group scopes (and their num_zones/num_groups extents) were deleted in
 VFS WP2: storage with no publisher and no write path. Declaring either now refuses.
@@ -52,10 +54,7 @@ SCOPED_VARIABLE = {
     },
 }
 
-EXTENT_NAME = {
-    "message": "num_message_slots",
-    "affordance": "num_affordances",
-}
+EXTENT_NAME = {"message": "num_message_slots"}
 
 
 def _add_scoped_variable(pack: Path, scope: str, extents: dict[str, int] | None) -> None:
@@ -68,7 +67,7 @@ def _add_scoped_variable(pack: Path, scope: str, extents: dict[str, int] | None)
     ref_path.write_text(yaml.safe_dump(data))
 
 
-@pytest.mark.parametrize("scope", ["message", "affordance"])
+@pytest.mark.parametrize("scope", ["message"])
 def test_scoped_variable_without_extent_fails_at_compile(temp_config_pack: Path, scope: str) -> None:
     """A message/affordance-scoped variable with no declared extent must be rejected
     at compile time, naming both the variable and the missing extent — never a green
@@ -146,8 +145,8 @@ def test_deleted_zone_and_group_scopes_refuse(temp_config_pack: Path, scope: str
         UniverseCompiler().compile(temp_config_pack, primary_level=PRIMARY_LEVEL, use_cache=False)
 
 
-@pytest.mark.parametrize("extent", ["num_zones", "num_groups"])
-def test_deleted_zone_and_group_extents_refuse(temp_config_pack: Path, extent: str) -> None:
+@pytest.mark.parametrize("extent", ["num_zones", "num_groups", "num_affordances"])
+def test_deleted_extents_refuse(temp_config_pack: Path, extent: str) -> None:
     """The deleted extents are unknown keys, not inert metadata."""
     ref_path = temp_config_pack / "variables.yaml"
     data = yaml.safe_load(ref_path.read_text())
@@ -156,3 +155,20 @@ def test_deleted_zone_and_group_extents_refuse(temp_config_pack: Path, extent: s
 
     with pytest.raises(CompilationError, match=extent):
         UniverseCompiler().compile(temp_config_pack, primary_level=PRIMARY_LEVEL, use_cache=False)
+
+
+def test_affordance_scope_rows_come_from_the_level(temp_config_pack: Path) -> None:
+    """findings_vfs F4: an affordance-scope variable needs no authored extent; its
+    registry rows are the level's affordance count, the one authority."""
+    _add_scoped_variable(temp_config_pack, "affordance", extents=None)
+
+    universe = UniverseCompiler().compile(temp_config_pack, primary_level=PRIMARY_LEVEL, use_cache=False)
+    env = VectorizedHamletEnv.from_universe(
+        universe,
+        level_name=PRIMARY_LEVEL,
+        num_agents=2,
+        device=torch.device("cpu"),
+    )
+
+    rows = env.vfs_registry.get(SCOPED_VARIABLE["affordance"]["id"], reader="engine")
+    assert rows.shape == (universe.metadata.affordance_count,)

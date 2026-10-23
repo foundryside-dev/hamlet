@@ -344,7 +344,7 @@ class CompiledVTCSocialResidueRule:
     clamp: tuple[float, float] | None
     telemetry_label: str
     reads: tuple[str, ...]
-    scope: str | None
+    target_scope: VariableScope
 
 
 @dataclass(frozen=True)
@@ -1021,13 +1021,6 @@ class VTCPassiveDepletionProgram:
 
     rules: tuple[CompiledVTCPassiveDepletion, ...]
 
-    def passive_rate_for(self, variable_id: str) -> float:
-        """Return the configured passive depletion rate for a meter bar."""
-        for rule in self.rules:
-            if rule.variable_id == variable_id:
-                return rule.passive_rate
-        raise KeyError(f"Meter '{variable_id}' has no VTC passive-depletion rule.")
-
     def apply(
         self,
         *,
@@ -1338,10 +1331,6 @@ class VTCInteractionProgressProgram:
             last_affordances=next_last_affordances,
             last_positions=next_last_positions,
         )
-
-    def duration_for(self, affordance_name: str) -> int:
-        """Return the configured VTC duration for a multi-tick affordance."""
-        return self._rule_for_affordance(affordance_name).duration_ticks
 
     def has_multi_tick_affordances(self) -> bool:
         """Return whether this program contains any multi-tick affordance rules."""
@@ -1727,17 +1716,13 @@ class VTCSocialResidueProgram:
             return value_on_device
 
         num_agents = active_mask.shape[0]
-        if (
-            value_on_device.shape == active_mask.shape
-            and target.dim() >= 2
-            and target.shape[0] == num_agents
-            and target.shape[1] == num_agents
-            and rule.scope != "agent"
-        ):
+        if value_on_device.shape == active_mask.shape and rule.target_scope == VariableScope.PAIR:
+            VTCSocialResidueProgram._assert_target_shape(rule, target, num_agents)
             view_shape = (1, num_agents, *([1] * (target.dim() - 2)))
             return value_on_device.reshape(view_shape).expand_as(target)
 
-        if value_on_device.shape == active_mask.shape and target.dim() >= 1 and target.shape[0] == num_agents:
+        if value_on_device.shape == active_mask.shape and rule.target_scope in ACTION_WRITE_AGENT_AXIS_SCOPES:
+            VTCSocialResidueProgram._assert_target_shape(rule, target, num_agents)
             view_shape = (num_agents, *([1] * (target.dim() - 1)))
             return value_on_device.reshape(view_shape).expand_as(target)
 
@@ -1756,37 +1741,33 @@ class VTCSocialResidueProgram:
         active_mask: torch.Tensor,
     ) -> torch.Tensor:
         active = active_mask.to(device=target.device, dtype=torch.bool)
-        if target.dim() == 0:
-            return torch.full_like(target, bool(active.any()), dtype=torch.bool, device=target.device)
-
         num_agents = active.shape[0]
-        is_pair_scope = rule.scope == "pair" or (
-            rule.scope is None and target.dim() >= 2 and target.shape[0] == num_agents and target.shape[1] == num_agents
-        )
-        if is_pair_scope:
-            if target.dim() < 2 or target.shape[0] != num_agents or target.shape[1] != num_agents:
-                raise ValueError(
-                    f"VTC social residue '{rule.telemetry_label}' scope=pair requires target shape "
-                    f"[agents, agents, ...], got {tuple(target.shape)}"
-                )
+        if rule.target_scope == VariableScope.PAIR:
+            VTCSocialResidueProgram._assert_target_shape(rule, target, num_agents)
             pair_mask = active.reshape(num_agents, 1) & active.reshape(1, num_agents)
             while pair_mask.dim() < target.dim():
                 pair_mask = pair_mask.unsqueeze(-1)
             return pair_mask.expand_as(target)
 
-        is_agent_scope = rule.scope == "agent" or (rule.scope is None and target.shape[0] == num_agents)
-        if is_agent_scope:
-            if target.shape[0] != num_agents:
-                raise ValueError(
-                    f"VTC social residue '{rule.telemetry_label}' scope=agent requires leading agent dimension "
-                    f"{num_agents}, got {tuple(target.shape)}"
-                )
+        if rule.target_scope in ACTION_WRITE_AGENT_AXIS_SCOPES:
+            VTCSocialResidueProgram._assert_target_shape(rule, target, num_agents)
             agent_mask = active
             while agent_mask.dim() < target.dim():
                 agent_mask = agent_mask.unsqueeze(-1)
             return agent_mask.expand_as(target)
 
+        # Global and affordance state has no row per agent: it is written while any agent is active.
         return torch.full_like(target, bool(active.any()), dtype=torch.bool, device=target.device)
+
+    @staticmethod
+    def _assert_target_shape(rule: CompiledVTCSocialResidueRule, target: torch.Tensor, num_agents: int) -> None:
+        """The declared scope fixes the leading axes; storage that disagrees is a registry defect."""
+        agent_axes = 2 if rule.target_scope == VariableScope.PAIR else 1
+        assert target.dim() >= agent_axes and all(int(extent) == num_agents for extent in target.shape[:agent_axes]), (
+            f"VTC social residue '{rule.telemetry_label}' targets {rule.target_scope.value}-scope "
+            f"'{rule.variable_id}' with storage shape {tuple(target.shape)}; expected {agent_axes} leading "
+            f"agent axes of {num_agents}"
+        )
 
 
 @dataclass(frozen=True)
@@ -1852,16 +1833,22 @@ _SOCIAL_RESIDUE_RULE_KINDS = frozenset({"visibility_effect", "social_residue", "
 
 def compile_vtc_social_residue_rules(
     rules: Sequence[VTCSocialResidueSource | Mapping[str, Any]],
+    target_scopes: Mapping[str, VariableScope],
 ) -> VTCSocialResidueProgram:
     """Compile relationship/social-state rules into VTC social-residue writes."""
-    return compile_vtc_social_residue_rules_with_phase_graph(rules, TransitionPhaseGraph.default())
+    return compile_vtc_social_residue_rules_with_phase_graph(rules, target_scopes, TransitionPhaseGraph.default())
 
 
 def compile_vtc_social_residue_rules_with_phase_graph(
     rules: Sequence[VTCSocialResidueSource | Mapping[str, Any]],
+    target_scopes: Mapping[str, VariableScope],
     phase_graph: TransitionPhaseGraph,
 ) -> VTCSocialResidueProgram:
-    """Compile relationship/social-state rules using an explicit transition phase graph."""
+    """Compile relationship/social-state rules using an explicit transition phase graph.
+
+    ``target_scopes`` maps every VFS variable a rule may write to its declared scope; the
+    scope, never the storage shape, decides how a write is masked and broadcast.
+    """
     parser = ExpressionParser()
     compiled_rules: list[CompiledVTCSocialResidueRule] = []
     refusals: list[VTCWriteRefusal] = []
@@ -1878,6 +1865,22 @@ def compile_vtc_social_residue_rules_with_phase_graph(
                             f"Transition rule '{rule['rule_id']}' write '{write['telemetry_label']}' is scheduled at "
                             f"{_unknown_phase_reason(write['phase'])}. "
                             f"Transition phases: {', '.join(phase_graph.ordered_phases)}"
+                        ),
+                    )
+                )
+                continue
+            target_scope = target_scopes.get(write["variable_id"])
+            if target_scope is None or target_scope == VariableScope.ITEM:
+                refusals.append(
+                    VTCWriteRefusal(
+                        origin_key=f"transition_rules:{rule['rule_id']}",
+                        message=(
+                            f"Transition rule '{rule['rule_id']}' write '{write['telemetry_label']}' targets "
+                            + (
+                                f"unknown VFS variable '{write['variable_id']}'"
+                                if target_scope is None
+                                else f"item-scope variable '{write['variable_id']}', which has no registry row"
+                            )
                         ),
                     )
                 )
@@ -1899,7 +1902,7 @@ def compile_vtc_social_residue_rules_with_phase_graph(
                     clamp=write["clamp"],
                     telemetry_label=write["telemetry_label"],
                     reads=rule["reads"],
-                    scope=write["scope"],
+                    target_scope=target_scope,
                 )
             )
 
@@ -1966,7 +1969,6 @@ def _coerce_social_residue_write(raw_write: Mapping[str, Any] | WriteSpec, rule:
     condition: str | None
     composition: str
     effect: str | None
-    scope: str | None
 
     if isinstance(raw_write, WriteSpec):
         variable_id = raw_write.variable_id
@@ -1978,14 +1980,7 @@ def _coerce_social_residue_write(raw_write: Mapping[str, Any] | WriteSpec, rule:
         clamp = raw_write.clamp
         telemetry_label = raw_write.telemetry_label
         effect = None
-        scope = None
     elif isinstance(raw_write, Mapping):
-        if "target" in raw_write:
-            raise ValueError(
-                f"VTC social residue rule '{rule_id}' write field 'target' was removed: directed masks are "
-                "expressed through condition/expression data (e.g. a pair-scope observer mask), not a role "
-                "annotation. Delete the 'target' key. See docs/architecture/vfs.md §16.3."
-            )
         variable_id = str(raw_write.get("variable_id", "")).strip()
         expression = str(raw_write.get("expression", "")).strip()
         condition_raw = raw_write.get("condition")
@@ -1998,8 +1993,6 @@ def _coerce_social_residue_write(raw_write: Mapping[str, Any] | WriteSpec, rule:
         telemetry_label = str(raw_write.get("telemetry_label") or _social_residue_telemetry_label(rule_id, kind, raw_write)).strip()
         effect_raw = raw_write.get("effect")
         effect = None if effect_raw is None else str(effect_raw).strip()
-        scope_raw = raw_write.get("scope")
-        scope = None if scope_raw is None else str(scope_raw).strip()
     else:
         raise TypeError(f"VTC social residue rule '{rule_id}' write entry must be a WriteSpec or mapping")
 
@@ -2019,8 +2012,6 @@ def _coerce_social_residue_write(raw_write: Mapping[str, Any] | WriteSpec, rule:
         raise ValueError(f"VTC social residue rule '{rule_id}' write to '{variable_id}' requires telemetry_label")
     if effect == "":
         raise ValueError(f"VTC social residue rule '{rule_id}' write to '{variable_id}' effect must be non-empty when provided")
-    if scope == "":
-        raise ValueError(f"VTC social residue rule '{rule_id}' write to '{variable_id}' scope must be non-empty when provided")
 
     return {
         "variable_id": variable_id,
@@ -2032,7 +2023,6 @@ def _coerce_social_residue_write(raw_write: Mapping[str, Any] | WriteSpec, rule:
         "clamp": clamp,
         "telemetry_label": telemetry_label,
         "effect": effect,
-        "scope": scope,
     }
 
 

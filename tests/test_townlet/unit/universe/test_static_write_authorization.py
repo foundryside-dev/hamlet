@@ -117,7 +117,6 @@ def test_conditional_action_and_social_writes_are_checked():
                                 "condition": None,
                                 "clamp": None,
                                 "effect": None,
-                                "scope": "agent",
                             }
                         ],
                     },

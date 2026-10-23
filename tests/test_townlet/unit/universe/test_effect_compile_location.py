@@ -31,3 +31,26 @@ def test_effect_compile_error_names_the_effect_declaration(tmp_path: Path) -> No
     assert Path(path).name == "effects.yaml"
     assert int(line) == failing_line
     assert "variables.yaml" not in str(refusal.value)
+
+
+def test_catalog_compile_error_carries_the_effect_id() -> None:
+    """The catalog names the failing effect on the exception; stage 6 reads it instead of
+    recompiling each definition alone to find it."""
+    from tests.test_townlet.unit.effects.test_bare_vfs_write import SCHEMA
+    from townlet.config.effects_config import EffectsConfig
+    from townlet.effects.catalog import EffectCatalog, EffectCompileError
+    from townlet.world.expression.type_checker import TypeCheckError
+
+    config = EffectsConfig(
+        version="1.0",
+        max_active_effects={"global": 1, "agent": 1, "item": 1, "affordance": 1},
+        effect_definitions=[_effect("agent", BARE_INCREMENT), _effect("global", BARE_INCREMENT)],
+    )
+    schema = {**SCHEMA, "vfs.public_state": "float", "target.vfs.public_state": "float"}
+
+    with pytest.raises(EffectCompileError) as refusal:
+        EffectCatalog.from_config(config, schema=schema)
+
+    assert refusal.value.effect_id == "global_probe"
+    assert "Effect 'global_probe' failed to compile" in str(refusal.value)
+    assert isinstance(refusal.value.__cause__, TypeCheckError)

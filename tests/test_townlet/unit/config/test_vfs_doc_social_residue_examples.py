@@ -13,8 +13,16 @@ import yaml
 
 from townlet.config.transition_rules_config import TransitionRulesConfig
 from townlet.vfs import compile_vtc_social_residue_rules
+from townlet.vfs.schema import VariableScope
 
 VFS_DOC = Path("docs/architecture/VFS.md")
+
+#: Declared scopes of the relational variables the examples write (VFS.md §16.2).
+DOC_TARGET_SCOPES = {
+    "trust": VariableScope.PAIR,
+    "obligation": VariableScope.PAIR,
+    "public_reputation": VariableScope.AGENT,
+}
 
 
 def _social_residue_blocks() -> list[str]:
@@ -40,5 +48,5 @@ def test_doc_social_residue_examples_compile_as_written() -> None:
     )
     for block in blocks:
         config = TransitionRulesConfig(**yaml.safe_load(block))
-        program = compile_vtc_social_residue_rules(config.social_residue_sources())
+        program = compile_vtc_social_residue_rules(config.social_residue_sources(), DOC_TARGET_SCOPES)
         assert len(program.rules) >= 1

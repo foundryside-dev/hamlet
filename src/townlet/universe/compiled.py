@@ -120,7 +120,7 @@ from townlet.vfs.transition_schedule import (
 # 1.30: `evaluation_mode` and `debug_logging` are deleted from the compiled VFS profiles;
 # mark-and-sweep is the only evaluator. A 1.29 cache of a pack that still declares them
 # would load without the parse refusal, so it is refused as stale.
-COMPILED_SCHEMA_VERSION = "1.30"
+COMPILED_SCHEMA_VERSION = "1.31"
 
 REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "compiled_schema_version",

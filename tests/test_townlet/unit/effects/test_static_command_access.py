@@ -22,7 +22,7 @@ def test_constructed_parallel_denial_preserves_earlier_target() -> None:
         2,
         torch.device("cpu"),
     )
-    command = CommandCompiler({"vfs.allowed": "float", "vfs.constant": "float"}).compile_command(
+    command = CommandCompiler({"vfs.allowed": "float", "vfs.constant": "float"}, agent_target=True).compile_command(
         CommandNode(
             type=CommandType.PARALLEL,
             parallel_commands=[
@@ -45,7 +45,7 @@ def test_constructed_for_each_denial_precedes_first_bar_mutation() -> None:
         2,
         torch.device("cpu"),
     )
-    command = CommandCompiler({"target.bar.energy": "float", "target.vfs.constant": "float"}).compile_command(
+    command = CommandCompiler({"target.bar.energy": "float", "target.vfs.constant": "float"}, agent_target=True).compile_command(
         CommandNode(
             type=CommandType.FOR_EACH,
             collection="all_agents",
@@ -73,7 +73,7 @@ def test_denied_sample_does_not_advance_random_generator() -> None:
         2,
         torch.device("cpu"),
     )
-    command = CommandCompiler({"vfs.constant": "float"}).compile_command(
+    command = CommandCompiler({"vfs.constant": "float"}, agent_target=True).compile_command(
         CommandNode(
             type=CommandType.SAMPLE, sample_store_path="vfs.constant", sample_distribution="uniform", sample_params={"min": 0.0, "max": 1.0}
         )

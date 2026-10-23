@@ -37,11 +37,12 @@ Every variable declares its `id`, `scope`, `type`, `lifetime`, `semantic_type` a
 entry remains a valid schema group for item types with no state variables.
 
 - **Scope:** `global`, `agent`, `agent_private`, `item`, `pair`, `affordance`, or
-  `message`. Storage scope and observation support are separate contracts. `affordance`
-  requires `extents.num_affordances` and `message` requires `extents.num_message_slots`;
-  no other scope takes an extent. There is no `zone` or `group` scope: both were storage
-  with no publisher and no write path, and were deleted (an old declaration fails
-  validation).
+  `message`. Storage scope and observation support are separate contracts. `message`
+  requires `extents.num_message_slots`; no other scope takes an extent. `affordance` rows
+  are the level's affordance count, the only authority: there is no `num_affordances`
+  extent, and an `extents` block that declares one fails as an extra field. There is no
+  `zone` or `group` scope: both were storage with no publisher and no write path, and were
+  deleted (an old declaration fails validation).
 - **Type:** `scalar` (float32 storage), `bool`, supported fixed/dynamic vectors,
   references, tensors or `message_token`. There are no authored `float`, `int` or
   generic `vector` aliases. Tensor shapes and dynamic vector dimensions are explicit.
@@ -63,8 +64,12 @@ entry remains a valid schema group for item types with no state variables.
   (`SYMBOL_METER_COLLISION`). Vector/tensor expression outputs
   and functions without a qualified shape refuse. A constant belongs in initialization.
 - **Exposure:** an empty list means hidden. Exposed variables require a supported bounded
-  `normalization`; normalization on a hidden variable is refused. `semantic_type` uses
-  the closed semantic vocabulary. Exposure does not confer new privacy guarantees.
+  `normalization`; normalization on a hidden variable is refused. Exposure does not confer
+  new privacy guarantees.
+- **Semantic type:** `temporal` or `custom`. An exposed variable's token descriptor carries
+  it as a one-hot; a global `temporal` variable with `expression: tick` and a cyclical
+  normalization is the pack's clock. The former members `bars`, `spatial`, `affordance` and
+  `effects` named groups of the deleted grouped observation vector and fail validation.
 
 Tensor modes `zeros`, `ones` and `eye` can lower to exact declared literals for token
 identity. Exposed random initializers are refused because they have no exact static reset

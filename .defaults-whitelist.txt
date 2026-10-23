@@ -236,9 +236,6 @@ src/townlet/universe/validation/references.py:*
 src/townlet/environment/action_executor.py:*
 
 # VFS modules added after the ledger's last maintenance - mechanical patterns.
-src/townlet/vfs/communication.py:*
-src/townlet/vfs/dynamic_needs.py:*
-src/townlet/vfs/generalisation.py:*
 src/townlet/vfs/schema_hashes.py:*
 src/townlet/vfs/transition_schedule.py:*
 

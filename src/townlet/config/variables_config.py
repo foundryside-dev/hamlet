@@ -199,10 +199,7 @@ class VariablesConfig(BaseModel):
         if any(not name or "." in name or "[" in name or "]" in name for name in self.item_profiles):
             raise ValueError("Item profile identifiers must be nonempty and contain no element separators")
         seen: set[tuple[str | None, str]] = set()
-        extent_fields = {
-            VariableScope.MESSAGE: "num_message_slots",
-            VariableScope.AFFORDANCE: "num_affordances",
-        }
+        extent_fields = {VariableScope.MESSAGE: "num_message_slots"}
         for variable in self.declarations:
             identity = (variable.profile if variable.scope == VariableScope.ITEM else None, variable.id)
             if identity in seen:

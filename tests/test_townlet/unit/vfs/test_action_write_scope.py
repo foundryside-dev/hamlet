@@ -115,11 +115,6 @@ def _scoped_write_pack(
     return pack
 
 
-def _affordance_count() -> int:
-    payload = yaml.safe_load((WITNESS / "levels" / LEVEL / "affordances.yaml").read_text())
-    return len(payload["affordances"])
-
-
 NON_AGENT_TARGETS = {
     # probe1 F: the global tensor whose extent coincided with num_agents=2.
     "global_tensor": (_declaration("gvec", "global", type="tensor1d", shape=[2], initial_value=[0.0, 0.0]), None, "global"),
@@ -128,7 +123,7 @@ NON_AGENT_TARGETS = {
     # probe2 G: row 0 of a pair tensor was written as the acting agent's "source row".
     "pair": (_declaration("trust", "pair"), None, "pair"),
     # An affordance variable outside the occupancy-claim form has no row per agent either.
-    "affordance": (_declaration("wear", "affordance"), {"num_affordances": _affordance_count()}, "affordance"),
+    "affordance": (_declaration("wear", "affordance"), None, "affordance"),
 }
 
 
@@ -173,7 +168,6 @@ def test_affordance_occupancy_claim_is_the_one_affordance_write(tmp_path: Path) 
 
     def edit_variables(payload: dict[str, Any]) -> None:
         payload["variables"]["declarations"].append(_declaration("occupied_by", "affordance", initial_value=-1.0))
-        payload["variables"]["extents"] = {"num_affordances": _affordance_count()}
 
     def edit_actions(payload: dict[str, Any]) -> None:
         payload["actions"]["custom_actions"].append(
@@ -216,7 +210,6 @@ def _residue_pack(tmp_path: Path, phase: str) -> Path:
                 "condition": None,
                 "clamp": None,
                 "effect": None,
-                "scope": "agent",
             }
         ],
     }

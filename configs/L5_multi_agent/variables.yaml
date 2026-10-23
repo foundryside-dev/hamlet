@@ -1,7 +1,6 @@
 variables:
   version: '1.0'
-  extents:
-    num_affordances: 4
+  extents: {}
   item_profiles: []
   declarations:
   - id: deficit_energy

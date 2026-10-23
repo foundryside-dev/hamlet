@@ -77,11 +77,6 @@ class VTCTransitionRunner:
     def __init__(self, schedule: VTCTransitionSchedule) -> None:
         self.schedule = schedule
 
-    def phases_through(self, phase: str) -> tuple[str, ...]:
-        """Return all configured phases through the named phase, inclusive."""
-        index = self.schedule.phase_graph.sort_key(phase)
-        return self.schedule.phase_graph.ordered_phases[: index + 1]
-
     def phases_between(self, after_phase: str, before_phase: str) -> tuple[str, ...]:
         """Return configured phases after one boundary and before another."""
         after_index = self.schedule.phase_graph.sort_key(after_phase)
@@ -247,8 +242,11 @@ def build_vtc_transition_schedule(
     passive_depletions = compile_vtc_passive_depletions_with_phase_graph(level.bars.meters, phase_graph)
     modulations = compile_vtc_modulations_with_phase_graph(level.affordances.modulations, phase_graph)
     threshold_cascades = compile_vtc_threshold_cascades_with_phase_graph(level.bars.cascades, level.bars.meters, phase_graph)
-    social_program = compile_vtc_social_residue_rules_with_phase_graph(social_residue_rules, phase_graph)
-    _validate_state_residue_targets(social_program, (variable.id for variable in vfs_variables))
+    social_program = compile_vtc_social_residue_rules_with_phase_graph(
+        social_residue_rules,
+        {variable.id: VariableScope(variable.scope) for variable in vfs_variables},
+        phase_graph,
+    )
     bounds_clamps = compile_vtc_bounds_clamps_with_phase_graph(level.bars.meters, phase_graph)
     return VTCTransitionSchedule(
         phase_graph=phase_graph,
@@ -321,13 +319,6 @@ def _action_write_target_scopes(vfs_variables: Sequence[VariableDef], meter_name
     return scopes
 
 
-def _validate_state_residue_targets(program: VTCSocialResidueProgram, variable_ids: Iterable[str]) -> None:
-    known = set(variable_ids)
-    for rule in program.rules:
-        if rule.variable_id not in known:
-            raise ValueError(f"VTC state residue rule '{rule.rule_id}' targets unknown VFS variable '{rule.variable_id}'")
-
-
 def _social_rule_to_source(rule: Any) -> dict[str, Any]:
     return {
         "id": rule.rule_id,
@@ -346,7 +337,6 @@ def _social_rule_to_source(rule: Any) -> dict[str, Any]:
                 "priority": rule.priority,
                 "clamp": None if rule.clamp is None else list(rule.clamp),
                 "telemetry_label": rule.telemetry_label,
-                "scope": rule.scope,
             }
         ],
     }

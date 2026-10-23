@@ -175,16 +175,3 @@ class VFSEvaluator:
         self._push_history(bars=bars, vfs_values=context.vfs, device=device, step=step)
 
         return result
-
-    def evaluate_all(self, registry: Any) -> dict[str, torch.Tensor]:
-        """Utility for benchmarks: return a snapshot of current VFS values."""
-        snapshot: dict[str, torch.Tensor] = {}
-        # Capture globals
-        if hasattr(registry, "list_global") and hasattr(registry, "get_global"):
-            for name in registry.list_global():
-                snapshot[f"global.{name}"] = registry.get_global(name, reader="engine")
-        # Capture agent values (batched tensors)
-        if hasattr(registry, "list_agent") and hasattr(registry, "get_agent"):
-            for name in registry.list_agent():
-                snapshot[f"agent.{name}"] = registry.get_agent(name, reader="engine")
-        return snapshot

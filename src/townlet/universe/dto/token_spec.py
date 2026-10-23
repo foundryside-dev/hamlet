@@ -17,7 +17,7 @@ every input is a declaration-derived value the caller hands over.
 Widths that are DERIVED from closed vocabularies, never written as literals:
 
 - scope one-hot          = ``len(VariableScope)``                      (vfs/schema.py)
-- semantic-type one-hot  = ``len(SEMANTIC_TYPES)``                     (vfs/semantic_type.py)
+- semantic-type one-hot  = ``len(get_args(SemanticType))``             (vfs/semantic_type.py)
 - normalization one-hot  = size of ``NormalizationSpec.kind``'s Literal (vfs/schema.py)
 - interaction_type       = size of ``InteractionType``                 (config/interaction_type.py)
 - effect scope one-hot   = ``len(EffectScope)``                        (config/effects_config.py)
@@ -1285,7 +1285,7 @@ def meter_capacity(meters: Sequence[MeterDeclaration]) -> int:
 
 def affordance_capacity(*, affordance_count: int) -> int:
     """Count of affordance instances — the runtime count from `metadata.affordance_count`
-    (affordances.yaml); the extents `num_affordances` declaration is presence-checked and inert."""
+    (affordances.yaml), the only authority for affordance-scope rows."""
     if affordance_count < 0:
         raise ValueError("affordance_count must be >= 0")
     return affordance_count

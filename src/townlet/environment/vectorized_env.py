@@ -1070,10 +1070,10 @@ class VectorizedHamletEnv:
         )
 
         # 2. Deplete meters (base passive decay with curriculum difficulty)
-        self._apply_vtc_passive_depletion(depletion_multiplier)
+        self._apply_vtc_passive_depletion(depletion_multiplier, active_on_entry)
 
         # 3. Passive threshold cascades via VTC relationship rules.
-        self._apply_vtc_threshold_cascades()
+        self._apply_vtc_threshold_cascades(active_on_entry)
 
         # 3.5. Execute active effects (after cascades, before terminal checks)
         # Effects can modify bars based on current state after all natural dynamics applied
@@ -1104,7 +1104,7 @@ class VectorizedHamletEnv:
         self._evaluate_vfs_profiles()
 
         # 4. Evaluate VTC terminal conditions
-        self._apply_vtc_terminal_conditions()
+        self._apply_vtc_terminal_conditions(active_on_entry)
         authored_terminal = active_on_entry & self.dones
 
         # 5. Count eligible transitions, including the transition that ends a lane.
@@ -1241,38 +1241,30 @@ class VectorizedHamletEnv:
         """Execute movement, interaction, and wait actions."""
         return self._action_executor._execute_actions(actions)
 
-    def _apply_vtc_action_writes(self, actions: torch.Tensor, active_mask: torch.Tensor) -> None:
-        """Apply compiled VFS transition writes for selected actions."""
-        self._run_vtc_transition_phases(
-            self.vtc_transition_runner.phases_through("apply_completion_bonuses"),
-            actions=actions,
-            active_mask=active_mask,
-        )
-
-    def _apply_vtc_passive_depletion(self, depletion_multiplier: float) -> None:
+    def _apply_vtc_passive_depletion(self, depletion_multiplier: float, active_mask: torch.Tensor) -> None:
         """Apply compiled VFS passive-depletion rules (and any transition rule at that phase)
-        to the agents still active: ``dones`` is unchanged from step entry until
-        ``evaluate_terminal_conditions``, so ``~dones`` is this tick's active-on-entry mask."""
+        to the agents active on entry to this step (``step()`` captures the mask once)."""
         self._run_vtc_transition_phases(
             ("apply_passive_depletion",),
-            active_mask=torch.logical_not(self.dones),
+            active_mask=active_mask,
             depletion_multiplier=depletion_multiplier,
         )
 
-    def _apply_vtc_threshold_cascades(self) -> None:
+    def _apply_vtc_threshold_cascades(self, active_mask: torch.Tensor) -> None:
         """Apply compiled VFS threshold-cascade rules (and any transition rule at that phase)
-        to the agents still active, as for passive depletion."""
+        to the agents active on entry to this step."""
         self._run_vtc_transition_phases(
             ("apply_threshold_cascades",),
-            active_mask=torch.logical_not(self.dones),
+            active_mask=active_mask,
         )
 
-    def _apply_vtc_terminal_conditions(self) -> None:
-        """Evaluate compiled VFS terminal-condition rules over meter bars."""
+    def _apply_vtc_terminal_conditions(self, active_mask: torch.Tensor) -> None:
+        """Evaluate compiled VFS terminal-condition rules over meter bars for the agents
+        active on entry to this step."""
         self._run_vtc_transition_phases(
             ("evaluate_terminal_conditions",),
             dones=self.dones,
-            active_mask=torch.logical_not(self.dones),
+            active_mask=active_mask,
         )
 
     def _run_vtc_transition_phases(

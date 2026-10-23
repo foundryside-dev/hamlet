@@ -2,39 +2,9 @@
 
 from __future__ import annotations
 
-import torch
-
 from townlet.effects.catalog import CompiledEffect, EffectCatalog
 from townlet.effects.executor import CommandExecutor
 from townlet.effects.manager import EffectManager
-from townlet.vfs.evaluator import VFSEvaluator
-from townlet.vfs.registry import VariableRegistry
-from townlet.vfs.schema import VariableDef
-
-
-def _make_vfs_registry(num_agents: int = 8) -> VariableRegistry:
-    variables = [
-        VariableDef(
-            id=name, scope=scope, type="scalar", lifetime="episode", default=value, readable_by=["engine", "agent"], writable_by=["engine"]
-        )
-        for name, scope, value in [("day_count", "global", 0.0), ("energy", "agent", 1.0), ("health", "agent", 0.5)]
-    ]
-    return VariableRegistry(variables, num_agents, torch.device("cpu"))
-
-
-class TestVFSBenchmarks:
-    """Benchmark VFS evaluation and observation build."""
-
-    def test_vfs_evaluation(self, benchmark):
-        # Simple evaluation of globals/agents via mark-and-sweep evaluator
-        registry = _make_vfs_registry()
-        evaluator = VFSEvaluator()
-
-        def _eval():
-            # Simulate a handful of marks; here we just use globals/agents already set.
-            return evaluator.evaluate_all(registry)
-
-        benchmark(_eval)
 
 
 class TestEffectsBenchmarks:

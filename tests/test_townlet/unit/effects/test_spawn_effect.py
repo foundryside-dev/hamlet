@@ -293,7 +293,7 @@ def test_spawn_effect_pipeline_requires_explicit_target_and_intensity():
     """Parser+compiler should execute only explicitly targeted spawn commands."""
     config = CommandConfig(spawn_effect="poison", target="self", intensity=1.0)
     parser = CommandParser()
-    compiler = CommandCompiler(schema={})
+    compiler = CommandCompiler(schema={}, agent_target=True)
 
     node = compiler.compile_command(parser.parse_command(config))
 
@@ -337,7 +337,7 @@ def test_spawn_effect_evaluates_target_expression_when_not_literal():
     """Non-literal targets should be evaluated via target_ast at runtime."""
     config = CommandConfig(spawn_effect="stun", target="1 + 1", intensity=1.0)
     parser = CommandParser()
-    compiler = CommandCompiler(schema={})
+    compiler = CommandCompiler(schema={}, agent_target=True)
     node = compiler.compile_command(parser.parse_command(config))
 
     catalog = EffectCatalog(

@@ -84,7 +84,7 @@ def _action_write_pack(tmp_path: Path, phase: str) -> Path:
     return pack
 
 
-def _residue_rule_pack(tmp_path: Path, phase: str, *, variable_id: str = "public_state", scope: str | None = "agent") -> Path:
+def _residue_rule_pack(tmp_path: Path, phase: str, *, variable_id: str = "public_state") -> Path:
     pack = _pack(tmp_path, f"residue_{phase}")
     rule = {
         "id": "inc",
@@ -100,7 +100,6 @@ def _residue_rule_pack(tmp_path: Path, phase: str, *, variable_id: str = "public
                 "condition": None,
                 "clamp": None,
                 "effect": None,
-                "scope": scope,
             }
         ],
     }
@@ -200,7 +199,7 @@ def test_transition_graph_hash_carries_no_reward_program(tmp_path: Path) -> None
 
 def test_expressions_observe_transition_rule_writes_in_the_same_tick(tmp_path: Path) -> None:
     """V14 (probe2 F mas_control): profile evaluation runs after the residue phase."""
-    pack = _residue_rule_pack(tmp_path, "apply_social_residue_effects", variable_id="gcount", scope=None)
+    pack = _residue_rule_pack(tmp_path, "apply_social_residue_effects", variable_id="gcount")
 
     def edit(payload: dict[str, Any]) -> None:
         base = {

@@ -525,7 +525,6 @@ def test_transition_graph_hash_binds_social_residue_rules() -> None:
                         {
                             "variable_id": "trust",
                             "effect": "trust_delta",
-                            "scope": "pair",
                             "expression": str(delta),
                             "composition": "additive_delta",
                             "clamp": [0.0, 1.0],
@@ -533,6 +532,7 @@ def test_transition_graph_hash_binds_social_residue_rules() -> None:
                     ],
                 }
             ],
+            {"trust": VariableScope.PAIR},
             phase_graph,
         )
 
@@ -556,7 +556,7 @@ def test_transition_graph_hash_binds_social_residue_rules() -> None:
             "clamp": [0.0, 1.0],
             "telemetry_label": "visibility_effect:seen_stealing_damages_trust:trust_delta",
             "reads": ["chosen_action", "observer_mask", "trust"],
-            "scope": "pair",
+            "target_scope": "pair",
         }
     ]
 

@@ -13,7 +13,7 @@ import torch
 import yaml
 
 from townlet.config.brain_config import apply_training_overrides, compute_brain_hash
-from townlet.effects.catalog import EffectCatalog
+from townlet.effects.catalog import EffectCatalog, EffectCompileError
 from townlet.universe.compiled import CompiledUniverse
 from townlet.universe.declarations import DeclarationStore, config_documents
 from townlet.universe.dto import UniverseMetadata
@@ -58,14 +58,6 @@ logger = logging.getLogger(__name__)
 
 SCHEMA_VERSION = "1.0"
 COMPILER_VERSION = "0.1.0"
-
-
-class EffectCompileError(Exception):
-    """An effect definition failed to compile; carries its id so the diagnostic is located."""
-
-    def __init__(self, effect_id: str) -> None:
-        super().__init__(effect_id)
-        self.effect_id = effect_id
 
 
 class UniverseCompiler:
@@ -188,7 +180,7 @@ class UniverseCompiler:
                 [
                     CompilationMessage(
                         code=ErrorCode.EFFECT_COMPILE,
-                        message=str(exc.__cause__),
+                        message=str(exc),
                         location=locate(source_map, f"effects:{exc.effect_id}"),
                     )
                 ],
@@ -314,26 +306,11 @@ class UniverseCompiler:
             compiled_vfs_profiles=compiled_vfs_profiles,
         )
 
-        try:
-            compiled_effect_catalog = self._effects_compiler.compile_catalog(
-                raw.effects,
-                effects_schema,
-                time_enabled=temporal_supported,
-            )
-        except (CircularDependencyError, TypeCheckError):
-            # The catalog names the effect only in prose; find the definition that
-            # fails on its own so the diagnostic lands at its declaration's file:line.
-            assert raw.effects is not None
-            for definition in raw.effects.effect_definitions:
-                try:
-                    self._effects_compiler.compile_catalog(
-                        raw.effects.model_copy(update={"effect_definitions": [definition]}),
-                        effects_schema,
-                        time_enabled=temporal_supported,
-                    )
-                except (CircularDependencyError, TypeCheckError) as single:
-                    raise EffectCompileError(definition.id) from single
-            raise
+        compiled_effect_catalog = self._effects_compiler.compile_catalog(
+            raw.effects,
+            effects_schema,
+            time_enabled=temporal_supported,
+        )
         return SharedCompilerArtifacts(
             bar_schema=bar_schema,
             compiled_vfs_profiles=compiled_vfs_profiles,

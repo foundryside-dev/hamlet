@@ -168,6 +168,12 @@ def test_compiler_resolves_bare_agent_path_and_expression_under_agent_target() -
     assert right.segments == ["vfs", "gcount"]
 
 
+def test_agent_target_is_a_required_declaration() -> None:
+    """No default: every construction site states whether `target` is bound to an agent row."""
+    with pytest.raises(TypeError, match="agent_target"):
+        CommandCompiler(SCHEMA)  # type: ignore[call-arg]
+
+
 def test_compiler_refuses_bare_agent_write_without_agent_target() -> None:
     with pytest.raises(TypeCheckError, match="no interacting agent"):
         CommandCompiler(SCHEMA, agent_target=False).compile_command(_modify("vfs.mood", "1.0"))
@@ -227,7 +233,7 @@ def _registry() -> VariableRegistry:
 def test_runtime_bare_agent_write_with_target_writes_that_row() -> None:
     registry = _registry()
     node = _modify("vfs.mood", "vfs.mood + 1.5")
-    CommandCompiler({"vfs.mood": "float"}).compile_command(node)  # no target twin: the compiler cannot resolve it
+    CommandCompiler({"vfs.mood": "float"}, agent_target=True).compile_command(node)  # no target twin: the compiler cannot resolve it
     CommandExecutor().execute(node, ExecutionContext(vfs_registry=registry, target_index=2))
     assert registry.get("mood", reader="engine").tolist() == [0.0, 0.0, 1.5]
 
@@ -235,7 +241,7 @@ def test_runtime_bare_agent_write_with_target_writes_that_row() -> None:
 def test_runtime_bare_agent_write_without_target_refuses_untouched() -> None:
     registry = _registry()
     node = _modify("vfs.mood", "1.0")
-    CommandCompiler({"vfs.mood": "float"}).compile_command(node)
+    CommandCompiler({"vfs.mood": "float"}, agent_target=True).compile_command(node)
     with pytest.raises(ValueError, match="never a batch write"):
         CommandExecutor().execute(node, ExecutionContext(vfs_registry=registry, target_index=None))
     assert registry.get("mood", reader="engine").tolist() == [0.0, 0.0, 0.0]

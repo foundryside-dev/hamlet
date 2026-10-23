@@ -10,6 +10,7 @@ import torch
 import yaml
 
 from townlet.universe.compiler import UniverseCompiler
+from townlet.universe.errors import CompilationError
 
 LEVEL_NAME = "L5_multi_agent"
 
@@ -38,7 +39,6 @@ def _write_social_residue_rule(config_dir: Path, *, variable_id: str = "trust", 
                         "composition": "additive_delta",
                         "condition": None,
                         "clamp": [0.0, 1.0],
-                        "scope": "pair",
                     }
                 ],
             }
@@ -98,7 +98,6 @@ def test_transition_rules_typo_key_fails_at_load_not_silently(tmp_path: Path) ->
                         "expression": "0.1",
                         "composition": "additive_delta",
                         "clamp": [0.0, 1.0],
-                        "scope": "pair",
                         "condtion": "trust > 0.5",
                     }
                 ],
@@ -126,8 +125,10 @@ def test_social_residue_rules_fail_loudly_for_unknown_targets(tmp_path: Path) ->
     config_dir = _copy_l5_pack(tmp_path, "missing-target")
     _write_social_residue_rule(config_dir, variable_id="missing_social_variable")
 
-    with pytest.raises(ValueError, match="targets unknown VFS variable 'missing_social_variable'"):
+    with pytest.raises(CompilationError, match="targets unknown VFS variable 'missing_social_variable'") as refusal:
         UniverseCompiler().compile(config_dir, primary_level=LEVEL_NAME, use_cache=False)
+    (issue,) = refusal.value.issues
+    assert issue.location is not None and "transition_rules.yaml" in issue.location
 
 
 def test_environment_runtime_does_not_embed_social_residue_domain_semantics() -> None:

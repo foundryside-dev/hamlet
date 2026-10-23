@@ -13,7 +13,7 @@ from townlet.world.expression.type_checker import TypeCheckError
 
 
 def _compile(cmd: CommandNode, schema: dict[str, str]) -> CommandNode:
-    return CommandCompiler(schema=schema).compile_command(cmd)
+    return CommandCompiler(schema=schema, agent_target=True).compile_command(cmd)
 
 
 def test_sample_uniform_compiles_and_executes_deterministically(cpu_device):
@@ -80,6 +80,6 @@ def test_sample_missing_param_rejected():
         sample_params={"min": 0.0},  # missing max
         sample_store_path="bar.energy",
     )
-    compiler = CommandCompiler(schema={"bar.energy": "float"})
+    compiler = CommandCompiler(schema={"bar.energy": "float"}, agent_target=True)
     with pytest.raises(TypeCheckError):
         compiler.compile_command(cmd)

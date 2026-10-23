@@ -17,7 +17,7 @@
 **When to Read**: Authoring "action leaves a social trace" mechanics — trust damage, obligations, reputation, sanctions — or debugging why a social-residue rule does or does not fire
 
 **AI-Friendly Summary**:
-`transition_rules.yaml` is the pack-root authoring surface for VTC social-residue rules. Three rule kinds (`visibility_effect`, `social_residue`, `institutional_rule`) declare condition-gated writes to VFS variables (typically pair-scope, e.g. `trust[i, j]`), executed in the `apply_social_residue_effects` phase inside `env.step`. The file is validated at load by a no-defaults DTO (`townlet.config.transition_rules_config.TransitionRulesConfig`, `extra="forbid"`): unknown or typo'd keys fail at parse, and the behavioural fields `condition`, `clamp`, `effect`, `scope` must be set explicitly (`null` included). Direction (observer→actor) is carried by declared pair-scope data in `condition`/`expression`, never by a role annotation.
+`transition_rules.yaml` is the pack-root authoring surface for VTC social-residue rules. Three rule kinds (`visibility_effect`, `social_residue`, `institutional_rule`) declare condition-gated writes to VFS variables (typically pair-scope, e.g. `trust[i, j]`), executed in the `apply_social_residue_effects` phase inside `env.step`. The file is validated at load by a no-defaults DTO (`townlet.config.transition_rules_config.TransitionRulesConfig`, `extra="forbid"`): unknown or typo'd keys fail at parse, and the behavioural fields `condition`, `clamp`, `effect` must be set explicitly (`null` included). Masking follows the target variable's declared scope, never an authored annotation. Direction (observer→actor) is carried by declared pair-scope data in `condition`/`expression`, never by a role annotation.
 
 **Reading Strategy**:
 - **Quick Reference**: "Field Reference" below
@@ -56,7 +56,6 @@ social_residue:           # required list (may be empty, but say so explicitly)
         condition: null                # combined (AND) with the rule condition when set
         clamp: [0.0, 1.0]              # or null
         effect: "trust_delta"          # relationship-effect label, or null
-        scope: "pair"                  # pair | agent | null (null = infer from tensor shape)
 ```
 
 ## Field Reference
@@ -83,12 +82,14 @@ social_residue:           # required list (may be empty, but say so explicitly)
 | `condition` | yes, nullable | ANDed with the rule condition |
 | `clamp` | yes, nullable | `[low, high]` post-write bounds |
 | `effect` | yes, nullable | vocabulary label (see vfs.md §16.3 table); used in derived telemetry |
-| `scope` | yes, nullable | `pair` masks by the symmetric active-agent mask; `agent` for agent vectors; `null` infers from shape |
 | `phase`, `priority`, `telemetry_label` | no (computed) | derived from the rule when omitted |
 
 ## Failure modes (by design)
 
 - Unknown/typo'd key anywhere → load error naming the key (`extra="forbid"`).
-- Omitting `condition`/`clamp`/`effect`/`scope` → load error; write `null` to mean "none".
+- Omitting `condition`/`clamp`/`effect` → load error; write `null` to mean "none".
 - `variable_id` not a declared VFS variable → compile error (`targets unknown VFS variable`).
-- The removed write-level `target` role annotation → rejected with a pointer to vfs.md §16.3.
+- The removed write-level `target` role annotation and `scope` masking annotation → load
+  error as unknown keys. A write is masked by its target's declared scope: `pair` by the
+  symmetric active-agent mask, `agent`/`agent_private`/`message` by the agent row, and
+  `global`/`affordance` state is written while any agent is active.

@@ -71,7 +71,7 @@ class TestL1TokenEmission:
         # Compact dynamic transport excludes immutable context and rank padding.
         assert _selected(l1_universe).token_spec.census["variable_element"] == 1
         assert _selected(l1_universe).token_spec.total_dims == 118
-        assert _selected(l1_universe).token_spec.fixed_total_dims == 4140
+        assert _selected(l1_universe).token_spec.fixed_total_dims == 4136
 
     def test_all_roster_types_present_in_engine_order(self, l1_universe):
         assert tuple(t.type_name for t in _selected(l1_universe).token_spec.types) == TOKEN_TYPE_ROSTER

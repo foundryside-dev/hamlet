@@ -459,11 +459,6 @@ class VariableDef(BaseModel):
         description="Human-readable description of this variable",
     )
 
-    observable: bool = Field(
-        default=False,
-        description="Whether this variable should be included in agent observations (for mark-and-sweep evaluation)",
-    )
-
     @model_validator(mode="after")
     def validate_access_policy(self) -> "VariableDef":
         validate_static_access(self.id, self.readable_by, self.writable_by, self.exposed_to)
@@ -504,17 +499,16 @@ class VariableDef(BaseModel):
 
 
 class VFSScopeExtents(BaseModel):
-    """Storage extents for the message and affordance variable scopes.
+    """Storage extent for the message variable scope.
 
-    Declared in the optional top-level ``extents:`` block of
-    the canonical variables declaration, which can declare variables with
-    these scopes. An extent is required exactly when a variable of the matching
-    scope is declared; the loader rejects the pack otherwise, so the failure is
+    Declared in the required ``extents:`` block of the canonical variables
+    declaration. ``num_message_slots`` is required exactly when a message-scope
+    variable is declared; the loader rejects the pack otherwise, so the failure is
     a compile error and never a green compile that crashes at env construction
-    (hamlet-9e1ae3b7a2).
+    (hamlet-9e1ae3b7a2). Affordance-scope rows have no authored extent: the
+    level's affordance count is the only authority.
     """
 
     model_config = ConfigDict(extra="forbid")
 
     num_message_slots: int | None = Field(default=None, ge=1, description="Recent-message buffer slots per agent")
-    num_affordances: int | None = Field(default=None, ge=1, description="Number of affordance-scope storage rows")

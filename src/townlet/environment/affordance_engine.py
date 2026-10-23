@@ -111,7 +111,7 @@ class AffordanceEngine:
 
         if command_executor is not None and effects_schema is not None:
             parser = CommandParser()
-            compiler = CommandCompiler(schema=effects_schema)
+            compiler = CommandCompiler(schema=effects_schema, agent_target=True)
 
             for affordance in affordance_config:
                 compiled = CompiledAffordance(

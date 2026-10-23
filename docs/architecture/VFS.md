@@ -286,9 +286,11 @@ metadata:
 Note the distinction, because the names are close: `semantic_class` above is *proposed variable
 metadata* — the variable's causal role, for the research/generalisation side, and it must never
 be read by the compiler or runtime to decide behaviour (`PDR-0045`, name-blindness). The
-**semantic group** in §4.3 (`semantic_type` in code) is an *observation-field* property with a
-closed vocabulary that IS consumed — by the group slices. Until 2026-08-16 `VariableDef` also
-carried a `semantic_type` that nothing read; it was removed (`PDR-0066`).
+**semantic type** (`semantic_type` in code) is a required declaration with a closed
+vocabulary, `temporal | custom` since VFS WP6 (2026-10-24). It is consumed in two places: as a
+one-hot in an exposed variable's token descriptor, and by the clock detector (a global
+`temporal` variable with `expression: tick`). The group slices this paragraph used to cite,
+and the `bars`/`spatial`/`affordance`/`effects` members that named them, are deleted.
 
 ### 4.2 Features
 
@@ -404,29 +406,25 @@ The current repo defines **nine** canonical scope classes (`VariableScope` in `v
 
 `item` scope is profile-based, not loaded from `variables_reference.yaml`. The registry allocates a profile-agnostic `item_vfs[max_items, max_profile_vars]` tensor, records `item_profile_map[profile_name][var_name] -> tensor_index`, and masks unused profile slots. Item profile definitions therefore live in `vfs_profiles.yaml:item_profiles`, while item instances address rows in the shared item VFS tensor.
 
-`pair` scope has two explicit allocation modes. `pair_storage_mode="dense"` prefixes values with `[num_agents, num_agents]`
-for small all-pairs simulations. `pair_storage_mode="sparse"` requires a directed `pair_edges[num_pair_edges, 2]`
-neighbourhood graph, validates that every edge is unique and in range, and stores pair values as `[num_pair_edges, ...]`.
-Sparse pair registries expose the active edge list, a dense boolean neighbourhood mask, and a dense diagnostic materialisation
-view; dense-shaped writes to sparse pair variables fail loudly instead of being treated as a compatibility path.
+`pair` scope storage is dense: values are prefixed with `[num_agents, num_agents]`. (A sparse
+edge-list mode and its accessors existed in the registry with no config surface; they were
+deleted in VFS WP6, 2026-10-24.)
 
-`group`, `affordance`, and `zone` scope storage is dense. These scopes require explicit positive `num_groups`,
-`num_affordances`, and `num_zones` registry extents before allocation.
+`affordance` scope storage is dense, one row per affordance of the level. The row count is the
+level's affordance count (`metadata.affordance_count`); there is no authored extent.
+(`zone` and `group` were deleted in VFS WP2; the scope table above predates that.)
 
 `message` scope is a dense L6 seed for recent communication buffers. It prefixes payload values with
 `[num_agents, num_message_slots]`, requires an explicit positive `num_message_slots` registry extent, and is used by
 `message_token` variables such as `recent_message_tokens`.
 
-**Runtime wiring (2026-08-21, `hamlet-9e1ae3b7a2` — closed).** All nine scopes are reachable
-end-to-end from config. `zone`, `group`, `message` — and, since 2026-08-25, `affordance`
-(`hamlet-702ae15f82`) — size their storage from the optional top-level `extents:` block of
-`variables_reference.yaml` (`num_zones` / `num_groups` / `num_message_slots` /
-`num_affordances`, each ≥ 1; `_SCOPE_EXTENT_FIELD`, `vfs/schema.py:594-599`); the extents flow
-through `UniverseMetadata` into `_initialize_vfs_subsystem`. Declaring a variable of one of
-those scopes without its extent is a compile error at config load — never a green compile that
-crashes at env construction. See `docs/config-schemas/variables.md` (stale
-2025-11, archived 2026-08-24 — schema concepts only). Note the extents allocate storage only:
-there is still no agent→zone / agent→group membership mapping surface.
+**Runtime wiring (2026-08-21, `hamlet-9e1ae3b7a2` — closed; corrected 2026-10-24).** `message`
+sizes its storage from `extents.num_message_slots` in the variables declaration; the extent
+flows through `UniverseMetadata` into `_initialize_vfs_subsystem`, and declaring a message-scope
+variable without it is a compile error at config load. `affordance` rows are the level's
+affordance count; the former `num_affordances` extent was presence-checked and inert, and was
+deleted in VFS WP6. `zone`/`group` (and `num_zones`/`num_groups`) were deleted in VFS WP2.
+See `docs/config-schemas/variables.md`.
 
 > ⚠ **Caveat (2026-08-24 audit,
 > `archive/REVIEW-2026-08-24-vfs-implementation-vs-spec.md`):** "reachable end-to-end from
@@ -435,9 +433,7 @@ there is still no agent→zone / agent→group membership mapping surface.
 > (`universe/validation/references.py:14-58` registers only `environment.yaml` and
 > `vfs_profiles.yaml` variables — `hamlet-33e520cebd`), so no effect, affordance, action write
 > or `drive.yaml` can reference a `pair` / `affordance` / `zone` / `group` / `message` variable
-> by name. Sparse pair storage (`pair_storage_mode` / `pair_edges`) is likewise real, tested
-> registry code with **no wiring from any config pack** — every environment is dense-pair.
-> And the `agent_private` scope-table row above ("hidden state") describes the declared intent,
+> by name. And the `agent_private` scope-table row above ("hidden state") describes the declared intent,
 > not current behaviour: the runtime observation path bypasses the access check and treats
 > `agent_private` identically to `agent` (`hamlet-83a043a9b9`; see the §6 caveat).
 >
@@ -446,9 +442,8 @@ there is still no agent→zone / agent→group membership mapping surface.
 > `environment.yaml` and `vfs_profiles.yaml` variables). What changed: (a) attempting to
 > expose a `pair`/`group`/`affordance`/`zone`/`message` variable as a token now refuses loudly
 > when that scope has no compiled `variable_element` binding contract; (b) an
-> affordance-scoped `variables_reference.yaml` variable
-> without `extents.num_affordances` is now a compile error, not a registry-construction crash
-> (see the extents paragraph above).
+> affordance-scoped variable sizes from the level's affordance count; `extents.num_affordances`
+> was deleted in VFS WP6 (2026-10-24) and now fails as an extra field.
 
 ### 5.2 Recommended future scopes
 
@@ -706,20 +701,6 @@ rejected.
 > declared agent-scoped; `configs/test/vfs_bar_access` was re-scoped exactly this way as part
 > of the fix (zero-backcompat: old configs fail loudly and get corrected).
 
-Runtime add/remove of top-level registry variables is gated behind
-`VariableRegistry(dynamic_variable_mode=True)`. Callers must use
-`add_variable(...)` / `remove_variable(...)` with an explicit
-`network_shape_effect`:
-
-- `shape_stable_internal` for variables that do not change the agent
-  observation schema.
-- `observation_schema_changed` for observable variables or variables whose
-  addition/removal must fork the observation/network ABI.
-
-The registry rejects dynamic mutations by default, rejects observable variables
-unless the caller acknowledges `observation_schema_changed`, and records a
-`DynamicVariableMutation` audit entry containing the post-mutation
-`variable_schema_hash`.
 
 ### 7.3 Recommended registry invariants
 
@@ -729,11 +710,11 @@ The registry should guarantee:
 - all tensors are on the configured device,
 - global variables have global shape,
 - agent variables have leading dimension `num_agents`,
-- pair variables have shape `[num_agents, num_agents, ...]` or an equivalent sparse representation,
+- pair variables have shape `[num_agents, num_agents, ...]`,
 - all values respect declared dtype,
 - optional clamps are applied after transition phases,
 - access control is enforced consistently, including `set_engine_value()` engine permission checks,
-- variable definitions are immutable during a run unless dynamic-variable mode is explicitly enabled.
+- variable definitions are immutable during a run (runtime add/remove was deleted in VFS WP6).
 
 ### 7.4 Shape validation
 
@@ -1622,8 +1603,8 @@ rules:
 
 Social residue example, in the shipped `transition_rules.yaml` grammar
 (pack root; schema `townlet.config.transition_rules_config.TransitionRulesConfig`,
-`extra="forbid"` — `condition`, `clamp`, `effect`, `scope` are required-nullable
-per the No-Defaults Principle):
+`extra="forbid"` — `condition`, `clamp`, `effect` are required-nullable
+per the No-Defaults Principle; a write is masked by its target's declared scope):
 
 ```yaml
 version: "1.0"
@@ -1636,7 +1617,6 @@ social_residue:
     writes:
       - variable_id: "trust"
         effect: "trust_delta"
-        scope: "pair"
         expression: "-0.15"
         composition: "additive_delta"
         condition: null
@@ -1656,7 +1636,6 @@ social_residue:
     writes:
       - variable_id: "public_reputation"
         effect: "reputation_delta"
-        scope: "agent"
         expression: "-0.10"
         composition: "additive_delta"
         condition: null
@@ -1754,21 +1733,15 @@ syntax.
 
 Fixed slots make replay and checkpoint dimensions simpler. Token/set representations are more
 flexible for arbitrary software-defined needs.
-The repo exposes option 1 as `canonical_fixed_slot_dynamic_need_variables(max_slots)`.
-It returns one agent-scoped `vecNf` variable per causal field, with `dims=max_slots`
-so storage and observations stay shape-stable while individual slots can represent
-abstract software-defined needs.
+Option 1 is authored as one agent-scoped `vecNf` variable per causal field, with
+`dims=max_slots`, so storage and observations stay shape-stable while individual slots can
+represent abstract software-defined needs. (A Python factory for these declarations,
+`vfs/dynamic_needs.py`, had no caller and was deleted in VFS WP6.)
 Option 2 is authored through ordinary exposed profile variables. A `tensor2d` variable such
 as `need_tokens` in `configs/test/token_set_smoke/vfs_profiles.yaml` compiles to
 `variable_element` tokens. `TokenSetQNetwork` consumes the compiled roster and pools the mixed
 typed set, so no dynamic-need-specific factory or parallel token layout is needed.
 
-The runtime registry now also exposes a deliberately gated dynamic-variable
-mode for experiments that truly add/remove variable definitions during a run.
-This mode is off by default. Enabling it does not hide the network-shape
-consequence: each mutation must declare whether it is
-`shape_stable_internal` or `observation_schema_changed`, and observable
-variables require the latter.
 
 ### 15.4 Experiment enabled by VFS
 
@@ -1790,19 +1763,9 @@ Test worlds:
 
 If the agent generalises, it is learning relationship structure rather than labels.
 
-Repo support for this experiment lives in `townlet.vfs.generalisation`:
-
-- `VFSGeneralisationPack` groups the variable, affordance, and rule surfaces for
-  one train or test pack.
-- `build_vfs_generalisation_signature(...)` turns those surfaces into a
-  deterministic signature that erases variable names and affordance labels while
-  retaining causal fields, expression operators, constants, phases, and
-  composition modes.
-- `assert_held_out_generalisation_split(train, test)` fails if train and test
-  reuse variable names or affordance labels, or if their surface-erased causal
-  profiles / operator grammars drift apart.
-- `operator_grammar_signature(expression)` exposes the expression-level check
-  for smaller assertions and diagnostics.
+There is no repo support for this experiment today. A test-only split checker
+(`townlet.vfs.generalisation`) existed with no caller in `src/` and no pack or compiler
+surface feeding it; it was deleted in VFS WP6 (2026-10-24).
 
 ---
 
@@ -1945,14 +1908,12 @@ social_residue:
     writes:
       - variable_id: "obligation"
         effect: "obligation_create"
-        scope: "pair"
         condition: "recipient_actor_mask"
         expression: "0.20"
         composition: "additive_delta"
         clamp: [0.0, 1.0]
       - variable_id: "public_reputation"
         effect: "reputation_delta"
-        scope: "agent"
         condition: "was_observed"
         expression: "0.05"
         composition: "additive_delta"
@@ -2478,7 +2439,6 @@ social_residue:
     writes:
       - variable_id: "public_reputation"
         effect: "reputation_delta"
-        scope: "agent"
         expression: "0.05"
         composition: "additive_delta"
         condition: null
@@ -2514,9 +2474,8 @@ read-snapshot/commit-batch phase semantics (§13.4); include the family in
 execution, hash movement, and failure modes. Refuse unsupported rule shapes at **compile**
 time — §14.4 and §16.3 document the two families that currently get this wrong.
 
-**Add runtime dynamic variables**: construct `VariableRegistry(dynamic_variable_mode=True)`
-and follow §7.2's `network_shape_effect` contract; treat the post-mutation schema
-hash/generation as a new ABI identity.
+**Add runtime dynamic variables**: not supported. Variables are fixed at compile time; the
+registry's gated add/remove mode had no authoring reach and was deleted in VFS WP6.
 
 ---
 
@@ -2542,13 +2501,11 @@ hash/generation as a new ABI identity.
    the declared schema. What remains is that VTC write expressions are validated mid-phase
    against phase-snapshot shapes only (`vtc.py:504-513`); a mis-shaped candidate now fails
    loudly at the commit boundary rather than at compile (§7.4).
-5. **Limited social-scope integration.** Dense and sparse `pair` storage exists alongside
-   `group`, `affordance`, and `zone` storage, canonical relational `VariableDef` surfaces
-   exist, and social-residue rules compile as VTC programs. Relational observation exposure
+5. **Limited social-scope integration.** Dense `pair` and `affordance` storage exists, and
+   social-residue rules compile as VTC programs. Relational observation exposure
    and scenario-level environment wiring remain incomplete.
-6. **Dynamic variables are registry-level only.** The gated `dynamic_variable_mode` (§7.2,
-   §15.3) exists and is audited, but it is off by default and no config surface or runtime
-   scenario drives it; for every shipped pack, variables are fixed at initialisation.
+6. **No dynamic variables.** Variables are fixed at compile time. The registry's gated
+   `dynamic_variable_mode` had no config surface and was deleted in VFS WP6 (2026-10-24).
 7. **Relationship rules are authorable but not yet authored.** Social rule kinds are
    declarable in a pack-root `transition_rules.yaml` (no-defaults DTO, 2026-08-22,
    hamlet-84cf93a1b9), compile into the transition schedule, and mutate pair-scope variables
@@ -2568,7 +2525,7 @@ hash/generation as a new ABI identity.
 | Compiler becomes too permissive | Small closed DSL, no arbitrary Python |
 | Observation ABI churn breaks checkpoints | Schema hashes and dimension regression tests |
 | VFS overhead slows training | JIT, caching, batched reads, compiled transition graph |
-| Social variables explode in size | Implemented sparse pair scopes, neighbourhood masks, limited active relationships |
+| Social variables explode in size | Open: pair storage is dense `[num_agents, num_agents]` (the unwired sparse mode was deleted in VFS WP6) |
 | Dynamic variables break network shapes | The compiler fixes token capacities; compact dynamic rows are expanded per type only at the token-network projection boundary |
 | Meaning becomes hidden in config complexity | Telemetry labels, rule IDs, documentation, visual rule inspector |
 | BAC naming collision | Use VTC for compiler; reserve BAC for Brain as Code |
@@ -2629,7 +2586,8 @@ Represent communication through VFS variables:
   writable_by: ["vtc"]
 ```
 
-The repo exposes the seed definition as `canonical_l6_message_variables(message_token_dims=...)`.
+A pack declares it as an ordinary `message`-scope variable (the uncalled Python factory
+`canonical_l6_message_variables` was deleted in VFS WP6).
 Runtime storage requires the caller to provide `num_message_slots`; `dims` is the token vocabulary size or embedding
 dimension for each message-slot payload.
 
@@ -2699,10 +2657,6 @@ This would make VFS teachable and debuggable.
 - `src/townlet/vfs/transition_schedule.py`
 - `src/townlet/vfs/schema_hashes.py`
 - `src/townlet/vfs/transition_graph.py`
-- `src/townlet/vfs/dynamic_needs.py`
-- `src/townlet/vfs/generalisation.py`
-- `src/townlet/vfs/relational.py`
-- `src/townlet/vfs/communication.py`
 - `src/townlet/environment/action_config.py`
 - `src/townlet/environment/observation_encoder.py`
 - `src/townlet/training/checkpoint_utils.py`

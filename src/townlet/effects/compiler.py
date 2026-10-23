@@ -20,7 +20,7 @@ _ITEM_TARGET_COLLECTIONS = frozenset({"inventory_items"})
 class CommandCompiler:
     """Compile commands with expression type checking."""
 
-    def __init__(self, schema: dict[str, str], *, time_enabled: bool = True, agent_target: bool = True):
+    def __init__(self, schema: dict[str, str], *, agent_target: bool, time_enabled: bool = True):
         """Initialize compiler with type schema.
 
         Args:

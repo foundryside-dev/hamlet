@@ -157,7 +157,7 @@ def test_primary_level_products_exist_only_on_level_metadata(artifact_payload: d
 
 
 def test_canonical_variable_cut_bumps_exact_artifact_schema() -> None:
-    assert COMPILED_SCHEMA_VERSION == "1.30"
+    assert COMPILED_SCHEMA_VERSION == "1.31"
 
 
 def _assert_missing_field(payload: dict[str, Any], field_path: str) -> None:

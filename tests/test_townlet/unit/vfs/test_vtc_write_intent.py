@@ -58,7 +58,8 @@ def test_scalar_social_write_respects_active_selection(active, condition, attemp
                 condition=condition,
                 writes=[dict(variable_id="state", expression="state", composition="overwrite")],
             )
-        ]
+        ],
+        {"state": VariableScope.GLOBAL},
     )
     result = program.apply(vfs_state={"state": torch.tensor(5.0)}, active_mask=torch.tensor([active]), device=torch.device("cpu"))
     assert result.attempted_targets == (frozenset({"state"}) if attempted else frozenset())

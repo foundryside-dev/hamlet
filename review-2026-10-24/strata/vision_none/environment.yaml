@@ -1,0 +1,28 @@
+environment:
+  version: "1.0"
+  meters:
+    - name: energy
+      description: "Energy"
+      range_type:
+        kind: minmax
+        clip: true
+    - name: health
+      description: "Health"
+      range_type:
+        kind: minmax
+        clip: true
+    - name: money
+      description: "Cash"
+      range_type:
+        kind: minmax
+        clip: true
+  affordances:
+    - name: Bed
+      description: "Rest"
+      category: rest
+    - name: Job
+      description: "Work"
+      category: work
+  cascade_graph: []
+  modulation_graph: []
+  cues: []

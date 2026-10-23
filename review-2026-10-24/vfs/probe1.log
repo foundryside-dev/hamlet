@@ -1,0 +1,50 @@
+
+===== A. witness ADVANCE/WAIT end to end (hamlet-3381043d2e) =====
+actions: ['UP', 'DOWN', 'LEFT', 'RIGHT', 'UP_LEFT', 'UP_RIGHT', 'DOWN_LEFT', 'DOWN_RIGHT', 'INTERACT', 'WAIT', 'ADVANCE'] enabled: None
+variable_element rows: [('variable_element', 0, 37, 40)]
+t0 public [0.0, 0.0] hidden [2.0, 2.0]
+t1 public [1.0, 1.0] hidden [3.0, 3.0] reward [1.5, 1.5]
+t2 public [2.0, 2.0] hidden [4.0, 4.0] reward [2.0, 2.0]
+t3 (WAIT) public [2.0, 2.0] hidden [4.0, 4.0]
+obs public_state row slice per agent: [[1.0, 0.5, 0.0], [1.0, 0.5, 0.0]]
+t4 mixed public [3.0, 2.0]
+after reset public [0.0, 0.0] hidden [2.0, 2.0]
+
+===== B. lifetimes tick/episode/persistent on agent + global (4597/5f99/0268) =====
+t1 {'acc_tick': [1.0, 1.0], 'acc_episode': [1.0, 1.0], 'acc_persist': [1.0, 1.0]}
+t2 {'acc_tick': [1.0, 1.0], 'acc_episode': [2.0, 2.0], 'acc_persist': [2.0, 2.0]}
+t3 {'acc_tick': [1.0, 1.0], 'acc_episode': [3.0, 3.0], 'acc_persist': [3.0, 3.0]}
+globals after engine write + step: {'g_tick': 0.0, 'g_episode': 5.0, 'g_persist': 5.0}
+after reset: {'acc_tick': [0.0, 0.0], 'acc_episode': [0.0, 0.0], 'acc_persist': [3.0, 3.0], 'g_tick': 0.0, 'g_episode': 0.0, 'g_persist': 5.0}
+
+===== C. agent_private: hidden is absent from obs; exposed refuses (83a043a9b9) =====
+total_dims 40 rows [('variable_element', 0, 37, 40)]
+99.0 present anywhere in obs? False 0.99? False
+agent read refused: Actor 'agent' is not allowed to read agent_private variable 'secret'
+exposed agent_private refused: CompilationError Stage 1: Parse v2.1 configs failed:
+  - [LOAD_ERROR] /tmp/claude-1000/-home-john-hamlet/7674c716-85c3-47ef-9259-6ef1cc884b42/scratchpad/vfs/packs/agent_private_exposed/variables.yaml:58 - Invalid variables declaration (declarations[4]): Value error, Variable 'secret' scope has no supported observation publisher
+
+===== D. phase names: unknown phase, late phase (passive_depletion), never-run phase (compute_rewards) (cebe51077a) =====
+phase=my_custom_phase: COMPILE refused ValueError: Unknown transition phase 'my_custom_phase'
+phase=apply_passive_depletion: compile OK, RUNTIME ValueError: Transition phase 'apply_passive_depletion' requires actions for VTC action writes
+phase=apply_social_residue_effects: compile OK, RUNTIME ValueError: Transition phase 'apply_social_residue_effects' requires actions for VTC action writes
+phase=compute_rewards: compile OK, 2x ADVANCE -> public_state [0.0, 0.0]
+phase=emit_telemetry: compile OK, 2x ADVANCE -> public_state [0.0, 0.0]
+
+===== E. exposed global tensor2d [2,2] at num_agents 2 and 3 (f54b887148); tensorNd (8b5af63108) =====
+variable_element rows: 32 census {'self': 1, 'meter': 4, 'affordance': 4, 'agent': 0, 'item': 0, 'effect': 0, 'variable_element': 32}
+num_agents=2: obs shape (2, 133), grid [[1.0, 2.0], [3.0, 4.0]], cube sum 27.0 hidden_cube shape (2, 2, 2, 2)
+  first grid element row (agent0): [1.0, 0.0, 0.0]
+num_agents=3: obs shape (3, 133), grid [[1.0, 2.0], [3.0, 4.0]], cube sum 27.0 hidden_cube shape (2, 2, 2, 2)
+  first grid element row (agent0): [1.0, 0.0, 0.0]
+
+===== F. H1: action write to global tensor1d[2] / zone var at num_agents=2 vs 3 (write-side coincidence) =====
+num_agents=2: agent0 ADVANCE only -> gvec [1.0, 0.0] zone_heat [1.0, 0.0]
+num_agents=3: ValueError: VTC action write 'w_gvec' target leading dimension 2 does not match action batch 3
+global scalar target: ValueError VTC action write 'w_gscalar' cannot apply a per-agent action mask to scalar variable
+
+===== G. H2: random tensor resets to the same draw (reset identity) =====
+draw0 [0.6679227948188782, 0.4433436393737793, 0.8057754635810852, 0.4540789723396301] 
+after reset [0.6679227948188782, 0.4433436393737793, 0.8057754635810852, 0.4540789723396301] 
+after reset2 [0.6679227948188782, 0.4433436393737793, 0.8057754635810852, 0.4540789723396301] 
+identical: True

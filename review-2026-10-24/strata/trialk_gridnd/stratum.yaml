@@ -1,0 +1,15 @@
+stratum:
+  substrate:
+    gridnd:
+      boundary: clamp
+      dimension_sizes:
+      - 7
+      - 7
+      - 7
+      - 7
+      distance_metric: manhattan
+      topology: hypercube
+    type: gridnd
+  temporal_support: disabled
+  version: '1.0'
+  vision_support: global

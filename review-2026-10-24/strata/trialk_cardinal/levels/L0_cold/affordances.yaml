@@ -1,0 +1,46 @@
+affordances:
+  version: '1.0'
+  affordances:
+  # The only way found to bring the winter process into existence. This is the
+  # cheat-#2 route and it is recorded as such: an agent must act for the world
+  # to start acting. F1's probe deliberately never touches this affordance.
+  - name: WINTER_ONSET
+    interaction_type: instant
+    costs: {}
+    opening_hours:
+      enabled: false
+    deployment:
+      type: fixed
+      positions:
+      - - 0
+        - 0
+    interactions:
+      on_start:
+      - spawn_effect: winter
+        target: "0"
+        intensity: 1.0
+      per_tick: []
+      on_completion: []
+      on_early_exit: []
+      on_failure: []
+
+  # A landmark inside the indoor region (x >= 5). Pure landmark: it grants no
+  # buff and is never interacted with for shelter, because cheat #6 rules an
+  # affordance-buff out as a route to F7.
+  - name: HEARTH
+    interaction_type: instant
+    costs: {}
+    opening_hours:
+      enabled: false
+    deployment:
+      type: fixed
+      positions:
+      - - 5
+        - 3
+    interactions:
+      on_start: []
+      per_tick: []
+      on_completion: []
+      on_early_exit: []
+      on_failure: []
+  modulations: []

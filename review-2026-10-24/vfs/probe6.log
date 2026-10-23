@@ -1,0 +1,4 @@
+
+===== A. action write and social_residue rule at apply_modulations =====
+   action write @apply_modulations: compile OK, 2x ADVANCE -> [0.0, 0.0]
+   residue rule @apply_modulations: compile OK, 2 steps -> [0.0, 0.0]

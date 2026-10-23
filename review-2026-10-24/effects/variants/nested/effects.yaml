@@ -1,0 +1,34 @@
+version: '1.0'
+effect_definitions:
+- id: outer
+  scope: agent
+  duration: 20
+  reapply_policy: renew
+  observable: true
+  on_spawn:
+  - modify: bar.health
+    value: bar.health - 0.5
+  - spawn_effect: inner
+    target: target
+    intensity: 1.0
+  on_tick: []
+  on_despawn: []
+  on_interrupt: []
+- id: inner
+  scope: agent
+  duration: 20
+  reapply_policy: renew
+  observable: true
+  on_spawn:
+  - modify: bar.energy
+    value: bar.energy - 0.5
+  - modify: vfs.score
+    value: vfs.score + 1.0
+  on_tick: []
+  on_despawn: []
+  on_interrupt: []
+max_active_effects:
+  global: 1
+  agent: 4
+  item: 0
+  affordance: 1

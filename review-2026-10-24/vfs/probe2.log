@@ -1,0 +1,110 @@
+
+===== A. expressions: bare same-scope ref, vfs. prefix, self-accumulator, agent->global ref (c6c6c241c5) =====
+[expr_bare] compiled OK
+   derived after 2 ADVANCE: [4.0, 4.0] public [2.0, 2.0]
+[expr_vfs_prefix] REFUSED CompilationError: Stage 6: Enrich shared schemas and effects failed:
+  - [VFS-PROFILE-COMPILE] /tmp/claude-1000/-home-john-hamlet/7674c716-85c3-47ef-9259-6ef1cc884b42/scratchpad/vfs/packs/expr_vfs_prefix/variables.yaml:1 - Reference traversal requires schema entry for 'vfs.public_state'
+[expr_self_acc] REFUSED CompilationError: Stage 6: Enrich shared schemas and effects failed:
+  - [VFS-PROFILE-COMPILE] /tmp/claude-1000/-home-john-hamlet/7674c716-85c3-47ef-9259-6ef1cc884b42/scratchpad/vfs/packs/expr_self_acc/variables.yaml:1 - Circular dependency detected in cycle: counter -> counter
+[expr_agent_reads_global] REFUSED CompilationError: Stage 6: Enrich shared schemas and effects failed:
+  - [VFS-PROFILE-COMPILE] /tmp/claude-1000/-home-john-hamlet/7674c716-85c3-47ef-9259-6ef1cc884b42/scratchpad/vfs/packs/expr_agent_reads_global/variables.yaml:1 - Variable 'immutable_scale' not found in schema. Available variables: ['tick', 'bar.energy', 'bar.health', 'bar.money', 'bar.sustenance', 'public_state', 'hidden_score', 'readable_unexposed']
+[expr_global_reads_global] compiled OK
+   g2: 1.0
+[expr_tensor] REFUSED CompilationError: Stage 6: Enrich shared schemas and effects failed:
+  - [VFS-PROFILE-COMPILE] /tmp/claude-1000/-home-john-hamlet/7674c716-85c3-47ef-9259-6ef1cc884b42/scratchpad/vfs/packs/expr_tensor/variables.yaml:1 - Circular dependency detected in cycle: t -> t
+[expr_global_reads_bar] REFUSED CompilationError: Stage 6: Enrich shared schemas and effects failed:
+  - [VFS-PROFILE-COMPILE] /tmp/claude-1000/-home-john-hamlet/7674c716-85c3-47ef-9259-6ef1cc884b42/scratchpad/vfs/packs/expr_global_reads_bar/variables.yaml:1 - Variable 'gb' expression shape is agent, expected scalar for global scope
+[expr_global_reads_agent] REFUSED CompilationError: Stage 6: Enrich shared schemas and effects failed:
+  - [VFS-PROFILE-COMPILE] /tmp/claude-1000/-home-john-hamlet/7674c716-85c3-47ef-9259-6ef1cc884b42/scratchpad/vfs/packs/expr_global_reads_agent/variables.yaml:1 - Variable 'public_state' not found in schema. Available variables: ['tick', 'bar.energy', 'bar.health', 'bar.money', 'bar.sustenance', 'immutable_scale']
+
+===== B. cascades cannot target VFS; social_residue as per-tick VFS passive dynamic (cb0ccdaa98) =====
+cascade with VFS source: REFUSED Stage 1: Parse v2.1 configs failed:
+  - [LEVEL_LOAD_ERROR] /tmp/claude-1000/-home-john-hamlet/7674c716-85c3-47ef-9259-6ef1cc884b42/scratchpad/vfs/packs/cascade_vfs/levels/L0_simple/bars.yaml:57 - Invalid bars declaration (cascades[0].strength): Field required
+  - [LEVEL_LOAD_ERROR] /tmp/claude-1000/-home-john-hamlet/7674c716-85c3-47ef-9259-6ef1cc884b42/scratchpad/vfs/packs/cascade_vfs/levels/L0_simple/bars.yaml:60 - Invalid bars declaration (cascades[0].rate): Extra inputs are not permitted
+[social_decay] compiled OK
+   n=2 after ADVANCE(+1 then *0.5): public [0.5, 0.5] heat [4.0, 4.0, 4.0]
+   n=2 after WAIT: public [0.25, 0.25] heat [2.0, 2.0, 2.0]
+   n=3 after ADVANCE(+1 then *0.5): public [0.5, 0.5, 0.5] heat [4.0, 4.0, 4.0]
+   n=3 after WAIT: public [0.25, 0.25, 0.25] heat [2.0, 2.0, 2.0]
+
+===== C. bare vfs.X write from affordance with 2 interacting agents (b9a3bcbde2) =====
+[bare_vfs_write] compiled OK
+   both agents INTERACT at SLEEP, vfs.public_state + 5.0 -> [10.0, 10.0]
+[target_vfs_write] compiled OK
+   target.vfs.public_state + 5.0 -> [5.0, 5.0]
+[global_vfs_write] compiled OK
+   global vfs.gcount + 1.0 with 2 agents -> 2.0
+
+===== D. set_engine_value dtype coercion; VTC bool->scalar write; set() on immutable (2ca2cb373f) =====
+[dtype] compiled OK
+   set_engine_value float->bool coerced; stored: [True, True]
+   set() float->bool refused: Value for 'flag' has dtype torch.float32, expected torch.bool
+[vtc_bool_to_scalar] compiled OK
+   num after bool-expression overwrite: [1.0, 1.0]
+   set_engine_value on writable_by []: Actor 'engine' is not allowed to write variable 'immutable_scale'
+[write_immutable] REFUSED CompilationError: Static write authorization failed:
+  - [UAC-STATIC-WRITE] /tmp/claude-1000/-home-john-hamlet/7674c716-85c3-47ef-9259-6ef1cc884b42/scratchpad/vfs/packs/write_immutable/actions.yaml:9 - Variable 'readable_unexposed' denies engine write required by actions:ADVANCE:writes
+
+===== E. initial_value_mode eye (8c354c90bb); vec types (b5cd718368); observable key (0071c78ee9) =====
+[eye_ok] compiled OK
+   eye 3x3: [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]
+[eye_bad] REFUSED CompilationError: Stage 1: Parse v2.1 configs failed:
+  - [LOAD_ERROR] /tmp/claude-1000/-home-john-hamlet/7674c716-85c3-47ef-9259-6ef1cc884b42/scratchpad/vfs/packs/eye_bad/variables.yaml:58 - Invalid variables declaration (declarations[4]): Value error, Variable 'm' eye initialization requires square 2D shape
+[eye_exposed] compiled OK
+[vec_types] compiled OK
+   shapes: {'v2i': ((2, 2), 'torch.int64'), 'v3i': ((2, 3), 'torch.int64'), 'vni': ((2, 4), 'torch.int64'), 'vnf': ((2, 4), 'torch.float32'), 'v2f': ((2, 2), 'torch.float32'), 'gvnf': ((2,), 'torch.float32')}
+   variable_element rows: [('variable_element', 0, 37, 40), ('variable_element', 1, 40, 43), ('variable_element', 2, 43, 46), ('variable_element', 3, 46, 49), ('variable_element', 4, 49, 52)]
+[vec_int_exposed] REFUSED CompilationError: Stage 1: Parse v2.1 configs failed:
+  - [LOAD_ERROR] /tmp/claude-1000/-home-john-hamlet/7674c716-85c3-47ef-9259-6ef1cc884b42/scratchpad/vfs/packs/vec_int_exposed/variables.yaml:58 - Invalid variables declaration (declarations[4]): Value error, Variable 'v2i' registry observation publisher requires float32 storage; type 'vec2i' is unsupported
+[observable_key] REFUSED CompilationError: Stage 1: Parse v2.1 configs failed:
+  - [LOAD_ERROR] /tmp/claude-1000/-home-john-hamlet/7674c716-85c3-47ef-9259-6ef1cc884b42/scratchpad/vfs/packs/observable_key/variables.yaml:70 - Invalid variables declaration (declarations[4].observable): Extra inputs are not permitted
+[marks_agent_only] compiled OK
+   marks: {'agent': {'derived'}} derived: [2.0, 2.0]
+
+===== F. eager evaluation: expression over action-written global static is stale? =====
+[eager_stale] compiled OK
+   t1 gcount 1.0 gtwice 0.0
+   t2 gcount 2.0 gtwice 0.0
+   t3 gcount 3.0 gtwice 0.0
+[mas_control] compiled OK
+   [mark_and_sweep] t1 gcount 1.0 gtwice 0.0
+   [mark_and_sweep] t2 gcount 2.0 gtwice 2.0
+   [mark_and_sweep] t3 gcount 3.0 gtwice 4.0
+[eager_agent_static] REFUSED CompilationError: Stage 6: Enrich shared schemas and effects failed:
+  - [VFS-PROFILE-COMPILE] /tmp/claude-1000/-home-john-hamlet/7674c716-85c3-47ef-9259-6ef1cc884b42/scratchpad/vfs/packs/eager_agent_static/variables.yaml:1 - Variable 'derived' expression shape is scalar, expected agent for agent scope
+
+===== G. extents.num_affordances inert; zone/group/message storage; pair H1 =====
+[extents] compiled OK
+   affordance rows: (4,) (declared extent 99, level has 4 affordances)
+   group (2,) msg (2, 3, 2) pair (2, 2)
+[pair_h1_2] compiled OK
+   pair n=2 agent0 ADVANCE -> trust [[1.0, 1.0], [0.0, 0.0]]
+[pair_h1_3] compiled OK
+   pair n=3 agent0 ADVANCE -> trust [[1.0, 1.0, 1.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
+[group_h1] compiled OK
+   group(2) n=2 agent0 ADVANCE -> grp [1.0, 0.0]
+
+===== H. normalization kinds at exposure; policy immutability; effects schema agent var; shape hash =====
+[norm_none] REFUSED ValueError: Variable 'x' exposes with normalization kind 'none'.
+  Rule: a value feature entering a token must come from a bounded normalization kind (['binary', 'cyclical_sin_cos']) or a range kind (['log_scaled', 'minmax']) with clip: true (spec §1, boundedness is certified at exposure). Unbounded values saturate LayerNorm and read as perpetual novelty to RND (PDR-0016).
+[norm_zscore] REFUSED ValueError: Variable 'x' exposes with normalization kind 'zscore'.
+  Rule: a value feature entering a token must come from a bounded normalization kind (['binary', 'cyclical_sin_cos']) or a range kind (['log_scaled', 'minmax']) with clip: true (spec §1, boundedness is certified at exposure). Unbounded values saturate LayerNorm and read as perpetual novelty to RND (PDR-0016).
+[norm_masked_value] REFUSED ValueError: Variable 'x' exposes with normalization kind 'masked_value'.
+  Rule: a value feature entering a token must come from a bounded normalization kind (['binary', 'cyclical_sin_cos']) or a range kind (['log_scaled', 'minmax']) with clip: true (spec §1, boundedness is certified at exposure). Unbounded values saturate LayerNorm and read as perpetual novelty to RND (PDR-0016).
+[norm_one_hot] REFUSED ValueError: Variable 'x' exposes with normalization kind 'one_hot'.
+  Rule: one_hot is refused on tokenized variables — it widens 1→C and cannot fit the fixed 2-wide value block (spec §1 width rule). Expose the category as a clipped minmax index over [0, C-1]; the declared range then rides in the descriptor block's min/max slots (there is no separate categories-count feature).
+[norm_rank_scaled] REFUSED ValueError: Variable 'x' exposes with normalization kind 'rank_scaled'.
+  Rule: rank_scaled is refused at profile-variable exposure (hamlet-6a6e104523): it ranks across dim 0 = the batch = causally independent worlds, so the observation depends on other worlds' state and reads constant-zero on globals / single-agent batches.
+[norm_minmax] REFUSED ValueError: Variable 'x' exposes with normalization kind 'minmax' (clip: false).
+  Rule: a value feature entering a token must come from a bounded normalization kind (['binary', 'cyclical_sin_cos']) or a range kind (['log_scaled', 'minmax']) with clip: true (spec §1, boundedness is certified at exposure). Unbounded values saturate LayerNorm and read as perpetual novelty to RND (PDR-0016).
+[norm_log_scaled] compiled OK
+   log_scaled: runtime OK, rows 2, x row agent0 [1.0, 0.0, 0.0]
+[norm_cyclical_sin_cos] compiled OK
+   cyclical_sin_cos: runtime OK, rows 2, x row agent0 [1.0, 0.0, 1.0]
+[norm_binary] compiled OK
+   binary: runtime OK, rows 2, x row agent0 [1.0, 0.0, 0.0]
+   mutated DTO lists; policy snapshot still refuses: Actor 'agent' is not allowed to read agent variable 'hidden_score'
+[effschema_agent_var] compiled OK
+[effschema_global_var] compiled OK
+[effschema_target_agent_var] compiled OK
+   variable_schema_hash [2,2] vs [4,4] equal: True ; zeros vs ones equal: True

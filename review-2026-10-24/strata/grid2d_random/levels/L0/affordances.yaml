@@ -1,0 +1,39 @@
+affordances:
+  affordances:
+  - costs:
+      energy: 0.0
+    deployment:
+      positions: []
+      type: random
+    interaction_type: instant
+    interactions:
+      on_completion: []
+      on_early_exit: []
+      on_failure: []
+      on_start:
+      - modify: target.bar.energy
+        value: target.bar.energy + 0.5
+      per_tick: []
+    name: Bed
+    opening_hours:
+      enabled: false
+  - costs: {}
+    deployment:
+      positions: []
+      type: random
+    interaction_type: instant
+    interactions:
+      on_completion: []
+      on_early_exit: []
+      on_failure: []
+      on_start:
+      - modify: target.bar.money
+        value: target.bar.money + 0.1
+      - modify: target.bar.energy
+        value: target.bar.energy + -0.1
+      per_tick: []
+    name: Job
+    opening_hours:
+      enabled: false
+  modulations: []
+  version: '1.0'

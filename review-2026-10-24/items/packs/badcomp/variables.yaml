@@ -1,0 +1,58 @@
+variables:
+  version: '1.0'
+  evaluation_mode: mark_and_sweep
+  debug_logging: false
+  extents: {}
+  item_profiles:
+  - food
+  - medical
+  - currency
+  declarations:
+  - id: position
+    readable_by: [engine, agent]
+    writable_by: [engine]
+    scope: agent
+    type: vec2f
+    lifetime: tick
+    semantic_type: custom
+    exposed_to: []
+    initial_value:
+    - 0.0
+    - 0.0
+    description: Normalized agent position in [0, 1]^2 range
+  - id: has_food
+    readable_by: [engine, agent]
+    writable_by: [engine]
+    scope: agent
+    type: bool
+    lifetime: tick
+    semantic_type: custom
+    exposed_to: []
+    initial_value: false
+    description: Agent has picked up food (set by on_pickup Effects)
+  - id: freshness
+    readable_by: [engine, agent]
+    writable_by: [engine]
+    scope: item
+    type: scalar
+    lifetime: episode
+    semantic_type: custom
+    exposed_to: []
+    profile: food
+    initial_value: 100.0
+  - id: durability
+    readable_by: [engine, agent]
+    writable_by: [engine]
+    scope: item
+    type: scalar
+    lifetime: episode
+    semantic_type: custom
+    exposed_to:
+    - agent
+    profile: medical
+    normalization:
+      kind: minmax
+      min: 0.0
+      max: 100.0
+      clip: true
+    initial_value: 100.0

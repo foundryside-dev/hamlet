@@ -1,0 +1,37 @@
+drive:
+  version: '1.0'
+  modifiers:
+    neutral:
+      bar: energy
+      ranges:
+      - name: range_0
+        min: 0.0
+        max: 1.0
+        multiplier: 1.0
+  extrinsic:
+    type: constant_base_with_shaped_bonus
+    base_reward: 0.01
+    # Leg-(c) reward assertion (A.4): comfort is a declared reward component, so
+    # a tick where the winter effect moves comfort must move the reward by a
+    # predictable amount.
+    bar_bonuses:
+    - bar: comfort
+      center: 0.0
+      scale: 0.5
+    variable_bonuses: []
+    apply_modifiers: []
+  intrinsic:
+    strategy: none
+    base_weight: 0.0
+    apply_modifiers: []
+    adaptive_config: null
+  shaping:
+  - type: approach_reward
+    weight: 0.01
+    target_affordance: HEARTH
+    max_distance: 7.0
+  composition:
+    normalize: false
+    clip: null
+    log_components: false
+    log_modifiers: false

@@ -1,0 +1,16 @@
+version: '1.0'
+social_residue:
+- id: inc
+  kind: institutional_rule
+  phase: apply_social_residue_effects
+  reads:
+  - gcount
+  condition: null
+  writes:
+  - variable_id: gcount
+    expression: gcount + 1.0
+    composition: overwrite
+    condition: null
+    clamp: null
+    effect: null
+    scope: null

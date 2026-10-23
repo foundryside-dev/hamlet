@@ -41,7 +41,7 @@ classifiers = [
 # floor is a claim about compatibility that nothing verifies.
 dependencies = [
     "numpy>=2.4.4",
-    "torch>=2.11.0,<2.12",  # upper bound: triton 3.7.0 segfaults inside pytest (filigree hamlet-74197422b3)
+    "torch>=2.13.0,<2.14",  # upper bound: triton 3.7.0 segfaults inside pytest (filigree hamlet-74197422b3)
     "tensorboard>=2.20.0",  # no direct import: required by torch.utils.tensorboard.SummaryWriter
     "fastapi>=0.136.1",
     "uvicorn[standard]>=0.46.0",

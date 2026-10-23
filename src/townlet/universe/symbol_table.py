@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
 
+from townlet.config.actions_config import CustomActionConfig
+from townlet.config.environment_config import AffordanceDefinition, CascadeConfig, MeterConfig
+from townlet.config.items_config import ItemTypeConfig
 from townlet.config.variables_config import VariableDeclaration
-from townlet.environment.action_config import ActionConfig
 
 from .errors import CompilationError
 from .stages import CompilationStage
@@ -14,18 +15,23 @@ from .stages import CompilationStage
 
 @dataclass
 class UniverseSymbolTable:
-    """Stores registered entities for cross-stage validation."""
+    """Stores registered entities for cross-stage validation.
 
-    meters: dict[str, Any] = field(default_factory=dict)
-    cascades: dict[str, Any] = field(default_factory=dict)
-    affordances: dict[str, Any] = field(default_factory=dict)
-    affordances_by_name: dict[str, Any] = field(default_factory=dict)
+    Meter bars and non-item variables share one runtime state namespace (the VTC
+    merges ``bars_state`` into ``vfs_state`` by bare name), so the collision between
+    them is refused where both vocabularies are first visible together:
+    ``validation.references.build_symbol_table``, which also holds the two origins.
+    """
+
+    meters: dict[str, MeterConfig] = field(default_factory=dict)
+    cascades: dict[str, CascadeConfig] = field(default_factory=dict)
+    affordances: dict[str, AffordanceDefinition] = field(default_factory=dict)
     variables: dict[str, VariableDeclaration] = field(default_factory=dict)
     item_variables: dict[tuple[str, str], VariableDeclaration] = field(default_factory=dict)
-    actions: dict[int, ActionConfig] = field(default_factory=dict)
-    items: dict[str, Any] = field(default_factory=dict)
+    actions: dict[str, CustomActionConfig] = field(default_factory=dict)
+    items: dict[str, ItemTypeConfig] = field(default_factory=dict)
 
-    def register_meter(self, config: Any) -> None:
+    def register_meter(self, config: MeterConfig) -> None:
         if config.name in self.meters:
             raise CompilationError(CompilationStage.SYMBOLS.label, [f"Duplicate meter '{config.name}' detected."])
         self.meters[config.name] = config
@@ -43,85 +49,28 @@ class UniverseSymbolTable:
             raise CompilationError(CompilationStage.SYMBOLS.label, [f"Duplicate variable '{identifier}' detected."])
         self.variables[identifier] = config
 
-    def register_action(self, config: ActionConfig) -> None:
-        action_id = getattr(config, "id", None)
-        if action_id is None:
-            action_id = getattr(config, "name", None)
-        if action_id is None:
-            raise CompilationError(CompilationStage.SYMBOLS.label, ["Action missing identifier during registration."])
-        if action_id in self.actions:
-            raise CompilationError(CompilationStage.SYMBOLS.label, [f"Duplicate action id '{action_id}' detected."])
-        self.actions[action_id] = config
+    def register_action(self, config: CustomActionConfig) -> None:
+        if config.name in self.actions:
+            raise CompilationError(CompilationStage.SYMBOLS.label, [f"Duplicate action id '{config.name}' detected."])
+        self.actions[config.name] = config
 
-    def register_cascade(self, config: Any) -> None:
-        cascade_name = getattr(config, "name", None)
-        if cascade_name is None:
-            source = getattr(config, "source", None)
-            target = getattr(config, "target", None)
-            cascade_name = f"{source}->{target}"
+    def register_cascade(self, config: CascadeConfig) -> None:
+        cascade_name = f"{config.source}->{config.target}"
         if cascade_name in self.cascades:
             raise CompilationError(CompilationStage.SYMBOLS.label, [f"Duplicate cascade '{cascade_name}' detected."])
         self.cascades[cascade_name] = config
 
-    def register_affordance(self, config: Any) -> None:
-        aff_id = getattr(config, "id", None) or getattr(config, "name", None)
-        aff_name = getattr(config, "name", aff_id)
-        if aff_id is None or aff_name is None:
-            raise CompilationError(CompilationStage.SYMBOLS.label, ["Affordance missing identifier during registration."])
-        if aff_id in self.affordances:
-            raise CompilationError(CompilationStage.SYMBOLS.label, [f"Duplicate affordance '{aff_id}' detected."])
-        if aff_name in self.affordances_by_name:
-            raise CompilationError(CompilationStage.SYMBOLS.label, [f"Duplicate affordance name '{aff_name}' detected."])
-        self.affordances[aff_id] = config
-        self.affordances_by_name[aff_name] = config
+    def register_affordance(self, config: AffordanceDefinition) -> None:
+        if config.name in self.affordances:
+            raise CompilationError(CompilationStage.SYMBOLS.label, [f"Duplicate affordance '{config.name}' detected."])
+        self.affordances[config.name] = config
 
-    def register_item(self, item: Any) -> None:
-        """Register items by id (preferred) or name to validate references."""
-        identifier = getattr(item, "id", None) or getattr(item, "name", None)
-        if identifier is None:
-            raise CompilationError(CompilationStage.SYMBOLS.label, ["Item missing required identifier during registration."])
-        if identifier in self.items:
-            raise CompilationError(CompilationStage.SYMBOLS.label, [f"Duplicate item '{identifier}' detected."])
-        self.items[identifier] = item
-
-    def get_meter(self, name: str) -> Any:
-        return self.meters[name]
-
-    def get_meter_names(self) -> list[str]:
-        return [meter.name for meter in sorted(self.meters.values(), key=lambda m: m.index)]
-
-    def resolve_meter_reference(self, name: str, *, location: str | None = None) -> Any:
-        if name not in self.meters:
-            raise ReferenceError(f"References non-existent meter '{name}'. Valid meters: {list(self.meters.keys())}")
-        return self.meters[name]
-
-    def get_meter_count(self) -> int:
-        return len(self.meters)
-
-    def get_action(self, action_id: int) -> ActionConfig:
-        return self.actions[action_id]
-
-    def get_variable(self, variable_id: str) -> VariableDeclaration:
-        return self.variables[variable_id]
-
-    def get_affordance_count(self) -> int:
-        return len(self.affordances)
-
-    @property
-    def affordance_ids(self) -> list[str]:
-        return sorted(self.affordances.keys())
-
-    @property
-    def affordance_names(self) -> list[str]:
-        return sorted(self.affordances_by_name.keys())
+    def register_item(self, item: ItemTypeConfig) -> None:
+        if item.id in self.items:
+            raise CompilationError(CompilationStage.SYMBOLS.label, [f"Duplicate item '{item.id}' detected."])
+        self.items[item.id] = item
 
     @property
     def vfs_variables(self) -> dict[str, VariableDeclaration]:
         """Variables that may be referenced through VFS-aware config surfaces."""
         return self.variables
-
-    def get_affordance(self, affordance_id: str) -> Any:
-        return self.affordances[affordance_id]
-
-    def get_affordance_by_name(self, affordance_name: str) -> Any:
-        return self.affordances_by_name[affordance_name]

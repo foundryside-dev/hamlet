@@ -428,11 +428,10 @@ class VTCActionWriteProgram:
         if actions.shape != active_mask.shape:
             raise ValueError(f"actions shape {tuple(actions.shape)} must match active_mask shape {tuple(active_mask.shape)}")
 
+        # Bar names and variable ids are disjoint: the universe compiler's symbol
+        # table refuses the collision (SYMBOL_METER_COLLISION).
         updated = {name: value.to(device=device).clone() for name, value in vfs_state.items()}
-        for bar_name, value in bars_state.items():
-            if bar_name in updated:
-                raise ValueError(f"VTC action write state has ambiguous bar/VFS variable '{bar_name}'")
-            updated[bar_name] = value.to(device=device).clone()
+        updated.update({bar_name: value.to(device=device).clone() for bar_name, value in bars_state.items()})
         bar_names = set(bars_state)
         actions_on_device = actions.to(device=device)
         active_mask_on_device = active_mask.to(device=device)
@@ -1481,9 +1480,6 @@ class VTCSocialResidueProgram:
         bars = {} if bars_state is None else dict(bars_state)
         updated = {name: value.to(device=device).clone() for name, value in vfs_state.items()}
         bars_on_device = {name: value.to(device=device) for name, value in bars.items()}
-        ambiguous = sorted(set(updated).intersection(bars_on_device))
-        if ambiguous:
-            raise ValueError(f"VTC social residue state has ambiguous bar/VFS variable(s): {ambiguous}")
 
         active = active_mask.to(device=device, dtype=torch.bool)
         attempted_targets: set[str] = set()

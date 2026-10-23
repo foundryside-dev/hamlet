@@ -8,7 +8,7 @@ from typing import Any
 
 import torch
 
-from townlet.vfs.schema import VariableDef
+from townlet.vfs.schema import VariableDef, VariableScope
 from townlet.vfs.transition_graph import TransitionPhaseGraph
 from townlet.vfs.vtc import (
     VTCActionWriteProgram,
@@ -235,11 +235,11 @@ def build_vtc_transition_schedule(
     # row. The id order below is the registry's affordance-scope row order
     # (build_affordance_metadata enumerates the same sequence).
     affordance_ids = tuple(aff.name for aff in level.affordances.affordances)
-    action_writes = compile_vtc_affordance_occupancy_with_phase_graph(runtime_action_space.actions, affordance_ids, phase_graph)
-    _validate_action_write_targets(
-        action_writes,
-        vfs_variable_ids=(variable.id for variable in vfs_variables),
-        meter_names=(meter.name for meter in level.bars.meters),
+    action_writes = compile_vtc_affordance_occupancy_with_phase_graph(
+        runtime_action_space.actions,
+        _action_write_target_scopes(vfs_variables, (meter.name for meter in level.bars.meters)),
+        affordance_ids,
+        phase_graph,
     )
     affordance_gates = compile_vtc_affordance_gates_with_phase_graph(level.affordances.affordances, phase_graph)
     interaction_progress = compile_vtc_interaction_progress_with_phase_graph(level.affordances.affordances, phase_graph)
@@ -314,21 +314,11 @@ def _split_vfs_and_bars(
     return vfs_state, bars_state
 
 
-def _validate_action_write_targets(
-    program: VTCActionWriteProgram,
-    *,
-    vfs_variable_ids: Iterable[str],
-    meter_names: Iterable[str],
-) -> None:
-    """Every action write must target a declared VFS variable or meter bar —
-    an unknown target would otherwise surface as a KeyError mid-step."""
-    known = set(vfs_variable_ids) | set(meter_names)
-    for write in program.writes:
-        if write.variable_id not in known:
-            raise ValueError(
-                f"Action '{write.action_name}' write '{write.telemetry_label}' targets unknown "
-                f"state variable '{write.variable_id}'. Declare it as a VFS variable or meter bar."
-            )
+def _action_write_target_scopes(vfs_variables: Sequence[VariableDef], meter_names: Iterable[str]) -> dict[str, VariableScope]:
+    """Declared scope of every state an action write may name; a meter bar is per-agent storage."""
+    scopes = {variable.id: VariableScope(variable.scope) for variable in vfs_variables}
+    scopes.update({name: VariableScope.AGENT for name in meter_names})
+    return scopes
 
 
 def _validate_state_residue_targets(program: VTCSocialResidueProgram, variable_ids: Iterable[str]) -> None:

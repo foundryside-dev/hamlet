@@ -20,8 +20,14 @@ def variable(**changes):
 
 
 def test_same_variable_contract_for_all_storage_scopes():
-    for scope in ["global", "agent", "agent_private", "pair", "group", "affordance", "zone", "message"]:
+    for scope in ["global", "agent", "agent_private", "pair", "affordance", "message"]:
         assert VariableDeclaration.model_validate(variable(scope=scope)).scope == scope
+
+
+@pytest.mark.parametrize("scope", ["zone", "group"])
+def test_deleted_storage_scopes_refuse(scope):
+    with pytest.raises(ValidationError, match="scope"):
+        VariableDeclaration.model_validate(variable(scope=scope))
 
 
 def test_initialization_is_explicit_even_for_derived_values():
@@ -52,7 +58,7 @@ def test_public_type_has_one_spelling(kind):
         VariableDeclaration.model_validate(variable(type=kind))
 
 
-@pytest.mark.parametrize("scope", ["agent_private", "pair", "group", "affordance", "zone", "message"])
+@pytest.mark.parametrize("scope", ["agent_private", "pair", "affordance", "message"])
 def test_unimplemented_expression_scopes_refuse(scope):
     with pytest.raises(ValidationError, match="expression"):
         VariableDeclaration.model_validate(variable(scope=scope, expression="tick"))

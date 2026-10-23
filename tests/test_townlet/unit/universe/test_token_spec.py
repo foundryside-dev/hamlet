@@ -239,8 +239,8 @@ class TestDescriptorBlock:
             describe_variable(var, element_index=0, owner_capacity=None)
 
     def test_descriptor_block_width_is_pinned(self):
-        # Single pin so drift is loud: 9 + 6 + 9 + 5 + 3 + 3 + 1 (initial) + 1 (log count) + 2.
-        assert DESCRIPTOR_BLOCK_WIDTH == 39
+        # Single pin so drift is loud: 7 (scope) + 6 + 9 + 5 + 3 + 3 + 1 (initial) + 1 (log count) + 2.
+        assert DESCRIPTOR_BLOCK_WIDTH == 37
         assert len(PAYLOAD_SCHEMAS["variable_element"]) == (MAX_POSITION_RANK + 1) + (VALUE_BLOCK_WIDTH + 1) + DESCRIPTOR_BLOCK_WIDTH
 
     def test_describe_variable_has_descriptor_width_and_marks_declaration(self):

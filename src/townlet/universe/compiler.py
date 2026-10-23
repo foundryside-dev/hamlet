@@ -32,7 +32,7 @@ from townlet.vfs.schema_hashes import (
     compute_vfs_hash,
 )
 from townlet.vfs.transition_schedule import build_vtc_transition_schedule
-from townlet.vfs.vtc import VTCPhaseError
+from townlet.vfs.vtc import VTCWriteRefusalError
 from townlet.world.expression.type_checker import TypeCheckError
 
 from .compiled import CompiledVFSProfiles
@@ -58,6 +58,14 @@ logger = logging.getLogger(__name__)
 
 SCHEMA_VERSION = "1.0"
 COMPILER_VERSION = "0.1.0"
+
+
+class EffectCompileError(Exception):
+    """An effect definition failed to compile; carries its id so the diagnostic is located."""
+
+    def __init__(self, effect_id: str) -> None:
+        super().__init__(effect_id)
+        self.effect_id = effect_id
 
 
 class UniverseCompiler:
@@ -174,6 +182,17 @@ class UniverseCompiler:
                 primary_level=primary_level,
                 temporal_supported=temporal_supported,
             )
+        except EffectCompileError as exc:
+            raise CompilationError(
+                CompilationStage.SHARED.label,
+                [
+                    CompilationMessage(
+                        code=ErrorCode.EFFECT_COMPILE,
+                        message=str(exc.__cause__),
+                        location=locate(source_map, f"effects:{exc.effect_id}"),
+                    )
+                ],
+            ) from exc.__cause__
         except (CircularDependencyError, TypeCheckError) as exc:
             raise self._vfs_domain_compilation_error(
                 CompilationStage.SHARED.label,
@@ -295,11 +314,26 @@ class UniverseCompiler:
             compiled_vfs_profiles=compiled_vfs_profiles,
         )
 
-        compiled_effect_catalog = self._effects_compiler.compile_catalog(
-            raw.effects,
-            effects_schema,
-            time_enabled=temporal_supported,
-        )
+        try:
+            compiled_effect_catalog = self._effects_compiler.compile_catalog(
+                raw.effects,
+                effects_schema,
+                time_enabled=temporal_supported,
+            )
+        except (CircularDependencyError, TypeCheckError):
+            # The catalog names the effect only in prose; find the definition that
+            # fails on its own so the diagnostic lands at its declaration's file:line.
+            assert raw.effects is not None
+            for definition in raw.effects.effect_definitions:
+                try:
+                    self._effects_compiler.compile_catalog(
+                        raw.effects.model_copy(update={"effect_definitions": [definition]}),
+                        effects_schema,
+                        time_enabled=temporal_supported,
+                    )
+                except (CircularDependencyError, TypeCheckError) as single:
+                    raise EffectCompileError(definition.id) from single
+            raise
         return SharedCompilerArtifacts(
             bar_schema=bar_schema,
             compiled_vfs_profiles=compiled_vfs_profiles,
@@ -388,7 +422,7 @@ class UniverseCompiler:
                     social_residue_rules=raw.social_residue_rules,
                     vfs_variables=vfs_variables,
                 )
-            except VTCPhaseError as exc:
+            except VTCWriteRefusalError as exc:
                 raise CompilationError(
                     CompilationStage.LEVELS.label,
                     [

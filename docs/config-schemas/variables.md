@@ -38,8 +38,12 @@ Every variable declares its `id`, `scope`, `type`, `lifetime`, `semantic_type` a
 `profile`, identifying a name in the explicit `item_profiles` catalog. An empty catalog
 entry remains a valid schema group for item types with no state variables.
 
-- **Scope:** `global`, `agent`, `agent_private`, `item`, `pair`, `affordance`, `zone`,
-  `group`, or `message`. Storage scope and observation support are separate contracts.
+- **Scope:** `global`, `agent`, `agent_private`, `item`, `pair`, `affordance`, or
+  `message`. Storage scope and observation support are separate contracts. `affordance`
+  requires `extents.num_affordances` and `message` requires `extents.num_message_slots`;
+  no other scope takes an extent. There is no `zone` or `group` scope: both were storage
+  with no publisher and no write path, and were deleted (an old declaration fails
+  validation).
 - **Type:** `scalar` (float32 storage), `bool`, supported fixed/dynamic vectors,
   references, tensors or `message_token`. There are no authored `float`, `int` or
   generic `vector` aliases. Tensor shapes and dynamic vector dimensions are explicit.
@@ -123,7 +127,17 @@ exactly the schedule `step()` executes, in this order:
 An action write is admitted only in group 1, the phases that run with the tick's actions.
 A write scheduled at any later phase is refused at compile with its `actions.yaml`
 `file:line`; an unknown phase name is refused the same way for action writes and
-transition rules. A transition rule applies at any phase of the graph. Rewards are not a
+transition rules.
+
+An action write applies to the acting agent's row, so its target's declared scope must
+have one row per agent: a meter bar, or a variable of scope `agent`, `agent_private` or
+`message`. The one exception is an affordance occupancy claim: an action that declares
+`source_affordance` may write an `affordance`-scoped variable with composition
+`claim_if_free` or `capacity_claim` at `resolve_affordance_access_and_occupancy`, which
+writes that affordance's row. Any other target (`global`, `pair`, `item`, or an
+`affordance` variable outside that form) is refused at compile with the variable, its
+declared scope and the write's `actions.yaml` `file:line`. Whether a pack compiles never
+depends on `num_agents`. A transition rule applies at any phase of the graph. Rewards are not a
 transition phase: they are computed by the drive (DAC) after the transition.
 
 Expressions are evaluated once per tick, after every transition phase that writes VFS

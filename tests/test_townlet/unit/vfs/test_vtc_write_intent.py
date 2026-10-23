@@ -4,7 +4,10 @@ import pytest
 import torch
 
 from tests.test_townlet.unit.vfs.test_vtc_action_writes import _action, _write
+from townlet.vfs.schema import VariableScope
 from townlet.vfs.vtc import compile_vtc_action_writes, compile_vtc_social_residue_rules
+
+STATE_SCOPES = {"state": VariableScope.AGENT}
 
 
 @pytest.mark.parametrize("composition,expression", [("overwrite", "state"), ("additive_delta", "0"), ("claim_if_free", "7")])
@@ -14,7 +17,7 @@ def test_same_value_or_failed_claim_is_still_an_attempt(composition, expression)
         name="ATTEMPT",
         writes=[_write(variable_id="state", expression=expression, condition=None, composition=composition, clamp=None)],
     )
-    result = compile_vtc_action_writes([action]).apply(
+    result = compile_vtc_action_writes([action], STATE_SCOPES).apply(
         actions=torch.tensor([2]),
         vfs_state={"state": torch.tensor([5.0])},
         bars_state={},
@@ -32,7 +35,7 @@ def test_unselected_action_write_has_no_intent(action, active, condition):
         name="ATTEMPT",
         writes=[_write(variable_id="state", expression="7", condition=condition, composition="overwrite", clamp=None)],
     )
-    result = compile_vtc_action_writes([config]).apply(
+    result = compile_vtc_action_writes([config], STATE_SCOPES).apply(
         actions=torch.tensor([action]),
         vfs_state={"state": torch.tensor([5.0])},
         bars_state={},

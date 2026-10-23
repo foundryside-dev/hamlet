@@ -202,8 +202,6 @@ class VariablesConfig(BaseModel):
             raise ValueError("Item profile identifiers must be nonempty and contain no element separators")
         seen: set[tuple[str | None, str]] = set()
         extent_fields = {
-            VariableScope.ZONE: "num_zones",
-            VariableScope.GROUP: "num_groups",
             VariableScope.MESSAGE: "num_message_slots",
             VariableScope.AFFORDANCE: "num_affordances",
         }

@@ -174,8 +174,18 @@ def test_compiler_hook_refuses_known_action_with_source_origin(tmp_path):
     pack = tmp_path / "pack"
     shutil.copytree("configs/simple", pack)
     payload = yaml.safe_load((pack / "variables.yaml").read_text())
-    variable = payload["variables"]["declarations"][0]
-    variable["writable_by"] = []
+    variable = dict(
+        id="locked_state",
+        scope="agent",
+        lifetime="episode",
+        type="scalar",
+        semantic_type="custom",
+        initial_value=0.0,
+        readable_by=["engine"],
+        writable_by=[],
+        exposed_to=[],
+    )
+    payload["variables"]["declarations"].append(variable)
     (pack / "variables.yaml").write_text(yaml.safe_dump(payload))
     actions = yaml.safe_load((pack / "actions.yaml").read_text())
     actions["actions"]["custom_actions"][0]["writes"] = [

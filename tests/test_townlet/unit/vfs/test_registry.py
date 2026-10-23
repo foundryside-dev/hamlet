@@ -858,16 +858,21 @@ class TestRegistryScopeSemantics:
 class TestRegistryRelationalScopes:
     """Test L5 relational and world-structure scope storage."""
 
-    def test_variable_scope_enum_includes_l5_storage_scopes(self):
-        """The schema should accept the L5 storage scopes as first-class enum values."""
+    def test_variable_scope_enum_has_no_zone_or_group(self):
+        """zone and group were storage with no publisher and no write path (VFS WP2); deleted."""
         from townlet.vfs.schema import VariableScope
 
-        assert VariableScope.PAIR == "pair"
-        assert VariableScope.GROUP == "group"
-        assert VariableScope.AFFORDANCE == "affordance"
-        assert VariableScope.ZONE == "zone"
+        assert {scope.value for scope in VariableScope} == {
+            "global",
+            "agent",
+            "agent_private",
+            "item",
+            "pair",
+            "affordance",
+            "message",
+        }
 
-    def test_registry_initializes_pair_group_affordance_and_zone_scalars(self):
+    def test_registry_initializes_pair_and_affordance_scalars(self):
         """Dense scope prefixes should match the declared world extents."""
         from townlet.vfs.registry import VariableRegistry
         from townlet.vfs.schema import VariableDef
@@ -883,15 +888,6 @@ class TestRegistryRelationalScopes:
                 default=0.25,
             ),
             VariableDef(
-                id="group_norm_strength",
-                scope="group",
-                type="scalar",
-                lifetime="episode",
-                readable_by=["engine"],
-                writable_by=["engine"],
-                default=0.5,
-            ),
-            VariableDef(
                 id="occupied_by",
                 scope="affordance",
                 type="agent_ref",
@@ -900,32 +896,19 @@ class TestRegistryRelationalScopes:
                 writable_by=["engine"],
                 default=None,
             ),
-            VariableDef(
-                id="zone_danger",
-                scope="zone",
-                type="scalar",
-                lifetime="episode",
-                readable_by=["engine"],
-                writable_by=["engine"],
-                default=0.0,
-            ),
         ]
 
         registry = VariableRegistry(
             variables=variables,
             num_agents=3,
-            num_groups=2,
             num_affordances=4,
-            num_zones=5,
             device=torch.device("cpu"),
         )
 
         assert registry.get("trust", reader="engine").shape == torch.Size([3, 3])
         assert torch.all(registry.get("trust", reader="engine") == 0.25)
-        assert registry.get("group_norm_strength", reader="engine").shape == torch.Size([2])
         assert registry.get("occupied_by", reader="engine").shape == torch.Size([4])
         assert torch.all(registry.get("occupied_by", reader="engine") == -1)
-        assert registry.get("zone_danger", reader="engine").shape == torch.Size([5])
 
     def test_registry_prefixes_vectors_and_tensors_with_relational_scopes(self):
         """Vector and tensor storage should add the scope dimensions before payload dimensions."""
@@ -971,16 +954,16 @@ class TestRegistryRelationalScopes:
         from townlet.vfs.schema import VariableDef
 
         variable = VariableDef(
-            id="group_norm_strength",
-            scope="group",
+            id="occupied_by",
+            scope="affordance",
             type="scalar",
             lifetime="episode",
             readable_by=["engine"],
             writable_by=["engine"],
-            default=0.5,
+            default=-1.0,
         )
 
-        with pytest.raises(ValueError, match="num_groups.*positive"):
+        with pytest.raises(ValueError, match="num_affordances.*positive"):
             VariableRegistry(variables=[variable], num_agents=3, device=torch.device("cpu"))
 
 

@@ -83,6 +83,7 @@ class ErrorCode(StrEnum):
 
     # --- Stages 6-7: shared artifacts and per-level compile ---
     VFS_PROFILE_COMPILE = "VFS-PROFILE-COMPILE"
+    EFFECT_COMPILE = "EFFECT-COMPILE"
     VFS_LEVEL_COMPILE = "VFS-LEVEL-COMPILE"
     UAC_OPT_CASCADE = "UAC-OPT-CASCADE"
     UAC_OPT_MODULATION = "UAC-OPT-MODULATION"

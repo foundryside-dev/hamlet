@@ -7,9 +7,7 @@ and scope semantics. It handles these scope patterns:
 - agent: Per-agent values, observable by all (shape [num_agents] or [num_agents, dims])
 - agent_private: Per-agent values, excluded from policy observation (shape [num_agents] or [num_agents, dims])
 - pair: Directed agent-agent values (dense shape [num_agents, num_agents, ...] or sparse shape [num_pair_edges, ...])
-- group: Group/faction/team values (shape [num_groups, ...])
 - affordance: Per-affordance-instance values (shape [num_affordances, ...])
-- zone: Per-zone values (shape [num_zones, ...])
 - message: Recent message buffer values (shape [num_agents, num_message_slots, ...])
 """
 
@@ -134,9 +132,7 @@ class VariableRegistry:
         device: torch.device,
         max_items: int = 0,
         item_profiles: dict[str, Any] | None = None,
-        num_groups: int = 0,
         num_affordances: int = 0,
-        num_zones: int = 0,
         num_message_slots: int = 0,
         dynamic_variable_mode: bool = False,
         pair_storage_mode: Literal["dense", "sparse"] = "dense",
@@ -150,9 +146,7 @@ class VariableRegistry:
             device: PyTorch device (cpu or cuda)
             max_items: Maximum items (for item-scoped variables)
             item_profiles: Compiled item profiles (profile_name → CompiledItemProfile)
-            num_groups: Number of group-scope rows
             num_affordances: Number of affordance-scope rows
-            num_zones: Number of zone-scope rows
             num_message_slots: Number of recent-message buffer slots per agent
             dynamic_variable_mode: Allow explicit add/remove of variable definitions during a run
             pair_storage_mode: Pair-scope allocation strategy, either dense all-pairs or sparse edge rows
@@ -160,9 +154,7 @@ class VariableRegistry:
         """
         self.num_agents = num_agents
         self.max_items = max_items
-        self.num_groups = num_groups
         self.num_affordances = num_affordances
-        self.num_zones = num_zones
         self.num_message_slots = num_message_slots
         self.dynamic_variable_mode = dynamic_variable_mode
         self.pair_storage_mode = pair_storage_mode
@@ -627,12 +619,8 @@ class VariableRegistry:
             if self.pair_storage_mode == "sparse":
                 return (self._require_sparse_pair_edges().shape[0],)
             return (self.num_agents, self.num_agents)
-        if scope == VariableScope.GROUP:
-            return (self._positive_extent(var_def, "num_groups"),)
         if scope == VariableScope.AFFORDANCE:
             return (self._positive_extent(var_def, "num_affordances"),)
-        if scope == VariableScope.ZONE:
-            return (self._positive_extent(var_def, "num_zones"),)
         if scope == VariableScope.MESSAGE:
             return (self.num_agents, self._positive_extent(var_def, "num_message_slots"))
         if scope == VariableScope.ITEM:

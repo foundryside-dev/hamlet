@@ -10,7 +10,7 @@ import torch
 
 from townlet.config.interaction_type import INTERACTION_TYPES, PROGRESS_INTERACTION_TYPES
 from townlet.vfs import vtc_kernels
-from townlet.vfs.schema import WriteSpec
+from townlet.vfs.schema import VariableScope, WriteSpec
 from townlet.vfs.transition_graph import TransitionPhaseGraph
 from townlet.world.expression import ASTNode, ExpressionParser
 from townlet.world.expression.context import ExecutionContext
@@ -145,6 +145,7 @@ class CompiledVTCActionWrite:
     source_affordance: str | None
     affordance_index: int | None
     variable_id: str
+    target_scope: VariableScope
     expression: str
     expression_ast: ASTNode
     condition: str | None
@@ -385,21 +386,21 @@ class VTCWriteResult:
 
 
 @dataclass(frozen=True)
-class VTCPhaseRefusal:
-    """One authored transition write whose phase cannot apply it."""
+class VTCWriteRefusal:
+    """One authored transition write the compiled schedule cannot apply."""
 
     origin_key: str
     message: str
 
 
-class VTCPhaseError(ValueError):
-    """Transition writes refused at compile because their phase cannot apply them.
+class VTCWriteRefusalError(ValueError):
+    """Transition writes refused at compile: their phase or their target's scope cannot apply them.
 
     ``origin_key`` is the source-map key of the authored write, so the universe
     compiler can locate each refusal at ``file:line``.
     """
 
-    def __init__(self, refusals: tuple[VTCPhaseRefusal, ...]) -> None:
+    def __init__(self, refusals: tuple[VTCWriteRefusal, ...]) -> None:
         self.refusals = refusals
         super().__init__("\n".join(refusal.message for refusal in refusals))
 
@@ -711,11 +712,8 @@ class VTCActionWriteProgram:
 
     @staticmethod
     def _targets_affordance_occupancy(write: CompiledVTCActionWrite) -> bool:
-        return (
-            write.affordance_index is not None
-            and write.phase == "resolve_affordance_access_and_occupancy"
-            and write.composition in {"claim_if_free", "capacity_claim"}
-        )
+        # The compiler admits an affordance-scoped target only as an occupancy claim.
+        return write.target_scope == VariableScope.AFFORDANCE
 
     @staticmethod
     def _require_affordance_index(write: CompiledVTCActionWrite, target: torch.Tensor) -> int:
@@ -935,13 +933,10 @@ class VTCActionWriteProgram:
 
     @staticmethod
     def _broadcast_agent_mask(mask: torch.Tensor, target: torch.Tensor, write: CompiledVTCActionWrite) -> torch.Tensor:
-        if target.dim() == 0:
-            raise ValueError(f"VTC action write '{write.telemetry_label}' cannot apply a per-agent action mask to scalar variable")
-        if target.shape[0] != mask.shape[0]:
-            raise ValueError(
-                f"VTC action write '{write.telemetry_label}' target leading dimension {target.shape[0]} "
-                f"does not match action batch {mask.shape[0]}"
-            )
+        # The compiler admits only agent-axis targets here (ACTION_WRITE_AGENT_AXIS_SCOPES),
+        # whose storage leads with the agent axis by construction.
+        assert write.target_scope in ACTION_WRITE_AGENT_AXIS_SCOPES, write
+        assert target.dim() >= 1 and target.shape[0] == mask.shape[0], (write.telemetry_label, tuple(target.shape))
         broadcast_mask = mask
         while broadcast_mask.dim() < target.dim():
             broadcast_mask = broadcast_mask.unsqueeze(-1)
@@ -1873,7 +1868,7 @@ def compile_vtc_social_residue_rules_with_phase_graph(
     """Compile relationship/social-state rules using an explicit transition phase graph."""
     parser = ExpressionParser()
     compiled_rules: list[CompiledVTCSocialResidueRule] = []
-    refusals: list[VTCPhaseRefusal] = []
+    refusals: list[VTCWriteRefusal] = []
 
     for rule_index, raw_rule in enumerate(rules):
         rule = _coerce_social_residue_rule(raw_rule, rule_index)
@@ -1881,7 +1876,7 @@ def compile_vtc_social_residue_rules_with_phase_graph(
             write = _coerce_social_residue_write(raw_write, rule, write_index)
             if write["phase"] not in phase_graph.ordered_phases:
                 refusals.append(
-                    VTCPhaseRefusal(
+                    VTCWriteRefusal(
                         origin_key=f"transition_rules:{rule['rule_id']}",
                         message=(
                             f"Transition rule '{rule['rule_id']}' write '{write['telemetry_label']}' is scheduled at "
@@ -1913,7 +1908,7 @@ def compile_vtc_social_residue_rules_with_phase_graph(
             )
 
     if refusals:
-        raise VTCPhaseError(tuple(refusals))
+        raise VTCWriteRefusalError(tuple(refusals))
     return VTCSocialResidueProgram(
         rules=tuple(
             sorted(
@@ -2073,46 +2068,103 @@ def _combined_condition(rule_condition: str | None, write_condition: str | None)
     return f"({rule_condition}) and ({write_condition})"
 
 
-def compile_vtc_action_writes(actions: Sequence[VTCActionWriteSource]) -> VTCActionWriteProgram:
+def compile_vtc_action_writes(
+    actions: Sequence[VTCActionWriteSource],
+    target_scopes: Mapping[str, VariableScope],
+) -> VTCActionWriteProgram:
     """Compile ActionConfig writes into VTC records sorted by phase, priority, and action id."""
-    return compile_vtc_action_writes_with_phase_graph(actions, TransitionPhaseGraph.default())
+    return compile_vtc_action_writes_with_phase_graph(actions, target_scopes, TransitionPhaseGraph.default())
 
 
 def compile_vtc_action_writes_with_phase_graph(
     actions: Sequence[VTCActionWriteSource],
+    target_scopes: Mapping[str, VariableScope],
     phase_graph: TransitionPhaseGraph,
 ) -> VTCActionWriteProgram:
     """Compile ActionConfig writes using an explicit VTC transition phase graph."""
-    return _compile_vtc_action_writes_with_phase_graph(actions, phase_graph, affordance_index_by_name=None)
+    return _compile_vtc_action_writes_with_phase_graph(actions, target_scopes, phase_graph, affordance_index_by_name=None)
 
 
 def compile_vtc_affordance_occupancy(
     actions: Sequence[VTCActionWriteSource],
+    target_scopes: Mapping[str, VariableScope],
     affordance_ids: Sequence[str],
 ) -> VTCActionWriteProgram:
     """Compile affordance occupancy action writes with source-affordance row targeting."""
-    return compile_vtc_affordance_occupancy_with_phase_graph(actions, affordance_ids, TransitionPhaseGraph.default())
+    return compile_vtc_affordance_occupancy_with_phase_graph(actions, target_scopes, affordance_ids, TransitionPhaseGraph.default())
 
 
 def compile_vtc_affordance_occupancy_with_phase_graph(
     actions: Sequence[VTCActionWriteSource],
+    target_scopes: Mapping[str, VariableScope],
     affordance_ids: Sequence[str],
     phase_graph: TransitionPhaseGraph,
 ) -> VTCActionWriteProgram:
     """Compile affordance occupancy writes using an explicit VTC transition phase graph."""
     affordance_index_by_name = _affordance_index_by_name(affordance_ids)
-    return _compile_vtc_action_writes_with_phase_graph(actions, phase_graph, affordance_index_by_name=affordance_index_by_name)
+    return _compile_vtc_action_writes_with_phase_graph(
+        actions, target_scopes, phase_graph, affordance_index_by_name=affordance_index_by_name
+    )
+
+
+ACTION_WRITE_AGENT_AXIS_SCOPES: frozenset[VariableScope] = frozenset(
+    {VariableScope.AGENT, VariableScope.AGENT_PRIVATE, VariableScope.MESSAGE}
+)
+"""Scopes whose registry storage leads with the agent axis, so an action write lands on the acting agent's row."""
+
+AFFORDANCE_OCCUPANCY_PHASE = "resolve_affordance_access_and_occupancy"
+AFFORDANCE_OCCUPANCY_COMPOSITIONS = frozenset({"claim_if_free", "capacity_claim"})
+
+
+def _action_write_scope_refusal(
+    write: WriteSpec,
+    action_name: str,
+    target_scope: VariableScope | None,
+    affordance_index: int | None,
+) -> str | None:
+    """Why an action write cannot apply to its target's declared scope, or None when it can.
+
+    An action write applies per acting agent. Its target must therefore have one row
+    per agent (an agent-axis scope or a meter bar), except for an affordance occupancy
+    claim, which writes the acting action's source-affordance row of an
+    affordance-scoped variable.
+    """
+    prefix = f"Action '{action_name}' write '{write.telemetry_label}' targets"
+    if target_scope is None:
+        return f"{prefix} unknown state variable '{write.variable_id}'. Declare it as a VFS variable or meter bar."
+    if target_scope == VariableScope.AFFORDANCE:
+        is_claim = (
+            write.composition in AFFORDANCE_OCCUPANCY_COMPOSITIONS
+            and write.phase == AFFORDANCE_OCCUPANCY_PHASE
+            and affordance_index is not None
+        )
+        if is_claim:
+            return None
+        return (
+            f"{prefix} variable '{write.variable_id}', declared scope 'affordance'. An action writes affordance-scoped "
+            f"state only as an occupancy claim: composition {' or '.join(sorted(AFFORDANCE_OCCUPANCY_COMPOSITIONS))} "
+            f"at phase '{AFFORDANCE_OCCUPANCY_PHASE}', from an action that declares source_affordance."
+        )
+    if target_scope in ACTION_WRITE_AGENT_AXIS_SCOPES:
+        return None
+    admitted = ", ".join(sorted(scope.value for scope in ACTION_WRITE_AGENT_AXIS_SCOPES))
+    return (
+        f"{prefix} variable '{write.variable_id}', declared scope '{target_scope.value}'. An action write applies to "
+        f"the acting agent's row, so its target must be a meter bar or a variable of scope {admitted}; "
+        f"a '{target_scope.value}' variable has no row per agent."
+    )
 
 
 def _compile_vtc_action_writes_with_phase_graph(
     actions: Sequence[VTCActionWriteSource],
+    target_scopes: Mapping[str, VariableScope],
     phase_graph: TransitionPhaseGraph,
     *,
     affordance_index_by_name: Mapping[str, int] | None,
 ) -> VTCActionWriteProgram:
     parser = ExpressionParser()
     compiled_writes: list[CompiledVTCActionWrite] = []
-    refusals: list[VTCPhaseRefusal] = []
+    refusals: list[VTCWriteRefusal] = []
     admitted = phase_graph.action_phases
 
     for action in actions:
@@ -2120,14 +2172,15 @@ def _compile_vtc_action_writes_with_phase_graph(
         affordance_index = _action_affordance_index(source_affordance, affordance_index_by_name, action.name)
         for write_index, raw_write in enumerate(action.writes):
             write = _coerce_write_spec(raw_write, action.name)
+            origin_key = f"actions:{action.name}:writes[{write_index}]"
             if write.phase not in admitted:
                 if write.phase in phase_graph.ordered_phases:
                     reason = f"phase '{write.phase}', which runs without the tick's actions, so the write could never apply"
                 else:
                     reason = _unknown_phase_reason(write.phase)
                 refusals.append(
-                    VTCPhaseRefusal(
-                        origin_key=f"actions:{action.name}:writes[{write_index}]",
+                    VTCWriteRefusal(
+                        origin_key=origin_key,
                         message=(
                             f"Action '{action.name}' write '{write.telemetry_label}' is scheduled at {reason}. "
                             f"Action writes are admitted at: {', '.join(admitted)}"
@@ -2135,6 +2188,12 @@ def _compile_vtc_action_writes_with_phase_graph(
                     )
                 )
                 continue
+            target_scope = target_scopes.get(write.variable_id)
+            scope_refusal = _action_write_scope_refusal(write, action.name, target_scope, affordance_index)
+            if scope_refusal is not None:
+                refusals.append(VTCWriteRefusal(origin_key=origin_key, message=scope_refusal))
+                continue
+            assert target_scope is not None
             compiled_writes.append(
                 CompiledVTCActionWrite(
                     action_id=action.id,
@@ -2142,6 +2201,7 @@ def _compile_vtc_action_writes_with_phase_graph(
                     source_affordance=source_affordance,
                     affordance_index=affordance_index,
                     variable_id=write.variable_id,
+                    target_scope=target_scope,
                     expression=write.expression,
                     expression_ast=parser.parse(write.expression),
                     condition=write.condition,
@@ -2155,7 +2215,7 @@ def _compile_vtc_action_writes_with_phase_graph(
             )
 
     if refusals:
-        raise VTCPhaseError(tuple(refusals))
+        raise VTCWriteRefusalError(tuple(refusals))
     return VTCActionWriteProgram(
         writes=tuple(
             sorted(
@@ -2179,7 +2239,7 @@ def _affordance_index_by_name(affordance_ids: Sequence[str]) -> dict[str, int]:
 
 
 def _action_source_affordance(action: VTCActionWriteSource) -> str | None:
-    source_affordance = getattr(action, "source_affordance", None)
+    source_affordance = action.source_affordance
     if source_affordance is None:
         return None
     return str(source_affordance)

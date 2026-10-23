@@ -1166,7 +1166,7 @@ affordance engine reads while applying affordance effects, carry `apply_action_e
 **Admission is checked at compile.** Action writes are admitted only at
 `TransitionPhaseGraph.action_phases` (phases 0-8, the phases that run with the action
 batch). A write scheduled later, or at a name not in the graph, is refused with a
-`file:line` origin (`VTCPhaseError`, located by the universe compiler); the runtime check in
+`file:line` origin (`VTCWriteRefusalError`, located by the universe compiler); the runtime check in
 `VTCTransitionRunner._run_action_writes` remains only as an engine-defect assertion.
 Transition rules apply at any phase; an unknown phase name is refused with its
 `transition_rules` origin. The shorthand names in this document's design examples

@@ -583,8 +583,6 @@ class VectorizedHamletEnv:
             max_items=max_items_in_world,
             num_affordances=self.metadata.affordance_count,
             item_profiles=item_profiles,
-            num_zones=self.metadata.num_zones,
-            num_groups=self.metadata.num_groups,
             num_message_slots=self.metadata.num_message_slots,
         )
 
@@ -1257,18 +1255,21 @@ class VectorizedHamletEnv:
         )
 
     def _apply_vtc_passive_depletion(self, depletion_multiplier: float) -> None:
-        """Apply compiled VFS passive-depletion rules to meter bars."""
+        """Apply compiled VFS passive-depletion rules (and any transition rule at that phase)
+        to the agents still active: ``dones`` is unchanged from step entry until
+        ``evaluate_terminal_conditions``, so ``~dones`` is this tick's active-on-entry mask."""
         self._run_vtc_transition_phases(
             ("apply_passive_depletion",),
-            active_mask=torch.ones_like(self.dones, dtype=torch.bool, device=self.device),
+            active_mask=torch.logical_not(self.dones),
             depletion_multiplier=depletion_multiplier,
         )
 
     def _apply_vtc_threshold_cascades(self) -> None:
-        """Apply compiled VFS threshold-cascade rules to meter bars."""
+        """Apply compiled VFS threshold-cascade rules (and any transition rule at that phase)
+        to the agents still active, as for passive depletion."""
         self._run_vtc_transition_phases(
             ("apply_threshold_cascades",),
-            active_mask=torch.ones_like(self.dones, dtype=torch.bool, device=self.device),
+            active_mask=torch.logical_not(self.dones),
         )
 
     def _apply_vtc_terminal_conditions(self) -> None:

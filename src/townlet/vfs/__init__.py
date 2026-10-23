@@ -19,7 +19,6 @@ from townlet.vfs.generalisation import (
     operator_grammar_signature,
 )
 from townlet.vfs.registry import DynamicVariableMutation, VariableRegistry, VFSRegistryProtocol
-from townlet.vfs.relational import canonical_l5_relational_variables
 from townlet.vfs.schema import (
     NormalizationSpec,
     VariableDef,
@@ -126,7 +125,6 @@ __all__ = [
     "build_vfs_generalisation_signature",
     "canonical_fixed_slot_dynamic_need_variables",
     "canonical_l6_message_variables",
-    "canonical_l5_relational_variables",
     "canonical_action_schema",
     "canonical_transition_graph_schema",
     "canonical_variable_schema",

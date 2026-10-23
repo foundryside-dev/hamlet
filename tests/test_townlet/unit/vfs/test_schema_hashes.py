@@ -12,7 +12,7 @@ from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.dto import RuntimeAction
 from townlet.universe.token_hashes import compute_observation_schema_hash
 from townlet.vfs import vtc
-from townlet.vfs.schema import NormalizationSpec, VariableDef
+from townlet.vfs.schema import NormalizationSpec, VariableDef, VariableScope
 from townlet.vfs.schema_hashes import (
     canonical_action_schema,
     canonical_transition_graph_schema,
@@ -24,6 +24,8 @@ from townlet.vfs.schema_hashes import (
 )
 from townlet.vfs.transition_graph import TransitionPhaseGraph
 from townlet.vfs.vtc import compile_vtc_action_writes_with_phase_graph, compile_vtc_threshold_cascades_with_phase_graph
+
+ENERGY_SCOPES = {"energy": VariableScope.AGENT}
 
 
 def test_canonical_variable_schema_uses_sorted_contract_fields() -> None:
@@ -286,7 +288,7 @@ def test_transition_graph_hash_binds_phases_and_compiled_rule_fields() -> None:
         )
 
     action = make_action(expression="energy + 0.25", composition="additive_delta")
-    program = compile_vtc_action_writes_with_phase_graph([action], phase_graph)
+    program = compile_vtc_action_writes_with_phase_graph([action], ENERGY_SCOPES, phase_graph)
 
     assert canonical_transition_graph_schema(phase_graph, program) == {
         "phase_graph": {
@@ -301,6 +303,7 @@ def test_transition_graph_hash_binds_phases_and_compiled_rule_fields() -> None:
                 "source_affordance": None,
                 "affordance_index": None,
                 "variable_id": "energy",
+                "target_scope": "agent",
                 "expression": "energy + 0.25",
                 "condition": "energy < 0.8",
                 "composition": "additive_delta",
@@ -320,14 +323,14 @@ def test_transition_graph_hash_binds_phases_and_compiled_rule_fields() -> None:
     assert baseline != ""
     assert baseline != compute_transition_graph_hash(
         reordered_graph,
-        compile_vtc_action_writes_with_phase_graph([action], reordered_graph),
+        compile_vtc_action_writes_with_phase_graph([action], ENERGY_SCOPES, reordered_graph),
     )
     assert baseline != compute_transition_graph_hash(
         phase_graph,
-        compile_vtc_action_writes_with_phase_graph([changed_expression], phase_graph),
+        compile_vtc_action_writes_with_phase_graph([changed_expression], ENERGY_SCOPES, phase_graph),
     )
     assert baseline != compute_transition_graph_hash(
-        phase_graph, compile_vtc_action_writes_with_phase_graph([changed_composition], phase_graph)
+        phase_graph, compile_vtc_action_writes_with_phase_graph([changed_composition], ENERGY_SCOPES, phase_graph)
     )
 
 
@@ -336,7 +339,7 @@ def test_transition_graph_hash_binds_modulation_rules() -> None:
     assert hasattr(vtc, "compile_vtc_modulations_with_phase_graph"), "VTC modulation compiler is required"
 
     phase_graph = TransitionPhaseGraph.default()
-    action_program = compile_vtc_action_writes_with_phase_graph([], phase_graph)
+    action_program = compile_vtc_action_writes_with_phase_graph([], {}, phase_graph)
     modulation = ModulationParamConfig(
         bar="energy",
         affordances=["WORK"],
@@ -381,7 +384,7 @@ def test_transition_graph_hash_binds_passive_depletion_rules() -> None:
     assert hasattr(vtc, "compile_vtc_passive_depletions_with_phase_graph"), "VTC passive depletion compiler is required"
 
     phase_graph = TransitionPhaseGraph.default()
-    action_program = compile_vtc_action_writes_with_phase_graph([], phase_graph)
+    action_program = compile_vtc_action_writes_with_phase_graph([], {}, phase_graph)
     meter = {"name": "energy", "depletion": {"passive": 0.1}, "bounds": {"min": 0.0, "max": 1.0}}
     changed_meter = {"name": "energy", "depletion": {"passive": 0.2}, "bounds": {"min": 0.0, "max": 1.0}}
 
@@ -416,7 +419,7 @@ def test_transition_graph_hash_binds_passive_depletion_rules() -> None:
 def test_transition_graph_hash_binds_interaction_progress_rules() -> None:
     """Transition hashes should bind VTC multi-tick progress and completion semantics."""
     phase_graph = TransitionPhaseGraph.default()
-    action_program = compile_vtc_action_writes_with_phase_graph([], phase_graph)
+    action_program = compile_vtc_action_writes_with_phase_graph([], {}, phase_graph)
     affordance = {"name": "SLEEP", "interaction_type": "multi_tick", "duration_ticks": 5}
     changed_affordance = {"name": "SLEEP", "interaction_type": "multi_tick", "duration_ticks": 6}
 
@@ -471,7 +474,7 @@ def test_transition_graph_hash_binds_interaction_progress_rules() -> None:
 def test_transition_graph_hash_binds_terminal_condition_rules() -> None:
     """Transition hashes should bind lethal meter terminal-condition semantics."""
     phase_graph = TransitionPhaseGraph.default()
-    action_program = compile_vtc_action_writes_with_phase_graph([], phase_graph)
+    action_program = compile_vtc_action_writes_with_phase_graph([], {}, phase_graph)
     meter = {"name": "energy", "bounds": {"min": 0.0, "max": 1.0, "lethal_min": True, "lethal_max": False}}
     changed_meter = {"name": "energy", "bounds": {"min": 0.25, "max": 1.0, "lethal_min": True, "lethal_max": False}}
 
@@ -509,7 +512,7 @@ def test_transition_graph_hash_binds_social_residue_rules() -> None:
     assert hasattr(vtc, "compile_vtc_social_residue_rules_with_phase_graph"), "VTC social-residue compiler is required"
 
     phase_graph = TransitionPhaseGraph.default()
-    action_program = compile_vtc_action_writes_with_phase_graph([], phase_graph)
+    action_program = compile_vtc_action_writes_with_phase_graph([], {}, phase_graph)
 
     def social_program(*, delta: float) -> vtc.VTCSocialResidueProgram:
         return vtc.compile_vtc_social_residue_rules_with_phase_graph(
@@ -600,7 +603,14 @@ def test_compiler_surfaces_vfs_hash(tmp_path: Path) -> None:
     assert level.transition_graph_hash != ""
     assert level.transition_graph_hash == compute_transition_graph_hash(
         phase_graph,
-        compile_vtc_action_writes_with_phase_graph(level.runtime_action_space.actions, phase_graph),
+        compile_vtc_action_writes_with_phase_graph(
+            level.runtime_action_space.actions,
+            {
+                **{variable.id: VariableScope(variable.scope) for variable in level.vfs_variables},
+                **{meter.name: VariableScope.AGENT for meter in level.bars.meters},
+            },
+            phase_graph,
+        ),
         affordance_gate_program=vtc.compile_vtc_affordance_gates_with_phase_graph(
             compiled.get_level(PRIMARY_LEVEL_NAME).affordances.affordances,
             phase_graph,

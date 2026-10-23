@@ -519,6 +519,8 @@ def make_test_episode_metadata(
         affordance_layout={"Bed": (2, 3)},
         affordance_visits={"Bed": 1},
         custom_action_uses={},
+        completion_reason="authored_terminal",
+        shaping_reward=0.0,
     )
 
 
@@ -541,7 +543,49 @@ def make_test_recorded_step(
         meters=meters,
         action=action,
         reward=reward,
-        intrinsic_reward=0.1,
+        intrinsic_reward=0.0,
         done=done,
         q_values=None,
+        extrinsic_reward=reward,
+        shaping_reward=0.0,
     )
+
+
+def make_test_recording_payload(*, episode_id: int, completion_reason: str) -> dict:
+    """Build an independent current-format ledger with an earlier reward and zero last row."""
+    steps = [
+        {
+            "step": index,
+            "position": [3, 5],
+            "meters": list(make_test_meters()),
+            "action": 0,
+            "reward": 1.0 if index == 0 else 0.0,
+            "extrinsic_reward": 0.5 if index == 0 else 0.0,
+            "intrinsic_reward": 0.3 if index == 0 else 0.0,
+            "shaping_reward": 0.2 if index == 0 else 0.0,
+            "done": index == 1 and completion_reason in {"authored_terminal", "retirement"},
+            "q_values": None,
+            "epsilon": 0.5,
+            "action_masks": None,
+            "time_of_day": None,
+            "interaction_progress": None,
+        }
+        for index in range(2)
+    ]
+    metadata = {
+        "episode_id": episode_id,
+        "survival_steps": len(steps),
+        "total_reward": sum(row["reward"] for row in steps),
+        "extrinsic_reward": sum(row["extrinsic_reward"] for row in steps),
+        "intrinsic_reward": sum(row["intrinsic_reward"] for row in steps),
+        "shaping_reward": sum(row["shaping_reward"] for row in steps),
+        "completion_reason": completion_reason,
+        "curriculum_stage": 1,
+        "epsilon": 0.5,
+        "intrinsic_weight": 0.1,
+        "timestamp": 1234567890.0,
+        "affordance_layout": {"Bed": [2, 3]},
+        "affordance_visits": {"Bed": 1},
+        "custom_action_uses": {"WAIT": 2},
+    }
+    return {"version": 2, "metadata": metadata, "steps": steps, "affordances": {"Bed": [2, 3]}}

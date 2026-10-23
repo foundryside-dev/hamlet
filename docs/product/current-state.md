@@ -1,94 +1,126 @@
-# Current state — Townlet · 2026-10-01
+# Current state — Townlet · 2026-10-02
 
 ## Delivered and verified
 
-Declaration-store **Cut A**, canonical-variable **Cut B** and **static epistemic access**
-are accepted and consolidated on GitHub `main` at **`729779280820a31294013f9f7c839fbf23732ced`** (PR #42), as read at 08:17 UTC.
-At that reading, local main matched publication, all 20 pre-consolidation local branch tips
-were contained, and no additional committed branch work was found. Local main subsequently
-advanced to documentation checkpoint **`792c6704`**; the repair branch is identified below.
-[PDR-0154](decisions/0154-main-consolidation-and-product-checkpoint.md) records the pre-publication checkpoint;
-[PDR-0155](decisions/0155-resume-reconciles-completed-main-publication.md) reconciles delivery at the 08:17 UTC resume.
+The retained October 1 hosted-main reading is **`95b2f828dae4f52d6e30e79600fc3491364a1eb5`** after
+[PR #44](https://github.com/foundryside-dev/hamlet/pull/44), merged October 1 at
+15:08:34 UTC. Its exact-main Lint, Config Validation and Tests all succeeded.
+Hosted tests report **4,276 passed / 19 skipped / 15 warnings / 85% coverage**.
+[Hosted receipt](evidence/static-access-review/hosted-delivery.md) records identities,
+run links and log custody; the previous brief's local-only claim is superseded.
 
-| Package | Accepted contract | Qualification |
+| Package | Accepted contract | Evidence |
 | --- | --- | --- |
-| A | Content discovery, scoped declaration merge, collision/provenance diagnostics, single authored clock authority | [PDR-0149](decisions/0149-owner-extends-cut-a-acceptance-to-october-1-and-cut-a-is-accepted.md); exact implementation `75383d18` hosted gates accepted |
-| B | Canonical variables, explicit lifetime/default/expression semantics, complete supported symbols and typed token scope | [PDR-0151](decisions/0151-cut-b-accepted-against-prd-0003.md); published implementation `22924d0a` hosted gates accepted |
-| Static access | Required finite engine/agent read policies, engine/empty writers, independent exposure, checked ordinary/item access, immutable authority and policy-bearing cache/checkpoint identity | [PDR-0153](decisions/0153-static-epistemic-access-accepted-against-prd-0004.md); qualified execution `b70fda10` |
+| Declaration Cut A | Content discovery, scoped merge, provenance/duplicates, authored clock | PDR-0149 |
+| Canonical-variable Cut B | Explicit lifetime/default/expression semantics, symbols and typed token scope | PDR-0151 |
+| Static access | Explicit finite roles, independent exposure, checked access/write intent, immutable policy and cache/checkpoint identity | PDR-0153 |
+| Review repairs | Effect preflight/reapplication, immediate nested refusal rollback, deterministic item allocation and structured variable identities | [PDR-0156](decisions/0156-static-access-review-refusal-and-identity-repairs.md) |
 
-The static source passed **4,250 tests / 18 skips / 85% coverage**, all local lint/fleet gates,
-31-case direct-parent comparison and ten frozen CPU cells. This is retained source qualification,
-not a new full-suite run at the local merge. **201 postmerge checks passed** against
-actual main-worktree imports. [Main integration receipt](evidence/main-consolidation/local-integration.json)
-records identities, commands and preservation checks. Exact-head GitHub publication/checks are
-verified separately in closed delivery issue **`hamlet-dd9a03f787`** and
-[PR #42](https://github.com/foundryside-dev/hamlet/pull/42). Actual-main Lint, Config Validation
-and Tests completed successfully; the retained hosted suite records **4,249 passed / 19 skips /
-15 warnings**. [Publication reading](evidence/main-consolidation/hosted-publication.json)
-records exact identities and run links. The resume reran no suite; a separate failed Dependabot
-update is outside the delivery verdict. No release, tag or deployment is part of this task.
+PR #42 delivered the first three at `72977928`; PR #44 delivered repairs qualified
+at `7eb7ded3`, with unchanged runtime/test/config source through the merge.
+Retained local qualification is **4,277 passed / 18 skips / 15 warnings / 85%
+coverage**, plus 397 focused item/effect and 988 compiler/oracle/access checks.
+The earlier owner-requested local merge passed 432 post-merge checks. These are
+separate readings, not a fresh suite during this resume.
+[Verification](evidence/static-access-review/verification.md) retains their limits.
+Both requested Filigree Markdown reference files were committed as `80d6a5ce`
+and included in PR #44. The three review repair issues remain closed:
+`hamlet-f75ff623be`, `hamlet-bae419a592`, `hamlet-940089c925`.
 
-Three historical access defects are closed with bounded source/runtime evidence:
-`hamlet-fc78bb49d3`, `hamlet-1a520475f4`, `hamlet-c78fbf32a3`. Owner/per-observer privacy
-`hamlet-83a043a9b9` remains open. Unknown historical roles are refused, not implemented.
+## Accepted local package: truthful episode lanes
 
-The owner's review of `72977928` exposed effect-admission refusal and canonical
-variable-identity defects. Both reproduced. The repair on `fix/static-access-review`
-contains implementation **`7eb7ded3`** (following `c3faa4bf`): selected lifecycle writes authorize before
-admission/reapplication, immediate nested denials restore runtime state, and structured
-canonical identities retain distinct variables and origins. Deterministic lowest-free
-item rows prevent rejected cascades from changing later allocation. **397 focused
-item/effect checks and 988 compiler/oracle/access checks pass**; lint/type/no-defaults/fleet gates
-pass. The final source's full suite passed **4,277 tests / 18 skips / 15 warnings /
-85% coverage** in 989.23s, exit 0. `hamlet-f75ff623be`, `hamlet-bae419a592` and the
-additional cascade defect `hamlet-940089c925` are closed against this local source. The repair is local;
-published main's source and hosted qualification remain the historical readings above.
-[PDR-0156](decisions/0156-static-access-review-refusal-and-identity-repairs.md) records
-the repair scope, independent counterexamples and acceptance limits.
-[Verification receipt](evidence/static-access-review/verification.md) banks the full
-reading and skip disposition. No frozen trajectory or convergence campaign was rerun.
+The owner's branch **`fix/episode-lane-accounting`** implements
+[PRD-0005](prds/0005-truthful-episode-lanes.md). Complete production candidate
+`462e8a3980845d76e7987cfea67fb63432bcb847` has passed **4,652 tests / 18 skips /
+31 warnings / 85% branch coverage**, plus lint/type/no-defaults/compiler and
+33-pack gates. The accepted final candidate is `7dc1d02e78d8b70bd096fc4c84b4d95a9822c94f`: only
+two test readers changed after that full suite; 30 strict affected cases pass
+with zero warnings and all other 1,059 execution files remain exact.
+[Astra accepts criteria1–8](evidence/episode-lanes/implementation-review.md),
+with no blocking findings. Execution `hamlet-78ad37dd49` and engine bug
+`hamlet-d6fc84d147` are **closed**, anchored to local landing
+`fix/episode-lane-accounting@225aad3f`. [Verification](evidence/episode-lanes/verification.md) retains the
+full source/evidence identities, actual commands, skipped cases and limits.
 
-The owner subsequently requested a local main merge. **Main fast-forwarded from
-`792c6704` to `a370814a`**, with an exact tree match to the qualified repair branch.
-**432 post-merge checks passed** in 11.95s against actual main-checkout imports;
-the full suite above is retained qualification, not a new merge-time full run.
-The receipt's local-integration addendum records custody and landing evidence.
-The merged task branch was retired; unrelated file contents and modes were preserved.
-At the owner's subsequent request, both Filigree error-code reference files were
-committed unchanged as **`80d6a5ce`**. No push
-or new hosted CI reading was performed. The follow-up checkpoint changes only product docs.
+The authored two/five fixture now reports survival **`[2,5]`**, five vector ticks,
+seven live transitions and **zero accounting error**. Standard/PER replay retain
+seven actual transitions; recurrent sequences complete `[2,5]` once each.
+RND normalization/ingestion use eligible samples; completed outcomes own their
+observations/meters. Actual Q/predictor updates and loss targets qualify terminal
+versus cap bootstrap. Two consecutive ordinary recorded episodes reconcile real
+SQLite/TensorBoard/curriculum/recording/replay/observer and both CSV exporters.
+Budget/cap/checkpoint cuts preserve valid successors and complete once.
 
-## Product judgment
+Strict format cuts refuse old nested population checkpoints, recordings and DBs;
+historical artifacts remain unchanged. Astra's implementation review found one
+exporter refusal that opened original WAL-mode SQLite files and created sidecars.
+The repaired reader validates an isolated snapshot, preserves the whole original
+family on success/refusal and passes actual exporter and custody controls.
 
-The supported declaration → compiled state → checked runtime contract is stronger. The product
-still has no freshly qualified multi-scenario compile → render → converge milestone. Static
-policy tests do not establish trustworthy episode outcomes, full BAC cognition, browser behavior,
-Murk integration, item ownership/locality, effect reset or portable model export.
+The six final lifecycle recipes qualify all 799 prospectively declared changes
+and preserve 4,008 other parent readings. Eight real learned numerical recipes
+qualify through the prospectively reviewed CPU-controlled reset fixture in
+[PDR-0160](decisions/0160-align-controlled-reset-inputs-without-changing-production-rng.md).
+The original uncontrolled bank remains failed: replay changes global RNG
+consumption, so this qualification does not establish production RNG isolation.
 
-Historical M4 remains four passing token architecture/aggregation cells at training `9d4e942f`,
-one training seed and its fixed evaluation/budget protocol. It is not current-main multi-seed
-convergence evidence. [Metrics](metrics.md) keeps those readings separate.
+The unchanged static-access and frozen scripted commands retain **exit1**:
+exactly seven dead-entry row99 rewards lose false retirement bonuses.
+[PDR-0161](decisions/0161-adjudicate-exact-inherited-terminal-bonus-coordinates.md)
+qualifies those exact coordinates through a prospectively frozen checker and
+42 rejected private-copy corruption controls. Original outputs, dirty flags,
+register allowances, frozen input bytes and harness remain preserved. No whole
+reward-stream allowance is added and neither original command is called passing.
 
-## Recovery exit and next step
+The baseline/planning receipts remain historical evidence of the parent defects,
+including `[5,5]` survival, phantom replay/RND rows and unstable final meters.
+E0a's ten ordinary shutdown/index witnesses and S3's real producer-to-observer
+pipeline pass; general recorder repair was unnecessary. The accepted revised
+plan in PDR-0159 and its original prospective declarations remain unchanged.
 
-Recovery remains open. **PDR-0058's register-growth trigger has fired:** A/B/static added
-DIV-013/014/015 without terminalizing existing divergences. Reopen the oracle-retirement exit
-framing for review; do not erase evidence, re-freeze the oracle or call registered differences
-terminal because qualification passes. The existing exit is not met, and a main merge does not
-meet it. [Checkpoint assessment](assessments/2026-10-01-main-product-checkpoint.md) records this
-reading. No new exit definition or deadline is invented here.
+## Recovery and product judgment
 
-The recommended next package is **truthful episode lanes**, starting from
-`hamlet-d6fc84d147`: reproduce current main, then plan a bounded lifecycle/accounting contract
-before another learning campaign. Proposed fixture: deaths at steps 2/5 give survival `[2,5]`,
-seven live transitions, five vector ticks, one terminal/finalization each, and no post-death
-replay/RND/annealing/bonus. Adjacent learner defects require reproduction before being treated
-as confirmed scope. This recommendation is not authorization to implement it.
+Recovery remains open. **PDR-0058's register-growth trigger remains unresolved**:
+sixteen divergences, five retired and eleven nonterminal, including DIV-016. Review task
+**`hamlet-4554a428b2`** must produce a concrete exit/instrument proposal. The frozen
+oracle, inputs, current exit and authority grant stay intact. Episode integrity
+is a prerequisite for credible learning evidence, not a substitute retirement exit.
+[PDR-0157](decisions/0157-episode-lane-package-and-merged-repair-delivery.md) records
+this scope and delivery reconciliation.
 
-The initial resume reconciled publication. The subsequent owner review dispatched these
-bounded contract repairs; no bet moved horizon and the standing authority grant remains
-unchanged. Recovery is open. The owner-requested integration is on local main only.
+No current-main multi-scenario compile → render → converge milestone is qualified.
+Historical M4 remains four passing token cells at training `9d4e942f`, one training
+seed and its fixed protocol. Static access is not per-owner privacy
+(`hamlet-83a043a9b9`); effect reset (`hamlet-d76684f549`), initial-item cache fidelity,
+RNG isolation, complete BAC cognition, viewer behavior, Murk and model export
+remain separate work. No north-star authoring success rate is revived.
 
-Next session: adjudicate the fired exit trigger, then source-reproduce and scope the episode-lane PRD. Keep effects reset and item fidelity as
-separate packages unless the chosen scenario explicitly depends on them. The frozen oracle,
-raw evidence and owner-authored skill reference edits remain preserved.
+Astra's plan re-review, original implementation refusal and scoped repair audits
+are retained separately from its final **ACCEPTED** verdict.
+[PDR-0162](decisions/0162-accept-bounded-truthful-episode-lanes.md) records the
+local acceptance and reversal conditions. This checkpoint is local to the feature
+branch. There is no new main merge, push/PR, hosted CI, CUDA or convergence
+reading for this package. Keep the recovery exit review and effect-reset task
+open; accept any later scope change only from a concrete dependency witness.
+
+## Next product task and engineering handoff
+
+[PDR-0163](decisions/0163-reconcile-episode-acceptance-and-next-product-task.md)
+reconciles the stale roadmap and selects the existing oracle-exit proposal
+`hamlet-4554a428b2` as the next product task. It remains open/unclaimed; its
+tracker context now includes all sixteen entries and the exact local qualification
+limits. Require an evidence-backed disposition/coverage inventory and falsifiable
+instrument proposal. The current retirement exit and pinned inputs stay intact;
+an owner decision is required before any strategy/exit replacement.
+
+The next engineering package is **effect-reset isolation**, `hamlet-d76684f549`,
+which remains triage/unclaimed. Its historical trial proves why the question
+matters, but a fresh current-source authored reproduction is required before
+planning. The target is zero previous-episode effect carryover under repeated
+reset, preserving legitimate new-episode initialization and within-episode
+behavior. Item-cache fidelity, production RNG isolation and BAC remain separate.
+No new code or learning campaign is dispatched by this product checkpoint.
+
+The accepted integrity metric is now met; the broader compile → render → reliably
+converge claim remains unqualified. Vision and authority grant are unchanged.
+This resume adds no new full-suite, hosted, CUDA or learning reading.

@@ -294,7 +294,7 @@ The `q_learning` section defines Q-learning hyperparameters.
 ```yaml
 q_learning:
   gamma: 0.99                    # Discount factor
-  target_update_frequency: 100   # Episodes between target network updates
+  target_update_frequency: 100   # Learner optimizer updates between target synchronizations
   use_double_dqn: true           # Use Double DQN vs Vanilla DQN
 ```
 
@@ -303,10 +303,13 @@ q_learning:
   - Range: [0.0, 1.0]
   - Typical: 0.99 (values future rewards highly)
   - Higher gamma = more long-term planning
-- `target_update_frequency` (int, required): Episodes between target network updates
-  - Typical: 100 (every 100 episodes)
+- `target_update_frequency` (int, required): Learner optimizer updates between target synchronizations
+  - Typical: 100 (every 100 successful learner updates)
   - Lower values = more frequent updates, less stable
   - Higher values = more stable, but slower adaptation
+  - Feedforward/PER and recurrent populations increment this counter after an actual
+    optimizer update. Warmup and rollout ticks without learning do not advance it.
+    This is separate from vector ticks, live-agent transitions and episode counts.
 - `use_double_dqn` (bool, required): Use Double DQN algorithm
   - `true`: Double DQN (decouples action selection and evaluation)
   - `false`: Vanilla DQN (uses target network for both)

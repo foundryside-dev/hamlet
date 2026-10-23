@@ -1,0 +1,23 @@
+
+===== A. VFS variable id == meter name ('energy') =====
+[name_collide] compiled OK
+   meter energy before [1.0, 1.0] vfs energy [0.25, 0.25]
+EXC ValueError: VTC action write state has ambiguous bar/VFS variable 'energy'
+
+===== B. social residue rule scheduled at never-run / actions-less phases =====
+[residue_emit_telemetry] compiled OK
+   phase=emit_telemetry: 2 steps -> public_state [0.0, 0.0]
+[residue_compute_rewards] compiled OK
+   phase=compute_rewards: 2 steps -> public_state [0.0, 0.0]
+[residue_clamp_and_validate] compiled OK
+   phase=clamp_and_validate: 2 steps -> public_state [2.0, 2.0]
+[residue_apply_action_effects] compiled OK
+   phase=apply_action_effects: 2 steps -> public_state [2.0, 2.0]
+
+===== C. bool target with additive_delta / overwrite float expression =====
+[bool_add] compiled OK
+   flag after 2x additive_delta 1.0: [True, True]
+[bool_ovw] compiled OK
+   flag after overwrite 0.0: [False, False]
+[ref_write] compiled OK
+   agent_ref after overwrite 0.6: [0, 0] torch.int64

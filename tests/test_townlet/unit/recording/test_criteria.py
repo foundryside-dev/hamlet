@@ -521,4 +521,6 @@ def _make_metadata(episode_id, survival_steps, total_reward, curriculum_stage=1)
         affordance_layout={},
         affordance_visits={},
         custom_action_uses={},
+        completion_reason="authored_terminal",
+        shaping_reward=0.0,
     )

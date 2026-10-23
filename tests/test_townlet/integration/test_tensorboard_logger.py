@@ -18,10 +18,82 @@ Integration test scope:
 
 from pathlib import Path
 
+import pytest
 import torch
 import torch.nn as nn
+from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
 
 from townlet.training.tensorboard_logger import TensorBoardLogger
+
+
+def test_canonical_components_survival_and_reason_are_persisted_as_real_events(tmp_path: Path) -> None:
+    directory = tmp_path / "events"
+    agents = [
+        {
+            "agent_id": "lane-0",
+            "survival_time": 2,
+            "completion_reason": "authored_terminal",
+            "total_reward": 5.0,
+            "extrinsic_reward": 2.0,
+            "intrinsic_reward": 1.0,
+            "shaping_reward": 2.0,
+            "curriculum_stage": 0,
+        },
+        {
+            "agent_id": "lane-1",
+            "survival_time": 5,
+            "completion_reason": "budget",
+            "total_reward": 0.0,
+            "extrinsic_reward": 0.0,
+            "intrinsic_reward": 0.0,
+            "shaping_reward": 0.0,
+        },
+    ]
+    with TensorBoardLogger(directory) as logger:
+        logger.log_multi_agent_episode(episode=10, agents=agents)
+    events = EventAccumulator(str(directory)).Reload()
+    for data in agents:
+        prefix = data["agent_id"]
+        for suffix, field in (
+            ("Survival_Time", "survival_time"),
+            ("Total_Reward", "total_reward"),
+            ("Extrinsic_Reward", "extrinsic_reward"),
+            ("Intrinsic_Reward", "intrinsic_reward"),
+            ("Shaping_Reward", "shaping_reward"),
+        ):
+            readings = events.Scalars(f"{prefix}/Episode/{suffix}")
+            assert len(readings) == 1
+            assert readings[0].step == 10
+            assert readings[0].value == pytest.approx(data[field])
+        reasons = events.Tensors(f"{prefix}/Episode/Completion_Reason/text_summary")
+        assert len(reasons) == 1
+        assert reasons[0].step == 10
+        assert reasons[0].tensor_proto.string_val == [data["completion_reason"].encode()]
+    stage = events.Scalars("lane-0/Curriculum/Stage")
+    assert len(stage) == 1
+    assert stage[0].step == 10
+    assert stage[0].value == 0
+
+
+def test_bad_later_episode_row_writes_no_scalar_or_reason_events(tmp_path: Path) -> None:
+    directory = tmp_path / "events"
+    good = {
+        "agent_id": "lane-0",
+        "survival_time": 2,
+        "completion_reason": "cap",
+        "total_reward": 1.0,
+        "extrinsic_reward": 0.5,
+        "intrinsic_reward": 0.5,
+        "shaping_reward": 0.0,
+    }
+    bad = {**good, "agent_id": "lane-1", "total_reward": 9.0}
+    with TensorBoardLogger(directory) as logger:
+        with pytest.raises(ValueError, match="reward"):
+            logger.log_multi_agent_episode(10, [good, bad])
+        assert logger.episodes_logged == 0
+    events = EventAccumulator(str(directory)).Reload()
+    assert events.Tags()["scalars"] == []
+    assert events.Tags()["tensors"] == []
 
 
 class TestTensorBoardLoggerBasic:
@@ -236,6 +308,8 @@ class TestEpisodeLogging:
                 "total_reward": 50.0,
                 "extrinsic_reward": 30.0,
                 "intrinsic_reward": 20.0,
+                "shaping_reward": 0.0,
+                "completion_reason": "cap",
                 "curriculum_stage": 2,
                 "epsilon": 0.5,
                 "intrinsic_weight": 0.8,
@@ -246,6 +320,8 @@ class TestEpisodeLogging:
                 "total_reward": 75.0,
                 "extrinsic_reward": 45.0,
                 "intrinsic_reward": 30.0,
+                "shaping_reward": 0.0,
+                "completion_reason": "retirement",
                 "curriculum_stage": 3,
                 "epsilon": 0.3,
                 "intrinsic_weight": 0.6,
@@ -256,6 +332,8 @@ class TestEpisodeLogging:
                 "total_reward": 40.0,
                 "extrinsic_reward": 25.0,
                 "intrinsic_reward": 15.0,
+                "shaping_reward": 0.0,
+                "completion_reason": "authored_terminal",
                 "curriculum_stage": 1,
                 "epsilon": 0.7,
                 "intrinsic_weight": 1.0,
@@ -271,29 +349,11 @@ class TestEpisodeLogging:
         logger.close()
 
     def test_log_multi_agent_episode_with_missing_fields(self, tmp_path: Path):
-        """Test multi-agent logging with missing optional fields."""
-        logger = TensorBoardLogger(log_dir=tmp_path / "logs")
-
-        # Agent data with minimal fields
-        agents_data = [
-            {
-                "agent_id": "agent_0",
-                "survival_time": 100,
-                # Missing total_reward, should default to 0.0
-            },
-            {
-                "agent_id": "agent_1",
-                # Missing survival_time, should default to 0
-                "total_reward": 50.0,
-            },
-        ]
-
-        # Should handle missing fields gracefully
-        logger.log_multi_agent_episode(episode=50, agents=agents_data)
-
-        assert logger.episodes_logged == 2
-
-        logger.close()
+        """Canonical multi-agent episodes reject absent lifecycle and reward fields."""
+        with TensorBoardLogger(tmp_path / "logs") as logger:
+            with pytest.raises(ValueError, match="total_reward"):
+                logger.log_multi_agent_episode(50, [{"agent_id": "agent_0", "survival_time": 100}])
+            assert logger.episodes_logged == 0
 
 
 class TestCurriculumTransitionLogging:

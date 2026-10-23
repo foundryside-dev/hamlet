@@ -1,4 +1,4 @@
-# Metrics — Townlet · Latest reading 2026-10-01
+# Metrics — Townlet · Latest reading 2026-10-02
 
 This is a source/evidence/tracker reading, not a new training campaign. New readings are
 separate from the retained chronological tables below; historical “current” cells there
@@ -6,6 +6,12 @@ refer to their dated source, not the consolidated main.
 
 | Reading | Result | Identity / limit |
 | --- | --- | --- |
+| Recovery exit guardrail — product resume | **16 register entries: five retired, eleven nonterminal**; fired register-growth trigger remains open | Current source `225aad3f`, direct register read; DIV-016 qualification is not terminal disposition. Next product task4554a428b2; no new runtime/learning reading |
+| Episode candidate full suite | 4,652 passed / 18 skipped / 31 warnings; 85% branch coverage; 1,187.28s, exit0 | `462e8a39`; 4,670 collected, unfiltered `pytest -rs`, default branch coverage; final7dc1 test cleanup:30 strict affected/pipeline cases pass, zero warnings; other1059 files exact; Astra criteria1–8 accepted |
+| Episode accounting — candidate | **0 error**, exact survival `[2,5]`, five ticks / seven eligible transitions; once-only terminal/completion | Authored END_LANE compiler/brain path and independent ledger; normal standard/PER/recurrent, actual Q/RND updates and terminal/cap targets; no convergence claim |
+| Episode persisted consumers — candidate | Two episodes, 14 live transitions, lane survival `[2,5]`; canonical reward components and eligible playback prefixes agree | Actual ordinary DB/TB/LZ4/index/ReplayManager/observer/two exporters; 11 pipeline checks and strict original-family custody controls |
+| Episode exact attribution | 799 declared lifecycle changes, 4,008 parent readings preserved; 8 learned recipes each normalize/admit/train63, finish18 lanes, leave0 pending | Five-cut CPU-controlled-reset evidence under PDR-0160; production RNG equivalence remains unqualified |
+| Episode inherited boundaries | Seven exact false retirement bonuses removed; prospective exact checker exit0 / 42 corruptions rejected | PDR-0161; original static-access/scripted commands remain exit1, frozen/matrix allowances unchanged; no CUDA/recovery-exit claim |
 | Local consolidation | All 20 local branch tips contained; 201 postmerge checks pass | Merge `bb88beb84a8dfdb6e2851c16140b7d65054efb14`; actual main-worktree imports; no new full local suite |
 | Static execution suite | 4,250 passed / 18 skipped / 15 warnings; 85% coverage | Qualified `b70fda10`, 1561.29s, exit 0; Ruff/Black/mypy/no-defaults/fleet also zero |
 | Direct-parent preservation | 31 cases, 884 readings, 150 exactly attributed identity changes; no numeric/reset changes | Ten CPU trajectories, eleven reset recipes; independent raw reconstruction |
@@ -20,6 +26,13 @@ refer to their dated source, not the consolidated main.
 | Tracker census after delivery closure — resume 08:17 UTC | 266 issues: 159 done, 107 open, zero in progress; 103 ready, four blocked | Delivery dd9a03f787 closed; recovery planning; episode bug d6fc84d147 triage; bookkeeping only |
 | Post-review local repair | Full suite 4,277 passed / 18 skipped / 15 warnings; 85% coverage; 989.23s, exit 0; 397 focused item/effect and 988 compiler/oracle/access checks; lint/type/no-defaults/fleet gates pass | Implementation 7eb7ded3 following c3faa4bf on fix/static-access-review; three reproduced defects closed; skip disposition retained; no publication or learning campaign |
 | Owner-requested local main merge | Exact qualified repair-tree fast-forward; 432 post-merge checks passed, 11.95s, exit 0; unrelated dirty file digests/modes preserved | Main landing a370814a from 792c6704; actual main-checkout imports; retained full suite above; no push, new hosted CI or convergence campaign |
+| Repair hosted delivery — October 2 resume | PR #44 merged; exact-main Lint, Config Validation and Tests completed/success; 4,276 passed / 19 skipped / 15 warnings / 85% coverage | Actual main `95b2f828`; published head `171318c8`; 4,295 collected, 1504.18s; separate from local 4,277/18; extra MP4 test skip; no fresh local suite |
+| Episode accounting error — input metric | Baseline **3**: returned survival sums ten versus seven independently counted live transitions; individual counters `[5,5]` versus `[2,5]` | Real CPU compiled environment `95b2f828`, deaths 2/5; target **0** with exact individual survival; PRD-0005 review October 9 or first candidate, no delivery forecast |
+| Episode consumer baseline | All three replay variants store ten transitions / five terminal rows; recurrent lengths `[2,1,1,1,5]`; registry `[1,5]`; RND sample delta ten; adaptive history `[2,1,1,1,5]`, weight 1.0 | Real population/replay/statistics/finalizers; gradients suppressed; no learner/predictor update, persisted-sink or convergence qualification |
+| Episode planning — authored/oracle | Compiled END_LANE deaths2/5 without meter injection, seven eligible/five ticks but reported `[5,5]`; pinned oracle reproduces count/bonus defects | Parent `ec463fda`, oracle `4222a917`; no frozen-byte changes; feasibility/defects, not candidate acceptance |
+| Episode planning — real learning | Standard/PER five Q/one predictor updates; recurrent23/11; both weights change. Seq1 consumes15 phantom Q rows/46 and23 predictor rows/77 | Actual original sampler/predictor hooks; parent defects, no target-value qualification |
+| Episode planning — persisted sinks | Two batches14 live transitions, DB/TB `[5,5]` each, baseline curves20; budget6 publishes `[4,4]` vs `[2,4]`; checkpoint-backed transition export remains correct | Real DB/TB/LZ4/curriculum/exporters; gradients suppressed; writer persistence wait isolates shutdown |
+| Episode planning prerequisite gate | 20 passed / one existing stochastic-affordance skip /58.42s, exit0 | Existing recurrent bootstrap/BPTT and runner integration; no new full suite, hosted CI or convergence |
 
 [PDR-0155](decisions/0155-resume-reconciles-completed-main-publication.md) and the
 [publication reading](evidence/main-consolidation/hosted-publication.json) record the resume
@@ -27,7 +40,23 @@ delta. That resume added no authoring or learning reading. Recovery's fired exit
 remains unresolved.
 [PDR-0156](decisions/0156-static-access-review-refusal-and-identity-repairs.md) records
 the subsequent refusal/identity repair. Its bounded verification is separate from
-the published-main baseline; a repaired access contract is not convergence evidence.
+the original published-main baseline; a repaired access contract is not convergence evidence.
+[PDR-0157](decisions/0157-episode-lane-package-and-merged-repair-delivery.md) now
+reconciles PR #44's completed [hosted delivery](evidence/static-access-review/hosted-delivery.md)
+and selects the episode-integrity planning scope.
+[PDR-0158](decisions/0158-episode-lane-plan-and-boundary-semantics.md) completes its
+[implementation plan](../plans/2026-10-02-truthful-episode-lanes.md);
+[planning receipts](evidence/episode-lanes/planning/receipt.md) add executed prerequisite
+witnesses. [PDR-0159](decisions/0159-episode-lane-astra-plan-revisions.md) adds
+nonmutating DB proposal controls and explicit ordinary-shutdown/reward-prefix gates.
+These remain historical planning evidence. The separate candidate readings above
+meet the zero-error target and are independently accepted at7dc1 under
+[PDR-0162](decisions/0162-accept-bounded-truthful-episode-lanes.md).
+[Baseline probes](evidence/episode-lanes/baseline.md)
+are discovery evidence from the unfixed parent; they do not supersede the
+separate implemented candidate readings above. Baseline error uses environment
+publication, not a fresh database/TensorBoard output reproduction. Exact lane values
+and zero post-terminal contributions guard against gaming a correct aggregate.
 
 No aggregate seven-surface completion percentage is recalculated: the old ledger predates
 canonical declaration discovery, variable unification, action-write witnesses and checked
@@ -35,8 +64,13 @@ static access. No new north-star authoring success rate, default-scenario conver
 browser/CUDA acceptance or Murk performance reading is asserted. No-defaults whitelist,
 frozen fixtures, unrelated dirty files and qualified raw evidence are preserved.
 
-The next discriminating measurement is exact episode-lane accounting, then task-specific
-held-out learning evidence from a declared scenario. See
+Episode-lane acceptance meets the input integrity target. The immediate product
+review is the existing retirement/instrument proposal; the next engineering
+measurement is effect-reset isolation, with a fresh current-source baseline still
+required. Task-specific held-out learning remains a later measurement once its
+prerequisites and protocol are qualified.
+[PDR-0163](decisions/0163-reconcile-episode-acceptance-and-next-product-task.md)
+records this distinction; no new success rate or convergence evidence is inferred. See
 [checkpoint assessment](assessments/2026-10-01-main-product-checkpoint.md).
 
 ## Historical readings and metric definitions

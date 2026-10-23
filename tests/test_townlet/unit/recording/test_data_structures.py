@@ -28,6 +28,8 @@ class TestRecordedStep:
             q_values=None,
             time_of_day=None,
             interaction_progress=None,
+            extrinsic_reward=0.85,
+            shaping_reward=0.0,
         )
 
         # Serialize to msgpack
@@ -63,6 +65,8 @@ class TestRecordedStep:
             q_values=(0.8, 0.7, 0.9, 0.6, 1.2, 0.5),
             time_of_day=None,
             interaction_progress=None,
+            extrinsic_reward=0.75,
+            shaping_reward=0.0,
         )
 
         # Serialize and deserialize
@@ -88,6 +92,8 @@ class TestRecordedStep:
             q_values=None,
             time_of_day=12,  # Noon
             interaction_progress=0.33,  # 1/3 through interaction
+            extrinsic_reward=0.4,
+            shaping_reward=0.0,
         )
 
         # Serialize and deserialize
@@ -114,6 +120,8 @@ class TestRecordedStep:
             q_values=None,
             time_of_day=None,
             interaction_progress=None,
+            extrinsic_reward=0.0,
+            shaping_reward=0.0,
         )
 
         # Serialize and deserialize
@@ -146,6 +154,8 @@ class TestEpisodeMetadata:
             affordance_layout={"Bed": (2, 3), "Hospital": (5, 1)},
             affordance_visits={"Bed": 15, "Hospital": 2},
             custom_action_uses={},
+            completion_reason="authored_terminal",
+            shaping_reward=0.0,
         )
 
         # Serialize to msgpack
@@ -181,6 +191,8 @@ class TestEpisodeMetadata:
             affordance_layout={"Bed": (2, 3)},
             affordance_visits={},  # No visits
             custom_action_uses={},  # No custom actions used
+            completion_reason="authored_terminal",
+            shaping_reward=0.0,
         )
 
         # Serialize and deserialize
@@ -212,6 +224,8 @@ class TestEpisodeEndMarker:
             affordance_layout={"Bed": (2, 3)},
             affordance_visits={"Bed": 5},
             custom_action_uses={},
+            completion_reason="authored_terminal",
+            shaping_reward=0.0,
         )
 
         marker = EpisodeEndMarker(metadata=metadata)
@@ -219,3 +233,59 @@ class TestEpisodeEndMarker:
         # Verify marker wraps metadata
         assert marker.metadata == metadata
         assert marker.metadata.episode_id == 100
+
+
+class TestRequiredArtifactContract:
+    """New fields are constructor requirements, not compatibility defaults."""
+
+    def test_metadata_reason_and_shaping_are_required(self):
+        from dataclasses import MISSING, fields
+
+        from townlet.recording.data_structures import EpisodeMetadata
+
+        declared = {field.name: field for field in fields(EpisodeMetadata)}
+        for name in ("completion_reason", "shaping_reward"):
+            assert name in declared, f"EpisodeMetadata requires {name}"
+            assert declared[name].default is MISSING
+            assert declared[name].default_factory is MISSING
+
+    def test_step_extrinsic_and_shaping_are_required(self):
+        from dataclasses import MISSING, fields
+
+        from townlet.recording.data_structures import RecordedStep
+
+        declared = {field.name: field for field in fields(RecordedStep)}
+        for name in ("extrinsic_reward", "shaping_reward"):
+            assert name in declared, f"RecordedStep requires {name}"
+            assert declared[name].default is MISSING
+            assert declared[name].default_factory is MISSING
+
+    def test_recorder_component_arguments_are_required(self):
+        from inspect import Parameter, signature
+
+        from townlet.recording.recorder import EpisodeRecorder
+
+        declared = signature(EpisodeRecorder.record_step).parameters
+        for name in ("extrinsic_reward", "shaping_reward"):
+            assert name in declared, f"record_step requires {name}"
+            assert declared[name].default is Parameter.empty
+
+    def test_recording_format_has_one_current_constant(self):
+        from townlet.recording import data_structures
+
+        assert getattr(data_structures, "RECORDING_FORMAT_VERSION", None) == 2
+
+    def test_current_dtos_roundtrip_flat_positions_and_canonical_rewards(self):
+        from tests.test_townlet.utils.builders import make_test_recording_payload
+        from townlet.recording.data_structures import deserialize_metadata, deserialize_step
+
+        payload = make_test_recording_payload(episode_id=7, completion_reason="authored_terminal")
+        metadata = deserialize_metadata(payload["metadata"])
+        step = deserialize_step(payload["steps"][0])
+        assert metadata.completion_reason == "authored_terminal"
+        assert metadata.shaping_reward == 0.2
+        assert metadata.affordance_layout == {"Bed": (2, 3)}
+        assert step.reward == 1.0
+        assert step.extrinsic_reward == 0.5
+        assert step.intrinsic_reward == 0.3
+        assert step.shaping_reward == 0.2

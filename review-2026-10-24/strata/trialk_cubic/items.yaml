@@ -1,0 +1,34 @@
+# Trial K (PRD-0001): the coat. F5 requires that the modulation of the incoming
+# cold be declared in ITEM-scoped state, not as a bare agent flag — so
+# `insulation` lives on the garment profile (vfs_profiles.yaml: garment_stats)
+# and the coat's own on_use publishes it to the wearer.
+#
+# Cheat #5 is explicitly avoided: the coat does NOT trickle warmth back. It
+# changes how much of the incoming cold effect lands, and nothing else.
+items:
+  version: '1.0'
+  item_types:
+    - id: coat
+      name: Coat
+      icon: "C"
+      tags: [garment]
+      exclusive: true
+      vfs_profile: garment_stats
+      duration: null
+      cooldown: null
+      description: "A garment carrying an item-scoped insulation value; wearing it reduces how much cold lands"
+      interactions:
+        on_pickup: []
+        on_use:
+          # Publish the ITEM's declared insulation onto the wearer, so the
+          # world-driven cold effect can read it. The VALUE is declared on the
+          # item; this is the propagation hop, recorded honestly in the trial.
+          - modify: target.bar.insulation_worn
+            value: self.vfs.insulation
+        # Boundary case 10 (unequip residual): taking the garment off must
+        # return the incoming cold to its unmitigated magnitude exactly.
+        on_drop:
+          - modify: target.bar.insulation_worn
+            value: "0.0"
+  max_items_per_agent: 1
+  max_items_in_world: 2

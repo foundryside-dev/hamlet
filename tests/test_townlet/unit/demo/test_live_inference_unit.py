@@ -221,3 +221,92 @@ def test_declared_icons_and_formats_reach_the_payload(tmp_path: Path, test_confi
     finally:
         if getattr(server, "_qvalue_log_file", None):
             server._qvalue_log_file.close()
+
+
+@pytest.mark.asyncio
+async def test_real_replay_prefix_and_components_project_through_actual_broadcast(live_server, tmp_path: Path) -> None:
+    from types import SimpleNamespace
+
+    import lz4.frame
+    import msgpack
+
+    from tests.test_townlet.utils.builders import make_test_recording_payload
+    from townlet.demo.database import DemoDatabase
+    from townlet.recording.replay import ReplayManager
+
+    class CollectingClient:
+        def __init__(self):
+            self.messages = []
+
+        async def send_json(self, message):
+            # Serialize the actual observer message to catch non-JSON projections.
+            import json
+
+            self.messages.append(json.loads(json.dumps(message, allow_nan=False)))
+
+    client = CollectingClient()
+    live_server.clients = {client}
+    live_server.env = SimpleNamespace(
+        substrate=Grid2DSubstrate(width=8, height=8, boundary="clamp", distance_metric="manhattan"),
+        bars_config=SimpleNamespace(meter_names=[f"meter_{index}" for index in range(8)]),
+    )
+    with DemoDatabase(tmp_path / "demo.db") as db:
+        for episode_id in (7, 8):
+            payload = make_test_recording_payload(episode_id=episode_id, completion_reason="authored_terminal")
+            if episode_id == 8:
+                for key in ("reward", "extrinsic_reward", "intrinsic_reward", "shaping_reward"):
+                    payload["steps"][0][key] *= 2
+                for key in ("total_reward", "extrinsic_reward", "intrinsic_reward", "shaping_reward"):
+                    payload["metadata"][key] *= 2
+            serialized = msgpack.packb(payload, use_bin_type=True)
+            compressed = lz4.frame.compress(serialized)
+            path = tmp_path / f"episode_{episode_id:06d}.msgpack.lz4"
+            path.write_bytes(compressed)
+            db.insert_recording(
+                episode_id=episode_id,
+                file_path=path.name,
+                metadata=SimpleNamespace(**payload["metadata"]),
+                reason="periodic",
+                file_size=len(serialized),
+                compressed_size=len(compressed),
+            )
+        replay = ReplayManager(db, tmp_path)
+        live_server.replay_manager = replay
+        await live_server._handle_load_replay(client, {"episode_id": 7})
+        loaded = client.messages[-2]
+        first = client.messages[-1]
+        assert loaded["type"] == "replay_loaded"
+        for key, expected in (("total_reward", 1.0), ("extrinsic_reward", 0.5), ("intrinsic_reward", 0.3), ("shaping_reward", 0.2)):
+            assert loaded["metadata"][key] == expected
+            assert first["replay_metadata"][key] == expected
+        assert loaded["metadata"]["completion_reason"] == "authored_terminal"
+        assert first["replay_metadata"]["completion_reason"] == "authored_terminal"
+        assert first["reward"] == 1.0
+        assert first["extrinsic_reward"] == 0.5
+        assert first["intrinsic_reward"] == 0.3
+        assert first["shaping_reward"] == 0.2
+        assert first["cumulative_reward"] == 1.0
+        replay.next_step()
+        await live_server._send_replay_step()
+        terminal = client.messages[-1]
+        assert terminal["reward"] == 0.0
+        assert terminal["cumulative_reward"] == 1.0
+        await live_server._send_replay_step()
+        assert client.messages[-1] == terminal
+        replay.seek(0)
+        await live_server._send_replay_step()
+        assert client.messages[-1] == first
+        replay.reset()
+        await live_server._send_replay_step()
+        assert client.messages[-1] == first
+        replay.next_step()
+        replay.next_step()
+        count = len(client.messages)
+        await live_server._send_replay_step()
+        assert len(client.messages) == count
+        await live_server._handle_load_replay(client, {"episode_id": 8})
+        assert client.messages[-1]["cumulative_reward"] == 2.0
+        replay.unload()
+        count = len(client.messages)
+        await live_server._send_replay_step()
+        assert len(client.messages) == count

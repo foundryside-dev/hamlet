@@ -5,11 +5,14 @@ Handles loading, decompressing, and streaming recorded episodes.
 """
 
 import logging
+import math
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import lz4.frame  # type: ignore[import-untyped]
 import msgpack  # type: ignore[import-untyped]
+
+from townlet.recording.data_structures import finite_recording_reward, validate_recording_episode
 
 if TYPE_CHECKING:
     from townlet.demo.database import DemoDatabase
@@ -68,11 +71,13 @@ class ReplayManager:
             decompressed = lz4.frame.decompress(compressed_data)
             episode_data = msgpack.unpackb(decompressed, raw=False)
 
-            # Store episode data
+            validate_recording_episode(episode_data, expected_episode_id=episode_id)
+
+            # Install only fully validated local candidates
             self.episode_id = episode_id
             self.metadata = episode_data["metadata"]
             self.steps = episode_data["steps"]
-            self.affordances = episode_data.get("affordances", {})
+            self.affordances = episode_data["affordances"]
             self.current_step_index = 0
             self.playing = False
 
@@ -100,6 +105,12 @@ class ReplayManager:
             return None
 
         return self.steps[self.current_step_index]
+
+    def get_current_cumulative_reward(self) -> float:
+        """Inclusive canonical prefix at the selected frame, independent of playback history."""
+        if self.get_current_step() is None:
+            raise ValueError("No selected replay frame")
+        return inclusive_recording_reward_prefix(self.steps, self.current_step_index)
 
     def get_metadata(self) -> dict | None:
         """Get episode metadata.
@@ -220,3 +231,9 @@ class ReplayManager:
             max_reward=max_reward,
             limit=limit,
         )
+
+
+def inclusive_recording_reward_prefix(steps: list[dict], index: int) -> float:
+    if type(index) is not int or not 0 <= index < len(steps):
+        raise ValueError("No selected replay frame")
+    return finite_recording_reward(math.fsum(finite_recording_reward(row["reward"]) for row in steps[: index + 1]))

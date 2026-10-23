@@ -1,0 +1,75 @@
+import json, shutil, sqlite3, sys, tempfile, time
+from pathlib import Path
+import torch, yaml, lz4.frame, msgpack
+from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
+sys.path.insert(0, '/home/john/hamlet')
+from townlet.demo.runner import DemoRunner
+from townlet.population.vectorized import VectorizedPopulation
+from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
+from townlet.recording.recorder import EpisodeRecorder
+from unittest.mock import patch
+
+root=Path('/home/john/hamlet')
+output=Path(tempfile.mkdtemp(prefix='hamlet-episode-runner-sinks-'))
+results=[]
+for case, episodes, budget in [('two-episodes',2,None),('budget',1,6)]:
+    run=output/case; run.mkdir()
+    pack=run/'pack'; shutil.copytree(root/'configs/default_curriculum',pack)
+    level='L0_0_minimal'; path=pack/'levels'/level/'training.yaml'
+    data=yaml.safe_load(path.read_text()); training=data['training']
+    training['population']['size']=2
+    training['training_loop']['max_steps_per_episode']=10
+    training['replay_buffer']['batch_size']=128
+    data['recording']={'enabled':True,'output_dir':'recordings','max_queue_size':100,'compression':'lz4','criteria':{'periodic':{'enabled':True,'interval':1}}}
+    path.write_text(yaml.safe_dump(data, sort_keys=False))
+    traces=[]; curriculum_calls=[]; terminal_meters=[]; logged_meters=[]
+    orig_reset=VectorizedPopulation.reset; orig_step=VectorizedPopulation.step_population
+    orig_update=VectorizedPopulation.update_curriculum_tracker
+    orig_finish=EpisodeRecorder.finish_episode
+    def reset(self):
+        result=orig_reset(self)
+        self.env.meters[:,self.env.meter_name_to_index['energy']]=torch.tensor([.015,.045],device=self.device)
+        self.current_obs=self.env._get_observations()
+        return result
+    def actions(self,q,state,masks):
+        return torch.full((2,),wait_id[0],dtype=torch.long,device=q.device)
+    wait_id=[]
+    def step(self,env):
+        if not wait_id: wait_id.append(env.action_space.get_action_by_name('WAIT').id)
+        active=~env.dones.clone(); result=orig_step(self,env)
+        newly=active & result.dones
+        for i in torch.where(newly)[0].tolist(): terminal_meters.append({'tick':env.global_tick,'lane':i,'meters':env.meters[i].detach().cpu().tolist()})
+        traces.append({'tick':env.global_tick,'active':active.tolist(),'dones':result.dones.tolist(),'survival':env.step_counts.tolist(),'meters':env.meters.detach().cpu().tolist(),'reward':result.rewards.tolist()})
+        return result
+    def update(self,rewards,dones):
+        curriculum_calls.append({'survival':rewards.tolist(),'dones':dones.tolist()})
+        return orig_update(self,rewards,dones)
+    def finish(self,metadata):
+        result=orig_finish(self,metadata)
+        # Observe actual writer persistence before runner cleanup; no writer replacement.
+        file=self.output_dir/f'episode_{metadata.episode_id:06d}.msgpack.lz4'
+        deadline=time.monotonic()+5
+        while not file.exists() and time.monotonic()<deadline: time.sleep(.01)
+        assert file.exists(), file
+        return result
+    with patch.object(VectorizedPopulation,'reset',reset),patch.object(VectorizedPopulation,'step_population',step),patch.object(VectorizedPopulation,'update_curriculum_tracker',update),patch.object(AdaptiveIntrinsicExploration,'select_actions',actions),patch.object(EpisodeRecorder,'finish_episode',finish):
+        runner=DemoRunner(config_dir=pack,db_path=run/'demo.db',checkpoint_dir=run/'checkpoints',max_episodes=episodes,level_name=level,max_environment_steps=budget)
+        old_log=runner.tb_logger.log_meters
+        def log_meters(*args,**kwargs):
+            logged_meters.append(kwargs.copy()); return old_log(*args,**kwargs)
+        runner.tb_logger.log_meters=log_meters
+        runner.run()
+    conn=sqlite3.connect(run/'demo.db'); conn.row_factory=sqlite3.Row
+    db=[dict(r) for r in conn.execute('SELECT * FROM episodes ORDER BY episode_id')]
+    recordings=[dict(r) for r in conn.execute('SELECT * FROM episode_recordings ORDER BY episode_id')]
+    states=dict(conn.execute('SELECT key,value FROM system_state'))
+    conn.close()
+    acc=EventAccumulator(str(run/'checkpoints'/'tensorboard'),size_guidance={'scalars':0}); acc.Reload()
+    tb={tag:[{'episode':e.step,'value':e.value} for e in acc.Scalars(tag)] for tag in acc.Tags()['scalars'] if tag.endswith('Survival_Time') or tag.endswith('Total_Reward') or '/Meters/' in tag}
+    persisted=[]
+    for p in sorted((run/'checkpoints'/'recordings').glob('*.msgpack.lz4')):
+        raw=msgpack.unpackb(lz4.frame.decompress(p.read_bytes()),raw=False,strict_map_key=False)
+        persisted.append({'path':str(p),'metadata':raw['metadata'],'steps':raw['steps']})
+    results.append({'case':case,'run':str(run),'realized_live_steps':runner.completed_live_agent_steps,'global_tick':runner.env.global_tick,'curriculum_calls':curriculum_calls,'terminal_meters':terminal_meters,'logged_meters':logged_meters,'trace':traces,'db':db,'db_recordings':recordings,'system_state':states,'tensorboard':tb,'persisted_recordings':persisted})
+result={'source':'ec463fda','output':str(output),'limits':'real compiler/environment/population/runner/DB/TB/writer; initial energy injection; WAIT policy; gradient updates suppressed; writer waited before cleanup to isolate queue draining','cases':results}
+(output/'result.json').write_text(json.dumps(result,indent=2)); print(output/'result.json')

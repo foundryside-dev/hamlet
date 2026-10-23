@@ -1,0 +1,16 @@
+version: '1.0'
+social_residue:
+- id: inc
+  kind: institutional_rule
+  phase: clamp_and_validate
+  reads:
+  - public_state
+  condition: null
+  writes:
+  - variable_id: public_state
+    expression: public_state + 1.0
+    composition: overwrite
+    condition: null
+    clamp: null
+    effect: null
+    scope: agent

@@ -360,6 +360,9 @@ class TestCurriculumSignalInterpretability:
                 if agent_state.dones[0]:
                     break
 
+            if not agent_state.dones[0]:
+                population.flush_episode(0, reason="cap")
+
             # Update curriculum with actual survival time
             step_counts = torch.tensor([float(survival_time)], device=cpu_device)
             curriculum_done = torch.ones(1, dtype=torch.bool, device=cpu_device)
@@ -379,6 +382,9 @@ class TestCurriculumSignalInterpretability:
                 survival_time += 1
                 if agent_state.dones[0]:
                     break
+
+            if not agent_state.dones[0]:
+                population.flush_episode(0, reason="cap")
 
             # Update curriculum with actual survival time
             step_counts = torch.tensor([float(survival_time)], device=cpu_device)

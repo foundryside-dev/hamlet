@@ -52,8 +52,12 @@ def export_episode_video(
     logger.info(f"Loading episode {episode_id}...")
     db = DemoDatabase(database_path)
     replay = ReplayManager(db, recordings_base_dir)
+    try:
+        loaded = replay.load_episode(episode_id)
+    finally:
+        db.close()
 
-    if not replay.load_episode(episode_id):
+    if not loaded:
         logger.error(f"Failed to load episode {episode_id}")
         return False
 
@@ -68,7 +72,7 @@ def export_episode_video(
 
     # Auto-detect grid size from affordance positions if not provided
     if grid_size is None:
-        affordance_positions = affordances.get("positions", affordances)
+        affordance_positions = affordances
         max_coord = 0
         for pos in affordance_positions.values():
             max_coord = max(max_coord, pos[0], pos[1])
@@ -217,13 +221,16 @@ def batch_export_videos(
 
     # Query database for recordings
     db = DemoDatabase(database_path)
-    recordings = db.list_recordings(
-        stage=stage,
-        reason=reason,
-        min_reward=min_reward,
-        max_reward=max_reward,
-        limit=limit,
-    )
+    try:
+        recordings = db.list_recordings(
+            stage=stage,
+            reason=reason,
+            min_reward=min_reward,
+            max_reward=max_reward,
+            limit=limit,
+        )
+    finally:
+        db.close()
 
     logger.info(f"Found {len(recordings)} episodes to export")
 

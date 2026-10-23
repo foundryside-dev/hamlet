@@ -1,0 +1,245 @@
+"""Disposable planning probe. Run from repo root with .venv/bin/python."""
+import argparse
+import ast
+import hashlib
+import importlib.util
+from importlib.machinery import SourceFileLoader
+import json
+from pathlib import Path
+import shutil
+import sqlite3
+import subprocess
+import sys
+import tempfile
+from unittest.mock import patch
+
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--proposal', type=Path, required=True)
+parser.add_argument('--source', type=Path, required=True)
+arguments = parser.parse_args()
+PROPOSAL = arguments.proposal.absolute()
+spec = importlib.util.spec_from_loader('preflight_proposal', SourceFileLoader('preflight_proposal', str(PROPOSAL)))
+assert spec and spec.loader
+proposal = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(proposal)
+
+# Trusted declarations originate from current source plus the plan's S1 fields.
+source_path = arguments.source.absolute()
+source = source_path.read_text()
+node = next(node for node in ast.walk(ast.parse(source)) if isinstance(node, ast.FunctionDef) and node.name == '_create_schema')
+OLD_DDL = next(call.args[0].value for call in ast.walk(node) if isinstance(call, ast.Call) and isinstance(call.func, ast.Attribute) and call.func.attr == 'executescript')
+CURRENT_DDL = OLD_DDL.replace(
+    'survival_time INTEGER NOT NULL,',
+    'survival_time INTEGER NOT NULL,\n batch_episode_steps INTEGER NOT NULL,\n live_agent_transitions INTEGER NOT NULL,\n completion_reason TEXT NOT NULL,',
+).replace('recording_reason TEXT NOT NULL,', 'recording_reason TEXT NOT NULL,\n completion_reason TEXT NOT NULL,').replace('extrinsic_reward REAL NOT NULL,', 'extrinsic_reward REAL NOT NULL,\n shaping_reward REAL NOT NULL,')
+reference = sqlite3.connect(':memory:')
+reference.executescript(CURRENT_DDL)
+EXPECTED = {
+    row[0]: tuple(reference.execute(f'PRAGMA table_xinfo("{row[0]}")'))
+    for row in reference.execute("SELECT name FROM sqlite_schema WHERE type='table' AND substr(name,1,7) != 'sqlite_'").fetchall()
+}
+reference.close()
+assert set(EXPECTED) == {'episodes', 'affordance_visits', 'position_heatmap', 'system_state', 'episode_recordings'}
+
+
+def create_closed(path, ddl, version, mode):
+    connection = sqlite3.connect(path)
+    connection.execute(f'PRAGMA journal_mode={mode}')
+    connection.executescript(ddl)
+    connection.execute(f'PRAGMA user_version={version}')
+    if ddl == OLD_DDL:
+        connection.execute("INSERT INTO episodes VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                           (1, 123.0, 2, 0.0, 0.0, 0.0, 1.0, 1, 0.1, "old-observation"))
+    if ddl == CURRENT_DDL:
+        connection.execute("INSERT INTO episodes VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                           (1, 123.0, 2, 5, 7, "authored_terminal", 0.0, 0.0, 0.0, 0.0, 1.0, 1, 0.1, "current-observation"))
+    connection.commit()
+    connection.close()
+
+
+def make_crashed_family(path, ddl, malformed):
+    # Committed WAL is retained by abrupt process exit; no live owner remains.
+    program = '''import os, sqlite3, sys
+c = sqlite3.connect(sys.argv[1])
+c.execute("PRAGMA journal_mode=WAL")
+c.executescript(sys.argv[2])
+c.execute("PRAGMA user_version=1")
+c.commit()
+c.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+if sys.argv[3] == "malformed":
+    c.execute("ALTER TABLE episodes DROP COLUMN completion_reason")
+else:
+    c.execute("INSERT INTO system_state VALUES (?, ?)", ("committed_wal_witness", "present"))
+c.commit()
+os._exit(0)
+'''
+    subprocess.run([sys.executable, '-c', program, str(path), ddl, 'malformed' if malformed else 'valid'], check=True)
+    assert Path(str(path) + '-wal').stat().st_size > 32
+
+
+def byte_snapshot(path):
+    return {
+        suffix or 'main': None if not Path(str(path) + suffix).exists() else {
+            'size': Path(str(path) + suffix).stat().st_size,
+            'sha256': hashlib.sha256(Path(str(path) + suffix).read_bytes()).hexdigest(),
+        }
+        for suffix in proposal.FAMILY_SUFFIXES
+    }
+
+
+results = []
+
+def run_case(label, path, expected, *, custody=True, mutate=None):
+    before = byte_snapshot(path)
+    observed_writer_state = None
+    original_read = proposal._read_regular
+    counts = 0
+    def controlled_read(member):
+        nonlocal counts, observed_writer_state
+        result = original_read(member)
+        if member == path:
+            counts += 1
+            if mutate is not None and counts == 2:
+                mutate(path)
+                observed_writer_state = byte_snapshot(path)
+        return result
+    error = None
+    original_connect = proposal.sqlite3.connect
+    sqlite_targets = []
+    def private_only_connect(target, **kwargs):
+        sqlite_targets.append(target)
+        assert target.startswith('file:///tmp/demo-schema-preflight-')
+        assert str(path) not in target
+        return original_connect(target, **kwargs)
+    with patch.object(proposal.sqlite3, 'connect', side_effect=private_only_connect), patch.object(proposal, '_read_regular', side_effect=controlled_read):
+        try:
+            proposal.inspect_existing_demo_schema(path, EXPECTED, exclusive_custody=custody)
+            decision = 'accepted'
+        except ValueError as exc:
+            decision = 'refused'
+            error = str(exc)
+    after = byte_snapshot(path)
+    assert decision == expected, (label, decision, error)
+    if mutate is None:
+        assert before == after, (label, 'original family mutated')
+    else:
+        assert before != after
+        assert after == observed_writer_state, 'preflight altered injected writer state'
+        assert error == 'Demo artifact family changed during preflight'
+    result = {'case': label, 'decision': decision, 'reason': error, 'before': before, 'after': after,
+              'sqlite_targets': sqlite_targets, 'family_unchanged': before == after,
+              'only_injected_writer_changed_family': observed_writer_state == after if mutate else None}
+    results.append(result)
+    print(json.dumps(result, sort_keys=True))
+
+
+with tempfile.TemporaryDirectory(prefix='episode-preflight-probes-') as directory:
+    root = Path(directory)
+    old = root / 'old_closed.db'
+    create_closed(old, OLD_DDL, 0, 'WAL')
+    assert byte_snapshot(old)['-wal'] is None and byte_snapshot(old)['-shm'] is None
+    run_case('old_closed_WAL_no_companions', old, 'refused')
+
+    malformed = root / 'malformed_current_closed.db'
+    create_closed(malformed, 'CREATE TABLE episodes (episode_id INTEGER PRIMARY KEY)', 1, 'WAL')
+    run_case('malformed_current_stamp_closed_WAL_no_companions', malformed, 'refused')
+
+    current = root / 'current_closed.db'
+    create_closed(current, CURRENT_DDL, 1, 'WAL')
+    run_case('valid_current_closed_WAL_no_companions', current, 'accepted')
+
+    plain = root / 'current_delete.db'
+    create_closed(plain, CURRENT_DDL, 1, 'DELETE')
+    run_case('valid_current_closed_DELETE', plain, 'accepted')
+
+    committed = root / 'committed_wal.db'
+    make_crashed_family(committed, CURRENT_DDL, False)
+    run_case('valid_current_committed_WAL_explicitly_unsupported', committed, 'refused')
+    before_witness = byte_snapshot(committed)
+    with tempfile.TemporaryDirectory(prefix='wal-witness-private-') as witness_directory:
+        main_only = Path(witness_directory) / 'main_only.db'
+        family_copy = Path(witness_directory) / 'complete.db'
+        shutil.copyfile(committed, main_only)
+        shutil.copyfile(committed, family_copy)
+        shutil.copyfile(Path(str(committed) + '-wal'), Path(str(family_copy) + '-wal'))
+        def witness(path):
+            connection = sqlite3.connect(path.as_uri() + '?mode=ro', uri=True)
+            try:
+                return connection.execute('SELECT value FROM system_state WHERE key=?', ('committed_wal_witness',)).fetchall()
+            finally:
+                connection.close()
+        main_rows = witness(main_only)
+        full_rows = witness(family_copy)
+        assert main_rows == [] and full_rows == [('present',)]
+        print(json.dumps({'wal_witness': {'private_main_only_rows': main_rows, 'private_complete_family_rows': full_rows}}))
+    assert byte_snapshot(committed) == before_witness
+
+    malformed_wal = root / 'malformed_current_pending.db'
+    make_crashed_family(malformed_wal, CURRENT_DDL, True)
+    run_case('malformed_current_stamp_with_committed_WAL', malformed_wal, 'refused')
+
+    pending = root / 'pending.db'
+    shutil.copyfile(current, pending)
+    Path(str(pending) + '-journal').write_bytes(b'pending transaction or malformed journal')
+    run_case('pending_journal', pending, 'refused')
+
+    empty_wal = root / 'empty_wal.db'
+    shutil.copyfile(current, empty_wal)
+    Path(str(empty_wal) + '-wal').touch()
+    run_case('zero_byte_WAL_companion', empty_wal, 'refused')
+
+    truncated = root / 'truncated.db'
+    truncated.write_bytes(current.read_bytes()[:100])
+    run_case('truncated_current_header', truncated, 'refused')
+
+    corrupt = root / 'corrupt.db'
+    data = bytearray(current.read_bytes())
+    data[100] = 0
+    corrupt.write_bytes(data)
+    run_case('corrupt_schema_btree_current_stamp', corrupt, 'refused')
+
+    for label, ddl in (
+        ('wrong_declared_type', CURRENT_DDL.replace('timestamp REAL NOT NULL', 'timestamp INTEGER NOT NULL', 1)),
+        ('wrong_not_null', CURRENT_DDL.replace('timestamp REAL NOT NULL', 'timestamp REAL', 1)),
+        ('wrong_primary_key', CURRENT_DDL.replace('episode_id INTEGER PRIMARY KEY', 'episode_id INTEGER', 1)),
+        ('extra_hidden_generated_column', CURRENT_DDL.replace('observation_schema_hash TEXT NOT NULL', 'observation_schema_hash TEXT NOT NULL, extra TEXT GENERATED ALWAYS AS (observation_schema_hash) VIRTUAL', 1)),
+    ):
+        fixture = root / (label + '.db')
+        create_closed(fixture, ddl, 1, 'WAL')
+        run_case(label, fixture, 'refused')
+
+    unsupported = root / 'unsupported.db'
+    create_closed(unsupported, CURRENT_DDL, 99, 'WAL')
+    run_case('unsupported_stamp', unsupported, 'refused')
+    nonempty = root / 'nonempty.db'
+    nonempty.write_bytes(b'not a database')
+    run_case('nonempty_not_sqlite', nonempty, 'refused')
+    run_case('no_custody_even_for_valid_current', current, 'refused', custody=False)
+    run_case('absent_new_path', root / 'absent.db', 'accepted')
+    empty = root / 'empty.db'
+    empty.touch()
+    run_case('zero_byte_new_path', empty, 'accepted')
+    orphan = root / 'orphan.db'
+    Path(str(orphan) + '-wal').write_bytes(b'orphan')
+    run_case('orphan_companion_without_main', orphan, 'refused')
+
+    changed = root / 'changed.db'
+    shutil.copyfile(current, changed)
+    def external_write(path):
+        data = bytearray(path.read_bytes())
+        data[-1] ^= 1
+        path.write_bytes(data)
+    run_case('source_changed_after_private_copy_read', changed, 'refused', mutate=external_write)
+
+    appeared = root / 'appeared.db'
+    shutil.copyfile(current, appeared)
+    def external_companion(path):
+        Path(str(path) + '-wal').write_bytes(b'new writer WAL')
+    run_case('companion_appeared_during_validation', appeared, 'refused', mutate=external_companion)
+
+print(json.dumps({'summary': {'python': sys.version.split()[0], 'sqlite': sqlite3.sqlite_version,
+                            'proposal_sha256': hashlib.sha256(PROPOSAL.read_bytes()).hexdigest(),
+                            'probe_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+                            'source_sha256': hashlib.sha256(source.encode()).hexdigest(),
+                            'cases_passed': len(results), 'unchanged_families': sum(r['family_unchanged'] for r in results),
+                            'writer_change_controls': sum(r['only_injected_writer_changed_family'] is True for r in results)}}))

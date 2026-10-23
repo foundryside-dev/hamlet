@@ -96,6 +96,8 @@ target-version = ['py313']
 [tool.ruff]
 line-length = 140
 target-version = "py313"
+# Review evidence: reproduction scripts frozen as they ran, not maintained code.
+extend-exclude = ["review-2026-10-24"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP"]

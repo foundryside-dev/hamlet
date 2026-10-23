@@ -1,0 +1,49 @@
+variables:
+  version: '1.0'
+  evaluation_mode: mark_and_sweep
+  debug_logging: false
+  extents: {}
+  item_profiles:
+  - default_item
+  declarations:
+  - id: day_count
+    readable_by: [engine, agent]
+    writable_by: [engine]
+    scope: global
+    type: scalar
+    lifetime: persistent
+    semantic_type: custom
+    exposed_to: []
+    initial_value: 0
+  - id: position
+    readable_by: [engine, agent]
+    writable_by: [engine]
+    scope: agent
+    type: vec2f
+    lifetime: tick
+    semantic_type: custom
+    exposed_to: []
+    initial_value:
+    - 0.0
+    - 0.0
+    description: Normalized agent position in [0, 1]^2 range
+  - id: digesting
+    readable_by: [engine, agent]
+    writable_by: [engine]
+    scope: agent
+    type: bool
+    lifetime: tick
+    semantic_type: custom
+    exposed_to: []
+    initial_value: false
+    description: Agent is currently digesting food (set by effects)
+  - id: is_wet
+    readable_by: [engine, agent]
+    writable_by: [engine]
+    scope: agent
+    type: bool
+    lifetime: tick
+    semantic_type: custom
+    exposed_to: []
+    initial_value: false
+    description: Agent is wet (set by effects)

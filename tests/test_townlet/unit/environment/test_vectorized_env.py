@@ -748,9 +748,9 @@ class TestVectorizedHamletEnvGoldenTick:
 
         real_rewards = env._reward_calculator._calculate_shaped_rewards
 
-        def spy_rewards():
+        def spy_rewards(*, active_on_entry):
             invocation_log.append("reward_calculator._calculate_shaped_rewards")
-            return real_rewards()
+            return real_rewards(active_on_entry=active_on_entry)
 
         monkeypatch.setattr(env._reward_calculator, "_calculate_shaped_rewards", spy_rewards)
 
@@ -1054,7 +1054,7 @@ class TestCalculateShapedRewards:
         env = cpu_env_factory(num_agents=2)
         env.reset()
 
-        rewards = env._calculate_shaped_rewards()
+        rewards = env._calculate_shaped_rewards(active_on_entry=~env.dones)
 
         assert isinstance(rewards, torch.Tensor)
         assert rewards.shape == (2,)
@@ -1065,14 +1065,14 @@ class TestCalculateShapedRewards:
         env.reset()
 
         # Get initial reward
-        initial_reward = env._calculate_shaped_rewards()
+        initial_reward = env._calculate_shaped_rewards(active_on_entry=~env.dones)
 
         # Modify meters (reduce energy)
         energy_idx = next(m.index for m in env.level.meter_metadata.meters if m.name == "energy")
         env.meters[0, energy_idx] = 0.1
 
         # Reward should change
-        new_reward = env._calculate_shaped_rewards()
+        new_reward = env._calculate_shaped_rewards(active_on_entry=~env.dones)
         # Rewards are based on meter states, so they should differ
         assert initial_reward.item() != new_reward.item()
 
@@ -1081,7 +1081,7 @@ class TestCalculateShapedRewards:
         env = cpu_env_factory(num_agents=3)
         env.reset()
 
-        rewards = env._calculate_shaped_rewards()
+        rewards = env._calculate_shaped_rewards(active_on_entry=~env.dones)
 
         assert torch.all(torch.isfinite(rewards)).item()
 

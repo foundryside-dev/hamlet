@@ -1,4 +1,4 @@
-# Roadmap — Townlet · Updated 2026-10-01
+# Roadmap — Townlet · Updated 2026-10-02
 
 This records product intent, not a delivery schedule. Workstream numbers are an inventory,
 not an execution order. One bounded recovery unit is selected at a time; forecasts and
@@ -26,25 +26,53 @@ Delivered within the bet:
   policy, attempted-write authorization and policy-bearing persistence/identity (PDR-0153).
   Permission authoring is no longer absent. Custom action writes are declared and exercised
   by the committed ADVANCE witness. No old profile/overlay authoring reader is preserved.
+- Refusal/identity review repairs are delivered through PR #44 at `95b2f828` with
+  exact-main hosted gates successful (PDR-0156/0157). This improves the supported
+  runtime contract; it adds no fresh convergence or frozen-trajectory claim.
 
 **Exit review required.** PDR-0058's trigger fired as DIV-013/014/015 were added without an
 entry becoming terminal across successive checkpoints. Keep the oracle and the current
 non-exit status; adjudicate the exit/instrument framing before treating the next unit as
 progress toward a settled retirement criterion. Qualification of a registered divergence
 is not a terminal disposition. Do not widen allowances or change frozen inputs to conceal it.
+The concrete exit/instrument review is tracked in `hamlet-4554a428b2`; preserve
+the current exit while preparing an evidence-backed proposal. No strategic exit
+change is made by the episode package.
 
-**Recommended next unit: truthful episode lanes.** Reproduce current main starting with
-`hamlet-d6fc84d147`, then scope a lifecycle/accounting PRD. Acceptance should share active-on-entry
-and newly-terminal events across runtime, replay, exploration and output sinks: one terminal
-transition/finalization, frozen post-death outcomes, exact live-transition versus vector-tick
-units. This is a recommendation under the compile → render → converge objective; no new
-implementation, deadline or training campaign is authorized by the checkpoint.
+**Truthful episode lanes accepted locally.** [PRD-0005](prds/0005-truthful-episode-lanes.md)
+meets zero accounting error, exact survival `[2,5]`, seven live transitions/five
+vector ticks and once-only eligible replay/RND/completion. Independent Astra
+accepts all eight criteria at `7dc1d02e`; implementation/documentation land locally
+on `fix/episode-lane-accounting@225aad3f`. Execution `hamlet-78ad37dd49` and
+engine bug `hamlet-d6fc84d147` are closed. [PDR-0162](decisions/0162-accept-bounded-truthful-episode-lanes.md)
+and [verification](evidence/episode-lanes/verification.md) retain actual learned
+samples, targets and ordinary persisted consumer evidence. This is a completed
+bounded integrity bet; main integration, hosted delivery and convergence remain
+separate states.
+
+**Next product task: the existing exit/instrument review, `hamlet-4554a428b2`.**
+The register now has sixteen entries: five retired and eleven nonterminal.
+DIV-016 is qualified locally but explicitly remains nonterminal. The original
+inherited commands retain exit1; their seven-coordinate correction is qualified
+by a separate exact comparator. The proposal must explain what the preserved
+oracle and any successor instrument can falsify, and support every proposed
+terminal disposition with evidence. Keep the current exit, pinned oracle, frozen
+inputs and allowances intact while preparing it. Any proposed strategy/exit
+change requires the owner's recorded decision.
+[PDR-0163](decisions/0163-reconcile-episode-acceptance-and-next-product-task.md)
+records this priority and the next engineering package. This is an evidence
+review handoff, with no new implementation or learning campaign dispatched.
 
 ## Next — shaped, separately scoped
 
-- **Reset isolation:** active effects must not survive a new episode (`hamlet-d76684f549`).
-  Use actual mutation/reset witnesses and explicit callback/persistence semantics. Keep this
-  out of the episode-lane package unless an evidenced dependency requires it.
+- **Next engineering package — reset isolation:** prior-episode effects must not
+  survive reset (`hamlet-d76684f549`). Its historical reproduction needs a fresh
+  supported authored-config/compiler/runtime witness. Require no carried-over
+  instances, elapsed timers or later mutations; qualify repeated reset against
+  fresh construction under controlled identical inputs, while retaining declared
+  new-episode initialization and within-episode behavior. Route the scoped PRD
+  to implementation planning before build. Item-cache and RNG isolation remain
+  separate work; this is not a complete world-reset qualification.
 - **Item fidelity:** initial appearances must survive cold/cache artifacts; carried items,
   type identity, locality, capacities and per-world mutable state need coherent contracts.
   Held-item issue `hamlet-4b931faaf4` remains open. Item-bearing scenarios must qualify these

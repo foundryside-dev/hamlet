@@ -65,7 +65,7 @@ def test_reward_calculator_routes_reward_phase_through_vtc_program() -> None:
 
     env = Env()
 
-    rewards = RewardCalculator(env)._calculate_shaped_rewards()  # type: ignore[arg-type]
+    rewards = RewardCalculator(env)._calculate_shaped_rewards(active_on_entry=~env.dones)  # type: ignore[arg-type]
 
     assert torch.equal(rewards, torch.tensor([2.0, 0.0], device=device))
     assert env.vtc_reward_program.kwargs is not None

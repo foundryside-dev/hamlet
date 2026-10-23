@@ -32,7 +32,6 @@ import difflib
 import json
 import re
 import shutil
-import sqlite3
 import subprocess
 import sys
 from pathlib import Path
@@ -44,6 +43,7 @@ MAX_STEPS_PER_EPISODE = 1000  # shipped L2 training_loop.max_steps_per_episode
 
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
+from townlet.training.episode_accounting import read_episode_accounting  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Pure functions (unit-tested in tests/test_townlet/unit/scripts/)
@@ -232,43 +232,20 @@ def cmd_eval(args: argparse.Namespace) -> None:
 
 def cmd_curves(args: argparse.Namespace) -> None:
     run_dir = Path(args.run_dir)
-    conn = sqlite3.connect(run_dir / "demo.db")
-    try:
-        rows = conn.execute("SELECT episode_id, survival_time, epsilon, intrinsic_weight FROM episodes ORDER BY episode_id").fetchall()
-    finally:
-        conn.close()
-
-    # Per-agent env-step accounting from TensorBoard events (the DB records slot 0
-    # only). Tag layout: <agent_id>/Episode/Survival_Time per log_episode.
-    per_episode_all_agents: dict[int, int] = {}
-    try:
-        from tensorboard.backend.event_processing.event_accumulator import (  # type: ignore[import-untyped]
-            EventAccumulator,
-        )
-
-        # DemoRunner's layout rule: <run>/checkpoints under a runs/-rooted tree puts
-        # TensorBoard at the checkpoint dir's SIBLING, <run>/tensorboard.
-        tb_dir = run_dir / "tensorboard"
-        if not tb_dir.exists():
-            tb_dir = run_dir / "checkpoints" / "tensorboard"
-        acc = EventAccumulator(str(tb_dir), size_guidance={"scalars": 0})
-        acc.Reload()
-        survival_tags = [t for t in acc.Tags().get("scalars", []) if t.endswith("Survival_Time")]
-        for tag in survival_tags:
-            for ev in acc.Scalars(tag):
-                per_episode_all_agents[ev.step] = per_episode_all_agents.get(ev.step, 0) + int(ev.value)
-    except Exception as exc:  # noqa: BLE001 — accounting degrades, curve stays
-        print(f"[l2_baseline] WARNING: env-step accounting unavailable ({exc}); total_env_steps column will be empty")
-
+    rows = read_episode_accounting(run_dir)
     out = run_dir / "curves.csv"
     cumulative = 0
     with out.open("w") as f:
-        f.write("episode,survival_steps_agent0,epsilon,intrinsic_weight,env_steps_all_agents,total_env_steps_cumulative\n")
-        for episode_id, survival, epsilon, iw in rows:
-            all_agents = per_episode_all_agents.get(episode_id, 0)
-            cumulative += all_agents
-            f.write(f"{episode_id},{survival},{epsilon:.6f},{iw:.6f},{all_agents},{cumulative if all_agents else ''}\n")
-    print(f"[l2_baseline] curves: {len(rows)} episodes, {cumulative} total per-agent env steps -> {out}")
+        f.write(
+            "episode,survival_steps_agent0,batch_episode_steps,live_agent_transitions,total_live_agent_transitions_cumulative,epsilon,intrinsic_weight\n"
+        )
+        for row in rows:
+            cumulative += row.live_agent_transitions
+            f.write(
+                f"{row.episode_id},{row.survival_steps_agent0},{row.batch_episode_steps},{row.live_agent_transitions},"
+                f"{cumulative},{row.epsilon:.6f},{row.intrinsic_weight:.6f}\n"
+            )
+    print(f"[l2_baseline] curves: {len(rows)} episodes, {cumulative} live-agent transitions -> {out}")
 
 
 # ---------------------------------------------------------------------------

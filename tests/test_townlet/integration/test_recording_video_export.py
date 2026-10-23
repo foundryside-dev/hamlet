@@ -183,7 +183,7 @@ class TestVideoExport:
     def test_export_episode_to_mp4(self):
         """Should export episode to MP4 file."""
         import time
-        from dataclasses import asdict
+        from dataclasses import asdict, replace
 
         import lz4.frame
         import msgpack
@@ -214,6 +214,8 @@ class TestVideoExport:
                 affordance_layout={"Bed": (2, 3)},
                 affordance_visits={"Bed": 2},
                 custom_action_uses={},
+                completion_reason="authored_terminal",
+                shaping_reward=0.0,
             )
 
             steps = [
@@ -226,13 +228,23 @@ class TestVideoExport:
                     intrinsic_reward=0.0,
                     done=(i == 9),
                     q_values=(0.1, 0.2, 0.3, 0.4, 0.5, 0.6),  # 6 actions: UP, DOWN, LEFT, RIGHT, INTERACT, WAIT
+                    extrinsic_reward=1.0,
+                    shaping_reward=0.0,
                 )
                 for i in range(10)
             ]
 
             # Serialize and write
+            metadata = replace(
+                metadata,
+                survival_steps=len(steps),
+                total_reward=sum(step.reward for step in steps),
+                extrinsic_reward=sum(step.extrinsic_reward for step in steps),
+                intrinsic_reward=sum(step.intrinsic_reward for step in steps),
+                shaping_reward=sum(step.shaping_reward for step in steps),
+            )
             episode_data = {
-                "version": 1,
+                "version": 2,
                 "metadata": asdict(metadata),
                 "steps": [asdict(step) for step in steps],
                 "affordances": metadata.affordance_layout,
@@ -281,3 +293,182 @@ class TestBatchExport:
         from townlet.recording import video_export
 
         assert hasattr(video_export, "batch_export_videos")
+
+
+def _make_export_database(tmp_path: Path):
+    from types import SimpleNamespace
+
+    import lz4.frame
+    import msgpack
+
+    from tests.test_townlet.utils.builders import make_test_recording_payload
+    from townlet.demo.database import DemoDatabase
+
+    path = tmp_path / "demo.db"
+    with DemoDatabase(path) as db:
+        for episode_id in (1, 2):
+            payload = make_test_recording_payload(episode_id=episode_id, completion_reason="authored_terminal")
+            serialized = msgpack.packb(payload, use_bin_type=True)
+            compressed = lz4.frame.compress(serialized)
+            recording_path = tmp_path / f"episode_{episode_id:06d}.msgpack.lz4"
+            recording_path.write_bytes(compressed)
+            db.insert_recording(
+                episode_id=episode_id,
+                file_path=recording_path.name,
+                metadata=SimpleNamespace(**payload["metadata"]),
+                reason="periodic",
+                file_size=len(serialized),
+                compressed_size=len(compressed),
+            )
+    return path
+
+
+def test_real_two_recording_batch_closes_query_and_each_loaded_reader_before_next_open(tmp_path: Path, monkeypatch) -> None:
+    from townlet.demo.database import DemoDatabase
+    from townlet.recording import video_export
+    from townlet.recording.replay import ReplayManager
+
+    database_path = _make_export_database(tmp_path)
+    owners = []
+    loaded = []
+    rendered = []
+    original_load = ReplayManager.load_episode
+
+    def observe_database(path):
+        assert all(db._closed for db in owners), "Query and prior export owners must close before another original open"
+        assert not any(Path(str(path) + suffix).exists() for suffix in ("-wal", "-shm", "-journal"))
+        db = DemoDatabase(path)
+        owners.append(db)
+        return db
+
+    def observe_load(self, episode_id):
+        result = original_load(self, episode_id)
+        assert result, "The real current-format reader must load both recordings"
+        loaded.append(episode_id)
+        return result
+
+    class FastRenderer:
+        def __init__(self, **kwargs):
+            assert all(db._closed for db in owners), "Loaded in-memory frames must release DB custody before rendering"
+
+        def render_frame(self, step, metadata, affordances):
+            rendered.append((step, metadata, affordances))
+            return np.zeros((2, 2, 3), dtype=np.uint8)
+
+    def fast_encode(frames_dir, output_path, **kwargs):
+        output_path.write_bytes(b"test encoded video")
+        return True
+
+    monkeypatch.setattr(video_export, "DemoDatabase", observe_database)
+    monkeypatch.setattr(ReplayManager, "load_episode", observe_load)
+    monkeypatch.setattr(video_export, "EpisodeVideoRenderer", FastRenderer)
+    monkeypatch.setattr(video_export, "_encode_video_ffmpeg", fast_encode)
+    try:
+        assert video_export.batch_export_videos(database_path, tmp_path, tmp_path / "videos", reason="periodic") == 2
+        assert loaded == [2, 1]
+        assert len(owners) == 3
+        assert all(db._closed for db in owners)
+        assert len(rendered) == 4
+        for step, metadata, affordances in rendered:
+            assert metadata["completion_reason"] == "authored_terminal"
+            assert metadata["total_reward"] == 1.0
+            assert metadata["shaping_reward"] == 0.2
+            assert affordances == {"Bed": [2, 3]}
+            assert step["reward"] == (1.0 if step["step"] == 0 else 0.0)
+            assert step["extrinsic_reward"] == (0.5 if step["step"] == 0 else 0.0)
+            assert step["intrinsic_reward"] == (0.3 if step["step"] == 0 else 0.0)
+            assert step["shaping_reward"] == (0.2 if step["step"] == 0 else 0.0)
+        assert not any(Path(str(database_path) + suffix).exists() for suffix in ("-wal", "-shm", "-journal"))
+    finally:
+        for db in owners:
+            db.close()
+
+
+@pytest.mark.parametrize("failure", ["missing_file", "invalid_payload", "load_exception"])
+def test_real_export_releases_reader_custody_on_load_failure(tmp_path: Path, monkeypatch, failure: str) -> None:
+    from townlet.demo.database import DemoDatabase
+    from townlet.recording import video_export
+    from townlet.recording.replay import ReplayManager
+
+    database_path = _make_export_database(tmp_path)
+    owners = []
+    recording_path = tmp_path / "episode_000001.msgpack.lz4"
+    if failure == "missing_file":
+        recording_path.unlink()
+    elif failure == "invalid_payload":
+        recording_path.write_bytes(b"invalid LZ4")
+    else:
+
+        def raise_from_load(self, episode_id):
+            assert self.database.get_recording(episode_id) is not None
+            raise RuntimeError("injected reader exception")
+
+        monkeypatch.setattr(ReplayManager, "load_episode", raise_from_load)
+
+    def observe_database(path):
+        db = DemoDatabase(path)
+        owners.append(db)
+        return db
+
+    monkeypatch.setattr(video_export, "DemoDatabase", observe_database)
+    try:
+        if failure == "load_exception":
+            with pytest.raises(RuntimeError, match="injected reader"):
+                video_export.export_episode_video(1, database_path, tmp_path, tmp_path / "video.mp4")
+        else:
+            assert video_export.export_episode_video(1, database_path, tmp_path, tmp_path / "video.mp4") is False
+        assert owners and all(db._closed for db in owners), "Every unsuccessful reader must close its real DB in finally"
+        assert not any(Path(str(database_path) + suffix).exists() for suffix in ("-wal", "-shm", "-journal"))
+        with DemoDatabase(database_path) as reopened:
+            assert reopened.get_recording(2) is not None
+    finally:
+        for db in owners:
+            db.close()
+
+
+def test_real_batch_query_exception_closes_query_owner(tmp_path: Path, monkeypatch) -> None:
+    from townlet.demo.database import DemoDatabase
+    from townlet.recording import video_export
+
+    database_path = _make_export_database(tmp_path)
+    owners = []
+
+    def observe_database(path):
+        db = DemoDatabase(path)
+        owners.append(db)
+        return db
+
+    def raise_from_query(self, **kwargs):
+        assert self.get_recording(1) is not None
+        raise RuntimeError("injected query exception")
+
+    monkeypatch.setattr(video_export, "DemoDatabase", observe_database)
+    monkeypatch.setattr(DemoDatabase, "list_recordings", raise_from_query)
+    try:
+        with pytest.raises(RuntimeError, match="injected query"):
+            video_export.batch_export_videos(database_path, tmp_path, tmp_path / "videos")
+        assert owners and all(db._closed for db in owners)
+        assert not any(Path(str(database_path) + suffix).exists() for suffix in ("-wal", "-shm", "-journal"))
+    finally:
+        for db in owners:
+            db.close()
+
+
+def test_actual_renderer_labels_canonical_frame_total_and_episode_total() -> None:
+    from matplotlib.figure import Figure
+
+    from tests.test_townlet.utils.builders import make_test_recording_payload
+    from townlet.recording.video_renderer import EpisodeVideoRenderer
+
+    payload = make_test_recording_payload(episode_id=7, completion_reason="authored_terminal")
+    renderer = EpisodeVideoRenderer(grid_size=8, dpi=20, style="dark")
+    for row in payload["steps"]:
+        figure = Figure()
+        axis = figure.add_subplot(111)
+        renderer._render_info(axis, row, payload["metadata"])
+        labels = {text.get_text() for text in axis.texts}
+        assert f"Reward: {row['reward']:.2f}" in labels
+        assert "Total: 1.0" in labels
+        if row["step"] == 0:
+            assert "Reward: 1.00" in labels
+            assert "Reward: 0.50" not in labels  # Extrinsic is only one contributor.

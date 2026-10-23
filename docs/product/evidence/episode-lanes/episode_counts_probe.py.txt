@@ -1,0 +1,70 @@
+"""Read-only runtime discovery at 95b2f828, not a product regression test."""
+import hashlib
+import json
+from pathlib import Path
+import shutil
+import subprocess
+import tempfile
+
+import torch
+import yaml
+from townlet.universe.compiler import UniverseCompiler
+
+root = Path('/home/john/hamlet')
+source_head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip()
+assert source_head == '95b2f828dae4f52d6e30e79600fc3491364a1eb5'
+level = 'L0_0_minimal'
+
+
+def probe(lifespan):
+    torch.manual_seed(42)
+    with tempfile.TemporaryDirectory(prefix='townlet-episode-counts-') as tmp:
+        config = Path(tmp) / 'default_curriculum'
+        shutil.copytree(root / 'configs/default_curriculum', config)
+        training_path = config / 'levels' / level / 'training.yaml'
+        training = yaml.safe_load(training_path.read_text())
+        if lifespan is not None:
+            training['training']['training_loop']['max_steps_per_episode'] = lifespan
+            training_path.write_text(yaml.safe_dump(training, sort_keys=False))
+        universe = UniverseCompiler().compile(config, primary_level=level, use_cache=False)
+        env = universe.create_environment(num_agents=2, level_name=level, device='cpu')
+        env.reset()
+        # Initial-state injection only: passive energy decay .01 triggers real
+        # compiled terminal conditions at ticks 2 and 5; no hooks are mocked.
+        env.meters[:, env.meter_name_to_index['energy']] = torch.tensor([.015, .045])
+        actions = torch.full((2,), env.action_space.get_action_by_name('WAIT').id, dtype=torch.long)
+        live_counts = torch.zeros(2, dtype=torch.long)
+        newly_terminal_counts = torch.zeros(2, dtype=torch.long)
+        trace = []
+        for tick in range(1, 6):
+            before = env.dones.clone()
+            active = ~before
+            live_counts += active.long()
+            observations, rewards, dones, info = env.step(actions)
+            newly = active & dones
+            newly_terminal_counts += newly.long()
+            trace.append({'tick': tick, 'active_on_entry': active.tolist(),
+                          'newly_terminal': newly.tolist(), 'dones': dones.tolist(),
+                          'step_counts': env.step_counts.tolist(),
+                          'info_step_counts': info['step_counts'].tolist(),
+                          'energy': env.meters[:, env.meter_name_to_index['energy']].tolist(),
+                          'health': env.meters[:, env.meter_name_to_index['health']].tolist(),
+                          'rewards': rewards.tolist(),
+                          'reward_components': {k: v.tolist() for k,v in info['reward_components'].items()}})
+        assert live_counts.tolist() == [2,5]
+        assert newly_terminal_counts.tolist() == [1,1]
+        assert env.dones.tolist() == [True,True]
+        return {'configured_lifespan': env.agent_lifespan,
+                'exploration_attached': env.exploration_module is not None,
+                'action': 'WAIT', 'action_id': int(actions[0]),
+                'expected_survival': [2,5], 'observed_survival': env.step_counts.tolist(),
+                'live_transition_counts': live_counts.tolist(),
+                'live_transitions': int(live_counts.sum()), 'batch_ticks': env.global_tick,
+                'reported_transition_sum': int(env.step_counts.sum()),
+                'newly_terminal_counts': newly_terminal_counts.tolist(), 'trace': trace}
+
+result = {'source_head': source_head, 'torch_seed':42, 'device':'cpu',
+          'config_source':'configs/default_curriculum', 'primary_level':level,
+          'fixture_override':'energy after reset [.015,.045]; bonus case max_steps_per_episode=5',
+          'cases':[probe(None), probe(5)]}
+print(json.dumps(result, indent=2))

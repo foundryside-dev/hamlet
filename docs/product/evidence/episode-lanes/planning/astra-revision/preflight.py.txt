@@ -1,0 +1,107 @@
+"""Planning-only proposal: no SQLite connection ever targets the input family."""
+
+from collections.abc import Mapping
+import hashlib
+import os
+from pathlib import Path
+import sqlite3
+import stat
+import tempfile
+
+DEMO_SCHEMA_VERSION = 1
+FAMILY_SUFFIXES = ("", "-wal", "-shm", "-journal")
+# Each column is the full table_xinfo row:
+# (cid, name, declared_type, notnull, default_sql, pk_ordinal, hidden).
+Column = tuple[int, str, str, int, str | None, int, int]
+Signature = tuple[int, int, int, int, int, str]
+
+
+def _read_regular(path: Path) -> tuple[bytes, Signature]:
+    descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    with os.fdopen(descriptor, "rb") as stream:
+        before = os.fstat(stream.fileno())
+        if not stat.S_ISREG(before.st_mode):
+            raise ValueError(f"Unsupported nonregular artifact: {path.name}")
+        data = stream.read()
+        after = os.fstat(stream.fileno())
+    def fields(value: os.stat_result) -> tuple[int, int, int, int, int]:
+        return value.st_dev, value.st_ino, value.st_size, value.st_mtime_ns, value.st_ctime_ns
+    if fields(before) != fields(after) or len(data) != after.st_size:
+        raise ValueError("Demo artifact changed during read")
+    return data, (*fields(after), hashlib.sha256(data).hexdigest())
+
+
+def demo_family_snapshot(path: Path) -> tuple[Signature | None, ...]:
+    """Raw OS reads only; include companion existence and bytes."""
+    readings: list[Signature | None] = []
+    for suffix in FAMILY_SUFFIXES:
+        member = Path(str(path) + suffix)
+        try:
+            _, signature = _read_regular(member)
+        except FileNotFoundError:
+            readings.append(None)
+        else:
+            readings.append(signature)
+    return tuple(readings)
+
+
+def inspect_existing_demo_schema(
+    path: Path,
+    expected_columns: Mapping[str, tuple[Column, ...]],
+    *,
+    exclusive_custody: bool,
+) -> None:
+    """Require stopped owners and custody through the following real open.
+
+    Only absent/zero-byte companion-free new files and closed companion-free
+    current files are supported. Any WAL/SHM/journal presence is refused, even
+    an empty companion. No checkpoint, recovery, migration or original-file
+    SQLite open occurs here. Fingerprints detect changes, not atomic snapshots.
+    """
+    if not exclusive_custody:
+        raise ValueError("Exclusive demo artifact custody is required")
+    path = path.absolute()
+    if any(not table.isidentifier() for table in expected_columns):
+        raise ValueError("Invalid internal schema table name")
+    before = demo_family_snapshot(path)
+    try:
+        if any(reading is not None for reading in before[1:]):
+            raise ValueError("Existing WAL/SHM/journal family is unsupported; preserve it unchanged")
+        if before[0] is None or before[0][2] == 0:
+            return
+        data, signature = _read_regular(path)
+        if signature != before[0]:
+            raise ValueError("Demo artifact changed before private validation")
+        if len(data) < 100 or data[:16] != b"SQLite format 3\x00":
+            raise ValueError("Malformed nonempty demo database header")
+        version = int.from_bytes(data[60:64], "big")
+        if version != DEMO_SCHEMA_VERSION:
+            raise ValueError(f"Unsupported demo schema version: {version}")
+        # WAL may exist only in this private directory. No immutable assumption.
+        with tempfile.TemporaryDirectory(prefix="demo-schema-preflight-") as directory:
+            private_path = Path(directory) / "probe.db"
+            private_path.write_bytes(data)
+            connection = sqlite3.connect(private_path.as_uri() + "?mode=ro", uri=True)
+            try:
+                if connection.execute("PRAGMA quick_check").fetchall() != [("ok",)]:
+                    raise ValueError("Corrupt demo database")
+                if connection.execute("PRAGMA user_version").fetchone() != (DEMO_SCHEMA_VERSION,):
+                    raise ValueError("Unsupported demo schema stamp")
+                actual_tables = {
+                    row[0] for row in connection.execute(
+                        "SELECT name FROM sqlite_schema WHERE type='table' AND substr(name, 1, 7) != 'sqlite_'"
+                    )
+                }
+                if actual_tables != set(expected_columns):
+                    raise ValueError("Unsupported demo table layout")
+                for table, columns in expected_columns.items():
+                    actual = tuple(connection.execute(f'PRAGMA table_xinfo("{table}")'))
+                    if actual != columns:
+                        raise ValueError(f"Unsupported demo columns: {table}")
+            except sqlite3.DatabaseError as error:
+                raise ValueError("Malformed demo database") from error
+            finally:
+                connection.close()
+    finally:
+        if demo_family_snapshot(path) != before:
+            raise ValueError("Demo artifact family changed during preflight")

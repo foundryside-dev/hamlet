@@ -1,0 +1,30 @@
+actions:
+  version: '1.0'
+  substrate_actions:
+    inherit: true
+  custom_actions:
+  - name: WAIT
+    description: Do nothing (pass turn)
+    enabled_by_default: true
+  - name: ADVANCE
+    description: Advance public state and engine-only reward state
+    enabled_by_default: true
+    writes:
+    - variable_id: public_state
+      expression: '1.0'
+      condition: null
+      composition: additive_delta
+      phase: apply_completion_bonuses
+      priority: 0
+      clamp: null
+      telemetry_label: advance_public_state
+    - variable_id: hidden_score
+      expression: '1.0'
+      condition: null
+      composition: additive_delta
+      phase: apply_completion_bonuses
+      priority: 0
+      clamp: null
+      telemetry_label: advance_hidden_score
+  labels:
+    preset: gaming

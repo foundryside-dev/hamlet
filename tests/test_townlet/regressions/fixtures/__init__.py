@@ -1,0 +1,1 @@
+"""Shared authored regression fixtures."""

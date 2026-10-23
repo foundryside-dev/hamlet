@@ -65,6 +65,8 @@ class TestEpisodeRecorder:
                 intrinsic_reward=0.15,
                 done=False,
                 q_values=None,
+                extrinsic_reward=0.85,
+                shaping_reward=0.0,
             )
 
             # Verify item added to queue
@@ -103,6 +105,8 @@ class TestEpisodeRecorder:
                 reward=1.0,
                 intrinsic_reward=0.15,
                 done=False,
+                extrinsic_reward=0.85,
+                shaping_reward=0.0,
             )
 
             # Get recorded step
@@ -141,6 +145,8 @@ class TestEpisodeRecorder:
                 intrinsic_reward=0.05,
                 done=False,
                 q_values=q_values,
+                extrinsic_reward=0.75,
+                shaping_reward=0.0,
             )
 
             item = recorder.queue.get_nowait()
@@ -174,6 +180,8 @@ class TestEpisodeRecorder:
                 done=False,
                 time_of_day=12,
                 interaction_progress=0.33,
+                extrinsic_reward=0.4,
+                shaping_reward=0.0,
             )
 
             item = recorder.queue.get_nowait()
@@ -229,10 +237,12 @@ class TestEpisodeRecorder:
                     meters=env.meters[0],
                     action=interact_action,
                     reward=reward[0].item(),
-                    intrinsic_reward=0.0,
+                    intrinsic_reward=float(info["reward_components"]["intrinsic"][0].item()),
                     done=done[0].item(),
                     time_of_day=env.time_of_day,
                     interaction_progress=env.interaction_progress[0].item() / 10.0,  # Normalized
+                    extrinsic_reward=float(info["reward_components"]["extrinsic"][0].item()),
+                    shaping_reward=float(info["reward_components"]["shaping"][0].item()),
                 )
 
             # Verify 3 steps recorded with temporal state
@@ -281,6 +291,8 @@ class TestEpisodeRecorder:
                 affordance_layout={"Bed": (2, 3)},
                 affordance_visits={"Bed": 5},
                 custom_action_uses={},
+                completion_reason="authored_terminal",
+                shaping_reward=0.0,
             )
 
             recorder.finish_episode(metadata)
@@ -314,14 +326,44 @@ class TestEpisodeRecorder:
             meters = torch.tensor([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
 
             # Fill queue
-            recorder.record_step(step=0, positions=positions, meters=meters, action=0, reward=1.0, intrinsic_reward=0.0, done=False)
-            recorder.record_step(step=1, positions=positions, meters=meters, action=0, reward=1.0, intrinsic_reward=0.0, done=False)
+            recorder.record_step(
+                step=0,
+                positions=positions,
+                meters=meters,
+                action=0,
+                reward=1.0,
+                intrinsic_reward=0.0,
+                done=False,
+                extrinsic_reward=1.0,
+                shaping_reward=0.0,
+            )
+            recorder.record_step(
+                step=1,
+                positions=positions,
+                meters=meters,
+                action=0,
+                reward=1.0,
+                intrinsic_reward=0.0,
+                done=False,
+                extrinsic_reward=1.0,
+                shaping_reward=0.0,
+            )
 
             # Queue is full (size=2)
             assert recorder.queue.full()
 
             # Try to add one more (should drop gracefully)
-            recorder.record_step(step=2, positions=positions, meters=meters, action=0, reward=1.0, intrinsic_reward=0.0, done=False)
+            recorder.record_step(
+                step=2,
+                positions=positions,
+                meters=meters,
+                action=0,
+                reward=1.0,
+                intrinsic_reward=0.0,
+                done=False,
+                extrinsic_reward=1.0,
+                shaping_reward=0.0,
+            )
 
             # Should still have 2 items (3rd was dropped)
             assert recorder.queue.qsize() == 2
@@ -381,6 +423,8 @@ class TestRecordingWriter:
                 intrinsic_reward=0.0,
                 done=False,
                 q_values=None,
+                extrinsic_reward=1.0,
+                shaping_reward=0.0,
             )
             test_queue.put(step)
 
@@ -427,6 +471,8 @@ class TestRecordingWriter:
                 intrinsic_reward=0.0,
                 done=False,
                 q_values=None,
+                extrinsic_reward=1.0,
+                shaping_reward=0.0,
             )
             test_queue.put(step)
 
@@ -444,6 +490,8 @@ class TestRecordingWriter:
                 affordance_layout={},
                 affordance_visits={},
                 custom_action_uses={},
+                completion_reason="cap",
+                shaping_reward=0.0,
             )
             marker = EpisodeEndMarker(metadata=metadata)
             test_queue.put(marker)

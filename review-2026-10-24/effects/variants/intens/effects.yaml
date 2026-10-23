@@ -1,0 +1,18 @@
+version: '1.0'
+effect_definitions:
+- id: i
+  scope: agent
+  duration: 20
+  reapply_policy: renew
+  observable: true
+  on_spawn: []
+  on_tick:
+  - modify: bar.health
+    value: bar.health - 0.1 * intensity
+  on_despawn: []
+  on_interrupt: []
+max_active_effects:
+  global: 1
+  agent: 4
+  item: 0
+  affordance: 1

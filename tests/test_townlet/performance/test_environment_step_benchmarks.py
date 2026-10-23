@@ -193,6 +193,6 @@ class TestRewardCalculatorBenchmarks:
         _record_scale_axes(benchmark, env, label=f"reward_n{num_agents}")
 
         def _rewards():
-            env._reward_calculator._calculate_shaped_rewards()
+            env._reward_calculator._calculate_shaped_rewards(active_on_entry=~env.dones)
 
         benchmark(_rewards)

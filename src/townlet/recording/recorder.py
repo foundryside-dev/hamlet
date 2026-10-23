@@ -14,7 +14,13 @@ import lz4.frame  # type: ignore[import-untyped]
 import msgpack  # type: ignore[import-untyped]
 import torch
 
-from townlet.recording.data_structures import EpisodeEndMarker, EpisodeMetadata, RecordedStep
+from townlet.recording.data_structures import (
+    RECORDING_FORMAT_VERSION,
+    EpisodeEndMarker,
+    EpisodeMetadata,
+    RecordedStep,
+    validate_recording_episode,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +78,9 @@ class EpisodeRecorder:
         meters: torch.Tensor,
         action: int,
         reward: float,
+        extrinsic_reward: float,
         intrinsic_reward: float,
+        shaping_reward: float,
         done: bool,
         q_values: torch.Tensor | None = None,
         epsilon: float | None = None,
@@ -89,8 +97,10 @@ class EpisodeRecorder:
             positions: [2] Agent (x, y) position
             meters: [8] All meters, normalized [0,1]
             action: Action taken (0-5)
-            reward: Extrinsic reward
-            intrinsic_reward: RND novelty reward
+            reward: Canonical composed total
+            extrinsic_reward: Canonical extrinsic contributor
+            intrinsic_reward: Effective DAC intrinsic contributor
+            shaping_reward: Canonical DAC shaping contributor
             done: Terminal state flag
             q_values: Optional [6] Q-values for all actions
             epsilon: Optional exploration rate (epsilon-greedy)
@@ -127,7 +137,9 @@ class EpisodeRecorder:
             meters=tuple(meters.tolist()),
             action=action,
             reward=reward,
+            extrinsic_reward=extrinsic_reward,
             intrinsic_reward=intrinsic_reward,
+            shaping_reward=shaping_reward,
             done=done,
             q_values=q_values_tuple,
             epsilon=epsilon,
@@ -270,11 +282,13 @@ class RecordingWriter:
         """
         # Build episode data structure
         episode_data = {
-            "version": 1,
+            "version": RECORDING_FORMAT_VERSION,
             "metadata": asdict(metadata),
             "steps": [asdict(step) for step in self.episode_buffer],
             "affordances": metadata.affordance_layout,
         }
+
+        validate_recording_episode(episode_data, expected_episode_id=metadata.episode_id)
 
         # Serialize with msgpack
         serialized = msgpack.packb(episode_data, use_bin_type=True)

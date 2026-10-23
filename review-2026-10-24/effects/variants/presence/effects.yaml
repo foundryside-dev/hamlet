@@ -1,0 +1,16 @@
+version: '1.0'
+effect_definitions:
+- id: hb
+  scope: agent
+  duration: 2
+  reapply_policy: stack
+  observable: true
+  on_spawn: []
+  on_tick: []
+  on_despawn: []
+  on_interrupt: []
+max_active_effects:
+  global: 0
+  agent: 2
+  item: 0
+  affordance: 0

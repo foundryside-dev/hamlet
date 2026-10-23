@@ -1,0 +1,11 @@
+experiment:
+  version: "1.0"
+  experiment_name: "action_space_grid2d"
+  metadata:
+    name: "Action Space Grid2D"
+    description: "Grid2D diagonals + interact/wait (10 actions)"
+    author: "Hamlet Tests"
+    created: "2025-11-17"
+    tags: ["test", "action_space"]
+  curriculum_levels:
+    - L0

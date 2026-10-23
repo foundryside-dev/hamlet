@@ -1,0 +1,13 @@
+experiment:
+  version: "1.0"
+  experiment_name: "reference_model_pack"
+
+  metadata:
+    name: "Reference Model Pack"
+    description: "Minimal runnable example aligned with v2.1.1 spec"
+    author: "HAMLET"
+    created: "2025-11-30"
+    tags: ["reference", "runnable", "demo"]
+
+  curriculum_levels:
+    - L0_demo

@@ -36,6 +36,8 @@ def test_recording_handles_2d_positions():
             intrinsic_reward=0.0,
             done=False,
             q_values=None,
+            extrinsic_reward=1.0,
+            shaping_reward=0.0,
         )
 
         # Verify position was converted to tuple correctly
@@ -100,6 +102,8 @@ def test_recording_handles_aspatial_positions():
             intrinsic_reward=0.0,
             done=False,
             q_values=None,
+            extrinsic_reward=1.0,
+            shaping_reward=0.0,
         )
 
         # Verify position was converted to empty tuple correctly

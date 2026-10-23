@@ -574,3 +574,30 @@ class TestBatchExportVideos:
         )
 
         assert result == 0
+
+
+def test_batch_query_owner_is_closed_before_each_child_export(tmp_path, monkeypatch):
+    from townlet.recording import video_export
+
+    database = Mock()
+    database.list_recordings.return_value = [{"episode_id": 2}, {"episode_id": 1}]
+    monkeypatch.setattr(video_export, "DemoDatabase", Mock(return_value=database))
+
+    def child_export(**kwargs):
+        database.close.assert_called_once_with()
+        return True
+
+    monkeypatch.setattr(video_export, "export_episode_video", child_export)
+    assert video_export.batch_export_videos(tmp_path / "demo.db", tmp_path, tmp_path / "videos") == 2
+
+
+def test_export_load_failure_closes_database(tmp_path, monkeypatch):
+    from townlet.recording import video_export
+
+    database = Mock()
+    replay = Mock()
+    replay.load_episode.return_value = False
+    monkeypatch.setattr(video_export, "DemoDatabase", Mock(return_value=database))
+    monkeypatch.setattr(video_export, "ReplayManager", Mock(return_value=replay))
+    assert video_export.export_episode_video(1, tmp_path / "demo.db", tmp_path, tmp_path / "video.mp4") is False
+    database.close.assert_called_once_with()

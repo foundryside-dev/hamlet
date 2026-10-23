@@ -1,0 +1,17 @@
+items:
+  version: '1.0'
+  item_types:
+  - id: rock
+    name: Rock
+    icon: R
+    tags:
+    - rock
+    vfs_profile: default_item
+    interactions:
+      on_pickup: []
+      on_use: []
+      on_drop: []
+    duration: null
+    cooldown: null
+  max_items_per_agent: 1
+  max_items_in_world: 2

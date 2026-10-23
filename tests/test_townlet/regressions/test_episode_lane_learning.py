@@ -193,7 +193,7 @@ def test_one_episode_ingests_seven_owned_predecessors_and_normalizes_seven_succe
                                 expected_predecessors.append((identity, row_digest(predecessor[agent])))
                                 expected_successors.append((identity, row_digest(state.observations[agent])))
                             else:
-                                phantom_successors.append(row_digest(state.observations[agent]))
+                                phantom_successors.append((identity, row_digest(state.observations[agent])))
                 assert predictor_steps.call_count > 0
     finally:
         hook.remove()
@@ -208,20 +208,21 @@ def test_one_episode_ingests_seven_owned_predecessors_and_normalizes_seven_succe
     assert rnd.reward_rms.count - rms_before == pytest.approx(7)
     assert len(rnd.obs_buffer) == 0
     assert any(not torch.equal(before, after) for before, after in zip(predictor_before, rnd.predictor_network.parameters(), strict=True))
-    # Frozen terminal successors can equal later dead successors. Role overlap is
-    # explicitly ambiguous; counts and coordinate-bound ledgers qualify admission.
-    eligible = {digest for _, digest in expected_successors}
-    qualify_hash_exclusion(eligible, set(phantom_successors))
-    # Corrupt a retained role witness with a real eligible digest: a hash-only
-    # exclusion claim must then refuse rather than subtract the shared digest.
+    # A dead agent's row is frozen, so a frozen terminal successor equals every
+    # later dead successor of the same agent by digest. Digests alone cannot
+    # separate the roles; the ledger coordinate (episode, tick, agent) can.
+    eligible = set(expected_successors)
+    qualify_coordinate_exclusion(eligible, set(phantom_successors))
+    # Corrupt a retained role witness with a real eligible coordinate: the
+    # exclusion claim must then refuse rather than subtract the shared row.
     corrupted_phantoms = set(phantom_successors) | {next(iter(eligible))}
     with pytest.raises(ValueError, match="ambiguous"):
-        qualify_hash_exclusion(eligible, corrupted_phantoms)
+        qualify_coordinate_exclusion(eligible, corrupted_phantoms)
 
 
-def qualify_hash_exclusion(eligible: set[str], phantom: set[str]) -> None:
+def qualify_coordinate_exclusion(eligible: set[tuple[tuple[int, int, int], str]], phantom: set[tuple[tuple[int, int, int], str]]) -> None:
     if eligible & phantom:
-        raise ValueError("Hash-only eligibility proof is ambiguous across ledger coordinates")
+        raise ValueError("Eligibility proof is ambiguous: a phantom row shares a ledger coordinate with an eligible row")
 
 
 @pytest.mark.parametrize("mode,sequence_length", [("standard", 1), ("per", 1), ("recurrent", 1), ("recurrent", 2)])

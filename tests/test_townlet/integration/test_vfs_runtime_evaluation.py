@@ -63,7 +63,7 @@ def test_mark_and_sweep_evaluates_unexposed_authored_expressions(tmp_path):
         return result
 
     with patch.object(VFSEvaluator, "evaluate_global_profile", track_evaluation):
-        # Create environment (default mode is mark-and-sweep)
+        # Create environment
         env = compiled.create_environment(
             num_agents=4,
             level_name="L0_effects",
@@ -80,48 +80,13 @@ def test_mark_and_sweep_evaluates_unexposed_authored_expressions(tmp_path):
     assert set(evaluated_vars) == {"day_count"}
 
 
-def test_eager_mode_evaluates_all_vars():
-    """Eager mode should evaluate all VFS variables."""
-    config_dir = Path(__file__).parent.parent.parent.parent / "configs" / "test" / "vfs_dependency_chain"
-
-    compiler = UniverseCompiler()
-    compiled = compiler.compile(config_dir, primary_level="L0_deps", use_cache=False)
-
-    evaluated_vars = []
-    original_evaluate = VFSEvaluator.evaluate_global_profile
-
-    def track_evaluation(self, profile, bars, vfs_state, marks=None, device=None, **kwargs):
-        """Track which variables are evaluated."""
-        result = original_evaluate(self, profile, bars, vfs_state, marks, device, **kwargs)
-        if profile is compiled.compiled_vfs_profiles.global_profile:
-            evaluated_vars.extend(result.keys())
-        return result
-
-    with patch.object(VFSEvaluator, "evaluate_global_profile", track_evaluation):
-        env = compiled.create_environment(
-            num_agents=4,
-            level_name="L0_deps",
-            device=torch.device("cpu"),
-        )
-
-        env.reset()
-        evaluated_vars.clear()
-        env.step(torch.zeros(4, dtype=torch.long))
-
-    assert compiled.compiled_vfs_profiles is not None
-    assert compiled.compiled_vfs_profiles.evaluation_mode == "eager"
-    assert compiled.compiled_vfs_profiles.global_profile is not None
-    all_vars = {var.name for var in compiled.compiled_vfs_profiles.global_profile.variables}
-    assert set(evaluated_vars) == all_vars, f"Expected all vars {all_vars}, got {set(evaluated_vars)}"
-
-
 def test_vfs_expression_dependency_chain():
     """VFS variables with complex dependency chains should evaluate correctly.
 
     Tests:
     - Multi-level dependencies (a → b → c)
     - Expression reuse across variables
-    - Eager evaluation includes static inputs as well as derived variables
+    - Marked expressions pull their static inputs at the current runtime value
     """
     # Setup: Use vfs_dependency_chain which has dependency chains
     config_dir = Path(__file__).parent.parent.parent.parent / "configs" / "test" / "vfs_dependency_chain"

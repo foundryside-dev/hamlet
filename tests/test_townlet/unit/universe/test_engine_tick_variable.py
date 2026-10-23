@@ -23,8 +23,6 @@ def _write_variables(config_dir: Path, declarations: list[dict]) -> None:
             {
                 "variables": {
                     "version": "1.0",
-                    "evaluation_mode": "eager",
-                    "debug_logging": False,
                     "extents": {},
                     "item_profiles": ["default_item"],
                     "declarations": declarations,
@@ -69,9 +67,7 @@ def test_authored_static_variable_named_tick_refuses_in_canonical_inventory():
     """The complete roster cannot silently deduplicate an authored engine tick."""
     authored_tick = VariableDeclaration.model_validate(_variable("tick", initial_value=1.0))
     with pytest.raises(ValueError, match="tick"):
-        VariablesConfig(
-            version="1.0", evaluation_mode="eager", debug_logging=False, extents={}, item_profiles=[], declarations=[authored_tick]
-        )
+        VariablesConfig(version="1.0", extents={}, item_profiles=[], declarations=[authored_tick])
 
 
 def test_expression_may_reference_bare_tick(tmp_path):

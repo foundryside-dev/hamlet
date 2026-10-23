@@ -87,8 +87,6 @@ COMMAND_NODE_FIELDS = (
 )
 
 COMPILED_VFS_PROFILE_FIELDS = (
-    "evaluation_mode",
-    "debug_logging",
     "global_profile",
     "agent_profile",
     "item_profiles",
@@ -159,7 +157,7 @@ def test_primary_level_products_exist_only_on_level_metadata(artifact_payload: d
 
 
 def test_canonical_variable_cut_bumps_exact_artifact_schema() -> None:
-    assert COMPILED_SCHEMA_VERSION == "1.29"
+    assert COMPILED_SCHEMA_VERSION == "1.30"
 
 
 def _assert_missing_field(payload: dict[str, Any], field_path: str) -> None:

@@ -7,7 +7,7 @@ import torch
 from townlet.effects.catalog import CompiledEffect, EffectCatalog
 from townlet.effects.executor import CommandExecutor
 from townlet.effects.manager import EffectManager
-from townlet.vfs.evaluator import EvaluationMode, VFSEvaluator
+from townlet.vfs.evaluator import VFSEvaluator
 from townlet.vfs.registry import VariableRegistry
 from townlet.vfs.schema import VariableDef
 
@@ -28,7 +28,7 @@ class TestVFSBenchmarks:
     def test_vfs_evaluation(self, benchmark):
         # Simple evaluation of globals/agents via mark-and-sweep evaluator
         registry = _make_vfs_registry()
-        evaluator = VFSEvaluator(mode=EvaluationMode.MARK_AND_SWEEP)
+        evaluator = VFSEvaluator()
 
         def _eval():
             # Simulate a handful of marks; here we just use globals/agents already set.

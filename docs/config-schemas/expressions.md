@@ -245,8 +245,6 @@ not (bar.health > 50)                       # Health not above 50
 ```yaml
 variables:
   version: '1.0'
-  evaluation_mode: mark_and_sweep
-  debug_logging: false
   extents: {}
   item_profiles: []
   declarations:

@@ -64,8 +64,6 @@ def test_effects_schema_canonical_global_variables_never_acquire_target_paths():
 
     variables = VariablesConfig(
         version="1.0",
-        evaluation_mode="eager",
-        debug_logging=False,
         extents={},
         item_profiles=[],
         declarations=[
@@ -117,8 +115,6 @@ def test_effects_schema_preserves_canonical_vector_type_before_command_compilati
 
     variables = VariablesConfig(
         version="1.0",
-        evaluation_mode="mark_and_sweep",
-        debug_logging=False,
         extents={},
         item_profiles=[],
         declarations=[

@@ -22,7 +22,7 @@ def test_expression_result_must_match_runtime_scope_shape(scope, expression):
         expression=expression,
     )
     with pytest.raises(TypeCheckError, match="shape"):
-        VFSProfileCompiler().compile_profile([declaration], {"energy": "float"}, evaluation_mode="mark_and_sweep", cross_scope=())
+        VFSProfileCompiler().compile_profile([declaration], {"energy": "float"}, cross_scope=())
 
 
 def test_agent_expression_static_dependency_retains_batched_shape():
@@ -51,7 +51,7 @@ def test_agent_expression_static_dependency_retains_batched_shape():
             expression="source + 1.0",
         ),
     ]
-    compiled = VFSProfileCompiler().compile_profile(declarations, evaluation_mode="mark_and_sweep", cross_scope=())
+    compiled = VFSProfileCompiler().compile_profile(declarations, cross_scope=())
     assert compiled.variables[-1].name == "computed"
 
 
@@ -462,7 +462,7 @@ def test_compile_global_profile():
         ),
     ]
     compiler = VFSProfileCompiler()
-    compiled = compiler.compile_profile(profile, evaluation_mode="mark_and_sweep", cross_scope=())
+    compiled = compiler.compile_profile(profile, cross_scope=())
     assert [v.name for v in compiled.variables] == ["a", "b", "c"]
     assert all(v.ast is not None or v.initial_value is not None for v in compiled.variables)
 
@@ -484,11 +484,13 @@ def test_compile_agent_profile_with_bars():
         )
     ]
     compiler = VFSProfileCompiler()
-    compiled = compiler.compile_profile(profile, bar_schema={"energy": "float"}, evaluation_mode="mark_and_sweep", cross_scope=())
+    compiled = compiler.compile_profile(profile, bar_schema={"energy": "float"}, cross_scope=())
     assert compiled.variables[0].name == "avg_energy"
 
 
-def test_eager_agent_static_dependency_refuses_the_scalar_reinitialization_shape():
+def test_agent_static_dependency_proves_a_batched_output():
+    """An agent static is per-agent storage, so an expression over it alone is agent-shaped
+    (the deleted eager evaluator rebuilt it from its scalar literal and had to refuse this)."""
     declarations = [
         VariableDeclaration(
             readable_by=["engine", "agent"],
@@ -514,8 +516,8 @@ def test_eager_agent_static_dependency_refuses_the_scalar_reinitialization_shape
             expression="source + 1.0",
         ),
     ]
-    with pytest.raises(TypeCheckError, match="shape"):
-        VFSProfileCompiler().compile_profile(declarations, evaluation_mode="eager", cross_scope=())
+    compiled = VFSProfileCompiler().compile_profile(declarations, cross_scope=())
+    assert compiled.dependencies["computed"] == ("source",)
 
 
 def _declaration(identifier: str, *, scope: str, expression: str | None = None, type: str = "scalar", **extra) -> VariableDeclaration:
@@ -543,7 +545,7 @@ def test_agent_expression_reads_globals_by_bare_name_without_a_dependency_edge()
         _declaration("is_night", scope="agent", type="bool", expression="day_phase > 0.5 and bar.energy < 1.0"),
         _declaration("scaled", scope="agent", expression="bar.energy * scale"),
     ]
-    compiled = VFSProfileCompiler().compile_profile(agents, {"energy": "float"}, evaluation_mode="mark_and_sweep", cross_scope=globals_)
+    compiled = VFSProfileCompiler().compile_profile(agents, {"energy": "float"}, cross_scope=globals_)
     assert {var.name for var in compiled.variables} == {"is_night", "scaled"}
     assert compiled.dependencies == {"is_night": (), "scaled": ()}
     assert compiled.variables[0].ast is not None
@@ -555,7 +557,6 @@ def test_agent_expression_over_a_global_alone_is_still_batch_shaped_at_compile()
         VFSProfileCompiler().compile_profile(
             [_declaration("flag", scope="agent", type="bool", expression="day_phase > 0.5")],
             {"energy": "float"},
-            evaluation_mode="mark_and_sweep",
             cross_scope=[_declaration("day_phase", scope="global", expression="tick")],
         )
 
@@ -566,7 +567,6 @@ def test_agent_expression_over_a_global_tensor_refuses_at_compile():
         VFSProfileCompiler().compile_profile(
             [_declaration("heat", scope="agent", expression="bar.energy * grid")],
             {"energy": "float"},
-            evaluation_mode="mark_and_sweep",
             cross_scope=[_declaration("grid", scope="global", type="tensor1d", shape=[2], initial_value=[0.0, 0.0])],
         )
 
@@ -579,7 +579,6 @@ def test_global_expression_reading_agent_state_refuses_as_scope_widening():
         VFSProfileCompiler().compile_profile(
             [_declaration("gb", scope="global", expression="public_state * 2.0")],
             {"energy": "float"},
-            evaluation_mode="mark_and_sweep",
             cross_scope=[_declaration("public_state", scope="agent")],
         )
 
@@ -588,6 +587,5 @@ def test_cross_scope_roster_must_be_the_other_scope():
     with pytest.raises(ValueError, match="cross_scope for a agent profile holds global declarations only"):
         VFSProfileCompiler().compile_profile(
             [_declaration("a", scope="agent")],
-            evaluation_mode="mark_and_sweep",
             cross_scope=[_declaration("b", scope="agent")],
         )

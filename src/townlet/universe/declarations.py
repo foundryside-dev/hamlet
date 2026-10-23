@@ -38,9 +38,7 @@ WRAPPED = frozenset(
     {"experiment", "stratum", "environment", "actions", "curriculum", "bars", "affordances", "drive", "training", "items", "variables"}
 )
 COLLECTION_FAMILIES = frozenset({"bars", "affordances", "items", "effects", "variables", "transition_rules"})
-STRUCTURAL_HEADERS = frozenset(
-    {"version", "evaluation_mode", "debug_logging", "max_items_in_world", "max_items_per_agent", "max_active_effects", "extents"}
-)
+STRUCTURAL_HEADERS = frozenset({"version", "max_items_in_world", "max_items_per_agent", "max_active_effects", "extents"})
 
 
 class MarkedMapping(dict[Any, Any]):

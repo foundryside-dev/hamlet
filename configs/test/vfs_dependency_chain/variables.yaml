@@ -1,7 +1,5 @@
 variables:
   version: '1.0'
-  evaluation_mode: eager
-  debug_logging: false
   extents: {}
   item_profiles:
   - default_item

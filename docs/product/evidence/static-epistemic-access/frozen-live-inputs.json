@@ -3,17 +3,17 @@
   "packs": [
     {
       "delta": {
-        "differing": [
-          "environment.yaml",
-          "levels/L2_partial_observability/curriculum.yaml",
-          "levels/L3_temporal_mechanics/curriculum.yaml",
-          "stratum.yaml"
-        ],
         "only_in_frozen": [
           "vfs_profiles.yaml"
         ],
         "only_in_live": [
           "variables.yaml"
+        ],
+        "differing": [
+          "environment.yaml",
+          "levels/L2_partial_observability/curriculum.yaml",
+          "levels/L3_temporal_mechanics/curriculum.yaml",
+          "stratum.yaml"
         ]
       },
       "frozen_files": {
@@ -84,21 +84,21 @@
         "levels/L3_temporal_mechanics/drive.yaml": "1dfaca1e050a33fc1776b065481ce77f77789ea9b450a35ee3cf86171bb048e8",
         "levels/L3_temporal_mechanics/training.yaml": "7e497eccaf86e04a6fd158898eefbd26822d329b5df14963dbf64b90e61aa87b",
         "stratum.yaml": "740d99ed47564a8e8825cae83c1c03601715dc7d1ea70dbb458162bed165a545",
-        "variables.yaml": "a2192f836f2de11a35ac4a5491fd9fd2de9c62feca7a73418f15137a0ed6acf9"
+        "variables.yaml": "82e2c45599ae1b6727e9be4b5a34c102538f27834cc8a44cc0bef0b847fac31b"
       },
       "pack": "configs/default_curriculum"
     },
     {
       "delta": {
-        "differing": [
-          "environment.yaml",
-          "stratum.yaml"
-        ],
         "only_in_frozen": [
           "vfs_profiles.yaml"
         ],
         "only_in_live": [
           "variables.yaml"
+        ],
+        "differing": [
+          "environment.yaml",
+          "stratum.yaml"
         ]
       },
       "frozen_files": {
@@ -129,22 +129,22 @@
         "levels/L1_full_observability/drive.yaml": "1dfaca1e050a33fc1776b065481ce77f77789ea9b450a35ee3cf86171bb048e8",
         "levels/L1_full_observability/training.yaml": "398fe080467e4cfb63bcb09562f095254fbbe5c5bfce913b129b6a796aa88c3c",
         "stratum.yaml": "b516656ecca108758df3152e0d96a312c94a674a4726018f8983b905849cdd4d",
-        "variables.yaml": "a2192f836f2de11a35ac4a5491fd9fd2de9c62feca7a73418f15137a0ed6acf9"
+        "variables.yaml": "82e2c45599ae1b6727e9be4b5a34c102538f27834cc8a44cc0bef0b847fac31b"
       },
       "pack": "configs/differential/boundary_wrap"
     },
     {
       "delta": {
-        "differing": [
-          "environment.yaml",
-          "levels/L2_partial_observability/curriculum.yaml",
-          "stratum.yaml"
-        ],
         "only_in_frozen": [
           "vfs_profiles.yaml"
         ],
         "only_in_live": [
           "variables.yaml"
+        ],
+        "differing": [
+          "environment.yaml",
+          "levels/L2_partial_observability/curriculum.yaml",
+          "stratum.yaml"
         ]
       },
       "frozen_files": {
@@ -175,21 +175,21 @@
         "levels/L2_partial_observability/drive.yaml": "1dfaca1e050a33fc1776b065481ce77f77789ea9b450a35ee3cf86171bb048e8",
         "levels/L2_partial_observability/training.yaml": "cf399a8bacaa77df2498c1bc5fcf34367d409fec7c0e56d1fb3b6bf3ab8e43eb",
         "stratum.yaml": "bf3b7b7ad0582944fd9b769d83f3e6a540f6cb9e56f6cdde4115fb54326f1845",
-        "variables.yaml": "a2192f836f2de11a35ac4a5491fd9fd2de9c62feca7a73418f15137a0ed6acf9"
+        "variables.yaml": "82e2c45599ae1b6727e9be4b5a34c102538f27834cc8a44cc0bef0b847fac31b"
       },
       "pack": "configs/differential/div003_cubic_partial"
     },
     {
       "delta": {
-        "differing": [
-          "environment.yaml",
-          "stratum.yaml"
-        ],
         "only_in_frozen": [
           "vfs_profiles.yaml"
         ],
         "only_in_live": [
           "variables.yaml"
+        ],
+        "differing": [
+          "environment.yaml",
+          "stratum.yaml"
         ]
       },
       "frozen_files": {
@@ -220,23 +220,23 @@
         "levels/L1_full_observability/drive.yaml": "1dfaca1e050a33fc1776b065481ce77f77789ea9b450a35ee3cf86171bb048e8",
         "levels/L1_full_observability/training.yaml": "398fe080467e4cfb63bcb09562f095254fbbe5c5bfce913b129b6a796aa88c3c",
         "stratum.yaml": "772242034c34fb5dd598ff2566473d123c287a9213730b50c8645508d5d8ca3d",
-        "variables.yaml": "a2192f836f2de11a35ac4a5491fd9fd2de9c62feca7a73418f15137a0ed6acf9"
+        "variables.yaml": "82e2c45599ae1b6727e9be4b5a34c102538f27834cc8a44cc0bef0b847fac31b"
       },
       "pack": "configs/differential/div003_rect"
     },
     {
       "delta": {
-        "differing": [
-          "effects.yaml",
-          "environment.yaml",
-          "stratum.yaml"
-        ],
         "only_in_frozen": [
           "variables_reference.yaml",
           "vfs_profiles.yaml"
         ],
         "only_in_live": [
           "variables.yaml"
+        ],
+        "differing": [
+          "effects.yaml",
+          "environment.yaml",
+          "stratum.yaml"
         ]
       },
       "frozen_files": {
@@ -268,17 +268,12 @@
         "levels/L0_effects/drive.yaml": "4c3b0c9c278c8e872de2bbc87d2a36eaa6fd545e31ae3a1f34c92df87e04eddf",
         "levels/L0_effects/training.yaml": "23c48c0ae7569b1731f0a6bdfdfd523dad8d313bb81839bf11e284effbf3a907",
         "stratum.yaml": "3d7d7c38f5879e30042d39af802e4844e935bd48f521903421199a60079ed97c",
-        "variables.yaml": "fa0741458368c54016c668d2e6019666db08de3ed1cf2762f84a6e76bfd1d0c1"
+        "variables.yaml": "0f90355f393041d1683dd838c9dd813b19599741daa7a682ccfb403d4c36ecc0"
       },
       "pack": "configs/test/effects_smoke"
     },
     {
       "delta": {
-        "differing": [
-          "effects.yaml",
-          "environment.yaml",
-          "stratum.yaml"
-        ],
         "only_in_frozen": [
           "affordances.yaml",
           "bars.yaml",
@@ -291,6 +286,11 @@
         ],
         "only_in_live": [
           "variables.yaml"
+        ],
+        "differing": [
+          "effects.yaml",
+          "environment.yaml",
+          "stratum.yaml"
         ]
       },
       "frozen_files": {
@@ -330,7 +330,7 @@
         "levels/L0_smoke/items.yaml": "5e170612edf95c3381f4f3c0e72ddf04b5286516be44a23e1f4eae5dfe715039",
         "levels/L0_smoke/training.yaml": "f947a1d0bc87f6c0fc30f5114d28402d9e4716e6ae5a21956b3beaddd5168bfb",
         "stratum.yaml": "aad8b287c76fd5b1cb6f67b11934948757c854edc184f9a0a6791d3665df653e",
-        "variables.yaml": "cdcfd10090fda619b28c810f9dbc90ec7a2fba1f96ec56d89c08295f6033f3b4"
+        "variables.yaml": "64d5086f750b14273880a6a3632e2f7ea4e58b82a0b41f28f3c0c2658a76b9ba"
       },
       "pack": "configs/test/items_smoke"
     }

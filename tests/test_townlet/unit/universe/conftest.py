@@ -19,8 +19,6 @@ def minimal_compiled_universe_with_profiles(tmp_path: Path):
     profiles = {
         "variables": {
             "version": "1.0",
-            "evaluation_mode": "mark_and_sweep",
-            "debug_logging": False,
             "extents": {},
             "item_profiles": [],
             "declarations": [
@@ -68,8 +66,6 @@ def minimal_compiled_universe_with_effects(tmp_path: Path):
     profiles = {
         "variables": {
             "version": "1.0",
-            "evaluation_mode": "mark_and_sweep",
-            "debug_logging": False,
             "extents": {},
             "item_profiles": [],
             "declarations": [

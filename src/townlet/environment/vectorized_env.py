@@ -32,7 +32,7 @@ from townlet.environment.token_publishers import (
 )
 from townlet.items import InventoryState, ItemActionHandler, ItemManager
 from townlet.universe.dto import RuntimeActionSpace
-from townlet.vfs.evaluator import EvaluationMode, VFSEvaluator
+from townlet.vfs.evaluator import VFSEvaluator
 from townlet.vfs.profiles import CompiledGlobalProfile
 from townlet.vfs.registry import VariableRegistry
 from townlet.vfs.transition_schedule import VTCTransitionContext, VTCTransitionRunner, VTCTransitionState
@@ -588,12 +588,7 @@ class VectorizedHamletEnv:
 
         self.vfs_evaluator: VFSEvaluator | None = None
         if universe.compiled_vfs_profiles is not None:
-            mode = EvaluationMode(universe.compiled_vfs_profiles.evaluation_mode)
-            self.vfs_evaluator = VFSEvaluator(
-                mode=mode,
-                history_spec=universe.vfs_history_spec,
-                debug_logging=universe.compiled_vfs_profiles.debug_logging,
-            )
+            self.vfs_evaluator = VFSEvaluator(history_spec=universe.vfs_history_spec)
             self.vfs_evaluation_marks = universe.vfs_evaluation_marks
         else:
             self.vfs_evaluation_marks = None
@@ -1212,7 +1207,7 @@ class VectorizedHamletEnv:
                 current_vfs_state = self._current_vfs_state()
 
             # Evaluate agent profile (hamlet-5d74335111). Compiled agent profiles are
-            # CompiledGlobalProfile — the same machinery, the same MARK_AND_SWEEP
+            # CompiledGlobalProfile — the same machinery, the same mark-and-sweep
             # static-skip in evaluate_global_profile, and the same expression-only
             # write-back filter (statics are storage, never re-written from a
             # dependency-chased initial — hamlet-df3a96bbac applies here too), but

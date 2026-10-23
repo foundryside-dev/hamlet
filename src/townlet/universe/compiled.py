@@ -117,7 +117,10 @@ from townlet.vfs.transition_schedule import (
 # inferred from filler-reference spelling; 1.26 bindings lack this execution authority.
 # 1.29: static permissions are required on registry definitions and every compiled
 # global, agent and qualified item variable. Older artifacts have no policy authority.
-COMPILED_SCHEMA_VERSION = "1.29"
+# 1.30: `evaluation_mode` and `debug_logging` are deleted from the compiled VFS profiles;
+# mark-and-sweep is the only evaluator. A 1.29 cache of a pack that still declares them
+# would load without the parse refusal, so it is refused as stale.
+COMPILED_SCHEMA_VERSION = "1.30"
 
 REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "compiled_schema_version",
@@ -150,8 +153,6 @@ REQUIRED_COMPILED_UNIVERSE_FIELDS = (
 class CompiledVFSProfiles:
     """Compiled VFS profiles (global, agent, item)."""
 
-    evaluation_mode: str
-    debug_logging: bool
     global_profile: CompiledGlobalProfile | None = None
     # A compiled agent profile is a CompiledGlobalProfile: both compile through
     # VFSProfileCompiler.compile_profile (townlet/universe/compilers/vfs.py).
@@ -1062,8 +1063,6 @@ def _serialize_vfs_profiles(profiles: CompiledVFSProfiles) -> dict[str, Any]:
     """Serialize CompiledVFSProfiles to dict."""
 
     result: dict[str, Any] = {
-        "evaluation_mode": profiles.evaluation_mode,
-        "debug_logging": profiles.debug_logging,
         "global_profile": _serialize_profile(profiles.global_profile),
         "agent_profile": _serialize_profile(profiles.agent_profile),
     }
@@ -1147,8 +1146,6 @@ def _deserialize_vfs_profiles(payload: dict[str, Any]) -> CompiledVFSProfiles:
     agent_profile_payload = _required_field(payload, "compiled_vfs_profiles.agent_profile")
 
     return CompiledVFSProfiles(
-        evaluation_mode=_required_field(payload, "compiled_vfs_profiles.evaluation_mode"),
-        debug_logging=_required_field(payload, "compiled_vfs_profiles.debug_logging"),
         global_profile=_deserialize_profile(global_profile_payload, field_name="compiled_vfs_profiles.global_profile"),
         agent_profile=_deserialize_profile(agent_profile_payload, field_name="compiled_vfs_profiles.agent_profile"),
         item_profiles=item_profiles,

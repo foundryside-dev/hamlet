@@ -567,8 +567,6 @@ class TestVectorizedHamletEnvStep:
         env.universe = replace(
             env.universe,
             compiled_vfs_profiles=CompiledVFSProfiles(
-                evaluation_mode="mark_and_sweep",
-                debug_logging=False,
                 global_profile=profile,
                 item_profiles={},
             ),
@@ -640,8 +638,6 @@ class TestVFSWriteBackLoudness:
         env.universe = replace(
             env.universe,
             compiled_vfs_profiles=CompiledVFSProfiles(
-                evaluation_mode="mark_and_sweep",
-                debug_logging=False,
                 global_profile=profile,
                 item_profiles={},
             ),
@@ -679,8 +675,6 @@ class TestVFSWriteBackLoudness:
         env.universe = replace(
             env.universe,
             compiled_vfs_profiles=CompiledVFSProfiles(
-                evaluation_mode="mark_and_sweep",
-                debug_logging=False,
                 agent_profile=agent_profile,
                 item_profiles={},
             ),

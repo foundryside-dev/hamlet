@@ -27,8 +27,6 @@ def _pack(tmp_path: Path, declarations: list[dict]) -> Path:
     payload = {
         "variables": {
             "version": "1.0",
-            "evaluation_mode": "mark_and_sweep",
-            "debug_logging": False,
             "extents": {},
             "item_profiles": ["default_item"],
             "declarations": declarations,

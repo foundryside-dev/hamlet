@@ -298,7 +298,6 @@ class VFSProfileCompiler:
         variables: Sequence[VariableDeclaration],
         bar_schema: dict[str, str] | None = None,
         *,
-        evaluation_mode: str,
         cross_scope: Sequence[VariableDeclaration],
     ) -> CompiledGlobalProfile:
         """Compile one global or agent expression group.
@@ -306,7 +305,6 @@ class VFSProfileCompiler:
         Args:
             variables: Canonical declarations sharing the compiled storage scope
             bar_schema: Type schema for bars (e.g., {"energy": "float"})
-            evaluation_mode: The pack's declared evaluation mode
             cross_scope: The declarations of the other registry scope. Globals are
                 readable inputs for an agent profile; agent state is refused for a
                 global profile (scope widening), with a message naming both sides.
@@ -386,10 +384,6 @@ class VFSProfileCompiler:
             schema[var.id] = "float" if var.type == "scalar" else var.type
             if var.type not in {"scalar", "bool"}:
                 shapes[var.id] = "payload"
-            elif evaluation_mode == "eager" and compiled.ast is None:
-                # The existing EAGER evaluator reinitializes static context from the
-                # literal, which has no agent axis. Refuse dependent shape mismatches.
-                shapes[var.id] = "scalar"
             else:
                 shapes[var.id] = "agent" if var.scope == VariableScope.AGENT else "scalar"
 

@@ -18,8 +18,6 @@ def test_compiler_generates_vfs_expression_schema(tmp_path: Path):
     variables_document = {
         "variables": {
             "version": "1.0",
-            "evaluation_mode": "mark_and_sweep",
-            "debug_logging": False,
             "extents": {},
             "item_profiles": [],
             "declarations": [

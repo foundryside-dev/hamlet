@@ -28,9 +28,7 @@ def _raw():
     ]
     return replace(
         raw,
-        variables=VariablesConfig(
-            version="1.0", evaluation_mode="mark_and_sweep", debug_logging=False, extents={}, item_profiles=[], declarations=declarations
-        ),
+        variables=VariablesConfig(version="1.0", extents={}, item_profiles=[], declarations=declarations),
     )
 
 

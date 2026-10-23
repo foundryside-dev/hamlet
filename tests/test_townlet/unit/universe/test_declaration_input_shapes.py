@@ -24,7 +24,7 @@ def pack(tmp_path: Path) -> Path:
         "variables: {}\nthis_is_a_typo: 10\n",
         "variables: [oops]\n",
         "variables: {bad: 1}\n",
-        "variables: {version: '1.0', evaluation_mode: eager, debug_logging: false, extents: 7, item_profiles: [], declarations: []}\n",
+        "variables: {version: '1.0', extents: 7, item_profiles: [], declarations: []}\n",
     ],
 )
 def test_canonical_variable_bad_shapes_are_structured(pack: Path, payload: str) -> None:

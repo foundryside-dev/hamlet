@@ -18,7 +18,7 @@ from townlet.config.variables_config import VariablesConfig
 from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.compilers.vfs import VFSCompiler
 from townlet.universe.errors import CompilationError
-from townlet.vfs.evaluator import EvaluationMode, VFSEvaluator
+from townlet.vfs.evaluator import VFSEvaluator
 
 PACK = Path("configs/static_epistemic_access")
 LEVEL = "L0_simple"
@@ -116,8 +116,6 @@ def test_evaluator_feeds_global_outputs_to_the_agent_profile_in_order():
     profile first and handing its outputs on makes the agent profile read this tick's value."""
     config = VariablesConfig(
         version="1.0",
-        evaluation_mode="mark_and_sweep",
-        debug_logging=False,
         extents={},
         item_profiles=[],
         declarations=[
@@ -131,7 +129,7 @@ def test_evaluator_feeds_global_outputs_to_the_agent_profile_in_order():
     assert marks == {"global": {"clock"}, "agent": {"is_night"}}
     assert profiles.global_profile is not None and profiles.agent_profile is not None
 
-    evaluator = VFSEvaluator(mode=EvaluationMode.MARK_AND_SWEEP)
+    evaluator = VFSEvaluator()
     bars = {"energy": torch.tensor([1.0, 1.0])}
     for tick, expected in ((0.0, False), (1.0, True)):
         state = {"tick": torch.tensor(tick), "clock": torch.tensor(-1.0), "is_night": torch.tensor([False, False])}

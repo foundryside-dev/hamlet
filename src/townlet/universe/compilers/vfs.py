@@ -66,18 +66,8 @@ class VFSCompiler:
         # by bare name (the runtime evaluates the global profile first); global
         # expressions refuse agent ids as scope widening.
         return CompiledVFSProfiles(
-            evaluation_mode=config.evaluation_mode,
-            debug_logging=config.debug_logging,
-            global_profile=(
-                compiler.compile_profile(globals_, bar_schema, evaluation_mode=config.evaluation_mode, cross_scope=agents)
-                if globals_
-                else None
-            ),
-            agent_profile=(
-                compiler.compile_profile(agents, bar_schema, evaluation_mode=config.evaluation_mode, cross_scope=globals_)
-                if agents
-                else None
-            ),
+            global_profile=(compiler.compile_profile(globals_, bar_schema, cross_scope=agents) if globals_ else None),
+            agent_profile=(compiler.compile_profile(agents, bar_schema, cross_scope=globals_) if agents else None),
             item_profiles={
                 name: compiler.compile_item_profile(name, config.for_item_profile(name), bar_schema) for name in config.item_profiles
             },

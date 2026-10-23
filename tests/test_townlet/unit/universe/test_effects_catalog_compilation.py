@@ -17,8 +17,6 @@ def test_compiler_compiles_effects_catalog_per_level(tmp_path: Path):
     profiles = {
         "variables": {
             "version": "1.0",
-            "evaluation_mode": "mark_and_sweep",
-            "debug_logging": False,
             "extents": {},
             "item_profiles": [],
             "declarations": [
@@ -77,8 +75,6 @@ def test_compiler_allows_missing_effects_yaml(tmp_path: Path):
     profiles = {
         "variables": {
             "version": "1.0",
-            "evaluation_mode": "mark_and_sweep",
-            "debug_logging": False,
             "extents": {},
             "item_profiles": [],
             "declarations": [

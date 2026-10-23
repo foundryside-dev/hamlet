@@ -8,8 +8,6 @@ languages with one required pack-scope `variables` declaration. A filename such 
 ```yaml
 variables:
   version: '1.0'
-  evaluation_mode: mark_and_sweep
-  debug_logging: false
   extents: {}
   item_profiles: [default_item]
   declarations:
@@ -60,7 +58,9 @@ entry remains a valid schema group for item types with no state variables.
   agent scalar/bool expressions produce an agent batch. An agent expression may read
   any global variable by bare name; the global profile evaluates before the agent profile
   each tick, so an agent expression sees this tick's global value. A global expression may
-  not read agent state (scope widening); it refuses at compile. Vector/tensor expression outputs
+  not read agent state (scope widening); it refuses at compile. A variable id may not
+  equal a meter name; the compiler refuses it at the symbol table with both origins
+  (`SYMBOL_METER_COLLISION`). Vector/tensor expression outputs
   and functions without a qualified shape refuse. A constant belongs in initialization.
 - **Exposure:** an empty list means hidden. Exposed variables require a supported bounded
   `normalization`; normalization on a hidden variable is refused. `semantic_type` uses
@@ -83,11 +83,11 @@ exposed by the current publisher and fail compilation. Item booleans/references 
 float-backed arena and remain supported. Ordinary named reward inputs require scalar or
 boolean global/agent state; other scopes/shapes need a separately implemented reduction.
 
-The `eager` evaluator requires non-null literal initialization for global/agent state
-and rebuilds static expression context from those literals. Null
-references and initializer modes in global/agent profiles therefore require `mark_and_sweep`.
-Expressions depending on eager agent statics must still prove a batched output; an agent
-static dependency alone supplies no batch axis. Unsupported combinations refuse early.
+Expressions are evaluated mark-and-sweep: each tick the compiler-derived marks and their
+in-profile dependencies are evaluated in dependency order, and a static input is read at its
+current runtime value, never its declared literal. There is no evaluation-mode or
+debug-logging setting; a `variables` declaration carrying `evaluation_mode` or
+`debug_logging` fails validation as an extra field.
 
 Global/agent registry variables and item-profile variables have token publishers. Other
 storage scopes do not acquire an observation publisher simply by entering the symbol table.

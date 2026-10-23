@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import logging
-from enum import StrEnum
 from typing import Any
 
 import torch
@@ -13,33 +11,22 @@ from townlet.world.expression.context import ExecutionContext
 from townlet.world.expression.evaluator import Evaluator
 from townlet.world.expression.history import TemporalHistory
 
-__all__ = ["VFSEvaluator", "EvaluationMode"]
-
-
-class EvaluationMode(StrEnum):
-    """VFS evaluation mode."""
-
-    MARK_AND_SWEEP = "mark_and_sweep"  # Only evaluate observed variables
-    EAGER = "eager"  # Evaluate all variables (debug mode)
+__all__ = ["VFSEvaluator"]
 
 
 class VFSEvaluator:
-    """Evaluates VFS expressions using compiled profiles."""
+    """Evaluates VFS expressions using compiled profiles, mark-and-sweep.
 
-    def __init__(
-        self,
-        mode: EvaluationMode = EvaluationMode.MARK_AND_SWEEP,
-        history_spec: dict[str, int] | None = None,
-        debug_logging: bool = False,
-    ):
+    Only the marked expressions and their in-profile dependencies are evaluated; statics
+    are storage and always read their current runtime value from ``vfs_state``.
+    """
+
+    def __init__(self, history_spec: dict[str, int] | None = None):
         """Initialize VFS evaluator.
 
         Args:
-            mode: Evaluation mode (mark_and_sweep or eager)
+            history_spec: Temporal history buffer lengths keyed by ``bar.*`` / ``vfs.*``
         """
-        self.mode = mode
-        self._debug_vfs = debug_logging
-        self._logger = logging.getLogger("hamlet.vfs")
         self.history_spec = history_spec or {}
         self._history: TemporalHistory | None = TemporalHistory(self.history_spec, torch.device("cpu")) if self.history_spec else None
         self._last_history_step: int | None = None
@@ -93,7 +80,7 @@ class VFSEvaluator:
         profile: CompiledGlobalProfile,
         bars: dict[str, torch.Tensor],
         vfs_state: dict[str, torch.Tensor],
-        marks: set[str] | None = None,
+        marks: set[str],
         device: torch.device = torch.device("cpu"),
         step: int | None = None,
         affordances: dict[str, Any] | None = None,
@@ -112,40 +99,28 @@ class VFSEvaluator:
             profile: Compiled global profile with variables in topo order
             bars: Bar state (e.g., {"energy": tensor([batch])})
             vfs_state: Current VFS state (inputs for expressions)
-            marks: Set of variable names to evaluate (for mark-and-sweep)
+            marks: Variable names to evaluate, plus their in-profile dependencies
             device: PyTorch device
 
         Returns:
             Dict mapping variable names to evaluated tensors
         """
-        # Determine which variables to evaluate
-        if self.mode == EvaluationMode.MARK_AND_SWEEP:
-            # Mark-and-sweep requires explicit marks. Use EAGER mode when every
-            # variable should be evaluated intentionally.
-            vars_to_eval: set[str]
-            if marks is None:
-                raise ValueError("MARK_AND_SWEEP evaluation requires explicit marks; use EAGER mode to evaluate every variable.")
-            else:
-                # Evaluate marked variables plus their in-profile dependencies
-                dependencies = getattr(profile, "dependencies", {}) or {}
-                var_names = {var.name for var in profile.variables}
-                unknown_marks = marks - var_names
-                if unknown_marks:
-                    raise KeyError(f"VFS mark(s) not found in profile: {sorted(unknown_marks)}")
+        dependencies = profile.dependencies
+        unknown_marks = marks - {var.name for var in profile.variables}
+        if unknown_marks:
+            raise KeyError(f"VFS mark(s) not found in profile: {sorted(unknown_marks)}")
 
-                def add_with_deps(var_name: str, acc: set[str]) -> None:
-                    """Add variable and its dependencies to evaluation set."""
-                    if var_name in acc:
-                        return
-                    acc.add(var_name)
-                    for dep in dependencies.get(var_name, ()):
-                        add_with_deps(dep, acc)
+        def add_with_deps(var_name: str, acc: set[str]) -> None:
+            """Add variable and its dependencies to evaluation set."""
+            if var_name in acc:
+                return
+            acc.add(var_name)
+            for dep in dependencies.get(var_name, ()):
+                add_with_deps(dep, acc)
 
-                vars_to_eval = set()
-                for marked in marks:
-                    add_with_deps(marked, vars_to_eval)
-        else:  # EAGER mode
-            vars_to_eval = {var.name for var in profile.variables}
+        vars_to_eval: set[str] = set()
+        for marked in marks:
+            add_with_deps(marked, vars_to_eval)
 
         # Temporal history requires variables to be evaluated even if unmarked
         history_vfs_vars = {key.split(".", 1)[1] for key in self.history_spec if key.startswith("vfs.")}
@@ -179,25 +154,14 @@ class VFSEvaluator:
             if var.name not in vars_to_eval:
                 continue
 
-            # Static (no expression): storage, not computation. Always report its
-            # declared initial value in `result`.
+            # Static (no expression): storage, not computation. It reaches vars_to_eval
+            # through the dependency chase of a marked expression or through the
+            # history_spec union above (derive_evaluation_marks never marks a static).
+            # context.vfs already carries its CURRENT runtime value from vfs_state; the
+            # declared initial value is reported in `result` only and never fed to a
+            # dependent expression (hamlet-df3a96bbac).
             if var.ast is None:
-                value = torch.tensor(var.initial_value, device=device)
-                result[var.name] = value
-                # EAGER mode's contract is to reinitialize every variable — including
-                # statics — from its declared default on every evaluation pass; that
-                # behavior is unchanged. In MARK_AND_SWEEP mode a static reaches
-                # vars_to_eval by TWO paths, neither of which is a direct mark
-                # (derive_evaluation_marks excludes statics): the dependency chase of a
-                # marked expression, and the history_spec union above — a `vfs.*` key in
-                # the compiled history spec forces its variable into vars_to_eval so the
-                # temporal buffer records it each tick, statics included (comment-242
-                # item 4). Either way context.vfs already carries the static's CURRENT
-                # runtime value from vfs_state; overwriting it with the compile-time
-                # default would silently feed a stale value into every dependent
-                # expression (hamlet-df3a96bbac).
-                if self.mode != EvaluationMode.MARK_AND_SWEEP:
-                    context.vfs[var.name] = value
+                result[var.name] = torch.tensor(var.initial_value, device=device)
                 continue
 
             # Evaluate expression using current context
@@ -210,15 +174,6 @@ class VFSEvaluator:
         # Push history after evaluating current step
         self._push_history(bars=bars, vfs_values=context.vfs, device=device, step=step)
 
-        if self._debug_vfs:
-            self._logger.debug(
-                "vfs_evaluation",
-                extra={
-                    "mode": self.mode.value,
-                    "evaluated": sorted(result.keys()),
-                    "marks": sorted(marks) if marks is not None else None,
-                },
-            )
         return result
 
     def evaluate_all(self, registry: Any) -> dict[str, torch.Tensor]:

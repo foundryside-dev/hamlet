@@ -1,6 +1,6 @@
 import torch
 
-from townlet.vfs.evaluator import EvaluationMode, VFSEvaluator
+from townlet.vfs.evaluator import VFSEvaluator
 from townlet.vfs.profiles import CompiledGlobalProfile, CompiledVariable
 from townlet.world.expression import ExpressionParser
 
@@ -22,7 +22,7 @@ def _profile(expr: str, name: str = "var") -> CompiledGlobalProfile:
 
 def test_distance_and_in_range_static_affordance():
     profile = _profile('distance_to_affordance("Fridge")', name="dist")
-    evaluator = VFSEvaluator(mode=EvaluationMode.EAGER)
+    evaluator = VFSEvaluator()
 
     agent_pos = torch.tensor([[0.0, 0.0], [2.0, 0.0]])
     affordances = {"Fridge": torch.tensor([1.0, 0.0])}
@@ -31,6 +31,7 @@ def test_distance_and_in_range_static_affordance():
         profile,
         bars={},
         vfs_state={},
+        marks=set(profile.dependencies),
         device=torch.device("cpu"),
         agent_positions=agent_pos,
         affordance_positions=affordances,
@@ -43,6 +44,7 @@ def test_distance_and_in_range_static_affordance():
         profile_range,
         bars={},
         vfs_state={},
+        marks=set(profile_range.dependencies),
         device=torch.device("cpu"),
         agent_positions=agent_pos,
         affordance_positions=affordances,
@@ -52,7 +54,7 @@ def test_distance_and_in_range_static_affordance():
 
 def test_direction_and_metric_euclidean():
     profile = _profile('direction_to_affordance("Target")', name="dir")
-    evaluator = VFSEvaluator(mode=EvaluationMode.EAGER)
+    evaluator = VFSEvaluator()
 
     agent_pos = torch.tensor([[0.0, 0.0], [2.0, 0.0]])
     affordances = {"Target": torch.tensor([2.0, 0.0])}
@@ -61,6 +63,7 @@ def test_direction_and_metric_euclidean():
         profile,
         bars={},
         vfs_state={},
+        marks=set(profile.dependencies),
         device=torch.device("cpu"),
         agent_positions=agent_pos,
         affordance_positions=affordances,
@@ -73,6 +76,7 @@ def test_direction_and_metric_euclidean():
         profile_euclid,
         bars={},
         vfs_state={},
+        marks=set(profile_euclid.dependencies),
         device=torch.device("cpu"),
         agent_positions=agent_pos,
         affordance_positions=affordances,
@@ -81,7 +85,7 @@ def test_direction_and_metric_euclidean():
 
 
 def test_empty_affordance_returns_inf_false_zero_dir():
-    evaluator = VFSEvaluator(mode=EvaluationMode.EAGER)
+    evaluator = VFSEvaluator()
     agent_pos = torch.tensor([[0.0, 0.0]])
 
     dist_profile = _profile('distance_to_affordance("None")', name="dist")
@@ -89,6 +93,7 @@ def test_empty_affordance_returns_inf_false_zero_dir():
         dist_profile,
         bars={},
         vfs_state={},
+        marks=set(dist_profile.dependencies),
         device=torch.device("cpu"),
         agent_positions=agent_pos,
         affordance_positions={},
@@ -100,6 +105,7 @@ def test_empty_affordance_returns_inf_false_zero_dir():
         dir_profile,
         bars={},
         vfs_state={},
+        marks=set(dir_profile.dependencies),
         device=torch.device("cpu"),
         agent_positions=agent_pos,
         affordance_positions={},
@@ -108,7 +114,7 @@ def test_empty_affordance_returns_inf_false_zero_dir():
 
 
 def test_invalid_metric_raises():
-    evaluator = VFSEvaluator(mode=EvaluationMode.EAGER)
+    evaluator = VFSEvaluator()
     agent_pos = torch.tensor([[0.0, 0.0]])
     affordances = {"Fridge": torch.tensor([0.0, 0.0])}
 
@@ -118,6 +124,7 @@ def test_invalid_metric_raises():
             profile,
             bars={},
             vfs_state={},
+            marks=set(profile.dependencies),
             device=torch.device("cpu"),
             agent_positions=agent_pos,
             affordance_positions=affordances,

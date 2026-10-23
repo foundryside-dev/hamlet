@@ -95,15 +95,6 @@ def test_global_expression_reading_an_agent_variable_refuses_at_compile(tmp_path
         UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "vectorized_env.step() snapshots _current_vfs_state() once (registry.get clones) before the "
-        "global profile pass and reuses it for the agent pass, so an agent expression over a global "
-        "EXPRESSION reads last tick's write-back. Fix: refresh the snapshot after the global "
-        "_write_back_profile_expressions call, before the agent profile evaluates (WP5 report)."
-    ),
-)
 def test_agent_expression_over_a_global_expression_reads_the_same_tick_value(tmp_path: Path):
     """The motivating case: `is_night: day_phase > 0.5` where the clock is itself a global expression."""
     pack = _pack_with(

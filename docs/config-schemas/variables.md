@@ -53,7 +53,10 @@ entry remains a valid schema group for item types with no state variables.
   value. Dependencies are resolved and ordered before execution. Scalar expressions use
   the expression DSL's numeric types; they do not promise integer registry storage.
   The compiler proves output shape: global scalar/bool expressions produce a scalar,
-  agent scalar/bool expressions produce an agent batch. Vector/tensor expression outputs
+  agent scalar/bool expressions produce an agent batch. An agent expression may read
+  any global variable by bare name; the global profile evaluates before the agent profile
+  each tick, so an agent expression sees this tick's global value. A global expression may
+  not read agent state (scope widening); it refuses at compile. Vector/tensor expression outputs
   and functions without a qualified shape refuse. A constant belongs in initialization.
 - **Exposure:** an empty list means hidden. Exposed variables require a supported bounded
   `normalization`; normalization on a hidden variable is refused. `semantic_type` uses
@@ -100,6 +103,34 @@ Supported consumer boundaries are explicit:
 
 Symbol registration alone does not supply pair-state reductions or arbitrary tensor
 operations to a consumer. Command expressions must satisfy that consumer's type contract.
+
+## Transition phases and evaluation order
+
+Action writes (`actions.custom_actions[].writes`) and transition rules
+(`transition_rules.social_residue[]`) name a `phase`. The phase graph is closed and is
+exactly the schedule `step()` executes, in this order:
+
+1. `ingest_actions`, `advance_global_time`, `compute_action_legality_masks`,
+   `apply_movement_and_wait_costs`, `resolve_affordance_access_and_occupancy`,
+   `apply_action_costs`, `advance_interaction_progress`, `apply_action_effects`,
+   `apply_completion_bonuses` — run together, with the tick's actions, after the action
+   executor.
+2. `apply_passive_depletion`, then `apply_threshold_cascades`; then scheduled effects tick.
+3. `apply_social_residue_effects`, `clamp_and_validate`.
+4. Global then agent expressions are evaluated (see below).
+5. `evaluate_terminal_conditions`.
+
+An action write is admitted only in group 1, the phases that run with the tick's actions.
+A write scheduled at any later phase is refused at compile with its `actions.yaml`
+`file:line`; an unknown phase name is refused the same way for action writes and
+transition rules. A transition rule applies at any phase of the graph. Rewards are not a
+transition phase: they are computed by the drive (DAC) after the transition.
+
+Expressions are evaluated once per tick, after every transition phase that writes VFS
+state (action writes, scheduled effects, transition rules) and after
+`clamp_and_validate`, so an expression always reads this tick's writes and clamped bars.
+The converse is one tick behind: an action write or transition rule that reads an
+expression variable sees the value computed at the end of the previous tick.
 
 ## Resolution, access and artifacts
 

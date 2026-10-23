@@ -32,6 +32,7 @@ from townlet.vfs.schema_hashes import (
     compute_vfs_hash,
 )
 from townlet.vfs.transition_schedule import build_vtc_transition_schedule
+from townlet.vfs.vtc import VTCPhaseError
 from townlet.world.expression.type_checker import TypeCheckError
 
 from .compiled import CompiledVFSProfiles
@@ -44,6 +45,7 @@ from .compilers.vfs import VFSCompiler
 from .errors import CompilationError, CompilationMessage
 from .loaders.preflight import validate_config_dir
 from .pipeline import CompiledLevelBundle, SharedCompilerArtifacts
+from .source_map import locate
 from .stages import CompilationStage
 from .validation.limits import (
     MAX_CACHE_FILE_SIZE,
@@ -379,12 +381,25 @@ class UniverseCompiler:
             observation_schema_hash = compute_observation_schema_hash(token_spec)
             assert compiled_vfs_profiles is not None and compiled_vfs_profiles.item_profiles is not None
             variable_schema_hash = compute_variable_schema_hash(vfs_variables, compiled_vfs_profiles.item_profiles)
-            transition_schedule = build_vtc_transition_schedule(
-                runtime_action_space=runtime_action_space,
-                level=level,
-                social_residue_rules=raw.social_residue_rules,
-                vfs_variables=vfs_variables,
-            )
+            try:
+                transition_schedule = build_vtc_transition_schedule(
+                    runtime_action_space=runtime_action_space,
+                    level=level,
+                    social_residue_rules=raw.social_residue_rules,
+                    vfs_variables=vfs_variables,
+                )
+            except VTCPhaseError as exc:
+                raise CompilationError(
+                    CompilationStage.LEVELS.label,
+                    [
+                        CompilationMessage(
+                            code=ErrorCode.UAC_STATIC_WRITE,
+                            message=refusal.message,
+                            location=locate(raw.source_map, refusal.origin_key),
+                        )
+                        for refusal in exc.refusals
+                    ],
+                ) from exc
             transition_graph_hash = compute_transition_graph_hash(
                 transition_schedule.phase_graph,
                 transition_schedule.action_write_program,
@@ -395,7 +410,6 @@ class UniverseCompiler:
                 modulation_program=transition_schedule.modulation_program,
                 passive_depletion_program=transition_schedule.passive_depletion_program,
                 social_residue_program=transition_schedule.social_residue_program,
-                reward_component_program=transition_schedule.reward_component_program,
                 bounds_clamp_program=transition_schedule.bounds_clamp_program,
             )
             vfs_hash = compute_vfs_hash(variable_schema_hash, observation_schema_hash, action_schema_hash, transition_graph_hash)

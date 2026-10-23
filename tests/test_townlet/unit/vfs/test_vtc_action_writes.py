@@ -6,7 +6,7 @@ import torch
 from townlet.environment.action_config import ActionConfig
 from townlet.vfs.schema import WriteSpec
 from townlet.vfs.transition_graph import TransitionPhaseGraph
-from townlet.vfs.vtc import compile_vtc_action_writes, compile_vtc_action_writes_with_phase_graph
+from townlet.vfs.vtc import VTCPhaseError, compile_vtc_action_writes, compile_vtc_action_writes_with_phase_graph
 
 
 def _write(
@@ -571,7 +571,7 @@ def test_vtc_action_writes_accepts_configured_transition_phase_order() -> None:
             ),
         ],
     )
-    phase_graph = TransitionPhaseGraph(("phase_b", "phase_a"))
+    phase_graph = TransitionPhaseGraph(("phase_b", "phase_a"), "phase_a")
 
     program = compile_vtc_action_writes_with_phase_graph([action], phase_graph)
     updated = program.apply(
@@ -603,5 +603,28 @@ def test_vtc_action_writes_rejects_unconfigured_transition_phase() -> None:
         ],
     )
 
-    with pytest.raises(ValueError, match="Unknown transition phase"):
+    with pytest.raises(VTCPhaseError, match="'unconfigured_phase', which is not a transition phase"):
         compile_vtc_action_writes([action])
+
+
+def test_vtc_action_writes_refuse_phases_that_run_without_actions() -> None:
+    action = _action(
+        action_id=11,
+        name="LATE",
+        writes=[
+            _write_with_metadata(
+                variable_id="energy",
+                expression="energy + 1.0",
+                condition=None,
+                composition="overwrite",
+                phase="apply_passive_depletion",
+                priority=0,
+                clamp=None,
+                telemetry_label="late_increment",
+            )
+        ],
+    )
+
+    with pytest.raises(VTCPhaseError, match="runs without the tick's actions") as refusal:
+        compile_vtc_action_writes([action])
+    assert [r.origin_key for r in refusal.value.refusals] == ["actions:LATE:writes[0]"]

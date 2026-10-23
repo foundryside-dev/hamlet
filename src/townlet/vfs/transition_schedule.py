@@ -17,7 +17,6 @@ from townlet.vfs.vtc import (
     VTCInteractionProgressProgram,
     VTCModulationProgram,
     VTCPassiveDepletionProgram,
-    VTCRewardProgram,
     VTCSocialResidueProgram,
     VTCTerminalConditionProgram,
     VTCThresholdCascadeProgram,
@@ -27,7 +26,6 @@ from townlet.vfs.vtc import (
     compile_vtc_interaction_progress_with_phase_graph,
     compile_vtc_modulations_with_phase_graph,
     compile_vtc_passive_depletions_with_phase_graph,
-    compile_vtc_reward_components_with_phase_graph,
     compile_vtc_social_residue_rules_with_phase_graph,
     compile_vtc_terminal_conditions_with_phase_graph,
     compile_vtc_threshold_cascades_with_phase_graph,
@@ -47,7 +45,6 @@ class VTCTransitionSchedule:
     modulation_program: VTCModulationProgram
     threshold_cascade_program: VTCThresholdCascadeProgram
     social_residue_program: VTCSocialResidueProgram
-    reward_component_program: VTCRewardProgram
     bounds_clamp_program: VTCBoundsClampProgram
 
 
@@ -93,10 +90,6 @@ class VTCTransitionRunner:
             raise ValueError(f"Phase '{after_phase}' must precede phase '{before_phase}'")
         return self.schedule.phase_graph.ordered_phases[after_index + 1 : before_index]
 
-    def run_phase(self, phase: str, context: VTCTransitionContext) -> VTCTransitionState:
-        """Run all compiled transition programs scheduled for one phase."""
-        return self.run_phases((phase,), context)
-
     def run_phases(self, phases: Sequence[str], context: VTCTransitionContext) -> VTCTransitionState:
         """Run compiled transition programs for the supplied phases in order."""
         vfs_state = {name: value.to(device=context.device).clone() for name, value in context.vfs_state.items()}
@@ -130,7 +123,9 @@ class VTCTransitionRunner:
         if not writes:
             return vfs_state, bars_state, frozenset()
         if context.actions is None:
-            raise ValueError(f"Transition phase '{phase}' requires actions for VTC action writes")
+            # The compiler admits action writes only at phase_graph.action_phases, which
+            # step() runs with the tick's actions; reaching here is an engine defect.
+            raise AssertionError(f"Transition phase '{phase}' ran without actions but schedules VTC action writes")
 
         updated = VTCActionWriteProgram(writes).apply(
             actions=context.actions,
@@ -254,7 +249,6 @@ def build_vtc_transition_schedule(
     threshold_cascades = compile_vtc_threshold_cascades_with_phase_graph(level.bars.cascades, level.bars.meters, phase_graph)
     social_program = compile_vtc_social_residue_rules_with_phase_graph(social_residue_rules, phase_graph)
     _validate_state_residue_targets(social_program, (variable.id for variable in vfs_variables))
-    rewards = compile_vtc_reward_components_with_phase_graph(level.drive, phase_graph)
     bounds_clamps = compile_vtc_bounds_clamps_with_phase_graph(level.bars.meters, phase_graph)
     return VTCTransitionSchedule(
         phase_graph=phase_graph,
@@ -266,7 +260,6 @@ def build_vtc_transition_schedule(
         modulation_program=modulations,
         threshold_cascade_program=threshold_cascades,
         social_residue_program=social_program,
-        reward_component_program=rewards,
         bounds_clamp_program=bounds_clamps,
     )
 
@@ -288,7 +281,6 @@ def serialize_vtc_transition_schedule(schedule: VTCTransitionSchedule) -> dict[s
             "modulations": len(schedule.modulation_program.rules),
             "threshold_cascades": len(schedule.threshold_cascade_program.rules),
             "social_residue": len(schedule.social_residue_program.rules),
-            "reward_components": len(schedule.reward_component_program.rules),
             "bounds_clamps": len(schedule.bounds_clamp_program.rules),
         },
     }

@@ -109,7 +109,7 @@ def _with_runtime_action_surface(
         modulation_program=transition_schedule.modulation_program,
         passive_depletion_program=transition_schedule.passive_depletion_program,
         social_residue_program=transition_schedule.social_residue_program,
-        reward_component_program=transition_schedule.reward_component_program,
+        bounds_clamp_program=transition_schedule.bounds_clamp_program,
     )
     vfs_hash = compute_vfs_hash(
         level.variable_schema_hash,

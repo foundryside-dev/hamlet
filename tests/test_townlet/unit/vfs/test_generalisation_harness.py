@@ -54,7 +54,7 @@ def test_held_out_generalisation_split_accepts_surface_label_swaps_with_shared_c
                 "variable_id": "affordance.FORAGE.multiplier",
                 "expression": "where(bar.energy < 0.3, 0.5 + 0.5 * (bar.energy / 0.3), 1.0)",
                 "composition": "multiplicative_modifier",
-                "phase": "apply_modulations",
+                "phase": "apply_action_effects",
             },
         ),
     )
@@ -75,7 +75,7 @@ def test_held_out_generalisation_split_accepts_surface_label_swaps_with_shared_c
                 "variable_id": "affordance.GRAZE.multiplier",
                 "expression": "where(bar.vitality < 0.3, 0.5 + 0.5 * (bar.vitality / 0.3), 1.0)",
                 "composition": "multiplicative_modifier",
-                "phase": "apply_modulations",
+                "phase": "apply_action_effects",
             },
         ),
     )

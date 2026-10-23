@@ -1057,7 +1057,7 @@ Current implementation is partial but real:
 - `VFSProfileCompiler` compiles profile expressions on the read/derived-variable path: AST parsing, dependency graph construction, topological sorting, cycle detection, and expression type checking.
 - `VFSEvaluator` evaluates compiled profile variables in dependency order, with mark-and-sweep evaluation for observed variables plus dependencies and eager mode when all variables are needed.
 - `VTCActionWriteProgram` executes the first write-path slice for `ActionConfig.writes`: parsed expressions, phase ordering, composition modes, clamps, conditions, active-agent masks, and atomic per-phase commit batches.
-- Generated VTC programs own passive depletion, threshold cascades, affordance modulation, operating-hour gates, interaction progress, terminal checks, and the reward-component contract. (The reward slice is a *contract*: `VTCRewardProgram` validates the tensors and components the DAC engine returns against the declared contract; the reward math itself still lives in `DACEngine`.)
+- Generated VTC programs own passive depletion, threshold cascades, affordance modulation, operating-hour gates, interaction progress, bounds clamps and terminal checks. Rewards are not a VTC program: `DACEngine` computes them after the transition, and `VTCRewardProgram` only checks the shape of what it returns (§11.4).
 - `vtc_kernels.py` contains TorchScript kernels for generated hot transition paths: masked action-write commits, passive depletion, threshold cascades, linear affordance modulation, and terminal-condition checks. Arbitrary action-write expressions still evaluate through the typed expression AST before entering scripted tensor composition.
 - Generated transition programs have no interpreter fallback helpers. Unsupported generated-rule forms fail loudly instead of silently routing through an old imperative executor.
 
@@ -1125,9 +1125,11 @@ Batched Execution
 Registry Updates + Rewards + Dones + Telemetry
 ```
 
-### 11.4 Recommended transition phases
+### 11.4 Transition phases
 
-A full tick should eventually compile into an ordered phase graph:
+The phase graph is the executed schedule (corrected 2026-10-24, WP1 of
+`docs/remediation/vfs.md`): `DEFAULT_TRANSITION_PHASES` (`vfs/transition_graph.py`) lists
+exactly the fourteen phases `VectorizedHamletEnv.step()` runs, in order, and no others.
 
 ```text
 0. ingest_actions
@@ -1138,52 +1140,45 @@ A full tick should eventually compile into an ordered phase graph:
 5. apply_action_costs
 6. advance_interaction_progress
 7. apply_action_effects
-8. apply_completion_bonuses
+8. apply_completion_bonuses          <- last_action_phase
 9. apply_passive_depletion
-10. apply_modulations
-11. apply_threshold_cascades
-12. apply_social_residue_effects
-13. clamp_and_validate
-14. evaluate_terminal_conditions
-15. compute_rewards
-16. emit_observation_features
-17. emit_telemetry
+10. apply_threshold_cascades
+11. apply_social_residue_effects
+12. clamp_and_validate
+13. evaluate_terminal_conditions
 ```
 
-The exact sequence can be tuned, but it must be explicit, configured, validated, and hashable.
-Execution order materially changes the world.
+Execution order materially changes the world, so the graph (phases, edges and
+`last_action_phase`) is hashed into `transition_graph_hash`.
 
-**This list is no longer only a recommendation** (noted 2026-08-25): it ships verbatim as
-`DEFAULT_TRANSITION_PHASES` (`vfs/transition_graph.py:7-26`), the canonical order
-`TransitionPhaseGraph` sorts compiled rules by. What remains aspirational is *coverage* —
-not every phase has compiled rules flowing through it yet (§11.5, §21.1).
+`step()` runs phases 0-8 in one runner call with the tick's actions, then 9, then 10, then
+the scheduled-effects tick, then 11-12, then profile expressions, then 13. Every phase is
+requested exactly once (`tests/test_townlet/unit/vfs/test_phase_graph_truth.py` pins this
+against the recorded runner calls).
 
-**Per-phase coverage at HEAD** (measured 2026-08-25, pass 3, from the `phase=` literals in
-`vfs/vtc.py` and the runner calls in `environment/vectorized_env.py:1026-1036,1150-1156`).
-Eleven of the eighteen phases carry compiler-emitted rules: `compute_action_legality_masks`
-(affordance gates), `resolve_affordance_access_and_occupancy` (occupancy claims),
-`advance_interaction_progress`, `apply_completion_bonuses`, `apply_passive_depletion`,
-`apply_modulations`, `apply_threshold_cascades`, `apply_social_residue_effects`,
-`clamp_and_validate`, `evaluate_terminal_conditions`, and `compute_rewards` (the DAC
-contract). The other seven — `ingest_actions`, `advance_global_time`,
-`apply_movement_and_wait_costs`, `apply_action_costs`, `apply_action_effects`,
-`emit_observation_features`, `emit_telemetry` — have **no compiler emitting into them**; the
-engine still does that work imperatively (`_action_executor`, `global_tick`, the encoder).
-Author-scheduled action writes (`actions.yaml` `writes[].phase`) are the one way content
-reaches the middle three, and they must land in a phase **no later than
-`apply_completion_bonuses`**: `env.step` runs phases 0–8 with the action batch, and the later
-runner calls carry `actions=None`, so an action write scheduled after that boundary raises
-`ValueError` at the first step (`vfs/transition_schedule.py:123-127`) — another
-compile-green/runtime-fail seam of the §21.1 item 8 kind.
+**Deleted phases.** `apply_modulations`, `compute_rewards`, `emit_observation_features` and
+`emit_telemetry` were in the graph but never requested by `step()`: a write or rule
+scheduled there compiled green and never applied (F1). They are gone, and with them the
+compiled reward-component rules (`reward_component_program`), which were hashed but never
+read: rewards are DAC's and run after the transition. `VTCRewardProgram` survives only as
+a rule-less shape check on the DAC backend's outputs. Modulation rules, which the
+affordance engine reads while applying affordance effects, carry `apply_action_effects`.
 
-**Phase names are validated at compile.** `WriteSpec.phase` and every rule's `phase` are
-resolved through `TransitionPhaseGraph.sort_key`, which raises `ValueError` for any name not in
-the list above (`vfs/transition_graph.py:57-63`; the action-write sort at `vfs/vtc.py:2282`).
-The shorthand names in this document's *design* examples — `action_costs`, `action_effects`,
-`emergency_relocation` (§10.2, §13.3), `passive_depletion`, `threshold_cascades` (§12.3,
-§14.3) — are illustrative and would be refused; author the canonical `apply_*` names. (The
-`WriteSpec` docstring in `vfs/schema.py:238,250` carries the same shorthand — a source nit,
-noted 2026-08-25.)
+**Admission is checked at compile.** Action writes are admitted only at
+`TransitionPhaseGraph.action_phases` (phases 0-8, the phases that run with the action
+batch). A write scheduled later, or at a name not in the graph, is refused with a
+`file:line` origin (`VTCPhaseError`, located by the universe compiler); the runtime check in
+`VTCTransitionRunner._run_action_writes` remains only as an engine-defect assertion.
+Transition rules apply at any phase; an unknown phase name is refused with its
+`transition_rules` origin. The shorthand names in this document's design examples
+(`action_costs`, `action_effects`, `emergency_relocation`, `passive_depletion`,
+`threshold_cascades`) are illustrative and would be refused; author the canonical names.
+
+**Expressions run after the transition phases.** Profile evaluation happens after
+`clamp_and_validate` and before `evaluate_terminal_conditions`, so expressions read this
+tick's action writes, effect writes and transition-rule writes. A transition write that
+reads an expression variable sees the previous tick's value (`variables.md`, "Transition
+phases and evaluation order").
 
 `clamp_and_validate` carries compiled bounds rules (`hamlet-f46e2b381a`): one
 `bounds_clamp:<meter>` rule per declared meter, sourced from `bars.*.bounds`, compiled into
@@ -2054,7 +2049,7 @@ token slots rather than a second observation-field path.
 3. Keep old meter update logic for non-action world physics.
 4. Run equivalence tests.
 
-#### Phase 2.1–2.3: Transition unification — completed (rewards run through the VTC contract; the math stays in `DACEngine`, §11.1)
+#### Phase 2.1–2.3: Transition unification — completed (rewards stay in `DACEngine`; the compiled reward-component rules were deleted 2026-10-24, §11.4)
 
 1. Move passive depletion into VTC.
 2. Move cascades and modulations into VTC.
@@ -2248,7 +2243,7 @@ Compiler and expression tests:
 uv run pytest tests/test_townlet/unit/vfs/test_expression_integration.py -v
 uv run pytest tests/test_townlet/unit/vfs/test_expression_spatial.py tests/test_townlet/unit/vfs/test_expression_temporal.py tests/test_townlet/unit/vfs/test_expression_noise.py -v
 uv run pytest tests/test_townlet/unit/vfs/test_vfs_evaluator.py -v
-uv run pytest tests/test_townlet/unit/vfs/test_transition_graph.py -v
+uv run pytest tests/test_townlet/unit/vfs/test_transition_graph.py tests/test_townlet/unit/vfs/test_phase_graph_truth.py -v
 uv run pytest tests/test_townlet/unit/vfs/test_vtc_action_writes.py -v
 ```
 

@@ -1,95 +1,26 @@
-"""Tests for reward components compiled as VTC transition rules."""
+"""The DAC reward-output contract: ``VTCRewardProgram`` validates what the backend returns.
+
+Rewards are DAC's. There is no reward transition phase and no compiled reward rule;
+the program only calls the backend and refuses mis-shaped outputs.
+"""
 
 from __future__ import annotations
 
 import pytest
 import torch
 
-from townlet.config.drive_as_code import (
-    BarBonusConfig,
-    DriveAsCodeConfig,
-    ExtrinsicStrategyConfig,
-    IntrinsicStrategyConfig,
-    ModifierConfig,
-    RangeConfig,
-    VariableBonusConfig,
-    VFSVariableBonusConfig,
-)
 from townlet.vfs import vtc
 
 
-def _reward_config(*, variable_weight: float = 0.5) -> DriveAsCodeConfig:
-    return DriveAsCodeConfig(
-        version="1.0",
-        modifiers={
-            "energy_crisis": ModifierConfig(
-                bar="energy",
-                ranges=[
-                    RangeConfig(name="crisis", min=0.0, max=0.3, multiplier=0.0),
-                    RangeConfig(name="normal", min=0.3, max=1.0, multiplier=1.0),
-                ],
-            )
-        },
-        extrinsic=ExtrinsicStrategyConfig(
-            type="constant_base_with_shaped_bonus",
-            base_reward=1.0,
-            bar_bonuses=[BarBonusConfig(bar="energy", center=0.5, scale=0.25)],
-            variable_bonuses=[VariableBonusConfig(variable="energy_deficit", weight=variable_weight)],
-            apply_modifiers=["energy_crisis"],
-        ),
-        intrinsic=IntrinsicStrategyConfig(strategy="rnd", base_weight=0.2, apply_modifiers=["energy_crisis"]),
-        shaping=[VFSVariableBonusConfig(type="vfs_variable", variable="vtc_completion_signal", weight=2.0)],
-    )
-
-
-def test_compile_vtc_reward_components_declares_dac_vtc_boundary() -> None:
-    """DAC reward sources should compile into explicit VTC compute-reward rules."""
-    assert hasattr(vtc, "compile_vtc_reward_components"), "VTC reward-component compiler is required"
-
-    program = vtc.compile_vtc_reward_components(_reward_config())
-
-    assert [rule.rule_id for rule in program.rules] == [
-        "reward:modifier:energy_crisis",
-        "reward:extrinsic:constant_base_with_shaped_bonus",
-        "reward:intrinsic:rnd",
-        "reward:shaping:0:vfs_variable",
-        "reward:total",
-    ]
-
-    modifier_rule = program.rules[0]
-    assert modifier_rule.kind == "reward_modifier"
-    assert modifier_rule.phase == "compute_rewards"
-    assert modifier_rule.variable_id == "reward.modifier.energy_crisis"
-    assert modifier_rule.reads == ("bar.energy",)
-    assert modifier_rule.component == "modifier"
-    assert modifier_rule.source_kind == "bar"
-    assert modifier_rule.parameters["ranges"][0]["multiplier"] == 0.0
-
-    extrinsic_rule = program.rules[1]
-    assert extrinsic_rule.kind == "reward_component"
-    assert extrinsic_rule.component == "extrinsic"
-    assert extrinsic_rule.variable_id == "reward.extrinsic"
-    assert extrinsic_rule.reads == ("bar.energy", "vfs.energy_deficit", "reward.modifier.energy_crisis")
-    assert extrinsic_rule.parameters["variable_bonuses"][0]["weight"] == 0.5
-
-    intrinsic_rule = program.rules[2]
-    assert intrinsic_rule.component == "intrinsic"
-    assert intrinsic_rule.reads == ("intrinsic_raw", "reward.modifier.energy_crisis")
-
-    shaping_rule = program.rules[3]
-    assert shaping_rule.component == "shaping"
-    assert shaping_rule.reads == ("vfs.vtc_completion_signal",)
-    assert shaping_rule.parameters["weight"] == 2.0
-
-    total_rule = program.rules[4]
-    assert total_rule.component == "total"
-    assert total_rule.reads == ("reward.extrinsic", "reward.intrinsic", "reward.shaping")
+def test_vtc_reward_program_carries_no_compiled_rules() -> None:
+    program = vtc.VTCRewardProgram()
+    assert not hasattr(program, "rules")
     assert program.expected_components == ("extrinsic", "intrinsic", "intrinsic_raw", "shaping")
 
 
 def test_vtc_reward_program_applies_dac_backend_and_validates_component_contract() -> None:
     """The VTC reward program should own reward-phase invocation and component shape validation."""
-    program = vtc.compile_vtc_reward_components(_reward_config())
+    program = vtc.VTCRewardProgram()
     device = torch.device("cpu")
     step_counts = torch.tensor([1, 2], device=device)
     dones = torch.tensor([False, True], device=device)
@@ -136,7 +67,7 @@ def test_vtc_reward_program_applies_dac_backend_and_validates_component_contract
 
 def test_vtc_reward_program_rejects_missing_declared_component() -> None:
     """Reward backends must return every component declared by the VTC reward contract."""
-    program = vtc.compile_vtc_reward_components(_reward_config())
+    program = vtc.VTCRewardProgram()
     device = torch.device("cpu")
 
     class Backend:

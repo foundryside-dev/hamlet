@@ -7,12 +7,6 @@ import yaml
 
 from tests.test_townlet.helpers.config_builder import PRIMARY_LEVEL_NAME, prepare_config_dir
 from townlet.config.affordances_v2_config import ModulationParamConfig
-from townlet.config.drive_as_code import (
-    DriveAsCodeConfig,
-    ExtrinsicStrategyConfig,
-    IntrinsicStrategyConfig,
-    VariableBonusConfig,
-)
 from townlet.environment.action_config import ActionConfig
 from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.dto import RuntimeAction
@@ -260,7 +254,7 @@ def test_compiler_surfaces_action_schema_hash(tmp_path: Path) -> None:
 
 def test_transition_graph_hash_binds_phases_and_compiled_rule_fields() -> None:
     """Transition hashes should bind scheduler order and compiled action-write semantics."""
-    phase_graph = TransitionPhaseGraph(("phase_a", "phase_b"))
+    phase_graph = TransitionPhaseGraph(("phase_a", "phase_b"), "phase_b")
 
     def make_action(*, expression: str, composition: str) -> ActionConfig:
         return ActionConfig(
@@ -298,11 +292,14 @@ def test_transition_graph_hash_binds_phases_and_compiled_rule_fields() -> None:
         "phase_graph": {
             "phases": ["phase_a", "phase_b"],
             "edges": [{"before": "phase_a", "after": "phase_b"}],
+            "last_action_phase": "phase_b",
         },
         "rules": [
             {
                 "action_id": 3,
                 "action_name": "REST",
+                "source_affordance": None,
+                "affordance_index": None,
                 "variable_id": "energy",
                 "expression": "energy + 0.25",
                 "condition": "energy < 0.8",
@@ -316,7 +313,7 @@ def test_transition_graph_hash_binds_phases_and_compiled_rule_fields() -> None:
     }
 
     baseline = compute_transition_graph_hash(phase_graph, program)
-    reordered_graph = TransitionPhaseGraph(("phase_b", "phase_a"))
+    reordered_graph = TransitionPhaseGraph(("phase_b", "phase_a"), "phase_a")
     changed_expression = make_action(expression="energy + 0.5", composition="additive_delta")
     changed_composition = make_action(expression="energy + 0.25", composition="overwrite")
 
@@ -361,10 +358,12 @@ def test_transition_graph_hash_binds_modulation_rules() -> None:
             "expression": "where(bar.energy < 0.3, 0.5 + (1.0 - 0.5) * (bar.energy / 0.3), 1.0)",
             "condition": None,
             "composition": "multiplicative_modifier",
-            "phase": "apply_modulations",
+            "phase": "apply_action_effects",
             "priority": 0,
             "clamp": [0.0, 1.0],
             "telemetry_label": "modulation:energy->WORK",
+            "modulation_threshold": 0.3,
+            "min_multiplier": 0.5,
         }
     ]
 
@@ -401,6 +400,7 @@ def test_transition_graph_hash_binds_passive_depletion_rules() -> None:
             "priority": 0,
             "clamp": [0.0, 1.0],
             "telemetry_label": "passive_depletion:energy",
+            "passive_rate": 0.1,
         }
     ]
 
@@ -501,116 +501,6 @@ def test_transition_graph_hash_binds_terminal_condition_rules() -> None:
         phase_graph,
         action_program,
         terminal_condition_program=vtc.compile_vtc_terminal_conditions_with_phase_graph([changed_meter], phase_graph),
-    )
-
-
-def test_transition_graph_hash_binds_reward_component_rules() -> None:
-    """Transition hashes should bind compiled reward-component semantics."""
-    assert hasattr(vtc, "compile_vtc_reward_components_with_phase_graph"), "VTC reward-component compiler is required"
-
-    phase_graph = TransitionPhaseGraph.default()
-    action_program = compile_vtc_action_writes_with_phase_graph([], phase_graph)
-
-    def drive_config(*, weight: float) -> DriveAsCodeConfig:
-        return DriveAsCodeConfig(
-            version="1.0",
-            extrinsic=ExtrinsicStrategyConfig(
-                type="vfs_variable",
-                variable_bonuses=[VariableBonusConfig(variable="custom_reward", weight=weight)],
-            ),
-            intrinsic=IntrinsicStrategyConfig(strategy="none", base_weight=0.0, apply_modifiers=[]),
-            shaping=[],
-        )
-
-    reward_program = vtc.compile_vtc_reward_components_with_phase_graph(drive_config(weight=0.25), phase_graph)
-
-    assert canonical_transition_graph_schema(
-        phase_graph,
-        action_program,
-        reward_component_program=reward_program,
-    )["rules"] == [
-        {
-            "rule_id": "reward:extrinsic:vfs_variable",
-            "kind": "reward_component",
-            "source_variable_id": "reward.extrinsic",
-            "variable_id": "reward.extrinsic",
-            "expression": "dac.extrinsic.vfs_variable",
-            "condition": None,
-            "composition": "overwrite",
-            "phase": "compute_rewards",
-            "priority": 0,
-            "clamp": None,
-            "telemetry_label": "reward_component:extrinsic",
-            "reads": ["vfs.custom_reward"],
-            "component": "extrinsic",
-            "source_kind": "dac_extrinsic",
-            "strategy": "vfs_variable",
-            "shaping_type": None,
-            "parameters": {
-                "apply_modifiers": [],
-                "bar_bonuses": [],
-                "bars": [],
-                "base": None,
-                "base_reward": None,
-                "type": "vfs_variable",
-                "variable": None,
-                "variable_bonuses": [{"variable": "custom_reward", "weight": 0.25}],
-            },
-        },
-        {
-            "rule_id": "reward:intrinsic:none",
-            "kind": "reward_component",
-            "source_variable_id": "intrinsic_raw",
-            "variable_id": "reward.intrinsic",
-            "expression": "intrinsic_raw * dac.intrinsic.weight",
-            "condition": None,
-            "composition": "overwrite",
-            "phase": "compute_rewards",
-            "priority": 1,
-            "clamp": None,
-            "telemetry_label": "reward_component:intrinsic",
-            "reads": ["intrinsic_raw"],
-            "component": "intrinsic",
-            "source_kind": "dac_intrinsic",
-            "strategy": "none",
-            "shaping_type": None,
-            "parameters": {
-                "adaptive_config": None,
-                "apply_modifiers": [],
-                "base_weight": 0.0,
-                "count_config": None,
-                "icm_config": None,
-                "rnd_config": None,
-                "strategy": "none",
-            },
-        },
-        {
-            "rule_id": "reward:total",
-            "kind": "reward_total",
-            "source_variable_id": "reward.components",
-            "variable_id": "reward.total",
-            "expression": "reward.extrinsic + reward.intrinsic + reward.shaping",
-            "condition": None,
-            "composition": "sum",
-            "phase": "compute_rewards",
-            "priority": 2,
-            "clamp": None,
-            "telemetry_label": "reward_total",
-            "reads": ["reward.extrinsic", "reward.intrinsic", "reward.shaping"],
-            "component": "total",
-            "source_kind": "reward_composition",
-            "strategy": None,
-            "shaping_type": None,
-            "parameters": {"components": ["extrinsic", "intrinsic", "shaping"]},
-        },
-    ]
-
-    baseline = compute_transition_graph_hash(phase_graph, action_program, reward_component_program=reward_program)
-
-    assert baseline != compute_transition_graph_hash(
-        phase_graph,
-        action_program,
-        reward_component_program=vtc.compile_vtc_reward_components_with_phase_graph(drive_config(weight=0.5), phase_graph),
     )
 
 
@@ -734,10 +624,6 @@ def test_compiler_surfaces_vfs_hash(tmp_path: Path) -> None:
         ),
         passive_depletion_program=vtc.compile_vtc_passive_depletions_with_phase_graph(
             compiled.get_level(PRIMARY_LEVEL_NAME).bars.meters,
-            phase_graph,
-        ),
-        reward_component_program=vtc.compile_vtc_reward_components_with_phase_graph(
-            compiled.get_level(PRIMARY_LEVEL_NAME).drive,
             phase_graph,
         ),
         bounds_clamp_program=vtc.compile_vtc_bounds_clamps_with_phase_graph(

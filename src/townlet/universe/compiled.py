@@ -442,7 +442,6 @@ class CompiledUniverse:
                 level=_SerializedLevel(
                     bars=level_bars,
                     affordances=level_affordances,
-                    drive=level_drive,
                 ),
                 social_residue_rules=social_rules_from_transition_payload(
                     level_transition_payload,
@@ -604,7 +603,6 @@ def _dataclass_to_plain(obj: Any) -> Any:
 class _SerializedLevel:
     bars: BarsV2Config
     affordances: AffordancesV2Config
-    drive: DriveAsCodeConfig
 
 
 def _missing_required_field(field_name: str) -> ValueError:

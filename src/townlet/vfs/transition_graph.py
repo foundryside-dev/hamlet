@@ -1,4 +1,10 @@
-"""Configured transition phase graph for VFS transition execution."""
+"""Configured transition phase graph for VFS transition execution.
+
+The graph is the schedule: ``VectorizedHamletEnv.step()`` executes every phase it
+declares, in order, and nothing outside it. Action writes are admitted only at the
+phases the env runs with the tick's actions in hand (``action_phases``); the
+compiler refuses an action write scheduled anywhere later.
+"""
 
 from __future__ import annotations
 
@@ -15,22 +21,25 @@ DEFAULT_TRANSITION_PHASES = (
     "apply_action_effects",
     "apply_completion_bonuses",
     "apply_passive_depletion",
-    "apply_modulations",
     "apply_threshold_cascades",
     "apply_social_residue_effects",
     "clamp_and_validate",
     "evaluate_terminal_conditions",
-    "compute_rewards",
-    "emit_observation_features",
-    "emit_telemetry",
 )
+
+DEFAULT_LAST_ACTION_PHASE = "apply_completion_bonuses"
 
 
 @dataclass(frozen=True)
 class TransitionPhaseGraph:
-    """Explicit phase order used by transition schedulers."""
+    """Explicit phase order used by transition schedulers.
+
+    ``last_action_phase`` closes the prefix of phases that run with the tick's
+    actions; every later phase runs without them, so action writes there refuse.
+    """
 
     ordered_phases: tuple[str, ...]
+    last_action_phase: str
 
     def __post_init__(self) -> None:
         if len(self.ordered_phases) == 0:
@@ -43,16 +52,23 @@ class TransitionPhaseGraph:
             if phase in seen:
                 raise ValueError(f"Duplicate transition phase '{phase}'")
             seen.add(phase)
+        if self.last_action_phase not in seen:
+            raise ValueError(f"last_action_phase '{self.last_action_phase}' is not a phase of the graph")
 
     @classmethod
     def default(cls) -> TransitionPhaseGraph:
-        """Return the default VFS v1.1 transition phase graph."""
-        return cls(DEFAULT_TRANSITION_PHASES)
+        """Return the default VFS transition phase graph."""
+        return cls(DEFAULT_TRANSITION_PHASES, DEFAULT_LAST_ACTION_PHASE)
 
     @property
     def edges(self) -> tuple[tuple[str, str], ...]:
         """Return adjacent phase ordering edges."""
         return tuple((before, after) for before, after in zip(self.ordered_phases, self.ordered_phases[1:]))
+
+    @property
+    def action_phases(self) -> tuple[str, ...]:
+        """Phases that run with the tick's actions — the only phases admitting action writes."""
+        return self.ordered_phases[: self.sort_key(self.last_action_phase) + 1]
 
     def sort_key(self, phase: str) -> int:
         """Return the configured order index for a phase, failing loudly for unknown phases."""
@@ -67,4 +83,5 @@ class TransitionPhaseGraph:
         return {
             "phases": list(self.ordered_phases),
             "edges": [{"before": before, "after": after} for before, after in self.edges],
+            "last_action_phase": self.last_action_phase,
         }

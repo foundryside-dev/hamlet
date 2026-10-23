@@ -38,19 +38,17 @@ def _empty_schedule_with_bounds(program: "vtc.VTCBoundsClampProgram") -> VTCTran
         modulation_program=vtc.VTCModulationProgram(rules=()),
         threshold_cascade_program=vtc.VTCThresholdCascadeProgram(rules=()),
         social_residue_program=vtc.VTCSocialResidueProgram(rules=()),
-        reward_component_program=vtc.VTCRewardProgram(rules=()),
         bounds_clamp_program=program,
     )
 
 
 def test_compile_vtc_bounds_clamps_emits_rule_metadata() -> None:
     """Declared meter bounds should compile into explicit clamp_and_validate rules."""
-    assert hasattr(vtc, "compile_vtc_bounds_clamps"), "VTC bounds-clamp compiler is required"
-
-    program = vtc.compile_vtc_bounds_clamps(
+    program = vtc.compile_vtc_bounds_clamps_with_phase_graph(
         [
             {"name": "money", "depletion": {"passive": 0.0}, "bounds": {"min": 0.0, "max": 999999.0}},
-        ]
+        ],
+        TransitionPhaseGraph.default(),
     )
 
     assert len(program.rules) == 1
@@ -69,11 +67,12 @@ def test_compile_vtc_bounds_clamps_emits_rule_metadata() -> None:
 
 def test_vtc_bounds_clamps_apply_enforces_each_meters_declared_bounds() -> None:
     """apply() pulls every meter inside its OWN declared bounds and touches nothing else."""
-    program = vtc.compile_vtc_bounds_clamps(
+    program = vtc.compile_vtc_bounds_clamps_with_phase_graph(
         [
             {"name": "energy", "depletion": {"passive": 0.01}, "bounds": {"min": 0.0, "max": 1.0}},
             {"name": "money", "depletion": {"passive": 0.0}, "bounds": {"min": 0.0, "max": 999999.0}},
-        ]
+        ],
+        TransitionPhaseGraph.default(),
     )
     bars_state = {
         "energy": torch.tensor([1.7, -0.3, 0.5], dtype=torch.float32),
@@ -94,10 +93,11 @@ def test_vtc_bounds_clamps_apply_enforces_each_meters_declared_bounds() -> None:
 
 def test_transition_runner_executes_bounds_clamps_in_clamp_and_validate_phase() -> None:
     """The runner applies bounds rules at clamp_and_validate — and ONLY there."""
-    program = vtc.compile_vtc_bounds_clamps(
+    program = vtc.compile_vtc_bounds_clamps_with_phase_graph(
         [
             {"name": "energy", "depletion": {"passive": 0.01}, "bounds": {"min": 0.0, "max": 1.0}},
-        ]
+        ],
+        TransitionPhaseGraph.default(),
     )
     runner = VTCTransitionRunner(_empty_schedule_with_bounds(program))
     context = VTCTransitionContext(
@@ -108,9 +108,9 @@ def test_transition_runner_executes_bounds_clamps_in_clamp_and_validate_phase() 
     )
 
     # A phase the rules are not scheduled for leaves the out-of-bounds value alone.
-    untouched = runner.run_phase("apply_passive_depletion", context)
+    untouched = runner.run_phases(("apply_passive_depletion",), context)
     assert untouched.bars_state["energy"].tolist() == pytest.approx([1.7, -0.3])
 
-    clamped = runner.run_phase("clamp_and_validate", context)
+    clamped = runner.run_phases(("clamp_and_validate",), context)
     # Bounds are invariants: they apply to every agent, active or not.
     assert clamped.bars_state["energy"].tolist() == [1.0, 0.0]

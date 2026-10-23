@@ -40,17 +40,17 @@ Commit history uses Conventional Commit semantics (`feat(env): ...`, `fix(action
 
 Load secrets via environment variables or `.env` files; never commit credentialized configs or generated databases (`test.db`) and large artifacts in `runs/`. Reuse the provided YAML configs instead of hard-coding paths, and validate new endpoints against `SECURITY.md` guidelines before exposing them in the API layer.
 
-<!-- filigree:instructions:v3.2.0:c1c023c3 -->
+<!-- filigree:instructions:v3.4.0:e2dfc82c -->
 <!-- filigree:last-writer:filigree install -->
 ## Filigree Issue Tracker
 
-`filigree` tracks this project's work. Use it to find, claim, update and close
-issues: `filigree session-context` at session start, then
-`filigree start-next-work --assignee <name>`.
+`filigree` tracks this project's work: `filigree session-context` at session
+start, then `filigree start-next-work --assignee <name>`. Name yourself on
+writes: `filigree --actor <name>` (CLI) or `actor=<name>` (MCP);
+`session-context` also reads `FILIGREE_ACTOR`.
 
-Full reference: the **filigree-workflow** skill (patterns, priorities,
-observations, error codes), `filigree --help`, and the `mcp__filigree__*` tool
-schemas. Prefer the MCP tools when available; fall back to the CLI.
+Reference: the **filigree-workflow** skill, `filigree --help`, and the
+`mcp__filigree__*` tool schemas. Prefer MCP tools; fall back to the CLI.
 
 Two rules `--help` will not tell you:
 

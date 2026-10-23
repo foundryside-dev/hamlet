@@ -62,11 +62,22 @@ class VFSCompiler:
         compiler = VFSProfileCompiler()
         globals_ = config.for_scope(VariableScope.GLOBAL)
         agents = config.for_scope(VariableScope.AGENT)
+        # Each scope compiles against the other's roster: agent expressions read globals
+        # by bare name (the runtime evaluates the global profile first); global
+        # expressions refuse agent ids as scope widening.
         return CompiledVFSProfiles(
             evaluation_mode=config.evaluation_mode,
             debug_logging=config.debug_logging,
-            global_profile=compiler.compile_profile(globals_, bar_schema, evaluation_mode=config.evaluation_mode) if globals_ else None,
-            agent_profile=compiler.compile_profile(agents, bar_schema, evaluation_mode=config.evaluation_mode) if agents else None,
+            global_profile=(
+                compiler.compile_profile(globals_, bar_schema, evaluation_mode=config.evaluation_mode, cross_scope=agents)
+                if globals_
+                else None
+            ),
+            agent_profile=(
+                compiler.compile_profile(agents, bar_schema, evaluation_mode=config.evaluation_mode, cross_scope=globals_)
+                if agents
+                else None
+            ),
             item_profiles={
                 name: compiler.compile_item_profile(name, config.for_item_profile(name), bar_schema) for name in config.item_profiles
             },

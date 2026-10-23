@@ -4,6 +4,8 @@ Compile with primary level `L0_simple`. `ADVANCE` increases public state and the
 engine-only `hidden_score`; `WAIT` leaves both unchanged. Extrinsic reward reads
 `hidden_score` by its declared name and multiplies it by 0.5. The global
 `immutable_scale` and agent-scoped `readable_unexposed` are runtime-immutable literals.
+The hidden agent expression `scaled_public` reads the global `immutable_scale` by bare
+name: agent expressions may read any global, evaluated after the global profile each tick.
 
 Only `public_state` has a variable-element observation binding. Engine-only state
 refuses agent accessor reads. Agent-readable state does not acquire a binding until

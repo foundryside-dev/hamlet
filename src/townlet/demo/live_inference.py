@@ -15,11 +15,10 @@ import torch
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
-from townlet.config.presentation_config import PresentationConfig
 from townlet.curriculum.adversarial import AdversarialCurriculum
 from townlet.curriculum.factory import build_curriculum
 from townlet.demo.database import DemoDatabase
-from townlet.demo.presentation import build_meter_metadata, load_presentation, presentation_payload
+from townlet.demo.presentation import build_meter_metadata, presentation_payload
 from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
 from townlet.population.vectorized import VectorizedPopulation
@@ -100,8 +99,6 @@ class LiveInferenceServer:
         self.config_dir = Path(config_dir)
         self.compiler = UniverseCompiler()
         self.compiled_universe: CompiledUniverse | None = None
-        # Observer-only presentation (PDR-0025): None is the honest default.
-        self.presentation: PresentationConfig | None = None
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.clients: set[WebSocket] = set()
@@ -178,21 +175,22 @@ class LiveInferenceServer:
         """What a frontend needs to render the universe without knowing what the game is.
 
         ``meters``: declared bounds, lethality and cascade edges per meter, in compiled order.
-        ``presentation``: the pack's opt-in ``presentation.yaml`` as JSON, or ``None`` — the
-        honest default (PDR-0025). Both are static per universe and ride on ``connected``.
+        ``presentation``: the pack's opt-in ``presentation`` declaration as JSON, read from the
+        compiled artifact, or ``None`` — the honest default (PDR-0025). Both are static per
+        universe and ride on ``connected``.
         """
         if self.compiled_universe is None:
             return {"meters": [], "presentation": None}
         return {
             "meters": build_meter_metadata(self.compiled_universe),
-            "presentation": presentation_payload(self.presentation),
+            "presentation": presentation_payload(self.compiled_universe.presentation),
         }
 
     def _affordance_icon(self, name: str) -> str | None:
         """The declared icon for an affordance, or ``None`` when the pack declares none."""
-        if self.presentation is None:
+        if self.compiled_universe is None or self.compiled_universe.presentation is None:
             return None
-        entry = self.presentation.affordances.get(name)
+        entry = self.compiled_universe.presentation.affordances.get(name)
         return entry.icon if entry is not None else None
 
     def _build_substrate_metadata(self) -> dict[str, Any]:
@@ -302,7 +300,6 @@ class LiveInferenceServer:
         """Initialize environment and agent components."""
         logger.info("Compiling universe for live inference from %s", self.config_dir)
         self.compiled_universe = self.compiler.compile(self.config_dir, primary_level=self.level_name)
-        self.presentation = load_presentation(self.config_dir, self.compiled_universe)
 
         level_meta = self.compiled_universe.get_level(self.level_name)
 

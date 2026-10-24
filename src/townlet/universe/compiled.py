@@ -20,6 +20,7 @@ from townlet.config.drive_as_code import DriveAsCodeConfig
 from townlet.config.environment_config import EnvironmentConfig
 from townlet.config.experiment_config import ExperimentConfig
 from townlet.config.items_config import ItemsAppearanceConfig, ItemsCatalogConfig
+from townlet.config.presentation_config import PresentationConfig
 from townlet.config.stratum_config import StratumConfig
 from townlet.config.training_v2_config import TrainingV2Config
 from townlet.effects.catalog import EffectCatalog
@@ -129,7 +130,11 @@ from townlet.vfs.transition_schedule import (
 # 1.33: each level persists its `items_appearance` spawn rules. A 1.32 artifact has no such
 # block, so a cache hit served an item-less world; the cache key does not move for an
 # unchanged pack, so the bump is what refuses it.
-COMPILED_SCHEMA_VERSION = "1.33"
+# 1.34: the artifact carries the pack's `presentation` declaration (PDR-0025, observer-only:
+# validated in resolve, never hashed). The runtime reads it from the artifact instead of
+# re-opening a fixed filename, so one vocabulary covers compile and serve. A 1.33 artifact
+# has no such block and is refused rather than served as "no presentation".
+COMPILED_SCHEMA_VERSION = "1.34"
 
 REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "compiled_schema_version",
@@ -140,6 +145,7 @@ REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "actions",
     "brain",
     "items_catalog",
+    "presentation",
     "compiled_vfs_profiles",
     "compiled_effect_catalog",
     "effects_schema",
@@ -193,6 +199,10 @@ class CompiledUniverse:
     all_levels: dict[str, CompiledUniverse.LevelMetadata]
 
     items_catalog: ItemsCatalogConfig | None = None
+
+    # Observer-only presentation (PDR-0025). References resolved at compile time; enters no
+    # semantic hash and no checkpoint gate. None is the honest default.
+    presentation: PresentationConfig | None = None
 
     # Compiled VFS profiles (experiment-level artifact)
     compiled_vfs_profiles: CompiledVFSProfiles | None = None
@@ -333,6 +343,7 @@ class CompiledUniverse:
             brain=deepcopy(self.brain),
             all_levels=deepcopy(self.all_levels),
             items_catalog=deepcopy(self.items_catalog) if self.items_catalog is not None else None,
+            presentation=deepcopy(self.presentation) if self.presentation is not None else None,
             compiled_vfs_profiles=deepcopy(self.compiled_vfs_profiles) if self.compiled_vfs_profiles is not None else None,
             compiled_effect_catalog=deepcopy(self.compiled_effect_catalog) if self.compiled_effect_catalog is not None else None,
             effects_schema=deepcopy(self.effects_schema) if self.effects_schema is not None else None,
@@ -360,6 +371,7 @@ class CompiledUniverse:
             "actions": self.actions.model_dump(),
             "brain": self.brain.model_dump(),
             "items_catalog": self.items_catalog.model_dump() if self.items_catalog is not None else None,
+            "presentation": self.presentation.model_dump() if self.presentation is not None else None,
             "compiled_vfs_profiles": (
                 _serialize_vfs_profiles(self.compiled_vfs_profiles) if self.compiled_vfs_profiles is not None else None
             ),
@@ -517,6 +529,11 @@ class CompiledUniverse:
             items_catalog=(
                 ItemsCatalogConfig.model_validate(_required_field(payload, "items_catalog"))
                 if _required_field(payload, "items_catalog") is not None
+                else None
+            ),
+            presentation=(
+                PresentationConfig.model_validate(_required_field(payload, "presentation"))
+                if _required_field(payload, "presentation") is not None
                 else None
             ),
             compiled_vfs_profiles=(

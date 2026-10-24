@@ -213,6 +213,18 @@ def test_compiled_universe_round_trip_serialization(minimal_compiled_universe_wi
         _assert_level_metadata_equal(level, restored.all_levels[name])
 
 
+def test_presentation_survives_msgpack_round_trip(tmp_path: Path, test_config_pack_path: Path) -> None:
+    pack = tmp_path / "pack"
+    shutil.copytree(test_config_pack_path, pack, ignore=shutil.ignore_patterns(".compiled"))
+    (pack / "display.yaml").write_text('version: "1.0"\nmeters: {}\naffordances:\n  EAT: {label: Eat, icon: "E"}\n')
+    original = UniverseCompiler().compile(pack, primary_level="L0_test", use_cache=False)
+    assert original.presentation is not None
+
+    restored = _msgpack_round_trip(original)
+
+    assert restored.presentation == original.presentation
+
+
 def test_items_appearance_survives_msgpack_round_trip() -> None:
     """Every LevelMetadata field, including the spawn rules, survives a msgpack round trip."""
     original = UniverseCompiler().compile(ITEMS_SMOKE, primary_level=ITEMS_SMOKE_LEVEL, use_cache=False)

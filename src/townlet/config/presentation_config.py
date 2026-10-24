@@ -1,9 +1,13 @@
 """Presentation configuration — how an observer SHOWS a universe, declared by the pack.
 
-`presentation.yaml` is an **observer-only** surface (PDR-0025): the live-inference server reads
-it and forwards it to the frontend; the universe compiler never opens it and nothing here enters
-a compiled hash. Its absence is the honest default — every meter renders from its declared
-bounds, uniformly, and no site may infer presentation from a variable's name.
+The `presentation` declaration is an **observer-only** surface (PDR-0025). The universe compiler
+discovers it by content like every other pack-scope family, resolves its meter and affordance
+references against the pack (an entry for something the pack does not declare is a located
+compile refusal), and carries the parsed config on the artifact as
+`CompiledUniverse.presentation`. The live-inference server forwards that to the frontend. Nothing
+here enters a compiled hash or a checkpoint gate. Its absence is the honest default — every meter
+renders from its declared bounds, uniformly, and no site may infer presentation from a variable's
+name.
 
 A pack that opts in (a "locked" showcase, PDR-0025) declares presentation per meter and per
 affordance. Everything present is explicit: a declared entry declares all of its fields, and a
@@ -78,7 +82,7 @@ class AffordancePresentation(BaseModel):
 
 
 class PresentationConfig(BaseModel):
-    """`presentation.yaml` — pack-level, observer-only, opt-in."""
+    """The `presentation` declaration — pack-scope, observer-only, opt-in."""
 
     model_config = ConfigDict(extra="forbid")
 

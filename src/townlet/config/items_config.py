@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any, Literal
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from townlet.config.effects_config import CommandConfig
 
@@ -218,6 +218,26 @@ class ItemsCatalogConfig(BaseModel):
             duplicates = [id for id in ids if ids.count(id) > 1]
             raise ValueError(f"Duplicate item type IDs: {duplicates}")
         return v
+
+    @model_validator(mode="after")
+    def validate_item_arena(self) -> ItemsCatalogConfig:
+        """Declared item types need an arena.
+
+        The item arena is `max_items_in_world + max_items_per_agent × agents_per_world`
+        (`token_spec.item_capacity`). Both terms are >= 0 and agents_per_world is >= 1, so the
+        arena is empty exactly when both capacities are 0. Either capacity alone may be 0: items
+        on the ground with no inventory, or inventories with nothing on the ground, are both
+        legitimate shapes. Item types declared into an empty arena are refused here, never
+        silently discarded. An empty `item_types` list with an empty arena declares no items at
+        all and lowers to "no catalog" (`RawConfigsV21.from_declarations`).
+        """
+        if self.item_types and self.max_items_in_world == 0 and self.max_items_per_agent == 0:
+            raise ValueError(
+                f"items declares {len(self.item_types)} item type(s) but "
+                "max_items_in_world + max_items_per_agent × agents_per_world is 0: there is no item arena "
+                "for them. Give at least one capacity a positive value, or delete the item types."
+            )
+        return self
 
     @classmethod
     def from_yaml(cls, path: Path) -> ItemsCatalogConfig:

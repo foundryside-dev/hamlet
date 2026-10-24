@@ -119,17 +119,14 @@ because a pack-level clock variable exists.
 The reference changes authoring authority only. It does not redesign time units, clock runtime,
 normalization, observation or reward semantics.
 
-## Observer metadata boundary
+## Presentation
 
-Discovery recognizes and validates optional presentation metadata against `PresentationConfig`,
-so it has a disposition rather than being stray YAML. It contributes to transport
-`metadata.config_hash` but does not become an execution product or enter semantic hashes.
-
-The live observer's separate presentation adapter still loads the conventional pack-root
-`presentation.yaml`. Cut A changes the compiler front end, not that UI loader. Relocating or
-combining a presentation declaration is accepted by discovery but does not make the observer
-follow it; display transport is a UX follow-on. Keep presentation in its conventional file when
-using that adapter. See [presentation configuration](presentation.md).
+`presentation` is a normal pack family. Discovery validates it against `PresentationConfig`,
+the compiler resolves every meter and affordance it names in stage 5 (an undeclared reference
+refuses as `[UAC-RES-PRESENTATION] <file>:<line>`), and the artifact carries it as
+`CompiledUniverse.presentation`, which the live observer reads. It enters no semantic hash:
+changing a label never moves a checkpoint-gated hash. A presentation declaration may live in any
+pack file, like every other family. See [presentation configuration](presentation.md).
 
 ## References and acceptance boundary
 

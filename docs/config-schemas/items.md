@@ -112,9 +112,20 @@ items:
         on_use: CommandConfig[]     # Effects when used (USE_SLOT_N)
         on_drop: CommandConfig[]    # Effects when dropped
 
-  max_items_per_agent: int          # Inventory capacity (1-10)
-  max_items_in_world: int           # Max concurrent items (1-1000)
+  max_items_per_agent: int          # Inventory capacity (0-10)
+  max_items_in_world: int           # Max concurrent items on the ground (0-1000)
 ```
+
+**Item arena.** The number of item slots a universe can hold is
+`max_items_in_world + max_items_per_agent × agents_per_world` (`token_spec.item_capacity`; one
+agent per world until a shared-world count is declared). Either capacity alone may be 0:
+`max_items_per_agent: 0` is a world with items on the ground and no inventory (no `GET`,
+`USE_SLOT_*` or `DROP_SLOT_*` actions are composed), and `max_items_in_world: 0` is inventories
+with nothing on the ground. A catalog that declares item types with **both** capacities 0 has no
+arena and is refused at parse — `items declares N item type(s) but max_items_in_world +
+max_items_per_agent × agents_per_world is 0: there is no item arena for them` — never silently
+discarded. An `items` declaration with `item_types: []` and both capacities 0 declares no items
+and compiles exactly as an absent declaration does (`items_catalog` and `items_hash` are `None`).
 
 ### 2. Items Appearance (Level-Specific)
 
@@ -198,8 +209,10 @@ items:
 
 | Field | Type | Default | Constraints | Description |
 |-------|------|---------|-------------|-------------|
-| `max_items_per_agent` | int | 3 | 1-10 | Inventory capacity per agent |
-| `max_items_in_world` | int | 10 | 1-1000 | Max items that can exist simultaneously |
+| `max_items_per_agent` | int | required | 0-10 | Inventory capacity per agent; 0 = no inventory |
+| `max_items_in_world` | int | required | 0-1000 | Max items on the ground simultaneously; 0 = nothing spawns |
+
+Both may not be 0 while `item_types` is non-empty (see "Item arena" above).
 
 ### Validation Rules
 

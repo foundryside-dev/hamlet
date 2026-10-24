@@ -1,0 +1,4 @@
+Failed to load cached universe from /home/john/hamlet/configs/L5_multi_agent/.compiled/universe-L5_multi_agent.msgpack: Compiled universe schema mismatch for /home/john/hamlet/configs/L5_multi_agent/.compiled/universe-L5_multi_agent.msgpack: found '1.26', expected '1.33'. Recompile the config pack with `python -m townlet.universe compile <config_dir>`.
+census {'self': 1, 'meter': 4, 'affordance': 4, 'agent': 0, 'item': 0, 'effect': 0, 'variable_element': 2}
+{'deficit_energy': [1.0, 0.0, 0.0], 'time_since_last_sleep': [1.0, 0.0, 0.0]}
+trust [[0.5, 0.5], [0.5, 0.5]] occupied_by [-1, -1, -1, -1]

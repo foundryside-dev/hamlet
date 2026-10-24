@@ -1,0 +1,44 @@
+environment:
+  version: "1.0"
+
+  meters:
+    - name: energy
+      description: "Physical energy for movement and actions"
+      range_type:
+        kind: minmax
+        clip: true
+    - name: health
+      description: "Basic well-being; recover at doctor"
+      range_type:
+        kind: minmax
+        clip: true
+    - name: money
+      description: "Economic resource for purchasing"
+      range_type:
+        kind: minmax
+        clip: true
+    - name: sustenance
+      description: "Food and nutrition for maintaining energy"
+      range_type:
+        kind: minmax
+        clip: true
+
+  cascade_graph: []
+
+  modulation_graph: []
+
+  affordances:
+    - name: SLEEP
+      description: "Rest to restore energy"
+      category: sustenance
+    - name: DOCTOR
+      description: "Medical checkup to restore health"
+      category: health
+    - name: WORK
+      description: "Earn money at the cost of energy"
+      category: money
+    - name: COOK
+      description: "Cook food to restore energy"
+      category: sustenance
+
+  cues: []

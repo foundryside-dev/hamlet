@@ -1,0 +1,23 @@
+affordances:
+  version: '1.0'
+  affordances:
+  - name: energy_station
+    interaction_type: instant
+    costs:
+      energy: 0.0
+    opening_hours:
+      enabled: false
+    deployment:
+      type: fixed
+      positions:
+      - - 1
+        - 1
+    interactions:
+      on_start:
+      - modify: target.bar.energy
+        value: target.bar.energy + 0.3
+      per_tick: []
+      on_completion: []
+      on_early_exit: []
+      on_failure: []
+  modulations: []

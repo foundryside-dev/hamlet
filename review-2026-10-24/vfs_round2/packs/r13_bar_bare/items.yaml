@@ -1,0 +1,52 @@
+items:
+  version: '1.0'
+  item_types:
+  - id: apple
+    vfs_profile: food
+    description: Restores energy when used
+    duration: null
+    cooldown: null
+    interactions:
+      on_pickup: []
+      on_use:
+      - modify: target.bar.energy
+        value: target.bar.energy + 0.3
+      on_drop: []
+    name: Apple
+    icon: "\U0001F34E"
+    tags:
+    - apple
+  - id: medkit
+    vfs_profile: medical
+    description: Restores health when used
+    duration: 100
+    cooldown: 50
+    interactions:
+      on_pickup: []
+      on_use:
+      - modify: target.bar.health
+        value: target.bar.health + 0.5
+      - modify: self.vfs.durability
+        value: self.vfs.durability - 10
+      on_drop: []
+    name: Medkit
+    icon: "\U0001F48A"
+    tags:
+    - medkit
+  - id: coin
+    vfs_profile: currency
+    description: Adds money when picked up
+    duration: null
+    cooldown: null
+    interactions:
+      on_pickup:
+      - modify: target.bar.money
+        value: target.bar.money + 0.1
+      on_use: []
+      on_drop: []
+    name: Coin
+    icon: "\U0001FA99"
+    tags:
+    - coin
+  max_items_per_agent: 3
+  max_items_in_world: 10

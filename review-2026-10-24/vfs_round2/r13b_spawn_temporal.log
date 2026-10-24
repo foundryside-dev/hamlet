@@ -1,0 +1,8 @@
+
+===== R13b spawn temporal namespace =====
+--- is_night: when: 'temporal.is_night'
+   compile: OK
+   runtime: KeyError: "Path 'temporal.is_night' not found in execution context"
+--- time_of_day: when: 'temporal.time_of_day < 12.0'
+   compile: OK
+   runtime: KeyError: "Path 'temporal.time_of_day' not found in execution context"

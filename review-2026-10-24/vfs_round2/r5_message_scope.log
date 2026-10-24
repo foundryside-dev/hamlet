@@ -1,0 +1,22 @@
+
+===== R5 message scope =====
+--- append_basic
+   compile: OK
+   step1 actions=[10, 9]: inbox = [[1.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
+   step2 actions=[10, 9]: inbox = [[1.0, 1.0, 0.0], [0.0, 0.0, 0.0]]
+   step3 actions=[10, 9]: inbox = [[1.0, 1.0, 1.0], [0.0, 0.0, 0.0]]
+   step4 actions=[10, 9]: inbox = [[1.0, 1.0, 1.0], [0.0, 0.0, 0.0]]
+--- append_zero_payload
+   compile: OK
+   step1 actions=[10, 9]: inbox = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
+   step2 actions=[10, 9]: inbox = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
+--- append_sentinel_init
+   compile: OK
+   step1 actions=[10, 9]: inbox = [[-1.0, -1.0, -1.0], [-1.0, -1.0, -1.0]]
+   step2 actions=[10, 9]: inbox = [[-1.0, -1.0, -1.0], [-1.0, -1.0, -1.0]]
+--- agent_expr_reads_inbox
+   compile: REFUSED CompilationError: Stage 6: Enrich shared schemas and effects failed:
+  - [VFS-PROFILE-COMPILE] /home/john/hamlet/review-2026-10-24/vfs_round2/packs/r5_agent_expr_reads_inbox/variables.yaml:1 - Variable 'inbox' not found in schema. Available variables: ['tick', 'bar.energy', 'bar.health', 'bar.money', 'bar.sustenance'
+--- agent_expr_reads_inbox_sum
+   compile: REFUSED CompilationError: Stage 6: Enrich shared schemas and effects failed:
+  - [VFS-PROFILE-COMPILE] /home/john/hamlet/review-2026-10-24/vfs_round2/packs/r5_agent_expr_reads_inbox_sum/variables.yaml:1 - Variable 'inbox' not found in schema. Available variables: ['tick', 'bar.energy', 'bar.health', 'bar.money', 'bar.sustena

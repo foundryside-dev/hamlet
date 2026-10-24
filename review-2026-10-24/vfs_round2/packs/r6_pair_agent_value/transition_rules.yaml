@@ -1,0 +1,16 @@
+version: '1.0'
+social_residue:
+- id: t
+  kind: social_residue
+  phase: apply_social_residue_effects
+  reads:
+  - trust
+  - energy
+  condition: null
+  writes:
+  - variable_id: trust
+    expression: bar.energy
+    composition: additive_delta
+    condition: null
+    clamp: null
+    effect: null

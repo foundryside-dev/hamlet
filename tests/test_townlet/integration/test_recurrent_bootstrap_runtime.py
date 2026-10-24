@@ -107,7 +107,6 @@ def _make_pack(
     loop["train_frequency"] = 4
     loop["max_episodes"] = 12
     loop["checkpointing"]["interval"] = 1_000_000
-    loop["evaluation"]["interval"] = 1_000_000
     (level / "training.yaml").write_text(yaml.safe_dump(training, sort_keys=False))
     return dest
 

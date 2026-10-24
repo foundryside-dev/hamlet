@@ -21,7 +21,6 @@ from townlet.config.drive_as_code import (
     IntrinsicStrategyConfig,
     ModifierConfig,
     RangeConfig,
-    TriggerCondition,
     VFSVariableBonusConfig,
 )
 
@@ -174,40 +173,6 @@ class TestIntrinsicStrategyConfigDTO:
             "temporal_decay",
             "health_crisis",
         ]
-
-
-class TestTriggerCondition:
-    """Test TriggerCondition validation."""
-
-    def test_trigger_with_above(self):
-        """Trigger when value is above threshold."""
-        trigger = TriggerCondition(
-            source="bar",
-            name="energy",
-            above=0.3,
-        )
-        assert trigger.source == "bar"
-        assert trigger.name == "energy"
-        assert trigger.above == 0.3
-        assert trigger.below is None
-
-    def test_trigger_with_below(self):
-        """Trigger when value is below threshold."""
-        trigger = TriggerCondition(
-            source="variable",
-            name="energy_urgency",
-            below=0.7,
-        )
-        assert trigger.source == "variable"
-        assert trigger.below == 0.7
-
-    def test_must_specify_above_or_below(self):
-        """Must specify at least one threshold."""
-        with pytest.raises(ValidationError, match="Must specify 'above' or 'below'"):
-            TriggerCondition(
-                source="bar",
-                name="energy",
-            )
 
 
 class TestApproachRewardConfig:

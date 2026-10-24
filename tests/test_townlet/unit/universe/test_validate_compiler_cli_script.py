@@ -1,4 +1,4 @@
-"""Fleet validation discovers pack boundaries and reads declared experiment content."""
+"""Fleet validation discovers pack and level boundaries independently of transport filenames."""
 
 from __future__ import annotations
 

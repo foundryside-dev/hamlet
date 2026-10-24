@@ -4,8 +4,3 @@ experiment:
   metadata:
     name: "Token Transfer Fixture B"
     description: "Minimal token-vocabulary fixture for the token-net transfer contract (unit 3 Task 9)"
-    author: "Tests"
-    created: "2026-08-25"
-    tags: ["test", "token-obs", "transfer"]
-  curriculum_levels:
-    - L0_transfer

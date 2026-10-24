@@ -4,8 +4,3 @@ experiment:
   metadata:
     name: "VFS Bar Access Test"
     description: "Tests VFS expressions accessing bar values"
-    author: "Tests"
-    created: "2025-11-21"
-    tags: ["test", "vfs", "bars"]
-  curriculum_levels:
-    - L0_bars

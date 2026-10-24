@@ -8,9 +8,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-from townlet.config.experiment_config import ExperimentConfig
-from townlet.universe.declarations import DeclarationStore
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CONFIGS_ROOT = REPO_ROOT / "configs"
 # Excluded directories:
@@ -42,22 +39,11 @@ def iter_config_dirs(base: Path) -> list[Path]:
 
 
 def resolve_primary_level(config_dir: Path) -> str:
-    """Return the first authored curriculum level, independent of transport paths."""
-    store = DeclarationStore.discover(config_dir)
-    experiment = store.parse("experiment", None, ExperimentConfig, True)
-    store.errors.check_and_raise()
-    assert experiment is not None  # Discovery requires the experiment declaration.
-    declaration = store.get("experiment", None)
-    assert declaration is not None
-    curriculum_levels = experiment.experiment.curriculum_levels
-    if not curriculum_levels:
-        raise ValueError(f"{declaration.origin} must declare a non-empty experiment.curriculum_levels list")
-
-    primary_level = curriculum_levels[0]
-    if not primary_level:
-        raise ValueError(f"{declaration.origin} has an invalid first curriculum level: {primary_level!r}")
-
-    return primary_level
+    """Return the first discovered level directory; ``levels/`` is the level authority."""
+    levels = sorted(entry.name for entry in (config_dir / "levels").iterdir() if entry.is_dir())
+    if not levels:
+        raise ValueError(f"{config_dir / 'levels'} contains no level directories")
+    return levels[0]
 
 
 def run_cli_validate(config_dir: Path, expect_failure: bool = False) -> None:

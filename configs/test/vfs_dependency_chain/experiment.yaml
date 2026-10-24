@@ -4,8 +4,3 @@ experiment:
   metadata:
     name: "VFS Dependency Chain Test"
     description: "Tests multi-level VFS variable dependencies (a → b → c)"
-    author: "Tests"
-    created: "2025-11-21"
-    tags: ["test", "vfs", "dependencies"]
-  curriculum_levels:
-    - L0_deps

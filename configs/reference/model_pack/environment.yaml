@@ -30,13 +30,5 @@ environment:
 
   affordances:
     - name: EAT
-      description: "Consume food"
-      category: sustenance
     - name: SLEEP
-      description: "Rest to restore energy"
-      category: sustenance
     - name: WORK
-      description: "Earn money"
-      category: economic
-
-  cues: []

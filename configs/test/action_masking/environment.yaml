@@ -45,21 +45,10 @@ environment:
 
   affordances:
     - name: Bed
-      description: "Sleep to restore energy"
-      category: rest
     - name: Hospital
-      description: "Recover health"
-      category: medical
     - name: Job
-      description: "Earn money"
-      category: work
     - name: Bar
-      description: "Social venue"
-      category: leisure
     - name: Park
-      description: "Free recreation"
-      category: leisure
 
   cascade_graph: []
   modulation_graph: []
-  cues: []

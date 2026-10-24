@@ -26,7 +26,3 @@ environment:
 
   affordances:
     - name: energy_station
-      description: "Restore energy"
-      category: sustenance
-
-  cues: []

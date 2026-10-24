@@ -18,11 +18,6 @@ environment:
         clip: true
   affordances:
     - name: Bed
-      description: "Rest"
-      category: rest
     - name: Job
-      description: "Work"
-      category: work
   cascade_graph: []
   modulation_graph: []
-  cues: []

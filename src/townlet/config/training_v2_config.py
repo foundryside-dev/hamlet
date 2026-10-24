@@ -39,7 +39,6 @@ __all__ = [
     "RNDConfig",
     "AnnealingConfig",
     "IntrinsicConfig",
-    "EvaluationConfig",
     "CheckpointingConfig",
     "TrainingLoopConfig",
     "AdversarialCurriculumConfig",
@@ -191,22 +190,12 @@ class IntrinsicConfig(BaseModel):
     )
 
 
-class EvaluationConfig(BaseModel):
-    """Evaluation configuration."""
-
-    model_config = ConfigDict(extra="forbid")
-
-    interval: int = Field(gt=0, description="Evaluate every N episodes")
-    num_episodes: int = Field(gt=0, description="Number of episodes per evaluation")
-
-
 class CheckpointingConfig(BaseModel):
     """Checkpointing configuration."""
 
     model_config = ConfigDict(extra="forbid")
 
     interval: int = Field(gt=0, description="Save checkpoint every N episodes")
-    keep_last: int = Field(gt=0, description="Keep last N checkpoints")
 
 
 class TrainingLoopConfig(BaseModel):
@@ -216,7 +205,6 @@ class TrainingLoopConfig(BaseModel):
 
     max_episodes: int = Field(gt=0, description="Total episodes to train")
     max_steps_per_episode: int = Field(gt=0, description="Maximum steps per episode")
-    evaluation: EvaluationConfig = Field(description="Evaluation configuration")
     checkpointing: CheckpointingConfig = Field(description="Checkpointing configuration")
     train_frequency: int = Field(
         gt=0,
@@ -325,7 +313,7 @@ class RunMetadataConfig(BaseModel):
 class RecordingConfig(BaseModel):
     """Optional episode recording configuration (telemetry / replay)."""
 
-    model_config = ConfigDict(extra="allow")
+    model_config = ConfigDict(extra="forbid")
 
     enabled: bool = Field(description="Enable episode recording and replay export.")
     output_dir: str | None = Field(default=None, description="Relative output directory for recordings.")

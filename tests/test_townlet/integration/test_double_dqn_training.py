@@ -43,12 +43,6 @@ class TestDoubleDoubleTraining:
             curriculum_cfg["strategy"] = "adversarial"  # Ensure initialize_population is available
             training["curriculum"] = curriculum_cfg
 
-            # Fast evaluation cadence isn't needed; keep minimal to avoid overhead
-            evaluation = training_loop.get("evaluation", {})
-            evaluation["interval"] = 1000
-            evaluation["num_episodes"] = 1
-            training_loop["evaluation"] = evaluation
-
         return modifier
 
     @staticmethod

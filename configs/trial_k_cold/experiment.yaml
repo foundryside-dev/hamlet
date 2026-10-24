@@ -4,8 +4,3 @@ experiment:
   metadata:
     name: "Trial K — Responding to the universe (the world gets cold; the agent adapts)"
     description: "PRD-0001 trial pack: exogenous world pressure and three mitigation paths"
-    author: "PRD-0001 trial executor"
-    created: "2026-08-19"
-    tags: ["trial", "prd-0001"]
-  curriculum_levels:
-    - L0_cold

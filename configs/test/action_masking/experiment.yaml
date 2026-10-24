@@ -5,9 +5,3 @@ experiment:
   metadata:
     name: "Action Masking Test Pack"
     description: "Minimal pack for action masking/operating-hour tests"
-    author: "Hamlet Tests"
-    created: "2025-11-17"
-    tags: ["test", "masking"]
-
-  curriculum_levels:
-    - L0_masking

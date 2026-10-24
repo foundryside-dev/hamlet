@@ -18,8 +18,5 @@ environment:
         clip: true
   affordances:
     - name: Bed
-      description: "Rest"
-      category: rest
   cascade_graph: []
   modulation_graph: []
-  cues: []

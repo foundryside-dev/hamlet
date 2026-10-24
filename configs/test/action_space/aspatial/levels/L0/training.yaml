@@ -37,12 +37,8 @@ training:
     train_frequency: 1
     sequence_length: 2
     max_grad_norm: 5.0
-    evaluation:
-      interval: 5
-      num_episodes: 1
     checkpointing:
       interval: 5
-      keep_last: 1
   curriculum:
     strategy: static
     adversarial: null

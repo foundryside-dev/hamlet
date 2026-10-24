@@ -17,13 +17,8 @@ environment:
   modulation_graph: []
   affordances:
     - name: BED
-      description: Rest to recover energy
-      category: rest
     - name: FOOD
-      description: Eat food
-      category: sustenance
 
   # The one roster member pack B lacks: an exposed variable whose declarations
   # SATISFY the exposure rules (bounded minmax with clip: true), so it binds a
   # variable_element slot in the compiled TokenSpec.
-  cues: []

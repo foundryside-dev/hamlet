@@ -1372,11 +1372,6 @@ class TestVariableMeterCheckpoints:
         shutil.copytree(Path("configs/test/model_config_4meter"), pack)
         shutil.copytree(pack / "levels" / primary_level, pack / "levels" / selected_level)
 
-        experiment_path = pack / "experiment.yaml"
-        experiment = yaml.safe_load(experiment_path.read_text())
-        experiment["experiment"]["curriculum_levels"].append(selected_level)
-        experiment_path.write_text(yaml.safe_dump(experiment, sort_keys=False))
-
         bars_path = pack / "levels" / selected_level / "bars.yaml"
         bars = yaml.safe_load(bars_path.read_text())
         bars["bars"]["meters"][0]["initial"] = 0.25

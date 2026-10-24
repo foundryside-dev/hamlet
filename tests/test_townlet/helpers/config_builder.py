@@ -74,16 +74,8 @@ def _write_training_yaml(level_dir: Path, config_data: dict) -> None:
 
 
 def _get_primary_level_dir(config_dir: Path) -> Path:
-    """Resolve the primary level directory from experiment.yaml."""
-    experiment_yaml = config_dir / "experiment.yaml"
-    if not experiment_yaml.exists():
-        raise FileNotFoundError(f"experiment.yaml not found in {config_dir}")
-    experiment_data = yaml.safe_load(experiment_yaml.read_text())
-    levels = experiment_data.get("experiment", {}).get("curriculum_levels") or []
-    if not levels:
-        raise ValueError(f"No curriculum_levels defined in {experiment_yaml}")
-    level_name = levels[0]
-    return config_dir / "levels" / level_name
+    """Resolve the primary level directory of a pack built by ``prepare_config_dir``."""
+    return config_dir / "levels" / PRIMARY_LEVEL_NAME
 
 
 def prepare_config_dir(tmp_path: Path, modifier: Callable[[dict], None] | None = None, name: str = "config") -> Path:

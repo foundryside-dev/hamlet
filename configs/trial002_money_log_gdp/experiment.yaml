@@ -6,9 +6,3 @@ experiment:
   metadata:
     name: "Simple Example - Validating Training Setup"
     description: "Simple validation of training setup using a basic agent and environment configuration."
-    author: "HAMLET Team"
-    created: "2025-11-15"
-    tags: ["simple", "sleep", "energy", "validation"]
-
-  curriculum_levels:
-    - L0_simple

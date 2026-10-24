@@ -13,12 +13,10 @@
 >
 > - **`id:` is not a field — the identity field is `name:`.**
 > - **`effect_pipeline:` is not a field — the real key is `interactions:`.**
-> - **`capabilities:` is not a field.** `src/townlet/config/capability_config.py` defines six
->   Capability DTOs (`cooldown`, `meter_gated`, `prerequisite`, `probabilistic`,
->   `skill_scaling`, …) that **nothing imports** — grep finds zero importers outside the module
->   itself. It is dead declared surface, unreachable from any pack. Tracked as
->   `hamlet-6b24c0bd83`, which also notes that `effects.md` Example 8 documents an
->   affordance-scope `on_cooldown` pattern with no runtime gate consulting it.
+> - **`capabilities:` is not a field.** `src/townlet/config/capability_config.py` (six
+>   Capability DTOs that nothing imported) was deleted on 2026-10-24; a `capabilities:` key
+>   refuses as an extra field. `hamlet-6b24c0bd83` also notes that `effects.md` Example 8
+>   documents an affordance-scope `on_cooldown` pattern with no runtime gate consulting it.
 > - **The error strings and codes quoted here are invented.** `UAC-VAL-010` / `-011` / `-012`
 >   appear 3× in this document and **0×** anywhere in `src/`. Do not search for them.
 >

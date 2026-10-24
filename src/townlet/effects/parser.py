@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from townlet.config.effects_config import CommandConfig
+from townlet.effects.collections import COLLECTION_RESOLVERS
 from townlet.effects.schema import CommandNode, CommandType
 
 __all__ = ["CommandParser"]
@@ -59,6 +60,7 @@ class CommandParser:
                 item_type=config.spawn_item,
                 position=config.position,
                 position_expr=config.position,
+                quantity=config.quantity,
             )
 
         elif config.sample is not None:
@@ -81,18 +83,11 @@ class CommandParser:
         elif config.for_each is not None:
             # for_each can be a registered collection name OR an arbitrary expression.
             # Only set collection when it matches a known resolver; otherwise treat as expression.
-            collection = None
+            collection: str | None = None
             collection_expr: str | None = config.for_each
-            if isinstance(config.for_each, str):
-                try:
-                    from townlet.effects import collections as _collections
-
-                    collection_resolvers = _collections.COLLECTION_RESOLVERS
-                except Exception:
-                    collection_resolvers = {}
-                if config.for_each in collection_resolvers:
-                    collection = config.for_each
-                    collection_expr = None
+            if config.for_each in COLLECTION_RESOLVERS:
+                collection = config.for_each
+                collection_expr = None
 
             return CommandNode(
                 type=CommandType.FOR_EACH,
@@ -100,6 +95,7 @@ class CommandParser:
                 collection_expr=collection_expr,
                 iterator=config.as_,
                 body=[self.parse_command(cmd) for cmd in config.do],
+                radius=config.radius,
             )
 
         elif config.switch is not None:

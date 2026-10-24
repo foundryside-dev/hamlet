@@ -10,6 +10,7 @@ from townlet.effects.compiler import CommandCompiler
 from townlet.effects.context import ExecutionContext
 from townlet.effects.executor import CommandExecutor
 from townlet.effects.schema import CommandNode, CommandType
+from townlet.substrate.grid2d import Grid2DSubstrate
 from townlet.world.expression import ExpressionParser
 
 
@@ -73,7 +74,8 @@ def test_for_each_nearby_agents_with_modify():
         target_index=None,
         effect_manager=DummyEffectManager(),
         item_manager=DummyItemManager(),
-        agent_positions=agent_positions,  # NEW field needed
+        agent_positions=agent_positions,
+        substrate=Grid2DSubstrate(width=16, height=16, boundary="clamp", distance_metric="euclidean", enable_diagonals=False),
     )
 
     # Execute for_each
@@ -224,6 +226,7 @@ def test_for_each_empty_collection_noop():
         effect_manager=DummyEffectManager(),
         item_manager=DummyItemManager(),
         agent_positions=agent_positions,
+        substrate=Grid2DSubstrate(width=16, height=16, boundary="clamp", distance_metric="euclidean", enable_diagonals=False),
     )
 
     executor.execute(command, context)

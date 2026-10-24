@@ -88,7 +88,7 @@ def test_parser_if_command():
 
 def test_parser_spawn_item_command():
     """Parser converts spawn_item CommandConfig to CommandNode."""
-    config = CommandConfig(spawn_item="health_potion", position="random")
+    config = CommandConfig(spawn_item="health_potion", position="random", quantity=2)
 
     parser = CommandParser()
     node = parser.parse_command(config)
@@ -97,6 +97,20 @@ def test_parser_spawn_item_command():
     assert node.item_type == "health_potion"
     assert node.position == "random"
     assert node.position_expr == "random"
+    assert node.quantity == 2
+    assert node.initial_state is None
+
+
+def test_parser_for_each_nearby_agents_carries_radius():
+    """The declared radius reaches the compiled node the resolver reads."""
+    config = CommandConfig.model_validate(
+        {"for_each": "nearby_agents", "radius": 2.0, "do": [{"modify": "target.bar.health", "value": "target.bar.health"}]}
+    )
+
+    node = CommandParser().parse_command(config)
+
+    assert node.collection == "nearby_agents"
+    assert node.radius == 2.0
 
 
 def test_parser_sample_command():

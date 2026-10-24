@@ -5,9 +5,10 @@ from __future__ import annotations
 from dataclasses import fields, replace
 from typing import Any
 
+from townlet.config.effects_config import SPATIAL_COLLECTIONS
 from townlet.effects.schema import CommandNode, CommandType
 from townlet.world.expression import ExpressionParser
-from townlet.world.expression.ast_nodes import ASTNode, PathAccess
+from townlet.world.expression.ast_nodes import ASTNode, FunctionCall, PathAccess
 from townlet.world.expression.type_checker import TypeChecker
 
 __all__ = ["CommandCompiler"]
@@ -15,6 +16,12 @@ __all__ = ["CommandCompiler"]
 # for_each collections whose iteration target is an item row, not an agent row
 # (executor `_for_each_contexts`: only inventory_items sets target_is_item).
 _ITEM_TARGET_COLLECTIONS = frozenset({"inventory_items"})
+
+# Functions that read a TemporalHistory or the evaluation step. Only the VFS profile
+# evaluator keeps a history and a step (`vfs/evaluator.py`); a command pipeline (effect,
+# affordance interaction, item interaction) runs without one, so these refuse here
+# instead of compiling and raising at the first tick (review-2026-10-24 effects F9).
+HISTORY_FUNCTIONS = frozenset({"lag", "delta", "moving_average", "ema", "rate_of_change", "rising_edge", "falling_edge", "elapsed_ticks"})
 
 
 class CommandCompiler:
@@ -78,7 +85,9 @@ class CommandCompiler:
         return _rewrite_ast(ast, self._bare_agent_path)
 
     def _parse(self, expression: str, agent_target: bool) -> ASTNode:
-        return self._resolve_expression(self.parser.parse(expression), agent_target)
+        ast = self.parser.parse(expression)
+        _refuse_history_functions(ast, expression)
+        return self._resolve_expression(ast, agent_target)
 
     def compile_command(self, node: CommandNode) -> CommandNode:
         """Compile and validate command.
@@ -267,6 +276,10 @@ class CommandCompiler:
                 if node.collection not in COLLECTION_RESOLVERS:
                     available = sorted(COLLECTION_RESOLVERS.keys())
                     raise TypeCheckError(f"Unknown for_each collection '{node.collection}'. Available: {available}")
+            if node.collection in SPATIAL_COLLECTIONS and node.radius is None:
+                raise TypeCheckError(f"for_each '{node.collection}' requires a declared radius")
+            if node.collection not in SPATIAL_COLLECTIONS and node.radius is not None:
+                raise TypeCheckError(f"for_each radius applies only to the spatial collections {sorted(SPATIAL_COLLECTIONS)}")
 
             # The body runs once per element with `target` rebound to it: an agent row
             # for every collection except the item-row ones.
@@ -452,6 +465,8 @@ class CommandCompiler:
 
             if not node.item_type:
                 raise TypeCheckError("SPAWN_ITEM command requires 'item_type'")
+            if node.quantity is None or node.quantity < 1:
+                raise TypeCheckError(f"SPAWN_ITEM '{node.item_type}' requires a declared quantity >= 1, got {node.quantity}")
 
             # Validate position expression if provided (not simple "random"/"self"/"target")
             simple_position = node.position in {"random", "self", "target"} or node.position is None
@@ -475,6 +490,35 @@ class CommandCompiler:
         for node in nodes:
             self.compile_command(node)
         return nodes
+
+
+def _refuse_history_functions(node: ASTNode, expression: str) -> None:
+    """Refuse a temporal-history function anywhere in a command expression."""
+    for found in _walk(node):
+        if isinstance(found, FunctionCall) and found.function_name in HISTORY_FUNCTIONS:
+            from townlet.world.expression.type_checker import TypeCheckError
+
+            raise TypeCheckError(
+                f"Function '{found.function_name}' in '{expression}' reads temporal history, which only VFS "
+                "profile expressions keep. Declare a variable with `expression: "
+                f'"{found.function_name}(...)"` in the pack-scope variables declaration and read that '
+                "variable from the command instead."
+            )
+
+
+def _walk(node: ASTNode) -> list[ASTNode]:
+    found = [node]
+    for field in fields(node):
+        found.extend(_walk_value(getattr(node, field.name)))
+    return found
+
+
+def _walk_value(value: Any) -> list[ASTNode]:
+    if isinstance(value, ASTNode):
+        return _walk(value)
+    if isinstance(value, list | tuple):
+        return [nested for item in value for nested in _walk_value(item)]
+    return []
 
 
 def _rewrite_ast(node: ASTNode, is_bare_agent_path: Any) -> ASTNode:

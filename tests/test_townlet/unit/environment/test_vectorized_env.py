@@ -144,9 +144,9 @@ def test_build_bar_index_map():
     # MeterInfo.name is the bar ID (lowercase)
     meter_metadata = MeterMetadata(
         meters=(
-            MeterInfo(name="energy", index=0, critical=True, initial_value=1.0, observable=True),
-            MeterInfo(name="health", index=1, critical=True, initial_value=1.0, observable=True),
-            MeterInfo(name="satiation", index=2, critical=False, initial_value=0.8, observable=True),
+            MeterInfo(name="energy", index=0, initial_value=1.0, description="energy"),
+            MeterInfo(name="health", index=1, initial_value=1.0, description="health"),
+            MeterInfo(name="satiation", index=2, initial_value=0.8, description="satiation"),
         )
     )
 

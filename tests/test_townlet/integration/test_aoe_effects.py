@@ -7,6 +7,7 @@ from townlet.effects.catalog import CompiledEffect, EffectCatalog
 from townlet.effects.executor import CommandExecutor
 from townlet.effects.manager import EffectManager
 from townlet.effects.schema import CommandNode, CommandType
+from townlet.substrate.grid2d import Grid2DSubstrate
 from townlet.world.expression.parser import ExpressionParser
 
 
@@ -65,6 +66,7 @@ def test_aoe_heal_nearby_agents():
         bars=bars,
         vfs_registry=None,
         agent_positions=agent_positions,
+        substrate=Grid2DSubstrate(width=16, height=16, boundary="clamp", distance_metric="euclidean", enable_diagonals=False),
     )
 
     # Verify agent 1 healed, agent 2 not

@@ -17,20 +17,22 @@ def _resolve_all_agents(context: Any, **_: Any) -> list[int]:
     return list(range(batch_size))
 
 
-def _resolve_nearby_agents(context: Any, **kwargs: Any) -> list[int]:
-    radius = kwargs.get("radius")
+def _resolve_nearby_agents(context: Any, *, radius: float | None, **_: Any) -> list[int]:
+    """Other agents within `radius` of self under the substrate's declared distance metric."""
     if radius is None:
         raise ValueError("radius required for 'nearby_agents' collection")
     if context.self_index is None:
         raise ValueError("self_index required for 'nearby_agents' collection")
-    if not hasattr(context, "agent_positions") or context.agent_positions is None:
+    if context.agent_positions is None:
         raise ValueError("agent_positions required for 'nearby_agents' collection")
+    if context.substrate is None:
+        raise ValueError("substrate required for 'nearby_agents' collection: distance is the substrate's declared metric")
 
-    self_pos = context.agent_positions[context.self_index]
-    distances = torch.norm(context.agent_positions - self_pos, dim=1)
-    device = distances.device
-    nearby = torch.where((distances <= radius) & (torch.arange(len(distances), device=device) != context.self_index))[0]
-    return nearby.tolist()
+    positions = context.agent_positions.to(dtype=torch.float32)
+    distances = context.substrate.compute_distance(positions, positions[context.self_index])
+    others = torch.arange(positions.shape[0], device=positions.device) != context.self_index
+    nearby = torch.where((distances <= radius) & others)[0]
+    return [int(index) for index in nearby.tolist()]
 
 
 def _resolve_inventory_items(context: Any, **_: Any) -> list[int]:

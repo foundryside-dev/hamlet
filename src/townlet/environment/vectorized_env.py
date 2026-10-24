@@ -32,6 +32,7 @@ from townlet.environment.token_publishers import (
 )
 from townlet.items import InventoryState, ItemActionHandler, ItemManager
 from townlet.universe.dto import RuntimeActionSpace
+from townlet.universe.dto.token_spec import item_capacity
 from townlet.vfs.evaluator import VFSEvaluator
 from townlet.vfs.profiles import CompiledGlobalProfile
 from townlet.vfs.registry import VariableRegistry
@@ -571,7 +572,18 @@ class VectorizedHamletEnv:
         universe = self.universe
         self.vfs_variables: list[VariableDef] = list(self.level.vfs_variables)
 
-        max_items_in_world = universe.items_catalog.max_items_in_world if universe.items_catalog else 0
+        # The item arena is world slots plus per-agent carried slots; the registry's item
+        # storage and the item manager are sized by it, not by the world slots alone, so a
+        # catalog with max_items_in_world: 0 and max_items_per_agent: n still has n*agents slots.
+        max_items_in_world = (
+            item_capacity(
+                max_items_in_world=universe.items_catalog.max_items_in_world,
+                max_items_per_agent=universe.items_catalog.max_items_per_agent,
+                declared_agents_per_world=None,
+            )
+            if universe.items_catalog
+            else 0
+        )
         item_profiles = None
         if universe.compiled_vfs_profiles is not None:
             item_profiles = universe.compiled_vfs_profiles.item_profiles
@@ -637,7 +649,11 @@ class VectorizedHamletEnv:
 
         self.item_manager = ItemManager(
             catalog=universe.items_catalog,
-            max_items=universe.items_catalog.max_items_in_world,
+            max_items=item_capacity(
+                max_items_in_world=universe.items_catalog.max_items_in_world,
+                max_items_per_agent=universe.items_catalog.max_items_per_agent,
+                declared_agents_per_world=None,
+            ),
             device=self.device,
             schema=self.effects_schema,
             vfs_registry=self.vfs_registry,
@@ -1084,6 +1100,9 @@ class VectorizedHamletEnv:
                 vfs_registry=self.vfs_registry,
                 current_step=self.global_tick,  # HIGH-01: Use global tick instead of agent 0
                 item_manager=self.item_manager,
+                agent_positions=self.positions,
+                affordance_positions=self.affordances,
+                substrate=self.substrate,
             )
 
         # Sync meters back from bars dict (effects may have modified them)

@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from townlet.effects.catalog import EffectCatalog
     from townlet.effects.context import ExecutionContext
     from townlet.effects.executor import CommandExecutor
+    from townlet.substrate.base import SpatialSubstrate
 
 from townlet.config.effects_config import EffectScope
 from townlet.effects.admission import EffectAdmissionSnapshot
@@ -62,6 +63,15 @@ class ActiveEffect:
         self.intensity = require_float32(self.intensity, field=f"active effect {self.effect_id!r} intensity")
 
 
+@dataclass(frozen=True)
+class _Spatial:
+    """The spatial state one spawn or tick hands every lifecycle context it builds."""
+
+    agent_positions: torch.Tensor | None
+    affordance_positions: dict[str, torch.Tensor] | None
+    substrate: SpatialSubstrate | None
+
+
 class EffectManager:
     """Manages all active effects across all entities."""
 
@@ -107,8 +117,10 @@ class EffectManager:
         bars: dict[str, torch.Tensor] | None = None,
         vfs_registry: Any | None = None,
         spawn_depth: int = 0,
-        agent_positions: Any | None = None,  # NEW: for for_each spatial queries
-        item_manager: Any | None = None,  # NEW: ItemManager for spawn_item commands
+        agent_positions: torch.Tensor | None = None,
+        item_manager: Any | None = None,
+        affordance_positions: dict[str, torch.Tensor] | None = None,
+        substrate: SpatialSubstrate | None = None,
     ) -> ActiveEffect:
         """Spawn new effect instance, handling reapply policies.
 
@@ -120,7 +132,10 @@ class EffectManager:
             bars: Current meter values (for on_spawn command execution)
             vfs_registry: VFS registry (for on_spawn command execution)
             spawn_depth: Current cascade depth (for on_spawn command execution)
-            agent_positions: Agent positions tensor [batch, 2] (for for_each spatial queries)
+            agent_positions: Agent positions [num_agents, position_dim] (spatial reads, spawn_item origins)
+            item_manager: ItemManager for spawn_item commands
+            affordance_positions: Affordance positions by name (affordance-spatial functions)
+            substrate: Substrate whose declared metric measures distance (nearby_agents)
 
         Returns:
             ActiveEffect instance
@@ -157,7 +172,15 @@ class EffectManager:
             self._admission_transaction_active = True
         try:
             return self._spawn_effect(
-                effect_id, target_entity_id, intensity, current_step, bars, vfs_registry, spawn_depth, agent_positions, item_manager
+                effect_id,
+                target_entity_id,
+                intensity,
+                current_step,
+                bars,
+                vfs_registry,
+                spawn_depth,
+                item_manager,
+                _Spatial(agent_positions, affordance_positions, substrate),
             )
         except PermissionError:
             if snapshot is not None:
@@ -188,8 +211,8 @@ class EffectManager:
         bars: dict[str, torch.Tensor] | None,
         vfs_registry: Any | None,
         spawn_depth: int,
-        agent_positions: Any | None,
         item_manager: Any | None,
+        spatial: _Spatial,
     ) -> ActiveEffect:
         # Get compiled effect definition (validates effect_id exists)
         effect_def = self.catalog.effects[effect_id]
@@ -246,7 +269,7 @@ class EffectManager:
                     vfs_registry=vfs_registry,
                     item_manager=item_manager,
                     spawn_depth=spawn_depth,
-                    agent_positions=agent_positions,
+                    spatial=spatial,
                     interrupt_reason="merged_by_effect" if merging else "replaced_by_effect",
                     current_tick=current_step,
                 )
@@ -258,7 +281,7 @@ class EffectManager:
                     vfs_registry=vfs_registry,
                     item_manager=item_manager,
                     spawn_depth=spawn_depth + 1,
-                    agent_positions=agent_positions,
+                    spatial=spatial,
                     current_tick=current_step,
                 )
                 self.command_executor.preflight_commands(effect_def.on_spawn, spawn_context)
@@ -296,7 +319,7 @@ class EffectManager:
         item_manager: Any | None,
         spawn_depth: int,
         current_tick: int,
-        agent_positions: Any | None = None,
+        spatial: _Spatial,
         interrupt_reason: str | None = None,
     ) -> ExecutionContext:
         """Build one scope-authoritative context for every effect lifecycle hook."""
@@ -317,7 +340,9 @@ class EffectManager:
             effect_manager=self,
             item_manager=item_manager or NullItemManager(),
             spawn_depth=spawn_depth,
-            agent_positions=agent_positions,
+            agent_positions=spatial.agent_positions,
+            affordance_positions=spatial.affordance_positions,
+            substrate=spatial.substrate,
             interrupt_reason=interrupt_reason,
             current_tick=current_tick,
             scheduler=self.scheduler,
@@ -457,8 +482,10 @@ class EffectManager:
         bars: dict[str, torch.Tensor],
         vfs_registry: Any | None,
         current_step: int,
-        item_manager: Any | None = None,  # NEW: ItemManager for spawn_item commands
-        agent_positions: Any | None = None,
+        item_manager: Any | None = None,
+        agent_positions: torch.Tensor | None = None,
+        affordance_positions: dict[str, torch.Tensor] | None = None,
+        substrate: SpatialSubstrate | None = None,
     ) -> None:
         """Execute all active effects for one timestep.
 
@@ -471,23 +498,31 @@ class EffectManager:
             vfs_registry: VFS registry
             current_step: Current environment step
             item_manager: ItemManager for spawn_item commands (optional)
+            agent_positions: Agent positions [num_agents, position_dim] this tick
+            affordance_positions: Affordance positions by name this tick
+            substrate: Substrate whose declared metric measures distance
+
+        Every lifecycle hook and delayed block run by this tick sees the same spatial
+        state, so position reads (`distance_to_affordance`, `in_range`, `nearby_agents`)
+        evaluate inside effects. Without it those reads refuse at runtime.
         """
 
         item_manager = item_manager or NullItemManager()
+        spatial = _Spatial(agent_positions, affordance_positions, substrate)
         self.current_step = current_step
 
         # Execute any scheduled commands due at this tick before on_tick handlers
         if self.scheduler:
             due_items = self.scheduler.advance(current_step)
-            self._execute_scheduled_items(due_items, bars, vfs_registry, item_manager, agent_positions)
+            self._execute_scheduled_items(due_items, bars, vfs_registry, item_manager, spatial)
 
-        self._tick_scope_collection(self.global_effects, bars, vfs_registry, item_manager)
+        self._tick_scope_collection(self.global_effects, bars, vfs_registry, item_manager, spatial)
         for effects in list(self.agent_effects.values()):
-            self._tick_scope_collection(effects, bars, vfs_registry, item_manager)
+            self._tick_scope_collection(effects, bars, vfs_registry, item_manager, spatial)
         for effects in list(self.item_effects.values()):
-            self._tick_scope_collection(effects, bars, vfs_registry, item_manager)
+            self._tick_scope_collection(effects, bars, vfs_registry, item_manager, spatial)
         for effects in list(self.affordance_effects.values()):
-            self._tick_scope_collection(effects, bars, vfs_registry, item_manager)
+            self._tick_scope_collection(effects, bars, vfs_registry, item_manager, spatial)
 
         # Drain any zero-delay commands scheduled during this tick
         if self.scheduler:
@@ -495,7 +530,7 @@ class EffectManager:
                 pending_now = self.scheduler.drain_due()
                 if not pending_now:
                     break
-                self._execute_scheduled_items(pending_now, bars, vfs_registry, item_manager, agent_positions)
+                self._execute_scheduled_items(pending_now, bars, vfs_registry, item_manager, spatial)
 
     def _tick_scope_collection(
         self,
@@ -503,12 +538,13 @@ class EffectManager:
         bars: dict[str, torch.Tensor],
         vfs_registry: Any | None,
         item_manager: Any | None,
+        spatial: _Spatial,
     ) -> None:
         """Tick and naturally despawn one scope collection in reverse removal order."""
         for effect in reversed(effects.copy()):
-            self._tick_effect(effect, bars, vfs_registry, item_manager)
+            self._tick_effect(effect, bars, vfs_registry, item_manager, spatial)
             if effect.duration_remaining <= 0:
-                self._despawn_effect(effect, bars, vfs_registry, item_manager, interrupt_reason=None)
+                self._despawn_effect(effect, bars, vfs_registry, item_manager, spatial, interrupt_reason=None)
 
     def _execute_scheduled_items(
         self,
@@ -516,7 +552,7 @@ class EffectManager:
         bars: dict[str, torch.Tensor],
         vfs_registry: Any | None,
         item_manager: Any | None,
-        agent_positions: Any | None,
+        spatial: _Spatial,
     ) -> None:
         """Execute scheduled commands using the current tick context."""
 
@@ -565,7 +601,9 @@ class EffectManager:
                 effect_manager=self,
                 item_manager=item_manager or NullItemManager(),
                 spawn_depth=spawn_depth,
-                agent_positions=agent_positions,
+                agent_positions=spatial.agent_positions,
+                affordance_positions=spatial.affordance_positions,
+                substrate=spatial.substrate,
                 current_tick=self.current_step,
                 scheduler=self.scheduler,
                 affordance_overrides=self.affordance_overrides,
@@ -584,7 +622,8 @@ class EffectManager:
         effect: ActiveEffect,
         bars: dict[str, torch.Tensor],
         vfs_registry: Any | None,
-        item_manager: Any | None = None,  # NEW
+        item_manager: Any | None,
+        spatial: _Spatial,
     ) -> None:
         """Tick a single effect (execute on_tick and update counters)."""
         # Execute on_tick commands
@@ -598,7 +637,8 @@ class EffectManager:
                     vfs_registry=vfs_registry,
                     item_manager=item_manager,
                     spawn_depth=0,  # Reset depth for top-level tick
-                    current_tick=self.current_step,  # NEW
+                    current_tick=self.current_step,
+                    spatial=spatial,
                 )
 
                 for command in compiled.on_tick:
@@ -613,7 +653,8 @@ class EffectManager:
         effect: ActiveEffect,
         bars: dict[str, torch.Tensor],
         vfs_registry: Any | None,
-        item_manager: Any | None = None,  # NEW
+        item_manager: Any | None,
+        spatial: _Spatial,
         interrupt_reason: str | None = None,
     ) -> None:
         """Despawn effect and execute on_despawn commands."""
@@ -631,7 +672,8 @@ class EffectManager:
                     item_manager=item_manager,
                     spawn_depth=0,
                     interrupt_reason=interrupt_reason,
-                    current_tick=self.current_step,  # NEW
+                    current_tick=self.current_step,
+                    spatial=spatial,
                 )
 
                 for command in compiled.on_despawn:
@@ -662,6 +704,9 @@ class EffectManager:
         vfs_registry: Any | None,
         current_step: int,
         item_manager: Any | None = None,
+        agent_positions: torch.Tensor | None = None,
+        affordance_positions: dict[str, torch.Tensor] | None = None,
+        substrate: SpatialSubstrate | None = None,
     ) -> None:
         """Manually cancel an effect instance (fail-forward: on_interrupt then remove)."""
         target_effect = next(
@@ -685,6 +730,7 @@ class EffectManager:
                 spawn_depth=0,
                 interrupt_reason="manually_cancelled",
                 current_tick=current_step,
+                spatial=_Spatial(agent_positions, affordance_positions, substrate),
             )
 
             for command in compiled.on_interrupt:

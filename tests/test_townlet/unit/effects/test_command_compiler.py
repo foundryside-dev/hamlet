@@ -269,6 +269,7 @@ def test_compiler_spawn_item_accepts_simple_position():
         type=CommandType.SPAWN_ITEM,
         item_type="health_potion",
         position="random",
+        quantity=1,
     )
 
     compiler = CommandCompiler(schema={}, agent_target=True)
@@ -285,6 +286,7 @@ def test_compiler_spawn_item_validates_position_expression():
         item_type="health_potion",
         position="coords",  # Not a simple value
         position_expr="target.position + 1",
+        quantity=1,
     )
 
     compiler = CommandCompiler(schema={"target.position": "int"}, agent_target=True)

@@ -12,6 +12,11 @@ from townlet.effects.collections import (
     register_collection_resolver,
     resolve_collection,
 )
+from townlet.substrate.grid2d import Grid2DSubstrate
+
+
+def _grid(metric: str) -> Grid2DSubstrate:
+    return Grid2DSubstrate(width=16, height=16, boundary="clamp", distance_metric=metric, enable_diagonals=False)
 
 
 @dataclass
@@ -21,6 +26,7 @@ class MockContext:
     bars: dict[str, torch.Tensor] = field(default_factory=dict)
     self_index: int | None = None
     agent_positions: torch.Tensor | None = None
+    substrate: Any = None
     inventory: Any = None
     effect_manager: Any = None
 
@@ -49,7 +55,7 @@ def test_nearby_agents_requires_radius():
     )
 
     with pytest.raises(ValueError, match="radius required"):
-        resolve_collection("nearby_agents", ctx)
+        resolve_collection("nearby_agents", ctx, radius=None)
 
 
 def test_nearby_agents_requires_self_index():
@@ -76,20 +82,41 @@ def test_nearby_agents_requires_agent_positions():
         resolve_collection("nearby_agents", ctx, radius=2.0)
 
 
+def test_nearby_agents_requires_substrate():
+    """nearby_agents measures distance with the substrate's declared metric, so it needs one."""
+    ctx = MockContext(
+        bars={"energy": torch.zeros(2)},
+        self_index=0,
+        agent_positions=torch.tensor([[0, 0], [1, 0]]),
+    )
+
+    with pytest.raises(ValueError, match="substrate required"):
+        resolve_collection("nearby_agents", ctx, radius=2.0)
+
+
 def test_nearby_agents_returns_agents_within_radius():
     """nearby_agents returns indices of agents within radius (excluding self)."""
     ctx = MockContext(
         bars={"energy": torch.zeros(4)},
         self_index=0,
-        agent_positions=torch.tensor([[0.0, 0.0], [1.0, 0.0], [5.0, 0.0], [10.0, 0.0]]),
+        agent_positions=torch.tensor([[0, 0], [1, 0], [5, 0], [10, 0]]),
+        substrate=_grid("manhattan"),
     )
 
-    result = resolve_collection("nearby_agents", ctx, radius=2.0)
+    assert resolve_collection("nearby_agents", ctx, radius=2.0) == [1]
 
-    # Agent 1 is at distance 1.0, within radius 2.0
-    # Agent 2 is at distance 5.0, outside radius 2.0
-    # Agent 3 is at distance 10.0, outside radius 2.0
-    assert result == [1]
+
+@pytest.mark.parametrize(("metric", "expected"), [("manhattan", [2]), ("euclidean", [1, 2]), ("chebyshev", [1, 2])])
+def test_nearby_agents_uses_the_declared_metric(metric: str, expected: list[int]) -> None:
+    """Self (0,0), A (1,1), B (1,0), radius 1.5: manhattan excludes A at distance 2."""
+    ctx = MockContext(
+        bars={"energy": torch.zeros(3)},
+        self_index=0,
+        agent_positions=torch.tensor([[0, 0], [1, 1], [1, 0]]),
+        substrate=_grid(metric),
+    )
+
+    assert resolve_collection("nearby_agents", ctx, radius=1.5) == expected
 
 
 # --- inventory_items resolver tests ---

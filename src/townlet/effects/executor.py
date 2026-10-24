@@ -83,9 +83,20 @@ class _TargetAwareExecutionContext(ExprExecutionContext):
         self_is_item: bool = False,  # NEW
         device: torch.device | str | None = None,
         vfs_scopes: dict[str, str] | None = None,
+        agent_positions: torch.Tensor | None = None,
+        affordance_positions: dict[str, torch.Tensor] | None = None,
     ):
         resolved_device = torch.device(device) if device is not None else torch.device("cpu")
-        super().__init__(bars=bars, vfs=vfs, affordances={}, temporal={}, device=resolved_device, vfs_scopes=vfs_scopes)
+        super().__init__(
+            bars=bars,
+            vfs=vfs,
+            affordances={},
+            temporal={},
+            device=resolved_device,
+            vfs_scopes=vfs_scopes,
+            agent_positions=agent_positions,
+            affordance_positions=affordance_positions,
+        )
         self.target_bars = target_bars
         self.target_vfs = target_vfs
         self.self_bars = self_bars or {}  # NEW
@@ -346,6 +357,8 @@ class CommandExecutor:
             spawn_depth=context.spawn_depth,  # manager increments for the spawned effect's on_spawn
             agent_positions=context.agent_positions,
             item_manager=context.item_manager,
+            affordance_positions=context.affordance_positions,
+            substrate=context.substrate,
         )
 
     def _execute_spawn_item(self, command: CommandNode, context: ExecutionContext) -> None:
@@ -396,9 +409,10 @@ class CommandExecutor:
         if item_type is None:
             raise ValueError("spawn_item command requires 'item_type'")
 
-        quantity = command.quantity or 1
+        if command.quantity is None:
+            raise ValueError(f"spawn_item '{item_type}' requires a declared quantity")
 
-        for _ in range(quantity):
+        for _ in range(command.quantity):
             position = context.item_manager.find_spawn_location(
                 strategy=strategy,
                 origin=origin,
@@ -762,8 +776,8 @@ class CommandExecutor:
         if active_effect:
             # Make effect variables available as scalars
             vfs_dict["intensity"] = torch.tensor(active_effect.intensity, device=device)
-            vfs_dict["elapsed_ticks"] = torch.tensor(active_effect.elapsed_ticks, device=device)
-            vfs_dict["duration_remaining"] = torch.tensor(active_effect.duration_remaining, device=device)
+            vfs_dict["elapsed_ticks"] = torch.tensor(active_effect.elapsed_ticks, device=device, dtype=torch.float32)
+            vfs_dict["duration_remaining"] = torch.tensor(active_effect.duration_remaining, device=device, dtype=torch.float32)
 
         # Add bars
         for bar_name, tensor in context.bars.items():
@@ -806,6 +820,15 @@ class CommandExecutor:
                     continue
                 self_vfs[var_name] = tensor if tensor.dim() == 0 else tensor[context.self_index]
 
+        # Spatial reads evaluate in float32, as the VFS evaluator hands them (grid
+        # positions are integer cells; euclidean distance takes a square root).
+        agent_positions = None if context.agent_positions is None else context.agent_positions.to(dtype=torch.float32, device=device)
+        affordance_positions = (
+            None
+            if context.affordance_positions is None
+            else {name: position.to(dtype=torch.float32, device=device) for name, position in context.affordance_positions.items()}
+        )
+
         # Always use the prefix-aware context when self or target indices are present
         if context.target_index is not None or context.self_index is not None:
             return _TargetAwareExecutionContext(
@@ -820,10 +843,21 @@ class CommandExecutor:
                 self_is_item=context.self_is_item,
                 device=device,
                 vfs_scopes=vfs_scopes,
+                agent_positions=agent_positions,
+                affordance_positions=affordance_positions,
             )
 
         # No self/target: fall back to basic context
-        return ExprExecutionContext(bars=bars_dict, vfs=vfs_dict, affordances={}, temporal={}, device=device, vfs_scopes=vfs_scopes)
+        return ExprExecutionContext(
+            bars=bars_dict,
+            vfs=vfs_dict,
+            affordances={},
+            temporal={},
+            device=device,
+            vfs_scopes=vfs_scopes,
+            agent_positions=agent_positions,
+            affordance_positions=affordance_positions,
+        )
 
     def execute_commands(self, commands: list[CommandNode], context: ExecutionContext) -> None:
         """Execute list of commands in order.

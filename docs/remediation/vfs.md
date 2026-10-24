@@ -163,3 +163,27 @@ the two inert accumulators in `configs/simple`, and correct `VFS.md` §6. Size: 
   read globals (WP5); state the random-initializer reset semantics (WP7).
 - `docs/architecture/VFS.md` §6: delete the bypass caveat and the `["engine","vtc"]` example;
   `read_item`/`write_item` take roles.
+
+## Round 2 (2026-10-24, after WP1–WP8 landed)
+
+A second first-principles review, `review-2026-10-24/findings_vfs_round2.md` (scripts under
+`review-2026-10-24/vfs_round2/`), found 14 implementation findings (5 P1, 8 P2, 1 P3) and 10 spec
+problems that WP1–WP8 did not reach. Its work packages continue the numbering here; full
+definitions, acceptance scripts and the S1–S10 spec problems are in that file.
+
+| WP | content | closes | size | executed by a shipped level? |
+|---|---|---|---|---|
+| WP9 | Clock and reset truth: evaluate profiles at the end of `reset()`; `tick`, `day_phase` and `time_of_day` agree in every observation | F1, F2 | S | yes (L3 `day_phase`) |
+| WP10 | Profile identity (expression source, type, order, `semantic_type`) into `vfs_hash`; `variables_hash` beside the pack hashes | F5 | S | yes |
+| WP12 | Shape-proved writes; refuse writes to expression-owned targets; one spawn schema; token-spec errors located; agent-shaped values into pair targets refused | F6, F7, F11, F12 | M | yes (compile-time) |
+| WP11 | One per-slot visibility mask shared by the item and item-state publishers | F3 | S | no (no shipped items) |
+| WP13 | Rule S1 (batch = N independent worlds), then per-world `global` axis; refuse `pair`/`message` until agents-per-world is declarable | F4, S1 | M–L | yes (L5 globals) |
+| WP14 | History operators admitted as pointwise, collected from both profiles, `lag`-only self-edges; or the pipeline deleted | F9, S9 | M | no |
+| WP15 | Scope surface: `agent_private`, `message`, `pair` deleted or given readers and addressing; L5 pack cleaned | F8, F14, S2, S6, S7 | M | partly (L5) |
+| WP16 | `persistent`-lifetime registry state checkpointed under the `vfs_hash` gate | F13 | S | yes (L3 `day_phase`) |
+| WP17 | Spec text: identity rule gated on brain type; one-spelling resolver; transition-rule `reads`/`kind`/name; expression variables inlined into writes; doc corrections; `temporal.is_night` deleted | S3, S4, S5, S8, S10, F14 | M | yes |
+
+Ordering (approved 2026-10-24): WP9, WP10, WP12 first, with the compiler's remaining WP5–WP7
+folded into the same sprint; WP13's ruling before WP15; WP12 before WP14. The "executed by a
+shipped level" column orders the work; it does not cut it. VFS is called green when a fresh
+first-principles review finds no P1/P2 and no unworkable spec gap.

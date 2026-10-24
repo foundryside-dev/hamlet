@@ -28,9 +28,17 @@ batch model the spec never stated. The five changes, in the order I would make t
 |---|---|---|
 | 1 | Rule the batch as N independent worlds, give every non-agent scope a world axis, and delete `agent_private`, `pair`, `message` | It is the only open decision that changes what a policy learns (F4), and today it leaks across lanes in four scopes, not one |
 | 2 | One spelling and one resolver: a variable is `x` in its own row, `target.x` for a second entity; the `vfs.`, `bar.`, `env.`, `self.`, `global.vfs.`, `agent.vfs.` prefixes go | Five consumers, five grammars, two of which compile and crash (S5, F6); the web form cannot be built on a surface where the right spelling depends on the file |
-| 3 | A meter is a pointer to a variable, never its own thing: `bars.yaml` becomes a level-scoped binding `{variable: energy, depletion: {...}, recovery: ..., lethal_min: ...}` that names any declared variable (stateful, expression-derived such as time of day from `tick`, or a constant with `mutable: false`) and supplies the survival-role parameters, admitted only where the target can carry them (depletion needs a mutable stateful target; a derived or constant target binds with none); the variable owns identity, storage, `range`, `initial`, exposure and the token. The `meters` section of `environment.yaml`, the `bar.` spelling, the `meter` token type, meter `bounds`/`initial` and the cascade DTOs go; cascades become rules | Owner ruling (2026-10-24, in session): VFS is the only system for storing variables and features; bars were always meant to be a pointer. This is the project's own role-binding pattern (`money_bar: str` in DAC) applied to the survival role. Today meters are a parallel ontology shimmed into the symbol table (`vtc_write_targets`, `meter=True`), which is why one state has two names everywhere and why hunger and thirst are refused (S3) |
-| 4 | Collapse the declaration to nine fields: `id`, `scope`, `type`, `lifetime`, `range`, `initial`, `observed`, `mutable`, and an optional `expression` | `readable_by`, `semantic_type`, `normalization`-iff-exposed and the three-field initializer are two spellings of one fact each; the form asks nine questions and emits a complete explicit declaration, so no-defaults survives |
+| 3 | A meter is a pointer to a variable, never its own thing: `bars.yaml` becomes a level-scoped binding `{variable: energy, depletion: {...}, recovery: ..., lethal_min: ...}` that names any declared variable (stateful, expression-derived such as time of day from `tick`, or a constant with `mutable: false`) and supplies the survival-role parameters, admitted only where the target can carry them (depletion needs a mutable stateful target; a derived or constant target binds with none); the variable owns identity, storage, `bounds` and what happens when they break, `initial`, exposure and the token. The `meters` section of `environment.yaml`, the `bar.` spelling, the `meter` token type, meter `bounds`/`lethal_*`/`initial` and the cascade DTOs go; cascades become rules | Owner ruling (2026-10-24, in session): VFS is the only system for storing variables and features; bars were always meant to be a pointer. This is the project's own role-binding pattern (`money_bar: str` in DAC) applied to the survival role. Today meters are a parallel ontology shimmed into the symbol table (`vtc_write_targets`, `meter=True`), which is why one state has two names everywhere and why hunger and thirst are refused (S3) |
+| 4 | Collapse the declaration to nine fields: `id`, `scope`, `type`, `lifetime`, `bounds`, `initial`, `observed`, `mutable`, and an optional `expression`. `bounds` is `{min, max, on_min, on_max}`; each policy is one of `end_experiment`, `end_agent_error`, `end_agent_fail`, `end_agent_success`, `cap`, `reset_to: <value>` (owner, 2026-10-24) | `readable_by`, `semantic_type`, `normalization`-iff-exposed and the three-field initializer are two spellings of one fact each; the form asks nine questions and emits a complete explicit declaration, so no-defaults survives |
 | 5 | Make expressions a synchronous dataflow: admit `prev(x)` as the one history primitive, admit action and interaction events as inputs, inline expression variables into write conditions, refuse writes to expression-owned targets | Accumulators and "time since" become one declaration instead of three families (S9), the one-tick lag rule disappears (S4), and the dead history pipeline (F9) is replaced rather than deleted |
+
+Change 3 is also the answer to the brief's two-audience question. A meter is a convenience
+layer over a raw variable: the web form's primitive is the meter binding (point at a variable,
+give it rates), the practitioner's primitive is the variable itself (bounds and breach policy,
+expression, lifetime, exposure), and the first is defined entirely in terms of the second, so
+there is one state model with two entry points rather than two state models. A new user never
+has to open `variables.yaml` for a survival meter; a practitioner never has to go through
+`bars.yaml` to get at one. That is the reason meters keep a declaration of their own.
 
 Do 1 before anything in WP15, 2 before WP12's shape proofs are written (they are written against
 the resolver), 3 immediately after 2 because the fold rides the resolver, 4 and 5 together since
@@ -74,7 +82,7 @@ place. P = practitioner, N = new user.
 | readable_by | `[engine]` or `[engine, agent]` | neither | delete: agent-readable-unexposed has no consumer; it duplicates exposure |
 | writable_by | `[engine]` or `[]` | P (as an immutability assertion) | rename to a required `mutable: true \| false`; it is PRD-0004's witness, so keep the bit, and keep it required so no-defaults holds |
 | semantic_type | `temporal`, `custom` | neither | delete: one descriptor bit and a clock detector that `expression: tick` plus cyclical range already identifies |
-| normalization | 9 kinds, required iff exposed | P, N | fold into `range` on the type: bounds, clamp, normalization and descriptor are one fact (PDR-0016 already did this for meters) |
+| normalization | 9 kinds, required iff exposed | P, N | fold into `bounds` on the variable: min, max, breach policy, normalization and descriptor are one fact (PDR-0016 already did this for meters) |
 | write composition | 11 modes | P | keep 5: `set`, `add`, `mul`, `min`, `max`, plus `claim` for occupancy; `clamp`, `priority_write`, `last_write_wins`, `append_event` go |
 | write fields | `variable_id`, `expression`, `condition`, `composition`, `phase`, `priority`, `clamp`, `telemetry_label` | P (4 of 8) | keep `variable`, `expression`, `when`, `composition`; derive the rest |
 | transition phase | 14 names authored on writes and rules | neither | internal; a write's family picks its phase |
@@ -105,11 +113,11 @@ Two spellings of one idea, confirmed in source:
 - `item_profiles` / `profile` / `vfs_profile`: one binding, three declarations.
 
 Smallest set that keeps the practitioner's power: `id`, `scope` (4), `type` (5), `lifetime` (3),
-`range`, `initial`, `expression` (optional, with `prev` and events), `observed`, `mutable`
+`bounds`, `initial`, `expression` (optional, with `prev` and events), `observed`, `mutable`
 (required boolean); writes with `variable`, `expression`, `when`, `composition` (5+1); rules with
 `id`, `when`, `writes`. That is 9 declaration fields and 3 rule fields, down from 17 and 7. The
 form asks: what is it called, who has one, what kind of value, when does it reset, what range,
-where does it start, how does it change, does the agent see it, can anything change it.
+where does it start, what happens when it breaks its bounds, how does it change, does the agent see it, can anything change it.
 
 ## 2. The core model
 
@@ -198,7 +206,7 @@ ruling 2 admits; an expression hash would be a name by another route and belongs
 Normalization and exposure belong on the variable, not on a separate observation declaration.
 A second declaration is a second place for one fact and a second file for the form to write.
 What the form needs instead is a read-only "what the agent sees" panel projected from the
-`observed` bits and the compiled census. Make `range` part of the type rather than a
+`observed` bits and the compiled census. Make `bounds` part of the numeric types rather than a
 conditional field: it serves clamp, normalization, the descriptor and the identity check, and
 it removes the "normalization iff exposed" rule, which refuses in both directions today.
 
@@ -264,27 +272,31 @@ rule expression refused while `hunger` works; indistinguishable from any other [
 scalar starting at 1.0. Target surface:
 
 ```yaml
-# variables.yaml (pack scope): the state
+# variables.yaml (pack scope): the state, its bounds, and what a breach means
 - id: hunger
   scope: agent
   type: scalar
   lifetime: episode
-  range: [0.0, 1.0]
+  bounds: {min: 0.0, max: 1.0, on_min: end_agent_fail, on_max: cap}
   initial: 1.0
   observed: true
   mutable: true
-# levels/<L>/bars.yaml (level scope): a pointer plus the survival-role parameters
+# levels/<L>/bars.yaml (level scope): a pointer plus the survival-role rates
 - variable: hunger
   depletion: {passive: 0.008, move: 0.01, interact: 0.0}
   recovery: 0.0
-  lethal_min: true
-  lethal_max: false
 ```
 
 with EAT's `modify: hunger` unchanged in the affordance. One declaration of state and one
 binding; the binding carries nothing the variable already owns (no `name`, `initial`,
-`bounds`, `range_type`), so there is nothing to keep in sync. Per-level tuning of rates, the one
-real reason `bars.yaml` is level-scoped, survives. Cascades are rules over the same variables.
+`bounds`, `lethal_*`, `range_type`), so there is nothing to keep in sync. Per-level tuning of
+rates, the one real reason `bars.yaml` is level-scoped, survives. Cascades are rules over the
+same variables. The breach policy is checked once, at the slot `clamp_and_validate` occupies
+today, after every write of the tick: `cap` and `reset_to` rewrite storage; `end_agent_*` feed
+the terminal step with the outcome class (`fail`, `success`, or `error`, which episode-lane
+accounting excludes from learning statistics); `end_experiment` raises to the runner. `cap` and
+`reset_to` are refused on an expression-owned target, whose stored value must equal its
+expression; its bounds serve normalization and the `end_*` policies only.
 
 ### (b) Ticks since the agent last slept, exposed to the policy
 
@@ -395,13 +407,13 @@ Deletions first, each with what it costs a practitioner and what it buys a new u
 | D4 | delete `readable_by` | two fixed values; the one it adds beyond exposure has no consumer | one PRD-0004 acceptance row (`readable_unexposed` in the `static_epistemic_access` witness) and a DIV-015 re-baseline | one fewer field, no "engine read required" refusal |
 | D5 | delete `semantic_type` | one descriptor bit plus a clock detector that two other facts already identify | descriptor loses one bit; declared dynamics (A5) separate more than it did | one fewer field with a meaningless `custom` answer |
 | D6 | delete `kind`, `reads`, `effect`, authored `phase` from rules; delete `reads` from actions | inert or unchecked (S8); `vtc.py:1649-1672` still crashes at step on three compositions the DTO admits | the telemetry label is derived from `id` | rule is `id`, `when`, `writes` |
-| D7 | delete `clamp`, `priority_write`, `last_write_wins`, `append_event` compositions; `priority`, `telemetry_label`, `phase` from writes | clamp is `range`; priority is declaration order; two modes have never had a use; `vtc.py:664` raises on unimplemented modes | none observed in any pack | a write is four fields |
+| D7 | delete `clamp`, `priority_write`, `last_write_wins`, `append_event` compositions; `priority`, `telemetry_label`, `phase` from writes | clamp is the `cap` breach policy on `bounds`; priority is declaration order; two modes have never had a use; `vtc.py:664` raises on unimplemented modes | none observed in any pack | a write is four fields |
 | D8 | delete the authored phase vocabulary | 14 names, of which an author legitimately needs zero; the family picks the phase | ordering control, which today is also invisible (walkthrough b) | no phase refusals |
 | D9 | delete `delta`, `ema`, `moving_average`, `rate_of_change`, `rising_edge`, `falling_edge` | sugar over `prev`; all dead today (F9) | one line each to re-express | smaller function table |
 | D10 | delete `temporal.is_night`, `temporal.day_progress`, `temporal.time_of_day` from the spawn schema | engine constants of a game fact (F14), unreachable at runtime | none | no namespace that compiles and crashes |
 | D11 | delete the 17-member type vocabulary in favour of 5 | `vec2i` versus `vecNi dims: 2` is one type; refs are ints with a sentinel | none | one type question |
 | A1 | add `agents_per_world` to `experiment`; world axis on `world`, `affordance`, items | change 1 | enables multi-agent packs honestly | nothing to learn until needed |
-| A2 | add `range` as part of the type; required always | one fact, four homes today | none; already required at exposure | no conditional field |
+| A2 | add `bounds: {min, max, on_min, on_max}` to numeric types where bounds make sense; an unbounded numeric declares `bounds: null` explicitly (no-defaults form) and is refused at exposure, which already certifies boundedness; `bool` and refs carry no `bounds` field; policies `end_experiment`, `end_agent_error`, `end_agent_fail`, `end_agent_success`, `cap`, `reset_to: <value>` | one fact, four homes today (meter `bounds` and `lethal_*`, per-write `clamp`, `VTCBoundsClampProgram`, exposure `normalization`); the breach policy replaces `VTCTerminalConditionProgram`'s meter sources and gives a declared `error` outcome class | none; already required at exposure, and terminal conditions become authorable on any variable | no conditional field; "what happens when it breaks" is one question on the form |
 | A3 | add `prev(x)`, `lag(x, n)` with lag-only self-edges | S9, F9 | accumulators in one line | counters without rules |
 | A4 | add events `did`, `started`, `completed`, `completed_with`, `count_completed` | walkthroughs b, c, d | one declaration per mechanic | the form's "how it changes" question has an answer |
 | D12 | delete the `meters` section of `environment.yaml`, meter `name`/`initial`/`bounds`/`range_type`, `CascadeParamConfig`, the `meter` token type and DAC's `bar:` reference | owner ruling: a meter is a pointer to a variable; everything a meter declares that the variable also declares is a second copy | the oracle's bar streams are re-baselined once; `default_curriculum` is rewritten (eight variables, eight bindings, five cascade rules) | one kind of thing to declare, one place to look for a value |

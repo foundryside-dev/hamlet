@@ -10,8 +10,10 @@ import torch
 from townlet.training.checkpoint_utils import (
     CHECKPOINT_FORMAT_VERSION,
     DEMO_CHECKPOINT_KEYS,
+    PACK_HASH_KEYS,
     assert_checkpoint_dimensions,
     assert_checkpoint_identity,
+    assert_checkpoint_pack_hashes,
     assert_checkpoint_vfs_hash,
     attach_universe_metadata,
     persist_checkpoint_digest,
@@ -106,7 +108,9 @@ def test_attach_universe_metadata(compiled_universe) -> None:
     attach_universe_metadata(checkpoint, compiled_universe)
     level = compiled_universe.get_level(compiled_universe.metadata.primary_level)
 
-    assert checkpoint["config_hash"] == compiled_universe.metadata.config_hash
+    # The cache fingerprint is not identity: a comment edit or file rename moves it while
+    # every semantic hash stays put, so it is not stamped at all (hamlet-2dde1015fe).
+    assert "config_hash" not in checkpoint
     assert checkpoint["action_dim"] == level.action_metadata.total_actions
     assert checkpoint["meter_count"] == len(level.meter_metadata.meters)
     assert checkpoint["observation_schema_hash"] == level.observation_schema_hash
@@ -117,6 +121,13 @@ def test_attach_universe_metadata(compiled_universe) -> None:
     assert checkpoint["layout_hash"] == level.layout_hash
     assert "observation_dim" not in checkpoint
     assert "observation_field_uuids" not in checkpoint
+    # The five pack-scope content hashes (hamlet-2dde1015fe). `items_hash` is a stamped
+    # None on a pack with no item arena — a value, not an absence.
+    for key in PACK_HASH_KEYS:
+        assert key in checkpoint
+        assert checkpoint[key] == getattr(compiled_universe, key)
+    assert compiled_universe.items_hash is None, "model_config grew an item arena; re-derive this pin"
+    assert checkpoint["items_hash"] is None
 
 
 def test_assert_checkpoint_identity_composes_all_legs(compiled_universe) -> None:
@@ -124,7 +135,7 @@ def test_assert_checkpoint_identity_composes_all_legs(compiled_universe) -> None
 
     `config_hash_warning` is deliberately gone (PDR-0022): a warning is the silent
     acceptance the Provenance-integrity guardrail forbids. The composed chain is
-    format version → vfs_hash → dimensions/content hashes → primary_level.
+    format version → vfs_hash → dimensions/content hashes → pack hashes → primary_level.
     """
     checkpoint: dict[str, object] = {"version": CHECKPOINT_FORMAT_VERSION}
     attach_universe_metadata(checkpoint, compiled_universe)
@@ -150,7 +161,18 @@ def test_assert_checkpoint_identity_composes_all_legs(compiled_universe) -> None
     with pytest.raises(ValueError, match="drive_hash mismatch"):
         assert_checkpoint_identity(mismatched_drive, compiled_universe, force_new_vfs=False)
 
-    # Leg 4 — D5: primary_level. Missing raises (no-hidden-defaults); mismatch raises.
+    # Leg 4 — the five pack-scope hashes, each a hard refusal through the composed gate.
+    for key in PACK_HASH_KEYS:
+        mismatched_pack = dict(checkpoint)
+        mismatched_pack[key] = "deadbeef" * 8
+        with pytest.raises(ValueError, match=f"{key} mismatch"):
+            assert_checkpoint_identity(mismatched_pack, compiled_universe, force_new_vfs=False)
+        missing_pack = dict(checkpoint)
+        del missing_pack[key]
+        with pytest.raises(ValueError, match=f"missing {key}"):
+            assert_checkpoint_identity(missing_pack, compiled_universe, force_new_vfs=False)
+
+    # Leg 5 — D5: primary_level. Missing raises (no-hidden-defaults); mismatch raises.
     missing_level = dict(checkpoint)
     del missing_level["primary_level"]
     with pytest.raises(ValueError, match="missing primary_level"):
@@ -160,6 +182,35 @@ def test_assert_checkpoint_identity_composes_all_legs(compiled_universe) -> None
     wrong_level["primary_level"] = "L9_not_this_level"
     with pytest.raises(ValueError, match="primary_level mismatch"):
         assert_checkpoint_identity(wrong_level, compiled_universe, force_new_vfs=False)
+
+
+def test_items_hash_none_versus_value_is_a_change(compiled_universe) -> None:
+    """`items_hash` is nullable: `None` is the stamped value of a pack with no item arena.
+
+    A catalog appearing (checkpoint None, universe digest) or vanishing (checkpoint digest,
+    universe None) is a changed world and refuses like any other mismatch; `None == None`
+    resumes. The checkpoint-digest-versus-universe-None direction uses the real
+    `items_smoke` pack so the universe side is a compiled artifact, not a stub.
+    """
+    assert compiled_universe.items_hash is None, "model_config grew an item arena; re-derive this pin"
+    checkpoint: dict[str, object] = {"version": CHECKPOINT_FORMAT_VERSION}
+    attach_universe_metadata(checkpoint, compiled_universe)
+    assert assert_checkpoint_identity(checkpoint, compiled_universe, force_new_vfs=False) is True
+
+    catalog_vanished = dict(checkpoint)
+    catalog_vanished["items_hash"] = "deadbeef" * 8
+    with pytest.raises(ValueError, match="items_hash mismatch: checkpoint=deadbeefdeadbeef..., current=None"):
+        assert_checkpoint_identity(catalog_vanished, compiled_universe, force_new_vfs=False)
+
+    with_items = UniverseCompiler().compile(Path("configs/test/items_smoke"), primary_level="L0_smoke", use_cache=False)
+    assert with_items.items_hash is not None
+    stamped_with_items: dict[str, object] = {"version": CHECKPOINT_FORMAT_VERSION}
+    attach_universe_metadata(stamped_with_items, with_items)
+    assert stamped_with_items["items_hash"] == with_items.items_hash
+    catalog_appeared = dict(stamped_with_items)
+    catalog_appeared["items_hash"] = None
+    with pytest.raises(ValueError, match="items_hash mismatch: checkpoint=None, current="):
+        assert_checkpoint_pack_hashes(catalog_appeared, with_items)
 
 
 def test_assert_checkpoint_dimensions_raises_on_mismatch(compiled_universe) -> None:

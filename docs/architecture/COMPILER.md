@@ -196,8 +196,8 @@ compiler assessment and is slated for deletion by the in-flight cleanup (§7).
 
 **Checkpoint identity is a separate contract from the cache.** `config_hash` is the cache
 fingerprint; the checkpoint gate is `assert_checkpoint_identity`
-(`src/townlet/training/checkpoint_utils.py`), which hard-compares seven of the artifact's
-seventeen declared `*_hash` fields. Full declared-vs-enforced breakdown: `HLD.md` §5.2.
+(`src/townlet/training/checkpoint_utils.py`), which hard-compares twelve of the artifact's
+declared `*_hash` fields, including the five pack-scope hashes; `config_hash` is not stamped. Full declared-vs-enforced breakdown: `HLD.md` §5.2.
 
 A rough edge README records here is **fixed**: README §Known rough edges (stamped 2026-08-20)
 describes agent-profile packs compiling green while their cache artifact silently fails to

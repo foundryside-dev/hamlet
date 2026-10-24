@@ -127,20 +127,19 @@ distinction is the architectural content:
 
 - **Enforced.** One shared gate, `assert_checkpoint_identity`
   (`src/townlet/training/checkpoint_utils.py`), is called by both the training-resume path
-  (`demo/runner.py`) and the serving path (`demo/live_inference.py`). Ten hash stamps enter a
-  checkpoint — nine of the artifact's seventeen fields plus `metadata.config_hash`; **seven are
-  hard-compared** — `vfs_hash`, `drive_hash`, the effective `brain_hash`, and the four
-  per-level content hashes (`curriculum`, `bars`, `affordances`, `training`) — alongside
-  observation dim, action count, observation-field UUIDs and `primary_level`. A checkpoint
-  therefore refuses to load into a universe it does not match, *including a different level of
-  the same pack*.
+  (`demo/runner.py`) and the serving path (`demo/live_inference.py`). Fourteen hash stamps enter
+  a checkpoint; **twelve are hard-compared** — `vfs_hash`, `drive_hash`, the effective
+  `brain_hash`, the four per-level content hashes (`curriculum`, `bars`, `affordances`,
+  `training`) and the five pack-scope hashes (`experiment`, `stratum`, `environment`, `actions`,
+  nullable `items`) — alongside the token/layout contract, action count and `primary_level`. A
+  checkpoint therefore refuses to load into a universe it does not match, *including a different
+  level of the same pack* or the same level with an edited stratum or item catalog.
 - **Computed but not enforced, recorded rather than hidden.** `observation_schema_hash` is
   stamped and never compared. `pack_brain_hash` is stamped and required present, but compared
   only to *state* a brain-lineage fork at load (a logged warning, PDR-0027), never to refuse.
-  The five pack-level hashes (`experiment`, `stratum`, `environment`, `actions`, `items`) are
-  computed and serialized and read by no checkpoint consumer — only the differential harness
-  reads them, as a provenance diff between two compiles. This is `DIV-001` in
-  `docs/oracle/known-divergences.md`.
+  `config_hash` is the cache fingerprint over raw pack bytes and is not stamped into
+  checkpoints at all (a file rename moves it while semantics stay). The five pack-scope hashes
+  were once stamped by nobody (`DIV-001`, resolved 2026-10-24).
 - `config_hash` (with `provenance_id`: compiler version, git sha, python/torch/pydantic
   versions) is the **cache** fingerprint, not the checkpoint gate — it is stamped into
   checkpoints but never compared (the comparison warning was deleted per PDR-0022).

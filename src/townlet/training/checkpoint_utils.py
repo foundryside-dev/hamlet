@@ -41,7 +41,6 @@ DEMO_CHECKPOINT_KEYS = frozenset(
         "completed_live_agent_steps",
         "training_config",
         "config_dir",
-        "config_hash",
         "primary_level",
         "action_dim",
         "meter_count",
@@ -56,8 +55,19 @@ DEMO_CHECKPOINT_KEYS = frozenset(
         "vfs_hash",
         "token_type_schema_hash",
         "layout_hash",
+        "experiment_hash",
+        "stratum_hash",
+        "environment_hash",
+        "actions_hash",
+        "items_hash",
     }
 )
+
+# The five pack-scope content hashes (compiler stage 1, `_compute_pydantic_hash` over the
+# parsed declaration). `items_hash` is None when the pack declares no item arena; that
+# None is a stamped value, and None-versus-value is a change like any other.
+PACK_HASH_KEYS = ("experiment_hash", "stratum_hash", "environment_hash", "actions_hash", "items_hash")
+_NULLABLE_PACK_HASH_KEYS = frozenset({"items_hash"})
 SUBSTRATE_METADATA_KEYS = frozenset({"position_dim", "substrate_type"})
 
 logger = logging.getLogger(__name__)
@@ -137,9 +147,13 @@ def validate_demo_checkpoint_runtime_fields(
 
 
 def attach_universe_metadata(checkpoint: dict[str, Any], universe: CompiledUniverse) -> None:
-    """Add config hash and dimension metadata to a checkpoint payload.
+    """Stamp every identity field `assert_checkpoint_identity` compares.
 
-    HIGH-05: Now includes brain_hash for network architecture validation.
+    `metadata.config_hash` is deliberately NOT stamped: it is the compile-cache
+    fingerprint (raw file bytes under their pack-relative paths), so a comment edit or a
+    file rename moves it while every semantic hash stays put. A field that is stamped
+    and never compared is a lie in the checkpoint, and comparing this one would refuse
+    transport-only edits; the semantic hashes below are the identity.
 
     Raises:
         ValueError: If universe is None
@@ -150,7 +164,6 @@ def attach_universe_metadata(checkpoint: dict[str, Any], universe: CompiledUnive
 
     level = universe.get_level(universe.metadata.primary_level)
 
-    checkpoint["config_hash"] = universe.metadata.config_hash
     # D5. The only field separating two levels that collide on every content hash.
     # Stamped here; compared on resume by assert_checkpoint_identity (task 5).
     checkpoint["primary_level"] = universe.metadata.primary_level
@@ -173,6 +186,30 @@ def attach_universe_metadata(checkpoint: dict[str, Any], universe: CompiledUnive
     # `layout_hash` is the flat-net contract (capacities, slot bindings, total_dims).
     checkpoint["token_type_schema_hash"] = level.token_type_schema_hash
     checkpoint["layout_hash"] = level.layout_hash
+    # The five pack-scope content hashes (hamlet-2dde1015fe): a stratum, environment,
+    # actions, experiment or items edit moves one of these even when no level hash moves.
+    for key in PACK_HASH_KEYS:
+        checkpoint[key] = getattr(universe, key)
+
+
+def _require_hash_match(checkpoint: Mapping[str, Any], key: str, current: str | None, subject: str) -> None:
+    """Refuse unless ``checkpoint[key]`` is present and equal to ``current``.
+
+    Presence is key presence, not non-None: a stamped ``None`` is a value (``items_hash``
+    on a pack with no item arena), and None-versus-value is a change like any other.
+    """
+    if key not in checkpoint:
+        raise ValueError(f"Checkpoint missing {key}; regenerate the checkpoint with the latest compiler.")
+    stamped = checkpoint[key]
+    if stamped != current:
+        raise ValueError(
+            f"Checkpoint {key} mismatch: checkpoint={_short(stamped)}, current={_short(current)}. "
+            f"{subject} has changed since the checkpoint was created."
+        )
+
+
+def _short(value: object) -> str:
+    return "None" if value is None else f"{str(value)[:16]}..."
 
 
 def assert_checkpoint_token_type_schema_hash(checkpoint: Mapping[str, Any], universe: CompiledUniverse) -> None:
@@ -292,53 +329,36 @@ def assert_checkpoint_dimensions(
     # These copy the drive_hash pattern deliberately: missing on either side RAISES.
     # Do not reintroduce an `if universe.<x> is not None` escape; that is what made the
     # brain_hash guard above vacuous on one side.
-    checkpoint_curriculum_hash = checkpoint.get("curriculum_hash")
-    if checkpoint_curriculum_hash is None:
-        raise ValueError("Checkpoint missing curriculum_hash; regenerate the checkpoint with the latest compiler.")
-    if level.curriculum_hash is None:
-        raise ValueError("Universe missing curriculum_hash; recompile the config pack.")
-    if checkpoint_curriculum_hash != level.curriculum_hash:
-        raise ValueError(
-            f"Checkpoint curriculum_hash mismatch: checkpoint={checkpoint_curriculum_hash[:16]}..., "
-            f"current={level.curriculum_hash[:16]}... "
-            "The curriculum configuration has changed since the checkpoint was created."
-        )
+    for key, description in (
+        ("curriculum_hash", "curriculum"),
+        ("bars_hash", "bars"),
+        ("affordances_hash", "affordances"),
+        ("training_hash", "training"),
+    ):
+        current = getattr(level, key)
+        if current is None:
+            raise ValueError(f"Universe missing {key}; recompile the config pack.")
+        _require_hash_match(checkpoint, key, current, f"The {description} configuration")
 
-    checkpoint_bars_hash = checkpoint.get("bars_hash")
-    if checkpoint_bars_hash is None:
-        raise ValueError("Checkpoint missing bars_hash; regenerate the checkpoint with the latest compiler.")
-    if level.bars_hash is None:
-        raise ValueError("Universe missing bars_hash; recompile the config pack.")
-    if checkpoint_bars_hash != level.bars_hash:
-        raise ValueError(
-            f"Checkpoint bars_hash mismatch: checkpoint={checkpoint_bars_hash[:16]}..., "
-            f"current={level.bars_hash[:16]}... "
-            "The bars configuration has changed since the checkpoint was created."
-        )
 
-    checkpoint_affordances_hash = checkpoint.get("affordances_hash")
-    if checkpoint_affordances_hash is None:
-        raise ValueError("Checkpoint missing affordances_hash; regenerate the checkpoint with the latest compiler.")
-    if level.affordances_hash is None:
-        raise ValueError("Universe missing affordances_hash; recompile the config pack.")
-    if checkpoint_affordances_hash != level.affordances_hash:
-        raise ValueError(
-            f"Checkpoint affordances_hash mismatch: checkpoint={checkpoint_affordances_hash[:16]}..., "
-            f"current={level.affordances_hash[:16]}... "
-            "The affordances configuration has changed since the checkpoint was created."
-        )
+def assert_checkpoint_pack_hashes(checkpoint: Mapping[str, Any], universe: CompiledUniverse) -> None:
+    """Hard-compare the five pack-scope content hashes (hamlet-2dde1015fe, findings F2).
 
-    checkpoint_training_hash = checkpoint.get("training_hash")
-    if checkpoint_training_hash is None:
-        raise ValueError("Checkpoint missing training_hash; regenerate the checkpoint with the latest compiler.")
-    if level.training_hash is None:
-        raise ValueError("Universe missing training_hash; recompile the config pack.")
-    if checkpoint_training_hash != level.training_hash:
-        raise ValueError(
-            f"Checkpoint training_hash mismatch: checkpoint={checkpoint_training_hash[:16]}..., "
-            f"current={level.training_hash[:16]}... "
-            "The training configuration has changed since the checkpoint was created."
-        )
+    Grid size is pack scope and no level can override it, so a `stratum.yaml` edit —
+    `boundary: clamp -> wrap`, `distance_metric: manhattan -> chebyshev` — moves no level
+    hash and no token layout, and before this leg resumed silently into a world whose wall
+    behaviour the policy never learned. Same for `environment`, `actions`, `experiment`
+    and `items`: each is a declaration the universe was compiled from, so each is identity.
+
+    `items_hash` is nullable (no item arena declared). ``None`` on one side and a digest on
+    the other IS a changed world: a catalog appeared or vanished. There is no
+    ``universe.items_hash is None`` escape here on purpose.
+    """
+    for key in PACK_HASH_KEYS:
+        current = getattr(universe, key)
+        if current is None and key not in _NULLABLE_PACK_HASH_KEYS:
+            raise ValueError(f"Universe missing {key}; recompile the config pack.")
+        _require_hash_match(checkpoint, key, current, f"The pack-scope {key.removesuffix('_hash')} declaration")
 
 
 def surface_brain_lineage(checkpoint: Mapping[str, Any]) -> None:
@@ -411,16 +431,20 @@ def assert_checkpoint_identity(checkpoint: Mapping[str, Any], universe: Compiled
          hash leg can raise; requires the ``pack_brain_hash`` stamp;
       2. ``assert_checkpoint_vfs_hash`` — the only leg that can return ``False``
          (the explicit force-new-VFS branch: start fresh, skip state load);
-      3. ``assert_checkpoint_dimensions`` — dims, field UUIDs, ``drive_hash``,
-         effective ``brain_hash``, and the four per-level content hashes;
-      4. ``primary_level`` equality (D5) — the only field separating two levels
+      3. ``assert_checkpoint_dimensions`` — action count, the architecture's
+         observation contract, ``drive_hash``, effective ``brain_hash``, and the
+         four per-level content hashes;
+      4. ``assert_checkpoint_pack_hashes`` — the five pack-scope content hashes
+         (``experiment``, ``stratum``, ``environment``, ``actions``, nullable
+         ``items``), so a pack edit no level hash sees still refuses;
+      5. ``primary_level`` equality (D5) — the only field separating two levels
          that collide on every content hash (see
          ``test_two_levels_collide_on_almost_every_identity_field``).
 
-    ``config_hash_warning`` is deliberately absent: a warning is the silent
-    acceptance the Provenance-integrity guardrail forbids, and it was deleted
-    per PDR-0022. The pack-level surfaces it loosely covered are tracked as a
-    known divergence (hamlet-2dde1015fe).
+    Every leg is a hard refusal. There is no warning leg: a warning is the silent
+    acceptance the Provenance-integrity guardrail forbids (PDR-0022), and
+    ``metadata.config_hash`` — the cache fingerprint — is not stamped at all
+    (see ``attach_universe_metadata``).
 
     Returns True when the checkpoint may be resumed. Every mismatch raises
     ValueError except the explicit force-new-VFS branch, which returns False.
@@ -438,6 +462,7 @@ def assert_checkpoint_identity(checkpoint: Mapping[str, Any], universe: Compiled
         return False
 
     assert_checkpoint_dimensions(checkpoint, universe, architecture_type=universe.brain.architecture.type)
+    assert_checkpoint_pack_hashes(checkpoint, universe)
 
     checkpoint_primary_level = checkpoint.get("primary_level")
     if checkpoint_primary_level is None:

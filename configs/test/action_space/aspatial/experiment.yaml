@@ -4,8 +4,3 @@ experiment:
   metadata:
     name: "Action Space Aspatial"
     description: "Aspatial pack for action space tests"
-    author: "Hamlet Tests"
-    created: "2025-11-17"
-    tags: ["test", "action_space"]
-  curriculum_levels:
-    - L0

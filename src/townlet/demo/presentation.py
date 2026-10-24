@@ -6,38 +6,26 @@ knowing what the game is:
 - **Meter metadata** — derived from the compiled artifact: declared bounds, lethality, and the
   declared cascade edges, in compiled index order. This is what the honest default renders from.
   No meter is singled out by name here, and none may be downstream.
-- **Presentation** — an optional pack-level ``presentation.yaml`` (``PresentationConfig``). Absent
-  is the honest default. Present, it is validated against the compiled universe's meter and
-  affordance names so a declaration for something that does not exist is a loud error, not a
-  silently ignored key.
+- **Presentation** — the pack's optional ``presentation`` declaration (``PresentationConfig``),
+  carried on the compiled artifact as ``CompiledUniverse.presentation``. Absent is the honest
+  default. The compiler resolves its meter and affordance references at compile time
+  (``[UAC-RES-PRESENTATION]``), so nothing here re-reads a file or re-checks a name: there is
+  one vocabulary, and the observer reads what the compiler emitted.
 
-The universe compiler never reads ``presentation.yaml``; nothing here enters a compiled hash.
+Presentation enters no compiled hash and no checkpoint gate.
 """
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import Any
-
-import yaml
-from pydantic import ValidationError
 
 from townlet.config.presentation_config import PresentationConfig
 from townlet.universe.compiled import CompiledUniverse
 
 __all__ = [
-    "PRESENTATION_FILENAME",
-    "PresentationError",
     "build_meter_metadata",
-    "load_presentation",
     "presentation_payload",
 ]
-
-PRESENTATION_FILENAME = "presentation.yaml"
-
-
-class PresentationError(ValueError):
-    """A ``presentation.yaml`` that cannot be honoured — malformed, or naming things the universe lacks."""
 
 
 def build_meter_metadata(universe: CompiledUniverse) -> list[dict[str, Any]]:
@@ -73,39 +61,8 @@ def build_meter_metadata(universe: CompiledUniverse) -> list[dict[str, Any]]:
     return rows
 
 
-def load_presentation(config_dir: Path, universe: CompiledUniverse) -> PresentationConfig | None:
-    """Read ``<config_dir>/presentation.yaml`` if present; ``None`` is the honest default.
-
-    Raises ``PresentationError`` if the file is malformed or names a meter/affordance the compiled
-    universe does not declare.
-    """
-    path = Path(config_dir) / PRESENTATION_FILENAME
-    if not path.exists():
-        return None
-
-    try:
-        raw = yaml.safe_load(path.read_text())
-        config = PresentationConfig.model_validate(raw)
-    except (yaml.YAMLError, ValidationError) as exc:
-        raise PresentationError(f"{path}: {exc}") from exc
-
-    level = universe.get_level(universe.metadata.primary_level)
-    meter_names = {info.name for info in level.meter_metadata.meters}
-    affordance_names = {info.name for info in level.affordance_metadata.affordances}
-    unknown_meters = sorted(set(config.meters) - meter_names)
-    unknown_affordances = sorted(set(config.affordances) - affordance_names)
-    if unknown_meters or unknown_affordances:
-        parts = []
-        if unknown_meters:
-            parts.append(f"meters {unknown_meters} (declared meters: {sorted(meter_names)})")
-        if unknown_affordances:
-            parts.append(f"affordances {unknown_affordances} (declared affordances: {sorted(affordance_names)})")
-        raise PresentationError(f"{path} declares presentation for undeclared " + " and ".join(parts))
-    return config
-
-
 def presentation_payload(config: PresentationConfig | None) -> dict[str, Any] | None:
-    """JSON-ready form of a loaded presentation, or ``None`` when the pack declares none."""
+    """JSON-ready form of the compiled presentation, or ``None`` when the pack declares none."""
     if config is None:
         return None
     return {

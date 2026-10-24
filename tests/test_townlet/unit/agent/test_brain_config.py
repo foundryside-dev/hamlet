@@ -430,7 +430,6 @@ def test_apply_training_overrides_merges_q_learning_and_replay():
         AdversarialCurriculumConfig,
         CheckpointingConfig,
         CurriculumStrategyConfig,
-        EvaluationConfig,
         IntrinsicConfig,
         ReplayBufferConfig,
         RNDConfig,
@@ -520,8 +519,7 @@ def test_apply_training_overrides_merges_q_learning_and_replay():
         training_loop=TrainingLoopConfig(
             max_episodes=100000,
             max_steps_per_episode=1000,
-            evaluation=EvaluationConfig(interval=1000, num_episodes=10),
-            checkpointing=CheckpointingConfig(interval=5000, keep_last=5),
+            checkpointing=CheckpointingConfig(interval=5000),
             train_frequency=4,
             sequence_length=8,
             max_grad_norm=10.0,

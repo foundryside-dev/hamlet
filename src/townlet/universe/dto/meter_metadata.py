@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
@@ -11,17 +11,15 @@ class MeterInfo:
 
     name: str
     index: int
-    critical: bool
     initial_value: float
-    observable: bool
-    description: str = ""
+    description: str
 
 
 @dataclass(frozen=True)
 class MeterMetadata:
     """Collection of all meter metadata."""
 
-    meters: tuple[MeterInfo, ...] = field(default_factory=tuple)
+    meters: tuple[MeterInfo, ...]
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "meters", tuple(self.meters))

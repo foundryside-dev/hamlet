@@ -64,7 +64,7 @@ configs/default_curriculum/
   items.yaml            # item catalog
   effects.yaml          # effect catalog
   transition_rules.yaml # optional transition declarations
-  presentation.yaml     # optional display metadata
+  presentation.yaml     # optional display metadata (discovered by content)
   levels/<level>/
     curriculum.yaml     # vision and temporal configuration
     bars.yaml           # meters, bounds and cascades
@@ -267,7 +267,7 @@ uv run python -m townlet.universe inspect configs/default_curriculum \
 `--primary-level` is required for compile/validate and directory inspection. Compilation builds
 all world levels, with one cache artifact per selected primary level:
 `<pack>/.compiled/universe-<level>.msgpack`. The top-level effective brain is primary-level scoped.
-The current compiled artifact schema is **1.33**; older versions and missing policies refuse.
+The current compiled artifact schema is **1.34**; older versions and missing policies refuse.
 This is separate from authored declaration versions and checkpoint format **6**.
 
 Train using the pack root:

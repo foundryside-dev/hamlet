@@ -113,7 +113,7 @@ def test_command_config_requires_one_command_type():
 
 def test_command_config_modify_requires_value():
     """modify command must have value field."""
-    with pytest.raises(ValidationError, match="modify command requires 'value' field"):
+    with pytest.raises(ValidationError, match=r"modify command requires \['value'\]"):
         CommandConfig(modify="target.bar.energy")  # Missing value
 
 
@@ -329,3 +329,62 @@ effect_definitions:
     assert len(config.effect_definitions) == 2
     assert config.effect_definitions[0].id == "ate_food"
     assert config.effect_definitions[1].id == "poisoned"
+
+
+# --- C12: one command kind per node, every field of it authored ---------------------------
+
+
+@pytest.mark.parametrize(
+    ("payload", "match"),
+    [
+        ({"modify": "bar.energy", "value": "0.0", "then": []}, r"modify command does not take \['then'\]"),
+        ({"if": "bar.energy < 0.5", "then": []}, r"if command requires \['else'\]"),
+        ({"switch": "bar.energy", "cases": [{"when": "0.0", "do": []}]}, r"switch command requires \['default'\]"),
+        ({"sample": "uniform", "store_in": "bar.energy"}, r"sample command requires \['params'\]"),
+        ({"spawn_item": "potion", "position": "self"}, r"spawn_item command requires \['quantity'\]"),
+        ({"spawn_item": "potion", "position": "self", "quantity": 0}, "greater than or equal to 1"),
+        ({"spawn_item": "potion", "position": "self", "quantity": 1, "initial_state": {}}, "Extra inputs are not permitted"),
+        ({"for_each": "nearby_agents", "do": []}, r"for_each command requires \['radius'\]"),
+        ({"for_each": "all_agents", "radius": 2.0, "do": []}, "radius applies only to the spatial collections"),
+        ({"for_each": "nearby_agents", "radius": -1.0, "do": []}, "greater than or equal to 0"),
+        ({"modify": "bar.energy", "value": None}, r"fields \['value'\] must not be null"),
+    ],
+)
+def test_command_config_refuses_incomplete_or_mixed_kinds(payload: dict, match: str) -> None:
+    with pytest.raises(ValidationError, match=match):
+        CommandConfig.model_validate(payload)
+
+
+def test_command_config_accepts_complete_nearby_agents_and_spawn_item() -> None:
+    nearby = CommandConfig.model_validate({"for_each": "nearby_agents", "radius": 1.5, "do": []})
+    spawn = CommandConfig.model_validate({"spawn_item": "potion", "position": "self", "quantity": 2})
+    assert nearby.radius == 1.5
+    assert spawn.quantity == 2
+
+
+@pytest.mark.parametrize("missing", ["version", "effect_definitions"])
+def test_effects_config_top_level_fields_are_required(missing: str) -> None:
+    from townlet.config.effects_config import EffectsConfig
+
+    payload = {"version": "1.0", "effect_definitions": []}
+    del payload[missing]
+    with pytest.raises(ValidationError, match=missing):
+        EffectsConfig.model_validate(payload)
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {"if": "bar.x > 0", "then": [{"modify": "bar.x", "value": "0.0"}], "else": []},
+        {"delay": "1", "do": [{"modify": "bar.x", "value": "0.0"}]},
+        {"for_each": "nearby_agents", "radius": 1.0, "as": "n", "do": [{"modify": "target.bar.x", "value": "0.0"}]},
+        {"spawn_item": "potion", "position": "random", "quantity": 2},
+    ],
+)
+def test_command_config_dump_is_the_authored_command(payload: dict) -> None:
+    """The compiled artifact dumps affordance commands and re-validates them on load."""
+    command = CommandConfig.model_validate(payload)
+    dumped = command.model_dump(by_alias=True)
+    assert dumped == CommandConfig.model_validate(payload).model_dump(by_alias=True)
+    assert set(dumped) == set(payload)
+    assert CommandConfig.model_validate(dumped) == command

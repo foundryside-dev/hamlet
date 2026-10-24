@@ -170,14 +170,13 @@ def test_build_agent_telemetry_payload_uses_episode_index(live_server: LiveInfer
 
 def _compile_for(server: LiveInferenceServer, level: str = "L0_test") -> None:
     server.level_name = level
-    server.compiled_universe = server.compiler.compile(server.config_dir, primary_level=level)
-    server.presentation = live_inference.load_presentation(server.config_dir, server.compiled_universe)
+    server.compiled_universe = server.compiler.compile(server.config_dir, primary_level=level, use_cache=False)
 
 
 def test_observer_metadata_carries_declared_bounds_and_no_presentation_by_default(live_server: LiveInferenceServer) -> None:
     _compile_for(live_server)
     meta = live_server._build_observer_metadata()
-    assert meta["presentation"] is None, "no presentation.yaml → the honest default"
+    assert meta["presentation"] is None, "no presentation declaration → the honest default"
     names = [row["name"] for row in meta["meters"]]
     assert names == list(live_server.compiled_universe.metadata.meter_names)
     money = next(row for row in meta["meters"] if row["name"] == "money")
@@ -194,8 +193,9 @@ def test_declared_icons_and_formats_reach_the_payload(tmp_path: Path, test_confi
     import shutil
 
     pack = tmp_path / "pack"
-    shutil.copytree(test_config_pack_path, pack)
-    (pack / "presentation.yaml").write_text(
+    shutil.copytree(test_config_pack_path, pack, ignore=shutil.ignore_patterns(".compiled"))
+    # Discovered by content and read from the artifact: the filename is transport.
+    (pack / "display.yaml").write_text(
         'version: "1.0"\n'
         "meters:\n"
         "  money: {label: Money, format: {kind: currency, symbol: '$', decimals: 0}, color: '#fbbf24'}\n"

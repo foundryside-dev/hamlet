@@ -6,6 +6,7 @@ import torch
 
 from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.universe.compiler import UniverseCompiler
+from townlet.universe.dto.token_spec import item_capacity
 
 
 def test_item_vfs_profile_driven_end_to_end():
@@ -64,9 +65,18 @@ def test_item_vfs_profile_driven_end_to_end():
     assert "durability" in medical_map, "durability variable not in medical profile map"
     assert medical_map["durability"] == 0, f"Expected durability at index 0, got {medical_map['durability']}"
 
-    # Verify: Item VFS storage has correct shape
-    # max_items_in_world = 10, max_vars_across_profiles = 1 (food and medical both have 1 var)
-    assert env.vfs_registry.item_vfs.shape[0] == 10, f"Expected 10 item slots, got {env.vfs_registry.item_vfs.shape[0]}"
+    # Verify: Item VFS storage is sized by the item arena (world slots plus per-agent
+    # carried slots), the same capacity the token spec allocates; max_vars_across_profiles
+    # = 1 (food and medical both have 1 var)
+    catalog = env.universe.items_catalog
+    expected_slots = item_capacity(
+        max_items_in_world=catalog.max_items_in_world,
+        max_items_per_agent=catalog.max_items_per_agent,
+        declared_agents_per_world=None,
+    )
+    assert (
+        env.vfs_registry.item_vfs.shape[0] == expected_slots
+    ), f"Expected {expected_slots} item slots, got {env.vfs_registry.item_vfs.shape[0]}"
     assert env.vfs_registry.item_vfs.shape[1] == 1, f"Expected 1 variable per item, got {env.vfs_registry.item_vfs.shape[1]}"
 
     # Exercise: Spawn item and observe VFS

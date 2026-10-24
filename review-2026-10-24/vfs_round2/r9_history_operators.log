@@ -1,0 +1,17 @@
+
+===== R9 history operators =====
+--- agent_lag_bar
+   REFUSED CompilationError: Stage 6: Enrich shared schemas and effects failed:
+  - [VFS-PROFILE-COMPILE] /home/john/hamlet/review-2026-10-24/vfs_round2/packs/r9_agent_lag_bar/variables.yaml:1 - Expression function 'lag' has no qualified variable output shape
+--- agent_delta_var
+   REFUSED CompilationError: Stage 6: Enrich shared schemas and effects failed:
+  - [VFS-PROFILE-COMPILE] /home/john/hamlet/review-2026-10-24/vfs_round2/packs/r9_agent_delta_var/variables.yaml:1 - Expression function 'delta' has no qualified variable output shape
+--- global_lag_tick
+   REFUSED CompilationError: Stage 6: Enrich shared schemas and effects failed:
+  - [VFS-PROFILE-COMPILE] /home/john/hamlet/review-2026-10-24/vfs_round2/packs/r9_global_lag_tick/variables.yaml:1 - Expression function 'lag' has no qualified variable output shape
+--- global_ema_tick
+   REFUSED CompilationError: Stage 6: Enrich shared schemas and effects failed:
+  - [VFS-PROFILE-COMPILE] /home/john/hamlet/review-2026-10-24/vfs_round2/packs/r9_global_ema_tick/variables.yaml:1 - Expression function 'ema' has no qualified variable output shape
+--- global_rising_edge
+   REFUSED CompilationError: Stage 6: Enrich shared schemas and effects failed:
+  - [VFS-PROFILE-COMPILE] /home/john/hamlet/review-2026-10-24/vfs_round2/packs/r9_global_rising_edge/variables.yaml:1 - Expression function 'rising_edge' has no qualified variable output shape

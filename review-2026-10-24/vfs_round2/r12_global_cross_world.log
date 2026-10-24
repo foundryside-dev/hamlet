@@ -1,0 +1,7 @@
+
+===== R12 global state couples 'independent worlds' =====
+token census: {'self': 1, 'meter': 4, 'affordance': 4, 'agent': 0, 'item': 0, 'effect': 0, 'variable_element': 2}  (agent capacity 0 => each batch row is its own world)
+agent0 @ SLEEP [4, 1], agent1 @ [7, 7] (no affordance)
+after [INTERACT, WAIT]: successful_interactions={0: 'SLEEP'} visits=1.0
+   visits token row  agent0=[1.0, 0.1, 0.0]  agent1=[1.0, 0.1, 0.0]
+   reward            agent0=1.000   agent1=1.000  (agent1 did nothing in its own world)

@@ -56,8 +56,10 @@ class CommandNode:
     position: Any | None = None  # Simple position ("self", "target", or coordinates)
     position_expr: str | None = None  # Expression string (for complex expressions)
     position_ast: Any | None = None  # ✅ Pre-compiled AST
-    quantity: int | None = None  # Number of items to spawn (NEW)
-    initial_state: dict | None = None  # Initial VFS state (NEW)
+    quantity: int | None = None  # Items placed per execution (authored, required >= 1)
+    # Item VFS overrides. Engine-built nodes only: YAML cannot author it (static write
+    # authorization cannot see an override map); the executor authorizes it at runtime.
+    initial_state: dict | None = None
 
     # sample command fields
     sample_distribution: str | None = None
@@ -77,7 +79,7 @@ class CommandNode:
     collection_ast: Any | None = None  # ✅ Pre-compiled AST
     iterator: str | None = None  # Iterator variable name
     body: list[CommandNode] | None = None  # Body commands
-    radius: float | None = None  # Radius for spatial collections (NEW)
+    radius: float | None = None  # nearby_agents radius under the substrate's declared metric
 
     # switch command fields
     switch_expr: str | None = None

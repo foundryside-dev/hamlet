@@ -42,10 +42,10 @@ from .compilers.metadata import MetadataCompiler
 from .compilers.observation import ObservationCompiler
 from .compilers.optimization import OptimizationCompiler
 from .compilers.vfs import VFSCompiler
-from .errors import CompilationError, CompilationMessage
+from .errors import CompilationError, CompilationErrorCollector, CompilationMessage
 from .loaders.preflight import validate_config_dir
 from .pipeline import CompiledLevelBundle, SharedCompilerArtifacts
-from .source_map import locate
+from .source_map import SourceMap, locate
 from .stages import CompilationStage
 from .validation.limits import (
     MAX_CACHE_FILE_SIZE,
@@ -156,6 +156,7 @@ class UniverseCompiler:
 
         self._log_stage(CompilationStage.RESOLVE)
         resolve_references(raw, symbol_table, experiment_dir, source_map)
+        self._resolve_presentation(raw, source_map)
 
         from townlet.universe.validation.static_access import validate_static_write_targets
 
@@ -261,6 +262,38 @@ class UniverseCompiler:
             items_hash=items_hash,
         )
         return compiled
+
+    def _resolve_presentation(self, raw: RawConfigsV21, source_map: SourceMap) -> None:
+        """Stage 5 – a presentation entry must name a meter or affordance the pack declares.
+
+        Presentation is observer-only (PDR-0025): it rides on the artifact so the observer reads
+        one vocabulary, but it enters no semantic hash. Resolving its references here is what
+        makes a declaration for something the universe lacks a located compile refusal rather
+        than a key the frontend silently ignores.
+        """
+        presentation = raw.presentation
+        if presentation is None:
+            return
+        env = raw.environment.environment
+        meter_names = {meter.name for meter in env.meters}
+        affordance_names = {affordance.name for affordance in env.affordances}
+        errors = CompilationErrorCollector(stage=CompilationStage.RESOLVE.label)
+        for name in presentation.meters:
+            if name not in meter_names:
+                errors.add(
+                    f"Presentation declares meter '{name}', which the pack does not declare (declared meters: {sorted(meter_names)}).",
+                    code=ErrorCode.UAC_RES_PRESENTATION,
+                    location=locate(source_map, f"presentation:meters.{name}"),
+                )
+        for name in presentation.affordances:
+            if name not in affordance_names:
+                errors.add(
+                    f"Presentation declares affordance '{name}', which the pack does not declare "
+                    f"(declared affordances: {sorted(affordance_names)}).",
+                    code=ErrorCode.UAC_RES_PRESENTATION,
+                    location=locate(source_map, f"presentation:affordances.{name}"),
+                )
+        errors.check_and_raise()
 
     def _vfs_domain_compilation_error(
         self,
@@ -521,6 +554,7 @@ class UniverseCompiler:
             # from the same selection; the two must never diverge.
             brain=raw.levels[universe_metadata.primary_level].brain or raw.brain,
             items_catalog=raw.items,
+            presentation=raw.presentation,
             compiled_vfs_profiles=compiled_vfs_profiles,
             compiled_effect_catalog=compiled_effect_catalog,
             effects_schema=effects_schema,

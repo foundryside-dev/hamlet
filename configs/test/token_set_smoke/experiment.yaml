@@ -6,10 +6,3 @@ experiment:
   metadata:
     name: "Model Config (Test)"
     description: "Minimal v2.1 pack for tests"
-    author: "Hamlet Tests"
-    created: "2025-11-17"
-    tags: ["test", "model"]
-
-  curriculum_levels:
-    - L0_test
-    - L1_attention

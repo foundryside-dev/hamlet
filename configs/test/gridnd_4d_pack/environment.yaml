@@ -22,15 +22,6 @@ environment:
   modulation_graph: []
   affordances:
     - name: Bed
-      description: Rest
-      category: rest
     - name: EAT
-      description: Eat food
-      category: sustenance
     - name: SLEEP
-      description: Sleep to recover energy
-      category: rest
     - name: WORK
-      description: Earn money
-      category: income
-  cues: []

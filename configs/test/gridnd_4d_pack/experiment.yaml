@@ -4,8 +4,3 @@ experiment:
   metadata:
     name: "GridND 4D Test Pack"
     description: "Test pack for GridND action support"
-    author: "Tests"
-    created: "2025-11-18"
-    tags: ["test", "gridnd"]
-  curriculum_levels:
-    - L0_test

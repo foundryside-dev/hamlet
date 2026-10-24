@@ -12,21 +12,26 @@
 > once — both PRD-0001 Trial O executors reached it only by reading
 > `src/townlet/effects/collections.py`. Tracked as `hamlet-7eadeb214c`.
 >
-> **⚠️ `temporal.*` does NOT work in effects — the single reconciled account** (resolved at
-> source 2026-08-26, because this doc and `expressions.md` disagreed):
-> - The effects executor passes **`temporal={}`** (`effects/executor.py:43`, `:739`), so
->   `temporal.anything` raises here at runtime.
-> - More fundamentally, **no schema builder emits a `temporal.*` key at all** —
->   `build_expression_schema` (`universe/compilers/vfs.py:136-152`) emits only `bar.*`,
->   `vfs.*`, `self.vfs.*`, `target.vfs.*` — so it fails at compile time first.
-> - Only the **item spawn-rule** path populates it, with the single key `tick`
->   (`items/manager.py:624`, `:630`).
-> - **✅ Correct working form: the bare `tick` variable**, the reserved engine-written step
->   counter (`universe/compilers/vfs.py:130-132`). Not `temporal.tick`.
->
-> Tracked as `hamlet-7eadeb214c` (comment 262 carries the `max_active_effects` and `temporal.*`
-> findings).
->
+> **Time and position in effects** (2026-10-24, effects remediation WP3; `hamlet-a737e444c0`).
+> One account for every command pipeline (effects, affordance interactions, item interactions):
+> - **✅ Time: the bare `tick` variable**, the engine-written step counter. The effects
+>   schema admits the engine's ambient names by bare name, exactly as VFS profile
+>   expressions do. A declared clock (a global variable whose `expression` derives from
+>   `tick`, e.g. `day_phase: "tick % 24"`) is read as `vfs.<id>` like any global.
+> - **❌ `temporal.*`** has no schema entry in a command pipeline and refuses at compile.
+> - **❌ Temporal-history functions** — `lag`, `delta`, `moving_average`, `ema`,
+>   `rate_of_change`, `rising_edge`, `falling_edge`, and `elapsed_ticks()` — **refuse at
+>   compile**: only the VFS profile evaluator keeps a history and a step. Declare a variable
+>   with `expression: "lag(bar.energy, 1)"` in the pack-scope variables declaration and read
+>   that variable from the command.
+> - **✅ Position: `distance_to_affordance`, `in_range`, `direction_to_affordance`** evaluate
+>   per agent. The environment hands every effect tick the agent positions, the deployed
+>   affordance positions and the substrate. An undeployed affordance is at distance `inf`.
+>   These functions take their own `"manhattan"`/`"euclidean"` argument (default manhattan);
+>   they do not read the stratum's `distance_metric`. `nearby_agents` does (see `for_each`).
+> - Inside an interaction pipeline (`affordances.yaml`, `items.yaml`) position reads still
+>   raise at runtime: the affordance engine and item handler do not yet pass positions.
+
 > Note `sqrt` / `sin` / `cos` fail at **type-check**, not parse — they are absent from
 > `FUNCTION_SPECS`. See `expressions.md`, which carries a banner of its own.
 
@@ -642,9 +647,8 @@ All command types are fully implemented and production-ready.
   `for_each` bodies over agents) the compiler resolves it to `target.vfs.X`, for reads and
   writes alike; a write to it from a pipeline with no agent target (a global, item or
   affordance-scoped effect, a `for_each: inventory_items` body) is refused at compile.
-- `temporal.*`: Time context
-  - `temporal.tick`: Current environment step count
-  - `temporal.time_of_day`: Hour in 24-hour cycle
+- `tick` (bare): the engine step counter. `temporal.*` has no entry in a command pipeline and
+  refuses at compile; a declared clock is a global variable read as `vfs.<id>`.
 
 **Expression Language**:
 Effects use HAMLET's VFS expression language (pure functional, type-safe):
@@ -699,9 +703,9 @@ Effects use HAMLET's VFS expression language (pure functional, type-safe):
 - modify: target.bar.health
   value: "target.bar.health - 0.1 if target.vfs.is_poisoned else target.bar.health"
 
-# Temporal logic
+# Temporal logic (bare `tick`; `temporal.*` refuses in an effect)
 - modify: global.vfs.is_night
-  value: "temporal.tick % 24 >= 18"
+  value: "tick % 24 >= 18"
 
 # Complex computation
 - modify: target.bar.mood
@@ -783,28 +787,24 @@ Effects use HAMLET's VFS expression language (pure functional, type-safe):
 
 ### `spawn_item` Command
 
-**Purpose**: Create item instance in world (loot drops, crafting, resource generation)
+**Purpose**: Create item instances in the world (loot drops, crafting, resource generation)
 
-**Schema**:
+**Schema** (every field required):
 ```yaml
 - spawn_item: <item_type_id>
-  position: <expression>    # Optional, location to spawn
+  position: self | target | random
+  quantity: <int >= 1>
 ```
 
 **Fields**:
-- `spawn_item` (string, REQUIRED): Item type ID from item catalog
-- `position` (expression, OPTIONAL): Where to spawn item
-
-**Position Resolution**:
-- `"target.position"`: At entity's current position
-- `"random"`: Random valid position in world (future)
-- Expression: Computed position (e.g., `"target.position + [1, 0]"`)
-
-**Use Cases**:
-- **Loot Drops**: Enemy death → spawn "gold_coin" at position
-- **Resource Generation**: Tree effect → spawn "apple" periodically
-- **Crafting Results**: Crafting effect completes → spawn finished item
-- **Environmental Spawns**: Rain effect → spawn "puddle" items
+- `spawn_item` (string, REQUIRED): Item type ID from the item catalog
+- `position` (string, REQUIRED): `self` or `target` (the agent's cell), or `random` (a free
+  cell found from the `self` agent's position)
+- `quantity` (int ≥ 1, REQUIRED): number of items placed by one execution of the command;
+  each finds its own spawn location. An item arena at capacity places fewer, silently.
+- No `initial_state`: an authored override map is refused as an extra field, because
+  compile-time write authorization cannot see one. A spawned item starts from its VFS
+  profile's declared initial values; change them afterwards with `modify` on the item.
 
 **Examples**:
 
@@ -813,33 +813,25 @@ Effects use HAMLET's VFS expression language (pure functional, type-safe):
 - id: "enemy_death"
   on_despawn:
     - spawn_item: "gold_coin"
-      position: "target.position"
+      position: target
+      quantity: 3
 
 # Periodic resource generation
 - id: "apple_tree"
   on_tick:
-    - if: "temporal.tick % 100 == 0"
+    - if: "tick % 100 == 0"
       then:
         - spawn_item: "apple"
-          position: "target.position"
+          position: random
+          quantity: 1
       else: []
-
-# Multiple item spawn
-- id: "treasure_chest"
-  on_spawn:
-    - spawn_item: "gold_coin"
-      position: "target.position"
-    - spawn_item: "health_potion"
-      position: "target.position"
 ```
 
 **Validation**:
-- Item type must exist in item catalog (compile-time check)
-- Position must be valid coordinate (runtime check)
-
-**Performance**:
-- Creates new item instance (O(1) operation)
-- Items have their own lifecycle (duration, decay effects)
+- `quantity` is required; a missing or null one refuses at parse
+- Item type must exist in the item catalog
+- `spawn_item` has no per-agent row: inside an `if`/`switch` branch that holds for only
+  some agents it is refused at runtime (see `if`)
 
 ---
 
@@ -860,7 +852,7 @@ Effects use HAMLET's VFS expression language (pure functional, type-safe):
 **Fields**:
 - `if` (expression, REQUIRED): Boolean expression (condition)
 - `then` (list[Command], REQUIRED): Commands to execute if true
-- `else` (list[Command], OPTIONAL): Commands to execute if false (default: empty)
+- `else` (list[Command], REQUIRED): Commands to execute if false; write `else: []` for none
 
 **Condition Expressions**:
 Must evaluate to boolean type. Use comparison operators and logical combinators.
@@ -929,7 +921,7 @@ One keyword, one meaning: the command form of `if` agrees with the expression fo
   else: []
 
 # Time-based logic
-- if: "temporal.tick % 24 >= 18"
+- if: "tick % 24 >= 18"
   then:
     - modify: global.vfs.is_night
       value: true
@@ -973,7 +965,8 @@ One keyword, one meaning: the command form of `if` agrees with the expression fo
 - `switch` (expression, REQUIRED): Selector value
 - `cases` (list, REQUIRED): Ordered `when`/`do` pairs; `when` is compared to the selector
   with `==`
-- `default` (list[Command], OPTIONAL): Commands for a selector no case matched
+- `default` (list[Command], REQUIRED): Commands for a selector no case matched; `default: []`
+  for none (at least one of `cases` and `default` must be non-empty)
 
 **Semantics — masked first-match, per agent**: the same rule as `if`. The selector and
 every `when` are evaluated over the batch; a case runs for the agents it matches that no
@@ -1002,82 +995,60 @@ The no-per-agent-row rule from `if` applies: a global, item, affordance, `spawn_
 
 ### `for_each` Command
 
-**Purpose**: Iterate over collections and execute commands for each element
+**Purpose**: Run a command list once per element of a collection, with `target` bound to it
 
 **Schema**:
 ```yaml
-- for_each: <collection_expression>
-  as: <iterator_variable>
+- for_each: all_agents | nearby_agents | inventory_items | active_effects | <expression>
+  radius: <number >= 0>   # REQUIRED for nearby_agents, refused for every other collection
+  as: <name>              # accepted, not yet bound to anything (see below)
   do:
-    - <command using iterator>
-    - <command using iterator>
+    - <command>           # `target.*` is the current element
 ```
 
 **Fields**:
-- `for_each` (expression, REQUIRED): Collection to iterate (list, tensor)
-- `as` (string, REQUIRED): Variable name for current element
-- `do` (list[Command], REQUIRED): Commands to execute for each element
+- `for_each` (string, REQUIRED): a collection name, or an expression evaluating to indices
+- `do` (list[Command], REQUIRED): commands run once per element; inside them `target.*`
+  addresses the element (an agent row, or an item row for `inventory_items`)
+- `radius` (number ≥ 0, REQUIRED for `nearby_agents` only): distance in world units (grid
+  cells on a grid)
+- `as` (string, OPTIONAL): accepted but **not bound** — the body cannot read it yet
+  (review-2026-10-24 effects F4; remediation WP7 decides bind or delete). Address the
+  element as `target.*`.
 
-**Collection Sources**:
-- `nearby_agents`: Agents within radius (future)
-- `held_items`: Items in inventory (future)
-- `active_effects`: Effects on entity (future)
-- Static lists: `[1, 2, 3]` or VFS array variables
-
-**Iterator Variable**:
-Available inside `do` commands as scoped variable. Access via name specified in `as`.
-
-**Use Cases**:
-- **Area Effects**: Apply effect to all nearby agents
-- **Inventory Processing**: Consume all food items
-- **Batch Operations**: Modify multiple VFS variables
-- **Relationship Systems**: Update all social connections
+**Collections**:
+- `all_agents`: every agent row.
+- `nearby_agents`: every other agent whose distance from the attached agent (`self`) is at
+  most `radius`, measured by the substrate under the stratum's declared `distance_metric`
+  (`manhattan`, `euclidean` or `chebyshev`). On an aspatial substrate every distance is 0,
+  so every other agent is nearby. Needs an agent-scoped effect (it measures from `self`).
+- `inventory_items`: the attached agent's held items (item rows).
+- `active_effects`: see review-2026-10-24 effects F6 before relying on it.
 
 **Examples**:
 
 ```yaml
-# Apply poison to nearby agents (future)
-- for_each: "nearby_agents(radius=2)"
-  as: "agent"
+# Heal every agent within 2 cells of the attached agent (stratum: distance_metric manhattan)
+- for_each: nearby_agents
+  radius: 2
   do:
-    - spawn_effect: "poison"
-      target: "agent"
-      intensity: 0.5
+    - modify: target.bar.health
+      value: "clamp(target.bar.health + 0.02 * intensity, 0.0, 1.0)"
 
-# Consume all food items (future)
-- for_each: "target.inventory.items"
-  as: "item"
+# Penalise every agent
+- for_each: all_agents
   do:
-    - if: "item.vfs.type == 'food'"
-      then:
-        - modify: "target.bar.energy"
-          value: "target.bar.energy + item.vfs.nutrition"
-        - spawn_effect: "item_consumed"
-          target: "item"
-      else: []
-
-# Batch VFS updates
-- for_each: "[1, 2, 3, 4, 5]"
-  as: "index"
-  do:
-    - modify: "target.vfs.multiplier"
-      value: "target.vfs.multiplier * index"
+    - modify: target.bar.comfort
+      value: "target.bar.comfort - 0.1"
 ```
 
 **Validation**:
-- Collection expression must evaluate to iterable type
-- Iterator variable scoped to `do` block only
-- Commands type-checked with iterator variable in context
+- `radius` present exactly when the collection selects by distance (parse-time refusal)
+- Body commands type-checked with `target` bound to the element's row kind
+- No nested `for_each`; collections over 256 elements raise
 
 **Performance**:
-- Loops execute sequentially (not vectorized)
-- Keep collections small for performance
-- Prefer batch operations over loops when possible
-
-**Current Limitations**:
-- Limited collection sources in Phase 3/4
-- No nested for_each loops (future enhancement)
-- No break/continue statements (execute all iterations)
+- Loops execute sequentially (not vectorized); keep collections small
 
 ---
 
@@ -1294,9 +1265,9 @@ Real examples demonstrating common patterns and use cases:
 
   on_tick:
     - modify: global.vfs.is_night
-      value: "temporal.tick % 24 >= 18 and temporal.tick % 24 < 6"
+      value: "tick % 24 >= 18 or tick % 24 < 6"
     - modify: global.vfs.time_of_day
-      value: "temporal.tick % 24"
+      value: "tick % 24"
 
   on_despawn: []
   on_interrupt: []
@@ -1304,7 +1275,7 @@ Real examples demonstrating common patterns and use cases:
 
 **Behavior**:
 - Sets global `is_night` flag based on time-of-day
-- Updates every tick using temporal context
+- Updates every tick from the engine `tick`
 - Duration 10000 for long-lived world state effect
 - Not observable (global state, not agent-specific status)
 
@@ -1312,7 +1283,8 @@ Real examples demonstrating common patterns and use cases:
 
 **Key Pattern**: Global scope + temporal expressions for world state
 
-**Note**: Uses `temporal.tick` for time-based logic, `global.vfs.*` for world state
+**Note**: Uses the bare `tick` for time-based logic, `global.vfs.*` for world state. A pack
+with a declared clock variable (`expression: "tick % 24"`) can read that instead.
 
 ---
 
@@ -1444,39 +1416,33 @@ Real examples demonstrating common patterns and use cases:
 ### Example 10: Area Effect (FOR_EACH Loop)
 
 ```yaml
-# Future example - requires nearby_agents() implementation
 - id: "healing_aura"
   description: "Heals nearby agents in radius"
   scope: agent
   duration: 20
-  intensity: 1.0
   reapply_policy: stack
   observable: true
 
   on_spawn: []
 
   on_tick:
-    - for_each: "nearby_agents(radius=2)"
-      as: "nearby"
+    - for_each: nearby_agents
+      radius: 2
       do:
-        - modify: "nearby.bar.health"
-          value: "clamp(nearby.bar.health + (0.02 * intensity), 0.0, 1.0)"
+        - modify: target.bar.health
+          value: "clamp(target.bar.health + (0.02 * intensity), 0.0, 1.0)"
 
   on_despawn: []
   on_interrupt: []
 ```
 
 **Behavior**:
-- Each tick, finds agents within radius 2
-- Heals each nearby agent by 2% health
+- Each tick, finds the other agents within 2 cells of the attached agent under the
+  stratum's declared `distance_metric`
+- Heals each by 2% health; the attached agent itself is not in `nearby_agents`
 - Stack policy allows multiple auras (compounding heals)
-- Works on others, not self
 
 **Use Case**: Support abilities, area buffs, social effects
-
-**Key Pattern**: for_each loop for multi-target effects
-
-**Note**: Requires spatial query functions (future feature)
 
 ---
 

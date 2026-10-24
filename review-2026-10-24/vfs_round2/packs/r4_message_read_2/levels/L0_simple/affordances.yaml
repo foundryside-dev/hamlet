@@ -1,0 +1,88 @@
+affordances:
+  version: "1.0"
+  affordances:
+    - name: SLEEP
+      interaction_type: instant
+      costs:
+        money: 0.05
+      opening_hours:
+        enabled: false
+      deployment:
+        type: random
+        positions:
+          - - 0
+            - 0
+          - - 3
+            - 3
+      interactions:
+        on_start:
+          - modify: target.bar.energy
+            value: target.bar.energy + 0.8
+        per_tick: []
+        on_completion: []
+        on_early_exit: []
+        on_failure: []
+    - name: WORK
+      interaction_type: instant
+      costs:
+        energy: 0.1
+      opening_hours:
+        enabled: false
+        schedule:
+          - start: 0
+            end: 24
+      deployment:
+        type: random
+        positions:
+          - - 2
+            - 2
+      interactions:
+        on_start:
+          - modify: target.bar.money
+            value: target.bar.money + 0.5
+        per_tick: []
+        on_completion: []
+        on_early_exit: []
+        on_failure: []
+    - name: DOCTOR
+      interaction_type: instant
+      costs:
+        money: 0.1
+      opening_hours:
+        enabled: false
+      deployment:
+        type: random
+        positions:
+          - - 0
+            - 1
+          - - 1
+            - 0
+      interactions:
+        on_start:
+          - modify: target.bar.health
+            value: target.bar.health + 0.8
+        per_tick: []
+        on_completion: []
+        on_early_exit: []
+        on_failure: []
+    - name: COOK
+      interaction_type: instant
+      costs:
+        energy: 0.15
+        money: 0.03
+      opening_hours:
+        enabled: false
+      deployment:
+        type: random
+        positions:
+          - - 2
+            - 2
+      interactions:
+        on_start:
+          - modify: target.bar.sustenance
+            value: target.bar.sustenance + 0.5
+        per_tick: []
+        on_completion: []
+        on_early_exit: []
+        on_failure: []
+  modulations: []

@@ -1,0 +1,26 @@
+
+===== R4 write expression shape =====
+--- global_tensor_read (num_agents=2)
+   compile: REFUSED CompilationError: Stage 7: Compile levels and optimization data failed:
+  - [VTC-WRITE-TYPE] /home/john/hamlet/review-2026-10-24/vfs_round2/packs/r4_global_tensor_read_2/actions.yaml:9 - Action 'ADVANCE' write 'w_public_state' assigns a tensor1d expression 'gvec' to 'public_state', declared scalar (admits float, int)
+--- global_tensor_read (num_agents=3)
+   compile: REFUSED CompilationError: Stage 7: Compile levels and optimization data failed:
+  - [VTC-WRITE-TYPE] /home/john/hamlet/review-2026-10-24/vfs_round2/packs/r4_global_tensor_read_3/actions.yaml:9 - Action 'ADVANCE' write 'w_public_state' assigns a tensor1d expression 'gvec' to 'public_state', declared scalar (admits float, int)
+--- global_tensor3_read (num_agents=3)
+   compile: REFUSED CompilationError: Stage 7: Compile levels and optimization data failed:
+  - [VTC-WRITE-TYPE] /home/john/hamlet/review-2026-10-24/vfs_round2/packs/r4_global_tensor3_read_3/actions.yaml:9 - Action 'ADVANCE' write 'w_public_state' assigns a tensor1d expression 'gvec' to 'public_state', declared scalar (admits float, int
+--- global_tensor_condition (num_agents=2)
+   compile: REFUSED CompilationError: Stage 7: Compile levels and optimization data failed:
+  - [VTC-WRITE-TYPE] /home/john/hamlet/review-2026-10-24/vfs_round2/packs/r4_global_tensor_condition_2/actions.yaml:9 - Action 'ADVANCE' write 'w_public_state' condition 'gvec > 15.0' does not type-check: Comparison operator > requires numeric op
+--- pair_read (num_agents=2)
+   compile: OK
+   runtime: ValueError: Expression for VTC action write 'w_public_state' produced shape (2, 2), expected (2,)
+--- pair_read (num_agents=3)
+   compile: OK
+   runtime: ValueError: Expression for VTC action write 'w_public_state' produced shape (3, 3), expected (3,)
+--- message_read (num_agents=2)
+   compile: OK
+   runtime: ValueError: Expression for VTC action write 'w_public_state' produced shape (2, 2), expected (2,)
+--- message_read (num_agents=3)
+   compile: OK
+   runtime: ValueError: Expression for VTC action write 'w_public_state' produced shape (3, 3), expected (3,)

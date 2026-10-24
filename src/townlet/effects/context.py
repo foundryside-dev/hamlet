@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field, replace
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import torch
 
 from townlet.vfs.registry import VariableRegistry
 from townlet.vfs.schema import VariableScope
+
+if TYPE_CHECKING:
+    from townlet.substrate.base import SpatialSubstrate
 
 __all__ = ["ExecutionContext"]
 
@@ -38,7 +41,11 @@ class ExecutionContext:
     effect_manager: Any | None = None
     item_manager: Any | None = None
     spawn_depth: int = 0
+    # Spatial state of the tick: raw agent positions (spawn_item origins), affordance
+    # positions by name, and the substrate whose declared metric measures distance.
     agent_positions: torch.Tensor | None = None
+    affordance_positions: dict[str, torch.Tensor] | None = None
+    substrate: SpatialSubstrate | None = None
     interrupt_reason: str | None = None
     current_tick: int = 0
     target_is_item: bool = False

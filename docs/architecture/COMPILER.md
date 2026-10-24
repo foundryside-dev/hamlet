@@ -7,8 +7,8 @@ original date; this update does not certify full compiler or runtime completenes
 
 The compiler is the thing that turns a YAML pack into one frozen, hash-carrying
 `CompiledUniverse`. The world-execution contract is "compile once, execute many": runtime
-consumes compiled world declarations. The observer's separate presentation loader remains an
-explicit exception for display metadata; see [its boundary](../config-schemas/declarations.md#observer-metadata-boundary).
+consumes compiled world declarations, including the optional `presentation` family carried on
+`CompiledUniverse.presentation`.
 
 - **Source**: `src/townlet/universe/compiler.py` (+ `loaders/`, `validation/`, `compilers/`,
   `dto/`, `optimization.py`, `symbol_table.py`, `errors.py`, `source_map.py`)

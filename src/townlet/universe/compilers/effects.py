@@ -8,6 +8,7 @@ from townlet.config.effects_config import EffectsConfig
 from townlet.config.variables_config import VariablesConfig
 from townlet.effects.catalog import EffectCatalog
 from townlet.universe.compiled import CompiledVFSProfiles
+from townlet.vfs.profiles import AMBIENT_ENGINE_NAMES
 from townlet.vfs.schema import VariableScope
 
 
@@ -27,6 +28,11 @@ class EffectsCompiler:
             "elapsed_ticks": "float",
             "duration_remaining": "float",
         }
+        # The engine-published ambient names (`tick`) are read by bare name, exactly as
+        # VFS profile expressions read them (`vfs/profiles.py`). The registry carries
+        # them as global variables, so the effects runtime already resolves them; a
+        # declared clock is an authored global derived from `tick` and enters below.
+        schema.update(AMBIENT_ENGINE_NAMES)
 
         for bar_name in bar_names:
             schema[f"bar.{bar_name}"] = "float"

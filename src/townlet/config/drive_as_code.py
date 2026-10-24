@@ -8,7 +8,7 @@ Task 1.1: RangeConfig DTO - Range definitions for modifiers.
 Task 1.2: ModifierConfig DTO - Range-based multipliers for contextual reward adjustment.
 Task 1.3: Extrinsic Strategy DTOs - BarBonusConfig, VariableBonusConfig, ExtrinsicStrategyConfig.
 Task 1.4: IntrinsicStrategyConfig DTO - Configuration for intrinsic curiosity strategies.
-Task 1.5: Shaping Bonus DTOs - TriggerCondition, ApproachRewardConfig, CompletionBonusConfig, VFSVariableBonusConfig.
+Task 1.5: Shaping Bonus DTOs - ApproachRewardConfig, CompletionBonusConfig, VFSVariableBonusConfig.
 Task 1.6: Top-level DAC Config - CompositionConfig, DriveAsCodeConfig.
 """
 
@@ -242,34 +242,6 @@ class IntrinsicStrategyConfig(BaseModel):
     icm_config: dict[str, Any] | None = None
     count_config: dict[str, Any] | None = None
     adaptive_config: dict[str, Any] | None = None
-
-
-class TriggerCondition(BaseModel):
-    """Condition for triggering a shaping bonus.
-
-    Evaluates to true when source value crosses threshold.
-
-    Example:
-        >>> low_energy = TriggerCondition(
-        ...     source="bar",
-        ...     name="energy",
-        ...     below=0.3,
-        ... )
-    """
-
-    model_config = ConfigDict(extra="forbid")
-
-    source: Literal["bar", "variable"] = Field(description="Source type")
-    name: str = Field(description="Source name (bar name or variable name)")
-    above: float | None = Field(default=None, description="Trigger when value > threshold")
-    below: float | None = Field(default=None, description="Trigger when value < threshold")
-
-    @model_validator(mode="after")
-    def validate_threshold(self) -> "TriggerCondition":
-        """Ensure at least one threshold specified."""
-        if self.above is None and self.below is None:
-            raise ValueError("Must specify 'above' or 'below'")
-        return self
 
 
 class ApproachRewardConfig(BaseModel):

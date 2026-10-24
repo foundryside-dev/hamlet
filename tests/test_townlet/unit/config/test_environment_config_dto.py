@@ -26,7 +26,7 @@ class TestEnvironmentConfigLoading:
         assert len(root.modulation_graph) > 0
         assert len(root.affordances) >= 1
         assert "variables" not in type(root).model_fields
-        assert len(root.cues) >= 1
+        assert "cues" not in type(root).model_fields
 
         # Meters and affordances match expected vocabulary
         meter_names = {m.name for m in root.meters}
@@ -85,7 +85,6 @@ environment:
   cascade_graph: []
   modulation_graph: []
   affordances: []
-  cues: []
 """)
 
         with pytest.raises(ValidationError):

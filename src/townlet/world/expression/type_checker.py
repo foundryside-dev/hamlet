@@ -11,7 +11,7 @@ Type System:
 Type Inference Rules:
     - Constants: Inferred from Python type
     - Variables: Looked up in schema
-    - BinaryOp: Type-specific rules (e.g., int + int → int, int + float → float)
+    - BinaryOp: Type-specific rules (e.g., int + int → int, int + float → float, int / int → float)
     - Functions: Signature lookup (e.g., max(int, int) → int)
     - Conditionals: Branches must unify to common type
 
@@ -211,32 +211,6 @@ class TypeChecker(ASTVisitor):
 
         return resolve(prefix, remaining)
 
-    def _lookup_ref_type(self, prefix: str | None, ref_name: str) -> str | None:
-        """Look up ref type from available schema keys."""
-        candidate_keys = []
-        if prefix:
-            candidate_keys.append(f"{prefix}.vfs.{ref_name}")
-        for key in (f"vfs.{ref_name}", f"target.vfs.{ref_name}", f"self.vfs.{ref_name}"):
-            if key not in candidate_keys:
-                candidate_keys.append(key)
-        return next((self.schema[key] for key in candidate_keys if key in self.schema), None)
-
-    def _fallback_target_lookup(self, tail: list[str], path_str: str) -> str:
-        """Fallback: look up tail as target.vfs.<...> after recursion."""
-        target_path = f"target.vfs.{'.'.join(tail[1:])}"
-        inferred = self.schema.get(target_path)
-        if inferred is None:
-            raise TypeCheckError(f"Path '{path_str}' not found in schema after reference resolution. Checked '{target_path}'.")
-        return inferred
-
-    def _fallback_item_lookup(self, tail: list[str], path_str: str) -> str:
-        """Fallback: look up tail as self.vfs.<...> after recursion for item refs."""
-        target_path = f"self.vfs.{'.'.join(tail[1:])}"
-        inferred = self.schema.get(target_path)
-        if inferred is None:
-            raise TypeCheckError(f"Path '{path_str}' not found in schema after reference resolution. Checked '{target_path}'.")
-        return inferred
-
     def visit_binary_op(self, node: BinaryOp) -> str:
         """Type check binary operation.
 
@@ -250,7 +224,8 @@ class TypeChecker(ASTVisitor):
             TypeCheckError: If operand types incompatible with operator
 
         Rules:
-            - Arithmetic (+, -, *, /, %, **): numeric × numeric → numeric
+            - Arithmetic (+, -, *, %, **): numeric × numeric → numeric (int only when both are int)
+            - Division (/): numeric × numeric → float
             - Comparison (==, !=, <, >, <=, >=): numeric × numeric → bool
             - Logical (and, or): bool × bool → bool
         """
@@ -276,8 +251,10 @@ class TypeChecker(ASTVisitor):
                 raise TypeCheckError(
                     f"Arithmetic operator {node.op.value} requires numeric operands, got incompatible types {left_type} and {right_type}"
                 )
-            # Type promotion: if either is float, result is float
-            if left_type == "float" or right_type == "float":
+            # Division is real division: the evaluator's ``/`` on two int tensors yields
+            # float, so the type is float for every operand pair. The other arithmetic
+            # operators keep int for int operands and promote when either is float.
+            if node.op == OperatorType.DIV or left_type == "float" or right_type == "float":
                 return "float"
             return "int"
 

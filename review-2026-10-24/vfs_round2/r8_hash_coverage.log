@@ -1,0 +1,7 @@
+
+===== R8 checkpoint hash coverage of variable semantics =====
+hidden_expression_text             moved: NOTHING (checkpoint resumes silently)
+hidden_semantic_type               moved: NOTHING (checkpoint resumes silently)
+hidden_initial_value               moved: ['vfs_hash']
+exposed_norm_kind_minmax_to_log    moved: ['observation_schema_hash', 'vfs_hash']
+exposed+rewarded expression x1 -> x3: hashes moved: NOTHING; reward after 2x ADVANCE: [2.0] vs [6.0]; bonus [2.0] vs [6.0]

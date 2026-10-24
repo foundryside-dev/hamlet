@@ -5,11 +5,21 @@ from __future__ import annotations
 import enum
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    SerializationInfo,
+    SerializerFunctionWrapHandler,
+    field_validator,
+    model_serializer,
+    model_validator,
+)
 
 from townlet.numeric import require_float32
 
 __all__ = [
+    "SPATIAL_COLLECTIONS",
     "CommandConfig",
     "EffectDefinitionConfig",
     "EffectScope",
@@ -66,24 +76,51 @@ class EffectScope(enum.StrEnum):
         return None
 
 
+# Each command kind is the exact set of YAML keys a node of that kind authors. The
+# first key names the kind; every key in `required` must be authored (no command field
+# has a behavioural default), and a key outside `required | optional` is refused, so a
+# node is one command kind and nothing else (compiler remediation C12). `do` is one YAML
+# key shared by `for_each` and `delay`.
+_COMMAND_KINDS: dict[str, tuple[frozenset[str], frozenset[str]]] = {
+    "modify": (frozenset({"modify", "value"}), frozenset()),
+    "spawn_effect": (frozenset({"spawn_effect", "target", "intensity"}), frozenset()),
+    "spawn_item": (frozenset({"spawn_item", "position", "quantity"}), frozenset()),
+    "if": (frozenset({"if", "then", "else"}), frozenset()),
+    # `as` is accepted and not yet bound (effects remediation WP7 decides bind or delete);
+    # `radius` is required by, and refused outside, the SPATIAL_COLLECTIONS.
+    "for_each": (frozenset({"for_each", "do"}), frozenset({"as", "radius"})),
+    "switch": (frozenset({"switch", "cases", "default"}), frozenset()),
+    "reduce": (frozenset({"reduce", "reduce_as", "reduce_init", "reduce_body", "reduce_into"}), frozenset()),
+    "parallel": (frozenset({"parallel"}), frozenset()),
+    "delay": (frozenset({"delay", "do"}), frozenset()),
+    "sample": (frozenset({"sample", "params", "store_in"}), frozenset()),
+}
+
+# for_each collections that select by distance under the substrate's declared metric.
+SPATIAL_COLLECTIONS = frozenset({"nearby_agents"})
+
+
 class CommandConfig(BaseModel):
     """Single command in an effect pipeline.
 
-    Exactly one command type must be set. Valid command types:
+    Exactly one command kind per node, and every field of that kind authored:
 
     - modify/value: Mutate VFS/bar variable
-    - spawn_effect: Trigger another effect
-    - spawn_item: Create item in world
-    - if/then/else: Conditional execution
-    - for_each/as/do: Iterate over collection
+    - spawn_effect/target/intensity: Trigger another effect
+    - spawn_item/position/quantity: Create items in the world
+    - if/then/else: Conditional execution (per-agent mask)
+    - for_each/do (+ radius for nearby_agents; as): Iterate over collection
     - switch/cases/default: Multi-branch dispatch
-    - reduce: Fixed-size reduction into accumulator
+    - reduce/reduce_as/reduce_init/reduce_body/reduce_into: Fixed-size reduction
     - parallel: Disjoint branch execution
     - delay/do: Schedule commands after N ticks
-    - sample/store_in: Draw from distribution
+    - sample/params/store_in: Draw from distribution
+
+    Fields that belong to another kind keep an inert empty value; the validator refuses
+    them if authored, so they never carry behaviour.
     """
 
-    model_config = ConfigDict(populate_by_name=True, extra="forbid")
+    model_config = ConfigDict(extra="forbid")
 
     # modify command: Mutate VFS/bar variable
     modify: str | None = None
@@ -94,9 +131,12 @@ class CommandConfig(BaseModel):
     target: str | None = None  # Expression: "self", "target", or path
     intensity: float | None = Field(default=None, allow_inf_nan=False)  # Strength multiplier
 
-    # spawn_item command: Create item in world (Phase 4)
+    # spawn_item command: Create items in the world
     spawn_item: str | None = None  # Item type ID
-    position: str | None = None  # Expression for position
+    position: str | None = None  # "self", "target" or "random"
+    quantity: int | None = Field(default=None, ge=1)  # Number of items placed by one execution
+    # No authored `initial_state`: static write authorization cannot see an override map,
+    # so an authored one is refused here as an extra field (items remediation).
 
     # if command: Conditional execution
     if_condition: str | None = Field(None, alias="if")  # Expression (must eval to bool)
@@ -104,8 +144,9 @@ class CommandConfig(BaseModel):
     else_: list[CommandConfig] = Field(default=[], alias="else")
 
     # for_each command: Iterate over collection
-    for_each: str | None = None  # Expression (must eval to list/tensor)
-    as_: str | None = Field(None, alias="as")  # Iterator variable name
+    for_each: str | None = None  # Collection name or expression
+    as_: str | None = Field(None, alias="as")  # Iterator variable name (not yet bound; WP7)
+    radius: float | None = Field(default=None, ge=0.0, allow_inf_nan=False)  # nearby_agents radius, world units
     do: list[CommandConfig] = []
 
     # switch command: Multi-branch equality dispatch
@@ -115,7 +156,7 @@ class CommandConfig(BaseModel):
 
     # reduce command: Fixed-size reduction into accumulator
     reduce: str | None = None  # collection expression
-    reduce_as: str | None = Field(None, alias="reduce_as")  # iterator name
+    reduce_as: str | None = None  # iterator name
     reduce_init: str | None = None  # accumulator init expr
     reduce_body: str | None = None  # accumulator update expr (uses acc + iterator)
     reduce_into: str | None = None  # target path to store result
@@ -129,7 +170,7 @@ class CommandConfig(BaseModel):
 
     # sample command: draw from distribution into path
     sample: str | None = None  # distribution name (e.g., "uniform")
-    params: dict[str, Any] = Field(default_factory=dict)
+    params: dict[str, Any] | None = None
     store_in: str | None = None
 
     @field_validator("intensity")
@@ -140,71 +181,82 @@ class CommandConfig(BaseModel):
             return None
         return require_float32(intensity, field="spawn_effect intensity")
 
+    @field_validator("radius")
+    @classmethod
+    def validate_radius_float32(cls, radius: float | None) -> float | None:
+        """Canonicalize an authored collection radius at the float32 runtime boundary."""
+        if radius is None:
+            return None
+        return require_float32(radius, field="for_each radius")
+
+    def _authored_keys(self) -> set[str]:
+        """The YAML keys this node authored (aliases, so `do` is one key for two fields)."""
+        fields = type(self).model_fields
+        return {fields[name].alias or name for name in self.model_fields_set}
+
+    @model_serializer(mode="wrap")
+    def _serialize_own_kind(self, handler: SerializerFunctionWrapHandler, info: SerializationInfo) -> dict[str, Any]:
+        """Serialize exactly the authored keys, so a dump re-validates as the same command.
+
+        The inert values of other kinds' fields are not part of the command; emitting them
+        would make a round trip (`model_dump` then `model_validate`) read as a node that
+        authored every kind at once.
+        """
+        authored = self._authored_keys()
+        fields = type(self).model_fields
+        # `do` is one YAML key for two fields; the node's kind owns exactly one of them.
+        disowned = "do"
+        if self.delay is None:
+            disowned = "delay_do"
+        keep = {name for name, field in fields.items() if (field.alias or name) in authored and name != disowned}
+        keys = set(keep)
+        if info.by_alias:
+            keys = {fields[name].alias or name for name in keep}
+        return {key: value for key, value in handler(self).items() if key in keys}
+
     @model_validator(mode="after")
     def validate_exactly_one_command(self) -> CommandConfig:
-        """Exactly one command type must be set."""
-        fields = [
-            "modify",
-            "spawn_effect",
-            "spawn_item",
-            "if_condition",
-            "for_each",
-            "switch",
-            "reduce",
-            "parallel",
-            "delay",
-            "sample",
-        ]
-        set_fields = [f for f in fields if getattr(self, f) is not None]
-
-        if len(set_fields) != 1:
-            allowed = "modify/spawn_effect/spawn_item/if/for_each/switch/reduce/parallel/delay/sample"
-            raise ValueError(f"Exactly one command type required ({allowed}), got {len(set_fields)}: {set_fields}")
-
-        # Also validate that modify command has value field
-        if self.modify and not self.value:
-            raise ValueError("modify command requires 'value' field")
-
-        if self.spawn_effect is not None:
-            if self.target is None:
-                raise ValueError("spawn_effect command requires 'target'")
-            if self.intensity is None:
-                raise ValueError("spawn_effect command requires 'intensity'")
+        """One command kind per node; every key of that kind authored, no key of another."""
+        authored = self._authored_keys()
+        kinds = [kind for kind in _COMMAND_KINDS if kind in authored]
+        if len(kinds) != 1:
+            allowed = "/".join(_COMMAND_KINDS)
+            raise ValueError(f"Exactly one command type required ({allowed}), got {len(kinds)}: {kinds}")
+        kind = kinds[0]
+        required, optional = _COMMAND_KINDS[kind]
+        if kind == "for_each":
+            optional = optional - {"radius"}
+            if self.for_each in SPATIAL_COLLECTIONS:
+                required = required | {"radius"}
+        missing = sorted(required - authored)
+        if missing:
+            raise ValueError(f"{kind} command requires {missing}; every field of a command is authored explicitly")
+        foreign = sorted(authored - required - optional)
+        if foreign:
+            if kind == "for_each" and foreign == ["radius"]:
+                raise ValueError(
+                    f"for_each radius applies only to the spatial collections {sorted(SPATIAL_COLLECTIONS)}; "
+                    f"'{self.for_each}' does not select by distance"
+                )
+            raise ValueError(f"{kind} command does not take {foreign}; a command node is exactly one command kind")
+        values = {name: getattr(self, name) for name in self.model_fields_set}
+        null = sorted(type(self).model_fields[name].alias or name for name, value in values.items() if value is None)
+        if null:
+            raise ValueError(f"{kind} command fields {null} must not be null")
 
         if self.switch is not None and not self.cases and not self.default:
             raise ValueError("switch command requires at least one case or default block")
-
-        if self.reduce is not None:
-            missing = [
-                name
-                for name, val in {
-                    "reduce_as": self.reduce_as,
-                    "reduce_init": self.reduce_init,
-                    "reduce_body": self.reduce_body,
-                    "reduce_into": self.reduce_into,
-                }.items()
-                if val is None
-            ]
-            if missing:
-                raise ValueError(f"reduce command missing fields: {missing}")
 
         if self.parallel is not None and not self.parallel:
             raise ValueError("parallel command requires at least one branch")
 
         if self.delay is not None and not self.delay_do:
-            raise ValueError("delay command requires a 'do' block")
+            raise ValueError("delay command requires a non-empty 'do' block")
 
-        sample_set = self.sample is not None
-        if sample_set:
-            if not self.store_in:
-                raise ValueError("sample command requires 'store_in'")
-            if not self.sample:
-                raise ValueError("sample command requires 'sample' distribution name")
-            if not isinstance(self.params, dict):
-                raise ValueError("sample command params must be a mapping")
-
+        if self.sample is not None:
+            assert self.params is not None
             dist = self.sample.lower()
-            required: dict[str, tuple[str, ...]] = {
+            required_params: dict[str, tuple[str, ...]] = {
                 "uniform": ("min", "max"),
                 "normal": ("mean", "std"),
                 "lognormal": ("mean", "std"),
@@ -212,11 +264,11 @@ class CommandConfig(BaseModel):
                 "bernoulli": ("p",),
                 "categorical": ("probs",),
             }
-            if dist not in required:
+            if dist not in required_params:
                 raise ValueError(f"Unsupported sample distribution '{self.sample}'")
-            missing = [k for k in required[dist] if k not in self.params]
-            if missing:
-                raise ValueError(f"sample '{dist}' missing params: {missing}")
+            missing_params = [k for k in required_params[dist] if k not in self.params]
+            if missing_params:
+                raise ValueError(f"sample '{dist}' missing params: {missing_params}")
 
         return self
 
@@ -265,8 +317,8 @@ class EffectsConfig(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    version: Literal["1.0"] = Field(default="1.0", description="Config schema version")
-    effect_definitions: list[EffectDefinitionConfig] = Field(default=[], description="Catalog of reusable effect definitions")
+    version: Literal["1.0"] = Field(..., description="Config schema version")
+    effect_definitions: list[EffectDefinitionConfig] = Field(..., description="Catalog of reusable effect definitions")
     # Per-scope budget of concurrently active effects (token-obs spec §2 capacity table;
     # hamlet-88578e629e). REQUIRED (No-Defaults) whenever any effect is declared —
     # `effect` token capacity is Σ scope budget × scope denominator — and forbidden when

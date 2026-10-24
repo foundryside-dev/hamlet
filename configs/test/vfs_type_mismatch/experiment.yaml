@@ -4,8 +4,3 @@ experiment:
   metadata:
     name: "VFS Type Mismatch Test"
     description: "Tests type mismatch detection (should fail at compile time)"
-    author: "Tests"
-    created: "2025-11-21"
-    tags: ["test", "vfs", "edge-case"]
-  curriculum_levels:
-    - L0_type_mismatch

@@ -36,10 +36,10 @@ def _raw():
     "command",
     [
         {"modify": "vfs.secret", "value": "3"},
-        {"if": "false", "then": [{"modify": "target.vfs.secret", "value": "3"}]},
+        {"if": "false", "then": [{"modify": "target.vfs.secret", "value": "3"}], "else": []},
         {"parallel": [{"modify": "self.vfs.secret", "value": "3"}]},
         {"delay": "3", "do": [{"modify": "vfs.secret", "value": "3"}]},
-        {"switch": "0", "cases": [{"when": "1", "do": [{"modify": "vfs.secret", "value": "3"}]}]},
+        {"switch": "0", "cases": [{"when": "1", "do": [{"modify": "vfs.secret", "value": "3"}]}], "default": []},
         {"for_each": "all_agents", "as": "agent", "do": [{"modify": "target.vfs.secret", "value": "3"}]},
         {"sample": "uniform", "params": {"min": "0", "max": "1"}, "store_in": "vfs.secret"},
         {"reduce": "all_agents", "reduce_as": "agent", "reduce_init": "0", "reduce_body": "acc + 1", "reduce_into": "vfs.secret"},
@@ -50,6 +50,7 @@ def test_all_effect_command_write_forms_are_checked(command):
 
     raw = _raw()
     effects = EffectsConfig(
+        version="1.0",
         effect_definitions=[
             dict(
                 id="bad",
@@ -134,7 +135,7 @@ def test_affordance_and_qualified_item_hook_write_targets_refuse():
     raw = _raw()
     level = next(iter(raw.levels.values()))
     level.affordances.affordances[0].interactions["on_start"] = [
-        CommandConfig.model_validate({"if": "false", "then": [{"modify": "vfs.secret", "value": "3"}]})
+        CommandConfig.model_validate({"if": "false", "then": [{"modify": "vfs.secret", "value": "3"}], "else": []})
     ]
     with pytest.raises(CompilationError, match="secret.*engine write"):
         validate_static_write_targets(raw, raw.source_map)
@@ -235,6 +236,7 @@ def test_for_each_preserves_self_and_retargets_target_namespace(effect_scope, co
         raw.variables.declarations[0].model_copy(update={"scope": "item", "profile": "inventory", "writable_by": ["engine"]})
     )
     effects = EffectsConfig(
+        version="1.0",
         effect_definitions=[
             dict(
                 id="loop",

@@ -51,14 +51,6 @@ def _build_two_level_pack(tmp_path: Path, config_pack_factory) -> Path:
     _add_action("MEDITATE", "Passive mood/health recovery (test)")
     actions_path.write_text(yaml.safe_dump(actions_data, sort_keys=False))
 
-    # Extend experiment curriculum_levels with a second level.
-    experiment_path = pack_dir / "experiment.yaml"
-    experiment_data = yaml.safe_load(experiment_path.read_text())
-    levels = experiment_data["experiment"].get("curriculum_levels", [])
-    levels.append("L1_alt")
-    experiment_data["experiment"]["curriculum_levels"] = levels
-    experiment_path.write_text(yaml.safe_dump(experiment_data, sort_keys=False))
-
     # Clone L0_test → L1_alt.
     src_level = pack_dir / "levels" / "L0_test"
     dest_level = pack_dir / "levels" / "L1_alt"

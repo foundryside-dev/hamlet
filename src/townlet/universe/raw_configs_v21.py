@@ -86,6 +86,9 @@ class RawConfigsV21:
     # Optional experiment-level configs
     items: ItemsCatalogConfig | None = None
     effects: EffectsConfig | None = None
+    # Observer-only presentation (PDR-0025): carried on the artifact, validated in resolve,
+    # never hashed.
+    presentation: PresentationConfig | None = None
     action_label_overrides: dict[int, str] | None = None
     vfs_extents: VFSScopeExtents | None = None
     social_residue_rules: tuple[dict[str, object], ...] = ()
@@ -115,7 +118,7 @@ class RawConfigsV21:
         variables = store.parse("variables", None, VariablesConfig, False)
         effects = store.parse("effects", None, EffectsConfig, False)
         transition_rules = store.parse("transition_rules", None, TransitionRulesConfig, False)
-        store.parse("presentation", None, PresentationConfig, False)
+        presentation = store.parse("presentation", None, PresentationConfig, False)
 
         labels_declaration = store.get("action_labels", None)
         action_label_overrides = None
@@ -166,7 +169,10 @@ class RawConfigsV21:
         store.errors.check_and_raise()
         assert experiment is not None and stratum is not None and environment is not None
         assert actions is not None and brain is not None and variables is not None
-        if items is not None and (items.max_items_in_world == 0 or items.max_items_per_agent == 0):
+        if items is not None and not items.item_types and items.max_items_in_world == 0 and items.max_items_per_agent == 0:
+            # No item types and no arena: the declaration says the pack has no items, which is
+            # what an absent declaration says. Item types declared into an empty arena never
+            # reach here; `ItemsCatalogConfig.validate_item_arena` refuses them at parse.
             items = None
         return cls(
             experiment=experiment,
@@ -177,6 +183,7 @@ class RawConfigsV21:
             items=items,
             variables=variables,
             effects=effects,
+            presentation=presentation,
             action_label_overrides=action_label_overrides,
             vfs_extents=variables.extents,
             social_residue_rules=transition_rules.social_residue_sources() if transition_rules is not None else (),

@@ -1,15 +1,14 @@
 """Experiment-level configuration DTO.
 
 This module defines the Pydantic DTO for experiment.yaml files in the v2.1
-configuration system. An experiment defines metadata and the list of curriculum
-levels to train through.
+configuration system. An experiment names the pack and carries its schema version and
+human-readable metadata. Curriculum levels are discovered from ``levels/``; the experiment
+declaration does not list them.
 
 Example:
     >>> config = ExperimentConfig.from_yaml(Path("configs/default_curriculum/experiment.yaml"))
     >>> print(config.experiment.experiment_name)
     'Default Curriculum'
-    >>> print(config.experiment.curriculum_levels)
-    ['L0_0_minimal', 'L0_5_dual_resource', ...]
 """
 
 from pathlib import Path
@@ -23,9 +22,6 @@ class ExperimentMetadata(BaseModel):
 
     name: str = Field(..., description="Human-readable experiment name")
     description: str = Field(..., description="Experiment purpose and scope")
-    author: str = Field(..., description="Creator of this experiment")
-    created: str = Field(..., description="Creation date (YYYY-MM-DD)")
-    tags: list[str] = Field(..., description="Classification tags")
 
     model_config = ConfigDict(extra="forbid")
 
@@ -41,7 +37,6 @@ class ExperimentConfigRoot(BaseModel):
         ),
     )
     metadata: ExperimentMetadata = Field(..., description="Experiment metadata")
-    curriculum_levels: list[str] = Field(..., description="Ordered list of curriculum level names")
 
     model_config = ConfigDict(extra="forbid")
 

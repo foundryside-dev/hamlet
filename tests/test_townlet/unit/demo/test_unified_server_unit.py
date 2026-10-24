@@ -64,12 +64,8 @@ def minimal_config_dir(tmp_path: Path) -> Path:
                 "    train_frequency: 1",
                 "    sequence_length: 1",
                 "    max_grad_norm: 1.0",
-                "    evaluation:",
-                "      interval: 1",
-                "      num_episodes: 1",
                 "    checkpointing:",
                 "      interval: 1",
-                "      keep_last: 1",
                 "  curriculum:",
                 "    strategy: static",
             ]

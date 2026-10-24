@@ -470,7 +470,7 @@ def test_vtc_action_writes_reads_phase_snapshot_before_committing_writes() -> No
     assert torch.allclose(updated["satiation"], torch.tensor([10.0]))
 
 
-def test_vtc_action_writes_rejects_shape_changing_phase_commit() -> None:
+def test_vtc_action_writes_refuses_a_vector_result_on_a_scalar_target_at_compile() -> None:
     action = _action(
         action_id=12,
         name="BAD_SHAPE",
@@ -498,17 +498,10 @@ def test_vtc_action_writes_rejects_shape_changing_phase_commit() -> None:
         ],
     )
 
-    # one_hot type-checks as a float over the integer agent index; its [agents, 3]
-    # shape is what the phase commit refuses.
-    program = compile_vtc_action_writes([action], _agent_scopes(action))
-    with pytest.raises(ValueError, match="invalid_status_one_hot.*shape"):
-        program.apply(
-            actions=torch.tensor([12, 12]),
-            vfs_state={"energy": torch.tensor([1.0, 1.0])},
-            bars_state={},
-            active_mask=torch.tensor([True, True]),
-            device=torch.device("cpu"),
-        ).values
+    # one_hot type-checks to a vecNf ([agents, 3]); a scalar target admits int and
+    # float only, so the shape mismatch is refused at compile, never at the phase commit.
+    with pytest.raises(VTCWriteRefusalError, match="invalid_status_one_hot.*vecNf.*declared scalar"):
+        compile_vtc_action_writes([action], _agent_scopes(action))
 
 
 def test_vtc_action_writes_uses_spec_phase_order_not_lexical_order() -> None:

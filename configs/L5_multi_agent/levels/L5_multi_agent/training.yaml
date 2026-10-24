@@ -55,13 +55,8 @@ training:
     sequence_length: 8
     max_grad_norm: 10.0
 
-    evaluation:
-      interval: 500
-      num_episodes: 10
-
     checkpointing:
       interval: 500
-      keep_last: 10
 
   curriculum:
     strategy: static

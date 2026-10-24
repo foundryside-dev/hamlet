@@ -42,40 +42,26 @@ class MetadataCompiler:
         self._get_git_sha = get_git_sha
 
     def build_meter_metadata(self, environment: EnvConfigV21, bars: BarsV2Config) -> MeterMetadata:
-        """Meters: use environment vocabulary, initial from bars."""
+        """Meters: use environment vocabulary, initial from bars.
+
+        Stage 3 (``compile_meter_declarations``) refuses any disagreement between the
+        environment and bars meter vocabularies, so every environment meter has a bar.
+        """
         meter_lookup = {meter.name: meter for meter in bars.meters}
-        meter_infos: list[MeterInfo] = []
-        for idx, meter in enumerate(environment.environment.meters):
-            bar_cfg = meter_lookup.get(meter.name)
-            initial = bar_cfg.initial if bar_cfg else 0.0
-            meter_infos.append(
-                MeterInfo(
-                    name=meter.name,
-                    index=idx,
-                    critical=False,
-                    initial_value=initial,
-                    observable=True,
-                    description=meter.description,
-                )
+        meter_infos = [
+            MeterInfo(
+                name=meter.name,
+                index=idx,
+                initial_value=meter_lookup[meter.name].initial,
+                description=meter.description,
             )
+            for idx, meter in enumerate(environment.environment.meters)
+        ]
         return MeterMetadata(meters=tuple(meter_infos))
 
     def build_affordance_metadata(self, affordances: AffordancesV2Config) -> AffordanceMetadata:
         """Affordance metadata derived from per-level affordances.yaml."""
-        infos: list[AffordanceInfo] = []
-        for aff in affordances.affordances:
-            infos.append(
-                AffordanceInfo(
-                    id=aff.name,
-                    name=aff.name,
-                    enabled=True,
-                    cost=float(aff.costs["money"]) if "money" in aff.costs else 0.0,
-                    category=None,
-                    description="",
-                    position=None,
-                )
-            )
-        return AffordanceMetadata(affordances=tuple(infos))
+        return AffordanceMetadata(affordances=tuple(AffordanceInfo(id=aff.name, name=aff.name) for aff in affordances.affordances))
 
     def build_universe_metadata(
         self,
@@ -137,25 +123,18 @@ class MetadataCompiler:
         if config_mtime is None:
             config_mtime = self._compute_config_mtime(experiment_dir)
 
-        def _version_error(message: str) -> CompilationError:
-            return CompilationError(
+        config_version = raw.experiment.experiment.version
+        if not config_version:
+            raise CompilationError(
                 CompilationStage.LEVELS.label,
                 [
                     CompilationMessage(
-                        code=ErrorCode.UAC_META_VERSION, message=message, location=locate(raw.source_map, "experiment:version")
+                        code=ErrorCode.UAC_META_VERSION,
+                        message="experiment.version is required in the experiment declaration and cannot be empty.",
+                        location=locate(raw.source_map, "experiment:version"),
                     )
                 ],
             )
-
-        try:
-            config_version = raw.experiment.experiment.version
-        except AttributeError as exc:
-            raise _version_error(
-                "experiment.version is required in the experiment declaration (no defaults allowed). "
-                "Provide an explicit semantic version string."
-            ) from exc
-        if not config_version:
-            raise _version_error("experiment.version is required in the experiment declaration and cannot be empty.")
 
         return UniverseMetadata(
             universe_name=raw.experiment.experiment.metadata.name,

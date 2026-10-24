@@ -29,16 +29,6 @@ environment:
 
   affordances:
     - name: SLEEP
-      description: "Rest to restore energy"
-      category: sustenance
     - name: DOCTOR
-      description: "Medical checkup to restore health"
-      category: health
     - name: WORK
-      description: "Earn money at the cost of energy"
-      category: money
     - name: COOK
-      description: "Cook food to restore energy"
-      category: sustenance
-
-  cues: []

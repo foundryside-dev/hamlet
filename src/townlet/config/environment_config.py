@@ -1,8 +1,8 @@
 """Environment-level configuration DTO.
 
 This module defines the Pydantic DTO for environment.yaml files in the v2.1
-configuration system. An environment defines meters, cascades, modulations,
-affordances, VFS variables, and UI cues.
+configuration system. An environment defines meters, cascades, modulations and
+the affordance name registry.
 
 Example:
     >>> config = EnvironmentConfig.from_yaml(Path("configs/default_curriculum/environment.yaml"))
@@ -143,44 +143,12 @@ class ModulationConfig(BaseModel):
 class AffordanceDefinition(BaseModel):
     """Global affordance registry entry (environment.yaml).
 
-    Defines the canonical name, description, and category for an affordance.
-    Curriculum-level parameters (costs, effects, deployment) are defined in
-    levels/*/affordances.yaml using AffordanceParamConfig.
+    Declares the canonical affordance name. Curriculum-level parameters (costs,
+    effects, deployment) are defined in levels/*/affordances.yaml using
+    AffordanceParamConfig.
     """
 
     name: str = Field(..., description="Affordance name (e.g., 'EAT', 'SLEEP')")
-    description: str = Field(..., description="Human-readable description")
-    category: str = Field(..., description="Affordance category (e.g., 'sustenance', 'hygiene')")
-
-    model_config = ConfigDict(extra="forbid")
-
-
-class CueTriggerConfig(BaseModel):
-    """Cue trigger condition."""
-
-    bar: str = Field(..., description="Meter name to monitor")
-    threshold: float = Field(..., description="Threshold value")
-    direction: Literal["above", "below"] = Field(..., description="Trigger direction")
-
-    model_config = ConfigDict(extra="forbid")
-
-
-class CueDisplayConfig(BaseModel):
-    """Cue display properties."""
-
-    icon: str = Field(..., description="Display icon (emoji or text)")
-    color: str = Field(..., description="Display color (hex code)")
-    message: str = Field(..., description="Message to display")
-
-    model_config = ConfigDict(extra="forbid")
-
-
-class CueConfig(BaseModel):
-    """UI cue definition."""
-
-    name: str = Field(..., description="Cue name")
-    trigger: CueTriggerConfig = Field(..., description="Trigger condition")
-    display: CueDisplayConfig = Field(..., description="Display properties")
 
     model_config = ConfigDict(extra="forbid")
 
@@ -193,7 +161,6 @@ class EnvironmentConfigRoot(BaseModel):
     cascade_graph: list[CascadeConfig] = Field(..., description="Cascade relationships")
     modulation_graph: list[ModulationConfig] = Field(..., description="Modulation relationships")
     affordances: list[AffordanceDefinition] = Field(..., description="Affordance definitions")
-    cues: list[CueConfig] = Field(..., description="UI cue definitions")
 
     model_config = ConfigDict(extra="forbid")
 

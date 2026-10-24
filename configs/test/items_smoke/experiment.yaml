@@ -6,9 +6,3 @@ experiment:
   metadata:
     name: "Items Smoke Test"
     description: "Minimal smoke test for Items & VFS Profiles feature (Phase 1-3)"
-    author: "HAMLET Tests"
-    created: "2025-11-19"
-    tags: ["test", "items", "vfs", "smoke"]
-
-  curriculum_levels:
-    - L0_smoke

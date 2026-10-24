@@ -1,0 +1,10 @@
+
+===== R10 indistinguishability =====
+--- two_meters_like_vars_different_writes
+   REFUSED ValueError: Variables 'hunger' and 'thirst' are indistinguishable: identical static payload signature (descriptor block + coordinate space).
+  Rule: under permutation-invariant pooling two such tokens alias for every weight setting (spec §1). Add a distinguishing DECLARED parameter to one of them — a different semantic_type, lifetime, normalization range, or declared initial value.
+--- two_expressions_different_formulas
+   REFUSED ValueError: Variables 'e1' and 'e2' are indistinguishable: identical static payload signature (descriptor block + coordinate space).
+  Rule: under permutation-invariant pooling two such tokens alias for every weight setting (spec §1). Add a distinguishing DECLARED parameter to one of them — a different semantic_type, lifetime, normalization range, or declared initial value.
+--- perturbed_initial
+   compile: OK (witness brain: dueling — a flat net that reads by slot position)

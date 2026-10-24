@@ -1,76 +1,18 @@
 # Expression Language Reference
 
-> ⛔ **Restored to the live tree 2026-08-26 — this document UNDERSTATES the engine. Do not use its "planned" lists to decide what you can author.**
+> **Function inventory is generated.** The table under [Function Reference](#function-reference)
+> is rendered from the registry `FUNCTION_SPECS` (`src/townlet/world/expression/functions.py`)
+> by `scripts/gen_expression_functions_doc.py`; a test fails when the two disagree, so the table
+> is the registry. The registry is also what the type checker and the evaluator run from, and
+> `tests/test_townlet/unit/world/expression/test_function_registry_agreement.py` holds every
+> function's declared return type to its evaluated dtype and batch shape.
 >
-> Verified against `src/townlet/world/expression/functions.py` on 2026-08-26: the function
-> registry `FUNCTION_SPECS` holds **49 working functions**. This document describes a small
-> fraction of them and labels several *shipped* ones "planned but not yet implemented".
->
-> **That is the most damaging way a doc in this repo can be wrong.** A designer who reads
-> "planned" against the spatial and statistical functions concludes the declarative surface
-> cannot express their idea and reaches for Python — which `CLAUDE.md` names as the exact
-> product defect this project exists to prevent. The framework is more capable than this file
-> says.
->
-> **⚠️ These NINE ship today, despite being listed below as "planned"** (all present in
-> `FUNCTION_SPECS`): `distance`, `within_radius`, `mean`, `sum`, `min`, `max`,
-> `distance_to_affordance`, `manhattan_distance`, `perlin_noise`.
->
-> **⚠️ "Function signature validation is deferred to Phase 2 (requires function registry)" is
-> false.** The registry exists and type checking is wired:
-> `world/expression/type_checker.py:358-366` — `visit_function_call` imports `FUNCTION_SPECS`,
-> raises `Unknown function '<name>'` for anything absent, then calls `spec.validate_args()`.
->
-> **⚠️ Two whole capability families are invisible here — 19 functions, entirely undocumented:**
-> - *Temporal:* `lag`, `delta`, `ema`, `moving_average`, `rate_of_change`, `rising_edge`,
->   `falling_edge`, `elapsed_ticks`, `time_in_window`, `phase_sin`, `phase_cos`
-> - *Tensor:* `gather`, `scatter`, `one_hot`, `masked_add`, `masked_set`, `argmin`, `argmax`,
->   `count_where` (`where` and `normalize` appear only incidentally — `normalize` is listed under
->   "Phase 3 planned" while it ships)
->
-> **✅ The "planned" label IS correct for these** — genuinely absent from the registry, and they
-> fail at **type-check** time (not parse) with `Unknown function`: `sin`, `cos`, `tan`, `asin`,
-> `acos`, `atan`, `sqrt`, `count`, `random`, `bernoulli`, `normal`, `has_item`.
-> (Note `normal_dist` and `uniform` *do* ship — the absent spellings are `normal` and `random`.)
->
-> **⚠️ "Division always returns float" is FALSE, and it is stated twice.** Verified empirically:
-> `42 / 10` type-checks to **`int`**; only `1.0 / 2` and `42 / 10.0` give `float`. This is the
-> most treacherous error here, because `compile_variable` rejects a declared-vs-inferred type
-> mismatch — so an author who trusts the sentence gets a compile failure with **no obvious link
-> back to the sentence that caused it**. Fix: declare an operand or the variable as float
-> (`42 / 10.0`).
->
-> **⚠️ `temporal.*` — the single reconciled account** (this doc, `effects.md` and earlier notes
-> disagreed; resolved at source 2026-08-26):
-> - It **parses**, and the runtime context has a reader
->   (`world/expression/context.py:64-65`, `:234-237`).
-> - But **no schema builder ever emits a `temporal.*` key.** `build_expression_schema`
->   (`universe/compilers/vfs.py:136-152`; sole caller `universe/compiler.py:454`) emits only
->   `bar.*`, `vfs.*`, `self.vfs.*`, `target.vfs.*`. Anything validated against that schema
->   therefore **fails at compile time**.
-> - At runtime only the **item spawn-rule** path populates it, and only with the single key
->   `tick` (`items/manager.py:624`, `:630`). The **effects** path passes `temporal={}`
->   (`effects/executor.py:43`, `:739`), so it always raises there.
-> - **✅ Correct working form: the bare `tick` variable** — the engine-written step counter,
->   reserved at `universe/compilers/vfs.py:130-132`. Do not write `temporal.tick`.
->
-> **⚠️ Three of the six path roots this document teaches do not resolve**, for the same reason:
-> the compile-time schema emits only the four roots listed above.
->
-> **⚠️ The YAML examples in this file do not all compile.** Treat every example as
-> unverified until the fix pass pins them with a test.
->
-> **✅ Correct as documented** (do not "fix" these): the ternary form is `if C then A else B` —
-> the Python conditional form failing is not a defect. And `sqrt`/`sin`/`cos` fail at
-> **type-check**, not parse.
->
-> Until this is rewritten, **`src/townlet/world/expression/functions.py` is the authority** on
-> what you can call. Tracked as `hamlet-8f2e13c5a9`.
->
-> *This document was audited twice on 2026-08-26 with materially different results; the second
-> pass found the first had under-reported it. A doc this wrong should not be signed off on a
-> single read — the durable answer is test-pinned examples, not repeated human passes.*
-
+> Two caveats that remain true (2026-10-24). First, the compile-time schemas resolve only these
+> path roots: `bar.*`, `vfs.*`, `self.vfs.*` and `target.vfs.*` for VFS expressions, plus
+> `target.bar.*` and `global.vfs.*` inside effects; `temporal.*`, `self.position`, `item.*` and the
+> other roots the namespace list below mentions do not resolve, and the engine step counter is read
+> through the bare `tick` variable. Second, the YAML examples in this file are illustrative, not
+> test-pinned.
 
 ## Overview
 
@@ -304,17 +246,15 @@ spawn_rules:
 - **Type mismatch**: `Logical operator and requires bool operands` → Wrap numeric expressions in comparisons.
 - **Unknown path**: `Path 'item.vfs.durability' not found` → Ensure schema includes item VFS variables for item contexts.
 
-## Phase 2 Roadmap (Deferred Operators)
+## Functions That Do Not Exist
 
-The following operators are planned but not yet implemented:
+These spellings appear in older notes and fail at type check with `Unknown function '<name>'`:
+`sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `sqrt`, `count`, `random`, `bernoulli`, `normal`,
+`has_item`, `length`. Use `phase_sin` / `phase_cos` for periodic signals, `x ** 0.5` for a square
+root, `count_where` to count true conditions, `uniform` / `normal_dist` for random draws, and
+`distance(v, v)` with a zero vector for a vector's length. The authority on what you can call is
+the [Function Reference](#function-reference).
 
-**Trigonometric:** `sin`, `cos`, `tan`, `asin`, `acos`, `atan`
-
-**Spatial:** `distance(pos1, pos2)`, `within_radius(pos, center, radius)`
-
-**Statistical:** `mean(list)`, `sum(list)`, `count(list)`, `min(list)`, `max(list)`
-
-**Stochastic:** `random()`, `bernoulli(p)`, `normal(mean, std)`
 
 #### Operator Precedence
 
@@ -355,7 +295,6 @@ if condition then true_branch else false_branch
 ```
 if bar.energy < 0.2 then 1.0 else 0.0                       # Crisis bonus
 if vfs.is_night then 0.5 else 1.0                           # Time multiplier
-if bar.health > 50 then "healthy" else "injured"            # Status string
 if a then (if b then 1.0 else 2.0) else 3.0                 # Nested conditionals
 ```
 
@@ -377,40 +316,136 @@ grid[x][y]                # Nested access (chained IndexAccess nodes)
 - Index must be `int`
 - Returns element type
 
-**Note**: Index access type checking is deferred to Phase 4 (requires array types in schema).
+**Note**: Index access is not type-checked against an element type; the checker treats every indexed element as `float`.
 
 ### Function Calls
 
-Invoke built-in or domain-specific functions:
+Invoke a registered function with positional arguments:
 
 ```
 function_name(arg1, arg2, ...)
 ```
 
-**Standard math functions:**
-```
-max(a, b)                 # Element-wise maximum
-min(a, b)                 # Element-wise minimum
-abs(x)                    # Absolute value
-clamp(x, min_val, max_val) # Clamp to range
-```
-
 **Examples:**
 ```
 max(bar.energy, 0.0)                        # Ensure non-negative
-clamp(bar.health + 0.2, 0.0, 1.0)          # Add health, clamp to [0,1]
-abs(target.position.x - self.position.x)    # Distance (1D)
+clamp(bar.health + 0.2, 0.0, 1.0)           # Add health, clamp to [0,1]
+mean(bar.energy, bar.health)                # Each agent's mean of two meters
+distance(vfs.position, vfs.home)            # Per-agent distance between two vec2f variables
 ```
 
-**Domain-specific functions (Phase 2 - planned):**
-```
-distance_to_affordance("Fridge")            # Spatial distance
-has_item("Apple")                            # Inventory check
-perlin_noise(x, y, seed)                     # Procedural generation
-manhattan_distance(pos1, pos2)               # L1 distance
-```
+**Type checking**: every call is checked against the registry: an unknown name, a wrong
+argument count or a wrong argument type is a compile-time `TypeCheckError`. The return type is
+the declared one in the [Function Reference](#function-reference); the evaluator produces that
+dtype, and a scalar-typed result keeps the `[batch]` axis of its per-agent inputs.
 
-**Type checking**: Function signature validation is deferred to Phase 2 (requires function registry).
+## Function Reference
+
+<!-- BEGIN GENERATED: expression-functions (scripts/gen_expression_functions_doc.py) -->
+49 functions are registered. A scalar-typed result (`int`, `float`, `bool`) keeps the batch axis of its
+per-agent inputs; a vector-typed result (`vec2f`, `vec3f`, `vecNf`) keeps it in front of the vector axis. No function
+collapses the batch axis. A literal has no batch axis, so a result built only from literals is unbatched:
+`one_hot(2, 3)` is `[3]`, `one_hot(bar.slot, 3)` is `[batch, 3]`.
+
+### Math
+
+Element-wise over numeric scalars.
+
+| Function | Returns | What it computes | Needs |
+|---|---|---|---|
+| `abs(x)` | int when every argument is int, else float | Absolute value. | — |
+| `clamp(x, low, high)` | int when every argument is int, else float | Clamp `x` into `[low, high]`. | — |
+| `clamp01(x)` | float | Clamp `x` into `[0.0, 1.0]`. | — |
+| `max(a, b)` | int when every argument is int, else float | Element-wise maximum of two numbers. | — |
+| `min(a, b)` | int when every argument is int, else float | Element-wise minimum of two numbers. | — |
+| `sigmoid(x)` | float | Logistic sigmoid `1 / (1 + exp(-x))`. | — |
+| `smoothstep(edge0, edge1, x)` | float | Hermite interpolation of `x` from 0 at `edge0` to 1 at `edge1`. | — |
+| `tanh(x)` | float | Hyperbolic tangent. | — |
+| `threshold(x, low, high)` | bool | `x > low`, forced true once `x >= high` (a two-level trigger). | — |
+
+### Statistics
+
+Reduced across the *arguments*, never across agents: `mean(bar.energy, bar.health)` is each agent's own mean.
+
+| Function | Returns | What it computes | Needs |
+|---|---|---|---|
+| `argmax(a, b, ...)` | int | Zero-based position of the largest argument. | — |
+| `argmin(a, b, ...)` | int | Zero-based position of the smallest argument. | — |
+| `count_where(c1, c2, ...)` | int | How many of the bool arguments are true. | — |
+| `max_all(a, b, ...)` | int when every argument is int, else float | Largest of the arguments. | — |
+| `mean(a, b, ...)` | float | Arithmetic mean of the arguments. | — |
+| `min_all(a, b, ...)` | int when every argument is int, else float | Smallest of the arguments. | — |
+| `product(a, b, ...)` | float | Product of the arguments. | — |
+| `sum(a, b, ...)` | float | Sum of the arguments. | — |
+| `variance(a, b, ...)` | float | Population variance of the arguments. | — |
+
+### Logic and masks
+
+Boolean combination and masked selection; `gather`/`scatter` index rows of a per-agent value.
+
+| Function | Returns | What it computes | Needs |
+|---|---|---|---|
+| `all(c1, c2, ...)` | bool | True when every bool argument is true. | — |
+| `any(c1, c2, ...)` | bool | True when at least one bool argument is true. | — |
+| `gather(values, index)` | the type of `values` | `values[index]`: read another row of a per-agent value by integer index. | — |
+| `masked_add(value, delta, mask)` | the numeric type of `value` and `delta` (promoted) | `value + delta` where `mask` holds, `value` elsewhere. | — |
+| `masked_set(value, replacement, mask)` | the type of `value` (numeric pairs promote) | `replacement` where `mask` holds, `value` elsewhere. | — |
+| `one_hot(index, classes)` | vecNf of width `classes` | One-hot vector of width `classes` (a literal >= 2) with a 1.0 at `index`. | — |
+| `scatter(base, index, updates)` | the type of `base` | A copy of `base` with `updates` written at `index`. | — |
+| `where(condition, if_true, if_false)` | the branch type (numeric branches promote) | Select `if_true` where `condition` holds, else `if_false`; the branches must share a type. | — |
+
+### Sampling
+
+Random draws take the shape of their first argument; noise fields are deterministic in their inputs.
+
+| Function | Returns | What it computes | Needs |
+|---|---|---|---|
+| `normal_dist([mean[, std]])` | float | Gaussian draw; one draw per element of `mean`, a single scalar draw with no arguments. | — |
+| `perlin_noise(x[, y[, seed]])` | float | Deterministic 2-D Perlin gradient noise at `(x, y)`. | — |
+| `simplex_noise(x[, y[, seed]])` | float | Alias of `perlin_noise`: the same gradient-noise field, not a simplex lattice. | — |
+| `uniform([low[, high]])` | float | Uniform draw in `[low, high)` (`[0, 1)` with one or no arguments); one draw per element of `low`. | — |
+
+### Temporal
+
+History operators read the temporal history the VFS evaluator maintains; `time_in_window` measures a 24-tick day.
+
+| Function | Returns | What it computes | Needs |
+|---|---|---|---|
+| `delta(x)` | int when every argument is int, else float | `x - lag(x, 1)`, 0 on the first tick. | temporal history on the context |
+| `elapsed_ticks([start[, now]])` | int | Ticks since `start` (clamped at 0); `now` defaults to the engine step, and with no arguments the step itself. | the engine step counter on the context |
+| `ema(x, alpha)` | float | Exponential moving average of `x` with smoothing `alpha` in `(0, 1]`. | temporal history on the context |
+| `falling_edge(flag)` | bool | True on the tick `flag` turns from true to false. | temporal history on the context |
+| `lag(x, n)` | int when every argument is int, else float | The value `x` held `n` ticks ago (0 before the history is that deep). | temporal history on the context |
+| `moving_average(x, window)` | float | Mean of `x` over the last `window` ticks including this one. | temporal history on the context |
+| `phase_cos(time, period)` | float | `cos(2π · time / period)`. | — |
+| `phase_sin(time, period)` | float | `sin(2π · time / period)`. | — |
+| `rate_of_change(x, window)` | float | `(x - lag(x, window)) / window`. | temporal history on the context |
+| `rising_edge(flag)` | bool | True on the tick `flag` turns from false to true. | temporal history on the context |
+| `time_in_window(time, start, end)` | bool | True when `time` modulo a 24-tick day lies in `[start, end)`, wrapping past midnight. | — |
+
+### Spatial
+
+Vector variables only (`vec2i`, `vec3i`, `vec2f`, `vec3f`, `vecNi`, `vecNf`); the distance between two scalars is `abs(a - b)`. Both vectors must share a width: `vec2*` against `vec3*` is refused at compile time; a `vecN*` or `tensor2d` width is only known at run time, and a mismatch there raises an error naming the function. Int and float vectors mix freely and are measured in float.
+
+| Function | Returns | What it computes | Needs |
+|---|---|---|---|
+| `distance(a, b[, "manhattan" \| "euclidean"])` | float | Distance between two vector variables of one width, measured in float (default euclidean). | — |
+| `manhattan_distance(a, b)` | float | L1 distance between two vector variables of one width, measured in float. | — |
+| `nearest(point, candidates[, "manhattan" \| "euclidean"])` | int | Row index of the candidate nearest to `point`; `candidates` is a vector variable or a tensor2d of rows. | — |
+| `normalize(v)` | the float vector type of `v`'s width (vec2f, vec3f or vecNf) | `v` scaled to unit euclidean length (the zero vector stays zero). | — |
+| `within_radius(a, b, radius[, "manhattan" \| "euclidean"])` | bool | True when `distance(a, b)` is at most `radius`. | — |
+
+### Affordance
+
+Read the agent and affordance positions the engine threads into the context.
+
+| Function | Returns | What it computes | Needs |
+|---|---|---|---|
+| `direction_to_affordance("NAME"[, "manhattan" \| "euclidean"])` | vecNf of the substrate's position width | Unit vector from each agent towards the named affordance (zero at the affordance or when it is not deployed). | agent and affordance positions on the context |
+| `distance_to_affordance("NAME"[, "manhattan" \| "euclidean"])` | float | Each agent's distance to the named affordance (default manhattan); infinity when it is not deployed. | agent and affordance positions on the context |
+| `in_range("NAME", radius[, "manhattan" \| "euclidean"])` | bool | True for each agent within `radius` of the named affordance. | agent and affordance positions on the context |
+<!-- END GENERATED: expression-functions -->
+
 
 ## Type System
 
@@ -433,7 +468,7 @@ Types are inferred bottom-up from leaves to root:
 1. **Constants**: Inferred from Python type (`42` → `int`, `0.5` → `float`, `true` → `bool`)
 2. **Variables/Paths**: Looked up in schema (`bar.energy` → schema["bar.energy"] → `float`)
 3. **Operators**: Type-specific rules (see below)
-4. **Functions**: Signature lookup (Phase 2)
+4. **Functions**: Signature lookup in the registry `FUNCTION_SPECS` (see [Function Reference](#function-reference))
 
 ### Type Promotion
 
@@ -962,26 +997,17 @@ uv run pytest tests/test_townlet/performance/test_expression_benchmarks.py -v
 
 ## Future Extensions
 
-**Phase 2 - Domain-Specific Functions** (planned):
-- Spatial functions: `distance_to_affordance()`, `nearest_agent()`
+Not in the registry today (they fail at type check with `Unknown function`):
+
 - Inventory queries: `has_item()`, `count_items()`
-- Statistical functions: `mean()`, `sum()`, `count()`
-
-**Phase 3 - Vector Types** (planned):
-- `vec2i`, `vec3i` types for positions
-- Vector arithmetic: `position + velocity`
-- Magnitude: `length(vec)`, `normalize(vec)`
-
-**Phase 4 - Array Types** (planned):
-- List/array types: `list[int]`, `list[float]`
-- Index access type checking
-- Array functions: `len()`, `slice()`
-
-**Phase 5 - Lambda Expressions** (speculative):
-- Higher-order functions: `map()`, `filter()`, `reduce()`
-- Anonymous functions: `lambda x: x * 2`
+- Nearest-agent queries: `nearest_agent()`
+- Vector arithmetic with operators (`position + velocity`); vectors are consumed by the
+  spatial functions only
+- Array types (`list[int]`, `list[float]`), index-access type checking, `len()`, `slice()`
+- Lambda expressions and higher-order functions
 
 ---
+
 
 ## See Also
 

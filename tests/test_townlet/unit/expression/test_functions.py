@@ -48,8 +48,8 @@ def test_numeric_functions_produce_float():
 
 
 def test_normalize_and_arg_functions():
-    norm = _eval("normalize", 1.0, 1.0, 2.0)
-    assert torch.allclose(torch.sum(torch.abs(norm)), torch.tensor(1.0), atol=1e-6)
+    norm = _eval_expr("normalize(v)", {"v": torch.tensor([[3.0, 4.0], [0.0, 0.0]])}, None)
+    assert torch.allclose(norm, torch.tensor([[0.6, 0.8], [0.0, 0.0]]))
 
     assert _eval("argmin", 3.0, 1.0, 2.0).item() == 1
     assert _eval("argmax", 3.0, 1.0, 2.0).item() == 0
@@ -191,15 +191,17 @@ def test_typechecker_accepts_vtc_recommended_operator_signatures():
             "flag": "bool",
             "value": "float",
             "time": "float",
-            "position": "float",
-            "target": "float",
-            "candidates": "float",
+            "position": "vec2f",
+            "target": "vec2f",
+            "candidates": "tensor2d",
             "idx": "int",
         }
     )
 
     assert checker.check(parser.parse("where(flag, value, 0.0)")) == "float"
     assert checker.check(parser.parse("masked_add(value, 1.0, flag)")) == "float"
-    assert checker.check(parser.parse("one_hot(idx, 3)")) == "float"
+    assert checker.check(parser.parse("one_hot(idx, 3)")) == "vecNf"
     assert checker.check(parser.parse("nearest(position, candidates)")) == "int"
+    assert checker.check(parser.parse("distance(position, target)")) == "float"
+    assert checker.check(parser.parse("within_radius(position, target, 1.5)")) == "bool"
     assert checker.check(parser.parse("time_in_window(time, 9, 17)")) == "bool"

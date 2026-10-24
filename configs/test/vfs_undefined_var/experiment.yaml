@@ -4,8 +4,3 @@ experiment:
   metadata:
     name: "VFS Undefined Variable Test"
     description: "Tests undefined variable reference detection (should fail at compile time)"
-    author: "Tests"
-    created: "2025-11-21"
-    tags: ["test", "vfs", "edge-case"]
-  curriculum_levels:
-    - L0_undefined

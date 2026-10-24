@@ -34,8 +34,8 @@ class TestMeterMetadata:
     """Meter metadata helpers."""
 
     def test_get_meter_by_name(self):
-        metadata = MeterMetadata(meters=(MeterInfo(name="energy", index=0, critical=True, initial_value=1.0, observable=True),))
-        assert metadata.get_meter_by_name("energy").critical
+        metadata = MeterMetadata(meters=(MeterInfo(name="energy", index=0, initial_value=1.0, description="energy"),))
+        assert metadata.get_meter_by_name("energy").index == 0
         with pytest.raises(KeyError):
             metadata.get_meter_by_name("missing")
 
@@ -44,18 +44,8 @@ class TestAffordanceMetadata:
     """Affordance metadata helpers."""
 
     def test_lookup(self):
-        metadata = AffordanceMetadata(
-            affordances=(
-                AffordanceInfo(
-                    id="bed",
-                    name="Bed",
-                    enabled=True,
-                    cost=5.0,
-                    category="rest",
-                ),
-            )
-        )
-        assert metadata.get_affordance_by_name("Bed").enabled
+        metadata = AffordanceMetadata(affordances=(AffordanceInfo(id="bed", name="Bed"),))
+        assert metadata.get_affordance_by_name("Bed").id == "bed"
         with pytest.raises(KeyError):
             metadata.get_affordance_by_name("Shower")
 

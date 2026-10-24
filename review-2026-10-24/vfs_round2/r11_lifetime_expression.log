@@ -1,0 +1,9 @@
+
+===== R11a tick-lifetime expression read by an action-write condition =====
+step1: money=0.50 rich(after eval)=[True] hits via tick-lifetime cond=[0.0] via episode-lifetime cond=[0.0]
+step2: money=0.50 rich(after eval)=[True] hits via tick-lifetime cond=[0.0] via episode-lifetime cond=[1.0]
+step3: money=0.50 rich(after eval)=[True] hits via tick-lifetime cond=[0.0] via episode-lifetime cond=[2.0]
+
+===== R11b action write / transition rule targeting an expression variable =====
+compile: OK (no refusal for writes to an expression-owned variable)
+after ADVANCE: public_state=[1.0] derived=[2.0] (action wrote 100, rule wrote derived+50; both discarded)

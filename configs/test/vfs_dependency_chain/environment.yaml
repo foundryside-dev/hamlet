@@ -12,7 +12,3 @@ environment:
   modulation_graph: []
   affordances:
     - name: FOOD
-      description: Eat food
-      category: sustenance
-
-  cues: []

@@ -41,10 +41,4 @@ environment:
     # not through an affordance — F6 wants a runtime verb, and the item surface
     # already provides one.
     - name: WINTER_ONSET
-      description: "The only found route to bringing the winter process into existence"
-      category: shelter
     - name: HEARTH
-      description: "A landmark inside the indoor region"
-      category: shelter
-
-  cues: []

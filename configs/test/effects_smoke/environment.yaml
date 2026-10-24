@@ -17,10 +17,4 @@ environment:
   modulation_graph: []
   affordances:
     - name: BED
-      description: Rest to recover energy
-      category: rest
     - name: FOOD
-      description: Eat food
-      category: sustenance
-
-  cues: []

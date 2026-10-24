@@ -92,10 +92,6 @@ Two spellings of one idea, confirmed in source:
   override of the role list (`registry.py:645`) and does strictly less (S2).
 - `semantic_type: temporal` versus `expression: tick` + `cyclical_sin_cos`: the clock detector
   needs all three (`universe/declarations.py`), so the first is redundant.
-- `normalization` versus `clamp` versus `bounds`: a meter has `bounds` in `bars.yaml`, a
-  `range_type` in `environment.yaml` and gets a token normalization derived from both
-  (`environment_config.py:110-117`); a variable has `normalization` on the declaration and a
-  per-write `clamp`. Same fact, four homes.
 - `bar.energy` versus `energy`: `vtc_write_targets` registers a meter as an agent-scoped scalar
   with `meter=True` so both spellings resolve (`vtc.py:421-441`); profile expressions accept only
   `bar.energy`; a variable id equal to a meter name is refused (`SYMBOL_METER_COLLISION`).
@@ -440,8 +436,6 @@ State these so the next sprint does not relitigate them.
 - Refusals with codes, stages and `file:line`. The token-spec refusals should join this shape
   (F12), not the other way round.
 - Hash-gated resume. Add what is missing (F5, F13); do not weaken the gate.
-- The item arena as a per-profile, profile-qualified store. The spelling changes; the storage
-  design does not.
 
 ## 9. Provenance: meters were VFS variables in the original design
 
@@ -492,8 +486,13 @@ and effect durations lower to; boundary = scope. Two primitives VFS lacks and ec
 societies need: a paired `transfer: {from, to, amount}` between stocks, conservation by
 construction; and world-scope `invariants:` with the same breach policies as `bounds`. From the
 declarations the compiler can emit the stock-flow graph and refuse a reinforcing loop on an
-unbounded stock. Patterns then form the web form's vocabulary as macros over the same primitives:
-`meter`, `resource`, `timer`, `cycle`, `pool`, `relation`, `capacity`. Meadows' leverage points
-give the pack layout a reading: rates (curriculum tuning) are the weakest intervention, `bounds`
-are buffer sizes, rules are flow structure, effects are delays, exposure is the information
-flow (what L2 changes), reward is the system's goal.
+unbounded stock. These patterns are the F in VFS (owner, 2026-10-24): variables are the raw infrastructure,
+features are the helpers over them for authors who do not want to write their own expressions
+and rules. `meter`, `resource`, `timer`, `cycle`, `pool`, `relation`, `capacity` are features,
+each a macro over the same primitives, each the web form's vocabulary, each expandable by hand.
+VFS.md §4.2 still lists `FeatureDef` as a future extension and the token cut reused the word
+for a payload column (`ObservationFeature`, `DESCRIPTOR_BLOCK_FEATURES`); rename those to
+`payload field` so the layer gets its name back. Meadows' leverage points then read the pack:
+rates (curriculum tuning) are the weakest intervention, `bounds` are buffer sizes, rules are
+flow structure, effects are delays, exposure is the information flow (what L2 changes), reward
+is the system's goal.

@@ -41,16 +41,14 @@ over bar behaviour. Under zero backwards compatibility all three are free; the r
 right that every lock reopens on it, which is the argument for doing it early, not late.
 
 **On the owner's question, whether non-VFS variables were put back because fixing VFS was
-harder.** Not put back: never migrated. Meters predate VFS (`bars.yaml`, `environment.yaml`,
-the oracle). VFS.md §15.1 states the intent ("bars are variables, not the whole ontology") and no
-cut acted on it. The token cut then gave meters their own token type with a hand-built
-signature (depletion rates, bounds, recovery) instead of a variable descriptor, and every round
-since has tightened the shim rather than removing it: `bar.<name>` admitted as a second spelling
-in VTC writes (`vtc.py:421-441`), a meter-name collision refused at the symbol table
-(`SYMBOL_METER_COLLISION`), `range_type` on the meter mirroring VFS normalization kinds
-(`environment_config.py:79-117`), DAC with `bar:` and `variable:` as parallel references. Each
-was the smaller change at the time. Together they are the dual ontology this review names as
-change 3.
+harder.** The git record says the original VFS had meters as variables and the v2.1 compiler
+wiring took them out nine days later, without a stated reason; section 9 has the commits. Every
+round since has tightened the resulting shim rather than removing it: `bar.<name>` admitted as a
+second spelling in VTC writes (`vtc.py:421-441`), a meter-name collision refused at the symbol
+table (`SYMBOL_METER_COLLISION`), `range_type` on the meter mirroring VFS normalization kinds
+(`environment_config.py:79-117`), DAC with `bar:` and `variable:` as parallel references, a
+hand-built `meter` token signature instead of a variable descriptor. Each was the smaller change
+at the time. Together they are the dual ontology this review names as change 3.
 
 What should not change: the closed expression DSL with a compile-time type checker; the single
 roster with files as transport; `extra="forbid"` and no defaults; the three lifetimes; the frozen
@@ -435,3 +433,27 @@ State these so the next sprint does not relitigate them.
 - Hash-gated resume. Add what is missing (F5, F13); do not weaken the gate.
 - The item arena as a per-profile, profile-qualified store. The spelling changes; the storage
   design does not.
+
+## 9. Provenance: meters were VFS variables in the original design
+
+The owner asked whether meters were taken out of VFS because leaving them in was harder. The
+record, from `git log` and the archived plans:
+
+| date | commit | what it did |
+|---|---|---|
+| 2025-11-07 | `e8d43e22`, `a226d186`, `90ad6fb5` (TASK-002C, Cycles 1-6) | VFS lands. Every level ships a `variables_reference.yaml` declaring `energy`, `health`, `satiation`, `money`, `mood`, `social`, `fitness`, `hygiene` as `scope: agent`, `type: scalar`, `lifetime: episode` variables beside `position`, `grid_encoding`, `time_sin`, `time_cos`. The file header calls them "temporary reference variables (Cycle 0.2), scaffolding for dimension validation" |
+| 2025-11-07 | `74792b4e` "Integrate VFS into VectorizedHamletEnv, remove legacy ObservationBuilder" | The env requires `variables_reference.yaml` and writes every meter into the registry each step (`self.vfs_registry.set(meter_name, self.meters[:, idx], writer="engine")`). Meters are VFS variables at runtime, with `self.meters` still the authority |
+| 2025-11-07 | `3696562a` "Cycle 7 COMPLETE" | The plan's Cycle 7 was to replace the reference files with a permanent `configs/templates/variables.yaml` whose example declares `energy` with `writable_by: ["actions", "engine"]`, that is, a meter as an action-written variable. The commit instead "clarified reference variables as test infrastructure (not temporary scaffolding)" and kept them |
+| 2025-11-15 | `4f52de35` | The flat packs, reference files included, move to `configs_archive/` for the v2.1 migration |
+| 2025-11-16 | `a4eff57d` "finalize v2.1 compiler/runtime wiring" (one-line message, no rationale) | Deletes the `variables_reference` load and the per-meter registry sync from the env. Meters become `obs_<meter>` fields the compiler emits from the `environment.yaml` meter vocabulary; VFS variables become a separate `environment.variables` list (`deficit_energy`, `time_since_last_eat`) under v2.1 Decision 9, "vocabulary in `environment.yaml`, computation in VFS" |
+| 2025-11-23 | `VARIABLE_SUBSYSTEM.md` (vfs_uplift) | Still states the design: "standard system variables are auto-generated from substrate, bars, and affordances: meters: energy, health, ...", with examples reading `bar["energy"]` |
+| 2026-05-15 | `VFS.md` §15.1 | "Bars are variables, not the whole ontology", with `energy` as the §4.1 example variable |
+| 2026-08-22 | token design §1 | Meters get their own `meter` token type with a hand-built signature; `variable_element` gets the descriptor block. The split is now in the observation ABI |
+| 2026-08-24 | `UNIVERSE_AS_CODE` trio rewrite | Maps "meters/bars, depletion, physics are data" to "VFS variables + VTC programs", still describing meters as variables |
+| 2026-10-24 | VFS WP4 (`e90a85a4`) | A variable id equal to a meter name is refused at the symbol table: the two namespaces are now enforced as disjoint |
+
+So: meters entered VFS on day one, by design and at runtime; the plan's own permanent template
+declared a meter as an action-written variable; the v2.1 compiler migration removed the runtime
+path nine days later with no recorded reason while every design document kept saying meters are
+variables; and the last ten months built around the removal. The owner's reading is the one the
+record supports. Change 3 is restoration of the original design, not a new one.

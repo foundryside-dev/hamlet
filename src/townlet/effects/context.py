@@ -48,6 +48,9 @@ class ExecutionContext:
     rng: torch.Generator | None = None
     seed: int | None = None  # Optional deterministic seed for sampling
     affordance_overrides: dict[str, bool] | None = None  # Runtime affordance availability overrides
+    # Per-agent liveness of this pipeline: a `[num_agents]` bool tensor set by a masked
+    # `if`/`switch` branch, None when every row is live. Every write passes through it.
+    write_mask: torch.Tensor | None = None
 
     def __post_init__(self) -> None:
         if self.effect_manager is None:
@@ -63,6 +66,37 @@ class ExecutionContext:
         """Shallow copy with field overrides for child contexts."""
 
         return replace(self, **overrides)
+
+    # -- write mask ---------------------------------------------------------------------
+
+    def agent_row(self) -> int | None:
+        """The agent row this context addresses, or None when it addresses no agent."""
+        if self.target_index is not None and not self.target_is_item:
+            return self.target_index
+        if self.self_index is not None and not self.self_is_item:
+            return self.self_index
+        return None
+
+    def row_is_live(self, index: int) -> bool:
+        """Whether agent row `index` is live under the write mask."""
+        if self.write_mask is None:
+            return True
+        return bool(self.write_mask[index].item())
+
+    def require_whole_batch_live(self, what: str) -> None:
+        """A target with no per-agent axis can only be written when no row is masked out.
+
+        Writing it when some rows are live and others are not would collapse a
+        per-agent condition into one shared decision; refuse instead.
+        """
+        if self.write_mask is None or bool(self.write_mask.all().item()):
+            return
+        raise ValueError(
+            f"Cannot write {what} under a per-agent condition: the target has no per-agent row, "
+            f"but the enclosing if/switch holds for only some agents "
+            f"({int(self.write_mask.sum().item())} of {self.write_mask.numel()}). "
+            "Condition on a scalar (target./self.) value, or write a per-agent target."
+        )
 
     def get_path(self, path: str) -> torch.Tensor:
         """Resolve path to tensor value.
@@ -210,6 +244,7 @@ class ExecutionContext:
                 var_name = rest[len("vfs.") :]
                 if self.vfs_registry is None:
                     raise ValueError("VFS registry not set in context")
+                self.require_whole_batch_live(f"item variable '{path}'")
                 write_value = value.item() if isinstance(value, torch.Tensor) and value.numel() == 1 else value
                 profile_name = self.vfs_registry.get_item_profile_for_index(self.target_index)
                 if profile_name is None:
@@ -224,15 +259,11 @@ class ExecutionContext:
                 var_name = segments[0]
                 if len(segments) > 1:
                     raise ValueError(f"Setting target reference traversal '{rest}' is not supported.")
-                self._write_agent_vfs_value(var_name, self.target_index, value)
+                if self.row_is_live(self.target_index):
+                    self._write_agent_vfs_value(var_name, self.target_index, value)
                 return
 
-            original = self.get_path(rest)
-            if original.dim() > 0:
-                original[self.target_index] = value
-            else:
-                # Scalar case - need to replace
-                self.set_path(rest, value)
+            self._write_indexed(rest, self.target_index, value)
             return
 
         # NEW: Handle self. prefix with special logic for items
@@ -247,6 +278,7 @@ class ExecutionContext:
                 var_name = rest[len("vfs.") :]
                 if self.vfs_registry is None:
                     raise ValueError("VFS registry not set in context")
+                self.require_whole_batch_live(f"item variable '{path}'")
                 # Convert scalar tensors to Python floats for item VFS storage.
                 write_value = value.item() if isinstance(value, torch.Tensor) and value.numel() == 1 else value
                 profile_name = self.vfs_registry.get_item_profile_for_index(self.self_index)
@@ -262,16 +294,11 @@ class ExecutionContext:
                 var_name = segments[0]
                 if len(segments) > 1:
                     raise ValueError(f"Setting reference traversal '{rest}' is not supported.")
-                self._write_agent_vfs_value(var_name, self.self_index, value)
+                if self.row_is_live(self.self_index):
+                    self._write_agent_vfs_value(var_name, self.self_index, value)
                 return
 
-            # Default: Get original tensor and mutate in-place
-            original = self.get_path(rest)
-            if original.dim() > 0:
-                original[self.self_index] = value
-            else:
-                # Scalar case - need to replace
-                self.set_path(rest, value)
+            self._write_indexed(rest, self.self_index, value)
             return
 
         # Handle bar.* paths
@@ -279,7 +306,7 @@ class ExecutionContext:
             bar_name = path[len("bar.") :]
             if bar_name not in self.bars:
                 raise KeyError(f"Bar '{bar_name}' not found")
-            self.bars[bar_name] = value
+            self._write_batch(path, self.bars[bar_name], value)
             return
 
         # Handle affordance availability overrides
@@ -288,6 +315,7 @@ class ExecutionContext:
             if len(parts) != 3:
                 raise ValueError(f"Invalid affordance path: {path}")
             aff_name = parts[1]
+            self.require_whole_batch_live(f"affordance availability '{path}'")
             if self.affordance_overrides is None:
                 self.affordance_overrides = {}
             scalar_value: bool
@@ -317,13 +345,41 @@ class ExecutionContext:
                         f"Bare write '{path}' names agent-scoped variable '{var_name}' but this context has no agent "
                         f"target; an agent-scoped write is never a batch write. Write it as 'target.{path}'."
                     )
-                self._write_agent_vfs_value(var_name, self.target_index, value)
+                if self.row_is_live(self.target_index):
+                    self._write_agent_vfs_value(var_name, self.target_index, value)
                 return
 
+            self.require_whole_batch_live(f"global variable '{path}'")
             self.vfs_registry.set(var_name, value, writer="engine")
             return
 
         raise ValueError(f"Invalid path: {path}")
+
+    def _write_indexed(self, path: str, index: int, value: torch.Tensor) -> None:
+        """Write one agent's row of a batched path, or the whole value of a scalar path."""
+        original = self.get_path(path)
+        if original.dim() == 0:
+            self.set_path(path, value)
+            return
+        if self.row_is_live(index):
+            original[index] = value
+
+    def _write_batch(self, path: str, destination: torch.Tensor, value: torch.Tensor) -> None:
+        """Copy `value` into `destination` in place, broadcasting a scalar over the batch.
+
+        The stored tensor is never rebound: a rebind to an expanded view made the next
+        indexed write land on every agent (review-2026-10-24 effects F1).
+        """
+        if destination.dim() == 0:
+            self.require_whole_batch_live(f"scalar '{path}'")
+            destination.copy_(value)
+            return
+        if self.write_mask is None:
+            destination.copy_(value)
+            return
+        if self.write_mask.shape != destination.shape:
+            raise ValueError(f"Write mask shape {tuple(self.write_mask.shape)} does not match '{path}' shape {tuple(destination.shape)}")
+        destination.copy_(torch.where(self.write_mask, value.to(destination.dtype), destination))
 
     def _resolve_vfs_path(self, scope: str, index: int | None, segments: list[str], *, default_index: int | None = None) -> torch.Tensor:
         """Traverse VFS paths, including reference types."""

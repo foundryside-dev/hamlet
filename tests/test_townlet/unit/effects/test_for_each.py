@@ -1,5 +1,7 @@
 """Tests for for_each command."""
 
+from types import SimpleNamespace
+
 import pytest
 import torch
 
@@ -292,7 +294,7 @@ def test_for_each_inventory_items_skips_empty_and_uses_ints():
     class DummyVFS:
         def __init__(self):
             self.values = {"durability": torch.tensor([5.0, 6.0, 7.0])}
-            self.variables = {"durability": object()}
+            self.variables = {"durability": SimpleNamespace(scope="item")}
 
         def read_item(self, profile_name, name, vfs_index, *, reader):
             return self.values[name][vfs_index]

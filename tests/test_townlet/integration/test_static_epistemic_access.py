@@ -39,8 +39,8 @@ def test_witness_public_observation_hidden_named_reward_and_immutable_state(tmp_
         assert torch.all(rows[:, 0, 0] == 1)
         assert torch.all(rows[:, 0, value_lane] == 0)
         with pytest.raises(PermissionError, match="hidden_score"):
-            env.vfs_registry.get_agent("hidden_score", reader="agent")
-        assert torch.all(env.vfs_registry.get_agent("readable_unexposed", reader="agent") == 7)
+            env.vfs_registry.get("hidden_score", reader="agent")
+        assert torch.all(env.vfs_registry.get("readable_unexposed", reader="agent") == 7)
         with pytest.raises(PermissionError, match="immutable_scale"):
             env.vfs_registry.set_engine_value("immutable_scale", torch.tensor(0.5))
         observation, rewards, dones, info = env.step(torch.tensor([ids["ADVANCE"], ids["WAIT"]]))

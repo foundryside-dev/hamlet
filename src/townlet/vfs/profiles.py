@@ -27,8 +27,11 @@ __all__ = [
 # reference by bare name without declaring them as profile variables (token-obs design
 # ruling 6: the engine publishes ONE temporal primitive — tick). Ambient names are
 # admitted into the expression type schema but never become an in-profile dependency
-# edge — they aren't sorted, they're just always there. Item profiles do not get this
-# admission (item expressions refuse entirely — Task 6).
+# edge — they aren't sorted, they're just always there. Authored globals enter an agent
+# profile's schema the same way (see `compile_profile`'s `cross_scope`): the runtime
+# evaluates the global profile first and hands the agent profile the registry state, so
+# a global is an input, never a dependency edge. Item profiles do not get this admission
+# (item expressions refuse entirely — Task 6).
 AMBIENT_ENGINE_NAMES: dict[str, str] = {"tick": "float"}
 
 
@@ -251,12 +254,12 @@ class VFSProfileCompiler:
                 ast=None,
                 initial_value=var.initial_value,
                 result_type="float" if var.type == "scalar" else var.type,
-                shape=getattr(var, "shape", None),
-                initial_value_mode=getattr(var, "initial_value_mode", None),
-                initial_value_params=getattr(var, "initial_value_params", None),
-                dims=getattr(var, "dims", None),
-                semantic_type=getattr(var, "semantic_type", None),
-                normalization=getattr(var, "normalization", None),
+                shape=var.shape,
+                initial_value_mode=var.initial_value_mode,
+                initial_value_params=var.initial_value_params,
+                dims=var.dims,
+                semantic_type=var.semantic_type,
+                normalization=var.normalization,
             )
 
         # Variable with expression
@@ -282,26 +285,46 @@ class VFSProfileCompiler:
             ast=ast,
             initial_value=var.initial_value,
             result_type=result_type,
-            shape=getattr(var, "shape", None),
-            initial_value_mode=getattr(var, "initial_value_mode", None),
-            initial_value_params=getattr(var, "initial_value_params", None),
-            dims=getattr(var, "dims", None),
-            semantic_type=getattr(var, "semantic_type", None),
-            normalization=getattr(var, "normalization", None),
+            shape=var.shape,
+            initial_value_mode=var.initial_value_mode,
+            initial_value_params=var.initial_value_params,
+            dims=var.dims,
+            semantic_type=var.semantic_type,
+            normalization=var.normalization,
         )
 
     def compile_profile(
-        self, variables: Sequence[VariableDeclaration], bar_schema: dict[str, str] | None = None, *, evaluation_mode: str
+        self,
+        variables: Sequence[VariableDeclaration],
+        bar_schema: dict[str, str] | None = None,
+        *,
+        cross_scope: Sequence[VariableDeclaration],
     ) -> CompiledGlobalProfile:
         """Compile one global or agent expression group.
 
         Args:
             variables: Canonical declarations sharing the compiled storage scope
             bar_schema: Type schema for bars (e.g., {"energy": "float"})
+            cross_scope: The declarations of the other registry scope. Globals are
+                readable inputs for an agent profile; agent state is refused for a
+                global profile (scope widening), with a message naming both sides.
 
         Returns:
             Compiled profile with variables in dependency order
         """
+        scopes = {var.scope for var in variables}
+        if len(scopes) != 1:
+            raise ValueError(f"A profile compiles one registry scope at a time; got {sorted(str(scope) for scope in scopes)}")
+        (scope,) = scopes
+        if scope not in {VariableScope.GLOBAL, VariableScope.AGENT}:
+            raise ValueError(f"Variable expression execution supports global and agent scopes only; got {scope}")
+        other_scope = VariableScope.AGENT if scope == VariableScope.GLOBAL else VariableScope.GLOBAL
+        stray_scopes = {var.scope for var in cross_scope} - {other_scope}
+        if stray_scopes:
+            raise ValueError(
+                f"cross_scope for a {scope} profile holds {other_scope} declarations only; got {sorted(str(s) for s in stray_scopes)}"
+            )
+
         # Sort variables in dependency order
         sorted_vars, dependencies = self.topological_sort_with_dependencies(variables)
 
@@ -320,7 +343,31 @@ class VFSProfileCompiler:
         shapes = {"tick": "scalar"}
         if bar_schema:
             shapes.update({f"bar.{bar_name}": "agent" for bar_name in bar_schema})
+
+        # Cross-scope namespace. An agent expression reads every global by bare name
+        # with the global's declared type and a scalar (batch-free) shape; the runtime
+        # evaluates the global profile first and feeds the agent profile the registry
+        # state, so these are inputs, not dependency edges (build_dependency_graph only
+        # links same-profile ids). The reverse direction is scope widening: a global
+        # expression has no agent axis to hold per-agent state, so it refuses here, by
+        # name, before the type checker can only say "not found".
+        widening_ids: set[str] = set()
+        if scope == VariableScope.AGENT:
+            for global_var in cross_scope:
+                schema[global_var.id] = "float" if global_var.type == "scalar" else global_var.type
+                shapes[global_var.id] = "scalar" if global_var.type in {"scalar", "bool"} else "payload"
+        else:
+            widening_ids = {agent_var.id for agent_var in cross_scope}
+
         for var in sorted_vars:
+            if var.expression is not None and widening_ids:
+                widened = sorted(self._extract_variable_refs(var.expression) & widening_ids)
+                if widened:
+                    raise TypeCheckError(
+                        f"Variable '{var.id}' is global-scope but its expression reads agent-scope "
+                        f"variable(s) {widened}; a global expression cannot widen to per-agent state. "
+                        f"Declare '{var.id}' with scope agent, or read global state only."
+                    )
             compiled = self.compile_variable(var, schema)
             if compiled.ast is not None:
                 if var.type not in {"scalar", "bool"}:
@@ -337,10 +384,6 @@ class VFSProfileCompiler:
             schema[var.id] = "float" if var.type == "scalar" else var.type
             if var.type not in {"scalar", "bool"}:
                 shapes[var.id] = "payload"
-            elif evaluation_mode == "eager" and compiled.ast is None:
-                # The existing EAGER evaluator reinitializes static context from the
-                # literal, which has no agent axis. Refuse dependent shape mismatches.
-                shapes[var.id] = "scalar"
             else:
                 shapes[var.id] = "agent" if var.scope == VariableScope.AGENT else "scalar"
 

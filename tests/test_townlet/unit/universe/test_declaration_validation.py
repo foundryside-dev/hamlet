@@ -235,8 +235,6 @@ def test_profile_registration_error_uses_qualified_profile_origin(tmp_path: Path
         raw,
         variables=VariablesConfig(
             version="1.0",
-            evaluation_mode="mark_and_sweep",
-            debug_logging=False,
             extents={},
             item_profiles=["tool", "food"],
             declarations=declarations,

@@ -29,27 +29,58 @@ def build_symbol_table(raw: RawConfigsV21, source_map: SourceMap | None = None) 
             )
 
     env = raw.environment.environment
-    for meter in getattr(env, "meters", []) or []:
+    for meter in env.meters:
         _register(table.register_meter, meter, f"environment:{meter.name}")
 
-    for cascade in getattr(env, "cascade_graph", []) or []:
+    for cascade in env.cascade_graph:
         _register(table.register_cascade, cascade, f"environment:{cascade.source}->{cascade.target}")
 
-    for affordance in getattr(env, "affordances", []) or []:
+    for affordance in env.affordances:
         _register(table.register_affordance, affordance, f"environment:{affordance.name}")
 
     for variable in raw.variables.declarations:
         _register(table.register_variable, variable, variable_location_key(variable.profile, variable.id))
 
-    for action in getattr(raw.actions.actions, "custom_actions", []) or []:
+    for action in raw.actions.actions.custom_actions:
         _register(table.register_action, action, f"actions:{action.name}")
 
     if raw.items is not None:
-        for item in getattr(raw.items, "item_types", []) or []:
+        for item in raw.items.item_types:
             _register(table.register_item, item, f"items:{item.id}")
+
+    _refuse_meter_variable_collisions(table, errors, source_map)
 
     errors.check_and_raise()
     return table
+
+
+def _refuse_meter_variable_collisions(
+    table: UniverseSymbolTable,
+    errors: CompilationErrorCollector,
+    source_map: SourceMap | None,
+) -> None:
+    """Refuse a non-item variable whose id is a meter name, citing both declarations.
+
+    Meter bars and registry variables share one runtime state namespace: VTC
+    programs merge ``bars_state`` into ``vfs_state`` by bare name, and a VFS
+    expression ``energy`` reads the variable while a VTC expression ``energy``
+    reads the bar. Item variables are profile-qualified and never enter that
+    namespace, so ``register_variable`` keeps them apart and they are not checked.
+    """
+    for variable_id, variable in table.variables.items():
+        if variable_id not in table.meters:
+            continue
+        meter_origin = locate(source_map, f"environment:{variable_id}")
+        errors.add(
+            CompilationMessage(
+                code=ErrorCode.SYMBOL_METER_COLLISION,
+                message=(
+                    f"Variable '{variable_id}' ({variable.scope}) collides with the meter '{variable_id}' declared at "
+                    f"{meter_origin}. Meter bars and variables share one state namespace; rename one of them."
+                ),
+                location=locate(source_map, variable_location_key(None, variable_id)),
+            )
+        )
 
 
 def validate_dac_references(

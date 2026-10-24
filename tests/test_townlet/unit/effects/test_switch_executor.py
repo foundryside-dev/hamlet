@@ -23,7 +23,7 @@ def test_switch_executes_matching_case():
     )
 
     schema = {"bar.energy": "float"}
-    compiler = CommandCompiler(schema)
+    compiler = CommandCompiler(schema, agent_target=True)
     compiled = compiler.compile_command(switch_node)
 
     context = ExecutionContext(bars={"energy": torch.tensor(0.0)})
@@ -44,7 +44,7 @@ def test_switch_executes_default_when_no_match():
     )
 
     schema = {"bar.energy": "float"}
-    compiler = CommandCompiler(schema)
+    compiler = CommandCompiler(schema, agent_target=True)
     compiled = compiler.compile_command(switch_node)
 
     context = ExecutionContext(bars={"energy": torch.tensor(0.0)})

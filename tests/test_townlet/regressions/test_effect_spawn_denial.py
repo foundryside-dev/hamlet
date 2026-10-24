@@ -57,14 +57,14 @@ def _setup(policy: str) -> tuple[EffectManager, VariableRegistry, dict[str, torc
 
 
 def _write(path: str, value: str) -> CommandNode:
-    return CommandCompiler({"self.vfs.charge": "float", "bar.energy": "float"}).compile_command(
+    return CommandCompiler({"self.vfs.charge": "float", "bar.energy": "float"}, agent_target=True).compile_command(
         CommandNode(type=CommandType.MODIFY, path=path, value_expr=value)
     )
 
 
 def _pipeline_with_denial() -> list[CommandNode]:
     """Earlier mutation, RNG and scheduling expose a late authorization failure."""
-    compiler = CommandCompiler({"self.vfs.charge": "float", "bar.energy": "float"})
+    compiler = CommandCompiler({"self.vfs.charge": "float", "bar.energy": "float"}, agent_target=True)
     return compiler.compile_commands(
         [
             CommandNode(type=CommandType.MODIFY, path="bar.energy", value_expr="9.0"),
@@ -88,7 +88,7 @@ def test_denied_item_spawn_cannot_leave_a_live_effect(entry: str) -> None:
         if entry == "manager":
             manager.spawn_effect("charging", 1, 1.0, 0, bars=bars, vfs_registry=registry)
         else:
-            command = CommandCompiler({}).compile_command(
+            command = CommandCompiler({}, agent_target=True).compile_command(
                 CommandNode(type=CommandType.SPAWN_EFFECT, effect_id="charging", target_expr="1 + 0", intensity=1.0)
             )
             CommandExecutor().execute(command, ExecutionContext(bars=bars, vfs_registry=registry, effect_manager=manager))
@@ -154,7 +154,7 @@ def test_reapplication_does_not_authorize_unused_spawn_hook(policy: str) -> None
 
 
 def _child_spawn(target_expr: str) -> CommandNode:
-    return CommandCompiler({"bar.energy": "float"}).compile_command(
+    return CommandCompiler({"bar.energy": "float"}, agent_target=True).compile_command(
         CommandNode(type=CommandType.SPAWN_EFFECT, effect_id="child", target_expr=target_expr, intensity=1.0)
     )
 
@@ -186,7 +186,7 @@ def test_descendant_denial_restores_parent_reapplication_and_aliases(policy: str
     before_rng = torch.get_rng_state().clone()
     pipeline = [
         _write("bar.energy", "9.0"),
-        CommandCompiler({"bar.energy": "float"}).compile_command(
+        CommandCompiler({"bar.energy": "float"}, agent_target=True).compile_command(
             CommandNode(type=CommandType.DELAY, delay_ticks_expr="2", delay_commands=[_write("bar.energy", "7.0")])
         ),
         _child_spawn("where(uniform(0.0, 1.0) > -1.0, 1, 0)"),
@@ -247,7 +247,7 @@ def test_successful_cascade_with_disabled_item_service(entry: str) -> None:
     _add_child(manager)
     manager.catalog.effects["charging"].on_spawn = [_child_spawn("0")]
     if entry == "context":
-        command = CommandCompiler({}).compile_command(
+        command = CommandCompiler({}, agent_target=True).compile_command(
             CommandNode(type=CommandType.SPAWN_EFFECT, effect_id="charging", target=0, intensity=1.0)
         )
         CommandExecutor().execute(command, ExecutionContext(bars=bars, vfs_registry=registry, effect_manager=manager))
@@ -259,7 +259,7 @@ def test_successful_cascade_with_disabled_item_service(entry: str) -> None:
 def test_compiled_switch_cascade_denial_preserves_parent_state() -> None:
     manager, registry, bars = _setup("stack")
     _add_child(manager)
-    switch = CommandCompiler({"bar.energy": "float"}).compile_command(
+    switch = CommandCompiler({"bar.energy": "float"}, agent_target=True).compile_command(
         CommandNode(type=CommandType.SWITCH, switch_expr="1", cases=[("1", [_child_spawn("1")])])
     )
     # Execution consumes compiled branches; source diagnostics are not authority.

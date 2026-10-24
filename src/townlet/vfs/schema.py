@@ -48,9 +48,7 @@ class VariableScope(StrEnum):
     AGENT_PRIVATE = "agent_private"  # Hidden from agent observations
     ITEM = "item"  # Per-item state ([max_items, ...])
     PAIR = "pair"  # Directed agent-agent state ([num_agents, num_agents, ...])
-    GROUP = "group"  # Group/faction/team state ([num_groups, ...])
     AFFORDANCE = "affordance"  # Per-affordance-instance state ([num_affordances, ...])
-    ZONE = "zone"  # Per-zone state ([num_zones, ...])
     MESSAGE = "message"  # Recent communication buffer state ([num_agents, num_message_slots, ...])
 
 
@@ -391,10 +389,10 @@ class VariableDef(BaseModel):
         description="Direct policy exposure selection, independent of agent-read permission",
     )
 
-    scope: VariableScope | Literal["global", "agent", "agent_private", "item", "pair", "group", "affordance", "zone", "message"] = Field(
+    scope: VariableScope | Literal["global", "agent", "agent_private", "item", "pair", "affordance", "message"] = Field(
         description=(
             "Scope: global (shared), agent (per-agent public), agent_private (per-agent private), item (per-item), "
-            "pair (directed agent-agent), group, affordance, zone, or message"
+            "pair (directed agent-agent), affordance, or message"
         ),
     )
 
@@ -461,11 +459,6 @@ class VariableDef(BaseModel):
         description="Human-readable description of this variable",
     )
 
-    observable: bool = Field(
-        default=False,
-        description="Whether this variable should be included in agent observations (for mark-and-sweep evaluation)",
-    )
-
     @model_validator(mode="after")
     def validate_access_policy(self) -> "VariableDef":
         validate_static_access(self.id, self.readable_by, self.writable_by, self.exposed_to)
@@ -506,19 +499,16 @@ class VariableDef(BaseModel):
 
 
 class VFSScopeExtents(BaseModel):
-    """Storage extents for the zone/group/message variable scopes.
+    """Storage extent for the message variable scope.
 
-    Declared in the optional top-level ``extents:`` block of
-    the canonical variables declaration, which can declare variables with
-    these scopes. An extent is required exactly when a variable of the matching
-    scope is declared; the loader rejects the pack otherwise, so the failure is
+    Declared in the required ``extents:`` block of the canonical variables
+    declaration. ``num_message_slots`` is required exactly when a message-scope
+    variable is declared; the loader rejects the pack otherwise, so the failure is
     a compile error and never a green compile that crashes at env construction
-    (hamlet-9e1ae3b7a2).
+    (hamlet-9e1ae3b7a2). Affordance-scope rows have no authored extent: the
+    level's affordance count is the only authority.
     """
 
     model_config = ConfigDict(extra="forbid")
 
-    num_zones: int | None = Field(default=None, ge=1, description="Number of zone-scope storage rows")
-    num_groups: int | None = Field(default=None, ge=1, description="Number of group-scope storage rows")
     num_message_slots: int | None = Field(default=None, ge=1, description="Recent-message buffer slots per agent")
-    num_affordances: int | None = Field(default=None, ge=1, description="Number of affordance-scope storage rows")

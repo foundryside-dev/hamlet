@@ -18,7 +18,7 @@ def test_parallel_allows_disjoint_writes():
     node = CommandNode(type=CommandType.PARALLEL, parallel_commands=[branch1, branch2])
 
     schema = {"bar.a": "int", "bar.b": "int"}
-    compiler = CommandCompiler(schema)
+    compiler = CommandCompiler(schema, agent_target=True)
 
     compiled = compiler.compile_command(node)
     assert compiled.parallel_commands is not None
@@ -31,7 +31,7 @@ def test_parallel_rejects_conflicting_writes():
     node = CommandNode(type=CommandType.PARALLEL, parallel_commands=[branch1, branch2])
 
     schema = {"bar.a": "int"}
-    compiler = CommandCompiler(schema)
+    compiler = CommandCompiler(schema, agent_target=True)
 
     with pytest.raises(TypeCheckError, match="same targets"):
         compiler.compile_command(node)

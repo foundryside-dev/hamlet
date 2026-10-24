@@ -8,18 +8,7 @@ Phase 2: Derivation graphs, complex types, expression evaluation
 """
 
 from townlet.vfs import vtc_kernels
-from townlet.vfs.communication import canonical_l6_message_variables
-from townlet.vfs.dynamic_needs import canonical_fixed_slot_dynamic_need_variables
-from townlet.vfs.generalisation import (
-    VFSGeneralisationPack,
-    VFSGeneralisationReport,
-    VFSGeneralisationSignature,
-    assert_held_out_generalisation_split,
-    build_vfs_generalisation_signature,
-    operator_grammar_signature,
-)
-from townlet.vfs.registry import DynamicVariableMutation, VariableRegistry, VFSRegistryProtocol
-from townlet.vfs.relational import canonical_l5_relational_variables
+from townlet.vfs.registry import VariableRegistry
 from townlet.vfs.schema import (
     NormalizationSpec,
     VariableDef,
@@ -42,7 +31,6 @@ from townlet.vfs.vtc import (
     CompiledVTCInteractionProgress,
     CompiledVTCModulation,
     CompiledVTCPassiveDepletion,
-    CompiledVTCRewardComponent,
     CompiledVTCSocialResidueRule,
     CompiledVTCTerminalCondition,
     CompiledVTCThresholdCascade,
@@ -57,7 +45,6 @@ from townlet.vfs.vtc import (
     VTCModulationSource,
     VTCPassiveDepletionProgram,
     VTCPassiveDepletionSource,
-    VTCRewardConfigSource,
     VTCRewardProgram,
     VTCSocialResidueProgram,
     VTCSocialResidueSource,
@@ -65,6 +52,7 @@ from townlet.vfs.vtc import (
     VTCTerminalConditionSource,
     VTCThresholdCascadeProgram,
     VTCThresholdCascadeSource,
+    VTCWriteTarget,
     compile_vtc_action_writes,
     compile_vtc_action_writes_with_phase_graph,
     compile_vtc_affordance_gates,
@@ -77,14 +65,13 @@ from townlet.vfs.vtc import (
     compile_vtc_modulations_with_phase_graph,
     compile_vtc_passive_depletions,
     compile_vtc_passive_depletions_with_phase_graph,
-    compile_vtc_reward_components,
-    compile_vtc_reward_components_with_phase_graph,
     compile_vtc_social_residue_rules,
     compile_vtc_social_residue_rules_with_phase_graph,
     compile_vtc_terminal_conditions,
     compile_vtc_terminal_conditions_with_phase_graph,
     compile_vtc_threshold_cascades,
     compile_vtc_threshold_cascades_with_phase_graph,
+    vtc_write_targets,
 )
 
 __all__ = [
@@ -94,12 +81,10 @@ __all__ = [
     "CompiledVTCInteractionProgress",
     "CompiledVTCModulation",
     "CompiledVTCPassiveDepletion",
-    "CompiledVTCRewardComponent",
     "CompiledVTCSocialResidueRule",
     "CompiledVTCTerminalCondition",
     "CompiledVTCThresholdCascade",
     "DEFAULT_TRANSITION_PHASES",
-    "DynamicVariableMutation",
     "NormalizationSpec",
     "VariableDef",
     "VariableRegistry",
@@ -115,7 +100,6 @@ __all__ = [
     "VTCModulationSource",
     "VTCPassiveDepletionProgram",
     "VTCPassiveDepletionSource",
-    "VTCRewardConfigSource",
     "VTCRewardProgram",
     "VTCSocialResidueProgram",
     "VTCSocialResidueSource",
@@ -123,16 +107,8 @@ __all__ = [
     "VTCTerminalConditionSource",
     "VTCThresholdCascadeProgram",
     "VTCThresholdCascadeSource",
-    "VFSRegistryProtocol",
-    "VFSGeneralisationPack",
-    "VFSGeneralisationReport",
-    "VFSGeneralisationSignature",
+    "VTCWriteTarget",
     "WriteSpec",
-    "assert_held_out_generalisation_split",
-    "build_vfs_generalisation_signature",
-    "canonical_fixed_slot_dynamic_need_variables",
-    "canonical_l6_message_variables",
-    "canonical_l5_relational_variables",
     "canonical_action_schema",
     "canonical_transition_graph_schema",
     "canonical_variable_schema",
@@ -140,7 +116,6 @@ __all__ = [
     "compute_transition_graph_hash",
     "compute_variable_schema_hash",
     "compute_vfs_hash",
-    "operator_grammar_signature",
     "compile_vtc_action_writes",
     "compile_vtc_action_writes_with_phase_graph",
     "compile_vtc_affordance_occupancy",
@@ -153,8 +128,6 @@ __all__ = [
     "compile_vtc_modulations_with_phase_graph",
     "compile_vtc_passive_depletions",
     "compile_vtc_passive_depletions_with_phase_graph",
-    "compile_vtc_reward_components",
-    "compile_vtc_reward_components_with_phase_graph",
     "compile_vtc_social_residue_rules",
     "compile_vtc_social_residue_rules_with_phase_graph",
     "compile_vtc_terminal_conditions",
@@ -162,4 +135,5 @@ __all__ = [
     "compile_vtc_threshold_cascades",
     "compile_vtc_threshold_cascades_with_phase_graph",
     "vtc_kernels",
+    "vtc_write_targets",
 ]

@@ -6,35 +6,28 @@ and scope semantics. It handles these scope patterns:
 - global: Single value shared by all agents (shape [] or [dims])
 - agent: Per-agent values, observable by all (shape [num_agents] or [num_agents, dims])
 - agent_private: Per-agent values, excluded from policy observation (shape [num_agents] or [num_agents, dims])
-- pair: Directed agent-agent values (dense shape [num_agents, num_agents, ...] or sparse shape [num_pair_edges, ...])
-- group: Group/faction/team values (shape [num_groups, ...])
+- pair: Directed agent-agent values (shape [num_agents, num_agents, ...])
 - affordance: Per-affordance-instance values (shape [num_affordances, ...])
-- zone: Per-zone values (shape [num_zones, ...])
 - message: Recent message buffer values (shape [num_agents, num_message_slots, ...])
 """
 
 from __future__ import annotations
 
-from collections.abc import Sequence
 from collections.abc import Set as AbstractSet
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Literal, Protocol, runtime_checkable
+from typing import Any
 
 import torch
 
 from townlet.vfs.access_policy import validate_static_access
 from townlet.vfs.schema import VariableDef, VariableScope
 from townlet.vfs.schema_hashes import compute_variable_schema_hash
-
-if TYPE_CHECKING:
-    pass  # CompiledItemProfile not needed for type checking
+from townlet.vfs.storage_dtype import storage_dtype
 
 __all__ = [
     "VariableRegistry",
     "ScopeArena",
-    "VFSRegistryProtocol",
-    "DynamicVariableMutation",
 ]
 
 
@@ -72,40 +65,6 @@ class ScopeArena:
     index: dict[str, tuple[int, int]]
 
 
-NetworkShapeEffect = Literal["shape_stable_internal", "observation_schema_changed"]
-_NETWORK_SHAPE_EFFECTS = {"shape_stable_internal", "observation_schema_changed"}
-
-
-@dataclass(frozen=True)
-class DynamicVariableMutation:
-    """Audit record for an explicitly gated runtime variable mutation."""
-
-    operation: Literal["add", "remove"]
-    variable_id: str
-    network_shape_effect: NetworkShapeEffect
-    shape: tuple[int, ...]
-    dtype: str
-    variable_schema_hash: str
-
-
-@runtime_checkable
-class VFSRegistryProtocol(Protocol):
-    """Observation-facing registry contract shared by runtime registry variants."""
-
-    device: torch.device
-    item_vfs: torch.Tensor | None
-    item_profile_map: dict[str, dict[str, int]]
-    item_vfs_index_to_profile: dict[int, str]
-
-    def list_global(self) -> list[str]: ...
-
-    def get_global(self, name: str, *, reader: str) -> torch.Tensor: ...
-
-    def list_agent(self) -> list[str]: ...
-
-    def get_agent(self, name: str, *, reader: str) -> torch.Tensor: ...
-
-
 class VariableRegistry:
     """Runtime storage for VFS variables with access control.
 
@@ -134,13 +93,8 @@ class VariableRegistry:
         device: torch.device,
         max_items: int = 0,
         item_profiles: dict[str, Any] | None = None,
-        num_groups: int = 0,
         num_affordances: int = 0,
-        num_zones: int = 0,
         num_message_slots: int = 0,
-        dynamic_variable_mode: bool = False,
-        pair_storage_mode: Literal["dense", "sparse"] = "dense",
-        pair_edges: torch.Tensor | Sequence[Sequence[int]] | None = None,
     ):
         """Initialize variable registry.
 
@@ -150,26 +104,15 @@ class VariableRegistry:
             device: PyTorch device (cpu or cuda)
             max_items: Maximum items (for item-scoped variables)
             item_profiles: Compiled item profiles (profile_name → CompiledItemProfile)
-            num_groups: Number of group-scope rows
             num_affordances: Number of affordance-scope rows
-            num_zones: Number of zone-scope rows
             num_message_slots: Number of recent-message buffer slots per agent
-            dynamic_variable_mode: Allow explicit add/remove of variable definitions during a run
-            pair_storage_mode: Pair-scope allocation strategy, either dense all-pairs or sparse edge rows
-            pair_edges: Directed pair edges as [num_pair_edges, 2], required for sparse pair variables
         """
         self.num_agents = num_agents
         self.max_items = max_items
-        self.num_groups = num_groups
         self.num_affordances = num_affordances
-        self.num_zones = num_zones
         self.num_message_slots = num_message_slots
-        self.dynamic_variable_mode = dynamic_variable_mode
-        self.pair_storage_mode = pair_storage_mode
         self.device = device
         self.item_profiles: dict[str, Any] = item_profiles or {}  # Store compiled profiles
-        self._dynamic_variable_mutations: list[DynamicVariableMutation] = []
-        self.variable_schema_generation = 0
         # Guardrail for tensor allocations
         self._max_tensor_elements = 1_000_000
 
@@ -199,10 +142,6 @@ class VariableRegistry:
                 variable.writable_by = policy.writable_by
                 variable.exposed_to = policy.exposed_to
 
-        self._pair_edges: torch.Tensor | None = None
-        self._pair_edge_to_index: dict[tuple[int, int], int] = {}
-        self._initialize_pair_storage_index(pair_edges)
-
         # Initialize storage tensors. Per-scope arenas are allocated FIRST so that
         # float32-typed global/agent variables can be stored as views into them
         # (token-obs unit 3, Task 8 — see ScopeArena).
@@ -213,18 +152,13 @@ class VariableRegistry:
         self._arena_backed: dict[str, str] = {}  # variable id -> arena scope key
         self._initialize_scope_arenas()
         self._initialize_storage()
-        self._initial_storage: dict[str, torch.Tensor] = {name: value.clone() for name, value in self._storage.items()}
 
         # Initialize item-scoped storage
         self.item_vfs: torch.Tensor | None = None
-        self.item_var_to_index: dict[str, int] = {}
         self.item_profile_map: dict[str, dict[str, int]] = {}  # {profile_name → {var_name → index}}
         self.item_profile_type_map: dict[str, dict[str, str]] = {}  # {profile_name → {var_name → type}}
         self.item_vfs_index_to_profile: dict[int, str] = {}  # {vfs_index → profile_name}
         self._initialize_item_storage_from_profiles()
-
-        # Guardrail for tensor allocations
-        self._max_tensor_elements = 1_000_000
 
     @property
     def variables(self) -> dict[str, VariableDef]:
@@ -246,11 +180,6 @@ class VariableRegistry:
         return self._definitions
 
     @property
-    def dynamic_variable_mutations(self) -> tuple[DynamicVariableMutation, ...]:
-        """Return runtime variable mutation audit records."""
-        return tuple(self._dynamic_variable_mutations)
-
-    @property
     def variable_schema_hash(self) -> str:
         """Return the current variable schema hash for this registry."""
         definitions = [
@@ -264,195 +193,6 @@ class VariableRegistry:
             for name, definition in self._definitions.items()
         ]
         return compute_variable_schema_hash(definitions, self._identity_item_profiles)
-
-    def _initialize_pair_storage_index(self, pair_edges: torch.Tensor | Sequence[Sequence[int]] | None) -> None:
-        """Validate and store sparse pair topology metadata."""
-        if self.pair_storage_mode not in {"dense", "sparse"}:
-            raise ValueError("pair_storage_mode must be either 'dense' or 'sparse'")
-
-        has_pair_variables = any(VariableScope(var.scope) == VariableScope.PAIR for var in self._definitions.values())
-
-        if self.pair_storage_mode == "dense":
-            if pair_edges is not None:
-                raise ValueError("pair_edges may only be provided when pair_storage_mode='sparse'")
-            return
-
-        if pair_edges is None:
-            if has_pair_variables:
-                raise ValueError("pair_edges must be provided when pair_storage_mode='sparse' and pair variables are declared")
-            self._pair_edges = torch.empty((0, 2), dtype=torch.long, device=self.device)
-            return
-
-        self._pair_edges = self._coerce_pair_edges(pair_edges)
-        self._pair_edge_to_index = {
-            (int(source_agent), int(target_agent)): edge_index
-            for edge_index, (source_agent, target_agent) in enumerate(self._pair_edges.detach().cpu().tolist())
-        }
-
-    def _coerce_pair_edges(self, pair_edges: torch.Tensor | Sequence[Sequence[int]]) -> torch.Tensor:
-        """Return validated directed pair edges as a long tensor on the registry device."""
-        if isinstance(pair_edges, torch.Tensor):
-            raw_edges = pair_edges.to(device=self.device)
-        elif len(pair_edges) == 0:
-            raw_edges = torch.empty((0, 2), dtype=torch.long, device=self.device)
-        else:
-            raw_edges = torch.as_tensor(pair_edges, device=self.device)
-
-        if raw_edges.dtype.is_floating_point or raw_edges.dtype.is_complex or raw_edges.dtype == torch.bool:
-            raise ValueError("pair_edges must contain integer agent indices")
-        if raw_edges.ndim != 2 or raw_edges.shape[1] != 2:
-            raise ValueError(f"pair_edges must have shape [num_pair_edges, 2], got {tuple(raw_edges.shape)}")
-
-        edges = raw_edges.to(dtype=torch.long).contiguous()
-        if edges.numel() > 0 and ((edges < 0).any() or (edges >= self.num_agents).any()):
-            raise ValueError(f"pair_edges contain agent indices out of range for num_agents={self.num_agents}")
-
-        seen_edges: set[tuple[int, int]] = set()
-        for source_agent, target_agent in edges.detach().cpu().tolist():
-            edge = (int(source_agent), int(target_agent))
-            if edge in seen_edges:
-                raise ValueError(f"pair_edges contain duplicate directed edge {edge}")
-            seen_edges.add(edge)
-
-        return edges
-
-    def _require_sparse_pair_edges(self) -> torch.Tensor:
-        """Return sparse pair edges or fail loudly when pair storage is dense."""
-        if self.pair_storage_mode != "sparse" or self._pair_edges is None:
-            raise ValueError("Sparse pair edge metadata requires pair_storage_mode='sparse'")
-        return self._pair_edges
-
-    def get_pair_edges(self) -> torch.Tensor:
-        """Return directed sparse pair edges as [num_pair_edges, 2]."""
-        return self._require_sparse_pair_edges().clone()
-
-    def get_pair_mask(self) -> torch.Tensor:
-        """Return a dense boolean neighbourhood mask for sparse pair edges."""
-        pair_edges = self._require_sparse_pair_edges()
-        mask = torch.zeros((self.num_agents, self.num_agents), dtype=torch.bool, device=self.device)
-        if pair_edges.numel() > 0:
-            mask[pair_edges[:, 0], pair_edges[:, 1]] = True
-        return mask
-
-    def get_pair_edge_index(self, source_agent: int, target_agent: int) -> int:
-        """Return the sparse row index for a directed active pair relationship."""
-        self._require_sparse_pair_edges()
-        edge = (int(source_agent), int(target_agent))
-        if edge not in self._pair_edge_to_index:
-            raise KeyError(f"Pair edge {edge} is not active in sparse pair storage")
-        return self._pair_edge_to_index[edge]
-
-    def materialize_pair_dense(self, variable_id: str, reader: str, fill_value: float | int | bool | None = None) -> torch.Tensor:
-        """Materialize a sparse pair variable into a dense diagnostic view."""
-        if variable_id not in self._definitions:
-            raise KeyError(f"Variable '{variable_id}' not found in registry")
-
-        var_def = self._definitions[variable_id]
-        if VariableScope(var_def.scope) != VariableScope.PAIR:
-            raise ValueError(f"Variable '{variable_id}' is not pair-scoped (scope: {var_def.scope})")
-
-        pair_edges = self._require_sparse_pair_edges()
-        sparse_values = self.get(variable_id, reader=reader)
-        dense_shape = (self.num_agents, self.num_agents, *tuple(sparse_values.shape[1:]))
-        dense = torch.full(
-            dense_shape,
-            self._pair_dense_fill_value(var_def) if fill_value is None else fill_value,
-            dtype=sparse_values.dtype,
-            device=self.device,
-        )
-        if pair_edges.numel() > 0:
-            dense[pair_edges[:, 0], pair_edges[:, 1]] = sparse_values
-        return dense
-
-    def _pair_dense_fill_value(self, var_def: VariableDef) -> float | int | bool:
-        """Return a scalar fill value for sparse-pair dense diagnostic views."""
-        if var_def.type in ("agent_ref", "item_ref", "affordance_ref", "effect_ref"):
-            return -1 if var_def.default is None else int(var_def.default)
-        if var_def.type == "bool":
-            return bool(var_def.default)
-        if isinstance(var_def.default, bool):
-            return bool(var_def.default)
-        if isinstance(var_def.default, int):
-            return int(var_def.default)
-        if isinstance(var_def.default, float):
-            return float(var_def.default)
-        return 0
-
-    def add_variable(self, var_def: VariableDef, *, network_shape_effect: NetworkShapeEffect) -> None:
-        """Add a variable definition and storage tensor during a dynamic-variable run."""
-        self._require_dynamic_variable_mode()
-        self._validate_network_shape_effect(var_def, network_shape_effect)
-        if var_def.id in self._definitions:
-            raise ValueError(f"Variable '{var_def.id}' already exists in registry")
-
-        policy = _snapshot_access_policy(var_def.id, var_def)
-        tensor = self._build_storage_tensor(var_def)
-        self._access_policies[var_def.id] = policy
-        self._definitions[var_def.id] = var_def
-        self._storage[var_def.id] = tensor
-        self._expected_shapes[var_def.id] = tensor.shape
-        self._expected_dtypes[var_def.id] = tensor.dtype
-        self._initial_storage[var_def.id] = tensor.clone()
-        self._record_dynamic_variable_mutation("add", var_def, network_shape_effect, tensor)
-
-    def remove_variable(self, variable_id: str, *, network_shape_effect: NetworkShapeEffect) -> None:
-        """Remove a variable definition and its storage during a dynamic-variable run."""
-        self._require_dynamic_variable_mode()
-        if variable_id not in self._definitions:
-            raise KeyError(f"Variable '{variable_id}' not found in registry")
-
-        var_def = self._definitions[variable_id]
-        self._validate_network_shape_effect(var_def, network_shape_effect)
-        tensor = self._storage[variable_id]
-        del self._access_policies[variable_id]
-        del self._definitions[variable_id]
-        del self._storage[variable_id]
-        del self._expected_shapes[variable_id]
-        del self._expected_dtypes[variable_id]
-        del self._initial_storage[variable_id]
-        scope_key = self._arena_backed.pop(variable_id, None)
-        if scope_key is not None:
-            # The arena column is orphaned, not reallocated. It stays readable through
-            # already-compiled publisher bindings (their column indices are frozen at
-            # construction and would serve the stale value) — which is exactly what the
-            # observation_schema_changed acknowledgment on this removal covers.
-            del self._scope_arenas[scope_key].index[variable_id]
-        self._record_dynamic_variable_mutation("remove", var_def, network_shape_effect, tensor)
-
-    def _require_dynamic_variable_mode(self) -> None:
-        if not self.dynamic_variable_mode:
-            raise ValueError("Runtime variable mutations require VariableRegistry(dynamic_variable_mode=True)")
-
-    def _validate_network_shape_effect(self, var_def: VariableDef, network_shape_effect: NetworkShapeEffect) -> None:
-        if network_shape_effect not in _NETWORK_SHAPE_EFFECTS:
-            raise ValueError(f"network_shape_effect must be one of {sorted(_NETWORK_SHAPE_EFFECTS)}")
-        if self._can_change_observation_schema(var_def) and network_shape_effect != "observation_schema_changed":
-            raise ValueError(
-                f"Variable '{var_def.id}' is agent-observable; dynamic add/remove must use "
-                "network_shape_effect='observation_schema_changed'"
-            )
-
-    def _can_change_observation_schema(self, var_def: VariableDef) -> bool:
-        return bool(var_def.observable or "agent" in var_def.exposed_to)
-
-    def _record_dynamic_variable_mutation(
-        self,
-        operation: Literal["add", "remove"],
-        var_def: VariableDef,
-        network_shape_effect: NetworkShapeEffect,
-        tensor: torch.Tensor,
-    ) -> None:
-        self.variable_schema_generation += 1
-        self._dynamic_variable_mutations.append(
-            DynamicVariableMutation(
-                operation=operation,
-                variable_id=var_def.id,
-                network_shape_effect=network_shape_effect,
-                shape=tuple(tensor.shape),
-                dtype=str(tensor.dtype),
-                variable_schema_hash=self.variable_schema_hash,
-            )
-        )
 
     @property
     def scope_arenas(self) -> dict[str, ScopeArena]:
@@ -484,11 +224,7 @@ class VariableRegistry:
     @staticmethod
     def _storage_dtype(var_def: VariableDef) -> torch.dtype:
         """The dtype _build_storage_tensor will allocate, decided without building it."""
-        if var_def.type in ("agent_ref", "item_ref", "affordance_ref", "effect_ref", "vecNi", "vec2i", "vec3i"):
-            return torch.long
-        if var_def.type == "bool":
-            return torch.bool
-        return torch.float32
+        return storage_dtype(var_def.type)
 
     def _arena_element_count(self, var_def: VariableDef) -> int:
         """Per-row element count: the declared shape with the scope prefix stripped."""
@@ -500,12 +236,7 @@ class VariableRegistry:
         return count
 
     def _initialize_scope_arenas(self) -> None:
-        """Allocate the global/agent arenas from construction-time declarations.
-
-        Variables added later through dynamic_variable_mode are never arena-backed —
-        compiled token slot bindings are static, so nothing can observe them through the
-        arena path.
-        """
+        """Allocate the global/agent arenas from the declarations."""
         layouts: dict[str, dict[str, tuple[int, int]]] = {"global": {}, "agent": {}}
         offsets = {"global": 0, "agent": 0}
         for var_id, var_def in self._definitions.items():
@@ -624,15 +355,9 @@ class VariableRegistry:
         if scope in (VariableScope.AGENT, VariableScope.AGENT_PRIVATE):
             return (self.num_agents,)
         if scope == VariableScope.PAIR:
-            if self.pair_storage_mode == "sparse":
-                return (self._require_sparse_pair_edges().shape[0],)
             return (self.num_agents, self.num_agents)
-        if scope == VariableScope.GROUP:
-            return (self._positive_extent(var_def, "num_groups"),)
         if scope == VariableScope.AFFORDANCE:
             return (self._positive_extent(var_def, "num_affordances"),)
-        if scope == VariableScope.ZONE:
-            return (self._positive_extent(var_def, "num_zones"),)
         if scope == VariableScope.MESSAGE:
             return (self.num_agents, self._positive_extent(var_def, "num_message_slots"))
         if scope == VariableScope.ITEM:
@@ -705,60 +430,55 @@ class VariableRegistry:
             raise KeyError(f"Variable '{variable_id}' not found in registry")
 
         self.authorize_write(variable_id, writer=writer)
-
-        expected_shape = self._expected_shapes[variable_id]
-        expected_dtype = self._expected_dtypes[variable_id]
-
-        if value.shape != expected_shape:
-            raise ValueError(f"Value for '{variable_id}' has shape {tuple(value.shape)}, expected {tuple(expected_shape)}")
-
-        if value.dtype != expected_dtype:
-            raise ValueError(f"Value for '{variable_id}' has dtype {value.dtype}, expected {expected_dtype}")
-
-        # Update storage (in place for arena-backed variables; defensive copy otherwise)
+        self._validate_write(variable_id, value)
         self._write_storage(variable_id, value.to(self.device))
 
     def set_engine_value(self, variable_id: str, value: torch.Tensor) -> None:
-        """Write evaluator output as the engine, enforcing the declared element shape.
+        """Write evaluator/VTC output as the engine under the same checks as ``set``.
 
-        Public, permission-checked writeback path for VTC/evaluator write-backs, kept
-        separate from the environment hot path's direct storage mutation. Prior to
-        hamlet-d970ef83f0 this bypassed the declared-shape check for non-sparse-pair
-        variables (docstring used to bless "per-agent batches for variables declared as
-        global scalars"); that bypass let storage drift permanently from
-        `_expected_shapes`, corrupting state whose shape then depended on writer identity.
-        A variable whose expression is genuinely per-agent must be declared agent-scoped,
-        not written through a global declaration.
+        Public, permission-checked write-back path for VTC commits and profile
+        expression write-backs. It validates the declared shape and dtype exactly as
+        ``set`` does — it neither bypasses the element shape (hamlet-d970ef83f0: a
+        global scalar cannot hold a per-agent batch; declare the variable agent-scoped)
+        nor coerces dtype (hamlet-2ca2cb373f: a float into a bool target is refused,
+        not truncated). Callers produce storage-typed values; the one admitted
+        conversion, integer widening into float32, lives in ``to_storage_dtype``.
         """
         if variable_id not in self._definitions:
             raise KeyError(f"Variable '{variable_id}' not found in registry")
 
         self.authorize_write(variable_id, writer="engine")
+        self._validate_write(variable_id, value)
+        self._write_storage(variable_id, value.to(self.device))
 
-        expected_dtype = self._expected_dtypes[variable_id]
+    def _validate_write(self, variable_id: str, value: torch.Tensor) -> None:
+        """The one shape-and-dtype check every registry write passes through."""
         expected_shape = self._expected_shapes[variable_id]
+        expected_dtype = self._expected_dtypes[variable_id]
         if value.shape != expected_shape:
-            raise ValueError(
-                f"Engine write for '{variable_id}' has shape {tuple(value.shape)}, expected {tuple(expected_shape)}.\n"
-                "  Rule: set_engine_value no longer bypasses the declared element shape "
-                "(hamlet-d970ef83f0) — a global scalar can no longer legally hold a per-agent "
-                "batch. If the expression is genuinely per-agent, declare the variable "
-                "agent-scoped instead of global."
-            )
-        self._write_storage(variable_id, value.to(device=self.device, dtype=expected_dtype))
+            raise ValueError(f"Value for '{variable_id}' has shape {tuple(value.shape)}, expected {tuple(expected_shape)}")
+        if value.dtype != expected_dtype:
+            raise ValueError(f"Value for '{variable_id}' has dtype {value.dtype}, expected {expected_dtype}")
 
     def reset_tick_scoped(self) -> None:
-        """Restore tick-lifetime variables to their configured defaults."""
+        """Re-initialize tick-lifetime variables."""
         self._reset_lifetimes({"tick"})
 
     def reset_episode_scoped(self) -> None:
-        """Restore episode-start variables while preserving persistent state."""
+        """Re-initialize tick- and episode-lifetime variables; persistent state is kept."""
         self._reset_lifetimes({"tick", "episode"})
 
     def _reset_lifetimes(self, lifetimes: AbstractSet[str]) -> None:
+        """A reset IS re-initialization: the declared initializer runs again.
+
+        A literal or deterministic mode (zeros/ones/eye) therefore restores the same
+        value; a random mode (random_normal/random_uniform) draws afresh from torch's
+        global RNG, the stream ``seed_all`` seeds and that agent placement also samples,
+        so each reset is reproducible per seed rather than a frozen first draw.
+        """
         for var_id, var_def in self._definitions.items():
             if str(var_def.lifetime) in lifetimes:
-                self._write_storage(var_id, self._initial_storage[var_id])
+                self._write_storage(var_id, self._build_storage_tensor(var_def))
 
     def _get_vector_dims(self, var_def: VariableDef) -> int:
         """Return expected dimensionality for vector variables."""
@@ -961,56 +681,6 @@ class VariableRegistry:
         for variable in profile.variables:
             if variable.initial_value is not None:
                 self.item_vfs[vfs_index, self.item_profile_map[profile_name][variable.name]] = float(variable.initial_value)
-
-    def list_global(self) -> list[str]:
-        """List all global variable names."""
-        return [var_id for var_id, var_def in self._definitions.items() if var_def.scope == VariableScope.GLOBAL]
-
-    def get_global(self, name: str, *, reader: str) -> torch.Tensor:
-        """Get global variable value.
-
-        Args:
-            name: Variable name
-
-        Returns:
-            Global variable value tensor
-
-        Raises:
-            KeyError: If variable not found or not global
-        """
-        self._validate_actor(reader, "read", name)
-        if name not in self._definitions:
-            raise KeyError(f"Variable '{name}' not found")
-        var_def = self._definitions[name]
-        if var_def.scope != VariableScope.GLOBAL:
-            raise KeyError(f"Variable '{name}' is not global (scope: {var_def.scope})")
-        return self.get(name, reader=reader)
-
-    def list_agent(self) -> list[str]:
-        """List all agent variable names (including agent_private)."""
-        return [
-            var_id for var_id, var_def in self._definitions.items() if var_def.scope in (VariableScope.AGENT, VariableScope.AGENT_PRIVATE)
-        ]
-
-    def get_agent(self, name: str, *, reader: str) -> torch.Tensor:
-        """Get agent variable value.
-
-        Args:
-            name: Variable name
-
-        Returns:
-            Agent variable value tensor (batch)
-
-        Raises:
-            KeyError: If variable not found or not agent-scoped
-        """
-        self._validate_actor(reader, "read", name)
-        if name not in self._definitions:
-            raise KeyError(f"Variable '{name}' not found")
-        var_def = self._definitions[name]
-        if var_def.scope not in (VariableScope.AGENT, VariableScope.AGENT_PRIVATE):
-            raise KeyError(f"Variable '{name}' is not agent-scoped (scope: {var_def.scope})")
-        return self.get(name, reader=reader)
 
     def write_item(self, profile_name: str, var_name: str, value: float | torch.Tensor, vfs_index: int, *, writer: str) -> None:
         """Write item variable value.

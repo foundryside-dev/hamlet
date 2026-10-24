@@ -64,8 +64,6 @@ def test_effects_schema_canonical_global_variables_never_acquire_target_paths():
 
     variables = VariablesConfig(
         version="1.0",
-        evaluation_mode="eager",
-        debug_logging=False,
         extents={},
         item_profiles=[],
         declarations=[
@@ -117,8 +115,6 @@ def test_effects_schema_preserves_canonical_vector_type_before_command_compilati
 
     variables = VariablesConfig(
         version="1.0",
-        evaluation_mode="mark_and_sweep",
-        debug_logging=False,
         extents={},
         item_profiles=[],
         declarations=[
@@ -149,7 +145,7 @@ def test_effects_schema_preserves_canonical_vector_type_before_command_compilati
     schema = EffectsCompiler().build_schema(bar_names=(), variables=variables, compiled_vfs_profiles=None)
     command = CommandNode(type=CommandType.MODIFY, path="vfs.scalar", value_expr="vfs.vector")
     with pytest.raises(TypeCheckError, match="expected float, got vec2f"):
-        CommandCompiler(schema).compile_command(command)
+        CommandCompiler(schema, agent_target=True).compile_command(command)
 
     pack = tmp_path / "pack"
     shutil.copytree("configs/test/effects_smoke", pack)

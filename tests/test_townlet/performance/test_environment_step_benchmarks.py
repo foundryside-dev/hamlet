@@ -138,7 +138,7 @@ class TestVTCTransitionRunnerBenchmarks:
         _record_scale_axes(benchmark, env, label=f"vtc_passive_depletion_n{num_agents}")
 
         def _depletion():
-            env._apply_vtc_passive_depletion(1.0)
+            env._apply_vtc_passive_depletion(1.0, ~env.dones)
 
         benchmark(_depletion)
 
@@ -150,7 +150,7 @@ class TestVTCTransitionRunnerBenchmarks:
         _record_scale_axes(benchmark, env, label=f"vtc_threshold_cascades_n{num_agents}")
 
         def _cascades():
-            env._apply_vtc_threshold_cascades()
+            env._apply_vtc_threshold_cascades(~env.dones)
 
         benchmark(_cascades)
 

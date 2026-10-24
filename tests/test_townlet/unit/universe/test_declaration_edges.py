@@ -75,7 +75,7 @@ def test_registry_collision_across_scopes_names_both_origins(pack: Path) -> None
     }
     data["variables"]["declarations"].append(variable)
     source.write_text(yaml.safe_dump(data, sort_keys=False))
-    headers = {key: data["variables"][key] for key in ("version", "evaluation_mode", "debug_logging", "extents")}
+    headers = {key: data["variables"][key] for key in ("version", "extents")}
     duplicate = pack / "z_agent.yml"
     duplicate.write_text(yaml.safe_dump({"variables": {**headers, "declarations": [{**variable, "scope": "agent"}]}}, sort_keys=False))
     with pytest.raises(CompilationError) as caught:

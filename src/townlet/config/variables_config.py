@@ -184,12 +184,10 @@ class VariableDeclaration(BaseModel):
 
 
 class VariablesConfig(BaseModel):
-    """Canonical pack variable roster, evaluation settings and named item schemas."""
+    """Canonical pack variable roster, scope extents and named item schemas."""
 
     model_config = ConfigDict(extra="forbid")
     version: Literal["1.0"]
-    evaluation_mode: Literal["mark_and_sweep", "eager"]
-    debug_logging: bool
     extents: VFSScopeExtents
     item_profiles: list[str]
     declarations: list[VariableDeclaration]
@@ -201,19 +199,8 @@ class VariablesConfig(BaseModel):
         if any(not name or "." in name or "[" in name or "]" in name for name in self.item_profiles):
             raise ValueError("Item profile identifiers must be nonempty and contain no element separators")
         seen: set[tuple[str | None, str]] = set()
-        extent_fields = {
-            VariableScope.ZONE: "num_zones",
-            VariableScope.GROUP: "num_groups",
-            VariableScope.MESSAGE: "num_message_slots",
-            VariableScope.AFFORDANCE: "num_affordances",
-        }
+        extent_fields = {VariableScope.MESSAGE: "num_message_slots"}
         for variable in self.declarations:
-            if self.evaluation_mode == "eager" and variable.scope in {VariableScope.GLOBAL, VariableScope.AGENT}:
-                if variable.initial_value is None:
-                    raise ValueError(
-                        f"Variable '{variable.id}' eager evaluation requires a literal non-null initial value; "
-                        "null references and initializer modes are supported by mark_and_sweep storage only"
-                    )
             identity = (variable.profile if variable.scope == VariableScope.ITEM else None, variable.id)
             if identity in seen:
                 raise ValueError(f"Duplicate variable identifier {identity}")

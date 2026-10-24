@@ -1,6 +1,6 @@
 import torch
 
-from townlet.vfs.evaluator import EvaluationMode, VFSEvaluator
+from townlet.vfs.evaluator import VFSEvaluator
 from townlet.vfs.profiles import CompiledGlobalProfile, CompiledVariable
 from townlet.world.expression import ExpressionParser
 
@@ -22,12 +22,13 @@ def _profile(expr: str, name: str = "var") -> CompiledGlobalProfile:
 
 def test_perlin_seed_determinism():
     profile = _profile("perlin_noise(bar.x, bar.y, 42)", name="noise")
-    evaluator = VFSEvaluator(mode=EvaluationMode.EAGER)
+    evaluator = VFSEvaluator()
     bars = {"x": torch.tensor([0.1, 0.5]), "y": torch.tensor([0.2, 0.6])}
     out1 = evaluator.evaluate_global_profile(
         profile,
         bars,
         {},
+        marks=set(profile.dependencies),
         device=torch.device("cpu"),
         agent_positions=None,
         affordance_positions={},
@@ -36,6 +37,7 @@ def test_perlin_seed_determinism():
         profile,
         bars,
         {},
+        marks=set(profile.dependencies),
         device=torch.device("cpu"),
         agent_positions=None,
         affordance_positions={},
@@ -45,7 +47,7 @@ def test_perlin_seed_determinism():
 
 def test_perlin_smoothness_neighbors_close():
     profile = _profile("perlin_noise(bar.x, bar.y, 0)", name="noise")
-    evaluator = VFSEvaluator(mode=EvaluationMode.EAGER)
+    evaluator = VFSEvaluator()
     base = torch.tensor([0.0, 0.0])
     delta = torch.tensor([0.05, 0.05])
     bars_a = {"x": base[:1], "y": base[:1]}
@@ -54,6 +56,7 @@ def test_perlin_smoothness_neighbors_close():
         profile,
         bars_a,
         {},
+        marks=set(profile.dependencies),
         device=torch.device("cpu"),
         agent_positions=None,
         affordance_positions={},
@@ -62,6 +65,7 @@ def test_perlin_smoothness_neighbors_close():
         profile,
         bars_b,
         {},
+        marks=set(profile.dependencies),
         device=torch.device("cpu"),
         agent_positions=None,
         affordance_positions={},
@@ -72,12 +76,13 @@ def test_perlin_smoothness_neighbors_close():
 def test_simplex_aliases_perlin():
     perlin_profile = _profile("perlin_noise(bar.x, bar.y, 7)", name="p")
     simplex_profile = _profile("simplex_noise(bar.x, bar.y, 7)", name="s")
-    evaluator = VFSEvaluator(mode=EvaluationMode.EAGER)
+    evaluator = VFSEvaluator()
     bars = {"x": torch.tensor([0.3]), "y": torch.tensor([0.9])}
     p = evaluator.evaluate_global_profile(
         perlin_profile,
         bars,
         {},
+        marks=set(perlin_profile.dependencies),
         device=torch.device("cpu"),
         agent_positions=None,
         affordance_positions={},
@@ -86,6 +91,7 @@ def test_simplex_aliases_perlin():
         simplex_profile,
         bars,
         {},
+        marks=set(simplex_profile.dependencies),
         device=torch.device("cpu"),
         agent_positions=None,
         affordance_positions={},

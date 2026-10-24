@@ -4,9 +4,9 @@ import pytest
 import torch
 
 from townlet.environment.action_config import ActionConfig
-from townlet.vfs.schema import WriteSpec
+from townlet.vfs.schema import VariableScope, WriteSpec
 from townlet.vfs.transition_graph import TransitionPhaseGraph
-from townlet.vfs.vtc import compile_vtc_action_writes, compile_vtc_action_writes_with_phase_graph
+from townlet.vfs.vtc import VTCWriteRefusalError, VTCWriteTarget, compile_vtc_action_writes, compile_vtc_action_writes_with_phase_graph
 
 
 def _write(
@@ -71,6 +71,11 @@ def _action(*, action_id: int, name: str, writes: list[WriteSpec]) -> ActionConf
     )
 
 
+def _agent_scopes(action: ActionConfig) -> dict[str, VTCWriteTarget]:
+    """Every target in these kernel tests is per-agent float storage."""
+    return {write.variable_id: VTCWriteTarget(VariableScope.AGENT, "scalar", meter=False) for write in action.writes}
+
+
 def test_vtc_action_writes_applies_write_only_to_selected_active_agents() -> None:
     action = _action(
         action_id=2,
@@ -86,7 +91,7 @@ def test_vtc_action_writes_applies_write_only_to_selected_active_agents() -> Non
         ],
     )
 
-    program = compile_vtc_action_writes([action])
+    program = compile_vtc_action_writes([action], _agent_scopes(action))
     updated = program.apply(
         actions=torch.tensor([2, 0, 2]),
         vfs_state={"energy": torch.tensor([0.1, 0.2, 0.3])},
@@ -113,7 +118,7 @@ def test_vtc_action_writes_combines_action_mask_with_condition() -> None:
         ],
     )
 
-    program = compile_vtc_action_writes([action])
+    program = compile_vtc_action_writes([action], _agent_scopes(action))
     updated = program.apply(
         actions=torch.tensor([3, 3, 3]),
         vfs_state={"energy": torch.tensor([0.2, 0.8, 0.4])},
@@ -140,7 +145,7 @@ def test_vtc_action_writes_can_target_meter_bars() -> None:
         ],
     )
 
-    program = compile_vtc_action_writes([action])
+    program = compile_vtc_action_writes([action], {"energy": VTCWriteTarget(VariableScope.AGENT, "scalar", meter=True)})
     updated = program.apply(
         actions=torch.tensor([11, 0]),
         vfs_state={},
@@ -200,7 +205,7 @@ def test_vtc_action_writes_composes_additive_and_multiplicative_writes() -> None
         ],
     )
 
-    program = compile_vtc_action_writes([action])
+    program = compile_vtc_action_writes([action], _agent_scopes(action))
     updated = program.apply(
         actions=torch.tensor([4, 0]),
         vfs_state={"energy": torch.tensor([0.7, 0.7]), "fatigue": torch.tensor([2.0, 2.0])},
@@ -242,7 +247,7 @@ def test_vtc_action_writes_composes_min_max_and_clamp_writes() -> None:
         ],
     )
 
-    program = compile_vtc_action_writes([action])
+    program = compile_vtc_action_writes([action], _agent_scopes(action))
     updated = program.apply(
         actions=torch.tensor([5, 0]),
         vfs_state={
@@ -288,7 +293,7 @@ def test_vtc_action_writes_claim_if_free_keeps_existing_claim_and_first_writer()
         ],
     )
 
-    program = compile_vtc_action_writes([action])
+    program = compile_vtc_action_writes([action], _agent_scopes(action))
     updated = program.apply(
         actions=torch.tensor([13, 0, 13]),
         vfs_state={"bed_owner": torch.tensor([-1.0, -1.0, 7.0])},
@@ -318,7 +323,7 @@ def test_vtc_action_writes_capacity_claim_caps_claim_count_in_batch_order() -> N
         ],
     )
 
-    program = compile_vtc_action_writes([action])
+    program = compile_vtc_action_writes([action], _agent_scopes(action))
     updated = program.apply(
         actions=torch.tensor([14, 14, 14, 14]),
         vfs_state={"has_queue_slot": torch.tensor([1.0, 0.0, 0.0, 0.0])},
@@ -348,7 +353,7 @@ def test_vtc_action_writes_append_event_uses_first_empty_slot() -> None:
         ],
     )
 
-    program = compile_vtc_action_writes([action])
+    program = compile_vtc_action_writes([action], _agent_scopes(action))
     updated = program.apply(
         actions=torch.tensor([15, 15, 15]),
         vfs_state={"recent_message_tokens": torch.tensor([[0.0, 0.0, 0.0], [5.0, 0.0, 0.0], [4.0, 5.0, 6.0]])},
@@ -411,7 +416,7 @@ def test_vtc_action_writes_resolves_priority_and_last_write_wins() -> None:
         ],
     )
 
-    program = compile_vtc_action_writes([action])
+    program = compile_vtc_action_writes([action], _agent_scopes(action))
     updated = program.apply(
         actions=torch.tensor([6, 0]),
         vfs_state={"target": torch.tensor([0.0, 0.0]), "status": torch.tensor([0.0, 0.0])},
@@ -452,7 +457,7 @@ def test_vtc_action_writes_reads_phase_snapshot_before_committing_writes() -> No
         ],
     )
 
-    program = compile_vtc_action_writes([action])
+    program = compile_vtc_action_writes([action], _agent_scopes(action))
     updated = program.apply(
         actions=torch.tensor([7]),
         vfs_state={"energy": torch.tensor([1.0]), "satiation": torch.tensor([0.0])},
@@ -481,8 +486,8 @@ def test_vtc_action_writes_rejects_shape_changing_phase_commit() -> None:
                 telemetry_label="valid_energy_increment",
             ),
             _write_with_metadata(
-                variable_id="status",
-                expression="one_hot(status, 3)",
+                variable_id="energy",
+                expression="one_hot(agent_id, 3)",
                 condition=None,
                 composition="overwrite",
                 phase="apply_action_effects",
@@ -493,11 +498,13 @@ def test_vtc_action_writes_rejects_shape_changing_phase_commit() -> None:
         ],
     )
 
-    program = compile_vtc_action_writes([action])
+    # one_hot type-checks as a float over the integer agent index; its [agents, 3]
+    # shape is what the phase commit refuses.
+    program = compile_vtc_action_writes([action], _agent_scopes(action))
     with pytest.raises(ValueError, match="invalid_status_one_hot.*shape"):
         program.apply(
             actions=torch.tensor([12, 12]),
-            vfs_state={"energy": torch.tensor([1.0, 1.0]), "status": torch.tensor([0.0, 1.0])},
+            vfs_state={"energy": torch.tensor([1.0, 1.0])},
             bars_state={},
             active_mask=torch.tensor([True, True]),
             device=torch.device("cpu"),
@@ -532,7 +539,7 @@ def test_vtc_action_writes_uses_spec_phase_order_not_lexical_order() -> None:
         ],
     )
 
-    program = compile_vtc_action_writes([action])
+    program = compile_vtc_action_writes([action], _agent_scopes(action))
     updated = program.apply(
         actions=torch.tensor([8]),
         vfs_state={"energy": torch.tensor([1.0])},
@@ -571,9 +578,9 @@ def test_vtc_action_writes_accepts_configured_transition_phase_order() -> None:
             ),
         ],
     )
-    phase_graph = TransitionPhaseGraph(("phase_b", "phase_a"))
+    phase_graph = TransitionPhaseGraph(("phase_b", "phase_a"), "phase_a")
 
-    program = compile_vtc_action_writes_with_phase_graph([action], phase_graph)
+    program = compile_vtc_action_writes_with_phase_graph([action], _agent_scopes(action), phase_graph)
     updated = program.apply(
         actions=torch.tensor([9]),
         vfs_state={"energy": torch.tensor([1.0])},
@@ -603,5 +610,28 @@ def test_vtc_action_writes_rejects_unconfigured_transition_phase() -> None:
         ],
     )
 
-    with pytest.raises(ValueError, match="Unknown transition phase"):
-        compile_vtc_action_writes([action])
+    with pytest.raises(VTCWriteRefusalError, match="'unconfigured_phase', which is not a transition phase"):
+        compile_vtc_action_writes([action], _agent_scopes(action))
+
+
+def test_vtc_action_writes_refuse_phases_that_run_without_actions() -> None:
+    action = _action(
+        action_id=11,
+        name="LATE",
+        writes=[
+            _write_with_metadata(
+                variable_id="energy",
+                expression="energy + 1.0",
+                condition=None,
+                composition="overwrite",
+                phase="apply_passive_depletion",
+                priority=0,
+                clamp=None,
+                telemetry_label="late_increment",
+            )
+        ],
+    )
+
+    with pytest.raises(VTCWriteRefusalError, match="runs without the tick's actions") as refusal:
+        compile_vtc_action_writes([action], _agent_scopes(action))
+    assert [r.origin_key for r in refusal.value.refusals] == ["actions:LATE:writes[0]"]

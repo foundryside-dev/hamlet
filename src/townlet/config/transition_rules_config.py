@@ -4,7 +4,7 @@ This is the parse-time gate in front of the VTC social-residue compiler
 (townlet.vfs.vtc.compile_vtc_social_residue_rules). The compiler validates rule
 semantics; this layer enforces the authoring contract: extra="forbid" so a stray
 or typo'd key fails at parse instead of silently changing behaviour, and
-nullable behavioural fields (condition, clamp, effect, scope) that must be set
+nullable behavioural fields (condition, clamp, effect) that must be set
 explicitly per the No-Defaults Principle. Fields the compiler derives when
 absent (write-level phase/priority/telemetry_label, rule-level priority) are
 computed values and may be omitted.
@@ -28,8 +28,9 @@ class SocialResidueWriteConfig(BaseModel):
 
     Mirrors townlet.vfs.schema.WriteSpec's grammar, with two differences the
     social-residue compiler defines: phase/priority/telemetry_label are derived
-    from the owning rule when omitted, and effect/scope annotate relationship
-    semantics (scope "pair" masks by the symmetric active-agent mask).
+    from the owning rule when omitted, and effect labels the relationship
+    effect. Masking follows the target variable's declared scope: a pair target
+    masks by the symmetric active-agent mask, an agent-axis target by the agent row.
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -70,10 +71,6 @@ class SocialResidueWriteConfig(BaseModel):
 
     effect: str | None = Field(
         description="Relationship-effect label (e.g. trust_delta), used in derived telemetry labels. Pass null when unlabelled.",
-    )
-
-    scope: Literal["pair", "agent"] | None = Field(
-        description="Write masking scope. 'pair' masks by the symmetric active-agent mask; null infers from the target shape.",
     )
 
     phase: str | None = Field(

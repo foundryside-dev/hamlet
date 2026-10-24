@@ -33,7 +33,7 @@ def test_compile_vtc_modulations_emits_modulation_rule_metadata() -> None:
     assert rule.expression == "where(bar.energy < 0.3, 0.5 + (1.0 - 0.5) * (bar.energy / 0.3), 1.0)"
     assert rule.condition is None
     assert rule.composition == "multiplicative_modifier"
-    assert rule.phase == "apply_modulations"
+    assert rule.phase == "apply_action_effects"
     assert rule.clamp == (0.0, 1.0)
     assert rule.telemetry_label == "modulation:energy->WORK"
 

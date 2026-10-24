@@ -50,7 +50,7 @@ def test_for_each_nearby_agents_with_modify():
 
     # Compile nested modify command
     schema = {"target.bar.health": "float"}
-    compiler = CommandCompiler(schema=schema)
+    compiler = CommandCompiler(schema=schema, agent_target=True)
     for body_cmd in command.body:
         compiler.compile_command(body_cmd)
 
@@ -102,7 +102,7 @@ def test_for_each_all_agents():
 
     # Compile nested modify command
     schema = {"target.bar.energy": "float"}
-    compiler = CommandCompiler(schema=schema)
+    compiler = CommandCompiler(schema=schema, agent_target=True)
     for body_cmd in command.body:
         compiler.compile_command(body_cmd)
 
@@ -168,7 +168,7 @@ def test_for_each_collection_expression_executes():
 
     # Compile nested modify command
     schema = {"target.bar.energy": "float"}
-    compiler = CommandCompiler(schema=schema)
+    compiler = CommandCompiler(schema=schema, agent_target=True)
     for body_cmd in command.body:
         compiler.compile_command(body_cmd)
 
@@ -207,7 +207,7 @@ def test_for_each_empty_collection_noop():
 
     # Compile nested modify command (with literal value this time)
     schema = {"target.bar.health": "float"}
-    compiler = CommandCompiler(schema=schema)
+    compiler = CommandCompiler(schema=schema, agent_target=True)
     for body_cmd in command.body:
         compiler.compile_command(body_cmd)
 
@@ -273,7 +273,7 @@ def test_for_each_inventory_items_skips_empty_and_uses_ints():
     )
 
     schema = {"target.vfs.durability": "float"}
-    compiler = CommandCompiler(schema=schema)
+    compiler = CommandCompiler(schema=schema, agent_target=True)
     for body_cmd in command.body:
         compiler.compile_command(body_cmd)
 

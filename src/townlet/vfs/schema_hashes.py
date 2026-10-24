@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import dataclasses
 import hashlib
 import json
 from collections.abc import Iterable, Mapping
@@ -46,6 +47,7 @@ def canonical_variable_schema(variables: Iterable[VariableDef], item_profiles: M
                         "scope": "item",
                         "dims": variable.dims,
                         "lifetime": variable.lifetime,
+                        "initial_value": _plain_payload(variable.initial_value),
                         "readable_by": sorted(variable.readable_by),
                         "writable_by": sorted(variable.writable_by),
                         "range": _normalization_range(variable.normalization),
@@ -81,7 +83,6 @@ def canonical_transition_graph_schema(
     modulation_program: Any | None = None,
     passive_depletion_program: Any | None = None,
     social_residue_program: Any | None = None,
-    reward_component_program: Any | None = None,
     bounds_clamp_program: Any | None = None,
 ) -> dict[str, Any]:
     """Return the transition-graph payload used for world-physics provenance."""
@@ -101,8 +102,6 @@ def canonical_transition_graph_schema(
         rules.extend(_canonical_transition_rule(rule) for rule in threshold_cascade_program.rules)
     if social_residue_program is not None:
         rules.extend(_canonical_transition_rule(rule) for rule in social_residue_program.rules)
-    if reward_component_program is not None:
-        rules.extend(_canonical_transition_rule(rule) for rule in reward_component_program.rules)
     if bounds_clamp_program is not None:
         rules.extend(_canonical_transition_rule(rule) for rule in bounds_clamp_program.rules)
     return {
@@ -122,7 +121,6 @@ def compute_transition_graph_hash(
     modulation_program: Any | None = None,
     passive_depletion_program: Any | None = None,
     social_residue_program: Any | None = None,
-    reward_component_program: Any | None = None,
     bounds_clamp_program: Any | None = None,
 ) -> str:
     """Return the SHA-256 digest of the compiled transition graph and rules."""
@@ -137,7 +135,6 @@ def compute_transition_graph_hash(
             modulation_program=modulation_program,
             passive_depletion_program=passive_depletion_program,
             social_residue_program=social_residue_program,
-            reward_component_program=reward_component_program,
             bounds_clamp_program=bounds_clamp_program,
         )
     )
@@ -161,12 +158,22 @@ def compute_vfs_hash(
 
 
 def _canonical_variable_entry(variable: VariableDef) -> dict[str, Any]:
+    """Every declared fact that fixes a variable's storage and reset identity.
+
+    ``shape`` fixes the tensor extent; ``initial_value`` (the DTO's ``default``),
+    ``initial_value_mode`` and ``initial_value_params`` fix what a reset restores or
+    redraws. Two declarations differing in any of them are different state.
+    """
     return {
         "id": variable.id,
         "type": variable.type,
         "scope": _scope_value(variable.scope),
         "dims": variable.dims,
+        "shape": list(variable.shape) if variable.shape is not None else None,
         "lifetime": variable.lifetime,
+        "initial_value": _plain_payload(variable.default),
+        "initial_value_mode": variable.initial_value_mode,
+        "initial_value_params": _plain_payload(variable.initial_value_params),
         "readable_by": sorted(variable.readable_by),
         "writable_by": sorted(variable.writable_by),
         "range": _normalization_range(variable.normalization),
@@ -190,61 +197,15 @@ def _canonical_action_entry(action: Any) -> dict[str, Any]:
     }
 
 
-def _canonical_transition_rule(write: Any) -> dict[str, Any]:
-    if hasattr(write, "rule_id"):
-        entry = {
-            "rule_id": write.rule_id,
-            "kind": write.kind,
-            "variable_id": write.variable_id,
-            "expression": write.expression,
-            "condition": write.condition,
-            "composition": write.composition,
-            "phase": write.phase,
-            "priority": write.priority,
-            "clamp": list(write.clamp) if write.clamp is not None else None,
-            "telemetry_label": write.telemetry_label,
-        }
-        if hasattr(write, "source_variable_id"):
-            entry["source_variable_id"] = write.source_variable_id
-        if hasattr(write, "target_affordance_id"):
-            entry["target_affordance_id"] = write.target_affordance_id
-        if hasattr(write, "effect"):
-            entry["effect"] = write.effect
-        if hasattr(write, "scope"):
-            entry["scope"] = write.scope
-        if hasattr(write, "target"):
-            entry["target"] = write.target
-        if hasattr(write, "duration_ticks"):
-            entry["duration_ticks"] = write.duration_ticks
-        if hasattr(write, "operator"):
-            entry["operator"] = write.operator
-        if hasattr(write, "threshold"):
-            entry["threshold"] = write.threshold
-        if hasattr(write, "reads"):
-            entry["reads"] = list(write.reads)
-        if hasattr(write, "component"):
-            entry["component"] = write.component
-        if hasattr(write, "source_kind"):
-            entry["source_kind"] = write.source_kind
-        if hasattr(write, "strategy"):
-            entry["strategy"] = write.strategy
-        if hasattr(write, "shaping_type"):
-            entry["shaping_type"] = write.shaping_type
-        if hasattr(write, "parameters"):
-            entry["parameters"] = _plain_payload(write.parameters)
-        return entry
-    return {
-        "action_id": write.action_id,
-        "action_name": write.action_name,
-        "variable_id": write.variable_id,
-        "expression": write.expression,
-        "condition": write.condition,
-        "composition": write.composition,
-        "phase": write.phase,
-        "priority": write.priority,
-        "clamp": list(write.clamp) if write.clamp is not None else None,
-        "telemetry_label": write.telemetry_label,
-    }
+def _canonical_transition_rule(rule: Any) -> dict[str, Any]:
+    """Project a compiled VTC rule onto every declared field except parsed ASTs.
+
+    Every rule family is a frozen dataclass; its fields are the identity. Parsed
+    ASTs are derived from the hashed source text and are not serialisable.
+    """
+    if not dataclasses.is_dataclass(rule) or isinstance(rule, type):
+        raise TypeError(f"Transition rule {rule!r} is not a compiled VTC rule dataclass")
+    return {field.name: _plain_payload(getattr(rule, field.name)) for field in dataclasses.fields(rule) if not field.name.endswith("_ast")}
 
 
 def _scope_value(scope: VariableScope | str) -> str:

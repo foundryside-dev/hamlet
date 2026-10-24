@@ -33,7 +33,6 @@ def test_compile_vtc_passive_depletions_emits_rule_metadata() -> None:
     assert rule.clamp == (0.0, 1.0)
     assert rule.telemetry_label == "passive_depletion:energy"
     assert rule.passive_rate == 0.1
-    assert program.passive_rate_for("energy") == 0.1
 
 
 def test_vtc_passive_depletions_apply_scaled_decay_clamp_and_masking() -> None:

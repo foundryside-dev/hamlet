@@ -23,7 +23,7 @@ status: current as of 2026-08-12 (WS-1(e), PDR-0016)
 >
 > **⚠️ "enforced at **six** runtime sites" is now SEVEN.** The six listed below are all real and
 > correctly described. The undocumented seventh is the compiled **`clamp_and_validate` bounds
-> program** — `compile_vtc_bounds_clamps` (`vfs/vtc.py:2431`), run by `_run_bounds_clamps`
+> program** — `compile_vtc_bounds_clamps_with_phase_graph` (`vfs/vtc.py`), run by `_run_bounds_clamps`
 > (`vfs/transition_schedule.py:186`). It genuinely executes every step: `clamp_and_validate`
 > sits between `apply_threshold_cascades` and `evaluate_terminal_conditions` in the phase graph
 > (`vfs/transition_graph.py:21`), which is exactly the span

@@ -32,7 +32,7 @@ from townlet.environment.token_publishers import (
 )
 from townlet.items import InventoryState, ItemActionHandler, ItemManager
 from townlet.universe.dto import RuntimeActionSpace
-from townlet.vfs.evaluator import EvaluationMode, VFSEvaluator
+from townlet.vfs.evaluator import VFSEvaluator
 from townlet.vfs.profiles import CompiledGlobalProfile
 from townlet.vfs.registry import VariableRegistry
 from townlet.vfs.transition_schedule import VTCTransitionContext, VTCTransitionRunner, VTCTransitionState
@@ -295,7 +295,7 @@ class VectorizedHamletEnv:
         self.vtc_passive_depletion_program: VTCPassiveDepletionProgram = self.vtc_transition_schedule.passive_depletion_program
         self.vtc_modulation_program: VTCModulationProgram = self.vtc_transition_schedule.modulation_program
         self.vtc_threshold_cascade_program: VTCThresholdCascadeProgram = self.vtc_transition_schedule.threshold_cascade_program
-        self.vtc_reward_program: VTCRewardProgram = self.vtc_transition_schedule.reward_component_program
+        self.vtc_reward_program = VTCRewardProgram()
 
         # Per-tick action-mask computation extracted from this class. The
         # builder is stateless; per-tick state is passed at call time.
@@ -583,19 +583,12 @@ class VectorizedHamletEnv:
             max_items=max_items_in_world,
             num_affordances=self.metadata.affordance_count,
             item_profiles=item_profiles,
-            num_zones=self.metadata.num_zones,
-            num_groups=self.metadata.num_groups,
             num_message_slots=self.metadata.num_message_slots,
         )
 
         self.vfs_evaluator: VFSEvaluator | None = None
         if universe.compiled_vfs_profiles is not None:
-            mode = EvaluationMode(universe.compiled_vfs_profiles.evaluation_mode)
-            self.vfs_evaluator = VFSEvaluator(
-                mode=mode,
-                history_spec=universe.vfs_history_spec,
-                debug_logging=universe.compiled_vfs_profiles.debug_logging,
-            )
+            self.vfs_evaluator = VFSEvaluator(history_spec=universe.vfs_history_spec)
             self.vfs_evaluation_marks = universe.vfs_evaluation_marks
         else:
             self.vfs_evaluation_marks = None
@@ -1071,16 +1064,16 @@ class VectorizedHamletEnv:
         # 1. Execute actions and track successful interactions
         successful_interactions = self._action_executor._execute_actions(actions)
         self._run_vtc_transition_phases(
-            self.vtc_transition_runner.phases_through("apply_completion_bonuses"),
+            self.vtc_transition_schedule.phase_graph.action_phases,
             actions=actions,
             active_mask=active_on_entry,
         )
 
         # 2. Deplete meters (base passive decay with curriculum difficulty)
-        self._apply_vtc_passive_depletion(depletion_multiplier)
+        self._apply_vtc_passive_depletion(depletion_multiplier, active_on_entry)
 
         # 3. Passive threshold cascades via VTC relationship rules.
-        self._apply_vtc_threshold_cascades()
+        self._apply_vtc_threshold_cascades(active_on_entry)
 
         # 3.5. Execute active effects (after cascades, before terminal checks)
         # Effects can modify bars based on current state after all natural dynamics applied
@@ -1100,80 +1093,18 @@ class VectorizedHamletEnv:
         for bar_name, idx in self.meter_name_to_index.items():
             self.meters[:, idx] = bars_dict[bar_name]
 
-        # 3.6. Evaluate VFS expressions if evaluator present
-        if self.vfs_evaluator is not None and self.universe.compiled_vfs_profiles is not None:
-            # Build execution context from current state
-            bars_dict_vfs = {name: self.meters[:, idx] for name, idx in self.meter_name_to_index.items()}
-
-            # Get current VFS state from registry
-            # HIGH-02: Use proper VFS API instead of direct _storage access
-            current_vfs_state = self._current_vfs_state()
-
-            # Evaluate global profile
-            global_profile = self.universe.compiled_vfs_profiles.global_profile
-            if global_profile is not None:
-                marks = self.vfs_evaluation_marks.get("global", set()) if self.vfs_evaluation_marks else set()
-
-                updated_vfs = self.vfs_evaluator.evaluate_global_profile(
-                    profile=global_profile,
-                    bars=bars_dict_vfs,
-                    vfs_state=current_vfs_state,
-                    marks=marks,
-                    device=self.device,
-                    step=self.global_tick,  # HIGH-01: Use global tick instead of agent 0
-                    affordances=self._build_vfs_affordance_context(),
-                    temporal=self._build_vfs_temporal_context(),
-                    agent_positions=self.positions.to(dtype=torch.float32, device=self.device),
-                    affordance_positions={k: v.to(dtype=torch.float32, device=self.device) for k, v in self.affordances.items()},
-                    vfs_types={name: var.type for name, var in self.vfs_registry.variables.items()},
-                    num_agents=self.num_agents,
-                    item_vfs=self.vfs_registry.item_vfs,
-                    item_profile_map=self.vfs_registry.item_profile_map,
-                    item_index_to_profile=self.vfs_registry.item_vfs_index_to_profile,
-                )
-
-                self._write_back_profile_expressions(
-                    "Global-profile", "global_profile", global_profile, updated_vfs, require_agent_shape=False
-                )
-
-            # Evaluate agent profile (hamlet-5d74335111). Compiled agent profiles are
-            # CompiledGlobalProfile — the same machinery, the same MARK_AND_SWEEP
-            # static-skip in evaluate_global_profile, and the same expression-only
-            # write-back filter (statics are storage, never re-written from a
-            # dependency-chased initial — hamlet-df3a96bbac applies here too), but
-            # expressions here already produce [num_agents]-shaped tensors from
-            # `bar.*` references, so write-back is checked against that exact shape.
-            agent_profile = self.universe.compiled_vfs_profiles.agent_profile
-            if agent_profile is not None:
-                agent_marks = self.vfs_evaluation_marks.get("agent", set()) if self.vfs_evaluation_marks else set()
-                updated_agent_vfs = self.vfs_evaluator.evaluate_global_profile(
-                    profile=agent_profile,
-                    bars=bars_dict_vfs,
-                    vfs_state=current_vfs_state,
-                    marks=agent_marks,
-                    device=self.device,
-                    step=self.global_tick,
-                    affordances=self._build_vfs_affordance_context(),
-                    temporal=self._build_vfs_temporal_context(),
-                    agent_positions=self.positions.to(dtype=torch.float32, device=self.device),
-                    affordance_positions={k: v.to(dtype=torch.float32, device=self.device) for k, v in self.affordances.items()},
-                    vfs_types={name: var.type for name, var in self.vfs_registry.variables.items()},
-                    num_agents=self.num_agents,
-                    item_vfs=self.vfs_registry.item_vfs,
-                    item_profile_map=self.vfs_registry.item_profile_map,
-                    item_index_to_profile=self.vfs_registry.item_vfs_index_to_profile,
-                )
-                self._write_back_profile_expressions(
-                    "Agent-profile", "agent_profile", agent_profile, updated_agent_vfs, require_agent_shape=True
-                )
-
         self._run_vtc_transition_phases(
             self.vtc_transition_runner.phases_between("apply_threshold_cascades", "evaluate_terminal_conditions"),
             active_mask=active_on_entry,
         )
 
+        # 3.6. Evaluate VFS expressions over the tick's committed state: after every
+        # transition phase that writes VFS variables (action writes, social residue)
+        # and after clamp_and_validate, so expressions never lag a transition write.
+        self._evaluate_vfs_profiles()
+
         # 4. Evaluate VTC terminal conditions
-        self._apply_vtc_terminal_conditions()
+        self._apply_vtc_terminal_conditions(active_on_entry)
         authored_terminal = active_on_entry & self.dones
 
         # 5. Count eligible transitions, including the transition that ends a lane.
@@ -1235,39 +1166,105 @@ class VectorizedHamletEnv:
 
         return observations, rewards, self.dones, info
 
+    def _evaluate_vfs_profiles(self) -> None:
+        """Evaluate global then agent profile expressions and commit them to the registry."""
+        if self.vfs_evaluator is not None and self.universe.compiled_vfs_profiles is not None:
+            # Build execution context from current state
+            bars_dict_vfs = {name: self.meters[:, idx] for name, idx in self.meter_name_to_index.items()}
+
+            # Get current VFS state from registry
+            # HIGH-02: Use proper VFS API instead of direct _storage access
+            current_vfs_state = self._current_vfs_state()
+
+            # Evaluate global profile
+            global_profile = self.universe.compiled_vfs_profiles.global_profile
+            if global_profile is not None:
+                marks = self.vfs_evaluation_marks.get("global", set()) if self.vfs_evaluation_marks else set()
+
+                updated_vfs = self.vfs_evaluator.evaluate_global_profile(
+                    profile=global_profile,
+                    bars=bars_dict_vfs,
+                    vfs_state=current_vfs_state,
+                    marks=marks,
+                    device=self.device,
+                    step=self.global_tick,  # HIGH-01: Use global tick instead of agent 0
+                    affordances=self._build_vfs_affordance_context(),
+                    temporal=self._build_vfs_temporal_context(),
+                    agent_positions=self.positions.to(dtype=torch.float32, device=self.device),
+                    affordance_positions={k: v.to(dtype=torch.float32, device=self.device) for k, v in self.affordances.items()},
+                    vfs_types={name: var.type for name, var in self.vfs_registry.variables.items()},
+                    num_agents=self.num_agents,
+                    item_vfs=self.vfs_registry.item_vfs,
+                    item_profile_map=self.vfs_registry.item_profile_map,
+                    item_index_to_profile=self.vfs_registry.item_vfs_index_to_profile,
+                )
+
+                self._write_back_profile_expressions(
+                    "Global-profile", "global_profile", global_profile, updated_vfs, require_agent_shape=False
+                )
+                # Agent expressions may read globals: re-snapshot so they see this tick's
+                # global expression values, not the pre-write-back snapshot.
+                current_vfs_state = self._current_vfs_state()
+
+            # Evaluate agent profile (hamlet-5d74335111). Compiled agent profiles are
+            # CompiledGlobalProfile — the same machinery, the same mark-and-sweep
+            # static-skip in evaluate_global_profile, and the same expression-only
+            # write-back filter (statics are storage, never re-written from a
+            # dependency-chased initial — hamlet-df3a96bbac applies here too), but
+            # expressions here already produce [num_agents]-shaped tensors from
+            # `bar.*` references, so write-back is checked against that exact shape.
+            agent_profile = self.universe.compiled_vfs_profiles.agent_profile
+            if agent_profile is not None:
+                agent_marks = self.vfs_evaluation_marks.get("agent", set()) if self.vfs_evaluation_marks else set()
+                updated_agent_vfs = self.vfs_evaluator.evaluate_global_profile(
+                    profile=agent_profile,
+                    bars=bars_dict_vfs,
+                    vfs_state=current_vfs_state,
+                    marks=agent_marks,
+                    device=self.device,
+                    step=self.global_tick,
+                    affordances=self._build_vfs_affordance_context(),
+                    temporal=self._build_vfs_temporal_context(),
+                    agent_positions=self.positions.to(dtype=torch.float32, device=self.device),
+                    affordance_positions={k: v.to(dtype=torch.float32, device=self.device) for k, v in self.affordances.items()},
+                    vfs_types={name: var.type for name, var in self.vfs_registry.variables.items()},
+                    num_agents=self.num_agents,
+                    item_vfs=self.vfs_registry.item_vfs,
+                    item_profile_map=self.vfs_registry.item_profile_map,
+                    item_index_to_profile=self.vfs_registry.item_vfs_index_to_profile,
+                )
+                self._write_back_profile_expressions(
+                    "Agent-profile", "agent_profile", agent_profile, updated_agent_vfs, require_agent_shape=True
+                )
+
     def _execute_actions(self, actions: torch.Tensor) -> dict:
         """Execute movement, interaction, and wait actions."""
         return self._action_executor._execute_actions(actions)
 
-    def _apply_vtc_action_writes(self, actions: torch.Tensor, active_mask: torch.Tensor) -> None:
-        """Apply compiled VFS transition writes for selected actions."""
-        self._run_vtc_transition_phases(
-            self.vtc_transition_runner.phases_through("apply_completion_bonuses"),
-            actions=actions,
-            active_mask=active_mask,
-        )
-
-    def _apply_vtc_passive_depletion(self, depletion_multiplier: float) -> None:
-        """Apply compiled VFS passive-depletion rules to meter bars."""
+    def _apply_vtc_passive_depletion(self, depletion_multiplier: float, active_mask: torch.Tensor) -> None:
+        """Apply compiled VFS passive-depletion rules (and any transition rule at that phase)
+        to the agents active on entry to this step (``step()`` captures the mask once)."""
         self._run_vtc_transition_phases(
             ("apply_passive_depletion",),
-            active_mask=torch.ones_like(self.dones, dtype=torch.bool, device=self.device),
+            active_mask=active_mask,
             depletion_multiplier=depletion_multiplier,
         )
 
-    def _apply_vtc_threshold_cascades(self) -> None:
-        """Apply compiled VFS threshold-cascade rules to meter bars."""
+    def _apply_vtc_threshold_cascades(self, active_mask: torch.Tensor) -> None:
+        """Apply compiled VFS threshold-cascade rules (and any transition rule at that phase)
+        to the agents active on entry to this step."""
         self._run_vtc_transition_phases(
             ("apply_threshold_cascades",),
-            active_mask=torch.ones_like(self.dones, dtype=torch.bool, device=self.device),
+            active_mask=active_mask,
         )
 
-    def _apply_vtc_terminal_conditions(self) -> None:
-        """Evaluate compiled VFS terminal-condition rules over meter bars."""
+    def _apply_vtc_terminal_conditions(self, active_mask: torch.Tensor) -> None:
+        """Evaluate compiled VFS terminal-condition rules over meter bars for the agents
+        active on entry to this step."""
         self._run_vtc_transition_phases(
             ("evaluate_terminal_conditions",),
             dones=self.dones,
-            active_mask=torch.logical_not(self.dones),
+            active_mask=active_mask,
         )
 
     def _run_vtc_transition_phases(

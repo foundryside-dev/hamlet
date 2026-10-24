@@ -44,8 +44,6 @@ class UniverseMetadata:
     # the pack declares no variables of that scope — the loader rejects a
     # scoped variable whose extent is undeclared, so 0 never reaches a registry
     # that needs it.
-    num_zones: int = 0
-    num_groups: int = 0
     num_message_slots: int = 0
 
     # Spatial metadata for finite substrates. Axis dimensions remain owned by

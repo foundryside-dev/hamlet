@@ -23,20 +23,18 @@ def _variable(identifier, *, scope="global", expression=None, initial_value=0.0,
     }
 
 
-def _config(declarations, evaluation_mode="mark_and_sweep"):
+def _config(declarations):
     return VariablesConfig(
         version="1.0",
-        evaluation_mode=evaluation_mode,
-        debug_logging=False,
         extents={},
         item_profiles=["default_item"],
         declarations=declarations,
     )
 
 
-def _compile(tmp_path, declarations, evaluation_mode="mark_and_sweep"):
+def _compile(tmp_path, declarations):
     directory = prepare_config_dir(tmp_path)
-    (directory / "variables.yaml").write_text(yaml.safe_dump({"variables": _config(declarations, evaluation_mode).model_dump(mode="json")}))
+    (directory / "variables.yaml").write_text(yaml.safe_dump({"variables": _config(declarations).model_dump(mode="json")}))
     return UniverseCompiler().compile(directory, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
 
 
@@ -58,7 +56,7 @@ def test_statics_are_never_marked(tmp_path):
 
 
 def test_removed_observation_mark_field_is_absent(tmp_path):
-    universe = _compile(tmp_path, [], "eager")
+    universe = _compile(tmp_path, [])
     assert not hasattr(universe, "vfs_observation_marks")
 
 

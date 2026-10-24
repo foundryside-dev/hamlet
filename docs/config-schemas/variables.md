@@ -8,8 +8,6 @@ languages with one required pack-scope `variables` declaration. A filename such 
 ```yaml
 variables:
   version: '1.0'
-  evaluation_mode: mark_and_sweep
-  debug_logging: false
   extents: {}
   item_profiles: [default_item]
   declarations:
@@ -38,8 +36,13 @@ Every variable declares its `id`, `scope`, `type`, `lifetime`, `semantic_type` a
 `profile`, identifying a name in the explicit `item_profiles` catalog. An empty catalog
 entry remains a valid schema group for item types with no state variables.
 
-- **Scope:** `global`, `agent`, `agent_private`, `item`, `pair`, `affordance`, `zone`,
-  `group`, or `message`. Storage scope and observation support are separate contracts.
+- **Scope:** `global`, `agent`, `agent_private`, `item`, `pair`, `affordance`, or
+  `message`. Storage scope and observation support are separate contracts. `message`
+  requires `extents.num_message_slots`; no other scope takes an extent. `affordance` rows
+  are the level's affordance count, the only authority: there is no `num_affordances`
+  extent, and an `extents` block that declares one fails as an extra field. There is no
+  `zone` or `group` scope: both were storage with no publisher and no write path, and were
+  deleted (an old declaration fails validation).
 - **Type:** `scalar` (float32 storage), `bool`, supported fixed/dynamic vectors,
   references, tensors or `message_token`. There are no authored `float`, `int` or
   generic `vector` aliases. Tensor shapes and dynamic vector dimensions are explicit.
@@ -48,20 +51,36 @@ entry remains a valid schema group for item types with no state variables.
   of filename or scope, subject to item-arena restrictions below.
 - **Initialization:** an explicit `initial_value`, or a supported tensor
   `initial_value_mode`. Reference null is an explicitly unbound value. Omitting a
-  reference initial value is not the same as declaring null.
+  reference initial value is not the same as declaring null. A lifetime reset re-runs
+  the declared initializer: a literal and the deterministic modes (`zeros`, `ones`,
+  `eye`) restore the same value; `random_normal` and `random_uniform` draw afresh on
+  every reset of the variable's lifetime from torch's global RNG, the stream
+  `seed_all` seeds, so a run is reproducible per seed rather than frozen to its first
+  draw. `shape`, `initial_value`, `initial_value_mode` and `initial_value_params` all
+  enter `variable_schema_hash`.
 - **Expression:** optional for global/agent variables; it must have an explicit initial
   value. Dependencies are resolved and ordered before execution. Scalar expressions use
   the expression DSL's numeric types; they do not promise integer registry storage.
   The compiler proves output shape: global scalar/bool expressions produce a scalar,
-  agent scalar/bool expressions produce an agent batch. Vector/tensor expression outputs
+  agent scalar/bool expressions produce an agent batch. An agent expression may read
+  any global variable by bare name; the global profile evaluates before the agent profile
+  each tick, so an agent expression sees this tick's global value. A global expression may
+  not read agent state (scope widening); it refuses at compile. A variable id may not
+  equal a meter name; the compiler refuses it at the symbol table with both origins
+  (`SYMBOL_METER_COLLISION`). Vector/tensor expression outputs
   and functions without a qualified shape refuse. A constant belongs in initialization.
 - **Exposure:** an empty list means hidden. Exposed variables require a supported bounded
-  `normalization`; normalization on a hidden variable is refused. `semantic_type` uses
-  the closed semantic vocabulary. Exposure does not confer new privacy guarantees.
+  `normalization`; normalization on a hidden variable is refused. Exposure does not confer
+  new privacy guarantees.
+- **Semantic type:** `temporal` or `custom`. An exposed variable's token descriptor carries
+  it as a one-hot; a global `temporal` variable with `expression: tick` and a cyclical
+  normalization is the pack's clock. The former members `bars`, `spatial`, `affordance` and
+  `effects` named groups of the deleted grouped observation vector and fail validation.
 
 Tensor modes `zeros`, `ones` and `eye` can lower to exact declared literals for token
-identity. Exposed random initializers are refused because they have no exact static reset
-identity. Irrelevant, conflicting or malformed initialization parameters fail validation.
+identity. Exposed random initializers are refused because token identity needs an exact
+literal initial value and a random draw has none. Irrelevant, conflicting or malformed
+initialization parameters fail validation.
 
 ## Item state and supported consumers
 
@@ -76,11 +95,11 @@ exposed by the current publisher and fail compilation. Item booleans/references 
 float-backed arena and remain supported. Ordinary named reward inputs require scalar or
 boolean global/agent state; other scopes/shapes need a separately implemented reduction.
 
-The `eager` evaluator requires non-null literal initialization for global/agent state
-and rebuilds static expression context from those literals. Null
-references and initializer modes in global/agent profiles therefore require `mark_and_sweep`.
-Expressions depending on eager agent statics must still prove a batched output; an agent
-static dependency alone supplies no batch axis. Unsupported combinations refuse early.
+Expressions are evaluated mark-and-sweep: each tick the compiler-derived marks and their
+in-profile dependencies are evaluated in dependency order, and a static input is read at its
+current runtime value, never its declared literal. There is no evaluation-mode or
+debug-logging setting; a `variables` declaration carrying `evaluation_mode` or
+`debug_logging` fails validation as an extra field.
 
 Global/agent registry variables and item-profile variables have token publishers. Other
 storage scopes do not acquire an observation publisher simply by entering the symbol table.
@@ -100,6 +119,44 @@ Supported consumer boundaries are explicit:
 
 Symbol registration alone does not supply pair-state reductions or arbitrary tensor
 operations to a consumer. Command expressions must satisfy that consumer's type contract.
+
+## Transition phases and evaluation order
+
+Action writes (`actions.custom_actions[].writes`) and transition rules
+(`transition_rules.social_residue[]`) name a `phase`. The phase graph is closed and is
+exactly the schedule `step()` executes, in this order:
+
+1. `ingest_actions`, `advance_global_time`, `compute_action_legality_masks`,
+   `apply_movement_and_wait_costs`, `resolve_affordance_access_and_occupancy`,
+   `apply_action_costs`, `advance_interaction_progress`, `apply_action_effects`,
+   `apply_completion_bonuses` — run together, with the tick's actions, after the action
+   executor.
+2. `apply_passive_depletion`, then `apply_threshold_cascades`; then scheduled effects tick.
+3. `apply_social_residue_effects`, `clamp_and_validate`.
+4. Global then agent expressions are evaluated (see below).
+5. `evaluate_terminal_conditions`.
+
+An action write is admitted only in group 1, the phases that run with the tick's actions.
+A write scheduled at any later phase is refused at compile with its `actions.yaml`
+`file:line`; an unknown phase name is refused the same way for action writes and
+transition rules.
+
+An action write applies to the acting agent's row, so its target's declared scope must
+have one row per agent: a meter bar, or a variable of scope `agent`, `agent_private` or
+`message`. The one exception is an affordance occupancy claim: an action that declares
+`source_affordance` may write an `affordance`-scoped variable with composition
+`claim_if_free` or `capacity_claim` at `resolve_affordance_access_and_occupancy`, which
+writes that affordance's row. Any other target (`global`, `pair`, `item`, or an
+`affordance` variable outside that form) is refused at compile with the variable, its
+declared scope and the write's `actions.yaml` `file:line`. Whether a pack compiles never
+depends on `num_agents`. A transition rule applies at any phase of the graph. Rewards are not a
+transition phase: they are computed by the drive (DAC) after the transition.
+
+Expressions are evaluated once per tick, after every transition phase that writes VFS
+state (action writes, scheduled effects, transition rules) and after
+`clamp_and_validate`, so an expression always reads this tick's writes and clamped bars.
+The converse is one tick behind: an action write or transition rule that reads an
+expression variable sees the value computed at the end of the previous tick.
 
 ## Resolution, access and artifacts
 

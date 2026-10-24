@@ -93,7 +93,7 @@ class ItemManager:
             from townlet.config.effects_config import CommandConfig
             from townlet.effects.parser import CommandParser
 
-            compiler = CommandCompiler(schema=schema)
+            compiler = CommandCompiler(schema=schema, agent_target=True)
             parser = CommandParser()
 
             for item_type in catalog.item_types:
@@ -232,23 +232,7 @@ class ItemManager:
         self._position_index.clear()
 
         if self.vfs_registry is not None and self.vfs_registry.item_vfs is not None:
-            from townlet.vfs.schema import VariableScope
-
             self.vfs_registry.item_vfs.zero_()
-            for var_id, var_def in self.vfs_registry.variables.items():
-                if var_def.scope != VariableScope.ITEM:
-                    continue
-                default_value = var_def.default
-                if default_value is None:
-                    continue
-                var_idx = self.vfs_registry.item_var_to_index.get(var_id)
-                if var_idx is None:
-                    continue
-                target_tensor = self.vfs_registry.item_vfs[:, var_idx]
-                if isinstance(default_value, list):
-                    target_tensor.fill_(default_value[0])
-                else:
-                    target_tensor.fill_(default_value)
 
     def find_spawn_location(
         self,

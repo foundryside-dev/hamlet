@@ -17,7 +17,6 @@ from townlet.vfs.vtc import (
     VTCInteractionProgressProgram,
     VTCModulationProgram,
     VTCPassiveDepletionProgram,
-    VTCRewardProgram,
     VTCSocialResidueProgram,
     VTCTerminalConditionProgram,
     VTCThresholdCascadeProgram,
@@ -27,10 +26,10 @@ from townlet.vfs.vtc import (
     compile_vtc_interaction_progress_with_phase_graph,
     compile_vtc_modulations_with_phase_graph,
     compile_vtc_passive_depletions_with_phase_graph,
-    compile_vtc_reward_components_with_phase_graph,
     compile_vtc_social_residue_rules_with_phase_graph,
     compile_vtc_terminal_conditions_with_phase_graph,
     compile_vtc_threshold_cascades_with_phase_graph,
+    vtc_write_targets,
 )
 
 
@@ -47,7 +46,6 @@ class VTCTransitionSchedule:
     modulation_program: VTCModulationProgram
     threshold_cascade_program: VTCThresholdCascadeProgram
     social_residue_program: VTCSocialResidueProgram
-    reward_component_program: VTCRewardProgram
     bounds_clamp_program: VTCBoundsClampProgram
 
 
@@ -80,11 +78,6 @@ class VTCTransitionRunner:
     def __init__(self, schedule: VTCTransitionSchedule) -> None:
         self.schedule = schedule
 
-    def phases_through(self, phase: str) -> tuple[str, ...]:
-        """Return all configured phases through the named phase, inclusive."""
-        index = self.schedule.phase_graph.sort_key(phase)
-        return self.schedule.phase_graph.ordered_phases[: index + 1]
-
     def phases_between(self, after_phase: str, before_phase: str) -> tuple[str, ...]:
         """Return configured phases after one boundary and before another."""
         after_index = self.schedule.phase_graph.sort_key(after_phase)
@@ -92,10 +85,6 @@ class VTCTransitionRunner:
         if after_index >= before_index:
             raise ValueError(f"Phase '{after_phase}' must precede phase '{before_phase}'")
         return self.schedule.phase_graph.ordered_phases[after_index + 1 : before_index]
-
-    def run_phase(self, phase: str, context: VTCTransitionContext) -> VTCTransitionState:
-        """Run all compiled transition programs scheduled for one phase."""
-        return self.run_phases((phase,), context)
 
     def run_phases(self, phases: Sequence[str], context: VTCTransitionContext) -> VTCTransitionState:
         """Run compiled transition programs for the supplied phases in order."""
@@ -130,7 +119,9 @@ class VTCTransitionRunner:
         if not writes:
             return vfs_state, bars_state, frozenset()
         if context.actions is None:
-            raise ValueError(f"Transition phase '{phase}' requires actions for VTC action writes")
+            # The compiler admits action writes only at phase_graph.action_phases, which
+            # step() runs with the tick's actions; reaching here is an engine defect.
+            raise AssertionError(f"Transition phase '{phase}' ran without actions but schedules VTC action writes")
 
         updated = VTCActionWriteProgram(writes).apply(
             actions=context.actions,
@@ -240,11 +231,12 @@ def build_vtc_transition_schedule(
     # row. The id order below is the registry's affordance-scope row order
     # (build_affordance_metadata enumerates the same sequence).
     affordance_ids = tuple(aff.name for aff in level.affordances.affordances)
-    action_writes = compile_vtc_affordance_occupancy_with_phase_graph(runtime_action_space.actions, affordance_ids, phase_graph)
-    _validate_action_write_targets(
-        action_writes,
-        vfs_variable_ids=(variable.id for variable in vfs_variables),
-        meter_names=(meter.name for meter in level.bars.meters),
+    targets = vtc_write_targets(vfs_variables, (meter.name for meter in level.bars.meters))
+    action_writes = compile_vtc_affordance_occupancy_with_phase_graph(
+        runtime_action_space.actions,
+        targets,
+        affordance_ids,
+        phase_graph,
     )
     affordance_gates = compile_vtc_affordance_gates_with_phase_graph(level.affordances.affordances, phase_graph)
     interaction_progress = compile_vtc_interaction_progress_with_phase_graph(level.affordances.affordances, phase_graph)
@@ -252,9 +244,7 @@ def build_vtc_transition_schedule(
     passive_depletions = compile_vtc_passive_depletions_with_phase_graph(level.bars.meters, phase_graph)
     modulations = compile_vtc_modulations_with_phase_graph(level.affordances.modulations, phase_graph)
     threshold_cascades = compile_vtc_threshold_cascades_with_phase_graph(level.bars.cascades, level.bars.meters, phase_graph)
-    social_program = compile_vtc_social_residue_rules_with_phase_graph(social_residue_rules, phase_graph)
-    _validate_state_residue_targets(social_program, (variable.id for variable in vfs_variables))
-    rewards = compile_vtc_reward_components_with_phase_graph(level.drive, phase_graph)
+    social_program = compile_vtc_social_residue_rules_with_phase_graph(social_residue_rules, targets, phase_graph)
     bounds_clamps = compile_vtc_bounds_clamps_with_phase_graph(level.bars.meters, phase_graph)
     return VTCTransitionSchedule(
         phase_graph=phase_graph,
@@ -266,7 +256,6 @@ def build_vtc_transition_schedule(
         modulation_program=modulations,
         threshold_cascade_program=threshold_cascades,
         social_residue_program=social_program,
-        reward_component_program=rewards,
         bounds_clamp_program=bounds_clamps,
     )
 
@@ -288,7 +277,6 @@ def serialize_vtc_transition_schedule(schedule: VTCTransitionSchedule) -> dict[s
             "modulations": len(schedule.modulation_program.rules),
             "threshold_cascades": len(schedule.threshold_cascade_program.rules),
             "social_residue": len(schedule.social_residue_program.rules),
-            "reward_components": len(schedule.reward_component_program.rules),
             "bounds_clamps": len(schedule.bounds_clamp_program.rules),
         },
     }
@@ -322,30 +310,6 @@ def _split_vfs_and_bars(
     return vfs_state, bars_state
 
 
-def _validate_action_write_targets(
-    program: VTCActionWriteProgram,
-    *,
-    vfs_variable_ids: Iterable[str],
-    meter_names: Iterable[str],
-) -> None:
-    """Every action write must target a declared VFS variable or meter bar —
-    an unknown target would otherwise surface as a KeyError mid-step."""
-    known = set(vfs_variable_ids) | set(meter_names)
-    for write in program.writes:
-        if write.variable_id not in known:
-            raise ValueError(
-                f"Action '{write.action_name}' write '{write.telemetry_label}' targets unknown "
-                f"state variable '{write.variable_id}'. Declare it as a VFS variable or meter bar."
-            )
-
-
-def _validate_state_residue_targets(program: VTCSocialResidueProgram, variable_ids: Iterable[str]) -> None:
-    known = set(variable_ids)
-    for rule in program.rules:
-        if rule.variable_id not in known:
-            raise ValueError(f"VTC state residue rule '{rule.rule_id}' targets unknown VFS variable '{rule.variable_id}'")
-
-
 def _social_rule_to_source(rule: Any) -> dict[str, Any]:
     return {
         "id": rule.rule_id,
@@ -364,7 +328,6 @@ def _social_rule_to_source(rule: Any) -> dict[str, Any]:
                 "priority": rule.priority,
                 "clamp": None if rule.clamp is None else list(rule.clamp),
                 "telemetry_label": rule.telemetry_label,
-                "scope": rule.scope,
             }
         ],
     }

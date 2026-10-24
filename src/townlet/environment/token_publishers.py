@@ -183,7 +183,7 @@ class CompiledValueNormalizer:
     Compiled once at publisher construction into per-element parameter tensors and
     per-kind masks (four masks over the element axis — constant count, independent of
     variable count), then applied to `[..., n_elements]` values in whole-tensor ops.
-    Kinds mirror `vfs/observation_builder.apply_normalization`'s live ABI exactly:
+    The kinds are the four `kind_to_id` admits at exposure (`require_exposure_normalization`):
     minmax / log_scaled clamp (clip is required at exposure), cyclical_sin_cos lands
     sin in lane 0 and cos in lane 1 of ONE token (spec §1 width rule), binary uses the
     strict `value > threshold` comparison.

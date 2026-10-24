@@ -86,18 +86,15 @@ src/townlet/training/state.py:*
 # VFS (Variable & Feature System) - Phase 1 schemas
 # Optional/metadata fields with acceptable defaults per no-defaults principle:
 #   - NormalizationSpec: min/max/mean/std are optional (kind determines which are used)
-#   - ObservationField: normalization is optional (None = no normalization)
 #   - VariableDef: dims optional (only for vecNi/vecNf), description optional (metadata)
 src/townlet/vfs/schema.py:NormalizationSpec:*:min:CALL003
 src/townlet/vfs/schema.py:NormalizationSpec:*:max:CALL003
 src/townlet/vfs/schema.py:NormalizationSpec:*:mean:CALL003
 src/townlet/vfs/schema.py:NormalizationSpec:*:std:CALL003
-src/townlet/vfs/schema.py:ObservationField:*:normalization:CALL003
 src/townlet/vfs/schema.py:VariableDef:*:dims:CALL003
 src/townlet/vfs/schema.py:VariableDef:*:description:CALL003
 
 # Needs review
-src/townlet/vfs/observation_builder.py:*
 src/townlet/vfs/registry.py:*
 src/townlet/config/base.py:*
 src/townlet/config/cues.py:*
@@ -108,7 +105,6 @@ src/townlet/universe/dto/observation_spec.py:*
 src/townlet/environment/action_config.py:*
 src/townlet/environment/substrate_action_validator.py:*
 src/townlet/training/checkpoint_utils.py:*
-src/townlet/universe/adapters/vfs_adapter.py:*
 src/townlet/universe/compiled.py:*
 src/townlet/universe/compiler.py:*
 src/townlet/universe/dto/universe_metadata.py:*
@@ -173,7 +169,6 @@ src/townlet/config/brain_config.py:*
 src/townlet/config/effects_config.py:*
 src/townlet/config/items_config.py:*
 src/townlet/config/stratum_config.py:*
-src/townlet/config/vfs_profiles_config.py:*
 src/townlet/effects/catalog.py:*
 src/townlet/effects/collections.py:*
 src/townlet/effects/compiler.py:*
@@ -241,10 +236,6 @@ src/townlet/universe/validation/references.py:*
 src/townlet/environment/action_executor.py:*
 
 # VFS modules added after the ledger's last maintenance - mechanical patterns.
-src/townlet/vfs/communication.py:*
-src/townlet/vfs/dynamic_needs.py:*
-src/townlet/vfs/generalisation.py:*
-src/townlet/vfs/relational.py:*
 src/townlet/vfs/schema_hashes.py:*
 src/townlet/vfs/transition_schedule.py:*
 

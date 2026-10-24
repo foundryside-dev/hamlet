@@ -61,7 +61,7 @@ def test_effect_expression_reads_and_writes_global_tensor_whole():
     context = _make_context(registry, target_index=1)
 
     command = CommandNode(type=CommandType.MODIFY, path="vfs.grid", value_expr="vfs.grid + 1.0")
-    compiler = CommandCompiler(schema={"vfs.grid": "float"})
+    compiler = CommandCompiler(schema={"vfs.grid": "float"}, agent_target=True)
     compiler.compile_command(command)
 
     CommandExecutor().execute(command, context)
@@ -77,7 +77,7 @@ def test_effect_expression_global_root_reads_global_tensor():
     context = _make_context(registry, target_index=1)
 
     command = CommandNode(type=CommandType.MODIFY, path="vfs.grid", value_expr="global.vfs.grid + 2.0")
-    compiler = CommandCompiler(schema={"vfs.grid": "float", "global.vfs.grid": "float"})
+    compiler = CommandCompiler(schema={"vfs.grid": "float", "global.vfs.grid": "float"}, agent_target=True)
     compiler.compile_command(command)
 
     CommandExecutor().execute(command, context)
@@ -99,7 +99,7 @@ def test_target_vfs_write_to_global_raises():
     # Schema deliberately includes the stale target path, simulating a pre-fix artifact:
     # the runtime must still refuse.
     command = CommandNode(type=CommandType.MODIFY, path="target.vfs.grid", value_expr="0.5")
-    compiler = CommandCompiler(schema={"target.vfs.grid": "float"})
+    compiler = CommandCompiler(schema={"target.vfs.grid": "float"}, agent_target=True)
     compiler.compile_command(command)
 
     with pytest.raises(ValueError, match="global"):
@@ -115,7 +115,7 @@ def test_target_vfs_read_of_global_not_available():
     context = _make_context(registry, target_index=1)
 
     command = CommandNode(type=CommandType.MODIFY, path="vfs.mood", value_expr="target.vfs.grid + 1.0")
-    compiler = CommandCompiler(schema={"vfs.mood": "float", "target.vfs.grid": "float"})
+    compiler = CommandCompiler(schema={"vfs.mood": "float", "target.vfs.grid": "float"}, agent_target=True)
     compiler.compile_command(command)
 
     with pytest.raises(KeyError):
@@ -128,7 +128,7 @@ def test_target_vfs_write_to_agent_var_still_works():
     context = _make_context(registry, target_index=1)
 
     command = CommandNode(type=CommandType.MODIFY, path="target.vfs.mood", value_expr="0.7")
-    compiler = CommandCompiler(schema={"target.vfs.mood": "float"})
+    compiler = CommandCompiler(schema={"target.vfs.mood": "float"}, agent_target=True)
     compiler.compile_command(command)
 
     CommandExecutor().execute(command, context)
@@ -166,7 +166,7 @@ def test_effect_writes_enforce_writable_by(path: str):
     )
 
     command = CommandNode(type=CommandType.MODIFY, path=path, value_expr="0.7")
-    CommandCompiler(schema={path: "float"}).compile_command(command)
+    CommandCompiler(schema={path: "float"}, agent_target=True).compile_command(command)
 
     with pytest.raises(PermissionError, match="not allowed to write"):
         CommandExecutor().execute(command, context)

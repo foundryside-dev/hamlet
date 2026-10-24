@@ -23,7 +23,7 @@ def _energy_write() -> CommandNode:
 
 
 def test_stochastic_loop_selects_once_and_reuses_the_exact_context() -> None:
-    command = CommandCompiler({"target.bar.energy": "float"}).compile_command(_random_loop([_energy_write()]))
+    command = CommandCompiler({"target.bar.energy": "float"}, agent_target=True).compile_command(_random_loop([_energy_write()]))
     executor = CommandExecutor()
     torch.manual_seed(1)
     selected = int((torch.rand(()) * 2).item())
@@ -47,7 +47,7 @@ def test_stochastic_loop_selects_once_and_reuses_the_exact_context() -> None:
 
 
 def test_loop_nested_under_compounds_evaluates_collection_once() -> None:
-    command = CommandCompiler({"target.bar.energy": "float"}).compile_command(
+    command = CommandCompiler({"target.bar.energy": "float"}, agent_target=True).compile_command(
         CommandNode(
             type=CommandType.PARALLEL,
             parallel_commands=[
@@ -74,7 +74,7 @@ def test_unselected_branch_does_not_evaluate_stochastic_loop(kind: str) -> None:
         command = CommandNode(type=CommandType.IF, condition_expr="0 > 1", then_commands=[loop], else_commands=[])
     else:
         command = CommandNode(type=CommandType.SWITCH, switch_expr="0", cases=[("1", [loop])], default_commands=[])
-    command = CommandCompiler({"target.bar.energy": "float"}).compile_command(command)
+    command = CommandCompiler({"target.bar.energy": "float"}, agent_target=True).compile_command(command)
     torch.manual_seed(1)
     before_rng = torch.get_rng_state().clone()
     context = ExecutionContext(bars={"energy": torch.full((2,), 3.0)})
@@ -99,7 +99,7 @@ def test_loop_selection_sees_earlier_compound_sibling_write() -> None:
         2,
         torch.device("cpu"),
     )
-    command = CommandCompiler({"vfs.selector": "float", "target.bar.energy": "float"}).compile_command(
+    command = CommandCompiler({"vfs.selector": "float", "target.bar.energy": "float"}, agent_target=True).compile_command(
         CommandNode(
             type=CommandType.PARALLEL,
             parallel_commands=[
@@ -120,7 +120,7 @@ def test_denied_stochastic_loop_body_precedes_compound_mutation_and_rng() -> Non
         2,
         torch.device("cpu"),
     )
-    command = CommandCompiler({"bar.energy": "float", "target.vfs.constant": "float"}).compile_command(
+    command = CommandCompiler({"bar.energy": "float", "target.vfs.constant": "float"}, agent_target=True).compile_command(
         CommandNode(
             type=CommandType.PARALLEL,
             parallel_commands=[
@@ -164,7 +164,7 @@ def test_inventory_profile_denial_precedes_first_selected_item_mutation() -> Non
     context.inventory = SimpleNamespace(
         slots=torch.tensor([[0, 1], [-1, -1]]), items={0: SimpleNamespace(vfs_index=0), 1: SimpleNamespace(vfs_index=1)}
     )
-    command = CommandCompiler({"target.vfs.charge": "float"}).compile_command(
+    command = CommandCompiler({"target.vfs.charge": "float"}, agent_target=True).compile_command(
         CommandNode(
             type=CommandType.FOR_EACH,
             collection="inventory_items",

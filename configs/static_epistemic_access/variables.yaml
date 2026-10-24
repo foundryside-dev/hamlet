@@ -1,7 +1,5 @@
 variables:
   version: '1.0'
-  evaluation_mode: mark_and_sweep
-  debug_logging: false
   extents: {}
   item_profiles: []
   declarations:
@@ -55,3 +53,16 @@ variables:
     writable_by: []
     exposed_to: []
     initial_value: 7.0
+  - id: scaled_public
+    scope: agent
+    type: scalar
+    lifetime: episode
+    semantic_type: custom
+    readable_by:
+    - engine
+    - agent
+    writable_by:
+    - engine
+    exposed_to: []
+    initial_value: 0.0
+    expression: public_state * immutable_scale

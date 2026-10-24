@@ -76,8 +76,6 @@ def test_cli_validate_reports_vfs_domain_errors_without_traceback(tmp_path, caps
     (config_dir / "variables.yaml").write_text("""
 variables:
   version: '1.0'
-  evaluation_mode: mark_and_sweep
-  debug_logging: false
   extents: {}
   item_profiles: []
   declarations:

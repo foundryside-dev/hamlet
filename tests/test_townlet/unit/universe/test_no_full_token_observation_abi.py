@@ -88,7 +88,7 @@ def test_vertical_runtime_has_no_whole_fixed_observation_surface_or_allocation(
 ) -> None:
     initial = UniverseCompiler().compile(PACK, primary_level=LEVEL, use_cache=False)
     fixed_width = initial.get_level(LEVEL).token_spec.fixed_total_dims
-    assert fixed_width == 4142  # measured 2026-09-02 after day_phase (PDR-0143)
+    assert fixed_width == 4136  # measured 2026-10-24 after the semantic_type cut to temporal|custom (VFS WP6)
 
     for name in ("zeros", "full", "zeros_like"):
         allocator = getattr(torch, name)

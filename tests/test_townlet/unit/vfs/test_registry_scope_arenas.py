@@ -109,10 +109,10 @@ class TestWritesLandInArena:
     def test_reads_are_unchanged_by_the_arena(self, registry):
         registry.set("a_scalar", torch.tensor([0.1, 0.2, 0.3]), writer="engine")
         assert registry.get("a_scalar", reader="engine").tolist() == pytest.approx([0.1, 0.2, 0.3])
-        assert registry.get_agent("a_scalar", reader="engine").tolist() == pytest.approx([0.1, 0.2, 0.3])
+        assert registry.get("a_scalar", reader="engine").tolist() == pytest.approx([0.1, 0.2, 0.3])
 
     def test_get_still_returns_a_clone_not_an_arena_view(self, registry):
-        value = registry.get_global("g_scalar", reader="engine")
+        value = registry.get("g_scalar", reader="engine")
         value.fill_(123.0)
         assert registry.scope_arenas["global"].tensor[0, 0].item() == 0.25
 
@@ -139,26 +139,3 @@ class TestNonArenaVariablesUnchanged:
 
     def test_agent_private_reads_still_work_for_privileged_readers(self, registry):
         assert registry.get("p_scalar", reader="engine").tolist() == [9.0, 9.0, 9.0]
-
-
-class TestDynamicVariableMode:
-    def test_dynamic_added_variables_stay_out_of_the_arena(self):
-        registry = VariableRegistry(
-            variables=[_var("g_scalar", default=0.0)],
-            num_agents=2,
-            device=DEVICE,
-            dynamic_variable_mode=True,
-        )
-        registry.add_variable(_var("late", default=1.0), network_shape_effect="shape_stable_internal")
-        assert "late" not in registry.scope_arenas["global"].index
-        assert registry.get("late", reader="engine").item() == 1.0
-
-    def test_removing_an_arena_backed_variable_drops_its_index_entry(self):
-        registry = VariableRegistry(
-            variables=[_var("g_scalar", default=0.0)],
-            num_agents=2,
-            device=DEVICE,
-            dynamic_variable_mode=True,
-        )
-        registry.remove_variable("g_scalar", network_shape_effect="shape_stable_internal")
-        assert "g_scalar" not in registry.scope_arenas["global"].index

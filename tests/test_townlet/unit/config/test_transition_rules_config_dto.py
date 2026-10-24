@@ -14,7 +14,8 @@ from townlet.config.transition_rules_config import (
     SocialResidueWriteConfig,
     TransitionRulesConfig,
 )
-from townlet.vfs import compile_vtc_social_residue_rules
+from townlet.vfs import VTCWriteTarget, compile_vtc_social_residue_rules
+from townlet.vfs.schema import VariableScope
 from townlet.vfs.vtc import _SOCIAL_RESIDUE_RULE_KINDS
 
 
@@ -26,7 +27,6 @@ def _write_payload(**overrides) -> dict:
         "condition": None,
         "clamp": (0.0, 1.0),
         "effect": "trust_delta",
-        "scope": "pair",
     }
     payload.update(overrides)
     return payload
@@ -60,7 +60,6 @@ class TestSocialResidueWriteConfig:
         assert write.variable_id == "trust"
         assert write.composition == "additive_delta"
         assert write.clamp == (0.0, 1.0)
-        assert write.scope == "pair"
         # Computed-at-compile fields may be omitted and default to None.
         assert write.phase is None
         assert write.priority is None
@@ -74,7 +73,7 @@ class TestSocialResidueWriteConfig:
         with pytest.raises(ValidationError, match="condtion"):
             SocialResidueWriteConfig(**{**_write_payload(), "condtion": "was_observed"})
 
-    @pytest.mark.parametrize("field", ["condition", "clamp", "effect", "scope"])
+    @pytest.mark.parametrize("field", ["condition", "clamp", "effect"])
     def test_nullable_behavioural_fields_must_be_explicit(self, field):
         payload = _write_payload()
         del payload[field]
@@ -85,11 +84,12 @@ class TestSocialResidueWriteConfig:
         with pytest.raises(ValidationError, match="composition"):
             SocialResidueWriteConfig(**_write_payload(composition="frobnicate"))
 
-    def test_unknown_scope_rejected(self):
-        # A stray scope would silently fall back to agent-shaped masking at
-        # runtime; the DTO closes that hole.
+    @pytest.mark.parametrize("scope", ["pair", "agent", None])
+    def test_removed_scope_field_is_rejected_at_parse_time(self, scope):
+        # Masking follows the target's declared scope; an authored annotation was a
+        # second authority and is an unknown key.
         with pytest.raises(ValidationError, match="scope"):
-            SocialResidueWriteConfig(**_write_payload(scope="group"))
+            SocialResidueWriteConfig(**_write_payload(scope=scope))
 
     def test_clamp_bounds_must_be_ordered(self):
         with pytest.raises(ValidationError, match="clamp"):
@@ -166,10 +166,15 @@ class TestTransitionRulesConfig:
         """The DTO's compiler-facing dump must be accepted verbatim by the
         existing VTC social-residue compiler."""
         config = TransitionRulesConfig(**_config_payload())
-        program = compile_vtc_social_residue_rules(config.social_residue_sources())
+        targets = {
+            "trust": VTCWriteTarget(VariableScope.PAIR, "scalar", meter=False),
+            "chosen_action": VTCWriteTarget(VariableScope.AGENT, "scalar", meter=False),
+            "observer_mask": VTCWriteTarget(VariableScope.PAIR, "bool", meter=False),
+        }
+        program = compile_vtc_social_residue_rules(config.social_residue_sources(), targets)
         assert len(program.rules) == 1
         assert program.rules[0].rule_id == "seen_stealing_damages_trust"
-        assert program.rules[0].scope == "pair"
+        assert program.rules[0].target_scope == VariableScope.PAIR
         assert program.rules[0].clamp == (0.0, 1.0)
 
     def test_sources_omit_computed_fields_rather_than_passing_none(self):

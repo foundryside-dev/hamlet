@@ -339,11 +339,9 @@ class TestTokenSetConfig:
 
     def test_legacy_set_encoder_vfs_layout_is_deleted(self):
         import townlet.vfs as vfs
-        import townlet.vfs.dynamic_needs as dynamic_needs
 
         for name in ("DynamicNeedTokenLayout", "dynamic_need_token_layout"):
             assert not hasattr(vfs, name)
-            assert not hasattr(dynamic_needs, name)
 
 
 class TestFactory:

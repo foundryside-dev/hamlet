@@ -1,9 +1,6 @@
 variables:
   version: '1.0'
-  evaluation_mode: mark_and_sweep
-  debug_logging: false
-  extents:
-    num_affordances: 4
+  extents: {}
   item_profiles: []
   declarations:
   - id: deficit_energy

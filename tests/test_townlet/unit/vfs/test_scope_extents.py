@@ -1,14 +1,15 @@
-"""Config-in/behaviour-out tests for zone/group/message scope extents (hamlet-9e1ae3b7a2).
+"""Config-in/behaviour-out tests for scope extents (hamlet-9e1ae3b7a2).
 
-Trial K showed a zone-scoped variable VALIDATES and COMPILES, then hard-crashes at
-env construction because nothing wires num_zones/num_groups/num_message_slots into
-VariableRegistry and no config surface exists to declare them.
-
-These tests pin the fix from both ends:
-- Declaring a zone/group/message-scoped variable WITHOUT its extent fails loudly
+These tests pin the extent contract from both ends:
+- Declaring a message-scoped variable WITHOUT `num_message_slots` fails loudly
   at compile time (not at env construction).
 - Declaring the extent in variables.yaml `extents:` reaches the runtime
   registry, so the scope actually works end-to-end.
+- Affordance-scope rows have no authored extent: the level's affordance count is
+  the authority, and `num_affordances` is an unknown key (VFS WP6, findings F4).
+
+The zone and group scopes (and their num_zones/num_groups extents) were deleted in
+VFS WP2: storage with no publisher and no write path. Declaring either now refuses.
 """
 
 from __future__ import annotations
@@ -26,30 +27,6 @@ from townlet.universe.errors import CompilationError
 PRIMARY_LEVEL = "L0_test"
 
 SCOPED_VARIABLE = {
-    "zone": {
-        "readable_by": ["engine", "agent"],
-        "writable_by": ["engine"],
-        "id": "zone_temp_offset",
-        "scope": "zone",
-        "type": "scalar",
-        "lifetime": "persistent",
-        "semantic_type": "custom",
-        "initial_value": 0.0,
-        "exposed_to": [],
-        "description": "Per-zone temperature offset",
-    },
-    "group": {
-        "readable_by": ["engine", "agent"],
-        "writable_by": ["engine"],
-        "id": "group_cohesion",
-        "scope": "group",
-        "type": "scalar",
-        "lifetime": "persistent",
-        "semantic_type": "custom",
-        "initial_value": 0.5,
-        "exposed_to": [],
-        "description": "Per-group cohesion",
-    },
     "message": {
         "readable_by": ["engine", "agent"],
         "writable_by": ["engine"],
@@ -77,12 +54,7 @@ SCOPED_VARIABLE = {
     },
 }
 
-EXTENT_NAME = {
-    "zone": "num_zones",
-    "group": "num_groups",
-    "message": "num_message_slots",
-    "affordance": "num_affordances",
-}
+EXTENT_NAME = {"message": "num_message_slots"}
 
 
 def _add_scoped_variable(pack: Path, scope: str, extents: dict[str, int] | None) -> None:
@@ -95,9 +67,9 @@ def _add_scoped_variable(pack: Path, scope: str, extents: dict[str, int] | None)
     ref_path.write_text(yaml.safe_dump(data))
 
 
-@pytest.mark.parametrize("scope", ["zone", "group", "message", "affordance"])
+@pytest.mark.parametrize("scope", ["message"])
 def test_scoped_variable_without_extent_fails_at_compile(temp_config_pack: Path, scope: str) -> None:
-    """A zone/group/message-scoped variable with no declared extent must be rejected
+    """A message/affordance-scoped variable with no declared extent must be rejected
     at compile time, naming both the variable and the missing extent — never a green
     compile followed by a crash at env construction (the Trial K shape)."""
     _add_scoped_variable(temp_config_pack, scope, extents=None)
@@ -113,8 +85,6 @@ def test_scoped_variable_without_extent_fails_at_compile(temp_config_pack: Path,
 @pytest.mark.parametrize(
     ("scope", "extents"),
     [
-        ("zone", {"num_zones": 4}),
-        ("group", {"num_groups": 2}),
         ("message", {"num_message_slots": 3}),
     ],
 )
@@ -137,17 +107,14 @@ def test_scoped_variable_with_extent_reaches_runtime(temp_config_pack: Path, sco
 
     assert getattr(env.vfs_registry, extent_name) == extent_value
     value = env.vfs_registry.get(SCOPED_VARIABLE[scope]["id"], reader="engine")
-    if scope == "message":
-        # Message scope allocates [num_agents, num_message_slots, ...]
-        assert value.shape[0] == 2
-        assert value.shape[1] == extent_value
-    else:
-        assert value.shape[0] == extent_value
+    # Message scope allocates [num_agents, num_message_slots, ...]
+    assert value.shape[0] == 2
+    assert value.shape[1] == extent_value
 
 
 def test_extent_of_zero_is_rejected(temp_config_pack: Path) -> None:
     """An explicit zero extent is a declaration that means nothing — reject it."""
-    _add_scoped_variable(temp_config_pack, "zone", extents={"num_zones": 0})
+    _add_scoped_variable(temp_config_pack, "message", extents={"num_message_slots": 0})
 
     with pytest.raises(CompilationError):
         UniverseCompiler().compile(temp_config_pack, primary_level=PRIMARY_LEVEL, use_cache=False)
@@ -157,8 +124,51 @@ def test_extents_without_scoped_variables_are_allowed(temp_config_pack: Path) ->
     """Declaring extents with no matching-scope variables is harmless sizing metadata."""
     ref_path = temp_config_pack / "variables.yaml"
     data = yaml.safe_load(ref_path.read_text())
-    data["variables"]["extents"] = {"num_zones": 4}
+    data["variables"]["extents"] = {"num_message_slots": 4}
     ref_path.write_text(yaml.safe_dump(data))
 
     universe = UniverseCompiler().compile(temp_config_pack, primary_level=PRIMARY_LEVEL, use_cache=False)
-    assert universe.metadata.num_zones == 4
+    assert universe.metadata.num_message_slots == 4
+
+
+@pytest.mark.parametrize("scope", ["zone", "group"])
+def test_deleted_zone_and_group_scopes_refuse(temp_config_pack: Path, scope: str) -> None:
+    """zone/group storage had no publisher and no write path; a declaration of either refuses."""
+    declaration = dict(SCOPED_VARIABLE["message"], id=f"{scope}_state", scope=scope, type="scalar", initial_value=0.0)
+    del declaration["dims"]
+    ref_path = temp_config_pack / "variables.yaml"
+    data = yaml.safe_load(ref_path.read_text())
+    data["variables"]["declarations"].append(declaration)
+    ref_path.write_text(yaml.safe_dump(data))
+
+    with pytest.raises(CompilationError, match=f"{scope}_state|scope"):
+        UniverseCompiler().compile(temp_config_pack, primary_level=PRIMARY_LEVEL, use_cache=False)
+
+
+@pytest.mark.parametrize("extent", ["num_zones", "num_groups", "num_affordances"])
+def test_deleted_extents_refuse(temp_config_pack: Path, extent: str) -> None:
+    """The deleted extents are unknown keys, not inert metadata."""
+    ref_path = temp_config_pack / "variables.yaml"
+    data = yaml.safe_load(ref_path.read_text())
+    data["variables"]["extents"] = {extent: 2}
+    ref_path.write_text(yaml.safe_dump(data))
+
+    with pytest.raises(CompilationError, match=extent):
+        UniverseCompiler().compile(temp_config_pack, primary_level=PRIMARY_LEVEL, use_cache=False)
+
+
+def test_affordance_scope_rows_come_from_the_level(temp_config_pack: Path) -> None:
+    """findings_vfs F4: an affordance-scope variable needs no authored extent; its
+    registry rows are the level's affordance count, the one authority."""
+    _add_scoped_variable(temp_config_pack, "affordance", extents=None)
+
+    universe = UniverseCompiler().compile(temp_config_pack, primary_level=PRIMARY_LEVEL, use_cache=False)
+    env = VectorizedHamletEnv.from_universe(
+        universe,
+        level_name=PRIMARY_LEVEL,
+        num_agents=2,
+        device=torch.device("cpu"),
+    )
+
+    rows = env.vfs_registry.get(SCOPED_VARIABLE["affordance"]["id"], reader="engine")
+    assert rows.shape == (universe.metadata.affordance_count,)

@@ -57,8 +57,6 @@ def _write_variables(config_dir: Path, *, profile_count: int) -> None:
     variables = {
         "variables": {
             "version": "1.0",
-            "evaluation_mode": "mark_and_sweep",
-            "debug_logging": False,
             "extents": {},
             "item_profiles": profiles,
             "declarations": [

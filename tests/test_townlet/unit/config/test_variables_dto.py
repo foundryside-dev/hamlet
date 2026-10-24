@@ -20,8 +20,14 @@ def variable(**changes):
 
 
 def test_same_variable_contract_for_all_storage_scopes():
-    for scope in ["global", "agent", "agent_private", "pair", "group", "affordance", "zone", "message"]:
+    for scope in ["global", "agent", "agent_private", "pair", "affordance", "message"]:
         assert VariableDeclaration.model_validate(variable(scope=scope)).scope == scope
+
+
+@pytest.mark.parametrize("scope", ["zone", "group"])
+def test_deleted_storage_scopes_refuse(scope):
+    with pytest.raises(ValidationError, match="scope"):
+        VariableDeclaration.model_validate(variable(scope=scope))
 
 
 def test_initialization_is_explicit_even_for_derived_values():
@@ -52,7 +58,7 @@ def test_public_type_has_one_spelling(kind):
         VariableDeclaration.model_validate(variable(type=kind))
 
 
-@pytest.mark.parametrize("scope", ["agent_private", "pair", "group", "affordance", "zone", "message"])
+@pytest.mark.parametrize("scope", ["agent_private", "pair", "affordance", "message"])
 def test_unimplemented_expression_scopes_refuse(scope):
     with pytest.raises(ValidationError, match="expression"):
         VariableDeclaration.model_validate(variable(scope=scope, expression="tick"))
@@ -78,8 +84,6 @@ def test_empty_item_profile_remains_a_real_binding_target():
     config = VariablesConfig.model_validate(
         {
             "version": "1.0",
-            "evaluation_mode": "mark_and_sweep",
-            "debug_logging": False,
             "extents": {},
             "item_profiles": ["default_item"],
             "declarations": [],
@@ -127,21 +131,13 @@ def test_item_reference_null_initializes_actual_arena_as_unbound(tmp_path):
         assert env.vfs_registry.read_item("food", "claimant", item.vfs_index, reader="engine") == -1
 
 
-@pytest.mark.parametrize(
-    "declarations",
-    [
-        [variable(scope="global", type="agent_ref", initial_value=None)],
-        [variable(scope="global", type="tensor1d", shape=[2], initial_value_mode="ones")],
-    ],
-)
-def test_eager_unsupported_initialization_refuses_before_execution(declarations):
-    for declaration in declarations:
-        if "initial_value_mode" in declaration:
-            declaration.pop("initial_value")
-    with pytest.raises(ValidationError, match="eager"):
-        VariablesConfig.model_validate(
-            dict(version="1.0", evaluation_mode="eager", debug_logging=False, extents={}, item_profiles=[], declarations=declarations)
-        )
+@pytest.mark.parametrize("key,value", [("evaluation_mode", "eager"), ("evaluation_mode", "mark_and_sweep"), ("debug_logging", False)])
+def test_deleted_evaluation_settings_refuse_as_extra_fields(key, value):
+    """Mark-and-sweep is the only evaluator (review-2026-10-24 F3): the settings are not vocabulary."""
+    payload = dict(version="1.0", extents={}, item_profiles=[], declarations=[variable(scope="global")])
+    payload[key] = value
+    with pytest.raises(ValidationError, match=rf"{key}\n  Extra inputs are not permitted"):
+        VariablesConfig.model_validate(payload)
 
 
 @pytest.mark.parametrize(

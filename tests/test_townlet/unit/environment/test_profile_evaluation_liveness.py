@@ -24,8 +24,6 @@ def _make_env(tmp_path, profile_payload, num_agents=2):
 _PROFILES = {
     "variables": {
         "version": "1.0",
-        "evaluation_mode": "mark_and_sweep",
-        "debug_logging": False,
         "extents": {},
         "item_profiles": ["default_item"],
         "declarations": [
@@ -80,8 +78,6 @@ def test_static_survives_engine_write_unclobbered(tmp_path):
 _DEPENDENCY_PROFILES = {
     "variables": {
         "version": "1.0",
-        "evaluation_mode": "mark_and_sweep",
-        "debug_logging": False,
         "extents": {},
         "item_profiles": ["default_item"],
         "declarations": [
@@ -132,8 +128,6 @@ def test_static_dependency_of_marked_expression_is_not_clobbered_by_write_back(t
 _AGENT_PROFILES = {
     "variables": {
         "version": "1.0",
-        "evaluation_mode": "mark_and_sweep",
-        "debug_logging": False,
         "extents": {},
         "item_profiles": ["default_item"],
         "declarations": [
@@ -185,8 +179,6 @@ def test_agent_static_is_never_clobbered(tmp_path):
 _AGENT_DEPENDENCY_PROFILES = {
     "variables": {
         "version": "1.0",
-        "evaluation_mode": "mark_and_sweep",
-        "debug_logging": False,
         "extents": {},
         "item_profiles": ["default_item"],
         "declarations": [
@@ -239,8 +231,6 @@ def test_agent_static_dependency_of_marked_expression_is_not_clobbered_by_write_
 _AGENT_SCALAR_EXPRESSION_PROFILES = {
     "variables": {
         "version": "1.0",
-        "evaluation_mode": "mark_and_sweep",
-        "debug_logging": False,
         "extents": {},
         "item_profiles": ["default_item"],
         "declarations": [
@@ -266,15 +256,13 @@ def test_agent_expression_wrong_shape_raises_naming_variable_and_shapes(tmp_path
         _make_env(tmp_path, _AGENT_SCALAR_EXPRESSION_PROFILES)
 
 
-# --- Amendment obligation 3 (Task 5 fix-round controller ruling): the write-back
-# filter is mode-uniform, which silently ended EAGER's registry-level static reinit.
-# Statics are storage in every evaluation mode, not just mark_and_sweep. ---
+# --- review-2026-10-24 F3: statics are storage. The deleted eager evaluator rebuilt
+# expression context from each static's declared literal, so an expression over an
+# engine-written static was permanently stale. Mark-and-sweep is the only path. ---
 
-_EAGER_PROFILES = {
+_STATIC_INPUT_PROFILES = {
     "variables": {
         "version": "1.0",
-        "evaluation_mode": "eager",
-        "debug_logging": False,
         "extents": {},
         "item_profiles": ["default_item"],
         "declarations": [
@@ -292,30 +280,25 @@ _EAGER_PROFILES = {
             {
                 "readable_by": ["engine", "agent"],
                 "writable_by": ["engine"],
-                "id": "tick_echo",
+                "id": "stash_twice",
                 "scope": "global",
                 "type": "scalar",
                 "lifetime": "persistent",
                 "semantic_type": "custom",
                 "initial_value": 0.0,
                 "exposed_to": [],
-                "expression": "tick * 2.0",
+                "expression": "stash * 2.0",
             },
         ],
     }
 }
 
 
-def test_eager_mode_static_survives_engine_write_unclobbered(tmp_path):
-    """Statics are storage in every mode, not just mark_and_sweep: EAGER reinitializes
-    `context.vfs` from each static's declared default for evaluation purposes (see
-    evaluator.py's mode check), but the write-back loop's expression-only filter
-    (`var.ast is not None`) excludes statics from ever reaching the registry — in
-    EAGER mode exactly as in mark_and_sweep. Before that filter existed, EAGER's
-    behavior was to reinit every variable including statics at the registry level;
-    that registry-level reinit is the behavior this test pins as GONE.
-    """
-    env = _make_env(tmp_path, _EAGER_PROFILES)
+def test_static_survives_engine_write_and_feeds_dependents_its_runtime_value(tmp_path):
+    """The write-back filter keeps an engine-written static unclobbered, and the expression
+    that depends on it reads the written value, never the declared literal 1.0."""
+    env = _make_env(tmp_path, _STATIC_INPUT_PROFILES)
     env.vfs_registry.set_engine_value("stash", torch.tensor(7.0))
     env.step(torch.zeros(env.num_agents, dtype=torch.long, device=env.device))
     assert _global_value(env, "stash") == 7.0
+    assert _global_value(env, "stash_twice") == 14.0

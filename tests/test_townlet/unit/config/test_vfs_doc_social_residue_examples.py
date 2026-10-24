@@ -12,9 +12,33 @@ from pathlib import Path
 import yaml
 
 from townlet.config.transition_rules_config import TransitionRulesConfig
-from townlet.vfs import compile_vtc_social_residue_rules
+from townlet.vfs import VTCWriteTarget, compile_vtc_social_residue_rules
+from townlet.vfs.schema import VariableScope
 
 VFS_DOC = Path("docs/architecture/VFS.md")
+
+
+def _target(scope: VariableScope, var_type: str = "scalar", *, meter: bool = False) -> VTCWriteTarget:
+    return VTCWriteTarget(scope, var_type, meter=meter)
+
+
+#: Declared scope and type of every state the examples write or read (VFS.md §16.2):
+#: the relational targets, the action-index globals the conditions compare against,
+#: the per-agent masks, and the two meters.
+DOC_TARGET_SCOPES = {
+    "trust": _target(VariableScope.PAIR),
+    "obligation": _target(VariableScope.PAIR),
+    "public_reputation": _target(VariableScope.AGENT),
+    "chosen_action": _target(VariableScope.AGENT),
+    "STEAL": _target(VariableScope.GLOBAL),
+    "CALL_AMBULANCE": _target(VariableScope.GLOBAL),
+    "HELP": _target(VariableScope.GLOBAL),
+    "observer_mask": _target(VariableScope.PAIR, "bool"),
+    "recipient_actor_mask": _target(VariableScope.PAIR, "bool"),
+    "was_observed": _target(VariableScope.AGENT, "bool"),
+    "health": _target(VariableScope.AGENT, meter=True),
+    "mood": _target(VariableScope.AGENT, meter=True),
+}
 
 
 def _social_residue_blocks() -> list[str]:
@@ -40,5 +64,5 @@ def test_doc_social_residue_examples_compile_as_written() -> None:
     )
     for block in blocks:
         config = TransitionRulesConfig(**yaml.safe_load(block))
-        program = compile_vtc_social_residue_rules(config.social_residue_sources())
+        program = compile_vtc_social_residue_rules(config.social_residue_sources(), DOC_TARGET_SCOPES)
         assert len(program.rules) >= 1

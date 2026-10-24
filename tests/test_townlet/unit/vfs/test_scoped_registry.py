@@ -31,22 +31,16 @@ def _registry() -> VariableRegistry:
     return VariableRegistry(variables, 3, torch.device("cpu"))
 
 
-def test_scope_inventory_and_batch_shapes() -> None:
+def test_scope_batch_shapes() -> None:
     registry = _registry()
-    assert registry.list_global() == ["world"]
-    assert registry.list_agent() == ["local"]
-    assert registry.get_global("world", reader="engine").shape == ()
-    assert registry.get_agent("local", reader="agent").shape == (3,)
-    with pytest.raises(KeyError, match="not global"):
-        registry.get_global("local", reader="engine")
-    with pytest.raises(KeyError, match="not agent"):
-        registry.get_agent("world", reader="engine")
+    assert registry.get("world", reader="engine").shape == ()
+    assert registry.get("local", reader="agent").shape == (3,)
 
 
-@pytest.mark.parametrize("name,getter", [("world", "get_global"), ("local", "get_agent")])
-def test_scoped_values_are_copies_and_checked_writes_reset(name: str, getter: str) -> None:
+@pytest.mark.parametrize("name", ["world", "local"])
+def test_scoped_values_are_copies_and_checked_writes_reset(name: str) -> None:
     registry = _registry()
-    value = getattr(registry, getter)(name, reader="engine")
+    value = registry.get(name, reader="engine")
     value.fill_(8.0)
     assert not torch.equal(value, registry.get(name, reader="engine"))
     registry.set(name, value, writer="engine")

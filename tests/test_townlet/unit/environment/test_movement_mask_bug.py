@@ -27,7 +27,8 @@ def _meter_idx(env, name: str) -> int | None:
 def _passive_rate(env, name: str) -> float:
     """Lookup passive decay from the compiled VTC passive-depletion program."""
 
-    return env.vtc_passive_depletion_program.passive_rate_for(name)
+    (rate,) = (rule.passive_rate for rule in env.vtc_passive_depletion_program.rules if rule.variable_id == name)
+    return rate
 
 
 def test_aspatial_interact_should_not_pay_movement_cost(aspatial_env):

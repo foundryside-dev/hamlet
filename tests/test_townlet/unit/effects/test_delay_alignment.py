@@ -21,7 +21,7 @@ def test_delay_respects_current_tick_anchor():
     # Build delay command: zero-delay should fire at current_tick anchor
     delay_cmd = _delay_cmd("0", "bar.energy", "5")
     schema = {"bar.energy": "int"}
-    compiler = CommandCompiler(schema)
+    compiler = CommandCompiler(schema, agent_target=True)
     compiled = compiler.compile_command(delay_cmd)
 
     scheduler = Scheduler(time_enabled=True)

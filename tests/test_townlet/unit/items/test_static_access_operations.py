@@ -88,7 +88,7 @@ def test_compound_spawn_denial_precedes_sibling_mutation() -> None:
     from townlet.effects.schema import CommandNode, CommandType
 
     manager = _manager()
-    command = CommandCompiler({"bar.energy": "float"}).compile_command(
+    command = CommandCompiler({"bar.energy": "float"}, agent_target=True).compile_command(
         CommandNode(
             type=CommandType.PARALLEL,
             parallel_commands=[

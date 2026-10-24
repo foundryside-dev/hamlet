@@ -28,8 +28,8 @@ batch model the spec never stated. The five changes, in the order I would make t
 |---|---|---|
 | 1 | Rule the batch as N independent worlds, give every non-agent scope a world axis, and delete `agent_private`, `pair`, `message` | It is the only open decision that changes what a policy learns (F4), and today it leaks across lanes in four scopes, not one |
 | 2 | One spelling and one resolver: a variable is `x` in its own row, `target.x` for a second entity; the `vfs.`, `bar.`, `env.`, `self.`, `global.vfs.`, `agent.vfs.` prefixes go | Five consumers, five grammars, two of which compile and crash (S5, F6); the web form cannot be built on a surface where the right spelling depends on the file |
-| 3 | Fold meters into VFS: a meter is an agent scalar variable with a declared `dynamics` block; the `meters` sections of `environment.yaml` and `bars.yaml`, the `bar.` spelling, the `meter` token type and the cascade DTOs go; cascades become rules | Owner ruling (2026-10-24, in session): VFS is the only system for storing variables and features. Today meters are a pre-VFS ontology shimmed into the symbol table (`vtc_write_targets`, `meter=True`), which is why one state has two names everywhere and why hunger and thirst are refused (S3) |
-| 4 | Collapse the declaration to nine fields: `id`, `scope`, `type`, `lifetime`, `range`, `initial`, `observed`, `mutable`, and an optional `expression` or `dynamics` | `readable_by`, `semantic_type`, `normalization`-iff-exposed and the three-field initializer are two spellings of one fact each; the form asks nine questions and emits a complete explicit declaration, so no-defaults survives |
+| 3 | A meter is a pointer to a variable, never its own thing: `bars.yaml` becomes a level-scoped binding `{variable: energy, depletion: {...}, recovery: ..., lethal_min: ...}` that names any declared variable (stateful, expression-derived such as time of day from `tick`, or a constant with `mutable: false`) and supplies the survival-role parameters, admitted only where the target can carry them (depletion needs a mutable stateful target; a derived or constant target binds with none); the variable owns identity, storage, `range`, `initial`, exposure and the token. The `meters` section of `environment.yaml`, the `bar.` spelling, the `meter` token type, meter `bounds`/`initial` and the cascade DTOs go; cascades become rules | Owner ruling (2026-10-24, in session): VFS is the only system for storing variables and features; bars were always meant to be a pointer. This is the project's own role-binding pattern (`money_bar: str` in DAC) applied to the survival role. Today meters are a parallel ontology shimmed into the symbol table (`vtc_write_targets`, `meter=True`), which is why one state has two names everywhere and why hunger and thirst are refused (S3) |
+| 4 | Collapse the declaration to nine fields: `id`, `scope`, `type`, `lifetime`, `range`, `initial`, `observed`, `mutable`, and an optional `expression` | `readable_by`, `semantic_type`, `normalization`-iff-exposed and the three-field initializer are two spellings of one fact each; the form asks nine questions and emits a complete explicit declaration, so no-defaults survives |
 | 5 | Make expressions a synchronous dataflow: admit `prev(x)` as the one history primitive, admit action and interaction events as inputs, inline expression variables into write conditions, refuse writes to expression-owned targets | Accumulators and "time since" become one declaration instead of three families (S9), the one-tick lag rule disappears (S4), and the dead history pipeline (F9) is replaced rather than deleted |
 
 Do 1 before anything in WP15, 2 before WP12's shape proofs are written (they are written against
@@ -264,6 +264,7 @@ rule expression refused while `hunger` works; indistinguishable from any other [
 scalar starting at 1.0. Target surface:
 
 ```yaml
+# variables.yaml (pack scope): the state
 - id: hunger
   scope: agent
   type: scalar
@@ -271,12 +272,19 @@ scalar starting at 1.0. Target surface:
   range: [0.0, 1.0]
   initial: 1.0
   observed: true
-  dynamics: {passive: -0.008, lethal_min: true}      # the meter template, as a declared block
+  mutable: true
+# levels/<L>/bars.yaml (level scope): a pointer plus the survival-role parameters
+- variable: hunger
+  depletion: {passive: 0.008, move: 0.01, interact: 0.0}
+  recovery: 0.0
+  lethal_min: true
+  lethal_max: false
 ```
 
-with EAT's `modify: hunger` unchanged in the affordance. One declaration. `dynamics` is change
-3: the meter template expressed on a variable, with `passive`, `move`, `interact`, `recovery`
-and `lethal_min`/`lethal_max` as its fields, and cascades written as ordinary rules.
+with EAT's `modify: hunger` unchanged in the affordance. One declaration of state and one
+binding; the binding carries nothing the variable already owns (no `name`, `initial`,
+`bounds`, `range_type`), so there is nothing to keep in sync. Per-level tuning of rates, the one
+real reason `bars.yaml` is level-scoped, survives. Cascades are rules over the same variables.
 
 ### (b) Ticks since the agent last slept, exposed to the policy
 
@@ -396,8 +404,8 @@ Deletions first, each with what it costs a practitioner and what it buys a new u
 | A2 | add `range` as part of the type; required always | one fact, four homes today | none; already required at exposure | no conditional field |
 | A3 | add `prev(x)`, `lag(x, n)` with lag-only self-edges | S9, F9 | accumulators in one line | counters without rules |
 | A4 | add events `did`, `started`, `completed`, `completed_with`, `count_completed` | walkthroughs b, c, d | one declaration per mechanic | the form's "how it changes" question has an answer |
-| D12 | delete the `meters` sections of `environment.yaml` and `bars.yaml`, `MeterConfig`, `CascadeParamConfig`, the `meter` token type and DAC's `bar:` reference | owner ruling: VFS is the only variable store; two DTOs, one token type and one reference form exist only because meters were never migrated | the oracle's bar streams are re-baselined once; `default_curriculum` is rewritten (eight declarations, five cascade rules) | one kind of thing to declare |
-| A5 | add a `dynamics` block on agent scalars (change 3): `passive`, `move`, `interact`, `recovery`, `lethal_min`, `lethal_max`; its signature enters the `variable_element` descriptor | meter template as declaration | meters stop being special; the descriptor carries behaviour, so S3 resolves | hunger is one declaration |
+| D12 | delete the `meters` section of `environment.yaml`, meter `name`/`initial`/`bounds`/`range_type`, `CascadeParamConfig`, the `meter` token type and DAC's `bar:` reference | owner ruling: a meter is a pointer to a variable; everything a meter declares that the variable also declares is a second copy | the oracle's bar streams are re-baselined once; `default_curriculum` is rewritten (eight variables, eight bindings, five cascade rules) | one kind of thing to declare, one place to look for a value |
+| A5 | make `bars.yaml` a binding (change 3): `{variable, depletion, recovery, lethal_min, lethal_max}` per entry, level-scoped, pointing at any declared variable (stateful, expression-derived, or constant); role parameters refused at compile when the target cannot carry them (depletion on an expression-owned or `mutable: false` target); the binding's dynamics signature enters that variable's `variable_element` descriptor | the survival role as a declared binding, the DAC `money_bar` pattern | meters stop being special; per-level rate tuning survives; the descriptor carries behaviour, so S3 resolves | hunger is one variable and one short binding |
 | A6 | add expression text and `semantic` facts to `vfs_hash` (WP10) | F5 | honest resume | none visible |
 | R1 | rename `global` to `world` | the ruling makes it per world; `global` reads as batch-wide | one find-and-replace | matches the mental model |
 | R2 | rename `exposed_to: [agent]` to `observed: true` | one role, one bit | none | boolean |
@@ -456,4 +464,6 @@ So: meters entered VFS on day one, by design and at runtime; the plan's own perm
 declared a meter as an action-written variable; the v2.1 compiler migration removed the runtime
 path nine days later with no recorded reason while every design document kept saying meters are
 variables; and the last ten months built around the removal. The owner's reading is the one the
-record supports. Change 3 is restoration of the original design, not a new one.
+record supports, with one sharpening the owner supplied in session: a bar was never meant to
+be its own thing, only a pointer to a variable. Change 3 is restoration of the original design
+in that form: the variable is the state, the meter binding is a level-scoped role over it.

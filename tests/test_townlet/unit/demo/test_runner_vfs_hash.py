@@ -121,7 +121,7 @@ def test_both_checkpoint_consumers_call_the_shared_identity_guard() -> None:
     # No second hand-rolled copy of the chain on either path — the piecemeal
     # checks must be called only inside assert_checkpoint_identity itself.
     for name, source in (("DemoRunner.load_checkpoint", runner_src), ("LiveInferenceServer._check_and_load_checkpoint", serving_src)):
-        for piecemeal in ("assert_checkpoint_vfs_hash(", "assert_checkpoint_dimensions(", "config_hash_warning("):
+        for piecemeal in ("assert_checkpoint_vfs_hash(", "assert_checkpoint_dimensions(", "assert_checkpoint_pack_hashes("):
             assert piecemeal not in source, f"{name} hand-rolls {piecemeal}...) instead of the shared guard"
 
     # H8: the named regression shape. `if self.compiled_universe is not None:` around the

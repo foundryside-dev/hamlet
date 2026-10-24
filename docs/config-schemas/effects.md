@@ -6,7 +6,7 @@
 > 1700-line document mentions it zero times.** Omit it and the pack is refused.
 >
 > **⚠️ The `for_each` collection vocabulary is missing, and described as "future" while it
-> ships.** Measured occurrence counts in this file: `all_agents` **0**, `switch` **0**,
+> ships.** Measured occurrence counts in this file: `all_agents` **0**, `switch` **1** (the semantics section below),
 > `delay` **0**, `sample` **0**. `for_each: all_agents` is the load-bearing surface for
 > expressing a declarative step over simultaneous agent submissions, and it is not mentioned
 > once — both PRD-0001 Trial O executors reached it only by reading
@@ -269,6 +269,16 @@ Number of ticks before effect auto-despawns. Counts down each time `effect_manag
 2. Each tick: `duration_remaining -= 1`, `elapsed_ticks += 1`
 3. Execute `on_tick` commands while `duration_remaining > 0`
 4. When `duration_remaining == 0`: Execute `on_despawn`, remove from active effects
+
+**Episode boundary**: effects are episode-scoped. `env.reset()` calls `EffectManager.reset()`
+before anything in the new episode can spawn: every global, agent, item and affordance effect is
+discarded, all delayed (`delay`) work is cancelled, the scheduler clock returns to tick 0 and
+instance ids restart at 0. This is a hard clear: no `on_despawn` or `on_interrupt` runs, because
+meters and episode-scoped VFS state have already been re-initialised and a hook would write into
+the new episode. An instance never carries over. A legitimately re-spawned effect is one that a
+spawn path re-creates after the reset (an interaction, a cascade, or a `delay` block scheduled in
+the new episode); it starts fresh, with full `duration` and `elapsed_ticks = 0`. There is no
+`on_reset` hook, so an effect cannot be declared live at tick 0.
 
 **Special Values**:
 - `duration: 1` - Instant effect (only on_spawn executes, then immediate despawn)
@@ -663,6 +673,17 @@ Effects use HAMLET's VFS expression language (pure functional, type-safe):
 - Expression return type must match target path type
 - Type mismatches cause compilation errors (fail-fast)
 
+**Write semantics** (2026-10-24, review F1):
+- A bare `bar.X` is the whole batch: one value per agent. A scalar `value` (`"0.3"`)
+  broadcasts to every agent. `target.bar.X` / `self.bar.X` write one agent's row.
+- Every write lands **in place** in the existing tensor. The bar is never rebound to a
+  new tensor or a broadcast view, so a scalar `modify: bar.X` followed by a
+  `target.bar.X` write to the same bar in the same tick changes only the target's row
+  (`[0.3, 0.3, 0.3]` then `[0.3, 0.4, 0.3]`, never `[0.4, 0.4, 0.4]`). The executor
+  checks after every command that no bar was rebound or left with a broadcast stride.
+- Inside a masked `if`/`switch` branch (below) a batch write lands only on the agents
+  the condition holds for, and a row write lands only if that agent's row is live.
+
 **Examples**:
 
 ```yaml
@@ -844,6 +865,29 @@ Effects use HAMLET's VFS expression language (pure functional, type-safe):
 **Condition Expressions**:
 Must evaluate to boolean type. Use comparison operators and logical combinators.
 
+**Semantics — masked execution** (2026-10-24, review F2): the condition is evaluated
+**per agent**, and each branch runs with its side of the condition as a **write mask**.
+One keyword, one meaning: the command form of `if` agrees with the expression form
+(`if c then a else b`, which is element-wise).
+
+- A per-agent condition (`bar.health < 0.5`, one bool per agent) runs `then` for the
+  agents it holds for and `else` for the agents it does not — both branches may run in
+  the same tick, each on its own agents. Nothing is reduced with `any()`/`all()`.
+- Inside a masked branch, a batch write (`modify: bar.energy`) lands only on the live
+  agents; a row write (`target.bar.energy`, `target.vfs.X`, bare agent-scoped `vfs.X`)
+  lands only if that agent's row is live; an agent-scoped `spawn_effect` spawns only if
+  its target agent's row is live. A nested `if` intersects its mask with the enclosing one.
+- A scalar condition (`target.bar.health < 0.5`, `intensity > 1.0`) is the degenerate
+  mask: it holds for every agent or for none, so exactly one branch runs, unmasked.
+- `then` runs to completion before `else`. Each agent's row is written by exactly one
+  branch, so row-local expressions are unaffected, but an aggregate read in `else`
+  (`mean(bar.energy)`, a `for_each` over `all_agents`) sees `then`'s writes.
+- A target with **no per-agent row** — a global variable, a scalar bar, an item variable,
+  `affordance.X.available`, `spawn_item`, a non-agent `spawn_effect`, a `delay` block —
+  can only be written when the mask is whole (every agent live). Writing it from a
+  branch that holds for only some agents is refused at runtime with a message naming
+  the target: condition on a scalar value instead, or write a per-agent target.
+
 **Use Cases**:
 - **Threshold Effects**: If health < 0.2, apply crisis penalties
 - **State-Dependent Behavior**: If night, reduce visibility
@@ -895,14 +939,64 @@ Must evaluate to boolean type. Use comparison operators and logical combinators.
 ```
 
 **Validation**:
-- Condition must be boolean type (compile-time check)
-- Both then and else branches type-checked
-- Nested conditionals supported (arbitrary depth)
+- Condition must be boolean type (compile-time check); at runtime it must be a scalar
+  or one value per agent
+- Both then and else branches type-checked and write-authorized, whichever runs
+- Nested conditionals supported (arbitrary depth); masks intersect
 
 **Performance**:
-- Condition evaluated once per execution
-- Only executed branch runs (no wasted computation)
+- Condition evaluated once per execution, over the whole batch
+- A branch no agent is live for is skipped (every write under an empty mask is a no-op)
 - Pre-compiled ASTs for condition and branches
+
+---
+
+### `switch` Command
+
+**Purpose**: Select one of several command lists by equality against a selector
+
+**Schema**:
+```yaml
+- switch: <expression>
+  cases:
+    - when: <expression>
+      do:
+        - <command>
+    - when: <expression>
+      do:
+        - <command>
+  default:
+    - <command>
+```
+
+**Fields**:
+- `switch` (expression, REQUIRED): Selector value
+- `cases` (list, REQUIRED): Ordered `when`/`do` pairs; `when` is compared to the selector
+  with `==`
+- `default` (list[Command], OPTIONAL): Commands for a selector no case matched
+
+**Semantics — masked first-match, per agent**: the same rule as `if`. The selector and
+every `when` are evaluated over the batch; a case runs for the agents it matches that no
+earlier case took, with that set as its write mask; `default` runs for the agents no case
+took. A scalar selector is the degenerate mask (one case or the default runs, unmasked).
+A string selector compares as a scalar. Cases run in authored order, then `default`; a
+later case's aggregate reads see earlier cases' writes.
+
+```yaml
+# bar.level per agent [1, 2, 3] → energy per agent [0.1, 0.2, 0.9]
+- switch: "bar.level"
+  cases:
+    - when: "1"
+      do: [{modify: bar.energy, value: "0.1"}]
+    - when: "2"
+      do: [{modify: bar.energy, value: "0.2"}]
+  default:
+    - modify: bar.energy
+      value: "0.9"
+```
+
+The no-per-agent-row rule from `if` applies: a global, item, affordance, `spawn_item` or
+`delay` target inside a case that holds for only some agents is refused at runtime.
 
 ---
 

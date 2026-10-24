@@ -68,7 +68,9 @@ evidence — never copied from a filed issue unchecked), the **intended new beha
 
 ## DIV-001 — Five pack-level provenance hashes: computed, serialized, compared by nobody
 
-- **Status:** `tag-stamped` at `oracle-2026-08-17` (re-verified at `4222a917`, 2026-08-17:
+- **Resolved 2026-10-24:** stamped by `attach_universe_metadata` and hard-compared by
+  `assert_checkpoint_pack_hashes` (`training/checkpoint_utils.py`); `hamlet-2dde1015fe` closable.
+- **Status (historical):** `tag-stamped` at `oracle-2026-08-17` (re-verified at `4222a917`, 2026-08-17:
   the five names appear only in `universe/compiled.py`, `universe/compiler.py`, and — as a
   docstring mention, not a compare site — `oracle/matrix.py`; no stamp/compare site
   references them; `hamlet-2dde1015fe` open). Previously `tag-stamped` at

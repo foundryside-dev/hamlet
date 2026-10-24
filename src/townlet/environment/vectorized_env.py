@@ -791,13 +791,10 @@ class VectorizedHamletEnv:
         # Clear any runtime overrides so each episode starts from configured availability
         self.affordance_overrides.clear()
 
-        # Reset scheduler/delayed work and cancel agent-scoped pending items between episodes
+        # Effects are episode-scoped: discard every active effect and all delayed work
+        # (no hooks run) before anything in this episode can spawn one.
         if self.effect_manager is not None:
-            # Clear scheduler state
-            self.effect_manager.reset_scheduler(current_tick=0)
-            # Cancel any lingering agent-scoped items (paranoia if reset called mid-episode)
-            for agent_idx in range(self.num_agents):
-                self.effect_manager.cancel_scheduled_for_entity(scope="agent", entity_id=agent_idx)
+            self.effect_manager.reset()
 
         # Reset temporal history so temporal VFS ops don't leak across episodes
         if self.vfs_evaluator is not None:

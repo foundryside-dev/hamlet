@@ -136,9 +136,8 @@ class TestAttachStampsTokenHashes:
         assert checkpoint["layout_hash"] == level.layout_hash
 
     def test_the_provenance_fields_all_stay(self, checkpoint, compiled_universe) -> None:
-        """Everything but the two ObservationSpec-derived fields survives the cut."""
+        """Everything but the two ObservationSpec-derived fields and the cache fingerprint survives."""
         for field in (
-            "config_hash",
             "primary_level",
             "action_dim",
             "meter_count",
@@ -151,8 +150,15 @@ class TestAttachStampsTokenHashes:
             "brain_hash",
             "pack_brain_hash",
             "vfs_hash",
+            "experiment_hash",
+            "stratum_hash",
+            "environment_hash",
+            "actions_hash",
+            "items_hash",
         ):
             assert field in checkpoint, f"pre-existing checkpoint field {field!r} went missing"
+        # The cache fingerprint is transport, not identity; it is not stamped (hamlet-2dde1015fe).
+        assert "config_hash" not in checkpoint
         # Dropped with their producer at the unit-3 cut.
         assert "observation_dim" not in checkpoint
         assert "observation_field_uuids" not in checkpoint

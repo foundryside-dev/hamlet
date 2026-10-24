@@ -154,20 +154,18 @@ def test_on_spawn_commands_execute_immediately(compile_universe, effects_smoke_c
     initial_health = 0.5
 
     # Spawn health_boost (on_spawn adds 0.2 health)
-    # Build the command context explicitly so on_spawn runs immediately.
-
+    # spawn_effect runs on_spawn itself when it is given the live bars.
+    bars = {name: env.meters[:, idx] for name, idx in env.meter_name_to_index.items()}
     effect = env.effect_manager.spawn_effect(
         effect_id="health_boost",
         target_entity_id=0,
         intensity=1.0,
         current_step=0,
+        bars=bars,
+        vfs_registry=env.vfs_registry,
+        item_manager=env.item_manager,
     )
-
-    # Manually execute on_spawn commands (simulating what spawn_effect should do)
-    if env.effect_manager.command_executor:
-        context = env.effect_manager._build_context(effect, env)
-        effect_def = env.effect_manager.catalog.effects["health_boost"]
-        env.effect_manager.command_executor.execute_commands(effect_def.on_spawn, context)
+    assert effect.effect_id == "health_boost"
 
     # Health should increase immediately (by 0.2)
     new_health = env.meters[0, env.meter_name_to_index["health"]].item()

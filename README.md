@@ -267,7 +267,7 @@ uv run python -m townlet.universe inspect configs/default_curriculum \
 `--primary-level` is required for compile/validate and directory inspection. Compilation builds
 all world levels, with one cache artifact per selected primary level:
 `<pack>/.compiled/universe-<level>.msgpack`. The top-level effective brain is primary-level scoped.
-The current compiled artifact schema is **1.29**; older versions and missing policies refuse.
+The current compiled artifact schema is **1.33**; older versions and missing policies refuse.
 This is separate from authored declaration versions and checkpoint format **6**.
 
 Train using the pack root:
@@ -302,10 +302,14 @@ uv run python -m townlet.demo.live_inference <checkpoint_dir> 8766 0.2 10000 \
 ```
 
 Training resume and serving share an identity gate. They check selected world, effective brain,
-VFS and architecture-appropriate token/layout contracts before loading weights. Permission-only
-changes in ordinary or qualified item state move variable/VFS identity and refuse exact resume.
-Transfer is a distinct operation. Some broader pack-level identity fields are recorded without
-being independent checkpoint gates; this is not a guarantee that every pack edit is incompatible.
+VFS, the architecture-appropriate token/layout contract, the four per-level content hashes and
+the five pack-scope content hashes (`experiment`, `stratum`, `environment`, `actions`, nullable
+`items`) before loading weights; every leg is a hard refusal. A `stratum.yaml` edit such as
+`boundary: clamp -> wrap` therefore refuses resume even though no level hash moves.
+Permission-only changes in ordinary or qualified item state move variable/VFS identity and
+refuse exact resume. Transfer is a distinct operation. The compile-cache fingerprint
+(`metadata.config_hash`) is not stamped into checkpoints: it moves on a comment edit or a file
+rename while every semantic hash stays put.
 
 ## Architecture and completion
 
@@ -409,9 +413,9 @@ They are not substituted for consolidation CI.
 - Reconcile shipped scenarios and BAC configurations, wire experiment controls, repair terminal
   lane/replay/metric accounting and isolate evaluation/serving randomness before relying on new
   convergence claims.
-- Complete reward strategy/composition consumption, effects reset and command/time lifecycle
-  contracts. Some historical silent cache failures are repaired; initial item-appearance cache
-  fidelity remains outside the static-access acceptance.
+- Complete reward strategy/composition consumption and command/time lifecycle contracts. The
+  compiled artifact now carries `items_appearance`, so a cache-served compile spawns the same
+  items as a fresh one.
 - Complete carried-item observation, item identity/locality/capacity and independent/shared-world
   semantics. Qualified static access does not solve those relationships.
 - Make the viewer's loaded model, run identity, controls, reconnect and replay states truthful;

@@ -7,6 +7,7 @@ from typing import Any
 
 import torch
 
+from townlet.config.effects_config import EffectScope
 from townlet.effects.context import ExecutionContext
 from townlet.effects.schema import CommandNode, CommandType
 from townlet.world.expression.context import ExecutionContext as ExprExecutionContext
@@ -17,6 +18,49 @@ from townlet.world.expression.evaluator import Evaluator
 MAX_CASCADE_DEPTH = 10
 
 __all__ = ["CommandExecutor", "MAX_CASCADE_DEPTH"]
+
+
+def _as_condition(value: torch.Tensor, keyword: str) -> torch.Tensor:
+    """A command condition is a scalar or one bool per agent; nothing else."""
+    if value.dim() > 1:
+        raise ValueError(f"'{keyword}' condition must be a scalar or one value per agent, got shape {tuple(value.shape)}")
+    return value.to(torch.bool)
+
+
+def _restrict(parent: torch.Tensor | None, condition: torch.Tensor) -> tuple[bool, torch.Tensor | None]:
+    """Narrow the live set `parent` (None: every agent) by `condition`.
+
+    Returns (any agent live, mask). A scalar condition keeps the parent mask: it is
+    the degenerate per-agent mask that holds for everyone or for no one.
+    """
+    if condition.dim() == 0:
+        return bool(condition.item()), parent
+    mask = condition if parent is None else parent & condition
+    return bool(mask.any().item()), mask
+
+
+def _switch_operand(value: Any, device: torch.device) -> torch.Tensor | str:
+    if isinstance(value, torch.Tensor):
+        return value
+    if isinstance(value, (int, float, bool)):
+        return torch.tensor(value, device=device)
+    if isinstance(value, str):
+        return value
+    raise ValueError(f"Unsupported switch value type: {type(value).__name__}")
+
+
+def _check_bars_materialised(bars: dict[str, torch.Tensor], before: dict[str, torch.Tensor]) -> None:
+    """Every bar is still the tensor it was and carries no broadcast stride.
+
+    A command writes into a bar in place; one that rebinds the bar (to an expanded
+    view, in review-2026-10-24 effects F1) would make the next per-agent write land on
+    every agent. Checked after every command so a view can never survive one.
+    """
+    for name, tensor in bars.items():
+        if name in before and tensor is not before[name]:
+            raise RuntimeError(f"Bar '{name}' was rebound by a command; writes must copy into the existing tensor")
+        if any(stride == 0 and size > 1 for stride, size in zip(tensor.stride(), tensor.shape, strict=True)):
+            raise RuntimeError(f"Bar '{name}' is a broadcast view (stride {tuple(tensor.stride())}); a bar must own its rows")
 
 
 class _TargetAwareExecutionContext(ExprExecutionContext):
@@ -77,8 +121,6 @@ class _TargetAwareExecutionContext(ExprExecutionContext):
         if parts[0] == "self":
             # Special handling for self.vfs.* when self is an item
             if parts[1] == "vfs" and len(parts) >= 3 and self.self_is_item:
-                import torch
-
                 var_name = ".".join(parts[2:])
                 if self.vfs_registry is None or self.self_index is None:
                     raise ValueError("VFS registry or self_index not set for item-scoped VFS lookup")
@@ -125,6 +167,11 @@ class CommandExecutor:
             NotImplementedError: For unimplemented command types
         """
         self._preflight_command(command, context)
+        bars_before = dict(context.bars)
+        self._dispatch(command, context)
+        _check_bars_materialised(context.bars, bars_before)
+
+    def _dispatch(self, command: CommandNode, context: ExecutionContext) -> None:
         if command.type == CommandType.MODIFY:
             self._execute_modify(command, context)
         elif command.type == CommandType.SPAWN_EFFECT:
@@ -277,9 +324,17 @@ class CommandExecutor:
         if command.effect_id is None:
             raise ValueError("spawn_effect command requires 'effect_id'")
 
-        context.effect_manager.catalog.get(command.effect_id)
+        definition = context.effect_manager.catalog.get(command.effect_id)
         if command.intensity is None:
             raise ValueError("spawn_effect command requires intensity")
+
+        # Under a per-agent condition an agent-scoped spawn is that agent's decision;
+        # any other scope has no agent row and needs the whole batch live.
+        if EffectScope(definition.scope) is EffectScope.AGENT:
+            if not context.row_is_live(target_idx):
+                return
+        else:
+            context.require_whole_batch_live(f"spawn_effect '{command.effect_id}' ({definition.scope} scope)")
 
         context.effect_manager.spawn_effect(
             effect_id=command.effect_id,
@@ -289,7 +344,7 @@ class CommandExecutor:
             bars=context.bars,
             vfs_registry=context.vfs_registry,
             spawn_depth=context.spawn_depth,  # manager increments for the spawned effect's on_spawn
-            agent_positions=getattr(context, "agent_positions", None),
+            agent_positions=context.agent_positions,
             item_manager=context.item_manager,
         )
 
@@ -305,6 +360,7 @@ class CommandExecutor:
         """
         if context.item_manager is None:
             raise ValueError("item_manager not set in context - cannot spawn items")
+        context.require_whole_batch_live(f"spawn_item '{command.item_type}'")
 
         # Resolve position using ItemManager helper (fail-forward on unsupported)
         raw_position = command.position
@@ -368,7 +424,7 @@ class CommandExecutor:
         evaluator = Evaluator(eval_ctx)
 
         # Initialize or reuse RNG on the correct device
-        generator = getattr(context, "rng", None)
+        generator = context.rng
         if generator is None:
             generator = torch.Generator(device=eval_ctx.device)
             base_seed = context.seed if context.seed is not None else 0
@@ -388,8 +444,7 @@ class CommandExecutor:
             return _eval_param(val)
 
         target_tensor = context.get_path(command.sample_store_path)
-        target_shape = tuple(target_tensor.shape) if hasattr(target_tensor, "shape") else ()
-        shape = target_shape if target_shape else ()
+        shape = tuple(target_tensor.shape)
 
         param_asts = command.sample_param_asts or {}
 
@@ -431,14 +486,12 @@ class CommandExecutor:
             sample_count = int(torch.tensor(shape).prod().item()) if shape else 1
             sampled = torch.multinomial(probs_tensor, num_samples=sample_count, replacement=True, generator=generator)
             result = sampled.reshape(shape) if shape else sampled[0]
-            # Align dtype with target (int or float)
-            target_dtype = target_tensor.dtype if hasattr(target_tensor, "dtype") else torch.int64
-            result = result.to(dtype=target_dtype, device=eval_ctx.device)
+            result = result.to(dtype=target_tensor.dtype, device=eval_ctx.device)
         else:
             raise ValueError(f"Unsupported sample distribution '{dist}'")
 
         # Broadcast scalar results to target shape if needed
-        if not shape and hasattr(target_tensor, "shape") and target_tensor.dim() > 0:
+        if not shape and target_tensor.dim() > 0:
             result = result.expand_as(target_tensor)
 
         context.set_path(command.sample_store_path, result)
@@ -457,25 +510,25 @@ class CommandExecutor:
 
         # Create evaluator with context and evaluate pre-compiled condition
         evaluator = Evaluator(eval_ctx)
-        condition = evaluator.evaluate(cond_ast)
+        condition = _as_condition(evaluator.evaluate(cond_ast), "if")
 
-        # Execute then or else branch
-        # For vectorized conditions, check if any element is true
-        if condition.dim() == 0:
-            # Scalar condition
-            is_true = condition.item()
-        else:
-            # Vector condition - check if any element is true
-            is_true = condition.any().item()
+        # Masked execution: each branch runs for the agents its side of the condition
+        # holds for, as a write mask on the branch's context. A scalar condition is the
+        # degenerate mask (the whole batch, or nobody).
+        self._run_branch(command.then_commands or [], context, *_restrict(context.write_mask, condition))
+        self._run_branch(command.else_commands or [], context, *_restrict(context.write_mask, ~condition))
 
-        if is_true:
-            then_commands = command.then_commands or []
-            for cmd in then_commands:
-                self.execute(cmd, context)
-        else:
-            else_commands = command.else_commands or []
-            for cmd in else_commands:
-                self.execute(cmd, context)
+    def _run_branch(self, commands: Sequence[CommandNode], context: ExecutionContext, live: bool, mask: torch.Tensor | None) -> None:
+        """Run `commands` under `mask`; a branch no agent is live for is skipped.
+
+        The skip is an optimisation, not semantics: every write under an all-false mask
+        is a no-op, and spawns gate on the same mask.
+        """
+        if not live:
+            return
+        branch_context = context if mask is context.write_mask else context.copy(write_mask=mask)
+        for cmd in commands:
+            self.execute(cmd, branch_context)
 
     def _execute_for_each(self, command: CommandNode, context: ExecutionContext) -> None:
         """Execute a preauthorized body for each resolved target."""
@@ -510,7 +563,6 @@ class CommandExecutor:
     def _for_each_contexts(self, command: CommandNode, context: ExecutionContext) -> list[ExecutionContext]:
         """Resolve the complete target set without mutating any target."""
         from townlet.effects.collections import MAX_COLLECTION_SIZE, resolve_collection
-        from townlet.world.expression.evaluator import Evaluator
 
         # Resolve collection to list of indices (resolver or expression)
         indices = []
@@ -545,7 +597,7 @@ class CommandExecutor:
             target_is_item = collection_type == "inventory_items"
             # For inventory_items, map instance_id -> vfs_index if available
             if target_is_item:
-                inventory = getattr(context, "inventory", None)
+                inventory = context.inventory
                 if inventory is None:
                     raise ValueError("inventory required for 'inventory_items' collection")
                 item = inventory.items.get(idx)
@@ -571,45 +623,23 @@ class CommandExecutor:
         eval_ctx = self._make_eval_context(context, effect=context.effect)
         evaluator = Evaluator(eval_ctx)
 
-        switch_val = evaluator.evaluate(command.switch_ast)
+        switch_eval = _switch_operand(evaluator.evaluate(command.switch_ast), eval_ctx.device)
 
-        def _to_scalar_or_tensor(val: Any) -> Any:
-            import torch
-
-            if isinstance(val, torch.Tensor):
-                return val
-            if isinstance(val, (int, float, bool)):
-                return torch.tensor(val, device=eval_ctx.device)
-            if isinstance(val, str):
-                return val
-            raise ValueError(f"Unsupported switch value type: {type(val).__name__}")
-
-        switch_eval = _to_scalar_or_tensor(switch_val)
-
-        matched = False
+        # Masked first-match per agent: a case runs for the agents it matches that no
+        # earlier case took; the default runs for the agents no case took. A scalar
+        # selector is the degenerate mask.
+        remaining_live, remaining = True, context.write_mask
         for when_ast, body in command.case_asts or []:
-            when_val = evaluator.evaluate(when_ast)
-            when_eval = _to_scalar_or_tensor(when_val)
-
-            if isinstance(switch_eval, str) or isinstance(when_eval, str):
-                is_match = switch_eval == when_eval
-            else:
-                # Assume tensors/scalars; allow broadcasting then any().
-                if switch_eval.shape == () and when_eval.shape == ():
-                    is_match = bool(switch_eval.item() == when_eval.item())
-                else:
-                    comp = switch_eval == when_eval
-                    is_match = bool(comp.any().item())
-
-            if is_match:
-                matched = True
-                for cmd in body:
-                    self.execute(cmd, context)
+            if not remaining_live:
                 break
-
-        if not matched:
-            for cmd in command.default_commands or []:
-                self.execute(cmd, context)
+            when_eval = _switch_operand(evaluator.evaluate(when_ast), eval_ctx.device)
+            if isinstance(switch_eval, str) or isinstance(when_eval, str):
+                matches = torch.tensor(switch_eval == when_eval, device=eval_ctx.device)
+            else:
+                matches = _as_condition(switch_eval == when_eval, "switch")
+            self._run_branch(body, context, *_restrict(remaining, matches))
+            remaining_live, remaining = _restrict(remaining, ~matches)
+        self._run_branch(command.default_commands or [], context, remaining_live, remaining)
 
     def _execute_reduce(self, command: CommandNode, context: ExecutionContext) -> None:
         """Execute reduce over fixed-size collection."""
@@ -621,8 +651,6 @@ class CommandExecutor:
 
         collection_val = evaluator.evaluate(command.collection_ast)
         acc = evaluator.evaluate(command.reduce_init_ast)
-
-        import torch
 
         # Accept tensor or Python list; enforce fixed-size by cap
         if isinstance(collection_val, list):
@@ -640,9 +668,9 @@ class CommandExecutor:
             raise RuntimeError(f"REDUCE collection size {length} exceeds cap {MAX_COLLECTION_SIZE}")
 
         # Iterate sequentially (fixed-size expectation)
-        acc_device = acc.device if hasattr(acc, "device") else None
+        acc_device = acc.device
         for i in range(length):
-            iter_val = elements[i] if isinstance(elements, list) else elements[i]
+            iter_val = elements[i]
 
             # Bind iterator and accumulator in a child eval context by shallow copy of dicts
             child_eval_ctx = self._make_eval_context(context, effect=context.effect)
@@ -652,9 +680,7 @@ class CommandExecutor:
                 child_eval_ctx.vfs[command.reduce_iterator or "iter"] = iter_val
             else:
                 # Fall back to tensor on available device, otherwise CPU
-                child_eval_ctx.vfs[command.reduce_iterator or "iter"] = (
-                    torch.tensor(iter_val, device=acc_device) if acc_device is not None else torch.tensor(iter_val)
-                )
+                child_eval_ctx.vfs[command.reduce_iterator or "iter"] = torch.tensor(iter_val, device=acc_device)
             child_eval_ctx.vfs["acc"] = acc
             child_evaluator = Evaluator(child_eval_ctx)
             acc = child_evaluator.evaluate(command.reduce_body_ast)
@@ -673,16 +699,12 @@ class CommandExecutor:
         if command.delay_ticks_ast is None:
             raise ValueError("delay command missing compiled ticks AST")
 
-        # Check scheduler availability
-        scheduler = getattr(context, "scheduler", None)
+        scheduler = context.scheduler
         if scheduler is None:
             raise RuntimeError("delay command cannot run without scheduler")
-
         eval_ctx = self._make_eval_context(context, effect=context.effect)
         evaluator = Evaluator(eval_ctx)
         ticks_val = evaluator.evaluate(command.delay_ticks_ast)
-
-        import torch
 
         if isinstance(ticks_val, torch.Tensor):
             if ticks_val.numel() != 1:
@@ -696,16 +718,18 @@ class CommandExecutor:
             "target_index": context.target_index,
             "self_is_item": context.self_is_item,
             "target_is_item": context.target_is_item,
-            "spawn_depth": getattr(context, "spawn_depth", 0),
+            "spawn_depth": context.spawn_depth,
             "effect": context.effect,
+            # A delayed block runs under the mask that was live when it was scheduled,
+            # so an `if` branch that schedules a delay stays per-agent.
+            "write_mask": context.write_mask,
         }
 
         scope = None
         if context.self_index is not None:
             scope = "item" if context.self_is_item else "agent"
-        elif context.effect is not None and getattr(context.effect, "scope", None) is not None:
-            eff_scope = getattr(context.effect, "scope")
-            scope = eff_scope.value if hasattr(eff_scope, "value") else str(eff_scope)
+        elif context.effect is not None:
+            scope = EffectScope(context.effect.scope).value
 
         scheduler.schedule(
             commands=command.delay_commands or [],
@@ -726,24 +750,13 @@ class CommandExecutor:
         Returns:
             Expression evaluation context
         """
-        # Use effect from parameter or context
-        active_effect = effect or context.effect
+        active_effect = effect if effect is not None else context.effect
 
         # Build dictionaries for ExprExecutionContext
         bars_dict = {}
         vfs_dict = {}
-        # Resolve device from bars when available; otherwise use the executor device.
-        device = None
-        if context.bars:
-            try:
-                sample = next(iter(context.bars.values()))
-                device = sample.device
-            except StopIteration:
-                device = None
-        if device is None:
-            device = getattr(self, "device", torch.device("cpu"))
-        if isinstance(device, str):
-            device = torch.device(device)
+        # Resolve device from bars when available; otherwise CPU.
+        device = next(iter(context.bars.values())).device if context.bars else torch.device("cpu")
 
         # Add effect-specific variables (if available)
         if active_effect:
@@ -765,9 +778,7 @@ class CommandExecutor:
                 try:
                     tensor = context.vfs_registry.get(var_id, reader="engine")
                     vfs_dict[var_id] = tensor
-                    declared_scope = getattr(var_def, "scope", None)
-                    if declared_scope is not None:
-                        vfs_scopes[var_id] = str(declared_scope)
+                    vfs_scopes[var_id] = str(var_def.scope)
                 except KeyError:
                     # Variable not initialized yet, skip
                     pass

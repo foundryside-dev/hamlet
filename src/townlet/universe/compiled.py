@@ -126,7 +126,10 @@ from townlet.vfs.transition_schedule import (
 # `initial_value_mode` and `initial_value_params`. The cache is keyed on source config
 # hash and mtime, so a 1.31 artifact of an unchanged pack would serve the old
 # `vfs_hash`; refuse it as stale.
-COMPILED_SCHEMA_VERSION = "1.32"
+# 1.33: each level persists its `items_appearance` spawn rules. A 1.32 artifact has no such
+# block, so a cache hit served an item-less world; the cache key does not move for an
+# unchanged pack, so the bump is what refuses it.
+COMPILED_SCHEMA_VERSION = "1.33"
 
 REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "compiled_schema_version",
@@ -257,13 +260,15 @@ class CompiledUniverse:
         observation_schema_hash: str
         vfs_variables: tuple[VariableDef, ...]
         variable_schema_hash: str
-        drive_hash: str | None = None
-        curriculum_hash: str | None = None
-        bars_hash: str | None = None
-        affordances_hash: str | None = None
-        training_hash: str | None = None
-        items_appearance: ItemsAppearanceConfig | None = None
-        token_advisories: tuple[str, ...] = ()
+        drive_hash: str | None
+        curriculum_hash: str | None
+        bars_hash: str | None
+        affordances_hash: str | None
+        training_hash: str | None
+        # Spawn rules; `None` when the level declares no item appearance. Each rule's
+        # `when_ast` is derived from its `when` text (re-parsed on load, never serialized).
+        items_appearance: ItemsAppearanceConfig | None
+        token_advisories: tuple[str, ...]
 
     def __post_init__(self) -> None:
         if not self.all_levels:
@@ -408,6 +413,7 @@ class CompiledUniverse:
                     "observation_schema_hash": meta.observation_schema_hash,
                     "vfs_variables": [var.model_dump() for var in meta.vfs_variables],
                     "variable_schema_hash": meta.variable_schema_hash,
+                    "items_appearance": None if meta.items_appearance is None else meta.items_appearance.model_dump(),
                     "token_advisories": list(meta.token_advisories),
                 }
                 for name, meta in self.all_levels.items()
@@ -497,6 +503,7 @@ class CompiledUniverse:
                 observation_schema_hash=_required_field(meta, f"all_levels.{name}.observation_schema_hash"),
                 vfs_variables=level_vfs_variables,
                 variable_schema_hash=_required_field(meta, f"all_levels.{name}.variable_schema_hash"),
+                items_appearance=_items_appearance_from_plain(_required_field(meta, f"{level_field}.items_appearance")),
                 token_advisories=tuple(_required_field(meta, f"all_levels.{name}.token_advisories")),
             )
 
@@ -592,6 +599,25 @@ class CompiledUniverse:
             num_agents=num_agents,
             device=device,
         )
+
+
+def _items_appearance_from_plain(payload: Any) -> ItemsAppearanceConfig | None:
+    """Rebuild a level's spawn rules, re-deriving each `when_ast` from its `when` text.
+
+    The `when` string is the authority; the AST is a parse of it, exactly as for compiled
+    VFS variables and effect commands. Type checking is a compile-time stage
+    (`VFSCompiler.compile_item_spawn_conditions`) and is not repeated here.
+    """
+    if payload is None:
+        return None
+    from townlet.world.expression import ExpressionParser
+
+    appearance = ItemsAppearanceConfig.model_validate(payload)
+    parser = ExpressionParser()
+    for rule in appearance.items:
+        if rule.when is not None:
+            rule.when_ast = parser.parse(rule.when)
+    return appearance
 
 
 def _dataclass_to_plain(obj: Any) -> Any:

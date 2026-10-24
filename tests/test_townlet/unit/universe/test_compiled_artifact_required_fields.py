@@ -138,13 +138,14 @@ LEVEL_FIELDS = (
     "observation_schema_hash",
     "vfs_variables",
     "variable_schema_hash",
+    "items_appearance",
     "token_advisories",
 )
 
 
 @pytest.fixture(scope="module")
 def artifact_payload(compile_universe) -> dict[str, Any]:
-    compiled = compile_universe(Path("configs/reference/model_pack"), primary_level="L0_demo")
+    compiled: CompiledUniverse = compile_universe(Path("configs/reference/model_pack"), primary_level="L0_demo")
     return compiled.to_dict()
 
 
@@ -156,8 +157,8 @@ def test_primary_level_products_exist_only_on_level_metadata(artifact_payload: d
     assert set(PRIMARY_LEVEL_PAYLOAD_FIELDS) <= set(artifact_payload["all_levels"]["L0_demo"])
 
 
-def test_variable_schema_hash_initialization_cut_bumps_exact_artifact_schema() -> None:
-    assert COMPILED_SCHEMA_VERSION == "1.32"
+def test_items_appearance_cut_bumps_exact_artifact_schema() -> None:
+    assert COMPILED_SCHEMA_VERSION == "1.33"
 
 
 def _assert_missing_field(payload: dict[str, Any], field_path: str) -> None:
@@ -275,7 +276,7 @@ def test_compiled_registry_descriptor_requires_semantic_type_key(artifact_payloa
     _assert_missing_field(payload, "all_levels.L0_demo.vfs_variables[0].semantic_type")
 
 
-@pytest.mark.parametrize("old_version", ["1.26", "1.27", "1.28"])
+@pytest.mark.parametrize("old_version", ["1.26", "1.27", "1.28", "1.32"])
 def test_previous_variable_artifact_versions_refuse(artifact_payload: dict[str, Any], old_version: str) -> None:
     payload = {**artifact_payload, "compiled_schema_version": old_version}
     with pytest.raises(ValueError, match="schema mismatch"):

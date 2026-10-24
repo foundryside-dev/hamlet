@@ -405,7 +405,7 @@ class EffectManager:
         if not self.scheduler:
             return
 
-        scope_value = effect.scope.value if hasattr(effect.scope, "value") else str(effect.scope)
+        scope_value = effect.scope.value
 
         if effect.scope == EffectScope.AGENT:
             self.scheduler.cancel(scope=scope_value, entity_id=effect.target_entity_id)
@@ -422,10 +422,35 @@ class EffectManager:
             return
         self.scheduler.cancel(scope=scope, entity_id=entity_id)
 
-    def reset_scheduler(self, current_tick: int = 0) -> None:
-        """Reset scheduler and clear all pending delayed work."""
-        if self.scheduler:
-            self.scheduler.reset(current_tick=current_tick)
+    def reset(self) -> None:
+        """Discard every effect and all delayed work at an episode boundary.
+
+        Effects are episode-scoped. ``reset()`` empties the global, agent, item and
+        affordance stores, clears the scheduler and rewinds its clock to tick 0, and
+        restarts ``next_instance_id`` and ``current_step`` at 0, so per-instance
+        counters (``elapsed_ticks``, ``duration_remaining``, ``intensity``) cannot
+        survive into the next episode.
+
+        It is a hard clear: no ``on_despawn`` or ``on_interrupt`` hook runs. The
+        environment has already re-initialised meters and episode-scoped VFS state
+        when it calls this, so a hook write would land in the new episode, which is
+        the carry-over this method exists to prevent.
+
+        A legitimately re-spawned effect is one that a spawn path re-creates after
+        ``reset()`` returns: an interaction, a cascade, or a delayed command
+        scheduled in the new episode. Such an instance starts fresh
+        (new instance id, full duration, zero elapsed ticks). There is no
+        ``on_reset`` hook; an effect that should be live at tick 0 would need one
+        declared, never a surviving instance.
+        """
+        self.global_effects.clear()
+        self.agent_effects.clear()
+        self.item_effects.clear()
+        self.affordance_effects.clear()
+        self.scheduler.reset(current_tick=0)
+        self.next_instance_id = 0
+        self.current_step = 0
+        self._admission_transaction_active = False
 
     def tick(
         self,
@@ -504,13 +529,14 @@ class EffectManager:
         while queue:
             item = queue.pop(0)
 
-            overrides = dict(getattr(item, "context_overrides", {}) or {})
+            overrides = dict(item.context_overrides)
             self_index = overrides.pop("self_index", None)
             target_index = overrides.pop("target_index", None)
             self_is_item = overrides.pop("self_is_item", False)
             target_is_item = overrides.pop("target_is_item", False)
             spawn_depth = overrides.pop("spawn_depth", 0)
             effect_override = overrides.pop("effect", None)
+            write_mask = overrides.pop("write_mask", None)
 
             # Derive defaults from scope/entity when not explicitly provided
             if item.scope == "agent" and self_index is None and item.entity_id is not None:
@@ -533,6 +559,7 @@ class EffectManager:
                 self_index=self_index,
                 target_index=target_index,
                 effect=effect_override,
+                write_mask=write_mask,
                 self_is_item=self_is_item,
                 target_is_item=target_is_item,
                 effect_manager=self,
@@ -611,30 +638,6 @@ class EffectManager:
                     self.command_executor.execute(command, context)
 
         self._remove_from_scope(effect)
-
-    def _build_context(
-        self, effect: ActiveEffect, env_state: Any, current_tick: int = 0, item_manager: Any | None = None
-    ) -> ExecutionContext:
-        """Build ExecutionContext for effect.
-
-        Args:
-            effect: Active effect instance
-            env_state: Environment state (bars, VFS, etc.)
-            current_tick: Current simulation tick (for time-based conditions)
-
-        Returns:
-            ExecutionContext with effect and target references
-        """
-        bars = getattr(env_state, "bars", None)
-        vfs_registry = getattr(env_state, "vfs_registry", None)
-        return self._lifecycle_context(
-            effect,
-            bars=bars or {},
-            vfs_registry=vfs_registry,
-            item_manager=item_manager or NullItemManager(),
-            spawn_depth=0,
-            current_tick=current_tick,
-        )
 
     def get_all_active_effects(self) -> list[ActiveEffect]:
         """Get all active effects across all scopes (for testing).

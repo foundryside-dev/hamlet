@@ -188,7 +188,7 @@ def test_tick_and_natural_despawn_execute_for_all_effect_scopes():
 
     class RecordingExecutor(CommandExecutor):
         def __init__(self) -> None:
-            self.calls = []
+            self.calls: list[tuple[object, ...]] = []
 
         def execute(self, command, context) -> None:
             self.calls.append((command.path, context.self_index, context.target_index, context.self_is_item))
@@ -244,7 +244,7 @@ def test_tick_and_natural_despawn_execute_for_all_effect_scopes():
 def test_item_scope_context_is_authoritative_across_spawn_merge_and_cancel():
     class RecordingExecutor(CommandExecutor):
         def __init__(self) -> None:
-            self.calls = []
+            self.calls: list[tuple[object, ...]] = []
 
         def execute(self, command, context) -> None:
             self.calls.append(
@@ -773,15 +773,81 @@ def test_cancel_effect_not_found_raises(catalog_fixture):
 # --- Scheduler tests ---
 
 
-def test_reset_scheduler(catalog_fixture):
-    """reset_scheduler() clears pending work."""
+def _one_effect_per_scope_catalog() -> EffectCatalog:
+    """Catalog with one effect per scope, each carrying non-empty exit hooks."""
+    hook = [CommandConfig.model_validate({"modify": "bar.health", "value": "bar.health + 1.0"})]
+    return EffectCatalog.from_config(
+        EffectsConfig(
+            max_active_effects={"global": 8, "agent": 8, "item": 8, "affordance": 8},
+            version="1.0",
+            effect_definitions=[
+                EffectDefinitionConfig(
+                    id=f"{scope.value}_probe",
+                    scope=scope,
+                    duration=10,
+                    reapply_policy=ReapplyPolicy.STACK,
+                    observable=True,
+                    on_spawn=[],
+                    on_tick=[],
+                    on_despawn=hook,
+                    on_interrupt=hook,
+                )
+                for scope in (EffectScope.GLOBAL, EffectScope.AGENT, EffectScope.ITEM, EffectScope.AFFORDANCE)
+            ],
+        )
+    )
+
+
+def test_reset_clears_every_store_scheduler_and_counter():
+    """reset() leaves nothing of the previous episode: stores, delayed work, ids, clock."""
+    from unittest.mock import Mock
+
+    executor = Mock(spec=CommandExecutor)
+    manager = EffectManager(catalog=_one_effect_per_scope_catalog(), device="cpu", command_executor=executor)
+    for target, scope in enumerate(("global", "agent", "item", "affordance")):
+        manager.spawn_effect(f"{scope}_probe", target, 1.0, current_step=0)
+    manager.tick(bars={}, vfs_registry=None, current_step=5)
+    manager.scheduler.schedule(commands=[], delay_ticks=3, scope="agent", entity_id=1)
+    manager.scheduler.schedule(commands=[], delay_ticks=7, scope=None, entity_id=None)
+    assert len(manager.get_all_active_effects()) == 4
+    assert manager.next_instance_id == 4
+    executor.reset_mock()
+
+    manager.reset()
+
+    assert manager.global_effects == []
+    assert manager.agent_effects == {}
+    assert manager.item_effects == {}
+    assert manager.affordance_effects == {}
+    assert manager.scheduler.pending == {}
+    assert manager.scheduler.current_tick == 0
+    assert manager.current_step == 0
+    assert manager.next_instance_id == 0
+    # A hard clear: no on_despawn / on_interrupt runs into the next episode.
+    executor.execute.assert_not_called()
+    executor.preflight_commands.assert_not_called()
+
+    respawned = manager.spawn_effect("agent_probe", 1, 1.0, current_step=0)
+    assert respawned.instance_id == 0
+    assert respawned.elapsed_ticks == 0
+    assert respawned.duration_remaining == respawned.duration_total == 10
+    assert manager.get_all_active_effects() == [respawned]
+
+
+def test_reset_keeps_store_identities(catalog_fixture):
+    """reset() clears in place; holders of the store objects see the cleared state."""
     manager = EffectManager(catalog=catalog_fixture, device="cpu")
+    stores = (manager.global_effects, manager.agent_effects, manager.item_effects, manager.affordance_effects)
+    pending = manager.scheduler.pending
+    manager.spawn_effect("regen", 2, 1.0, current_step=0)
 
-    # Reset should not raise
-    manager.reset_scheduler(current_tick=100)
+    manager.reset()
 
-    # Scheduler should be reset
-    assert manager.scheduler.current_tick == 100
+    assert all(
+        a is b for a, b in zip(stores, (manager.global_effects, manager.agent_effects, manager.item_effects, manager.affordance_effects))
+    )
+    assert manager.scheduler.pending is pending
+    assert manager.agent_effects == {}
 
 
 def test_cancel_scheduled_for_entity(catalog_fixture):

@@ -1,19 +1,11 @@
 # VFS design review: first principles
 
 Written 2026-10-24 against `fix/compiler-effects-remediation` at `a79f4551`, after VFS WP1-WP8
-landed and round 2 (`review-2026-10-24/findings_vfs_round2.md`) proposed WP9-WP17. Read-only;
-nothing in `src/`, `configs/` or `tests/` was changed. This is a design review, not a bug hunt:
-round-2 F-numbers and S-numbers are cited, never re-reported. The question throughout is the
-owner's: is the VFS powerful enough for a practitioner and simple enough for a web form, at once.
-
-Evidence base: `docs/config-schemas/{variables,declarations,transition_rules,expressions}.md`,
-`docs/architecture/VFS.md`, the 2026-08-22 token design, the 32 `variables.yaml` under `configs/`
-(listed; eight read in full: `default_curriculum`, `static_epistemic_access`, `L5_multi_agent`,
-`trial_k_cold`, `trial002_money_log_gdp`, `test/items_smoke`, `test/vfs_profiles_smoke`,
-`test/effects_smoke`),
-`src/townlet/vfs/*`, `config/variables_config.py`, `config/transition_rules_config.py`,
-`universe/compilers/vfs.py`, `universe/dto/token_spec.py`, `environment/token_publishers.py`,
-`environment/vectorized_env.py` (`reset`, `step`), `effects/context.py`, `config/bars_v2_config.py`.
+landed and round 2 (`review-2026-10-24/findings_vfs_round2.md`) proposed WP9-WP17. Read-only; a
+design review, not a bug hunt: round-2 F and S numbers are cited, never re-reported. Evidence:
+the four VFS config-schema docs, `VFS.md`, the token design, the 32 `variables.yaml` (eight read in
+full), `src/townlet/vfs/*`, the two VFS DTOs, `compilers/vfs.py`, `token_spec.py`,
+`token_publishers.py`, `vectorized_env.py` (`reset`, `step`), `effects/context.py`, `bars_v2_config.py`.
 
 ## Summary for the owner
 
@@ -100,9 +92,6 @@ Two spellings of one idea, confirmed in source:
   override of the role list (`registry.py:645`) and does strictly less (S2).
 - `semantic_type: temporal` versus `expression: tick` + `cyclical_sin_cos`: the clock detector
   needs all three (`universe/declarations.py`), so the first is redundant.
-- `reads` versus the AST: `reads` is required and never checked (S8); `ActionConfig.reads`
-  defaults to `[]` and is equally inert (`action_config.py:78-81`).
-- `kind` versus nothing: three values, identical behaviour (round 2 refutation).
 - `normalization` versus `clamp` versus `bounds`: a meter has `bounds` in `bars.yaml`, a
   `range_type` in `environment.yaml` and gets a token normalization derived from both
   (`environment_config.py:110-117`); a variable has `normalization` on the declaration and a
@@ -479,3 +468,32 @@ variables; and the last ten months built around the removal. The owner's reading
 record supports, with one sharpening the owner supplied in session: a bar was never meant to
 be its own thing, only a pointer to a variable. Change 3 is restoration of the original design
 in that form: the variable is the state, the meter binding is a level-scoped role over it.
+
+## 10. The convenience layer, evaluated, and its systems-thinking extension
+
+A meter, stripped of the game, is a bounded stock with three flows (per-tick drain,
+action-conditioned drain, recovery), a constraint with a consequence, exposure, and a reward
+role. Every item on that list is a VFS primitive under changes 3 to 5, so the meter binding is a
+macro over primitives the compiler already proves and hashes. That is the strongest position a
+convenience layer can hold: it cannot drift from the core, and any pack can hand-expand it,
+which is the test that it is a layer and not a type. Three weaknesses to design around: the
+binding's own vocabulary must not smuggle game facts back in (`depletion.move` assumes a
+substrate with movement; speak in `did(<action class>)`); the binding's rates should be
+expressions, not constants only, so a designer who needs "cold makes hunger fall faster" has a
+slope and not a cliff down to raw rules; and the compiler owes the designer a per-stock ledger
+(every flow in and out, with `file:line`), because locality spreads one stock's behaviour over
+four files by design.
+
+The extension is to make the stock-and-flow reading explicit. Stock = variable; flow = one
+`{into | out_of, rate: <expr>, when: <event or condition>}` form that writes, rules, meter
+depletion and cascades all lower to; converter = expression variable; constraint = `bounds` with
+breach policy; event = `did`/`completed`/breach; delay = one `delay(x, n)` that `prev`, `lag`
+and effect durations lower to; boundary = scope. Two primitives VFS lacks and economies and
+societies need: a paired `transfer: {from, to, amount}` between stocks, conservation by
+construction; and world-scope `invariants:` with the same breach policies as `bounds`. From the
+declarations the compiler can emit the stock-flow graph and refuse a reinforcing loop on an
+unbounded stock. Patterns then form the web form's vocabulary as macros over the same primitives:
+`meter`, `resource`, `timer`, `cycle`, `pool`, `relation`, `capacity`. Meadows' leverage points
+give the pack layout a reading: rates (curriculum tuning) are the weakest intervention, `bounds`
+are buffer sizes, rules are flow structure, effects are delays, exposure is the information
+flow (what L2 changes), reward is the system's goal.

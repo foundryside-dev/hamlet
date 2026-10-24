@@ -81,9 +81,20 @@ def test_pipeline_with_logical_operators():
 
 
 def test_pipeline_with_function_call():
-    """Test pipeline with function call (skipped - Phase 2)."""
-    # Function call type checking not implemented in Phase 1
-    pytest.skip("Function call type checking deferred to Phase 2")
+    """A registered function is type-checked through the registry and then evaluated."""
+    parser = ExpressionParser()
+
+    ast = parser.parse("clamp(bar.energy + 10, 0, 50)")
+    schema = {"bar.energy": "float"}
+    assert TypeChecker(schema=schema).check(ast) == "float"
+
+    context = ExecutionContext(bars={"energy": torch.tensor([45.0, 20.0])}, vfs={}, affordances={}, temporal={})
+    result = Evaluator(context=context).evaluate(ast)
+
+    assert torch.allclose(result, torch.tensor([50.0, 30.0]))
+
+    with pytest.raises(TypeCheckError, match="requires numeric args"):
+        TypeChecker(schema={"bar.flag": "bool"}).check(parser.parse("clamp(bar.flag, 0, 1)"))
 
 
 def test_pipeline_type_error_detection():

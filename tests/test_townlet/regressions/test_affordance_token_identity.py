@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import shutil
 from pathlib import Path
 
@@ -24,6 +25,7 @@ from townlet.universe.dto.token_spec import (
     affordance_signature,
     meter_signature,
 )
+from townlet.universe.errors import CompilationError
 
 REFERENCE_PACK = Path("configs/reference/model_pack")
 LEVEL = "L0_demo"
@@ -44,6 +46,16 @@ def _affordance_payload(pack: Path, name: str) -> tuple[Path, dict, dict]:
 
 def _write_yaml(path: Path, payload: dict) -> None:
     path.write_text(yaml.safe_dump(payload, sort_keys=False))
+
+
+def _compile_refuses(pack: Path, pattern: str) -> None:
+    """An affordance identity refusal is a located LEVELS-stage diagnostic, never a bare ValueError."""
+    with pytest.raises(CompilationError) as excinfo:
+        UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)
+    message = str(excinfo.value)
+    assert "[TOKEN-SPEC]" in message, message
+    assert re.search(r"affordances\.yaml:\d+", message), message
+    assert re.search(pattern, message), message
 
 
 def _compiled_affordance_signature(pack: Path, name: str) -> tuple[tuple[float, ...], str]:
@@ -256,8 +268,7 @@ def test_spawned_effect_missing_reference_or_cycle_refuses(tmp_path: Path, effec
         effects_payload["effect_definitions"][0]["on_spawn"] = [{"spawn_effect": "ate_food", "target": "target", "intensity": 1.0}]
         _write_yaml(effects_path, effects_payload)
 
-    with pytest.raises(ValueError, match="spawn_effect.*(missing|cycle)|cycle.*spawn_effect"):
-        UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)
+    _compile_refuses(pack, "spawn_effect.*(missing|cycle)|cycle.*spawn_effect")
 
 
 def test_non_finite_affine_literal_refuses_instead_of_becoming_dynamic(tmp_path: Path) -> None:
@@ -269,8 +280,7 @@ def test_non_finite_affine_literal_refuses_instead_of_becoming_dynamic(tmp_path:
     eat["interactions"]["on_completion"] = []
     _write_yaml(path, payload)
 
-    with pytest.raises(ValueError, match="finite"):
-        UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)
+    _compile_refuses(pack, "finite")
 
 
 def test_costs_and_costs_per_tick_have_distinct_identity_and_hash(tmp_path: Path) -> None:
@@ -341,8 +351,7 @@ def test_more_than_fixed_k_reachable_meter_writes_refuses(tmp_path: Path) -> Non
     pack = _copy_reference_pack(tmp_path)
     _set_work_per_tick_writes(pack, (0.1, 0.2, 0.3, 0.4, 0.5, 0.6))
 
-    with pytest.raises(ValueError, match=rf"EFFECT_SUMMARY_K|at most {EFFECT_SUMMARY_K}|{EFFECT_SUMMARY_K}.*writes"):
-        UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)
+    _compile_refuses(pack, rf"EFFECT_SUMMARY_K|at most {EFFECT_SUMMARY_K}|{EFFECT_SUMMARY_K}.*writes")
 
 
 @pytest.mark.parametrize(
@@ -392,8 +401,7 @@ def test_unrepresentable_affordance_spawn_target_refuses(tmp_path: Path, target:
     eat["interactions"]["on_start"] = [{"spawn_effect": "ate_food", "target": target, "intensity": 1.0}]
     _write_yaml(path, payload)
 
-    with pytest.raises(ValueError, match="spawn_effect.*target|target.*represent"):
-        UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)
+    _compile_refuses(pack, "spawn_effect.*target|target.*represent")
 
 
 def test_non_cyclic_nested_spawn_effect_refuses_instead_of_flattening_chain(tmp_path: Path) -> None:
@@ -419,8 +427,7 @@ def test_non_cyclic_nested_spawn_effect_refuses_instead_of_flattening_chain(tmp_
     effects_payload["effect_definitions"][0]["on_spawn"] = [{"spawn_effect": "leaf", "target": "target", "intensity": 1.0}]
     _write_yaml(effects_path, effects_payload)
 
-    with pytest.raises(ValueError, match="nested spawn_effect.*fixed|fixed.*nested spawn_effect"):
-        UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)
+    _compile_refuses(pack, "nested spawn_effect.*fixed|fixed.*nested spawn_effect")
 
 
 def _contains_subsequence(haystack: tuple[float, ...], needle: tuple[float, ...]) -> bool:

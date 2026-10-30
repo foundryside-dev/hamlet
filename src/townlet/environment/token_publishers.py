@@ -43,6 +43,7 @@ from townlet.universe.dto.token_spec import (
     VALUE_BLOCK_WIDTH,
     CompactTokenTypeLayout,
     MeterDeclaration,
+    TokenSubject,
     TokenTypeSchema,
     meter_signature,
     require_exposure_normalization,
@@ -201,7 +202,7 @@ class CompiledValueNormalizer:
         width_used = torch.ones(n, dtype=torch.float32, device=device)
         kind_to_id = {"minmax": 0, "log_scaled": 1, "cyclical_sin_cos": 2, "binary": 3}
         for i, (var_id, spec, element_index, element_count) in enumerate(specs):
-            require_exposure_normalization(var_id, spec)
+            require_exposure_normalization(TokenSubject("variable", var_id, None), spec)
             kind_ids[i] = kind_to_id[spec.kind]
             width_used[i] = float(value_block_width_used(spec))
             if spec.kind in ("minmax", "log_scaled"):
@@ -841,7 +842,7 @@ class RegistryVariableElementPublisher:
             else:
                 agent_local.append(local)
                 agent_columns.append(offset + element_index)
-            spec = require_exposure_normalization(base_id, var_def.normalization)
+            spec = require_exposure_normalization(TokenSubject("variable", base_id, None), var_def.normalization)
             normalizer_specs.append((base_id, spec, element_index, count))
             context_coordinates = _slot_context_slice(schema, slot_index, "position_0", MAX_POSITION_RANK + 1)
             shape = self._element_shape(var_def)

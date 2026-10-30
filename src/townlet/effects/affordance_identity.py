@@ -43,6 +43,18 @@ AffordanceWriteTarget = Literal["target", "self", "all"]
 SpawnEffectTarget = Literal["target", "index_zero"]
 
 
+class AffordanceIdentityError(ValueError):
+    """An affordance's declared behaviour cannot enter the fixed-width token identity.
+
+    ``affordance_name`` lets the universe compiler locate the refusal at the
+    affordance's own declaration line.
+    """
+
+    def __init__(self, affordance_name: str, message: str) -> None:
+        self.affordance_name = affordance_name
+        super().__init__(message)
+
+
 @dataclass(frozen=True)
 class SpawnedEffectIdentity:
     """Executable spawn/effect identity retained on every flattened meter write."""
@@ -313,17 +325,22 @@ def _spawned_effect_writes(
 ) -> Iterable[AffordanceMeterWrite]:
     effect_id = command.effect_id
     if effect_id is None:
-        raise ValueError(f"Affordance {affordance_name!r} stage {stage!r}: spawn_effect has no effect reference")
+        raise AffordanceIdentityError(
+            affordance_name, f"Affordance {affordance_name!r} stage {stage!r}: spawn_effect has no effect reference"
+        )
     if effect_catalog is None or effect_id not in effect_catalog.effects:
-        raise ValueError(f"Affordance {affordance_name!r} stage {stage!r}: spawn_effect references missing effect {effect_id!r}")
+        raise AffordanceIdentityError(
+            affordance_name, f"Affordance {affordance_name!r} stage {stage!r}: spawn_effect references missing effect {effect_id!r}"
+        )
     if effect_id in effect_path:
         cycle = " -> ".join((*effect_path, effect_id))
-        raise ValueError(f"Affordance {affordance_name!r} stage {stage!r}: spawn_effect cycle: {cycle}")
+        raise AffordanceIdentityError(affordance_name, f"Affordance {affordance_name!r} stage {stage!r}: spawn_effect cycle: {cycle}")
     if effect_path:
         chain = " -> ".join((*effect_path, effect_id))
-        raise ValueError(
+        raise AffordanceIdentityError(
+            affordance_name,
             f"Affordance {affordance_name!r} stage {stage!r}: nested spawn_effect chain {chain} "
-            "cannot be represented by the fixed-width affordance identity"
+            "cannot be represented by the fixed-width affordance identity",
         )
 
     effect = effect_catalog.effects[effect_id]
@@ -360,19 +377,25 @@ def _spawn_target(command: CommandNode, *, affordance_name: str, stage: str) -> 
         rendered = command.target_expr
     else:
         rendered = command.target
-    raise ValueError(
+    raise AffordanceIdentityError(
+        affordance_name,
         f"Affordance {affordance_name!r} stage {stage!r}: spawn_effect target {rendered!r} "
-        "cannot execute from an affordance context or be represented exactly; use 'target' or explicit index 0"
+        "cannot execute from an affordance context or be represented exactly; use 'target' or explicit index 0",
     )
 
 
 def _spawn_intensity(command: CommandNode, *, affordance_name: str, stage: str) -> float:
     if command.intensity is None:
-        raise ValueError(f"Affordance {affordance_name!r} stage {stage!r}: spawn_effect intensity must be an explicit float32 literal")
-    return require_float32(
-        command.intensity,
-        field=f"affordance {affordance_name!r} stage {stage!r} spawn_effect intensity",
-    )
+        raise AffordanceIdentityError(
+            affordance_name, f"Affordance {affordance_name!r} stage {stage!r}: spawn_effect intensity must be an explicit float32 literal"
+        )
+    try:
+        return require_float32(
+            command.intensity,
+            field=f"affordance {affordance_name!r} stage {stage!r} spawn_effect intensity",
+        )
+    except ValueError as exc:
+        raise AffordanceIdentityError(affordance_name, str(exc)) from exc
 
 
 def _effect_commands(effect: CompiledEffect, stage: str) -> list[CommandNode]:
@@ -406,8 +429,9 @@ def _meter_target(path: str | None, affordance_name: str, stage: str) -> tuple[s
         if path.startswith(prefix):
             meter_name = path.removeprefix(prefix)
             if not meter_name or "." in meter_name:
-                raise ValueError(
-                    f"Affordance {affordance_name!r} stage {stage!r}: meter write path {path!r} " "does not identify exactly one meter"
+                raise AffordanceIdentityError(
+                    affordance_name,
+                    f"Affordance {affordance_name!r} stage {stage!r}: meter write path {path!r} does not identify exactly one meter",
                 )
             return meter_name, target
     return None
@@ -439,10 +463,13 @@ def _affine_delta(
 
 
 def _require_finite_affine(delta: float, *, affordance_name: str, stage: str, path: str) -> float:
-    return require_float32(
-        delta,
-        field=f"affordance {affordance_name!r} stage {stage!r} affine literal delta for {path!r}",
-    )
+    try:
+        return require_float32(
+            delta,
+            field=f"affordance {affordance_name!r} stage {stage!r} affine literal delta for {path!r}",
+        )
+    except ValueError as exc:
+        raise AffordanceIdentityError(affordance_name, str(exc)) from exc
 
 
 def _is_path(node: object, path: str) -> bool:
@@ -459,6 +486,7 @@ __all__ = [
     "AFFORDANCE_WRITE_TARGETS",
     "EFFECT_LIFECYCLE_STAGES",
     "SPAWN_EFFECT_TARGETS",
+    "AffordanceIdentityError",
     "AffordanceMeterWrite",
     "SpawnedEffectIdentity",
     "extract_affordance_meter_writes",

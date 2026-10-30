@@ -39,7 +39,7 @@ from townlet.universe.error_codes import ErrorCode
 from townlet.universe.errors import CompilationError
 from townlet.vfs.profiles import CompiledGlobalProfile, CompiledVariable
 from townlet.vfs.schema import WriteSpec
-from townlet.vfs.schema_hashes import compute_transition_graph_hash, compute_vfs_hash
+from townlet.vfs.schema_hashes import compute_expression_schema_hash, compute_transition_graph_hash, compute_vfs_hash
 from townlet.vfs.transition_schedule import (
     VTCTransitionState,
     build_vtc_transition_schedule,
@@ -111,11 +111,16 @@ def _with_runtime_action_surface(
         social_residue_program=transition_schedule.social_residue_program,
         bounds_clamp_program=transition_schedule.bounds_clamp_program,
     )
+    profiles = None if disable_vfs_profiles else universe.compiled_vfs_profiles
     vfs_hash = compute_vfs_hash(
         level.variable_schema_hash,
         level.observation_schema_hash,
         level.action_schema_hash,
         transition_graph_hash,
+        compute_expression_schema_hash(
+            global_profile=None if profiles is None else profiles.global_profile,
+            agent_profile=None if profiles is None else profiles.agent_profile,
+        ),
     )
     patched_level = replace(
         patched_level,
@@ -541,59 +546,6 @@ class TestVectorizedHamletEnvStep:
         assert "intrinsic_weight" in info
         assert isinstance(info["intrinsic_weight"], torch.Tensor)
         assert info["intrinsic_weight"].shape == (2,)
-
-    def test_step_threads_vfs_affordance_and_temporal_context(self, custom_env_builder, monkeypatch):
-        """Runtime VFS evaluation should receive current affordance and temporal state."""
-        env = custom_env_builder(overrides={"environment": {"enable_temporal_mechanics": True}})
-        env.reset()
-        env.time_of_day = 10
-        env.global_tick = 7
-
-        profile = CompiledGlobalProfile(
-            variables=[
-                CompiledVariable(
-                    readable_by=("engine", "agent"),
-                    writable_by=("engine",),
-                    name="context_probe",
-                    lifetime="persistent",
-                    type="bool",
-                    exposed_to=("agent",),
-                    initial_value=True,
-                    result_type="bool",
-                )
-            ],
-            dependencies={"context_probe": tuple()},
-        )
-        env.universe = replace(
-            env.universe,
-            compiled_vfs_profiles=CompiledVFSProfiles(
-                global_profile=profile,
-                item_profiles={},
-            ),
-        )
-        env.vfs_evaluation_marks = {"global": {"context_probe"}}
-
-        captured_context: dict[str, object] = {}
-
-        def capture_evaluation(**kwargs):
-            captured_context.update(kwargs)
-            return {}
-
-        assert env.vfs_evaluator is not None
-        monkeypatch.setattr(env.vfs_evaluator, "evaluate_global_profile", capture_evaluation)
-
-        env.step(torch.zeros(env.num_agents, dtype=torch.long))
-
-        assert set(captured_context["affordances"]) == set(env.affordances)
-        first_affordance = env.affordance_names[0]
-        affordance_state = captured_context["affordances"][first_affordance]
-        assert torch.equal(affordance_state["available"], torch.tensor(env._is_affordance_open(first_affordance), device=env.device))
-
-        temporal = captured_context["temporal"]
-        assert torch.equal(temporal["tick"], torch.tensor(7, device=env.device))
-        assert torch.equal(temporal["time_of_day"], torch.tensor(10.0, device=env.device))
-        assert torch.equal(temporal["day_progress"], torch.tensor(10.0 / float(env.day_length), device=env.device))
-        assert torch.equal(temporal["is_night"], torch.tensor(False, device=env.device))
 
 
 class TestVFSWriteBackLoudness:

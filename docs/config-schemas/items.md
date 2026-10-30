@@ -266,7 +266,7 @@ items:
 1. **Item Type Exists**: `item_type` must reference existing catalog item
 2. **Spawn Count Non-Negative**: `spawn_count` must be >= 0
 3. **Spawn Interval Positive**: `spawn_interval` must be >= 1 if specified
-4. **Condition is Boolean**: `when` must type-check to bool against bars/VFS/temporal schema (temporal symbols only when temporal mechanics enabled)
+4. **Condition is Boolean and served**: `when` must read only the names listed below and type-check to bool; anything else is refused at compile time with `[ITEM-SPAWN-CONDITION]` and the rule's `file:line`
 
 ### Spawn Condition Examples
 
@@ -279,11 +279,11 @@ items:
     spawn_interval: 50
     when: "vfs.is_raining"
 
-# Time-gated spawn (requires temporal mechanics enabled)
+# Time-gated spawn: the engine clock is the global variable `tick`
   - item_type: "night_flower"
     spawn_count: 1
     spawn_position: random
-    when: "temporal.tick % 1000 > 500"  # Only after halfway through the day
+    when: "vfs.tick % 1000 > 500"  # Only after halfway through the day
 
 # State-based gate with boolean logic
   - item_type: "health_potion"
@@ -293,7 +293,7 @@ items:
     when: "(bar.energy < 0.4) and vfs.danger_level >= 3"
 ```
 
-Supported symbols: `bar.<meter>`, `vfs.<variable>`, `temporal.tick` (only when temporal mechanics are enabled). All standard comparison operators and boolean logic (`and`, `or`, `not`) are available via the expression language.
+Supported symbols: `bar.<meter>`, and `vfs.<variable>` for every global- or agent-scope registry variable, including the engine clock `vfs.tick`. There is no `temporal.*` namespace, and bare names, `env.*` and `agent.vfs.*` are refused; derive an hour or a season as a declared global expression variable and read it by `vfs.<id>`. An agent-scope read passes only when it holds for every agent. Predicates evaluate after the instant's expressions (at `reset()` and on every respawn), so an expression variable reads its evaluated value, never its declared literal. All standard comparison operators and boolean logic (`and`, `or`, `not`) are available via the expression language.
 
 ### Advanced Spawn Rules Examples
 

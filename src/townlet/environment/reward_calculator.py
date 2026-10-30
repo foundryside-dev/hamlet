@@ -37,7 +37,10 @@ class RewardCalculator:
         }
 
         if env.enable_temporal_mechanics:
-            kwargs["current_hour"] = env.time_of_day
+            # The hour the step's action was taken at (instant k): step() flips
+            # time_of_day to the next action's hour only after rewards. DAC terms
+            # are tensor programs, so the hour crosses this boundary as a tensor.
+            kwargs["current_hour"] = torch.tensor(env.time_of_day, device=env.device)
 
         total_rewards, intrinsic_weights, components = env.vtc_reward_program.apply(
             reward_backend=env.dac_engine,

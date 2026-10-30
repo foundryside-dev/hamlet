@@ -129,9 +129,9 @@ def test_lifetime_and_derived_state_do_not_depend_on_transport(tmp_path: Path, c
     assert env.vfs_registry.get("per_tick", reader="engine").item() == 1.0
     assert env.vfs_registry.get("per_episode", reader="engine").item() == 9.0
     assert env.vfs_registry.get("persistent", reader="engine").item() == 9.0
-    assert env.vfs_registry.get("derived", reader="engine").item() == 4.0
+    assert env.vfs_registry.get("derived", reader="engine").item() == 5.0  # evaluated at the advanced clock: tick 1 + 4
     env.step(torch.zeros(2, dtype=torch.long))
-    assert env.vfs_registry.get("derived", reader="engine").item() == 5.0
+    assert env.vfs_registry.get("derived", reader="engine").item() == 6.0
     env.reset()
     assert env.vfs_registry.get("per_tick", reader="engine").item() == 1.0
     assert env.vfs_registry.get("per_episode", reader="engine").item() == 2.0

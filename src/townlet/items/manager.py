@@ -5,7 +5,8 @@ from __future__ import annotations
 import logging
 import math
 import os
-from dataclasses import dataclass
+from collections.abc import Iterable, Mapping
+from dataclasses import dataclass, fields, is_dataclass
 from typing import TYPE_CHECKING, Any, Literal
 
 import torch
@@ -22,10 +23,107 @@ from townlet.config.items_config import (
 from townlet.effects.compiler import CommandCompiler
 from townlet.effects.schema import CommandNode
 from townlet.items.instance import ItemInstance
+from townlet.vfs.schema import VariableDef, VariableScope
+from townlet.world.expression.ast_nodes import PathAccess, Variable
 from townlet.world.expression.context import ExecutionContext as ExprExecutionContext
 from townlet.world.expression.evaluator import Evaluator
 
-__all__ = ["ItemManager", "CompiledItemType"]
+__all__ = ["ItemManager", "CompiledItemType", "SpawnPredicateReads"]
+
+
+class SpawnPredicateReads:
+    """What an item spawn predicate (`when:`) may read, and the runtime values behind it.
+
+    One declaration owns both sides, so the compiler can never admit a name the runtime
+    does not serve: `schema()` is what the compiler type-checks a predicate against, and
+    `context()` is what `ItemManager` evaluates it in. Both are derived from the same
+    registry roster (`VFSCompiler.build_runtime_variables` at compile time, the live
+    `VariableRegistry` at run time) through the same scope rule:
+
+    - a registry variable is readable iff its declared scope is in `VARIABLE_SCOPES`,
+      spelled `vfs.<id>`. That includes the engine-published `tick` (a global variable),
+      which is the one temporal primitive a predicate reads; there is no `temporal.*`
+      namespace here.
+    - a meter is readable as `bar.<name>`.
+
+    Every other spelling (bare names, `env.*`, `agent.vfs.*`, `temporal.*`) is refused at
+    compile time. Agent-scope reads yield one value per agent; the predicate passes only
+    when it holds for every agent (`_should_spawn_rule`).
+    """
+
+    VARIABLE_ROOT = "vfs"
+    BAR_ROOT = "bar"
+    VARIABLE_SCOPES: frozenset[VariableScope] = frozenset({VariableScope.GLOBAL, VariableScope.AGENT})
+
+    @classmethod
+    def admits(cls, scope: VariableScope | str) -> bool:
+        return VariableScope(scope) in cls.VARIABLE_SCOPES
+
+    @classmethod
+    def variable_path(cls, variable_id: str) -> str:
+        return f"{cls.VARIABLE_ROOT}.{variable_id}"
+
+    @classmethod
+    def bar_path(cls, meter_name: str) -> str:
+        return f"{cls.BAR_ROOT}.{meter_name}"
+
+    @staticmethod
+    def _expression_type(variable_type: str) -> str:
+        return "float" if variable_type == "scalar" else variable_type
+
+    @classmethod
+    def schema(cls, *, meter_names: Iterable[str], variables: Iterable[VariableDef]) -> dict[str, str]:
+        """The compile-time type schema: every readable path and its expression type."""
+        schema = {cls.bar_path(name): "float" for name in meter_names}
+        for variable in variables:
+            if cls.admits(variable.scope):
+                schema[cls.variable_path(variable.id)] = cls._expression_type(variable.type)
+        return schema
+
+    @classmethod
+    def reads(cls, ast: Any) -> list[str]:
+        """Every name a parsed predicate reads, in source order (paths joined by '.')."""
+        if isinstance(ast, PathAccess):
+            return [".".join(ast.segments)]
+        if isinstance(ast, Variable):
+            return [ast.name]
+        if is_dataclass(ast) and not isinstance(ast, type):
+            return [name for field in fields(ast) for name in cls.reads(getattr(ast, field.name))]
+        if isinstance(ast, list | tuple):
+            return [name for child in ast for name in cls.reads(child)]
+        return []
+
+    @classmethod
+    def context(
+        cls,
+        *,
+        bars: Mapping[str, torch.Tensor],
+        registry: VariableRegistry | None,
+        device: torch.device,
+    ) -> ExprExecutionContext:
+        """The runtime evaluation context, resolved variable id -> scope -> value."""
+        values: dict[str, torch.Tensor] = {}
+        scopes: dict[str, str] = {}
+        types: dict[str, str] = {}
+        num_agents: int | None = None
+        if registry is not None:
+            num_agents = registry.num_agents
+            for variable_id, variable in registry.variables.items():
+                if not cls.admits(variable.scope):
+                    continue
+                values[variable_id] = registry.get(variable_id, reader="engine")
+                scopes[variable_id] = VariableScope(variable.scope).value
+                types[variable_id] = variable.type
+        return ExprExecutionContext(
+            bars=dict(bars),
+            vfs=values,
+            affordances={},
+            temporal={},
+            device=device,
+            vfs_types=types,
+            vfs_scopes=scopes,
+            num_agents=num_agents,
+        )
 
 
 @dataclass
@@ -501,39 +599,12 @@ class ItemManager:
         # Note: Timer is per item_type, not per instance. If multiple items
         # of the same type despawn, only the most recent despawn triggers respawn.
         if self.appearance_config is not None:
-            # Find appearance rule for this item type
             rule = next(
                 (r for r in self.appearance_config.items if r.item_type == item.item_type),
                 None,
             )
-
             if rule is not None:
-                schedule = getattr(rule, "schedule", None)
-
-                if schedule is not None and isinstance(schedule, SpawnScheduleConfig):
-                    if schedule.type == "periodic" and schedule.period is not None:
-                        self.respawn_timers[item.item_type] = current_tick + schedule.period
-                    elif schedule.type == "normal" and schedule.mean is not None and schedule.std_dev is not None:
-                        next_tick = int(
-                            max(
-                                0.0,
-                                torch.normal(
-                                    mean=torch.tensor(schedule.mean),
-                                    std=torch.tensor(schedule.std_dev),
-                                ).item(),
-                            )
-                        )
-                        self.respawn_timers[item.item_type] = next_tick
-                    elif schedule.type == "poisson" and schedule.rate is not None and schedule.rate > 0:
-                        self.respawn_timers[item.item_type] = current_tick + 1
-                    elif schedule.type == "time_window":
-                        if schedule.start_tick is not None and current_tick < schedule.start_tick:
-                            self.respawn_timers[item.item_type] = schedule.start_tick
-                        else:
-                            self.respawn_timers[item.item_type] = current_tick + 1
-                else:
-                    # No schedule: do not queue respawns automatically
-                    pass
+                self._arm_respawn_timer(rule, current_tick)
 
         self._log_items(
             "despawn_item",
@@ -542,6 +613,38 @@ class ItemManager:
             vfs_index=item.vfs_index,
             current_tick=current_tick,
         )
+
+    def _arm_respawn_timer(self, rule: Any, current_tick: int) -> None:
+        """Queue the rule's next spawn attempt from its declared schedule.
+
+        Called when an item despawns and when a rule's `when:` predicate rejects a spawn
+        (initial or respawn), so a rejected rule retries on its declared period rather
+        than never (initial) or every tick (respawn). A rule without a schedule queues
+        nothing.
+        """
+        schedule = rule.schedule
+        if not isinstance(schedule, SpawnScheduleConfig):
+            return
+        if schedule.type == "periodic" and schedule.period is not None:
+            self.respawn_timers[rule.item_type] = current_tick + schedule.period
+        elif schedule.type == "normal" and schedule.mean is not None and schedule.std_dev is not None:
+            next_tick = int(
+                max(
+                    0.0,
+                    torch.normal(
+                        mean=torch.tensor(schedule.mean),
+                        std=torch.tensor(schedule.std_dev),
+                    ).item(),
+                )
+            )
+            self.respawn_timers[rule.item_type] = next_tick
+        elif schedule.type == "poisson" and schedule.rate is not None and schedule.rate > 0:
+            self.respawn_timers[rule.item_type] = current_tick + 1
+        elif schedule.type == "time_window":
+            if schedule.start_tick is not None and current_tick < schedule.start_tick:
+                self.respawn_timers[rule.item_type] = schedule.start_tick
+            else:
+                self.respawn_timers[rule.item_type] = current_tick + 1
 
     def tick(self, current_tick: int) -> None:
         """Advance all item lifecycles by one tick.
@@ -586,10 +689,8 @@ class ItemManager:
         rule: Any,
         *,
         bars: dict[str, torch.Tensor] | None,
-        temporal: dict[str, torch.Tensor] | None,
-        current_tick: int,
     ) -> bool:
-        """Evaluate spawn predicate if provided."""
+        """Evaluate spawn predicate if provided, in the `SpawnPredicateReads` context."""
 
         if rule.when is None:
             return True
@@ -600,21 +701,7 @@ class ItemManager:
         if bars is None:
             raise RuntimeError("Spawn conditions require bar context; pass bars when invoking spawn routines")
 
-        vfs_state: dict[str, torch.Tensor] = {}
-        if self.vfs_registry is not None:
-            for var_id, _ in self.vfs_registry.variables.items():
-                vfs_state[var_id] = self.vfs_registry.get(var_id, reader="engine")
-
-        temporal_context = temporal or {"tick": torch.tensor(current_tick, device=self.device)}
-
-        context = ExprExecutionContext(
-            bars=bars,
-            vfs=vfs_state,
-            affordances={},
-            temporal=temporal_context,
-            device=self.device,
-        )
-
+        context = SpawnPredicateReads.context(bars=bars, registry=self.vfs_registry, device=self.device)
         evaluator = Evaluator(context)
         result = evaluator.evaluate(rule.when_ast)
 
@@ -816,7 +903,6 @@ class ItemManager:
         current_tick: int,
         *,
         bars: dict[str, torch.Tensor] | None = None,
-        temporal: dict[str, torch.Tensor] | None = None,
     ) -> None:
         """Spawn items at level start based on ItemsAppearanceConfig.
 
@@ -838,7 +924,8 @@ class ItemManager:
             if not self._schedule_allows_spawn(rule, current_tick=current_tick):
                 continue
 
-            if not self._should_spawn_rule(rule, bars=bars, temporal=temporal, current_tick=current_tick):
+            if not self._should_spawn_rule(rule, bars=bars):
+                self._arm_respawn_timer(rule, current_tick)
                 continue
 
             count = rule.spawn_count if rule.spawn_count is not None else 1
@@ -881,7 +968,6 @@ class ItemManager:
         current_tick: int,
         *,
         bars: dict[str, torch.Tensor] | None = None,
-        temporal: dict[str, torch.Tensor] | None = None,
     ) -> None:
         """Process periodic item respawning based on timers.
 
@@ -928,7 +1014,8 @@ class ItemManager:
                         self.respawn_timers[item_type] = next_tick_int
                 continue
 
-            if not self._should_spawn_rule(rule, bars=bars, temporal=temporal, current_tick=current_tick):
+            if not self._should_spawn_rule(rule, bars=bars):
+                self._arm_respawn_timer(rule, current_tick)
                 continue
 
             max_total = getattr(rule, "max_total", None)

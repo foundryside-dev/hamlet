@@ -221,7 +221,7 @@ effects_catalog:
 ```yaml
 spawn_rules:
   - item_type: "apple"
-    when: "not vfs:is_winter and bar.energy < 0.8"
+    when: "not vfs.is_winter and bar.energy < 0.8"
 ```
 
 ## Type System Reference

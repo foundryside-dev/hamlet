@@ -63,9 +63,9 @@ def test_global_expression_advances_under_mark_and_sweep_default(tmp_path):
     env = _make_env(tmp_path, _PROFILES)
     for _ in range(3):
         env.step(torch.zeros(env.num_agents, dtype=torch.long, device=env.device))
-    # evaluator ran at tick k-1 on the last step (pre-increment) — the value MOVED,
-    # which is the whole ticket; pin the exact phase relation:
-    assert _global_value(env, "tick_echo") == 2.0 * (env.global_tick - 1)
+    # The value MOVED, which is the whole ticket; pin the exact phase relation: the
+    # evaluator runs after the clock advance, at the instant the observation describes.
+    assert _global_value(env, "tick_echo") == 2.0 * env.global_tick
 
 
 def test_static_survives_engine_write_unclobbered(tmp_path):

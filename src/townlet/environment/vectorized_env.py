@@ -504,30 +504,13 @@ class VectorizedHamletEnv:
         except KeyError as exc:
             raise ValueError(f"Missing VTC operating-hour gate for affordance '{affordance_name}'") from exc
 
-    def _build_vfs_affordance_context(self) -> dict[str, dict[str, torch.Tensor]]:
-        """Build affordance state exposed to VFS expressions."""
-        return {
-            affordance_name: {"available": torch.tensor(self._is_affordance_open(affordance_name), device=self.device)}
-            for affordance_name in self.affordances
-        }
+    def _clock_hour(self) -> int:
+        """The hour `global_tick` falls in: the one derivation of every hour the engine uses."""
+        return (self.global_tick % int(self.day_length)) if self.enable_temporal_mechanics else 0
 
-    def _build_vfs_temporal_context(self) -> dict[str, torch.Tensor]:
-        """Build temporal state exposed to VFS expressions."""
-        if not self.enable_temporal_mechanics:
-            return {}
-
-        day_length = float(self.day_length)
-        time_of_day = float(self.time_of_day)
-        day_progress = time_of_day / day_length
-        night_threshold = day_length * 0.25
-        is_night = time_of_day < night_threshold or time_of_day >= (day_length - night_threshold)
-
-        return {
-            "tick": torch.tensor(self.global_tick, device=self.device),
-            "time_of_day": torch.tensor(time_of_day, device=self.device),
-            "day_progress": torch.tensor(day_progress, device=self.device),
-            "is_night": torch.tensor(is_night, device=self.device),
-        }
+    def _publish_engine_tick(self) -> None:
+        """Write `global_tick` into the registry's engine `tick` (the one temporal primitive)."""
+        self.vfs_registry.set_engine_value("tick", torch.tensor(float(self.global_tick), device=self.device))
 
     def _build_action_space_from_runtime_artifact(self, runtime_action_space: RuntimeActionSpace) -> ComposedActionSpace:
         """Build ComposedActionSpace from compiler-emitted runtime actions."""
@@ -750,11 +733,23 @@ class VectorizedHamletEnv:
         return bars_dict
 
     def reset(self) -> torch.Tensor:
-        """
-        Reset all environments.
+        """Reset all environments and return the first observation of the episode.
 
-        Returns:
-            observations: [num_agents, observation_dim]
+        The observation describes the state the first action is taken in, exactly as
+        `step()`'s observation describes the state the next action is taken in. Reset runs
+        the tail of `step()`'s phase order from an empty world, at instant 0:
+
+        1. world state: affordance layout, positions, velocity, meters, dones, step counts;
+        2. clock: `global_tick = 0`, registry `tick` written after `reset_episode_scoped`
+           (tick is episode-lifetime, so an earlier write would be clobbered), hour 0;
+        3. episode-scoped engine state: affordance tracking and overrides, effects,
+           expression history, items and inventories;
+        4. expressions: `_evaluate_vfs_profiles()` over that state (step: after the clock
+           advance), so no expression shows its declared literal or, for a persistent
+           one, the previous episode's value;
+        5. item spawn, whose predicates read the evaluated expressions (step: respawn
+           after evaluation);
+        6. observation.
         """
         # Refresh affordance layout each episode so randomization/configured layouts stay in sync
         # BUG-15 fix: randomize_affordance_positions() now returns agent positions to prevent collisions
@@ -782,24 +777,19 @@ class VectorizedHamletEnv:
 
         self.dones = torch.zeros(self.num_agents, dtype=torch.bool, device=self.device)
         self.step_counts = torch.zeros(self.num_agents, dtype=torch.long, device=self.device)
-        self.global_tick = 0  # HIGH-01: Reset global time counter
         self.intrinsic_weights = torch.ones(self.num_agents, dtype=torch.float32, device=self.device)  # Reset to 1.0
-        self.vfs_registry.reset_episode_scoped()
-        # Pinned tick write point (token-obs unit 2): same registry cell as step()'s.
-        # Ordered AFTER reset_episode_scoped: the tick variable is episode-lifetime, so
-        # a write before the reset would be clobbered back to its declared initial —
-        # value-identically today (both are 0.0), but the pinned write must be the
-        # authoritative one, not a coincidence (comment-242 item 3, reorder chosen).
-        self.vfs_registry.set_engine_value("tick", torch.tensor(float(self.global_tick), device=self.device))
 
-        # Reset temporal mechanics state
+        # 2. Clock at instant 0.
+        self.global_tick = 0
+        self.vfs_registry.reset_episode_scoped()
+        self._publish_engine_tick()
+        self.time_of_day = self._clock_hour()
         if self.enable_temporal_mechanics:
-            self.time_of_day = 0
             self.interaction_progress.fill_(0)
             self.last_interaction_affordance = [None] * self.num_agents
             self.last_interaction_position.fill_(0)
 
-        # Reset affordance history tracking
+        # 3. Episode-scoped engine state.
         self._last_affordances = [None] * self.num_agents
         self._affordance_streaks = {}
         self._unique_affordances_count.zero_()
@@ -816,13 +806,15 @@ class VectorizedHamletEnv:
         if self.vfs_evaluator is not None:
             self.vfs_evaluator.reset()
 
-        # Clear item/inventory state between episodes
         if self.item_manager is not None:
             self.item_manager.reset_state()
         if self.item_inventory is not None:
             self.item_inventory.reset()
 
-        # Spawn initial items if configured
+        # 4. Expressions over the instant-0 state.
+        self._evaluate_vfs_profiles()
+
+        # 5. Initial item spawn (predicates read the evaluated expressions).
         if self.item_manager is not None and self.level.items_appearance is not None:
             # Get grid size from substrate (only works for Grid2D/Grid3D/GridND)
             # For continuous substrates, this would need different handling
@@ -836,14 +828,11 @@ class VectorizedHamletEnv:
                     grid_size = (self.substrate.width, self.substrate.height)
 
             if grid_size is not None:
-                bars_dict_spawn = {name: self.meters[:, idx] for name, idx in self.meter_name_to_index.items()}
-                temporal_context = {"tick": torch.tensor(0, device=self.device)} if self.enable_temporal_mechanics else None
                 self.item_manager.spawn_initial_items(
                     appearance_config=self.level.items_appearance,
                     grid_size=grid_size,
-                    current_tick=0,
-                    bars=bars_dict_spawn,
-                    temporal=temporal_context,
+                    current_tick=self.global_tick,
+                    bars=self.bars,
                 )
 
         return self._get_observations()
@@ -1057,6 +1046,15 @@ class VectorizedHamletEnv:
         """
         Execute one step for all agents.
 
+        Clock contract: the step's action is taken at instant `global_tick` (k) — the
+        registry `tick`, `time_of_day` (which gates opening hours), effects'
+        `current_step` and the action executor all read k. Once the transition phases have
+        committed, the clock advances to k+1 at ONE point (`global_tick`, then the registry
+        `tick`); expressions, terminal conditions, item aging/respawn and the observation
+        all describe that instant, because the observation describes the state the next
+        action is taken in. `time_of_day` flips to k+1's hour last, after the reward
+        calculator has read the hour the action was taken at.
+
         Args:
             actions: [num_agents] tensor of actions (0-4)
             depletion_multiplier: Curriculum difficulty multiplier (0.2 = 20% difficulty)
@@ -1067,10 +1065,6 @@ class VectorizedHamletEnv:
             dones: [num_agents] bool
             info: dict with metadata
         """
-        # Pinned tick write point (token-obs unit 2): every consumer of THIS step —
-        # action executor, effects (current_step), evaluator — sees this one value,
-        # and any read of the registry's tick returns the same.
-        self.vfs_registry.set_engine_value("tick", torch.tensor(float(self.global_tick), device=self.device))
         prev_dones = self.dones.clone()
         active_on_entry = ~prev_dones
         self.vfs_registry.reset_tick_scoped()
@@ -1114,9 +1108,14 @@ class VectorizedHamletEnv:
             active_mask=active_on_entry,
         )
 
-        # 3.6. Evaluate VFS expressions over the tick's committed state: after every
-        # transition phase that writes VFS variables (action writes, social residue)
-        # and after clamp_and_validate, so expressions never lag a transition write.
+        # 3.6. Advance the clock to k+1: the transitions of instant k have committed.
+        self.global_tick += 1  # HIGH-01: Track global time independently of agent 0
+        self._publish_engine_tick()
+
+        # 3.7. Evaluate VFS expressions over the committed state at the new instant: after
+        # every transition phase that writes VFS variables (action writes, social residue)
+        # and after clamp_and_validate, so expressions never lag a transition write or
+        # the clock.
         self._evaluate_vfs_profiles()
 
         # 4. Evaluate VTC terminal conditions
@@ -1125,18 +1124,14 @@ class VectorizedHamletEnv:
 
         # 5. Count eligible transitions, including the transition that ends a lane.
         self.step_counts += active_on_entry.to(dtype=self.step_counts.dtype)
-        self.global_tick += 1  # HIGH-01: Increment global time counter
 
-        # 5.1. Age items and process periodic respawning (after step count increment)
-        # Items age/despawn/respawn based on the NEW tick count after incrementing
+        # 5.1. Age items and process periodic respawning at the new instant; respawn
+        # predicates read the expressions evaluated at 3.7.
         if self.item_manager is not None:
-            # HIGH-01: Use global tick instead of agent 0
             # Age all items (expire items that reach duration limit)
             self.item_manager.tick(self.global_tick)
             # Respawn items whose periodic schedule timer has expired.
-            bars_dict_spawn = {name: self.meters[:, idx] for name, idx in self.meter_name_to_index.items()}
-            temporal_context = {"tick": torch.tensor(self.global_tick, device=self.device)} if self.enable_temporal_mechanics else None
-            self.item_manager.process_respawns(self.global_tick, bars=bars_dict_spawn, temporal=temporal_context)
+            self.item_manager.process_respawns(self.global_tick, bars=self.bars)
 
         # 5.5. Check for retirement (reached maximum lifespan)
         # Authored termination wins coincidence with the configured lifespan.
@@ -1161,11 +1156,11 @@ class VectorizedHamletEnv:
                 for idx in torch.nonzero(newly_terminal, as_tuple=False).flatten():
                     self.effect_manager.cancel_scheduled_for_entity(scope="agent", entity_id=int(idx))
 
-        # 6. time_of_day is DERIVED from global_tick at this same point in the step —
-        # one temporal pipeline (token-obs unit 2c). The update point is load-bearing:
-        # the reward calculator reads time_of_day between the global_tick increment and
-        # here, and moving this line changes reward timing against the pinned oracle.
-        self.time_of_day = (self.global_tick % int(self.day_length)) if self.enable_temporal_mechanics else 0
+        # 7. time_of_day is DERIVED from global_tick — one temporal pipeline (token-obs
+        # unit 2c). It flips to the new instant's hour only here: the reward calculator
+        # (6) reads the hour the action was taken at, and from here on it gates the next
+        # action, matching the registry tick and every expression in the observation.
+        self.time_of_day = self._clock_hour()
 
         observations = self._get_observations()
 
@@ -1204,8 +1199,6 @@ class VectorizedHamletEnv:
                     marks=marks,
                     device=self.device,
                     step=self.global_tick,  # HIGH-01: Use global tick instead of agent 0
-                    affordances=self._build_vfs_affordance_context(),
-                    temporal=self._build_vfs_temporal_context(),
                     agent_positions=self.positions.to(dtype=torch.float32, device=self.device),
                     affordance_positions={k: v.to(dtype=torch.float32, device=self.device) for k, v in self.affordances.items()},
                     vfs_types={name: var.type for name, var in self.vfs_registry.variables.items()},
@@ -1239,8 +1232,6 @@ class VectorizedHamletEnv:
                     marks=agent_marks,
                     device=self.device,
                     step=self.global_tick,
-                    affordances=self._build_vfs_affordance_context(),
-                    temporal=self._build_vfs_temporal_context(),
                     agent_positions=self.positions.to(dtype=torch.float32, device=self.device),
                     affordance_positions={k: v.to(dtype=torch.float32, device=self.device) for k, v in self.affordances.items()},
                     vfs_types={name: var.type for name, var in self.vfs_registry.variables.items()},

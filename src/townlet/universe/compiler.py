@@ -27,8 +27,11 @@ from townlet.universe.token_hashes import (
 from townlet.vfs.profiles import CircularDependencyError
 from townlet.vfs.schema_hashes import (
     compute_action_schema_hash,
+    compute_actions_hash,
+    compute_expression_schema_hash,
     compute_transition_graph_hash,
     compute_variable_schema_hash,
+    compute_variables_hash,
     compute_vfs_hash,
 )
 from townlet.vfs.transition_schedule import build_vtc_transition_schedule
@@ -111,31 +114,26 @@ class UniverseCompiler:
                 # returns normally — verified by execution — so a mislabelled artifact
                 # would silently recompile instead of failing loudly.
                 if cached.metadata.primary_level != primary_level:
-                    raise ValueError(
-                        f"Compiled artifact at {cache_path} declares primary_level "
-                        f"'{cached.metadata.primary_level}' but was loaded for '{primary_level}'. "
-                        "The cache is mislabelled; delete .compiled/ and recompile."
+                    raise CompilationError(
+                        CompilationStage.PREFLIGHT.label,
+                        [
+                            CompilationMessage(
+                                code=ErrorCode.ARTIFACT_LOAD_REFUSED,
+                                message=(
+                                    f"Compiled artifact declares primary_level '{cached.metadata.primary_level}' "
+                                    f"but was loaded for '{primary_level}'. The cache is mislabelled; "
+                                    "delete .compiled/ and recompile."
+                                ),
+                                location=f"{cache_path}:1",
+                            )
+                        ],
                     )
 
-                config_hash, provenance_id = self._build_cache_fingerprint(experiment_dir)
-                config_mtime = self._compute_config_mtime(experiment_dir)
-                cached_meta = cached.metadata
-
-                # Treat missing fingerprint fields as stale cache
-                if cached_meta.config_hash and cached_meta.config_mtime and cached_meta.provenance_id:
-                    if (
-                        cached_meta.config_hash == config_hash
-                        and cached_meta.provenance_id == provenance_id
-                        and cached_meta.config_mtime >= config_mtime
-                    ):
-                        logger.info("Loading compiled universe from cache: %s", cache_path)
-                        return cached
-                    logger.info(
-                        "Cache stale for %s (hash/provenance/mtime mismatch); recompiling.",
-                        experiment_dir,
-                    )
-                else:
-                    logger.info("Cached universe at %s missing fingerprint/provenance fields; recompiling.", cache_path)
+                staleness = self.cache_staleness(cached, experiment_dir)
+                if not staleness:
+                    logger.info("Loading compiled universe from cache: %s", cache_path)
+                    return cached
+                logger.info("Cache stale for %s (%s); recompiling.", cache_path, "; ".join(staleness))
 
         # Stage 0 preflight: YAML syntax validation (lightweight)
 
@@ -217,8 +215,14 @@ class UniverseCompiler:
         experiment_hash = self._compute_pydantic_hash(raw.experiment)
         stratum_hash = self._compute_pydantic_hash(raw.stratum)
         environment_hash = self._compute_pydantic_hash(raw.environment)
-        actions_hash = self._compute_pydantic_hash(raw.actions)
+        # Canonical, not a pydantic dump: action-write expression text is hashed as its AST,
+        # so a respelling that parses identically does not refuse resume.
+        actions_hash = compute_actions_hash(raw.actions)
         items_hash = self._compute_pydantic_hash(raw.items) if raw.items else None
+        # The sixth pack hash is canonical content, not `_compute_pydantic_hash`: `variables`
+        # is a collection family whose fragments merge in sorted-path order, so a pydantic
+        # dump would move on a file move while no variable changed (VFS round-2 F5).
+        variables_hash = compute_variables_hash(raw.variables)
 
         try:
             level_bundle = self._stage_7_compile_levels(
@@ -260,6 +264,7 @@ class UniverseCompiler:
             environment_hash=environment_hash,
             actions_hash=actions_hash,
             items_hash=items_hash,
+            variables_hash=variables_hash,
         )
         return compiled
 
@@ -387,8 +392,8 @@ class UniverseCompiler:
                 level.items_appearance,
                 bar_schema=bar_schema,
                 variables=raw.variables,
-                compiled_vfs_profiles=compiled_vfs_profiles,
-                temporal_supported=temporal_supported and level.curriculum.curriculum.active_temporal,
+                source_map=raw.source_map,
+                level_name=level_name,
             )
             optimization_data = self._optimization_compiler.build_optimization_data(
                 level.bars,
@@ -405,7 +410,14 @@ class UniverseCompiler:
             # (unit-3 Task-10 cut). It is built BEFORE `observation_schema_hash`, which
             # is now computed over it (token-obs spec §5) and enters slot 2 of the
             # structurally-unchanged four-term `compute_vfs_hash` composition.
-            meter_declarations = self._observation_compiler.compile_meter_declarations(raw.environment, level.bars)
+            # Token-spec refusals (exposure, capacity, identity) leave the observation
+            # compiler as located LEVELS-stage CompilationErrors with their error code.
+            meter_declarations = self._observation_compiler.compile_meter_declarations(
+                raw.environment,
+                level.bars,
+                level_name=level_name,
+                source_map=raw.source_map,
+            )
             token_spec, token_advisories = self._observation_compiler.build_token_spec(
                 raw.stratum,
                 meter_declarations,
@@ -414,8 +426,12 @@ class UniverseCompiler:
                 compiled_effect_catalog,
                 compiled_vfs_profiles,
                 vfs_variables,
-                # The EFFECTIVE brain for this level (PDR-0027 selection, same as stage 8).
+                # The EFFECTIVE brain for this level (PDR-0027 selection, same as stage 8);
+                # it also decides whether the indistinguishability check applies.
                 level.brain or raw.brain,
+                enabled_affordances=level.training.enabled_affordances,
+                level_name=level_name,
+                source_map=raw.source_map,
             )
             token_type_schema_hash = compute_token_type_schema_hash(token_spec)
             layout_hash = compute_token_layout_hash(token_spec)
@@ -456,7 +472,13 @@ class UniverseCompiler:
                 social_residue_program=transition_schedule.social_residue_program,
                 bounds_clamp_program=transition_schedule.bounds_clamp_program,
             )
-            vfs_hash = compute_vfs_hash(variable_schema_hash, observation_schema_hash, action_schema_hash, transition_graph_hash)
+            expression_schema_hash = compute_expression_schema_hash(
+                global_profile=compiled_vfs_profiles.global_profile,
+                agent_profile=compiled_vfs_profiles.agent_profile,
+            )
+            vfs_hash = compute_vfs_hash(
+                variable_schema_hash, observation_schema_hash, action_schema_hash, transition_graph_hash, expression_schema_hash
+            )
 
             # Compute hashes for level-specific configs
             drive_hash = self._compute_pydantic_hash(level.drive)
@@ -541,6 +563,7 @@ class UniverseCompiler:
         environment_hash: str,
         actions_hash: str,
         items_hash: str | None,
+        variables_hash: str,
     ) -> CompiledUniverse:
         """Stage 8 – emit the compiled artifact and persist cache."""
         compiled = CompiledUniverse(
@@ -569,6 +592,7 @@ class UniverseCompiler:
             environment_hash=environment_hash,
             actions_hash=actions_hash,
             items_hash=items_hash,
+            variables_hash=variables_hash,
             all_levels=all_levels,
         )
 
@@ -631,19 +655,53 @@ class UniverseCompiler:
             ) from exc
 
     def _build_cache_fingerprint(self, config_dir: Path) -> tuple[str, str]:
+        """Return ``(config_hash, provenance_id)`` for the pack at ``config_dir``.
+
+        ``config_hash`` is the pack's content (two identical packs share it). The
+        provenance carries everything else an artifact depends on: the resolved pack
+        path (an artifact copied with its pack belongs to the source, not the copy), the
+        bytes of the townlet source tree (an uncommitted compiler edit moves it; a commit
+        that touches no source does not), and the interpreter/dependency versions.
+        """
         config_hash = self._compute_config_hash(config_dir)
         python_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
         from pydantic import __version__ as pydantic_version  # lazy import to avoid startup penalty
 
         provenance = self._compute_provenance_id(
             config_hash=config_hash,
+            experiment_dir=str(Path(config_dir).resolve()),
             compiler_version=COMPILER_VERSION,
-            git_sha=self._get_git_sha(),
+            source_digest=self._compute_package_source_digest(),
             python_version=python_version,
             torch_version=torch.__version__,
             pydantic_version=pydantic_version,
         )
         return config_hash, provenance
+
+    def cache_staleness(self, compiled: CompiledUniverse, config_dir: Path) -> list[str]:
+        """Say why ``compiled`` no longer matches the pack at ``config_dir``; empty when fresh.
+
+        The single freshness rule, shared by the compile cache fast-path and ``inspect``:
+        the artifact must have been compiled from this pack path, with this pack content
+        and executable provenance, and no pack file may be newer than the compile.
+        """
+        config_dir = Path(config_dir).resolve()
+        meta = compiled.metadata
+        reasons: list[str] = []
+        if compiled.experiment_dir is None or Path(compiled.experiment_dir).resolve() != config_dir:
+            reasons.append(f"compiled from {compiled.experiment_dir}, not {config_dir}")
+        if not config_dir.is_dir():
+            reasons.append(f"source pack {config_dir} does not exist")
+            return reasons
+        config_hash, provenance_id = self._build_cache_fingerprint(config_dir)
+        if meta.config_hash != config_hash:
+            reasons.append("pack content changed since compile (config_hash differs)")
+        elif meta.provenance_id != provenance_id:
+            # provenance_id folds in config_hash, so it is only informative when the content matches.
+            reasons.append("compiler provenance changed (pack path, townlet source, or python/torch/pydantic version)")
+        if meta.config_mtime < self._compute_config_mtime(config_dir):
+            reasons.append("a pack file was modified after compile")
+        return reasons
 
     def _cache_directory_for(self, config_dir: Path) -> Path:
         """Return the cache directory path for a config pack."""
@@ -659,9 +717,21 @@ class UniverseCompiler:
         """
 
         levels_dir = config_dir / "levels"
-        available = sorted(entry.name for entry in levels_dir.iterdir()) if levels_dir.is_dir() else []
+        # Directories only: a stray file in levels/ (README.md) is not a level.
+        # Exact-name membership, not (levels_dir / name).is_dir(), which would admit
+        # "." and ".." and nested paths.
+        available = sorted(entry.name for entry in levels_dir.iterdir() if entry.is_dir()) if levels_dir.is_dir() else []
         if primary_level not in available:
-            raise ValueError(f"Primary level '{primary_level}' not found. Available: {available}")
+            raise CompilationError(
+                CompilationStage.PREFLIGHT.label,
+                [
+                    CompilationMessage(
+                        code=ErrorCode.PRIMARY_LEVEL_UNKNOWN,
+                        message=f"Primary level '{primary_level}' not found. Available: {available}",
+                        location=f"{levels_dir}:1",
+                    )
+                ],
+            )
 
     def _read_cache_artifact(self, cache_path: Path) -> CompiledUniverse | None:
         """Load a cached artifact, or return None if it is unusable.
@@ -745,8 +815,9 @@ class UniverseCompiler:
         self,
         *,
         config_hash: str,
+        experiment_dir: str,
         compiler_version: str,
-        git_sha: str,
+        source_digest: str,
         python_version: str,
         torch_version: str,
         pydantic_version: str,
@@ -759,8 +830,9 @@ class UniverseCompiler:
         payload = "|".join(
             [
                 config_hash,
+                experiment_dir,
                 compiler_version,
-                git_sha,
+                source_digest,
                 python_version,
                 torch_version,
                 pydantic_version,
@@ -768,16 +840,45 @@ class UniverseCompiler:
         )
         return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
+    @staticmethod
+    def _package_root() -> Path:
+        """The directory holding the townlet source this compiler was imported from."""
+        import townlet
+
+        return Path(townlet.__file__).resolve().parent
+
+    def _compute_package_source_digest(self) -> str:
+        """SHA-256 over every ``.py`` file of the townlet package (relative path + bytes).
+
+        Robust where a git sha is not: it moves on an uncommitted edit, stays put on a
+        commit that touches no source, and works for an installed (non-git) package.
+        The whole package, not only ``universe/``: the artifact embeds the products of
+        config DTOs, VFS, effects and substrate code. Measured at ~7 ms for the tree.
+        """
+        root = self._package_root()
+        digest = hashlib.sha256()
+        for source in sorted(root.rglob("*.py")):
+            digest.update(source.relative_to(root).as_posix().encode("utf-8"))
+            digest.update(b"\0")
+            digest.update(source.read_bytes())
+        return digest.hexdigest()
+
     def _get_git_sha(self) -> str:
+        """HEAD of the repository holding the townlet source, independent of the cwd.
+
+        Recorded on the artifact as ``compiler_git_sha``; it is not a cache input (the
+        source digest is), so a non-git install records "unknown" without thrashing.
+        """
         import subprocess
 
         try:
             result = subprocess.run(
                 ["git", "rev-parse", "HEAD"],
+                cwd=self._package_root(),
                 capture_output=True,
                 text=True,
                 check=True,
             )
             return result.stdout.strip()
-        except Exception:
+        except (OSError, subprocess.CalledProcessError):
             return "unknown"

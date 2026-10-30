@@ -4,16 +4,27 @@ from __future__ import annotations
 
 from typing import Any
 
+from pyparsing import ParseBaseException
+
 from townlet.config.bars_v2_config import BarsV2Config
 from townlet.config.items_config import ItemsAppearanceConfig, ItemsCatalogConfig
 from townlet.config.variables_config import VariableDeclaration, VariablesConfig
+from townlet.items.manager import SpawnPredicateReads
 from townlet.universe.compiled import CompiledVFSProfiles
+from townlet.universe.error_codes import ErrorCode
+from townlet.universe.errors import CompilationError, CompilationMessage
+from townlet.universe.source_map import SourceMap, locate
 from townlet.vfs.profiles import VFSProfileCompiler
 from townlet.vfs.schema import VariableDef, VariableScope
 from townlet.world.expression import ExpressionParser
 from townlet.world.expression.type_checker import TypeChecker, TypeCheckError
 
 _ENGINE_TICK_ID = "tick"
+
+
+class _SpawnPredicateRefusedError(Exception):
+    """One spawn predicate the runtime could not evaluate; the message says why."""
+
 
 _DETERMINISTIC_TENSOR_INITIALIZERS = frozenset({"zeros", "ones", "eye"})
 
@@ -162,74 +173,59 @@ class VFSCompiler:
         *,
         bar_schema: dict[str, str],
         variables: VariablesConfig,
-        compiled_vfs_profiles: CompiledVFSProfiles | None,
-        temporal_supported: bool,
+        source_map: SourceMap | None,
+        level_name: str,
     ) -> None:
-        """Compile item spawn predicates into parsed ASTs for runtime reuse."""
+        """Type-check each spawn predicate against what the runtime serves; store its AST.
+
+        The readable names come from `SpawnPredicateReads.schema`, fed the same registry
+        roster the runtime registry is built from, so a predicate that compiles is one the
+        spawn context can evaluate. A read outside that schema, or a non-bool result, is
+        refused here with the rule's `file:line`.
+        """
         if appearance is None:
             return
-        schema = self._build_spawn_condition_schema(
-            bar_schema=bar_schema,
-            variables=variables,
-            compiled_vfs_profiles=compiled_vfs_profiles,
-            temporal_supported=temporal_supported,
-        )
+        schema = SpawnPredicateReads.schema(meter_names=bar_schema, variables=self.build_runtime_variables(variables))
         parser = ExpressionParser()
         type_checker = TypeChecker(schema)
-        for rule in appearance.items:
+        declaration = f"levels/{level_name}/items_appearance"
+        issues: list[CompilationMessage] = []
+        for index, rule in enumerate(appearance.items):
             rule.when_ast = None
             if rule.when is None:
                 continue
+            try:
+                rule.when_ast = self._check_spawn_predicate(rule.when, schema, parser, type_checker)
+            except _SpawnPredicateRefusedError as refusal:
+                issues.append(
+                    CompilationMessage(
+                        code=ErrorCode.ITEM_SPAWN_CONDITION,
+                        message=f"Spawn condition for item '{rule.item_type}': {rule.when!r} {refusal}",
+                        location=locate(source_map, f"{declaration}:items[{index}].when", declaration),
+                    )
+                )
+        if issues:
+            raise CompilationError("Item spawn conditions", issues)
 
-            ast = parser.parse(rule.when)
-
-            if not temporal_supported and self._ast_uses_temporal(ast):
-                raise TypeCheckError("Spawn condition references temporal.* but temporal mechanics are disabled for this level")
-
+    @staticmethod
+    def _check_spawn_predicate(when: str, schema: dict[str, str], parser: ExpressionParser, type_checker: TypeChecker) -> Any:
+        """Return the parsed predicate, or raise `_SpawnPredicateRefusedError` saying why not."""
+        try:
+            ast = parser.parse(when)
+        except (ParseBaseException, ValueError) as exc:
+            raise _SpawnPredicateRefusedError(f"does not parse: {exc}") from exc
+        unserved = [name for name in dict.fromkeys(SpawnPredicateReads.reads(ast)) if name not in schema]
+        if unserved:
+            raise _SpawnPredicateRefusedError(
+                f"reads {unserved}, which the spawn context does not serve. A spawn predicate reads "
+                f"'{SpawnPredicateReads.VARIABLE_ROOT}.<id>' for a global- or agent-scope variable (the engine clock "
+                f"is '{SpawnPredicateReads.variable_path(_ENGINE_TICK_ID)}') and '{SpawnPredicateReads.BAR_ROOT}.<meter>' "
+                "for a meter; derive anything else (an hour, a season) as a declared global expression variable."
+            )
+        try:
             result_type = type_checker.check(ast)
-            if result_type != "bool":
-                raise TypeCheckError(f"Spawn condition must return bool, got {result_type}")
-
-            rule.when_ast = ast
-
-    def _build_spawn_condition_schema(
-        self,
-        *,
-        bar_schema: dict[str, str],
-        variables: VariablesConfig,
-        compiled_vfs_profiles: CompiledVFSProfiles | None,
-        temporal_supported: bool,
-    ) -> dict[str, str]:
-        """Build expression schema for item spawn conditions."""
-        schema: dict[str, str] = {**bar_schema}
-        for var in variables.declarations:
-            if var.scope in {VariableScope.GLOBAL, VariableScope.AGENT}:
-                schema[f"env.{var.id}"] = "float" if var.type == "scalar" else var.type
-        if temporal_supported:
-            schema["temporal.time_of_day"] = "float"
-            schema["temporal.day_progress"] = "float"
-            schema["temporal.is_night"] = "bool"
-
-        if compiled_vfs_profiles is not None:
-            if compiled_vfs_profiles.global_profile is not None:
-                for compiled_var in compiled_vfs_profiles.global_profile.variables:
-                    schema[f"vfs.{compiled_var.name}"] = compiled_var.type
-            if compiled_vfs_profiles.agent_profile is not None:
-                for compiled_var in compiled_vfs_profiles.agent_profile.variables:
-                    schema[f"agent.vfs.{compiled_var.name}"] = compiled_var.type
-
-        return schema
-
-    def _ast_uses_temporal(self, ast: Any) -> bool:
-        """Return True if parsed expression AST references temporal.* paths."""
-        if isinstance(ast, dict):
-            if ast.get("type") == "path":
-                path = ast.get("path")
-                if isinstance(path, str) and path.startswith("temporal."):
-                    return True
-            return any(self._ast_uses_temporal(value) for value in ast.values())
-        if isinstance(ast, list):
-            return any(self._ast_uses_temporal(item) for item in ast)
-        if hasattr(ast, "__dict__"):
-            return self._ast_uses_temporal(vars(ast))
-        return False
+        except TypeCheckError as exc:
+            raise _SpawnPredicateRefusedError(f"does not type-check: {exc}") from exc
+        if result_type != "bool":
+            raise _SpawnPredicateRefusedError(f"must return bool, got {result_type}")
+        return ast

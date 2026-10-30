@@ -279,10 +279,12 @@ class TestAuthoredDayPhase:
         env.reset()
         wait = env.action_dim - 1
         obs = None
-        for _ in range(7):
+        for _ in range(6):
             obs, *_ = env.step(torch.tensor([wait], device=env.device))
-        # evaluation runs before the tick increments, so after 7 steps day_phase == 6
+        # the observation describes the instant the next action is taken in: after 6
+        # steps day_phase, the registry tick and the gating hour are all 6
         assert float(env.vfs_registry.get(self.VARIABLE, reader="engine").reshape(-1)[0]) == 6.0
+        assert env.time_of_day == 6
         _row, v0 = self._lanes(env)
         assert obs[0, v0].item() == pytest.approx(1.0, abs=1e-6)  # sin(2π·6/24)
         assert obs[0, v0 + 1].item() == pytest.approx(0.0, abs=1e-6)

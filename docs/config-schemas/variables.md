@@ -14,7 +14,7 @@ variables:
   - id: day_phase
     scope: global
     type: scalar
-    lifetime: persistent
+    lifetime: episode
     semantic_type: temporal
     initial_value: 0.0
     expression: tick
@@ -81,6 +81,23 @@ Tensor modes `zeros`, `ones` and `eye` can lower to exact declared literals for 
 identity. Exposed random initializers are refused because token identity needs an exact
 literal initial value and a random draw has none. Irrelevant, conflicting or malformed
 initialization parameters fail validation.
+
+**Token identity and the brain.** An exposed variable's token identity is its declared
+descriptor: scope, semantic type, normalization kind and bounds, dtype, lifetime, declared
+initial value, element count and tensor shape — never its name or slot. Two exposed
+variables equal in every one of those are one token to a permutation-invariant encoder, so
+when the level's effective brain is `token_set` or `recurrent` (both pool through
+`TokenSetEncoder`) the compiler refuses the pair with `[TOKEN-IDENTITY]` at the second
+declaration's `file:line`, naming the first. A flat brain (`feedforward`, `dueling`) reads
+slots by position and compiles the same pack unchanged. The same rule, under the same brain
+gate, covers deployed affordances on an aspatial substrate (interaction type, duration,
+opening hours, reachable meter writes; with position lanes two affordances differ by where
+they are every episode, and an affordance outside `enabled_affordances` is padding) and
+observable catalogued effects (scope, duration, reapply policy — not what the effect writes;
+an `observable: false` effect is never published). Every other token-spec refusal —
+exposure rules (`[TOKEN-EXPOSURE]`), item or effect capacity (`[TOKEN-CAPACITY]`), and
+declared parameters that cannot enter a token (`[TOKEN-SPEC]`) — is a stage-7
+`CompilationError` located at the subject declaration, never a bare `ValueError`.
 
 ## Item state and supported consumers
 
@@ -152,11 +169,37 @@ declared scope and the write's `actions.yaml` `file:line`. Whether a pack compil
 depends on `num_agents`. A transition rule applies at any phase of the graph. Rewards are not a
 transition phase: they are computed by the drive (DAC) after the transition.
 
-Expressions are evaluated once per tick, after every transition phase that writes VFS
+A write's expression and condition are shape-proved as well as type-checked. A read has
+its scope's shape: `agent`/`agent_private` variables, meters and `agent_id` are one per
+agent, `pair` is agent × agent, `message` is agent × slot, `affordance` is one per
+affordance, `global` is scalar. Values of two different shapes do not combine. The result must
+fit the target: an action write takes scalar or agent-shaped values (a non-`append_event`
+write to a `message` buffer takes a message-shaped one), and its condition is scalar or
+agent-shaped; a transition-rule write to a `global` target takes scalars only, to `pair`
+scalar or pair-shaped values, to `agent`/`agent_private` agent-shaped ones, to `message`
+agent- or message-shaped ones, and to `affordance` affordance-shaped ones.
+An agent-shaped value into a `pair` target is refused, because the language cannot yet say
+which pair axis it belongs to. The one admitted mix is inside a pair target's condition:
+`observer_mask and chosen_action == STEAL` gates `v[i, j]` by agent j's value. A misfit
+refuses at compile (`VTC-WRITE-TYPE`) with the write's `file:line`.
+
+Expressions are evaluated once per instant, after every transition phase that writes VFS
 state (action writes, scheduled effects, transition rules) and after
 `clamp_and_validate`, so an expression always reads this tick's writes and clamped bars.
-The converse is one tick behind: an action write or transition rule that reads an
-expression variable sees the value computed at the end of the previous tick.
+The observation describes the state the next action is taken in: within a step the
+action, its transitions and effects run at instant k (engine `tick` = k); the clock then
+advances to k+1, and expressions, terminal conditions, item respawn predicates and the
+observation all see k+1, as does the hour that gates the next action's opening hours.
+`reset()` runs the same tail at instant 0, evaluating expressions before the initial item
+spawn and the first observation, so no expression ever shows its declared literal or a
+previous episode's value. An expression derived from `tick` is therefore `episode`
+lifetime, like `tick` itself. The converse is one tick behind: an action write or
+transition rule that reads an expression variable sees the value evaluated for the instant
+its action is taken in, at the end of the previous step (or by `reset()`).
+A variable that carries an `expression` is owned by it: an action write, transition-rule
+write or command-pipeline write (effect, affordance interaction, item hook) that targets it
+would be overwritten by evaluation, so it refuses at compile (`UAC-STATIC-WRITE`) at the
+write's `file:line`, naming the expression variable's declaration `file:line`.
 
 ## Resolution, access and artifacts
 

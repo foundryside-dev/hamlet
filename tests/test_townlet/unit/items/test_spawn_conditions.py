@@ -135,7 +135,8 @@ def test_vfs_condition_gates_spawn() -> None:
     assert len(manager.active_items) == 1
 
 
-def test_temporal_condition_and_boolean_logic() -> None:
+def test_engine_tick_condition_and_boolean_logic() -> None:
+    """The engine clock is a global registry variable, read as `vfs.tick` like any other."""
     catalog = ItemsCatalogConfig.from_yaml(path=Path("configs/test/items_smoke/items.yaml"))
     appearance = _appearance(
         items=[
@@ -143,13 +144,13 @@ def test_temporal_condition_and_boolean_logic() -> None:
                 "item_type": "apple",
                 "spawn_count": 1,
                 "placement": {"mode": "random"},
-                "when": "vfs.is_raining and temporal.tick > 5",
+                "when": "vfs.is_raining and vfs.tick > 5",
             }
         ]
     )
 
     rule = appearance.items[0]
-    _compile_when(rule, {"vfs.is_raining": "bool", "temporal.tick": "int", "bar.energy": "float"})
+    _compile_when(rule, {"vfs.is_raining": "bool", "vfs.tick": "float", "bar.energy": "float"})
 
     class _DummyProfile:
         variables: tuple = ()
@@ -164,7 +165,16 @@ def test_temporal_condition_and_boolean_logic() -> None:
                 readable_by=["engine"],
                 writable_by=["engine"],
                 default=False,
-            )
+            ),
+            VariableDef(
+                id="tick",
+                scope=VariableScope.GLOBAL,
+                type="scalar",
+                lifetime="episode",
+                readable_by=["engine"],
+                writable_by=["engine"],
+                default=0.0,
+            ),
         ],
         num_agents=1,
         device=torch.device("cpu"),
@@ -177,11 +187,13 @@ def test_temporal_condition_and_boolean_logic() -> None:
 
     # tick low -> no spawn
     registry._storage["is_raining"] = torch.tensor(True)
-    manager.spawn_initial_items(appearance, grid_size=(3, 3), current_tick=0, bars=bars, temporal={"tick": torch.tensor(3)})
+    registry._storage["tick"] = torch.tensor(3.0)
+    manager.spawn_initial_items(appearance, grid_size=(3, 3), current_tick=3, bars=bars)
     assert len(manager.active_items) == 0
 
     # tick high and raining -> spawn
-    manager.spawn_initial_items(appearance, grid_size=(3, 3), current_tick=6, bars=bars, temporal={"tick": torch.tensor(6)})
+    registry._storage["tick"] = torch.tensor(6.0)
+    manager.spawn_initial_items(appearance, grid_size=(3, 3), current_tick=6, bars=bars)
     assert len(manager.active_items) == 1
 
 

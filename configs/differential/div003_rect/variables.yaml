@@ -9,7 +9,7 @@ variables:
     writable_by: [engine]
     scope: global
     type: scalar
-    lifetime: persistent
+    lifetime: episode
     semantic_type: temporal
     exposed_to:
     - agent

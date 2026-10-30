@@ -338,3 +338,36 @@ class TestEndToEnd:
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
+
+
+class TestRatchet:
+    """The whitelisted count is held to a committed ceiling that may only fall."""
+
+    def test_at_ceiling_passes(self, tmp_path):
+        ratchet = tmp_path / "ratchet"
+        ratchet.write_text("5\n")
+        assert no_defaults_lint.check_ratchet(ratchet, 5) == 0
+
+    def test_rise_fails(self, tmp_path, capsys):
+        ratchet = tmp_path / "ratchet"
+        ratchet.write_text("5\n")
+        assert no_defaults_lint.check_ratchet(ratchet, 6) == 1
+        assert "exceed the ceiling" in capsys.readouterr().out
+
+    def test_fall_fails_until_lowered(self, tmp_path, capsys):
+        ratchet = tmp_path / "ratchet"
+        ratchet.write_text("5\n")
+        assert no_defaults_lint.check_ratchet(ratchet, 4) == 1
+        assert "Lower" in capsys.readouterr().out
+
+    def test_main_applies_ratchet_to_waived_file(self, tmp_path):
+        src = tmp_path / "mod.py"
+        src.write_text("def f(x=1):\n    return x\n")
+        whitelist = tmp_path / "wl.txt"
+        whitelist.write_text(f"{src}:*\n")
+        ratchet = tmp_path / "ratchet"
+        ratchet.write_text("0\n")
+        argv = ["lint", str(src), "--whitelist", str(whitelist), "--ratchet", str(ratchet), "--quiet"]
+        assert no_defaults_lint.main(argv) == 1
+        ratchet.write_text("1\n")
+        assert no_defaults_lint.main(argv) == 0

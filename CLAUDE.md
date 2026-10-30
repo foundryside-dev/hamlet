@@ -119,7 +119,9 @@ the register says otherwise."* Accepted differences are registered in
   on it; corrected here 2026-09-02 — this line used to say no workflow had ever run). A "green"
   claim still requires reading every per-push row at the tip SHA (`PDR-0127`). The local
   pre-push set mirrors the Lint job — `ruff check .`, `black --check src tests`,
-  `mypy src/townlet --show-error-codes`, `scripts/no_defaults_lint.py` — plus
+  `mypy src/townlet --show-error-codes`, `scripts/no_defaults_lint.py src/townlet/ --whitelist
+  .defaults-whitelist.txt --ratchet .defaults-ratchet` (the ratchet holds the whitelisted count to
+  the committed ceiling, which may only fall: blanket waivers no longer hide new defaults) — plus
   `scripts/validate_compiler_cli.py` and `pytest` for the other two gates.
   **Merging `project-recovery*` to `main` is autonomous under `PDR-0101`** once gate 1 (every CI
   row green at the tip) and gate 2 (the `PDR-0039` README re-verification by method) are

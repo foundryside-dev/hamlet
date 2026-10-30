@@ -470,6 +470,14 @@ Rule IDs:
     parser.add_argument("--show-context", action="store_true", help="Show AST context (class/function) for violations")
     parser.add_argument("--quiet", action="store_true", help="Suppress progress output")
     parser.add_argument("--exclude", action="append", help="Exclude files matching pattern (can be used multiple times)")
+    parser.add_argument(
+        "--ratchet",
+        type=pathlib.Path,
+        help=(
+            "File holding the exact number of whitelisted violations. Fails when the count rises "
+            "(a new default landed under a blanket waiver) and when it falls (lower the file)."
+        ),
+    )
 
     args = parser.parse_args(argv[1:])
 
@@ -547,11 +555,29 @@ Rule IDs:
             print(f"({len(whitelisted_violations)} violation(s) whitelisted)")
 
         return 1
-    else:
-        print("No defaults detected. Clean.")
-        if whitelisted_violations:
-            print(f"({len(whitelisted_violations)} violation(s) whitelisted)")
-        return 0
+    print("No defaults detected. Clean.")
+    if whitelisted_violations:
+        print(f"({len(whitelisted_violations)} violation(s) whitelisted)")
+    if args.ratchet:
+        return check_ratchet(args.ratchet, len(whitelisted_violations))
+    return 0
+
+
+def check_ratchet(ratchet_file: pathlib.Path, whitelisted: int) -> int:
+    """Hold the whitelisted count to the committed ceiling, which may only fall."""
+    ceiling = int(ratchet_file.read_text().strip())
+    if whitelisted > ceiling:
+        print(
+            f"Ratchet: {whitelisted} whitelisted violation(s) exceed the ceiling of {ceiling} in "
+            f"{ratchet_file}. A new default landed in a waived file; remove it "
+            f"(run with --show-whitelisted to list them)."
+        )
+        return 1
+    if whitelisted < ceiling:
+        print(f"Ratchet: {whitelisted} whitelisted violation(s), below the ceiling of {ceiling}. Lower {ratchet_file} to {whitelisted}.")
+        return 1
+    print(f"Ratchet: {whitelisted} whitelisted violation(s), at the ceiling.")
+    return 0
 
 
 if __name__ == "__main__":

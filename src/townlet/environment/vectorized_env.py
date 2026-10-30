@@ -201,7 +201,10 @@ class VectorizedHamletEnv:
         # If affordances exist but catalog missing, compilation would have failed
 
         self.command_executor = CommandExecutor()
-        self.affordance_overrides: dict[str, bool] = {}
+        # Runtime affordance availability overrides (`affordance.X.available`), one
+        # mapping per world (S1): an override written in world w opens or closes the
+        # affordance in world w only.
+        self.affordance_overrides: list[dict[str, bool]] = [{} for _ in range(num_agents)]
         self.effect_manager = (
             EffectManager(
                 catalog=effect_catalog,
@@ -485,11 +488,23 @@ class VectorizedHamletEnv:
 
         return tensor
 
-    def _is_affordance_open(self, affordance_name: str, hour: int | None = None) -> bool:
-        """Return True if an affordance is open for the specified (or current) hour."""
+    def _affordance_open_mask(self, affordance_name: str) -> torch.Tensor:
+        """`[num_worlds]` bool: whether each world's affordance is open now.
 
-        if affordance_name in self.affordance_overrides:
-            return bool(self.affordance_overrides[affordance_name])
+        A world's runtime override (`affordance.X.available`) takes precedence over the
+        declared opening hours, in that world only.
+        """
+        scheduled = self._is_affordance_open(affordance_name)
+        open_in_world = []
+        for overrides in self.affordance_overrides:
+            if affordance_name in overrides:
+                open_in_world.append(bool(overrides[affordance_name]))
+            else:
+                open_in_world.append(scheduled)
+        return torch.tensor(open_in_world, dtype=torch.bool, device=self.device)
+
+    def _is_affordance_open(self, affordance_name: str, hour: int | None = None) -> bool:
+        """Return True if an affordance's declared opening hours admit the specified (or current) hour."""
 
         if not self.enable_temporal_mechanics:
             return True
@@ -665,6 +680,7 @@ class VectorizedHamletEnv:
             meter_name_to_index=self.meter_name_to_index,
             effect_manager=self.effect_manager,
             affordance_overrides=self.affordance_overrides,
+            agent_positions=lambda: self.positions,
         )
 
     def _initialize_affordance_engine(self, num_agents: int) -> None:
@@ -767,13 +783,15 @@ class VectorizedHamletEnv:
             agent_positions = self.randomize_affordance_positions()
             # Use returned positions (guaranteed collision-free with affordances)
             self.positions = (
-                agent_positions if agent_positions is not None else self.substrate.initialize_positions(self.num_agents, self.device)
+                agent_positions
+                if agent_positions is not None
+                else self.substrate.initialize_positions(self.num_agents, self.device, generator=None)
             )
         else:
             self._apply_configured_affordance_positions()
             # When using configured positions, agents still spawn randomly (could still collide)
             # TODO: Consider also handling configured affordance case for complete collision-free guarantee
-            self.positions = self.substrate.initialize_positions(self.num_agents, self.device)
+            self.positions = self.substrate.initialize_positions(self.num_agents, self.device, generator=None)
 
         # At episode start, velocity is zero.
         self._velocity = torch.zeros(
@@ -805,7 +823,8 @@ class VectorizedHamletEnv:
         self._unique_affordances_count.zero_()
         self._affordances_seen = [set() for _ in range(self.num_agents)]
         # Clear any runtime overrides so each episode starts from configured availability
-        self.affordance_overrides.clear()
+        for overrides in self.affordance_overrides:
+            overrides.clear()
 
         # Effects are episode-scoped: discard every active effect and all delayed work
         # (no hooks run) before anything in this episode can spawn one.
@@ -883,46 +902,56 @@ class VectorizedHamletEnv:
         inventory = self.item_inventory
         dim = self.substrate.position_dim
         per_world = self.items_per_world
-        # world -> [(slot, position, carried, holder's inventory slot)]
-        occupied: dict[int, list[tuple[int, list[Any], bool, int]]] = {}
+        # Host-side assembly in plain Python lists, then one tensor per field: no per-item
+        # tensor ops. Holder inventories and agent positions cross to the host once.
+        inventory_rows: list[list[int]] | None = None
+        if inventory is not None:
+            inventory_rows = inventory.slots.tolist()
+        agent_positions: list[list[Any]] | None = None
+        if dim > 0:
+            agent_positions = self.positions.tolist()
+        entry_worlds: list[int] = []
+        entry_slots: list[int] = []
+        entry_positions: list[list[Any]] = []
+        entry_carried: list[bool] = []
+        entry_owner: list[int] = []
         for world in range(self.num_agents):
-            entries: list[tuple[int, list[Any], bool, int]] = []
             for item in manager.items_in_world(world):
                 position: list[Any] = list(item.position)
                 carried = False
                 inventory_slot = -1
-                holders = sorted(h for h in item.holder_agent_ids if manager.world_of_agent(h) == world)
-                if holders and inventory is not None:
-                    holder = holders[0]
-                    held_at = torch.nonzero(inventory.slots[holder] == item.instance_id, as_tuple=True)[0]
-                    if held_at.numel():
-                        carried = True
-                        inventory_slot = int(held_at[0])
-                        position = self.positions[holder].tolist()
-                entries.append((item.vfs_index - world * per_world, position, carried, inventory_slot))
-            occupied[world] = entries
+                holder = manager.holder_of(item)
+                if holder is not None and inventory_rows is not None and item.instance_id in inventory_rows[holder]:
+                    carried = True
+                    inventory_slot = inventory_rows[holder].index(item.instance_id)
+                    if agent_positions is not None:
+                        position = agent_positions[holder]
+                entry_worlds.append(world)
+                entry_slots.append(item.vfs_index - world * per_world)
+                entry_positions.append(position)
+                entry_carried.append(carried)
+                entry_owner.append(inventory_slot)
 
-        used = sorted({slot for entries in occupied.values() for slot, *_ in entries})
-        if not used:
+        if not entry_slots:
             return None
+        used = sorted(set(entry_slots))
         column_of = {slot: column for column, slot in enumerate(used)}
         k = len(used)
         n = self.num_agents
         slot_tensor = torch.tensor(used, dtype=torch.long, device=self.device)
+        world_index = torch.tensor(entry_worlds, dtype=torch.long, device=self.device)
+        column_index = torch.tensor([column_of[slot] for slot in entry_slots], dtype=torch.long, device=self.device)
         active = torch.zeros((n, k), dtype=torch.bool, device=self.device)
+        active[world_index, column_index] = True
         positions = torch.zeros((n, k, dim), dtype=self.substrate.position_dtype, device=self.device)
+        if dim > 0:
+            positions[world_index, column_index] = torch.tensor(entry_positions, dtype=self.substrate.position_dtype, device=self.device)
         # Every world's row for a column is its own block's row for that slot.
         vfs_rows = torch.arange(n, device=self.device).unsqueeze(1) * per_world + slot_tensor.unsqueeze(0)
         carried_mask = torch.zeros((n, k), dtype=torch.bool, device=self.device)
+        carried_mask[world_index, column_index] = torch.tensor(entry_carried, dtype=torch.bool, device=self.device)
         owner_slot = torch.full((n, k), -1, dtype=torch.long, device=self.device)
-        for world, entries in occupied.items():
-            for slot, position, carried, inventory_slot in entries:
-                column = column_of[slot]
-                active[world, column] = True
-                if dim > 0:
-                    positions[world, column] = torch.tensor(position, dtype=self.substrate.position_dtype, device=self.device)
-                carried_mask[world, column] = carried
-                owner_slot[world, column] = inventory_slot
+        owner_slot[world_index, column_index] = torch.tensor(entry_owner, dtype=torch.long, device=self.device)
         return ItemSlotBatch(
             slot_indices=slot_tensor,
             active=active,
@@ -1010,46 +1039,16 @@ class VectorizedHamletEnv:
         )
 
     def _observable_effects_for_world(self, world: int) -> list[Any]:
-        """Every observable active effect this world's agent can see, any scope.
-
-        Item effects are keyed by item-arena row, and items are per world: a world sees
-        only the effects on its own items.
-        """
+        """Every observable active effect living in `world`, any scope (each effect has one world)."""
         manager = self.effect_manager
         assert manager is not None
-        effects = [effect for effect in manager.global_effects if effect.observable]
-        effects.extend(manager.get_observable_agent_effects(world))
-        for row, entries in manager.item_effects.items():
-            if self.vfs_registry.item_world(row) == world:
-                effects.extend(effect for effect in entries if effect.observable)
-        for entries in manager.affordance_effects.values():
-            effects.extend(effect for effect in entries if effect.observable)
-        return effects
+        return [effect for effect in manager.effects_in_world(world) if effect.observable]
 
     def _encode_velocity_observation(self) -> torch.Tensor | None:
-        """Encode agent velocity as delta position per step.
-
-        Returns:
-            [num_agents, position_dim] tensor or None for aspatial substrates.
-        """
-        if getattr(self.substrate, "position_dim", 0) == 0:
+        """Agent velocity (delta position per step), `[num_agents, position_dim]`; None when aspatial."""
+        if self.substrate.position_dim == 0:
             return None
-
-        # Velocity is tracked per-step in _execute_actions; default to zeros if unset.
-        if not hasattr(self, "_velocity"):
-            return torch.zeros(
-                (self.num_agents, self.substrate.position_dim),
-                dtype=torch.float32,
-                device=self.device,
-            )
-        velocity: torch.Tensor | None = getattr(self, "_velocity")
-        if velocity is None:
-            return torch.zeros(
-                (self.num_agents, self.substrate.position_dim),
-                dtype=torch.float32,
-                device=self.device,
-            )
-        return velocity
+        return self._velocity
 
     def get_action_masks(self) -> torch.Tensor:
         """Compute valid-action masks for the current tick.
@@ -1066,7 +1065,7 @@ class VectorizedHamletEnv:
             item_manager=self.item_manager,
             item_handler=self.item_handler,
             affordances=self.affordances,
-            is_affordance_open=self._is_affordance_open,
+            affordance_open=self._affordance_open_mask,
         )
 
     def step(
@@ -1128,6 +1127,9 @@ class VectorizedHamletEnv:
                 agent_positions=self.positions,
                 affordance_positions=self.affordances,
                 substrate=self.substrate,
+                # A world whose agent is done is frozen: its effects write nothing,
+                # exactly as VTC rules are masked by activity.
+                live=active_on_entry,
             )
 
         # Sync meters back from bars dict (effects may have modified them)
@@ -1671,7 +1673,7 @@ class VectorizedHamletEnv:
             # Discrete grid: try random sampling with collision detection
             max_attempts = 10
             for attempt in range(max_attempts):
-                sampled = self.substrate.initialize_positions(total_positions_needed, self.device)
+                sampled = self.substrate.initialize_positions(total_positions_needed, self.device, generator=None)
 
                 # Convert positions to tuples for uniqueness check
                 positions_as_tuples = [tuple(sampled[i].tolist()) for i in range(total_positions_needed)]
@@ -1692,7 +1694,7 @@ class VectorizedHamletEnv:
                 )
         else:
             # Continuous/aspatial: sample directly (infinite positions, collisions OK)
-            sampled = self.substrate.initialize_positions(total_positions_needed, self.device)
+            sampled = self.substrate.initialize_positions(total_positions_needed, self.device, generator=None)
 
         # Split: first N for affordances, remaining M for agents
         affordance_positions = sampled[: len(self.affordances)]

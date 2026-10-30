@@ -13,11 +13,12 @@ effect_definitions:
   # found to declare. The F1 probe runs all-WAIT and reads `winter_ticks`: if it
   # is still 0.0, the world never acted on its own.
   #
-  # Scope note, inherited from Trial O (`hamlet-4cd664a955`): `scope: global` is
-  # declarable but unreachable at spawn — every spawn path hardcodes agent
-  # scope — so this is declared agent-scoped and pinned to slot 0.
+  # Scope: the batch is independent single-agent worlds, so winter is a global
+  # effect of one world. WINTER_ONSET spawns it in the world whose agent
+  # interacted; it writes that world's globals and, through `all_agents`, that
+  # world's agent only. Each world gets its own winter.
   - id: "winter"
-    scope: agent
+    scope: global
     duration: 100000
     reapply_policy: renew
     observable: true
@@ -75,7 +76,7 @@ effect_definitions:
 # effects are declared). Values: one active instance per declared effect per scope
 # entity; a `stack`-policy effect exceeding its scope budget raises loudly at publish.
 max_active_effects:
-  global: 0
-  agent: 1
+  global: 1
+  agent: 0
   item: 0
   affordance: 0

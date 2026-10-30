@@ -190,7 +190,7 @@ def test_execution_context_affordance_available():
         target_index=None,
         effect_manager=DummyEffectManager(),
         item_manager=DummyItemManager(),
-        affordance_overrides={"food": True, "water": False},
+        affordance_overrides=[{"food": True, "water": False}],
     )
 
     food_available = context.get_path("affordance.food.available")
@@ -211,12 +211,12 @@ def test_execution_context_set_affordance_available():
         target_index=None,
         effect_manager=DummyEffectManager(),
         item_manager=DummyItemManager(),
-        affordance_overrides={},
+        affordance_overrides=[{}],
     )
 
-    # Set affordance availability
+    # Set affordance availability (in the context's world, 0)
     context.set_path("affordance.gym.available", torch.tensor(False))
-    assert context.affordance_overrides["gym"] is False
+    assert context.affordance_overrides == [{"gym": False}]
 
 
 # --- Target VFS tests ---

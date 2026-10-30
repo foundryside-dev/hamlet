@@ -33,6 +33,7 @@ from townlet.vfs.storage_dtype import storage_dtype
 __all__ = [
     "VariableRegistry",
     "ScopeArena",
+    "item_row_world",
 ]
 
 
@@ -64,6 +65,15 @@ class ScopeArena:
 
     tensor: torch.Tensor
     index: dict[str, tuple[int, int]]
+
+
+def item_row_world(row: int, items_per_world: int) -> int:
+    """The world a flat item-arena row belongs to: row = world * items_per_world + slot.
+
+    The one definition of the row -> world fact (items are per world, S1); the registry
+    and the item manager both ask it.
+    """
+    return row // items_per_world
 
 
 class VariableRegistry:
@@ -453,6 +463,29 @@ class VariableRegistry:
             raise ValueError(f"Value for '{variable_id}' has shape {tuple(value.shape)}, expected {tuple(expected_shape)}")
         if value.dtype != expected_dtype:
             raise ValueError(f"Value for '{variable_id}' has dtype {value.dtype}, expected {expected_dtype}")
+        var_def = self._definitions[variable_id]
+        if var_def.type == "item_ref" and var_def.scope in (VariableScope.AGENT, VariableScope.GLOBAL):
+            self._validate_item_refs(variable_id, value)
+
+    def _validate_item_refs(self, variable_id: str, value: torch.Tensor) -> None:
+        """An `item_ref` written in world w names an item row of world w, or is null (-1).
+
+        Items are per world (S1) and row r of an agent or global variable is world r's,
+        so a reference into another world's arena would be a cross-world read waiting to
+        happen. Every writer (effects, VTC, profiles) passes through here.
+        """
+        rows = torch.arange(value.shape[0], device=value.device)
+        refs = value.to(torch.long)
+        null = refs == -1
+        in_world = (refs >= rows * self.items_per_world) & (refs < (rows + 1) * self.items_per_world)
+        bad = ~(null | in_world)
+        if bool(bad.any()):
+            row = int(torch.nonzero(bad, as_tuple=True)[0][0])
+            raise RuntimeError(
+                f"Engine defect: item_ref '{variable_id}' in world {row} names item row {int(refs[row])}, which is not "
+                f"a row of world {row} ([{row * self.items_per_world}, {(row + 1) * self.items_per_world})) and not null (-1); "
+                "worlds are independent"
+            )
 
     def reset_tick_scoped(self) -> None:
         """Re-initialize tick-lifetime variables."""
@@ -651,6 +684,16 @@ class VariableRegistry:
         for profile in self.item_profiles.values():
             max_vars = max(max_vars, len(profile.variables))
 
+        # The arena is one row per item slot of every world: N * C * V elements. It grows
+        # with the batch, so it shares the tensor-variable allocation guardrail.
+        arena_elements = self.max_items * max_vars
+        if arena_elements > self._max_tensor_elements:
+            raise ValueError(
+                f"Item arena [{self.num_worlds} worlds x {self.items_per_world} item slots, {max_vars} profile variables] "
+                f"needs {arena_elements} elements, which exceeds max supported elements ({self._max_tensor_elements}). "
+                "Reduce num_agents, max_items_in_world / max_items_per_agent, or the item-profile variable count."
+            )
+
         self.item_vfs = torch.zeros(
             (self.max_items, max_vars),
             dtype=torch.float32,
@@ -748,6 +791,14 @@ class VariableRegistry:
         if var_name not in profile_vars:
             raise KeyError(f"Variable '{var_name}' not found in profile '{profile_name}'. Available: {list(profile_vars.keys())}")
         var_idx = profile_vars[var_name]
+        if self.get_item_variable_type(profile_name, var_name) == "item_ref":
+            ref = int(value.item() if isinstance(value, torch.Tensor) else value)
+            world = self.item_world(vfs_index)
+            if ref != -1 and not world * self.items_per_world <= ref < (world + 1) * self.items_per_world:
+                raise RuntimeError(
+                    f"Engine defect: item_ref '{profile_name}.{var_name}' on item row {vfs_index} (world {world}) names item "
+                    f"row {ref}, which is not a row of world {world} and not null (-1); worlds are independent"
+                )
         self.item_vfs[vfs_index, var_idx] = value
 
     def read_item(self, profile_name: str, var_name: str, vfs_index: int, *, reader: str) -> float:
@@ -812,7 +863,7 @@ class VariableRegistry:
         """The world an item-arena row belongs to (row = world * items_per_world + slot)."""
         if not 0 <= vfs_index < self.max_items:
             raise IndexError(f"Item row {vfs_index} is outside the declared arena [0, {self.max_items})")
-        return vfs_index // self.items_per_world
+        return item_row_world(vfs_index, self.items_per_world)
 
     def get_item_profile_for_index(self, vfs_index: int) -> str | None:
         """Return profile name for a given item VFS index (if registered)."""

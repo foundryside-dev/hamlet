@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING, Any
 
 import torch
 
-from townlet.config.effects_config import EffectScope
 from townlet.vfs.registry import VariableRegistry
 from townlet.vfs.schema import VariableScope
 
@@ -31,6 +30,13 @@ class _NullItemManager:
     @property
     def num_worlds(self) -> int:  # pragma: no cover
         raise RuntimeError("ItemManager is not configured; spawn_item unavailable")
+
+
+def _available(overrides: dict[str, bool], affordance: str) -> bool:
+    """A world's affordance availability: its runtime override, or open when it has none."""
+    if affordance in overrides:
+        return bool(overrides[affordance])
+    return True
 
 
 @dataclass
@@ -59,7 +65,8 @@ class ExecutionContext:
     scheduler: Any | None = None  # Scheduler for delay commands
     rng: torch.Generator | None = None
     seed: int | None = None  # Optional deterministic seed for sampling
-    affordance_overrides: dict[str, bool] | None = None  # Runtime affordance availability overrides
+    # Runtime affordance availability overrides, one mapping per world (S1).
+    affordance_overrides: list[dict[str, bool]] | None = None
     # Per-agent liveness of this pipeline: a `[num_agents]` bool tensor set by a masked
     # `if`/`switch` branch, None when every row is live. Every write passes through it.
     write_mask: torch.Tensor | None = None
@@ -71,8 +78,6 @@ class ExecutionContext:
             self.item_manager = _NullItemManager()
         if self.bars is None:
             self.bars = {}
-        if self.affordance_overrides is None:
-            self.affordance_overrides = {}
 
     def copy(self, **overrides: Any) -> ExecutionContext:
         """Shallow copy with field overrides for child contexts."""
@@ -104,27 +109,43 @@ class ExecutionContext:
         return None
 
     def world_row(self) -> int | None:
-        """The world this context's global reads and writes address, or None for every world.
+        """The one world this context reads and writes, or None when it is bound to none.
 
         The batch is independent single-agent worlds (S1), so world ``i`` is agent
-        ``i``'s. An affordance or item interaction, and an agent-scoped effect, act in
-        the world of the agent they address; an item-scoped effect, or a context whose
-        only entity is an item, acts in that item's world (items are per world). A
-        global- or affordance-scoped effect lives in one store shared by the whole
-        batch, so it addresses every world: its global writes land in every world's
-        row, under the write mask.
+        ``i``'s. Every effect lives in one world (``ActiveEffect.world``: its agent's,
+        its item's, or for a global- or affordance-scoped effect the world whose event
+        spawned it). An affordance or item interaction acts in the world of the agent it
+        addresses; a context whose only entity is an item acts in that item's world.
+        Every write such a context makes (globals, bare ``bar.X``, item state,
+        affordance availability, spawns) lands in that world only.
+
+        A context bound to no world (no effect, agent or item: only direct engine or
+        test callers build one) addresses every world under its write mask, and a
+        global- or affordance-scoped spawn from it creates one instance per live world.
         """
         if self.effect is not None:
-            scope = EffectScope(self.effect.scope)
-            if scope is EffectScope.ITEM:
-                return self.item_world(int(self.effect.target_entity_id))
-            if scope is not EffectScope.AGENT:
-                return None
+            return int(self.effect.world)
         agent = self.agent_row()
         if agent is not None:
             return agent
         item = self.item_row()
         return None if item is None else self.item_world(item)
+
+    def live_worlds(self, num_worlds: int) -> list[int]:
+        """The worlds a write from this context lands in: its own if live, else every live one."""
+        world = self.world_row()
+        if world is not None:
+            return [world] if self.row_is_live(world) else []
+        return [w for w in range(num_worlds) if self.row_is_live(w)]
+
+    def require_same_world(self, what: str, entity_world: int) -> None:
+        """Refuse an entity reference that leaves this context's world (S1: worlds are independent)."""
+        world = self.world_row()
+        if world is not None and entity_world != world:
+            raise ValueError(
+                f"{what} is in world {entity_world}, but this pipeline runs in world {world}: worlds are independent, "
+                "so a pipeline reads and writes only its own world"
+            )
 
     def item_row_is_live(self, item_row: int) -> bool:
         """Whether the world of item row `item_row` is live under the write mask.
@@ -239,8 +260,15 @@ class ExecutionContext:
             if len(parts) != 3:
                 raise ValueError(f"Invalid affordance path: {path}")
             aff_name = parts[1]
-            available = True if self.affordance_overrides is None else self.affordance_overrides.get(aff_name, True)
-            return torch.tensor(bool(available), device=self.bars[next(iter(self.bars))].device if self.bars else torch.device("cpu"))
+            device = torch.device("cpu")
+            if self.bars:
+                device = self.bars[next(iter(self.bars))].device
+            if self.affordance_overrides is None:
+                return torch.tensor(True, device=device)
+            world = self.world_row()
+            if world is not None:
+                return torch.tensor(_available(self.affordance_overrides[world], aff_name), device=device)
+            return torch.tensor([_available(overrides, aff_name) for overrides in self.affordance_overrides], device=device)
 
         # Handle vfs.* paths
         if path.startswith("vfs."):
@@ -368,12 +396,19 @@ class ExecutionContext:
             self._write_indexed(rest, self.self_index, value)
             return
 
-        # Handle bar.* paths
+        # Handle bar.* paths: a context bound to a world writes that world's row only
         if path.startswith("bar."):
             bar_name = path[len("bar.") :]
             if bar_name not in self.bars:
                 raise KeyError(f"Bar '{bar_name}' not found")
-            self._write_batch(path, self.bars[bar_name], value)
+            destination = self.bars[bar_name]
+            world = self.world_row()
+            if world is None or destination.dim() == 0:
+                self._write_batch(path, destination, value)
+            elif self.row_is_live(world):
+                if isinstance(value, torch.Tensor) and value.dim() > 0 and value.shape == destination.shape:
+                    value = value[world]
+                destination[world] = value
             return
 
         # Handle affordance availability overrides
@@ -382,21 +417,17 @@ class ExecutionContext:
             if len(parts) != 3:
                 raise ValueError(f"Invalid affordance path: {path}")
             aff_name = parts[1]
-            self.require_whole_batch_live(f"affordance availability '{path}'")
             if self.affordance_overrides is None:
-                self.affordance_overrides = {}
-            scalar_value: bool
-            if isinstance(value, torch.Tensor):
-                if value.numel() != 1:
-                    raise ValueError(
-                        f"'{path}' is shared by every world and takes one value, but the expression produced shape "
-                        f"{tuple(value.shape)}; a per-world value (a global read outside an agent's interaction) "
-                        "has no single world here."
-                    )
-                scalar_value = bool(value.item())
-            else:
-                scalar_value = bool(value)
-            self.affordance_overrides[aff_name] = scalar_value
+                raise ValueError(f"Cannot write '{path}': this pipeline was given no affordance availability store")
+            worlds = self.live_worlds(len(self.affordance_overrides))
+            per_world = isinstance(value, torch.Tensor) and value.numel() == len(self.affordance_overrides) and value.dim() == 1
+            if isinstance(value, torch.Tensor) and value.numel() != 1 and not per_world:
+                raise ValueError(f"'{path}' takes one value per world, but the expression produced shape {tuple(value.shape)}")
+            for world in worlds:
+                if isinstance(value, torch.Tensor):
+                    self.affordance_overrides[world][aff_name] = bool((value[world] if per_world else value).item())
+                else:
+                    self.affordance_overrides[world][aff_name] = bool(value)
             return
 
         # Handle bare vfs.* paths, and global.vfs.* (the explicit spelling of a global)
@@ -512,6 +543,7 @@ class ExecutionContext:
             raise ValueError("Item references only support '.vfs.<name>' traversal")
         if ref_idx < 0 or ref_idx >= self.vfs_registry.max_items:
             raise ValueError(f"Invalid item reference index {ref_idx}")
+        self.require_same_world(f"Item reference '{var_name}' (row {ref_idx})", self.vfs_registry.item_world(ref_idx))
         return self._resolve_vfs_path(scope="item", index=ref_idx, segments=tail)
 
     def _read_vfs_value(self, scope: str, index: int | None, var_name: str, *, allow_batch: bool) -> torch.Tensor:

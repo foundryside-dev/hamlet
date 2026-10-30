@@ -22,7 +22,7 @@ class DummyItemManager:
         (EffectScope.GLOBAL, "global_effects", None),
         (EffectScope.AGENT, "agent_effects", 0),
         (EffectScope.ITEM, "item_effects", 0),
-        (EffectScope.AFFORDANCE, "affordance_effects", "0"),
+        (EffectScope.AFFORDANCE, "affordance_effects", (0, 0)),
     ),
 )
 def test_spawn_effect_definition_scope_is_runtime_authority(scope, store_name, store_key):
@@ -56,8 +56,9 @@ def test_spawn_effect_definition_scope_is_runtime_authority(scope, store_name, s
     CommandExecutor().execute(command, context)
 
     store = getattr(manager, store_name)
-    active = store[0] if store_key is None else store[store_key][0]
+    active = store[0][0] if store_key is None else store[store_key][0]
     assert active.scope == scope
+    assert active.world == 0  # spawned by world 0's pipeline, it lives in world 0
 
 
 def test_spawn_effect_with_self_target():
@@ -364,7 +365,7 @@ def test_spawn_effect_evaluates_target_expression_when_not_literal():
     context = ExecutionContext(
         bars=bars,
         vfs_registry=None,
-        self_index=0,
+        self_index=2,
         target_index=None,
         effect_manager=manager,
         item_manager=DummyItemManager(),
@@ -374,3 +375,7 @@ def test_spawn_effect_evaluates_target_expression_when_not_literal():
 
     assert 2 in manager.agent_effects
     assert manager.agent_effects[2][0].effect_id == "stun"
+
+    # From world 0 the same target is another world's agent: refused (S1).
+    with pytest.raises(ValueError, match="worlds are independent"):
+        executor.execute(node, context.copy(self_index=0))

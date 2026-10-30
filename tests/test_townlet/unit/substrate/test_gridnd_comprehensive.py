@@ -281,7 +281,7 @@ class TestGridNDInitializePositions:
             distance_metric="manhattan",
         )
 
-        positions = substrate.initialize_positions(num_agents=50, device=torch.device("cpu"))
+        positions = substrate.initialize_positions(num_agents=50, device=torch.device("cpu"), generator=None)
 
         assert positions.shape == (50, 4), "Should return [num_agents, N] shape"
         assert positions.dtype == torch.long, "Should be long tensor"
@@ -298,7 +298,7 @@ class TestGridNDInitializePositions:
             distance_metric="manhattan",
         )
 
-        positions = substrate.initialize_positions(num_agents=100, device=torch.device("cpu"))
+        positions = substrate.initialize_positions(num_agents=100, device=torch.device("cpu"), generator=None)
 
         # Check each dimension is within bounds
         for dim_idx, dim_size in enumerate([10, 8, 6, 5]):

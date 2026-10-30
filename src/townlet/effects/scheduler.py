@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Hashable
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -14,7 +15,7 @@ class ScheduledItem:
     due_tick: int
     commands: list[Any]
     scope: str | None = None
-    entity_id: int | str | None = None
+    entity_id: Hashable | None = None
     context_overrides: dict[str, Any] = field(default_factory=dict)
 
 
@@ -31,7 +32,7 @@ class Scheduler:
         commands: list[Any],
         delay_ticks: int,
         scope: str | None = None,
-        entity_id: int | str | None = None,
+        entity_id: Hashable | None = None,
         context_overrides: dict[str, Any] | None = None,
         base_tick: int | None = None,
     ) -> None:
@@ -72,7 +73,7 @@ class Scheduler:
         items = self.pending.pop(self.current_tick, [])
         return items
 
-    def cancel(self, scope: str | None, entity_id: int | str | None) -> None:
+    def cancel(self, scope: str | None, entity_id: Hashable | None) -> None:
         """Cancel all pending items matching scope/entity_id."""
         for tick, items in list(self.pending.items()):
             filtered = [it for it in items if not (it.scope == scope and it.entity_id == entity_id)]

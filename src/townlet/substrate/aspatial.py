@@ -39,7 +39,7 @@ class AspatialSubstrate(SpatialSubstrate):
         """Aspatial positions use torch.long (empty tensors, but typed for consistency)."""
         return torch.long
 
-    def initialize_positions(self, num_agents: int, device: torch.device) -> torch.Tensor:
+    def initialize_positions(self, num_agents: int, device: torch.device, *, generator: torch.Generator | None) -> torch.Tensor:
         """Return empty position tensors (agents have no position)."""
         return torch.zeros((num_agents, 0), dtype=torch.long, device=device)
 

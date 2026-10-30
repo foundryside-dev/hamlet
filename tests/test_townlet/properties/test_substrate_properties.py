@@ -41,7 +41,7 @@ def test_property_position_bounds_grid2d(width, height, x, y):
 
     # Initialize positions and verify they're within bounds
     device = torch.device("cpu")
-    positions = substrate.initialize_positions(num_agents=1, device=device)
+    positions = substrate.initialize_positions(num_agents=1, device=device, generator=None)
 
     assert 0 <= positions[0, 0] < width, f"X position {positions[0, 0]} out of bounds [0, {width})"
     assert 0 <= positions[0, 1] < height, f"Y position {positions[0, 1]} out of bounds [0, {height})"

@@ -19,7 +19,6 @@ from pydantic import (
 from townlet.numeric import require_float32
 
 __all__ = [
-    "SPATIAL_COLLECTIONS",
     "CommandConfig",
     "EffectDefinitionConfig",
     "EffectScope",
@@ -86,18 +85,14 @@ _COMMAND_KINDS: dict[str, tuple[frozenset[str], frozenset[str]]] = {
     "spawn_effect": (frozenset({"spawn_effect", "target", "intensity"}), frozenset()),
     "spawn_item": (frozenset({"spawn_item", "position", "quantity"}), frozenset()),
     "if": (frozenset({"if", "then", "else"}), frozenset()),
-    # `as` is accepted and not yet bound (effects remediation WP7 decides bind or delete);
-    # `radius` is required by, and refused outside, the SPATIAL_COLLECTIONS.
-    "for_each": (frozenset({"for_each", "do"}), frozenset({"as", "radius"})),
+    # `as` is accepted and not yet bound (effects remediation WP7 decides bind or delete).
+    "for_each": (frozenset({"for_each", "do"}), frozenset({"as"})),
     "switch": (frozenset({"switch", "cases", "default"}), frozenset()),
     "reduce": (frozenset({"reduce", "reduce_as", "reduce_init", "reduce_body", "reduce_into"}), frozenset()),
     "parallel": (frozenset({"parallel"}), frozenset()),
     "delay": (frozenset({"delay", "do"}), frozenset()),
     "sample": (frozenset({"sample", "params", "store_in"}), frozenset()),
 }
-
-# for_each collections that select by distance under the substrate's declared metric.
-SPATIAL_COLLECTIONS = frozenset({"nearby_agents"})
 
 
 class CommandConfig(BaseModel):
@@ -109,7 +104,7 @@ class CommandConfig(BaseModel):
     - spawn_effect/target/intensity: Trigger another effect
     - spawn_item/position/quantity: Create items in the world
     - if/then/else: Conditional execution (per-agent mask)
-    - for_each/do (+ radius for nearby_agents; as): Iterate over collection
+    - for_each/do (+ as): Iterate over collection
     - switch/cases/default: Multi-branch dispatch
     - reduce/reduce_as/reduce_init/reduce_body/reduce_into: Fixed-size reduction
     - parallel: Disjoint branch execution
@@ -146,7 +141,6 @@ class CommandConfig(BaseModel):
     # for_each command: Iterate over collection
     for_each: str | None = None  # Collection name or expression
     as_: str | None = Field(None, alias="as")  # Iterator variable name (not yet bound; WP7)
-    radius: float | None = Field(default=None, ge=0.0, allow_inf_nan=False)  # nearby_agents radius, world units
     do: list[CommandConfig] = []
 
     # switch command: Multi-branch equality dispatch
@@ -180,14 +174,6 @@ class CommandConfig(BaseModel):
         if intensity is None:
             return None
         return require_float32(intensity, field="spawn_effect intensity")
-
-    @field_validator("radius")
-    @classmethod
-    def validate_radius_float32(cls, radius: float | None) -> float | None:
-        """Canonicalize an authored collection radius at the float32 runtime boundary."""
-        if radius is None:
-            return None
-        return require_float32(radius, field="for_each radius")
 
     def _authored_keys(self) -> set[str]:
         """The YAML keys this node authored (aliases, so `do` is one key for two fields)."""
@@ -224,20 +210,11 @@ class CommandConfig(BaseModel):
             raise ValueError(f"Exactly one command type required ({allowed}), got {len(kinds)}: {kinds}")
         kind = kinds[0]
         required, optional = _COMMAND_KINDS[kind]
-        if kind == "for_each":
-            optional = optional - {"radius"}
-            if self.for_each in SPATIAL_COLLECTIONS:
-                required = required | {"radius"}
         missing = sorted(required - authored)
         if missing:
             raise ValueError(f"{kind} command requires {missing}; every field of a command is authored explicitly")
         foreign = sorted(authored - required - optional)
         if foreign:
-            if kind == "for_each" and foreign == ["radius"]:
-                raise ValueError(
-                    f"for_each radius applies only to the spatial collections {sorted(SPATIAL_COLLECTIONS)}; "
-                    f"'{self.for_each}' does not select by distance"
-                )
             raise ValueError(f"{kind} command does not take {foreign}; a command node is exactly one command kind")
         values = {name: getattr(self, name) for name in self.model_fields_set}
         null = sorted(type(self).model_fields[name].alias or name for name, value in values.items() if value is None)

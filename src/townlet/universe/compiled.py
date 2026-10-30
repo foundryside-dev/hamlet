@@ -145,7 +145,10 @@ from townlet.vfs.transition_schedule import (
 # `UniverseMetadata.num_message_slots` are deleted (VFS WP15). The variable_element scope
 # one-hot falls 7 -> 4 lanes, so its row width and the token type schema change; a 1.35
 # artifact of an unchanged pack would serve the old layout, so it is refused as stale.
-COMPILED_SCHEMA_VERSION = "1.36"
+# 1.37: the for_each `radius` field is deleted with the `nearby_agents` collection (S1: no
+# other agent shares an agent's world). Serialized command nodes lose the key; a 1.36
+# artifact carries it and is refused as stale.
+COMPILED_SCHEMA_VERSION = "1.37"
 
 REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "compiled_schema_version",
@@ -1358,7 +1361,6 @@ def _serialize_command_node(command: CommandNode) -> dict[str, Any]:
         "collection_expr": command.collection_expr,
         "iterator": command.iterator,
         "body": _serialize_command_pipeline(command.body or []),
-        "radius": command.radius,
         "switch_expr": command.switch_expr,
         "cases": [
             {"when": when_expr, "commands": _serialize_command_pipeline(case_commands)} for when_expr, case_commands in command.cases or []
@@ -1426,7 +1428,6 @@ def _deserialize_command_node(payload: dict[str, Any], *, field_name: str) -> Co
         collection_expr=required("collection_expr"),
         iterator=required("iterator"),
         body=command_list("body"),
-        radius=required("radius"),
         switch_expr=required("switch_expr"),
         cases=cases,
         default_commands=command_list("default_commands"),

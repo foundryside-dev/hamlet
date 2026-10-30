@@ -127,6 +127,10 @@ authored pack wants velocity as a variable, that is a declared engine-write bind
 `semantic_type: velocity` or an explicit `engine_writes:` list on the declaration), not an id the
 engine recognises. Until a pack needs it, delete the branch.
 
+Status 2026-10-31: the S11 half is done — the four `velocity_*` name branches in
+`action_executor.py` are deleted (no pack or test declared those ids). The bounded
+`egocentric_delta` velocity and the declared engine-write binding remain open.
+
 Verification: `s4_velocity.py` wrap case publishes `[-1/7, 0]` scaled, not −7;
 `s4b_velocity_continuous.py` publishes a normalized value. Size: S.
 

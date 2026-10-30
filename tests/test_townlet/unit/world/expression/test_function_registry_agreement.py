@@ -362,7 +362,6 @@ def test_nearest_measures_int_points_against_float_candidates_in_float() -> None
         "distance(vfs.pos, vfs.v3)",
         "manhattan_distance(vfs.pos, vfs.v3)",
         "within_radius(vfs.pos, vfs.v3, 1.0)",
-        "nearest(vfs.v3, vfs.pos)",
     ],
 )
 def test_vectors_of_different_static_widths_are_refused_at_type_check(expression: str) -> None:
@@ -370,6 +369,23 @@ def test_vectors_of_different_static_widths_are_refused_at_type_check(expression
     ast = ExpressionParser().parse(expression)
     with pytest.raises(TypeCheckError, match="requires vectors of one width"):
         TypeChecker(SCHEMA).check(ast)
+
+
+@pytest.mark.parametrize("candidates", ["vfs.pos", "vfs.v3", "vfs.n"])
+def test_nearest_refuses_vector_candidates_at_type_check(candidates: str) -> None:
+    """S1: a vector variable's rows are the batch's worlds, so they are never one world's candidates."""
+    ast = ExpressionParser().parse(f"nearest(vfs.pos, {candidates})")
+    with pytest.raises(TypeCheckError, match="must be a tensor2d of candidate rows"):
+        TypeChecker(SCHEMA).check(ast)
+
+
+def test_nearest_refuses_candidates_without_the_points_world_axis_at_evaluation() -> None:
+    context = make_context()
+    context.vfs["sites"] = torch.tensor([[0.9, 0.9], [1.9, 1.9], [5.0, 5.0]])  # [K, D]: no per-world axis
+    ast = ExpressionParser().parse("nearest(vfs.pos, vfs.sites)")
+    TypeChecker(SCHEMA).check(ast)
+    with pytest.raises(ValueError, match="candidates are per world"):
+        Evaluator(context).evaluate(ast)
 
 
 @pytest.mark.parametrize(

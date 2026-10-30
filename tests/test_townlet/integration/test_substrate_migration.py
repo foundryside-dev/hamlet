@@ -25,7 +25,7 @@ def test_training_with_grid3d_substrate(tmp_path):
     # Verify substrate can generate random positions
     num_agents = 10
     device = torch.device("cpu")
-    positions = substrate.initialize_positions(num_agents, device)
+    positions = substrate.initialize_positions(num_agents, device, generator=None)
 
     # Verify 3D positions
     assert positions.shape == (num_agents, 3)

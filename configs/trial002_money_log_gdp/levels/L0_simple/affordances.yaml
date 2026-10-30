@@ -41,7 +41,7 @@ affordances:
           - modify: target.bar.money
             value: target.bar.money + 0.5
           - spawn_effect: business_cycle
-            target: "0"
+            target: target
             intensity: 1.0
         per_tick: []
         on_completion: []

@@ -124,9 +124,18 @@ def _ensure_vector_arg(name: str, arg: str, position: int) -> None:
 
 
 def _ensure_candidates_arg(name: str, arg: str, position: int) -> None:
-    if arg in VectorTypes or arg == "tensor2d":
+    """Candidates are a tensor2d of rows, held per world.
+
+    A vector variable's only row axis is the batch, and the batch is independent worlds
+    (S1): its rows as candidates would let one world pick another world's row. So a
+    vector variable is refused; a tensor2d's candidate rows sit inside each world's row.
+    """
+    if arg == "tensor2d":
         return
-    raise ValueError(f"Function '{name}' argument {position} must be a vector variable or a tensor2d of candidate rows, got {arg}")
+    raise ValueError(
+        f"Function '{name}' argument {position} must be a tensor2d of candidate rows, got {arg}: a vector variable's rows "
+        "are the batch's independent worlds, never one world's candidates"
+    )
 
 
 def _static_vector_width(arg: str) -> int | None:
@@ -524,20 +533,20 @@ def _eval_normalize(args: list[Any], context: ExecutionContext, arg_nodes: list[
 
 def _eval_normal_dist(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
     if not args:
-        return torch.randn((), device=context.device)
+        return torch.randn((), device=context.device, generator=context.rng)
     mean = cast(torch.Tensor, args[0]).to(dtype=torch.float32)
     std = cast(torch.Tensor, args[1]).to(device=mean.device, dtype=torch.float32) if len(args) > 1 else 1.0
-    return torch.randn_like(mean) * std + mean
+    return torch.randn(mean.shape, device=mean.device, generator=context.rng) * std + mean
 
 
 def _eval_uniform(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
     if not args:
-        return torch.rand((), device=context.device)
+        return torch.rand((), device=context.device, generator=context.rng)
     low = cast(torch.Tensor, args[0]).to(dtype=torch.float32)
     if len(args) == 1:
-        return torch.rand_like(low)
+        return torch.rand(low.shape, device=low.device, generator=context.rng)
     high = cast(torch.Tensor, args[1]).to(device=low.device, dtype=torch.float32)
-    return torch.rand_like(low) * (high - low) + low
+    return torch.rand(low.shape, device=low.device, generator=context.rng) * (high - low) + low
 
 
 def _eval_perlin_noise(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
@@ -658,8 +667,13 @@ def _eval_within_radius(args: list[Any], context: ExecutionContext, arg_nodes: l
 def _eval_nearest(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
     points = cast(torch.Tensor, args[0])
     candidates = _as_float_vector(cast(torch.Tensor, args[1]), points.device)
-    if candidates.dim() == 1:
-        candidates = candidates.unsqueeze(0)
+    # Candidates are [..., K, D] with the point's leading (per-world) axes: each point
+    # chooses among its own world's rows only.
+    if candidates.dim() != points.dim() + 1 or candidates.shape[: points.dim() - 1] != points.shape[:-1]:
+        raise ValueError(
+            f"Function 'nearest' needs candidates shaped [..., K, D] with the point's leading axes "
+            f"{tuple(points.shape[:-1])}, got {tuple(candidates.shape)}: candidates are per world, never the batch's rows"
+        )
     _check_vector_widths("nearest", points, candidates)
     diff = _as_float_vector(points, points.device).unsqueeze(-2) - candidates
     distances = _reduce_vector(diff, _metric_from_args("nearest", args[2:], "euclidean"))
@@ -1446,7 +1460,7 @@ _register(
     FunctionSpec(
         name="nearest",
         signature='nearest(point, candidates[, "manhattan" | "euclidean"])',
-        summary="Row index of the candidate nearest to `point`; `candidates` is a vector variable or a tensor2d of rows.",
+        summary="Row index of the candidate nearest to `point`; `candidates` is a tensor2d of rows in the point's world.",
         returns="int",
         family=FAMILY_SPATIAL,
         requires=(),

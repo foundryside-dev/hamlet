@@ -165,6 +165,7 @@ class _ItemSpawnState:
     live_items: dict[int, ItemInstance]
     live_entries: dict[int, ItemInstance]
     next_instance_id: int
+    world_rng_states: list[torch.Tensor]
 
     @classmethod
     def capture(cls, manager: ItemManager) -> _ItemSpawnState:
@@ -175,6 +176,7 @@ class _ItemSpawnState:
             live_items=manager.live_items,
             live_entries=manager.live_items.copy(),
             next_instance_id=manager.next_instance_id,
+            world_rng_states=[generator.get_state() for generator in manager.world_rngs],
         )
 
     def restore(self) -> None:
@@ -185,6 +187,8 @@ class _ItemSpawnState:
         self.live_items.clear()
         self.live_items.update(self.live_entries)
         self.manager.next_instance_id = self.next_instance_id
+        for generator, state in zip(self.manager.world_rngs, self.world_rng_states, strict=True):
+            generator.set_state(state)
 
 
 @dataclass
@@ -199,11 +203,10 @@ class EffectAdmissionSnapshot:
     """
 
     manager: EffectManager
-    global_effects: list[ActiveEffect]
-    global_entries: list[ActiveEffect]
+    global_effects: _ListMappingState[int, ActiveEffect]
     agent_effects: _ListMappingState[int, ActiveEffect]
     item_effects: _ListMappingState[int, ActiveEffect]
-    affordance_effects: _ListMappingState[str, ActiveEffect]
+    affordance_effects: _ListMappingState[tuple[int, int], ActiveEffect]
     effect_values: list[tuple[ActiveEffect, dict[str, Any]]]
     next_instance_id: int
     current_step: int
@@ -213,10 +216,12 @@ class EffectAdmissionSnapshot:
     bars: _TensorMappingState | None
     registry: _RegistryState | None
     item_manager: _ItemSpawnState | None
-    affordance_overrides: dict[str, bool] | None
-    affordance_entries: dict[str, bool] | None
+    affordance_overrides: list[dict[str, bool]] | None
+    affordance_entries: list[dict[str, bool]] | None
     cpu_rng: torch.Tensor
     cuda_rng: list[torch.Tensor] | None
+    world_rngs: dict[int, torch.Generator]
+    world_rng_entries: dict[int, tuple[torch.Generator, torch.Tensor]]
 
     @classmethod
     def capture(
@@ -230,8 +235,7 @@ class EffectAdmissionSnapshot:
         effects = manager.get_all_active_effects()
         return cls(
             manager=manager,
-            global_effects=manager.global_effects,
-            global_entries=manager.global_effects.copy(),
+            global_effects=_ListMappingState.capture(manager.global_effects),
             agent_effects=_ListMappingState.capture(manager.agent_effects),
             item_effects=_ListMappingState.capture(manager.item_effects),
             affordance_effects=_ListMappingState.capture(manager.affordance_effects),
@@ -245,9 +249,11 @@ class EffectAdmissionSnapshot:
             registry=None if registry is None else _RegistryState.capture(registry),
             item_manager=None if item_manager is None else _ItemSpawnState.capture(item_manager),
             affordance_overrides=manager.affordance_overrides,
-            affordance_entries=None if manager.affordance_overrides is None else manager.affordance_overrides.copy(),
+            affordance_entries=None if manager.affordance_overrides is None else [world.copy() for world in manager.affordance_overrides],
             cpu_rng=torch.get_rng_state(),
             cuda_rng=torch.cuda.get_rng_state_all() if torch.cuda.is_initialized() else None,
+            world_rngs=manager.world_rngs,
+            world_rng_entries={world: (generator, generator.get_state()) for world, generator in manager.world_rngs.items()},
         )
 
     def restore(self) -> None:
@@ -262,8 +268,8 @@ class EffectAdmissionSnapshot:
         for effect, values in self.effect_values:
             for name, value in values.items():
                 setattr(effect, name, value)
-        self.manager.global_effects = self.global_effects
-        self.global_effects[:] = self.global_entries
+        self.manager.global_effects = self.global_effects.mapping
+        self.global_effects.restore()
         self.manager.agent_effects = self.agent_effects.mapping
         self.agent_effects.restore()
         self.manager.item_effects = self.item_effects.mapping
@@ -278,8 +284,14 @@ class EffectAdmissionSnapshot:
         self.scheduler.current_tick = self.scheduler_tick
         self.manager.affordance_overrides = self.affordance_overrides
         if self.affordance_overrides is not None and self.affordance_entries is not None:
-            self.affordance_overrides.clear()
-            self.affordance_overrides.update(self.affordance_entries)
+            for overrides, entries in zip(self.affordance_overrides, self.affordance_entries, strict=True):
+                overrides.clear()
+                overrides.update(entries)
         torch.set_rng_state(self.cpu_rng)
         if self.cuda_rng is not None:
             torch.cuda.set_rng_state_all(self.cuda_rng)
+        self.manager.world_rngs = self.world_rngs
+        self.world_rngs.clear()
+        for world, (generator, state) in self.world_rng_entries.items():
+            generator.set_state(state)
+            self.world_rngs[world] = generator

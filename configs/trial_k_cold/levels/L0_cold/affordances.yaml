@@ -4,6 +4,7 @@ affordances:
   # The only way found to bring the winter process into existence. This is the
   # cheat-#2 route and it is recorded as such: an agent must act for the world
   # to start acting. F1's probe deliberately never touches this affordance.
+  # The winter it spawns lives in the interacting agent's world only.
   - name: WINTER_ONSET
     interaction_type: instant
     costs: {}
@@ -17,7 +18,7 @@ affordances:
     interactions:
       on_start:
       - spawn_effect: winter
-        target: "0"
+        target: target
         intensity: 1.0
       per_tick: []
       on_completion: []

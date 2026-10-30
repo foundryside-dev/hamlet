@@ -72,7 +72,7 @@ def _no_broadcast_stride(tensor: torch.Tensor) -> bool:
 
 
 def test_scalar_modify_then_per_agent_modify_hits_one_agent() -> None:
-    """probe_d.py I3: expects [0.3, 0.4, 0.3]."""
+    """probe_d.py I3, under S1: a bare bar write from agent 1's pipeline is world 1's row only."""
     scalar = _compile(_modify("bar.health", "0.3"))
     indexed = _compile(_modify("target.bar.health", "target.bar.health + 0.1"))
     bars = {"health": torch.tensor([1.0, 1.0, 1.0])}
@@ -83,10 +83,10 @@ def test_scalar_modify_then_per_agent_modify_hits_one_agent() -> None:
     executor.execute(scalar, context)
     assert bars["health"] is original
     assert _no_broadcast_stride(bars["health"])
-    assert torch.allclose(bars["health"], torch.tensor([0.3, 0.3, 0.3]))
+    assert torch.allclose(bars["health"], torch.tensor([1.0, 0.3, 1.0]))
 
     executor.execute(indexed, context)
-    assert torch.allclose(bars["health"], torch.tensor([0.3, 0.4, 0.3]))
+    assert torch.allclose(bars["health"], torch.tensor([1.0, 0.4, 1.0]))
 
 
 def test_scalar_modify_writes_through_a_column_view_of_the_meter_matrix() -> None:
@@ -167,10 +167,11 @@ def test_scalar_condition_is_the_degenerate_mask() -> None:
     )
     bars = _bars()
     executor = CommandExecutor()
+    # Each pipeline is bound to its agent's world: its bare bar write is that row only.
     executor.execute(command, ExecutionContext(bars=bars, target_index=1))
-    assert bars["energy"].tolist() == [0.0, 0.0, 0.0]
+    assert bars["energy"].tolist() == [1.0, 0.0, 1.0]
     executor.execute(command, ExecutionContext(bars=bars, target_index=0))
-    assert bars["energy"].tolist() == [0.5, 0.5, 0.5]
+    assert bars["energy"].tolist() == [0.5, 0.0, 1.0]
 
 
 def test_partial_mask_writes_a_global_in_the_live_worlds_only() -> None:
@@ -299,16 +300,18 @@ def test_if_on_a_per_agent_condition_penalises_only_the_low_agent(tmp_path: Path
     health, energy = env.meter_name_to_index["health"], env.meter_name_to_index["energy"]
     env.meters[1, health] = 0.1
     bars = {name: env.meters[:, idx] for name, idx in env.meter_name_to_index.items()}
-    env.effect_manager.spawn_effect(
-        "crisis",
-        target_entity_id=0,
-        intensity=1.0,
-        current_step=env.global_tick,
-        bars=bars,
-        vfs_registry=env.vfs_registry,
-        agent_positions=env.positions,
-        item_manager=env.item_manager,
-    )
+    # S1: each world gets its own crisis; the condition holds in world 1 only.
+    for agent in range(3):
+        env.effect_manager.spawn_effect(
+            "crisis",
+            target_entity_id=agent,
+            intensity=1.0,
+            current_step=env.global_tick,
+            bars=bars,
+            vfs_registry=env.vfs_registry,
+            agent_positions=env.positions,
+            item_manager=env.item_manager,
+        )
     env.step(torch.full((3,), env.action_dim - 1, dtype=torch.long))  # WAIT
 
     after = env.meters[:, energy]

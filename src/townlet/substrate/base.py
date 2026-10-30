@@ -164,12 +164,14 @@ class SpatialSubstrate(ABC):
         pass
 
     @abstractmethod
-    def initialize_positions(self, num_agents: int, device: torch.device) -> torch.Tensor:
+    def initialize_positions(self, num_agents: int, device: torch.device, *, generator: torch.Generator | None) -> torch.Tensor:
         """Initialize random positions for agents.
 
         Args:
             num_agents: Number of agents to initialize
             device: PyTorch device (cuda/cpu)
+            generator: Random stream to draw from (a world's own stream for item
+                placement, S1); None draws from torch's global stream
 
         Returns:
             Tensor of shape [num_agents, position_dim]

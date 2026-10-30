@@ -287,8 +287,8 @@ def test_an_affordance_rule_reading_affordance_state_still_runs() -> None:
     assert updated["wear"].tolist() == [1.0, 1.0, 1.0]
 
 
-def test_a_batch_shared_availability_override_refuses_a_per_world_value() -> None:
-    """A global-scope effect is world-shared; `affordance.X.available` takes one value for the batch."""
+def test_an_availability_override_is_per_world() -> None:
+    """`affordance.X.available` has one value per world: a world-bound write lands in its world only."""
     registry = VariableRegistry(
         [
             VariableDef(
@@ -304,9 +304,12 @@ def test_a_batch_shared_availability_override_refuses_a_per_world_value() -> Non
         2,
         torch.device("cpu"),
     )
-    context = ExecutionContext(bars={"energy": torch.ones(2)}, vfs_registry=registry)
-    with pytest.raises(ValueError, match="no single world"):
-        context.set_path("affordance.SLEEP.available", context.get_path("vfs.open_flag"))
-    # Bound to one agent's world, the same read is one value.
-    context.copy(target_index=1).set_path("affordance.SLEEP.available", context.copy(target_index=1).get_path("vfs.open_flag"))
-    assert context.affordance_overrides == {"SLEEP": True}
+    overrides: list[dict[str, bool]] = [{}, {}]
+    context = ExecutionContext(bars={"energy": torch.ones(2)}, vfs_registry=registry, affordance_overrides=overrides)
+    # Bound to no world, the per-world read writes each world's own value.
+    context.set_path("affordance.SLEEP.available", context.get_path("vfs.open_flag"))
+    assert overrides == [{"SLEEP": True}, {"SLEEP": True}]
+    # Bound to agent 1's world, the write lands in world 1 only.
+    bound = context.copy(target_index=1)
+    bound.set_path("affordance.SLEEP.available", torch.tensor(False))
+    assert overrides == [{"SLEEP": True}, {"SLEEP": False}]

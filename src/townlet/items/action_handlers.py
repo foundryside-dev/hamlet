@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, Literal
 
 import torch
@@ -35,7 +36,8 @@ class ItemActionHandler:
         vfs_registry: VariableRegistry,
         meter_name_to_index: dict[str, int],
         effect_manager: Any | None = None,
-        affordance_overrides: dict[str, bool] | None = None,
+        affordance_overrides: list[dict[str, bool]] | None = None,
+        agent_positions: Callable[[], torch.Tensor] | None = None,
     ) -> None:
         """Initialize action handler.
 
@@ -45,6 +47,8 @@ class ItemActionHandler:
             command_executor: CommandExecutor for Effects
             vfs_registry: VFS registry for Effects context
             meter_name_to_index: Bar name to index mapping
+            agent_positions: The env's current agent positions, read when a command runs
+                (a carried item is at its holder's position, e.g. `spawn_item position: self`)
         """
         self.manager = manager
         self.inventory = inventory
@@ -53,6 +57,7 @@ class ItemActionHandler:
         self.meter_name_to_index = meter_name_to_index
         self.effect_manager = effect_manager or NullEffectManager()
         self.affordance_overrides = affordance_overrides
+        self.agent_positions = agent_positions
         # Cache custom verb specs for masking/dispatch
         self.custom_action_specs = {
             name: (item_type, scope, command_name) for name, item_type, scope, command_name in manager.get_custom_action_specs()
@@ -116,6 +121,7 @@ class ItemActionHandler:
             scheduler=getattr(self.effect_manager, "scheduler", None),
             current_tick=current_tick or 0,
             affordance_overrides=self.affordance_overrides,
+            agent_positions=None if self.agent_positions is None else self.agent_positions(),
         )
 
         # Execute all commands
@@ -235,6 +241,7 @@ class ItemActionHandler:
             scheduler=getattr(self.effect_manager, "scheduler", None),
             current_tick=current_tick,
             affordance_overrides=self.affordance_overrides,
+            agent_positions=None if self.agent_positions is None else self.agent_positions(),
         )
 
         for command in commands:

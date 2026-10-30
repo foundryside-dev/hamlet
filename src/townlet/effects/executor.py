@@ -89,6 +89,7 @@ class _TargetAwareExecutionContext(ExprExecutionContext):
         target_index: int | None,
         target_is_item: bool,
         world_globals: frozenset[str],
+        rng: torch.Generator | None,
     ):
         resolved_device = torch.device(device) if device is not None else torch.device("cpu")
         super().__init__(
@@ -99,6 +100,7 @@ class _TargetAwareExecutionContext(ExprExecutionContext):
             device=resolved_device,
             agent_positions=agent_positions,
             affordance_positions=affordance_positions,
+            rng=rng,
         )
         self.target_bars = target_bars
         self.target_vfs = target_vfs
@@ -355,35 +357,57 @@ class CommandExecutor:
         if command.intensity is None:
             raise ValueError("spawn_effect command requires intensity")
 
-        # Under a per-agent condition an agent-scoped spawn is that agent's decision;
-        # any other scope has no agent row and needs the whole batch live.
-        if EffectScope(definition.scope) is EffectScope.AGENT:
-            if not context.row_is_live(target_idx):
-                return
-        else:
-            context.require_whole_batch_live(f"spawn_effect '{command.effect_id}' ({definition.scope} scope)")
+        # Every effect lives in one world (S1). An agent- or item-scoped effect lives in
+        # its entity's world, which must be the spawning world; a global- or
+        # affordance-scoped one lives in the spawning world. Under a per-agent condition
+        # the spawn is that world's decision. A context bound to no world spawns one
+        # global/affordance instance per live world.
+        scope = EffectScope(definition.scope)
+        world = context.world_row()
+        if scope is EffectScope.AGENT or (scope is EffectScope.ITEM and context.vfs_registry is not None):
+            from townlet.effects.manager import EffectManager
 
-        context.effect_manager.spawn_effect(
-            effect_id=command.effect_id,
-            target_entity_id=target_idx,
-            intensity=command.intensity,
-            current_step=context.effect_manager.current_step,
-            bars=context.bars,
-            vfs_registry=context.vfs_registry,
-            spawn_depth=context.spawn_depth,  # manager increments for the spawned effect's on_spawn
-            agent_positions=context.agent_positions,
-            item_manager=context.item_manager,
-            affordance_positions=context.affordance_positions,
-            substrate=context.substrate,
-        )
+            entity_world = EffectManager.effect_world(scope, target_idx, world=None, vfs_registry=context.vfs_registry)
+            context.require_same_world(f"spawn_effect '{command.effect_id}' target {scope.value} {target_idx}", entity_world)
+            worlds = [w for w in (entity_world,) if context.row_is_live(w)]
+        elif world is not None:
+            worlds = [w for w in (world,) if context.row_is_live(w)]
+        else:
+            worlds = context.live_worlds(self._num_worlds(context))
+
+        for world in worlds:
+            context.effect_manager.spawn_effect(
+                effect_id=command.effect_id,
+                target_entity_id=target_idx,
+                intensity=command.intensity,
+                current_step=context.effect_manager.current_step,
+                bars=context.bars,
+                vfs_registry=context.vfs_registry,
+                spawn_depth=context.spawn_depth,  # manager increments for the spawned effect's on_spawn
+                agent_positions=context.agent_positions,
+                item_manager=context.item_manager,
+                affordance_positions=context.affordance_positions,
+                substrate=context.substrate,
+                world=world,
+            )
+
+    @staticmethod
+    def _num_worlds(context: ExecutionContext) -> int:
+        """The batch's world count (S1: one world per agent row)."""
+        if context.vfs_registry is not None:
+            return int(context.vfs_registry.num_worlds)
+        if context.write_mask is not None:
+            return int(context.write_mask.shape[0])
+        if context.bars:
+            return int(next(iter(context.bars.values())).shape[0])
+        raise ValueError("A pipeline bound to no world needs a registry, write mask or bars to know the batch's worlds")
 
     def _execute_spawn_item(self, command: CommandNode, context: ExecutionContext) -> None:
         """Execute spawn_item command.
 
-        Items are per world (S1). A context bound to one world (an agent, an item, an
-        agent- or item-scoped effect) spawns into that world when its row is live under
-        the write mask; a world-shared context (a global- or affordance-scoped effect)
-        spawns into every live world.
+        Items are per world (S1). A context bound to one world (an agent, an item, any
+        effect) spawns into that world when its row is live under the write mask; a
+        context bound to no world spawns into every live world.
 
         Args:
             command: Spawn item command node
@@ -423,13 +447,7 @@ class CommandExecutor:
         else:
             raise ValueError(f"Invalid position: {command.position}")
 
-        world = context.world_row()
-        if world is not None:
-            worlds = [world] if context.row_is_live(world) else []
-        else:
-            worlds = [w for w in range(context.item_manager.num_worlds) if context.row_is_live(w)]
-
-        for target_world in worlds:
+        for target_world in context.live_worlds(context.item_manager.num_worlds):
             for _ in range(command.quantity):
                 position = context.item_manager.find_spawn_location(
                     target_world,
@@ -447,13 +465,19 @@ class CommandExecutor:
 
     @staticmethod
     def _entity_position(context: ExecutionContext, index: int, *, is_item: bool) -> tuple[Any, ...]:
-        """The position of the context's self/target entity: an agent, or an item row."""
+        """The position of the context's self/target entity: an agent, or an item row.
+
+        A carried item is where its holder is, as its observation token says.
+        """
         if is_item:
             assert context.item_manager is not None
             item = context.item_manager.item_at_row(index)
             if item is None:
                 raise ValueError(f"No live item holds arena row {index}; it has no position to spawn at")
-            return tuple(item.position)
+            holder = context.item_manager.holder_of(item)
+            if holder is None:
+                return tuple(item.position)
+            index = holder
         if context.agent_positions is None:
             raise ValueError("agent_positions required to spawn at an agent's position")
         return tuple(context.agent_positions[index].tolist())
@@ -469,8 +493,8 @@ class CommandExecutor:
         eval_ctx = self._make_eval_context(context, effect=context.effect)
         evaluator = Evaluator(eval_ctx)
 
-        # Initialize or reuse RNG on the correct device
-        generator = context.rng
+        # A world's own stream (S1); a context bound to no world seeds one per tick.
+        generator = self._random_stream(context, eval_ctx.device)
         if generator is None:
             generator = torch.Generator(device=eval_ctx.device)
             base_seed = context.seed if context.seed is not None else 0
@@ -617,7 +641,6 @@ class CommandExecutor:
             indices = resolve_collection(
                 collection_type=collection_type,
                 context=context,
-                radius=command.radius,
                 max_count=MAX_COLLECTION_SIZE,
             )
         elif command.collection_ast is not None:
@@ -641,6 +664,9 @@ class CommandExecutor:
         for idx in indices:
             target_idx = idx
             target_is_item = collection_type == "inventory_items"
+            if not target_is_item:
+                # An agent element is an agent row; it must live in the pipeline's world.
+                context.require_same_world(f"for_each element agent {idx}", idx)
             # For inventory_items, map instance_id -> vfs_index if available
             if target_is_item:
                 inventory = context.inventory
@@ -771,20 +797,37 @@ class CommandExecutor:
             "write_mask": context.write_mask,
         }
 
-        scope = None
-        if context.self_index is not None:
+        # Delayed work is keyed by the entity that owns it, so cancelling one effect
+        # (or one world's global effect) cancels its own work only.
+        scope: str | None = None
+        entity_id: Any = context.self_index
+        if context.effect is not None:
+            from townlet.effects.manager import EffectManager
+
+            scope, entity_id = EffectManager.schedule_key(context.effect)
+        elif context.self_index is not None:
             scope = "item" if context.self_is_item else "agent"
-        elif context.effect is not None:
-            scope = EffectScope(context.effect.scope).value
 
         scheduler.schedule(
             commands=command.delay_commands or [],
             delay_ticks=delay_ticks,
             scope=scope,
-            entity_id=context.self_index,
+            entity_id=entity_id,
             context_overrides=context_overrides,
             base_tick=None if context.current_tick is None else context.current_tick,
         )
+
+    @staticmethod
+    def _random_stream(context: ExecutionContext, device: torch.device) -> torch.Generator | None:
+        """The stream this pipeline's randomness draws from: its world's own (S1), if any."""
+        if context.rng is not None:
+            return context.rng
+        from townlet.effects.manager import EffectManager
+
+        world = context.world_row()
+        if world is not None and isinstance(context.effect_manager, EffectManager):
+            return context.effect_manager.world_rng(world, device)
+        return None
 
     def _make_eval_context(self, context: ExecutionContext, effect: Any | None = None) -> ExprExecutionContext:
         """Convert ExecutionContext to ExprExecutionContext.
@@ -816,8 +859,8 @@ class CommandExecutor:
             bars_dict[bar_name] = tensor
 
         # Add VFS variables from the current registry. A global has one row per world
-        # (S1); a context bound to one world reads that world's value, a world-shared
-        # context (global/affordance/item effect) reads every world's row.
+        # (S1); a context bound to one world reads that world's value, a context bound to
+        # no world reads every world's row.
         world_row = context.world_row()
         global_ids: set[str] = set()
         if context.vfs_registry:
@@ -858,9 +901,12 @@ class CommandExecutor:
             else {name: position.to(dtype=torch.float32, device=device) for name, position in context.affordance_positions.items()}
         )
 
+        rng = self._random_stream(context, device)
+
         # Always use the prefix-aware context when self or target indices are present
         if context.target_index is not None or context.self_index is not None:
             return _TargetAwareExecutionContext(
+                rng=rng,
                 bars=bars_dict,
                 vfs=vfs_dict,
                 target_bars=target_bars,
@@ -887,6 +933,7 @@ class CommandExecutor:
             device=device,
             agent_positions=agent_positions,
             affordance_positions=affordance_positions,
+            rng=rng,
         )
 
     def execute_commands(self, commands: list[CommandNode], context: ExecutionContext) -> None:

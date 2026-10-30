@@ -28,9 +28,10 @@
 >   per agent. The environment hands every effect tick the agent positions, the deployed
 >   affordance positions and the substrate. An undeployed affordance is at distance `inf`.
 >   These functions take their own `"manhattan"`/`"euclidean"` argument (default manhattan);
->   they do not read the stratum's `distance_metric`. `nearby_agents` does (see `for_each`).
+>   they do not read the stratum's `distance_metric`.
 > - Inside an interaction pipeline (`affordances.yaml`, `items.yaml`) position reads still
->   raise at runtime: the affordance engine and item handler do not yet pass positions.
+>   raise at runtime: the affordance engine passes no positions, and the item handler passes
+>   only agent positions (so `spawn_item position: self` from a carried item is its holder's).
 
 > Note `sqrt` / `sin` / `cos` fail at **type-check**, not parse — they are absent from
 > `FUNCTION_SPECS`. See `expressions.md`, which carries a banner of its own.
@@ -242,8 +243,8 @@ Determines where the effect can attach and what context is available to commands
 - **Typical Duration**: 10-1000 ticks (long-lived items)
 
 **`global`** - Effect attaches to world state
-- **Access**: `global.vfs.*`, `global.bar.*` (if global bars exist)
-- **Storage**: Single global effect list
+- **Access**: `global.vfs.*` (bare `vfs.X` for a global), its world's agents via `for_each: all_agents`
+- **Storage**: One effect list per world
 - **Examples**: `day_cycle`, `nighttime`, `heatwave`, `rush_hour`
 - **Typical Duration**: 100-10000 ticks (persistent world state)
 
@@ -253,9 +254,31 @@ Determines where the effect can attach and what context is available to commands
 - **Examples**: `broken`, `locked`, `occupied`, `on_cooldown`
 - **Typical Duration**: 5-50 ticks (temporary state changes)
 
+**Every effect lives in one world.** The env batch is N independent single-agent worlds
+(owner ruling S1, 2026-10-25), and an effect instance belongs to exactly one of them:
+
+- an **agent**-scoped effect lives in its agent's world, an **item**-scoped one in its item's
+  world (a spawn naming an agent or item of another world is refused: worlds are independent);
+- a **global**- or **affordance**-scoped effect lives in the world whose event spawned it (the
+  interaction, item verb or effect cascade that ran `spawn_effect`). Each world that triggers
+  it gets its own instance, its own reapply policy (`renew`/`merge`/`stack`/`replace` act per
+  world), its own duration and its own delayed work;
+- a spawner bound to no world (none exists in a pack today: there is no level-start spawner;
+  only direct engine or test callers build one) spawns **one instance per live world**.
+
+Everything an effect does lands in its own world only: globals (`vfs.X`, `global.vfs.X`),
+bare `bar.X` writes (its world's agent's row), `for_each: all_agents` (its world's agents —
+under S1 the one agent), `affordance.X.available` (one override per world), `spawn_item`
+(into its world) and sampling (`sample`, `uniform()`, `normal_dist()`, which draw from the
+world's own random stream, seeded from the run seed, world and episode). A global- or
+affordance-scoped effect has no `self`/`target` agent of its own; it reaches its world's agent
+through `for_each: all_agents`. When a world's agent is done, that world's effects write
+nothing (the env ticks effects under the live mask, as VTC rules are masked), so a persistent
+global carries no posthumous advance into the next episode.
+
 **Path Resolution**:
-- `target.*` resolves to the entity the effect is attached to (scope-dependent)
-- `global.*` always resolves to world state
+- `target.*` resolves to the entity the effect is attached to (agent and item scope)
+- `global.*` always resolves to the effect's world's state
 - `self.*` resolves to the effect instance itself (for effect-local state)
 - `temporal.*` provides current tick, time-of-day, etc.
 
@@ -642,13 +665,11 @@ All command types are fully implemented and production-ready.
   - `global.bar.economy`: Global economy meter (if exists)
 - `self.*`: Effect instance state (for effect-local variables)
 - `vfs.*` (bare) and `global.vfs.*`: a global variable is its world's value (one row per
-  world, VFS WP13). A pipeline bound to an agent (an affordance or item interaction, an
-  agent-scoped effect) reads and writes that agent's world only; an item-scoped effect reads
-  and writes its item's world only (items are per world); a global- or affordance-scoped
-  effect is shared by the whole batch, so it reads every world's row and writes every row its
-  mask leaves live. Item-variable writes are gated by the item's own world under a masked
-  `if`/`switch`, and `spawn_item` spawns into the pipeline's world (every live world from a
-  global- or affordance-scoped effect). A bare `vfs.X` naming an
+  world, VFS WP13). Every pipeline is bound to one world: an affordance or item interaction
+  to its agent's, an effect to its own (see "Every effect lives in one world" above). It reads
+  and writes that world's row only. Item-variable writes are gated by the item's own world
+  under a masked `if`/`switch`, and `spawn_item` spawns into the pipeline's world. A bare
+  `bar.X` write is the world's agent's row, never the batch. A bare `vfs.X` naming an
   **agent-scoped** variable is the interacting agent's row, never the batch: wherever the
   pipeline runs with an agent target (affordance and item interactions, agent-scoped effects,
   `for_each` bodies over agents) the compiler resolves it to `target.vfs.X`, for reads and
@@ -685,12 +706,13 @@ Effects use HAMLET's VFS expression language (pure functional, type-safe):
 - Type mismatches cause compilation errors (fail-fast)
 
 **Write semantics** (2026-10-24, review F1):
-- A bare `bar.X` is the whole batch: one value per agent. A scalar `value` (`"0.3"`)
-  broadcasts to every agent. `target.bar.X` / `self.bar.X` write one agent's row.
+- A bare `bar.X` write is the pipeline's world's agent's row (S1); only a pipeline bound to
+  no world (a direct engine or test caller) writes the whole batch, a scalar `value`
+  broadcasting. `target.bar.X` / `self.bar.X` write one agent's row.
 - Every write lands **in place** in the existing tensor. The bar is never rebound to a
   new tensor or a broadcast view, so a scalar `modify: bar.X` followed by a
   `target.bar.X` write to the same bar in the same tick changes only the target's row
-  (`[0.3, 0.3, 0.3]` then `[0.3, 0.4, 0.3]`, never `[0.4, 0.4, 0.4]`). The executor
+  (world-less: `[0.3, 0.3, 0.3]` then `[0.3, 0.4, 0.3]`, never `[0.4, 0.4, 0.4]`). The executor
   checks after every command that no bar was rebound or left with a broadcast stride.
 - Inside a masked `if`/`switch` branch (below) a batch write lands only on the agents
   the condition holds for, and a row write lands only if that agent's row is live.
@@ -883,11 +905,11 @@ One keyword, one meaning: the command form of `if` agrees with the expression fo
   (`mean(bar.energy)`, a `for_each` over `all_agents`) sees `then`'s writes.
 - A global variable has one row per world, so a per-agent mask is a per-world mask on it:
   a masked write lands in the live worlds only.
-- A target with **no per-agent row** — a scalar bar, an item variable,
-  `affordance.X.available`, `spawn_item`, a non-agent `spawn_effect`, a `delay` block —
-  can only be written when the mask is whole (every agent live). Writing it from a
-  branch that holds for only some agents is refused at runtime with a message naming
-  the target: condition on a scalar value instead, or write a per-agent target.
+- Every other target has one world, and the mask is per world: an item variable lands if
+  its item's world is live, `affordance.X.available`, `spawn_item` and a global- or
+  affordance-scoped `spawn_effect` act in the pipeline's world if it is live, and a `delay`
+  block carries the mask it was scheduled under. Only a 0-dimensional bar (no per-world
+  row at all) needs the whole mask live, and is refused at runtime otherwise.
 
 **Use Cases**:
 - **Threshold Effects**: If health < 0.2, apply crisis penalties
@@ -1008,8 +1030,7 @@ The no-per-agent-row rule from `if` applies: an item, affordance, `spawn_item` o
 
 **Schema**:
 ```yaml
-- for_each: all_agents | nearby_agents | inventory_items | active_effects | <expression>
-  radius: <number >= 0>   # REQUIRED for nearby_agents, refused for every other collection
+- for_each: all_agents | inventory_items | active_effects | <expression>
   as: <name>              # accepted, not yet bound to anything (see below)
   do:
     - <command>           # `target.*` is the current element
@@ -1019,32 +1040,26 @@ The no-per-agent-row rule from `if` applies: an item, affordance, `spawn_item` o
 - `for_each` (string, REQUIRED): a collection name, or an expression evaluating to indices
 - `do` (list[Command], REQUIRED): commands run once per element; inside them `target.*`
   addresses the element (an agent row, or an item row for `inventory_items`)
-- `radius` (number ≥ 0, REQUIRED for `nearby_agents` only): distance in world units (grid
-  cells on a grid)
 - `as` (string, OPTIONAL): accepted but **not bound** — the body cannot read it yet
   (review-2026-10-24 effects F4; remediation WP7 decides bind or delete). Address the
   element as `target.*`.
 
 **Collections**:
-- `all_agents`: every agent row.
-- `nearby_agents`: every other agent whose distance from the attached agent (`self`) is at
-  most `radius`, measured by the substrate under the stratum's declared `distance_metric`
-  (`manhattan`, `euclidean` or `chebyshev`). On an aspatial substrate every distance is 0,
-  so every other agent is nearby. Needs an agent-scoped effect (it measures from `self`).
+- `all_agents`: every agent of the pipeline's world. Under S1 a world holds one agent, so
+  this is that agent; it is how a global- or affordance-scoped effect, which has no agent of
+  its own, reaches its world's agent. It keeps its meaning when agents-per-world becomes a
+  declared parameter.
 - `inventory_items`: the attached agent's held items (item rows).
+- An `<expression>` collection names agent rows; every element must be an agent of the
+  pipeline's world (refused at runtime otherwise: worlds are independent).
+- `nearby_agents` (and its `radius`) is deleted: no other agent shares an agent's world, so it
+  was always empty. Authoring it is refused at parse (`radius` is not a field).
 - `active_effects`: see review-2026-10-24 effects F6 before relying on it.
 
 **Examples**:
 
 ```yaml
-# Heal every agent within 2 cells of the attached agent (stratum: distance_metric manhattan)
-- for_each: nearby_agents
-  radius: 2
-  do:
-    - modify: target.bar.health
-      value: "clamp(target.bar.health + 0.02 * intensity, 0.0, 1.0)"
-
-# Penalise every agent
+# Penalise the world's agent(s), from a global-scoped effect
 - for_each: all_agents
   do:
     - modify: target.bar.comfort
@@ -1052,7 +1067,6 @@ The no-per-agent-row rule from `if` applies: an item, affordance, `spawn_item` o
 ```
 
 **Validation**:
-- `radius` present exactly when the collection selects by distance (parse-time refusal)
 - Body commands type-checked with `target` bound to the element's row kind
 - No nested `for_each`; collections over 256 elements raise
 
@@ -1288,7 +1302,7 @@ Real examples demonstrating common patterns and use cases:
 - Duration 10000 for long-lived world state effect
 - Not observable (global state, not agent-specific status)
 
-**Use Case**: Environment spawns this on startup for day/night cycles
+**Use Case**: Day/night state for the world whose event spawns it (no level-start spawner exists; each world that triggers it gets its own instance)
 
 **Key Pattern**: Global scope + temporal expressions for world state
 
@@ -1422,36 +1436,36 @@ with a declared clock variable (`expression: "tick % 24"`) can read that instead
 
 ---
 
-### Example 10: Area Effect (FOR_EACH Loop)
+### Example 10: World Process (FOR_EACH over the world's agents)
 
 ```yaml
-- id: "healing_aura"
-  description: "Heals nearby agents in radius"
-  scope: agent
+- id: "cold_snap"
+  description: "A world-scale process that bites the world's agent each tick"
+  scope: global
   duration: 20
-  reapply_policy: stack
+  reapply_policy: renew
   observable: true
 
   on_spawn: []
 
   on_tick:
-    - for_each: nearby_agents
-      radius: 2
+    - modify: vfs.temperature
+      value: "vfs.temperature - 0.1"
+    - for_each: all_agents
       do:
         - modify: target.bar.health
-          value: "clamp(target.bar.health + (0.02 * intensity), 0.0, 1.0)"
+          value: "clamp(target.bar.health - (0.02 * intensity), 0.0, 1.0)"
 
   on_despawn: []
   on_interrupt: []
 ```
 
 **Behavior**:
-- Each tick, finds the other agents within 2 cells of the attached agent under the
-  stratum's declared `distance_metric`
-- Heals each by 2% health; the attached agent itself is not in `nearby_agents`
-- Stack policy allows multiple auras (compounding heals)
+- Lives in the world whose event spawned it; each world that triggers it has its own
+- Each tick lowers that world's `temperature` and bites that world's agent
+- Renew policy refreshes the world's one instance
 
-**Use Case**: Support abilities, area buffs, social effects
+**Use Case**: Weather, seasons, world-scale hazards
 
 ---
 

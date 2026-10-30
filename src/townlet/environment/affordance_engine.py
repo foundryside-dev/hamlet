@@ -63,7 +63,7 @@ class AffordanceEngine:
         command_executor: CommandExecutor | None = None,  # NEW: Effects executor
         effect_manager: Any | None = None,  # NEW: EffectManager required for Effects commands
         item_manager: Any | None = None,  # NEW: ItemManager required for spawn_item
-        affordance_overrides: dict[str, bool] | None = None,  # NEW: dynamic availability toggles
+        affordance_overrides: list[dict[str, bool]] | None = None,  # per-world availability toggles (S1)
         *,
         meter_bounds_min: torch.Tensor,
         meter_bounds_max: torch.Tensor,

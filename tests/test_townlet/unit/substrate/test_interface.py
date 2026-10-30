@@ -23,7 +23,7 @@ def test_grid2d_initialize_positions():
     """Grid2D should initialize random positions in valid range."""
     substrate = Grid2DSubstrate(width=8, height=8, boundary="clamp", distance_metric="manhattan")
 
-    positions = substrate.initialize_positions(num_agents=10, device=torch.device("cpu"))
+    positions = substrate.initialize_positions(num_agents=10, device=torch.device("cpu"), generator=None)
 
     assert positions.shape == (10, 2)
     assert torch.all(positions >= 0)
@@ -189,7 +189,7 @@ def test_aspatial_initialize_positions():
     """Aspatial should return empty position tensors."""
     substrate = AspatialSubstrate()
 
-    positions = substrate.initialize_positions(num_agents=10, device=torch.device("cpu"))
+    positions = substrate.initialize_positions(num_agents=10, device=torch.device("cpu"), generator=None)
 
     assert positions.shape == (10, 0)  # Empty position vectors
 

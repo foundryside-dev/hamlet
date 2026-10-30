@@ -157,7 +157,7 @@ class ContinuousNDSubstrate(SpatialSubstrate):
         return 2 * self.position_dim + 2
 
     # Implementation methods
-    def initialize_positions(self, num_agents: int, device: torch.device) -> torch.Tensor:
+    def initialize_positions(self, num_agents: int, device: torch.device, *, generator: torch.Generator | None) -> torch.Tensor:
         """Initialize random positions uniformly in continuous bounds.
 
         Returns:
@@ -165,7 +165,7 @@ class ContinuousNDSubstrate(SpatialSubstrate):
         """
         positions = []
         for min_val, max_val in self.bounds:
-            dim_positions = torch.rand(num_agents, device=device, dtype=torch.float32) * (max_val - min_val) + min_val
+            dim_positions = torch.rand(num_agents, device=device, generator=generator, dtype=torch.float32) * (max_val - min_val) + min_val
             positions.append(dim_positions)
 
         return torch.stack(positions, dim=1)

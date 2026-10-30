@@ -1095,11 +1095,15 @@ class ItemArenaVariableElementPublisher:
             # mere slot liveness, decides whether this declaration's column holds a
             # meaningful value. Small Python loop over live items, the same scale as
             # `_item_slot_batch`'s own per-item tensor assembly.
+            # One host transfer, dict lookups, one scatter.
             worlds, columns = torch.nonzero(batch.active, as_tuple=True)
-            for world, column in zip(worlds.tolist(), columns.tolist(), strict=True):
-                profile_name = self._registry.get_item_profile_for_index(int(batch.vfs_rows[world, column]))
-                if profile_name is not None:
-                    occupant_profile_ids[world, int(owner_slots[column])] = self._profile_vocab[profile_name]
+            arena_rows = batch.vfs_rows[worlds, columns].tolist()
+            profile_of = self._registry.item_vfs_index_to_profile
+            profile_ids = [-1 if (name := profile_of.get(row)) is None else self._profile_vocab[name] for row in arena_rows]
+            if profile_ids:
+                occupant_profile_ids[worlds.to(rows.device), owner_slots[columns.to(rows.device)]] = torch.tensor(
+                    profile_ids, dtype=torch.long, device=rows.device
+                )
         mine_live = live.index_select(1, self._owner_slots) & (
             occupant_profile_ids.index_select(1, self._owner_slots) == self._declared_profile_ids.unsqueeze(0)
         )  # [N, n] bool

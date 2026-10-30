@@ -38,7 +38,7 @@ class TestGrid3DPositionInitialization:
     def test_initialize_positions_shape(self):
         """Positions have correct shape."""
         substrate = Grid3DSubstrate(width=8, height=8, depth=3, boundary="clamp")
-        positions = substrate.initialize_positions(100, torch.device("cpu"))
+        positions = substrate.initialize_positions(100, torch.device("cpu"), generator=None)
 
         assert positions.shape == (100, 3)
         assert positions.dtype == torch.long
@@ -46,7 +46,7 @@ class TestGrid3DPositionInitialization:
     def test_initialize_positions_in_bounds(self):
         """Positions within grid bounds."""
         substrate = Grid3DSubstrate(width=8, height=8, depth=3, boundary="clamp")
-        positions = substrate.initialize_positions(1000, torch.device("cpu"))
+        positions = substrate.initialize_positions(1000, torch.device("cpu"), generator=None)
 
         assert (positions[:, 0] >= 0).all()
         assert (positions[:, 0] < 8).all()

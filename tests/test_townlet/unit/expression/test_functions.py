@@ -159,7 +159,8 @@ def test_spatial_operator_catalogue_evaluates_batched_positions():
     vfs = {
         "positions": torch.tensor([[0.0, 0.0], [3.0, 4.0]]),
         "targets": torch.tensor([[0.0, 4.0], [0.0, 0.0]]),
-        "candidates": torch.tensor([[0.0, 1.0], [2.0, 2.0], [10.0, 10.0]]),
+        # tensor2d candidates, per world: [batch, K, D]
+        "candidates": torch.tensor([[0.0, 1.0], [2.0, 2.0], [10.0, 10.0]]).expand(2, 3, 2).clone(),
     }
 
     assert torch.allclose(_eval_expr("distance(positions, targets)", vfs, None), torch.tensor([4.0, 5.0]))

@@ -84,13 +84,13 @@ class Grid3DSubstrate(SpatialSubstrate):
             "Z": "depth",  # Floor/layer
         }
 
-    def initialize_positions(self, num_agents: int, device: torch.device) -> torch.Tensor:
+    def initialize_positions(self, num_agents: int, device: torch.device, *, generator: torch.Generator | None) -> torch.Tensor:
         """Randomly initialize positions in 3D grid."""
         return torch.stack(
             [
-                torch.randint(0, self.width, (num_agents,), device=device),
-                torch.randint(0, self.height, (num_agents,), device=device),
-                torch.randint(0, self.depth, (num_agents,), device=device),
+                torch.randint(0, self.width, (num_agents,), device=device, generator=generator),
+                torch.randint(0, self.height, (num_agents,), device=device, generator=generator),
+                torch.randint(0, self.depth, (num_agents,), device=device, generator=generator),
             ],
             dim=1,
         )

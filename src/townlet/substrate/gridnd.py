@@ -120,14 +120,17 @@ class GridNDSubstrate(SpatialSubstrate):
         return 2 * self.position_dim + 2
 
     # Implementation methods
-    def initialize_positions(self, num_agents: int, device: torch.device) -> torch.Tensor:
+    def initialize_positions(self, num_agents: int, device: torch.device, *, generator: torch.Generator | None) -> torch.Tensor:
         """Initialize random positions uniformly across N-dimensional grid.
 
         Returns:
             [num_agents, N] tensor of integer positions
         """
         return torch.stack(
-            [torch.randint(0, dim_size, (num_agents,), device=device, dtype=torch.long) for dim_size in self.dimension_sizes],
+            [
+                torch.randint(0, dim_size, (num_agents,), device=device, generator=generator, dtype=torch.long)
+                for dim_size in self.dimension_sizes
+            ],
             dim=1,
         )
 

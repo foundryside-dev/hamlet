@@ -16,6 +16,7 @@ def test_active_effect_initialization():
         instance_id=42,
         target_entity_id=3,
         scope=EffectScope.AGENT,
+        world=3,
         intensity=1.5,
         duration_total=100,
         duration_remaining=100,
@@ -39,6 +40,7 @@ def test_active_effect_tracks_multiple_targets():
         instance_id=1,
         target_entity_id=0,
         scope=EffectScope.AGENT,
+        world=0,
         intensity=1.0,
         duration_total=50,
         duration_remaining=50,
@@ -52,6 +54,7 @@ def test_active_effect_tracks_multiple_targets():
         instance_id=2,
         target_entity_id=5,
         scope=EffectScope.AGENT,
+        world=5,
         intensity=2.0,
         duration_total=50,
         duration_remaining=30,
@@ -125,7 +128,7 @@ def test_spawn_effect_derives_scope_and_duration_only_from_catalog(catalog_fixtu
     )
     manager = EffectManager(catalog=catalog_fixture, device="cpu")
 
-    effect = manager.spawn_effect("item_decay", 42, intensity=2.0, current_step=3)
+    effect = manager.spawn_effect("item_decay", 42, intensity=2.0, current_step=3, world=0)
 
     assert effect.scope == EffectScope.ITEM
     assert effect.duration_total == 7
@@ -223,18 +226,20 @@ def test_tick_and_natural_despawn_execute_for_all_effect_scopes():
         EffectScope.AFFORDANCE: 13,
     }
     for scope, entity_id in entity_ids.items():
-        manager.spawn_effect(scope.value, entity_id, 1.0, 0)
+        manager.spawn_effect(scope.value, entity_id, 1.0, 0, world=entity_id if scope is EffectScope.AGENT else 0)
 
     manager.tick(bars={}, vfs_registry=None, current_step=1)
 
+    # An agent- or item-scoped effect's self and target are its entity; a global or
+    # affordance effect has no agent (it addresses its world's agents with all_agents).
     expected = []
     for scope, entity_id in entity_ids.items():
-        self_index = entity_id if scope in {EffectScope.AGENT, EffectScope.ITEM} else None
+        entity = entity_id if scope in {EffectScope.AGENT, EffectScope.ITEM} else None
         is_item = scope == EffectScope.ITEM
         expected.extend(
             (
-                (f"tick.{scope.value}", self_index, entity_id, is_item),
-                (f"despawn.{scope.value}", self_index, entity_id, is_item),
+                (f"tick.{scope.value}", entity, entity, is_item),
+                (f"despawn.{scope.value}", entity, entity, is_item),
             )
         )
     assert sorted(executor.calls) == sorted(expected)
@@ -277,8 +282,8 @@ def test_item_scope_context_is_authoritative_across_spawn_merge_and_cancel():
         command_executor=executor,  # type: ignore[arg-type]
     )
 
-    active = manager.spawn_effect("item_effect", 42, 1.0, 0, bars={})
-    manager.spawn_effect("item_effect", 42, 0.5, 1, bars={})
+    active = manager.spawn_effect("item_effect", 42, 1.0, 0, bars={}, world=0)
+    manager.spawn_effect("item_effect", 42, 0.5, 1, bars={}, world=0)
     manager.cancel_effect(active.instance_id, bars={}, vfs_registry=None, current_step=2)
 
     assert executor.calls == [
@@ -307,7 +312,7 @@ def test_tick_handles_multiple_scopes(catalog_fixture):
         on_interrupt=[],
     )
 
-    global_effect = manager.spawn_effect("day_cycle", 0, 1.0, 10)
+    global_effect = manager.spawn_effect("day_cycle", 0, 1.0, 10, world=0)
     agent_effect = manager.spawn_effect("regen", 5, 1.0, 10)
 
     bars = {"health": torch.tensor([1.0] * 6)}
@@ -575,6 +580,7 @@ def test_spawn_effect_item_scope(catalog_fixture):
         target_entity_id=42,  # Item ID
         intensity=1.0,
         current_step=0,
+        world=0,
     )
 
     assert effect.scope == EffectScope.ITEM
@@ -604,11 +610,12 @@ def test_spawn_effect_affordance_scope(catalog_fixture):
         target_entity_id=7,  # Affordance index
         intensity=1.0,
         current_step=0,
+        world=2,
     )
 
     assert effect.scope == EffectScope.AFFORDANCE
-    assert "7" in manager.affordance_effects  # Keyed by string
-    assert effect in manager.affordance_effects["7"]
+    assert effect.world == 2
+    assert effect in manager.affordance_effects[(2, 7)]  # keyed by (world, entity)
 
 
 def test_get_all_active_effects_includes_all_scopes(catalog_fixture):
@@ -651,10 +658,10 @@ def test_get_all_active_effects_includes_all_scopes(catalog_fixture):
     manager = EffectManager(catalog=catalog_fixture, device="cpu")
 
     # Spawn effects in different scopes
-    global_eff = manager.spawn_effect("global_buff", 0, 1.0, 0)
+    global_eff = manager.spawn_effect("global_buff", 0, 1.0, 0, world=0)
     agent_eff = manager.spawn_effect("regen", 1, 1.0, 0)
-    item_eff = manager.spawn_effect("item_decay", 42, 1.0, 0)
-    aff_eff = manager.spawn_effect("depleted", 7, 1.0, 0)
+    item_eff = manager.spawn_effect("item_decay", 42, 1.0, 0, world=0)
+    aff_eff = manager.spawn_effect("depleted", 7, 1.0, 0, world=0)
 
     all_effects = manager.get_all_active_effects()
 
@@ -699,12 +706,12 @@ def test_cancel_effect_global_scope(catalog_fixture):
     )
 
     manager = EffectManager(catalog=catalog_fixture, device="cpu")
-    effect = manager.spawn_effect("global_buff", 0, 1.0, 0)
+    effect = manager.spawn_effect("global_buff", 0, 1.0, 0, world=0)
 
     bars = {"health": torch.tensor([1.0])}
     manager.cancel_effect(effect.instance_id, bars, None, current_step=10)
 
-    assert effect not in manager.global_effects
+    assert effect not in manager.global_effects.get(0, [])
 
 
 def test_cancel_effect_item_scope(catalog_fixture):
@@ -725,7 +732,7 @@ def test_cancel_effect_item_scope(catalog_fixture):
     )
 
     manager = EffectManager(catalog=catalog_fixture, device="cpu")
-    effect = manager.spawn_effect("item_decay", 42, 1.0, 0)
+    effect = manager.spawn_effect("item_decay", 42, 1.0, 0, world=0)
 
     bars = {"health": torch.tensor([1.0])}
     manager.cancel_effect(effect.instance_id, bars, None, current_step=10)
@@ -751,12 +758,12 @@ def test_cancel_effect_affordance_scope(catalog_fixture):
     )
 
     manager = EffectManager(catalog=catalog_fixture, device="cpu")
-    effect = manager.spawn_effect("depleted", 7, 1.0, 0)
+    effect = manager.spawn_effect("depleted", 7, 1.0, 0, world=0)
 
     bars = {"health": torch.tensor([1.0])}
     manager.cancel_effect(effect.instance_id, bars, None, current_step=10)
 
-    assert "7" not in manager.affordance_effects or effect not in manager.affordance_effects.get("7", [])
+    assert effect not in manager.affordance_effects.get((0, 7), [])
 
 
 def test_cancel_effect_not_found_raises(catalog_fixture):
@@ -805,7 +812,7 @@ def test_reset_clears_every_store_scheduler_and_counter():
     executor = Mock(spec=CommandExecutor)
     manager = EffectManager(catalog=_one_effect_per_scope_catalog(), device="cpu", command_executor=executor)
     for target, scope in enumerate(("global", "agent", "item", "affordance")):
-        manager.spawn_effect(f"{scope}_probe", target, 1.0, current_step=0)
+        manager.spawn_effect(f"{scope}_probe", target, 1.0, current_step=0, world=target if scope == "agent" else 0)
     manager.tick(bars={}, vfs_registry=None, current_step=5)
     manager.scheduler.schedule(commands=[], delay_ticks=3, scope="agent", entity_id=1)
     manager.scheduler.schedule(commands=[], delay_ticks=7, scope=None, entity_id=None)
@@ -815,7 +822,7 @@ def test_reset_clears_every_store_scheduler_and_counter():
 
     manager.reset()
 
-    assert manager.global_effects == []
+    assert manager.global_effects == {}
     assert manager.agent_effects == {}
     assert manager.item_effects == {}
     assert manager.affordance_effects == {}

@@ -1,6 +1,5 @@
 from pathlib import Path
 
-import pytest
 import torch
 
 from tests.test_townlet.utils.builders import make_grid2d_substrate
@@ -247,22 +246,3 @@ def test_fixed_placement_skips_occupied_cells() -> None:
     manager.spawn_initial_items(appearance, current_tick=0, bars=_bars(1.0))
     positions = {item.position for item in manager.worlds[0].active.values()}
     assert positions == {(0, 0), (1, 1)}
-
-
-def test_fixed_placement_off_the_grid_is_an_invariant_violation() -> None:
-    """The compiler refuses an off-grid authored cell; reaching the runtime with one raises."""
-    catalog = ItemsCatalogConfig.from_yaml(path=Path("configs/test/items_smoke/items.yaml"))
-    appearance = _appearance(
-        items=[
-            ItemAppearanceRuleConfig(
-                item_type="apple",
-                spawn_count=1,
-                placement=SpawnPlacementConfig(mode="fixed", fixed_positions=[(10, 10)]),
-            )
-        ]
-    )
-    manager = ItemManager(
-        catalog=catalog, num_worlds=1, substrate=make_grid2d_substrate(width=3, height=3), items_per_world=5, device="cpu"
-    )
-    with pytest.raises(ValueError, match="not a cell of the substrate"):
-        manager.spawn_initial_items(appearance, current_tick=0, bars=_bars(1.0))

@@ -10,7 +10,6 @@ from townlet.effects.compiler import CommandCompiler
 from townlet.effects.context import ExecutionContext
 from townlet.effects.executor import CommandExecutor
 from townlet.effects.schema import CommandNode, CommandType
-from townlet.substrate.grid2d import Grid2DSubstrate
 from townlet.world.expression import ExpressionParser
 
 
@@ -30,61 +29,6 @@ class DummyInventory:
     def __init__(self, slots: torch.Tensor):
         self.slots = slots
         self.items = {}
-
-
-def test_for_each_nearby_agents_with_modify():
-    """Test for_each iterates over nearby agents and modifies bars."""
-    executor = CommandExecutor()
-
-    # Create for_each command: heal all agents within radius 3.0
-    command = CommandNode(
-        type=CommandType.FOR_EACH,
-        collection="nearby_agents",
-        radius=3.0,
-        iterator="ally",
-        body=[
-            CommandNode(
-                type=CommandType.MODIFY,
-                path="target.bar.health",
-                value_expr="target.bar.health + 0.2",
-            )
-        ],
-    )
-
-    # Compile nested modify command
-    schema = {"target.bar.health": "float"}
-    compiler = CommandCompiler(schema=schema, agent_target=True)
-    for body_cmd in command.body:
-        compiler.compile_command(body_cmd)
-
-    # Create context with 3 agents (self at index 0, others at 1, 2)
-    bars = {
-        "health": torch.tensor([0.5, 0.6, 0.7]),  # All agents need healing
-    }
-
-    # Mock agent positions (needed for radius check)
-    # Agent 0 at (0, 0), Agent 1 at (2, 0), Agent 2 at (10, 0)
-    # Only Agent 1 is within radius 3.0
-    agent_positions = torch.tensor([[0.0, 0.0], [2.0, 0.0], [10.0, 0.0]])
-
-    context = ExecutionContext(
-        bars=bars,
-        vfs_registry=None,
-        self_index=0,
-        target_index=None,
-        effect_manager=DummyEffectManager(),
-        item_manager=DummyItemManager(),
-        agent_positions=agent_positions,
-        substrate=Grid2DSubstrate(width=16, height=16, boundary="clamp", distance_metric="euclidean", enable_diagonals=False),
-    )
-
-    # Execute for_each
-    executor.execute(command, context)
-
-    # Verify only agent 1 was healed (within radius)
-    assert bars["health"][0].item() == pytest.approx(0.5)  # Self unchanged
-    assert bars["health"][1].item() == pytest.approx(0.8)  # Agent 1 healed (+0.2)
-    assert bars["health"][2].item() == pytest.approx(0.7)  # Agent 2 unchanged (too far)
 
 
 def test_for_each_all_agents():
@@ -122,10 +66,12 @@ def test_for_each_all_agents():
 
     executor.execute(command, context)
 
-    # All agents should be boosted (+0.1 energy)
-    assert bars["energy"][0].item() == pytest.approx(0.3)
-    assert bars["energy"][1].item() == pytest.approx(0.4)
-    assert bars["energy"][2].item() == pytest.approx(0.5)
+    # S1: the pipeline runs in agent 0's world, whose only agent is agent 0.
+    assert bars["energy"].tolist() == pytest.approx([0.3, 0.3, 0.4])
+
+    # A context bound to no world iterates every world's agent.
+    executor.execute(command, context.copy(self_index=None))
+    assert bars["energy"].tolist() == pytest.approx([0.4, 0.4, 0.5])
 
 
 def test_for_each_unknown_collection_raises():
@@ -192,32 +138,18 @@ def test_for_each_collection_expression_executes():
 
 
 def test_for_each_empty_collection_noop():
-    """Test for_each with empty collection is no-op."""
+    """A for_each over an empty collection (an empty inventory) runs its body for no one."""
     executor = CommandExecutor()
 
     command = CommandNode(
         type=CommandType.FOR_EACH,
-        collection="nearby_agents",
-        radius=1.0,  # Very small radius - no one nearby
-        iterator="ally",
-        body=[
-            CommandNode(
-                type=CommandType.MODIFY,
-                path="target.bar.health",
-                value_expr="0.0",  # Would zero health
-            )
-        ],
+        collection="inventory_items",
+        iterator="item",
+        body=[CommandNode(type=CommandType.MODIFY, path="bar.health", value_expr="0.0")],
     )
-
-    # Compile nested modify command (with literal value this time)
-    schema = {"target.bar.health": "float"}
-    compiler = CommandCompiler(schema=schema, agent_target=True)
-    for body_cmd in command.body:
-        compiler.compile_command(body_cmd)
+    CommandCompiler(schema={"bar.health": "float"}, agent_target=True).compile_command(command.body[0])
 
     bars = {"health": torch.tensor([0.5, 0.6])}
-    agent_positions = torch.tensor([[0.0, 0.0], [10.0, 10.0]])  # Far apart
-
     context = ExecutionContext(
         bars=bars,
         vfs_registry=None,
@@ -225,15 +157,12 @@ def test_for_each_empty_collection_noop():
         target_index=None,
         effect_manager=DummyEffectManager(),
         item_manager=DummyItemManager(),
-        agent_positions=agent_positions,
-        substrate=Grid2DSubstrate(width=16, height=16, boundary="clamp", distance_metric="euclidean", enable_diagonals=False),
+        inventory=DummyInventory(torch.full((2, 2), -1)),
     )
 
     executor.execute(command, context)
 
-    # Health unchanged (no nearby agents)
-    assert bars["health"][0].item() == pytest.approx(0.5)
-    assert bars["health"][1].item() == pytest.approx(0.6)
+    assert bars["health"].tolist() == pytest.approx([0.5, 0.6])
 
 
 def test_for_each_iteration_cap_raises():
@@ -251,7 +180,7 @@ def test_for_each_iteration_cap_raises():
     context = ExecutionContext(
         bars=bars,
         vfs_registry=None,
-        self_index=0,
+        self_index=None,  # bound to no world: every world's agent
         target_index=None,
         effect_manager=DummyEffectManager(),
         item_manager=DummyItemManager(),

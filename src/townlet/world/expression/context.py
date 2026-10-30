@@ -36,6 +36,9 @@ class ExecutionContext:
     item_index_to_profile: dict[int, str] | None = None
     history: TemporalHistory | None = None
     step: int | None = None
+    # The random stream sampling functions draw from: a world's own stream in an effect
+    # pipeline (S1, so one world's draws never shift another's); None is torch's global one.
+    rng: torch.Generator | None = None
 
     def get(self, path: str) -> torch.Tensor:
         """Resolve dotted path to tensor value.

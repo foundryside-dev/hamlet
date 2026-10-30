@@ -105,7 +105,7 @@ def _services(
     manager = EffectManager(
         catalog=EffectCatalog(effects=effects, max_active_effects={"global": 0, "agent": 2, "item": 2, "affordance": 0}),
         command_executor=CommandExecutor(),
-        affordance_overrides={"bank": True},
+        affordance_overrides=[{"bank": True}],
     )
     catalog = ItemsCatalogConfig(
         version="1.0",
@@ -216,7 +216,7 @@ def test_descendant_denial_restores_published_arenas_standalone_aliases_and_affo
     assert torch.equal(published_global, global_values)
     assert torch.equal(published_agents, agent_values)
     assert manager.affordance_overrides is availability
-    assert availability == {"bank": True}
+    assert availability == [{"bank": True}]
     assert manager.get_all_active_effects() == []
 
 

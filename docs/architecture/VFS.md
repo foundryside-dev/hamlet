@@ -412,8 +412,8 @@ WP13): registry storage is `[num_worlds, *payload]` with `num_worlds == num_agen
 `i` is agent `i`'s. The axis is engine-internal; authors read a global as one value in their
 world, and the expression shape proof labels it `scalar`. Interactions and agent-scoped
 effects write their own world's row; item-scoped effects write their item's world (items are
-per world); global- and affordance-scoped effects are world-shared stores and write every row;
-transition rules mask a global row by its own agent's activity; the token publisher, DAC and
+per world); a global- or affordance-scoped effect lives in the world whose event spawned it and
+writes that row only; transition rules and effects mask a global row by its own agent's activity; the token publisher, DAC and
 persistent snapshots read per row. The engine `tick` is written into every row at once
 (lockstep). No reader reduces across worlds (item spawn predicates are evaluated per world);
 cross-world quantities have no spelling by design (`docs/config-schemas/variables.md`).

@@ -958,8 +958,8 @@ class TestHandleInteractions:
                 )
 
             @staticmethod
-            def _is_affordance_open(_affordance_name):
-                return True
+            def _affordance_open_mask(_affordance_name):
+                return torch.tensor([True])
 
             def _update_affordance_tracking(self, successful_interactions):
                 self.tracked_interactions = dict(successful_interactions)

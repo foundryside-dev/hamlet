@@ -430,7 +430,7 @@ Vector variables only (`vec2i`, `vec3i`, `vec2f`, `vec3f`, `vecNi`, `vecNf`); th
 |---|---|---|---|
 | `distance(a, b[, "manhattan" \| "euclidean"])` | float | Distance between two vector variables of one width, measured in float (default euclidean). | — |
 | `manhattan_distance(a, b)` | float | L1 distance between two vector variables of one width, measured in float. | — |
-| `nearest(point, candidates[, "manhattan" \| "euclidean"])` | int | Row index of the candidate nearest to `point`; `candidates` is a vector variable or a tensor2d of rows. | — |
+| `nearest(point, candidates[, "manhattan" \| "euclidean"])` | int | Row index of the candidate nearest to `point`; `candidates` is a tensor2d of rows in the point's world. | — |
 | `normalize(v)` | the float vector type of `v`'s width (vec2f, vec3f or vecNf) | `v` scaled to unit euclidean length (the zero vector stays zero). | — |
 | `within_radius(a, b, radius[, "manhattan" \| "euclidean"])` | bool | True when `distance(a, b)` is at most `radius`. | — |
 

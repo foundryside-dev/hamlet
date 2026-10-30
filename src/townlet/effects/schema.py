@@ -79,7 +79,6 @@ class CommandNode:
     collection_ast: Any | None = None  # ✅ Pre-compiled AST
     iterator: str | None = None  # Iterator variable name
     body: list[CommandNode] | None = None  # Body commands
-    radius: float | None = None  # nearby_agents radius under the substrate's declared metric
 
     # switch command fields
     switch_expr: str | None = None

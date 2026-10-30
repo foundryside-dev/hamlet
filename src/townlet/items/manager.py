@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import logging
 import math
 import os
@@ -24,6 +25,7 @@ from townlet.config.items_config import (
 from townlet.effects.compiler import CommandCompiler
 from townlet.effects.schema import CommandNode
 from townlet.items.instance import ItemInstance
+from townlet.vfs.registry import item_row_world
 from townlet.vfs.schema import VariableDef, VariableScope
 from townlet.world.expression.ast_nodes import PathAccess, Variable
 from townlet.world.expression.context import ExecutionContext as ExprExecutionContext
@@ -321,13 +323,28 @@ class ItemManager:
         # Every live instance (any world, ground or held), by globally unique id.
         self.live_items: dict[int, ItemInstance] = {}
         self.worlds: list[WorldItemState] = [self._fresh_world(world) for world in range(num_worlds)]
+        # One random stream per world for item placement and spawn schedules, so one
+        # world's draws never shift another's (S1). Seeded from the run seed
+        # (`torch.initial_seed()`, set by `seed_all`), the world index and the episode,
+        # without consuming the global stream: the same seed is the same run.
+        self._episode = 0
+        self.world_rngs: list[torch.Generator] = []
+        self._reseed_world_rngs()
 
         # Appearance config for periodic respawning (shared rules; state is per world).
         self.appearance_config: ItemsAppearanceConfig | None = None
         self._rule_keys: dict[int, str] = {}
-        # Enumerated grid cells, built on first use by fixed/grid/scripted placement.
+        # Enumerated grid cells, built on first use by `grid` placement.
         self._cells: list[tuple[int, ...]] | None = None
-        self._cell_set: set[tuple[int, ...]] | None = None
+
+    def _reseed_world_rngs(self) -> None:
+        run_seed = torch.initial_seed()
+        self.world_rngs = []
+        for world in range(self.num_worlds):
+            digest = hashlib.blake2b(f"items:{run_seed}:{self._episode}:{world}".encode(), digest_size=8).digest()
+            generator = torch.Generator(device=self.device)
+            generator.manual_seed(int.from_bytes(digest, "little") & ((1 << 63) - 1))
+            self.world_rngs.append(generator)
 
     def _fresh_world(self, world: int) -> WorldItemState:
         base = world * self.items_per_world
@@ -348,7 +365,7 @@ class ItemManager:
 
     def world_of(self, item: ItemInstance) -> int:
         """The world an item instance lives in, from its flat arena row."""
-        return item.vfs_index // self.items_per_world
+        return item_row_world(item.vfs_index, self.items_per_world)
 
     def world_state(self, world: int) -> WorldItemState:
         if not 0 <= world < self.num_worlds:
@@ -362,10 +379,18 @@ class ItemManager:
 
     def item_at_row(self, vfs_index: int) -> ItemInstance | None:
         """The live instance holding arena row `vfs_index`, if any."""
-        for item in self.items_in_world(vfs_index // self.items_per_world):
-            if item.vfs_index == vfs_index:
-                return item
+        state = self.world_state(item_row_world(vfs_index, self.items_per_world))
+        for items in (state.active, state.held):
+            for item in items.values():
+                if item.vfs_index == vfs_index:
+                    return item
         return None
+
+    def holder_of(self, item: ItemInstance) -> int | None:
+        """The agent carrying `item` in its own world (lowest index), or None on the ground."""
+        world = self.world_of(item)
+        holders = sorted(h for h in item.holder_agent_ids if self.world_of_agent(h) == world)
+        return holders[0] if holders else None
 
     def items_at(self, world: int, position: torch.Tensor) -> list[ItemInstance]:
         """Active items of `world` co-located with `position`, in spawn order.
@@ -389,6 +414,8 @@ class ItemManager:
         self.appearance_config = None
         self._rule_keys.clear()
         self.next_instance_id = 0
+        self._episode += 1
+        self._reseed_world_rngs()
 
         if self.vfs_registry is not None:
             self.vfs_registry.item_vfs_index_to_profile.clear()
@@ -407,21 +434,13 @@ class ItemManager:
     def _grid_cells(self) -> list[tuple[int, ...]]:
         """Every cell of a discrete grid substrate, in the substrate's enumeration order.
 
-        fixed / grid / scripted placement are refused at compile on any other substrate.
+        `grid` placement is refused at compile on any other substrate.
         """
         if self._cells is None:
             if self.substrate.position_dtype.is_floating_point or self.substrate.position_dim == 0:
-                raise RuntimeError("fixed/grid/scripted item placement needs a discrete grid substrate; the compiler refuses it here")
+                raise RuntimeError("grid item placement needs a discrete grid substrate; the compiler refuses it here")
             self._cells = [tuple(int(c) for c in cell) for cell in self.substrate.get_all_positions()]
-            self._cell_set = set(self._cells)
         return self._cells
-
-    def _require_cell(self, position: tuple[int, ...]) -> tuple[int, ...]:
-        self._grid_cells()
-        assert self._cell_set is not None
-        if position not in self._cell_set:
-            raise ValueError(f"Item placement {position} is not a cell of the substrate (the compiler checks authored cells)")
-        return position
 
     def _position_occupied(self, world: int, position: tuple[int, ...] | tuple[float, ...]) -> bool:
         """Check whether a position is occupied by an active item of `world` (O(1) lookup)."""
@@ -466,7 +485,7 @@ class ItemManager:
             occupied = self.world_state(world).position_index
             for _ in range(retries):
                 # A unit step per axis, through the substrate's own boundary rule.
-                step = torch.randint(-1, 2, (1, dim), device=self.device).to(dtype=dtype)
+                step = torch.randint(-1, 2, (1, dim), device=self.device, generator=self.world_rngs[world]).to(dtype=dtype)
                 candidate = self._position_key(self.substrate.apply_movement(base.clone(), step)[0])
                 if not occupied.get(candidate):
                     return candidate
@@ -517,8 +536,9 @@ class ItemManager:
             ItemInstance if spawned, None if the world is at capacity or on cooldown
         """
         state = self.world_state(world)
-        # Check per-world capacity
-        if len(state.active) >= self.items_per_world:
+        # Ground capacity is the declared max_items_in_world; the arena (free_rows,
+        # checked below) also holds the world's carried items.
+        if len(state.active) >= self.catalog.max_items_in_world:
             return None
 
         # Check cooldown
@@ -655,9 +675,10 @@ class ItemManager:
         if self.inventory is not None:
             self.inventory.purge_instance(instance_id)
 
-        # Cancel any scheduled delayed commands targeting this item
+        # Discard the item's live effects and delayed work before its row is freed: an
+        # effect outliving its item would read an unregistered row (and kill the batch).
         if self.effect_manager is not None:
-            self.effect_manager.cancel_scheduled_for_entity(scope="item", entity_id=item.vfs_index)
+            self.effect_manager.discard_item_effects(item.vfs_index)
 
         state.free_rows.add(item.vfs_index)
 
@@ -705,8 +726,9 @@ class ItemManager:
                 max(
                     0.0,
                     torch.normal(
-                        mean=torch.tensor(schedule.mean),
-                        std=torch.tensor(schedule.std_dev),
+                        mean=torch.tensor([float(schedule.mean)]),
+                        std=torch.tensor([float(schedule.std_dev)]),
+                        generator=self.world_rngs[world],
                     ).item(),
                 )
             )
@@ -787,7 +809,8 @@ class ItemManager:
         """Up to `count` positions in `world` for one spawn event of `rule`.
 
         random: the substrate's own position initialization (every substrate, any rank).
-        fixed / grid / scripted: cells of a discrete grid (checked at compile).
+        fixed / grid / scripted: cells of a discrete grid. Every authored fixed and
+        scripted cell is checked against the grid at compile ([ITEM-PLACEMENT-SUBSTRATE]).
         """
         mode = self._placement_mode(rule)
         placement = rule.placement
@@ -796,7 +819,7 @@ class ItemManager:
         if mode == "random":
             if count <= 0:
                 return positions
-            drawn = self.substrate.initialize_positions(count, self.device)
+            drawn = self.substrate.initialize_positions(count, self.device, generator=self.world_rngs[world])
             return [self._position_key(row) for row in drawn.reshape(count, self.substrate.position_dim)]
 
         assert isinstance(placement, SpawnPlacementConfig)  # Type narrowing for mypy
@@ -804,7 +827,7 @@ class ItemManager:
             for raw in placement.fixed_positions or []:
                 if len(positions) >= count:
                     break
-                cell = self._require_cell(tuple(int(c) for c in raw))
+                cell = tuple(int(c) for c in raw)
                 if not self._position_occupied(world, cell):
                     positions.append(cell)
             return positions
@@ -835,7 +858,7 @@ class ItemManager:
                 tick = event.get("tick")
                 if tick is None or tick != current_tick:
                     break
-                cell = self._require_cell(tuple(int(c) for c in event.get("position", ())))
+                cell = tuple(int(c) for c in event.get("position", ()))
                 if not self._position_occupied(world, cell):
                     positions.append(cell)
                 start_idx = idx + 1
@@ -875,7 +898,7 @@ class ItemManager:
             prob = 1.0 - torch.exp(torch.tensor(-rate))
             if prob >= 0.9999:
                 return True
-            return bool(torch.rand((), device=self.device) < prob)
+            return bool(torch.rand((), device=self.device, generator=self.world_rngs[world]) < prob)
 
         if schedule.type == "normal":
             cursor = self.worlds[world].next_scheduled_tick
@@ -998,8 +1021,9 @@ class ItemManager:
                             timers[item_type] = max(current_tick + 1, schedule.start_tick or current_tick + 1)
                     elif schedule.type == "normal" and schedule.mean is not None and schedule.std_dev is not None:
                         sampled = torch.normal(
-                            mean=torch.tensor(schedule.mean),
-                            std=torch.tensor(schedule.std_dev),
+                            mean=torch.tensor([float(schedule.mean)]),
+                            std=torch.tensor([float(schedule.std_dev)]),
+                            generator=self.world_rngs[world],
                         ).item()
                         timers[item_type] = int(max(current_tick + 1, math.ceil(sampled)))
                 continue

@@ -230,13 +230,16 @@ def test_successful_cascade_uses_prior_writes_and_samples_target_once() -> None:
         _child_spawn("where(bar.energy[0] > 8.0 and uniform(0.0, 1.0) > -1.0, 0, 1)"),
     ]
     torch.manual_seed(16)
-    torch.rand(())
-    expected_rng = torch.get_rng_state().clone()
-    torch.manual_seed(16)
+    global_rng = torch.get_rng_state().clone()
     manager.spawn_effect("charging", 0, 1.0, 0, bars=bars, vfs_registry=registry)
     assert registry.read_item("writable", "charge", 0, reader="engine") == 4.0
     assert [effect.effect_id for effect in manager.get_all_active_effects()] == ["charging", "child"]
-    assert torch.equal(torch.get_rng_state(), expected_rng)
+    # The target is sampled once, from the effect's world stream (S1), not the global one.
+    assert torch.equal(torch.get_rng_state(), global_rng)
+    world = manager.get_all_active_effects()[0].world
+    reference = EffectManager(catalog=manager.catalog).world_rng(world, torch.device("cpu"))
+    torch.rand((), generator=reference)
+    assert torch.equal(manager.world_rngs[world].get_state(), reference.get_state())
 
 
 @pytest.mark.parametrize("entry", ["context", "environment"])

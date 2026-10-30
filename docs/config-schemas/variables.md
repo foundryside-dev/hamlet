@@ -95,10 +95,11 @@ expression shape proof still treats it so: a global expression may not read agen
 an action write may not target a global. At runtime every reader and writer addresses its own
 world's row:
 
-- an affordance or item interaction, and an agent-scoped effect, write the interacting agent's
-  world (`vfs.X` and `global.vfs.X` alike); an item-scoped effect writes its item's world (items
-  are per world); a global- or affordance-scoped effect lives in one store shared by the batch,
-  so its global writes land in every world's row;
+- an affordance or item interaction writes the interacting agent's world (`vfs.X` and
+  `global.vfs.X` alike); every effect lives in one world (its agent's, its item's, or for a
+  global- or affordance-scoped effect the world whose event spawned it) and writes that
+  world's row only (`docs/config-schemas/effects.md`); a world whose agent is done writes
+  nothing, by rule or by effect;
 - a transition rule advances each world's global while that world's agent is active;
 - global and agent profile expressions read their own world's globals;
 - each world's observation publishes its own row, and the reward reads its own row;

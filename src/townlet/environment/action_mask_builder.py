@@ -56,7 +56,7 @@ class ActionMaskBuilder:
         item_manager: ItemManager | None,
         item_handler: ItemActionHandler | None,
         affordances: dict[str, Any],
-        is_affordance_open: Callable[[str], bool],
+        affordance_open: Callable[[str], torch.Tensor],
     ) -> torch.Tensor:
         """Compute action masks for the current tick.
 
@@ -70,8 +70,9 @@ class ActionMaskBuilder:
             item_manager: Item registry, or ``None`` when items are disabled.
             item_handler: Custom action handler, or ``None``.
             affordances: Mapping of affordance name to position.
-            is_affordance_open: Predicate that returns ``True`` when the
-                given affordance is currently open (for temporal mechanics).
+            affordance_open: ``[num_agents]`` bool per affordance: whether each
+                agent's world has it open now (temporal mechanics and per-world
+                availability overrides).
 
         Returns:
             ``[num_agents, action_dim]`` bool tensor; ``True`` is valid.
@@ -187,10 +188,9 @@ class ActionMaskBuilder:
         on_valid_affordance = torch.zeros(num_agents, dtype=torch.bool, device=self.device)
 
         for affordance_name, affordance_pos in affordances.items():
-            if self.enable_temporal_mechanics and not is_affordance_open(affordance_name):
-                continue
-
             on_this_affordance = self.substrate.is_on_position(positions, affordance_pos)
+            if self.enable_temporal_mechanics:
+                on_this_affordance = on_this_affordance & affordance_open(affordance_name)
             on_valid_affordance |= on_this_affordance
 
         if interact_action_idx is not None:

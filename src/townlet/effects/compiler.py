@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import fields, replace
 from typing import Any, Literal
 
-from townlet.config.effects_config import SPATIAL_COLLECTIONS, EffectScope
+from townlet.config.effects_config import EffectScope
 from townlet.effects.schema import CommandNode, CommandType
 from townlet.world.expression import ExpressionParser
 from townlet.world.expression.ast_nodes import ASTNode, FunctionCall, PathAccess
@@ -308,10 +308,6 @@ class CommandCompiler:
                 if node.collection not in COLLECTION_RESOLVERS:
                     available = sorted(COLLECTION_RESOLVERS.keys())
                     raise TypeCheckError(f"Unknown for_each collection '{node.collection}'. Available: {available}")
-            if node.collection in SPATIAL_COLLECTIONS and node.radius is None:
-                raise TypeCheckError(f"for_each '{node.collection}' requires a declared radius")
-            if node.collection not in SPATIAL_COLLECTIONS and node.radius is not None:
-                raise TypeCheckError(f"for_each radius applies only to the spatial collections {sorted(SPATIAL_COLLECTIONS)}")
 
             # The body runs once per element with `target` rebound to it: an agent row
             # for every collection except the item-row ones.

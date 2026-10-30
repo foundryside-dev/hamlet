@@ -108,6 +108,7 @@ def test_active_effect_refuses_invalid_runtime_intensity() -> None:
             instance_id=0,
             target_entity_id=0,
             scope="agent",
+            world=0,
             intensity=1.0e39,
             duration_total=10,
             duration_remaining=10,

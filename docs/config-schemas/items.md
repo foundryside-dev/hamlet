@@ -137,8 +137,19 @@ every observation hash are independent of the batch size. At runtime the registr
 arena block per world, flat: `item_vfs` is `[num_worlds × item_capacity, V]` and world `w`'s
 item in compiled slot `s` lives at row `w × item_capacity + s` (`VariableRegistry.item_world(row)`
 recovers `w`). Rows are globally unique, so an effect or `item_ref` keyed by row needs no world
-beside it. A spawn predicate (`when:`) is evaluated per world: each world spawns when the
-predicate holds for its own values; there is no reduction across worlds.
+beside it; an `item_ref` written in world `w` must name a row of world `w` (or be null, `-1`),
+and any other value is refused at the write as an engine defect. A spawn predicate (`when:`) is
+evaluated per world: each world spawns when the predicate holds for its own values; there is no
+reduction across worlds.
+
+Ground capacity is `max_items_in_world` per world: a spawn into a world already holding that many
+items on the ground is refused. The rest of the arena (`max_items_per_agent × agents_per_world`)
+is for carried items. Each world draws its item randomness (random placement, `random` spawn
+positions, poisson and normal schedules) from its own stream, seeded from the run seed, the
+world and the episode, so one world's spawns never move another world's placements and the same
+seed is the same run. When an item despawns its live item-scoped effects and their delayed work
+are discarded with it (no hook runs: the item's state row is gone). A carried item's position,
+for `spawn_item position: self` as for its observation token, is its holder's.
 
 ### 2. Items Appearance (Level-Specific)
 
@@ -326,7 +337,7 @@ items:
     when: "(bar.energy < 0.4) and vfs.danger_level >= 3"
 ```
 
-Supported symbols: `bar.<meter>`, and `vfs.<variable>` for every global- or agent-scope registry variable, including the engine clock `vfs.tick`. There is no `temporal.*` namespace, and bare names, `env.*` and `agent.vfs.*` are refused; derive an hour or a season as a declared global expression variable and read it by `vfs.<id>`. An agent-scope read passes only when it holds for every agent. Predicates evaluate after the instant's expressions (at `reset()` and on every respawn), so an expression variable reads its evaluated value, never its declared literal. All standard comparison operators and boolean logic (`and`, `or`, `not`) are available via the expression language.
+Supported symbols: `bar.<meter>`, and `vfs.<variable>` for every global- or agent-scope registry variable, including the engine clock `vfs.tick`. There is no `temporal.*` namespace, and bare names, `env.*` and `agent.vfs.*` are refused; derive an hour or a season as a declared global expression variable and read it by `vfs.<id>`. An agent-scope read is the value of the world's own agent (world `w` holds agent `w`), so each world spawns or not on its own values. Predicates evaluate after the instant's expressions (at `reset()` and on every respawn), so an expression variable reads its evaluated value, never its declared literal. All standard comparison operators and boolean logic (`and`, `or`, `not`) are available via the expression language.
 
 ### Advanced Spawn Rules Examples
 

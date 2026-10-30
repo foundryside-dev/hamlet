@@ -142,11 +142,11 @@ class ContinuousSubstrate(SpatialSubstrate):
         names = {1: {"X": "position"}, 2: {"X": "horizontal", "Y": "vertical"}, 3: {"X": "horizontal", "Y": "vertical", "Z": "depth"}}
         return names.get(self.dimensions, {})
 
-    def initialize_positions(self, num_agents: int, device: torch.device) -> torch.Tensor:
+    def initialize_positions(self, num_agents: int, device: torch.device, *, generator: torch.Generator | None) -> torch.Tensor:
         """Randomly initialize positions in continuous space."""
         positions = []
         for min_val, max_val in self.bounds:
-            dim_positions = torch.rand(num_agents, device=device) * (max_val - min_val) + min_val
+            dim_positions = torch.rand(num_agents, device=device, generator=generator) * (max_val - min_val) + min_val
             positions.append(dim_positions)
 
         return torch.stack(positions, dim=1)

@@ -95,7 +95,6 @@ class CommandParser:
                 collection_expr=collection_expr,
                 iterator=config.as_,
                 body=[self.parse_command(cmd) for cmd in config.do],
-                radius=config.radius,
             )
 
         elif config.switch is not None:

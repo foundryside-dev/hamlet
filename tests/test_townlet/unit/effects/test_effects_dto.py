@@ -344,9 +344,8 @@ effect_definitions:
         ({"spawn_item": "potion", "position": "self"}, r"spawn_item command requires \['quantity'\]"),
         ({"spawn_item": "potion", "position": "self", "quantity": 0}, "greater than or equal to 1"),
         ({"spawn_item": "potion", "position": "self", "quantity": 1, "initial_state": {}}, "Extra inputs are not permitted"),
-        ({"for_each": "nearby_agents", "do": []}, r"for_each command requires \['radius'\]"),
-        ({"for_each": "all_agents", "radius": 2.0, "do": []}, "radius applies only to the spatial collections"),
-        ({"for_each": "nearby_agents", "radius": -1.0, "do": []}, "greater than or equal to 0"),
+        # `radius` went with `nearby_agents` (S1: no other agent shares a world).
+        ({"for_each": "all_agents", "radius": 2.0, "do": []}, "Extra inputs are not permitted"),
         ({"modify": "bar.energy", "value": None}, r"fields \['value'\] must not be null"),
     ],
 )
@@ -355,10 +354,10 @@ def test_command_config_refuses_incomplete_or_mixed_kinds(payload: dict, match: 
         CommandConfig.model_validate(payload)
 
 
-def test_command_config_accepts_complete_nearby_agents_and_spawn_item() -> None:
-    nearby = CommandConfig.model_validate({"for_each": "nearby_agents", "radius": 1.5, "do": []})
+def test_command_config_accepts_complete_all_agents_and_spawn_item() -> None:
+    every = CommandConfig.model_validate({"for_each": "all_agents", "do": []})
     spawn = CommandConfig.model_validate({"spawn_item": "potion", "position": "self", "quantity": 2})
-    assert nearby.radius == 1.5
+    assert every.for_each == "all_agents"
     assert spawn.quantity == 2
 
 
@@ -377,7 +376,7 @@ def test_effects_config_top_level_fields_are_required(missing: str) -> None:
     [
         {"if": "bar.x > 0", "then": [{"modify": "bar.x", "value": "0.0"}], "else": []},
         {"delay": "1", "do": [{"modify": "bar.x", "value": "0.0"}]},
-        {"for_each": "nearby_agents", "radius": 1.0, "as": "n", "do": [{"modify": "target.bar.x", "value": "0.0"}]},
+        {"for_each": "all_agents", "as": "n", "do": [{"modify": "target.bar.x", "value": "0.0"}]},
         {"spawn_item": "potion", "position": "random", "quantity": 2},
     ],
 )

@@ -77,7 +77,7 @@ def test_runner_refuses_population_version_five_before_all_consumer_mutation(tmp
         runner.save_checkpoint()
         checkpoint_path = next(runner.checkpoint_dir.glob("checkpoint_ep*.pt"))
         checkpoint = torch.load(checkpoint_path, weights_only=False)
-        assert checkpoint["version"] == CHECKPOINT_FORMAT_VERSION == 6
+        assert checkpoint["version"] == CHECKPOINT_FORMAT_VERSION == 7
         checkpoint["population_state"]["version"] = 5
         first_weight = next(iter(checkpoint["population_state"]["q_network"]))
         checkpoint["population_state"]["q_network"][first_weight] += 1.0

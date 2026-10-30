@@ -54,6 +54,7 @@ def test_demo_checkpoint_runtime_fields_require_exact_bound_values() -> None:
     payload["agent_ids"] = ["agent_0"]
     payload["epsilon"] = 0.25
     payload["completed_live_agent_steps"] = 123
+    payload["vfs_persistent_state"] = {"season": torch.tensor(3.0)}
 
     validate_demo_checkpoint_runtime_fields(
         payload,
@@ -101,6 +102,17 @@ def test_demo_checkpoint_runtime_fields_require_exact_bound_values() -> None:
             substrate_type="Grid2DSubstrate",
             num_agents=1,
         )
+
+    for malformed in (None, {"season": 3.0}, {1: torch.tensor(3.0)}):
+        invalid_persistent = dict(payload)
+        invalid_persistent["vfs_persistent_state"] = malformed
+        with pytest.raises(ValueError, match="vfs_persistent_state must be a dictionary of variable id to tensor"):
+            validate_demo_checkpoint_runtime_fields(
+                invalid_persistent,
+                position_dim=2,
+                substrate_type="Grid2DSubstrate",
+                num_agents=1,
+            )
 
 
 def test_attach_universe_metadata(compiled_universe) -> None:

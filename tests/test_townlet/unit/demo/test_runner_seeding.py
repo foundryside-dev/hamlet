@@ -38,8 +38,23 @@ class _CheckpointSubstrate:
     position_dim = 2
 
 
+class _CheckpointVariableRegistry:
+    @staticmethod
+    def persistent_state() -> dict[str, torch.Tensor]:
+        return {}
+
+    @staticmethod
+    def validate_persistent_state(_state: dict[str, torch.Tensor]) -> None:
+        return None
+
+    @staticmethod
+    def restore_persistent_state(_state: dict[str, torch.Tensor]) -> None:
+        raise AssertionError("outer schema validation must run before registry mutation")
+
+
 class _CheckpointEnv:
     substrate = _CheckpointSubstrate()
+    vfs_registry = _CheckpointVariableRegistry()
 
     @staticmethod
     def get_affordance_positions() -> dict[str, tuple[int, int]]:

@@ -23,7 +23,8 @@ _DIGEST_BUFFER_SIZE = 1024 * 1024  # 1 MiB chunks keep memory bounded
 # 5: THE COMPACT TOKEN/REPLAY CUT (unit 3 M3 Task 4). Every nested population and
 # replay artifact now carries only the compact observation ABI and validates before
 # any runtime state is applied. The immediately previous version describes a different ABI.
-CHECKPOINT_FORMAT_VERSION = 6
+# 7: persistent-lifetime VFS registry state (`vfs_persistent_state`) is part of resume.
+CHECKPOINT_FORMAT_VERSION = 7
 
 # The complete DemoRunner artifact. Producers and both consumers share this one
 # closed schema: only artifacts emitted by the current code are accepted.
@@ -36,6 +37,7 @@ DEMO_CHECKPOINT_KEYS = frozenset(
         "population_state",
         "curriculum_state",
         "affordance_layout",
+        "vfs_persistent_state",
         "agent_ids",
         "epsilon",
         "completed_live_agent_steps",
@@ -148,6 +150,12 @@ def validate_demo_checkpoint_runtime_fields(
     completed_live_agent_steps = checkpoint["completed_live_agent_steps"]
     if isinstance(completed_live_agent_steps, bool) or not isinstance(completed_live_agent_steps, int) or completed_live_agent_steps < 0:
         raise ValueError("Demo checkpoint completed_live_agent_steps must be a non-negative integer.")
+
+    persistent_state = checkpoint["vfs_persistent_state"]
+    if not isinstance(persistent_state, dict) or any(
+        not isinstance(variable_id, str) or not isinstance(value, torch.Tensor) for variable_id, value in persistent_state.items()
+    ):
+        raise ValueError("Demo checkpoint vfs_persistent_state must be a dictionary of variable id to tensor.")
 
 
 def attach_universe_metadata(checkpoint: dict[str, Any], universe: CompiledUniverse) -> None:

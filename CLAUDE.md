@@ -85,7 +85,8 @@ target; the status line is false. That pattern repeats across the archived corpu
 set in `docs/architecture/` — `HLD.md`, `STRATA.md`, `UAC.md`, `BAC.md`, `COMPILER.md`,
 `VFS.md` (all reviewed against source 2026-08-24) — and `docs/config-schemas/`.
 `docs/architecture/archive/vfs-current-implementation.md` also remains accurate per the
-2026-08-24 audit **except** its access-control and `agent_private` claims.
+2026-08-24 audit **except** its access-control and `agent_private` claims (`agent_private` was
+deleted 2026-10-31).
 
 **On `docs/config-schemas/`** (restored 2026-08-26): the 2026-08-24 recut (commit `c4e8bd58`,
 "zzz. archive") swept it into the archive on a fast visual pass, and a follow-up sweep
@@ -222,13 +223,18 @@ universes**, and a **per-universe compiled capacity** with deterministic slot bi
 Content is per-universe; the type system is not. `total_dims = Σ_type capacity × (1 + payload
 width)`. Identity is the declared payload applied recursively (a meter is its declared
 parameters, an affordance carries its targets' meter signatures), never a name or a slot
-index — so two entities identical in every declared parameter are refused at compile time.
+index — so two entities identical in every declared parameter are refused at compile time
+**when the level's effective brain is a permutation-invariant token encoder** (`token_set`,
+`recurrent`); a flat brain (`feedforward`, `dueling`) reads slots by position and compiles
+them unchanged (`[TOKEN-IDENTITY]`, S3 ruling 2026-10-25). The check covers exposed variables,
+observable effects, and deployed affordances only where tokens carry no position lanes
+(aspatial): on a spatial substrate two identical affordances differ by position.
 
 **Two consequences worth holding on to:**
 
 - **Transfer is a property of the type schema, not of the width.**
   `token_type_schema_hash` — the transfer contract — is **identical across a 2-D grid, a 3-D
-  cubic grid and an aspatial universe** (measured 2026-08-26: `428982ef5d81dd26` on
+  cubic grid and an aspatial universe** (measured 2026-10-31: `f0f3f356e25411b3` on
   `default_curriculum`, `differential/div003_cubic_partial`, `aspatial_test` and all three
   `token_transfer_*` packs, whose `total_dims` range 162–1132). That is what
   `MAX_POSITION_RANK` padding buys, and why rank-adaptive padding is not a free width saving.
@@ -286,21 +292,25 @@ TokenSpec → Runtime Registry + token publishers → Observations`
 - `vtc.py`: VFS Transition Compiler — action writes, passive dynamics, cascades, terminal
   conditions, reward components, occupancy claims
 
-**Variable Scopes** — nine, not three (`VariableScope` in `vfs/schema.py`): `global`, `agent`,
-`agent_private`, `item`, `pair`, `group`, `affordance`, `zone`, `message`.
+**Variable Scopes** — four (`VariableScope` in `vfs/schema.py`): `global`, `agent`, `item`,
+`affordance`. **The batch is N independent single-agent worlds** (owner ruling S1, 2026-10-25):
+`global` is per world, and `pair`, `message`, `group`, `zone` and `agent_private` are deleted
+until agents-per-world is declarable. Privacy is `readable_by` / `exposed_to` on an `agent`
+variable.
 
-**Access Control**: `readable_by` / `writable_by` role lists per variable, enforced at
-`registry.get()` / `set()`. Roles are open strings, not a closed enum — `agent`, `engine`,
-`actions`, `vtc`, `social_model` are the common ones. ⚠ Caveat (2026-08-24 audit): the
-enforcement is real where it runs, but it currently has **no authoring surface** (the compiler
-applies one fixed role policy to the canonical variable family) and the observation path bypasses the
-checked accessor entirely — see `docs/architecture/VFS.md` §6 caveat and
-`docs/architecture/archive/REVIEW-2026-08-24-vfs-implementation-vs-spec.md`.
+**Access Control**: every registry variable declares `readable_by`, `writable_by` and
+`exposed_to` in the pack's `variables` declaration. The vocabulary is closed
+(`vfs/access_policy.py`): readers `engine`/`agent`, writers `engine` or empty, exposure `agent`,
+`engine` always a reader, exposure ⊆ readers. The registry freezes one policy per variable and
+checks it in `get()`/`set()`/`set_engine_value()` and the item accessors; the `variable_element`
+publisher binds each exposed slot through `authorize_read(reader="agent")`, so an unexposed or
+engine-only variable never reaches an observation. (The 2026-08-24 "no authoring surface /
+observation bypass" caveat is obsolete; see `docs/architecture/VFS.md` §6.)
 
 **Which declarations a pack needs** (declaration-store Cut B):
 
 - One required pack-scope `variables:` declaration supplies the explicit registry-variable
-  roster, evaluator settings, scope extents and named item-profile groups.
+  roster and named item-profile groups.
 - Every variable declares type, scope, initialization, lifetime, semantic type and exposure.
   Global/agent expressions and supported item state lower into internal compiled profiles.
 - Environment-variable, VFS-profile and static-overlay authoring languages are deleted.

@@ -21,12 +21,12 @@ from townlet.vfs.vtc import _SOCIAL_RESIDUE_RULE_KINDS
 
 def _write_payload(**overrides) -> dict:
     payload = {
-        "variable_id": "trust",
+        "variable_id": "reputation",
         "expression": "-0.15",
         "composition": "additive_delta",
         "condition": None,
         "clamp": (0.0, 1.0),
-        "effect": "trust_delta",
+        "effect": "reputation_delta",
     }
     payload.update(overrides)
     return payload
@@ -34,11 +34,11 @@ def _write_payload(**overrides) -> dict:
 
 def _rule_payload(**overrides) -> dict:
     payload = {
-        "id": "seen_stealing_damages_trust",
+        "id": "seen_stealing_damages_reputation",
         "kind": "visibility_effect",
         "phase": "apply_social_residue_effects",
-        "reads": ["chosen_action", "observer_mask", "trust"],
-        "condition": "observer_mask and chosen_action == 7",
+        "reads": ["chosen_action", "was_observed", "reputation"],
+        "condition": "was_observed and chosen_action == 7",
         "writes": [_write_payload()],
     }
     payload.update(overrides)
@@ -57,7 +57,7 @@ def _config_payload(**overrides) -> dict:
 class TestSocialResidueWriteConfig:
     def test_valid_write_parses(self):
         write = SocialResidueWriteConfig(**_write_payload())
-        assert write.variable_id == "trust"
+        assert write.variable_id == "reputation"
         assert write.composition == "additive_delta"
         assert write.clamp == (0.0, 1.0)
         # Computed-at-compile fields may be omitted and default to None.
@@ -103,9 +103,9 @@ class TestSocialResidueWriteConfig:
 class TestSocialResidueRuleConfig:
     def test_valid_rule_parses(self):
         rule = SocialResidueRuleConfig(**_rule_payload())
-        assert rule.id == "seen_stealing_damages_trust"
+        assert rule.id == "seen_stealing_damages_reputation"
         assert rule.kind == "visibility_effect"
-        assert rule.reads == ("chosen_action", "observer_mask", "trust")
+        assert rule.reads == ("chosen_action", "was_observed", "reputation")
         assert rule.priority is None
 
     def test_kind_literal_matches_compiler_vocabulary(self):
@@ -159,7 +159,7 @@ class TestTransitionRulesConfig:
 
     def test_duplicate_rule_ids_rejected(self):
         payload = _config_payload(social_residue=[_rule_payload(), _rule_payload()])
-        with pytest.raises(ValidationError, match="seen_stealing_damages_trust"):
+        with pytest.raises(ValidationError, match="seen_stealing_damages_reputation"):
             TransitionRulesConfig(**payload)
 
     def test_sources_compile_through_vtc_social_residue_compiler(self):
@@ -167,14 +167,14 @@ class TestTransitionRulesConfig:
         existing VTC social-residue compiler."""
         config = TransitionRulesConfig(**_config_payload())
         targets = {
-            "trust": VTCWriteTarget(VariableScope.PAIR, "scalar", meter=False),
+            "reputation": VTCWriteTarget(VariableScope.AGENT, "scalar", meter=False),
             "chosen_action": VTCWriteTarget(VariableScope.AGENT, "scalar", meter=False),
-            "observer_mask": VTCWriteTarget(VariableScope.PAIR, "bool", meter=False),
+            "was_observed": VTCWriteTarget(VariableScope.AGENT, "bool", meter=False),
         }
         program = compile_vtc_social_residue_rules(config.social_residue_sources(), targets)
         assert len(program.rules) == 1
-        assert program.rules[0].rule_id == "seen_stealing_damages_trust"
-        assert program.rules[0].target_scope == VariableScope.PAIR
+        assert program.rules[0].rule_id == "seen_stealing_damages_reputation"
+        assert program.rules[0].target_scope == VariableScope.AGENT
         assert program.rules[0].clamp == (0.0, 1.0)
 
     def test_sources_omit_computed_fields_rather_than_passing_none(self):

@@ -82,7 +82,7 @@ class CommandCompiler:
     def _bare_agent_path(self, path: str) -> bool:
         """True when `path` is a bare `vfs.X` naming an agent-scoped variable.
 
-        `EffectsCompiler.build_schema` registers agent/agent_private variables under
+        `EffectsCompiler.build_schema` registers agent variables under
         both `vfs.X` and `target.vfs.X`, globals under `vfs.X` and `global.vfs.X`, and
         item-profile variables under `self.vfs.X` only — so the `target.` twin is the
         schema's statement that `X` has an agent axis.

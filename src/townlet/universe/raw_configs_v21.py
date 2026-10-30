@@ -26,7 +26,6 @@ from townlet.config.transition_rules_config import TransitionRulesConfig
 from townlet.config.variables_config import VariablesConfig
 from townlet.universe.error_codes import ErrorCode
 from townlet.universe.source_map import SourceMap
-from townlet.vfs.schema import VFSScopeExtents
 
 if TYPE_CHECKING:
     from townlet.universe.declarations import DeclarationStore
@@ -90,7 +89,6 @@ class RawConfigsV21:
     # never hashed.
     presentation: PresentationConfig | None = None
     action_label_overrides: dict[int, str] | None = None
-    vfs_extents: VFSScopeExtents | None = None
     social_residue_rules: tuple[dict[str, object], ...] = ()
 
     def __post_init__(self) -> None:
@@ -185,7 +183,6 @@ class RawConfigsV21:
             effects=effects,
             presentation=presentation,
             action_label_overrides=action_label_overrides,
-            vfs_extents=variables.extents,
             social_residue_rules=transition_rules.social_residue_sources() if transition_rules is not None else (),
             levels=levels,
             experiment_dir=store.experiment_dir,

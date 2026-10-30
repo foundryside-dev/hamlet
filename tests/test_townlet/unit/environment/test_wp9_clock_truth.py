@@ -143,7 +143,6 @@ def expression_env(tmp_path):
     variables = {
         "variables": {
             "version": "1.0",
-            "extents": {},
             "item_profiles": ["default_item"],
             "declarations": [
                 _declaration("e_energy", scope="agent", lifetime="episode", expression="bar.energy * 2.0", normalization=_MM2),

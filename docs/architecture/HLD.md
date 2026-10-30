@@ -266,7 +266,7 @@ restatement. The one systemic story: declared epistemic state has no working aut
 `readable_by` / `writable_by` are compiler-hardcoded on both required surfaces, `exposed_to`
 fails open, the observation path bypasses the checked accessor, and the one file where an author
 *could* declare access and the pair/affordance/zone/group/message scopes
-(`variables_reference.yaml`) never enters the compiler symbol table. Every privacy /
+(`variables_reference.yaml`) never enters the compiler symbol table. *(Superseded 2026-10-31: zone, group, pair, message and agent_private are deleted; the scopes are global, agent, item and affordance.)* Every privacy /
 hidden-state / social-inference mechanic VFS presents as its payoff is currently unauthorable
 while appearing authorable. It is one gap wearing about six ticket numbers and should be fixed
 as one design unit.

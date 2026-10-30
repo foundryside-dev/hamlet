@@ -215,7 +215,7 @@ Summarised only far enough to route:
   about six ticket numbers.
 - **`variables_reference.yaml` variables never reach the compiler symbol table** — the
   pair / affordance / zone / group / message scopes allocate storage that no effect, affordance
-  or drive can reference (`hamlet-33e520cebd`). Five of nine scopes are unreachable declaratively.
+  or drive can reference (`hamlet-33e520cebd`). Five of nine scopes are unreachable declaratively. *(Superseded 2026-10-31: zone, group, pair, message and agent_private are deleted; the scopes are global, agent, item and affordance.)*
 - **`lifetime` is hardcoded** on both required surfaces (environment.yaml → always `tick`;
   profiles → `persistent` / `episode`), so no author-declared counters or accumulators exist.
 - A handful of **compile-green / crash-at-step-1 seams**: VTC modulation `condition:`, three of

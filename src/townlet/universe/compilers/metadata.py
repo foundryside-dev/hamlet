@@ -150,7 +150,6 @@ class MetadataCompiler:
             affordance_id_to_index=affordance_id_to_index,
             action_count=primary_meta.action_metadata.total_actions,
             observation_dim=primary_meta.token_spec.total_dims,
-            num_message_slots=(raw.vfs_extents.num_message_slots or 0) if raw.vfs_extents is not None else 0,
             grid_cells=grid_cells,
             ticks_per_day=ticks_per_day,
             config_version=config_version,

@@ -72,6 +72,7 @@ __all__ = [
     "TokenPublishContext",
     "TokenTypePublisher",
     "bind_dynamic_slots",
+    "item_slot_visibility",
 ]
 
 
@@ -379,6 +380,31 @@ def _require_input(value: object, publisher: str, field: str) -> None:
         raise ValueError(f"{publisher} requires TokenPublishContext.{field}; got None")
 
 
+def item_slot_visibility(substrate: SpatialSubstrate, ctx: TokenPublishContext, batch: ItemSlotBatch) -> torch.Tensor:
+    """THE per-slot item visibility mask, `[N, K]` bool in `batch` column order.
+
+    One definition consumed by every publisher that describes a live item — the
+    `item` token and its item-state `variable_element` companions — so a hidden item's
+    presence can never leak through a companion row (VFS round-2 F3 / WP11). The rule
+    is the spatial one (spec §3): an item is visible to an observer world when its
+    stored position is within that world's `vision_range` under the substrate's
+    declared metric, or when that world's agent carries it (a carried item is on self).
+    Full observability (`vision_range is None`) and aspatial substrates (no positions
+    to hide) need no observer position and see every live slot. `carried` is `[N, K]`,
+    so the mask is per observer row: under S1 each batch row is its own single-agent
+    world and "carried" can only mean carried by that world's agent.
+    """
+    carried = batch.carried.to(dtype=torch.bool)
+    if substrate.position_dim == 0 or ctx.vision_range is None:
+        return torch.ones_like(carried)
+    _require_input(ctx.positions, "item_slot_visibility", "positions")
+    assert ctx.positions is not None
+    visible = substrate.visible(ctx.positions, batch.positions, ctx.vision_range).to(device=carried.device)  # [N, K]
+    if tuple(visible.shape) != tuple(carried.shape):
+        raise ValueError(f"item_slot_visibility: substrate.visible() gave {tuple(visible.shape)}, carried is {tuple(carried.shape)}")
+    return visible | carried
+
+
 # --------------------------------------------------------------------------- publishers
 
 
@@ -639,19 +665,17 @@ class ItemTokenPublisher:
             return
         dim = self._substrate.position_dim
         carried = batch.carried.to(dtype=torch.bool)
+        # The one per-slot mask shared with the item-state companion rows (WP11).
+        visible = item_slot_visibility(self._substrate, ctx, batch)
         payload = torch.zeros((rows.shape[0], slots.shape[0], rows.shape[2]), dtype=rows.dtype, device=rows.device)
         if dim > 0:
             assert self._pos0 is not None and self._ego0 is not None
             _require_input(ctx.positions, "ItemTokenPublisher", "positions")
             assert ctx.positions is not None
-            visible = self._substrate.visible(ctx.positions, batch.positions, ctx.vision_range)
             payload[:, :, self._pos0 : self._pos0 + dim] = self._substrate.normalize_positions(batch.positions)
             ego = self._substrate.egocentric_delta(ctx.positions, batch.positions)
             ego = ego * (~carried).to(dtype=ego.dtype).unsqueeze(-1)  # carried = on self = relative zero
             payload[:, :, self._ego0 : self._ego0 + dim] = ego
-        else:
-            visible = torch.ones((rows.shape[0], slots.shape[0]), dtype=torch.bool, device=rows.device)
-        visible = visible | carried
         applicable = batch.owner_slot >= 0
         payload[:, :, self._carried] = carried.to(dtype=rows.dtype)
         payload[:, :, self._owner_slot] = (batch.owner_slot.clamp(min=0).to(dtype=rows.dtype) / self._owner_slot_capacity) * applicable.to(
@@ -742,8 +766,7 @@ class RegistryVariableElementPublisher:
     never a per-variable Python loop, never a clone per read (hamlet-c7084169f7).
 
     The gather plan authorizes every binding against the registry's immutable role
-    and exposure authority before indexing its arena. ``agent_private`` has no
-    publisher and remains refused. Convenience getters enforce the same authority;
+    and exposure authority before indexing its arena. Convenience getters enforce the same authority;
     the authorized batched arena read avoids per-variable clones in the hot path.
     """
 
@@ -803,14 +826,6 @@ class RegistryVariableElementPublisher:
                 raise ValueError(
                     f"variable_element slot {slot_index}: binding scope {binding.scope!r} disagrees with "
                     f"registry variable {base_id!r} scope {scope.value!r}; recompile the config pack"
-                )
-            if scope == VariableScope.AGENT_PRIVATE:
-                raise ValueError(
-                    f"variable_element slot {slot_index} is bound to agent_private variable {base_id!r}.\n"
-                    "  Rule: agent_private is excluded from observation by the publisher, filtered BEFORE slot "
-                    "binding at this publisher enforcement point (token-obs spec §2 scope table; hamlet-83a043a9b9). "
-                    "Checked accessors also "
-                    "refuse agent reads of private-scope storage."
                 )
             if scope == VariableScope.GLOBAL:
                 scope_key = "global"
@@ -926,6 +941,11 @@ class ItemArenaVariableElementPublisher:
     variable's live reading. A dead owner slot, or one occupied by the wrong profile,
     publishes presence 0 with zeroed payload — token unit 5 (hamlet-55b2826a02), the
     first pack to expose an item-profile variable.
+
+    Presence is further gated, PER OBSERVER WORLD, by the same `item_slot_visibility`
+    mask the `item` token publishes under: a state row is present exactly when its
+    owner item token is present (VFS round-2 F3 / WP11). The value itself is
+    world-shared (one item arena); only its visibility is per world.
     """
 
     type_name = "variable_element"
@@ -937,11 +957,13 @@ class ItemArenaVariableElementPublisher:
         registry: VariableRegistry,
         declarations: Sequence[ItemStateSlotDeclaration],
         owner_capacity: int,
+        substrate: SpatialSubstrate,
         device: torch.device,
     ) -> None:
         self._schema = _require_type(schema, "variable_element")
         self._layout = _require_layout(schema, layout, "variable_element")
         self._registry = registry
+        self._substrate = substrate
         if declarations and owner_capacity < 1:
             raise ValueError("ItemArenaVariableElementPublisher requires owner_capacity >= 1 when slots are declared")
         # Stored raw: capacity 0 is a real state, legal only with zero declarations,
@@ -1035,8 +1057,12 @@ class ItemArenaVariableElementPublisher:
         item_vfs = self._registry.item_vfs
         if item_vfs is None:
             raise ValueError("ItemArenaVariableElementPublisher declared slots but the registry has no item_vfs arena")
+        num_worlds = rows.shape[0]
         live = torch.zeros(self._owner_capacity, dtype=torch.bool, device=rows.device)
         vfs_rows = torch.zeros(self._owner_capacity, dtype=torch.long, device=rows.device)
+        # Per observer world: which owner slots this world can see (the item token's own
+        # mask, scattered from live-batch column order onto compiled owner slots).
+        visible = torch.zeros((num_worlds, self._owner_capacity), dtype=torch.bool, device=rows.device)
         # -1 = no item at this owner slot (never overwritten below, so it never equals
         # a real `_declared_profile_ids` entry). A live item's REGISTERED profile is
         # always a member of `_profile_vocab` — `register_item_instance` validates
@@ -1049,6 +1075,7 @@ class ItemArenaVariableElementPublisher:
             owner_slots = ctx.item_slots.slot_indices.to(dtype=torch.long)
             live[owner_slots] = True
             vfs_rows[owner_slots] = ctx.item_slots.vfs_indices.to(dtype=torch.long)
+            visible[:, owner_slots] = item_slot_visibility(self._substrate, ctx, ctx.item_slots).to(device=rows.device)
             # `item_vfs` is profile-agnostic storage shared by every item profile
             # (docstring above) — the occupying item's OWN registered profile, not
             # mere slot liveness, decides whether this declaration's column holds a
@@ -1060,15 +1087,17 @@ class ItemArenaVariableElementPublisher:
                     occupant_profile_ids[compiled_slot] = self._profile_vocab[profile_name]
         mine_live = live.index_select(0, self._owner_slots) & (
             occupant_profile_ids.index_select(0, self._owner_slots) == self._declared_profile_ids
-        )  # [n] bool
+        )  # [n] bool, world-shared
+        # Present for a world iff live, right profile AND that world sees the owner
+        # item token — the state row and the item row share one mask by construction.
+        present = mine_live.unsqueeze(0) & visible.index_select(1, self._owner_slots)  # [N, n] bool
         source_rows = vfs_rows.index_select(0, self._owner_slots)  # [n]
         # Gather COPIES: no view of item_vfs survives this call (spec §6).
         values = item_vfs[source_rows, self._columns].to(dtype=torch.float32)  # [n]
-        values = values * mine_live.to(dtype=torch.float32)
-        lanes = self._normalizer.apply(values)  # [n, VALUE_BLOCK_WIDTH]
-        live_f = mine_live.to(dtype=rows.dtype)
+        present_f = present.to(dtype=torch.float32)
+        lanes = self._normalizer.apply(values.unsqueeze(0) * present_f)  # [N, n, VALUE_BLOCK_WIDTH]
         slots = self._slots
-        # Item state is world-shared (one item arena, like affordance layout): rows
-        # broadcast over the world batch. Presence 0 zeroes the payload of dead slots.
-        rows[:, slots, 0] = live_f
-        rows[:, slots, self._value0 : self._value0 + VALUE_BLOCK_WIDTH] = lanes * live_f.unsqueeze(-1)
+        # The value is world-shared (one item arena, like affordance layout); presence
+        # is per world. Presence 0 zeroes the payload of dead or hidden slots.
+        rows[:, slots, 0] = present_f.to(dtype=rows.dtype)
+        rows[:, slots, self._value0 : self._value0 + VALUE_BLOCK_WIDTH] = lanes.to(dtype=rows.dtype) * present_f.unsqueeze(-1)

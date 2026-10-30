@@ -24,7 +24,6 @@ def _make_env(tmp_path, profile_payload, num_agents=2):
 _PROFILES = {
     "variables": {
         "version": "1.0",
-        "extents": {},
         "item_profiles": ["default_item"],
         "declarations": [
             {
@@ -78,7 +77,6 @@ def test_static_survives_engine_write_unclobbered(tmp_path):
 _DEPENDENCY_PROFILES = {
     "variables": {
         "version": "1.0",
-        "extents": {},
         "item_profiles": ["default_item"],
         "declarations": [
             {
@@ -128,7 +126,6 @@ def test_static_dependency_of_marked_expression_is_not_clobbered_by_write_back(t
 _AGENT_PROFILES = {
     "variables": {
         "version": "1.0",
-        "extents": {},
         "item_profiles": ["default_item"],
         "declarations": [
             {
@@ -179,7 +176,6 @@ def test_agent_static_is_never_clobbered(tmp_path):
 _AGENT_DEPENDENCY_PROFILES = {
     "variables": {
         "version": "1.0",
-        "extents": {},
         "item_profiles": ["default_item"],
         "declarations": [
             {
@@ -231,7 +227,6 @@ def test_agent_static_dependency_of_marked_expression_is_not_clobbered_by_write_
 _AGENT_SCALAR_EXPRESSION_PROFILES = {
     "variables": {
         "version": "1.0",
-        "extents": {},
         "item_profiles": ["default_item"],
         "declarations": [
             {
@@ -263,7 +258,6 @@ def test_agent_expression_wrong_shape_raises_naming_variable_and_shapes(tmp_path
 _STATIC_INPUT_PROFILES = {
     "variables": {
         "version": "1.0",
-        "extents": {},
         "item_profiles": ["default_item"],
         "declarations": [
             {

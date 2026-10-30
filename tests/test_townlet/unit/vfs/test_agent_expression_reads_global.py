@@ -116,7 +116,6 @@ def test_evaluator_feeds_global_outputs_to_the_agent_profile_in_order():
     profile first and handing its outputs on makes the agent profile read this tick's value."""
     config = VariablesConfig(
         version="1.0",
-        extents={},
         item_profiles=[],
         declarations=[
             _declaration("clock", scope="global", expression="tick * 1.0"),

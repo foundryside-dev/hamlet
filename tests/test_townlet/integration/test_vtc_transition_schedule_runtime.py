@@ -16,17 +16,34 @@ LEVEL_NAME = "L5_multi_agent"
 
 
 def _copy_l5_pack(tmp_path: Path, name: str) -> Path:
+    """L5 plus one rule-writable agent-scope variable, ``reputation`` (initial 0.5)."""
     target = tmp_path / name
-    shutil.copytree(Path("configs") / LEVEL_NAME, target)
+    shutil.copytree(Path("configs") / LEVEL_NAME, target, ignore=shutil.ignore_patterns(".compiled"))
+    variables_path = target / "variables.yaml"
+    payload = yaml.safe_load(variables_path.read_text())
+    payload["variables"]["declarations"].append(
+        {
+            "id": "reputation",
+            "scope": "agent",
+            "type": "scalar",
+            "lifetime": "episode",
+            "semantic_type": "custom",
+            "readable_by": ["engine"],
+            "writable_by": ["engine"],
+            "exposed_to": [],
+            "initial_value": 0.5,
+        }
+    )
+    variables_path.write_text(yaml.safe_dump(payload, sort_keys=False))
     return target
 
 
-def _write_social_residue_rule(config_dir: Path, *, variable_id: str = "trust", delta: float = 0.1) -> None:
+def _write_social_residue_rule(config_dir: Path, *, variable_id: str = "reputation", delta: float = 0.1) -> None:
     payload = {
         "version": "1.0",
         "social_residue": [
             {
-                "id": "constant_pair_delta",
+                "id": "constant_reputation_delta",
                 "phase": "apply_social_residue_effects",
                 "kind": "social_residue",
                 "reads": [variable_id],
@@ -34,7 +51,7 @@ def _write_social_residue_rule(config_dir: Path, *, variable_id: str = "trust", 
                 "writes": [
                     {
                         "variable_id": variable_id,
-                        "effect": "pair_delta",
+                        "effect": "reputation_delta",
                         "expression": str(delta),
                         "composition": "additive_delta",
                         "condition": None,
@@ -67,15 +84,15 @@ def test_social_residue_rules_are_config_driven_runtime_transitions(tmp_path: Pa
     social_env = social.create_environment(num_agents=3, level_name=LEVEL_NAME, device="cpu")
 
     assert baseline_env.__class__ is social_env.__class__
-    assert torch.allclose(baseline_env.vfs_registry.get("trust", reader="engine"), torch.full((3, 3), 0.5))
-    assert torch.allclose(social_env.vfs_registry.get("trust", reader="engine"), torch.full((3, 3), 0.5))
+    assert torch.allclose(baseline_env.vfs_registry.get("reputation", reader="engine"), torch.full((3,), 0.5))
+    assert torch.allclose(social_env.vfs_registry.get("reputation", reader="engine"), torch.full((3,), 0.5))
 
     actions = torch.zeros(3, dtype=torch.long)
     baseline_env.step(actions)
     social_env.step(actions)
 
-    assert torch.allclose(baseline_env.vfs_registry.get("trust", reader="engine"), torch.full((3, 3), 0.5))
-    assert torch.allclose(social_env.vfs_registry.get("trust", reader="engine"), torch.full((3, 3), 0.6))
+    assert torch.allclose(baseline_env.vfs_registry.get("reputation", reader="engine"), torch.full((3,), 0.5))
+    assert torch.allclose(social_env.vfs_registry.get("reputation", reader="engine"), torch.full((3,), 0.6))
 
 
 def test_transition_rules_typo_key_fails_at_load_not_silently(tmp_path: Path) -> None:
@@ -86,19 +103,19 @@ def test_transition_rules_typo_key_fails_at_load_not_silently(tmp_path: Path) ->
         "version": "1.0",
         "social_residue": [
             {
-                "id": "constant_pair_delta",
+                "id": "constant_reputation_delta",
                 "phase": "apply_social_residue_effects",
                 "kind": "social_residue",
-                "reads": ["trust"],
+                "reads": ["reputation"],
                 "condition": None,
                 "writes": [
                     {
-                        "variable_id": "trust",
-                        "effect": "pair_delta",
+                        "variable_id": "reputation",
+                        "effect": "reputation_delta",
                         "expression": "0.1",
                         "composition": "additive_delta",
                         "clamp": [0.0, 1.0],
-                        "condtion": "trust > 0.5",
+                        "condtion": "reputation > 0.5",
                     }
                 ],
             }

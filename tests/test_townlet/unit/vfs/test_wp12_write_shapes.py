@@ -2,12 +2,11 @@
 
 Converted from review-2026-10-24/vfs_round2 r4_write_expression_shape.py and
 r6_rules_pair_global.py. Action-write and transition-rule expressions were type-checked
-but not shape-proved: a ``pair`` (N x N) or ``message`` (N x slots) read into an
-agent-row action write compiled and raised at the first step; an agent-shaped value
-into a ``global`` rule target compiled and raised at the first step; and an
-agent-shaped value into a ``pair`` target was silently broadcast down the column,
-diagonal included (``trust[i, j] += value[j]``). Each now refuses at compile with
-``[VTC-WRITE-TYPE]`` and the author's ``file:line``.
+but not shape-proved: a non-agent-row read into an agent-row action write compiled and
+raised at the first step, and an agent-shaped value into a ``global`` rule target
+compiled and raised at the first step. Each now refuses at compile with
+``[VTC-WRITE-TYPE]`` and the author's ``file:line``. (The ``pair`` and ``message``
+witnesses went with those scopes in VFS WP15: ``test_wp15_scope_surface.py``.)
 """
 
 from __future__ import annotations
@@ -62,7 +61,6 @@ def _pack(
     name: str,
     *,
     declarations: list[dict[str, Any]],
-    extents: dict[str, int] | None = None,
     action_write: dict[str, Any] | None = None,
     rules: list[dict[str, Any]] | None = None,
 ) -> Path:
@@ -71,7 +69,6 @@ def _pack(
 
     def edit_variables(payload: dict[str, Any]) -> None:
         payload["variables"]["declarations"].extend(declarations)
-        payload["variables"]["extents"].update(extents or {})
 
     _edit_yaml(pack / "variables.yaml", edit_variables)
     if action_write is not None:
@@ -132,40 +129,31 @@ def _refusal(pack: Path) -> str:
 # --- F6: action writes reading non-agent-row state --------------------------------
 
 
-@pytest.mark.parametrize(
-    "declaration,extents",
-    [
-        (_declaration("trust", "pair", initial_value=0.5), {}),
-        (_declaration("inbox", "message", initial_value=1.0), {"num_message_slots": 2}),
-    ],
-    ids=["pair_read", "message_read"],
-)
-def test_action_write_reading_a_non_agent_row_refuses_at_compile(tmp_path: Path, declaration, extents) -> None:
-    """r4: compiled green, then `produced shape (N, N), expected (N,)` at the first step."""
+def test_action_write_reading_a_non_agent_row_refuses_at_compile(tmp_path: Path) -> None:
+    """r4: compiled green, then a shape error at the first step."""
     pack = _pack(
         tmp_path,
-        declaration["id"],
-        declarations=[declaration],
-        extents=extents,
-        action_write=_action_write("public_state", declaration["id"]),
+        "affordance_read",
+        declarations=[_declaration("wear", "affordance")],
+        action_write=_action_write("public_state", "wear"),
     )
     message = _refusal(pack)
     assert "[VTC-WRITE-TYPE]" in message
     assert "actions.yaml:" in message
-    assert f"expression '{declaration['id']}' is {declaration['scope']}-shaped" in message
+    assert "expression 'wear' is affordance-shaped" in message
     assert "declared scope 'agent'" in message
 
 
-def test_action_write_condition_reading_pair_state_refuses_at_compile(tmp_path: Path) -> None:
+def test_action_write_condition_reading_affordance_state_refuses_at_compile(tmp_path: Path) -> None:
     pack = _pack(
         tmp_path,
-        "pair_condition",
-        declarations=[_declaration("trust", "pair", initial_value=0.5)],
-        action_write=_action_write("public_state", "1.0", condition="trust > 0.1"),
+        "affordance_condition",
+        declarations=[_declaration("wear", "affordance")],
+        action_write=_action_write("public_state", "1.0", condition="wear > 0.1"),
     )
     message = _refusal(pack)
     assert "[VTC-WRITE-TYPE]" in message
-    assert "condition 'trust > 0.1' is pair-shaped" in message
+    assert "condition 'wear > 0.1' is affordance-shaped" in message
 
 
 def test_action_write_reading_agent_rows_and_globals_still_compiles_and_runs(tmp_path: Path) -> None:
@@ -211,60 +199,6 @@ def test_rule_with_an_agent_condition_on_a_global_target_refuses_at_compile(tmp_
     assert "condition 'bar.energy > 0.5' is agent-shaped" in _refusal(pack)
 
 
-# --- F7: agent-shaped value into a pair target ------------------------------------
-
-
-@pytest.mark.parametrize("expression", ["bar.energy", "trust * 0.0 + bar.energy"], ids=["bare", "mixed_with_pair"])
-def test_rule_writing_an_agent_value_into_a_pair_target_refuses_at_compile(tmp_path: Path, expression: str) -> None:
-    """r6: `trust += bar.energy` wrote agent j's energy into every row's column j, diagonal included.
-
-    Mixing the agent value with pair data inside the expression reaches the same column
-    broadcast, so it refuses too: the expression language cannot name the axis yet (S7).
-    """
-    pack = _pack(
-        tmp_path,
-        "pair_agent_value",
-        declarations=[_declaration("trust", "pair")],
-        rules=[_rule("t", "trust", expression)],
-    )
-    message = _refusal(pack)
-    assert "[VTC-WRITE-TYPE]" in message
-    assert "transition_rules.yaml:" in message
-    assert f"expression '{expression}'" in message
-
-
-def test_bare_agent_condition_on_a_pair_target_refuses_at_compile(tmp_path: Path) -> None:
-    pack = _pack(
-        tmp_path,
-        "pair_agent_condition",
-        declarations=[_declaration("trust", "pair")],
-        rules=[_rule("t", "trust", "0.1", condition="bar.energy > 0.5")],
-    )
-    message = _refusal(pack)
-    assert "condition 'bar.energy > 0.5' is agent-shaped" in message
-    assert "no declared pair axis" in message
-
-
-def test_pair_condition_gated_by_an_agent_value_compiles_and_indexes_the_second_axis(tmp_path: Path) -> None:
-    """The shipped grammar (VFS.md §16): `observer_mask and chosen_action == STEAL`. Inside a pair
-    target's condition an agent operand combined with pair data indexes the second axis j."""
-    pack = _pack(
-        tmp_path,
-        "pair_condition_ok",
-        declarations=[_declaration("trust", "pair"), _declaration("watching", "pair", type="bool", initial_value=True)],
-        rules=[_rule("t", "trust", "0.1", condition="watching and bar.energy > 0.5")],
-    )
-    env = VectorizedHamletEnv.from_universe(_compile(pack), level_name=LEVEL, num_agents=3, device="cpu")
-    env.reset()
-    energy = env.meter_name_to_index["energy"]
-    env.meters[:, energy] = torch.tensor([0.9, 0.2, 0.9])
-    wait = next(i for i, action in enumerate(env.action_space.actions) if action.name == "WAIT")
-    env.step(torch.full((3,), wait, dtype=torch.long))
-    trust = env.vfs_registry.get("trust", reader="engine")
-    assert torch.equal(trust[:, 1], torch.zeros(3))
-    assert torch.all(trust[:, 0] > 0) and torch.all(trust[:, 2] > 0)
-
-
 # --- compiler-level units: admitted shapes per target scope -----------------------
 
 
@@ -275,8 +209,6 @@ def _target(scope: VariableScope, var_type: str = "scalar", *, meter: bool = Fal
 TARGETS = {
     "energy": _target(VariableScope.AGENT, meter=True),
     "public": _target(VariableScope.AGENT),
-    "trust": _target(VariableScope.PAIR),
-    "inbox": _target(VariableScope.MESSAGE),
     "pressure": _target(VariableScope.GLOBAL),
     "wear": _target(VariableScope.AFFORDANCE),
 }
@@ -292,9 +224,6 @@ def _unit_rule(variable_id: str, expression: str, condition: str | None = None) 
     [
         ("public", "bar.energy"),
         ("public", "pressure"),
-        ("inbox", "bar.energy"),  # an agent value spreads along the message target's agent axis
-        ("inbox", "inbox * 0.5"),
-        ("trust", "trust * 0.5"),
         ("pressure", "pressure + 1.0"),
         ("wear", "wear * 0.5"),
         ("public", "masked_add(public, 0.5, bar.energy > 0.5)"),
@@ -310,13 +239,10 @@ def test_rule_shapes_the_runtime_handles_compile(variable_id: str, expression: s
 @pytest.mark.parametrize(
     "variable_id,expression",
     [
-        ("public", "trust"),
-        ("public", "inbox"),
         ("public", "wear"),
         ("wear", "bar.energy"),
         ("pressure", "wear"),
-        ("trust", "inbox"),
-        ("inbox", "trust"),
+        ("pressure", "bar.energy"),
     ],
 )
 def test_rule_shapes_that_would_fail_or_broadcast_by_coincidence_refuse(variable_id: str, expression: str) -> None:
@@ -326,10 +252,10 @@ def test_rule_shapes_that_would_fail_or_broadcast_by_coincidence_refuse(variable
     assert refusal.kind == "type"
 
 
-def test_mixing_message_and_agent_axes_refuses_even_inside_an_expression() -> None:
-    """(N,) + (N, slots) aligns trailing dimensions: agent i's value would land on slot i."""
+def test_mixing_affordance_and_agent_axes_refuses_even_inside_an_expression() -> None:
+    """(N_agents,) + (N_affordances,) would combine by coincidence of extent."""
     with pytest.raises(VTCWriteRefusalError, match="different shapes"):
-        compile_vtc_social_residue_rules([_unit_rule("inbox", "inbox + bar.energy")], TARGETS)
+        compile_vtc_social_residue_rules([_unit_rule("public", "wear + bar.energy")], TARGETS)
 
 
 class _Action:
@@ -345,11 +271,7 @@ class _Action:
     [
         ("public", "energy + 1.0", "additive_delta", True),
         ("public", "agent_id", "overwrite", True),
-        ("inbox", "inbox * 0.5", "overwrite", True),
-        ("inbox", "bar.energy", "append_event", True),
-        ("inbox", "bar.energy", "overwrite", False),  # (N,) into [agents, slots] storage: crashed at step
-        ("inbox", "inbox", "append_event", False),
-        ("public", "trust", "overwrite", False),
+        ("public", "pressure", "overwrite", True),
         ("public", "wear", "overwrite", False),
     ],
 )

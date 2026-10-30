@@ -49,7 +49,7 @@ def _literal_tensor_default(mode: str, shape: list[int], *, var_id: str) -> list
 def _engine_tick_variable_def() -> VariableDef:
     return VariableDef(
         id=_ENGINE_TICK_ID,
-        scope="global",
+        scope=VariableScope.GLOBAL,
         type="scalar",
         default=0.0,
         lifetime="episode",

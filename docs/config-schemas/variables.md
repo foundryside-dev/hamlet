@@ -8,7 +8,6 @@ languages with one required pack-scope `variables` declaration. A filename such 
 ```yaml
 variables:
   version: '1.0'
-  extents: {}
   item_profiles: [default_item]
   declarations:
   - id: day_phase
@@ -36,18 +35,21 @@ Every variable declares its `id`, `scope`, `type`, `lifetime`, `semantic_type` a
 `profile`, identifying a name in the explicit `item_profiles` catalog. An empty catalog
 entry remains a valid schema group for item types with no state variables.
 
-- **Scope:** `global`, `agent`, `agent_private`, `item`, `pair`, `affordance`, or
-  `message`. Storage scope and observation support are separate contracts. `message`
-  requires `extents.num_message_slots`; no other scope takes an extent. `affordance` rows
-  are the level's affordance count, the only authority: there is no `num_affordances`
-  extent, and an `extents` block that declares one fails as an extra field. There is no
-  `zone` or `group` scope: both were storage with no publisher and no write path, and were
-  deleted (an old declaration fails validation).
+- **Scope:** `global`, `agent`, `item` or `affordance` — four scopes. Storage scope and
+  observation support are separate contracts. No scope takes an authored extent, so the
+  declaration has no `extents` block: `affordance` rows are the level's affordance count,
+  the only authority, and a declaration carrying `extents` (empty or not) fails at parse
+  as an extra field. Privacy is not a scope: an `agent` variable
+  with `readable_by: [engine]` and `exposed_to: []` is private and keeps every consumer.
+  The `zone`, `group`, `pair`, `message` and `agent_private` scopes are deleted, and a
+  declaration naming one fails validation.
 - **Type:** `scalar` (float32 storage), `bool`, supported fixed/dynamic vectors,
-  references, tensors or `message_token`. There are no authored `float`, `int` or
+  references or tensors. There are no authored `float`, `int` or
   generic `vector` aliases. Tensor shapes and dynamic vector dimensions are explicit.
 - **Lifetime:** `tick` resets before each step; `episode` resets with the environment;
-  `persistent` retains state across episode resets. Authors choose this independently
+  `persistent` retains state across episode resets, and the demo checkpoint saves it:
+  checkpoint resume and live serving restore the saved value (tick and episode state is
+  not saved; a resume starts a fresh episode). Authors choose this independently
   of filename or scope, subject to item-arena restrictions below.
 - **Initialization:** an explicit `initial_value`, or a supported tensor
   `initial_value_mode`. Reference null is an explicitly unbound value. Omitting a
@@ -82,6 +84,17 @@ identity. Exposed random initializers are refused because token identity needs a
 literal initial value and a random draw has none. Irrelevant, conflicting or malformed
 initialization parameters fail validation.
 
+**The batch is N independent single-agent worlds** (owner ruling S1, 2026-10-25). Each
+row of the environment batch is its own world with one agent in it; no two agents share a
+world. So there is no scope relating two agents: `pair` and `message` (and the
+`append_event` composition that filled a message buffer) are deleted, because in a
+one-agent world a pair has no partner and a message no addressee. `global` is world state:
+the intended contract is one value per world, so an effect or rule that writes a global
+writes its own world's value and no other world's reward or observation moves. That
+per-world axis is landing in WP13; today `global` storage is still one value shared by the
+whole batch. A multi-agent world will be a new declared parameter (agents per world), not a
+reinterpretation of `global`.
+
 **Token identity and the brain.** An exposed variable's token identity is its declared
 descriptor: scope, semantic type, normalization kind and bounds, dtype, lifetime, declared
 initial value, element count and tensor shape — never its name or slot. Two exposed
@@ -106,8 +119,8 @@ Item declarations use the same model, with `scope: item`, a declared `profile`,
 The current item arena does not execute expressions, vectors, tensors or alternate
 lifetimes. Those declarations fail validation instead of being silently accepted.
 
-Global/agent registry observation supports float32-backed scalar, floating vector, tensor
-and message-token state. Registry booleans, integer vectors and references cannot be
+Global/agent registry observation supports float32-backed scalar, floating vector and tensor
+state. Registry booleans, integer vectors and references cannot be
 exposed by the current publisher and fail compilation. Item booleans/references use its
 float-backed arena and remain supported. Ordinary named reward inputs require scalar or
 boolean global/agent state; other scopes/shapes need a separately implemented reduction.
@@ -132,9 +145,9 @@ Supported consumer boundaries are explicit:
 | Item observation | Profile-qualified scalar/bool/reference arena state |
 | Ordinary reward input | Global/agent scalar or boolean state |
 | Global effects | `vfs.X` or `global.vfs.X` in its typed schema |
-| Agent/private effects | `vfs.X` or `target.vfs.X` in its typed schema |
+| Agent effects | `vfs.X` or `target.vfs.X` in its typed schema |
 
-Symbol registration alone does not supply pair-state reductions or arbitrary tensor
+Symbol registration alone does not supply affordance-state reductions or arbitrary tensor
 operations to a consumer. Command expressions must satisfy that consumer's type contract.
 
 ## Transition phases and evaluation order
@@ -159,29 +172,23 @@ A write scheduled at any later phase is refused at compile with its `actions.yam
 transition rules.
 
 An action write applies to the acting agent's row, so its target's declared scope must
-have one row per agent: a meter bar, or a variable of scope `agent`, `agent_private` or
-`message`. The one exception is an affordance occupancy claim: an action that declares
+have one row per agent: a meter bar, or a variable of scope `agent`. The one exception is
+an affordance occupancy claim: an action that declares
 `source_affordance` may write an `affordance`-scoped variable with composition
 `claim_if_free` or `capacity_claim` at `resolve_affordance_access_and_occupancy`, which
-writes that affordance's row. Any other target (`global`, `pair`, `item`, or an
+writes that affordance's row. Any other target (`global`, `item`, or an
 `affordance` variable outside that form) is refused at compile with the variable, its
 declared scope and the write's `actions.yaml` `file:line`. Whether a pack compiles never
 depends on `num_agents`. A transition rule applies at any phase of the graph. Rewards are not a
 transition phase: they are computed by the drive (DAC) after the transition.
 
 A write's expression and condition are shape-proved as well as type-checked. A read has
-its scope's shape: `agent`/`agent_private` variables, meters and `agent_id` are one per
-agent, `pair` is agent × agent, `message` is agent × slot, `affordance` is one per
-affordance, `global` is scalar. Values of two different shapes do not combine. The result must
-fit the target: an action write takes scalar or agent-shaped values (a non-`append_event`
-write to a `message` buffer takes a message-shaped one), and its condition is scalar or
-agent-shaped; a transition-rule write to a `global` target takes scalars only, to `pair`
-scalar or pair-shaped values, to `agent`/`agent_private` agent-shaped ones, to `message`
-agent- or message-shaped ones, and to `affordance` affordance-shaped ones.
-An agent-shaped value into a `pair` target is refused, because the language cannot yet say
-which pair axis it belongs to. The one admitted mix is inside a pair target's condition:
-`observer_mask and chosen_action == STEAL` gates `v[i, j]` by agent j's value. A misfit
-refuses at compile (`VTC-WRITE-TYPE`) with the write's `file:line`.
+its scope's shape: `agent` variables, meters and `agent_id` are one per agent,
+`affordance` is one per affordance, `global` is scalar. Values of two different shapes do
+not combine. The result must fit the target: an action write and its condition take
+scalar or agent-shaped values; a transition-rule write to a `global` target takes scalars
+only, to `agent` scalar or agent-shaped values, and to `affordance` scalar or
+affordance-shaped ones. A misfit refuses at compile (`VTC-WRITE-TYPE`) with the write's `file:line`.
 
 Expressions are evaluated once per instant, after every transition phase that writes VFS
 state (action writes, scheduled effects, transition rules) and after

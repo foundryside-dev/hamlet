@@ -141,7 +141,11 @@ from townlet.vfs.transition_schedule import (
 # pack-scope `variables_hash`, the canonical content of the discovered `variables`
 # declaration. The cache key does not move for an unchanged pack, so a 1.34 artifact
 # would serve the old `vfs_hash` and lack the new field; refuse it as stale.
-COMPILED_SCHEMA_VERSION = "1.35"
+# 1.36: the pair/message/agent_private scopes, the `extents` block, `message_token` and
+# `UniverseMetadata.num_message_slots` are deleted (VFS WP15). The variable_element scope
+# one-hot falls 7 -> 4 lanes, so its row width and the token type schema change; a 1.35
+# artifact of an unchanged pack would serve the old layout, so it is refused as stale.
+COMPILED_SCHEMA_VERSION = "1.36"
 
 REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "compiled_schema_version",

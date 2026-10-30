@@ -16,6 +16,7 @@ from townlet.universe.compiled import COMPILED_SCHEMA_VERSION, CompiledUniverse
 from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.compilers.observation import ObservationCompiler
 from townlet.universe.dto.token_spec import (
+    DESCRIPTOR_BLOCK_WIDTH,
     METER_SIGNATURE_FEATURES,
     PAYLOAD_SCHEMAS,
     TOKEN_TYPE_ROSTER,
@@ -71,7 +72,8 @@ class TestL1TokenEmission:
         # Compact dynamic transport excludes immutable context and rank padding.
         assert _selected(l1_universe).token_spec.census["variable_element"] == 1
         assert _selected(l1_universe).token_spec.total_dims == 118
-        assert _selected(l1_universe).token_spec.fixed_total_dims == 4136
+        # One variable_element slot; its descriptor block derives from the vocabularies.
+        assert _selected(l1_universe).token_spec.fixed_total_dims == 4103 + DESCRIPTOR_BLOCK_WIDTH
 
     def test_all_roster_types_present_in_engine_order(self, l1_universe):
         assert tuple(t.type_name for t in _selected(l1_universe).token_spec.types) == TOKEN_TYPE_ROSTER

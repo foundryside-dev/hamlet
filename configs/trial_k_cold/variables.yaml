@@ -1,6 +1,5 @@
 variables:
   version: '1.0'
-  extents: {}
   item_profiles:
   - garment_stats
   - default_item

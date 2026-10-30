@@ -1,4 +1,9 @@
-"""End-to-end checks for the L5 multi-agent VFS config pack."""
+"""End-to-end checks for the L5 config pack.
+
+Under the owner's S1 ruling the batch is N independent single-agent worlds, so L5 is
+N agents side by side, each alone. It declares no relational state (the pair scope is
+deleted, VFS WP15); its one variable is an agent-scope expression of energy.
+"""
 
 from pathlib import Path
 
@@ -7,26 +12,19 @@ import torch
 from townlet.universe.compiler import UniverseCompiler
 
 
-def test_l5_multi_agent_config_exercises_pair_and_affordance_scopes_end_to_end() -> None:
+def test_l5_config_compiles_and_steps_as_independent_worlds() -> None:
     config_dir = Path("configs/L5_multi_agent")
 
     compiled = UniverseCompiler().compile(config_dir, primary_level="L5_multi_agent", use_cache=False)
 
     variables = {variable.id: variable for variable in compiled.get_level("L5_multi_agent").vfs_variables}
-    assert variables["trust"].scope == "pair"
-    assert variables["trust"].type == "scalar"
-    assert variables["occupied_by"].scope == "affordance"
-    assert variables["occupied_by"].type == "agent_ref"
+    assert variables["deficit_energy"].scope == "agent"
+    assert variables["deficit_energy"].exposed_to == ["agent"]
 
     env = compiled.create_environment(num_agents=3, level_name="L5_multi_agent", device="cpu")
+    env.reset()
 
-    trust = env.vfs_registry.get("trust", reader="agent")
-    occupied_by = env.vfs_registry.get("occupied_by", reader="engine")
-
-    assert trust.shape == torch.Size([3, 3])
-    assert torch.allclose(trust, torch.full((3, 3), 0.5))
-    assert occupied_by.shape == torch.Size([compiled.metadata_for_level("L5_multi_agent").affordance_count])
-    assert torch.all(occupied_by == -1)
+    assert env.vfs_registry.get("deficit_energy", reader="agent").shape == torch.Size([3])
 
     observations, rewards, dones, info = env.step(torch.zeros(3, dtype=torch.long))
 

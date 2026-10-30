@@ -38,7 +38,7 @@ def test_malformed_fragmented_item_profile_reports_its_own_origin(tmp_path, file
     assert issue.location == f"{malformed}:3"
 
 
-def test_pair_reward_reader_refuses_without_an_explicit_reduction(tmp_path):
+def test_affordance_reward_reader_refuses_without_an_explicit_reduction(tmp_path):
     pack = tmp_path / "pack"
     shutil.copytree(PACK, pack)
     variable_path = pack / "variables.yaml"
@@ -48,7 +48,7 @@ def test_pair_reward_reader_refuses_without_an_explicit_reduction(tmp_path):
             readable_by=["engine", "agent"],
             writable_by=["engine"],
             id="score",
-            scope="pair",
+            scope="affordance",
             type="scalar",
             lifetime="episode",
             semantic_type="custom",
@@ -235,7 +235,6 @@ def test_profile_registration_error_uses_qualified_profile_origin(tmp_path: Path
         raw,
         variables=VariablesConfig(
             version="1.0",
-            extents={},
             item_profiles=["tool", "food"],
             declarations=declarations,
         ),

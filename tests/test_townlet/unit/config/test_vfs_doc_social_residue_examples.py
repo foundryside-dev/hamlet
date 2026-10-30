@@ -22,19 +22,16 @@ def _target(scope: VariableScope, var_type: str = "scalar", *, meter: bool = Fal
     return VTCWriteTarget(scope, var_type, meter=meter)
 
 
-#: Declared scope and type of every state the examples write or read (VFS.md §16.2):
-#: the relational targets, the action-index globals the conditions compare against,
-#: the per-agent masks, and the two meters.
+#: Declared scope and type of every state the examples write or read: the agent-scope
+#: target, the action-index globals the conditions compare against, the per-agent
+#: mask, and the two meters. There is no pair scope (VFS WP15), so no example relates
+#: two agents.
 DOC_TARGET_SCOPES = {
-    "trust": _target(VariableScope.PAIR),
-    "obligation": _target(VariableScope.PAIR),
     "public_reputation": _target(VariableScope.AGENT),
     "chosen_action": _target(VariableScope.AGENT),
     "STEAL": _target(VariableScope.GLOBAL),
     "CALL_AMBULANCE": _target(VariableScope.GLOBAL),
     "HELP": _target(VariableScope.GLOBAL),
-    "observer_mask": _target(VariableScope.PAIR, "bool"),
-    "recipient_actor_mask": _target(VariableScope.PAIR, "bool"),
     "was_observed": _target(VariableScope.AGENT, "bool"),
     "health": _target(VariableScope.AGENT, meter=True),
     "mood": _target(VariableScope.AGENT, meter=True),

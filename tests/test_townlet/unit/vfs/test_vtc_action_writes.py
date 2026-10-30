@@ -335,39 +335,6 @@ def test_vtc_action_writes_capacity_claim_caps_claim_count_in_batch_order() -> N
     assert torch.allclose(updated["has_queue_slot"], torch.tensor([1.0, 1.0, 0.0, 0.0]))
 
 
-def test_vtc_action_writes_append_event_uses_first_empty_slot() -> None:
-    action = _action(
-        action_id=15,
-        name="BROADCAST",
-        writes=[
-            _write_with_metadata(
-                variable_id="recent_message_tokens",
-                expression="9.0",
-                condition=None,
-                composition="append_event",
-                phase="apply_action_effects",
-                priority=0,
-                clamp=None,
-                telemetry_label="append_message_token",
-            )
-        ],
-    )
-
-    program = compile_vtc_action_writes([action], _agent_scopes(action))
-    updated = program.apply(
-        actions=torch.tensor([15, 15, 15]),
-        vfs_state={"recent_message_tokens": torch.tensor([[0.0, 0.0, 0.0], [5.0, 0.0, 0.0], [4.0, 5.0, 6.0]])},
-        bars_state={},
-        active_mask=torch.tensor([True, True, True]),
-        device=torch.device("cpu"),
-    ).values
-
-    assert torch.allclose(
-        updated["recent_message_tokens"],
-        torch.tensor([[9.0, 0.0, 0.0], [5.0, 9.0, 0.0], [4.0, 5.0, 6.0]]),
-    )
-
-
 def test_vtc_action_writes_resolves_priority_and_last_write_wins() -> None:
     action = _action(
         action_id=6,

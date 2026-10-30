@@ -173,7 +173,6 @@ def task001_config_4meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
     vfs_config = {
         "variables": {
             "version": "1.0",
-            "extents": {},
             "item_profiles": ["default_item"],
             "declarations": [
                 {
@@ -402,7 +401,6 @@ def task001_config_12meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
     vfs_config = {
         "variables": {
             "version": "1.0",
-            "extents": {},
             "item_profiles": ["default_item"],
             "declarations": [
                 {

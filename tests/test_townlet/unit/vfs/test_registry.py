@@ -6,7 +6,7 @@ with access control and scope semantics.
 Scope patterns:
 - global: Single value (shape [] or [dims])
 - agent: Per-agent values (shape [num_agents] or [num_agents, dims])
-- agent_private: Per-agent private values (shape [num_agents] or [num_agents, dims])
+- affordance: Per-affordance values (shape [num_affordances, ...])
 """
 
 import pytest
@@ -220,35 +220,6 @@ class TestRegistryInitialization:
         assert value.shape == torch.Size([4, 2])
         assert torch.all(value == 0.0)
 
-    def test_registry_with_agent_private_vector(self):
-        """Initialize registry with agent_private scoped vector variable."""
-        from townlet.vfs.registry import VariableRegistry
-        from townlet.vfs.schema import VariableDef
-
-        variables = [
-            VariableDef(
-                id="home_position",
-                scope="agent_private",
-                type="vecNf",
-                dims=2,
-                lifetime="episode",
-                readable_by=["agent", "engine"],
-                writable_by=["engine"],
-                default=[5.0, 5.0],
-            )
-        ]
-
-        registry = VariableRegistry(
-            variables=variables,
-            num_agents=4,
-            device=torch.device("cpu"),
-        )
-
-        # Agent_private vector: shape [num_agents, dims]
-        value = registry.get("home_position", reader="engine")
-        assert value.shape == torch.Size([4, 2])
-        assert torch.all(value == 5.0)
-
     def test_registry_with_mixed_scopes(self):
         """Initialize registry with multiple variables of different scopes."""
         from townlet.vfs.registry import VariableRegistry
@@ -275,11 +246,11 @@ class TestRegistryInitialization:
             ),
             VariableDef(
                 id="home_pos",
-                scope="agent_private",
+                scope="agent",
                 type="vecNf",
                 dims=2,
                 lifetime="episode",
-                readable_by=["agent", "engine"],
+                readable_by=["engine"],
                 writable_by=["engine"],
                 default=[0.0, 0.0],
             ),
@@ -424,50 +395,6 @@ class TestRegistryAccessControl:
         # acs cannot read (not in readable_by)
         with pytest.raises(PermissionError, match="Unknown actor.*acs.*read"):
             registry.get("energy", reader="acs")
-
-    def test_agent_cannot_read_agent_private(self):
-        """Agents should not directly read agent_private variables."""
-        from townlet.vfs.registry import VariableRegistry
-        from townlet.vfs.schema import VariableDef
-
-        variables = [
-            VariableDef(
-                id="secret",
-                scope="agent_private",
-                type="scalar",
-                lifetime="episode",
-                readable_by=["agent", "engine"],
-                writable_by=["engine"],
-                default=0.5,
-            )
-        ]
-
-        registry = VariableRegistry(variables=variables, num_agents=3, device=torch.device("cpu"))
-
-        with pytest.raises(PermissionError, match="agent_private"):
-            registry.get("secret", reader="agent")
-
-    def test_engine_can_read_agent_private(self):
-        """Privileged readers (engine) can access full agent_private tensors."""
-        from townlet.vfs.registry import VariableRegistry
-        from townlet.vfs.schema import VariableDef
-
-        variables = [
-            VariableDef(
-                id="secret",
-                scope="agent_private",
-                type="scalar",
-                lifetime="episode",
-                readable_by=["agent", "engine"],
-                writable_by=["engine"],
-                default=0.5,
-            )
-        ]
-
-        registry = VariableRegistry(variables=variables, num_agents=3, device=torch.device("cpu"))
-
-        value = registry.get("secret", reader="engine")
-        assert torch.all(value == 0.5)
 
     def test_write_allowed(self):
         """Write variable when writer is in writable_by list."""
@@ -797,84 +724,22 @@ class TestRegistryScopeSemantics:
         value = registry.get("agent_vec", reader="agent")
         assert value.shape == torch.Size([10, 2])  # [num_agents, dims]
 
-    def test_agent_private_scalar_shape(self):
-        """Agent_private scalar has shape [num_agents]."""
-        from townlet.vfs.registry import VariableRegistry
-        from townlet.vfs.schema import VariableDef
 
-        variables = [
-            VariableDef(
-                id="private_var",
-                scope="agent_private",
-                type="scalar",
-                lifetime="episode",
-                readable_by=["agent", "engine"],
-                writable_by=["engine"],
-                default=1.0,
-            )
-        ]
+class TestRegistryWorldStructureScopes:
+    """Test world-structure scope storage."""
 
-        registry = VariableRegistry(variables=variables, num_agents=10, device=torch.device("cpu"))
-
-        value = registry.get("private_var", reader="engine")
-        assert value.shape == torch.Size([10])  # [num_agents]
-
-    def test_agent_private_vector_shape(self):
-        """Agent_private vector has shape [num_agents, dims]."""
-        from townlet.vfs.registry import VariableRegistry
-        from townlet.vfs.schema import VariableDef
-
-        variables = [
-            VariableDef(
-                id="private_vec",
-                scope="agent_private",
-                type="vecNf",
-                dims=2,
-                lifetime="episode",
-                readable_by=["agent", "engine"],
-                writable_by=["engine"],
-                default=[0.0, 0.0],
-            )
-        ]
-
-        registry = VariableRegistry(variables=variables, num_agents=10, device=torch.device("cpu"))
-
-        value = registry.get("private_vec", reader="engine")
-        assert value.shape == torch.Size([10, 2])  # [num_agents, dims]
-
-
-class TestRegistryRelationalScopes:
-    """Test L5 relational and world-structure scope storage."""
-
-    def test_variable_scope_enum_has_no_zone_or_group(self):
-        """zone and group were storage with no publisher and no write path (VFS WP2); deleted."""
+    def test_variable_scope_enum_has_no_zone_group_pair_message_or_agent_private(self):
+        """zone/group (VFS WP2) and pair/message/agent_private (VFS WP15) are deleted."""
         from townlet.vfs.schema import VariableScope
 
-        assert {scope.value for scope in VariableScope} == {
-            "global",
-            "agent",
-            "agent_private",
-            "item",
-            "pair",
-            "affordance",
-            "message",
-        }
+        assert {scope.value for scope in VariableScope} == {"global", "agent", "item", "affordance"}
 
-    def test_registry_initializes_pair_and_affordance_scalars(self):
+    def test_registry_initializes_affordance_scalars(self):
         """Dense scope prefixes should match the declared world extents."""
         from townlet.vfs.registry import VariableRegistry
         from townlet.vfs.schema import VariableDef
 
         variables = [
-            VariableDef(
-                id="trust",
-                scope="pair",
-                type="scalar",
-                lifetime="episode",
-                readable_by=["engine"],
-                writable_by=["engine"],
-                default=0.25,
-            ),
             VariableDef(
                 id="occupied_by",
                 scope="affordance",
@@ -893,12 +758,10 @@ class TestRegistryRelationalScopes:
             device=torch.device("cpu"),
         )
 
-        assert registry.get("trust", reader="engine").shape == torch.Size([3, 3])
-        assert torch.all(registry.get("trust", reader="engine") == 0.25)
         assert registry.get("occupied_by", reader="engine").shape == torch.Size([4])
         assert torch.all(registry.get("occupied_by", reader="engine") == -1)
 
-    def test_registry_prefixes_vectors_and_tensors_with_relational_scopes(self):
+    def test_registry_prefixes_vectors_and_tensors_with_scope_dimensions(self):
         """Vector and tensor storage should add the scope dimensions before payload dimensions."""
         from townlet.vfs.registry import VariableRegistry
         from townlet.vfs.schema import VariableDef
@@ -906,7 +769,7 @@ class TestRegistryRelationalScopes:
         variables = [
             VariableDef(
                 id="relative_offset",
-                scope="pair",
+                scope="agent",
                 type="vecNf",
                 dims=2,
                 lifetime="episode",
@@ -933,7 +796,7 @@ class TestRegistryRelationalScopes:
             device=torch.device("cpu"),
         )
 
-        assert registry.get("relative_offset", reader="engine").shape == torch.Size([4, 4, 2])
+        assert registry.get("relative_offset", reader="engine").shape == torch.Size([4, 2])
         assert registry.get("affordance_slots", reader="engine").shape == torch.Size([6, 2, 3])
 
     def test_registry_requires_explicit_extent_for_non_agent_relational_scope(self):

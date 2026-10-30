@@ -19,7 +19,6 @@ def minimal_compiled_universe_with_profiles(tmp_path: Path):
     profiles = {
         "variables": {
             "version": "1.0",
-            "extents": {},
             "item_profiles": [],
             "declarations": [
                 {
@@ -66,7 +65,6 @@ def minimal_compiled_universe_with_effects(tmp_path: Path):
     profiles = {
         "variables": {
             "version": "1.0",
-            "extents": {},
             "item_profiles": [],
             "declarations": [
                 {

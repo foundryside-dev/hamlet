@@ -1,6 +1,11 @@
+# L5's "multi-agent" premise is not true today. The env batch is N independent
+# single-agent worlds (owner ruling S1, 2026-10-25): agents never share a world, so
+# this pack runs N agents side by side, each alone. The relational state it used to
+# declare (pair-scope `trust`, the never-written affordance `occupied_by`) is gone
+# with the pair scope. A shared world needs a declared agents-per-world parameter;
+# until then this pack is a small single-agent survival level.
 variables:
   version: '1.0'
-  extents: {}
   item_profiles: []
   declarations:
   - id: deficit_energy
@@ -13,45 +18,10 @@ variables:
     exposed_to:
     - agent
     initial_value: 0.0
+    expression: max(0.0, 0.5 - bar.energy)
     normalization:
       kind: minmax
       min: 0.0
-      max: 1.0
+      max: 0.5
       clip: true
-    description: How far below target energy (0.0 = at/above target)
-  - id: time_since_last_sleep
-    readable_by: [engine, agent]
-    writable_by: [engine]
-    scope: agent
-    type: scalar
-    lifetime: tick
-    semantic_type: custom
-    exposed_to:
-    - agent
-    initial_value: 0.0
-    normalization:
-      kind: minmax
-      min: 0.0
-      max: 100.0
-      clip: true
-    description: Timesteps since last SLEEP action
-  - id: trust
-    readable_by: [engine, agent]
-    writable_by: [engine]
-    scope: pair
-    type: scalar
-    lifetime: episode
-    semantic_type: custom
-    exposed_to: []
-    initial_value: 0.5
-    description: Directed trust from one agent to another.
-  - id: occupied_by
-    readable_by: [engine, agent]
-    writable_by: [engine]
-    scope: affordance
-    type: agent_ref
-    lifetime: tick
-    semantic_type: custom
-    exposed_to: []
-    initial_value: null
-    description: Current claimant for each affordance row, using -1 for free rows.
+    description: How far energy sits below the 0.5 target (0.0 = at or above target)

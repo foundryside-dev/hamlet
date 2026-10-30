@@ -491,7 +491,6 @@ Items use VFS profiles to store persistent state. Each item instance has a uniqu
 ```yaml
 variables:
   version: '1.0'
-  extents: {}
   item_profiles: [durable]
   declarations:
   - id: durability

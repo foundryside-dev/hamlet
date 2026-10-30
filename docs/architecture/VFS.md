@@ -390,60 +390,37 @@ In VFS terms, actions and affordances should declare:
 
 ### 5.1 Current scopes
 
-The current repo defines **nine** canonical scope classes (`VariableScope` in `vfs/schema.py`)
-— the eight below plus `message`, described at the end of this section:
+The current repo defines **four** scopes (`VariableScope` in `vfs/schema.py`; corrected
+2026-10-31, VFS WP15):
 
 | Scope | Use case | Example |
 | --- | --- | --- |
-| `global` | Shared state | `time_sin`, `day_of_week`, `weather_state` |
-| `agent` | Per-agent observable state | `energy`, `position`, `health` |
-| `agent_private` | Per-agent hidden state | `internal_motivation`, `hidden_reward` |
+| `global` | World state | `time_sin`, `day_of_week`, `weather_state` |
+| `agent` | Per-agent state | `energy`, `position`, `health` |
 | `item` | Per-item-instance state compiled from item profiles | `durability`, `charges`, `spoilage` |
-| `pair` | Directed agent-agent relationship state | `trust`, `fear`, `obligation`, `resentment` |
-| `group` | Group, faction, family, or team state | `group_norm_strength`, `membership`, `loyalty` |
-| `affordance` | Per-affordance-instance capacity and occupancy state | `occupied_by`, `cooldown`, `is_open` |
-| `zone` | Multi-zone environment state | `zone_danger`, `travel_cost`, `zone_crowding` |
+| `affordance` | Per-affordance-instance occupancy state | `occupied_by` |
 
-`item` scope is profile-based, not loaded from `variables_reference.yaml`. The registry allocates a profile-agnostic `item_vfs[max_items, max_profile_vars]` tensor, records `item_profile_map[profile_name][var_name] -> tensor_index`, and masks unused profile slots. Item profile definitions therefore live in `vfs_profiles.yaml:item_profiles`, while item instances address rows in the shared item VFS tensor.
+**The batch is N independent single-agent worlds** (owner ruling S1, 2026-10-25). No scope
+relates two agents, because no two agents share a world. `pair` and `message` were deleted in
+VFS WP15: a pair had no partner and a message no addressee, `append_event` wrote the sender's own
+row, and nothing read either. `agent_private` was deleted with them: `agent` with
+`readable_by: [engine]` and `exposed_to: []` is the same privacy and keeps every consumer.
+`zone` and `group` were deleted in VFS WP2. A declaration naming any deleted scope fails at
+parse. A multi-agent world is a future declared parameter (agents per world), not a
+reinterpretation of an existing scope. `global` is world state: today it is one value shared by
+the whole batch; the per-world axis that makes it one value per world is landing in WP13.
 
-`pair` scope storage is dense: values are prefixed with `[num_agents, num_agents]`. (A sparse
-edge-list mode and its accessors existed in the registry with no config surface; they were
-deleted in VFS WP6, 2026-10-24.)
+`item` scope is profile-based. The registry allocates a profile-agnostic
+`item_vfs[max_items, max_profile_vars]` tensor, records
+`item_profile_map[profile_name][var_name] -> tensor_index`, and masks unused profile slots.
+Item profiles are named in the variables declaration's `item_profiles` list.
 
 `affordance` scope storage is dense, one row per affordance of the level. The row count is the
-level's affordance count (`metadata.affordance_count`); there is no authored extent.
-(`zone` and `group` were deleted in VFS WP2; the scope table above predates that.)
-
-`message` scope is a dense L6 seed for recent communication buffers. It prefixes payload values with
-`[num_agents, num_message_slots]`, requires an explicit positive `num_message_slots` registry extent, and is used by
-`message_token` variables such as `recent_message_tokens`.
-
-**Runtime wiring (2026-08-21, `hamlet-9e1ae3b7a2` — closed; corrected 2026-10-24).** `message`
-sizes its storage from `extents.num_message_slots` in the variables declaration; the extent
-flows through `UniverseMetadata` into `_initialize_vfs_subsystem`, and declaring a message-scope
-variable without it is a compile error at config load. `affordance` rows are the level's
-affordance count; the former `num_affordances` extent was presence-checked and inert, and was
-deleted in VFS WP6. `zone`/`group` (and `num_zones`/`num_groups`) were deleted in VFS WP2.
-See `docs/config-schemas/variables.md`.
-
-> ⚠ **Caveat (2026-08-24 audit,
-> `archive/REVIEW-2026-08-24-vfs-implementation-vs-spec.md`):** "reachable end-to-end from
-> config" holds for *storage allocation*, but not for *referenceability*.
-> `variables_reference.yaml` variables never enter the compiler symbol table
-> (`universe/validation/references.py:14-58` registers only `environment.yaml` and
-> `vfs_profiles.yaml` variables — `hamlet-33e520cebd`), so no effect, affordance, action write
-> or `drive.yaml` can reference a `pair` / `affordance` / `zone` / `group` / `message` variable
-> by name. And the `agent_private` scope-table row above ("hidden state") describes the declared intent,
-> not current behaviour: the runtime observation path bypasses the access check and treats
-> `agent_private` identically to `agent` (`hamlet-83a043a9b9`; see the §6 caveat).
->
-> **Re-verified 2026-08-25, with two edges hardened since the audit.** The symbol-table gap
-> itself is unchanged (`universe/validation/references.py:14-58` still registers only
-> `environment.yaml` and `vfs_profiles.yaml` variables). What changed: (a) attempting to
-> expose a `pair`/`group`/`affordance`/`zone`/`message` variable as a token now refuses loudly
-> when that scope has no compiled `variable_element` binding contract; (b) an
-> affordance-scoped variable sizes from the level's affordance count; `extents.num_affordances`
-> was deleted in VFS WP6 (2026-10-24) and now fails as an extra field.
+level's affordance count (`metadata.affordance_count`); there is no authored extent, and the
+variables declaration has no `extents` block (a stale one fails at parse). Its one engine writer is an action's
+occupancy claim (`claim_if_free` / `capacity_claim` at `resolve_affordance_access_and_occupancy`,
+from an action that declares `source_affordance`); transition rules may read and write it. It
+has no observation publisher and no reward reduction.
 
 ### 5.2 Recommended future scopes
 
@@ -455,10 +432,9 @@ For serious multi-agent and small-society modelling, VFS should still add richer
 | `faction` | `[faction]` | Political or social blocs | `legitimacy`, `territory_claim` |
 | `institution` | `[institution]` | Rules and enforcement | `sanction_probability`, `rule_legitimacy` |
 
-The implemented L5/L6 seed scopes are the storage foundation for multi-agent competition and emergent communication.
-Sparse pair storage is available for neighbourhood-limited relationships, and message scope can store recent
-message-token payloads. Relational visibility, sender metadata, message age, and end-to-end communication semantics
-remain separate follow-on work.
+There are no relational or communication scopes today (§5.1). Pair, message and sparse-pair
+storage were deleted (VFS WP6, WP15); relational state, addressed delivery, sender metadata and
+message age belong to the multi-agent world design, after agents-per-world is declarable.
 
 ### 5.3 Social observability and privacy
 
@@ -502,7 +478,7 @@ Examples:
 
 - id: "perceived_health"
   type: "scalar"
-  scope: "agent_private"
+  scope: "agent"
   readable_by: ["agent"]
   writable_by: ["perception_model", "vtc"]
 
@@ -716,7 +692,7 @@ The registry should guarantee:
 - all tensors are on the configured device,
 - global variables have global shape,
 - agent variables have leading dimension `num_agents`,
-- pair variables have shape `[num_agents, num_agents, ...]`,
+- affordance variables have leading dimension `affordance_count`,
 - all values respect declared dtype,
 - optional clamps are applied after transition phases,
 - access control is enforced consistently, including `set_engine_value()` engine permission checks,
@@ -1462,7 +1438,6 @@ Conflict semantics must be explicit.
 | `last_write_wins` | Later phase wins | Rare; use sparingly |
 | `claim_if_free` | First valid claimant gets resource | Bed occupancy |
 | `capacity_claim` | Up to N agents acquire slots | Hospital beds, queue slots |
-| `append_event` | Add event to event buffer | Telemetry, messages, rumours |
 
 The action-write VTC slice implements these advanced modes inside the normal
 per-phase snapshot/accumulator boundary:
@@ -1475,10 +1450,6 @@ per-phase snapshot/accumulator boundary:
   integer high value declaring the total capacity for that write. Rows already
   greater than zero count against capacity, and remaining eligible claimants are
   accepted deterministically in action-batch order without over-allocation.
-- `append_event` targets bounded event buffers shaped `[agents, event_slots, ...]`.
-  The expression must produce either a scalar payload or `[agents, ...]`; the
-  VTC appends into the first zero/false slot for each selected active agent and
-  leaves full buffers unchanged.
 
 Affordance occupancy uses the same action-write machinery with source-affordance
 row targeting. `compile_vtc_affordance_occupancy(...)` resolves each
@@ -1614,14 +1585,14 @@ per the No-Defaults Principle; a write is masked by its target's declared scope)
 ```yaml
 version: "1.0"
 social_residue:
-  - id: "seen_stealing_damages_trust"
+  - id: "seen_stealing_damages_reputation"
     phase: "apply_social_residue_effects"
     kind: "visibility_effect"
-    reads: ["chosen_action", "observer_mask", "trust"]
-    condition: "observer_mask and chosen_action == STEAL"
+    reads: ["chosen_action", "was_observed", "public_reputation"]
+    condition: "was_observed and chosen_action == STEAL"
     writes:
-      - variable_id: "trust"
-        effect: "trust_delta"
+      - variable_id: "public_reputation"
+        effect: "reputation_delta"
         expression: "-0.15"
         composition: "additive_delta"
         condition: null
@@ -1804,6 +1775,10 @@ communication messages
 
 ### 16.2 Suggested relational variables
 
+> **Design intent, not authorable (2026-10-31, VFS WP15).** The batch is N independent
+> single-agent worlds (§5.1), and the `pair` and `group` scopes this sketch uses do not exist.
+> It describes a future multi-agent world, after agents-per-world is declarable.
+
 ```yaml
 variables:
   - id: "trust"
@@ -1839,28 +1814,20 @@ variables:
     writable_by: ["vtc"]
 ```
 
-The repo exposes this canonical set as `canonical_l5_relational_variables()`,
-returning `VariableDef` records for storage allocation and schema hashing. Pair
-and group extents remain explicit: callers allocate storage with the relevant
-`num_agents` and `num_groups` instead of relying on hidden default groups.
+This relational set is design history: the `pair`, `message` and `group` scopes and
+their extents were deleted (owner ruling S1, 2026-10-25: the batch is N independent
+single-agent worlds). It returns only when agents-per-world becomes declarable.
 
 ### 16.3 Social residue effect types
 
 The VTC social-residue compiler accepts `visibility_effect`, `social_residue`,
 and `institutional_rule` relationship rules in the canonical
 `apply_social_residue_effects` phase. Rule-level conditions and write-level
-conditions are combined before commit. Pair-scope writes are masked by the
-symmetric active-agent mask (`active[i] & active[j]`); observer→actor
-directionality is encoded by the author inside `condition` / `expression`
-via pair-scope data (e.g. an `[observer, actor]` observer mask), and a
-pair write conditioned on such a mask moves `trust[i, j]` without touching
-`trust[j, i]`. The former write-level `target` role annotation
-(e.g. `observer -> actor`) was removed 2026-08-22 (hamlet-175bff4ed5): it was
-stored but never consumed, and a role string carries no data a directed mask
-could be derived from — direction lives in the declared reads. Configs that
-set `target` are rejected at compile time. If a first-class directional
-grammar returns, it belongs to the authoring-surface DTO design
-(hamlet-84cf93a1b9), with roles bound to declared reads.
+conditions are combined before commit. A write is masked by its target's
+declared scope: an agent target on each active agent's row, a global or
+affordance target whenever any agent is active. There is no pair scope (§5.1),
+so no rule relates two agents. The former write-level `target` role annotation
+(e.g. `observer -> actor`) was removed 2026-08-22 (hamlet-175bff4ed5).
 Agent-scope writes use agent vectors such as `chosen_action` or derived
 visibility vectors such as `was_observed`. As with other VTC writes,
 `additive_delta` expressions are deltas, not post-update values.
@@ -1874,17 +1841,15 @@ the universe compiler through `compile_vtc_social_residue_rules` into the
 transition schedule. The compiler and the `apply_social_residue_effects` phase
 are wired into `env.step`'s executed phase range;
 `tests/test_townlet/integration/test_vtc_transition_schedule_runtime.py`
-proves a declared rule mutates a pair-scope variable during `env.step`. No
+proves a declared rule mutates an agent-scope variable during `env.step`. No
 shipped pack declares rules yet, so current scenarios still compile an empty
 rule set (see §21.1, item 7).
 
-⚠ **Composition coverage (2026-08-24 audit, re-verified 2026-08-25):** the social-residue
-executor supports **8 of the 11** §13.2 composition modes. `claim_if_free`,
-`capacity_claim`, and `append_event` validate at the schema layer
-(`transition_rules_config.py` mirrors all 11) but raise `NotImplementedError` at execution
-(`vtc.py:1606-1607`) — another compile-green/runtime-crash seam. A contested-claim or
-witnessed-event social rule cannot currently use claim-style composition; nothing warns the
-author until the first `env.step`.
+**Composition coverage (corrected 2026-10-31, VFS WP15):** a rule write admits the 8
+non-claim §13.2 composition modes (`RULE_WRITE_COMPOSITIONS` in `vtc.py`). The occupancy
+claims `claim_if_free` and `capacity_claim` are action-write only (a rule has no claimant and
+no source affordance); a rule naming one fails at parse. The former compile-green /
+`NotImplementedError`-at-step seam is gone.
 
 | Effect | Description |
 | --- | --- |
@@ -1905,18 +1870,12 @@ author until the first `env.step`.
 ```yaml
 version: "1.0"
 social_residue:
-  - id: "help_creates_obligation_and_reputation"
+  - id: "observed_help_raises_reputation"
     phase: "apply_social_residue_effects"
     kind: "social_residue"
-    reads: ["chosen_action", "recipient_actor_mask", "was_observed", "public_reputation", "obligation"]
+    reads: ["chosen_action", "was_observed", "public_reputation"]
     condition: "chosen_action == HELP"
     writes:
-      - variable_id: "obligation"
-        effect: "obligation_create"
-        condition: "recipient_actor_mask"
-        expression: "0.20"
-        composition: "additive_delta"
-        clamp: [0.0, 1.0]
       - variable_id: "public_reputation"
         effect: "reputation_delta"
         condition: "was_observed"
@@ -2034,7 +1993,7 @@ token slots rather than a second observation-field path.
 
 #### Phase 3+: Social/relational expansion — storage landed, wiring open (§5.1, §16.3)
 
-1. Add pair/group/affordance/zone scopes. Dense and sparse runtime storage now exists; VTC relational rule coverage follows separately.
+1. Add pair/group/affordance/zone scopes. Only `affordance` survives; pair/group/zone (and message) were deleted (VFS WP2, WP15) until agents-per-world is declarable.
 2. Add social residue rules. **Done 2026-08-22**: authorable via pack-root `transition_rules.yaml` (§16.3).
 3. Add communication variables.
 4. Add dynamic needs or variable-token observations.
@@ -2231,7 +2190,7 @@ uv run pytest tests/test_townlet/integration/test_checkpointing.py tests/test_to
 Multi-agent tests:
 
 ```bash
-uv run pytest tests/test_townlet/unit/vfs/test_relational_variables.py tests/test_townlet/unit/vfs/test_message_variables.py -v
+uv run pytest tests/test_townlet/unit/vfs/test_wp15_scope_surface.py -v
 uv run pytest tests/test_townlet/unit/vfs/test_vtc_affordance_occupancy.py -v
 uv run pytest tests/test_townlet/unit/vfs/test_vtc_social_residue.py -v
 uv run pytest tests/test_townlet/integration/test_l5_multi_agent_config.py -v
@@ -2282,7 +2241,6 @@ compiled and interpreted expressions agree
 transition graph hash changes when rule order changes
 same snapshot gives same schema hashes
 capacity_claim never over-allocates affordance capacity
-pair-scope trust[i,j] may differ from trust[j,i]
 ```
 
 ### 19.5 Performance benchmarks
@@ -2386,7 +2344,6 @@ vecNf
 one_hot
 mask
 matrix
-message_token
 ```
 
 ### 20.4 Access control
@@ -2506,22 +2463,20 @@ registry's gated add/remove mode had no authoring reach and was deleted in VFS W
    the declared schema. What remains is that VTC write expressions are validated mid-phase
    against phase-snapshot shapes only (`vtc.py:504-513`); a mis-shaped candidate now fails
    loudly at the commit boundary rather than at compile (§7.4).
-5. **Limited social-scope integration.** Dense `pair` and `affordance` storage exists, and
-   social-residue rules compile as VTC programs. Relational observation exposure
-   and scenario-level environment wiring remain incomplete.
+5. **No relational scopes.** The batch is N independent single-agent worlds (§5.1); `pair`
+   and `message` were deleted in VFS WP15. Social-residue rules compile as VTC programs over
+   agent, global and affordance state.
 6. **No dynamic variables.** Variables are fixed at compile time. The registry's gated
    `dynamic_variable_mode` had no config surface and was deleted in VFS WP6 (2026-10-24).
 7. **Relationship rules are authorable but not yet authored.** Social rule kinds are
    declarable in a pack-root `transition_rules.yaml` (no-defaults DTO, 2026-08-22,
-   hamlet-84cf93a1b9), compile into the transition schedule, and mutate pair-scope variables
-   during `env.step` (proven config-in/behaviour-out). No shipped pack declares rules yet, and
-   group-scope rules remain gated on relational observation exposure and the group-extents
-   runtime wiring.
-8. **Two VTC families refuse unsupported rule shapes at runtime, not compile time**
+   hamlet-84cf93a1b9), compile into the transition schedule, and mutate agent-scope variables
+   during `env.step` (proven config-in/behaviour-out). No shipped pack declares rules yet.
+   Group, pair and message scopes are deleted (S1, 2026-10-25).
+8. **One VTC family refuses unsupported rule shapes at runtime, not compile time**
    (2026-08-24 audit): modulation rules with `condition:` or non-`multiplicative_modifier`
-   composition (§14.4), and social-residue writes using the three claim-style compositions
-   (§16.3). Both compile green and raise `NotImplementedError` at the first `env.step` — each
-   costs a designer a training run to discover.
+   composition (§14.4). It compiles green and raises `NotImplementedError` at the first
+   `env.step`. (The social-residue claim compositions now fail at parse, §16.3.)
 
 ### 21.2 Design risks
 
@@ -2530,7 +2485,6 @@ registry's gated add/remove mode had no authoring reach and was deleted in VFS W
 | Compiler becomes too permissive | Small closed DSL, no arbitrary Python |
 | Observation ABI churn breaks checkpoints | Schema hashes and dimension regression tests |
 | VFS overhead slows training | JIT, caching, batched reads, compiled transition graph |
-| Social variables explode in size | Open: pair storage is dense `[num_agents, num_agents]` (the unwired sparse mode was deleted in VFS WP6) |
 | Dynamic variables break network shapes | The compiler fixes token capacities; compact dynamic rows are expanded per type only at the token-network projection boundary |
 | Meaning becomes hidden in config complexity | Telemetry labels, rule IDs, documentation, visual rule inspector |
 | BAC naming collision | Use VTC for compiler; reserve BAC for Brain as Code |
@@ -2580,21 +2534,9 @@ Cache derived features that are expensive but stable across ticks or phases.
 
 ### 22.5 Multi-agent communication
 
-Represent communication through VFS variables:
-
-```yaml
-- id: "recent_message_tokens"
-  type: "message_token"
-  scope: "message"
-  dims: 20
-  readable_by: ["agent", "social_model"]
-  writable_by: ["vtc"]
-```
-
-A pack declares it as an ordinary `message`-scope variable (the uncalled Python factory
-`canonical_l6_message_variables` was deleted in VFS WP6).
-Runtime storage requires the caller to provide `num_message_slots`; `dims` is the token vocabulary size or embedding
-dimension for each message-slot payload.
+Not authorable. The `message` scope and `append_event` were deleted in VFS WP15 (§5.1): they
+stored a sender's own buffer with no addressee and no reader. Communication returns with the
+multi-agent world design, as addressed delivery plus a reader.
 
 ### 22.6 Intrinsic reward shaping
 
@@ -2683,7 +2625,6 @@ This would make VFS teachable and debuggable.
 - `configs/simple/vfs_profiles.yaml`
 - `configs/aspatial_test/vfs_profiles.yaml`
 - `configs/test/model_config/vfs_profiles.yaml`
-- `configs/L5_multi_agent/variables_reference.yaml` — static pair and affordance runtime variable example
 - `configs/test/model_config/variables_reference.yaml` — optional observation metadata example
 - `configs/test/vfs_bar_access/variables_reference.yaml` — optional observation metadata example
 

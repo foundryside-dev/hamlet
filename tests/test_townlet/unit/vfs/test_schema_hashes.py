@@ -136,7 +136,6 @@ def test_compiler_surfaces_variable_schema_hash(tmp_path: Path) -> None:
     profiles = {
         "variables": {
             "version": "1.0",
-            "extents": {},
             "item_profiles": [],
             "declarations": [
                 {
@@ -535,15 +534,15 @@ def test_transition_graph_hash_binds_social_residue_rules() -> None:
         return vtc.compile_vtc_social_residue_rules_with_phase_graph(
             [
                 {
-                    "id": "seen_stealing_damages_trust",
+                    "id": "seen_stealing_damages_reputation",
                     "phase": "apply_social_residue_effects",
                     "kind": "visibility_effect",
-                    "reads": ["chosen_action", "observer_mask", "trust"],
-                    "condition": "observer_mask and chosen_action == 7",
+                    "reads": ["chosen_action", "was_observed", "reputation"],
+                    "condition": "was_observed and chosen_action == 7",
                     "writes": [
                         {
-                            "variable_id": "trust",
-                            "effect": "trust_delta",
+                            "variable_id": "reputation",
+                            "effect": "reputation_delta",
                             "expression": str(delta),
                             "composition": "additive_delta",
                             "clamp": [0.0, 1.0],
@@ -552,9 +551,9 @@ def test_transition_graph_hash_binds_social_residue_rules() -> None:
                 }
             ],
             {
-                "trust": VTCWriteTarget(VariableScope.PAIR, "scalar", meter=False),
+                "reputation": VTCWriteTarget(VariableScope.AGENT, "scalar", meter=False),
                 "chosen_action": VTCWriteTarget(VariableScope.AGENT, "scalar", meter=False),
-                "observer_mask": VTCWriteTarget(VariableScope.PAIR, "bool", meter=False),
+                "was_observed": VTCWriteTarget(VariableScope.AGENT, "bool", meter=False),
             },
             phase_graph,
         )
@@ -567,19 +566,19 @@ def test_transition_graph_hash_binds_social_residue_rules() -> None:
         social_residue_program=program,
     )["rules"] == [
         {
-            "rule_id": "seen_stealing_damages_trust",
+            "rule_id": "seen_stealing_damages_reputation",
             "kind": "visibility_effect",
-            "effect": "trust_delta",
-            "variable_id": "trust",
+            "effect": "reputation_delta",
+            "variable_id": "reputation",
             "expression": _ast("-0.15"),
-            "condition": _ast("observer_mask and chosen_action == 7"),
+            "condition": _ast("was_observed and chosen_action == 7"),
             "composition": "additive_delta",
             "phase": "apply_social_residue_effects",
             "priority": 0,
             "clamp": [0.0, 1.0],
-            "telemetry_label": "visibility_effect:seen_stealing_damages_trust:trust_delta",
-            "reads": ["chosen_action", "observer_mask", "trust"],
-            "target_scope": "pair",
+            "telemetry_label": "visibility_effect:seen_stealing_damages_reputation:reputation_delta",
+            "reads": ["chosen_action", "was_observed", "reputation"],
+            "target_scope": "agent",
         }
     ]
 

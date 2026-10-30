@@ -42,12 +42,6 @@ class UniverseMetadata:
     action_count: int = 0
     observation_dim: int = 0
 
-    # VFS scope extents (canonical variables `extents:` block). Zero means
-    # the pack declares no variables of that scope — the loader rejects a
-    # scoped variable whose extent is undeclared, so 0 never reaches a registry
-    # that needs it.
-    num_message_slots: int = 0
-
     # Spatial metadata for finite substrates. Axis dimensions remain owned by
     # the substrate; collapsing them to one square-only number loses identity.
     grid_cells: int | None = None

@@ -85,7 +85,6 @@ def test_resolve_references_allows_profile_vfs_variables_in_dac(tmp_path: Path) 
             {
                 "variables": {
                     "version": "1.0",
-                    "extents": {},
                     "item_profiles": [],
                     "declarations": [
                         {

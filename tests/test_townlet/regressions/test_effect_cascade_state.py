@@ -47,7 +47,19 @@ def _services(
                 readable_by=["engine"],
                 writable_by=["engine"],
             )
-            for name, scope in [("global_state", "global"), ("agent_state", "agent"), ("private_state", "agent_private")]
+            for name, scope in [("global_state", "global"), ("agent_state", "agent")]
+        ]
+        # Bool storage stays outside the float32 arenas, so an ordinary write rebinds it.
+        + [
+            VariableDef(
+                id="standalone_flag",
+                scope="global",
+                type="bool",
+                lifetime="episode",
+                default=True,
+                readable_by=["engine"],
+                writable_by=["engine"],
+            )
         ],
         num_agents=2,
         device=torch.device("cpu"),
@@ -60,7 +72,7 @@ def _services(
             "self.vfs.charge": "float",
             "vfs.global_state": "float",
             "self.vfs.agent_state": "float",
-            "vfs.private_state": "float",
+            "vfs.standalone_flag": "bool",
             "affordance.bank.available": "bool",
         },
         agent_target=True,
@@ -161,11 +173,12 @@ def test_fresh_parent_denial_releases_items_positions_and_profile_rows() -> None
     assert registry.read_item("sealed", "charge", sealed.vfs_index, reader="engine") == 2.0
 
 
-def test_descendant_denial_restores_published_arenas_private_aliases_and_affordance() -> None:
+def test_descendant_denial_restores_published_arenas_standalone_aliases_and_affordance() -> None:
     manager, registry, items, sealed, bars, compiler = _services(3)
-    # Hold the views used by runtime publishers, and the original private tensor
+    # Hold the views used by runtime publishers, and the original standalone tensor
     # which ordinary registry writes replace. The rollback must repair both.
     original = {name: tensor for name, tensor in registry._storage.items()}
+    original_values = {name: tensor.clone() for name, tensor in registry._storage.items()}
     published_global = registry._scope_arenas["global"].tensor
     published_agents = registry._scope_arenas["agent"].tensor
     global_values = published_global.clone()
@@ -176,7 +189,7 @@ def test_descendant_denial_restores_published_arenas_private_aliases_and_afforda
         [
             CommandNode(type=CommandType.MODIFY, path="vfs.global_state", value_expr="9.0"),
             CommandNode(type=CommandType.MODIFY, path="self.vfs.agent_state", value_expr="8.0"),
-            CommandNode(type=CommandType.MODIFY, path="vfs.private_state", value_expr="7.0"),
+            CommandNode(type=CommandType.MODIFY, path="vfs.standalone_flag", value_expr="false"),
             CommandNode(type=CommandType.MODIFY, path="affordance.bank.available", value_expr="false"),
             CommandNode(type=CommandType.SPAWN_EFFECT, effect_id="child", target=sealed.vfs_index, intensity=1.0),
         ]
@@ -185,7 +198,7 @@ def test_descendant_denial_restores_published_arenas_private_aliases_and_afforda
         manager.spawn_effect("parent", 0, 1.0, 0, bars=bars, vfs_registry=registry, item_manager=items)
     for name, tensor in original.items():
         assert registry._storage[name] is tensor
-        assert torch.equal(tensor, torch.full_like(tensor, 2.0))
+        assert torch.equal(tensor, original_values[name])
         assert torch.equal(registry.get(name, reader="engine"), tensor)
     assert registry._scope_arenas["global"].tensor is published_global
     assert registry._scope_arenas["agent"].tensor is published_agents

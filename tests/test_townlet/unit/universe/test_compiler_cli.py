@@ -76,7 +76,6 @@ def test_cli_validate_reports_vfs_domain_errors_without_traceback(tmp_path, caps
     (config_dir / "variables.yaml").write_text("""
 variables:
   version: '1.0'
-  extents: {}
   item_profiles: []
   declarations:
     - id: first

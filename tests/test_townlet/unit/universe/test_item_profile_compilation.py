@@ -31,7 +31,6 @@ def _write_variables(pack: Path, profiles: list[str], declarations: list[dict]) 
             {
                 "variables": {
                     "version": "1.0",
-                    "extents": {},
                     "item_profiles": profiles,
                     "declarations": declarations,
                 }

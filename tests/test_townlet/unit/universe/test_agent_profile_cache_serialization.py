@@ -25,7 +25,6 @@ def _write_profiles_with_agent(experiment_dir: Path) -> None:
     profiles = {
         "variables": {
             "version": "1.0",
-            "extents": {},
             "item_profiles": [],
             "declarations": [
                 {

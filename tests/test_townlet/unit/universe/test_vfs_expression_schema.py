@@ -18,7 +18,6 @@ def test_compiler_generates_vfs_expression_schema(tmp_path: Path):
     variables_document = {
         "variables": {
             "version": "1.0",
-            "extents": {},
             "item_profiles": [],
             "declarations": [
                 {

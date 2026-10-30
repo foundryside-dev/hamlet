@@ -60,7 +60,7 @@ configs/default_curriculum/
   environment.yaml      # meter observation types and cascade graph
   actions.yaml          # substrate/custom actions, writes and labels
   brain.yaml            # architecture, optimizer, loss, Q-learning and replay
-  variables.yaml        # canonical state, policies, profiles and scope extents
+  variables.yaml        # canonical state, policies and item profiles
   items.yaml            # item catalog
   effects.yaml          # effect catalog
   transition_rules.yaml # optional transition declarations
@@ -124,7 +124,8 @@ compile/reset/step witness, not full support for every topology or a learning re
 
 Cut B replaced the separate environment/profile/overlay authoring surfaces with one canonical
 variable roster. Each declaration specifies scope, lifetime, initialization, semantic type and
-exposure. `variables.extents` supplies the sizes of zone, group, message and affordance storage;
+exposure. Scopes are `global`, `agent`, `item` and `affordance`; the batch is N independent
+single-agent worlds, so there is no pair or message scope, and no scope takes an authored extent;
 item state uses the same contract, qualified by its declared item profile. The authored day
 clock is derived from engine `tick`, and a curriculum can refer to its period with
 `day_length: {period_of: day_phase}`. See [variables](docs/config-schemas/variables.md).
@@ -269,7 +270,7 @@ uv run python -m townlet.universe inspect configs/default_curriculum \
 `--primary-level` is required for compile/validate and directory inspection. Compilation builds
 all world levels, with one cache artifact per selected primary level:
 `<pack>/.compiled/universe-<level>.msgpack`. The top-level effective brain is primary-level scoped.
-The current compiled artifact schema is **1.35**; older versions and missing policies refuse.
+The current compiled artifact schema is **1.36**; older versions and missing policies refuse.
 This is separate from authored declaration versions and checkpoint format **6**.
 
 Train using the pack root:

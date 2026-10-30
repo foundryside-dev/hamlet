@@ -427,9 +427,6 @@ def vtc_write_targets(vfs_variables: Iterable[VariableDef], meter_names: Iterabl
 _SCOPE_SHAPES: dict[VariableScope, str] = {
     VariableScope.GLOBAL: "scalar",
     VariableScope.AGENT: "agent",
-    VariableScope.AGENT_PRIVATE: "agent",
-    VariableScope.PAIR: "pair",
-    VariableScope.MESSAGE: "message",
     VariableScope.AFFORDANCE: "affordance",
 }
 """The leading registry axes a read of each scope yields (``VFSProfileCompiler.expression_shape`` labels).
@@ -470,7 +467,6 @@ def _write_shape_refusal(
     shapes: Mapping[str, str],
     admitted_expression: frozenset[str],
     admitted_condition: frozenset[str],
-    condition_pair_agent_join: bool,
     target_id: str,
     target_scope: VariableScope,
     prefix: str,
@@ -478,30 +474,24 @@ def _write_shape_refusal(
     """Why a write's expression or condition has a shape its target's scope cannot hold, or None.
 
     Runs after the type check: the type proves the payload, this proves the axes, so
-    a pair or message read into an agent row, or an agent value into a global or pair
-    target, refuses here instead of failing (or broadcasting by coincidence) at step.
+    an affordance read into an agent row, or an agent value into a global target,
+    refuses here instead of failing (or broadcasting by coincidence) at step.
     """
-    checks = [("expression", expression_ast, expression, admitted_expression, False)]
+    checks = [("expression", expression_ast, expression, admitted_expression)]
     if condition_ast is not None:
         assert condition is not None
-        checks.append(("condition", condition_ast, condition, admitted_condition, condition_pair_agent_join))
-    for kind, ast, text, admitted, pair_agent_join in checks:
+        checks.append(("condition", condition_ast, condition, admitted_condition))
+    for kind, ast, text, admitted in checks:
         try:
-            shape = VFSProfileCompiler.expression_shape(ast, dict(shapes), pair_agent_join=pair_agent_join)
+            shape = VFSProfileCompiler.expression_shape(ast, dict(shapes))
         except TypeCheckError as exc:
             return f"{prefix} {kind} '{text}' has no provable shape: {exc}"
         if shape in admitted:
             continue
-        reason = (
+        return (
             f"{prefix} {kind} '{text}' is {shape}-shaped, but its target '{target_id}' has declared scope "
             f"'{target_scope.value}', which admits {' or '.join(sorted(admitted))}-shaped values."
         )
-        if target_scope == VariableScope.PAIR and shape == "agent":
-            reason += (
-                " An agent-shaped value has no declared pair axis: the language cannot yet say whether agent i's "
-                "value belongs to row i or column i of the pair, so it is refused rather than broadcast down a column."
-            )
-        return reason
     return None
 
 
@@ -700,8 +690,6 @@ class VTCActionWriteProgram:
             return self._apply_claim_if_free(write, phase_value, expression_value, write_mask)
         if write.composition == "capacity_claim":
             return self._apply_capacity_claim(write, phase_value, expression_value, write_mask)
-        if write.composition == "append_event":
-            return self._apply_append_event(write, phase_value, expression_value, write_mask)
 
         candidate = self._compose_candidate(write, phase_value, expression_value)
         candidate = self._apply_optional_clamp(write, candidate)
@@ -867,29 +855,6 @@ class VTCActionWriteProgram:
             )
         return write.affordance_index
 
-    def _apply_append_event(
-        self,
-        write: CompiledVTCActionWrite,
-        phase_value: torch.Tensor,
-        expression_value: torch.Tensor,
-        write_mask: torch.Tensor,
-    ) -> torch.Tensor:
-        if phase_value.dim() < 2:
-            raise ValueError(f"VTC append_event write '{write.telemetry_label}' requires target shape [agents, event_slots, ...]")
-
-        candidate = phase_value.clone()
-        payload = self._apply_optional_clamp(write, expression_value)
-        free_slots = self._event_slot_free_mask(phase_value)
-
-        for agent_index_tensor in torch.nonzero(write_mask.bool(), as_tuple=False).flatten():
-            agent_index = int(agent_index_tensor.item())
-            free_slot_indices = torch.nonzero(free_slots[agent_index], as_tuple=False).flatten()
-            if free_slot_indices.numel() == 0:
-                continue
-            candidate[agent_index, int(free_slot_indices[0].item())] = payload[agent_index]
-
-        return candidate
-
     @staticmethod
     def _row_free_for_claim(value: torch.Tensor) -> torch.Tensor:
         if value.dtype == torch.bool:
@@ -919,13 +884,6 @@ class VTCActionWriteProgram:
         if mask.dim() <= 1:
             return mask.bool()
         return mask.bool().flatten(start_dim=1).any(dim=1)
-
-    @staticmethod
-    def _event_slot_free_mask(value: torch.Tensor) -> torch.Tensor:
-        if value.dim() == 2:
-            return ~value.bool() if value.dtype == torch.bool else value == 0
-        occupied = value if value.dtype == torch.bool else value != 0
-        return ~occupied.bool().flatten(start_dim=2).any(dim=2)
 
     @staticmethod
     def _slot_free_for_claim(value: torch.Tensor) -> torch.Tensor:
@@ -1000,8 +958,6 @@ class VTCActionWriteProgram:
         value = to_storage_dtype(value, target.dtype, f"Expression for VTC action write '{write.telemetry_label}'").to(device=target.device)
         if VTCActionWriteProgram._targets_affordance_occupancy(write):
             return VTCActionWriteProgram._coerce_affordance_payload_tensor(value, target, actions, write)
-        if write.composition == "append_event":
-            return VTCActionWriteProgram._coerce_event_payload_tensor(value, target, write)
         if value.dim() == 0:
             return value.expand_as(target)
         if value.shape != target.shape:
@@ -1042,25 +998,6 @@ class VTCActionWriteProgram:
             f"Expression for VTC affordance occupancy write '{write.telemetry_label}' produced shape {tuple(value.shape)}, "
             f"expected claimant payload shape {tuple(payload_shape)}"
         )
-
-    @staticmethod
-    def _coerce_event_payload_tensor(
-        value: torch.Tensor,
-        target: torch.Tensor,
-        write: CompiledVTCActionWrite,
-    ) -> torch.Tensor:
-        if target.dim() < 2:
-            raise ValueError(f"VTC append_event write '{write.telemetry_label}' requires target shape [agents, event_slots, ...]")
-
-        payload_shape = torch.Size((target.shape[0], *tuple(target.shape[2:])))
-        if value.dim() == 0:
-            return value.expand(payload_shape)
-        if value.shape != payload_shape:
-            raise ValueError(
-                f"Expression for VTC append_event write '{write.telemetry_label}' produced shape {tuple(value.shape)}, "
-                f"expected event payload shape {tuple(payload_shape)}"
-            )
-        return value
 
     @staticmethod
     def _broadcast_agent_mask(mask: torch.Tensor, target: torch.Tensor, write: CompiledVTCActionWrite) -> torch.Tensor:
@@ -1710,9 +1647,6 @@ class VTCSocialResidueProgram:
 
         if rule.composition == "priority_write":
             return self._apply_priority_write(rule, phase_value, candidate, write_mask, priority_state)
-        if rule.composition in {"claim_if_free", "capacity_claim", "append_event"}:
-            raise NotImplementedError(f"VTC social residue composition '{rule.composition}' is not supported")
-
         return cast(torch.Tensor, vtc_kernels.apply_masked_candidate(phase_value, candidate, write_mask))
 
     @staticmethod
@@ -1733,7 +1667,7 @@ class VTCSocialResidueProgram:
             return torch.minimum(phase_value, expression)
         if rule.composition == "max":
             return torch.maximum(phase_value, expression)
-        raise NotImplementedError(f"VTC social residue composition '{rule.composition}' is not implemented yet")
+        raise AssertionError(f"VTC social residue composition '{rule.composition}' is outside RULE_WRITE_COMPOSITIONS")
 
     @staticmethod
     def _apply_optional_clamp(rule: CompiledVTCSocialResidueRule, value: torch.Tensor) -> torch.Tensor:
@@ -1834,8 +1768,7 @@ class VTCSocialResidueProgram:
             return value_on_device
 
         # The compile-time shape proof admits one more case: an agent-shaped value on an
-        # agent-axis target (a message target spreads it across the agent's slots). A pair
-        # target never takes one (F7), so there is no axis to guess here.
+        # agent target with an element axis (a vector or tensor row), spread along it.
         num_agents = active_mask.shape[0]
         if value_on_device.shape == active_mask.shape and rule.target_scope in ACTION_WRITE_AGENT_AXIS_SCOPES:
             VTCSocialResidueProgram._assert_target_shape(rule, target, num_agents)
@@ -1855,13 +1788,6 @@ class VTCSocialResidueProgram:
     ) -> torch.Tensor:
         active = active_mask.to(device=target.device, dtype=torch.bool)
         num_agents = active.shape[0]
-        if rule.target_scope == VariableScope.PAIR:
-            VTCSocialResidueProgram._assert_target_shape(rule, target, num_agents)
-            pair_mask = active.reshape(num_agents, 1) & active.reshape(1, num_agents)
-            while pair_mask.dim() < target.dim():
-                pair_mask = pair_mask.unsqueeze(-1)
-            return pair_mask.expand_as(target)
-
         if rule.target_scope in ACTION_WRITE_AGENT_AXIS_SCOPES:
             VTCSocialResidueProgram._assert_target_shape(rule, target, num_agents)
             agent_mask = active
@@ -1874,12 +1800,10 @@ class VTCSocialResidueProgram:
 
     @staticmethod
     def _assert_target_shape(rule: CompiledVTCSocialResidueRule, target: torch.Tensor, num_agents: int) -> None:
-        """The declared scope fixes the leading axes; storage that disagrees is a registry defect."""
-        agent_axes = 2 if rule.target_scope == VariableScope.PAIR else 1
-        assert target.dim() >= agent_axes and all(int(extent) == num_agents for extent in target.shape[:agent_axes]), (
+        """The declared scope fixes the leading axis; storage that disagrees is a registry defect."""
+        assert target.dim() >= 1 and int(target.shape[0]) == num_agents, (
             f"VTC social residue '{rule.telemetry_label}' targets {rule.target_scope.value}-scope "
-            f"'{rule.variable_id}' with storage shape {tuple(target.shape)}; expected {agent_axes} leading "
-            f"agent axes of {num_agents}"
+            f"'{rule.variable_id}' with storage shape {tuple(target.shape)}; expected a leading agent axis of {num_agents}"
         )
 
 
@@ -1942,6 +1866,19 @@ class VTCRewardProgram:
 
 
 _SOCIAL_RESIDUE_RULE_KINDS = frozenset({"visibility_effect", "social_residue", "institutional_rule"})
+
+#: Transition-rule write compositions. The occupancy claims (``claim_if_free``,
+#: ``capacity_claim``) are action-write only: a rule has no claimant and no source affordance.
+RULE_WRITE_COMPOSITIONS: tuple[str, ...] = (
+    "overwrite",
+    "additive_delta",
+    "multiplicative_modifier",
+    "min",
+    "max",
+    "clamp",
+    "priority_write",
+    "last_write_wins",
+)
 
 
 def compile_vtc_social_residue_rules(
@@ -2028,10 +1965,6 @@ def compile_vtc_social_residue_rules_with_phase_graph(
                 shapes=shapes,
                 admitted_expression=admitted_shapes,
                 admitted_condition=admitted_shapes,
-                # Conditions on a pair target may gate by an agent's own state alongside
-                # pair data (``observer_mask and chosen_action == STEAL``): the agent
-                # operand indexes the second axis. Shipped grammar, VFS.md §16.
-                condition_pair_agent_join=target.scope == VariableScope.PAIR,
                 target_id=write["variable_id"],
                 target_scope=target.scope,
                 prefix=f"Transition rule '{rule['rule_id']}' write '{write['telemetry_label']}'",
@@ -2155,8 +2088,11 @@ def _coerce_social_residue_write(raw_write: Mapping[str, Any] | WriteSpec, rule:
         raise ValueError(f"VTC social residue rule '{rule_id}' write to '{variable_id}' requires expression")
     if condition == "":
         raise ValueError(f"VTC social residue rule '{rule_id}' write to '{variable_id}' condition must be non-empty when provided")
-    if not composition:
-        raise ValueError(f"VTC social residue rule '{rule_id}' write to '{variable_id}' requires composition")
+    if composition not in RULE_WRITE_COMPOSITIONS:
+        raise ValueError(
+            f"VTC social residue rule '{rule_id}' write to '{variable_id}' composition '{composition}' is not one of "
+            f"{', '.join(RULE_WRITE_COMPOSITIONS)}"
+        )
     if not phase:
         raise ValueError(f"VTC social residue rule '{rule_id}' write to '{variable_id}' requires phase")
     if priority < 0:
@@ -2244,9 +2180,7 @@ def compile_vtc_affordance_occupancy_with_phase_graph(
     return _compile_vtc_action_writes_with_phase_graph(actions, targets, phase_graph, affordance_index_by_name=affordance_index_by_name)
 
 
-ACTION_WRITE_AGENT_AXIS_SCOPES: frozenset[VariableScope] = frozenset(
-    {VariableScope.AGENT, VariableScope.AGENT_PRIVATE, VariableScope.MESSAGE}
-)
+ACTION_WRITE_AGENT_AXIS_SCOPES: frozenset[VariableScope] = frozenset({VariableScope.AGENT})
 """Scopes whose registry storage leads with the agent axis, so an action write lands on the acting agent's row."""
 
 AFFORDANCE_OCCUPANCY_PHASE = "resolve_affordance_access_and_occupancy"
@@ -2254,34 +2188,18 @@ AFFORDANCE_OCCUPANCY_COMPOSITIONS = frozenset({"claim_if_free", "capacity_claim"
 
 
 _AGENT_ROW_SHAPES = frozenset({"scalar", "agent"})
+"""Value shapes an action write's expression and condition may produce.
 
-
-def _action_write_admitted_shapes(target_scope: VariableScope, composition: str) -> frozenset[str]:
-    """Value shapes an action write's expression may produce for its target.
-
-    An action write lands per acting agent, so its value is one per agent (or a
-    scalar): an agent row, an ``append_event`` payload, an occupancy claimant's
-    payload. The exception is a non-event write to a message buffer, which replaces
-    the whole ``[agents, slots]`` storage and so takes a message-shaped value.
-    """
-    if target_scope == VariableScope.MESSAGE and composition != "append_event":
-        return frozenset({"scalar", "message"})
-    return _AGENT_ROW_SHAPES
+An action write lands per acting agent, so its value is one per agent (or a
+scalar): an agent row or an occupancy claimant's payload."""
 
 
 _RULE_ADMITTED_SHAPES: dict[VariableScope, frozenset[str]] = {
     VariableScope.GLOBAL: frozenset({"scalar"}),
     VariableScope.AGENT: _AGENT_ROW_SHAPES,
-    VariableScope.AGENT_PRIVATE: _AGENT_ROW_SHAPES,
-    VariableScope.MESSAGE: frozenset({"scalar", "agent", "message"}),
-    VariableScope.PAIR: frozenset({"scalar", "pair"}),
     VariableScope.AFFORDANCE: frozenset({"scalar", "affordance"}),
 }
-"""Value shapes a transition-rule write (expression and condition) may produce, by target scope.
-
-A message target also takes an agent-shaped value along its leading agent axis
-(``VTCSocialResidueProgram._coerce_tensor_to_target``). A pair target never takes an
-agent-shaped one (review-2026-10-24 VFS F7)."""
+"""Value shapes a transition-rule write (expression and condition) may produce, by target scope."""
 
 
 def _action_write_scope_refusal(
@@ -2388,9 +2306,8 @@ def _compile_vtc_action_writes_with_phase_graph(
                 condition_ast=condition_ast,
                 condition=write.condition,
                 shapes=shapes,
-                admitted_expression=_action_write_admitted_shapes(target.scope, write.composition),
+                admitted_expression=_AGENT_ROW_SHAPES,
                 admitted_condition=_AGENT_ROW_SHAPES,
-                condition_pair_agent_join=False,
                 target_id=write.variable_id,
                 target_scope=target.scope,
                 prefix=f"Action '{action.name}' write '{write.telemetry_label}'",

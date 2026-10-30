@@ -16,7 +16,6 @@ def _declare(experiment_dir: Path, declarations: list[dict]) -> None:
     payload = {
         "variables": {
             "version": "1.0",
-            "extents": {},
             "item_profiles": ["default_item"],
             "declarations": declarations,
         }

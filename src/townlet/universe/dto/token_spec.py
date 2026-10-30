@@ -169,7 +169,7 @@ LIFETIME_VOCABULARY: Final[tuple[str, ...]] = get_args(VariableDef.model_fields[
 VARIABLE_TYPE_VOCABULARY: Final[tuple[str, ...]] = get_args(VariableDef.model_fields["type"].annotation)
 DTYPE_VOCABULARY: Final[tuple[str, ...]] = ("float", "int", "bool")
 
-#: VariableDef.type -> dtype flag. References and message tokens are integer ids. Pinned by
+#: VariableDef.type -> dtype flag. References are integer ids. Pinned by
 #: test to cover exactly VARIABLE_TYPE_VOCABULARY, so a new VariableDef type is loud here.
 _VARIABLE_TYPE_DTYPE: Final[Mapping[str, str]] = {
     "scalar": "float",
@@ -187,7 +187,6 @@ _VARIABLE_TYPE_DTYPE: Final[Mapping[str, str]] = {
     "item_ref": "int",
     "affordance_ref": "int",
     "effect_ref": "int",
-    "message_token": "int",
     "bool": "bool",
 }
 
@@ -1577,14 +1576,9 @@ def effect_capacity(
 
 def variable_element_capacity(variables: Iterable[ExposedVariable]) -> int:
     """Σ element counts of explicitly exposed variables. Each variable is checked against the
-    exposure rules so a refused kind never sizes a capacity.
-
-    `agent_private` is NOT refused here by ruling (Task 6 review M1): the spec §2 table places
-    that exclusion in the publisher's filter before slot binding. LANDED (Task 8):
-    `environment/token_publishers.py::RegistryVariableElementPublisher` refuses an
-    agent_private-bound slot at construction, and the registry's scope arenas exclude
-    agent_private by construction — pinned by test (agent_private never lands in any
-    agent's rows; the hamlet-83a043a9b9 boundary by mechanism)."""
+    exposure rules so a refused kind never sizes a capacity. Privacy is declared roles, not a
+    scope: `RegistryVariableElementPublisher` authorizes every binding against the declared
+    `readable_by`/`exposed_to` before slot binding (the hamlet-83a043a9b9 boundary by mechanism)."""
     total = 0
     for var in variables:
         require_exposure_normalization(var.subject, var.normalization)

@@ -8,7 +8,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, StrictInt, model_validator
 
 from townlet.vfs.access_policy import validate_static_access
-from townlet.vfs.schema import NormalizationSpec, VariableScope, VFSScopeExtents
+from townlet.vfs.schema import NormalizationSpec, VariableScope
 from townlet.vfs.semantic_type import SemanticType
 
 VariableType = Literal[
@@ -28,7 +28,6 @@ VariableType = Literal[
     "tensor2d",
     "tensor3d",
     "tensorNd",
-    "message_token",
 ]
 VariableLifetime = Literal["tick", "episode", "persistent"]
 _REFERENCE_TYPES = frozenset({"agent_ref", "item_ref", "affordance_ref", "effect_ref"})
@@ -104,7 +103,7 @@ class VariableDeclaration(BaseModel):
                 raise ValueError(f"Variable '{self.id}' tensor uses shape, not dims")
         elif self.shape is not None:
             raise ValueError(f"Variable '{self.id}' shape is only meaningful for tensor types")
-        if self.type in {"vecNi", "vecNf", "message_token"}:
+        if self.type in {"vecNi", "vecNf"}:
             if self.dims is None or self.dims <= 0:
                 raise ValueError(f"Variable '{self.id}' requires dims")
         elif self.dims is not None:
@@ -184,11 +183,10 @@ class VariableDeclaration(BaseModel):
 
 
 class VariablesConfig(BaseModel):
-    """Canonical pack variable roster, scope extents and named item schemas."""
+    """Canonical pack variable roster and named item schemas."""
 
     model_config = ConfigDict(extra="forbid")
     version: Literal["1.0"]
-    extents: VFSScopeExtents
     item_profiles: list[str]
     declarations: list[VariableDeclaration]
 
@@ -199,7 +197,6 @@ class VariablesConfig(BaseModel):
         if any(not name or "." in name or "[" in name or "]" in name for name in self.item_profiles):
             raise ValueError("Item profile identifiers must be nonempty and contain no element separators")
         seen: set[tuple[str | None, str]] = set()
-        extent_fields = {VariableScope.MESSAGE: "num_message_slots"}
         for variable in self.declarations:
             identity = (variable.profile if variable.scope == VariableScope.ITEM else None, variable.id)
             if identity in seen:
@@ -209,9 +206,6 @@ class VariablesConfig(BaseModel):
                 raise ValueError("Variable id 'tick' is reserved for the engine-written step counter")
             if variable.scope == VariableScope.ITEM and variable.profile not in self.item_profiles:
                 raise ValueError(f"Variable '{variable.id}' uses unknown item profile '{variable.profile}'")
-            field = extent_fields.get(variable.scope)
-            if field is not None and getattr(self.extents, field) is None:
-                raise ValueError(f"Variable '{variable.id}' scope requires explicit '{field}' extent")
         return self
 
     def for_scope(self, scope: VariableScope) -> tuple[VariableDeclaration, ...]:

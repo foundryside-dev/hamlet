@@ -187,7 +187,6 @@ not (bar.health > 50)                       # Health not above 50
 ```yaml
 variables:
   version: '1.0'
-  extents: {}
   item_profiles: []
   declarations:
   - id: is_critical

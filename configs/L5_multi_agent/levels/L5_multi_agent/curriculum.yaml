@@ -1,8 +1,8 @@
 curriculum:
   version: "1.0"
 
-  # L5: Multi-agent relational storage exercise
-  # 8x8 grid, 4 bars, 4 affordances, pair + affordance scoped VFS variables
+  # L5: N independent single-agent worlds (see variables.yaml); not multi-agent
+  # 8x8 grid, 4 bars, 4 affordances, one agent-scope expression variable
 
   active_vision: global # Full grid observable
   vision_range: 0.5 # 4x4 (1/2) window on 8×8 grid

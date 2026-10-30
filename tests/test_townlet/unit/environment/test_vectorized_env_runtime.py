@@ -54,7 +54,6 @@ def test_vectorized_env_uses_compiled_vfs_variables_without_profile_synthesis(tm
     profiles = {
         "variables": {
             "version": "1.0",
-            "extents": {},
             "item_profiles": [],
             "declarations": [
                 {
@@ -102,7 +101,6 @@ def test_vectorized_env_uses_compiled_effects_schema(tmp_path: Path) -> None:
     profiles = {
         "variables": {
             "version": "1.0",
-            "extents": {},
             "item_profiles": [],
             "declarations": [
                 {

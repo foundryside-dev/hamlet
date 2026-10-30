@@ -1588,7 +1588,6 @@ The compiler supplies engine roles; authors do not declare readers or writers.
 ```yaml
 variables:
   version: '1.0'
-  extents: {}
   item_profiles: []
   declarations:
   - id: is_caffeinated

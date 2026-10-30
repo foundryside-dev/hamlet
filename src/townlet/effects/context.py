@@ -15,8 +15,6 @@ if TYPE_CHECKING:
 
 __all__ = ["ExecutionContext"]
 
-_AGENT_SCOPES = frozenset({VariableScope.AGENT, VariableScope.AGENT_PRIVATE})
-
 
 class _NullEffectManager:
     def spawn_effect(self, *args: Any, **kwargs: Any) -> None:  # pragma: no cover
@@ -343,7 +341,7 @@ class ExecutionContext:
             if var_def is None:
                 raise KeyError(f"VFS variable '{var_name}' not found")
 
-            if var_def.scope in _AGENT_SCOPES:
+            if var_def.scope == VariableScope.AGENT:
                 # An agent-scoped bare write is one agent's row, never the batch. The
                 # compiler resolves it to target.vfs.X; a node reaching here unresolved
                 # is routed to the agent target or refused.
@@ -455,7 +453,7 @@ class ExecutionContext:
         if scope == "global":
             return self.vfs_registry.get(var_name, reader="engine")
 
-        if scope in ("agent", "agent_private"):
+        if scope == "agent":
             tensor = self.vfs_registry.get(var_name, reader="engine")
             if tensor.dim() == 0 or allow_batch:
                 return tensor

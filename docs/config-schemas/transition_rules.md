@@ -2,11 +2,10 @@
 
 > ✅ **Restored to the live tree 2026-08-26 — verified accurate. Its flagship example both parses AND compiles**, which is the bar the other schema docs fail.
 >
-> One caveat, not a defect: the example variables `trust`, `observer_mask` and `chosen_action`
-> are **not declared in `configs/default_curriculum`**. Pair-scoped `trust` ships only in
-> `configs/L5_multi_agent` (`configs/trial_o_bidding_blind` was deleted 2026-09-02, `PDR-0142`); `observer_mask` and
-> `chosen_action` have no config hits anywhere. Read them as illustrative names, and declare
-> your own before copying an example.
+> One caveat, not a defect: the example variables `public_reputation`, `was_observed` and
+> `chosen_action` are **not declared in any shipped pack**. Read them as illustrative names,
+> and declare your own before copying an example. There is no `pair` scope (VFS WP15, owner
+> ruling S1: the batch is N independent single-agent worlds), so no rule relates two agents.
 
 
 ---
@@ -17,7 +16,7 @@
 **When to Read**: Authoring "action leaves a social trace" mechanics — trust damage, obligations, reputation, sanctions — or debugging why a social-residue rule does or does not fire
 
 **AI-Friendly Summary**:
-`transition_rules.yaml` is the pack-root authoring surface for VTC social-residue rules. Three rule kinds (`visibility_effect`, `social_residue`, `institutional_rule`) declare condition-gated writes to VFS variables (typically pair-scope, e.g. `trust[i, j]`), executed in the `apply_social_residue_effects` phase inside `env.step`. The file is validated at load by a no-defaults DTO (`townlet.config.transition_rules_config.TransitionRulesConfig`, `extra="forbid"`): unknown or typo'd keys fail at parse, and the behavioural fields `condition`, `clamp`, `effect` must be set explicitly (`null` included). Masking follows the target variable's declared scope, never an authored annotation. Direction (observer→actor) is carried by declared pair-scope data in `condition`/`expression`, never by a role annotation.
+`transition_rules.yaml` is the pack-root authoring surface for VTC social-residue rules. Three rule kinds (`visibility_effect`, `social_residue`, `institutional_rule`) declare condition-gated writes to `global`, `agent` or `affordance` VFS variables, executed in the `apply_social_residue_effects` phase inside `env.step`. The file is validated at load by a no-defaults DTO (`townlet.config.transition_rules_config.TransitionRulesConfig`, `extra="forbid"`): unknown or typo'd keys fail at parse, and the behavioural fields `condition`, `clamp`, `effect` must be set explicitly (`null` included). Masking follows the target variable's declared scope, never an authored annotation.
 
 **Reading Strategy**:
 - **Quick Reference**: "Field Reference" below
@@ -25,7 +24,7 @@
 
 **Related Documents**:
 - `docs/architecture/VFS.md` §16.3 (semantics, effect vocabulary, directionality)
-- `docs/config-schemas/variables.md` - VFS variable scopes (`pair`, `agent`, ...)
+- `docs/config-schemas/variables.md` - VFS variable scopes (`global`, `agent`, `affordance`)
 - `docs/config-schemas/expressions.md` - expression language used by `condition` / `expression`
 
 ---
@@ -44,18 +43,18 @@ See [declaration discovery](declarations.md).
 ```yaml
 version: "1.0"            # required, literal
 social_residue:           # required list (may be empty, but say so explicitly)
-  - id: "seen_stealing_damages_trust"
+  - id: "seen_stealing_damages_reputation"
     kind: "visibility_effect"          # visibility_effect | social_residue | institutional_rule
     phase: "apply_social_residue_effects"
-    reads: ["chosen_action", "observer_mask", "trust"]
-    condition: "observer_mask and chosen_action == STEAL"   # or null
+    reads: ["chosen_action", "was_observed", "public_reputation"]
+    condition: "was_observed and chosen_action == STEAL"   # or null
     writes:
-      - variable_id: "trust"
+      - variable_id: "public_reputation"
         expression: "-0.15"
         composition: "additive_delta"
         condition: null                # combined (AND) with the rule condition when set
         clamp: [0.0, 1.0]              # or null
-        effect: "trust_delta"          # relationship-effect label, or null
+        effect: "reputation_delta"     # effect label, or null
 ```
 
 ## Field Reference
@@ -67,7 +66,7 @@ social_residue:           # required list (may be empty, but say so explicitly)
 | `id` | yes | unique across pack-scope transition declarations; appears in telemetry labels |
 | `kind` | yes | `visibility_effect` \| `social_residue` \| `institutional_rule` |
 | `phase` | yes | canonically `apply_social_residue_effects`; writes inherit it |
-| `reads` | yes, non-empty | variables the rule reads; directionality lives here as pair-scope data |
+| `reads` | yes, non-empty | variables the rule reads |
 | `condition` | yes, nullable | rule-level gate; `null` = unconditional |
 | `writes` | yes, non-empty | see below |
 | `priority` | no (computed) | defaults to declaration order |
@@ -78,7 +77,7 @@ social_residue:           # required list (may be empty, but say so explicitly)
 |---|---|---|
 | `variable_id` | yes | must be a declared VFS variable (compile-time checked) |
 | `expression` | yes | `additive_delta` expressions are deltas, not post-update values |
-| `composition` | yes | same vocabulary as `WriteSpec` (`additive_delta`, `overwrite`, ...) |
+| `composition` | yes | `WriteSpec`'s vocabulary minus the action-only occupancy claims: `overwrite`, `additive_delta`, `multiplicative_modifier`, `min`, `max`, `clamp`, `priority_write`, `last_write_wins`; `claim_if_free`/`capacity_claim` fail at parse |
 | `condition` | yes, nullable | ANDed with the rule condition |
 | `clamp` | yes, nullable | `[low, high]` post-write bounds |
 | `effect` | yes, nullable | vocabulary label (see vfs.md §16.3 table); used in derived telemetry |
@@ -90,13 +89,9 @@ social_residue:           # required list (may be empty, but say so explicitly)
 - Omitting `condition`/`clamp`/`effect` → load error; write `null` to mean "none".
 - `variable_id` not a declared VFS variable → compile error (`targets unknown VFS variable`).
 - The removed write-level `target` role annotation and `scope` masking annotation → load
-  error as unknown keys. A write is masked by its target's declared scope: `pair` `v[i, j]`
-  where both i and j are active (the diagonal included), `agent`/`agent_private`/`message`
-  by the agent row, and `global`/`affordance` state is written while any agent is active.
+  error as unknown keys. A write is masked by its target's declared scope: `agent` by the
+  agent row, and `global`/`affordance` state is written while any agent is active.
 - An expression or condition whose shape does not fit the target scope → compile error
   (`VTC-WRITE-TYPE`; rules in [variables.md](variables.md#transition-phases-and-evaluation-order)).
-  An agent-shaped value into a `pair` target is refused: the language cannot yet name
-  the pair axis. Inside a pair target's condition, an agent operand alongside pair data
-  indexes the second axis (`observer_mask and chosen_action == STEAL`).
 - A write to a variable that carries an `expression` → compile error (`UAC-STATIC-WRITE`),
   naming both the write and the declaration.

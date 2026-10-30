@@ -57,7 +57,6 @@ def _write_variables(config_dir: Path, *, profile_count: int) -> None:
     variables = {
         "variables": {
             "version": "1.0",
-            "extents": {},
             "item_profiles": profiles,
             "declarations": [
                 {

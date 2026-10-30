@@ -5,4 +5,4 @@ experiment:
 
   metadata:
     name: "L5 Multi-Agent VFS Scenario"
-    description: "Small society scenario validating pair and affordance-scoped VFS storage through compile and runtime setup."
+    description: "Small survival level run as N independent single-agent worlds; not multi-agent until agents-per-world is declarable."

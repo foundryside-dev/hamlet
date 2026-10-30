@@ -14,14 +14,10 @@ def _target(scope: VariableScope, var_type: str = "scalar") -> VTCWriteTarget:
 
 #: Declared scope and type of every state these rules write or read.
 TARGET_SCOPES = {
-    "trust": _target(VariableScope.PAIR),
-    "obligation": _target(VariableScope.PAIR),
     "public_reputation": _target(VariableScope.AGENT),
     "pressure": _target(VariableScope.GLOBAL),
     "wear": _target(VariableScope.AFFORDANCE),
     "chosen_action": _target(VariableScope.AGENT),
-    "observer_mask": _target(VariableScope.PAIR, "bool"),
-    "recipient_actor_mask": _target(VariableScope.PAIR, "bool"),
     "was_observed": _target(VariableScope.AGENT, "bool"),
 }
 
@@ -34,15 +30,15 @@ def test_vtc_social_residue_compiles_visibility_social_and_institutional_kinds()
     program = _compile(
         [
             {
-                "id": "seen_stealing_damages_trust",
+                "id": "seen_stealing_damages_reputation",
                 "phase": "apply_social_residue_effects",
                 "kind": "visibility_effect",
-                "reads": ["chosen_action", "observer_mask", "trust"],
-                "condition": "observer_mask and chosen_action == 7",
+                "reads": ["chosen_action", "was_observed", "public_reputation"],
+                "condition": "was_observed and chosen_action == 7",
                 "writes": [
                     {
-                        "variable_id": "trust",
-                        "effect": "trust_delta",
+                        "variable_id": "public_reputation",
+                        "effect": "seen_delta",
                         "expression": "-0.15",
                         "composition": "additive_delta",
                         "clamp": (0.0, 1.0),
@@ -50,16 +46,16 @@ def test_vtc_social_residue_compiles_visibility_social_and_institutional_kinds()
                 ],
             },
             {
-                "id": "help_creates_obligation",
+                "id": "working_wears_affordances",
                 "phase": "apply_social_residue_effects",
                 "kind": "social_residue",
-                "reads": ["chosen_action", "recipient_actor_mask", "obligation"],
-                "condition": "chosen_action == 4",
+                "reads": ["wear"],
+                "condition": None,
                 "writes": [
                     {
-                        "variable_id": "obligation",
-                        "effect": "obligation_create",
-                        "condition": "recipient_actor_mask",
+                        "variable_id": "wear",
+                        "effect": "wear_delta",
+                        "condition": None,
                         "expression": "0.20",
                         "composition": "additive_delta",
                         "clamp": (0.0, 1.0),
@@ -86,114 +82,21 @@ def test_vtc_social_residue_compiles_visibility_social_and_institutional_kinds()
     )
 
     assert [rule.kind for rule in program.rules] == ["visibility_effect", "social_residue", "institutional_rule"]
-    assert [rule.effect for rule in program.rules] == ["trust_delta", "obligation_create", "reputation_delta"]
+    assert [rule.effect for rule in program.rules] == ["seen_delta", "wear_delta", "reputation_delta"]
     assert {rule.phase for rule in program.rules} == {"apply_social_residue_effects"}
-    assert program.rules[0].reads == ("chosen_action", "observer_mask", "trust")
+    assert program.rules[0].reads == ("chosen_action", "was_observed", "public_reputation")
 
 
-def test_vtc_directed_pair_write_moves_trust_ij_without_trust_ji() -> None:
-    """Directionality is carried by condition data: trust[i, j] moves while trust[j, i] does not."""
+def test_vtc_social_and_institutional_residue_updates_agent_variables() -> None:
     program = _compile(
         [
             {
-                "id": "seen_stealing_damages_trust",
-                "phase": "apply_social_residue_effects",
-                "kind": "visibility_effect",
-                "reads": ["chosen_action", "observer_mask", "trust"],
-                "condition": "observer_mask and chosen_action == 7",
-                "writes": [
-                    {
-                        "variable_id": "trust",
-                        "effect": "trust_delta",
-                        "expression": "-0.15",
-                        "composition": "additive_delta",
-                        "clamp": (0.0, 1.0),
-                    }
-                ],
-            }
-        ]
-    )
-
-    updated = program.apply(
-        vfs_state={
-            "trust": torch.full((2, 2), 0.8),
-            "observer_mask": torch.tensor(
-                [
-                    [False, True],
-                    [False, False],
-                ]
-            ),
-            "chosen_action": torch.tensor([0, 7]),
-        },
-        active_mask=torch.tensor([True, True]),
-        device=torch.device("cpu"),
-    ).values
-
-    assert updated["trust"][0, 1].item() == pytest.approx(0.65)
-    assert updated["trust"][1, 0].item() == pytest.approx(0.8)
-
-
-def test_vtc_visibility_effect_updates_directed_pair_state_for_observed_actor_actions() -> None:
-    program = _compile(
-        [
-            {
-                "id": "seen_stealing_damages_trust",
-                "phase": "apply_social_residue_effects",
-                "kind": "visibility_effect",
-                "reads": ["chosen_action", "observer_mask", "trust"],
-                "condition": "observer_mask and chosen_action == 7",
-                "writes": [
-                    {
-                        "variable_id": "trust",
-                        "effect": "trust_delta",
-                        "expression": "-0.15",
-                        "composition": "additive_delta",
-                        "clamp": (0.0, 1.0),
-                    }
-                ],
-            }
-        ]
-    )
-
-    updated = program.apply(
-        vfs_state={
-            "trust": torch.full((3, 3), 0.8),
-            "observer_mask": torch.tensor(
-                [
-                    [False, True, False],
-                    [False, False, False],
-                    [False, True, False],
-                ]
-            ),
-            "chosen_action": torch.tensor([0, 7, 0]),
-        },
-        active_mask=torch.tensor([True, True, False]),
-        device=torch.device("cpu"),
-    ).values
-
-    expected = torch.full((3, 3), 0.8)
-    expected[0, 1] = 0.65
-    assert torch.allclose(updated["trust"], expected)
-
-
-def test_vtc_social_and_institutional_residue_updates_pair_and_agent_variables() -> None:
-    program = _compile(
-        [
-            {
-                "id": "help_creates_obligation_and_reputation",
+                "id": "observed_help_raises_reputation",
                 "phase": "apply_social_residue_effects",
                 "kind": "social_residue",
-                "reads": ["chosen_action", "recipient_actor_mask", "was_observed", "obligation", "public_reputation"],
+                "reads": ["chosen_action", "was_observed", "public_reputation"],
                 "condition": "chosen_action == 4",
                 "writes": [
-                    {
-                        "variable_id": "obligation",
-                        "effect": "obligation_create",
-                        "condition": "recipient_actor_mask",
-                        "expression": "0.20",
-                        "composition": "additive_delta",
-                        "clamp": (0.0, 1.0),
-                    },
                     {
                         "variable_id": "public_reputation",
                         "effect": "reputation_delta",
@@ -225,15 +128,7 @@ def test_vtc_social_and_institutional_residue_updates_pair_and_agent_variables()
 
     updated = program.apply(
         vfs_state={
-            "obligation": torch.zeros((3, 3)),
             "public_reputation": torch.tensor([0.5, 0.5, 0.5]),
-            "recipient_actor_mask": torch.tensor(
-                [
-                    [False, False, False],
-                    [True, False, False],
-                    [False, False, False],
-                ]
-            ),
             "was_observed": torch.tensor([True, False, False]),
             "chosen_action": torch.tensor([4, 9, 0]),
         },
@@ -241,9 +136,6 @@ def test_vtc_social_and_institutional_residue_updates_pair_and_agent_variables()
         device=torch.device("cpu"),
     ).values
 
-    expected_obligation = torch.zeros((3, 3))
-    expected_obligation[1, 0] = 0.2
-    assert torch.allclose(updated["obligation"], expected_obligation)
     assert torch.allclose(updated["public_reputation"], torch.tensor([0.55, 0.4, 0.5]))
 
 

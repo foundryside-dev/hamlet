@@ -41,7 +41,7 @@ class EffectsCompiler:
         for var in variables.declarations:
             if var.scope == VariableScope.GLOBAL:
                 self._add_global_vfs_paths(schema, var.id, var.type)
-            elif var.scope in {VariableScope.AGENT, VariableScope.AGENT_PRIVATE}:
+            elif var.scope == VariableScope.AGENT:
                 self._add_target_vfs_paths(schema, var.id, var.type)
 
         if compiled_vfs_profiles is not None:

@@ -14,7 +14,7 @@ Usage:
 
 Purpose:
     Catch substrate integration bugs BEFORE training starts, preventing wasted
-    training time. Complements YAML validation (validate_substrate_configs.py)
+    training time. Complements compile-time validation (python -m townlet.universe validate)
     with runtime checks.
 """
 

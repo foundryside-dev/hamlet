@@ -116,6 +116,7 @@ python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = [
     "--verbose",
+    "-m", "not perf",
     "--cov=townlet",
     "--cov-branch",
     "--cov-report=term-missing",
@@ -127,6 +128,7 @@ markers = [
     "gpu: marks tests requiring CUDA/GPU hardware",
     "integration: marks tests as integration tests",
     "e2e: marks tests as end-to-end tests",
+    "perf: wall-clock ratio asserts; excluded by default (addopts), run with `pytest -m perf --no-cov`",
 ]
 
 [tool.coverage.run]

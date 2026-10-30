@@ -46,7 +46,6 @@ src/townlet/training/tensorboard_logger.py:*
 # Whitelist specific classes that have acceptable defaults
 
 # Environment modules - will be refactored in TASK-003/TASK-004A
-src/townlet/environment/affordance_config.py:*
 src/townlet/environment/affordance_engine.py:*
 src/townlet/environment/vectorized_env.py:*
 

@@ -76,8 +76,8 @@ Each stage emits an INFO log marker (`Stage N: …`) from `townlet.universe.comp
 order is observable in tests and runtime diagnostics.
 
 **Determinism.** The compiler is intentionally pure: given the same YAML content and the same
-compiler version, the emitted artifact — including `metadata.config_hash` and
-`metadata.provenance_id` — is stable. That is what unlocks both cache hits and checkpoint
+compiler source, the emitted artifact is stable; `metadata.config_hash` depends on content alone,
+and `metadata.provenance_id` additionally on the pack path and the toolchain (§5). That is what unlocks both cache hits and checkpoint
 identity checking.
 
 ---
@@ -150,7 +150,8 @@ cell ceiling raises `GRID_SIZE_LIMIT_EXCEEDED`; a grid too small to hold its aff
 agents raises `GRID_CAPACITY_EXCEEDED`).
 
 **There is no warning channel in practice — every finding is a hard error.** Verified
-2026-08-24: `CompilationErrorCollector.add_warning` exists but has **zero callers**; the one
+2026-08-24, re-checked 2026-10-25: the collector has no warning-adding method (the
+zero-caller `add_warning` was deleted); the one
 producer of soft findings, `SubstrateActionValidator`, has its warnings escalated to errors
 (`SUBSTRATE_ACTION_WARNING_AS_ERROR`, `validation/semantics.py:151-156`). The archived guide's
 economic-imbalance *warning* has no current counterpart at all: economic-balance analysis is not
@@ -186,18 +187,27 @@ compiler assessment and is slated for deletion by the in-flight cleanup (§7).
   artifact per level**, since `CompiledUniverse` is single-level by construction
   (`compiler.py:677`). The archived guide's flat `universe.msgpack` path is stale.
 - The compiler normalizes YAML (sorted keys) before hashing, then folds in file names to avoid
-  collisions, producing `config_hash`. `provenance_id` folds in compiler version, git SHA, and
-  Python / torch / pydantic versions.
-- Cache validation uses `config_hash` **plus** the maximum mtime across recursively discovered
-  `.yaml`/`.yml` files outside `.compiled`. If the hash changes or any config is newer than the artifact,
-  the compiler recompiles rather than loading.
+  collisions, producing `config_hash` (pack content only: two identical packs share it).
+  `provenance_id` folds in `config_hash`, the resolved pack path (`experiment_dir`), the compiler
+  version, a SHA-256 over every `.py` file of the installed `townlet` package (so an uncommitted
+  source edit invalidates the cache and a docs-only commit does not), and Python / torch /
+  pydantic versions. The git SHA is not a cache input; it is recorded as
+  `metadata.compiler_git_sha`, resolved from the package root, never the cwd.
+- Cache validation (`UniverseCompiler.cache_staleness`) requires the artifact's `experiment_dir`
+  to be this pack, equal `config_hash` and `provenance_id`, and no recursively discovered
+  `.yaml`/`.yml` file outside `.compiled` newer than the artifact; otherwise the compiler
+  recompiles. A pack copied with its `.compiled/` therefore recompiles at the new path.
+  `inspect` applies the same rule against the source pack and prints `Freshness: FRESH`,
+  `STALE - <reasons>` or `UNKNOWN` (source pack gone), with a stderr warning when not fresh.
 - `CompiledUniverse.save_to_cache` / `load_from_cache` use MessagePack with defensive fallbacks:
   a corrupt cache triggers full recompilation plus a warning.
 
 **Checkpoint identity is a separate contract from the cache.** `config_hash` is the cache
 fingerprint; the checkpoint gate is `assert_checkpoint_identity`
-(`src/townlet/training/checkpoint_utils.py`), which hard-compares twelve of the artifact's
-declared `*_hash` fields, including the five pack-scope hashes; `config_hash` is not stamped. Full declared-vs-enforced breakdown: `HLD.md` §5.2.
+(`src/townlet/training/checkpoint_utils.py`), which hard-compares thirteen of the artifact's
+declared `*_hash` fields, including the six pack-scope hashes (`variables_hash` is canonical
+declaration content, not a pydantic dump: a declaration moved between files does not move it);
+`config_hash` is not stamped. Full declared-vs-enforced breakdown: `HLD.md` §5.2.
 
 A rough edge README records here is **fixed**: README §Known rough edges (stamped 2026-08-20)
 describes agent-profile packs compiling green while their cache artifact silently fails to
@@ -263,8 +273,11 @@ python -m townlet.universe validate configs/default_curriculum \
 
 Flags: `compile --no-cache` skips cache reads and writes and always rebuilds;
 `inspect --format {table,json}` selects human or machine-readable output (json carries the
-artifact path and metadata hashes); `validate` compiles and discards, so `.compiled/` never
-appears. `scripts/validate_compiler_cli.py` iterates every pack in `configs/`.
+artifact path, `freshness`, metadata hashes, the token census, `token_types` with payload
+features and row widths, and `token_rows`: one entry per slot with its filler kind, `filler_ref`,
+scope, compact `start`/`end` and network-boundary `fixed_start`/`fixed_end`); `validate`
+compiles and discards, so `.compiled/` never appears. Every CLI refusal exits 1 with a
+`[CODE] file:line - message` diagnostic, never a traceback. `scripts/validate_compiler_cli.py` iterates every pack in `configs/`.
 
 The CLI is wired into CI via `.github/workflows/config-validation.yml`. **Caveat: no workflow
 has ever run on `project-recovery`** (filigree `hamlet-2100105c9a`) — the gates that actually

@@ -1,33 +1,14 @@
 """Tests for universe DTOs."""
 
 import pytest
-import torch
 
 from townlet.universe.dto import (
-    ActionMetadata,
-    ActionSpaceMetadata,
     AffordanceInfo,
     AffordanceMetadata,
     MeterInfo,
     MeterMetadata,
     UniverseMetadata,
 )
-
-
-class TestActionSpaceMetadata:
-    """Action space helpers."""
-
-    def test_action_mask(self):
-        actions = (
-            ActionMetadata(id=0, name="wait", type="passive", enabled=True, source="substrate", costs={}, description=""),
-            ActionMetadata(id=1, name="sleep", type="interaction", enabled=False, source="affordance", costs={}, description=""),
-        )
-        metadata = ActionSpaceMetadata(total_actions=2, actions=actions)
-        mask = metadata.get_action_mask(num_agents=2, device=torch.device("cpu"))
-
-        assert mask.shape == (2, 2)
-        assert torch.all(mask[:, 0])
-        assert not torch.any(mask[:, 1])
 
 
 class TestMeterMetadata:

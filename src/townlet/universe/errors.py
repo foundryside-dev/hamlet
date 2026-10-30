@@ -83,12 +83,6 @@ class CompilationErrorCollector:
     def add_hint(self, hint: str) -> None:
         self.hints.append(hint)
 
-    def add_warning(self, message: CompilationMessage | str) -> None:
-        if isinstance(message, CompilationMessage):
-            self.warnings.append(message.format())
-        else:
-            self.warnings.append(message)
-
     def extend(self, messages: Iterable[CompilationMessage | str]) -> None:
         for message in messages:
             self.add(message)

@@ -31,6 +31,7 @@ ALLOWED_FIXED_REFERENCES = Counter(
         ("universe/dto/token_spec.py", "definition", "fixed_total_dims"): 1,
         ("universe/dto/token_spec.py", "definition", "fixed_row_layout"): 1,
         ("universe/__main__.py", "attribute", "fixed_total_dims"): 2,
+        ("universe/__main__.py", "attribute", "fixed_row_layout"): 1,
     }
 )
 FORBIDDEN_WHOLE_OBSERVATION_CALLABLES = frozenset(

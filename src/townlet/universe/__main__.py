@@ -12,7 +12,11 @@ from pathlib import Path
 
 from townlet.universe.compiled import CompiledUniverse
 from townlet.universe.compiler import UniverseCompiler
-from townlet.universe.errors import CompilationError
+from townlet.universe.dto.token_spec import SlotBinding
+from townlet.universe.error_codes import ErrorCode
+from townlet.universe.errors import CompilationError, CompilationMessage
+
+INSPECT_STAGE = "Inspect"
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -81,9 +85,6 @@ def _print_summary(metadata) -> None:
 
 def _cmd_compile(args: argparse.Namespace) -> int:
     config_dir = Path(args.config_dir).resolve()
-    if not config_dir.exists():
-        raise FileNotFoundError(f"Config directory not found: {config_dir}")
-
     compiler = UniverseCompiler()
     start = time.perf_counter()
     compiled = compiler.compile(config_dir, primary_level=args.primary_level, use_cache=not args.no_cache)
@@ -151,26 +152,122 @@ def _print_token_census(compiled: CompiledUniverse) -> None:
         print(f"  ADVISORY: {advisory}")
 
 
+def _refusal(stage: str, code: ErrorCode, location: Path | str, message: str) -> CompilationError:
+    """A CLI refusal in the compiler's own ``[CODE] file:line - message`` shape."""
+    return CompilationError(stage, [CompilationMessage(code=code, message=message, location=f"{location}:1")])
+
+
+def _token_layout_payload(compiled: CompiledUniverse) -> dict:
+    """Where every token row lands in the flat view, and what fills it.
+
+    ``token_rows`` joins ``row_layout()`` (compact transport offsets) and
+    ``fixed_row_layout()`` (network-boundary offsets) with each slot's binding, so
+    "where did my variable land" is answerable without Python.
+    """
+    spec = compiled.get_level(compiled.metadata.primary_level).token_spec
+    compact_layout = spec.compact_layout()
+    token_types = []
+    bindings: list[SlotBinding] = []
+    for token_type in spec.types:
+        type_layout = compact_layout.get_type(token_type.type_name)
+        assert type_layout is not None
+        token_types.append(
+            {
+                "type_name": token_type.type_name,
+                "capacity": token_type.capacity,
+                "payload_features": list(token_type.payload_features),
+                "compact_row_width": type_layout.compact_row_width,
+                "fixed_row_width": token_type.fixed_row_width,
+            }
+        )
+        bindings.extend(token_type.slot_bindings)
+    compact_rows = spec.row_layout()
+    fixed_rows = spec.fixed_row_layout()
+    assert len(compact_rows) == len(fixed_rows) == len(bindings)
+    token_rows = []
+    for (type_name, slot_index, start, end), (_, _, fixed_start, fixed_end), binding in zip(
+        compact_rows, fixed_rows, bindings, strict=True
+    ):
+        assert binding.slot_index == slot_index
+        token_rows.append(
+            {
+                "type_name": type_name,
+                "slot_index": slot_index,
+                "filler_kind": binding.filler_kind,
+                "filler_ref": binding.filler_ref,
+                "scope": None if binding.scope is None else str(binding.scope),
+                "start": start,
+                "end": end,
+                "fixed_start": fixed_start,
+                "fixed_end": fixed_end,
+            }
+        )
+    return {"token_types": token_types, "token_rows": token_rows}
+
+
+def _freshness(compiled: CompiledUniverse, source_pack: Path | None, requested_level: str | None) -> dict:
+    """Check the artifact against its source pack with the compile cache's own rule."""
+    if source_pack is None:
+        return {"status": "unknown", "source_pack": None, "reasons": ["artifact records no source pack"]}
+    if not source_pack.is_dir():
+        return {"status": "unknown", "source_pack": str(source_pack), "reasons": [f"source pack {source_pack} not found"]}
+    reasons = UniverseCompiler().cache_staleness(compiled, source_pack)
+    if requested_level is not None and compiled.metadata.primary_level != requested_level:
+        reasons.append(f"artifact is for level '{compiled.metadata.primary_level}', not '{requested_level}'")
+    return {"status": "stale" if reasons else "fresh", "source_pack": str(source_pack), "reasons": reasons}
+
+
 def _cmd_inspect(args: argparse.Namespace) -> int:
     artifact_path = Path(args.artifact).resolve()
+    source_pack: Path | None = None
 
-    # Auto-resolve config directory to artifact path for better UX
+    # A config directory resolves to its per-level artifact.
     if artifact_path.is_dir():
         if not args.primary_level:
-            raise ValueError(
-                f"{artifact_path} is a config directory and holds one artifact per level; "
-                "pass --primary-level to say which one to inspect."
+            raise _refusal(
+                INSPECT_STAGE,
+                ErrorCode.CLI_PRIMARY_LEVEL_REQUIRED,
+                artifact_path,
+                "This is a config directory and holds one artifact per level; pass --primary-level to say which one to inspect.",
             )
+        source_pack = artifact_path
         artifact_path = artifact_path / ".compiled" / f"universe-{args.primary_level}.msgpack"
 
-    if not artifact_path.exists():
-        raise FileNotFoundError(f"Artifact not found: {artifact_path}")
+    if not artifact_path.is_file():
+        raise _refusal(
+            INSPECT_STAGE,
+            ErrorCode.ARTIFACT_NOT_FOUND,
+            artifact_path,
+            "Compiled artifact not found; run `python -m townlet.universe compile` first.",
+        )
 
-    compiled = CompiledUniverse.load_from_cache(artifact_path)
+    try:
+        compiled = CompiledUniverse.load_from_cache(artifact_path)
+        recorded_pack = None if compiled.experiment_dir is None else Path(compiled.experiment_dir)
+    except Exception as exc:
+        # The same breadth as the compile cache read (_read_cache_artifact): any malformed
+        # artifact — wrong schema, wrong types, not msgpack at all — is a coded refusal.
+        raise _refusal(INSPECT_STAGE, ErrorCode.ARTIFACT_LOAD_REFUSED, artifact_path, f"{type(exc).__name__}: {exc}") from exc
+
+    # Given a pack directory, freshness is checked against it; given an artifact file,
+    # against the pack the artifact records (a copied pack's artifact still names its source).
+    source_origin = "argument" if source_pack is not None else "recorded in artifact"
+    if source_pack is None:
+        source_pack = recorded_pack
+    freshness = _freshness(compiled, source_pack, args.primary_level)
+    freshness["source_pack_origin"] = source_origin
+    checked = f"checked against {freshness['source_pack']} ({source_origin})"
+    if freshness["status"] != "fresh":
+        print(
+            f"WARNING: artifact freshness is {freshness['status'].upper()}, {checked}: " + "; ".join(freshness["reasons"]),
+            file=sys.stderr,
+        )
+
     level = compiled.get_level(compiled.metadata.primary_level)
     if args.format == "json":
         payload = {
             "artifact": str(artifact_path),
+            "freshness": freshness,
             "metadata": _metadata_to_dict(compiled.metadata),
             "vfs_hash": level.vfs_hash,
             "action_schema_hash": level.action_schema_hash,
@@ -183,6 +280,7 @@ def _cmd_inspect(args: argparse.Namespace) -> int:
             "token_type_schema_hash": level.token_type_schema_hash,
             "layout_hash": level.layout_hash,
             "token_advisories": list(level.token_advisories),
+            **_token_layout_payload(compiled),
         }
         print(json.dumps(payload, indent=2, sort_keys=True))
     else:
@@ -193,15 +291,16 @@ def _cmd_inspect(args: argparse.Namespace) -> int:
         print(f"  Variable Schema Hash : {level.variable_schema_hash[:16]}")
         print(f"  Transition Graph Hash : {_format_transition_hash(level.transition_graph_hash)}")
         _print_token_census(compiled)
+        freshness_line = f"{freshness['status'].upper()}, {checked}"
+        if freshness["reasons"]:
+            freshness_line += " - " + "; ".join(freshness["reasons"])
+        print(f"Freshness: {freshness_line}")
         print(f"Artifact path: {artifact_path}")
     return 0
 
 
 def _cmd_validate(args: argparse.Namespace) -> int:
     config_dir = Path(args.config_dir).resolve()
-    if not config_dir.exists():
-        raise FileNotFoundError(f"Config directory not found: {config_dir}")
-
     compiler = UniverseCompiler()
     start = time.perf_counter()
     compiler.compile(config_dir, primary_level=args.primary_level, use_cache=False)
@@ -211,23 +310,29 @@ def _cmd_validate(args: argparse.Namespace) -> int:
 
 
 def main(argv: Iterable[str] | None = None) -> int:
+    """Run one CLI command. Every refusal returns 1 with a diagnostic; none ends in a traceback."""
     parser = _build_parser()
     args = parser.parse_args(list(argv) if argv is not None else None)
+    commands = {"compile": _cmd_compile, "inspect": _cmd_inspect, "validate": _cmd_validate}
+    prefix = "" if args.command == "inspect" else "Compilation failed: "
+    target = args.artifact if args.command == "inspect" else args.config_dir
 
     try:
-        if args.command == "compile":
-            return _cmd_compile(args)
-        if args.command == "inspect":
-            return _cmd_inspect(args)
-        if args.command == "validate":
-            return _cmd_validate(args)
-    except CompilationError as exc:  # pragma: no cover - exercised via tests indirectly
-        print(f"Compilation failed: {exc}", file=sys.stderr)
+        return commands[args.command](args)
+    except CompilationError as exc:
+        print(f"{prefix}{exc}", file=sys.stderr)
         return 1
-    except FileNotFoundError as exc:
-        print(str(exc), file=sys.stderr)
+    except (ValueError, OSError) as exc:
+        # Last resort: a refusal raised below the CLI that does not yet carry its own
+        # code still reaches the user in the compiler's diagnostic shape.
+        refusal = _refusal(
+            INSPECT_STAGE if args.command == "inspect" else "Compiler",
+            ErrorCode.UNCLASSIFIED_REFUSAL,
+            Path(target).resolve(),
+            f"{type(exc).__name__}: {exc}",
+        )
+        print(f"{prefix}{refusal}", file=sys.stderr)
         return 1
-    return 0
 
 
 if __name__ == "__main__":  # pragma: no cover

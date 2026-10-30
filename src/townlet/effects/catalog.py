@@ -97,11 +97,10 @@ class EffectCatalog:
             on_despawn = parser.parse_commands(defn.on_despawn)
             on_interrupt = parser.parse_commands(defn.on_interrupt)
 
-            # Compile (validate) if schema provided. Only an agent-scoped effect runs
-            # with `target` bound to an agent row (EffectManager._lifecycle_context);
-            # global, item and affordance effects have no interacting agent.
+            # Compile (validate) if schema provided, with `target` bound as
+            # EffectManager._lifecycle_context binds it for the effect's scope.
             if schema:
-                compiler = CommandCompiler(schema, time_enabled=time_enabled, agent_target=defn.scope == EffectScope.AGENT)
+                compiler = CommandCompiler.for_effect_scope(schema, scope=defn.scope, time_enabled=time_enabled)
                 try:
                     compiler.compile_commands(on_spawn)
                     compiler.compile_commands(on_tick)

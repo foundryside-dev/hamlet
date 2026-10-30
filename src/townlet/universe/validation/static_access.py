@@ -15,6 +15,11 @@ from townlet.world.expression import ExpressionParser, PathAccess
 def validate_static_write_targets(raw: RawConfigsV21, source_map: SourceMap | None) -> None:
     """Refuse known denied writes independent of runtime branch selection.
 
+    Two refusals, both citing the authored write site: a target that denies the
+    engine write, and a target that carries an ``expression``. Profile evaluation
+    recomputes an expression variable after every authored write, so a write to one
+    would be silently discarded; the second refusal also names the declaration.
+
     Item-hook self targets have a known qualified profile. Item-effect targets
     and reference traversal are resolved and authorized by the runtime because
     their destination is selected dynamically.
@@ -24,14 +29,27 @@ def validate_static_write_targets(raw: RawConfigsV21, source_map: SourceMap | No
     items = {(v.profile, v.id): v for v in raw.variables.declarations if v.scope == VariableScope.ITEM}
     parser = ExpressionParser()
 
+    def identity(variable: VariableDeclaration) -> str:
+        return f"{variable.profile}:{variable.id}" if variable.profile is not None else variable.id
+
     def check(variable: VariableDeclaration | None, origin: str) -> None:
         if variable is not None and "engine" not in variable.writable_by:
-            if variable.profile is not None:
-                identity = f"{variable.profile}:{variable.id}"
-            else:
-                identity = variable.id
             errors.add(
-                f"Variable '{identity}' denies engine write required by {origin}",
+                f"Variable '{identity(variable)}' denies engine write required by {origin}",
+                code=ErrorCode.UAC_STATIC_WRITE,
+                location=locate(source_map, origin),
+            )
+
+    def check_authored(variable: VariableDeclaration | None, origin: str) -> None:
+        """An authored write (action, transition rule, command pipeline): authorized, and not expression-owned."""
+        check(variable, origin)
+        if variable is not None and variable.expression is not None:
+            declared_at = locate(source_map, variable_location_key(variable.profile, variable.id))
+            errors.add(
+                f"{origin} writes variable '{identity(variable)}', which is computed by its expression "
+                f"'{variable.expression}' (declared at {declared_at}). Profile evaluation recomputes it after every "
+                f"write, so this write would be silently discarded. Write one of the expression's inputs, or declare "
+                f"the variable without an expression.",
                 code=ErrorCode.UAC_STATIC_WRITE,
                 location=locate(source_map, origin),
             )
@@ -49,11 +67,11 @@ def validate_static_write_targets(raw: RawConfigsV21, source_map: SourceMap | No
             return
         identifier = ".".join(segments[1:])
         if prefix == "self" and item_profile is not None:
-            check(items.get((item_profile, identifier)), origin)
+            check_authored(items.get((item_profile, identifier)), origin)
         elif (self_is_item and prefix == "self") or (target_is_item and prefix == "target"):
             return  # The effect's item instance/profile is selected dynamically.
         else:
-            check(registry.get(identifier), origin)
+            check_authored(registry.get(identifier), origin)
 
     def commands(nodes: Iterable[CommandConfig], origin: str, item_profile: str | None, self_is_item: bool, target_is_item: bool) -> None:
         for index, node in enumerate(nodes):
@@ -82,8 +100,8 @@ def validate_static_write_targets(raw: RawConfigsV21, source_map: SourceMap | No
         if variable.expression is not None:
             check(variable, f"{variable_location_key(variable.profile, variable.id)}:expression")
     for action in raw.actions.actions.custom_actions:
-        for write in action.writes:
-            check(registry.get(write.variable_id), f"actions:{action.name}:writes")
+        for write_index, write in enumerate(action.writes):
+            check_authored(registry.get(write.variable_id), f"actions:{action.name}:writes[{write_index}]")
     for rule in raw.social_residue_rules:
         # These are lowered typed declarations, with explicit nulls removed by
         # RawConfigsV21. Validate the required projection instead of reparsing
@@ -91,10 +109,10 @@ def validate_static_write_targets(raw: RawConfigsV21, source_map: SourceMap | No
         writes = rule["writes"]
         if not isinstance(writes, tuple | list):
             raise TypeError("Lowered social rule requires a write sequence")
-        for social_write in writes:
+        for write_index, social_write in enumerate(writes):
             if not isinstance(social_write, dict) or not isinstance(social_write["variable_id"], str):
                 raise TypeError("Lowered social write requires an explicit variable_id string")
-            check(registry.get(social_write["variable_id"]), f"transition_rules:{rule['id']}:writes")
+            check_authored(registry.get(social_write["variable_id"]), f"transition_rules:{rule['id']}:writes[{write_index}]")
     for level in raw.levels.values():
         for affordance in level.affordances.affordances:
             for stage, pipeline in affordance.interactions.items():

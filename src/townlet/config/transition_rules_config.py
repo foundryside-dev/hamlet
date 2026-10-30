@@ -30,7 +30,16 @@ class SocialResidueWriteConfig(BaseModel):
     social-residue compiler defines: phase/priority/telemetry_label are derived
     from the owning rule when omitted, and effect labels the relationship
     effect. Masking follows the target variable's declared scope: a pair target
-    masks by the symmetric active-agent mask, an agent-axis target by the agent row.
+    ``v[i, j]`` is written where both agents i and j are active (the diagonal
+    ``v[i, i]`` included), an agent-axis target on each active agent's row, and a
+    global or affordance target whenever any agent is active.
+
+    The compiler proves the expression's and condition's shape against the target
+    scope. A pair target takes scalar or pair-shaped values only, never an
+    agent-shaped one: the expression language cannot yet say which pair axis an
+    agent's value belongs to. Inside a pair target's condition, an agent-shaped
+    operand combined with a pair-shaped one indexes the second axis
+    (``observer_mask[i, j] and chosen_action[j] == STEAL``).
     """
 
     model_config = ConfigDict(extra="forbid")

@@ -90,6 +90,13 @@ social_residue:           # required list (may be empty, but say so explicitly)
 - Omitting `condition`/`clamp`/`effect` → load error; write `null` to mean "none".
 - `variable_id` not a declared VFS variable → compile error (`targets unknown VFS variable`).
 - The removed write-level `target` role annotation and `scope` masking annotation → load
-  error as unknown keys. A write is masked by its target's declared scope: `pair` by the
-  symmetric active-agent mask, `agent`/`agent_private`/`message` by the agent row, and
-  `global`/`affordance` state is written while any agent is active.
+  error as unknown keys. A write is masked by its target's declared scope: `pair` `v[i, j]`
+  where both i and j are active (the diagonal included), `agent`/`agent_private`/`message`
+  by the agent row, and `global`/`affordance` state is written while any agent is active.
+- An expression or condition whose shape does not fit the target scope → compile error
+  (`VTC-WRITE-TYPE`; rules in [variables.md](variables.md#transition-phases-and-evaluation-order)).
+  An agent-shaped value into a `pair` target is refused: the language cannot yet name
+  the pair axis. Inside a pair target's condition, an agent operand alongside pair data
+  indexes the second axis (`observer_mask and chosen_action == STEAL`).
+- A write to a variable that carries an `expression` → compile error (`UAC-STATIC-WRITE`),
+  naming both the write and the declaration.

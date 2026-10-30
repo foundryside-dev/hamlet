@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from dataclasses import fields, replace
-from typing import Any
+from typing import Any, Literal
 
-from townlet.config.effects_config import SPATIAL_COLLECTIONS
+from townlet.config.effects_config import SPATIAL_COLLECTIONS, EffectScope
 from townlet.effects.schema import CommandNode, CommandType
 from townlet.world.expression import ExpressionParser
 from townlet.world.expression.ast_nodes import ASTNode, FunctionCall, PathAccess
@@ -24,6 +24,10 @@ _ITEM_TARGET_COLLECTIONS = frozenset({"inventory_items"})
 HISTORY_FUNCTIONS = frozenset({"lag", "delta", "moving_average", "ema", "rate_of_change", "rising_edge", "falling_edge", "elapsed_ticks"})
 
 
+TargetBinding = Literal["agent", "item", "none"]
+"""What `target` names while a command runs: an agent row, an item row, or nothing."""
+
+
 class CommandCompiler:
     """Compile commands with expression type checking."""
 
@@ -35,17 +39,43 @@ class CommandCompiler:
             time_enabled: Whether temporal mechanics are enabled (gates delay)
             agent_target: Whether the compiled pipeline runs with `target` bound to one
                 agent row — true for affordance interactions, item interactions and
-                agent-scoped effects; false for global, item and affordance-scoped
-                effects. A bare `vfs.X` naming an agent-scoped variable means that
+                agent-scoped effects; false for global and affordance-scoped effects.
+                An item-scoped effect's `target` is the item itself: build its
+                compiler with `for_effect_scope`. A bare `vfs.X` naming an agent-scoped variable means that
                 agent's row, never the batch: with an agent target it is resolved to
                 `target.vfs.X` (reads and writes alike); without one a write to it is
                 refused here.
         """
         self.schema = schema
         self.time_enabled = time_enabled
-        self.agent_target = agent_target
+        self.root_binding: TargetBinding = "agent" if agent_target else "none"
         self.parser = ExpressionParser()  # type: ignore[no-untyped-call]
         self.type_checker = TypeChecker(schema=schema)
+        # Under an item binding `target` is the item row (ExecutionContext
+        # `target_is_item`): `target.vfs.X` names item-profile state, typed like the
+        # schema's `self.vfs.X`, and an item has no bars or agent registry row.
+        self.item_schema = {key: value for key, value in schema.items() if not key.startswith("target.")}
+        self.item_schema.update({f"target.{key[len('self.'):]}": value for key, value in schema.items() if key.startswith("self.vfs.")})
+        self.item_type_checker = TypeChecker(schema=self.item_schema)
+
+    @classmethod
+    def for_effect_scope(cls, schema: dict[str, str], *, scope: EffectScope, time_enabled: bool) -> CommandCompiler:
+        """The compiler for an effect of `scope`, with `target` bound as EffectManager binds it.
+
+        An agent-scoped effect's target is its agent row; an item-scoped effect's target
+        is the item itself (`_lifecycle_context` sets `target_is_item`); global and
+        affordance effects have no target agent.
+        """
+        compiler = cls(schema, agent_target=scope == EffectScope.AGENT, time_enabled=time_enabled)
+        if scope == EffectScope.ITEM:
+            compiler.root_binding = "item"
+        return compiler
+
+    def _schema(self, binding: TargetBinding) -> dict[str, str]:
+        return self.item_schema if binding == "item" else self.schema
+
+    def _checker(self, binding: TargetBinding) -> TypeChecker:
+        return self.item_type_checker if binding == "item" else self.type_checker
 
     # -- bare `vfs.X` resolution -------------------------------------------------
 
@@ -63,10 +93,10 @@ class CommandCompiler:
         """The path a write lands on once bare agent paths are resolved (no refusal)."""
         return f"target.{path}" if self._bare_agent_path(path) else path
 
-    def _resolve_write_path(self, path: str, agent_target: bool, what: str) -> str:
+    def _resolve_write_path(self, path: str, binding: TargetBinding, what: str) -> str:
         if not self._bare_agent_path(path):
             return path
-        if not agent_target:
+        if binding != "agent":
             from townlet.world.expression.type_checker import TypeCheckError
 
             name = path[len("vfs.") :]
@@ -78,16 +108,16 @@ class CommandCompiler:
             )
         return f"target.{path}"
 
-    def _resolve_expression(self, ast: ASTNode, agent_target: bool) -> ASTNode:
+    def _resolve_expression(self, ast: ASTNode, binding: TargetBinding) -> ASTNode:
         """Rewrite bare agent-scoped `vfs.X` references to `target.vfs.X` under an agent target."""
-        if not agent_target:
+        if binding != "agent":
             return ast
         return _rewrite_ast(ast, self._bare_agent_path)
 
-    def _parse(self, expression: str, agent_target: bool) -> ASTNode:
+    def _parse(self, expression: str, binding: TargetBinding) -> ASTNode:
         ast = self.parser.parse(expression)
         _refuse_history_functions(ast, expression)
-        return self._resolve_expression(ast, agent_target)
+        return self._resolve_expression(ast, binding)
 
     def compile_command(self, node: CommandNode) -> CommandNode:
         """Compile and validate command.
@@ -101,9 +131,11 @@ class CommandCompiler:
         Raises:
             TypeCheckError: If path invalid or type mismatch
         """
-        return self._compile_command(node, self.agent_target)
+        return self._compile_command(node, self.root_binding)
 
-    def _compile_command(self, node: CommandNode, agent_target: bool) -> CommandNode:
+    def _compile_command(self, node: CommandNode, binding: TargetBinding) -> CommandNode:
+        schema = self._schema(binding)
+        type_checker = self._checker(binding)
         if node.type == CommandType.MODIFY:
             # Validate required fields are present
             if node.path is None or node.value_expr is None:
@@ -111,20 +143,20 @@ class CommandCompiler:
 
                 raise TypeCheckError("MODIFY command requires both 'path' and 'value_expr'")
 
-            node.path = self._resolve_write_path(node.path, agent_target, "MODIFY target")
+            node.path = self._resolve_write_path(node.path, binding, "MODIFY target")
 
             # Validate path exists
-            if node.path not in self.schema:
+            if node.path not in schema:
                 from townlet.world.expression.type_checker import TypeCheckError
 
-                raise TypeCheckError(f"Path '{node.path}' not found in schema. Available: {list(self.schema.keys())}")
+                raise TypeCheckError(f"Path '{node.path}' not found in schema. Available: {list(schema.keys())}")
 
             # Parse and type-check value expression
-            value_ast = self._parse(node.value_expr, agent_target)
-            value_type = self.type_checker.check(value_ast)
+            value_ast = self._parse(node.value_expr, binding)
+            value_type = type_checker.check(value_ast)
 
             # Verify type matches target path
-            target_type = self.schema[node.path]
+            target_type = schema[node.path]
             if value_type != target_type:
                 from townlet.world.expression.type_checker import TypeCheckError
 
@@ -146,8 +178,8 @@ class CommandCompiler:
             # Validate and compile target expression only when not a simple literal
             simple_target = node.target in {"self", "target"} or isinstance(node.target, int)
             if not simple_target and node.target_expr:
-                target_ast = self._parse(node.target_expr, agent_target)
-                target_type = self.type_checker.check(target_ast)
+                target_ast = self._parse(node.target_expr, binding)
+                target_type = type_checker.check(target_ast)
                 if target_type != "int":
                     raise TypeCheckError(f"spawn_effect target expression must be int, got {target_type} for '{node.target_expr}'")
 
@@ -162,9 +194,9 @@ class CommandCompiler:
                 raise TypeCheckError("SAMPLE command requires 'sample_distribution'")
             if node.sample_store_path is None:
                 raise TypeCheckError("SAMPLE command requires 'sample_store_path'")
-            node.sample_store_path = self._resolve_write_path(node.sample_store_path, agent_target, "SAMPLE store_in")
-            if node.sample_store_path not in self.schema:
-                raise TypeCheckError(f"Path '{node.sample_store_path}' not found in schema. Available: {list(self.schema.keys())}")
+            node.sample_store_path = self._resolve_write_path(node.sample_store_path, binding, "SAMPLE store_in")
+            if node.sample_store_path not in schema:
+                raise TypeCheckError(f"Path '{node.sample_store_path}' not found in schema. Available: {list(schema.keys())}")
 
             required_params: dict[str, tuple[str, ...]] = {
                 "uniform": ("min", "max"),
@@ -182,7 +214,7 @@ class CommandCompiler:
             if missing:
                 raise TypeCheckError(f"SAMPLE '{dist}' missing params: {missing}")
 
-            target_type = self.schema[node.sample_store_path]
+            target_type = schema[node.sample_store_path]
             expected_type = {
                 "uniform": "float",
                 "normal": "float",
@@ -209,8 +241,8 @@ class CommandCompiler:
                     ast_list = []
                     for idx, prob in enumerate(raw_val):
                         expr = prob if isinstance(prob, str) else str(prob)
-                        ast = self._parse(expr, agent_target)
-                        prob_type = self.type_checker.check(ast)
+                        ast = self._parse(expr, binding)
+                        prob_type = type_checker.check(ast)
                         if prob_type not in {"int", "float"}:
                             raise TypeCheckError(f"categorical probs[{idx}] must be numeric, got {prob_type}")
                         ast_list.append(ast)
@@ -218,8 +250,8 @@ class CommandCompiler:
                     continue
 
                 expr = raw_val if isinstance(raw_val, str) else str(raw_val)
-                ast = self._parse(expr, agent_target)
-                arg_type = self.type_checker.check(ast)
+                ast = self._parse(expr, binding)
+                arg_type = type_checker.check(ast)
                 if arg_type not in {"int", "float"}:
                     raise TypeCheckError(f"SAMPLE param '{name}' must be numeric, got {arg_type}")
                 param_asts[name] = ast
@@ -234,8 +266,8 @@ class CommandCompiler:
                 raise TypeCheckError("IF command requires 'condition_expr'")
 
             # Validate condition is boolean
-            cond_ast = self._parse(node.condition_expr, agent_target)
-            cond_type = self.type_checker.check(cond_ast)
+            cond_ast = self._parse(node.condition_expr, binding)
+            cond_type = type_checker.check(cond_ast)
 
             if cond_type != "bool":
                 from townlet.world.expression.type_checker import TypeCheckError
@@ -248,10 +280,10 @@ class CommandCompiler:
             # Recursively compile nested commands (with None checks for mypy)
             if node.then_commands is not None:
                 for cmd in node.then_commands:
-                    self._compile_command(cmd, agent_target)
+                    self._compile_command(cmd, binding)
             if node.else_commands is not None:
                 for cmd in node.else_commands:
-                    self._compile_command(cmd, agent_target)
+                    self._compile_command(cmd, binding)
 
         elif node.type == CommandType.FOR_EACH:
             # Validate required fields are present
@@ -269,8 +301,8 @@ class CommandCompiler:
             if has_collection_expr:
                 coll_expr = node.collection_expr
                 assert coll_expr is not None
-                coll_ast = self._parse(str(coll_expr), agent_target)
-                self.type_checker.check(coll_ast)
+                coll_ast = self._parse(str(coll_expr), binding)
+                type_checker.check(coll_ast)
                 node.collection_ast = coll_ast
             elif has_collection:
                 if node.collection not in COLLECTION_RESOLVERS:
@@ -283,7 +315,7 @@ class CommandCompiler:
 
             # The body runs once per element with `target` rebound to it: an agent row
             # for every collection except the item-row ones.
-            body_agent_target = node.collection not in _ITEM_TARGET_COLLECTIONS
+            body_binding: TargetBinding = "item" if node.collection in _ITEM_TARGET_COLLECTIONS else "agent"
 
             # Recursively compile nested commands (with None check for mypy)
             nested: list[CommandNode] = []
@@ -294,7 +326,7 @@ class CommandCompiler:
                 seen_ids.add(id(cmd))
                 nested.append(cmd)
             for cmd in nested:
-                self._compile_command(cmd, body_agent_target)
+                self._compile_command(cmd, body_binding)
 
             # Explicitly reject nested for_each until vectorized semantics are defined
             def _child_commands(cmd: CommandNode) -> list[CommandNode]:
@@ -327,25 +359,25 @@ class CommandCompiler:
             if node.switch_expr is None:
                 raise TypeCheckError("SWITCH command requires 'switch' expression")
 
-            switch_ast = self._parse(node.switch_expr, agent_target)
-            switch_type = self.type_checker.check(switch_ast)
+            switch_ast = self._parse(node.switch_expr, binding)
+            switch_type = type_checker.check(switch_ast)
             node.switch_ast = switch_ast
 
             compiled_cases: list[tuple[Any, list[CommandNode]]] = []
             for when_expr, body in node.cases or []:
                 if when_expr is None:
                     raise TypeCheckError("SWITCH case missing 'when' expression")
-                when_ast = self._parse(when_expr, agent_target)
-                when_type = self.type_checker.check(when_ast)
+                when_ast = self._parse(when_expr, binding)
+                when_type = type_checker.check(when_ast)
                 if when_type != switch_type:
                     raise TypeCheckError(f"SWITCH case type mismatch: switch is {switch_type}, case is {when_type}")
                 for cmd in body:
-                    self._compile_command(cmd, agent_target)
+                    self._compile_command(cmd, binding)
                 compiled_cases.append((when_ast, body))
             node.case_asts = compiled_cases
 
             for cmd in node.default_commands or []:
-                self._compile_command(cmd, agent_target)
+                self._compile_command(cmd, binding)
 
         elif node.type == CommandType.REDUCE:
             from townlet.world.expression.type_checker import TypeCheckError
@@ -360,36 +392,36 @@ class CommandCompiler:
                 raise TypeCheckError("REDUCE command requires collection, iterator, init, body, and target")
 
             # Parse expressions
-            coll_ast = self._parse(node.reduce_expr, agent_target)
-            init_ast = self._parse(node.reduce_init_expr, agent_target)
-            body_ast = self._parse(node.reduce_body_expr, agent_target)
+            coll_ast = self._parse(node.reduce_expr, binding)
+            init_ast = self._parse(node.reduce_init_expr, binding)
+            body_ast = self._parse(node.reduce_body_expr, binding)
 
             # Type check collection -> must be iterable of known-size tensors/lists (policy: reject unknown/ragged)
-            coll_type = self.type_checker.check(coll_ast)
+            coll_type = type_checker.check(coll_ast)
             if coll_type not in {"list", "tensor"}:
                 raise TypeCheckError("REDUCE collection must be fixed-size list or tensor under vectorized constraints")
 
             # Type check init and infer accumulator type
-            acc_type = self.type_checker.check(init_ast)
+            acc_type = type_checker.check(init_ast)
 
             # Extend schema with iterator and accumulator symbols for body checking
             iter_name = node.reduce_iterator
             # Temporarily augment schema
-            original_schema = dict(self.type_checker.schema)
-            self.type_checker.schema[iter_name] = acc_type  # assume numeric iterator compatible with accumulator
-            self.type_checker.schema["acc"] = acc_type
-            body_type = self.type_checker.check(body_ast)
+            original_schema = dict(type_checker.schema)
+            type_checker.schema[iter_name] = acc_type  # assume numeric iterator compatible with accumulator
+            type_checker.schema["acc"] = acc_type
+            body_type = type_checker.check(body_ast)
             # Restore schema
-            self.type_checker.schema = original_schema
+            type_checker.schema = original_schema
 
             if body_type != acc_type:
                 raise TypeCheckError(f"REDUCE body must return accumulator type {acc_type}, got {body_type}")
 
             # Validate target path exists and matches accumulator type
-            node.reduce_target = self._resolve_write_path(node.reduce_target, agent_target, "REDUCE into")
-            if node.reduce_target not in self.schema:
+            node.reduce_target = self._resolve_write_path(node.reduce_target, binding, "REDUCE into")
+            if node.reduce_target not in schema:
                 raise TypeCheckError(f"Path '{node.reduce_target}' not found in schema")
-            target_type = self.schema[node.reduce_target]
+            target_type = schema[node.reduce_target]
             if target_type != acc_type:
                 raise TypeCheckError(f"REDUCE target type mismatch: expected {target_type}, got {acc_type}")
 
@@ -436,7 +468,7 @@ class CommandCompiler:
 
             # Compile branches
             for bc in branches:
-                self._compile_command(bc, agent_target)
+                self._compile_command(bc, binding)
 
         elif node.type == CommandType.DELAY:
             from townlet.world.expression.type_checker import TypeCheckError
@@ -448,8 +480,8 @@ class CommandCompiler:
             if not node.delay_commands:
                 raise TypeCheckError("delay command requires a non-empty do block")
 
-            ticks_ast = self._parse(node.delay_ticks_expr, agent_target)
-            ticks_type = self.type_checker.check(ticks_ast)
+            ticks_ast = self._parse(node.delay_ticks_expr, binding)
+            ticks_type = type_checker.check(ticks_ast)
             if ticks_type != "int":
                 raise TypeCheckError("delay ticks expression must be int")
 
@@ -458,7 +490,7 @@ class CommandCompiler:
 
             # Compile nested commands (the scheduler replays them with the same target)
             for cmd in node.delay_commands:
-                self._compile_command(cmd, agent_target)
+                self._compile_command(cmd, binding)
 
         elif node.type == CommandType.SPAWN_ITEM:
             from townlet.world.expression.type_checker import TypeCheckError
@@ -471,9 +503,9 @@ class CommandCompiler:
             # Validate position expression if provided (not simple "random"/"self"/"target")
             simple_position = node.position in {"random", "self", "target"} or node.position is None
             if not simple_position and node.position_expr:
-                position_ast = self._parse(node.position_expr, agent_target)
+                position_ast = self._parse(node.position_expr, binding)
                 # Position expressions should produce coordinates - type check for sanity
-                self.type_checker.check(position_ast)
+                type_checker.check(position_ast)
                 node.position_ast = position_ast
 
         return node

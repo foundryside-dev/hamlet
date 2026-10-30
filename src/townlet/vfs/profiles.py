@@ -372,7 +372,7 @@ class VFSProfileCompiler:
             if compiled.ast is not None:
                 if var.type not in {"scalar", "bool"}:
                     raise TypeCheckError(f"Variable '{var.id}' expression shape supports scalar and bool outputs only")
-                output_shape = self._expression_shape(compiled.ast, shapes)
+                output_shape = self.expression_shape(compiled.ast, shapes, pair_agent_join=False)
                 expected_shape = "agent" if var.scope == VariableScope.AGENT else "scalar"
                 if output_shape != expected_shape:
                     raise TypeCheckError(
@@ -390,11 +390,20 @@ class VFSProfileCompiler:
         return CompiledGlobalProfile(variables=compiled_vars, dependencies=dependencies)
 
     @classmethod
-    def _expression_shape(cls, node: ASTNode, shapes: dict[str, str]) -> str:
+    def expression_shape(cls, node: ASTNode, shapes: dict[str, str], *, pair_agent_join: bool) -> str:
         """Prove the currently supported scalar/batch output shape without runtime sampling.
 
         Batch size remains symbolic: a one-agent execution cannot establish global
         versus per-agent compatibility. Unqualified shape-changing functions refuse.
+
+        A shape names the leading registry axes of a value: ``scalar`` (no axis),
+        ``agent`` (one row per agent), ``pair`` (agent x agent), ``message`` (agent x
+        message slot), ``affordance`` (one row per affordance) or ``payload`` (a
+        vector/tensor value, refused). ``scalar`` joins with anything; two distinct
+        axes refuse, because the evaluator aligns trailing dimensions and would combine
+        them by coincidence of extents. The one exception is ``pair_agent_join``: a
+        caller may admit pair with agent as pair, where the agent operand indexes the
+        pair's second axis (``mask[i, j] and value[j]``).
         """
         if isinstance(node, Constant):
             return "scalar"
@@ -408,7 +417,7 @@ class VFSProfileCompiler:
                 raise TypeCheckError(f"Expression path '{path}' has no qualified variable output shape")
             return shapes[path]
         if isinstance(node, UnaryOp):
-            return cls._expression_shape(node.operand, shapes)
+            return cls.expression_shape(node.operand, shapes, pair_agent_join=pair_agent_join)
         if isinstance(node, BinaryOp):
             operands = [node.left, node.right]
         elif isinstance(node, IfThenElse):
@@ -428,21 +437,36 @@ class VFSProfileCompiler:
                 "time_in_window",
                 "phase_sin",
                 "phase_cos",
+                "masked_add",
+                "masked_set",
+                "perlin_noise",
+                "simplex_noise",
             }
             stacked = {"mean", "variance", "sum", "product", "min_all", "max_all", "count_where", "argmin", "argmax", "all", "any"}
             if node.function_name not in pointwise | stacked:
                 raise TypeCheckError(f"Expression function '{node.function_name}' has no qualified variable output shape")
             operands = list(node.arguments)
             if node.function_name in stacked:
-                argument_shapes = {cls._expression_shape(argument, shapes) for argument in operands}
+                argument_shapes = {cls.expression_shape(argument, shapes, pair_agent_join=pair_agent_join) for argument in operands}
                 if len(argument_shapes) != 1:
                     raise TypeCheckError(f"Expression function '{node.function_name}' requires equal argument shapes")
         else:
             raise TypeCheckError(f"Expression node '{type(node).__name__}' has no qualified variable output shape")
-        operand_shapes = {cls._expression_shape(operand, shapes) for operand in operands}
+        operand_shapes = {cls.expression_shape(operand, shapes, pair_agent_join=pair_agent_join) for operand in operands}
         if "payload" in operand_shapes:
             raise TypeCheckError("Expression shape with vector/tensor payloads is not supported")
-        return "agent" if "agent" in operand_shapes else "scalar"
+        axes = operand_shapes - {"scalar"}
+        if not axes:
+            return "scalar"
+        if len(axes) == 1:
+            (axis,) = axes
+            return axis
+        if pair_agent_join and axes == {"pair", "agent"}:
+            return "pair"
+        raise TypeCheckError(
+            f"Expression combines values of different shapes {sorted(axes)}; their axes do not align, so the result "
+            "would depend on coincidences of extent"
+        )
 
     def compile_item_profile(
         self,

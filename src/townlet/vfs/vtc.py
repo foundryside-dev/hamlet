@@ -10,6 +10,7 @@ import torch
 
 from townlet.config.interaction_type import INTERACTION_TYPES, PROGRESS_INTERACTION_TYPES
 from townlet.vfs import vtc_kernels
+from townlet.vfs.profiles import VFSProfileCompiler
 from townlet.vfs.schema import VariableDef, VariableScope, WriteSpec
 from townlet.vfs.storage_dtype import admitted_write_result_types, to_storage_dtype
 from townlet.vfs.transition_graph import TransitionPhaseGraph
@@ -423,22 +424,85 @@ def vtc_write_targets(vfs_variables: Iterable[VariableDef], meter_names: Iterabl
     return targets
 
 
-def _write_expression_schema(targets: Mapping[str, VTCWriteTarget]) -> dict[str, str]:
-    """The type schema of a VTC write expression, mirroring the runtime ExecutionContext.
+_SCOPE_SHAPES: dict[VariableScope, str] = {
+    VariableScope.GLOBAL: "scalar",
+    VariableScope.AGENT: "agent",
+    VariableScope.AGENT_PRIVATE: "agent",
+    VariableScope.PAIR: "pair",
+    VariableScope.MESSAGE: "message",
+    VariableScope.AFFORDANCE: "affordance",
+}
+"""The leading registry axes a read of each scope yields (``VFSProfileCompiler.expression_shape`` labels).
+
+A vector/tensor-typed variable carries the same label: its payload width is the type
+checker's to prove (``vecNf`` against ``scalar``); the shape proof proves the axes.
+Scopes absent here have no registry row, so a write expression cannot read them."""
+
+
+def _write_expression_namespace(targets: Mapping[str, VTCWriteTarget]) -> tuple[dict[str, str], dict[str, str]]:
+    """The type schema and the shape map of a VTC write expression, mirroring the runtime ExecutionContext.
 
     The context resolves a bare name against the phase snapshot (every registry
     variable, every meter bar, and ``agent_id``), ``bar.<meter>`` against the bars, and
-    ``vfs.`` / ``self.vfs.`` / ``target.vfs.`` chains against the snapshot.
+    ``vfs.`` / ``self.vfs.`` / ``target.vfs.`` chains against the snapshot. Every
+    spelling reads the whole registry tensor, so every spelling carries its scope's shape.
     """
     schema: dict[str, str] = {"agent_id": "int"}
+    shapes: dict[str, str] = {"agent_id": "agent"}
     for name, target in targets.items():
         result_type = "float" if target.type == "scalar" else target.type
-        for key in (name, f"vfs.{name}", f"self.vfs.{name}", f"target.vfs.{name}"):
-            schema[key] = result_type
+        keys = [name, f"vfs.{name}", f"self.vfs.{name}", f"target.vfs.{name}"]
         if target.meter:
-            for key in (f"bar.{name}", f"self.bar.{name}", f"target.bar.{name}"):
-                schema[key] = result_type
-    return schema
+            keys += [f"bar.{name}", f"self.bar.{name}", f"target.bar.{name}"]
+        for key in keys:
+            schema[key] = result_type
+            if target.scope in _SCOPE_SHAPES:
+                shapes[key] = _SCOPE_SHAPES[target.scope]
+    return schema, shapes
+
+
+def _write_shape_refusal(
+    *,
+    expression_ast: ASTNode,
+    expression: str,
+    condition_ast: ASTNode | None,
+    condition: str | None,
+    shapes: Mapping[str, str],
+    admitted_expression: frozenset[str],
+    admitted_condition: frozenset[str],
+    condition_pair_agent_join: bool,
+    target_id: str,
+    target_scope: VariableScope,
+    prefix: str,
+) -> str | None:
+    """Why a write's expression or condition has a shape its target's scope cannot hold, or None.
+
+    Runs after the type check: the type proves the payload, this proves the axes, so
+    a pair or message read into an agent row, or an agent value into a global or pair
+    target, refuses here instead of failing (or broadcasting by coincidence) at step.
+    """
+    checks = [("expression", expression_ast, expression, admitted_expression, False)]
+    if condition_ast is not None:
+        assert condition is not None
+        checks.append(("condition", condition_ast, condition, admitted_condition, condition_pair_agent_join))
+    for kind, ast, text, admitted, pair_agent_join in checks:
+        try:
+            shape = VFSProfileCompiler.expression_shape(ast, dict(shapes), pair_agent_join=pair_agent_join)
+        except TypeCheckError as exc:
+            return f"{prefix} {kind} '{text}' has no provable shape: {exc}"
+        if shape in admitted:
+            continue
+        reason = (
+            f"{prefix} {kind} '{text}' is {shape}-shaped, but its target '{target_id}' has declared scope "
+            f"'{target_scope.value}', which admits {' or '.join(sorted(admitted))}-shaped values."
+        )
+        if target_scope == VariableScope.PAIR and shape == "agent":
+            reason += (
+                " An agent-shaped value has no declared pair axis: the language cannot yet say whether agent i's "
+                "value belongs to row i or column i of the pair, so it is refused rather than broadcast down a column."
+            )
+        return reason
+    return None
 
 
 def _write_type_refusal(
@@ -1769,24 +1833,19 @@ class VTCSocialResidueProgram:
         if value_on_device.shape == target.shape:
             return value_on_device
 
+        # The compile-time shape proof admits one more case: an agent-shaped value on an
+        # agent-axis target (a message target spreads it across the agent's slots). A pair
+        # target never takes one (F7), so there is no axis to guess here.
         num_agents = active_mask.shape[0]
-        if value_on_device.shape == active_mask.shape and rule.target_scope == VariableScope.PAIR:
-            VTCSocialResidueProgram._assert_target_shape(rule, target, num_agents)
-            view_shape = (1, num_agents, *([1] * (target.dim() - 2)))
-            return value_on_device.reshape(view_shape).expand_as(target)
-
         if value_on_device.shape == active_mask.shape and rule.target_scope in ACTION_WRITE_AGENT_AXIS_SCOPES:
             VTCSocialResidueProgram._assert_target_shape(rule, target, num_agents)
             view_shape = (num_agents, *([1] * (target.dim() - 1)))
             return value_on_device.reshape(view_shape).expand_as(target)
 
-        try:
-            return torch.broadcast_to(value_on_device, target.shape)
-        except RuntimeError as exc:
-            raise ValueError(
-                f"{label} for VTC social residue '{rule.telemetry_label}' produced shape {tuple(value.shape)}, "
-                f"expected broadcastable to {tuple(target.shape)}"
-            ) from exc
+        raise ValueError(
+            f"{label} for VTC social residue '{rule.telemetry_label}' produced shape {tuple(value.shape)} for "
+            f"{rule.target_scope.value}-scope target shape {tuple(target.shape)}; the compiled shape proof admits none such"
+        )
 
     @staticmethod
     def _active_mask_for_target(
@@ -1905,7 +1964,8 @@ def compile_vtc_social_residue_rules_with_phase_graph(
     broadcast; the type is what the write expression must type-check to.
     """
     parser = ExpressionParser()
-    checker = TypeChecker(schema=_write_expression_schema(targets))
+    schema, shapes = _write_expression_namespace(targets)
+    checker = TypeChecker(schema=schema)
     compiled_rules: list[CompiledVTCSocialResidueRule] = []
     refusals: list[VTCWriteRefusal] = []
 
@@ -1927,7 +1987,7 @@ def compile_vtc_social_residue_rules_with_phase_graph(
                 )
                 continue
             target = targets.get(write["variable_id"])
-            if target is None or target.scope == VariableScope.ITEM:
+            if target is None or target.scope not in _RULE_ADMITTED_SHAPES:
                 refusals.append(
                     VTCWriteRefusal(
                         origin_key=f"transition_rules:{rule['rule_id']}",
@@ -1937,7 +1997,7 @@ def compile_vtc_social_residue_rules_with_phase_graph(
                             + (
                                 f"unknown VFS variable '{write['variable_id']}'"
                                 if target is None
-                                else f"item-scope variable '{write['variable_id']}', which has no registry row"
+                                else f"{target.scope.value}-scope variable '{write['variable_id']}', which has no registry row"
                             )
                         ),
                     )
@@ -1958,6 +2018,26 @@ def compile_vtc_social_residue_rules_with_phase_graph(
             )
             if type_refusal is not None:
                 refusals.append(VTCWriteRefusal(origin_key=f"transition_rules:{rule['rule_id']}", kind="type", message=type_refusal))
+                continue
+            admitted_shapes = _RULE_ADMITTED_SHAPES[target.scope]
+            shape_refusal = _write_shape_refusal(
+                expression_ast=expression_ast,
+                expression=write["expression"],
+                condition_ast=condition_ast,
+                condition=condition,
+                shapes=shapes,
+                admitted_expression=admitted_shapes,
+                admitted_condition=admitted_shapes,
+                # Conditions on a pair target may gate by an agent's own state alongside
+                # pair data (``observer_mask and chosen_action == STEAL``): the agent
+                # operand indexes the second axis. Shipped grammar, VFS.md §16.
+                condition_pair_agent_join=target.scope == VariableScope.PAIR,
+                target_id=write["variable_id"],
+                target_scope=target.scope,
+                prefix=f"Transition rule '{rule['rule_id']}' write '{write['telemetry_label']}'",
+            )
+            if shape_refusal is not None:
+                refusals.append(VTCWriteRefusal(origin_key=f"transition_rules:{rule['rule_id']}", kind="type", message=shape_refusal))
                 continue
             compiled_rules.append(
                 CompiledVTCSocialResidueRule(
@@ -2173,6 +2253,37 @@ AFFORDANCE_OCCUPANCY_PHASE = "resolve_affordance_access_and_occupancy"
 AFFORDANCE_OCCUPANCY_COMPOSITIONS = frozenset({"claim_if_free", "capacity_claim"})
 
 
+_AGENT_ROW_SHAPES = frozenset({"scalar", "agent"})
+
+
+def _action_write_admitted_shapes(target_scope: VariableScope, composition: str) -> frozenset[str]:
+    """Value shapes an action write's expression may produce for its target.
+
+    An action write lands per acting agent, so its value is one per agent (or a
+    scalar): an agent row, an ``append_event`` payload, an occupancy claimant's
+    payload. The exception is a non-event write to a message buffer, which replaces
+    the whole ``[agents, slots]`` storage and so takes a message-shaped value.
+    """
+    if target_scope == VariableScope.MESSAGE and composition != "append_event":
+        return frozenset({"scalar", "message"})
+    return _AGENT_ROW_SHAPES
+
+
+_RULE_ADMITTED_SHAPES: dict[VariableScope, frozenset[str]] = {
+    VariableScope.GLOBAL: frozenset({"scalar"}),
+    VariableScope.AGENT: _AGENT_ROW_SHAPES,
+    VariableScope.AGENT_PRIVATE: _AGENT_ROW_SHAPES,
+    VariableScope.MESSAGE: frozenset({"scalar", "agent", "message"}),
+    VariableScope.PAIR: frozenset({"scalar", "pair"}),
+    VariableScope.AFFORDANCE: frozenset({"scalar", "affordance"}),
+}
+"""Value shapes a transition-rule write (expression and condition) may produce, by target scope.
+
+A message target also takes an agent-shaped value along its leading agent axis
+(``VTCSocialResidueProgram._coerce_tensor_to_target``). A pair target never takes an
+agent-shaped one (review-2026-10-24 VFS F7)."""
+
+
 def _action_write_scope_refusal(
     write: WriteSpec,
     action_name: str,
@@ -2220,7 +2331,8 @@ def _compile_vtc_action_writes_with_phase_graph(
     affordance_index_by_name: Mapping[str, int] | None,
 ) -> VTCActionWriteProgram:
     parser = ExpressionParser()
-    checker = TypeChecker(schema=_write_expression_schema(targets))
+    schema, shapes = _write_expression_namespace(targets)
+    checker = TypeChecker(schema=schema)
     compiled_writes: list[CompiledVTCActionWrite] = []
     refusals: list[VTCWriteRefusal] = []
     admitted = phase_graph.action_phases
@@ -2267,6 +2379,24 @@ def _compile_vtc_action_writes_with_phase_graph(
             )
             if type_refusal is not None:
                 refusals.append(VTCWriteRefusal(origin_key=origin_key, kind="type", message=type_refusal))
+                continue
+            # A shape refusal is the second half of the type proof (payload, then axes),
+            # so it reports under the same kind.
+            shape_refusal = _write_shape_refusal(
+                expression_ast=expression_ast,
+                expression=write.expression,
+                condition_ast=condition_ast,
+                condition=write.condition,
+                shapes=shapes,
+                admitted_expression=_action_write_admitted_shapes(target.scope, write.composition),
+                admitted_condition=_AGENT_ROW_SHAPES,
+                condition_pair_agent_join=False,
+                target_id=write.variable_id,
+                target_scope=target.scope,
+                prefix=f"Action '{action.name}' write '{write.telemetry_label}'",
+            )
+            if shape_refusal is not None:
+                refusals.append(VTCWriteRefusal(origin_key=origin_key, kind="type", message=shape_refusal))
                 continue
             compiled_writes.append(
                 CompiledVTCActionWrite(

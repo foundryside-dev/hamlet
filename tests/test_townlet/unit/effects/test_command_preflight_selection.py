@@ -164,7 +164,9 @@ def test_inventory_profile_denial_precedes_first_selected_item_mutation() -> Non
     context.inventory = SimpleNamespace(
         slots=torch.tensor([[0, 1], [-1, -1]]), items={0: SimpleNamespace(vfs_index=0), 1: SimpleNamespace(vfs_index=1)}
     )
-    command = CommandCompiler({"target.vfs.charge": "float"}, agent_target=True).compile_command(
+    # The effects schema names item-profile state `self.vfs.X`; an inventory loop's
+    # `target` is the item, so `target.vfs.charge` is typed from it.
+    command = CommandCompiler({"self.vfs.charge": "float"}, agent_target=True).compile_command(
         CommandNode(
             type=CommandType.FOR_EACH,
             collection="inventory_items",

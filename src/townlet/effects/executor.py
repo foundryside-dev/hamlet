@@ -85,6 +85,9 @@ class _TargetAwareExecutionContext(ExprExecutionContext):
         vfs_scopes: dict[str, str] | None = None,
         agent_positions: torch.Tensor | None = None,
         affordance_positions: dict[str, torch.Tensor] | None = None,
+        *,
+        target_index: int | None,
+        target_is_item: bool,
     ):
         resolved_device = torch.device(device) if device is not None else torch.device("cpu")
         super().__init__(
@@ -104,6 +107,8 @@ class _TargetAwareExecutionContext(ExprExecutionContext):
         self.vfs_registry = vfs_registry  # NEW
         self.self_index = self_index  # NEW
         self.self_is_item = self_is_item  # NEW
+        self.target_index = target_index
+        self.target_is_item = target_is_item
 
     def get(self, path: str) -> torch.Tensor:
         """Resolve dotted path with target. and self. prefix support.
@@ -119,8 +124,13 @@ class _TargetAwareExecutionContext(ExprExecutionContext):
         """
         parts = path.split(".")
 
-        # Handle target. prefix
+        # Handle target. prefix. An item target (item-scoped effect, inventory loop) is
+        # an item row, read from its profile exactly as `set_path` writes it.
         if parts[0] == "target":
+            if self.target_is_item:
+                if parts[1] == "vfs" and len(parts) >= 3:
+                    return self._read_item_vfs(self.target_index, ".".join(parts[2:]))
+                raise KeyError(f"Target path '{path}' not found: the target is an item, which has only item-profile state")
             if parts[1] == "bar" and len(parts) == 3:
                 return self.target_bars[parts[2]]
             elif parts[1] == "vfs" and len(parts) >= 3:
@@ -132,19 +142,7 @@ class _TargetAwareExecutionContext(ExprExecutionContext):
         if parts[0] == "self":
             # Special handling for self.vfs.* when self is an item
             if parts[1] == "vfs" and len(parts) >= 3 and self.self_is_item:
-                var_name = ".".join(parts[2:])
-                if self.vfs_registry is None or self.self_index is None:
-                    raise ValueError("VFS registry or self_index not set for item-scoped VFS lookup")
-                profile_name = self.vfs_registry.get_item_profile_for_index(self.self_index)
-                if profile_name is None:
-                    raise KeyError(f"No item profile registered for vfs_index {self.self_index}")
-                value = self.vfs_registry.read_item(profile_name, var_name, self.self_index, reader="engine")
-                # Convert to tensor if needed
-                if not isinstance(value, torch.Tensor):
-                    value = torch.tensor(value, dtype=torch.float32, device=self.device)
-                else:
-                    value = value.to(self.device)
-                return value
+                return self._read_item_vfs(self.self_index, ".".join(parts[2:]))
             elif parts[1] == "bar" and len(parts) == 3:
                 return self.self_bars[parts[2]]
             elif parts[1] == "vfs" and len(parts) >= 3:
@@ -154,6 +152,18 @@ class _TargetAwareExecutionContext(ExprExecutionContext):
 
         # Delegate to parent for non-target/non-self paths
         return super().get(path)
+
+    def _read_item_vfs(self, index: int | None, var_name: str) -> torch.Tensor:
+        """One item row's profile variable, as a tensor on this context's device."""
+        if self.vfs_registry is None or index is None:
+            raise ValueError("VFS registry or item index not set for item-scoped VFS lookup")
+        profile_name = self.vfs_registry.get_item_profile_for_index(index)
+        if profile_name is None:
+            raise KeyError(f"No item profile registered for vfs_index {index}")
+        value = self.vfs_registry.read_item(profile_name, var_name, index, reader="engine")
+        if not isinstance(value, torch.Tensor):
+            return torch.tensor(value, dtype=torch.float32, device=self.device)
+        return value.to(self.device)
 
 
 class CommandExecutor:
@@ -802,7 +812,7 @@ class CommandExecutor:
         # first spatial axis by agent index.
         target_bars = {}
         target_vfs = {}
-        if context.target_index is not None:
+        if context.target_index is not None and not context.target_is_item:
             for bar_name, tensor in bars_dict.items():
                 target_bars[bar_name] = tensor if tensor.dim() == 0 else tensor[context.target_index]
             for var_name, tensor in vfs_dict.items():
@@ -841,6 +851,8 @@ class CommandExecutor:
                 vfs_registry=context.vfs_registry,
                 self_index=context.self_index,
                 self_is_item=context.self_is_item,
+                target_index=context.target_index,
+                target_is_item=context.target_is_item,
                 device=device,
                 vfs_scopes=vfs_scopes,
                 agent_positions=agent_positions,

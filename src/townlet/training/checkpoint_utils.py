@@ -60,13 +60,17 @@ DEMO_CHECKPOINT_KEYS = frozenset(
         "environment_hash",
         "actions_hash",
         "items_hash",
+        "variables_hash",
     }
 )
 
-# The five pack-scope content hashes (compiler stage 1, `_compute_pydantic_hash` over the
-# parsed declaration). `items_hash` is None when the pack declares no item arena; that
-# None is a stamped value, and None-versus-value is a change like any other.
-PACK_HASH_KEYS = ("experiment_hash", "stratum_hash", "environment_hash", "actions_hash", "items_hash")
+# The six pack-scope content hashes. Five are `_compute_pydantic_hash` over the parsed
+# declaration (compiler stage 1); `variables_hash` is the canonical content of the
+# discovered `variables` declaration (`townlet.vfs.schema_hashes.compute_variables_hash`),
+# so a declaration moved between files does not move it. `items_hash` is None when the
+# pack declares no item arena; that None is a stamped value, and None-versus-value is a
+# change like any other.
+PACK_HASH_KEYS = ("experiment_hash", "stratum_hash", "environment_hash", "actions_hash", "items_hash", "variables_hash")
 _NULLABLE_PACK_HASH_KEYS = frozenset({"items_hash"})
 SUBSTRATE_METADATA_KEYS = frozenset({"position_dim", "substrate_type"})
 
@@ -186,8 +190,9 @@ def attach_universe_metadata(checkpoint: dict[str, Any], universe: CompiledUnive
     # `layout_hash` is the flat-net contract (capacities, slot bindings, total_dims).
     checkpoint["token_type_schema_hash"] = level.token_type_schema_hash
     checkpoint["layout_hash"] = level.layout_hash
-    # The five pack-scope content hashes (hamlet-2dde1015fe): a stratum, environment,
-    # actions, experiment or items edit moves one of these even when no level hash moves.
+    # The six pack-scope content hashes (hamlet-2dde1015fe; `variables_hash` from VFS
+    # round-2 F5): a stratum, environment, actions, experiment, items or variables edit
+    # moves one of these even when no level hash moves.
     for key in PACK_HASH_KEYS:
         checkpoint[key] = getattr(universe, key)
 
@@ -342,13 +347,16 @@ def assert_checkpoint_dimensions(
 
 
 def assert_checkpoint_pack_hashes(checkpoint: Mapping[str, Any], universe: CompiledUniverse) -> None:
-    """Hard-compare the five pack-scope content hashes (hamlet-2dde1015fe, findings F2).
+    """Hard-compare the six pack-scope content hashes (hamlet-2dde1015fe, findings F2).
 
     Grid size is pack scope and no level can override it, so a `stratum.yaml` edit —
     `boundary: clamp -> wrap`, `distance_metric: manhattan -> chebyshev` — moves no level
     hash and no token layout, and before this leg resumed silently into a world whose wall
-    behaviour the policy never learned. Same for `environment`, `actions`, `experiment`
-    and `items`: each is a declaration the universe was compiled from, so each is identity.
+    behaviour the policy never learned. Same for `environment`, `actions`, `experiment`,
+    `items` and `variables`: each is a declaration the universe was compiled from, so each
+    is identity. `variables_hash` is content, not transport: the declaration may live in
+    any file, and a hidden variable's `semantic_type` or expression text is as much a part
+    of it as an exposed one's normalization.
 
     `items_hash` is nullable (no item arena declared). ``None`` on one side and a digest on
     the other IS a changed world: a catalog appeared or vanished. There is no
@@ -434,9 +442,9 @@ def assert_checkpoint_identity(checkpoint: Mapping[str, Any], universe: Compiled
       3. ``assert_checkpoint_dimensions`` — action count, the architecture's
          observation contract, ``drive_hash``, effective ``brain_hash``, and the
          four per-level content hashes;
-      4. ``assert_checkpoint_pack_hashes`` — the five pack-scope content hashes
+      4. ``assert_checkpoint_pack_hashes`` — the six pack-scope content hashes
          (``experiment``, ``stratum``, ``environment``, ``actions``, nullable
-         ``items``), so a pack edit no level hash sees still refuses;
+         ``items``, ``variables``), so a pack edit no level hash sees still refuses;
       5. ``primary_level`` equality (D5) — the only field separating two levels
          that collide on every content hash (see
          ``test_two_levels_collide_on_almost_every_identity_field``).

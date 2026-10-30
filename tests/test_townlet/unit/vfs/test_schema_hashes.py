@@ -15,9 +15,11 @@ from townlet.vfs import vtc
 from townlet.vfs.schema import NormalizationSpec, VariableDef, VariableScope
 from townlet.vfs.schema_hashes import (
     canonical_action_schema,
+    canonical_expression_ast,
     canonical_transition_graph_schema,
     canonical_variable_schema,
     compute_action_schema_hash,
+    compute_expression_schema_hash,
     compute_transition_graph_hash,
     compute_variable_schema_hash,
     compute_vfs_hash,
@@ -29,8 +31,14 @@ from townlet.vfs.vtc import (
     compile_vtc_threshold_cascades_with_phase_graph,
     vtc_write_targets,
 )
+from townlet.world.expression import ExpressionParser
 
 ENERGY_SCOPES = {"energy": VTCWriteTarget(VariableScope.AGENT, "scalar", meter=False)}
+
+
+def _ast(expression: str) -> dict:
+    """Expression text enters every hash payload as its canonical AST (WP10 follow-up)."""
+    return canonical_expression_ast(ExpressionParser().parse(expression))
 
 
 def test_canonical_variable_schema_uses_sorted_contract_fields() -> None:
@@ -57,12 +65,14 @@ def test_canonical_variable_schema_uses_sorted_contract_fields() -> None:
                 "dims": None,
                 "shape": None,
                 "lifetime": "tick",
+                "semantic_type": None,
                 "initial_value": 1.0,
                 "initial_value_mode": None,
                 "initial_value_params": None,
                 "readable_by": ["agent", "engine"],
                 "writable_by": ["engine"],
-                "range": [0.0, 1.0],
+                "exposed_to": [],
+                "normalization": {"kind": "minmax", "min": 0.0, "max": 1.0, "clip": False},
             },
         }
     ]
@@ -209,7 +219,7 @@ def test_canonical_action_schema_uses_action_abi_fields() -> None:
             "writes": [
                 {
                     "variable_id": "energy",
-                    "expression": "energy + 0.2",
+                    "expression": _ast("energy + 0.2"),
                     "condition": None,
                     "composition": "additive_delta",
                     "phase": "action_effects",
@@ -242,7 +252,7 @@ def test_action_schema_hash_changes_when_mask_or_reads_or_writes_change() -> Non
         enabled=True,
         source="custom",
         reads=("energy",),
-        writes=({"variable_id": "energy", "expression": "energy + 0.2"},),
+        writes=({"variable_id": "energy", "expression": "energy + 0.2", "condition": None},),
     )
 
     assert compute_action_schema_hash((base,)) != compute_action_schema_hash((disabled,))
@@ -311,8 +321,8 @@ def test_transition_graph_hash_binds_phases_and_compiled_rule_fields() -> None:
                 "affordance_index": None,
                 "variable_id": "energy",
                 "target_scope": "agent",
-                "expression": "energy + 0.25",
-                "condition": "energy < 0.8",
+                "expression": _ast("energy + 0.25"),
+                "condition": _ast("energy < 0.8"),
                 "composition": "additive_delta",
                 "phase": "phase_b",
                 "priority": 5,
@@ -365,7 +375,7 @@ def test_transition_graph_hash_binds_modulation_rules() -> None:
             "source_variable_id": "energy",
             "target_affordance_id": "WORK",
             "variable_id": "affordance.WORK.multiplier",
-            "expression": "where(bar.energy < 0.3, 0.5 + (1.0 - 0.5) * (bar.energy / 0.3), 1.0)",
+            "expression": _ast("where(bar.energy < 0.3, 0.5 + (1.0 - 0.5) * (bar.energy / 0.3), 1.0)"),
             "condition": None,
             "composition": "multiplicative_modifier",
             "phase": "apply_action_effects",
@@ -403,7 +413,7 @@ def test_transition_graph_hash_binds_passive_depletion_rules() -> None:
             "kind": "passive_depletion",
             "source_variable_id": "energy",
             "variable_id": "energy",
-            "expression": "bar.energy - (0.1 * temporal.depletion_multiplier)",
+            "expression": _ast("bar.energy - (0.1 * temporal.depletion_multiplier)"),
             "condition": None,
             "composition": "overwrite",
             "phase": "apply_passive_depletion",
@@ -443,7 +453,7 @@ def test_transition_graph_hash_binds_interaction_progress_rules() -> None:
             "source_variable_id": "interaction_progress",
             "target_affordance_id": "SLEEP",
             "variable_id": "interaction_progress",
-            "expression": "where(same_affordance and affordance_is_open and chosen_interact, interaction_progress + 1, 0)",
+            "expression": _ast("where(same_affordance and affordance_is_open and chosen_interact, interaction_progress + 1, 0)"),
             "condition": None,
             "composition": "overwrite",
             "phase": "advance_interaction_progress",
@@ -458,7 +468,7 @@ def test_transition_graph_hash_binds_interaction_progress_rules() -> None:
             "source_variable_id": "interaction_progress",
             "target_affordance_id": "SLEEP",
             "variable_id": "affordance.SLEEP.completed",
-            "expression": "interaction_progress >= 5",
+            "expression": _ast("interaction_progress >= 5"),
             "condition": None,
             "composition": "event",
             "phase": "apply_completion_bonuses",
@@ -493,7 +503,7 @@ def test_transition_graph_hash_binds_terminal_condition_rules() -> None:
             "kind": "terminal_condition",
             "source_variable_id": "energy",
             "variable_id": "done",
-            "expression": "bar.energy <= 0.0",
+            "expression": _ast("bar.energy <= 0.0"),
             "condition": None,
             "composition": "event",
             "phase": "evaluate_terminal_conditions",
@@ -561,8 +571,8 @@ def test_transition_graph_hash_binds_social_residue_rules() -> None:
             "kind": "visibility_effect",
             "effect": "trust_delta",
             "variable_id": "trust",
-            "expression": "-0.15",
-            "condition": "observer_mask and chosen_action == 7",
+            "expression": _ast("-0.15"),
+            "condition": _ast("observer_mask and chosen_action == 7"),
             "composition": "additive_delta",
             "phase": "apply_social_residue_effects",
             "priority": 0,
@@ -587,14 +597,18 @@ def test_vfs_hash_combines_component_hashes_and_transition_graph() -> None:
     observation_hash = "b" * 64
     action_hash = "c" * 64
     transition_hash = "d" * 64
+    expression_hash = "h" * 64
 
-    expected = hashlib.sha256((variable_hash + observation_hash + action_hash + transition_hash).encode("utf-8")).hexdigest()
+    expected = hashlib.sha256(
+        (variable_hash + observation_hash + action_hash + transition_hash + expression_hash).encode("utf-8")
+    ).hexdigest()
 
-    assert compute_vfs_hash(variable_hash, observation_hash, action_hash, transition_hash) == expected
-    assert compute_vfs_hash("e" * 64, observation_hash, action_hash, transition_hash) != expected
-    assert compute_vfs_hash(variable_hash, "e" * 64, action_hash, transition_hash) != expected
-    assert compute_vfs_hash(variable_hash, observation_hash, "f" * 64, transition_hash) != expected
-    assert compute_vfs_hash(variable_hash, observation_hash, action_hash, "g" * 64) != expected
+    assert compute_vfs_hash(variable_hash, observation_hash, action_hash, transition_hash, expression_hash) == expected
+    assert compute_vfs_hash("e" * 64, observation_hash, action_hash, transition_hash, expression_hash) != expected
+    assert compute_vfs_hash(variable_hash, "e" * 64, action_hash, transition_hash, expression_hash) != expected
+    assert compute_vfs_hash(variable_hash, observation_hash, "f" * 64, transition_hash, expression_hash) != expected
+    assert compute_vfs_hash(variable_hash, observation_hash, action_hash, "g" * 64, expression_hash) != expected
+    assert compute_vfs_hash(variable_hash, observation_hash, action_hash, transition_hash, "i" * 64) != expected
 
 
 def test_compiler_surfaces_vfs_hash(tmp_path: Path) -> None:
@@ -604,11 +618,14 @@ def test_compiler_surfaces_vfs_hash(tmp_path: Path) -> None:
     compiled = UniverseCompiler().compile(experiment_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
     level = compiled.get_level(PRIMARY_LEVEL_NAME)
     phase_graph = TransitionPhaseGraph.default()
+    profiles = compiled.compiled_vfs_profiles
+    assert profiles is not None
     expected = compute_vfs_hash(
         level.variable_schema_hash,
         level.observation_schema_hash,
         level.action_schema_hash,
         level.transition_graph_hash,
+        compute_expression_schema_hash(global_profile=profiles.global_profile, agent_profile=profiles.agent_profile),
     )
 
     assert level.transition_graph_hash != ""

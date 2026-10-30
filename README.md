@@ -264,10 +264,12 @@ uv run python -m townlet.universe inspect configs/default_curriculum \
     --primary-level L1_full_observability --format json
 ```
 
+`inspect` reports whether the artifact is still fresh against its source pack and, under
+`--format json`, where every token row lands (`token_rows`: type, slot, `filler_ref`, offsets).
 `--primary-level` is required for compile/validate and directory inspection. Compilation builds
 all world levels, with one cache artifact per selected primary level:
 `<pack>/.compiled/universe-<level>.msgpack`. The top-level effective brain is primary-level scoped.
-The current compiled artifact schema is **1.34**; older versions and missing policies refuse.
+The current compiled artifact schema is **1.35**; older versions and missing policies refuse.
 This is separate from authored declaration versions and checkpoint format **6**.
 
 Train using the pack root:
@@ -303,11 +305,14 @@ uv run python -m townlet.demo.live_inference <checkpoint_dir> 8766 0.2 10000 \
 
 Training resume and serving share an identity gate. They check selected world, effective brain,
 VFS, the architecture-appropriate token/layout contract, the four per-level content hashes and
-the five pack-scope content hashes (`experiment`, `stratum`, `environment`, `actions`, nullable
-`items`) before loading weights; every leg is a hard refusal. A `stratum.yaml` edit such as
-`boundary: clamp -> wrap` therefore refuses resume even though no level hash moves.
+the six pack-scope content hashes (`experiment`, `stratum`, `environment`, `actions`, nullable
+`items`, `variables`) before loading weights; every leg is a hard refusal. A `stratum.yaml` edit
+such as `boundary: clamp -> wrap` therefore refuses resume even though no level hash moves.
 Permission-only changes in ordinary or qualified item state move variable/VFS identity and
-refuse exact resume. Transfer is a distinct operation. The compile-cache fingerprint
+refuse exact resume; so does a hidden variable's expression text or `semantic_type`, which
+enter `vfs_hash` through the compiled expression programs and `variables_hash` through the
+declaration's canonical content (declaration order and file placement are transport, not
+identity). Transfer is a distinct operation. The compile-cache fingerprint
 (`metadata.config_hash`) is not stamped into checkpoints: it moves on a comment edit or a file
 rename while every semantic hash stays put.
 

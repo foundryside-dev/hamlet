@@ -155,6 +155,7 @@ class TestAttachStampsTokenHashes:
             "environment_hash",
             "actions_hash",
             "items_hash",
+            "variables_hash",
         ):
             assert field in checkpoint, f"pre-existing checkpoint field {field!r} went missing"
         # The cache fingerprint is transport, not identity; it is not stamped (hamlet-2dde1015fe).

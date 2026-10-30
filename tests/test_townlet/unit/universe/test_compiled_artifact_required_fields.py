@@ -158,7 +158,7 @@ def test_primary_level_products_exist_only_on_level_metadata(artifact_payload: d
 
 
 def test_presentation_cut_bumps_exact_artifact_schema() -> None:
-    assert COMPILED_SCHEMA_VERSION == "1.34"
+    assert COMPILED_SCHEMA_VERSION == "1.35"
 
 
 def test_compiled_artifact_requires_presentation(artifact_payload: dict[str, Any]) -> None:

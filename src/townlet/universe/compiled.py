@@ -57,7 +57,7 @@ from townlet.universe.token_hashes import (
 )
 from townlet.vfs.profiles import AMBIENT_ENGINE_NAMES, CompiledGlobalProfile, CompiledItemProfile
 from townlet.vfs.schema import NormalizationSpec, VariableDef, VariableScope
-from townlet.vfs.schema_hashes import compute_variable_schema_hash, compute_vfs_hash
+from townlet.vfs.schema_hashes import compute_expression_schema_hash, compute_variable_schema_hash, compute_vfs_hash
 from townlet.vfs.transition_schedule import (
     VTCTransitionSchedule,
     build_vtc_transition_schedule,
@@ -134,7 +134,14 @@ from townlet.vfs.transition_schedule import (
 # validated in resolve, never hashed). The runtime reads it from the artifact instead of
 # re-opening a fixed filename, so one vocabulary covers compile and serve. A 1.33 artifact
 # has no such block and is refused rather than served as "no presentation".
-COMPILED_SCHEMA_VERSION = "1.34"
+# 1.35: `vfs_hash` gains a fifth term — the canonical global/agent expression programs
+# (`compute_expression_schema_hash`) — and `variable_schema_hash` binds `semantic_type`,
+# `exposed_to` and the complete normalization (VFS round-2 F5: expression text and
+# semantic_type entered no checkpoint-gated hash). The artifact also carries the required
+# pack-scope `variables_hash`, the canonical content of the discovered `variables`
+# declaration. The cache key does not move for an unchanged pack, so a 1.34 artifact
+# would serve the old `vfs_hash` and lack the new field; refuse it as stale.
+COMPILED_SCHEMA_VERSION = "1.35"
 
 REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "compiled_schema_version",
@@ -160,6 +167,7 @@ REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "environment_hash",
     "actions_hash",
     "items_hash",
+    "variables_hash",
     "all_levels",
 )
 
@@ -197,6 +205,11 @@ class CompiledUniverse:
 
     # Every compiled level product, including the selected level's products.
     all_levels: dict[str, CompiledUniverse.LevelMetadata]
+
+    # The sixth pack-scope content hash: the canonical content of the discovered
+    # `variables` declaration (`townlet.vfs.schema_hashes.compute_variables_hash`),
+    # independent of which file carries it. Required: every pack declares `variables`.
+    variables_hash: str
 
     items_catalog: ItemsCatalogConfig | None = None
 
@@ -341,7 +354,8 @@ class CompiledUniverse:
             environment=deepcopy(self.environment),
             actions=deepcopy(self.actions),
             brain=deepcopy(self.brain),
-            all_levels=deepcopy(self.all_levels),
+            all_levels={name: _clone_level(level) for name, level in self.all_levels.items()},
+            variables_hash=self.variables_hash,
             items_catalog=deepcopy(self.items_catalog) if self.items_catalog is not None else None,
             presentation=deepcopy(self.presentation) if self.presentation is not None else None,
             compiled_vfs_profiles=deepcopy(self.compiled_vfs_profiles) if self.compiled_vfs_profiles is not None else None,
@@ -392,6 +406,7 @@ class CompiledUniverse:
             "environment_hash": self.environment_hash,
             "actions_hash": self.actions_hash,
             "items_hash": self.items_hash,
+            "variables_hash": self.variables_hash,
             "all_levels": {
                 name: {
                     "level_name": meta.level_name,
@@ -562,6 +577,7 @@ class CompiledUniverse:
             environment_hash=_required_field(payload, "environment_hash"),
             actions_hash=_required_field(payload, "actions_hash"),
             items_hash=_required_field(payload, "items_hash"),
+            variables_hash=_required_field(payload, "variables_hash"),
             all_levels=all_levels,
         )
         _validate_compiled_token_coherence(compiled)
@@ -635,6 +651,25 @@ def _items_appearance_from_plain(payload: Any) -> ItemsAppearanceConfig | None:
         if rule.when is not None:
             rule.when_ast = parser.parse(rule.when)
     return appearance
+
+
+def _clone_level(level: CompiledUniverse.LevelMetadata) -> CompiledUniverse.LevelMetadata:
+    """Deep-copy one level; the two action products go through their own plain round trip.
+
+    `ActionInfo` and `RuntimeAction` hold `costs` as a read-only mappingproxy, which
+    `copy.deepcopy` cannot pickle. The artifact serializers already know how to take
+    them apart and rebuild them, so a clone uses that path instead of sharing them.
+    """
+    return replace(
+        level,
+        **{
+            field.name: deepcopy(getattr(level, field.name))
+            for field in fields(level)
+            if field.name not in {"action_metadata", "runtime_action_space"}
+        },
+        action_metadata=_action_space_metadata_from_plain(_dataclass_to_plain(level.action_metadata)),
+        runtime_action_space=_runtime_action_space_from_plain(_dataclass_to_plain(level.runtime_action_space)),
+    )
 
 
 def _dataclass_to_plain(obj: Any) -> Any:
@@ -821,11 +856,18 @@ def _validate_compiled_token_coherence(compiled: CompiledUniverse) -> None:
             "layout_hash": compute_token_layout_hash(level.token_spec),
             "observation_schema_hash": compute_observation_schema_hash(level.token_spec),
         }
+        # The expression programs are universe-scoped and deserialized with their ASTs
+        # re-parsed from source text, so the fifth term recomputes from the artifact alone.
+        profiles = compiled.compiled_vfs_profiles
         computed_hashes["vfs_hash"] = compute_vfs_hash(
             computed_hashes["variable_schema_hash"],
             computed_hashes["observation_schema_hash"],
             level.action_schema_hash,
             level.transition_graph_hash,
+            compute_expression_schema_hash(
+                global_profile=None if profiles is None else profiles.global_profile,
+                agent_profile=None if profiles is None else profiles.agent_profile,
+            ),
         )
         for field_name, computed_value in computed_hashes.items():
             stored_value = getattr(level, field_name)

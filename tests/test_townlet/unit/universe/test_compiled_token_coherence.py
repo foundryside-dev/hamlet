@@ -16,7 +16,7 @@ from townlet.universe.token_hashes import (
     compute_token_layout_hash,
     compute_token_type_schema_hash,
 )
-from townlet.vfs.schema_hashes import compute_vfs_hash
+from townlet.vfs.schema_hashes import compute_expression_schema_hash, compute_vfs_hash
 
 
 @pytest.fixture(scope="module")
@@ -76,11 +76,13 @@ def _rehash_primary_token_artifact(payload: dict[str, Any]) -> None:
     level["token_type_schema_hash"] = compute_token_type_schema_hash(spec)
     level["layout_hash"] = compute_token_layout_hash(spec)
     level["observation_schema_hash"] = compute_observation_schema_hash(spec)
+    profiles = compiled_module._deserialize_vfs_profiles(payload["compiled_vfs_profiles"])
     level["vfs_hash"] = compute_vfs_hash(
         level["variable_schema_hash"],
         level["observation_schema_hash"],
         level["action_schema_hash"],
         level["transition_graph_hash"],
+        compute_expression_schema_hash(global_profile=profiles.global_profile, agent_profile=profiles.agent_profile),
     )
     payload["token_spec"] = deepcopy(level["token_spec"])
     for field_name in ("token_type_schema_hash", "layout_hash", "observation_schema_hash", "vfs_hash"):

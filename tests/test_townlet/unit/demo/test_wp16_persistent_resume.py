@@ -148,11 +148,13 @@ def _trained_checkpoint(tmp_path: Path) -> tuple[Path, dict[str, torch.Tensor]]:
     assert _run_across_resets(population, ticks) >= 2
     saved = _values(population)
     # Persistent state accumulated across every episode; the episode control did not.
-    assert float(saved["season"]) == ticks
-    # Rules skip a lane on the tick it ends, so `standing` trails `season`; it still holds
-    # more than one episode could accumulate.
+    # `season` is a global: one row per world (S1), each advanced while its own lane is
+    # active, so it tracks that lane's `standing` exactly and the rows may differ.
+    assert saved["season"].shape == (NUM_AGENTS,)
+    assert torch.equal(saved["season"], saved["standing"] * 4.0)
+    # Rules skip a lane on the tick it ends; each world still holds more than one episode.
     assert bool((saved["standing"] > 0.25 * LIFESPAN).all())
-    assert float(saved[EPISODE]) < ticks
+    assert bool((saved[EPISODE] < ticks).all())
     with _runner(pack, tmp_path, "first", population) as runner:
         runner.save_checkpoint()
     return pack, saved
@@ -186,9 +188,9 @@ def test_persistent_state_survives_resume_exactly_and_episode_state_is_not_resto
     after_reset = _values(resumed)
     for var_id in PERSISTENT:
         assert torch.equal(after_reset[var_id], saved[var_id]), var_id
-    assert float(after_reset[EPISODE]) == 0.0
+    assert bool((after_reset[EPISODE] == 0.0).all())
     resumed.step_population(resumed.env)
-    assert float(_values(resumed)["season"]) == float(saved["season"]) + 1.0
+    assert torch.equal(_values(resumed)["season"], saved["season"] + 1.0)
 
 
 def test_a_mismatched_pack_is_refused_before_any_state_is_applied(tmp_path: Path) -> None:
@@ -209,7 +211,7 @@ def test_a_mismatched_pack_is_refused_before_any_state_is_applied(tmp_path: Path
     after = registry.persistent_state()
     assert set(after) == set(before)
     assert all(torch.equal(after[var_id], before[var_id]) for var_id in before)
-    assert float(after["season"]) == 5.0
+    assert after["season"].tolist() == [5.0] * NUM_AGENTS
 
 
 def _server(pack: Path, checkpoint_dir: Path):
@@ -242,7 +244,7 @@ async def test_serving_a_checkpoint_restores_its_persistent_world(tmp_path: Path
         env.step(wait)
         env.step(wait)
     saved = {var_id: env.vfs_registry.get(var_id, reader="engine") for var_id in PERSISTENT}
-    assert float(saved["season"]) > 2.0  # more than any single two-tick episode can hold
+    assert bool((saved["season"] > 2.0).all())  # more than any single two-tick episode can hold
     with DemoRunner(
         config_dir=pack, db_path=tmp_path / "producer.db", checkpoint_dir=checkpoint_dir, max_episodes=1, level_name=LEVEL_NAME
     ) as runner:
@@ -254,7 +256,7 @@ async def test_serving_a_checkpoint_restores_its_persistent_world(tmp_path: Path
 
     server = _server(pack, checkpoint_dir)
     registry = server.env.vfs_registry
-    assert float(registry.get("season", reader="engine")) == 0.0
+    assert bool((registry.get("season", reader="engine") == 0.0).all())
     assert await server._check_and_load_checkpoint() is True
     for var_id in PERSISTENT:
         assert torch.equal(registry.get(var_id, reader="engine"), saved[var_id]), var_id

@@ -110,7 +110,8 @@ def test_loop_selection_sees_earlier_compound_sibling_write() -> None:
     )
     context = ExecutionContext(vfs_registry=registry, bars={"energy": torch.full((2,), 3.0)})
     CommandExecutor().execute(command, context)
-    assert registry.get("selector", reader="engine").item() == 1.0
+    # A context bound to no agent is world-shared: its global write lands in every world (S1).
+    assert registry.get("selector", reader="engine").tolist() == [1.0, 1.0]
     assert torch.equal(context.bars["energy"], torch.tensor([3.0, 9.0]))
 
 

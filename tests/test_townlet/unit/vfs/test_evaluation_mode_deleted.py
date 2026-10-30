@@ -103,6 +103,6 @@ def test_expression_over_a_rule_written_global_static_tracks_it(tmp_path: Path):
     wait = universe.get_level(LEVEL).runtime_action_space.action_ids["WAIT"]
     for tick in range(1, 4):
         env.step(torch.full((env.num_agents,), wait, dtype=torch.long))
-        gcount = env.vfs_registry.get("gcount", reader="engine").item()
-        assert gcount == float(tick)
-        assert env.vfs_registry.get("gtwice", reader="engine").item() == gcount * 2.0
+        gcount = env.vfs_registry.get("gcount", reader="engine")
+        assert gcount.tolist() == [float(tick)] * env.num_agents  # every world's rule advanced
+        assert torch.equal(env.vfs_registry.get("gtwice", reader="engine"), gcount * 2.0)

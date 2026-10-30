@@ -1,9 +1,9 @@
-"""Effects-layer tests for global-scope resolution (hamlet-cf16cdb6c4 / A-G1, A-G2 scope guard).
+"""Effects-layer tests for global-scope resolution (hamlet-cf16cdb6c4, S1 per-world globals).
 
-A global-scoped VFS tensor's first axis is spatial, not an agent axis. Every route
-here previously treated it as agent-scoped: the eval context gathered it by
-arange(batch), the target/self view builder sliced its first axis by agent index,
-and target.vfs writes slab-wrote container[agent_index].
+A global-scoped VFS tensor leads with the world axis (S1: one world per agent), then its
+declared payload. An effects context bound to an agent reads and writes that agent's
+world's value as a whole payload; it never gathers the payload's first axis by agent
+rows, and never touches another world's row.
 """
 
 import pytest
@@ -67,8 +67,9 @@ def test_effect_expression_reads_and_writes_global_tensor_whole():
     CommandExecutor().execute(command, context)
 
     result = registry.get("grid", reader="engine")
-    assert result.shape == (3, 3)
-    assert torch.equal(result, torch.ones(3, 3))
+    assert result.shape == (2, 3, 3)  # [worlds, 3, 3]
+    assert torch.equal(result[1], torch.ones(3, 3))  # the interacting agent's world, whole
+    assert torch.equal(result[0], torch.zeros(3, 3))  # the other world is untouched
 
 
 def test_effect_expression_global_root_reads_global_tensor():
@@ -83,30 +84,42 @@ def test_effect_expression_global_root_reads_global_tensor():
     CommandExecutor().execute(command, context)
 
     result = registry.get("grid", reader="engine")
-    assert result.shape == (3, 3)
-    assert torch.equal(result, torch.full((3, 3), 2.0))
+    assert torch.equal(result[1], torch.full((3, 3), 2.0))
+    assert torch.equal(result[0], torch.zeros(3, 3))
 
 
-def test_target_vfs_write_to_global_raises():
-    """modify target.vfs.<global> must refuse loudly, not slab-write container[agent_index].
+def test_global_vfs_write_path_lands_in_the_contexts_world():
+    """`global.vfs.<id>` is a write spelling too: the effects schema admits it, so the runtime serves it."""
+    registry = _make_registry()
+    context = _make_context(registry, target_index=0)
 
-    The slab write is A-G2's accidental route (hamlet-57a5126baa): it indexes the
-    container's first SPATIAL axis by agent index.
+    command = CommandNode(type=CommandType.MODIFY, path="global.vfs.grid", value_expr="global.vfs.grid + 3.0")
+    CommandCompiler(schema={"global.vfs.grid": "float"}, agent_target=True).compile_command(command)
+    CommandExecutor().execute(command, context)
+
+    result = registry.get("grid", reader="engine")
+    assert torch.equal(result[0], torch.full((3, 3), 3.0))
+    assert torch.equal(result[1], torch.zeros(3, 3))
+
+
+def test_a_row_write_to_a_global_writes_the_whole_payload_of_one_world():
+    """A row write never slab-writes container[agent_index] of the payload (hamlet-57a5126baa):
+    the row a global has is its world's, and the payload is written whole.
+
+    The effects schema never admits `target.vfs.<global>`; this simulates a stale artifact.
     """
     registry = _make_registry()
     context = _make_context(registry, target_index=1)
 
-    # Schema deliberately includes the stale target path, simulating a pre-fix artifact:
-    # the runtime must still refuse.
     command = CommandNode(type=CommandType.MODIFY, path="target.vfs.grid", value_expr="0.5")
     compiler = CommandCompiler(schema={"target.vfs.grid": "float"}, agent_target=True)
     compiler.compile_command(command)
 
-    with pytest.raises(ValueError, match="global"):
-        CommandExecutor().execute(command, context)
+    CommandExecutor().execute(command, context)
 
-    # And the container is untouched — the refusal happened before any mutation.
-    assert torch.equal(registry.get("grid", reader="engine"), torch.zeros(3, 3))
+    result = registry.get("grid", reader="engine")
+    assert torch.equal(result[1], torch.full((3, 3), 0.5))
+    assert torch.equal(result[0], torch.zeros(3, 3))
 
 
 def test_target_vfs_read_of_global_not_available():

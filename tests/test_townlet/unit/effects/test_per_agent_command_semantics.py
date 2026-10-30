@@ -173,13 +173,13 @@ def test_scalar_condition_is_the_degenerate_mask() -> None:
     assert bars["energy"].tolist() == [0.5, 0.5, 0.5]
 
 
-def test_partial_mask_refuses_a_target_with_no_per_agent_row() -> None:
+def test_partial_mask_writes_a_global_in_the_live_worlds_only() -> None:
+    """A global has one row per world (S1), so a per-agent mask is a per-world mask on it."""
     counter = _scalar("counter", scope="global")
     registry = VariableRegistry([counter], 3, torch.device("cpu"))
     command = _compile(_if("bar.health < 0.5", then=[_modify("vfs.counter", "1.0")]))
-    with pytest.raises(ValueError, match="no per-agent row"):
-        CommandExecutor().execute(command, ExecutionContext(bars=_bars(), vfs_registry=registry))
-    assert registry.get("counter", reader="engine").item() == 0.0
+    CommandExecutor().execute(command, ExecutionContext(bars=_bars(), vfs_registry=registry))
+    assert registry.get("counter", reader="engine").tolist() == [0.0, 1.0, 0.0]
 
 
 def test_whole_batch_mask_writes_a_global_target() -> None:
@@ -187,7 +187,7 @@ def test_whole_batch_mask_writes_a_global_target() -> None:
     registry = VariableRegistry([counter], 3, torch.device("cpu"))
     command = _compile(_if("bar.health < 2.0", then=[_modify("vfs.counter", "1.0")]))
     CommandExecutor().execute(command, ExecutionContext(bars=_bars(), vfs_registry=registry))
-    assert registry.get("counter", reader="engine").item() == 1.0
+    assert registry.get("counter", reader="engine").tolist() == [1.0, 1.0, 1.0]
 
 
 def test_switch_selects_a_case_per_agent_first_match_wins() -> None:

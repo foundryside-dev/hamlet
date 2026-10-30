@@ -65,7 +65,7 @@ def test_expression_functions_produce_declared_state_shape(
     wait = universe.get_level(LEVEL).runtime_action_space.action_ids["WAIT"]
     env.step(torch.full((2,), wait, dtype=torch.long))
     actual = env.vfs_registry.get("signal", reader="engine")
-    assert actual.shape == (() if scope == "global" else (2,))
+    assert actual.shape == (2,)  # a global holds one row per world (S1), an agent variable one per agent
     assert torch.allclose(actual, torch.full_like(actual, expected))
 
 

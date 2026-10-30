@@ -80,9 +80,9 @@ def test_agent_expression_compiles_against_a_global_and_tracks_engine_writes(tmp
     assert torch.equal(env.vfs_registry.get("scaled", reader="engine"), torch.tensor([0.5, 0.5]))
     assert torch.equal(env.vfs_registry.get("scaled_immutable", reader="engine"), torch.tensor([0.5, 0.5]))
 
-    env.vfs_registry.set_engine_value("scale", torch.tensor(2.0))
-    _advance(env)  # public_state 1 -> 2 per agent, read against the written global
-    assert torch.equal(env.vfs_registry.get("scaled", reader="engine"), torch.tensor([4.0, 4.0]))
+    env.vfs_registry.set_engine_value("scale", torch.tensor([2.0, 3.0]))  # one value per world (S1)
+    _advance(env)  # public_state 1 -> 2 per agent, each read against its own world's global
+    assert torch.equal(env.vfs_registry.get("scaled", reader="engine"), torch.tensor([4.0, 6.0]))
     assert torch.equal(env.vfs_registry.get("scaled_immutable", reader="engine"), torch.tensor([1.0, 1.0]))
 
 

@@ -145,59 +145,43 @@ def test_execution_context_strips_ref_segments():
     assert torch.allclose(vfs_result, torch.tensor([0.8, 0.4, 0.2]))
 
 
-def test_vfs_root_honors_global_scope_no_agent_gather():
-    """vfs.<name> on a global-scoped tensor returns the whole container, not an agent-gathered view.
+def test_vfs_root_reads_each_worlds_own_global_row():
+    """vfs.<name> on a global is the reading agent's own world's row (S1: one row per world).
 
-    A global variable's first axis is spatial, not an agent axis (registry scope
-    prefix for GLOBAL is ()). Gathering it by arange(batch) silently returns
-    (batch, ...) — the A-G1 defect (hamlet-cf16cdb6c4).
+    Global storage leads with the world axis like agent storage leads with the agent
+    axis, so the batch gather is the identity: row i is world i's grid, never another
+    world's (review-2026-10-24 VFS F4).
     """
-    grid = torch.arange(9, dtype=torch.float32).reshape(3, 3)
+    grid = torch.arange(18, dtype=torch.float32).reshape(2, 3, 3)  # [worlds, 3, 3]
     ctx = ExecutionContext(
         bars={"energy": torch.tensor([0.5, 0.8])},  # batch inferred as 2
         vfs={"grid": grid},
         affordances={},
         temporal={},
-        vfs_scopes={"grid": "global"},
     )
 
     result = ctx.get("vfs.grid")
-    assert result.shape == (3, 3)
+    assert result.shape == (2, 3, 3)
     assert torch.equal(result, grid)
 
 
 def test_vfs_root_still_gathers_agent_scoped():
-    """vfs.<name> on an agent-scoped variable keeps the existing per-agent gather."""
+    """vfs.<name> on an agent-scoped variable keeps the per-agent gather."""
     mood = torch.tensor([0.1, 0.5, 0.9])
     ctx = ExecutionContext(
         bars={"energy": torch.tensor([0.5, 0.8, 0.2])},
         vfs={"mood": mood},
         affordances={},
         temporal={},
-        vfs_scopes={"mood": "agent"},
     )
 
     result = ctx.get("vfs.mood")
     assert torch.equal(result, mood)
 
 
-def test_vfs_root_without_scopes_preserves_legacy_gather():
-    """With no vfs_scopes supplied, resolution behaves exactly as before (agent gather)."""
-    grid = torch.arange(9, dtype=torch.float32).reshape(3, 3)
-    ctx = ExecutionContext(
-        bars={"energy": torch.tensor([0.5, 0.8])},
-        vfs={"grid": grid},
-        affordances={},
-        temporal={},
-    )
-
-    result = ctx.get("vfs.grid")
-    assert result.shape == (2, 3)  # gathered by arange(batch) — legacy behaviour
-
-
 def test_global_root_resolves_global_tensor_raw():
-    """global.vfs.<name> returns the raw container (pre-existing behaviour, pinned)."""
-    grid = torch.arange(9, dtype=torch.float32).reshape(3, 3)
+    """global.vfs.<name> returns every world's row of the global."""
+    grid = torch.arange(18, dtype=torch.float32).reshape(2, 3, 3)
     ctx = ExecutionContext(
         bars={"energy": torch.tensor([0.5, 0.8])},
         vfs={"grid": grid},

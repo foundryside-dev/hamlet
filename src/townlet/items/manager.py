@@ -47,8 +47,11 @@ class SpawnPredicateReads:
     - a meter is readable as `bar.<name>`.
 
     Every other spelling (bare names, `env.*`, `agent.vfs.*`, `temporal.*`) is refused at
-    compile time. Agent-scope reads yield one value per agent; the predicate passes only
-    when it holds for every agent (`_should_spawn_rule`).
+    compile time. Global and agent reads both yield one value per world (S1: one agent
+    per world). Items are world-shared today (one `ItemManager` for the batch), so the
+    predicate passes only when it holds in every world (`_should_spawn_rule`): the one
+    engine-internal reduction across worlds, and it belongs to the items surface, not to
+    any authored spelling.
     """
 
     VARIABLE_ROOT = "vfs"
@@ -103,7 +106,6 @@ class SpawnPredicateReads:
     ) -> ExprExecutionContext:
         """The runtime evaluation context, resolved variable id -> scope -> value."""
         values: dict[str, torch.Tensor] = {}
-        scopes: dict[str, str] = {}
         types: dict[str, str] = {}
         num_agents: int | None = None
         if registry is not None:
@@ -112,7 +114,6 @@ class SpawnPredicateReads:
                 if not cls.admits(variable.scope):
                     continue
                 values[variable_id] = registry.get(variable_id, reader="engine")
-                scopes[variable_id] = VariableScope(variable.scope).value
                 types[variable_id] = variable.type
         return ExprExecutionContext(
             bars=dict(bars),
@@ -121,7 +122,6 @@ class SpawnPredicateReads:
             temporal={},
             device=device,
             vfs_types=types,
-            vfs_scopes=scopes,
             num_agents=num_agents,
         )
 
@@ -708,7 +708,7 @@ class ItemManager:
         if isinstance(result, torch.Tensor):
             if result.numel() == 1:
                 return bool(result.item())
-            # Vectorized contexts emit per-agent tensors; require all agents to satisfy.
+            # Per-world values; items are world-shared, so every world must satisfy it.
             return bool(torch.all(result).item())
 
         return bool(result)

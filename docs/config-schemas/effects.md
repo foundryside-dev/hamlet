@@ -641,7 +641,11 @@ All command types are fully implemented and production-ready.
   - `global.vfs.is_night`: Global boolean flag
   - `global.bar.economy`: Global economy meter (if exists)
 - `self.*`: Effect instance state (for effect-local variables)
-- `vfs.*` (bare): a global variable is its one shared value. A bare `vfs.X` naming an
+- `vfs.*` (bare) and `global.vfs.*`: a global variable is its world's value (one row per
+  world, VFS WP13). A pipeline bound to an agent (an affordance or item interaction, an
+  agent-scoped effect) reads and writes that agent's world only; a global-, affordance- or
+  item-scoped effect is shared by the whole batch, so it reads every world's row and writes
+  every row its mask leaves live. A bare `vfs.X` naming an
   **agent-scoped** variable is the interacting agent's row, never the batch: wherever the
   pipeline runs with an agent target (affordance and item interactions, agent-scoped effects,
   `for_each` bodies over agents) the compiler resolves it to `target.vfs.X`, for reads and
@@ -874,7 +878,9 @@ One keyword, one meaning: the command form of `if` agrees with the expression fo
 - `then` runs to completion before `else`. Each agent's row is written by exactly one
   branch, so row-local expressions are unaffected, but an aggregate read in `else`
   (`mean(bar.energy)`, a `for_each` over `all_agents`) sees `then`'s writes.
-- A target with **no per-agent row** — a global variable, a scalar bar, an item variable,
+- A global variable has one row per world, so a per-agent mask is a per-world mask on it:
+  a masked write lands in the live worlds only.
+- A target with **no per-agent row** — a scalar bar, an item variable,
   `affordance.X.available`, `spawn_item`, a non-agent `spawn_effect`, a `delay` block —
   can only be written when the mask is whole (every agent live). Writing it from a
   branch that holds for only some agents is refused at runtime with a message naming
@@ -988,7 +994,7 @@ later case's aggregate reads see earlier cases' writes.
       value: "0.9"
 ```
 
-The no-per-agent-row rule from `if` applies: a global, item, affordance, `spawn_item` or
+The no-per-agent-row rule from `if` applies: an item, affordance, `spawn_item` or
 `delay` target inside a case that holds for only some agents is refused at runtime.
 
 ---

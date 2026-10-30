@@ -106,8 +106,8 @@ def test_bare_dotted_registry_id_is_an_exact_target(writers: list[str]) -> None:
     ctx = ExecutionContext(vfs_registry=registry)
     if writers:
         ctx.set_path("vfs.food.freshness", torch.tensor(7.0))
-        assert registry.get("food.freshness", reader="engine").item() == 7.0
+        assert registry.get("food.freshness", reader="engine").tolist() == [7.0, 7.0]  # world-shared context: every world
     else:
         with pytest.raises(PermissionError, match="food.freshness"):
             ctx.set_path("vfs.food.freshness", torch.tensor(2.0))
-        assert registry.get("food.freshness", reader="engine").item() == 2.0
+        assert registry.get("food.freshness", reader="engine").tolist() == [2.0, 2.0]

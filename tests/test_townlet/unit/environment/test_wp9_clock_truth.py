@@ -37,6 +37,13 @@ def _registry(env, name: str) -> torch.Tensor:
     return env.vfs_registry.get(name, reader="engine")
 
 
+def _global(env, name: str) -> float:
+    """A world-uniform global's value: one row per world (S1), equal in every row here."""
+    rows = _registry(env, name)
+    assert rows.shape == (env.num_agents,) and bool((rows == rows[0]).all()), rows
+    return float(rows[0])
+
+
 def _wait(env) -> torch.Tensor:
     index = next(i for i, action in enumerate(env.action_space.actions) if action.name == "WAIT")
     return torch.full((env.num_agents,), index, dtype=torch.long, device=env.device)
@@ -56,8 +63,8 @@ def _observed_hour(env, obs: torch.Tensor) -> float:
 
 def _assert_one_instant(env, obs: torch.Tensor) -> None:
     tick = env.global_tick
-    assert float(_registry(env, "tick")) == float(tick)
-    assert float(_registry(env, "day_phase")) == float(tick)
+    assert _global(env, "tick") == float(tick)
+    assert _global(env, "day_phase") == float(tick)
     assert env.time_of_day == tick % int(env.day_length)
     assert _observed_hour(env, obs) == pytest.approx(env.time_of_day, abs=1e-3)
 
@@ -172,9 +179,9 @@ def test_persistent_expression_does_not_leak_previous_episode(expression_env):
     env.reset()
     for _ in range(5):
         env.step(_wait(env))
-    assert float(_registry(env, "g_persist_tick")) == 5.0
+    assert _global(env, "g_persist_tick") == 5.0
     obs = env.reset()
-    assert float(_registry(env, "g_persist_tick")) == 0.0
+    assert _global(env, "g_persist_tick") == 0.0
     assert _variable_rows(env, obs)["g_persist_tick"][1] == 0.0
 
 
@@ -182,8 +189,8 @@ def test_tick_lifetime_expression_tracks_the_clock(expression_env):
     """r1's `tick_mirror: tick + 1` read global_tick, one ahead of the registry tick."""
     env = expression_env
     env.reset()
-    assert float(_registry(env, "tick_mirror")) == 1.0
+    assert _global(env, "tick_mirror") == 1.0
     for _ in range(3):
         env.step(_wait(env))
-        assert float(_registry(env, "tick")) == float(env.global_tick)
-        assert float(_registry(env, "tick_mirror")) == float(env.global_tick) + 1.0
+        assert _global(env, "tick") == float(env.global_tick)
+        assert _global(env, "tick_mirror") == float(env.global_tick) + 1.0

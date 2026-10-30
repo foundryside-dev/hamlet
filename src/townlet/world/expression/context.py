@@ -28,7 +28,6 @@ class ExecutionContext:
     agent_positions: torch.Tensor | None = None
     device: torch.device = torch.device("cpu")
     vfs_types: dict[str, str] | None = None  # Variable id → type (agent_ref/item_ref/etc.)
-    vfs_scopes: dict[str, str] | None = None  # Variable id → declared scope (global/agent/...)
     num_agents: int | None = None
     self_indices: torch.Tensor | None = None
     target_indices: torch.Tensor | None = None
@@ -66,7 +65,7 @@ class ExecutionContext:
         if root == "global":
             if not tail or tail[0] != "vfs":
                 raise KeyError(f"Path '{path}' not found in execution context")
-            return self._resolve_vfs_chain(tail[1:], base_indices=None, scope="global", original_path=path)
+            return self._resolve_vfs_chain(tail[1:], base_indices=None, original_path=path)
         if root in {"vfs", "self", "target"}:
             return self._resolve_entity_path(root=root, tail=tail, original_path=path)
         if len(segments) == 1 and path in self.vfs:
@@ -91,12 +90,7 @@ class ExecutionContext:
         if vfs_tail and vfs_tail[0] == "vfs":
             vfs_tail = vfs_tail[1:]
 
-        return self._resolve_vfs_chain(
-            vfs_tail,
-            base_indices=self._select_indices(root),
-            scope="agent",
-            original_path=original_path,
-        )
+        return self._resolve_vfs_chain(vfs_tail, base_indices=self._select_indices(root), original_path=original_path)
 
     def _select_indices(self, root: str) -> torch.Tensor | None:
         if root == "self":
@@ -117,14 +111,13 @@ class ExecutionContext:
         self,
         segments: list[str],
         base_indices: torch.Tensor | None,
-        scope: str,
         original_path: str,
     ) -> torch.Tensor:
         if not segments:
             raise KeyError(f"Path '{original_path}' not found in execution context")
 
         var_name, *rest = segments
-        value = self._get_vfs_value(var_name, base_indices=base_indices, scope=scope, original_path=original_path)
+        value = self._get_vfs_value(var_name, base_indices=base_indices, original_path=original_path)
         var_type = self._lookup_var_type(var_name)
 
         if not rest:
@@ -159,12 +152,7 @@ class ExecutionContext:
         if hop != "vfs":
             raise KeyError(f"Invalid reference traversal segment '{hop}' in '{original_path}'")
 
-        result = self._resolve_vfs_chain(
-            tail,
-            base_indices=self._ensure_indices(safe_indices, self.device),
-            scope="agent",
-            original_path=original_path,
-        )
+        result = self._resolve_vfs_chain(tail, base_indices=self._ensure_indices(safe_indices, self.device), original_path=original_path)
         if isinstance(result, torch.Tensor):
             return self._mask_reference_output(result, valid_mask)
         return result
@@ -241,16 +229,17 @@ class ExecutionContext:
             raise KeyError(f"Path '{original_path}' not found in execution context")
         return self.bars[name]
 
-    def _get_vfs_value(self, name: str, base_indices: torch.Tensor | None, scope: str, original_path: str) -> torch.Tensor:
+    def _get_vfs_value(self, name: str, base_indices: torch.Tensor | None, original_path: str) -> torch.Tensor:
+        """One registry value, gathered by the path's agent indices when it has them.
+
+        Global and agent storage both lead with the batch axis (S1: one agent per
+        world, so world ``i`` is agent ``i``'s), so the same row gather serves both: a
+        global read resolves to the reading agent's own world.
+        """
         if name not in self.vfs:
             raise KeyError(f"Path '{original_path}' not found in execution context")
         value = self.vfs[name]
-        if scope == "global" or not isinstance(value, torch.Tensor):
-            return value
-        # A variable's declared scope wins over the path's implied scope: a global
-        # variable has no agent axis, so gathering it by agent indices would read
-        # its first spatial axis as agents (hamlet-cf16cdb6c4).
-        if self.vfs_scopes is not None and self.vfs_scopes.get(name) == "global":
+        if not isinstance(value, torch.Tensor):
             return value
         if base_indices is None or value.dim() == 0:
             return value

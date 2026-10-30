@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any
 
 import torch
 
+from townlet.config.effects_config import EffectScope
 from townlet.vfs.registry import VariableRegistry
 from townlet.vfs.schema import VariableScope
 
@@ -81,6 +82,19 @@ class ExecutionContext:
         if self.self_index is not None and not self.self_is_item:
             return self.self_index
         return None
+
+    def world_row(self) -> int | None:
+        """The world this context's global reads and writes address, or None for every world.
+
+        The batch is independent single-agent worlds (S1), so world ``i`` is agent
+        ``i``'s. An affordance or item interaction, and an agent-scoped effect, act in
+        the world of the agent they address. A global-, affordance- or item-scoped
+        effect lives in one store shared by the whole batch, so it addresses every
+        world: its global writes land in every world's row, under the write mask.
+        """
+        if self.effect is not None and EffectScope(self.effect.scope) is not EffectScope.AGENT:
+            return None
+        return self.agent_row()
 
     def row_is_live(self, index: int) -> bool:
         """Whether agent row `index` is live under the write mask."""
@@ -198,13 +212,21 @@ class ExecutionContext:
             # Keep batched tensors for bare vfs.* paths; callers (target./self.) index as needed.
             return self._resolve_vfs_path(scope="agent", index=None, segments=segments)
 
+        # Handle global.vfs.* paths: the explicit spelling of a global, its world's value
+        if path.startswith("global.vfs."):
+            if self.vfs_registry is None:
+                raise ValueError("VFS registry not set in context")
+            return self._resolve_vfs_path(scope="global", index=None, segments=path.split(".")[2:])
+
         raise ValueError(f"Invalid path: {path}")
 
     def authorize_write_path(self, path: str) -> None:
         """Preflight one resolved command target without reading or mutating storage."""
         parts = path.split(".")
         item_index: int | None = None
-        if parts[0] in ("self", "target"):
+        if parts[0] == "global":
+            parts.pop(0)
+        elif parts[0] in ("self", "target"):
             actor = parts.pop(0)
             is_item = self.self_is_item if actor == "self" else self.target_is_item
             if is_item:
@@ -325,22 +347,30 @@ class ExecutionContext:
                 self.affordance_overrides = {}
             scalar_value: bool
             if isinstance(value, torch.Tensor):
+                if value.numel() != 1:
+                    raise ValueError(
+                        f"'{path}' is shared by every world and takes one value, but the expression produced shape "
+                        f"{tuple(value.shape)}; a per-world value (a global read outside an agent's interaction) "
+                        "has no single world here."
+                    )
                 scalar_value = bool(value.item())
             else:
                 scalar_value = bool(value)
             self.affordance_overrides[aff_name] = scalar_value
             return
 
-        # Handle bare vfs.* paths
-        if path.startswith("vfs."):
+        # Handle bare vfs.* paths, and global.vfs.* (the explicit spelling of a global)
+        if path.startswith(("vfs.", "global.vfs.")):
             if self.vfs_registry is None:
                 raise ValueError("VFS registry not set in context")
 
-            var_name = path[len("vfs.") :]
+            var_name = path.split("vfs.", 1)[1]
             var_def = self.vfs_registry.variables.get(var_name)
             if var_def is None:
                 raise KeyError(f"VFS variable '{var_name}' not found")
 
+            if path.startswith("global.") and var_def.scope != VariableScope.GLOBAL:
+                raise ValueError(f"'{path}' names {var_def.scope}-scoped variable '{var_name}'; 'global.vfs.' spells a global only.")
             if var_def.scope == VariableScope.AGENT:
                 # An agent-scoped bare write is one agent's row, never the batch. The
                 # compiler resolves it to target.vfs.X; a node reaching here unresolved
@@ -354,8 +384,7 @@ class ExecutionContext:
                     self._write_agent_vfs_value(var_name, self.target_index, value)
                 return
 
-            self.require_whole_batch_live(f"global variable '{path}'")
-            self.vfs_registry.set(var_name, value, writer="engine")
+            self._write_global_vfs_value(var_name, value)
             return
 
         raise ValueError(f"Invalid path: {path}")
@@ -450,8 +479,11 @@ class ExecutionContext:
         if self.vfs_registry is None:
             raise ValueError("VFS registry not set in context")
 
-        if scope == "global":
-            return self.vfs_registry.get(var_name, reader="engine")
+        if scope == "global" or self._declared_global(var_name):
+            # One row per world (S1): the context's world reads its own row.
+            tensor = self.vfs_registry.get(var_name, reader="engine")
+            row = self.world_row()
+            return tensor if row is None else tensor[row]
 
         if scope == "agent":
             tensor = self.vfs_registry.get(var_name, reader="engine")
@@ -486,17 +518,42 @@ class ExecutionContext:
                 return self.vfs_registry.get_item_variable_type(profile_name, var_name)
         return self.vfs_registry.get_variable_type(var_name)
 
+    def _declared_global(self, var_name: str) -> bool:
+        assert self.vfs_registry is not None
+        var_def = self.vfs_registry.variables.get(var_name)
+        return var_def is not None and var_def.scope == VariableScope.GLOBAL
+
+    def _write_global_vfs_value(self, var_name: str, value: torch.Tensor) -> None:
+        """Write a global into the context's world, or into every world under the write mask.
+
+        A global has one row per world (S1). A context bound to one world writes that
+        row only, so one world's interaction never moves another world's state
+        (review-2026-10-24 VFS F4). A world-shared context (see `world_row`) writes every
+        world's row that the write mask leaves live.
+        """
+        assert self.vfs_registry is not None
+        row = self.world_row()
+        if row is not None:
+            if self.row_is_live(row):
+                self._write_agent_vfs_value(var_name, row, value)
+            return
+        batch = self.vfs_registry.get(var_name, reader="engine")
+        # No dtype cast: the registry refuses a value whose dtype is not the declared one.
+        candidate = value.to(device=batch.device).expand_as(batch)
+        if self.write_mask is not None:
+            mask = self.write_mask.to(device=batch.device, dtype=torch.bool)
+            while mask.dim() < batch.dim():
+                mask = mask.unsqueeze(-1)
+            candidate = torch.where(mask, candidate, batch)
+        self.vfs_registry.set(var_name, candidate.clone(), writer="engine")
+
     def _write_agent_vfs_value(self, var_name: str, index: int, value: torch.Tensor) -> None:
-        """Write an agent-scoped VFS variable for a specific agent."""
+        """Write one row of a batched (agent- or global-scoped) VFS variable.
+
+        A global's row is the world of agent ``index`` (S1: one agent per world).
+        """
         if self.vfs_registry is None:
             raise RuntimeError("VFS registry is not configured; cannot write VFS variable")
-        var_def = self.vfs_registry.variables.get(var_name)
-        if var_def is not None and var_def.scope == VariableScope.GLOBAL:
-            # A global variable has no per-agent axis; indexing it here would write
-            # a slab of its first spatial axis (hamlet-cf16cdb6c4 / hamlet-57a5126baa).
-            raise ValueError(
-                f"VFS variable '{var_name}' is global-scoped; it has no per-agent value. Write it as 'vfs.{var_name}' (one shared value)."
-            )
         batch = self.vfs_registry.get(var_name, reader="engine")
         if batch.dim() == 0:
             raise ValueError(f"VFS variable '{var_name}' is not agent-scoped; cannot index by agent.")

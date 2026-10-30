@@ -220,5 +220,5 @@ def test_expressions_observe_transition_rule_writes_in_the_same_tick(tmp_path: P
     env = _env(_compile(pack))
     for tick in range(1, 4):
         _step(env, "WAIT")
-        assert env.vfs_registry.get("gcount", reader="engine").item() == float(tick)
-        assert env.vfs_registry.get("gtwice", reader="engine").item() == 2.0 * tick
+        assert env.vfs_registry.get("gcount", reader="engine").tolist() == [float(tick)] * env.num_agents
+        assert env.vfs_registry.get("gtwice", reader="engine").tolist() == [2.0 * tick] * env.num_agents

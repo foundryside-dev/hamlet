@@ -88,12 +88,32 @@ initialization parameters fail validation.
 row of the environment batch is its own world with one agent in it; no two agents share a
 world. So there is no scope relating two agents: `pair` and `message` (and the
 `append_event` composition that filled a message buffer) are deleted, because in a
-one-agent world a pair has no partner and a message no addressee. `global` is world state:
-the intended contract is one value per world, so an effect or rule that writes a global
-writes its own world's value and no other world's reward or observation moves. That
-per-world axis is landing in WP13; today `global` storage is still one value shared by the
-whole batch. A multi-agent world will be a new declared parameter (agents per world), not a
-reinterpretation of `global`.
+one-agent world a pair has no partner and a message no addressee. `global` is world state,
+one value per world (VFS WP13). The world axis is engine-internal: an author declares
+`scope: global` and reads it as one scalar (or one declared payload) in their world, and the
+expression shape proof still treats it so: a global expression may not read agent state, and
+an action write may not target a global. At runtime every reader and writer addresses its own
+world's row:
+
+- an affordance or item interaction, and an agent-scoped effect, write the interacting agent's
+  world (`vfs.X` and `global.vfs.X` alike); a global-, affordance- or item-scoped effect lives
+  in one store shared by the batch, so its global writes land in every world's row;
+- a transition rule advances each world's global while that world's agent is active;
+- global and agent profile expressions read their own world's globals;
+- each world's observation publishes its own row, and the reward reads its own row;
+- persistent-lifetime save and restore carry every world's row.
+
+The engine `tick` is a global like any other: all worlds step in lockstep, so the engine
+writes the same instant into every row. Episode resets are batch-wide for the same reason:
+every world's episode- and tick-lifetime state is re-initialized together. Item spawn
+predicates are the one engine-internal reduction across worlds: items are shared by the batch
+today, so a predicate passes only when it holds in every world.
+
+**Non-goal: cross-world quantities.** There is no spelling for a value that reduces over
+worlds (a batch-wide total, mean or maximum of a global or agent variable). Under S1 such a
+value would leak one world's events into another world's observation or reward, so its
+absence is the contract, not a gap. A multi-agent world will be a new declared parameter
+(agents per world), not a reinterpretation of `global`.
 
 **Token identity and the brain.** An exposed variable's token identity is its declared
 descriptor: scope, semantic type, normalization kind and bounds, dtype, lifetime, declared

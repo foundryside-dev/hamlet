@@ -2,7 +2,7 @@
 
 The registry gains item_vfs-style consolidated arenas for the `global` and `agent`
 scopes: one `[rows, elements]` float32 tensor per scope with a compiled index map, where
-`rows` is 1 (global) or num_agents (agent). Float32-typed variables of those scopes are
+`rows` is num_worlds (global; S1: one world per agent) or num_agents (agent). Float32-typed variables of those scopes are
 STORED as views into the arena, so every write (set / set_engine_value / lifetime reset)
 lands in the arena without any sync step, and the token registry publisher reads one slab
 per scope — this is what lets the publisher's fills be batched (never per-variable Python
@@ -66,7 +66,7 @@ class TestArenaLayout:
     def test_global_arena_shape_and_index(self, registry):
         arena = registry.scope_arenas["global"]
         # g_scalar (1) + g_vec (3) + t_scalar (1); ref and bool dtypes stay standalone.
-        assert arena.tensor.shape == (1, 5)
+        assert arena.tensor.shape == (3, 5)  # one row per world
         assert arena.tensor.dtype == torch.float32
         assert arena.index["g_scalar"] == (0, 1)
         assert arena.index["g_vec"] == (1, 3)
@@ -81,15 +81,16 @@ class TestArenaLayout:
         assert arena.index["a_vec"] == (1, 2)
 
     def test_initial_values_land_in_arena(self, registry):
-        assert registry.scope_arenas["global"].tensor[0].tolist() == [0.25, 1.0, 2.0, 3.0, 0.0]
+        for row in registry.scope_arenas["global"].tensor.tolist():
+            assert row == [0.25, 1.0, 2.0, 3.0, 0.0]
         for row in registry.scope_arenas["agent"].tensor.tolist():
             assert row == pytest.approx([0.5, 0.1, 0.2])
 
 
 class TestWritesLandInArena:
     def test_set_writes_through_to_arena(self, registry):
-        registry.set("g_scalar", torch.tensor(0.75), writer="engine")
-        assert registry.scope_arenas["global"].tensor[0, 0].item() == 0.75
+        registry.set("g_scalar", torch.tensor([0.25, 0.75, 0.25]), writer="engine")
+        assert registry.scope_arenas["global"].tensor[:, 0].tolist() == [0.25, 0.75, 0.25]
 
     def test_set_engine_value_writes_through(self, registry):
         registry.set_engine_value("a_vec", torch.tensor([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]]))
@@ -106,19 +107,19 @@ class TestWritesLandInArena:
         assert registry.scope_arenas["global"].tensor[0, 0].item() == 0.25
 
     def test_lifetime_reset_restores_arena_values(self, registry):
-        registry.set("t_scalar", torch.tensor(7.0), writer="engine")
+        registry.set("t_scalar", torch.tensor([7.0, 7.0, 7.0]), writer="engine")
         registry.set("a_scalar", torch.tensor([9.0, 9.0, 9.0]), writer="engine")
         registry.reset_tick_scoped()
-        assert registry.scope_arenas["global"].tensor[0, 4].item() == 0.0  # tick lifetime restored
+        assert registry.scope_arenas["global"].tensor[:, 4].tolist() == [0.0, 0.0, 0.0]  # tick lifetime restored
         assert registry.scope_arenas["agent"].tensor[:, 0].tolist() == [9.0, 9.0, 9.0]  # episode untouched
         registry.reset_episode_scoped()
         assert registry.scope_arenas["agent"].tensor[:, 0].tolist() == [0.5, 0.5, 0.5]
 
     def test_shape_and_dtype_refusals_unchanged(self, registry):
         with pytest.raises(ValueError, match="shape"):
-            registry.set("g_scalar", torch.tensor([1.0, 2.0]), writer="engine")
+            registry.set("g_scalar", torch.tensor(1.0), writer="engine")
         with pytest.raises(PermissionError):
-            registry.set("g_scalar", torch.tensor(1.0), writer="agent")
+            registry.set("g_scalar", torch.tensor([1.0, 1.0, 1.0]), writer="agent")
 
 
 class TestNonArenaVariablesUnchanged:

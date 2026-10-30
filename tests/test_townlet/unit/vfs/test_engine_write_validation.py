@@ -267,12 +267,12 @@ def _noise_registry() -> VariableRegistry:
     return VariableRegistry(variables=[noise], num_agents=2, device=torch.device("cpu"))
 
 
-def _draws(seed: int) -> list[list[float]]:
+def _draws(seed: int) -> list[list[list[float]]]:
     torch.manual_seed(seed)
     registry = _noise_registry()
     draws = [registry.get("noise", reader="engine").tolist()]
     for _ in range(2):
-        registry.set_engine_value("noise", torch.zeros(4))
+        registry.set_engine_value("noise", torch.zeros(2, 4))  # [num_worlds, 4]
         registry.reset_episode_scoped()
         draws.append(registry.get("noise", reader="engine").tolist())
     return draws
@@ -280,8 +280,9 @@ def _draws(seed: int) -> list[list[float]]:
 
 def test_random_initializer_redraws_on_every_reset_reproducibly_per_seed() -> None:
     first = _draws(7)
-    assert len({tuple(draw) for draw in first}) == 3, first  # three distinct draws, not one frozen draw
-    assert all(0.0 <= value < 1.0 for draw in first for value in draw)
+    assert len({tuple(map(tuple, draw)) for draw in first}) == 3, first  # three distinct draws, not one frozen draw
+    assert all(world[0] != world[1] for world in first)  # each world draws its own global (S1)
+    assert all(0.0 <= value < 1.0 for draw in first for world in draw for value in world)
     assert _draws(7) == first
     assert _draws(8) != first
 
@@ -292,14 +293,14 @@ def test_literal_and_deterministic_initializers_restore_on_reset() -> None:
     keep = _variable(id="keep", type="scalar", lifetime="persistent", default=0.0)
     registry = VariableRegistry(variables=[literal, eye, keep], num_agents=2, device=torch.device("cpu"))
     registry.set_engine_value("score", torch.tensor([9.0, 9.0]))
-    registry.set_engine_value("eye", torch.zeros(2, 2))
-    registry.set_engine_value("keep", torch.tensor(4.0))
+    registry.set_engine_value("eye", torch.zeros(2, 2, 2))  # [num_worlds, 2, 2]
+    registry.set_engine_value("keep", torch.tensor([4.0, 5.0]))
 
     registry.reset_episode_scoped()
 
     assert registry.get("score", reader="engine").tolist() == [1.5, 1.5]
-    assert registry.get("eye", reader="engine").tolist() == [[1.0, 0.0], [0.0, 1.0]]
-    assert registry.get("keep", reader="engine").item() == 4.0
+    assert registry.get("eye", reader="engine").tolist() == [[[1.0, 0.0], [0.0, 1.0]]] * 2
+    assert registry.get("keep", reader="engine").tolist() == [4.0, 5.0]
 
 
 def test_env_reset_redraws_a_random_global_tensor(tmp_path: Path) -> None:

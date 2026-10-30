@@ -407,8 +407,16 @@ row, and nothing read either. `agent_private` was deleted with them: `agent` wit
 `readable_by: [engine]` and `exposed_to: []` is the same privacy and keeps every consumer.
 `zone` and `group` were deleted in VFS WP2. A declaration naming any deleted scope fails at
 parse. A multi-agent world is a future declared parameter (agents per world), not a
-reinterpretation of an existing scope. `global` is world state: today it is one value shared by
-the whole batch; the per-world axis that makes it one value per world is landing in WP13.
+reinterpretation of an existing scope. `global` is world state, one value per world (VFS
+WP13): registry storage is `[num_worlds, *payload]` with `num_worlds == num_agents`, so world
+`i` is agent `i`'s. The axis is engine-internal; authors read a global as one value in their
+world, and the expression shape proof labels it `scalar`. Interactions and agent-scoped
+effects write their own world's row; global-, affordance- and item-scoped effects are
+world-shared stores and write every row; transition rules mask a global row by its own
+agent's activity; the token publisher, DAC and persistent snapshots read per row. The engine
+`tick` is written into every row at once (lockstep). No reader reduces across worlds except
+item spawn predicates, because items are batch-shared; cross-world quantities have no
+spelling by design (`docs/config-schemas/variables.md`).
 
 `item` scope is profile-based. The registry allocates a profile-agnostic
 `item_vfs[max_items, max_profile_vars]` tensor, records
@@ -677,9 +685,11 @@ mismatched refuses.
 > previously said `set_engine_value()` "bypasses declaration-shape checks so derived global VFS
 > variables may store batched per-agent results". That carve-out is gone:
 > `set_engine_value()` now validates `value.shape` against the declared element shape for
-> **every** variable (`registry.py:563-593`) — a global scalar can no longer hold a
-> `[num_agents]` batch, which previously let storage drift permanently from the declared
-> schema (`hamlet-2ca2cb373f`). A variable whose expression is genuinely per-agent must be
+> **every** variable (`registry.py`, `_validate_write`), which previously let storage drift
+> permanently from the declared schema (`hamlet-2ca2cb373f`). Since VFS WP13 (2026-10-31) the
+> declared shape of a global scalar is `[num_worlds]` (one value per world, S1), so the check
+> refuses a 0-d, world-less write; the global profile write-back expands a literal-only
+> (world-invariant) expression result into every world's row before writing. A variable whose expression is genuinely per-agent must be
 > declared agent-scoped; `configs/test/vfs_bar_access` was re-scoped exactly this way as part
 > of the fix (zero-backcompat: old configs fail loudly and get corrected).
 
@@ -690,7 +700,7 @@ The registry should guarantee:
 
 - all declared variables exist after initialisation,
 - all tensors are on the configured device,
-- global variables have global shape,
+- global variables have leading dimension `num_worlds` (S1: equal to `num_agents`),
 - agent variables have leading dimension `num_agents`,
 - affordance variables have leading dimension `affordance_count`,
 - all values respect declared dtype,

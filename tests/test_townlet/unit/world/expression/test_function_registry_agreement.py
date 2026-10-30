@@ -126,8 +126,9 @@ MIXED_CASES: dict[str, str] = {
 POS = torch.tensor([[0.0, 0.0], [1.0, 1.0], [3.0, 4.0]])
 IPOS = torch.tensor([[0, 0], [1, 1], [3, 4]])
 GOAL = torch.tensor([[0.0, 4.0], [1.0, 1.0], [0.0, 0.0]])
-HOME = torch.tensor([2.0, 2.0])
-SITES = torch.tensor([[0.0, 1.0], [2.0, 3.0], [10.0, 10.0]])
+# `home` and `sites` are globals: one row per world (S1), here the same in every world.
+HOME = torch.tensor([2.0, 2.0]).expand(BATCH, 2).clone()
+SITES = torch.tensor([[0.0, 1.0], [2.0, 3.0], [10.0, 10.0]]).expand(BATCH, 3, 2).clone()
 
 
 def make_context() -> ExecutionContext:
@@ -168,16 +169,6 @@ def make_context() -> ExecutionContext:
             "n": "vecNf",
             "sites": "tensor2d",
             "started": "scalar",
-        },
-        vfs_scopes={
-            "pos": "agent",
-            "ipos": "agent",
-            "goal": "agent",
-            "home": "global",
-            "v3": "agent",
-            "n": "agent",
-            "sites": "global",
-            "started": "agent",
         },
         num_agents=BATCH,
         history=history,
@@ -310,11 +301,11 @@ def test_distance_functions_reduce_the_vector_axis_only() -> None:
     assert torch.equal(check_and_evaluate("nearest(vfs.pos, vfs.sites)")[1], torch.tensor([0, 0, 1]))
 
 
-def test_distance_against_a_global_vector_is_per_agent_and_between_globals_is_scalar() -> None:
+def test_distance_against_a_global_vector_is_per_agent_and_between_globals_is_per_world() -> None:
     per_agent = check_and_evaluate("manhattan_distance(vfs.pos, vfs.home)")[1]
     assert torch.allclose(per_agent, torch.tensor([4.0, 2.0, 3.0]))
-    scalar = check_and_evaluate("distance(vfs.home, vfs.home)")[1]
-    assert scalar.dim() == 0 and scalar.item() == 0.0
+    per_world = check_and_evaluate("distance(vfs.home, vfs.home)")[1]
+    assert torch.equal(per_world, torch.zeros(BATCH))
 
 
 def test_masked_functions_promote_an_int_value_against_a_float_argument() -> None:
@@ -358,7 +349,7 @@ def _distance_values(expression: str, goal: torch.Tensor) -> torch.Tensor:
 
 def test_nearest_measures_int_points_against_float_candidates_in_float() -> None:
     context = make_context()
-    context.vfs["sites"] = torch.tensor([[0.9, 0.9], [1.9, 1.9]])
+    context.vfs["sites"] = torch.tensor([[0.9, 0.9], [1.9, 1.9]]).expand(BATCH, 2, 2).clone()
     ast = ExpressionParser().parse("nearest(vfs.ipos, vfs.sites)")
     TypeChecker(SCHEMA).check(ast)
     # ipos row (1,1) is 0.14 from (0.9,0.9); truncating the candidates to (0,0)/(1,1) would pick row 1.

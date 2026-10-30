@@ -509,8 +509,12 @@ class VectorizedHamletEnv:
         return (self.global_tick % int(self.day_length)) if self.enable_temporal_mechanics else 0
 
     def _publish_engine_tick(self) -> None:
-        """Write `global_tick` into the registry's engine `tick` (the one temporal primitive)."""
-        self.vfs_registry.set_engine_value("tick", torch.tensor(float(self.global_tick), device=self.device))
+        """Write `global_tick` into the registry's engine `tick` (the one temporal primitive).
+
+        `tick` is a global like any other: one row per world. Every world steps in
+        lockstep, so the engine writes the same instant into every row.
+        """
+        self.vfs_registry.set_engine_value("tick", torch.full((self.vfs_registry.num_worlds,), float(self.global_tick), device=self.device))
 
     def _build_action_space_from_runtime_artifact(self, runtime_action_space: RuntimeActionSpace) -> ComposedActionSpace:
         """Build ComposedActionSpace from compiler-emitted runtime actions."""
@@ -1331,6 +1335,10 @@ class VectorizedHamletEnv:
         expression variables, or a dependency chase silently clobbers an engine-written
         static every step (hamlet-df3a96bbac). An unknown variable id is a refusal
         (hamlet-0ddc83e377); agent-profile expressions must land [num_agents]-shaped.
+
+        A global expression evaluates per world: one that reads a global or `tick`
+        yields one value per world; one that reads only literals is world-invariant and
+        yields a 0-d value, which is that same value in every world's row.
         """
         expression_var_names = {var.name for var in profile.variables if var.ast is not None}
         for var_name, value in updated_vfs.items():
@@ -1347,6 +1355,8 @@ class VectorizedHamletEnv:
                     f"Agent-profile variable '{var_name}' evaluated to shape {tuple(value.shape)}, "
                     f"expected ({self.num_agents},). A constant belongs in initial_value, not an expression."
                 )
+            if not require_agent_shape and value.dim() == 0:
+                value = value.expand(self.vfs_registry.num_worlds).clone()
             self.vfs_registry.set_engine_value(var_name, value)
 
     def _current_vfs_state(self) -> dict[str, torch.Tensor]:

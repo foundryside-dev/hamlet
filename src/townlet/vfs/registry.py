@@ -3,8 +3,13 @@
 The VariableRegistry manages runtime storage of VFS variables with access control
 and scope semantics. It handles these scope patterns:
 
-- global: World state (shape [] or [dims])
+- global: World state, one row per world (shape [num_worlds] or [num_worlds, dims])
 - agent: Per-agent values (shape [num_agents] or [num_agents, dims])
+
+The batch is N independent single-agent worlds (owner ruling S1, 2026-10-25), so
+``num_worlds == num_agents`` and world ``i`` is agent ``i``'s world. The world axis is
+engine-internal: an author declares ``scope: global`` and reads it as one value in
+their world. No reader or writer reduces across worlds.
 - affordance: Per-affordance-instance values (shape [num_affordances, ...])
 
 Item-scope state lives in the item arena (``item_vfs``), not in ordinary storage.
@@ -49,8 +54,8 @@ def _snapshot_access_policy(identifier: str, declaration: Any) -> StaticAccessPo
 class ScopeArena:
     """One per-scope storage arena (token-obs unit 3, Task 8 — the item_vfs shape).
 
-    ``tensor`` is ``[rows, elements]`` float32 — rows 1 for the global scope,
-    ``num_agents`` for the agent scope; ``index`` maps each backed variable id to its
+    ``tensor`` is ``[rows, elements]`` float32 — ``num_worlds`` rows for the global
+    scope, ``num_agents`` for the agent scope (equal under S1: one agent per world); ``index`` maps each backed variable id to its
     ``(offset, element_count)`` column span. Backed variables' registry storage tensors
     are VIEWS into this arena, so every write path (set / set_engine_value / lifetime
     reset) lands here with no sync step, and the token registry publisher reads one slab
@@ -102,6 +107,10 @@ class VariableRegistry:
             num_affordances: Number of affordance-scope rows
         """
         self.num_agents = num_agents
+        # S1 (2026-10-25): the batch is independent single-agent worlds, so the global
+        # scope's world axis has one row per agent. Agents-per-world > 1 is a future
+        # declared parameter, not a reinterpretation of this axis.
+        self.num_worlds = num_agents
         self.max_items = max_items
         self.num_affordances = num_affordances
         self.device = device
@@ -237,7 +246,7 @@ class VariableRegistry:
             layouts[scope_key][var_id] = (offsets[scope_key], count)
             offsets[scope_key] += count
             self._arena_backed[var_id] = scope_key
-        rows = {"global": 1, "agent": self.num_agents}
+        rows = {"global": self.num_worlds, "agent": self.num_agents}
         for scope_key in ("global", "agent"):
             self._scope_arenas[scope_key] = ScopeArena(
                 tensor=torch.zeros((rows[scope_key], offsets[scope_key]), dtype=torch.float32, device=self.device),
@@ -253,8 +262,6 @@ class VariableRegistry:
         scope_key = self._arena_backed[var_id]
         arena = self._scope_arenas[scope_key]
         offset, count = arena.index[var_id]
-        if scope_key == "global":
-            return arena.tensor[0, offset : offset + count].view(tuple(shape))
         sliced = arena.tensor[:, offset : offset + count]
         if len(shape) == 1:
             return sliced.squeeze(1)
@@ -311,8 +318,8 @@ class VariableRegistry:
             Tuple representing tensor shape
 
         Examples:
-            global scalar: ()
-            global vector (dims=2): (2,)
+            global scalar: (num_worlds,)
+            global vector (dims=2): (num_worlds, 2)
             agent scalar: (num_agents,)
             agent vector (dims=2): (num_agents, 2)
         """
@@ -341,7 +348,7 @@ class VariableRegistry:
         """Return the leading tensor dimensions implied by a variable scope."""
         scope = VariableScope(var_def.scope)
         if scope == VariableScope.GLOBAL:
-            return ()
+            return (self.num_worlds,)
         if scope == VariableScope.AGENT:
             return (self.num_agents,)
         if scope == VariableScope.AFFORDANCE:
@@ -373,9 +380,9 @@ class VariableRegistry:
             energy = registry.get("energy", reader="agent")
             # Returns: tensor([1.0, 1.0, 1.0, 1.0])  # shape [num_agents]
 
-            # Read global time_sin
+            # Read global time_sin: one value per world
             time_sin = registry.get("time_sin", reader="agent")
-            # Returns: tensor(0.0)  # shape []
+            # Returns: tensor([0.0, 0.0, 0.0, 0.0])  # shape [num_worlds]
         """
         self._validate_actor(reader, "read", variable_id)
         if variable_id not in self._definitions:
@@ -403,8 +410,8 @@ class VariableRegistry:
             new_energy = torch.tensor([0.9, 0.8, 0.7, 0.6])
             registry.set("energy", new_energy, writer="engine")
 
-            # Update global time_sin
-            registry.set("time_sin", torch.tensor(0.707), writer="engine")
+            # Update global time_sin in every world
+            registry.set("time_sin", torch.full((registry.num_worlds,), 0.707), writer="engine")
         """
         self._validate_actor(writer, "write", variable_id)
         if variable_id not in self._definitions:
@@ -419,9 +426,8 @@ class VariableRegistry:
 
         Public, permission-checked write-back path for VTC commits and profile
         expression write-backs. It validates the declared shape and dtype exactly as
-        ``set`` does — it neither bypasses the element shape (hamlet-d970ef83f0: a
-        global scalar cannot hold a per-agent batch; declare the variable agent-scoped)
-        nor coerces dtype (hamlet-2ca2cb373f: a float into a bool target is refused,
+        ``set`` does — it neither bypasses the declared shape (a global scalar holds
+        exactly one value per world, ``[num_worlds]``) nor coerces dtype (hamlet-2ca2cb373f: a float into a bool target is refused,
         not truncated). Callers produce storage-typed values; the one admitted
         conversion, integer widening into float32, lives in ``to_storage_dtype``.
         """

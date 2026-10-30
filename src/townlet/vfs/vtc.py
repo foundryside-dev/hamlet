@@ -1767,10 +1767,11 @@ class VTCSocialResidueProgram:
         if value_on_device.shape == target.shape:
             return value_on_device
 
-        # The compile-time shape proof admits one more case: an agent-shaped value on an
-        # agent target with an element axis (a vector or tensor row), spread along it.
+        # The compile-time shape proof admits one more case: a per-row value (an agent
+        # row, or a global's per-world value) on a target with an element axis (a vector
+        # or tensor row), spread along it.
         num_agents = active_mask.shape[0]
-        if value_on_device.shape == active_mask.shape and rule.target_scope in ACTION_WRITE_AGENT_AXIS_SCOPES:
+        if value_on_device.shape == active_mask.shape and rule.target_scope in BATCH_AXIS_SCOPES:
             VTCSocialResidueProgram._assert_target_shape(rule, target, num_agents)
             view_shape = (num_agents, *([1] * (target.dim() - 1)))
             return value_on_device.reshape(view_shape).expand_as(target)
@@ -1788,14 +1789,15 @@ class VTCSocialResidueProgram:
     ) -> torch.Tensor:
         active = active_mask.to(device=target.device, dtype=torch.bool)
         num_agents = active.shape[0]
-        if rule.target_scope in ACTION_WRITE_AGENT_AXIS_SCOPES:
+        if rule.target_scope in BATCH_AXIS_SCOPES:
+            # An agent row, or a world's global row (S1): each advances while its own agent is active.
             VTCSocialResidueProgram._assert_target_shape(rule, target, num_agents)
             agent_mask = active
             while agent_mask.dim() < target.dim():
                 agent_mask = agent_mask.unsqueeze(-1)
             return agent_mask.expand_as(target)
 
-        # Global and affordance state has no row per agent: it is written while any agent is active.
+        # Affordance state has no row per agent: it is written while any agent is active.
         return torch.full_like(target, bool(active.any()), dtype=torch.bool, device=target.device)
 
     @staticmethod
@@ -1803,7 +1805,7 @@ class VTCSocialResidueProgram:
         """The declared scope fixes the leading axis; storage that disagrees is a registry defect."""
         assert target.dim() >= 1 and int(target.shape[0]) == num_agents, (
             f"VTC social residue '{rule.telemetry_label}' targets {rule.target_scope.value}-scope "
-            f"'{rule.variable_id}' with storage shape {tuple(target.shape)}; expected a leading agent axis of {num_agents}"
+            f"'{rule.variable_id}' with storage shape {tuple(target.shape)}; expected a leading batch axis of {num_agents}"
         )
 
 
@@ -1902,6 +1904,7 @@ def compile_vtc_social_residue_rules_with_phase_graph(
     """
     parser = ExpressionParser()
     schema, shapes = _write_expression_namespace(targets)
+    affordance_target_shapes = _affordance_target_shapes(targets, shapes)
     checker = TypeChecker(schema=schema)
     compiled_rules: list[CompiledVTCSocialResidueRule] = []
     refusals: list[VTCWriteRefusal] = []
@@ -1962,7 +1965,7 @@ def compile_vtc_social_residue_rules_with_phase_graph(
                 expression=write["expression"],
                 condition_ast=condition_ast,
                 condition=condition,
-                shapes=shapes,
+                shapes=affordance_target_shapes if target.scope == VariableScope.AFFORDANCE else shapes,
                 admitted_expression=admitted_shapes,
                 admitted_condition=admitted_shapes,
                 target_id=write["variable_id"],
@@ -1970,6 +1973,11 @@ def compile_vtc_social_residue_rules_with_phase_graph(
                 prefix=f"Transition rule '{rule['rule_id']}' write '{write['telemetry_label']}'",
             )
             if shape_refusal is not None:
+                if target.scope == VariableScope.AFFORDANCE and _WORLD_SHAPE in shape_refusal:
+                    shape_refusal += (
+                        " A global holds one value per world, and affordance state is shared by every world, "
+                        "so a global read here has no single world."
+                    )
                 refusals.append(VTCWriteRefusal(origin_key=f"transition_rules:{rule['rule_id']}", kind="type", message=shape_refusal))
                 continue
             compiled_rules.append(
@@ -2181,7 +2189,19 @@ def compile_vtc_affordance_occupancy_with_phase_graph(
 
 
 ACTION_WRITE_AGENT_AXIS_SCOPES: frozenset[VariableScope] = frozenset({VariableScope.AGENT})
-"""Scopes whose registry storage leads with the agent axis, so an action write lands on the acting agent's row."""
+"""Scopes an action write may target: an action write lands on the acting agent's row.
+
+A global also has one row per world, and under S1 the acting agent's world is its row,
+but admitting action writes to world state is an authoring decision of its own; a
+global is written by a transition rule or an interaction effect."""
+
+BATCH_AXIS_SCOPES: frozenset[VariableScope] = frozenset({VariableScope.GLOBAL, VariableScope.AGENT})
+"""Scopes whose registry storage leads with the batch axis: one row per agent, or per world.
+
+Under S1 (2026-10-25) the batch is independent single-agent worlds, so the world axis
+of a global and the agent axis coincide at runtime; a transition rule's target row in
+either scope is masked by its own agent's (world's) activity. The authoring contract
+still tells them apart: a global reads as a scalar in its world (`_SCOPE_SHAPES`)."""
 
 AFFORDANCE_OCCUPANCY_PHASE = "resolve_affordance_access_and_occupancy"
 AFFORDANCE_OCCUPANCY_COMPOSITIONS = frozenset({"claim_if_free", "capacity_claim"})
@@ -2192,6 +2212,26 @@ _AGENT_ROW_SHAPES = frozenset({"scalar", "agent"})
 
 An action write lands per acting agent, so its value is one per agent (or a
 scalar): an agent row or an occupancy claimant's payload."""
+
+
+_WORLD_SHAPE = "world"
+"""The shape a global read takes where the target is batch-shared (affordance state).
+
+A global is one value per world (S1); within its world it reads as a scalar
+(`_SCOPE_SHAPES`). Affordance state is shared by the whole batch, so a global read
+feeding it has no single world: labelled with its own axis, it neither joins an
+affordance row nor passes as a scalar, and the shape proof refuses it at compile."""
+
+
+def _affordance_target_shapes(targets: Mapping[str, VTCWriteTarget], shapes: Mapping[str, str]) -> dict[str, str]:
+    """The write-expression shape map for a rule targeting affordance state: globals read world-shaped."""
+    global_names = {name for name, target in targets.items() if target.scope == VariableScope.GLOBAL}
+    relabelled = dict(shapes)
+    for name in global_names:
+        for key in (name, f"vfs.{name}", f"self.vfs.{name}", f"target.vfs.{name}"):
+            if key in relabelled:
+                relabelled[key] = _WORLD_SHAPE
+    return relabelled
 
 
 _RULE_ADMITTED_SHAPES: dict[VariableScope, frozenset[str]] = {
@@ -2236,8 +2276,8 @@ def _action_write_scope_refusal(
     admitted = ", ".join(sorted(scope.value for scope in ACTION_WRITE_AGENT_AXIS_SCOPES))
     return (
         f"{prefix} variable '{write.variable_id}', declared scope '{target_scope.value}'. An action write applies to "
-        f"the acting agent's row, so its target must be a meter bar or a variable of scope {admitted}; "
-        f"a '{target_scope.value}' variable has no row per agent."
+        f"the acting agent's row, so its target must be a meter bar or a variable of scope {admitted}. "
+        f"A '{target_scope.value}' variable is written by a transition rule or an interaction effect."
     )
 
 

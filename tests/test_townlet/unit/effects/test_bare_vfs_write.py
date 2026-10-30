@@ -115,7 +115,7 @@ def test_target_spelling_is_unchanged(tmp_path: Path) -> None:
     assert _public_state(env) == [0.0, 5.0]
 
 
-def test_global_bare_write_stays_one_shared_value(tmp_path: Path) -> None:
+def test_global_bare_write_lands_in_each_interactors_own_world(tmp_path: Path) -> None:
     pack = _pack(tmp_path, sleep_on_start=[{"modify": "vfs.gcount", "value": "vfs.gcount + 1.0"}])
     variables = pack / "variables.yaml"
     payload = yaml.safe_load(variables.read_text())
@@ -135,7 +135,10 @@ def test_global_bare_write_stays_one_shared_value(tmp_path: Path) -> None:
     _write_yaml(variables, payload)
     env = _env(pack, num_agents=2)
     env.step(torch.full((2,), env.action_ids["INTERACT"]))
-    assert env.vfs_registry.get("gcount", reader="engine").item() == 2.0
+    # One row per world (S1): each interactor counts in its own world, never in the other's.
+    assert env.vfs_registry.get("gcount", reader="engine").tolist() == [1.0, 1.0]
+    env.step(torch.tensor([env.action_ids["WAIT"], env.action_ids["INTERACT"]]))
+    assert env.vfs_registry.get("gcount", reader="engine").tolist() == [1.0, 2.0]
 
 
 @pytest.mark.parametrize("scope", ["global", "item", "affordance"])

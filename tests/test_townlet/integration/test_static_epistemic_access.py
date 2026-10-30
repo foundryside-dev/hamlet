@@ -53,7 +53,7 @@ def test_witness_public_observation_hidden_named_reward_and_immutable_state(tmp_
         _, rewards, dones, _ = env.step(torch.tensor([ids["WAIT"], ids["ADVANCE"]]))
         assert not dones.any()
         assert torch.equal(rewards, torch.tensor([1.5, 1.5]))
-        assert env.vfs_registry.get("immutable_scale", reader="engine").item() == 0.5
+        assert env.vfs_registry.get("immutable_scale", reader="engine").tolist() == [0.5, 0.5]  # one row per world
         assert torch.all(env.vfs_registry.get("readable_unexposed", reader="engine") == 7)
 
 

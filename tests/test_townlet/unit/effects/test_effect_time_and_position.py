@@ -103,7 +103,8 @@ def test_tick_compiles_in_an_effect_and_reads_the_engine_tick(tmp_path: Path) ->
         ticks_at_effect = env.global_tick
         _wait(env)
 
-    assert env.vfs_registry.get("day_count", reader="engine").item() == pytest.approx(float(ticks_at_effect))
+    # A global-scope effect is world-shared, so its global write lands in every world (S1).
+    assert env.vfs_registry.get("day_count", reader="engine").tolist() == pytest.approx([float(ticks_at_effect)] * 2)
     assert ticks_at_effect > 0
 
 

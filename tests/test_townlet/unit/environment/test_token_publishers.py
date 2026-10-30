@@ -1086,13 +1086,13 @@ class TestRegistryVariableElementPublisher:
         rows = _rows(schema.capacity, "variable_element")
         publisher.publish(rows, TokenPublishContext())
         assert rows[0, 0, v0].item() == pytest.approx(0.25)
-        registry.set("temp", torch.tensor(0.75), writer="engine")
+        registry.set("temp", torch.tensor([0.75, 0.25]), writer="engine")  # one row per world (S1)
         registry.set("mood", torch.tensor([2.0, 8.0]), writer="engine")
-        registry.set("wind", torch.tensor([[0.0, 5.0, 0.0], [0.0, 5.0, 0.0]])[0], writer="engine")
+        registry.set("wind", torch.tensor([[0.0, 5.0, 0.0], [0.0, 5.0, 0.0]]), writer="engine")
         rows2 = _rows(schema.capacity, "variable_element")
         publisher.publish(rows2, TokenPublishContext())
-        assert rows2[0, 0, v0].item() == pytest.approx(0.75)  # global broadcasts to every world
-        assert rows2[1, 0, v0].item() == pytest.approx(0.75)
+        assert rows2[0, 0, v0].item() == pytest.approx(0.75)  # each world publishes its own global row
+        assert rows2[1, 0, v0].item() == pytest.approx(0.25)
         assert rows2[0, 1, v0].item() == pytest.approx(0.2)  # agent scope: per-world row
         assert rows2[1, 1, v0].item() == pytest.approx(0.8)
         assert rows2[0, 2, v0].item() == pytest.approx(0.5)  # wind[1] element
@@ -1136,7 +1136,7 @@ class TestRegistryVariableElementPublisher:
     def test_cyclical_fills_both_lanes_of_one_token(self):
         registry = _registry()
         publisher, schema = self._publisher(registry, ["phase"])
-        registry.set("phase", torch.tensor(6.0), writer="engine")
+        registry.set("phase", torch.tensor([6.0, 6.0]), writer="engine")
         rows = _rows(schema.capacity, "variable_element")
         publisher.publish(rows, TokenPublishContext())
         v0 = _lane("variable_element", "value_0")
@@ -1533,7 +1533,7 @@ class TestTokenObservationEncoder:
         encoder = _encoder(registry, spec)
         tick_one = encoder.encode(2, _full_ctx())
         stored = tick_one.clone()
-        registry.set("temp", torch.tensor(0.9), writer="engine")
+        registry.set("temp", torch.tensor([0.9, 0.9]), writer="engine")
         tick_two = encoder.encode(2, _full_ctx())
         assert tick_one.data_ptr() != tick_two.data_ptr()
         assert torch.equal(tick_one, stored)  # tick one is immutable history
@@ -1575,7 +1575,7 @@ def test_registry_publisher_and_getter_share_snapshot_after_dto_policy_mutation(
     registry.variables["temp"].exposed_to.clear()
     schema = _variable_type(_registry_bindings(["temp"]))
     publisher = RegistryVariableElementPublisher(schema, _layout(schema), registry, (0,), DEVICE)
-    assert registry.get("temp", reader="agent").item() == pytest.approx(0.25)
+    assert registry.get("temp", reader="agent").tolist() == pytest.approx([0.25, 0.25])
     monkeypatch.setattr(registry, "get", lambda *args, **kwargs: pytest.fail("publisher must retain batched arena gathers"))
     rows = _rows(1, "variable_element")
     publisher.publish(rows, TokenPublishContext())

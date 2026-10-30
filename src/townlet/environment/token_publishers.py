@@ -905,8 +905,9 @@ class RegistryVariableElementPublisher:
         # 2^24 remain that ticket's open question — the publisher adds no cast of its
         # own, it publishes the storage dtype.
         values = torch.zeros((num_worlds, n), dtype=torch.float32, device=rows.device)
+        # Each world's row publishes its own global state (S1: one row per world).
         if self._global_columns.shape[0]:
-            values[:, self._global_local] = arenas["global"].tensor[0].index_select(0, self._global_columns)
+            values[:, self._global_local] = arenas["global"].tensor.index_select(1, self._global_columns)
         if self._agent_columns.shape[0]:
             values[:, self._agent_local] = arenas["agent"].tensor.index_select(1, self._agent_columns)
         lanes = self._normalizer.apply(values)  # [N, n, VALUE_BLOCK_WIDTH]

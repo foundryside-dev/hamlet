@@ -150,9 +150,9 @@ def _rule(variable_id: str, *, expression: str = "1.0", composition: str = "addi
     }
 
 
-def test_global_target_is_masked_by_declared_scope_not_by_storage_shape() -> None:
-    """A global tensor whose extent happens to equal num_agents is still global state: with one
-    agent done it is written whole. The shape[0] == num_agents guess masked it per agent."""
+def test_global_target_advances_only_in_worlds_whose_agent_is_active() -> None:
+    """A global has one row per world (S1): its rule advances each world by that world's own
+    agent's activity, so a done agent's world holds while the other world moves on."""
     program = _compile([_rule("pressure")])
     (rule,) = program.rules
     assert rule.target_scope == VariableScope.GLOBAL
@@ -163,7 +163,7 @@ def test_global_target_is_masked_by_declared_scope_not_by_storage_shape() -> Non
         device=torch.device("cpu"),
     ).values
 
-    assert updated["pressure"].tolist() == [1.0, 1.0]
+    assert updated["pressure"].tolist() == [1.0, 0.0]
 
 
 def test_affordance_target_is_not_masked_per_agent() -> None:

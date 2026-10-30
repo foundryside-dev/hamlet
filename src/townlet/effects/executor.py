@@ -10,6 +10,7 @@ import torch
 from townlet.config.effects_config import EffectScope
 from townlet.effects.context import ExecutionContext
 from townlet.effects.schema import CommandNode, CommandType
+from townlet.vfs.schema import VariableScope
 from townlet.world.expression.context import ExecutionContext as ExprExecutionContext
 from townlet.world.expression.evaluator import Evaluator
 
@@ -82,12 +83,12 @@ class _TargetAwareExecutionContext(ExprExecutionContext):
         self_index: int | None = None,  # NEW
         self_is_item: bool = False,  # NEW
         device: torch.device | str | None = None,
-        vfs_scopes: dict[str, str] | None = None,
         agent_positions: torch.Tensor | None = None,
         affordance_positions: dict[str, torch.Tensor] | None = None,
         *,
         target_index: int | None,
         target_is_item: bool,
+        world_globals: frozenset[str],
     ):
         resolved_device = torch.device(device) if device is not None else torch.device("cpu")
         super().__init__(
@@ -96,7 +97,6 @@ class _TargetAwareExecutionContext(ExprExecutionContext):
             affordances={},
             temporal={},
             device=resolved_device,
-            vfs_scopes=vfs_scopes,
             agent_positions=agent_positions,
             affordance_positions=affordance_positions,
         )
@@ -109,6 +109,9 @@ class _TargetAwareExecutionContext(ExprExecutionContext):
         self.self_is_item = self_is_item  # NEW
         self.target_index = target_index
         self.target_is_item = target_is_item
+        # Globals whose `vfs` entry is already this context's world value (S1), so a
+        # `vfs.<id>` read returns it as-is instead of gathering it by agent rows.
+        self.world_globals = world_globals
 
     def get(self, path: str) -> torch.Tensor:
         """Resolve dotted path with target. and self. prefix support.
@@ -149,6 +152,9 @@ class _TargetAwareExecutionContext(ExprExecutionContext):
                 return self.self_vfs[".".join(parts[2:])]
             else:
                 raise KeyError(f"Self path '{path}' not found in execution context")
+
+        if parts[0] == "vfs" and len(parts) == 2 and parts[1] in self.world_globals:
+            return self.vfs[parts[1]]
 
         # Delegate to parent for non-target/non-self paths
         return super().get(path)
@@ -793,32 +799,30 @@ class CommandExecutor:
         for bar_name, tensor in context.bars.items():
             bars_dict[bar_name] = tensor
 
-        # Add VFS variables from the current registry contract, carrying each
-        # variable's declared scope so resolution can honor it (hamlet-cf16cdb6c4).
-        vfs_scopes: dict[str, str] = {}
+        # Add VFS variables from the current registry. A global has one row per world
+        # (S1); a context bound to one world reads that world's value, a world-shared
+        # context (global/affordance/item effect) reads every world's row.
+        world_row = context.world_row()
+        global_ids: set[str] = set()
         if context.vfs_registry:
-            # VariableRegistry has .variables property with variable definitions
             for var_id, var_def in context.vfs_registry.variables.items():
-                try:
-                    tensor = context.vfs_registry.get(var_id, reader="engine")
-                    vfs_dict[var_id] = tensor
-                    vfs_scopes[var_id] = str(var_def.scope)
-                except KeyError:
-                    # Variable not initialized yet, skip
-                    pass
+                tensor = context.vfs_registry.get(var_id, reader="engine")
+                if var_def.scope == VariableScope.GLOBAL:
+                    global_ids.add(var_id)
+                    if world_row is not None:
+                        tensor = tensor[world_row]
+                vfs_dict[var_id] = tensor
 
-        # Build target/self scoped views when present. Global-scoped variables are
-        # excluded: they have no per-agent axis, so tensor[index] would slice their
-        # first spatial axis by agent index.
+        # Build target/self scoped views when present. Globals are world state, not entity
+        # state: they have no `target.`/`self.` spelling.
         target_bars = {}
         target_vfs = {}
         if context.target_index is not None and not context.target_is_item:
             for bar_name, tensor in bars_dict.items():
                 target_bars[bar_name] = tensor if tensor.dim() == 0 else tensor[context.target_index]
             for var_name, tensor in vfs_dict.items():
-                if vfs_scopes.get(var_name) == "global":
-                    continue
-                target_vfs[var_name] = tensor if tensor.dim() == 0 else tensor[context.target_index]
+                if var_name not in global_ids:
+                    target_vfs[var_name] = tensor if tensor.dim() == 0 else tensor[context.target_index]
 
         self_bars = {}
         self_vfs = {}
@@ -826,9 +830,8 @@ class CommandExecutor:
             for bar_name, tensor in bars_dict.items():
                 self_bars[bar_name] = tensor if tensor.dim() == 0 else tensor[context.self_index]
             for var_name, tensor in vfs_dict.items():
-                if vfs_scopes.get(var_name) == "global":
-                    continue
-                self_vfs[var_name] = tensor if tensor.dim() == 0 else tensor[context.self_index]
+                if var_name not in global_ids:
+                    self_vfs[var_name] = tensor if tensor.dim() == 0 else tensor[context.self_index]
 
         # Spatial reads evaluate in float32, as the VFS evaluator hands them (grid
         # positions are integer cells; euclidean distance takes a square root).
@@ -853,8 +856,8 @@ class CommandExecutor:
                 self_is_item=context.self_is_item,
                 target_index=context.target_index,
                 target_is_item=context.target_is_item,
+                world_globals=frozenset(global_ids) if world_row is not None else frozenset(),
                 device=device,
-                vfs_scopes=vfs_scopes,
                 agent_positions=agent_positions,
                 affordance_positions=affordance_positions,
             )
@@ -866,7 +869,6 @@ class CommandExecutor:
             affordances={},
             temporal={},
             device=device,
-            vfs_scopes=vfs_scopes,
             agent_positions=agent_positions,
             affordance_positions=affordance_positions,
         )

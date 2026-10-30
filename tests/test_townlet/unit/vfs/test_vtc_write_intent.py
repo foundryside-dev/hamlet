@@ -61,6 +61,7 @@ def test_scalar_social_write_respects_active_selection(active, condition, attemp
         ],
         {"state": VTCWriteTarget(VariableScope.GLOBAL, "scalar", meter=False)},
     )
-    result = program.apply(vfs_state={"state": torch.tensor(5.0)}, active_mask=torch.tensor([active]), device=torch.device("cpu"))
+    # A global holds one row per world (S1): one world here.
+    result = program.apply(vfs_state={"state": torch.tensor([5.0])}, active_mask=torch.tensor([active]), device=torch.device("cpu"))
     assert result.attempted_targets == (frozenset({"state"}) if attempted else frozenset())
-    assert torch.equal(result.values["state"], torch.tensor(5.0))
+    assert torch.equal(result.values["state"], torch.tensor([5.0]))

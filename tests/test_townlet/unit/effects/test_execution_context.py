@@ -62,7 +62,7 @@ def test_execution_context_vfs_access():
     registry = VariableRegistry(variables=variables, num_agents=3, device=torch.device("cpu"))
 
     # Set initial values
-    registry.set("day_count", torch.tensor(42.0), writer="engine")
+    registry.set("day_count", torch.tensor([42.0, 7.0, 3.0]), writer="engine")  # one row per world
     registry.set("motivation", torch.tensor([1.0, 0.8, 1.2]), writer="engine")
 
     context = ExecutionContext(
@@ -74,8 +74,11 @@ def test_execution_context_vfs_access():
         item_manager=DummyItemManager(),
     )
 
+    # No agent binding: the context is world-shared and reads every world's row.
     day_count = context.get_path("vfs.day_count")
-    assert torch.equal(day_count, torch.tensor(42.0))
+    assert torch.equal(day_count, torch.tensor([42.0, 7.0, 3.0]))
+    # Bound to agent 1, the context reads its own world's row.
+    assert torch.equal(context.copy(target_index=1).get_path("vfs.day_count"), torch.tensor(7.0))
 
     motivation = context.get_path("vfs.motivation")
     assert torch.equal(motivation, torch.tensor([1.0, 0.8, 1.2]))

@@ -2,6 +2,7 @@
 
 from pathlib import Path
 
+from tests.test_townlet.utils.builders import make_grid2d_substrate
 from townlet.config.items_config import ItemsCatalogConfig
 from townlet.effects.schema import CommandType
 from townlet.items.manager import ItemManager
@@ -28,7 +29,9 @@ def test_item_interactions_are_compiled():
     # Create manager with schema
     manager = ItemManager(
         catalog=catalog,
-        max_items=10,
+        num_worlds=1,
+        substrate=make_grid2d_substrate(),
+        items_per_world=10,
         device="cpu",
         schema=schema,  # NEW PARAMETER
     )

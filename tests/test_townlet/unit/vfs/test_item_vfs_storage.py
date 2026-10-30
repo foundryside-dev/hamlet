@@ -72,7 +72,7 @@ def test_registry_initializes_item_storage_from_profiles():
         variables=[],  # No global/agent vars for this test
         num_agents=4,
         device=torch.device("cpu"),
-        max_items=10,
+        items_per_world=10,
         item_profiles=item_profiles,  # NEW parameter
     )
 
@@ -141,11 +141,13 @@ def test_registry_item_storage_has_correct_shape():
         variables=[],
         num_agents=4,
         device=torch.device("cpu"),
-        max_items=10,
+        items_per_world=10,
         item_profiles={"profile1": profile1, "profile2": profile2},
     )
 
     # Verify: Storage tensor shape
-    # Shape should be [max_items, max_vars_across_all_profiles]
+    # Shape should be [num_worlds * items_per_world, max_vars_across_all_profiles]
     assert registry.item_vfs is not None
-    assert registry.item_vfs.shape == (10, 2)  # 10 items, 2 vars (max across profiles)
+    assert registry.item_vfs.shape == (40, 2)  # 4 worlds x 10 rows, 2 vars (max across profiles)
+    assert registry.max_items == 40
+    assert [registry.item_world(row) for row in (0, 9, 10, 39)] == [0, 0, 1, 3]

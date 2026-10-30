@@ -157,7 +157,7 @@ def test_inventory_profile_denial_precedes_first_selected_item_mutation() -> Non
                 )
             ],
         )
-    registry = VariableRegistry([], 2, torch.device("cpu"), max_items=2, item_profiles=profiles)
+    registry = VariableRegistry([], 2, torch.device("cpu"), items_per_world=2, item_profiles=profiles)
     for row, profile in enumerate(profiles):
         registry._initialize_item_row(profile, row)
         registry.register_item_instance(row, profile)

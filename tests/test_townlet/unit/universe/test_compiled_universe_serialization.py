@@ -55,7 +55,7 @@ def _items_after_reset(universe: CompiledUniverse) -> Counter[str]:
     env = VectorizedHamletEnv.from_universe(universe, level_name=ITEMS_SMOKE_LEVEL, num_agents=2, device="cpu")
     env.reset()
     assert env.item_manager is not None
-    return Counter(item.item_type for item in env.item_manager.active_items.values())
+    return Counter(item.item_type for item in env.item_manager.worlds[0].active.values())
 
 
 def test_compiled_universe_serializes_vfs_profiles(minimal_compiled_universe_with_profiles):

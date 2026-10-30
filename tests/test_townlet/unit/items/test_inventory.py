@@ -28,6 +28,7 @@ def test_add_item_to_inventory():
     inventory = InventoryState(batch_size=1, max_items_per_agent=3, device="cpu")
 
     item1 = ItemInstance(
+        exclusive=True,
         name="Apple",
         icon="🍎",
         tags=("food",),
@@ -41,6 +42,7 @@ def test_add_item_to_inventory():
         duration_remaining=200,
     )
     item2 = ItemInstance(
+        exclusive=True,
         name="Medkit",
         icon="💊",
         tags=("medical",),
@@ -70,6 +72,7 @@ def test_add_item_overflow_deny():
     inventory = InventoryState(batch_size=1, max_items_per_agent=2, device="cpu")
 
     item1 = ItemInstance(
+        exclusive=True,
         name="a",
         icon="a",
         tags=("t",),
@@ -83,6 +86,7 @@ def test_add_item_overflow_deny():
         duration_remaining=None,
     )
     item2 = ItemInstance(
+        exclusive=True,
         name="b",
         icon="b",
         tags=("t",),
@@ -96,6 +100,7 @@ def test_add_item_overflow_deny():
         duration_remaining=None,
     )
     item3 = ItemInstance(
+        exclusive=True,
         name="c",
         icon="c",
         tags=("t",),
@@ -124,6 +129,7 @@ def test_remove_item_from_slot():
     inventory = InventoryState(batch_size=1, max_items_per_agent=3, device="cpu")
 
     item = ItemInstance(
+        exclusive=True,
         name="Apple",
         icon="🍎",
         tags=("food",),
@@ -158,6 +164,7 @@ def test_get_item_from_slot():
     inventory = InventoryState(batch_size=1, max_items_per_agent=3, device="cpu")
 
     item = ItemInstance(
+        exclusive=True,
         name="Medkit",
         icon="💊",
         tags=("medical",),
@@ -184,6 +191,7 @@ def test_is_full():
     assert not inventory.is_full(0)
 
     item1 = ItemInstance(
+        exclusive=True,
         name="a",
         icon="a",
         tags=("t",),
@@ -200,6 +208,7 @@ def test_is_full():
     assert not inventory.is_full(0)
 
     item2 = ItemInstance(
+        exclusive=True,
         name="b",
         icon="b",
         tags=("t",),
@@ -223,6 +232,7 @@ def test_count_items():
     assert inventory.count_items(0) == 0
 
     item1 = ItemInstance(
+        exclusive=True,
         name="a",
         icon="a",
         tags=("t",),
@@ -239,6 +249,7 @@ def test_count_items():
     assert inventory.count_items(0) == 1
 
     item2 = ItemInstance(
+        exclusive=True,
         name="b",
         icon="b",
         tags=("t",),

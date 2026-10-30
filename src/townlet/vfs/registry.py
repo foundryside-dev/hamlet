@@ -92,7 +92,7 @@ class VariableRegistry:
         variables: list[VariableDef],
         num_agents: int,
         device: torch.device,
-        max_items: int = 0,
+        items_per_world: int = 0,
         item_profiles: dict[str, Any] | None = None,
         num_affordances: int = 0,
     ):
@@ -102,7 +102,7 @@ class VariableRegistry:
             variables: List of variable definitions
             num_agents: Number of agents in the environment
             device: PyTorch device (cpu or cuda)
-            max_items: Maximum items (for item-scoped variables)
+            items_per_world: Item-arena rows per world (`token_spec.item_capacity`)
             item_profiles: Compiled item profiles (profile_name → CompiledItemProfile)
             num_affordances: Number of affordance-scope rows
         """
@@ -111,7 +111,14 @@ class VariableRegistry:
         # scope's world axis has one row per agent. Agents-per-world > 1 is a future
         # declared parameter, not a reinterpretation of this axis.
         self.num_worlds = num_agents
-        self.max_items = max_items
+        # Items are per world too: the item arena is flat, `[num_worlds * items_per_world,
+        # V]`, with row = world * items_per_world + slot. Rows are globally unique, so an
+        # effect or expression keyed by item row needs no world beside it; `item_world`
+        # is the one place the row -> world fact lives.
+        if items_per_world < 0:
+            raise ValueError(f"items_per_world must be >= 0, got {items_per_world}")
+        self.items_per_world = items_per_world
+        self.max_items = self.num_worlds * items_per_world
         self.num_affordances = num_affordances
         self.device = device
         self.item_profiles: dict[str, Any] = item_profiles or {}  # Store compiled profiles
@@ -620,7 +627,7 @@ class VariableRegistry:
         """Initialize item VFS storage from compiled profiles.
 
         Creates:
-        - item_vfs: [max_items, max_profile_vars] tensor
+        - item_vfs: [num_worlds * items_per_world, max_profile_vars] tensor
         - item_profile_map: {profile_name → {var_name → tensor_index}}
 
         Item storage is profile-agnostic: all profiles share the same tensor layout
@@ -800,6 +807,12 @@ class VariableRegistry:
     def get_item_variable_type(self, profile_name: str, variable_id: str) -> str | None:
         """Return declared type for an item-scoped variable."""
         return self.item_profile_type_map.get(profile_name, {}).get(variable_id)
+
+    def item_world(self, vfs_index: int) -> int:
+        """The world an item-arena row belongs to (row = world * items_per_world + slot)."""
+        if not 0 <= vfs_index < self.max_items:
+            raise IndexError(f"Item row {vfs_index} is outside the declared arena [0, {self.max_items})")
+        return vfs_index // self.items_per_world
 
     def get_item_profile_for_index(self, vfs_index: int) -> str | None:
         """Return profile name for a given item VFS index (if registered)."""

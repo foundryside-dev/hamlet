@@ -26,7 +26,7 @@ def test_items_smoke_pack_compiles_required_declarations():
     assert torch.isfinite(observation).all()
     assert env.item_manager is not None
     assert env.item_manager.catalog == universe.items_catalog
-    assert {item.item_type for item in env.item_manager.get_all_items()} == {"apple", "medkit"}
+    assert {item.item_type for item in env.item_manager.items_in_world(0)} == {"apple", "medkit"}
 
 
 def test_items_catalog_has_three_item_types():
@@ -123,14 +123,14 @@ def test_get_action_picks_up_item():
 
     # Clear any items at target position to avoid collision with random spawns
     target_pos = (2, 2)
-    for instance_id, existing_item in list(env.item_manager.active_items.items()):
+    for instance_id, existing_item in list(env.item_manager.worlds[0].active.items()):
         if existing_item.position == target_pos:
             env.item_manager.despawn_item(instance_id, current_tick=0)
     # Clear cooldowns that may have been set by despawning
-    env.item_manager.cooldown_until.clear()
+    env.item_manager.worlds[0].cooldown_until.clear()
 
     # Spawn coin at (2, 2) - has on_pickup: money +0.1 (10 out of max 100)
-    item = env.item_manager.spawn_item("coin", position=target_pos, current_tick=0)
+    item = env.item_manager.spawn_item(0, "coin", position=target_pos, current_tick=0)
     assert item is not None
 
     # Record initial money
@@ -147,7 +147,7 @@ def test_get_action_picks_up_item():
 
     # Verify item picked up
     assert env.item_inventory.count_items(0) == 1
-    assert item.instance_id not in env.item_manager.active_items
+    assert item.instance_id not in env.item_manager.worlds[0].active
 
     # Verify on_pickup Effects executed: money increased by 0.1
     final_money = env.meters[0, money_idx].item()
@@ -172,12 +172,12 @@ def test_use_slot_action_executes_effects():
 
     # Spawn apple and pick it up
     target_pos = (0, 0)
-    for instance_id, existing_item in list(env.item_manager.active_items.items()):
+    for instance_id, existing_item in list(env.item_manager.worlds[0].active.items()):
         if existing_item.position == target_pos:
             env.item_manager.despawn_item(instance_id, current_tick=0)
-    env.item_manager.cooldown_until.clear()
+    env.item_manager.worlds[0].cooldown_until.clear()
 
-    apple = env.item_manager.spawn_item("apple", position=target_pos, current_tick=0)
+    apple = env.item_manager.spawn_item(0, "apple", position=target_pos, current_tick=0)
     assert apple is not None
     env.positions[0] = torch.tensor(target_pos, dtype=torch.long)
     get_action = env.action_space.get_action_by_name("GET")
@@ -216,12 +216,12 @@ def test_drop_slot_action_spawns_item_in_world():
 
     pickup_pos = (0, 0)
     # Ensure no other items occupy the pickup position
-    for instance_id, item in list(env.item_manager.active_items.items()):
+    for instance_id, item in list(env.item_manager.worlds[0].active.items()):
         if item.position == pickup_pos:
-            env.item_manager.active_items.pop(instance_id)
+            env.item_manager.worlds[0].active.pop(instance_id)
 
     # Give agent apple in slot 0
-    apple = env.item_manager.spawn_item("apple", position=(0, 0), current_tick=0)
+    apple = env.item_manager.spawn_item(0, "apple", position=(0, 0), current_tick=0)
     apple_instance_id = apple.instance_id  # Track the specific apple we spawned
     env.positions[0] = torch.tensor(pickup_pos, dtype=torch.long)
     get_action = env.action_space.get_action_by_name("GET")
@@ -240,8 +240,8 @@ def test_drop_slot_action_spawns_item_in_world():
 
     # Verify OUR apple is in active_items at (4, 4)
     # (There may be other items at (4, 4) from random initial spawn)
-    assert apple_instance_id in env.item_manager.active_items, "Dropped item not in active_items"
-    dropped_apple = env.item_manager.active_items[apple_instance_id]
+    assert apple_instance_id in env.item_manager.worlds[0].active, "Dropped item not in active_items"
+    dropped_apple = env.item_manager.worlds[0].active[apple_instance_id]
     assert dropped_apple.position == (4, 4), f"Dropped item at {dropped_apple.position}, expected (4, 4)"
     assert dropped_apple.item_type == "apple"
 
@@ -265,7 +265,7 @@ def test_automatic_item_spawning_at_reset():
     env.reset()
 
     # Count items by type
-    active_items = list(env.item_manager.active_items.values())
+    active_items = list(env.item_manager.worlds[0].active.values())
     apple_count = sum(1 for item in active_items if item.item_type == "apple")
     medkit_count = sum(1 for item in active_items if item.item_type == "medkit")
 
@@ -299,7 +299,7 @@ def test_periodic_item_respawning():
     env.reset()
 
     # Verify initial spawn (should have 1 medkit from appearance config)
-    initial_medkits = [i for i in env.item_manager.active_items.values() if i.item_type == "medkit"]
+    initial_medkits = [i for i in env.item_manager.worlds[0].active.values() if i.item_type == "medkit"]
     assert len(initial_medkits) == 1, f"Expected 1 medkit at spawn, got {len(initial_medkits)}"
 
     # Wait for medkit to expire in the world (duration=100 ticks)
@@ -310,16 +310,16 @@ def test_periodic_item_respawning():
         env.step(torch.tensor([wait_action.id]))
 
     # Verify medkit despawned after duration expired
-    remaining_medkits = [i for i in env.item_manager.active_items.values() if i.item_type == "medkit"]
+    remaining_medkits = [i for i in env.item_manager.worlds[0].active.values() if i.item_type == "medkit"]
     assert len(remaining_medkits) == 0, "Medkit should have despawned after duration expired"
 
     # Verify respawn timer is set correctly (should be at tick 101 + 200 = 301)
-    assert "medkit" in env.item_manager.respawn_timers, "Respawn timer should be set for medkit"
+    assert "medkit" in env.item_manager.worlds[0].respawn_timers, "Respawn timer should be set for medkit"
 
     # Step until respawn_timer expires (200 more ticks to reach tick 301)
     for _ in range(200):
         env.step(torch.tensor([wait_action.id]))
 
     # Verify medkit respawned after the schedule period elapsed
-    respawned_medkits = [i for i in env.item_manager.active_items.values() if i.item_type == "medkit"]
+    respawned_medkits = [i for i in env.item_manager.worlds[0].active.values() if i.item_type == "medkit"]
     assert len(respawned_medkits) == 1, f"Expected 1 medkit to respawn after the schedule period, got {len(respawned_medkits)}"

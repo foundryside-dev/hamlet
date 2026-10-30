@@ -79,7 +79,7 @@ def _items() -> VariableRegistry:
             name="value", type="float", exposed_to=(), lifetime="episode", readable_by=readers, writable_by=writers, initial_value=2.0
         )
         profiles[name] = CompiledItemProfile(profile_name=name, variables=[variable])
-    return VariableRegistry([], 2, torch.device("cpu"), max_items=2, item_profiles=profiles)
+    return VariableRegistry([], 2, torch.device("cpu"), items_per_world=2, item_profiles=profiles)
 
 
 def test_item_policies_are_qualified_and_denials_preserve_storage() -> None:

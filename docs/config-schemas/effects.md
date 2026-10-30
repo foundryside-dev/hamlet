@@ -643,9 +643,12 @@ All command types are fully implemented and production-ready.
 - `self.*`: Effect instance state (for effect-local variables)
 - `vfs.*` (bare) and `global.vfs.*`: a global variable is its world's value (one row per
   world, VFS WP13). A pipeline bound to an agent (an affordance or item interaction, an
-  agent-scoped effect) reads and writes that agent's world only; a global-, affordance- or
-  item-scoped effect is shared by the whole batch, so it reads every world's row and writes
-  every row its mask leaves live. A bare `vfs.X` naming an
+  agent-scoped effect) reads and writes that agent's world only; an item-scoped effect reads
+  and writes its item's world only (items are per world); a global- or affordance-scoped
+  effect is shared by the whole batch, so it reads every world's row and writes every row its
+  mask leaves live. Item-variable writes are gated by the item's own world under a masked
+  `if`/`switch`, and `spawn_item` spawns into the pipeline's world (every live world from a
+  global- or affordance-scoped effect). A bare `vfs.X` naming an
   **agent-scoped** variable is the interacting agent's row, never the batch: wherever the
   pipeline runs with an agent target (affordance and item interactions, agent-scoped effects,
   `for_each` bodies over agents) the compiler resolves it to `target.vfs.X`, for reads and

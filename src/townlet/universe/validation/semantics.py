@@ -55,6 +55,69 @@ def _detect_cycles(graph: Mapping[str, Iterable[str]]) -> list[list[str]]:
     return cycles
 
 
+def grid_axis_sizes(substrate: Any) -> tuple[int, ...] | None:
+    """Per-axis cell counts of a discrete grid substrate config; None for any other substrate."""
+    if substrate.type == "grid" and substrate.grid is not None:
+        grid = substrate.grid
+        return (grid.width, grid.height) if grid.depth is None else (grid.width, grid.height, grid.depth)
+    if substrate.type == "gridnd" and substrate.gridnd is not None:
+        return tuple(int(size) for size in substrate.gridnd.dimension_sizes)
+    return None
+
+
+def _validate_item_placements(
+    raw: RawConfigsV21,
+    experiment_dir: Path,
+    source_map: SourceMap | None,
+    errors: CompilationErrorCollector,
+) -> None:
+    """Item placement modes against the substrate they place on.
+
+    `random` asks the substrate's own position initialization and works everywhere.
+    `fixed`, `grid` and `scripted` name grid cells, so they need a discrete grid (any
+    rank), and every authored cell must have the grid's rank and lie inside it.
+    """
+    substrate = raw.stratum.stratum.substrate
+    axes = grid_axis_sizes(substrate)
+    for level_name, level in raw.levels.items():
+        if level.items_appearance is None:
+            continue
+        declaration = f"levels/{level_name}/items_appearance"
+        location = locate(source_map, declaration, str(experiment_dir / "levels" / level_name / "items_appearance"))
+        for rule in level.items_appearance.items:
+            placement = rule.placement
+            if placement is None or placement.mode == "random":
+                continue
+            if axes is None:
+                errors.add(
+                    f"Item '{rule.item_type}' uses placement mode '{placement.mode}', which names grid cells, but the "
+                    f"substrate is '{substrate.type}'. Use placement mode 'random' (the substrate's own position "
+                    "initialization) or a grid substrate.",
+                    code=ErrorCode.ITEM_PLACEMENT_SUBSTRATE,
+                    location=location,
+                )
+                continue
+            cells: list[tuple[Any, ...]] = []
+            if placement.mode == "fixed":
+                cells = [tuple(cell) for cell in placement.fixed_positions or []]
+            elif placement.mode == "scripted":
+                # An event without a position list has no cell (rank 0) and refuses below.
+                positions = [event.get("position") for event in placement.script or []]
+                cells = [tuple(position) if isinstance(position, list | tuple) else () for position in positions]
+            for cell in cells:
+                in_grid = len(cell) == len(axes) and all(
+                    isinstance(c, int) and not isinstance(c, bool) and 0 <= c < size for c, size in zip(cell, axes, strict=True)
+                )
+                if not in_grid:
+                    errors.add(
+                        f"Item '{rule.item_type}' {placement.mode} placement cell {list(cell)} is not a cell of the "
+                        f"{'x'.join(str(size) for size in axes)} grid (a cell has {len(axes)} integer coordinates, "
+                        "each in [0, size)).",
+                        code=ErrorCode.ITEM_PLACEMENT_SUBSTRATE,
+                        location=location,
+                    )
+
+
 def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path, source_map: SourceMap | None) -> None:
     """Validate v2.1 semantic constraints after typed config loading.
 
@@ -191,6 +254,7 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path, source_map:
         )
 
     grid_capacity = grid_capacity_for_substrate(substrate)
+    _validate_item_placements(raw, experiment_dir, source_map, errors)
 
     for level_name, level in raw.levels.items():
         level_dir = experiment_dir / "levels" / level_name

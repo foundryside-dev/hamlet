@@ -89,7 +89,9 @@ def test_item_effect_writes_its_item_through_target(tmp_path: Path) -> None:
     env = VectorizedHamletEnv.from_universe(universe, level_name=LEVEL, num_agents=2, device="cpu")
     env.reset()
     registry = env.vfs_registry
-    (item,) = [item for item in env.item_manager.active_items.values() if registry.get_item_profile_for_index(item.vfs_index) == "food"][:1]
+    (item,) = [
+        item for item in env.item_manager.worlds[0].active.values() if registry.get_item_profile_for_index(item.vfs_index) == "food"
+    ][:1]
     bars = {name: env.meters[:, index] for name, index in env.meter_name_to_index.items()}
     env.effect_manager.spawn_effect(
         "poke",

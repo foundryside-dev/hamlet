@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 import torch
 
+from tests.test_townlet.utils.builders import make_grid2d_substrate
 from townlet.config.items_config import ItemAppearanceRuleConfig, ItemsAppearanceConfig, ItemsCatalogConfig
 from townlet.items.manager import ItemManager
 from townlet.vfs.registry import VariableRegistry
@@ -40,15 +41,17 @@ def test_spawn_initial_items_gated_by_bar_condition() -> None:
     rule = appearance.items[0]
     _compile_when(rule, {"bar.energy": "float"})
 
-    manager = ItemManager(catalog=catalog, max_items=5, device="cpu")
+    manager = ItemManager(
+        catalog=catalog, num_worlds=1, substrate=make_grid2d_substrate(width=3, height=3), items_per_world=5, device="cpu"
+    )
 
     low_bars = {"energy": torch.tensor([0.25])}
-    manager.spawn_initial_items(appearance, grid_size=(3, 3), current_tick=0, bars=low_bars)
-    assert len(manager.active_items) == 0
+    manager.spawn_initial_items(appearance, current_tick=0, bars=low_bars)
+    assert len(manager.worlds[0].active) == 0
 
     high_bars = {"energy": torch.tensor([0.75])}
-    manager.spawn_initial_items(appearance, grid_size=(3, 3), current_tick=0, bars=high_bars)
-    assert len(manager.active_items) == 1
+    manager.spawn_initial_items(appearance, current_tick=0, bars=high_bars)
+    assert len(manager.worlds[0].active) == 1
 
 
 def test_process_respawns_respects_condition() -> None:
@@ -69,18 +72,20 @@ def test_process_respawns_respects_condition() -> None:
     rule = appearance.items[0]
     _compile_when(rule, {"bar.energy": "float"})
 
-    manager = ItemManager(catalog=catalog, max_items=5, device="cpu")
-    manager.set_appearance_config(appearance, grid_size=(3, 3))
+    manager = ItemManager(
+        catalog=catalog, num_worlds=1, substrate=make_grid2d_substrate(width=3, height=3), items_per_world=5, device="cpu"
+    )
+    manager.set_appearance_config(appearance)
 
-    manager.respawn_timers["apple"] = 0
+    manager.worlds[0].respawn_timers["apple"] = 0
     low_bars = {"energy": torch.tensor([0.1])}
     manager.process_respawns(current_tick=0, bars=low_bars)
-    assert len(manager.active_items) == 0
+    assert len(manager.worlds[0].active) == 0
 
-    manager.respawn_timers["apple"] = 0
+    manager.worlds[0].respawn_timers["apple"] = 0
     high_bars = {"energy": torch.tensor([1.0])}
     manager.process_respawns(current_tick=0, bars=high_bars)
-    assert len(manager.active_items) == 1
+    assert len(manager.worlds[0].active) == 1
 
 
 def test_vfs_condition_gates_spawn() -> None:
@@ -117,22 +122,29 @@ def test_vfs_condition_gates_spawn() -> None:
         ],
         num_agents=2,
         device=torch.device("cpu"),
-        max_items=5,
+        items_per_world=5,
         item_profiles={"food": _DummyProfile()},
     )
 
-    manager = ItemManager(catalog=catalog, max_items=5, device="cpu", vfs_registry=registry)
+    manager = ItemManager(
+        catalog=catalog,
+        num_worlds=registry.num_worlds,
+        substrate=make_grid2d_substrate(width=3, height=3),
+        items_per_world=5,
+        device="cpu",
+        vfs_registry=registry,
+    )
     bars = {"energy": torch.tensor([0.9, 0.9])}
 
     # False -> no spawn
     registry._storage["is_raining"] = torch.tensor(False)
-    manager.spawn_initial_items(appearance, grid_size=(3, 3), current_tick=0, bars=bars)
-    assert len(manager.active_items) == 0
+    manager.spawn_initial_items(appearance, current_tick=0, bars=bars)
+    assert len(manager.worlds[0].active) == 0
 
     # True -> spawn
     registry._storage["is_raining"] = torch.tensor(True)
-    manager.spawn_initial_items(appearance, grid_size=(3, 3), current_tick=0, bars=bars)
-    assert len(manager.active_items) == 1
+    manager.spawn_initial_items(appearance, current_tick=0, bars=bars)
+    assert len(manager.worlds[0].active) == 1
 
 
 def test_engine_tick_condition_and_boolean_logic() -> None:
@@ -178,26 +190,34 @@ def test_engine_tick_condition_and_boolean_logic() -> None:
         ],
         num_agents=1,
         device=torch.device("cpu"),
-        max_items=5,
+        items_per_world=5,
         item_profiles={"food": _DummyProfile()},
     )
 
-    manager = ItemManager(catalog=catalog, max_items=5, device="cpu", vfs_registry=registry)
+    manager = ItemManager(
+        catalog=catalog,
+        num_worlds=registry.num_worlds,
+        substrate=make_grid2d_substrate(width=3, height=3),
+        items_per_world=5,
+        device="cpu",
+        vfs_registry=registry,
+    )
     bars = {"energy": torch.tensor([1.0])}
 
     # tick low -> no spawn
     registry._storage["is_raining"] = torch.tensor(True)
     registry._storage["tick"] = torch.tensor(3.0)
-    manager.spawn_initial_items(appearance, grid_size=(3, 3), current_tick=3, bars=bars)
-    assert len(manager.active_items) == 0
+    manager.spawn_initial_items(appearance, current_tick=3, bars=bars)
+    assert len(manager.worlds[0].active) == 0
 
     # tick high and raining -> spawn
     registry._storage["tick"] = torch.tensor(6.0)
-    manager.spawn_initial_items(appearance, grid_size=(3, 3), current_tick=6, bars=bars)
-    assert len(manager.active_items) == 1
+    manager.spawn_initial_items(appearance, current_tick=6, bars=bars)
+    assert len(manager.worlds[0].active) == 1
 
 
-def test_comparison_variants_and_vector_reduction() -> None:
+def test_comparison_variants_evaluate_per_world() -> None:
+    """A per-world predicate gates each world on its own value: no cross-world reduction (S1)."""
     catalog = ItemsCatalogConfig.from_yaml(path=Path("configs/test/items_smoke/items.yaml"))
     appearance = _appearance(
         items=[
@@ -213,17 +233,15 @@ def test_comparison_variants_and_vector_reduction() -> None:
     rule = appearance.items[0]
     _compile_when(rule, {"bar.energy": "float"})
 
-    manager = ItemManager(catalog=catalog, max_items=5, device="cpu")
+    manager = ItemManager(
+        catalog=catalog, num_worlds=2, substrate=make_grid2d_substrate(width=3, height=3), items_per_world=5, device="cpu"
+    )
 
-    # Mixed batch (one below threshold) -> all() reduction rejects
-    bars = {"energy": torch.tensor([0.4, 0.7])}
-    manager.spawn_initial_items(appearance, grid_size=(3, 3), current_tick=0, bars=bars)
-    assert len(manager.active_items) == 0
-
-    # All above threshold -> allow
-    bars_high = {"energy": torch.tensor([0.5, 0.8])}
-    manager.spawn_initial_items(appearance, grid_size=(3, 3), current_tick=0, bars=bars_high)
-    assert len(manager.active_items) == 1
+    # Mixed batch: world 0 is below threshold, world 1 meets it (>= is inclusive).
+    bars = {"energy": torch.tensor([0.4, 0.5])}
+    manager.spawn_initial_items(appearance, current_tick=0, bars=bars)
+    assert len(manager.worlds[0].active) == 0
+    assert len(manager.worlds[1].active) == 1
 
 
 def test_unknown_symbol_rejected_at_compile_time() -> None:
@@ -251,11 +269,13 @@ def test_missing_ast_raises_runtime_error() -> None:
         ]
     )
 
-    manager = ItemManager(catalog=catalog, max_items=5, device="cpu")
+    manager = ItemManager(
+        catalog=catalog, num_worlds=1, substrate=make_grid2d_substrate(width=3, height=3), items_per_world=5, device="cpu"
+    )
     bars = {"energy": torch.tensor([0.9])}
 
     with pytest.raises(RuntimeError, match="compiled AST"):
-        manager.spawn_initial_items(appearance, grid_size=(3, 3), current_tick=0, bars=bars)
+        manager.spawn_initial_items(appearance, current_tick=0, bars=bars)
 
 
 def test_equality_and_inequality_operators() -> None:
@@ -293,25 +313,32 @@ def test_equality_and_inequality_operators() -> None:
         ],
         num_agents=1,
         device=torch.device("cpu"),
-        max_items=5,
+        items_per_world=5,
         item_profiles={"food": _DummyProfile()},
     )
 
-    manager = ItemManager(catalog=catalog, max_items=5, device="cpu", vfs_registry=registry)
+    manager = ItemManager(
+        catalog=catalog,
+        num_worlds=registry.num_worlds,
+        substrate=make_grid2d_substrate(width=3, height=3),
+        items_per_world=5,
+        device="cpu",
+        vfs_registry=registry,
+    )
     bars = {"energy": torch.tensor([1.0])}
 
     # mode=0 -> no spawn
     registry._storage["mode"] = torch.tensor(0)
-    manager.spawn_initial_items(appearance_eq, grid_size=(3, 3), current_tick=0, bars=bars)
-    assert len(manager.active_items) == 0
+    manager.spawn_initial_items(appearance_eq, current_tick=0, bars=bars)
+    assert len(manager.worlds[0].active) == 0
 
     # mode=1 -> spawn
     registry._storage["mode"] = torch.tensor(1)
-    manager.spawn_initial_items(appearance_eq, grid_size=(3, 3), current_tick=0, bars=bars)
-    assert len(manager.active_items) == 1
+    manager.spawn_initial_items(appearance_eq, current_tick=0, bars=bars)
+    assert len(manager.worlds[0].active) == 1
 
     # Test != operator
-    manager.active_items.clear()
+    manager.worlds[0].active.clear()
     appearance_neq = _appearance(
         items=[
             {
@@ -327,13 +354,13 @@ def test_equality_and_inequality_operators() -> None:
 
     # mode=0 -> no spawn
     registry._storage["mode"] = torch.tensor(0)
-    manager.spawn_initial_items(appearance_neq, grid_size=(3, 3), current_tick=0, bars=bars)
-    assert len(manager.active_items) == 0
+    manager.spawn_initial_items(appearance_neq, current_tick=0, bars=bars)
+    assert len(manager.worlds[0].active) == 0
 
     # mode=2 -> spawn
     registry._storage["mode"] = torch.tensor(2)
-    manager.spawn_initial_items(appearance_neq, grid_size=(3, 3), current_tick=0, bars=bars)
-    assert len(manager.active_items) == 1
+    manager.spawn_initial_items(appearance_neq, current_tick=0, bars=bars)
+    assert len(manager.worlds[0].active) == 1
 
 
 def test_or_and_not_boolean_operators() -> None:
@@ -380,26 +407,33 @@ def test_or_and_not_boolean_operators() -> None:
         ],
         num_agents=1,
         device=torch.device("cpu"),
-        max_items=5,
+        items_per_world=5,
         item_profiles={"food": _DummyProfile()},
     )
 
-    manager = ItemManager(catalog=catalog, max_items=5, device="cpu", vfs_registry=registry)
+    manager = ItemManager(
+        catalog=catalog,
+        num_worlds=registry.num_worlds,
+        substrate=make_grid2d_substrate(width=3, height=3),
+        items_per_world=5,
+        device="cpu",
+        vfs_registry=registry,
+    )
     bars = {"energy": torch.tensor([1.0])}
 
     # Both false -> no spawn
     registry._storage["is_day"] = torch.tensor(False)
     registry._storage["is_special"] = torch.tensor(False)
-    manager.spawn_initial_items(appearance_or, grid_size=(3, 3), current_tick=0, bars=bars)
-    assert len(manager.active_items) == 0
+    manager.spawn_initial_items(appearance_or, current_tick=0, bars=bars)
+    assert len(manager.worlds[0].active) == 0
 
     # One true -> spawn
     registry._storage["is_day"] = torch.tensor(True)
-    manager.spawn_initial_items(appearance_or, grid_size=(3, 3), current_tick=0, bars=bars)
-    assert len(manager.active_items) == 1
+    manager.spawn_initial_items(appearance_or, current_tick=0, bars=bars)
+    assert len(manager.worlds[0].active) == 1
 
     # Test NOT operator
-    manager.active_items.clear()
+    manager.worlds[0].active.clear()
     appearance_not = _appearance(
         items=[
             {
@@ -415,13 +449,13 @@ def test_or_and_not_boolean_operators() -> None:
 
     # is_day=True -> no spawn (because NOT)
     registry._storage["is_day"] = torch.tensor(True)
-    manager.spawn_initial_items(appearance_not, grid_size=(3, 3), current_tick=0, bars=bars)
-    assert len(manager.active_items) == 0
+    manager.spawn_initial_items(appearance_not, current_tick=0, bars=bars)
+    assert len(manager.worlds[0].active) == 0
 
     # is_day=False -> spawn
     registry._storage["is_day"] = torch.tensor(False)
-    manager.spawn_initial_items(appearance_not, grid_size=(3, 3), current_tick=0, bars=bars)
-    assert len(manager.active_items) == 1
+    manager.spawn_initial_items(appearance_not, current_tick=0, bars=bars)
+    assert len(manager.worlds[0].active) == 1
 
 
 def test_less_than_operators() -> None:
@@ -442,20 +476,22 @@ def test_less_than_operators() -> None:
     rule_lt = appearance_lt.items[0]
     _compile_when(rule_lt, {"bar.energy": "float"})
 
-    manager = ItemManager(catalog=catalog, max_items=5, device="cpu")
+    manager = ItemManager(
+        catalog=catalog, num_worlds=1, substrate=make_grid2d_substrate(width=3, height=3), items_per_world=5, device="cpu"
+    )
 
     # Above threshold -> no spawn
     bars_high = {"energy": torch.tensor([0.5])}
-    manager.spawn_initial_items(appearance_lt, grid_size=(3, 3), current_tick=0, bars=bars_high)
-    assert len(manager.active_items) == 0
+    manager.spawn_initial_items(appearance_lt, current_tick=0, bars=bars_high)
+    assert len(manager.worlds[0].active) == 0
 
     # Below threshold -> spawn
     bars_low = {"energy": torch.tensor([0.2])}
-    manager.spawn_initial_items(appearance_lt, grid_size=(3, 3), current_tick=0, bars=bars_low)
-    assert len(manager.active_items) == 1
+    manager.spawn_initial_items(appearance_lt, current_tick=0, bars=bars_low)
+    assert len(manager.worlds[0].active) == 1
 
     # Test <= operator
-    manager.active_items.clear()
+    manager.worlds[0].active.clear()
     appearance_lte = _appearance(
         items=[
             {
@@ -471,8 +507,8 @@ def test_less_than_operators() -> None:
 
     # Equal to threshold -> spawn
     bars_equal = {"energy": torch.tensor([0.3])}
-    manager.spawn_initial_items(appearance_lte, grid_size=(3, 3), current_tick=0, bars=bars_equal)
-    assert len(manager.active_items) == 1
+    manager.spawn_initial_items(appearance_lte, current_tick=0, bars=bars_equal)
+    assert len(manager.worlds[0].active) == 1
 
 
 def test_unconditional_spawn_has_no_overhead() -> None:
@@ -491,12 +527,14 @@ def test_unconditional_spawn_has_no_overhead() -> None:
         ]
     )
 
-    manager = ItemManager(catalog=catalog, max_items=5, device="cpu")
+    manager = ItemManager(
+        catalog=catalog, num_worlds=1, substrate=make_grid2d_substrate(width=3, height=3), items_per_world=5, device="cpu"
+    )
     bars = {"energy": torch.tensor([0.5])}
 
     # Should spawn without evaluating any conditions
-    manager.spawn_initial_items(appearance, grid_size=(3, 3), current_tick=0, bars=bars)
-    assert len(manager.active_items) == 1
+    manager.spawn_initial_items(appearance, current_tick=0, bars=bars)
+    assert len(manager.worlds[0].active) == 1
 
     # Verify when and when_ast are None
     assert appearance.items[0].when is None

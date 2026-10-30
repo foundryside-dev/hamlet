@@ -411,15 +411,16 @@ reinterpretation of an existing scope. `global` is world state, one value per wo
 WP13): registry storage is `[num_worlds, *payload]` with `num_worlds == num_agents`, so world
 `i` is agent `i`'s. The axis is engine-internal; authors read a global as one value in their
 world, and the expression shape proof labels it `scalar`. Interactions and agent-scoped
-effects write their own world's row; global-, affordance- and item-scoped effects are
-world-shared stores and write every row; transition rules mask a global row by its own
-agent's activity; the token publisher, DAC and persistent snapshots read per row. The engine
-`tick` is written into every row at once (lockstep). No reader reduces across worlds except
-item spawn predicates, because items are batch-shared; cross-world quantities have no
-spelling by design (`docs/config-schemas/variables.md`).
+effects write their own world's row; item-scoped effects write their item's world (items are
+per world); global- and affordance-scoped effects are world-shared stores and write every row;
+transition rules mask a global row by its own agent's activity; the token publisher, DAC and
+persistent snapshots read per row. The engine `tick` is written into every row at once
+(lockstep). No reader reduces across worlds (item spawn predicates are evaluated per world);
+cross-world quantities have no spelling by design (`docs/config-schemas/variables.md`).
 
-`item` scope is profile-based. The registry allocates a profile-agnostic
-`item_vfs[max_items, max_profile_vars]` tensor, records
+`item` scope is profile-based and per world. The registry allocates a profile-agnostic
+`item_vfs[num_worlds * items_per_world, max_profile_vars]` tensor (world `w` owns rows
+`[w * items_per_world, (w + 1) * items_per_world)`; `item_world(row)` recovers `w`), records
 `item_profile_map[profile_name][var_name] -> tensor_index`, and masks unused profile slots.
 Item profiles are named in the variables declaration's `item_profiles` list.
 

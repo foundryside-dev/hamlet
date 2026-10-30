@@ -315,6 +315,9 @@ def test_for_each_inventory_items_skips_empty_and_uses_ints():
         def get_item_profile_for_index(self, vfs_index):
             return "default"
 
+        def item_world(self, vfs_index):
+            return 0  # one world: every item row belongs to agent 0's world
+
         def get_item_variable_type(self, profile_name, name):
             return "float"
 

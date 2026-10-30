@@ -49,14 +49,14 @@ def test_custom_item_verbs_flow_from_config_to_runtime(tmp_path):
     env.reset()
     energy_idx = env.meter_name_to_index["energy"]
     occupied_positions = {
-        tuple(int(coord) for coord in item.position) for item in env.item_manager.active_items.values() if item.position is not None
+        tuple(int(coord) for coord in item.position) for item in env.item_manager.worlds[0].active.values() if item.position is not None
     }
     spawn_position = next(
         (x, y) for x in range(env.substrate.width) for y in range(env.substrate.height) if (x, y) not in occupied_positions
     )
     env.positions[0] = torch.tensor(spawn_position, device=env.device)
 
-    item = env.item_manager.spawn_item("apple", position=spawn_position, current_tick=0)
+    item = env.item_manager.spawn_item(0, "apple", position=spawn_position, current_tick=0)
     assert item is not None
 
     masks = env.get_action_masks()

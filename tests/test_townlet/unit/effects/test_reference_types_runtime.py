@@ -41,7 +41,7 @@ def _registry_with_refs(num_agents: int = 3, max_items: int = 0, item_profiles: 
         variables=variables,
         num_agents=num_agents,
         device=torch.device("cpu"),
-        max_items=max_items,
+        items_per_world=max_items,
         item_profiles=item_profiles or {},
     )
     reg._storage["energy"] = torch.tensor([0.2, 0.8, 0.5])

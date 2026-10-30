@@ -54,7 +54,7 @@ def test_items_on_the_ground_with_no_inventory_compile_and_spawn(tmp_path: Path)
     env = VectorizedHamletEnv.from_universe(compiled, level_name=LEVEL, num_agents=2, device="cpu")
     env.reset()
     assert env.item_manager is not None
-    assert Counter(item.item_type for item in env.item_manager.active_items.values()) == Counter({"apple": 3, "medkit": 1})
+    assert Counter(item.item_type for item in env.item_manager.worlds[0].active.values()) == Counter({"apple": 3, "medkit": 1})
 
     # No inventory means no pickup, use or drop actions; the catalog itself is intact.
     action_names = {action.name for action in compiled.get_level(LEVEL).runtime_action_space.actions}

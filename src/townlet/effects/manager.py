@@ -30,6 +30,12 @@ class NullItemManager:
     def spawn_item(self, *args: Any, **kwargs: Any) -> None:
         raise RuntimeError("ItemManager is not configured; spawn_item is unavailable")
 
+    find_spawn_location = spawn_item
+
+    @property
+    def num_worlds(self) -> int:
+        raise RuntimeError("ItemManager is not configured; spawn_item is unavailable")
+
     def tick(self, *args: Any, **kwargs: Any) -> None:
         return None
 

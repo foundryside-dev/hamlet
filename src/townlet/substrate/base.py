@@ -16,13 +16,19 @@ def pairwise_axis_deltas(
 ) -> torch.Tensor:
     """Signed per-axis deltas ``entity − self`` as ``[N, M, D]`` float32.
 
-    Shared helper for the token visibility/egocentric contract (token-obs unit 3 Task 8).
+    ``entity_pos`` is either ``[M, D]`` (one entity set every observer shares) or
+    ``[N, M, D]`` (a per-observer entity set: row ``i`` is what observer ``i`` sees,
+    e.g. per-world items). Shared helper for the token visibility/egocentric contract
+    (token-obs unit 3 Task 8).
     Under wrap (``wrap_extents`` = per-axis extent tensor ``[D]``) each axis delta is the
     toroidal shortest signed path: ``((d + e/2) mod e) − e/2``. The half-extent tie on an
     even extent maps deterministically to the NEGATIVE half (remainder arithmetic) —
     pinned by test, part of the contract.
     """
-    deltas = entity_pos.to(dtype=torch.float32).unsqueeze(0) - self_pos.to(dtype=torch.float32).unsqueeze(1)
+    entities = entity_pos.to(dtype=torch.float32)
+    if entities.dim() == 2:
+        entities = entities.unsqueeze(0)
+    deltas = entities - self_pos.to(dtype=torch.float32).unsqueeze(1)
     if wrap_extents is not None:
         extents = wrap_extents.to(dtype=torch.float32, device=deltas.device)
         deltas = torch.remainder(deltas + extents / 2.0, extents) - extents / 2.0
@@ -46,6 +52,21 @@ def require_position_batch(positions: torch.Tensor, position_dim: int, *, argume
     """Refuse a position batch whose trailing width is not the substrate's position_dim."""
     if positions.dim() != 2 or positions.shape[1] != position_dim:
         raise ValueError(f"{argument} must have shape [batch, position_dim={position_dim}], got {tuple(positions.shape)}")
+
+
+def require_entity_batch(entity_pos: torch.Tensor, self_pos: torch.Tensor, position_dim: int) -> int:
+    """Refuse an entity batch that is neither shared ``[M, D]`` nor per-observer ``[N, M, D]``.
+
+    Returns ``M``, the entity count per observer.
+    """
+    shared = entity_pos.dim() == 2 and entity_pos.shape[1] == position_dim
+    per_observer = entity_pos.dim() == 3 and entity_pos.shape[0] == self_pos.shape[0] and entity_pos.shape[2] == position_dim
+    if not (shared or per_observer):
+        raise ValueError(
+            f"entity_pos must have shape [entities, position_dim={position_dim}] or "
+            f"[observers={self_pos.shape[0]}, entities, position_dim={position_dim}], got {tuple(entity_pos.shape)}"
+        )
+    return int(entity_pos.shape[-2])
 
 
 class SpatialSubstrate(ABC):
@@ -315,7 +336,8 @@ class SpatialSubstrate(ABC):
 
         Args:
             self_pos: [N, position_dim] observer positions
-            entity_pos: [M, position_dim] entity positions
+            entity_pos: [M, position_dim] entity positions shared by every observer, or
+                [N, M, position_dim] per observer (row i is observer i's own entities)
             vision_range: normalized fraction of the longest axis (the POMDP meaning),
                 or None for full observability (pass-all)
 
@@ -333,7 +355,7 @@ class SpatialSubstrate(ABC):
 
         Args:
             self_pos: [N, position_dim] observer positions
-            entity_pos: [M, position_dim] entity positions
+            entity_pos: [M, position_dim] shared, or [N, M, position_dim] per observer
 
         Returns:
             [N, M, position_dim] float32, divided by the same denominator as

@@ -153,6 +153,7 @@ def test_affordance_and_qualified_item_hook_write_targets_refuse():
                 name="Locked",
                 icon="x",
                 tags=["locked"],
+                exclusive=True,
                 vfs_profile="locked",
                 interactions={"on_use": [{"modify": "self.vfs.secret", "value": "3"}]},
             )

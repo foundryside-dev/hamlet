@@ -2,6 +2,7 @@ items:
   version: '1.0'
   item_types:
   - id: apple
+    exclusive: true
     vfs_profile: food
     description: Restores energy when used
     duration: null
@@ -17,6 +18,7 @@ items:
     tags:
     - apple
   - id: medkit
+    exclusive: true
     vfs_profile: medical
     description: Restores health when used
     duration: 100
@@ -34,6 +36,7 @@ items:
     tags:
     - medkit
   - id: coin
+    exclusive: true
     vfs_profile: currency
     description: Adds money when picked up
     duration: null

@@ -305,6 +305,7 @@
           "effects.yaml",
           "environment.yaml",
           "experiment.yaml",
+          "items.yaml",
           "levels/L0_smoke/training.yaml",
           "stratum.yaml"
         ]
@@ -338,7 +339,7 @@
         "effects.yaml": "0e434a1b8a1e2ca957bf0a423049a459c383e5262b35dacc4cabdb03f29e2a1a",
         "environment.yaml": "e9c11a3f51e29e459cb081c300b04c6c047ef4d53e8e640ba2d7d2b6e874b4c0",
         "experiment.yaml": "4bedc329e30775073b042ceb5d39c361390b8ef77d3d6493f5fdcc9ba846d2e0",
-        "items.yaml": "94ddb1f4fbddf2f5f91f9e24a0ddac74b9fbd57edfb1d21b81ce1cb825612127",
+        "items.yaml": "eab308d137f617765a7c2d8ae9242f950ee408c7b4f76ebc1295c134283662fc",
         "levels/L0_smoke/affordances.yaml": "a5cc1b708460b901eaef66df75487fc9ba324d2858d713b516f6a73781ef7098",
         "levels/L0_smoke/bars.yaml": "040b63ba2a146cd3c762a547cae6d51243bee3a5cdf4fccecedde516d998d9d2",
         "levels/L0_smoke/curriculum.yaml": "ad5461940b42f7030c7c258441ccdbc4142ba1c1da409756c3520389f47b8963",

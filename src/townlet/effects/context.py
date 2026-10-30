@@ -26,6 +26,12 @@ class _NullItemManager:
     def spawn_item(self, *args: Any, **kwargs: Any) -> None:  # pragma: no cover
         raise RuntimeError("ItemManager is not configured; spawn_item unavailable")
 
+    find_spawn_location = spawn_item
+
+    @property
+    def num_worlds(self) -> int:  # pragma: no cover
+        raise RuntimeError("ItemManager is not configured; spawn_item unavailable")
+
 
 @dataclass
 class ExecutionContext:
@@ -83,18 +89,50 @@ class ExecutionContext:
             return self.self_index
         return None
 
+    def item_world(self, item_row: int) -> int:
+        """The world an item-arena row belongs to (items are per world, S1)."""
+        if self.vfs_registry is None:
+            raise ValueError("VFS registry not set in context; an item row has no world without it")
+        return self.vfs_registry.item_world(item_row)
+
+    def item_row(self) -> int | None:
+        """The item-arena row this context addresses (self first, then target), if any."""
+        if self.self_index is not None and self.self_is_item:
+            return self.self_index
+        if self.target_index is not None and self.target_is_item:
+            return self.target_index
+        return None
+
     def world_row(self) -> int | None:
         """The world this context's global reads and writes address, or None for every world.
 
         The batch is independent single-agent worlds (S1), so world ``i`` is agent
         ``i``'s. An affordance or item interaction, and an agent-scoped effect, act in
-        the world of the agent they address. A global-, affordance- or item-scoped
-        effect lives in one store shared by the whole batch, so it addresses every
-        world: its global writes land in every world's row, under the write mask.
+        the world of the agent they address; an item-scoped effect, or a context whose
+        only entity is an item, acts in that item's world (items are per world). A
+        global- or affordance-scoped effect lives in one store shared by the whole
+        batch, so it addresses every world: its global writes land in every world's
+        row, under the write mask.
         """
-        if self.effect is not None and EffectScope(self.effect.scope) is not EffectScope.AGENT:
-            return None
-        return self.agent_row()
+        if self.effect is not None:
+            scope = EffectScope(self.effect.scope)
+            if scope is EffectScope.ITEM:
+                return self.item_world(int(self.effect.target_entity_id))
+            if scope is not EffectScope.AGENT:
+                return None
+        agent = self.agent_row()
+        if agent is not None:
+            return agent
+        item = self.item_row()
+        return None if item is None else self.item_world(item)
+
+    def item_row_is_live(self, item_row: int) -> bool:
+        """Whether the world of item row `item_row` is live under the write mask.
+
+        An item has one world, so a per-agent condition gates its write by that world's
+        row alone (S1: world i is agent i's), never by the whole batch.
+        """
+        return self.row_is_live(self.item_world(item_row))
 
     def row_is_live(self, index: int) -> bool:
         """Whether agent row `index` is live under the write mask."""
@@ -271,7 +309,8 @@ class ExecutionContext:
                 var_name = rest[len("vfs.") :]
                 if self.vfs_registry is None:
                     raise ValueError("VFS registry not set in context")
-                self.require_whole_batch_live(f"item variable '{path}'")
+                if not self.item_row_is_live(self.target_index):
+                    return
                 write_value = value.item() if isinstance(value, torch.Tensor) and value.numel() == 1 else value
                 profile_name = self.vfs_registry.get_item_profile_for_index(self.target_index)
                 if profile_name is None:
@@ -305,7 +344,8 @@ class ExecutionContext:
                 var_name = rest[len("vfs.") :]
                 if self.vfs_registry is None:
                     raise ValueError("VFS registry not set in context")
-                self.require_whole_batch_live(f"item variable '{path}'")
+                if not self.item_row_is_live(self.self_index):
+                    return
                 # Convert scalar tensors to Python floats for item VFS storage.
                 write_value = value.item() if isinstance(value, torch.Tensor) and value.numel() == 1 else value
                 profile_name = self.vfs_registry.get_item_profile_for_index(self.self_index)

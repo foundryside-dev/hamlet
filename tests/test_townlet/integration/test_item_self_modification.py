@@ -27,14 +27,14 @@ def test_item_use_modifies_item_durability():
 
     # Clear any items at target position to avoid collision with random spawns
     target_pos = (2, 2)
-    for instance_id, item in list(env.item_manager.active_items.items()):
+    for instance_id, item in list(env.item_manager.worlds[0].active.items()):
         if item.position == target_pos:
             env.item_manager.despawn_item(instance_id, current_tick=0)
     # Clear cooldowns that may have been set by despawning
-    env.item_manager.cooldown_until.clear()
+    env.item_manager.worlds[0].cooldown_until.clear()
 
     # Spawn medkit at known location and pick it up
-    medkit_instance = env.item_manager.spawn_item("medkit", position=target_pos, current_tick=0)
+    medkit_instance = env.item_manager.spawn_item(0, "medkit", position=target_pos, current_tick=0)
     assert medkit_instance is not None
 
     # Move agent to medkit position

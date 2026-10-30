@@ -2,6 +2,7 @@
 
 import torch
 
+from tests.test_townlet.utils.builders import make_grid2d_substrate
 from townlet.config.items_config import (
     ItemInteractionsConfig,
     ItemsCatalogConfig,
@@ -27,6 +28,7 @@ def test_item_manager_assigns_vfs_profile_on_spawn():
     catalog = _catalog(
         [
             ItemTypeConfig(
+                exclusive=True,
                 id="apple",
                 name="Apple",
                 icon="🍎",
@@ -39,6 +41,7 @@ def test_item_manager_assigns_vfs_profile_on_spawn():
                 ),
             ),
             ItemTypeConfig(
+                exclusive=True,
                 id="sword",
                 name="Sword",
                 icon="🗡️",
@@ -116,14 +119,16 @@ def test_item_manager_assigns_vfs_profile_on_spawn():
     registry = VariableRegistry(
         variables=[],
         num_agents=1,
-        max_items=10,
+        items_per_world=10,
         device=torch.device("cpu"),
         item_profiles=item_profiles,
     )
 
     manager = ItemManager(
         catalog=catalog,
-        max_items=10,
+        num_worlds=registry.num_worlds,
+        substrate=make_grid2d_substrate(),
+        items_per_world=10,
         device=torch.device("cpu"),
         schema=None,
         vfs_registry=registry,
@@ -131,6 +136,7 @@ def test_item_manager_assigns_vfs_profile_on_spawn():
 
     # Exercise: Spawn an apple
     apple_instance = manager.spawn_item(
+        0,
         item_type="apple",
         position=(0, 0),
         current_tick=0,
@@ -143,6 +149,7 @@ def test_item_manager_assigns_vfs_profile_on_spawn():
 
     # Exercise: Spawn a sword
     sword_instance = manager.spawn_item(
+        0,
         item_type="sword",
         position=(1, 1),
         current_tick=0,
@@ -160,6 +167,7 @@ def test_item_manager_preserves_vfs_profile_across_operations():
     catalog = _catalog(
         [
             ItemTypeConfig(
+                exclusive=True,
                 id="potion",
                 name="Potion",
                 icon="🧪",
@@ -208,14 +216,16 @@ def test_item_manager_preserves_vfs_profile_across_operations():
     registry = VariableRegistry(
         variables=[],
         num_agents=1,
-        max_items=10,
+        items_per_world=10,
         device=torch.device("cpu"),
         item_profiles=item_profiles,
     )
 
     manager = ItemManager(
         catalog=catalog,
-        max_items=10,
+        num_worlds=registry.num_worlds,
+        substrate=make_grid2d_substrate(),
+        items_per_world=10,
         device=torch.device("cpu"),
         schema=None,
         vfs_registry=registry,
@@ -223,6 +233,7 @@ def test_item_manager_preserves_vfs_profile_across_operations():
 
     # Spawn item
     item = manager.spawn_item(
+        0,
         item_type="potion",
         position=(2, 3),
         current_tick=0,

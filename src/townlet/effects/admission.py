@@ -26,7 +26,7 @@ if TYPE_CHECKING:
     from townlet.effects.manager import ActiveEffect, EffectManager
     from townlet.effects.scheduler import ScheduledItem, Scheduler
     from townlet.items.instance import ItemInstance
-    from townlet.items.manager import ItemManager
+    from townlet.items.manager import ItemManager, WorldItemState
     from townlet.vfs.registry import VariableRegistry
 
 __all__ = ["EffectAdmissionSnapshot", "permission_denial_rng"]
@@ -117,45 +117,74 @@ class _RegistryState:
 
 
 @dataclass
-class _ItemSpawnState:
-    manager: ItemManager
+class _WorldSpawnState:
+    """One world's spawn-mutable item state: ground items, free arena rows, occupancy."""
+
+    state: WorldItemState
     active_items: dict[int, ItemInstance]
     active_entries: dict[int, ItemInstance]
-    next_instance_id: int
-    free_slots: set[int]
+    free_rows: set[int]
     free_values: set[int]
-    positions: dict[tuple[int, ...], set[int]]
-    position_entries: dict[tuple[int, ...], set[int]]
+    positions: dict[Any, set[int]]
+    position_entries: dict[Any, set[int]]
     position_values: list[tuple[set[int], set[int]]]
 
     @classmethod
-    def capture(cls, manager: ItemManager) -> _ItemSpawnState:
+    def capture(cls, state: WorldItemState) -> _WorldSpawnState:
         return cls(
-            manager=manager,
-            active_items=manager.active_items,
-            active_entries=manager.active_items.copy(),
-            next_instance_id=manager.next_instance_id,
-            free_slots=manager.vfs_free_slots,
-            free_values=manager.vfs_free_slots.copy(),
-            positions=manager._position_index,
-            position_entries=manager._position_index.copy(),
-            position_values=[(values, values.copy()) for values in manager._position_index.values()],
+            state=state,
+            active_items=state.active,
+            active_entries=state.active.copy(),
+            free_rows=state.free_rows,
+            free_values=state.free_rows.copy(),
+            positions=state.position_index,
+            position_entries=state.position_index.copy(),
+            position_values=[(values, values.copy()) for values in state.position_index.values()],
         )
 
     def restore(self) -> None:
-        self.manager.active_items = self.active_items
+        self.state.active = self.active_items
         self.active_items.clear()
         self.active_items.update(self.active_entries)
-        self.manager.next_instance_id = self.next_instance_id
-        self.manager.vfs_free_slots = self.free_slots
-        self.free_slots.clear()
-        self.free_slots.update(self.free_values)
-        self.manager._position_index = self.positions
+        self.state.free_rows = self.free_rows
+        self.free_rows.clear()
+        self.free_rows.update(self.free_values)
+        self.state.position_index = self.positions
         self.positions.clear()
         self.positions.update(self.position_entries)
         for values, contents in self.position_values:
             values.clear()
             values.update(contents)
+
+
+@dataclass
+class _ItemSpawnState:
+    manager: ItemManager
+    worlds: list[WorldItemState]
+    world_states: list[_WorldSpawnState]
+    live_items: dict[int, ItemInstance]
+    live_entries: dict[int, ItemInstance]
+    next_instance_id: int
+
+    @classmethod
+    def capture(cls, manager: ItemManager) -> _ItemSpawnState:
+        return cls(
+            manager=manager,
+            worlds=manager.worlds,
+            world_states=[_WorldSpawnState.capture(state) for state in manager.worlds],
+            live_items=manager.live_items,
+            live_entries=manager.live_items.copy(),
+            next_instance_id=manager.next_instance_id,
+        )
+
+    def restore(self) -> None:
+        self.manager.worlds = self.worlds
+        for world_state in self.world_states:
+            world_state.restore()
+        self.manager.live_items = self.live_items
+        self.live_items.clear()
+        self.live_items.update(self.live_entries)
+        self.manager.next_instance_id = self.next_instance_id
 
 
 @dataclass

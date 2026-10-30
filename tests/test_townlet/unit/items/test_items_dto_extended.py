@@ -20,6 +20,7 @@ class TestItemTypeConfigValidation:
 
     def test_valid_minimal_item(self):
         item = ItemTypeConfig(
+            exclusive=True,
             id="apple",
             name="Apple",
             icon="🍎",
@@ -43,6 +44,7 @@ class TestItemTypeConfigValidation:
     def test_invalid_ids_rejected(self, bad_id: str):
         with pytest.raises(ValidationError):
             ItemTypeConfig(
+                exclusive=True,
                 id=bad_id,
                 name="Bad",
                 icon="❌",
@@ -54,6 +56,7 @@ class TestItemTypeConfigValidation:
     def test_missing_vfs_profile(self):
         with pytest.raises(ValidationError):
             ItemTypeConfig(
+                exclusive=True,
                 id="apple",
                 name="Apple",
                 icon="🍎",
@@ -172,6 +175,7 @@ class TestItemAppearanceRuleConfigValidation:
 class TestItemsCatalogConfigValidation:
     def _base_item(self, id_: str = "apple") -> ItemTypeConfig:
         return ItemTypeConfig(
+            exclusive=True,
             id=id_,
             name=id_.capitalize(),
             icon="🧰",

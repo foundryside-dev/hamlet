@@ -380,6 +380,11 @@ class CommandExecutor:
     def _execute_spawn_item(self, command: CommandNode, context: ExecutionContext) -> None:
         """Execute spawn_item command.
 
+        Items are per world (S1). A context bound to one world (an agent, an item, an
+        agent- or item-scoped effect) spawns into that world when its row is live under
+        the write mask; a world-shared context (a global- or affordance-scoped effect)
+        spawns into every live world.
+
         Args:
             command: Spawn item command node
             context: Execution context
@@ -389,58 +394,69 @@ class CommandExecutor:
         """
         if context.item_manager is None:
             raise ValueError("item_manager not set in context - cannot spawn items")
-        context.require_whole_batch_live(f"spawn_item '{command.item_type}'")
+
+        item_type = command.item_type
+        if item_type is None:
+            raise ValueError("spawn_item command requires 'item_type'")
+        if command.quantity is None:
+            raise ValueError(f"spawn_item '{item_type}' requires a declared quantity")
 
         # Resolve position using ItemManager helper (fail-forward on unsupported)
         raw_position = command.position
         origin = None
         explicit_coords = None
-        strategy: str | tuple | list | None = raw_position
+        strategy: str
 
-        if raw_position == "self":
-            if context.agent_positions is None or context.self_index is None:
-                raise ValueError("agent_positions and self_index required for position 'self'")
-            origin = tuple(context.agent_positions[context.self_index].tolist())
-            strategy = "self"
+        if raw_position in ("self", "random"):
+            if context.self_index is None:
+                raise ValueError(f"self_index required for position '{raw_position}'")
+            origin = self._entity_position(context, context.self_index, is_item=context.self_is_item)
+            strategy = str(raw_position)
         elif raw_position == "target":
-            if context.agent_positions is None or context.target_index is None:
-                raise ValueError("agent_positions and target_index required for position 'target'")
-            origin = tuple(context.agent_positions[context.target_index].tolist())
+            if context.target_index is None:
+                raise ValueError("target_index required for position 'target'")
+            origin = self._entity_position(context, context.target_index, is_item=context.target_is_item)
             strategy = "target"
-        elif raw_position == "random":
-            if context.agent_positions is None or context.self_index is None:
-                raise ValueError("agent_positions and self_index required for position 'random'")
-            origin = tuple(context.agent_positions[context.self_index].tolist())
-            strategy = "random"
         elif isinstance(raw_position, (list, tuple)):
             explicit_coords = tuple(raw_position)
             strategy = "explicit"
         else:
             raise ValueError(f"Invalid position: {command.position}")
 
-        if strategy is None:
-            raise ValueError("spawn_item position strategy could not be resolved")
+        world = context.world_row()
+        if world is not None:
+            worlds = [world] if context.row_is_live(world) else []
+        else:
+            worlds = [w for w in range(context.item_manager.num_worlds) if context.row_is_live(w)]
 
-        item_type = command.item_type
-        if item_type is None:
-            raise ValueError("spawn_item command requires 'item_type'")
+        for target_world in worlds:
+            for _ in range(command.quantity):
+                position = context.item_manager.find_spawn_location(
+                    target_world,
+                    strategy=strategy,
+                    origin=origin,
+                    explicit=explicit_coords,
+                )
+                context.item_manager.spawn_item(
+                    target_world,
+                    item_type=item_type,
+                    position=position,
+                    current_tick=context.current_tick,
+                    initial_state=command.initial_state,
+                )
 
-        if command.quantity is None:
-            raise ValueError(f"spawn_item '{item_type}' requires a declared quantity")
-
-        for _ in range(command.quantity):
-            position = context.item_manager.find_spawn_location(
-                strategy=strategy,
-                origin=origin,
-                explicit=explicit_coords,
-            )
-            context.item_manager.spawn_item(
-                item_type=item_type,
-                position=position,
-                current_tick=context.current_tick,
-                initial_state=command.initial_state,
-            )
-        return
+    @staticmethod
+    def _entity_position(context: ExecutionContext, index: int, *, is_item: bool) -> tuple[Any, ...]:
+        """The position of the context's self/target entity: an agent, or an item row."""
+        if is_item:
+            assert context.item_manager is not None
+            item = context.item_manager.item_at_row(index)
+            if item is None:
+                raise ValueError(f"No live item holds arena row {index}; it has no position to spawn at")
+            return tuple(item.position)
+        if context.agent_positions is None:
+            raise ValueError("agent_positions required to spawn at an agent's position")
+        return tuple(context.agent_positions[index].tolist())
 
     def _execute_sample(self, command: CommandNode, context: ExecutionContext) -> None:
         """Sample from a distribution and store the result."""

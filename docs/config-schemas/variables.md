@@ -96,8 +96,9 @@ an action write may not target a global. At runtime every reader and writer addr
 world's row:
 
 - an affordance or item interaction, and an agent-scoped effect, write the interacting agent's
-  world (`vfs.X` and `global.vfs.X` alike); a global-, affordance- or item-scoped effect lives
-  in one store shared by the batch, so its global writes land in every world's row;
+  world (`vfs.X` and `global.vfs.X` alike); an item-scoped effect writes its item's world (items
+  are per world); a global- or affordance-scoped effect lives in one store shared by the batch,
+  so its global writes land in every world's row;
 - a transition rule advances each world's global while that world's agent is active;
 - global and agent profile expressions read their own world's globals;
 - each world's observation publishes its own row, and the reward reads its own row;
@@ -105,9 +106,9 @@ world's row:
 
 The engine `tick` is a global like any other: all worlds step in lockstep, so the engine
 writes the same instant into every row. Episode resets are batch-wide for the same reason:
-every world's episode- and tick-lifetime state is re-initialized together. Item spawn
-predicates are the one engine-internal reduction across worlds: items are shared by the batch
-today, so a predicate passes only when it holds in every world.
+every world's episode- and tick-lifetime state is re-initialized together. Items are per world
+too (their own spawns, state and arena rows; see [items](items.md)), so an item spawn predicate
+is evaluated per world: each world spawns when it holds for that world's values.
 
 **Non-goal: cross-world quantities.** There is no spelling for a value that reduces over
 worlds (a batch-wide total, mean or maximum of a global or agent variable). Under S1 such a

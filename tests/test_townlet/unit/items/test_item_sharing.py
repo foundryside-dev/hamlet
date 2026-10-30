@@ -1,5 +1,6 @@
 import torch
 
+from tests.test_townlet.utils.builders import make_grid2d_substrate
 from townlet.config.items_config import ItemInteractionsConfig, ItemsCatalogConfig, ItemTypeConfig
 from townlet.effects.executor import CommandExecutor
 from townlet.items.action_handlers import ItemActionHandler
@@ -34,7 +35,10 @@ def _make_catalog(*, exclusive: bool) -> ItemsCatalogConfig:
 
 def _make_handler(*, exclusive: bool) -> tuple[ItemManager, InventoryState, ItemActionHandler]:
     catalog = _make_catalog(exclusive=exclusive)
-    manager = ItemManager(catalog=catalog, max_items=5, device="cpu", schema=None, vfs_registry=None)
+    # S1: two independent single-agent worlds; agent i lives in world i.
+    manager = ItemManager(
+        catalog=catalog, num_worlds=2, substrate=make_grid2d_substrate(), items_per_world=7, device="cpu", schema=None, vfs_registry=None
+    )
     inventory = InventoryState(batch_size=2, max_items_per_agent=2, device="cpu")
     handler = ItemActionHandler(
         manager=manager,
@@ -48,61 +52,63 @@ def _make_handler(*, exclusive: bool) -> tuple[ItemManager, InventoryState, Item
     return manager, inventory, handler
 
 
-def test_exclusive_item_single_holder() -> None:
+def test_exclusive_item_leaves_its_world_on_pickup_and_returns_on_drop() -> None:
     manager, inventory, handler = _make_handler(exclusive=True)
 
-    item = manager.spawn_item(item_type="test_item", position=(0, 0), current_tick=0, initial_state=None)
+    item = manager.spawn_item(0, item_type="test_item", position=(0, 0), current_tick=0, initial_state=None)
     assert item is not None
 
-    meters = torch.zeros((1, 0))
+    meters = torch.zeros((2, 0))
     pos = torch.tensor([0, 0], dtype=torch.float32)
 
-    # First agent picks up successfully; item leaves the world
+    # World 0's agent picks it up; the item leaves world 0's ground into held state
     assert handler.handle_get_action(agent_idx=0, agent_position=pos, current_tick=0, meters=meters) is True
     assert inventory.has_item(0, item.instance_id)
-    assert manager.active_items == {}
+    assert manager.worlds[0].active == {}
+    assert manager.worlds[0].held == {item.instance_id: item}
     assert item.holder_agent_ids == {0}
 
-    # Second agent cannot pick up (item no longer on grid)
-    assert handler.handle_get_action(agent_idx=1, agent_position=pos, current_tick=1, meters=meters) is False
-    assert not inventory.has_item(1, item.instance_id)
+    # A second GET at the same cell finds nothing
+    assert handler.handle_get_action(agent_idx=0, agent_position=pos, current_tick=1, meters=meters) is False
 
-    # Dropping returns item to the grid and clears holders
+    # Dropping returns item to world 0's ground and clears holders
     drop_pos = torch.tensor([1, 0], dtype=torch.float32)
     assert handler.handle_drop_slot_action(agent_idx=0, slot_idx=0, agent_position=drop_pos, current_tick=2) is True
-    assert manager.active_items[item.instance_id].position == (1, 0)
+    assert manager.worlds[0].active[item.instance_id].position == (1, 0)
     assert item.holder_agent_ids == set()
-    assert manager.held_items == {}
+    assert manager.worlds[0].held == {}
 
 
-def test_shared_item_multiple_holders() -> None:
+def test_shared_item_stays_on_the_ground_while_held() -> None:
     manager, inventory, handler = _make_handler(exclusive=False)
 
-    item = manager.spawn_item(item_type="test_item", position=(0, 0), current_tick=0, initial_state=None)
+    item = manager.spawn_item(0, item_type="test_item", position=(0, 0), current_tick=0, initial_state=None)
     assert item is not None
 
-    meters = torch.zeros((1, 0))
+    meters = torch.zeros((2, 0))
     pos = torch.tensor([0, 0], dtype=torch.float32)
 
-    # First agent picks up; item stays in world and tracks holder
     assert handler.handle_get_action(agent_idx=0, agent_position=pos, current_tick=0, meters=meters) is True
     assert inventory.has_item(0, item.instance_id)
-    assert len(manager.active_items) == 1
     assert item.holder_agent_ids == {0}
+    assert manager.worlds[0].active[item.instance_id] is item  # Shared item never left the ground
 
-    # Second agent can also pick up the same item
-    assert handler.handle_get_action(agent_idx=1, agent_position=pos, current_tick=1, meters=meters) is True
-    assert inventory.has_item(1, item.instance_id)
-    assert item.holder_agent_ids == {0, 1}
-    assert len(manager.active_items) == 1  # Shared item never left the grid
+    # The same agent cannot hold a second copy
+    assert handler.handle_get_action(agent_idx=0, agent_position=pos, current_tick=1, meters=meters) is False
 
-    # Dropping from one agent only removes that holder; item stays put
+    # Dropping clears the holder; the item stays put
     assert handler.handle_drop_slot_action(agent_idx=0, slot_idx=0, agent_position=pos, current_tick=2) is True
-    assert item.holder_agent_ids == {1}
-    assert len(manager.active_items) == 1
-    assert manager.active_items[item.instance_id].position == (0, 0)
-
-    # Final drop clears holders but item remains active
-    assert handler.handle_drop_slot_action(agent_idx=1, slot_idx=0, agent_position=pos, current_tick=3) is True
     assert item.holder_agent_ids == set()
-    assert len(manager.active_items) == 1
+    assert manager.worlds[0].active[item.instance_id].position == (0, 0)
+
+
+def test_an_agent_cannot_pick_up_another_worlds_item() -> None:
+    """Agent 1 standing on world 0's item's cell is in world 1, where no item exists (S1)."""
+    for exclusive in (True, False):
+        manager, inventory, handler = _make_handler(exclusive=exclusive)
+        item = manager.spawn_item(0, item_type="test_item", position=(0, 0), current_tick=0, initial_state=None)
+        assert item is not None
+        pos = torch.tensor([0, 0], dtype=torch.float32)
+        assert handler.handle_get_action(agent_idx=1, agent_position=pos, current_tick=0, meters=torch.zeros((2, 0))) is False
+        assert not inventory.has_item(1, item.instance_id)
+        assert manager.worlds[0].active == {item.instance_id: item}

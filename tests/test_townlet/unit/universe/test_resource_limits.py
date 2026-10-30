@@ -23,6 +23,7 @@ def _make_item_types(count: int, *, profile: str = "default") -> list[dict]:
             "name": f"Item {idx}",
             "icon": "i",
             "tags": ["tag"],
+            "exclusive": True,
             "vfs_profile": profile,
             "duration": None,
             "cooldown": None,

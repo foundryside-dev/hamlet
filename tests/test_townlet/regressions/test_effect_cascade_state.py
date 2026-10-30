@@ -3,6 +3,7 @@
 import pytest
 import torch
 
+from tests.test_townlet.utils.builders import make_grid2d_substrate
 from townlet.config.items_config import ItemInteractionsConfig, ItemsCatalogConfig, ItemTypeConfig
 from townlet.effects.catalog import CompiledEffect, EffectCatalog
 from townlet.effects.compiler import CommandCompiler
@@ -63,7 +64,7 @@ def _services(
         ],
         num_agents=2,
         device=torch.device("cpu"),
-        max_items=max_items,
+        items_per_world=max_items,
         item_profiles=profiles,
     )
     compiler = CommandCompiler(
@@ -110,6 +111,7 @@ def _services(
         version="1.0",
         item_types=[
             ItemTypeConfig(
+                exclusive=True,
                 id=name,
                 name=name,
                 icon="x",
@@ -124,8 +126,17 @@ def _services(
         max_items_per_agent=3,
         max_items_in_world=max_items,
     )
-    items = ItemManager(catalog=catalog, max_items=max_items, device="cpu", schema=None, vfs_registry=registry, effect_manager=manager)
-    sealed = items.spawn_item("sealed", (0, 0), 0)
+    items = ItemManager(
+        catalog=catalog,
+        num_worlds=registry.num_worlds,
+        substrate=make_grid2d_substrate(),
+        items_per_world=max_items,
+        device="cpu",
+        schema=None,
+        vfs_registry=registry,
+        effect_manager=manager,
+    )
+    sealed = items.spawn_item(0, "sealed", (0, 0), 0)
     assert sealed is not None
     return manager, registry, items, sealed, {"energy": torch.full((2,), 3.0)}, compiler
 
@@ -153,9 +164,9 @@ def test_fresh_parent_denial_releases_items_positions_and_profile_rows() -> None
             item_manager=items,
             agent_positions=torch.tensor([[4, 5], [6, 7]]),
         )
-    assert items.get_all_items() == [sealed]
-    assert items.get_all_items()[0] is sealed
-    assert not items._position_occupied((4, 5))
+    assert items.items_in_world(0) == [sealed]
+    assert items.items_in_world(0)[0] is sealed
+    assert not items._position_occupied(0, (4, 5))
     assert registry.item_vfs is arena
     assert torch.equal(arena, before_arena)
     assert registry.item_vfs_index_to_profile == before_profiles
@@ -164,8 +175,8 @@ def test_fresh_parent_denial_releases_items_positions_and_profile_rows() -> None
     assert torch.equal(bars["energy"], torch.full((2,), 3.0))
     # A failed cascade must leave both free rows and the next public item ID
     # available. No hidden item can consume capacity or retain its profile.
-    first = items.spawn_item("writable", (4, 5), 1, initial_state={"charge": 6.0})
-    second = items.spawn_item("writable", (6, 7), 1)
+    first = items.spawn_item(0, "writable", (4, 5), 1, initial_state={"charge": 6.0})
+    second = items.spawn_item(0, "writable", (6, 7), 1)
     assert first is not None and second is not None
     assert (first.instance_id, second.instance_id) == (1, 2)
     assert first.vfs_index != second.vfs_index
@@ -214,8 +225,8 @@ def test_refused_cascade_preserves_next_item_row_after_allocation_and_reuse() ->
     rejected = _services(4)
     targets = []
     for _, registry, items, initial, _, _ in [control, rejected]:
-        sealed = items.spawn_item("sealed", (1, 0), 0)
-        writable = items.spawn_item("writable", (2, 0), 0)
+        sealed = items.spawn_item(0, "sealed", (1, 0), 0)
+        writable = items.spawn_item(0, "writable", (2, 0), 0)
         assert sealed is not None and writable is not None
         assert [initial.vfs_index, sealed.vfs_index, writable.vfs_index] == [0, 1, 2]
         items.despawn_item(initial.instance_id, current_tick=1)
@@ -240,8 +251,8 @@ def test_refused_cascade_preserves_next_item_row_after_allocation_and_reuse() ->
             item_manager=items,
             agent_positions=torch.tensor([[4, 5], [6, 7]]),
         )
-    expected = control[2].spawn_item("writable", (4, 5), 2, initial_state={"charge": 6.0})
-    actual = items.spawn_item("writable", (4, 5), 2, initial_state={"charge": 6.0})
+    expected = control[2].spawn_item(0, "writable", (4, 5), 2, initial_state={"charge": 6.0})
+    actual = items.spawn_item(0, "writable", (4, 5), 2, initial_state={"charge": 6.0})
     assert expected is not None and actual is not None
     assert actual.vfs_index == expected.vfs_index
     # Allocation is determined by the available rows, including reused lower
@@ -250,6 +261,6 @@ def test_refused_cascade_preserves_next_item_row_after_allocation_and_reuse() ->
     assert actual.instance_id == expected.instance_id == 3
     assert actual.position == expected.position == (4, 5)
     assert actual.item_type == expected.item_type == "writable"
-    assert len(items.get_all_items()) == len(control[2].get_all_items()) == 3
+    assert len(items.items_in_world(0)) == len(control[2].items_in_world(0)) == 3
     assert registry.read_item("writable", "charge", actual.vfs_index, reader="engine") == 6.0
     assert registry.read_item("sealed", "charge", targets[1].vfs_index, reader="engine") == 2.0

@@ -65,25 +65,26 @@ def test_item_vfs_profile_driven_end_to_end():
     assert "durability" in medical_map, "durability variable not in medical profile map"
     assert medical_map["durability"] == 0, f"Expected durability at index 0, got {medical_map['durability']}"
 
-    # Verify: Item VFS storage is sized by the item arena (world slots plus per-agent
-    # carried slots), the same capacity the token spec allocates; max_vars_across_profiles
-    # = 1 (food and medical both have 1 var)
+    # Verify: Item VFS storage holds one item arena per world (world slots plus per-agent
+    # carried slots, the same per-world capacity the token spec allocates; items are per
+    # world, S1); max_vars_across_profiles = 1 (food and medical both have 1 var)
     catalog = env.universe.items_catalog
     expected_slots = item_capacity(
         max_items_in_world=catalog.max_items_in_world,
         max_items_per_agent=catalog.max_items_per_agent,
         declared_agents_per_world=None,
     )
+    assert env.items_per_world == expected_slots == env.token_spec.get_type("item").capacity
     assert (
-        env.vfs_registry.item_vfs.shape[0] == expected_slots
-    ), f"Expected {expected_slots} item slots, got {env.vfs_registry.item_vfs.shape[0]}"
+        env.vfs_registry.item_vfs.shape[0] == env.num_agents * expected_slots
+    ), f"Expected {env.num_agents} x {expected_slots} item rows, got {env.vfs_registry.item_vfs.shape[0]}"
     assert env.vfs_registry.item_vfs.shape[1] == 1, f"Expected 1 variable per item, got {env.vfs_registry.item_vfs.shape[1]}"
 
     # Exercise: Spawn item and observe VFS
     env.reset()
 
     # Spawn apple (food profile with freshness=100.0)
-    apple = env.item_manager.spawn_item("apple", position=(2, 2), current_tick=0)
+    apple = env.item_manager.spawn_item(0, "apple", position=(2, 2), current_tick=0)
     assert apple is not None, "Failed to spawn apple"
     assert apple.vfs_profile == "food", f"Expected food profile, got {apple.vfs_profile}"
 
@@ -115,6 +116,7 @@ def test_item_spawn_with_initial_state():
     # Exercise: Spawn apple with custom initial_state
     custom_freshness = 75.5
     apple = env.item_manager.spawn_item(
+        0,
         "apple",
         position=(3, 3),
         current_tick=0,
@@ -130,6 +132,7 @@ def test_item_spawn_with_initial_state():
     # Exercise: Spawn medkit with custom initial_state
     custom_durability = 42.0
     medkit = env.item_manager.spawn_item(
+        0,
         "medkit",
         position=(4, 4),
         current_tick=0,
@@ -165,7 +168,7 @@ def test_item_vfs_in_observations():
     initial_obs_dim = obs.shape[1]
 
     # Spawn apple and pick it up
-    env.item_manager.spawn_item("apple", position=(0, 0), current_tick=0)
+    env.item_manager.spawn_item(0, "apple", position=(0, 0), current_tick=0)
     env.positions[0] = torch.tensor([0, 0], dtype=torch.long)
     get_action = env.action_space.get_action_by_name("GET")
     obs, _, _, _ = env.step(torch.tensor([get_action.id]))
@@ -207,7 +210,7 @@ def test_item_profile_switch_updates_vfs_layout():
     env.reset()
 
     # Exercise: Spawn apple (food profile)
-    apple = env.item_manager.spawn_item("apple", position=(2, 2), current_tick=0)
+    apple = env.item_manager.spawn_item(0, "apple", position=(2, 2), current_tick=0)
     assert apple is not None, "Failed to spawn apple"
     assert apple.vfs_profile == "food", f"Expected food profile, got {apple.vfs_profile}"
 
@@ -222,10 +225,10 @@ def test_item_profile_switch_updates_vfs_layout():
     # Exercise: Despawn apple
     current_tick = env.step_counts[0].item() if env.step_counts.numel() > 0 else 0
     env.item_manager.despawn_item(apple.instance_id, current_tick=current_tick)
-    assert apple.instance_id not in env.item_manager.active_items, "Apple should be despawned"
+    assert apple.instance_id not in env.item_manager.worlds[0].active, "Apple should be despawned"
 
     # Exercise: Spawn medkit (medical profile) - reuses the same VFS slot
-    medkit = env.item_manager.spawn_item("medkit", position=(3, 3), current_tick=0)
+    medkit = env.item_manager.spawn_item(0, "medkit", position=(3, 3), current_tick=0)
     assert medkit is not None, "Failed to spawn medkit"
     assert medkit.vfs_profile == "medical", f"Expected medical profile, got {medkit.vfs_profile}"
 

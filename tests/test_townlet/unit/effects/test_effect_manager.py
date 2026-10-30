@@ -527,7 +527,7 @@ def test_null_item_manager_spawn_item_raises():
     manager = NullItemManager()
 
     with pytest.raises(RuntimeError, match="ItemManager is not configured"):
-        manager.spawn_item("item_type")
+        manager.spawn_item(0, "item_type")
 
 
 def test_null_item_manager_tick_returns_none():

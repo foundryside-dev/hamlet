@@ -357,10 +357,11 @@ def test_rank_zero_publishers_have_no_position_lane_or_context_requirement():
         TokenPublishContext(
             item_slots=ItemSlotBatch(
                 slot_indices=torch.tensor([0]),
-                positions=torch.empty((1, 0), dtype=torch.long),
-                vfs_indices=torch.tensor([0]),
+                active=torch.tensor([[True], [True]]),
+                positions=torch.empty((2, 1, 0), dtype=torch.long),
+                vfs_rows=torch.tensor([[0], [0]]),
                 carried=torch.tensor([[False], [False]]),
-                owner_slot=torch.tensor([-1]),
+                owner_slot=torch.tensor([[-1], [-1]]),
             )
         ),
     )
@@ -745,13 +746,29 @@ class TestAgentTokenPublisher:
             publisher.publish(_rows(1, "agent", batch=1), ctx)
 
 
-def _item_batch(slot_indices, positions, vfs_indices, carried, owner_slot):
+def _item_batch(slot_indices, positions, vfs_rows, carried, owner_slot, active=None):
+    """Per-world item batch. `positions` `[K, D]`, `vfs_rows` and `owner_slot` `[K]` are the
+    same in every world unless given per world; `active` defaults to every slot live in every
+    world (items are per world, S1: each world row is its own world's item)."""
+    carried_t = torch.tensor(carried)
+    n, k = carried_t.shape
+    positions_t = torch.tensor(positions)
+    if positions_t.dim() == 2:
+        positions_t = positions_t.unsqueeze(0).expand(n, k, positions_t.shape[1]).clone()
+    rows_t = torch.tensor(vfs_rows)
+    if rows_t.dim() == 1:
+        rows_t = rows_t.unsqueeze(0).expand(n, k).clone()
+    owner_t = torch.tensor(owner_slot)
+    if owner_t.dim() == 1:
+        owner_t = owner_t.unsqueeze(0).expand(n, k).clone()
+    active_t = torch.ones((n, k), dtype=torch.bool) if active is None else torch.tensor(active)
     return ItemSlotBatch(
         slot_indices=torch.tensor(slot_indices),
-        positions=torch.tensor(positions),
-        vfs_indices=torch.tensor(vfs_indices),
-        carried=torch.tensor(carried),
-        owner_slot=torch.tensor(owner_slot),
+        active=active_t,
+        positions=positions_t,
+        vfs_rows=rows_t,
+        carried=carried_t,
+        owner_slot=owner_t,
     )
 
 
@@ -1204,7 +1221,7 @@ def _item_profile_registry() -> VariableRegistry:
         variables=[],
         num_agents=2,
         device=DEVICE,
-        max_items=3,
+        items_per_world=3,
         item_profiles={"food": _Profile(["nutrition", "freshness"])},
     )
 
@@ -1256,15 +1273,32 @@ class TestItemArenaVariableElementPublisher:
         # liveness (a compiled item token slot can be occupied by any profile).
         publisher, schema = self._publisher(registry)
         rows = _rows(schema.capacity, "variable_element")
-        batch = _item_batch([0], [[1, 1]], [2], [[False], [False]], [-1])
+        # World 0 has its item at row 2; world 1 has no item at owner slot 0.
+        batch = _item_batch([0], [[1, 1]], [[2], [3]], [[False], [False]], [-1], active=[[True], [False]])
         publisher.publish(rows, TokenPublishContext(item_slots=batch))
         v0 = _lane("variable_element", "value_0")
         assert rows[0, 0, 0].item() == 1.0
         assert rows[0, 0, v0].item() == pytest.approx(0.75)
-        assert rows[1, 0, v0].item() == pytest.approx(0.75)  # world-shared item arena
+        # Items are per world (S1): world 1 does not see world 0's item or its state.
+        assert rows[1, 0, 0].item() == 0.0
+        assert rows[1, 0].abs().sum().item() == 0.0
         # dead owner slot 1: presence 0, payload zeroed.
         assert rows[0, 1, 0].item() == 0.0
         assert rows[0, 1].abs().sum().item() == 0.0
+
+    def test_each_world_reads_its_own_arena_row(self):
+        registry = _item_profile_registry()
+        registry.register_item_instance(0, "food")  # world 0, slot 0
+        registry.register_item_instance(3, "food")  # world 1, slot 0
+        registry.write_item("food", "nutrition", 0.75, vfs_index=0, writer="engine")
+        registry.write_item("food", "nutrition", 0.25, vfs_index=3, writer="engine")
+        publisher, schema = self._publisher(registry)
+        rows = _rows(schema.capacity, "variable_element")
+        batch = _item_batch([0], [[1, 1]], [[0], [3]], [[False], [False]], [-1])
+        publisher.publish(rows, TokenPublishContext(item_slots=batch))
+        v0 = _lane("variable_element", "value_0")
+        assert rows[:, 0, 0].tolist() == [1.0, 1.0]
+        assert rows[:, 0, v0].tolist() == pytest.approx([0.75, 0.25])
 
     def test_no_live_items_means_all_absent(self):
         registry = _item_profile_registry()
@@ -1328,7 +1362,7 @@ class TestItemArenaVariableElementPublisher:
             variables=[],
             num_agents=2,
             device=DEVICE,
-            max_items=3,
+            items_per_world=3,
             item_profiles={
                 "food": _Profile(["nutrition"]),
                 "medical": _Profile(["durability"]),
@@ -1430,7 +1464,7 @@ class TestTokenObservationEncoder:
             variables=[_var("temp", default=0.25), _var("mood", scope="agent", default=0.75)],
             num_agents=2,
             device=DEVICE,
-            max_items=2,
+            items_per_world=2,
             item_profiles={"food": _Profile(["nutrition"])},
         )
         registry.register_item_instance(0, "food")
@@ -1467,10 +1501,12 @@ class TestTokenObservationEncoder:
                 ],
                 DEVICE,
             )
-            observations.append(encoder.encode(2, TokenPublishContext(item_slots=_item_batch([0], [[1, 1]], [0], [[False]], [-1]))))
+            # World 0 owns the item at row 0; world 1 has none (items are per world, S1).
+            batch = _item_batch([0], [[1, 1]], [[0], [2]], [[False], [False]], [-1], active=[[True], [False]])
+            observations.append(encoder.encode(2, TokenPublishContext(item_slots=batch)))
         assert torch.equal(observations[0], observations[1])
-        assert observations[0].reshape(2, 3, 3)[:, :, 0].tolist() == [[1.0, 1.0, 1.0], [1.0, 1.0, 1.0]]
-        assert observations[0].reshape(2, 3, 3)[:, :, 1].tolist() == [[0.25, 0.75, 0.5], [0.25, 0.75, 0.5]]
+        assert observations[0].reshape(2, 3, 3)[:, :, 0].tolist() == [[1.0, 1.0, 1.0], [1.0, 1.0, 0.0]]
+        assert observations[0].reshape(2, 3, 3)[:, :, 1].tolist() == [[0.25, 0.75, 0.5], [0.25, 0.75, 0.0]]
 
     def test_layout_matches_spec_serialization(self):
         registry = _registry()
@@ -1587,7 +1623,7 @@ def test_item_publisher_refuses_hidden_qualified_binding(readers, reason):
     profile = _Profile(["nutrition", "freshness"])
     profile.variables[0].readable_by = readers
     profile.variables[0].exposed_to = ()
-    registry = VariableRegistry([], 2, DEVICE, max_items=3, item_profiles={"food": profile})
+    registry = VariableRegistry([], 2, DEVICE, items_per_world=3, item_profiles={"food": profile})
     with pytest.raises(reason, match="food.*nutrition"):
         TestItemArenaVariableElementPublisher()._publisher(registry)
 

@@ -137,6 +137,7 @@ def test_limit_diagnostics_use_relocated_family_origin(tmp_path: Path, monkeypat
                 "name": "Tool",
                 "icon": "t",
                 "tags": ["tool"],
+                "exclusive": True,
                 "vfs_profile": "tool",
                 "duration": None,
                 "cooldown": None,

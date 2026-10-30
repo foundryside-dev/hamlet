@@ -195,10 +195,11 @@ def _partial_items_pack(tmp_path: Path) -> Path:
     return pack
 
 
-def _spawn_medkit(env, position: tuple[int, int]):
-    item = env.item_manager.spawn_item(item_type="medkit", position=position, current_tick=0)
+def _spawn_medkit(env, position: tuple[int, int], world: int) -> int:
+    """Spawn a medkit into `world`; return its compiled item slot (row - world * C)."""
+    item = env.item_manager.spawn_item(world, item_type="medkit", position=position, current_tick=0)
     assert item is not None
-    return item
+    return item.vfs_index - world * env.items_per_world
 
 
 def test_r3_item_state_row_follows_item_token_under_partial_vision(tmp_path: Path) -> None:
@@ -206,16 +207,17 @@ def test_r3_item_state_row_follows_item_token_under_partial_vision(tmp_path: Pat
     env = make_vectorized_env_from_pack(_partial_items_pack(tmp_path), level_name=LEVEL, num_agents=2, device=DEVICE)
     assert env.partial_observability is True
     env.reset()
-    medkit = _spawn_medkit(env, (4, 4))
+    # Each world gets its own medkit at the same cell (items are per world, S1), so the
+    # only difference between the two observations is distance.
+    slots = [_spawn_medkit(env, (4, 4), world) for world in range(2)]
     env.positions[0] = torch.tensor([4, 3], dtype=env.positions.dtype)  # manhattan 1: in range
     env.positions[1] = torch.tensor([0, 0], dtype=env.positions.dtype)  # manhattan 8: hidden
     obs = env._get_observations()
 
-    state_ref = f"medical.durability[{medkit.vfs_index}]"
-    seen_item = _item_row(env, obs, medkit.vfs_index, world=0)
-    hidden_item = _item_row(env, obs, medkit.vfs_index, world=1)
-    seen_state = _element_row(env, obs, state_ref, world=0)
-    hidden_state = _element_row(env, obs, state_ref, world=1)
+    seen_item = _item_row(env, obs, slots[0], world=0)
+    hidden_item = _item_row(env, obs, slots[1], world=1)
+    seen_state = _element_row(env, obs, f"medical.durability[{slots[0]}]", world=0)
+    hidden_state = _element_row(env, obs, f"medical.durability[{slots[1]}]", world=1)
     assert seen_item[0] == 1.0
     assert hidden_item[0] == 0.0
     assert seen_state[0] == 1.0
@@ -238,13 +240,12 @@ def test_r3_full_observability_publishes_state_regardless_of_distance(tmp_path: 
     env = make_vectorized_env_from_pack(pack, level_name=LEVEL, num_agents=2, device=DEVICE)
     assert env.partial_observability is False
     env.reset()
-    medkit = _spawn_medkit(env, (4, 4))
+    slots = [_spawn_medkit(env, (4, 4), world) for world in range(2)]
     env.positions[0] = torch.tensor([4, 3], dtype=env.positions.dtype)
     env.positions[1] = torch.tensor([0, 0], dtype=env.positions.dtype)
     obs = env._get_observations()
-    state_ref = f"medical.durability[{medkit.vfs_index}]"
     for world in range(2):
-        assert _item_row(env, obs, medkit.vfs_index, world)[0] == 1.0
-        row = _element_row(env, obs, state_ref, world)
+        assert _item_row(env, obs, slots[world], world)[0] == 1.0
+        row = _element_row(env, obs, f"medical.durability[{slots[world]}]", world)
         assert row[0] == 1.0
         assert row[1] == pytest.approx(1.0)

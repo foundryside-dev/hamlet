@@ -559,10 +559,10 @@ class VectorizedHamletEnv:
         universe = self.universe
         self.vfs_variables: list[VariableDef] = list(self.level.vfs_variables)
 
-        # The item arena is world slots plus per-agent carried slots; the registry's item
-        # storage and the item manager are sized by it, not by the world slots alone, so a
-        # catalog with max_items_in_world: 0 and max_items_per_agent: n still has n*agents slots.
-        max_items_in_world = (
+        # Items are per world (S1). One world's arena is its ground slots plus its agents'
+        # carried slots (`item_capacity`, the same count that sizes the `item` token); the
+        # registry holds one such block per world, flat: row = world * C + slot.
+        self.items_per_world = (
             item_capacity(
                 max_items_in_world=universe.items_catalog.max_items_in_world,
                 max_items_per_agent=universe.items_catalog.max_items_per_agent,
@@ -579,7 +579,7 @@ class VectorizedHamletEnv:
             variables=self.vfs_variables,
             num_agents=self.num_agents,
             device=self.device,
-            max_items=max_items_in_world,
+            items_per_world=self.items_per_world,
             num_affordances=self.metadata.affordance_count,
             item_profiles=item_profiles,
         )
@@ -633,13 +633,20 @@ class VectorizedHamletEnv:
                 "Declare item profile names and state in the canonical variables declaration for all item types."
             )
 
+        item_token = self.token_spec.get_type("item")
+        token_capacity = 0 if item_token is None else item_token.capacity
+        if token_capacity != self.items_per_world:
+            # One compiled `item` slot per per-world arena row (slot = row - world * C);
+            # anything else would drop or alias items in the observation.
+            raise ValueError(
+                f"Compiled item token capacity {token_capacity} disagrees with the per-world item arena "
+                f"({self.items_per_world} rows); recompile the config pack"
+            )
         self.item_manager = ItemManager(
             catalog=universe.items_catalog,
-            max_items=item_capacity(
-                max_items_in_world=universe.items_catalog.max_items_in_world,
-                max_items_per_agent=universe.items_catalog.max_items_per_agent,
-                declared_agents_per_world=None,
-            ),
+            items_per_world=self.items_per_world,
+            num_worlds=num_agents,
+            substrate=self.substrate,
             device=self.device,
             schema=self.effects_schema,
             vfs_registry=self.vfs_registry,
@@ -817,26 +824,14 @@ class VectorizedHamletEnv:
         # 4. Expressions over the instant-0 state.
         self._evaluate_vfs_profiles()
 
-        # 5. Initial item spawn (predicates read the evaluated expressions).
+        # 5. Initial item spawn into every world (predicates read the evaluated
+        # expressions; placement asks the substrate, so every substrate spawns).
         if self.item_manager is not None and self.level.items_appearance is not None:
-            # Get grid size from substrate (only works for Grid2D/Grid3D/GridND)
-            # For continuous substrates, this would need different handling
-            grid_size: tuple[int, ...] | None = None
-            if hasattr(self.substrate, "width") and hasattr(self.substrate, "height"):
-                if hasattr(self.substrate, "depth"):
-                    # Grid3D
-                    grid_size = (self.substrate.width, self.substrate.height, self.substrate.depth)
-                else:
-                    # Grid2D
-                    grid_size = (self.substrate.width, self.substrate.height)
-
-            if grid_size is not None:
-                self.item_manager.spawn_initial_items(
-                    appearance_config=self.level.items_appearance,
-                    grid_size=grid_size,
-                    current_tick=self.global_tick,
-                    bars=self.bars,
-                )
+            self.item_manager.spawn_initial_items(
+                appearance_config=self.level.items_appearance,
+                current_tick=self.global_tick,
+                bars=self.bars,
+            )
 
         return self._get_observations()
 
@@ -874,39 +869,66 @@ class VectorizedHamletEnv:
         return self._observation_encoder.encode(self.num_agents, self._build_token_publish_context())
 
     def _item_slot_batch(self) -> ItemSlotBatch | None:
-        """Live item instances keyed by compiled `item` token slot.
+        """Every world's live items keyed by compiled `item` token slot.
 
-        Item state is world-SHARED (one `ItemManager` behind N independent agent
-        batches); only `carried` is per world. Slot assignment is the item's `vfs_index`,
-        which is the item arena row and therefore already unique and stable per instance.
+        Items are per world (S1): world `w`'s item at arena row `r` occupies compiled slot
+        `r - w * C` (`C` = the per-world arena = the `item` token capacity, checked at
+        init). Ground and carried items both publish: a carried item (an exclusive one is
+        lifted into `held`; a shared one stays on the ground) takes its holder's position
+        and inventory slot, in the holder's world.
         """
         manager = self.item_manager
-        if manager is None:
+        if manager is None or self.items_per_world == 0:
             return None
-        item_type = self.token_spec.get_type("item")
-        if item_type is None or item_type.capacity == 0:
-            return None
-        instances = [item for item in manager.get_all_items() if item.vfs_index < item_type.capacity]
-        if not instances:
-            return None
+        inventory = self.item_inventory
         dim = self.substrate.position_dim
-        slot_indices = torch.tensor([item.vfs_index for item in instances], dtype=torch.long, device=self.device)
-        vfs_indices = slot_indices.clone()
-        if dim > 0:
-            positions = torch.tensor([list(item.position) for item in instances], dtype=self.substrate.position_dtype, device=self.device)
-        else:
-            positions = torch.zeros((len(instances), 0), dtype=self.substrate.position_dtype, device=self.device)
-        carried = torch.zeros((self.num_agents, len(instances)), dtype=torch.bool, device=self.device)
-        for column, item in enumerate(instances):
-            for holder in item.holder_agent_ids:
-                if 0 <= holder < self.num_agents:
-                    carried[holder, column] = True
-        owner_slot = torch.full((len(instances),), -1, dtype=torch.long, device=self.device)
+        per_world = self.items_per_world
+        # world -> [(slot, position, carried, holder's inventory slot)]
+        occupied: dict[int, list[tuple[int, list[Any], bool, int]]] = {}
+        for world in range(self.num_agents):
+            entries: list[tuple[int, list[Any], bool, int]] = []
+            for item in manager.items_in_world(world):
+                position: list[Any] = list(item.position)
+                carried = False
+                inventory_slot = -1
+                holders = sorted(h for h in item.holder_agent_ids if manager.world_of_agent(h) == world)
+                if holders and inventory is not None:
+                    holder = holders[0]
+                    held_at = torch.nonzero(inventory.slots[holder] == item.instance_id, as_tuple=True)[0]
+                    if held_at.numel():
+                        carried = True
+                        inventory_slot = int(held_at[0])
+                        position = self.positions[holder].tolist()
+                entries.append((item.vfs_index - world * per_world, position, carried, inventory_slot))
+            occupied[world] = entries
+
+        used = sorted({slot for entries in occupied.values() for slot, *_ in entries})
+        if not used:
+            return None
+        column_of = {slot: column for column, slot in enumerate(used)}
+        k = len(used)
+        n = self.num_agents
+        slot_tensor = torch.tensor(used, dtype=torch.long, device=self.device)
+        active = torch.zeros((n, k), dtype=torch.bool, device=self.device)
+        positions = torch.zeros((n, k, dim), dtype=self.substrate.position_dtype, device=self.device)
+        # Every world's row for a column is its own block's row for that slot.
+        vfs_rows = torch.arange(n, device=self.device).unsqueeze(1) * per_world + slot_tensor.unsqueeze(0)
+        carried_mask = torch.zeros((n, k), dtype=torch.bool, device=self.device)
+        owner_slot = torch.full((n, k), -1, dtype=torch.long, device=self.device)
+        for world, entries in occupied.items():
+            for slot, position, carried, inventory_slot in entries:
+                column = column_of[slot]
+                active[world, column] = True
+                if dim > 0:
+                    positions[world, column] = torch.tensor(position, dtype=self.substrate.position_dtype, device=self.device)
+                carried_mask[world, column] = carried
+                owner_slot[world, column] = inventory_slot
         return ItemSlotBatch(
-            slot_indices=slot_indices,
+            slot_indices=slot_tensor,
+            active=active,
             positions=positions,
-            vfs_indices=vfs_indices,
-            carried=carried,
+            vfs_rows=vfs_rows,
+            carried=carried_mask,
             owner_slot=owner_slot,
             source="item_manager",
         )
@@ -988,14 +1010,20 @@ class VectorizedHamletEnv:
         )
 
     def _observable_effects_for_world(self, world: int) -> list[Any]:
-        """Every observable active effect this world's agent can see, any scope."""
+        """Every observable active effect this world's agent can see, any scope.
+
+        Item effects are keyed by item-arena row, and items are per world: a world sees
+        only the effects on its own items.
+        """
         manager = self.effect_manager
         assert manager is not None
         effects = [effect for effect in manager.global_effects if effect.observable]
         effects.extend(manager.get_observable_agent_effects(world))
-        for store in (manager.item_effects, manager.affordance_effects):
-            for entries in store.values():
+        for row, entries in manager.item_effects.items():
+            if self.vfs_registry.item_world(row) == world:
                 effects.extend(effect for effect in entries if effect.observable)
+        for entries in manager.affordance_effects.values():
+            effects.extend(effect for effect in entries if effect.observable)
         return effects
 
     def _encode_velocity_observation(self) -> torch.Tensor | None:

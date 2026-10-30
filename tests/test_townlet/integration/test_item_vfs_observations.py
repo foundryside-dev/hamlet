@@ -46,6 +46,7 @@ def spawn_and_pickup_item(
 
     # Spawn item at agent's position
     item = env.item_manager.spawn_item(
+        0,
         item_type=item_type,
         position=agent_pos,
         current_tick=current_tick,
@@ -99,7 +100,7 @@ def test_spawn_and_pickup_helper_is_robust_to_colocated_items():
     # the helper runs. Without the despawn-co-located fix, the helper's GET
     # would pick this one (freshness=100) rather than the helper's spawn.
     agent_pos = tuple(env.positions[0].tolist())
-    preexisting = env.item_manager.spawn_item(item_type="apple", position=agent_pos, current_tick=0)
+    preexisting = env.item_manager.spawn_item(0, item_type="apple", position=agent_pos, current_tick=0)
     assert preexisting is not None, "Pre-existing apple must spawn successfully"
     preexisting_id = preexisting.instance_id
 
@@ -124,25 +125,12 @@ def test_exposed_item_variable_publishes_through_the_item_arena():
     declared exposed on the `medical` profile, so a world-resident medkit's row carries its
     normalized value and toggles absent when the item leaves the world.
 
-    Two deviations from the brief's literal test, both measured rather than assumed:
-
-    1. `items_smoke`'s `L0_smoke` level auto-spawns one medkit (and three apples) at reset
-       (`levels/L0_smoke/items.yaml`), so the medical-profile `durability` row is already
-       present before any test-driven spawn — the brief's "absent until spawn" assumption
-       doesn't hold for the committed pack. Asserted instead, by the same principle the
-       effects-smoke test above applies: the present-row count increases by exactly one
-       after a spawn, and the newly-present row carries the spawned item's own value.
-    2. The item-arena `variable_element` scope is fed by the SAME live-item batch as the
-       `item` token type (`VectorizedHamletEnv._item_slot_batch`), which is world-resident
-       items only (`ItemManager.get_all_items()` — `active_items`, not `held_items`). A
-       picked-up EXCLUSIVE item (medkit defaults `exclusive: true`) is lifted out of that
-       batch entirely on pickup (`ItemManager.lift_item`), so `spawn_and_pickup_item`'s own
-       pickup step makes its medkit disappear from every item-token-shaped observation, not
-       just this one — a pre-existing gap in the `item` token type's coverage of held
-       inventory, not something this task's item-arena wiring introduces or should paper
-       over. Demonstrated below (the row goes from present back to absent) rather than
-       worked around, so the gap is visible in-tree, not only in the task report. Filed as
-       hamlet-4b931faaf4.
+    `items_smoke`'s `L0_smoke` level auto-spawns one medkit (and three apples) at reset
+    (`levels/L0_smoke/items.yaml`), so the medical-profile `durability` row is already
+    present before any test-driven spawn: the present-row count increases by exactly one
+    after a spawn, and the newly-present row carries the spawned item's own value. A lifted
+    (held) exclusive item keeps its row: the item batch is every live item of the world,
+    ground and held (hamlet-4b931faaf4, closed by the per-world items change).
     """
     universe = UniverseCompiler().compile(Path("configs/test/items_smoke"), primary_level="L0_smoke", use_cache=False)
     env = VectorizedHamletEnv(universe=universe, level_name="L0_smoke", num_agents=1, device=torch.device("cpu"))
@@ -175,7 +163,7 @@ def test_exposed_item_variable_publishes_through_the_item_arena():
     # World-resident spawn (no pickup): proves presence toggling, per-instance value, and
     # normalization for the item-arena scope on its own terms.
     agent_pos = tuple(env.positions[0].tolist())
-    spawned = env.item_manager.spawn_item(item_type="medkit", position=agent_pos, current_tick=0, initial_state={"durability": 50.0})
+    spawned = env.item_manager.spawn_item(0, item_type="medkit", position=agent_pos, current_tick=0, initial_state={"durability": 50.0})
     assert spawned is not None
     after_spawn = rows()
     after_spawn_present = after_spawn[:, 0] == 1.0
@@ -184,21 +172,21 @@ def test_exposed_item_variable_publishes_through_the_item_arena():
     assert newly_present.sum().item() == 1
     assert after_spawn[newly_present][0, v0].item() == pytest.approx(0.5)  # minmax 0..100
 
-    # Documents the held-item gap named above (filed as hamlet-4b931faaf4): lifting the
-    # same instance (matching GET's exclusive-pickup semantics) removes it from
-    # `ItemManager.get_all_items()`, so its durability row goes back to absent even though
-    # the item and its VFS state still exist.
+    # Lifting the same instance (GET's exclusive-pickup semantics) moves it to held state;
+    # the item and its VFS state still exist, so its durability row stays present.
     env.item_manager.lift_item(spawned.instance_id)
+    assert spawned.instance_id in env.item_manager.worlds[0].held
     after_lift = rows()
-    assert present_count(after_lift) == baseline
+    assert present_count(after_lift) == baseline + 1
+    assert after_lift[newly_present][0, v0].item() == pytest.approx(0.5)
 
 
 @pytest.mark.parametrize("cached", [False, True])
 def test_qualified_item_policy_and_observation_cold_cache_two_resets(tmp_path, cached):
     """Controlled live spawns qualify roles, not initial appearance cache fidelity.
 
-    The initial appearance declaration is explicitly removed. World-shared item
-    rows remain world-shared; owner locality and held-item publication are excluded.
+    The initial appearance declaration is explicitly removed. Items are per world (S1):
+    the items spawned into world 0 publish in world 0 only.
     """
     import shutil
 
@@ -236,8 +224,8 @@ def test_qualified_item_policy_and_observation_cold_cache_two_resets(tmp_path, c
     for episode in range(2):
         env.reset()
         assert not observations()[:, :, 0].any()
-        apple = env.item_manager.spawn_item("apple", (0, 0), current_tick=0, initial_state={"freshness": 42.0})
-        medkit = env.item_manager.spawn_item("medkit", (1, 1), current_tick=0, initial_state={"durability": 30.0})
+        apple = env.item_manager.spawn_item(0, "apple", (0, 0), current_tick=0, initial_state={"freshness": 42.0})
+        medkit = env.item_manager.spawn_item(0, "medkit", (1, 1), current_tick=0, initial_state={"durability": 30.0})
         assert apple is not None and medkit is not None
         with pytest.raises(PermissionError, match="food.*freshness"):
             env.vfs_registry.read_item("food", "freshness", apple.vfs_index, reader="agent")
@@ -250,6 +238,7 @@ def test_qualified_item_policy_and_observation_cold_cache_two_resets(tmp_path, c
         rows = observations()
         present = rows[0, :, 0].bool()
         assert int(present.sum()) == 1
-        assert torch.allclose(rows[:, present, value_lane], torch.full((2, 1), 0.3))
+        assert torch.allclose(rows[0, present, value_lane], torch.full((1,), 0.3))
+        assert not rows[1, :, 0].any()  # world 1 has no items of its own
         env.item_manager.despawn_item(medkit.instance_id, current_tick=0)
         assert not observations()[:, :, 0].any()

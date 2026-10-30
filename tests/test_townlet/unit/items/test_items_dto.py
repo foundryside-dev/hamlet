@@ -17,6 +17,7 @@ from townlet.config.items_config import (
 def test_item_type_minimal():
     """ItemTypeConfig requires id, vfs_profile, interactions."""
     item = ItemTypeConfig(
+        exclusive=True,
         id="apple",
         name="Apple",
         icon="🍎",
@@ -37,6 +38,7 @@ def test_item_type_minimal():
 def test_item_type_with_lifecycle():
     """ItemTypeConfig supports duration and cooldown."""
     item = ItemTypeConfig(
+        exclusive=True,
         id="mushroom",
         name="Mushroom",
         icon="🍄",
@@ -73,6 +75,7 @@ def test_item_interactions_use_effects_syntax():
 def test_item_type_rejects_custom_commands():
     """Custom item commands are supported via ItemCustomCommand."""
     cfg = ItemTypeConfig(
+        exclusive=True,
         id="umbrella",
         name="Umbrella",
         icon="☂️",
@@ -96,6 +99,7 @@ def test_items_catalog_minimal():
         version="1.0",
         item_types=[
             ItemTypeConfig(
+                exclusive=True,
                 id="apple",
                 name="Apple",
                 icon="🍎",
@@ -124,6 +128,7 @@ def test_items_catalog_rejects_duplicate_ids():
             version="1.0",
             item_types=[
                 ItemTypeConfig(
+                    exclusive=True,
                     id="apple",
                     name="Apple",
                     icon="🍎",
@@ -132,6 +137,7 @@ def test_items_catalog_rejects_duplicate_ids():
                     interactions=ItemInteractionsConfig(on_pickup=[], on_use=[], on_drop=[]),
                 ),
                 ItemTypeConfig(
+                    exclusive=True,
                     id="apple",
                     name="Apple2",
                     icon="🍏",
@@ -235,6 +241,7 @@ def test_items_catalog_requires_version_and_limits():
         ItemsCatalogConfig(
             item_types=[
                 ItemTypeConfig(
+                    exclusive=True,
                     id="apple",
                     name="Apple",
                     icon="🍎",
@@ -250,6 +257,7 @@ def test_items_catalog_requires_version_and_limits():
             version="1.0",
             item_types=[
                 ItemTypeConfig(
+                    exclusive=True,
                     id="apple",
                     name="Apple",
                     icon="🍎",

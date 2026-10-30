@@ -103,6 +103,7 @@ items:
 
   item_types:
     - id: string                    # Unique item type identifier
+      exclusive: bool               # Required: true = a pickup lifts the item off the ground
       vfs_profile: string           # VFS profile ID (item scope)
       description: string           # Human-readable description (optional)
       duration: int | null          # Lifetime in ticks (null = permanent)
@@ -126,6 +127,18 @@ arena and is refused at parse — `items declares N item type(s) but max_items_i
 max_items_per_agent × agents_per_world is 0: there is no item arena for them` — never silently
 discarded. An `items` declaration with `item_types: []` and both capacities 0 declares no items
 and compiles exactly as an absent declaration does (`items_catalog` and `items_hash` are `None`).
+
+**Items are per world** (owner ruling S1, 2026-10-25: the env batch is N independent
+single-agent worlds). Every world has its own items: its own level-start spawns, ground
+occupancy, capacity, cooldowns, respawn timers, rule spawn counts and item-scope state. A pickup,
+spawn, despawn or item effect in one world never touches another. The arena above is **per
+world**, and it is exactly the compiled `item` token capacity, so the observation layout and
+every observation hash are independent of the batch size. At runtime the registry holds one
+arena block per world, flat: `item_vfs` is `[num_worlds × item_capacity, V]` and world `w`'s
+item in compiled slot `s` lives at row `w × item_capacity + s` (`VariableRegistry.item_world(row)`
+recovers `w`). Rows are globally unique, so an effect or `item_ref` keyed by row needs no world
+beside it. A spawn predicate (`when:`) is evaluated per world: each world spawns when the
+predicate holds for its own values; there is no reduction across worlds.
 
 ### 2. Items Appearance (Level-Specific)
 
@@ -194,6 +207,7 @@ items:
 | Field | Type | Description |
 |-------|------|-------------|
 | `id` | string | Unique item type identifier (lowercase, alphanumeric + underscores) |
+| `exclusive` | bool | `true`: single holder — `GET` lifts the item off the ground into the holder's inventory, `DROP` puts it back. `false`: shared — the item stays on the ground while held. No default (No-Defaults Principle); a catalog without it fails to parse |
 | `vfs_profile` | string | Named item profile from the canonical variables catalog |
 | `interactions` | object | Item interaction commands (on_pickup, on_use, on_drop) |
 
@@ -257,9 +271,28 @@ items:
 | `spawn_interval` | int \| null | null | Ticks between respawns (null = no periodic respawn) |
 | `spawn_position` | enum | random | Position strategy: `random` or `fixed` |
 | `when` | string \| null | null | Boolean expression gating spawn (e.g., `bar.energy > 0.5`) |
-| `placement` | object | null | Advanced placement: `random` (default), `fixed` with `fixed_positions`, `grid` with `grid_spacing`, `scripted` with `script` events |
+| `placement` | object | null | Advanced placement: `random` (default), `fixed` with `fixed_positions`, `grid` with `grid_spacing`, `scripted` with `script` events. See "Placement and substrates" below |
 | `schedule` | object | null | Advanced scheduling: `periodic`, `time_window` (start_tick/end_tick), `poisson` (rate), `normal` (mean/std_dev) |
 | `max_total` | int \| null | null | Maximum total spawns for this rule (caps all attempts) |
+
+### Placement and substrates
+
+Each world places its own items.
+
+- `random` asks the substrate's own position initialization (`initialize_positions`), so it works
+  on every substrate: 2-D/3-D grids, N-D grids, continuous spaces of any rank, and aspatial
+  (position `()`).
+- `fixed`, `grid` and `scripted` name grid **cells**, so they need a discrete grid substrate
+  (`grid`, square or cubic, or `gridnd`). A cell has the grid's rank (`[x, y]` on a square grid,
+  `[x, y, z]` on a cubic one, one coordinate per axis on `gridnd`) and must lie inside it. `grid`
+  mode places on every cell whose coordinates are all multiples of `grid_spacing`, in the
+  substrate's own cell order. Any other combination is refused at compile with
+  `ITEM-PLACEMENT-SUBSTRATE` and the appearance declaration's `file:line`: a `fixed`/`grid`/
+  `scripted` placement on a continuous or aspatial substrate, or a cell of the wrong rank or out
+  of bounds.
+
+Picking an item up uses the substrate's co-location rule (`is_on_position`): the exact cell on
+a grid, within `interaction_radius` on a continuous space, always on aspatial.
 
 ### Validation Rules
 
@@ -482,7 +515,7 @@ See `docs/config-schemas/effects.md` for complete Effects command reference.
 
 ## VFS State
 
-Items use VFS profiles to store persistent state. Each item instance has a unique VFS index into the item-scoped tensor `[max_items, num_item_profiles]`.
+Items use VFS profiles to store persistent state. Each item instance has a unique VFS index (arena row) into the item-scoped tensor `[num_worlds × item_capacity, max_profile_vars]`; world `w` owns rows `[w × item_capacity, (w + 1) × item_capacity)`.
 
 ### VFS Profile Configuration
 
@@ -650,7 +683,11 @@ max_items_per_agent: 3    # Each agent can hold 3 items
 - Adds to first empty inventory slot
 - Fails if inventory full (DENY_PICKUP policy)
 - Executes `on_pickup` Effects
-- Item moved from world (`active_items`) to held state (`held_items`)
+- An item of the agent's own world only (items are per world)
+- An exclusive item moves from its world's ground (`WorldItemState.active`) to held state
+  (`WorldItemState.held`); a shared item stays on the ground with the agent recorded as a holder
+- A carried item is still observed: its `item` token (`carried = 1`, the holder's inventory slot
+  in `owner_slot`) and its item-state rows publish at the holder's position, in the holder's world
 
 **USE_SLOT_N**: Use item in slot N
 - N = 0, 1, 2, ... (zero-indexed)
@@ -917,8 +954,8 @@ item_profiles:
 ### VFS Integration
 
 **Item-scoped variables** stored in VFS registry:
-- Tensor shape: `[max_items, num_item_profiles]`
-- Each item instance has unique `vfs_index`
+- Tensor shape: `[num_worlds × item_capacity, max_profile_vars]`, one block per world
+- Each item instance has a unique `vfs_index` (its arena row, in its own world's block)
 - VFS slot allocated on spawn, freed on despawn
 - State persists across inventory transitions
 
@@ -1042,7 +1079,7 @@ item_profiles:
 ### Runtime Validation
 
 **ItemManager enforces**:
-1. Max items in world (capacity limit)
+1. Max items in world (capacity limit, per world)
 2. Max items per agent (inventory limit)
 3. Cooldown periods (prevent spam spawning)
 4. VFS slot allocation (finite pool)
@@ -1059,8 +1096,8 @@ item_profiles:
 ### VFS Slot Pool
 
 **Fixed-size allocation**:
-- Pre-allocate `max_items_in_world` VFS slots
-- Slot recycling on despawn
+- Pre-allocate `item_capacity` arena rows per world
+- Row recycling on despawn, within the item's own world
 - O(1) allocation/deallocation using free set
 
 **Recommendation**: Set `max_items_in_world` >= (num_item_types × spawn_count)
@@ -1076,8 +1113,8 @@ item_profiles:
 
 ### Respawn Timers
 
-**Per-type timers**:
-- Only one respawn timer per item type
+**Per-type timers, per world**:
+- Only one respawn timer per item type in each world
 - Multiple despawns → most recent sets timer
 - O(num_item_types) timer checks per tick
 
@@ -1087,7 +1124,6 @@ item_profiles:
 
 **Phase 1-3 Limitations**:
 - No custom item commands (only Effects: modify, spawn_effect, spawn_item, if)
-- No fixed spawn positions (only random)
 - Items don't auto-consume on use (require explicit Effects to remove)
 - No item-to-item interactions
 - No item observations (agents can't see what's in inventory via obs)
@@ -1096,7 +1132,6 @@ item_profiles:
 - Item observations (inventory composition visible)
 - Crafting system (combine items)
 - Item-to-item effects (poison apple damages nearby food)
-- Fixed spawn positions
 - Item wear/repair system
 - Item rarity/quality on spawn
 

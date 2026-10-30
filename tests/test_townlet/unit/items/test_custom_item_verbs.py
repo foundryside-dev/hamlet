@@ -2,6 +2,7 @@
 
 import torch
 
+from tests.test_townlet.utils.builders import make_grid2d_substrate
 from townlet.config.items_config import (
     ItemCustomCommand,
     ItemInteractionsConfig,
@@ -61,6 +62,7 @@ def _catalog_with_custom() -> ItemsCatalogConfig:
         version="1.0",
         item_types=[
             ItemTypeConfig(
+                exclusive=True,
                 id="tool",
                 name="Tool",
                 icon="🧰",
@@ -82,7 +84,7 @@ def _catalog_with_custom() -> ItemsCatalogConfig:
 
 def test_custom_item_verbs_masking_and_dispatch():
     catalog = _catalog_with_custom()
-    manager = ItemManager(catalog=catalog, max_items=4, device="cpu", schema=None)
+    manager = ItemManager(catalog=catalog, num_worlds=2, substrate=make_grid2d_substrate(), items_per_world=4, device="cpu", schema=None)
     inventory = InventoryState(batch_size=2, max_items_per_agent=2, device="cpu")
     executor = _CommandExecutorStub()
     vfs_registry = _VFSRegistryStub()
@@ -106,7 +108,7 @@ def test_custom_item_verbs_masking_and_dispatch():
     assert not action_masks[0, 1]
 
     # Add local item at agent 0 position and recompute
-    item = manager.spawn_item("tool", position=(0, 0), current_tick=0)
+    item = manager.spawn_item(0, "tool", position=(0, 0), current_tick=0)
     assert item is not None
     action_masks[:] = True
     handler.compute_custom_action_masks(action_space, action_masks, agent_positions=torch.tensor([[0, 0], [5, 5]]))

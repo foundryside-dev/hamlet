@@ -46,6 +46,7 @@ def _item(identifier: str, profile: str) -> dict:
         "name": identifier,
         "icon": "item",
         "tags": ["test"],
+        "exclusive": True,
         "vfs_profile": profile,
         "duration": None,
         "cooldown": None,

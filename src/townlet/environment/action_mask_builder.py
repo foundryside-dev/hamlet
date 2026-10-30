@@ -99,14 +99,9 @@ class ActionMaskBuilder:
                         if not action_masks[agent_idx, get_action_id]:
                             continue
 
-                        agent_pos_tuple = tuple(positions[agent_idx].tolist())
-                        item_at_position = False
-                        for item in item_manager.active_items.values():
-                            if item.position == agent_pos_tuple:
-                                item_at_position = True
-                                break
-
-                        if not item_at_position:
+                        # Only an item of this agent's own world can be picked up (S1).
+                        world = item_manager.world_of_agent(agent_idx)
+                        if not item_manager.items_at(world, positions[agent_idx]):
                             action_masks[agent_idx, get_action_id] = False
 
             for slot_idx in range(item_inventory.max_items_per_agent):

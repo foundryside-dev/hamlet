@@ -977,6 +977,7 @@ items:
       name: "Red Apple"
       icon: "🍎"
       tags: [food, perishable]
+      exclusive: true  # required: a pickup lifts the item off the ground (false = shared)
       vfs_profiles: [freshness, calories]  # Links to Section 10
       interactions:
         pickup:

@@ -2,6 +2,7 @@ items:
   version: '1.0'
   item_types:
   - id: apple
+    exclusive: true
     vfs_profile: default_item
     description: Restores energy when used
     duration: null

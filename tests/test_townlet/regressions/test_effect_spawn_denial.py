@@ -34,7 +34,7 @@ def _setup(policy: str) -> tuple[EffectManager, VariableRegistry, dict[str, torc
         )
         for profile, writers in [("writable", ("engine",)), ("sealed", ())]
     }
-    registry = VariableRegistry([], 2, torch.device("cpu"), max_items=2, item_profiles=profiles)
+    registry = VariableRegistry([], 2, torch.device("cpu"), items_per_world=2, item_profiles=profiles)
     for index, profile in enumerate(profiles):
         registry._initialize_item_row(profile, index)
         registry.register_item_instance(index, profile)

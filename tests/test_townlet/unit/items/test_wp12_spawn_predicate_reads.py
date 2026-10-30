@@ -81,7 +81,7 @@ def _apples_after_reset(pack: Path) -> int:
     universe = UniverseCompiler().compile(pack, primary_level=LEVEL)
     env = universe.create_environment(num_agents=1, level_name=LEVEL, device="cpu")
     env.reset()
-    return sum(1 for item in env.item_manager.get_all_items() if item.item_type == "apple")
+    return sum(1 for item in env.item_manager.items_in_world(0) if item.item_type == "apple")
 
 
 SEASON = _global("season", initial=1.0)
@@ -170,7 +170,8 @@ def test_reads_lists_every_name_in_source_order():
     assert SpawnPredicateReads.reads(ast) == ["bar.energy", "vfs.danger", "season"]
 
 
-def test_agent_scope_read_requires_every_agent(tmp_path):
+def test_agent_scope_read_decides_per_world(tmp_path):
+    """S1: each world's spawn follows its own agent's value; there is no all-worlds reduction."""
     pack = _pack(tmp_path, "bar.energy > 0.5")
     universe = UniverseCompiler().compile(pack, primary_level=LEVEL)
     env = universe.create_environment(num_agents=2, level_name=LEVEL, device="cpu")
@@ -178,9 +179,9 @@ def test_agent_scope_read_requires_every_agent(tmp_path):
     rule = next(rule for rule in env.level.items_appearance.items if rule.item_type == "apple")
     bars = {name: tensor.clone() for name, tensor in env.bars.items()}
     bars["energy"] = torch.tensor([0.9, 0.1])
-    assert env.item_manager._should_spawn_rule(rule, bars=bars) is False
+    assert env.item_manager._should_spawn_rule(rule, bars=bars) == [True, False]
     bars["energy"] = torch.tensor([0.9, 0.6])
-    assert env.item_manager._should_spawn_rule(rule, bars=bars) is True
+    assert env.item_manager._should_spawn_rule(rule, bars=bars) == [True, True]
 
 
 def test_rejected_initial_spawn_retries_on_its_declared_period(tmp_path):
@@ -201,9 +202,9 @@ def test_rejected_initial_spawn_retries_on_its_declared_period(tmp_path):
     env = universe.create_environment(num_agents=1, level_name=LEVEL, device="cpu")
     env.reset()
     wait = next(i for i, action in enumerate(env.action_space.actions) if action.name == "WAIT")
-    apples_by_tick = {0: sum(1 for item in env.item_manager.get_all_items() if item.item_type == "apple")}
+    apples_by_tick = {0: sum(1 for item in env.item_manager.items_in_world(0) if item.item_type == "apple")}
     for _ in range(12):
         env.step(torch.tensor([wait], device=env.device))
-        apples_by_tick[env.global_tick] = sum(1 for item in env.item_manager.get_all_items() if item.item_type == "apple")
+        apples_by_tick[env.global_tick] = sum(1 for item in env.item_manager.items_in_world(0) if item.item_type == "apple")
     assert all(apples_by_tick[tick] == 0 for tick in range(10))  # rejected at 0 and 5; true from 7
     assert apples_by_tick[10] == 1

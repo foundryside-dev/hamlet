@@ -3,6 +3,7 @@
 import pytest
 import torch
 
+from tests.test_townlet.utils.builders import make_grid2d_substrate
 from townlet.config.items_config import (
     ItemInteractionsConfig,
     ItemsCatalogConfig,
@@ -35,6 +36,7 @@ def test_spawn_item_resolves_self_position():
     catalog = _catalog(
         [
             ItemTypeConfig(
+                exclusive=True,
                 id="health_potion",
                 name="Health Potion",
                 icon="🧪",
@@ -53,7 +55,9 @@ def test_spawn_item_resolves_self_position():
 
     item_manager = ItemManager(
         catalog=catalog,
-        max_items=10,
+        num_worlds=3,
+        substrate=make_grid2d_substrate(),
+        items_per_world=10,
         device="cpu",
         schema=None,
         vfs_registry=None,
@@ -93,7 +97,9 @@ def test_spawn_item_resolves_self_position():
     executor.execute(command, context)
 
     # Verify item spawned at agent 1's position
-    items = item_manager.get_all_items()
+    # Spawned into agent 1's world (S1), at its position
+    assert item_manager.items_in_world(0) == [] and item_manager.items_in_world(2) == []
+    items = item_manager.items_in_world(1)
     assert len(items) == 1
     assert items[0].position == (5, 7)  # Agent 1's position (rounded)
 
@@ -103,6 +109,7 @@ def test_spawn_item_resolves_target_position():
     catalog = _catalog(
         [
             ItemTypeConfig(
+                exclusive=True,
                 id="loot_drop",
                 name="Loot Drop",
                 icon="🎁",
@@ -121,7 +128,9 @@ def test_spawn_item_resolves_target_position():
 
     item_manager = ItemManager(
         catalog=catalog,
-        max_items=10,
+        num_worlds=3,
+        substrate=make_grid2d_substrate(),
+        items_per_world=10,
         device="cpu",
         schema=None,
         vfs_registry=None,
@@ -157,7 +166,8 @@ def test_spawn_item_resolves_target_position():
     executor = CommandExecutor()
     executor.execute(command, context)
 
-    items = item_manager.get_all_items()
+    # The context addresses agent 2 (its target), so the item lives in world 2
+    items = item_manager.items_in_world(2)
     assert len(items) == 1
     assert items[0].position == (3, 4)  # Target agent position
 
@@ -167,6 +177,7 @@ def test_spawn_item_with_explicit_position():
     catalog = _catalog(
         [
             ItemTypeConfig(
+                exclusive=True,
                 id="treasure",
                 name="Treasure",
                 icon="💰",
@@ -185,7 +196,9 @@ def test_spawn_item_with_explicit_position():
 
     item_manager = ItemManager(
         catalog=catalog,
-        max_items=10,
+        num_worlds=1,
+        substrate=make_grid2d_substrate(),
+        items_per_world=10,
         device="cpu",
         schema=None,
         vfs_registry=None,
@@ -214,7 +227,7 @@ def test_spawn_item_with_explicit_position():
     executor = CommandExecutor()
     executor.execute(command, context)
 
-    items = item_manager.get_all_items()
+    items = item_manager.items_in_world(0)
     assert len(items) == 1
     assert items[0].position == (10, 15)
 
@@ -247,7 +260,7 @@ def test_spawn_item_with_initial_state():
     vfs_registry = VariableRegistry(
         variables=[],
         num_agents=1,
-        max_items=10,
+        items_per_world=10,
         device="cpu",
         item_profiles=item_profiles,
     )
@@ -255,6 +268,7 @@ def test_spawn_item_with_initial_state():
     catalog = _catalog(
         [
             ItemTypeConfig(
+                exclusive=True,
                 id="damaged_sword",
                 name="Damaged Sword",
                 icon="🗡️",
@@ -273,7 +287,9 @@ def test_spawn_item_with_initial_state():
 
     item_manager = ItemManager(
         catalog=catalog,
-        max_items=10,
+        num_worlds=vfs_registry.num_worlds,
+        substrate=make_grid2d_substrate(),
+        items_per_world=10,
         device="cpu",
         schema=None,
         vfs_registry=vfs_registry,
@@ -301,7 +317,7 @@ def test_spawn_item_with_initial_state():
     executor = CommandExecutor()
     executor.execute(command, context)
 
-    items = item_manager.get_all_items()
+    items = item_manager.items_in_world(0)
     assert len(items) == 1
 
     # Verify custom initial_state applied
@@ -315,6 +331,7 @@ def test_spawn_item_random_fails_when_blocked():
     catalog = _catalog(
         [
             ItemTypeConfig(
+                exclusive=True,
                 id="blocked_item",
                 name="Blocked Item",
                 icon="🚫",
@@ -329,22 +346,17 @@ def test_spawn_item_random_fails_when_blocked():
 
     item_manager = ItemManager(
         catalog=catalog,
-        max_items=20,
+        num_worlds=1,
+        substrate=make_grid2d_substrate(),
+        items_per_world=20,
         device="cpu",
         schema=None,
         vfs_registry=None,
     )
 
-    # Occupy a 3x3 grid around origin (0,0)
-    class DummyItem:
-        def __init__(self, pos, instance_id):
-            self.position = pos
-            self.instance_id = instance_id
-            self.vfs_index = 0
-
-    positions = [(x, y) for x in (-1, 0, 1) for y in (-1, 0, 1)]
-    for idx, pos in enumerate(positions):
-        item_manager.active_items[idx] = DummyItem(pos, idx)
+    # Occupy every cell a unit step from origin (0,0) can reach on the clamped grid
+    for idx, pos in enumerate([(x, y) for x in (0, 1) for y in (0, 1)]):
+        item_manager.worlds[0].position_index[pos] = {idx}
 
     agent_positions = torch.tensor([[0.0, 0.0]])
     context = ExecutionContext(

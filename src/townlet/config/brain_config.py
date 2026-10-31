@@ -7,7 +7,7 @@ Forward-compatible with future SDA (Software Defined Agent) architecture.
 import hashlib
 import json
 from pathlib import Path
-from typing import Literal
+from typing import Annotated, Literal
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
@@ -27,9 +27,11 @@ class FeedforwardConfig(BaseModel):
         ... )
     """
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
-    hidden_layers: list[int] = Field(min_length=1, description="Hidden layer sizes (e.g., [256, 128] for 2 hidden layers)")
+    hidden_layers: list[Annotated[int, Field(ge=0)]] = Field(
+        min_length=1, description="Hidden layer sizes (e.g., [256, 128] for 2 hidden layers)"
+    )
     activation: Literal["relu", "gelu", "swish", "tanh", "elu"] = Field(description="Activation function")
     dropout: float = Field(ge=0.0, lt=1.0, description="Dropout probability (0.0 = no dropout)")
     layer_norm: bool = Field(description="Apply LayerNorm after each hidden layer")
@@ -46,7 +48,7 @@ class LSTMConfig(BaseModel):
         ... )
     """
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     hidden_size: int = Field(gt=0, description="LSTM hidden state dimension")
     num_layers: int = Field(ge=1, le=4, description="Number of stacked LSTM layers (1-4)")
@@ -69,9 +71,9 @@ class DuelingStreamConfig(BaseModel):
         ... )
     """
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
-    hidden_layers: list[int] = Field(min_length=1, description="Hidden layer sizes for value/advantage stream")
+    hidden_layers: list[Annotated[int, Field(ge=0)]] = Field(min_length=1, description="Hidden layer sizes for value/advantage stream")
     activation: Literal["relu", "gelu", "swish", "tanh", "elu"] = Field(description="Activation function for stream")
 
 
@@ -95,9 +97,9 @@ class DuelingConfig(BaseModel):
         ... )
     """
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
-    shared_layers: list[int] = Field(min_length=1, description="Shared feature extraction layers")
+    shared_layers: list[Annotated[int, Field(ge=0)]] = Field(min_length=1, description="Shared feature extraction layers")
     value_stream: DuelingStreamConfig = Field(description="Value stream V(s) configuration")
     advantage_stream: DuelingStreamConfig = Field(description="Advantage stream A(s,a) configuration")
     activation: Literal["relu", "gelu", "swish", "tanh", "elu"] = Field(description="Activation function for shared layers")
@@ -112,7 +114,7 @@ class SetAggregatorConfig(BaseModel):
     token rows, then the same masked mean-pool — permutation-invariant either way.
     """
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     type: Literal["mean", "attention"] = Field(description="Token-set aggregation strategy")
     num_heads: int | None = Field(default=None, gt=0, description="Attention heads (required for type=attention)")
@@ -139,7 +141,7 @@ class TokenSetConfig(BaseModel):
     token type or a capacity. No-Defaults: every field is required.
     """
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     token_embed_dim: int = Field(gt=0, description="Embedding width every token type projects into")
     q_head_hidden_dim: int = Field(gt=0, description="Hidden size for the final Q-value head")
@@ -163,7 +165,7 @@ class RecurrentConfig(BaseModel):
     LSTM consumes the complete sequence. Every field is authored and required.
     """
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     token_embed_dim: int = Field(gt=0, description="Embedding width every token type projects into")
     aggregator: SetAggregatorConfig = Field(description="Declared token-set aggregation (no default)")
@@ -190,7 +192,7 @@ class ScheduleConfig(BaseModel):
         >>> cosine = ScheduleConfig(type="cosine", t_max=5000, eta_min=0.00001)
     """
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     type: Literal["constant", "step_decay", "cosine", "exponential"] = Field(description="Learning rate schedule type")
 
@@ -233,7 +235,7 @@ class OptimizerConfig(BaseModel):
         ... )
     """
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     type: Literal["adam", "adamw", "sgd", "rmsprop"] = Field(description="Optimizer type")
     learning_rate: float = Field(gt=0.0, description="Learning rate")
@@ -279,6 +281,8 @@ class OptimizerConfig(BaseModel):
                 missing.append("sgd_nesterov")
             if missing:
                 raise ValueError(f"type='sgd' requires {', '.join(missing)} to be specified")
+            if self.sgd_nesterov and self.sgd_momentum == 0.0:
+                raise ValueError("sgd_nesterov requires sgd_momentum > 0 when type='sgd'")
 
         elif self.type == "rmsprop":
             missing = []
@@ -300,7 +304,7 @@ class LossConfig(BaseModel):
         >>> huber = LossConfig(type="huber", huber_delta=1.0)
     """
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     type: Literal["mse", "huber", "smooth_l1"] = Field(description="Loss function type")
 
@@ -328,7 +332,7 @@ class ArchitectureConfig(BaseModel):
     Supports feedforward, recurrent (LSTM), dueling, and token-set architectures.
     """
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     type: Literal["feedforward", "recurrent", "dueling", "token_set"] = Field(description="Architecture type")
 
@@ -368,7 +372,7 @@ class ReplayConfig(BaseModel):
         ... )
     """
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     capacity: int = Field(gt=0, description="Maximum number of transitions in replay buffer")
     prioritized: bool = Field(description="Use Prioritized Experience Replay (Schaul et al. 2016)")
@@ -420,7 +424,7 @@ class ReplayConfig(BaseModel):
 class QLearningConfig(BaseModel):
     """Q-learning algorithm configuration."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     gamma: float = Field(ge=0.0, le=1.0, description="Discount factor")
     target_update_frequency: int = Field(gt=0, description="Update target network every N training steps")
@@ -445,7 +449,7 @@ class BrainConfig(BaseModel):
         ... )
     """
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     version: str = Field(description="Configuration schema version (e.g., '1.0')")
     description: str = Field(description="Human-readable description of this brain configuration")

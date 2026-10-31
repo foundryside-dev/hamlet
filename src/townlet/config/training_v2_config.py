@@ -53,7 +53,7 @@ __all__ = [
 class PopulationConfig(BaseModel):
     """Population settings configuration."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     size: int = Field(gt=0, description="Number of parallel agents")
 
@@ -67,7 +67,7 @@ class EnabledActionsConfig(BaseModel):
     for the level, over every action source (`universe/compilers/actions.py`).
     """
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     custom: list[str] = Field(description="Custom actions to enable for this level (an empty list enables none beyond the defaults)")
 
@@ -89,10 +89,10 @@ class QLearningConfig(BaseModel):
     These override brain.yaml settings for this curriculum level.
     """
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     use_double_dqn: bool = Field(description="Enable Double DQN for this level")
-    gamma: float = Field(gt=0.0, le=1.0, description="Discount factor")
+    gamma: float = Field(ge=0.0, le=1.0, description="Discount factor")
     learning_rate: float = Field(gt=0.0, description="Adam learning rate")
     target_update_frequency: int = Field(gt=0, description="Update target network every N steps")
 
@@ -100,7 +100,7 @@ class QLearningConfig(BaseModel):
 class ReplayBufferConfig(BaseModel):
     """Replay buffer configuration."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     capacity: int = Field(gt=0, description="Replay buffer capacity")
     batch_size: int = Field(gt=0, description="Training batch size")
@@ -130,7 +130,7 @@ class ReplayBufferConfig(BaseModel):
 class ExplorationConfig(BaseModel):
     """Epsilon-greedy exploration configuration."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     epsilon_start: float = Field(ge=0.0, le=1.0, description="Initial exploration rate (1.0 = 100% random)")
     epsilon_end: float = Field(ge=0.0, le=1.0, description="Minimum exploration rate (floor)")
@@ -151,7 +151,7 @@ class ExplorationConfig(BaseModel):
 class RNDConfig(BaseModel):
     """Random Network Distillation configuration."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     feature_dim: int = Field(gt=0, description="RND feature dimension")
     learning_rate: float = Field(gt=0.0, description="RND learning rate")
@@ -160,7 +160,7 @@ class RNDConfig(BaseModel):
 class AnnealingConfig(BaseModel):
     """Intrinsic reward annealing configuration."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     threshold: float = Field(gt=0.0, description="Survivors metric threshold")
     decay_rate: float = Field(gt=0.0, lt=1.0, description="Annealing decay rate")
@@ -170,7 +170,7 @@ class AnnealingConfig(BaseModel):
 class IntrinsicConfig(BaseModel):
     """Intrinsic exploration configuration."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     rnd: RNDConfig = Field(description="RND configuration")
     annealing: AnnealingConfig = Field(description="Annealing configuration")
@@ -195,7 +195,7 @@ class IntrinsicConfig(BaseModel):
 class CheckpointingConfig(BaseModel):
     """Checkpointing configuration."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     interval: int = Field(gt=0, description="Save checkpoint every N episodes")
 
@@ -203,7 +203,7 @@ class CheckpointingConfig(BaseModel):
 class TrainingLoopConfig(BaseModel):
     """Training loop configuration."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     max_episodes: int = Field(gt=0, description="Total episodes to train")
     max_steps_per_episode: int = Field(gt=0, description="Maximum steps per episode")
@@ -225,7 +225,7 @@ class TrainingLoopConfig(BaseModel):
 class AdversarialCurriculumConfig(BaseModel):
     """Adversarial curriculum configuration."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     difficulty_metric: Literal["survival_rate"] = Field(description="Difficulty metric to track")
     adaptation_rate: float = Field(gt=0.0, le=1.0, description="Difficulty adaptation rate")
@@ -277,7 +277,7 @@ class AdversarialCurriculumConfig(BaseModel):
 class CurriculumStrategyConfig(BaseModel):
     """Curriculum progression strategy configuration."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     strategy: Literal["static", "adversarial"] = Field(description="Curriculum strategy")
     adversarial: AdversarialCurriculumConfig | None = Field(
@@ -298,7 +298,7 @@ class CurriculumStrategyConfig(BaseModel):
 class RunMetadataConfig(BaseModel):
     """Run-level metadata used for run directory naming and provenance."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     output_subdir: str = Field(description="Directory name segment for this training run (e.g., L0_0_minimal).")
 
@@ -315,7 +315,7 @@ class RunMetadataConfig(BaseModel):
 class RecordingConfig(BaseModel):
     """Optional episode recording configuration (telemetry / replay)."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     enabled: bool = Field(description="Enable episode recording and replay export.")
     output_dir: str | None = Field(default=None, description="Relative output directory for recordings.")
@@ -344,7 +344,7 @@ class TrainingV2Config(BaseModel):
         ... )
     """
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     version: Literal["1.0"] = Field(description="Config version")
     seed: int = Field(

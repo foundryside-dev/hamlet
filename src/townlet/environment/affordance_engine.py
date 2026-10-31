@@ -65,7 +65,6 @@ class AffordanceEngine:
         command_executor: CommandExecutor | None = None,  # NEW: Effects executor
         effect_manager: Any | None = None,  # NEW: EffectManager required for Effects commands
         item_manager: Any | None = None,  # NEW: ItemManager required for spawn_item
-        affordance_overrides: list[dict[str, bool]] | None = None,  # per-world availability toggles (S1)
         *,
         meter_bounds_min: torch.Tensor,
         meter_bounds_max: torch.Tensor,
@@ -103,7 +102,6 @@ class AffordanceEngine:
         self.command_executor = command_executor  # NEW
         self.effect_manager = effect_manager or NullEffectManager()
         self.item_manager = item_manager or NullItemManager()
-        self.affordance_overrides = affordance_overrides
 
         # Build lookup maps
         self._build_lookup_maps()
@@ -116,7 +114,7 @@ class AffordanceEngine:
             compiler = CommandCompiler(
                 command_symbols.namespace,
                 context=INTERACTION_PIPELINE,
-                time_enabled=True,
+                time_enabled=command_symbols.time_enabled,
                 expressions=command_symbols.expressions,
             )
 
@@ -491,7 +489,6 @@ class AffordanceEngine:
                 item_manager=self.item_manager,
                 scheduler=getattr(self.effect_manager, "scheduler", None),
                 current_tick=current_tick or 0,
-                affordance_overrides=self.affordance_overrides,
             )
 
             for command in commands:

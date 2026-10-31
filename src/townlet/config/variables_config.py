@@ -11,6 +11,7 @@ from townlet.vfs.access_policy import validate_static_access
 from townlet.vfs.schema import NormalizationSpec, VariableScope
 from townlet.vfs.semantic_type import SemanticType
 from townlet.vfs.storage_dtype import BATCH_ROW_REFERENCE_TYPES
+from townlet.world.expression.references import RESERVED_NAMES
 
 VariableType = Literal[
     "scalar",
@@ -64,6 +65,11 @@ class VariableDeclaration(BaseModel):
         validate_static_access(self.id, self.readable_by, self.writable_by, self.exposed_to)
         if "[" in self.id or "]" in self.id:
             raise ValueError(f"Variable '{self.id}' cannot contain slot-index delimiters")
+        if self.scope != VariableScope.ITEM and self.id in RESERVED_NAMES:
+            raise ValueError(
+                f"Variable id '{self.id}' is reserved: the engine or an effect pipeline binds it by bare name "
+                f"(reserved: {', '.join(sorted(RESERVED_NAMES))}). Choose another id."
+            )
         if "." in self.id:
             raise ValueError(
                 f"Variable '{self.id}' cannot contain '.': a variable is read by its bare id, and a dotted name "
@@ -212,8 +218,6 @@ class VariablesConfig(BaseModel):
             if identity in seen:
                 raise ValueError(f"Duplicate variable identifier {identity}")
             seen.add(identity)
-            if variable.id == "tick" and variable.scope != VariableScope.ITEM:
-                raise ValueError("Variable id 'tick' is reserved for the engine-written step counter")
             if variable.scope == VariableScope.ITEM and variable.profile not in self.item_profiles:
                 raise ValueError(f"Variable '{variable.id}' uses unknown item profile '{variable.profile}'")
         return self

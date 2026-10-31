@@ -73,7 +73,7 @@ def test_build_dependency_graph_no_deps():
             readable_by=["engine", "agent"],
             writable_by=["engine"],
             semantic_type="custom",
-            id="tick",
+            id="hour",
             type="scalar",
             initial_value=0,
             scope="global",
@@ -84,7 +84,7 @@ def test_build_dependency_graph_no_deps():
     compiler = VFSProfileCompiler()
     graph = compiler.build_dependency_graph(profile)
     assert len(graph.edges) == 0
-    assert set(graph.nodes) == {"day_count", "tick"}
+    assert set(graph.nodes) == {"day_count", "hour"}
 
 
 def test_build_dependency_graph_with_deps():

@@ -11,7 +11,7 @@ import townlet.environment.vectorized_env as vectorized_env_module
 from tests.test_townlet.helpers.config_builder import PRIMARY_LEVEL_NAME, prepare_config_dir
 from townlet.substrate.grid2d import Grid2DSubstrate
 from townlet.universe.compiler import UniverseCompiler
-from townlet.vfs.namespace import EFFECT_PIPELINE
+from townlet.vfs.namespace import EFFECT_PIPELINE, ItemBinding
 
 
 @pytest.mark.parametrize("config_name", ["configs/default_curriculum/levels/L0_0_minimal"])
@@ -156,7 +156,7 @@ def test_vectorized_env_passes_its_command_symbols_to_item_manager(monkeypatch: 
     env = compiled.create_environment(num_agents=1, level_name="L0_smoke", device="cpu")
 
     assert captured["symbols"] is env.command_symbols
-    assert "item.durability" in env.command_symbols.namespace.schema(EFFECT_PIPELINE.with_item(True))
+    assert "item.durability" in env.command_symbols.namespace.schema(EFFECT_PIPELINE.with_item(ItemBinding.of_profile("medical")))
 
 
 def test_vectorized_env_uses_compiled_runtime_action_space_without_substrate_rebuild(monkeypatch: pytest.MonkeyPatch) -> None:

@@ -29,15 +29,13 @@ def test_item_vfs_profile_driven_end_to_end():
 
     # Verify: Profiles have correct structure
     food_profile = compiled.compiled_vfs_profiles.item_profiles["food"]
-    assert len(food_profile.variables) == 1, f"Expected 1 variable in food profile, got {len(food_profile.variables)}"
-    assert food_profile.variables[0].name == "freshness", "Expected freshness variable in food profile"
+    assert [variable.name for variable in food_profile.variables] == ["freshness", "condition"]
 
     medical_profile = compiled.compiled_vfs_profiles.item_profiles["medical"]
-    assert len(medical_profile.variables) == 1, f"Expected 1 variable in medical profile, got {len(medical_profile.variables)}"
-    assert medical_profile.variables[0].name == "durability", "Expected durability variable in medical profile"
+    assert [variable.name for variable in medical_profile.variables] == ["durability", "condition"]
 
     currency_profile = compiled.compiled_vfs_profiles.item_profiles["currency"]
-    assert len(currency_profile.variables) == 0, f"Expected 0 variables in currency profile, got {len(currency_profile.variables)}"
+    assert [variable.name for variable in currency_profile.variables] == ["condition"]
 
     # Create environment
     env = VectorizedHamletEnv(
@@ -78,7 +76,8 @@ def test_item_vfs_profile_driven_end_to_end():
     assert (
         env.vfs_registry.item_vfs.shape[0] == env.num_agents * expected_slots
     ), f"Expected {env.num_agents} x {expected_slots} item rows, got {env.vfs_registry.item_vfs.shape[0]}"
-    assert env.vfs_registry.item_vfs.shape[1] == 1, f"Expected 1 variable per item, got {env.vfs_registry.item_vfs.shape[1]}"
+    # Columns: the widest profile (its own state plus the shared `condition`).
+    assert env.vfs_registry.item_vfs.shape[1] == 2, f"Expected 2 variables per item, got {env.vfs_registry.item_vfs.shape[1]}"
 
     # Exercise: Spawn item and observe VFS
     env.reset()

@@ -53,3 +53,36 @@ variables:
       max: 100.0
       clip: true
     initial_value: 100.0
+  - id: condition
+    readable_by: [engine, agent]
+    writable_by: [engine]
+    scope: item
+    type: scalar
+    lifetime: episode
+    semantic_type: custom
+    exposed_to: []
+    profile: food
+    initial_value: 100.0
+    description: Wear state every item profile declares, so an item-scoped effect (whose item is chosen at run time) can read it
+  - id: condition
+    readable_by: [engine, agent]
+    writable_by: [engine]
+    scope: item
+    type: scalar
+    lifetime: episode
+    semantic_type: custom
+    exposed_to: []
+    profile: medical
+    initial_value: 100.0
+    description: Wear state every item profile declares, so an item-scoped effect (whose item is chosen at run time) can read it
+  - id: condition
+    readable_by: [engine, agent]
+    writable_by: [engine]
+    scope: item
+    type: scalar
+    lifetime: episode
+    semantic_type: custom
+    exposed_to: []
+    profile: currency
+    initial_value: 100.0
+    description: Wear state every item profile declares, so an item-scoped effect (whose item is chosen at run time) can read it

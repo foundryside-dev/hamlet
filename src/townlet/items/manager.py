@@ -26,7 +26,7 @@ from townlet.effects.compiler import CommandCompiler
 from townlet.effects.schema import CommandNode
 from townlet.items.instance import ItemInstance
 from townlet.items.inventory import InventoryState
-from townlet.vfs.namespace import INTERACTION_PIPELINE, SPAWN_PREDICATE, CommandSymbols, Namespace
+from townlet.vfs.namespace import INTERACTION_PIPELINE, SPAWN_PREDICATE, CommandSymbols, ItemBinding, Namespace
 from townlet.vfs.registry import item_row_world
 from townlet.vfs.schema import VariableDef, VariableScope
 from townlet.world.expression.context import ExecutionContext as ExprExecutionContext
@@ -187,16 +187,17 @@ class ItemManager:
             from townlet.config.effects_config import CommandConfig
             from townlet.effects.parser import CommandParser
 
-            # An item interaction runs with its agent and its item bound: `item.<x>` is the item's state.
-            compiler = CommandCompiler(
-                symbols.namespace,
-                context=INTERACTION_PIPELINE.with_item(True),
-                time_enabled=True,
-                expressions=symbols.expressions,
-            )
             parser = CommandParser()
 
             for item_type in catalog.item_types:
+                # An item interaction runs with its agent and its item bound; the item's
+                # profile is static, so `item.<x>` reads exactly that profile's state.
+                compiler = CommandCompiler(
+                    symbols.namespace,
+                    context=INTERACTION_PIPELINE.with_item(ItemBinding.of_profile(item_type.vfs_profile)),
+                    time_enabled=symbols.time_enabled,
+                    expressions=symbols.expressions,
+                )
                 # Convert raw dicts to CommandConfig objects
                 on_pickup_configs = [CommandConfig(**cmd) for cmd in item_type.interactions.on_pickup]
                 on_use_configs = [CommandConfig(**cmd) for cmd in item_type.interactions.on_use]

@@ -16,7 +16,6 @@ from townlet.items.manager import ItemManager
 from townlet.vfs.profiles import CompiledItemProfile, CompiledVariable
 from townlet.vfs.registry import VariableRegistry
 from townlet.vfs.schema import VariableDef
-from townlet.world.expression import ExpressionParser
 
 
 def _services(
@@ -107,7 +106,6 @@ def _services(
     manager = EffectManager(
         catalog=EffectCatalog(effects=effects, max_active_effects={"global": 0, "agent": 2, "item": 2, "affordance": 0}),
         command_executor=CommandExecutor(),
-        affordance_overrides=[{"bank": True}],
     )
     catalog = ItemsCatalogConfig(
         version="1.0",
@@ -188,7 +186,7 @@ def test_fresh_parent_denial_releases_items_positions_and_profile_rows() -> None
     assert registry.read_item("sealed", "charge", sealed.vfs_index, reader="engine") == 2.0
 
 
-def test_descendant_denial_restores_published_arenas_standalone_aliases_and_affordance() -> None:
+def test_descendant_denial_restores_published_arenas_and_standalone_aliases() -> None:
     manager, registry, items, sealed, bars, compiler = _services(3)
     # Hold the views used by runtime publishers, and the original standalone tensor
     # which ordinary registry writes replace. The rollback must repair both.
@@ -198,8 +196,6 @@ def test_descendant_denial_restores_published_arenas_standalone_aliases_and_affo
     published_agents = registry._scope_arenas["agent"].tensor
     global_values = published_global.clone()
     agent_values = published_agents.clone()
-    availability = manager.affordance_overrides
-    assert availability is not None
     manager.catalog.effects["parent"].on_spawn = compiler.compile_commands(
         [
             CommandNode(type=CommandType.MODIFY, path="global_state", value_expr="9.0"),
@@ -207,10 +203,6 @@ def test_descendant_denial_restores_published_arenas_standalone_aliases_and_affo
             CommandNode(type=CommandType.MODIFY, path="standalone_flag", value_expr="false"),
         ]
     ) + [
-        # Engine-built: the affordance availability store has no authored spelling.
-        CommandNode(
-            type=CommandType.MODIFY, path="affordance.bank.available", value_expr="false", value_ast=ExpressionParser().parse("false")
-        ),
         # Engine-built: an authored constant spawn target is refused at compile (S1).
         CommandNode(type=CommandType.SPAWN_EFFECT, effect_id="child", target=sealed.vfs_index, intensity=1.0),
     ]
@@ -224,8 +216,6 @@ def test_descendant_denial_restores_published_arenas_standalone_aliases_and_affo
     assert registry._scope_arenas["agent"].tensor is published_agents
     assert torch.equal(published_global, global_values)
     assert torch.equal(published_agents, agent_values)
-    assert manager.affordance_overrides is availability
-    assert availability == [{"bank": True}]
     assert manager.get_all_active_effects() == []
 
 

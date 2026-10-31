@@ -177,21 +177,6 @@ def test_nested_dac_reference_uses_relocated_entry_origin(tmp_path: Path) -> Non
     assert issue.location == f"{origin}:29"
 
 
-def test_affordance_reference_uses_relocated_named_origin(tmp_path: Path) -> None:
-    raw = load_v21_configs(PACK)
-    affordance = raw.levels[LEVEL].affordances.affordances[0]
-    affordance.interactions["on_start"][0].modify = "missing_value"  # a bare name: a registry variable
-    origin = tmp_path / "levels" / LEVEL / "mechanics" / "interactions.yml"
-    source_map = SourceMap()
-    source_map.record(f"levels/{LEVEL}/affordances:{affordance.name}", origin, 11)
-
-    with pytest.raises(CompilationError) as caught:
-        resolve_references(raw, build_symbol_table(raw), PACK, source_map)
-
-    issue = next(issue for issue in caught.value.issues if issue.code == ErrorCode.UAC_RES_VFS)
-    assert issue.location == f"{origin}:11"
-
-
 def test_item_appearance_reference_uses_relocated_family_origin(tmp_path: Path) -> None:
     raw = load_v21_configs(PACK)
     raw.levels[LEVEL] = replace(

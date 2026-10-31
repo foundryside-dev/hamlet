@@ -182,7 +182,7 @@ class UniverseCompiler:
                     CompilationMessage(
                         code=ErrorCode.EFFECT_COMPILE,
                         message=str(exc),
-                        location=locate(source_map, f"effects:{exc.effect_id}"),
+                        location=locate(source_map, exc.origin, locate(source_map, f"effects:{exc.effect_id}")),
                     )
                 ],
             ) from exc.__cause__
@@ -355,13 +355,10 @@ class UniverseCompiler:
             meter_names=tuple(meter.name for meter in primary_level_config.bars.meters),
             compiled_vfs_profiles=compiled_vfs_profiles,
             expressions=expressions,
-        )
-
-        compiled_effect_catalog = self._effects_compiler.compile_catalog(
-            raw.effects,
-            command_symbols,
             time_enabled=temporal_supported,
         )
+
+        compiled_effect_catalog = self._effects_compiler.compile_catalog(raw.effects, command_symbols)
         # Affordance and item interactions compile when the environment builds its
         # engines; compile each level's here too, so a refusal is located at file:line.
         for level_name, level in raw.levels.items():
@@ -370,12 +367,10 @@ class UniverseCompiler:
                 meter_names=tuple(meter.name for meter in level.bars.meters),
                 compiled_vfs_profiles=compiled_vfs_profiles,
                 expressions=expressions,
+                time_enabled=temporal_supported,
             )
             self._effects_compiler.check_interactions(
-                interaction_pipelines(
-                    ((f"levels/{level_name}/affordances:{aff.name}", aff.interactions) for aff in level.affordances.affordances),
-                    raw.items,
-                ),
+                interaction_pipelines(level_name, level.affordances.affordances, raw.items),
                 level_symbols,
                 source_map=raw.source_map,
             )

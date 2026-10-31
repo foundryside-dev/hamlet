@@ -11,11 +11,11 @@ import torch
 from townlet.config.interaction_type import INTERACTION_TYPES, PROGRESS_INTERACTION_TYPES
 from townlet.vfs import vtc_kernels
 from townlet.vfs.namespace import (
+    ENGINE_AGENT_ID,
     TRANSITION_WRITE,
     ExpressionSource,
     Namespace,
     SpellingError,
-    SymbolKind,
     expression_sources,
     inline_expression_reads,
 )
@@ -459,7 +459,7 @@ def _write_namespace(targets: Mapping[str, VTCWriteTarget]) -> Namespace:
     return Namespace(
         variables=[(name, target.scope, target.type) for name, target in targets.items() if not target.meter],
         meters=[name for name, target in targets.items() if target.meter],
-        item_state={},
+        item_profiles={},
     )
 
 
@@ -470,11 +470,9 @@ def _resolve_write_target(variable_id: str, namespace: Namespace, prefix: str) -
     ``bar.<name>``. An engine name (``agent_id``) is no state.
     """
     try:
-        symbol = namespace.resolve(variable_id, TRANSITION_WRITE)
+        symbol = namespace.resolve_write(variable_id, TRANSITION_WRITE)
     except SpellingError as exc:
         return None, f"{prefix} targets {exc}"
-    if symbol.kind not in {SymbolKind.VARIABLE, SymbolKind.METER}:
-        return None, f"{prefix} targets '{variable_id}', the {symbol.kind}, which is no state a write can change."
     return symbol.name, None
 
 
@@ -574,6 +572,12 @@ def _write_shape_refusal(
     return None
 
 
+REFERENCE_WRITE_COMPOSITIONS = frozenset({"overwrite", "claim_if_free"})
+"""How a write into an ``agent_ref``/``item_ref`` may compose: by replacing the row (an occupancy
+claim replaces it with the claimant when free). Every other composition does arithmetic or
+ordering on a row index."""
+
+
 def _write_type_refusal(
     checker: TypeChecker,
     *,
@@ -583,9 +587,16 @@ def _write_type_refusal(
     condition: str | None,
     target_id: str,
     target_type: str,
+    composition: str,
     prefix: str,
 ) -> str | None:
     """Why a write's expression or condition cannot type-check against its target, or None."""
+    if target_type in BATCH_ROW_REFERENCE_TYPES and composition not in REFERENCE_WRITE_COMPOSITIONS:
+        return (
+            f"{prefix} composes '{composition}' into {target_type} '{target_id}'. A reference names a row; arithmetic "
+            f"or ordering on it can name any row, so a reference write composes only as "
+            f"{' or '.join(sorted(REFERENCE_WRITE_COMPOSITIONS))}."
+        )
     try:
         result_type = checker.check(expression_ast)
     except TypeCheckError as exc:
@@ -647,7 +658,7 @@ def _world_local_reference(ast: ASTNode, target_type: str, schema: Mapping[str, 
             path = ast.name
         else:
             path = ".".join(ast.segments)
-        return (target_type == "agent_ref" and path == "agent_id") or schema.get(path) == target_type
+        return (target_type == "agent_ref" and path == ENGINE_AGENT_ID) or schema.get(path) == target_type
     if isinstance(ast, IfThenElse):
         branches = [ast.true_branch, ast.false_branch]
     elif isinstance(ast, FunctionCall) and ast.function_name == "where" and len(ast.arguments) == 3:
@@ -758,7 +769,7 @@ class VTCActionWriteProgram:
     ) -> tuple[_VTCActionWriteEffect, ...]:
         phase_effects: list[_VTCActionWriteEffect] = []
         context_vfs = dict(phase_snapshot)
-        context_vfs.setdefault("agent_id", torch.arange(actions.shape[0], device=device))
+        context_vfs[ENGINE_AGENT_ID] = torch.arange(actions.shape[0], device=device)
         context = ExecutionContext(
             bars={name: phase_snapshot[name] for name in bar_names},
             vfs=context_vfs,
@@ -1659,7 +1670,7 @@ class VTCTransitionRuleProgram:
     ) -> tuple[_VTCTransitionRuleEffect, ...]:
         phase_effects: list[_VTCTransitionRuleEffect] = []
         context_vfs = dict(phase_snapshot)
-        context_vfs.setdefault("agent_id", torch.arange(active_mask.shape[0], device=device))
+        context_vfs[ENGINE_AGENT_ID] = torch.arange(active_mask.shape[0], device=device)
         context = ExecutionContext(
             bars=dict(bars_state),
             vfs=context_vfs,
@@ -2060,6 +2071,7 @@ def compile_vtc_transition_rules_with_phase_graph(
                 condition=condition,
                 target_id=write["variable_id"],
                 target_type=target.type,
+                composition=write["composition"],
                 prefix=f"Transition rule '{rule['rule_id']}' write '{write['telemetry_label']}'",
             )
             if type_refusal is not None:
@@ -2338,7 +2350,7 @@ def _rule_reads(namespace: Namespace, *asts: ASTNode | None) -> tuple[str, ...]:
     """
     paths = frozenset().union(*(read_paths(ast) for ast in asts if ast is not None))
     symbols = (namespace.resolve(path, TRANSITION_WRITE) for path in paths)
-    return tuple(sorted({symbol.name for symbol in symbols if symbol.kind in {SymbolKind.VARIABLE, SymbolKind.METER}}))
+    return tuple(sorted({symbol.name for symbol in symbols if symbol.stored}))
 
 
 def _world_columns(target_scope: VariableScope, namespace: Namespace, *asts: ASTNode | None) -> frozenset[str]:
@@ -2347,7 +2359,7 @@ def _world_columns(target_scope: VariableScope, namespace: Namespace, *asts: AST
         return frozenset()
     paths = frozenset().union(*(read_paths(ast) for ast in asts if ast is not None))
     symbols = (namespace.resolve(path, TRANSITION_WRITE) for path in paths)
-    return frozenset(symbol.name for symbol in symbols if symbol.kind == SymbolKind.VARIABLE and symbol.scope == VariableScope.GLOBAL)
+    return frozenset(symbol.name for symbol in symbols if symbol.stored and symbol.scope == VariableScope.GLOBAL)
 
 
 _RULE_ADMITTED_SHAPES: dict[VariableScope, frozenset[str]] = {
@@ -2471,6 +2483,7 @@ def _compile_vtc_action_writes_with_phase_graph(
                 condition=write.condition,
                 target_id=write.variable_id,
                 target_type=target.type,
+                composition=write.composition,
                 prefix=f"Action '{action.name}' write '{write.telemetry_label}'",
             )
             if type_refusal is not None:

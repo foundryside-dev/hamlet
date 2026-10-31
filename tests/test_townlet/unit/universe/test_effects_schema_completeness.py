@@ -11,7 +11,7 @@ from townlet.effects.schema import CommandNode, CommandType
 from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.compilers.effects import EffectsCompiler
 from townlet.universe.errors import CompilationError
-from townlet.vfs.namespace import EFFECT_PIPELINE
+from townlet.vfs.namespace import ANY_ITEM, EFFECT_PIPELINE, ItemBinding
 from townlet.vfs.schema import VariableDef
 from townlet.world.expression.type_checker import TypeCheckError
 
@@ -23,14 +23,17 @@ def _env(pack: str, level: str):
     return universe, universe.create_environment(num_agents=1, level_name=level, device="cpu")
 
 
-def test_item_state_is_item_dot_name_in_an_item_bound_pipeline():
+def test_item_state_is_item_dot_name_of_the_bound_profile():
     universe, env = _env("test/items_smoke", "L0_smoke")
-    schema = env.command_symbols.namespace.schema(EFFECT_PIPELINE.with_item(True))
+    namespace = env.command_symbols.namespace
     assert universe.compiled_vfs_profiles is not None and universe.compiled_vfs_profiles.item_profiles
-    for profile in universe.compiled_vfs_profiles.item_profiles.values():
+    for name, profile in universe.compiled_vfs_profiles.item_profiles.items():
+        schema = namespace.schema(EFFECT_PIPELINE.with_item(ItemBinding.of_profile(name)))
         for var in profile.variables:
             assert f"item.{var.name}" in schema
-            assert f"item.{var.name}" not in env.command_symbols.namespace.schema(EFFECT_PIPELINE)
+            assert f"item.{var.name}" not in namespace.schema(EFFECT_PIPELINE)
+    # An item chosen at run time reads only what every profile declares.
+    assert {key for key in namespace.schema(EFFECT_PIPELINE.with_item(ANY_ITEM)) if key.startswith("item.")} == {"item.condition"}
 
 
 def test_meters_locals_and_tick_are_served():
@@ -50,7 +53,11 @@ def _var(var_id: str, scope: str, var_type: str = "scalar") -> VariableDef:
 
 def test_global_and_agent_variables_have_one_bare_spelling():
     symbols = EffectsCompiler().build_symbols(
-        variables=[_var("world_heat", "global"), _var("deficit", "agent")], meter_names=(), compiled_vfs_profiles=None, expressions={}
+        variables=[_var("world_heat", "global"), _var("deficit", "agent")],
+        meter_names=(),
+        compiled_vfs_profiles=None,
+        expressions={},
+        time_enabled=True,
     )
     schema = symbols.namespace.schema(EFFECT_PIPELINE)
     assert {"world_heat", "deficit"} <= schema.keys()
@@ -59,7 +66,11 @@ def test_global_and_agent_variables_have_one_bare_spelling():
 
 def test_canonical_vector_type_is_preserved_before_command_compilation(tmp_path):
     symbols = EffectsCompiler().build_symbols(
-        variables=[_var("vector", "global", "vec2f"), _var("scalar", "global")], meter_names=(), compiled_vfs_profiles=None, expressions={}
+        variables=[_var("vector", "global", "vec2f"), _var("scalar", "global")],
+        meter_names=(),
+        compiled_vfs_profiles=None,
+        expressions={},
+        time_enabled=True,
     )
     compiler = CommandCompiler(symbols.namespace, context=EFFECT_PIPELINE, time_enabled=True, expressions={})
     with pytest.raises(TypeCheckError, match="expected float, got vec2f"):

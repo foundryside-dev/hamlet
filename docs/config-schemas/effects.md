@@ -285,7 +285,16 @@ global carries no posthumous advance into the next episode.
   global is the world's value, an agent variable the world's agent's row)
 - `bar.<name>`: a meter of the world's agent
 - `item.<name>`: the state of the item the pipeline is bound to (an item-scoped effect, an item
-  interaction, a `for_each: inventory_items` element); refused where no item is bound
+  interaction, a `for_each: inventory_items` element); refused where no item is bound. An item
+  interaction reads its item type's `vfs_profile` only. An item-scoped effect's or an inventory
+  element's item is chosen at run time, so it reads only state every item profile declares with
+  one type (the intersection); a name some profile lacks refuses at compile, naming the profiles
+  that declare it.
+- A variable may not take a reserved name (`tick`, `agent_id`, `intensity`, `elapsed_ticks`,
+  `duration_remaining`): it refuses at its declaration line. `tick` and `agent_id` are read-only
+  engine names; a write to either refuses ("the engine name, which is no state a write can change").
+- `delay` needs a substrate that keeps time (`stratum.temporal_support: enabled`) in every
+  pipeline, interactions and item hooks included; otherwise it refuses at the command's line.
 - `tick`, and the effect's locals `intensity`, `elapsed_ticks`, `duration_remaining`
 - Every other spelling (`vfs.x`, `global.vfs.x`, `target.vfs.x`, `self.vfs.x`, `target.bar.m`,
   `self.bar.m`, a bare meter name, `temporal.*`, `env.*`) refuses at compile, naming the one to write
@@ -1365,11 +1374,12 @@ with a declared clock variable (`expression: "tick % 24"`) can read that instead
 
 ### Example 8: Affordance State (not reachable from an effect)
 
-An effect cannot read or write affordance state. The effect schema has no
-`affordance.X.available` path and no affordance-scoped variable path, so a pipeline that
-names either is refused at compile (`[EFFECT-COMPILE]`, at the effect's declaration). An
-affordance-scoped effect still lives in its world and runs its pipelines there; it reaches
-its world's agent through `for_each: all_agents`.
+An effect cannot read or write affordance state. There is no affordance-availability path
+(the engine-side `affordance.X.available` store that nothing could reach was deleted on
+2026-10-31) and no affordance-scoped variable path, so a pipeline that names either is refused
+at compile (`[EFFECT-COMPILE]`, at the command's line). An affordance's availability is its
+declared opening hours. An affordance-scoped effect still lives in its world and runs its
+pipelines there, reading and writing its world's agent by bare variable ids and `bar.<m>`.
 
 Affordance-scoped state (one row per affordance in each world, see
 [variables.md](variables.md)) is written by an action's occupancy claim

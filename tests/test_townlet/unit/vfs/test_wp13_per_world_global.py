@@ -16,7 +16,6 @@ import pytest
 import torch
 import yaml
 
-from townlet.effects.context import ExecutionContext
 from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.errors import CompilationError
 from townlet.vfs.registry import VariableRegistry
@@ -246,31 +245,3 @@ def test_persistent_save_and_restore_round_trips_every_worlds_row() -> None:
     # A snapshot without the world axis is not this registry's state.
     with pytest.raises(RuntimeError, match="shape"):
         target.validate_persistent_state({"season": rows[0]})
-
-
-def test_an_availability_override_is_per_world() -> None:
-    """`affordance.X.available` has one value per world: a world-bound write lands in its world only."""
-    registry = VariableRegistry(
-        [
-            VariableDef(
-                id="open_flag",
-                scope="global",
-                type="bool",
-                lifetime="episode",
-                readable_by=["engine"],
-                writable_by=["engine"],
-                default=True,
-            )
-        ],
-        2,
-        torch.device("cpu"),
-    )
-    overrides: list[dict[str, bool]] = [{}, {}]
-    context = ExecutionContext(bars={"energy": torch.ones(2)}, vfs_registry=registry, affordance_overrides=overrides)
-    # Bound to no world, the per-world read writes each world's own value.
-    context.set_path("affordance.SLEEP.available", context.get_path("open_flag"))
-    assert overrides == [{"SLEEP": True}, {"SLEEP": True}]
-    # Bound to agent 1's world, the write lands in world 1 only.
-    bound = context.copy(target_index=1)
-    bound.set_path("affordance.SLEEP.available", torch.tensor(False))
-    assert overrides == [{"SLEEP": True}, {"SLEEP": False}]

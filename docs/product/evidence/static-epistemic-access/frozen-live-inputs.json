@@ -346,7 +346,7 @@
       "live_files": {
         "actions.yaml": "c98d76e064dce68b4c51031904f632ac21b651eaee92f2c0d4661ce14fdd15ef",
         "brain.yaml": "e0fff02ab1af345bd9dedb056c606f67d719057ced39cf143ad68c5bcf5a7627",
-        "effects.yaml": "4d91dfc0795828653a2761ff6e12c11852f59e8010e0a53b78c757b0cf89bc68",
+        "effects.yaml": "897a5d8d013f96e7f1f0d37dd90c38ccf05aedef493ad9099e2f960967a64d2e",
         "environment.yaml": "e9c11a3f51e29e459cb081c300b04c6c047ef4d53e8e640ba2d7d2b6e874b4c0",
         "experiment.yaml": "4bedc329e30775073b042ceb5d39c361390b8ef77d3d6493f5fdcc9ba846d2e0",
         "items.yaml": "1c17e72093af65a0bf72d6325f82fdb0ca647d4d00026fa674864078ecf46aea",
@@ -357,7 +357,7 @@
         "levels/L0_smoke/items.yaml": "5e170612edf95c3381f4f3c0e72ddf04b5286516be44a23e1f4eae5dfe715039",
         "levels/L0_smoke/training.yaml": "1a2a47c166b3ab3952850d359c048dbcdfba3c2ec31e63c37c5bd73c24458181",
         "stratum.yaml": "aad8b287c76fd5b1cb6f67b11934948757c854edc184f9a0a6791d3665df653e",
-        "variables.yaml": "03a892dd02f9084eecd9a16e261d38244320a6d8410b738f47c2db373c25bba8"
+        "variables.yaml": "cbc5eb5fd41dcb37b319d065e112be8b76979373187766cd67695ab1b85764ce"
       },
       "pack": "configs/test/items_smoke"
     }

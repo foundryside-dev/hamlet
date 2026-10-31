@@ -40,11 +40,13 @@ from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.errors import CompilationError
 from townlet.vfs.namespace import (
     AGENT_EXPRESSION,
+    ANY_ITEM,
     EFFECT_PIPELINE,
     GLOBAL_EXPRESSION,
     INTERACTION_PIPELINE,
     SPAWN_PREDICATE,
     TRANSITION_WRITE,
+    ItemBinding,
     Namespace,
     ReadContext,
     SymbolKind,
@@ -183,7 +185,7 @@ def _refused(pack: Path, *needles: str, level: str = LEVEL) -> str:
 NAMESPACE = Namespace(
     variables=[("g", VariableScope.GLOBAL, "scalar"), ("a", VariableScope.AGENT, "scalar"), ("seat", VariableScope.AFFORDANCE, "scalar")],
     meters=["energy"],
-    item_state={"durability": "scalar"},
+    item_profiles={"medical": {"durability": "scalar"}},
 )
 
 #: (context, old spelling, the one canonical spelling the refusal names)
@@ -200,9 +202,9 @@ OLD_SPELLINGS: list[tuple[ReadContext, str, str]] = [
     (EFFECT_PIPELINE, "global.vfs.g", "g"),
     (EFFECT_PIPELINE, "target.vfs.a", "a"),
     (EFFECT_PIPELINE, "target.bar.energy", "bar.energy"),
-    (EFFECT_PIPELINE.with_item(True), "self.vfs.durability", "item.durability"),
-    (EFFECT_PIPELINE.with_item(True), "target.vfs.durability", "item.durability"),
-    (INTERACTION_PIPELINE.with_item(True), "self.vfs.durability", "item.durability"),
+    (EFFECT_PIPELINE.with_item(ANY_ITEM), "self.vfs.durability", "item.durability"),
+    (EFFECT_PIPELINE.with_item(ANY_ITEM), "target.vfs.durability", "item.durability"),
+    (INTERACTION_PIPELINE.with_item(ItemBinding.of_profile("medical")), "self.vfs.durability", "item.durability"),
     (SPAWN_PREDICATE, "vfs.tick", "tick"),
     (SPAWN_PREDICATE, "vfs.g", "g"),
     (SPAWN_PREDICATE, "agent.vfs.a", "a"),
@@ -222,13 +224,13 @@ def test_every_old_spelling_refuses_naming_the_canonical_one(context: ReadContex
     [
         (AGENT_EXPRESSION, "a", SymbolKind.VARIABLE, "a"),
         (AGENT_EXPRESSION, "g", SymbolKind.VARIABLE, "g"),
-        (AGENT_EXPRESSION, "tick", SymbolKind.VARIABLE, "tick"),
+        (AGENT_EXPRESSION, "tick", SymbolKind.ENGINE, "tick"),
         (AGENT_EXPRESSION, "bar.energy", SymbolKind.METER, "energy"),
         (TRANSITION_WRITE, "seat", SymbolKind.VARIABLE, "seat"),
         (TRANSITION_WRITE, "agent_id", SymbolKind.ENGINE, "agent_id"),
         (EFFECT_PIPELINE, "intensity", SymbolKind.LOCAL, "intensity"),
-        (EFFECT_PIPELINE.with_item(True), "item.durability", SymbolKind.ITEM_STATE, "durability"),
-        (SPAWN_PREDICATE, "tick", SymbolKind.VARIABLE, "tick"),
+        (EFFECT_PIPELINE.with_item(ANY_ITEM), "item.durability", SymbolKind.ITEM_STATE, "durability"),
+        (SPAWN_PREDICATE, "tick", SymbolKind.ENGINE, "tick"),
     ],
 )
 def test_canonical_spellings_resolve(context: ReadContext, spelling: str, kind: SymbolKind, name: str) -> None:
@@ -262,7 +264,7 @@ def test_schema_and_runtime_cannot_drift_every_spelling_the_schema_admits_the_ru
     resolver refuses is refused by the runtime too. Both sides parse the same grammar,
     so neither can admit what the other does not.
     """
-    item_context = EFFECT_PIPELINE.with_item(True)
+    item_context = EFFECT_PIPELINE.with_item(ANY_ITEM)
     for context in (AGENT_EXPRESSION, GLOBAL_EXPRESSION, TRANSITION_WRITE, SPAWN_PREDICATE, INTERACTION_PIPELINE, item_context):
         entries = NAMESPACE.entries(context)
         runtime = ExecutionContext(
@@ -510,10 +512,16 @@ def test_compiler_and_environment_build_one_command_namespace(tmp_path: Path) ->
             meter_names=tuple(meter.name for meter in raw.levels[ITEMS_LEVEL].bars.meters),
             compiled_vfs_profiles=universe.compiled_vfs_profiles,
             expressions={},
+            time_enabled=True,
         )
         .namespace
     )
-    for context in (INTERACTION_PIPELINE, INTERACTION_PIPELINE.with_item(True), EFFECT_PIPELINE, EFFECT_PIPELINE.with_item(True)):
+    for context in (
+        INTERACTION_PIPELINE,
+        INTERACTION_PIPELINE.with_item(ItemBinding.of_profile("medical")),
+        EFFECT_PIPELINE,
+        EFFECT_PIPELINE.with_item(ANY_ITEM),
+    ):
         assert compiled.entries(context) == env.command_symbols.namespace.entries(context)
 
 
@@ -535,7 +543,7 @@ def test_every_effect_spelling_the_schema_admits_the_effect_runtime_serves(tmp_p
     context = EffectContext(bars=bars, vfs_registry=registry, self_index=row, target_index=row, self_is_item=True, target_is_item=True)
     context.effect = _Effect()
     runtime = CommandExecutor()._make_eval_context(context)
-    schema = env.command_symbols.namespace.schema(EFFECT_PIPELINE.with_item(True))
+    schema = env.command_symbols.namespace.schema(EFFECT_PIPELINE.with_item(ANY_ITEM))
     medical = {name for name in schema if not name.startswith("item.")} | {f"item.{name}" for name in registry.item_profile_map["medical"]}
     for spelling in medical:
         runtime.get(spelling)

@@ -82,7 +82,7 @@ def test_vtc_transition_rules_compile_agent_affordance_and_conditional_writes() 
     assert program.rules[1].reads == ()
 
 
-def test_vtc_social_and_institutional_residue_updates_agent_variables() -> None:
+def test_vtc_transition_rules_update_agent_variables() -> None:
     program = _compile(
         [
             {

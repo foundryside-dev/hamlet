@@ -33,13 +33,6 @@ class _NullItemManager:
         raise RuntimeError("ItemManager is not configured; spawn_item unavailable")
 
 
-def _available(overrides: dict[str, bool], affordance: str) -> bool:
-    """A world's affordance availability: its runtime override, or open when it has none."""
-    if affordance in overrides:
-        return bool(overrides[affordance])
-    return True
-
-
 @dataclass
 class ExecutionContext:
     """Runtime context for effect command execution."""
@@ -66,8 +59,6 @@ class ExecutionContext:
     scheduler: Any | None = None  # Scheduler for delay commands
     rng: torch.Generator | None = None
     seed: int | None = None  # Optional deterministic seed for sampling
-    # Runtime affordance availability overrides, one mapping per world (S1).
-    affordance_overrides: list[dict[str, bool]] | None = None
     # Per-agent liveness of this pipeline: a `[num_agents]` bool tensor set by a masked
     # `if`/`switch` branch, None when every row is live. Every write passes through it.
     write_mask: torch.Tensor | None = None
@@ -203,14 +194,6 @@ class ExecutionContext:
     def _device(self) -> torch.device:
         return self.bars[next(iter(self.bars))].device if self.bars else torch.device("cpu")
 
-    @staticmethod
-    def _availability(path: str) -> str | None:
-        """The affordance an engine availability path (``affordance.<NAME>.available``) toggles, or None."""
-        parts = path.split(".")
-        if len(parts) == 3 and parts[0] == "affordance" and parts[2] == "available":
-            return parts[1]
-        return None
-
     def _reference(self, path: str) -> Reference:
         reference = parse_reference(path)
         if reference is None:
@@ -246,15 +229,6 @@ class ExecutionContext:
         and ``bar.<m>`` are this world's agent's row; ``item.<x>`` is the bound item's
         state. A context bound to no world reads the whole batch.
         """
-        affordance = self._availability(path)
-        if affordance is not None:
-            device = self._device()
-            if self.affordance_overrides is None:
-                return torch.tensor(True, device=device)
-            world = self.world_row()
-            if world is not None:
-                return torch.tensor(_available(self.affordance_overrides[world], affordance), device=device)
-            return torch.tensor([_available(overrides, affordance) for overrides in self.affordance_overrides], device=device)
         reference = self._reference(path)
         if reference.kind == ReferenceKind.METER:
             if reference.name not in self.bars:
@@ -279,8 +253,6 @@ class ExecutionContext:
 
     def authorize_write_path(self, path: str) -> None:
         """Preflight one resolved command target without reading or mutating storage."""
-        if self._availability(path) is not None:
-            return
         reference = self._reference(path)
         if reference.kind == ReferenceKind.METER:
             return
@@ -297,20 +269,6 @@ class ExecutionContext:
     def set_path(self, path: str, value: torch.Tensor) -> None:
         """Write ``path`` in this pipeline's world (the same resolution as ``get_path``), under the write mask."""
         self.authorize_write_path(path)
-        affordance = self._availability(path)
-        if affordance is not None:
-            if self.affordance_overrides is None:
-                raise ValueError(f"Cannot write '{path}': this pipeline was given no affordance availability store")
-            worlds = self.live_worlds(len(self.affordance_overrides))
-            per_world = isinstance(value, torch.Tensor) and value.numel() == len(self.affordance_overrides) and value.dim() == 1
-            if isinstance(value, torch.Tensor) and value.numel() != 1 and not per_world:
-                raise ValueError(f"'{path}' takes one value per world, but the expression produced shape {tuple(value.shape)}")
-            for world in worlds:
-                if isinstance(value, torch.Tensor):
-                    self.affordance_overrides[world][affordance] = bool((value[world] if per_world else value).item())
-                else:
-                    self.affordance_overrides[world][affordance] = bool(value)
-            return
         reference = self._reference(path)
         if reference.kind == ReferenceKind.METER:
             if reference.name not in self.bars:

@@ -110,7 +110,6 @@ def _world_snapshot(env, world: int, obs: torch.Tensor, rewards: torch.Tensor) -
         "meters": env.meters[world].clone(),
         "done": bool(env.dones[world]),
         "position": env.positions[world].clone(),
-        "affordance_overrides": dict(env.affordance_overrides[world]),
         "registry": {
             var_id: env.vfs_registry.get(var_id, reader="engine")[world].clone()
             for var_id in env.vfs_registry.variables

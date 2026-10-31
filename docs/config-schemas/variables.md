@@ -347,7 +347,13 @@ a transition rule, an effect, an affordance or item interaction and an item spaw
 | an active effect's locals | `intensity`, `elapsed_ticks`, `duration_remaining` | effects |
 
 Under S1 a world has one agent, so `self.`/`target.`/`global.` carry no information; an item
-is the only second entity a context can have, and `item.` names it. Every other spelling
+is the only second entity a context can have, and `item.` names it. An item interaction reads
+its item type's profile only; an item-scoped effect or an inventory element (its item chosen at
+run time) reads only the state every item profile declares with one type. The engine and
+pipeline names are reserved: a registry variable may not be called `tick`, `agent_id`,
+`intensity`, `elapsed_ticks` or `duration_remaining` (refused at the declaration line), and
+`tick` and `agent_id` are read-only everywhere. A write into an `agent_ref`/`item_ref` composes
+only as `overwrite` (or an occupancy `claim_if_free`): arithmetic on a row can name any row. Every other spelling
 (`vfs.x`, `self.vfs.x`, `target.vfs.x`, `global.vfs.x`, `agent.vfs.x`, `self.bar.m`,
 `target.bar.m`, a bare meter name, `temporal.*`, `env.*`) refuses at compile with the one
 spelling to write, at the author's `file:line`. A variable id contains no `.`: a dotted name is

@@ -112,7 +112,6 @@ class EffectManager:
         command_executor: CommandExecutor | None = None,
         scheduler: Any | None = None,
         time_enabled: bool = True,
-        affordance_overrides: list[dict[str, bool]] | None = None,
     ) -> None:
         """Initialize effect manager with compiled catalog.
 
@@ -127,7 +126,6 @@ class EffectManager:
         from townlet.effects.scheduler import Scheduler
 
         self.scheduler = scheduler or Scheduler(time_enabled=time_enabled)
-        self.affordance_overrides = affordance_overrides
         self.current_step = 0  # Track environment step
         self.next_instance_id = 0
         self._admission_transaction_active = False
@@ -487,7 +485,6 @@ class EffectManager:
             interrupt_reason=interrupt_reason,
             current_tick=current_tick,
             scheduler=self.scheduler,
-            affordance_overrides=self.affordance_overrides,
         )
 
     def _add_to_scope(self, effect: ActiveEffect) -> None:
@@ -720,7 +717,6 @@ class EffectManager:
                 substrate=spatial.substrate,
                 current_tick=self.current_step,
                 scheduler=self.scheduler,
-                affordance_overrides=self.affordance_overrides,
             )
 
             for cmd in item.commands:

@@ -188,8 +188,8 @@ def test_affordance_occupancy_claim_is_the_one_affordance_write(tmp_path: Path) 
     assert claim.affordance_index == 0
 
 
-def _residue_pack(tmp_path: Path, phase: str) -> Path:
-    pack = _pack(tmp_path, f"residue_{phase}")
+def _rule_pack(tmp_path: Path, phase: str) -> Path:
+    pack = _pack(tmp_path, f"rule_{phase}")
     rule = {
         "id": "inc",
         "phase": phase,
@@ -211,7 +211,7 @@ def _residue_pack(tmp_path: Path, phase: str) -> Path:
 
 @pytest.mark.parametrize("phase", ["apply_passive_depletion", "apply_threshold_cascades"])
 def test_transition_rule_skips_done_agents_at_depletion_and_cascade_phases(tmp_path: Path, phase: str) -> None:
-    env = _env(_compile(_residue_pack(tmp_path, phase)), num_agents=2)
+    env = _env(_compile(_rule_pack(tmp_path, phase)), num_agents=2)
     env.dones[1] = True
     meters_before = env.meters.clone()
 

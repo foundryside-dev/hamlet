@@ -73,15 +73,15 @@ def _compile(pack: Path) -> CompiledUniverse:
 
 
 def test_item_effect_spelling_item_state_bare_refuses_at_compile(tmp_path: Path) -> None:
-    with pytest.raises(CompilationError, match=r"\[EFFECT-COMPILE\].*effects\.yaml:\d+.*Effect 'poke'.*write 'item\.freshness'"):
-        _compile(_pack(tmp_path, {"modify": "freshness", "value": "1.0"}))
+    with pytest.raises(CompilationError, match=r"\[EFFECT-COMPILE\].*effects\.yaml:\d+.*Effect 'poke'.*write 'item\.condition'"):
+        _compile(_pack(tmp_path, {"modify": "condition", "value": "1.0"}))
 
 
 @pytest.mark.parametrize(
     "command",
     [
         {"modify": "public_state", "value": "5.0"},
-        {"modify": "item.freshness", "value": "public_state"},
+        {"modify": "item.condition", "value": "public_state"},
         {"modify": "bar.energy", "value": "0.5"},
     ],
     ids=["agent_write", "agent_read", "bar_write"],
@@ -91,7 +91,7 @@ def test_item_effect_reads_and_writes_its_worlds_agent(tmp_path: Path, command: 
 
 
 def test_item_effect_writes_its_item_through_target(tmp_path: Path) -> None:
-    universe = _compile(_pack(tmp_path, {"modify": "item.freshness", "value": "item.freshness - 10.0"}))
+    universe = _compile(_pack(tmp_path, {"modify": "item.condition", "value": "item.condition - 10.0"}))
     env = VectorizedHamletEnv.from_universe(universe, level_name=LEVEL, num_agents=2, device="cpu")
     env.reset()
     registry = env.vfs_registry
@@ -108,10 +108,10 @@ def test_item_effect_writes_its_item_through_target(tmp_path: Path) -> None:
         vfs_registry=registry,
         item_manager=env.item_manager,
     )
-    before = float(registry.read_item("food", "freshness", item.vfs_index, reader="engine"))
+    before = float(registry.read_item("food", "condition", item.vfs_index, reader="engine"))
     wait = next(i for i, action in enumerate(env.action_space.actions) if action.name == "WAIT")
     env.step(torch.full((2,), wait, dtype=torch.long))
-    after = float(registry.read_item("food", "freshness", item.vfs_index, reader="engine"))
+    after = float(registry.read_item("food", "condition", item.vfs_index, reader="engine"))
     assert after == pytest.approx(before - 10.0)
 
 

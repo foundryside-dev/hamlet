@@ -24,10 +24,33 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import StrEnum
 
-__all__ = ["ITEM_ROOT", "METER_ROOT", "Reference", "ReferenceKind", "parse_reference"]
+__all__ = [
+    "EFFECT_LOCALS",
+    "ENGINE_AGENT_ID",
+    "ENGINE_TICK",
+    "ITEM_ROOT",
+    "METER_ROOT",
+    "RESERVED_NAMES",
+    "Reference",
+    "ReferenceKind",
+    "parse_reference",
+]
 
 METER_ROOT = "bar"
 ITEM_ROOT = "item"
+
+ENGINE_TICK = "tick"
+"""The engine step counter, readable by bare name in every context and written by the engine only."""
+
+ENGINE_AGENT_ID = "agent_id"
+"""The acting agent's row, served to transition writes and rules."""
+
+EFFECT_LOCALS: dict[str, str] = {"intensity": "float", "elapsed_ticks": "float", "duration_remaining": "float"}
+"""The names an active effect binds while its pipeline runs, with their expression types."""
+
+RESERVED_NAMES: frozenset[str] = frozenset({ENGINE_TICK, ENGINE_AGENT_ID, *EFFECT_LOCALS})
+"""Every bare name the engine or a pipeline binds. A registry variable may not take one: its bare
+spelling would name two things (``VariableDeclaration`` refuses it at the declaration line)."""
 
 
 class ReferenceKind(StrEnum):

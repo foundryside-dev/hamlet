@@ -216,8 +216,6 @@ class EffectAdmissionSnapshot:
     bars: _TensorMappingState | None
     registry: _RegistryState | None
     item_manager: _ItemSpawnState | None
-    affordance_overrides: list[dict[str, bool]] | None
-    affordance_entries: list[dict[str, bool]] | None
     cpu_rng: torch.Tensor
     cuda_rng: list[torch.Tensor] | None
     world_rngs: dict[int, torch.Generator]
@@ -248,8 +246,6 @@ class EffectAdmissionSnapshot:
             bars=None if bars is None else _TensorMappingState.capture(bars),
             registry=None if registry is None else _RegistryState.capture(registry),
             item_manager=None if item_manager is None else _ItemSpawnState.capture(item_manager),
-            affordance_overrides=manager.affordance_overrides,
-            affordance_entries=None if manager.affordance_overrides is None else [world.copy() for world in manager.affordance_overrides],
             cpu_rng=torch.get_rng_state(),
             cuda_rng=torch.cuda.get_rng_state_all() if torch.cuda.is_initialized() else None,
             world_rngs=manager.world_rngs,
@@ -282,11 +278,6 @@ class EffectAdmissionSnapshot:
         self.scheduler.pending = self.pending.mapping
         self.pending.restore()
         self.scheduler.current_tick = self.scheduler_tick
-        self.manager.affordance_overrides = self.affordance_overrides
-        if self.affordance_overrides is not None and self.affordance_entries is not None:
-            for overrides, entries in zip(self.affordance_overrides, self.affordance_entries, strict=True):
-                overrides.clear()
-                overrides.update(entries)
         torch.set_rng_state(self.cpu_rng)
         if self.cuda_rng is not None:
             torch.cuda.set_rng_state_all(self.cuda_rng)

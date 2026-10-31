@@ -474,7 +474,8 @@ All item interactions use Effects command language. Commands are compiled at Uni
 An item interaction has two entities: the world's agent (S1: one per world) and the item.
 
 - The agent: meters as `bar.<name>`, agent and global variables by bare id
-- The item: its state as `item.<name>` (durability, charges, ...)
+- The item: its state as `item.<name>`, from its item type's `vfs_profile` only (a name another
+  profile declares refuses at compile, naming the profiles that declare it)
 - `target.`/`self.` qualifiers and `vfs.` prefixes are refused at compile, naming the spelling to write
 
 ### Effects Command Reference

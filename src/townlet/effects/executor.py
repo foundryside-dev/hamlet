@@ -690,16 +690,16 @@ class CommandExecutor:
         world_row = context.world_row()
 
         vfs_dict: dict[str, torch.Tensor] = {}
-        if active_effect:
-            vfs_dict["intensity"] = torch.tensor(active_effect.intensity, device=device)
-            vfs_dict["elapsed_ticks"] = torch.tensor(active_effect.elapsed_ticks, device=device, dtype=torch.float32)
-            vfs_dict["duration_remaining"] = torch.tensor(active_effect.duration_remaining, device=device, dtype=torch.float32)
-
         bars_dict = {name: ExecutionContext._row(tensor, agent_row) for name, tensor in context.bars.items()}
         if context.vfs_registry:
             for var_id, var_def in context.vfs_registry.variables.items():
                 row = agent_row if var_def.scope == VariableScope.AGENT else world_row
                 vfs_dict[var_id] = ExecutionContext._row(context.vfs_registry.get(var_id, reader="engine"), row)
+        # The locals are reserved names (no variable may take one), bound last.
+        if active_effect:
+            vfs_dict["intensity"] = torch.tensor(active_effect.intensity, device=device)
+            vfs_dict["elapsed_ticks"] = torch.tensor(active_effect.elapsed_ticks, device=device, dtype=torch.float32)
+            vfs_dict["duration_remaining"] = torch.tensor(active_effect.duration_remaining, device=device, dtype=torch.float32)
 
         item_row = context.bound_item()
         item_state = None if item_row is None else context.read_item_state(item_row)

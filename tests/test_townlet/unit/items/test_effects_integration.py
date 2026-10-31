@@ -2,11 +2,11 @@
 
 from pathlib import Path
 
-from tests.test_townlet._fixtures.command_namespace import command_symbols
 from tests.test_townlet.utils.builders import make_grid2d_substrate
 from townlet.config.items_config import ItemsCatalogConfig
 from townlet.effects.schema import CommandType
 from townlet.items.manager import ItemManager
+from townlet.vfs.namespace import CommandSymbols, Namespace
 
 
 def test_item_interactions_are_compiled():
@@ -15,17 +15,12 @@ def test_item_interactions_are_compiled():
     config_path = Path("configs/test/items_smoke/items.yaml")
     catalog = ItemsCatalogConfig.from_yaml(config_path)
 
-    # The command namespace in canonical spelling (production builds it with Namespace.of_registry)
-    schema = {
-        "bar.energy": "float",
-        "bar.health": "float",
-        "bar.money": "float",
-        "has_food": "bool",
-        # Item state, read as item.<name>
-        "item.durability": "float",
-        "item.freshness": "float",
-        "item.charges": "float",
-    }
+    # The namespace by item profile, as Namespace.of_registry builds it from the compiled roster
+    namespace = Namespace(
+        variables=[("has_food", "agent", "bool")],
+        meters=["energy", "health", "money"],
+        item_profiles={"food": {"freshness": "scalar"}, "medical": {"durability": "scalar"}, "currency": {}},
+    )
 
     # Create manager with schema
     manager = ItemManager(
@@ -34,7 +29,7 @@ def test_item_interactions_are_compiled():
         substrate=make_grid2d_substrate(),
         items_per_world=10,
         device="cpu",
-        symbols=command_symbols(schema),
+        symbols=CommandSymbols(namespace=namespace, expressions={}, time_enabled=True),
     )
 
     # Verify coin interactions are compiled (coin has on_pickup effect)

@@ -302,7 +302,7 @@ class VFSProfileCompiler:
         namespace = Namespace(
             variables=[(var.id, var.scope, var.type) for var in (*variables, *cross_scope)],
             meters=bar_schema or {},
-            item_state={},
+            item_profiles={},
         )
         context = AGENT_EXPRESSION if scope == VariableScope.AGENT else GLOBAL_EXPRESSION
         schema = namespace.schema(context)

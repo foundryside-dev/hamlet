@@ -35,7 +35,6 @@ class ItemActionHandler:
         vfs_registry: VariableRegistry,
         meter_name_to_index: dict[str, int],
         effect_manager: Any | None = None,
-        affordance_overrides: list[dict[str, bool]] | None = None,
         agent_positions: Callable[[], torch.Tensor] | None = None,
     ) -> None:
         """Initialize action handler.
@@ -54,7 +53,6 @@ class ItemActionHandler:
         self.vfs_registry = vfs_registry
         self.meter_name_to_index = meter_name_to_index
         self.effect_manager = effect_manager or NullEffectManager()
-        self.affordance_overrides = affordance_overrides
         self.agent_positions = agent_positions
         # Cache custom verb specs for masking/dispatch
         self.custom_action_specs = {
@@ -117,7 +115,6 @@ class ItemActionHandler:
             item_manager=self.manager,
             scheduler=getattr(self.effect_manager, "scheduler", None),
             current_tick=current_tick or 0,
-            affordance_overrides=self.affordance_overrides,
             agent_positions=None if self.agent_positions is None else self.agent_positions(),
         )
 
@@ -237,7 +234,6 @@ class ItemActionHandler:
             item_manager=self.manager,
             scheduler=getattr(self.effect_manager, "scheduler", None),
             current_tick=current_tick,
-            affordance_overrides=self.affordance_overrides,
             agent_positions=None if self.agent_positions is None else self.agent_positions(),
         )
 

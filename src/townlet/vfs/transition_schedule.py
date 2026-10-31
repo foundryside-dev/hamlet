@@ -100,8 +100,8 @@ class VTCTransitionRunner:
             attempted_vfs_targets.update(action_targets)
             bars_state = self._run_passive_depletions(phase, context, bars_state)
             bars_state = self._run_threshold_cascades(phase, context, bars_state)
-            vfs_state, residue_targets = self._run_state_residue(phase, context, vfs_state, bars_state)
-            attempted_vfs_targets.update(residue_targets)
+            vfs_state, rule_targets = self._run_transition_rules(phase, context, vfs_state, bars_state)
+            attempted_vfs_targets.update(rule_targets)
             bars_state = self._run_bounds_clamps(phase, context, bars_state)
             dones = self._run_terminal_conditions(phase, context, bars_state, dones)
 
@@ -165,7 +165,7 @@ class VTCTransitionRunner:
             device=context.device,
         )
 
-    def _run_state_residue(
+    def _run_transition_rules(
         self,
         phase: str,
         context: VTCTransitionContext,

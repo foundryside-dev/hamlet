@@ -11,7 +11,6 @@ from townlet.universe.raw_configs_v21 import RawConfigsV21
 from townlet.universe.source_map import SourceMap, locate, variable_location_key
 from townlet.universe.stages import CompilationStage
 from townlet.universe.symbol_table import UniverseSymbolTable
-from townlet.world.expression.references import ReferenceKind, parse_reference
 
 
 def build_symbol_table(raw: RawConfigsV21, source_map: SourceMap | None = None) -> UniverseSymbolTable:
@@ -288,7 +287,6 @@ def resolve_references(
     errors = CompilationErrorCollector(stage=CompilationStage.RESOLVE.label)
 
     meter_names = set(symbol_table.meters.keys())
-    vfs_variable_ids = set(symbol_table.vfs_variables.keys())
     item_ids = set(symbol_table.items.keys())
 
     for level_name, level in raw.levels.items():
@@ -317,28 +315,8 @@ def resolve_references(
                     )
                 )
 
-        for affordance in getattr(level.affordances, "affordances", []) or []:
-            for stage_commands in (affordance.interactions or {}).values():
-                for cmd in stage_commands:
-                    modify_target = getattr(cmd, "modify", None)
-                    if isinstance(modify_target, str):
-                        # A bare name is a registry variable (VFS round-2 S5); other spellings
-                        # resolve, or refuse naming the one to write, when the pipeline compiles.
-                        reference = parse_reference(modify_target)
-                        if reference is not None and reference.kind == ReferenceKind.NAME:
-                            var_name = reference.name
-                            if var_name not in vfs_variable_ids:
-                                errors.add(
-                                    CompilationMessage(
-                                        code=ErrorCode.UAC_RES_VFS,
-                                        message=f"Affordance '{affordance.name}' interaction uses unknown VFS variable '{var_name}'.",
-                                        location=locate(
-                                            source_map,
-                                            f"levels/{level_name}/affordances:{affordance.name}",
-                                            str(level_dir / "affordances"),
-                                        ),
-                                    )
-                                )
+        # Interaction command paths resolve, or refuse naming the one spelling to write,
+        # when stage 6 compiles every interaction pipeline (VFS round-2 S5).
 
         if level.items_appearance is not None:
             for rule in level.items_appearance.items:

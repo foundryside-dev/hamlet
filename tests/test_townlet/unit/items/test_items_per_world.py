@@ -288,7 +288,7 @@ def test_an_item_effect_in_world_0_never_touches_world_1(tmp_path: Path) -> None
     medkits = [env.item_manager.spawn_item(world, "medkit", (4, 4), current_tick=0) for world in range(2)]
     assert all(medkit is not None for medkit in medkits)
     rows = [medkit.vfs_index for medkit in medkits]
-    durability = [env.vfs_registry.read_item("medical", "durability", row, reader="engine") for row in rows]
+    durability = [env.vfs_registry.read_item("medical", "condition", row, reader="engine") for row in rows]
     env.effect_manager.spawn_effect(
         "wear_and_tear",
         rows[0],
@@ -300,7 +300,7 @@ def test_an_item_effect_in_world_0_never_touches_world_1(tmp_path: Path) -> None
     )
     wait = next(i for i, action in enumerate(env.action_space.actions) if action.name == "WAIT")
     obs, *_ = env.step(torch.tensor([wait, wait]))
-    after = [env.vfs_registry.read_item("medical", "durability", row, reader="engine") for row in rows]
+    after = [env.vfs_registry.read_item("medical", "condition", row, reader="engine") for row in rows]
     assert after[0] < durability[0]
     assert after[1] == pytest.approx(durability[1])
 

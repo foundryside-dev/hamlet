@@ -18,10 +18,10 @@ from townlet.universe.errors import CompilationError
 OLD_SPELLING = [{"modify": "vfs.public_state", "value": "1.0"}]
 
 
-def test_effect_compile_error_names_the_effect_declaration(tmp_path: Path) -> None:
+def test_effect_compile_error_names_the_refused_command(tmp_path: Path) -> None:
     pack = _pack(tmp_path, effects=[_effect("agent", BARE_INCREMENT), _effect("global", OLD_SPELLING)])
     effects_text = (pack / "effects.yaml").read_text().splitlines()
-    failing_line = next(i for i, line in enumerate(effects_text, start=1) if "id: global_probe" in line)
+    failing_line = next(i for i, line in enumerate(effects_text, start=1) if "modify: vfs.public_state" in line)
 
     with pytest.raises(CompilationError) as refusal:
         UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)

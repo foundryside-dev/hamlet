@@ -202,17 +202,12 @@ class VectorizedHamletEnv:
         # If affordances exist but catalog missing, compilation would have failed
 
         self.command_executor = CommandExecutor()
-        # Runtime affordance availability overrides (`affordance.X.available`), one
-        # mapping per world (S1): an override written in world w opens or closes the
-        # affordance in world w only.
-        self.affordance_overrides: list[dict[str, bool]] = [{} for _ in range(num_agents)]
         self.effect_manager = (
             EffectManager(
                 catalog=effect_catalog,
                 command_executor=self.command_executor,
                 device=str(self.device),
                 time_enabled=self.temporal_support_enabled,
-                affordance_overrides=self.affordance_overrides,
             )
             if effect_catalog is not None
             else None
@@ -487,19 +482,9 @@ class VectorizedHamletEnv:
         return tensor
 
     def _affordance_open_mask(self, affordance_name: str) -> torch.Tensor:
-        """`[num_worlds]` bool: whether each world's affordance is open now.
-
-        A world's runtime override (`affordance.X.available`) takes precedence over the
-        declared opening hours, in that world only.
-        """
+        """`[num_worlds]` bool: whether each world's affordance is open now (its declared opening hours)."""
         scheduled = self._is_affordance_open(affordance_name)
-        open_in_world = []
-        for overrides in self.affordance_overrides:
-            if affordance_name in overrides:
-                open_in_world.append(bool(overrides[affordance_name]))
-            else:
-                open_in_world.append(scheduled)
-        return torch.tensor(open_in_world, dtype=torch.bool, device=self.device)
+        return torch.full((self.num_agents,), scheduled, dtype=torch.bool, device=self.device)
 
     def _is_affordance_open(self, affordance_name: str, hour: int | None = None) -> bool:
         """Return True if an affordance's declared opening hours admit the specified (or current) hour."""
@@ -618,6 +603,7 @@ class VectorizedHamletEnv:
                 self.vfs_variables, meters=tuple(meter.name for meter in self.level.bars.meters), item_profiles=item_profiles or {}
             ),
             expressions=expression_sources(expression_profiles),
+            time_enabled=self.temporal_support_enabled,
         )
 
     def _initialize_dac_engine(self) -> None:
@@ -685,7 +671,6 @@ class VectorizedHamletEnv:
             vfs_registry=self.vfs_registry,
             meter_name_to_index=self.meter_name_to_index,
             effect_manager=self.effect_manager,
-            affordance_overrides=self.affordance_overrides,
             agent_positions=lambda: self.positions,
         )
 
@@ -709,7 +694,6 @@ class VectorizedHamletEnv:
             meter_bounds_min=self.meter_bounds_min,
             meter_bounds_max=self.meter_bounds_max,
             item_manager=self.item_manager or NullItemManager(),
-            affordance_overrides=self.affordance_overrides,
         )
 
     def _build_movement_deltas(self) -> torch.Tensor:
@@ -828,10 +812,6 @@ class VectorizedHamletEnv:
         self._affordance_streaks = {}
         self._unique_affordances_count.zero_()
         self._affordances_seen = [set() for _ in range(self.num_agents)]
-        # Clear any runtime overrides so each episode starts from configured availability
-        for overrides in self.affordance_overrides:
-            overrides.clear()
-
         # Effects are episode-scoped: discard every active effect and all delayed work
         # (no hooks run) before anything in this episode can spawn one.
         if self.effect_manager is not None:

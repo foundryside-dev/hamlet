@@ -8,25 +8,36 @@ from typing import Any
 from townlet.config.effects_config import EffectScope
 from townlet.effects.schema import CommandNode, CommandType
 from townlet.vfs.namespace import (
+    ANY_ITEM,
     EFFECT_PIPELINE,
     ExpressionSource,
     Namespace,
     ReadContext,
     SpellingError,
-    SymbolKind,
     inline_expression_reads,
 )
 from townlet.world.expression import ExpressionParser, read_paths
 from townlet.world.expression.ast_nodes import ASTNode
 from townlet.world.expression.type_checker import TypeChecker, TypeCheckError
 
-__all__ = ["CommandCompiler"]
+__all__ = ["CommandCompileError", "CommandCompiler"]
 
 # for_each collections whose iteration target is an item row, not an agent row
 # (executor `_for_each_contexts`: only inventory_items sets target_is_item).
 _ITEM_TARGET_COLLECTIONS = frozenset({"inventory_items"})
 
-_WRITABLE_KINDS = frozenset({SymbolKind.VARIABLE, SymbolKind.METER, SymbolKind.ITEM_STATE})
+
+class CommandCompileError(TypeCheckError):
+    """A refused nested command; ``path`` is its authored position under the top-level command (``then[1].do[0]``)."""
+
+    def __init__(self, message: str, path: tuple[str, ...]) -> None:
+        super().__init__(message)
+        self.path = path
+
+    @property
+    def suffix(self) -> str:
+        """``path`` as a source-map key suffix (``.then[1].do[0]``)."""
+        return "".join(f".{segment}" for segment in self.path)
 
 
 class CommandCompiler:
@@ -45,8 +56,8 @@ class CommandCompiler:
         Args:
             namespace: The symbol table (``Namespace.of_registry`` over the compiled roster)
             context: What the pipeline's runtime serves: ``INTERACTION_PIPELINE`` for an
-                affordance interaction, ``.with_item(True)`` for an item interaction,
-                ``EFFECT_PIPELINE`` (``.with_item(True)`` when item-scoped) for an effect.
+                affordance interaction, ``.with_item(ItemBinding.of_profile(p))`` for an item
+                interaction, ``EFFECT_PIPELINE`` (``.with_item(ANY_ITEM)`` when item-scoped) for an effect.
                 A bare variable is read and written in the pipeline's world by its declared
                 scope (S1: a world has one agent, so an agent variable is that agent's row
                 wherever the pipeline runs); ``item.<x>`` names the bound item's state.
@@ -72,7 +83,7 @@ class CommandCompiler:
         """The compiler for an effect of ``scope``: an item-scoped effect is bound to its item."""
         return cls(
             namespace,
-            context=EFFECT_PIPELINE.with_item(scope == EffectScope.ITEM),
+            context=EFFECT_PIPELINE.with_item(ANY_ITEM if scope == EffectScope.ITEM else None),
             time_enabled=time_enabled,
             expressions=expressions,
         )
@@ -86,11 +97,9 @@ class CommandCompiler:
     def _resolve_write_path(self, path: str, context: ReadContext, what: str) -> str:
         """The canonical path a write lands on, or a TypeCheckError naming the spelling to use."""
         try:
-            symbol = self.namespace.resolve(path, context)
+            self.namespace.resolve_write(path, context)
         except SpellingError as exc:
             raise TypeCheckError(f"{what} {exc}") from exc
-        if symbol.kind not in _WRITABLE_KINDS:
-            raise TypeCheckError(f"{what} '{path}' is the {symbol.kind}, which is no state a command can change")
         return path
 
     def _parse(self, expression: str, context: ReadContext) -> ASTNode:
@@ -116,6 +125,15 @@ class CommandCompiler:
             TypeCheckError: If path invalid or type mismatch
         """
         return self._compile_command(node, self.context)
+
+    def _compile_child(self, node: CommandNode, binding: ReadContext, segment: str) -> None:
+        """Compile a nested command; a refusal carries the child's authored path (``then[1]``)."""
+        try:
+            self._compile_command(node, binding)
+        except CommandCompileError as exc:
+            raise CommandCompileError(str(exc), (segment, *exc.path)) from exc
+        except TypeCheckError as exc:
+            raise CommandCompileError(str(exc), (segment,)) from exc
 
     def _compile_command(self, node: CommandNode, binding: ReadContext) -> CommandNode:
         schema = self._schema(binding)
@@ -252,12 +270,10 @@ class CommandCompiler:
             node.condition_ast = cond_ast
 
             # Recursively compile nested commands (with None checks for mypy)
-            if node.then_commands is not None:
-                for cmd in node.then_commands:
-                    self._compile_command(cmd, binding)
-            if node.else_commands is not None:
-                for cmd in node.else_commands:
-                    self._compile_command(cmd, binding)
+            for index, cmd in enumerate(node.then_commands or []):
+                self._compile_child(cmd, binding, f"then[{index}]")
+            for index, cmd in enumerate(node.else_commands or []):
+                self._compile_child(cmd, binding, f"else[{index}]")
 
         elif node.type == CommandType.FOR_EACH:
             # Validate required fields are present
@@ -284,7 +300,10 @@ class CommandCompiler:
 
             # The body runs once per element with `target` rebound to it: an agent row
             # for every collection except the item-row ones.
-            body_binding = binding.with_item(binding.item or node.collection in _ITEM_TARGET_COLLECTIONS)
+            # An inventory element is an item of any profile; any other collection keeps the binding.
+            body_binding = binding
+            if node.collection in _ITEM_TARGET_COLLECTIONS:
+                body_binding = binding.with_item(ANY_ITEM)
 
             # Recursively compile nested commands (with None check for mypy)
             nested: list[CommandNode] = []
@@ -294,8 +313,8 @@ class CommandCompiler:
                     continue
                 seen_ids.add(id(cmd))
                 nested.append(cmd)
-            for cmd in nested:
-                self._compile_command(cmd, body_binding)
+            for index, cmd in enumerate(nested):
+                self._compile_child(cmd, body_binding, f"do[{index}]")
 
             # Explicitly reject nested for_each until vectorized semantics are defined
             def _child_commands(cmd: CommandNode) -> list[CommandNode]:
@@ -331,20 +350,20 @@ class CommandCompiler:
             node.switch_ast = switch_ast
 
             compiled_cases: list[tuple[Any, list[CommandNode]]] = []
-            for when_expr, body in node.cases or []:
+            for case_index, (when_expr, body) in enumerate(node.cases or []):
                 if when_expr is None:
                     raise TypeCheckError("SWITCH case missing 'when' expression")
                 when_ast = self._parse(when_expr, binding)
                 when_type = type_checker.check(when_ast)
                 if when_type != switch_type:
                     raise TypeCheckError(f"SWITCH case type mismatch: switch is {switch_type}, case is {when_type}")
-                for cmd in body:
-                    self._compile_command(cmd, binding)
+                for index, cmd in enumerate(body):
+                    self._compile_child(cmd, binding, f"cases[{case_index}].do[{index}]")
                 compiled_cases.append((when_ast, body))
             node.case_asts = compiled_cases
 
-            for cmd in node.default_commands or []:
-                self._compile_command(cmd, binding)
+            for index, cmd in enumerate(node.default_commands or []):
+                self._compile_child(cmd, binding, f"default[{index}]")
 
         elif node.type == CommandType.PARALLEL:
             branches = node.parallel_commands or []
@@ -379,8 +398,8 @@ class CommandCompiler:
                 seen.update(writes)
 
             # Compile branches
-            for bc in branches:
-                self._compile_command(bc, binding)
+            for index, bc in enumerate(branches):
+                self._compile_child(bc, binding, f"parallel[{index}]")
 
         elif node.type == CommandType.DELAY:
             if not self.time_enabled:
@@ -399,8 +418,8 @@ class CommandCompiler:
             node.delay_ticks_ast = ticks_ast
 
             # Compile nested commands (the scheduler replays them with the same target)
-            for cmd in node.delay_commands:
-                self._compile_command(cmd, binding)
+            for index, cmd in enumerate(node.delay_commands):
+                self._compile_child(cmd, binding, f"do[{index}]")
 
         elif node.type == CommandType.SPAWN_ITEM:
             if not node.item_type:

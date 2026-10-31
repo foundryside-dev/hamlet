@@ -23,12 +23,12 @@ items:
           # Publish the ITEM's declared insulation onto the wearer, so the
           # world-driven cold effect can read it. The VALUE is declared on the
           # item; this is the propagation hop, recorded honestly in the trial.
-          - modify: target.bar.insulation_worn
-            value: self.vfs.insulation
+          - modify: bar.insulation_worn
+            value: item.insulation
         # Boundary case 10 (unequip residual): taking the garment off must
         # return the incoming cold to its unmitigated magnitude exactly.
         on_drop:
-          - modify: target.bar.insulation_worn
+          - modify: bar.insulation_worn
             value: "0.0"
   max_items_per_agent: 1
   max_items_in_world: 2

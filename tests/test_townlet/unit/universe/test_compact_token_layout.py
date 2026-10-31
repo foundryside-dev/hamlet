@@ -15,6 +15,7 @@ from typing import Any
 import pytest
 import torch
 
+from tests.test_townlet.helpers.token_widths import fixed_width_for
 from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.dto import token_spec as token_spec_module
 from townlet.universe.dto.token_spec import (
@@ -204,7 +205,7 @@ def test_current_l1_dynamic_census_is_exactly_118_and_below_the_120_cap(l1_token
         "variable_element": 1,
     }
     assert l1_token_spec.total_dims == layout.dynamic_total_dims == 5 + 24 + 70 + 16 + 3 == 118
-    assert l1_token_spec.fixed_total_dims == 4136
+    assert l1_token_spec.fixed_total_dims == fixed_width_for(l1_token_spec.census)
     assert l1_token_spec.row_layout()[-1][3] == l1_token_spec.total_dims
     assert l1_token_spec.fixed_row_layout()[-1][3] == l1_token_spec.fixed_total_dims
     assert l1_token_spec.total_dims <= 120
@@ -343,7 +344,7 @@ def test_static_context_and_dynamic_state_assemble_the_fixed_input_exactly() -> 
     dynamic = torch.tensor([[1.0, 0.125, 0.75, -0.25, 0.5]], dtype=torch.float32)
 
     assert spec.total_dims == 5
-    assert spec.fixed_total_dims == 277
+    assert spec.fixed_total_dims == fixed_width_for(spec.census) == 1 + len(PAYLOAD_SCHEMAS["affordance"])
     expected = torch.zeros((1, spec.fixed_total_dims), dtype=torch.float32)
     expected[0, 0] = 1.0
     expected[0, 1:] = torch.tensor(fixed_payload)
@@ -354,7 +355,7 @@ def test_static_context_and_dynamic_state_assemble_the_fixed_input_exactly() -> 
     ):
         expected[0, 1 + PAYLOAD_SCHEMAS["affordance"].index(feature)] = value
     expanded = assembler.expand_type("affordance", dynamic.view(1, 1, 5))
-    assert expanded.shape == (1, 1, 277)
+    assert expanded.shape == (1, 1, spec.fixed_total_dims)
     assert torch.equal(expanded[:, 0, :], expected)
 
 

@@ -41,9 +41,9 @@ def test_gridnd_config_valid_asymmetric():
 
 
 def test_gridnd_config_valid_high_dimensional():
-    """GridND config with 10 dimensions should parse successfully."""
+    """GridND config with 8 dimensions (MAX_POSITION_RANK) should parse successfully."""
     config_data = {
-        "dimension_sizes": [3, 3, 3, 3, 3, 3, 3, 3, 3, 3],  # 10D
+        "dimension_sizes": [3, 3, 3, 3, 3, 3, 3, 3],  # 8D
         "boundary": "bounce",
         "distance_metric": "chebyshev",
         "topology": "hypercube",
@@ -51,7 +51,7 @@ def test_gridnd_config_valid_high_dimensional():
 
     config = GridNDConfig(**config_data)
 
-    assert len(config.dimension_sizes) == 10
+    assert len(config.dimension_sizes) == 8
     assert all(size == 3 for size in config.dimension_sizes)
 
 
@@ -97,18 +97,18 @@ def test_gridnd_config_invalid_negative_dimension():
         GridNDConfig(**config_data)
 
 
-@pytest.mark.skip(reason="v2.1 GridNDConfig doesn't enforce maximum 100 dimensions at DTO level")
 def test_gridnd_config_invalid_too_many_dimensions():
-    """GridND config with >100 dimensions should fail."""
-    # NOTE: v2.1 removed the 100-dimension maximum constraint from GridNDConfig DTO.
+    """GridND config with more than MAX_POSITION_RANK dimensions should fail at the DTO."""
+    from townlet.config.stratum_config import MAX_POSITION_RANK
+
     config_data = {
-        "dimension_sizes": [3] * 101,  # 101D exceeds limit!
+        "dimension_sizes": [3] * (MAX_POSITION_RANK + 1),
         "boundary": "clamp",
         "distance_metric": "manhattan",
         "topology": "hypercube",
     }
 
-    with pytest.raises(ValueError, match="exceeds limit"):
+    with pytest.raises(ValueError, match=f"a gridnd substrate has 4 to {MAX_POSITION_RANK}"):
         GridNDConfig(**config_data)
 
 
@@ -184,10 +184,10 @@ def test_continuous_config_valid_4d():
 
 
 def test_continuous_config_valid_high_dimensional():
-    """ContinuousConfig with 10D should work."""
-    bounds = [(0.0, 10.0) for _ in range(10)]
+    """ContinuousConfig with 8D (MAX_POSITION_RANK) should work."""
+    bounds = [(0.0, 10.0) for _ in range(8)]
     config = ContinuousConfig(
-        dimensions=10,
+        dimensions=8,
         bounds=bounds,
         boundary="wrap",
         movement_delta=0.5,
@@ -196,8 +196,8 @@ def test_continuous_config_valid_high_dimensional():
         action_discretization=BASE_ACTION_DISC,
     )
 
-    assert config.dimensions == 10
-    assert len(config.bounds) == 10
+    assert config.dimensions == 8
+    assert len(config.bounds) == 8
 
 
 def test_continuous_config_valid_asymmetric_bounds():
@@ -250,10 +250,8 @@ def test_continuous_config_invalid_bound_order():
         ContinuousConfig(**config_data)
 
 
-@pytest.mark.skip(reason="v2.1 ContinuousConfig doesn't validate range vs interaction_radius")
 def test_continuous_config_invalid_too_small_range():
-    """ContinuousConfig with range < interaction_radius should fail."""
-    # NOTE: v2.1 removed this validation from ContinuousConfig DTO.
+    """ContinuousConfig with range < interaction_radius should fail at the DTO (verify_R12 D4)."""
     config_data = {
         "dimensions": 4,
         "bounds": [(0.0, 10.0), (0.0, 0.5), (0.0, 10.0), (0.0, 10.0)],  # Range 0.5 < interaction 1.0!
@@ -264,15 +262,15 @@ def test_continuous_config_invalid_too_small_range():
         "action_discretization": {"num_directions": 8, "num_magnitudes": 3},
     }
 
-    with pytest.raises(ValueError, match="Space too small"):
+    with pytest.raises(ValueError, match="too small for affordance interaction"):
         ContinuousConfig(**config_data)
 
 
 def test_continuous_config_invalid_too_many_dimensions():
-    """ContinuousConfig with >100 dimensions should fail."""
-    bounds = [(0.0, 10.0) for _ in range(101)]
+    """ContinuousConfig with more than MAX_POSITION_RANK dimensions should fail."""
+    bounds = [(0.0, 10.0) for _ in range(9)]
     config_data = {
-        "dimensions": 101,
+        "dimensions": 9,
         "bounds": bounds,
         "boundary": "clamp",
         "movement_delta": 0.5,
@@ -281,7 +279,7 @@ def test_continuous_config_invalid_too_many_dimensions():
         "action_discretization": {"num_directions": 8, "num_magnitudes": 3},
     }
 
-    with pytest.raises(Exception, match="less than or equal to 100"):
+    with pytest.raises(Exception, match="less than or equal to 8"):
         ContinuousConfig(**config_data)
 
 

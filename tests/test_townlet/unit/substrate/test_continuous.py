@@ -127,21 +127,21 @@ class TestContinuousPositionInitialization:
     def test_initialize_positions_1d_shape(self):
         """1D positions have correct shape [num_agents, 1]."""
         substrate = make_cont1d()
-        positions = substrate.initialize_positions(5, torch.device("cpu"))
+        positions = substrate.initialize_positions(5, torch.device("cpu"), generator=None)
         assert positions.shape == (5, 1)
         assert positions.dtype == torch.float32
 
     def test_initialize_positions_2d_shape(self):
         """2D positions have correct shape [num_agents, 2]."""
         substrate = make_cont2d()
-        positions = substrate.initialize_positions(10, torch.device("cpu"))
+        positions = substrate.initialize_positions(10, torch.device("cpu"), generator=None)
         assert positions.shape == (10, 2)
         assert positions.dtype == torch.float32
 
     def test_initialize_positions_in_bounds(self):
         """Initialized positions are within bounds."""
         substrate = make_cont2d(min_x=2.0, max_x=8.0, min_y=-5.0, max_y=5.0)
-        positions = substrate.initialize_positions(100, torch.device("cpu"))
+        positions = substrate.initialize_positions(100, torch.device("cpu"), generator=None)
 
         # Check X dimension
         assert (positions[:, 0] >= 2.0).all()
@@ -409,7 +409,7 @@ class TestDtypeIsolation:
         grid = Grid2DSubstrate(width=10, height=10, boundary="clamp", distance_metric="manhattan")
 
         # Continuous operations with float32
-        cont_positions = continuous.initialize_positions(num_agents=5, device=torch.device("cpu"))
+        cont_positions = continuous.initialize_positions(num_agents=5, device=torch.device("cpu"), generator=None)
         cont_deltas = torch.tensor([[-0.5, 0.5], [0.5, -0.5], [0.0, 0.0], [1.0, 1.0], [-1.0, -1.0]], dtype=torch.float32)
         cont_result = continuous.apply_movement(cont_positions, cont_deltas)
 
@@ -417,7 +417,7 @@ class TestDtypeIsolation:
         assert cont_result.dtype == torch.float32
 
         # Grid operations with long
-        grid_positions = grid.initialize_positions(num_agents=5, device=torch.device("cpu"))
+        grid_positions = grid.initialize_positions(num_agents=5, device=torch.device("cpu"), generator=None)
         grid_deltas = torch.tensor([[-1, 0], [1, 0], [0, 1], [0, -1], [0, 0]], dtype=torch.float32)
         grid_result = grid.apply_movement(grid_positions, grid_deltas)
 
@@ -433,7 +433,7 @@ class TestDtypeIsolation:
         continuous = make_cont2d()
 
         # Grid operations with long
-        grid_positions = grid.initialize_positions(num_agents=5, device=torch.device("cpu"))
+        grid_positions = grid.initialize_positions(num_agents=5, device=torch.device("cpu"), generator=None)
         grid_deltas = torch.tensor([[-1, 0], [1, 0], [0, 1], [0, -1], [0, 0]], dtype=torch.float32)
         grid_result = grid.apply_movement(grid_positions, grid_deltas)
 
@@ -441,7 +441,7 @@ class TestDtypeIsolation:
         assert grid_result.dtype == torch.long
 
         # Continuous operations with float32
-        cont_positions = continuous.initialize_positions(num_agents=5, device=torch.device("cpu"))
+        cont_positions = continuous.initialize_positions(num_agents=5, device=torch.device("cpu"), generator=None)
         cont_deltas = torch.tensor([[-0.5, 0.5], [0.5, -0.5], [0.0, 0.0], [1.0, 1.0], [-1.0, -1.0]], dtype=torch.float32)
         cont_result = continuous.apply_movement(cont_positions, cont_deltas)
 
@@ -468,11 +468,11 @@ class TestDtypeIsolation:
         assert continuous3d.position_dtype == torch.float32
 
         # Verify position initialization respects dtype
-        grid2d_pos = grid2d.initialize_positions(num_agents=3, device=torch.device("cpu"))
-        grid3d_pos = grid3d.initialize_positions(num_agents=3, device=torch.device("cpu"))
-        cont1d_pos = continuous1d.initialize_positions(num_agents=3, device=torch.device("cpu"))
-        cont2d_pos = continuous2d.initialize_positions(num_agents=3, device=torch.device("cpu"))
-        cont3d_pos = continuous3d.initialize_positions(num_agents=3, device=torch.device("cpu"))
+        grid2d_pos = grid2d.initialize_positions(num_agents=3, device=torch.device("cpu"), generator=None)
+        grid3d_pos = grid3d.initialize_positions(num_agents=3, device=torch.device("cpu"), generator=None)
+        cont1d_pos = continuous1d.initialize_positions(num_agents=3, device=torch.device("cpu"), generator=None)
+        cont2d_pos = continuous2d.initialize_positions(num_agents=3, device=torch.device("cpu"), generator=None)
+        cont3d_pos = continuous3d.initialize_positions(num_agents=3, device=torch.device("cpu"), generator=None)
 
         assert grid2d_pos.dtype == torch.long
         assert grid3d_pos.dtype == torch.long

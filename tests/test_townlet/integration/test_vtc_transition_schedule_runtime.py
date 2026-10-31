@@ -16,25 +16,40 @@ LEVEL_NAME = "L5_multi_agent"
 
 
 def _copy_l5_pack(tmp_path: Path, name: str) -> Path:
+    """L5 plus one rule-writable agent-scope variable, ``reputation`` (initial 0.5)."""
     target = tmp_path / name
-    shutil.copytree(Path("configs") / LEVEL_NAME, target)
+    shutil.copytree(Path("configs") / LEVEL_NAME, target, ignore=shutil.ignore_patterns(".compiled"))
+    variables_path = target / "variables.yaml"
+    payload = yaml.safe_load(variables_path.read_text())
+    payload["variables"]["declarations"].append(
+        {
+            "id": "reputation",
+            "scope": "agent",
+            "type": "scalar",
+            "lifetime": "episode",
+            "semantic_type": "custom",
+            "readable_by": ["engine"],
+            "writable_by": ["engine"],
+            "exposed_to": [],
+            "initial_value": 0.5,
+        }
+    )
+    variables_path.write_text(yaml.safe_dump(payload, sort_keys=False))
     return target
 
 
-def _write_social_residue_rule(config_dir: Path, *, variable_id: str = "trust", delta: float = 0.1) -> None:
+def _write_transition_rule(config_dir: Path, *, variable_id: str = "reputation", delta: float = 0.1) -> None:
     payload = {
         "version": "1.0",
-        "social_residue": [
+        "transition_rules": [
             {
-                "id": "constant_pair_delta",
-                "phase": "apply_social_residue_effects",
-                "kind": "social_residue",
-                "reads": [variable_id],
+                "id": "constant_reputation_delta",
+                "phase": "apply_transition_rules",
                 "condition": None,
                 "writes": [
                     {
                         "variable_id": variable_id,
-                        "effect": "pair_delta",
+                        "effect": "reputation_delta",
                         "expression": str(delta),
                         "composition": "additive_delta",
                         "condition": None,
@@ -47,10 +62,10 @@ def _write_social_residue_rule(config_dir: Path, *, variable_id: str = "trust", 
     (config_dir / "transition_rules.yaml").write_text(yaml.safe_dump(payload, sort_keys=False))
 
 
-def test_social_residue_rules_are_config_driven_runtime_transitions(tmp_path: Path) -> None:
+def test_transition_rules_are_config_driven_runtime_transitions(tmp_path: Path) -> None:
     baseline_dir = _copy_l5_pack(tmp_path, "baseline")
     social_dir = _copy_l5_pack(tmp_path, "social")
-    _write_social_residue_rule(social_dir, delta=0.1)
+    _write_transition_rule(social_dir, delta=0.1)
 
     compiler = UniverseCompiler()
     baseline = compiler.compile(baseline_dir, primary_level=LEVEL_NAME, use_cache=False)
@@ -60,22 +75,22 @@ def test_social_residue_rules_are_config_driven_runtime_transitions(tmp_path: Pa
 
     assert baseline_level.transition_graph_hash != social_level.transition_graph_hash
     assert baseline_level.vfs_hash != social_level.vfs_hash
-    assert len(baseline_level.transition_schedule.social_residue_program.rules) == 0
-    assert len(social_level.transition_schedule.social_residue_program.rules) == 1
+    assert len(baseline_level.transition_schedule.transition_rule_program.rules) == 0
+    assert len(social_level.transition_schedule.transition_rule_program.rules) == 1
 
     baseline_env = baseline.create_environment(num_agents=3, level_name=LEVEL_NAME, device="cpu")
     social_env = social.create_environment(num_agents=3, level_name=LEVEL_NAME, device="cpu")
 
     assert baseline_env.__class__ is social_env.__class__
-    assert torch.allclose(baseline_env.vfs_registry.get("trust", reader="engine"), torch.full((3, 3), 0.5))
-    assert torch.allclose(social_env.vfs_registry.get("trust", reader="engine"), torch.full((3, 3), 0.5))
+    assert torch.allclose(baseline_env.vfs_registry.get("reputation", reader="engine"), torch.full((3,), 0.5))
+    assert torch.allclose(social_env.vfs_registry.get("reputation", reader="engine"), torch.full((3,), 0.5))
 
     actions = torch.zeros(3, dtype=torch.long)
     baseline_env.step(actions)
     social_env.step(actions)
 
-    assert torch.allclose(baseline_env.vfs_registry.get("trust", reader="engine"), torch.full((3, 3), 0.5))
-    assert torch.allclose(social_env.vfs_registry.get("trust", reader="engine"), torch.full((3, 3), 0.6))
+    assert torch.allclose(baseline_env.vfs_registry.get("reputation", reader="engine"), torch.full((3,), 0.5))
+    assert torch.allclose(social_env.vfs_registry.get("reputation", reader="engine"), torch.full((3,), 0.6))
 
 
 def test_transition_rules_typo_key_fails_at_load_not_silently(tmp_path: Path) -> None:
@@ -84,21 +99,19 @@ def test_transition_rules_typo_key_fails_at_load_not_silently(tmp_path: Path) ->
     config_dir = _copy_l5_pack(tmp_path, "typo-key")
     payload = {
         "version": "1.0",
-        "social_residue": [
+        "transition_rules": [
             {
-                "id": "constant_pair_delta",
-                "phase": "apply_social_residue_effects",
-                "kind": "social_residue",
-                "reads": ["trust"],
+                "id": "constant_reputation_delta",
+                "phase": "apply_transition_rules",
                 "condition": None,
                 "writes": [
                     {
-                        "variable_id": "trust",
-                        "effect": "pair_delta",
+                        "variable_id": "reputation",
+                        "effect": "reputation_delta",
                         "expression": "0.1",
                         "composition": "additive_delta",
                         "clamp": [0.0, 1.0],
-                        "condtion": "trust > 0.5",
+                        "condtion": "reputation > 0.5",
                     }
                 ],
             }
@@ -113,7 +126,7 @@ def test_transition_rules_typo_key_fails_at_load_not_silently(tmp_path: Path) ->
 def test_transition_rules_missing_version_fails_at_load(tmp_path: Path) -> None:
     config_dir = _copy_l5_pack(tmp_path, "missing-version")
     payload = {
-        "social_residue": [],
+        "transition_rules": [],
     }
     (config_dir / "transition_rules.yaml").write_text(yaml.safe_dump(payload, sort_keys=False))
 
@@ -121,17 +134,17 @@ def test_transition_rules_missing_version_fails_at_load(tmp_path: Path) -> None:
         UniverseCompiler().compile(config_dir, primary_level=LEVEL_NAME, use_cache=False)
 
 
-def test_social_residue_rules_fail_loudly_for_unknown_targets(tmp_path: Path) -> None:
+def test_transition_rules_fail_loudly_for_unknown_targets(tmp_path: Path) -> None:
     config_dir = _copy_l5_pack(tmp_path, "missing-target")
-    _write_social_residue_rule(config_dir, variable_id="missing_social_variable")
+    _write_transition_rule(config_dir, variable_id="missing_social_variable")
 
-    with pytest.raises(CompilationError, match="targets unknown VFS variable 'missing_social_variable'") as refusal:
+    with pytest.raises(CompilationError, match="targets 'missing_social_variable' names no variable") as refusal:
         UniverseCompiler().compile(config_dir, primary_level=LEVEL_NAME, use_cache=False)
     (issue,) = refusal.value.issues
     assert issue.location is not None and "transition_rules.yaml" in issue.location
 
 
-def test_environment_runtime_does_not_embed_social_residue_domain_semantics() -> None:
+def test_environment_runtime_does_not_embed_social_domain_semantics() -> None:
     source = Path("src/townlet/environment/vectorized_env.py").read_text()
 
     forbidden_tokens = (

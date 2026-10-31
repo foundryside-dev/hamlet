@@ -26,7 +26,7 @@ def test_compile_vtc_affordance_gates_emits_action_legality_rule_metadata() -> N
     assert rule.kind == "affordance_gate"
     assert rule.source_variable_id == "time_of_day"
     assert rule.target_affordance_id == "Job"
-    assert rule.variable_id == "affordance.Job.available"
+    assert rule.variable_id == "opening_hours:Job"
     assert rule.expression == "time_in_window(temporal.time_of_day, 9.0, 18.0)"
     assert rule.condition is None
     assert rule.composition == "overwrite"

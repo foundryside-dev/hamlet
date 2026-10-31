@@ -207,7 +207,7 @@ def test_continuousnd_initialize_positions():
         distance_metric="euclidean",
     )
 
-    positions = substrate.initialize_positions(num_agents=10, device=torch.device("cpu"))
+    positions = substrate.initialize_positions(num_agents=10, device=torch.device("cpu"), generator=None)
 
     assert positions.shape == (10, 4)
     assert positions.dtype == torch.float32

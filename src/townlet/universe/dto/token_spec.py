@@ -28,23 +28,25 @@ Widths that are DERIVED from closed vocabularies, never written as literals:
 from __future__ import annotations
 
 import math
-from collections.abc import Iterable, Iterator, Mapping, Sequence
-from dataclasses import dataclass
+from collections.abc import Collection, Iterable, Iterator, Mapping, Sequence
+from dataclasses import dataclass, replace
 from typing import TYPE_CHECKING, Final, Literal, get_args
 
 from townlet.config.affordances_v2_config import AffordanceParamConfig
 from townlet.config.effects_config import EffectScope, ReapplyPolicy
 from townlet.config.interaction_type import InteractionType
+from townlet.config.stratum_config import MAX_POSITION_RANK
 from townlet.effects.affordance_identity import (
     AFFORDANCE_LIFECYCLE_STAGES,
     AFFORDANCE_WRITE_SOURCES,
     AFFORDANCE_WRITE_TARGETS,
-    SPAWN_EFFECT_TARGETS,
+    AffordanceIdentityError,
     AffordanceMeterWrite,
     extract_affordance_meter_writes,
     opening_hours_signature,
 )
 from townlet.numeric import require_float32
+from townlet.universe.error_codes import ErrorCode
 from townlet.vfs.access_policy import validate_static_access
 from townlet.vfs.schema import NormalizationSpec, VariableDef, VariableScope, variable_element_shape
 from townlet.vfs.semantic_type import SemanticType
@@ -54,13 +56,67 @@ if TYPE_CHECKING:
     from townlet.config.items_config import ItemsCatalogConfig
     from townlet.effects.catalog import EffectCatalog
     from townlet.universe.compiled import CompiledVFSProfiles
-    from townlet.vfs.profiles import CompiledVariable
+
+# --------------------------------------------------------------------------- refusals
+
+TokenSubjectKind = Literal["variable", "affordance", "effect", "meter", "effects", "stratum"]
+
+
+@dataclass(frozen=True)
+class TokenSubject:
+    """What a token-spec refusal is about, in declaration terms.
+
+    The token derivations know declarations, not files: the universe compiler maps a
+    subject to the author's ``file:line`` through its source map. ``profile`` is the
+    item profile of an item-scoped variable and None for every other subject; ``name``
+    is None for the two declaration-level subjects (``effects``, ``stratum``).
+    """
+
+    kind: TokenSubjectKind
+    name: str | None
+    profile: str | None
+
+    @property
+    def display(self) -> str:
+        if self.kind == "variable":
+            if self.profile is None:
+                return f"Variable '{self.name}'"
+            return f"Item variable '{self.profile}.{self.name}'"
+        if self.kind == "affordance":
+            return f"Affordance '{self.name}'"
+        if self.kind == "effect":
+            return f"Effect '{self.name}'"
+        if self.kind == "meter":
+            return f"Meter '{self.name}'"
+        if self.kind == "effects":
+            return "The effects declaration"
+        return "The stratum declaration"
+
+
+class TokenSpecRefusalError(ValueError):
+    """A declaration cannot enter the token observation; refused at compile.
+
+    Carries the diagnostic ``code`` and the ``subject`` declaration so the universe
+    compiler can raise it as a located ``CompilationError``. ``related`` names a second
+    declaration when the refusal is about a pair (indistinguishability).
+    """
+
+    def __init__(self, code: ErrorCode, subject: TokenSubject, message: str, *, related: TokenSubject | None) -> None:
+        self.code = code
+        self.subject = subject
+        self.related = related
+        super().__init__(message)
+
+
+_EFFECTS_SUBJECT: Final = TokenSubject("effects", None, None)
+_STRATUM_SUBJECT: Final = TokenSubject("stratum", None, None)
+
 
 # --------------------------------------------------------------------------- engine constants
 
-#: Position payloads pad to this rank, with a rank feature (spec §1). A substrate of rank > 8
-#: is refused at compile time; raising the constant is a superseding PDR (breaks checkpoints).
-MAX_POSITION_RANK: Final[int] = 8
+#: Position payloads pad to MAX_POSITION_RANK, with a rank feature (spec §1). It is defined once,
+#: in the stratum DTO (`config/stratum_config.py`), whose `gridnd`/`continuousnd` rank bound it
+#: is, so a substrate of a larger rank refuses at parse; raising it breaks checkpoints.
 
 #: Value sub-block width. Scalar kinds use lane 0; ``cyclical_sin_cos`` lands sin/cos in lanes
 #: 0–1 of ONE token (spec §1 width rule). A width-used feature accompanies the lanes.
@@ -113,7 +169,7 @@ LIFETIME_VOCABULARY: Final[tuple[str, ...]] = get_args(VariableDef.model_fields[
 VARIABLE_TYPE_VOCABULARY: Final[tuple[str, ...]] = get_args(VariableDef.model_fields["type"].annotation)
 DTYPE_VOCABULARY: Final[tuple[str, ...]] = ("float", "int", "bool")
 
-#: VariableDef.type -> dtype flag. References and message tokens are integer ids. Pinned by
+#: VariableDef.type -> dtype flag. References are integer ids. Pinned by
 #: test to cover exactly VARIABLE_TYPE_VOCABULARY, so a new VariableDef type is loud here.
 _VARIABLE_TYPE_DTYPE: Final[Mapping[str, str]] = {
     "scalar": "float",
@@ -131,7 +187,6 @@ _VARIABLE_TYPE_DTYPE: Final[Mapping[str, str]] = {
     "item_ref": "int",
     "affordance_ref": "int",
     "effect_ref": "int",
-    "message_token": "int",
     "bool": "bool",
 }
 
@@ -252,8 +307,15 @@ def _normalization_values(value: float | list[float] | None) -> list[float]:
     return [float(item) for item in value] if isinstance(value, list) else [float(value)]
 
 
-def _require_normalization_float32(var_id: str, spec: NormalizationSpec) -> None:
+def _require_normalization_float32(subject: TokenSubject, spec: NormalizationSpec) -> None:
     """Refuse exposure parameters whose float32 execution changes their semantics."""
+    try:
+        _check_normalization_float32(subject, spec)
+    except ValueError as exc:
+        raise TokenSpecRefusalError(ErrorCode.TOKEN_EXPOSURE, subject, str(exc), related=None) from exc
+
+
+def _check_normalization_float32(subject: TokenSubject, spec: NormalizationSpec) -> None:
     if spec.kind in _RANGE_KINDS:
         lows = _normalization_values(spec.min)
         highs = _normalization_values(spec.max)
@@ -262,21 +324,21 @@ def _require_normalization_float32(var_id: str, spec: NormalizationSpec) -> None
         if len(highs) == 1 and len(lows) > 1:
             highs *= len(lows)
         if len(lows) != len(highs):
-            raise ValueError(f"Variable '{var_id}': normalization bounds are not broadcast-compatible")
+            raise ValueError(f"{subject.display}: normalization bounds are not broadcast-compatible")
         for index, (low, high) in enumerate(zip(lows, highs, strict=True)):
             _float32_range(
                 low,
                 high,
-                field=f"Variable '{var_id}' normalization[{index}]",
+                field=f"{subject.display} normalization[{index}]",
                 logarithmic=spec.kind == "log_scaled",
             )
     elif spec.kind == "cyclical_sin_cos":
         assert spec.period is not None
-        period32 = require_float32(spec.period, field=f"Variable '{var_id}' cyclical period")
-        require_float32(2.0 * math.pi / period32, field=f"Variable '{var_id}' cyclical float32 factor")
+        period32 = require_float32(spec.period, field=f"{subject.display} cyclical period")
+        require_float32(2.0 * math.pi / period32, field=f"{subject.display} cyclical float32 factor")
     elif spec.kind == "binary":
         assert spec.threshold is not None
-        require_float32(spec.threshold, field=f"Variable '{var_id}' binary threshold")
+        require_float32(spec.threshold, field=f"{subject.display} binary threshold")
 
 
 def position_features(prefix: str, *, with_rank: bool) -> tuple[str, ...]:
@@ -328,8 +390,7 @@ def _effect_summary_features() -> tuple[str, ...]:
 AFFORDANCE_DURATION_FEATURES: Final[tuple[str, ...]] = ("duration_applicable", "duration_ticks")
 OPENING_HOURS_FEATURES: Final[tuple[str, ...]] = tuple(f"open_hour_{hour}" for hour in range(24))
 SPAWN_EFFECT_IDENTITY_FEATURES: Final[tuple[str, ...]] = (
-    tuple(f"spawn_target_{target}" for target in SPAWN_EFFECT_TARGETS)
-    + ("spawn_intensity", "spawn_duration")
+    ("spawn_intensity", "spawn_duration")
     + tuple(f"spawn_scope_{scope}" for scope in EFFECT_SCOPE_VOCABULARY)
     + tuple(f"spawn_reapply_{policy}" for policy in REAPPLY_POLICY_VOCABULARY)
     + ("spawn_observable",)
@@ -398,9 +459,13 @@ class ExposedVariable:
     shape: tuple[int, ...]
     normalization: NormalizationSpec | None
     owner_slot: int | None = None
+    #: The item profile of an item-scoped variable (its ``id`` is then ``"<profile>.<name>"``).
+    profile: str | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "shape", tuple(self.shape))
+        if self.profile is not None and not self.id.startswith(f"{self.profile}."):
+            raise ValueError(f"Variable '{self.id}': an item-profile variable's id must be qualified by its profile {self.profile!r}")
         if self.scope not in SCOPE_VOCABULARY:
             raise ValueError(f"Variable '{self.id}': scope {self.scope!r} is not a VariableScope member {SCOPE_VOCABULARY}")
         if self.semantic_type not in SEMANTIC_TYPE_VOCABULARY:
@@ -419,6 +484,13 @@ class ExposedVariable:
     def rank(self) -> int:
         return len(self.shape)
 
+    @property
+    def subject(self) -> TokenSubject:
+        """This declaration as a refusal subject (profile-qualified for item variables)."""
+        if self.profile is None:
+            return TokenSubject("variable", self.id, None)
+        return TokenSubject("variable", self.id[len(self.profile) + 1 :], self.profile)
+
 
 @dataclass(frozen=True)
 class MeterDeclaration:
@@ -436,7 +508,19 @@ class MeterDeclaration:
     interact_depletion: float
     natural_recovery: float
 
+    @property
+    def subject(self) -> TokenSubject:
+        return TokenSubject("meter", self.name, None)
+
     def __post_init__(self) -> None:
+        try:
+            self._check_declaration()
+        except TokenSpecRefusalError:
+            raise
+        except ValueError as exc:
+            raise TokenSpecRefusalError(ErrorCode.TOKEN_SPEC, self.subject, str(exc), related=None) from exc
+
+    def _check_declaration(self) -> None:
         authored_values = {
             "initial": self.initial,
             "min": self.min,
@@ -473,7 +557,7 @@ class MeterDeclaration:
                 f"to a bound in float32: {authored_values['initial']!r} -> {initial!r}"
             )
 
-        spec = require_exposure_normalization(f"meter:{self.name}", self.normalization)
+        spec = require_exposure_normalization(self.subject, self.normalization)
         if spec.kind not in METER_NORMALIZATION_KIND_VOCABULARY:
             raise ValueError(
                 f"Meter '{self.name}': normalization kind {spec.kind!r} is not in the bounded "
@@ -887,7 +971,7 @@ _BOUNDED_KINDS: Final[frozenset[str]] = frozenset({"cyclical_sin_cos", "binary"}
 _RANGE_KINDS: Final[frozenset[str]] = frozenset({"minmax", "log_scaled"})
 
 
-def require_exposure_normalization(var_id: str, spec: NormalizationSpec | None) -> NormalizationSpec:
+def require_exposure_normalization(subject: TokenSubject, spec: NormalizationSpec | None) -> NormalizationSpec:
     """The exposure refusals, in one place (spec §1 width + boundedness rules; Task 5f ruling).
 
     - normalization is REQUIRED at exposure (spec §2 "normalization authority");
@@ -898,38 +982,50 @@ def require_exposure_normalization(var_id: str, spec: NormalizationSpec | None) 
     - ``none`` / ``zscore`` / bare ``masked_value`` / unclipped range kinds are unbounded.
     """
     if spec is None:
-        raise ValueError(
-            f"Variable '{var_id}' is exposed but declares no normalization.\n"
+        raise TokenSpecRefusalError(
+            ErrorCode.TOKEN_EXPOSURE,
+            subject,
+            f"{subject.display} is exposed but declares no normalization.\n"
             "  Rule: normalization is required at exposure (spec §2, normalization authority) — the "
-            "normalization that feeds a token value is declared on the variable being exposed."
+            "normalization that feeds a token value is declared on the variable being exposed.",
+            related=None,
         )
     kind = spec.kind
     if kind == "one_hot":
-        raise ValueError(
-            f"Variable '{var_id}' exposes with normalization kind 'one_hot'.\n"
+        raise TokenSpecRefusalError(
+            ErrorCode.TOKEN_EXPOSURE,
+            subject,
+            f"{subject.display} exposes with normalization kind 'one_hot'.\n"
             f"  Rule: one_hot is refused on tokenized variables — it widens 1→C and cannot fit the "
             f"fixed {VALUE_BLOCK_WIDTH}-wide value block (spec §1 width rule). Expose the category as a "
             "clipped minmax index over [0, C-1]; the declared range then rides in the descriptor "
-            "block's min/max slots (there is no separate categories-count feature)."
+            "block's min/max slots (there is no separate categories-count feature).",
+            related=None,
         )
     if kind == "rank_scaled":
-        raise ValueError(
-            f"Variable '{var_id}' exposes with normalization kind 'rank_scaled'.\n"
+        raise TokenSpecRefusalError(
+            ErrorCode.TOKEN_EXPOSURE,
+            subject,
+            f"{subject.display} exposes with normalization kind 'rank_scaled'.\n"
             "  Rule: rank_scaled is refused at profile-variable exposure (hamlet-6a6e104523): it ranks "
             "across dim 0 = the batch = causally independent worlds, so the observation depends on "
-            "other worlds' state and reads constant-zero on globals / single-agent batches."
+            "other worlds' state and reads constant-zero on globals / single-agent batches.",
+            related=None,
         )
     bounded = kind in _BOUNDED_KINDS or (kind in _RANGE_KINDS and spec.clip is True)
     if not bounded:
-        raise ValueError(
-            f"Variable '{var_id}' exposes with normalization kind '{kind}'"
+        raise TokenSpecRefusalError(
+            ErrorCode.TOKEN_EXPOSURE,
+            subject,
+            f"{subject.display} exposes with normalization kind '{kind}'"
             f"{' (clip: false)' if kind in _RANGE_KINDS else ''}.\n"
             "  Rule: a value feature entering a token must come from a bounded normalization kind "
             f"({sorted(_BOUNDED_KINDS)}) or a range kind ({sorted(_RANGE_KINDS)}) with clip: true "
             "(spec §1, boundedness is certified at exposure). Unbounded values saturate LayerNorm "
-            "and read as perpetual novelty to RND (PDR-0016)."
+            "and read as perpetual novelty to RND (PDR-0016).",
+            related=None,
         )
-    _require_normalization_float32(var_id, spec)
+    _require_normalization_float32(subject, spec)
     return spec
 
 
@@ -943,11 +1039,14 @@ def require_position_rank(rank: int, *, substrate_type: str) -> int:
     if rank < 0:
         raise ValueError(f"Substrate '{substrate_type}' reports negative position rank {rank}")
     if rank > MAX_POSITION_RANK:
-        raise ValueError(
+        raise TokenSpecRefusalError(
+            ErrorCode.TOKEN_SPEC,
+            _STRATUM_SUBJECT,
             f"Substrate '{substrate_type}' has position rank {rank} > MAX_POSITION_RANK = {MAX_POSITION_RANK}.\n"
             "  Rule: position payloads pad to the engine constant MAX_POSITION_RANK (spec §1). This is a "
             "deliberate capability contraction for GridND's 4–100D range; raising the constant breaks "
-            "every checkpoint and is a superseding PDR, not a config change."
+            "every checkpoint and is a superseding PDR, not a config change.",
+            related=None,
         )
     return rank
 
@@ -1059,7 +1158,7 @@ def normalization_param_vector(spec: NormalizationSpec, *, element_index: int, e
 def describe_variable(var: ExposedVariable, *, element_index: int, owner_capacity: int | None) -> tuple[float, ...]:
     """The variable-descriptor block for one element (spec §1): fixed-width, name-free, built
     from the declaration. Width == DESCRIPTOR_BLOCK_WIDTH."""
-    spec = require_exposure_normalization(var.id, var.normalization)
+    spec = require_exposure_normalization(var.subject, var.normalization)
     if var.owner_slot is not None:
         if owner_capacity is None or owner_capacity <= 0:
             raise ValueError(f"Variable '{var.id}' carries owner_slot {var.owner_slot} but no owner capacity was given")
@@ -1069,22 +1168,29 @@ def describe_variable(var: ExposedVariable, *, element_index: int, owner_capacit
     else:
         owner = (0.0, 0.0)
     count = var.element_count
-    declared = _element_default(var.default, element_index, count, where=f"Variable '{var.id}' default")
-    initial = normalize_declared_scalar(declared, spec, element_index=element_index, element_count=count)
-    block = (
-        _one_hot(SCOPE_VOCABULARY, var.scope)
-        + _one_hot(SEMANTIC_TYPE_VOCABULARY, var.semantic_type)
-        + _one_hot(NORMALIZATION_KIND_VOCABULARY, spec.kind)
-        + normalization_param_vector(spec, element_index=element_index, element_count=count)
-        + _one_hot(DTYPE_VOCABULARY, _VARIABLE_TYPE_DTYPE[var.type])
-        + _one_hot(LIFETIME_VOCABULARY, var.lifetime)
-        + (initial, saturate(math.log1p(var.element_count)))
-        + owner
-    )
-    assert len(block) == DESCRIPTOR_BLOCK_WIDTH
-    bounded_block = _float32_tuple(block, field=f"Variable '{var.id}' descriptor")
+    try:
+        declared = _element_default(var.default, element_index, count, where=f"{var.subject.display} default")
+        initial = normalize_declared_scalar(declared, spec, element_index=element_index, element_count=count)
+        block = (
+            _one_hot(SCOPE_VOCABULARY, var.scope)
+            + _one_hot(SEMANTIC_TYPE_VOCABULARY, var.semantic_type)
+            + _one_hot(NORMALIZATION_KIND_VOCABULARY, spec.kind)
+            + normalization_param_vector(spec, element_index=element_index, element_count=count)
+            + _one_hot(DTYPE_VOCABULARY, _VARIABLE_TYPE_DTYPE[var.type])
+            + _one_hot(LIFETIME_VOCABULARY, var.lifetime)
+            + (initial, saturate(math.log1p(var.element_count)))
+            + owner
+        )
+        assert len(block) == DESCRIPTOR_BLOCK_WIDTH
+        bounded_block = _float32_tuple(block, field=f"{var.subject.display} descriptor")
+    except TokenSpecRefusalError:
+        raise
+    except ValueError as exc:
+        # Declared defaults and normalization parameters are authored facts; their
+        # float32 and shape refusals belong to the declaration, not to the derivation.
+        raise TokenSpecRefusalError(ErrorCode.TOKEN_EXPOSURE, var.subject, str(exc), related=None) from exc
     if any(not -1.0 <= feature <= 1.0 for feature in bounded_block):
-        raise ValueError(f"Variable '{var.id}' descriptor features must all be within [-1, 1]")
+        raise ValueError(f"{var.subject.display} descriptor features must all be within [-1, 1]")
     return bounded_block
 
 
@@ -1096,22 +1202,111 @@ def static_payload_signature(var: ExposedVariable, *, owner_capacity: int | None
     return (var.scope, var.shape, blocks)
 
 
-def check_indistinguishability(variables: Iterable[ExposedVariable], *, owner_capacity: int | None) -> None:
-    """Compile-time indistinguishability check (spec §1): identical static signature → error
-    naming both declarations and demanding a distinguishing declared parameter."""
-    seen: dict[tuple[object, ...], str] = {}
-    for var in variables:
-        sig = static_payload_signature(var, owner_capacity=owner_capacity)
-        other = seen.get(sig)
-        if other is not None:
-            raise ValueError(
-                f"Variables '{other}' and '{var.id}' are indistinguishable: identical static payload "
-                "signature (descriptor block + coordinate space).\n"
-                "  Rule: under permutation-invariant pooling two such tokens alias for every weight "
-                "setting (spec §1). Add a distinguishing DECLARED parameter to one of them — a different "
-                "semantic_type, lifetime, normalization range, or declared initial value."
+@dataclass(frozen=True)
+class TokenIdentity:
+    """One declaration's static token identity: the subject and everything the encoder sees of
+    it before the first step. Two equal signatures of the same kind are one token identity."""
+
+    subject: TokenSubject
+    signature: tuple[object, ...]
+
+
+#: What each token kind's static identity is built from — named in the refusal so the author
+#: knows which declared parameters the encoder can tell apart.
+_IDENTITY_CARRIES: Final[Mapping[str, str]] = {
+    "variable": (
+        "scope, semantic type, normalization kind and bounds, dtype, lifetime, declared initial value, " "element count and tensor shape"
+    ),
+    "affordance": "interaction type, duration, opening hours and the reachable meter writes (target meter, direction, magnitude)",
+    "effect": "scope, duration and reapply policy — not what the effect writes",
+}
+
+#: Why the refusal is specific to set-pooling brains, per kind: variable and affordance
+#: slots are compile-time static, so a flat brain reads them apart by position; effect
+#: slots are bound dynamically, so the flat-brain exemption rests only on the gate.
+_IDENTITY_WHY: Final[Mapping[str, str]] = {
+    "variable": (
+        "This refusal is specific to set-pooling brains (architecture.type token_set or recurrent); a flat brain "
+        "(feedforward, dueling) tells these statically bound slots apart by position and compiles these declarations unchanged."
+    ),
+    "affordance": (
+        "On this aspatial substrate affordance tokens carry no position lanes, so nothing at runtime separates them either. "
+        "This refusal is specific to set-pooling brains (architecture.type token_set or recurrent); a flat brain "
+        "(feedforward, dueling) tells these statically bound slots apart by position and compiles these declarations unchanged."
+    ),
+    "effect": (
+        "The effect payload carries scope, duration and reapply policy, not what the effect writes, so a set encoder sees one "
+        "effect wherever either is active. This refusal is specific to set-pooling brains (architecture.type token_set or "
+        "recurrent); it is not applied to a flat brain (feedforward, dueling)."
+    ),
+}
+
+
+def token_identities(
+    *,
+    meter_declarations: tuple[MeterDeclaration, ...],
+    affordances: AffordancesV2Config,
+    enabled_affordances: Collection[str],
+    position_rank: int,
+    compiled_effect_catalog: EffectCatalog | None,
+    compiled_vfs_profiles: CompiledVFSProfiles | None,
+    vfs_variables: tuple[VariableDef, ...],
+) -> tuple[TokenIdentity, ...]:
+    """The static identity of every declaration whose token a set encoder could not tell from
+    another's, in authored order: exposed variables (one per declaration; an item variable's
+    owner slots share it); deployed affordances, only on an aspatial substrate (with position
+    lanes two affordances differ by where they are, every episode, whatever the deployment
+    mode; an affordance outside ``enabled_affordances`` publishes presence 0 forever and is
+    padding); observable catalogued effects (an unobservable effect is never published).
+    Meters are not here: they are the next ruling's pointers to variables."""
+    identities: list[TokenIdentity] = []
+    for var in exposed_variable_declarations(compiled_vfs_profiles, vfs_variables):
+        identities.append(TokenIdentity(var.subject, ("variable", *static_payload_signature(var, owner_capacity=None))))
+    if position_rank == 0:
+        meters_by_name = {meter.name: meter for meter in meter_declarations}
+        deployed = set(enabled_affordances)
+        for affordance in affordances.affordances:
+            if affordance.name not in deployed:
+                continue
+            signature = affordance_signature(
+                affordance=affordance,
+                effect_deltas=_affordance_meter_writes(affordance, compiled_effect_catalog),
+                meters=meters_by_name,
             )
-        seen[sig] = var.id
+            identities.append(TokenIdentity(TokenSubject("affordance", affordance.name, None), ("affordance", signature)))
+    if compiled_effect_catalog is not None:
+        for effect in compiled_effect_catalog.effects.values():
+            if not effect.observable:
+                continue
+            declaration = EffectDeclaration(
+                id=effect.id, scope=effect.scope, duration=effect.duration, reapply_policy=effect.reapply_policy
+            )
+            identities.append(TokenIdentity(TokenSubject("effect", effect.id, None), ("effect", effect_static_payload(declaration))))
+    return tuple(identities)
+
+
+def check_indistinguishability(identities: Iterable[TokenIdentity]) -> None:
+    """Compile-time indistinguishability check (spec §1) for permutation-invariant brains.
+
+    Two declarations of one kind with equal static identity would be pooled as the same
+    token for every weight setting, so a set encoder cannot learn to tell them apart. A
+    flat brain reads by slot position and does not need this check; the observation
+    compiler gates the call on the level's brain architecture.
+    """
+    seen: dict[tuple[object, ...], TokenIdentity] = {}
+    for identity in identities:
+        other = seen.get(identity.signature)
+        if other is not None:
+            kind = identity.subject.kind
+            raise TokenSpecRefusalError(
+                ErrorCode.TOKEN_IDENTITY,
+                identity.subject,
+                f"{other.subject.display} and {identity.subject.display} are identical as a permutation-invariant "
+                f"token encoder sees them. The {kind} token's static identity is its {_IDENTITY_CARRIES[kind]}; every one of "
+                f"those is equal here, so the two tokens alias for every weight setting. {_IDENTITY_WHY[kind]}",
+                related=other.subject,
+            )
+        seen[identity.signature] = identity
 
 
 # --------------------------------------------------------------------------- meter / affordance payload math
@@ -1126,7 +1321,9 @@ def meter_signature(meter: MeterDeclaration) -> tuple[float, ...]:
     scale-free."""
     span = meter.max - meter.min
     if span <= 0:
-        raise ValueError(f"Meter '{meter.name}': bounds must satisfy min < max")
+        raise TokenSpecRefusalError(
+            ErrorCode.TOKEN_SPEC, meter.subject, f"{meter.subject.display}: bounds must satisfy min < max", related=None
+        )
     initial = min(max((meter.initial - meter.min) / span, 0.0), 1.0)
     spec = meter.normalization
     if spec.kind in _RANGE_KINDS:
@@ -1170,9 +1367,19 @@ def affordance_signature(
 ) -> tuple[float, ...]:
     """Immutable compiled identity for one affordance slot."""
     name = affordance.name
+    subject = TokenSubject("affordance", name, None)
     interaction_type = str(affordance.interaction_type)
     if interaction_type not in INTERACTION_TYPE_VOCABULARY:
-        raise ValueError(f"Affordance {name!r}: interaction_type {interaction_type!r} is not in " f"{INTERACTION_TYPE_VOCABULARY}")
+        raise TokenSpecRefusalError(
+            ErrorCode.TOKEN_SPEC,
+            subject,
+            f"{subject.display}: interaction_type {interaction_type!r} is not in {INTERACTION_TYPE_VOCABULARY}",
+            related=None,
+        )
+    try:
+        write_summary = effect_summary(effect_deltas, meters)
+    except ValueError as exc:
+        raise TokenSpecRefusalError(ErrorCode.TOKEN_SPEC, subject, f"{subject.display}: {exc}", related=None) from exc
     duration_applicable = affordance.duration_ticks is not None
     if affordance.duration_ticks is not None:
         duration = saturate(float(affordance.duration_ticks))
@@ -1183,7 +1390,7 @@ def affordance_signature(
         float(duration_applicable),
         duration,
         *opening_hours_signature(affordance.opening_hours),
-        *effect_summary(effect_deltas, meters),
+        *write_summary,
         saturate(float(len(effect_deltas))),
     )
     assert len(signature) == AFFORDANCE_SIGNATURE_WIDTH
@@ -1211,7 +1418,7 @@ def effect_summary(deltas: Sequence[AffordanceMeterWrite], meters: Mapping[str, 
     """
     if len(deltas) > EFFECT_SUMMARY_K:
         raise ValueError(
-            f"Affordance declares {len(deltas)} reachable meter writes; EFFECT_SUMMARY_K={EFFECT_SUMMARY_K} "
+            f"declares {len(deltas)} reachable meter writes; EFFECT_SUMMARY_K={EFFECT_SUMMARY_K} "
             "permits at most that many without aliasing behavior"
         )
     unknown_entries: list[tuple[AffordanceMeterWrite, float, float, MeterDeclaration]] = []
@@ -1245,7 +1452,6 @@ def effect_summary(deltas: Sequence[AffordanceMeterWrite], meters: Mapping[str, 
             spawned = write.spawned_effect
             if spawned is not None:
                 spawn_identity = (
-                    *_one_hot(SPAWN_EFFECT_TARGETS, spawned.target),
                     saturate_signed(spawned.intensity),
                     saturate(math.log1p(spawned.duration)),
                     *_one_hot(EFFECT_SCOPE_VOCABULARY, spawned.scope),
@@ -1330,11 +1536,14 @@ def effect_capacity(
     if declared_effect_count == 0:
         return 0
     if max_active_effects is None:
-        raise ValueError(
+        raise TokenSpecRefusalError(
+            ErrorCode.TOKEN_CAPACITY,
+            _EFFECTS_SUBJECT,
             f"The effects declaration contains {declared_effect_count} effect(s) but no `max_active_effects` budget.\n"
             "  Rule: effect token capacity derives from a per-scope declared budget "
             f"(max_active_effects: {{{', '.join(f'{s}: N' for s in EFFECT_SCOPE_VOCABULARY)}}}), "
-            "required if any effects are declared (spec §2 capacity table, No-Defaults)."
+            "required if any effects are declared (spec §2 capacity table, No-Defaults).",
+            related=None,
         )
     denominators = {
         "global": 1,
@@ -1345,32 +1554,32 @@ def effect_capacity(
     missing = [s for s in EFFECT_SCOPE_VOCABULARY if s not in max_active_effects]
     unknown = [s for s in max_active_effects if s not in EFFECT_SCOPE_VOCABULARY]
     if missing or unknown:
-        raise ValueError(
+        raise TokenSpecRefusalError(
+            ErrorCode.TOKEN_CAPACITY,
+            _EFFECTS_SUBJECT,
             f"max_active_effects must declare exactly the EffectScope members {EFFECT_SCOPE_VOCABULARY}; "
-            f"missing {missing}, unknown {unknown}"
+            f"missing {missing}, unknown {unknown}",
+            related=None,
         )
     total = 0
     for scope in EFFECT_SCOPE_VOCABULARY:
         budget = max_active_effects[scope]
         if budget < 0:
-            raise ValueError(f"max_active_effects.{scope} must be >= 0")
+            raise TokenSpecRefusalError(
+                ErrorCode.TOKEN_CAPACITY, _EFFECTS_SUBJECT, f"max_active_effects.{scope} must be >= 0", related=None
+            )
         total += budget * denominators[scope]
     return total
 
 
 def variable_element_capacity(variables: Iterable[ExposedVariable]) -> int:
     """Σ element counts of explicitly exposed variables. Each variable is checked against the
-    exposure rules so a refused kind never sizes a capacity.
-
-    `agent_private` is NOT refused here by ruling (Task 6 review M1): the spec §2 table places
-    that exclusion in the publisher's filter before slot binding. LANDED (Task 8):
-    `environment/token_publishers.py::RegistryVariableElementPublisher` refuses an
-    agent_private-bound slot at construction, and the registry's scope arenas exclude
-    agent_private by construction — pinned by test (agent_private never lands in any
-    agent's rows; the hamlet-83a043a9b9 boundary by mechanism)."""
+    exposure rules so a refused kind never sizes a capacity. Privacy is declared roles, not a
+    scope: `RegistryVariableElementPublisher` authorizes every binding against the declared
+    `readable_by`/`exposed_to` before slot binding (the hamlet-83a043a9b9 boundary by mechanism)."""
     total = 0
     for var in variables:
-        require_exposure_normalization(var.id, var.normalization)
+        require_exposure_normalization(var.subject, var.normalization)
         total += var.element_count
     return total
 
@@ -1400,68 +1609,25 @@ _ITEM_VAR_TYPE_TO_TOKEN_TYPE: Final[Mapping[str, str]] = {
 }
 
 
-def _variable_element_artifacts(
+def exposed_variable_declarations(
     compiled_vfs_profiles: CompiledVFSProfiles | None,
     vfs_variables: tuple[VariableDef, ...],
-    *,
-    item_capacity_value: int,
-) -> tuple[tuple[SlotBinding, ...], tuple[tuple[float, ...], ...]]:
-    """Derive variable bindings and their complete fixed payloads in one pass."""
-    exposed_item_vars: list[tuple[str, CompiledVariable]] = []  # (id "<profile>.<var>", declaration)
-    if compiled_vfs_profiles is not None:
-        for profile_name, item_profile in (compiled_vfs_profiles.item_profiles or {}).items():
-            for compiled_var in item_profile.variables:
-                validate_static_access(
-                    f"{profile_name}.{compiled_var.name}", compiled_var.readable_by, compiled_var.writable_by, compiled_var.exposed_to
-                )
-                if compiled_var.exposed_to:
-                    exposed_item_vars.append((f"{profile_name}.{compiled_var.name}", compiled_var))
-
-    if exposed_item_vars and item_capacity_value <= 0:
-        names = ", ".join(var_id for var_id, _ in exposed_item_vars)
-        raise ValueError(
-            f"Item-profile variable(s) {names} declare exposed_to, but this universe's compiled `item` token "
-            "capacity is 0 (no item catalog declaration, or max_items_in_world + max_items_per_agent × agents_per_world sums "
-            "to 0) — there is no item-arena slot for an exposed item variable to bind against."
-        )
-
-    bindings: list[SlotBinding] = []
-    contexts: list[tuple[float, ...]] = []
-    bound: list[ExposedVariable] = []
-
-    def emit(exposed: ExposedVariable, *, owner_capacity: int | None) -> None:
-        bound.append(exposed)
-        descriptor_blocks = tuple(
-            describe_variable(exposed, element_index=i, owner_capacity=owner_capacity) for i in range(exposed.element_count)
-        )
-        assert exposed.normalization is not None
-        width_used = value_block_width_used(exposed.normalization) / VALUE_BLOCK_WIDTH
-        for element_index, descriptor_block in enumerate(descriptor_blocks):
-            if exposed.owner_slot is not None:
-                filler_ref = f"{exposed.id}[{exposed.owner_slot}]"
-            elif exposed.element_count == 1:
-                filler_ref = exposed.id
-            else:
-                filler_ref = f"{exposed.id}[{element_index}]"
-            bindings.append(
-                SlotBinding(slot_index=len(bindings), filler_kind="static", filler_ref=filler_ref, scope=VariableScope(exposed.scope))
-            )
-            payload = [0.0] * len(PAYLOAD_SCHEMAS["variable_element"])
-            coordinates = element_coordinate_block(exposed.shape, element_index)
-            position_start = PAYLOAD_SCHEMAS["variable_element"].index("position_0")
-            descriptor_start = PAYLOAD_SCHEMAS["variable_element"].index(DESCRIPTOR_BLOCK_FEATURES[0])
-            payload[position_start : position_start + MAX_POSITION_RANK + 1] = coordinates
-            payload[PAYLOAD_SCHEMAS["variable_element"].index("value_width_used")] = width_used
-            payload[descriptor_start : descriptor_start + DESCRIPTOR_BLOCK_WIDTH] = descriptor_block
-            contexts.append(_float32_tuple(payload, field=f"Variable '{exposed.id}' fixed payload"))
-
+) -> tuple[ExposedVariable, ...]:
+    """Every exposed declaration as the token derivations see it: registry variables in
+    declaration order, then item-profile variables (``owner_slot`` None — one declaration,
+    however many item slots it will bind against). Access policy is checked for every
+    variable, exposed or not."""
+    declarations: list[ExposedVariable] = []
     for var_def in vfs_variables:
         var_id = var_def.id
-        validate_static_access(var_id, var_def.readable_by, var_def.writable_by, var_def.exposed_to)
+        subject = TokenSubject("variable", var_id, None)
+        _require_static_access(subject, var_def.readable_by, var_def.writable_by, var_def.exposed_to)
         if not var_def.exposed_to:
             continue
         if var_def.semantic_type is None:
-            raise ValueError(f"Exposed variable '{var_id}' requires declared semantic_type")
+            raise TokenSpecRefusalError(
+                ErrorCode.TOKEN_EXPOSURE, subject, f"{subject.display} is exposed and must declare semantic_type", related=None
+            )
         semantic_type = str(var_def.semantic_type)
 
         if var_def.initial_value_mode is not None or var_def.initial_value_params is not None:
@@ -1479,8 +1645,7 @@ def _variable_element_artifacts(
             scope = var_def.scope.value
         else:
             scope = str(var_def.scope)
-        shape = variable_element_shape(var_def)
-        emit(
+        declarations.append(
             ExposedVariable(
                 var_id,
                 scope,
@@ -1488,36 +1653,117 @@ def _variable_element_artifacts(
                 var_def.type,
                 var_def.lifetime,
                 var_def.default,
-                shape,
+                variable_element_shape(var_def),
                 var_def.normalization,
-            ),
-            owner_capacity=None,
+            )
         )
 
-    for var_id, item_var in exposed_item_vars:
-        mapped_type = _ITEM_VAR_TYPE_TO_TOKEN_TYPE.get(item_var.type)
-        if mapped_type is None:
-            raise ValueError(
-                f"Item-profile variable '{var_id}' declares type {item_var.type!r}, which has no token "
-                "dtype landing yet — supported compiled item types are float (authored scalar), bool, and *_ref."
-            )
-        for owner_slot in range(item_capacity_value):
-            emit(
-                ExposedVariable(
-                    var_id,
-                    "item",
-                    str(item_var.semantic_type),
-                    mapped_type,
-                    item_var.lifetime,
-                    item_var.initial_value,
-                    (),
-                    item_var.normalization,
-                    owner_slot=owner_slot,
-                ),
-                owner_capacity=item_capacity_value,
-            )
+    if compiled_vfs_profiles is not None:
+        for profile_name, item_profile in (compiled_vfs_profiles.item_profiles or {}).items():
+            for compiled_var in item_profile.variables:
+                subject = TokenSubject("variable", compiled_var.name, profile_name)
+                _require_static_access(subject, compiled_var.readable_by, compiled_var.writable_by, compiled_var.exposed_to)
+                if not compiled_var.exposed_to:
+                    continue
+                mapped_type = _ITEM_VAR_TYPE_TO_TOKEN_TYPE.get(compiled_var.type)
+                if mapped_type is None:
+                    raise TokenSpecRefusalError(
+                        ErrorCode.TOKEN_EXPOSURE,
+                        subject,
+                        f"{subject.display} declares type {compiled_var.type!r}, which has no token dtype landing yet — "
+                        "supported compiled item types are float (authored scalar), bool, and *_ref.",
+                        related=None,
+                    )
+                declarations.append(
+                    ExposedVariable(
+                        f"{profile_name}.{compiled_var.name}",
+                        "item",
+                        str(compiled_var.semantic_type),
+                        mapped_type,
+                        compiled_var.lifetime,
+                        compiled_var.initial_value,
+                        (),
+                        compiled_var.normalization,
+                        profile=profile_name,
+                    )
+                )
+    return tuple(declarations)
 
-    check_indistinguishability(bound, owner_capacity=item_capacity_value or None)
+
+def _require_static_access(
+    subject: TokenSubject, readable_by: Sequence[str], writable_by: Sequence[str], exposed_to: Sequence[str]
+) -> None:
+    assert subject.name is not None
+    if subject.profile is None:
+        variable_id = subject.name
+    else:
+        variable_id = f"{subject.profile}.{subject.name}"
+    try:
+        validate_static_access(variable_id, readable_by, writable_by, exposed_to)
+    except ValueError as exc:
+        raise TokenSpecRefusalError(ErrorCode.TOKEN_EXPOSURE, subject, str(exc), related=None) from exc
+
+
+def _variable_element_artifacts(
+    compiled_vfs_profiles: CompiledVFSProfiles | None,
+    vfs_variables: tuple[VariableDef, ...],
+    *,
+    item_capacity_value: int,
+) -> tuple[tuple[SlotBinding, ...], tuple[tuple[float, ...], ...]]:
+    """Derive variable bindings and their complete fixed payloads in one pass."""
+    declarations = exposed_variable_declarations(compiled_vfs_profiles, vfs_variables)
+    item_declarations = [exposed for exposed in declarations if exposed.profile is not None]
+    if item_declarations and item_capacity_value <= 0:
+        names = ", ".join(exposed.id for exposed in item_declarations)
+        raise TokenSpecRefusalError(
+            ErrorCode.TOKEN_CAPACITY,
+            item_declarations[0].subject,
+            f"Item-profile variable(s) {names} declare exposed_to, but this universe's compiled `item` token "
+            "capacity is 0 (no item catalog declaration, or max_items_in_world + max_items_per_agent × agents_per_world sums "
+            "to 0) — there is no item-arena slot for an exposed item variable to bind against.",
+            related=None,
+        )
+
+    bindings: list[SlotBinding] = []
+    contexts: list[tuple[float, ...]] = []
+
+    def emit(exposed: ExposedVariable, *, owner_capacity: int | None) -> None:
+        descriptor_blocks = tuple(
+            describe_variable(exposed, element_index=i, owner_capacity=owner_capacity) for i in range(exposed.element_count)
+        )
+        assert exposed.normalization is not None
+        width_used = value_block_width_used(exposed.normalization) / VALUE_BLOCK_WIDTH
+        for element_index, descriptor_block in enumerate(descriptor_blocks):
+            if exposed.owner_slot is not None:
+                filler_ref = f"{exposed.id}[{exposed.owner_slot}]"
+            elif exposed.element_count == 1:
+                filler_ref = exposed.id
+            else:
+                filler_ref = f"{exposed.id}[{element_index}]"
+            bindings.append(
+                SlotBinding(slot_index=len(bindings), filler_kind="static", filler_ref=filler_ref, scope=VariableScope(exposed.scope))
+            )
+            payload = [0.0] * len(PAYLOAD_SCHEMAS["variable_element"])
+            try:
+                coordinates = element_coordinate_block(exposed.shape, element_index)
+            except ValueError as exc:
+                raise TokenSpecRefusalError(
+                    ErrorCode.TOKEN_EXPOSURE, exposed.subject, f"{exposed.subject.display}: {exc}", related=None
+                ) from exc
+            position_start = PAYLOAD_SCHEMAS["variable_element"].index("position_0")
+            descriptor_start = PAYLOAD_SCHEMAS["variable_element"].index(DESCRIPTOR_BLOCK_FEATURES[0])
+            payload[position_start : position_start + MAX_POSITION_RANK + 1] = coordinates
+            payload[PAYLOAD_SCHEMAS["variable_element"].index("value_width_used")] = width_used
+            payload[descriptor_start : descriptor_start + DESCRIPTOR_BLOCK_WIDTH] = descriptor_block
+            contexts.append(_float32_tuple(payload, field=f"{exposed.subject.display} fixed payload"))
+
+    for exposed in declarations:
+        if exposed.profile is None:
+            emit(exposed, owner_capacity=None)
+        else:
+            for owner_slot in range(item_capacity_value):
+                emit(replace(exposed, owner_slot=owner_slot), owner_capacity=item_capacity_value)
+
     return tuple(bindings), tuple(contexts)
 
 
@@ -1633,6 +1879,34 @@ def _fixed_payload(type_name: str, values: Mapping[str, float]) -> tuple[float, 
     return _float32_tuple(payload, field=f"Token type {type_name!r} fixed payload")
 
 
+def _affordance_meter_writes(
+    affordance: AffordanceParamConfig, compiled_effect_catalog: EffectCatalog | None
+) -> tuple[AffordanceMeterWrite, ...]:
+    """The affordance's reachable meter writes, with identity-extraction refusals owned by the affordance."""
+    try:
+        return extract_affordance_meter_writes(affordance, effect_catalog=compiled_effect_catalog)
+    except AffordanceIdentityError as exc:
+        raise TokenSpecRefusalError(
+            ErrorCode.TOKEN_SPEC, TokenSubject("affordance", exc.affordance_name, None), str(exc), related=None
+        ) from exc
+
+
+def _effect_declarations(compiled_effect_catalog: EffectCatalog | None) -> tuple[EffectDeclaration, ...]:
+    """Catalogued effects in catalog-ordinal order, as token declarations."""
+    if compiled_effect_catalog is None:
+        return ()
+    if len(compiled_effect_catalog.effects) > 2**24:
+        raise ValueError("Effect catalog has more than 2**24 entries; float32 context indices would not remain exact")
+    name_to_id = compiled_effect_catalog.effect_name_to_id
+    if name_to_id is None:
+        name_to_id = {}
+    ordered_effects = sorted(compiled_effect_catalog.effects.values(), key=lambda effect: name_to_id[effect.id])
+    return tuple(
+        EffectDeclaration(id=effect.id, scope=effect.scope, duration=effect.duration, reapply_policy=effect.reapply_policy)
+        for effect in ordered_effects
+    )
+
+
 def canonical_token_contexts(
     *,
     position_rank: int,
@@ -1676,7 +1950,7 @@ def canonical_token_contexts(
                     affordance_static_features,
                     affordance_signature(
                         affordance=affordance,
-                        effect_deltas=extract_affordance_meter_writes(affordance, effect_catalog=compiled_effect_catalog),
+                        effect_deltas=_affordance_meter_writes(affordance, compiled_effect_catalog),
                         meters=meters_by_name,
                     ),
                     strict=True,
@@ -1700,37 +1974,13 @@ def canonical_token_contexts(
         compiled_vfs_profiles, vfs_variables, item_capacity_value=item_capacity_value
     )
 
-    effect_contexts: tuple[TokenContext, ...] = ()
-    if compiled_effect_catalog is not None:
-        if len(compiled_effect_catalog.effects) > 2**24:
-            raise ValueError("Effect catalog has more than 2**24 entries; float32 context indices would not remain exact")
-        name_to_id = compiled_effect_catalog.effect_name_to_id
-        if name_to_id is None:
-            name_to_id = {}
-        ordered_effects = sorted(compiled_effect_catalog.effects.values(), key=lambda effect: name_to_id[effect.id])
-        effect_contexts = tuple(
-            TokenContext(
-                context_ref=f"effect:{effect.id}",
-                fixed_payload=_fixed_payload(
-                    "effect",
-                    dict(
-                        zip(
-                            EFFECT_STATIC_FEATURES,
-                            effect_static_payload(
-                                EffectDeclaration(
-                                    id=effect.id,
-                                    scope=effect.scope,
-                                    duration=effect.duration,
-                                    reapply_policy=effect.reapply_policy,
-                                )
-                            ),
-                            strict=True,
-                        )
-                    ),
-                ),
-            )
-            for effect in ordered_effects
+    effect_contexts = tuple(
+        TokenContext(
+            context_ref=f"effect:{effect.id}",
+            fixed_payload=_fixed_payload("effect", dict(zip(EFFECT_STATIC_FEATURES, effect_static_payload(effect), strict=True))),
         )
+        for effect in _effect_declarations(compiled_effect_catalog)
+    )
 
     by_type: Mapping[TokenType, tuple[tuple[tuple[float, ...], ...], tuple[TokenContext, ...]]] = {
         "self": ((_fixed_payload("self", rank_context),), ()),
@@ -1803,7 +2053,10 @@ __all__ = [
     "MeterDeclaration",
     "SlotBinding",
     "TokenContext",
+    "TokenIdentity",
     "TokenSpec",
+    "TokenSpecRefusalError",
+    "TokenSubject",
     "TokenType",
     "TokenTypeSchema",
     "affordance_capacity",
@@ -1819,6 +2072,7 @@ __all__ = [
     "effect_static_payload",
     "effect_summary",
     "element_coordinate_block",
+    "exposed_variable_declarations",
     "item_capacity",
     "mean_census_advisory",
     "meter_capacity",
@@ -1832,6 +2086,7 @@ __all__ = [
     "saturate_signed",
     "self_capacity",
     "static_payload_signature",
+    "token_identities",
     "value_block_width_used",
     "variable_element_capacity",
     "variable_element_bindings",

@@ -2,28 +2,28 @@
 
 import pytest
 
-from townlet.effects.compiler import CommandCompiler
+from tests.test_townlet._fixtures.command_namespace import command_compiler
 from townlet.effects.schema import CommandNode, CommandType
 from townlet.world.expression.type_checker import TypeCheckError
 
 
 def test_compiler_modify_validates_path():
     """Compiler validates modify command path exists."""
-    node = CommandNode(type=CommandType.MODIFY, path="target.bar.energy", value_expr="5.0")
+    node = CommandNode(type=CommandType.MODIFY, path="bar.energy", value_expr="5.0")
 
-    schema = {"target.bar.energy": "float"}
-    compiler = CommandCompiler(schema, agent_target=True)
+    schema = {"bar.energy": "float"}
+    compiler = command_compiler(schema)
 
     compiled = compiler.compile_command(node)
-    assert compiled.path == "target.bar.energy"
+    assert compiled.path == "bar.energy"
 
 
 def test_compiler_modify_rejects_invalid_path():
     """Compiler rejects invalid path in modify command."""
-    node = CommandNode(type=CommandType.MODIFY, path="target.bar.invalid", value_expr="5.0")
+    node = CommandNode(type=CommandType.MODIFY, path="bar.invalid", value_expr="5.0")
 
-    schema = {"target.bar.energy": "float"}
-    compiler = CommandCompiler(schema, agent_target=True)
+    schema = {"bar.energy": "float"}
+    compiler = command_compiler(schema)
 
     with pytest.raises(TypeCheckError, match="invalid"):
         compiler.compile_command(node)
@@ -31,25 +31,25 @@ def test_compiler_modify_rejects_invalid_path():
 
 def test_compiler_modify_validates_expression():
     """Compiler type-checks value expression."""
-    node = CommandNode(type=CommandType.MODIFY, path="target.bar.energy", value_expr="target.bar.energy + 0.05")
+    node = CommandNode(type=CommandType.MODIFY, path="bar.energy", value_expr="bar.energy + 0.05")
 
-    schema = {"target.bar.energy": "float"}
-    compiler = CommandCompiler(schema, agent_target=True)
+    schema = {"bar.energy": "float"}
+    compiler = command_compiler(schema)
 
     compiled = compiler.compile_command(node)
-    assert compiled.value_expr == "target.bar.energy + 0.05"
+    assert compiled.value_expr == "bar.energy + 0.05"
 
 
 def test_compiler_modify_rejects_type_mismatch():
     """Compiler rejects type mismatch in modify command."""
     node = CommandNode(
         type=CommandType.MODIFY,
-        path="target.bar.energy",  # float
+        path="bar.energy",  # float
         value_expr="true",  # bool - type mismatch!
     )
 
-    schema = {"target.bar.energy": "float"}
-    compiler = CommandCompiler(schema, agent_target=True)
+    schema = {"bar.energy": "float"}
+    compiler = command_compiler(schema)
 
     with pytest.raises(TypeCheckError, match="Type mismatch"):
         compiler.compile_command(node)
@@ -59,29 +59,29 @@ def test_compiler_if_validates_bool_condition():
     """Compiler validates if condition is boolean."""
     node = CommandNode(
         type=CommandType.IF,
-        condition_expr="target.bar.energy < 0.2",  # Should be bool
+        condition_expr="bar.energy < 0.2",  # Should be bool
         then_commands=[],
         else_commands=[],
     )
 
-    schema = {"target.bar.energy": "float"}
-    compiler = CommandCompiler(schema, agent_target=True)
+    schema = {"bar.energy": "float"}
+    compiler = command_compiler(schema)
 
     compiled = compiler.compile_command(node)
-    assert compiled.condition_expr == "target.bar.energy < 0.2"
+    assert compiled.condition_expr == "bar.energy < 0.2"
 
 
 def test_compiler_if_rejects_non_bool_condition():
     """Compiler rejects non-boolean if condition."""
     node = CommandNode(
         type=CommandType.IF,
-        condition_expr="target.bar.energy",  # float, not bool!
+        condition_expr="bar.energy",  # float, not bool!
         then_commands=[],
         else_commands=[],
     )
 
-    schema = {"target.bar.energy": "float"}
-    compiler = CommandCompiler(schema, agent_target=True)
+    schema = {"bar.energy": "float"}
+    compiler = command_compiler(schema)
 
     with pytest.raises(TypeCheckError, match="bool"):
         compiler.compile_command(node)
@@ -95,7 +95,7 @@ def test_compiler_for_each_accepts_registered_collection_without_expr():
         body=[],
     )
 
-    compiler = CommandCompiler(schema={}, agent_target=True)
+    compiler = command_compiler({})
     compiled = compiler.compile_command(node)
 
     assert compiled.collection == "all_agents"
@@ -110,7 +110,7 @@ def test_compiler_for_each_rejects_unknown_collection():
         body=[],
     )
 
-    compiler = CommandCompiler(schema={}, agent_target=True)
+    compiler = command_compiler({})
 
     with pytest.raises(TypeCheckError, match="Unknown for_each collection"):
         compiler.compile_command(node)
@@ -121,11 +121,11 @@ def test_compiler_for_each_accepts_collection_expression():
     node = CommandNode(
         type=CommandType.FOR_EACH,
         collection=None,
-        collection_expr="target.inventory.items",
+        collection_expr="held",
         body=[],
     )
 
-    compiler = CommandCompiler(schema={"target.inventory.items": "list"}, agent_target=True)
+    compiler = command_compiler({"held": "list"})
     compiled = compiler.compile_command(node)
 
     assert compiled.collection is None
@@ -141,7 +141,7 @@ def test_compiler_switch_happy_path():
     )
 
     schema = {"mode": "int"}
-    compiler = CommandCompiler(schema, agent_target=True)
+    compiler = command_compiler(schema)
 
     compiled = compiler.compile_command(node)
     assert compiled.switch_ast is not None
@@ -157,28 +157,10 @@ def test_compiler_switch_rejects_type_mismatch_case():
     )
 
     schema = {"mode": "int"}
-    compiler = CommandCompiler(schema, agent_target=True)
+    compiler = command_compiler(schema)
 
     with pytest.raises(TypeCheckError, match="type mismatch"):
         compiler.compile_command(node)
-
-
-def test_compiler_reduce_rejected_for_now():
-    """Reduce command compiles when collection is fixed-size tensor path."""
-    node = CommandNode(
-        type=CommandType.REDUCE,
-        reduce_expr="bar.col",
-        reduce_iterator="i",
-        reduce_init_expr="0",
-        reduce_body_expr="acc + i",
-        reduce_target="target.bar.energy",
-    )
-
-    schema = {"target.bar.energy": "int", "bar.col": "tensor"}
-    compiler = CommandCompiler(schema, agent_target=True)
-
-    compiled = compiler.compile_command(node)
-    assert compiled.collection_ast is not None
 
 
 def test_compiler_for_each_rejects_nested_for_each():
@@ -186,7 +168,7 @@ def test_compiler_for_each_rejects_nested_for_each():
     inner = CommandNode(type=CommandType.FOR_EACH, collection="all_agents", body=[])
     outer = CommandNode(type=CommandType.FOR_EACH, collection="all_agents", body=[inner])
 
-    compiler = CommandCompiler(schema={}, agent_target=True)
+    compiler = command_compiler({})
 
     with pytest.raises(TypeCheckError, match="Nested for_each"):
         compiler.compile_command(outer)
@@ -202,7 +184,7 @@ def test_compiler_for_each_rejects_nested_for_each_in_switch_case():
     )
     outer = CommandNode(type=CommandType.FOR_EACH, collection="all_agents", body=[switch])
 
-    compiler = CommandCompiler(schema={"mode": "int"}, agent_target=True)
+    compiler = command_compiler({"mode": "int"})
 
     with pytest.raises(TypeCheckError, match="Nested for_each"):
         compiler.compile_command(outer)
@@ -214,7 +196,7 @@ def test_compiler_for_each_rejects_nested_for_each_in_parallel():
     parallel = CommandNode(type=CommandType.PARALLEL, parallel_commands=[inner])
     outer = CommandNode(type=CommandType.FOR_EACH, collection="all_agents", body=[parallel])
 
-    compiler = CommandCompiler(schema={}, agent_target=True)
+    compiler = command_compiler({})
 
     with pytest.raises(TypeCheckError, match="Nested for_each"):
         compiler.compile_command(outer)
@@ -226,7 +208,7 @@ def test_compiler_for_each_rejects_nested_for_each_in_delay():
     delay = CommandNode(type=CommandType.DELAY, delay_ticks_expr="1", delay_commands=[inner])
     outer = CommandNode(type=CommandType.FOR_EACH, collection="all_agents", body=[delay])
 
-    compiler = CommandCompiler(schema={}, agent_target=True)
+    compiler = command_compiler({})
 
     with pytest.raises(TypeCheckError, match="Nested for_each"):
         compiler.compile_command(outer)
@@ -237,10 +219,10 @@ def test_compiler_delay_rejects_when_time_disabled():
     node = CommandNode(
         type=CommandType.DELAY,
         delay_ticks_expr="1",
-        delay_commands=[CommandNode(type=CommandType.MODIFY, path="vfs.foo", value_expr="1")],
+        delay_commands=[CommandNode(type=CommandType.MODIFY, path="foo", value_expr="1")],
     )
 
-    compiler = CommandCompiler(schema={"vfs.foo": "float"}, time_enabled=False, agent_target=True)
+    compiler = command_compiler({"foo": "float"}, time_enabled=False)
 
     with pytest.raises(TypeCheckError, match="time is disabled"):
         compiler.compile_command(node)
@@ -257,7 +239,7 @@ def test_compiler_spawn_item_validates_item_type_required():
         position="random",
     )
 
-    compiler = CommandCompiler(schema={}, agent_target=True)
+    compiler = command_compiler({})
 
     with pytest.raises(TypeCheckError, match="item_type"):
         compiler.compile_command(node)
@@ -272,7 +254,7 @@ def test_compiler_spawn_item_accepts_simple_position():
         quantity=1,
     )
 
-    compiler = CommandCompiler(schema={}, agent_target=True)
+    compiler = command_compiler({})
     compiled = compiler.compile_command(node)
 
     assert compiled.item_type == "health_potion"
@@ -285,11 +267,11 @@ def test_compiler_spawn_item_validates_position_expression():
         type=CommandType.SPAWN_ITEM,
         item_type="health_potion",
         position="coords",  # Not a simple value
-        position_expr="target.position + 1",
+        position_expr="cell + 1",
         quantity=1,
     )
 
-    compiler = CommandCompiler(schema={"target.position": "int"}, agent_target=True)
+    compiler = command_compiler({"cell": "int"})
     compiled = compiler.compile_command(node)
 
     assert compiled.item_type == "health_potion"

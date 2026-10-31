@@ -12,6 +12,7 @@ from pathlib import Path
 import msgpack
 import pytest
 
+from tests.test_townlet.helpers.token_widths import fixed_width_for
 from townlet.universe.compiled import COMPILED_SCHEMA_VERSION, CompiledUniverse
 from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.compilers.observation import ObservationCompiler
@@ -71,7 +72,10 @@ class TestL1TokenEmission:
         # Compact dynamic transport excludes immutable context and rank padding.
         assert _selected(l1_universe).token_spec.census["variable_element"] == 1
         assert _selected(l1_universe).token_spec.total_dims == 118
-        assert _selected(l1_universe).token_spec.fixed_total_dims == 4136
+        # The fixed width derives from the census pinned above and the per-type payload
+        # schemas; this is the ONE literal pin of the shipped width, so vocabulary drift is loud.
+        spec = _selected(l1_universe).token_spec
+        assert spec.fixed_total_dims == fixed_width_for(spec.census) == 3993
 
     def test_all_roster_types_present_in_engine_order(self, l1_universe):
         assert tuple(t.type_name for t in _selected(l1_universe).token_spec.types) == TOKEN_TYPE_ROSTER
@@ -430,12 +434,29 @@ class TestVariableElementBindings:
         with pytest.raises(ValueError, match="rank_scaled"):
             variable_element_bindings(None, defs, item_capacity_value=0)
 
-    def test_indistinguishable_pair_refuses_naming_both(self):
-        # Identical declarations apart from the id: identical static signatures.
+    def test_indistinguishable_pair_binds_slots_and_refuses_only_as_an_identity(self):
+        # Identical declarations apart from the id: identical static signatures. Binding
+        # is not where that is refused (a flat brain reads the two slots apart); the
+        # identity roster is, for a permutation-invariant brain.
+        from townlet.config.affordances_v2_config import AffordancesV2Config
+        from townlet.universe.dto.token_spec import TokenSpecRefusalError, check_indistinguishability, token_identities
+
         defs = (_variable_def("twin_a", normalization=_BOUNDED), _variable_def("twin_b", normalization=_BOUNDED))
-        with pytest.raises(ValueError, match="indistinguishable") as excinfo:
-            variable_element_bindings(None, defs, item_capacity_value=0)
-        assert "twin_a" in str(excinfo.value) and "twin_b" in str(excinfo.value)
+        assert [b.filler_ref for b in variable_element_bindings(None, defs, item_capacity_value=0)] == ["twin_a", "twin_b"]
+        identities = token_identities(
+            meter_declarations=(),
+            affordances=AffordancesV2Config(version="1.0", affordances=[], modulations=[]),
+            enabled_affordances=(),
+            position_rank=2,
+            compiled_effect_catalog=None,
+            compiled_vfs_profiles=None,
+            vfs_variables=defs,
+        )
+        with pytest.raises(TokenSpecRefusalError, match="twin_a.*twin_b.*permutation-invariant") as excinfo:
+            check_indistinguishability(identities)
+        assert excinfo.value.code == "TOKEN-IDENTITY"
+        assert excinfo.value.subject.name == "twin_b" and excinfo.value.related is not None
+        assert excinfo.value.related.name == "twin_a"
 
     def test_unexposed_variable_binds_nothing(self):
         # Empty exposure is explicit on the canonical variable and occupies no slot.
@@ -534,8 +555,11 @@ class TestMeanCensusAdvisoryWiring:
                 )
             }
         )
+        from townlet.universe.source_map import SourceMap
+
         compiler = ObservationCompiler()
-        meter_declarations = compiler.compile_meter_declarations(environment, bars)
+        source_map = SourceMap()
+        meter_declarations = compiler.compile_meter_declarations(environment, bars, level_name="L1", source_map=source_map)
         return compiler.build_token_spec(
             l1_universe.stratum,
             meter_declarations,
@@ -545,6 +569,9 @@ class TestMeanCensusAdvisoryWiring:
             None,
             (),
             brain,
+            enabled_affordances=(),
+            level_name="L1",
+            source_map=source_map,
         )
 
     def test_mean_aggregator_over_threshold_advises(self, l1_universe):

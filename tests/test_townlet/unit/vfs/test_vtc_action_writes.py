@@ -66,14 +66,13 @@ def _action(*, action_id: int, name: str, writes: list[WriteSpec]) -> ActionConf
         icon=None,
         source="custom",
         source_affordance=None,
-        reads=[],
         writes=writes,
     )
 
 
 def _agent_scopes(action: ActionConfig) -> dict[str, VTCWriteTarget]:
     """Every target in these kernel tests is per-agent float storage."""
-    return {write.variable_id: VTCWriteTarget(VariableScope.AGENT, "scalar", meter=False) for write in action.writes}
+    return {write.variable_id: VTCWriteTarget(VariableScope.AGENT, "scalar", meter=False, expression=None) for write in action.writes}
 
 
 def test_vtc_action_writes_applies_write_only_to_selected_active_agents() -> None:
@@ -98,6 +97,7 @@ def test_vtc_action_writes_applies_write_only_to_selected_active_agents() -> Non
         bars_state={},
         active_mask=torch.tensor([True, True, False]),
         device=torch.device("cpu"),
+        draws=None,
     ).values
 
     assert torch.allclose(updated["energy"], torch.tensor([0.35, 0.2, 0.3]))
@@ -125,6 +125,7 @@ def test_vtc_action_writes_combines_action_mask_with_condition() -> None:
         bars_state={},
         active_mask=torch.tensor([True, True, True]),
         device=torch.device("cpu"),
+        draws=None,
     ).values
 
     assert torch.allclose(updated["energy"], torch.tensor([0.6, 0.8, 0.8]))
@@ -136,7 +137,7 @@ def test_vtc_action_writes_can_target_meter_bars() -> None:
         name="REST",
         writes=[
             _write(
-                variable_id="energy",
+                variable_id="bar.energy",
                 expression="bar.energy + 0.25",
                 condition=None,
                 composition="overwrite",
@@ -145,13 +146,14 @@ def test_vtc_action_writes_can_target_meter_bars() -> None:
         ],
     )
 
-    program = compile_vtc_action_writes([action], {"energy": VTCWriteTarget(VariableScope.AGENT, "scalar", meter=True)})
+    program = compile_vtc_action_writes([action], {"energy": VTCWriteTarget(VariableScope.AGENT, "scalar", meter=True, expression=None)})
     updated = program.apply(
         actions=torch.tensor([11, 0]),
         vfs_state={},
         bars_state={"energy": torch.tensor([0.2, 0.3])},
         active_mask=torch.tensor([True, True]),
         device=torch.device("cpu"),
+        draws=None,
     ).values
 
     assert torch.allclose(updated["energy"], torch.tensor([0.45, 0.3]))
@@ -212,6 +214,7 @@ def test_vtc_action_writes_composes_additive_and_multiplicative_writes() -> None
         bars_state={},
         active_mask=torch.tensor([True, True]),
         device=torch.device("cpu"),
+        draws=None,
     ).values
 
     assert torch.allclose(updated["energy"], torch.tensor([1.0, 0.7]))
@@ -258,6 +261,7 @@ def test_vtc_action_writes_composes_min_max_and_clamp_writes() -> None:
         bars_state={},
         active_mask=torch.tensor([True, True]),
         device=torch.device("cpu"),
+        draws=None,
     ).values
 
     assert torch.allclose(updated["floor_value"], torch.tensor([0.4, 0.2]))
@@ -265,47 +269,13 @@ def test_vtc_action_writes_composes_min_max_and_clamp_writes() -> None:
     assert torch.allclose(updated["energy"], torch.tensor([1.0, 0.8]))
 
 
-def test_vtc_action_writes_claim_if_free_keeps_existing_claim_and_first_writer() -> None:
-    action = _action(
-        action_id=13,
-        name="CLAIM_BED",
-        writes=[
-            _write_with_metadata(
-                variable_id="bed_owner",
-                expression="100.0",
-                condition=None,
-                composition="claim_if_free",
-                phase="apply_action_effects",
-                priority=0,
-                clamp=None,
-                telemetry_label="first_bed_claim",
-            ),
-            _write_with_metadata(
-                variable_id="bed_owner",
-                expression="200.0",
-                condition=None,
-                composition="claim_if_free",
-                phase="apply_action_effects",
-                priority=1,
-                clamp=None,
-                telemetry_label="second_bed_claim",
-            ),
-        ],
-    )
+@pytest.mark.parametrize("composition", ["claim_if_free", "capacity_claim"])
+def test_a_claim_on_an_agent_row_refuses_at_compile(composition: str) -> None:
+    """An occupancy claim writes a source-affordance row of affordance-scoped state.
 
-    program = compile_vtc_action_writes([action], _agent_scopes(action))
-    updated = program.apply(
-        actions=torch.tensor([13, 0, 13]),
-        vfs_state={"bed_owner": torch.tensor([-1.0, -1.0, 7.0])},
-        bars_state={},
-        active_mask=torch.tensor([True, True, True]),
-        device=torch.device("cpu"),
-    ).values
-
-    assert torch.allclose(updated["bed_owner"], torch.tensor([100.0, -1.0, 7.0]))
-
-
-def test_vtc_action_writes_capacity_claim_caps_claim_count_in_batch_order() -> None:
+    On an agent row it was a different program: `capacity_claim` counted claims across the
+    whole batch, so one world's claim used up another world's capacity (S1).
+    """
     action = _action(
         action_id=14,
         name="JOIN_QUEUE",
@@ -314,7 +284,7 @@ def test_vtc_action_writes_capacity_claim_caps_claim_count_in_batch_order() -> N
                 variable_id="has_queue_slot",
                 expression="1.0",
                 condition=None,
-                composition="capacity_claim",
+                composition=composition,
                 phase="apply_action_effects",
                 priority=0,
                 clamp=(0.0, 2.0),
@@ -323,49 +293,8 @@ def test_vtc_action_writes_capacity_claim_caps_claim_count_in_batch_order() -> N
         ],
     )
 
-    program = compile_vtc_action_writes([action], _agent_scopes(action))
-    updated = program.apply(
-        actions=torch.tensor([14, 14, 14, 14]),
-        vfs_state={"has_queue_slot": torch.tensor([1.0, 0.0, 0.0, 0.0])},
-        bars_state={},
-        active_mask=torch.tensor([True, True, True, True]),
-        device=torch.device("cpu"),
-    ).values
-
-    assert torch.allclose(updated["has_queue_slot"], torch.tensor([1.0, 1.0, 0.0, 0.0]))
-
-
-def test_vtc_action_writes_append_event_uses_first_empty_slot() -> None:
-    action = _action(
-        action_id=15,
-        name="BROADCAST",
-        writes=[
-            _write_with_metadata(
-                variable_id="recent_message_tokens",
-                expression="9.0",
-                condition=None,
-                composition="append_event",
-                phase="apply_action_effects",
-                priority=0,
-                clamp=None,
-                telemetry_label="append_message_token",
-            )
-        ],
-    )
-
-    program = compile_vtc_action_writes([action], _agent_scopes(action))
-    updated = program.apply(
-        actions=torch.tensor([15, 15, 15]),
-        vfs_state={"recent_message_tokens": torch.tensor([[0.0, 0.0, 0.0], [5.0, 0.0, 0.0], [4.0, 5.0, 6.0]])},
-        bars_state={},
-        active_mask=torch.tensor([True, True, True]),
-        device=torch.device("cpu"),
-    ).values
-
-    assert torch.allclose(
-        updated["recent_message_tokens"],
-        torch.tensor([[9.0, 0.0, 0.0], [5.0, 9.0, 0.0], [4.0, 5.0, 6.0]]),
-    )
+    with pytest.raises(VTCWriteRefusalError, match="occupancy claim writes its action's source-affordance row"):
+        compile_vtc_action_writes([action], _agent_scopes(action))
 
 
 def test_vtc_action_writes_resolves_priority_and_last_write_wins() -> None:
@@ -374,7 +303,7 @@ def test_vtc_action_writes_resolves_priority_and_last_write_wins() -> None:
         name="CONFLICT",
         writes=[
             _write_with_metadata(
-                variable_id="target",
+                variable_id="winner",
                 expression="0.1",
                 condition=None,
                 composition="priority_write",
@@ -384,7 +313,7 @@ def test_vtc_action_writes_resolves_priority_and_last_write_wins() -> None:
                 telemetry_label="low_priority",
             ),
             _write_with_metadata(
-                variable_id="target",
+                variable_id="winner",
                 expression="0.9",
                 condition=None,
                 composition="priority_write",
@@ -419,13 +348,14 @@ def test_vtc_action_writes_resolves_priority_and_last_write_wins() -> None:
     program = compile_vtc_action_writes([action], _agent_scopes(action))
     updated = program.apply(
         actions=torch.tensor([6, 0]),
-        vfs_state={"target": torch.tensor([0.0, 0.0]), "status": torch.tensor([0.0, 0.0])},
+        vfs_state={"winner": torch.tensor([0.0, 0.0]), "status": torch.tensor([0.0, 0.0])},
         bars_state={},
         active_mask=torch.tensor([True, True]),
         device=torch.device("cpu"),
+        draws=None,
     ).values
 
-    assert torch.allclose(updated["target"], torch.tensor([0.9, 0.0]))
+    assert torch.allclose(updated["winner"], torch.tensor([0.9, 0.0]))
     assert torch.allclose(updated["status"], torch.tensor([0.7, 0.0]))
 
 
@@ -464,6 +394,7 @@ def test_vtc_action_writes_reads_phase_snapshot_before_committing_writes() -> No
         bars_state={},
         active_mask=torch.tensor([True]),
         device=torch.device("cpu"),
+        draws=None,
     ).values
 
     assert torch.allclose(updated["energy"], torch.tensor([2.0]))
@@ -539,6 +470,7 @@ def test_vtc_action_writes_uses_spec_phase_order_not_lexical_order() -> None:
         bars_state={},
         active_mask=torch.tensor([True]),
         device=torch.device("cpu"),
+        draws=None,
     ).values
 
     assert torch.allclose(updated["energy"], torch.tensor([20.0]))
@@ -580,6 +512,7 @@ def test_vtc_action_writes_accepts_configured_transition_phase_order() -> None:
         bars_state={},
         active_mask=torch.tensor([True]),
         device=torch.device("cpu"),
+        draws=None,
     ).values
 
     assert torch.allclose(updated["energy"], torch.tensor([11.0]))

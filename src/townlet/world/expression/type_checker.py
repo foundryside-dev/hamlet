@@ -33,6 +33,7 @@ from townlet.world.expression.ast_nodes import (
     UnaryOp,
     Variable,
 )
+from townlet.world.expression.functions import branch_type
 
 
 class TypeCheckError(Exception):
@@ -268,6 +269,14 @@ class TypeChecker(ASTVisitor):
             OperatorType.GTE,
         }:
             if node.op in {OperatorType.EQ, OperatorType.NEQ}:
+                # A vector or tensor compared elementwise is a vector of truth values, not the one
+                # bool the operator is typed as; refuse it rather than define an implicit all().
+                for operand_type in (left_type, right_type):
+                    if operand_type.startswith(("vec", "tensor")):
+                        raise TypeCheckError(
+                            f"Comparison operator {node.op.value} compares one value per row, but '{operand_type}' has elements. "
+                            "Compare an element (gather(v, i) == x) or a distance (distance(a, b) == 0.0)."
+                        )
                 # Equality/inequality: allow matching types or numeric pair with promotion
                 if left_type == right_type:
                     return "bool"
@@ -375,12 +384,11 @@ class TypeChecker(ASTVisitor):
         true_type = node.true_branch.accept(self)
         false_type = node.false_branch.accept(self)
 
-        # Branches must match
-        if true_type != false_type:
+        # Branches must unify: equal, numeric promotion only if equal, or a reference and its int null.
+        unified = branch_type(true_type, false_type)
+        if true_type != false_type and (unified is None or {true_type, false_type} <= {"int", "float"}):
             raise TypeCheckError(f"If branches must have same type. Got {true_type} (true) and {false_type} (false)")
-
-        # Result type is branch type (type cast for mypy)
-        return str(true_type)
+        return str(unified)
 
     def visit_index_access(self, node: IndexAccess) -> str:
         """Type check index access.

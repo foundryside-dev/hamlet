@@ -1,194 +1,145 @@
-"""Temporal history buffers for expression evaluation.
+"""Temporal history for expression evaluation: one ring buffer per history key.
 
-Manages per-key ring buffers, warm-length tracking, and EMA/edge caches
-for temporal operators (lag, delta, moving_average, ema, rate_of_change,
-rising_edge, falling_edge). Keys are string identifiers such as
-"bar.energy" or "vfs.energy_deficit"; window sizes are defined per-key
-via a history spec produced at compile time.
+A history key names the value a temporal operator reads the past of: ``bar.<meter>``
+for a meter, ``vfs.<id>`` for a registry variable (the engine clock is ``vfs.tick``).
+The compiled history spec maps each key to its ring depth, the deepest ``lag`` any
+operator needs.
+
+The contract, which every temporal operator is defined through:
+
+- **One sample per instant.** The engine evaluates every expression once per instant
+  (reset's instant 0, then each step). After all of them evaluate, it ``commit``\\ s the
+  committed value of every key; ``lag(x, n)`` at instant ``t`` is that value at
+  instant ``t - n``. A ``lag`` read therefore never reads the in-evaluation value, which
+  is why it is not a dependency edge and why ``x: f(lag(x, 1))`` is well defined.
+- **The pre-history is the episode-start value.** At the first instant of an episode
+  ``seed`` fills every slot of a key's ring with the value the key held before that
+  instant's evaluation: a meter's initial value, a variable's declared initial value
+  (tick and episode lifetime) or carried value (persistent lifetime). So ``lag(x, n)``
+  before ``n`` instants exist returns that value — never an undocumented zero.
+- **History is episode-scoped for every lifetime.** ``reset`` drops every ring; the
+  next ``seed`` refills it. For a persistent variable the seed is its carried value, so
+  ``lag(p, 1)`` at an episode's first instant is exactly the previous episode's last
+  value, and every deeper lag collapses to it until the ring refills.
+- **A dead world's history does not advance.** ``commit`` writes only the rows its
+  ``live`` mask selects; a done world's ring, cursor and moving averages stay frozen.
+
+Rows are worlds (S1: one agent per world, so agent and global keys are both ``[N]``).
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from collections.abc import Mapping
 
 import torch
+
+from townlet.world.expression.ast_nodes import ASTNode, PathAccess, Variable
 
 MAX_WINDOW_SIZE = 256
 
 
-@dataclass
+def history_key(node: ASTNode) -> str | None:
+    """The history key a temporal operator's first argument names, or None if it names no value."""
+    if isinstance(node, PathAccess):
+        return ".".join(node.segments)
+    if isinstance(node, Variable):
+        return f"vfs.{node.name}"
+    return None
+
+
+def history_value(key: str, bars: Mapping[str, torch.Tensor], vfs: Mapping[str, torch.Tensor]) -> torch.Tensor:
+    """The current value of one history key in the engine's bar and registry state."""
+    root, _, name = key.partition(".")
+    sources = {"bar": bars, "vfs": vfs}
+    if root not in sources or name not in sources[root]:
+        raise KeyError(f"Engine defect: history key '{key}' names no meter or registry variable in the evaluation state")
+    return sources[root][name]
+
+
 class TemporalHistory:
-    """Ring buffers and caches for temporal operators."""
+    """Ring buffers (``[N, depth]`` per key) plus the running state of each ``ema``."""
 
-    history_spec: dict[str, int]
-    device: torch.device
-
-    def __post_init__(self) -> None:
+    def __init__(self, history_spec: Mapping[str, int], device: torch.device) -> None:
+        for key, depth in history_spec.items():
+            if not 1 <= depth <= MAX_WINDOW_SIZE:
+                raise ValueError(f"Engine defect: history depth for '{key}' is {depth}; the compiler admits 1..{MAX_WINDOW_SIZE}")
+        self.history_spec = dict(history_spec)
+        self.device = device
         self._buffers: dict[str, torch.Tensor] = {}
-        self._write_index: dict[str, torch.Tensor] = {}
-        self._warm_length: dict[str, torch.Tensor] = {}
-        self._ema_state: dict[str, torch.Tensor] = {}
-        self._edge_cache: dict[str, torch.Tensor] = {}
+        self._cursor: dict[str, torch.Tensor] = {}
+        self._ema: dict[tuple[str, float], torch.Tensor] = {}
+        self._commits = 0
 
-    def _ensure_allocated(self, key: str, value: torch.Tensor) -> None:
-        window = self.history_spec.get(key)
-        if window is None:
-            return
-        if window <= 0:
-            raise ValueError(f"History window must be > 0 for key '{key}', got {window}")
-        if window > MAX_WINDOW_SIZE:
-            raise ValueError(f"History window for '{key}' exceeds MAX_WINDOW_SIZE={MAX_WINDOW_SIZE}")
+    @property
+    def seeded(self) -> bool:
+        return bool(self._buffers) or not self.history_spec
 
-        if key in self._buffers:
-            return
+    def seed(self, bars: Mapping[str, torch.Tensor], vfs: Mapping[str, torch.Tensor]) -> None:
+        """Fill every ring with each key's pre-evaluation value (the episode-start value)."""
+        if self._buffers:
+            raise RuntimeError("Engine defect: history seeded twice in one episode; reset() starts an episode")
+        for key, depth in self.history_spec.items():
+            value = history_value(key, bars, vfs).to(self.device)
+            if value.dim() != 1:
+                raise RuntimeError(f"Engine defect: history key '{key}' has shape {tuple(value.shape)}; rows must be [N]")
+            self._buffers[key] = value.unsqueeze(1).expand(value.shape[0], depth).clone()
+            self._cursor[key] = torch.zeros(value.shape[0], dtype=torch.long, device=self.device)
 
-        batch = value.shape[0]
-        buffer_shape = (batch, window, *value.shape[1:])
-        self._buffers[key] = torch.zeros(buffer_shape, device=self.device, dtype=value.dtype)
-        self._write_index[key] = torch.zeros((batch,), device=self.device, dtype=torch.long)
-        self._warm_length[key] = torch.zeros((batch,), device=self.device, dtype=torch.long)
-        if value.dtype == torch.bool:
-            self._edge_cache[key] = torch.zeros(value.shape, device=self.device, dtype=torch.bool)
-
-    def push(self, key: str, value: torch.Tensor) -> None:
-        """Push current value into ring buffer (once per timestep)."""
-
-        window = self.history_spec.get(key)
-        if window is None:
-            return
-        self._ensure_allocated(key, value)
-        buffer = self._buffers[key]
-        idx = self._write_index[key]
-        warm = self._warm_length[key]
-
-        batch_indices = torch.arange(value.shape[0], device=self.device)
-        target = idx % window
-        buffer[batch_indices, target, ...] = value
-
-        self._write_index[key] = (idx + 1) % window
-        self._warm_length[key] = torch.clamp(warm + 1, max=window)
-
-        if value.dtype == torch.bool:
-            self._edge_cache[key] = value
-
-    def lag(self, key: str, n: int, fallback: torch.Tensor) -> torch.Tensor:
-        window = self.history_spec.get(key)
-        if window is None:
-            return fallback
-        if n < 0:
-            raise ValueError(f"lag requires non-negative n, got {n}")
+    def _ring(self, key: str) -> tuple[torch.Tensor, torch.Tensor]:
         if key not in self._buffers:
-            return torch.zeros_like(fallback)
+            if key not in self.history_spec:
+                raise KeyError(f"Engine defect: history key '{key}' is not in the compiled history spec")
+            raise RuntimeError(f"Engine defect: history key '{key}' read before the episode's history was seeded")
+        return self._buffers[key], self._cursor[key]
 
-        buffer = self._buffers[key]
-        idx = self._write_index[key]
-        warm = self._warm_length[key]
-        batch = buffer.shape[0]
-        batch_indices = torch.arange(batch, device=self.device)
-
-        target = (idx - n) % window
-        values = buffer[batch_indices, target, ...]
-
-        valid = warm >= n
-        while valid.dim() < values.dim():
-            valid = valid.unsqueeze(-1)
-        return torch.where(valid, values, torch.zeros_like(values))
-
-    def moving_average(self, key: str, window: int, current: torch.Tensor) -> torch.Tensor:
-        if window <= 0:
-            raise ValueError("moving_average window must be > 0")
-        spec_window = self.history_spec.get(key)
-        if spec_window is None:
-            return current
-        if window > spec_window:
-            raise ValueError(f"moving_average window {window} exceeds spec window {spec_window} for key '{key}'")
-
-        self._ensure_allocated(key, current)
-        buffer = self._buffers[key]
-        idx = self._write_index[key]
-        warm = self._warm_length[key]
-        batch = buffer.shape[0]
-
-        # Include current sample + up to window-1 historical samples
-        past_window = min(max(window - 1, 0), spec_window)
-        if past_window == 0:
-            return current
-
-        batch_indices = torch.arange(batch, device=self.device)
-        offsets = torch.arange(past_window, device=self.device)
-        target = (idx.unsqueeze(1) - 1 - offsets.unsqueeze(0)) % spec_window
-        selected = buffer[batch_indices.unsqueeze(1), target, ...]
-
-        warm_past = torch.clamp(warm, max=past_window)
-        mask = offsets.unsqueeze(0) < warm_past.unsqueeze(1)
-        while mask.dim() < selected.dim():
-            mask = mask.unsqueeze(-1)
-        masked_past = torch.where(mask, selected, torch.zeros_like(selected))
-
-        sum_values = current + masked_past.sum(dim=1)
-        warm_total = torch.clamp(warm_past + 1, min=1).to(buffer.dtype)
-        while warm_total.dim() < sum_values.dim():
-            warm_total = warm_total.unsqueeze(-1)
-        return sum_values / warm_total
+    def lag(self, key: str, n: int) -> torch.Tensor:
+        """The committed value of ``key`` ``n`` instants ago (``1 <= n <= depth``)."""
+        buffer, cursor = self._ring(key)
+        depth = buffer.shape[1]
+        if not 1 <= n <= depth:
+            raise RuntimeError(f"Engine defect: lag({key}, {n}) outside the compiled depth 1..{depth}")
+        slot = (cursor - n) % depth
+        return buffer.gather(1, slot.unsqueeze(1)).squeeze(1)
 
     def ema(self, key: str, alpha: float, current: torch.Tensor) -> torch.Tensor:
-        if alpha <= 0 or alpha > 1:
-            raise ValueError(f"ema alpha must be in (0,1], got {alpha}")
-
-        self._ensure_allocated(key, current)
-        state = self._ema_state.get(key)
+        """``alpha * current + (1 - alpha) * previous``; the previous before the first instant is the seed."""
+        state = self._ema.get((key, alpha))
         if state is None:
-            state = current
-        else:
-            state = alpha * current + (1 - alpha) * state
+            if self._commits:
+                raise RuntimeError(
+                    f"Engine defect: ema({key}, {alpha}) first evaluated after the episode's first instant; "
+                    "every expression evaluates at every instant"
+                )
+            state = self.lag(key, 1).to(torch.float32)
+            self._ema[(key, alpha)] = state
+        return alpha * current.to(torch.float32) + (1.0 - alpha) * state
 
-        self._ema_state[key] = state
-        return state
-
-    def rate_of_change(self, key: str, window: int, current: torch.Tensor) -> torch.Tensor:
-        if window <= 0:
-            raise ValueError("rate_of_change window must be > 0")
-        lagged = self.lag(key, window, fallback=torch.zeros_like(current))
-        return (current.to(dtype=torch.float32) - lagged.to(dtype=torch.float32)) / float(window)
-
-    def edge(self, key: str, current: torch.Tensor, rising: bool) -> torch.Tensor:
-        if key not in self._edge_cache:
-            # Ensure allocation for bool tensors
-            self._ensure_allocated(key, current)
-            if key not in self._edge_cache:
-                self._edge_cache[key] = torch.zeros_like(current, dtype=torch.bool)
-
-        prev = self._edge_cache[key]
-        if rising:
-            result = torch.logical_and(torch.logical_not(prev), current)
-        else:
-            result = torch.logical_and(prev, torch.logical_not(current))
-        return result
+    def commit(self, bars: Mapping[str, torch.Tensor], vfs: Mapping[str, torch.Tensor], live: torch.Tensor) -> None:
+        """Record this instant's committed value of every key, in the live rows only."""
+        live = live.to(device=self.device, dtype=torch.bool)
+        for key in self.history_spec:
+            buffer, cursor = self._ring(key)
+            value = history_value(key, bars, vfs).to(device=self.device, dtype=buffer.dtype)
+            if value.shape != live.shape:
+                raise RuntimeError(f"Engine defect: history key '{key}' has shape {tuple(value.shape)}, live mask {tuple(live.shape)}")
+            slot = cursor.unsqueeze(1)
+            buffer.scatter_(1, slot, torch.where(live, value, buffer.gather(1, slot).squeeze(1)).unsqueeze(1))
+            self._cursor[key] = (cursor + live.to(torch.long)) % buffer.shape[1]
+        for (key, alpha), state in self._ema.items():
+            current = history_value(key, bars, vfs).to(device=self.device, dtype=torch.float32)
+            self._ema[(key, alpha)] = torch.where(live, alpha * current + (1.0 - alpha) * state, state)
+        self._commits += 1
 
     def reset(self) -> None:
+        """Drop every ring and moving average; the next instant seeds a new episode."""
         self._buffers.clear()
-        self._write_index.clear()
-        self._warm_length.clear()
-        self._ema_state.clear()
-        self._edge_cache.clear()
+        self._cursor.clear()
+        self._ema.clear()
+        self._commits = 0
 
     def to(self, device: torch.device) -> None:
-        """Move all buffers to a new device while preserving history."""
-
+        """Move all history to a new device, preserving it."""
         self.device = device
-        for key, buf in list(self._buffers.items()):
-            self._buffers[key] = buf.to(device)
-        for key, idx in list(self._write_index.items()):
-            self._write_index[key] = idx.to(device)
-        for key, warm in list(self._warm_length.items()):
-            self._warm_length[key] = warm.to(device)
-        for key, ema in list(self._ema_state.items()):
-            self._ema_state[key] = ema.to(device)
-        for key, edge in list(self._edge_cache.items()):
-            self._edge_cache[key] = edge.to(device)
-
-    def has_history(self, key: str, n: int) -> torch.Tensor | None:
-        warm = self._warm_length.get(key)
-        if warm is None:
-            return None
-        return warm >= n
+        self._buffers = {key: value.to(device) for key, value in self._buffers.items()}
+        self._cursor = {key: value.to(device) for key, value in self._cursor.items()}
+        self._ema = {key: value.to(device) for key, value in self._ema.items()}

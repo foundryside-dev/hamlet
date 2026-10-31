@@ -5,34 +5,23 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any
 
-import torch
-
 MAX_COLLECTION_SIZE = 256
 
 CollectionResolver = Callable[..., list[int]]
 
 
 def _resolve_all_agents(context: Any, **_: Any) -> list[int]:
+    """Every agent of the pipeline's world.
+
+    The batch is independent single-agent worlds (S1), so a world's agents are its one
+    agent row: world ``w`` holds agent ``w``. A pipeline bound to no world (only direct
+    engine or test callers build one) iterates every world's agent.
+    """
+    world = context.world_row()
+    if world is not None:
+        return [world]
     batch_size = next(iter(context.bars.values())).shape[0]
     return list(range(batch_size))
-
-
-def _resolve_nearby_agents(context: Any, *, radius: float | None, **_: Any) -> list[int]:
-    """Other agents within `radius` of self under the substrate's declared distance metric."""
-    if radius is None:
-        raise ValueError("radius required for 'nearby_agents' collection")
-    if context.self_index is None:
-        raise ValueError("self_index required for 'nearby_agents' collection")
-    if context.agent_positions is None:
-        raise ValueError("agent_positions required for 'nearby_agents' collection")
-    if context.substrate is None:
-        raise ValueError("substrate required for 'nearby_agents' collection: distance is the substrate's declared metric")
-
-    positions = context.agent_positions.to(dtype=torch.float32)
-    distances = context.substrate.compute_distance(positions, positions[context.self_index])
-    others = torch.arange(positions.shape[0], device=positions.device) != context.self_index
-    nearby = torch.where((distances <= radius) & others)[0]
-    return [int(index) for index in nearby.tolist()]
 
 
 def _resolve_inventory_items(context: Any, **_: Any) -> list[int]:
@@ -58,7 +47,6 @@ def _resolve_active_effects(context: Any, **_: Any) -> list[int]:
 
 COLLECTION_RESOLVERS: dict[str, CollectionResolver] = {
     "all_agents": _resolve_all_agents,
-    "nearby_agents": _resolve_nearby_agents,
     "inventory_items": _resolve_inventory_items,
     "active_effects": _resolve_active_effects,
 }

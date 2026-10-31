@@ -5,6 +5,7 @@ from __future__ import annotations
 from townlet.config.effects_config import CommandConfig
 from townlet.effects.collections import COLLECTION_RESOLVERS
 from townlet.effects.schema import CommandNode, CommandType
+from townlet.world.expression.references import ENTITY_NAMES
 
 __all__ = ["CommandParser"]
 
@@ -30,27 +31,19 @@ class CommandParser:
             )
 
         elif config.spawn_effect is not None:
-            # Normalize target: keep simple values on `target` for executor, preserve expr string
+            # `self` / `target` name the context's entity; anything else is an int expression
+            # the compiler type-checks (an integer literal is refused there: S1).
             raw_target = config.target
             assert raw_target is not None
-            resolved_target: str | int | None
-            if isinstance(raw_target, str):
-                if raw_target in {"self", "target"}:
-                    resolved_target = raw_target
-                else:
-                    try:
-                        # Allow numeric strings (including negatives) to be treated as explicit indices
-                        resolved_target = int(raw_target)
-                    except ValueError:
-                        resolved_target = None  # Expression resolved at runtime
-            else:
+            resolved_target: str | None = None
+            if raw_target in ENTITY_NAMES:
                 resolved_target = raw_target
 
             return CommandNode(
                 type=CommandType.SPAWN_EFFECT,
                 effect_id=config.spawn_effect,
                 target=resolved_target,
-                target_expr=str(raw_target),
+                target_expr=raw_target,
                 intensity=config.intensity,
             )
 
@@ -95,18 +88,10 @@ class CommandParser:
                 collection_expr=collection_expr,
                 iterator=config.as_,
                 body=[self.parse_command(cmd) for cmd in config.do],
-                radius=config.radius,
             )
 
         elif config.switch is not None:
-            parsed_cases: list[tuple[str, list[CommandNode]]] = []
-            for case in config.cases:
-                when_expr = case.get("when")
-                if when_expr is None:
-                    raise ValueError("Switch case 'when' expression is required")
-                do_cmds = case.get("do") or []
-                parsed_cases.append((when_expr, [self.parse_command(cmd) for cmd in do_cmds]))
-
+            parsed_cases = [(case.when, [self.parse_command(cmd) for cmd in case.do]) for case in config.cases]
             default_cmds = [self.parse_command(cmd) for cmd in config.default]
 
             return CommandNode(
@@ -114,16 +99,6 @@ class CommandParser:
                 switch_expr=config.switch,
                 cases=parsed_cases,
                 default_commands=default_cmds,
-            )
-
-        elif config.reduce is not None:
-            return CommandNode(
-                type=CommandType.REDUCE,
-                reduce_expr=config.reduce,
-                reduce_iterator=config.reduce_as,
-                reduce_init_expr=config.reduce_init,
-                reduce_body_expr=config.reduce_body,
-                reduce_target=config.reduce_into,
             )
 
         elif config.parallel is not None:

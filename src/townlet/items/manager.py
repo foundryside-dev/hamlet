@@ -2,16 +2,19 @@
 
 from __future__ import annotations
 
+import hashlib
 import logging
 import math
 import os
-from dataclasses import dataclass
+from collections.abc import Iterable, Mapping
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Literal
 
 import torch
 
 if TYPE_CHECKING:
     from townlet.config.items_config import ItemsAppearanceConfig, ItemsCatalogConfig
+    from townlet.substrate.base import SpatialSubstrate
     from townlet.vfs.registry import VariableRegistry
 
 from townlet.config.items_config import (
@@ -22,10 +25,55 @@ from townlet.config.items_config import (
 from townlet.effects.compiler import CommandCompiler
 from townlet.effects.schema import CommandNode
 from townlet.items.instance import ItemInstance
+from townlet.items.inventory import InventoryState
+from townlet.vfs.namespace import INTERACTION_PIPELINE, SPAWN_PREDICATE, CommandSymbols, ItemBinding, Namespace
+from townlet.vfs.registry import item_row_world
+from townlet.vfs.schema import VariableDef, VariableScope
 from townlet.world.expression.context import ExecutionContext as ExprExecutionContext
 from townlet.world.expression.evaluator import Evaluator
+from townlet.world.expression.references import ENTITY_NAMES
 
-__all__ = ["ItemManager", "CompiledItemType"]
+__all__ = ["ItemManager", "CompiledItemType", "SpawnPredicateReads", "WorldItemState"]
+
+
+class SpawnPredicateReads:
+    """What an item spawn predicate (`when:`) may read, and the runtime values behind it.
+
+    One resolver owns both sides (VFS round-2 S5): `namespace()` is the compiler's
+    symbol table, read in the `SPAWN_PREDICATE` context, and `context()` serves exactly
+    the registry scopes that context admits, through the same reference grammar. A
+    predicate reads a global- or agent-scope variable by its bare id (the engine clock
+    is `tick`) and a meter as `bar.<name>`; every other spelling refuses at compile
+    with the canonical one named.
+
+    Global and agent reads both yield one value per world (S1: one agent per world),
+    and items are per world too, so the predicate is evaluated per world
+    (`ItemManager._should_spawn_rule` gives one bool per world): each world decides its
+    own spawn. There is no reduction across worlds.
+    """
+
+    CONTEXT = SPAWN_PREDICATE
+
+    @staticmethod
+    def namespace(*, meter_names: Iterable[str], variables: Iterable[VariableDef]) -> Namespace:
+        """The compile-time symbol table over the same registry roster the runtime registry holds."""
+        return Namespace.of_registry(variables, meters=meter_names, item_profiles={})
+
+    @classmethod
+    def context(
+        cls,
+        *,
+        bars: Mapping[str, torch.Tensor],
+        registry: VariableRegistry | None,
+        device: torch.device,
+    ) -> ExprExecutionContext:
+        """The runtime evaluation context: every variable of an admitted scope, by bare id, and the meters."""
+        values: dict[str, torch.Tensor] = {}
+        if registry is not None:
+            for variable_id, variable in registry.variables.items():
+                if VariableScope(variable.scope) in cls.CONTEXT.variable_scopes:
+                    values[variable_id] = registry.get(variable_id, reader="engine")
+        return ExprExecutionContext(bars=dict(bars), vfs=values, temporal={}, device=device)
 
 
 @dataclass
@@ -53,35 +101,82 @@ class CompiledItemType:
     compiled_inventory_commands: dict[str, list[CommandNode]]
 
 
+@dataclass
+class WorldItemState:
+    """One world's item lifecycle (S1: the batch is independent single-agent worlds).
+
+    Every field is per world: occupancy, the world's arena rows, cooldowns, respawn
+    timers, rule spawn counts and schedule cursors. `free_rows` holds FLAT item-arena
+    rows of this world (`world * items_per_world + slot`), so an allocated row is
+    globally unique and effect/expression row keys stay valid without a world beside them.
+    """
+
+    free_rows: set[int]
+    active: dict[int, ItemInstance] = field(default_factory=dict)  # on the ground (and held shared items)
+    held: dict[int, ItemInstance] = field(default_factory=dict)  # lifted exclusive items, in an inventory
+    position_index: dict[tuple[int, ...] | tuple[float, ...], set[int]] = field(default_factory=dict)
+    cooldown_until: dict[str, int] = field(default_factory=dict)
+    respawn_timers: dict[str, int] = field(default_factory=dict)
+    rule_spawn_counts: dict[str, int] = field(default_factory=dict)
+    next_scheduled_tick: dict[str, int] = field(default_factory=dict)
+    script_indices: dict[str, int] = field(default_factory=dict)
+
+
 class ItemManager:
-    """Manages all items in the world."""
+    """Manages every world's items: one compiled catalog, per-world lifecycle state.
+
+    Items are per world (S1, 2026-10-25): world `w` owns arena rows
+    `[w * items_per_world, (w + 1) * items_per_world)` and its own `WorldItemState`.
+    A pickup, spawn, despawn, cooldown or respawn timer in one world never touches
+    another. Instance ids stay globally unique (`InventoryState.purge_instance` masks
+    every inventory row by id). Under S1 world `w`'s one agent is agent `w`
+    (`world_of_agent`); a holder is an agent index, its world is derived.
+    """
 
     def __init__(
         self,
         catalog: ItemsCatalogConfig,
-        max_items: int,
+        *,
+        items_per_world: int,
+        num_worlds: int,
+        substrate: SpatialSubstrate,
         device: torch.device | str,
-        schema: dict[str, str] | None = None,  # NEW: Schema for Effects compilation
-        vfs_registry: VariableRegistry | None = None,  # NEW: VFS registry for item state storage
-        effect_manager: Any | None = None,  # NEW: EffectManager for scheduler cancellation
-        inventory: Any | None = None,  # NEW: InventoryState for cleanup on despawn (I2 fix)
+        symbols: CommandSymbols | None = None,
+        vfs_registry: VariableRegistry | None = None,
+        effect_manager: Any | None = None,
     ) -> None:
         """Initialize ItemManager.
 
         Args:
             catalog: Items catalog from items.yaml
-            max_items: Maximum items that can exist simultaneously
+            items_per_world: Arena rows per world (`token_spec.item_capacity`)
+            num_worlds: Worlds in the batch (S1: one per agent)
+            substrate: The world's substrate; placement and co-location ask it
             device: PyTorch device
-            schema: Variable type schema for Effects compilation
+            symbols: The namespace and inlinable expressions item interactions compile against
             vfs_registry: VFS registry for item state storage
-            inventory: InventoryState reference for cleanup on despawn
+
+        The manager owns its worlds' inventory (`self.inventory`, one row per world's
+        agent): a held item that despawns (expiry, effect) is purged from its slot in
+        the same call, so no slot ever names a dead item.
         """
+        if items_per_world < 0:
+            raise ValueError(f"items_per_world must be >= 0, got {items_per_world}")
+        if num_worlds < 1:
+            raise ValueError(f"num_worlds must be >= 1, got {num_worlds}")
+        if vfs_registry is not None and (vfs_registry.items_per_world, vfs_registry.num_worlds) != (items_per_world, num_worlds):
+            raise ValueError(
+                f"ItemManager arena ({num_worlds} worlds x {items_per_world} rows) disagrees with the registry's "
+                f"({vfs_registry.num_worlds} x {vfs_registry.items_per_world})"
+            )
         self.catalog = catalog
-        self.max_items = max_items
+        self.items_per_world = items_per_world
+        self.num_worlds = num_worlds
+        self.substrate = substrate
         self.device = torch.device(device) if isinstance(device, str) else device
         self.vfs_registry = vfs_registry  # Store VFS registry
         self.effect_manager = effect_manager
-        self.inventory = inventory  # Store inventory for despawn cleanup (I2 fix)
+        self.inventory = InventoryState(batch_size=num_worlds, max_items_per_agent=catalog.max_items_per_agent, device=str(self.device))
         self._debug_items = os.getenv("HAMLET_DEBUG_ITEMS", "").strip().lower() in {"1", "true", "yes", "on"}
         self._logger = logging.getLogger("hamlet.items")
 
@@ -89,14 +184,21 @@ class ItemManager:
         self.compiled_item_types: list[CompiledItemType] = []
         self.custom_action_specs: list[tuple[str, str, Literal["local", "inventory"], str]] = []
 
-        if schema is not None:
+        if symbols is not None:
             from townlet.config.effects_config import CommandConfig
             from townlet.effects.parser import CommandParser
 
-            compiler = CommandCompiler(schema=schema, agent_target=True)
             parser = CommandParser()
 
             for item_type in catalog.item_types:
+                # An item interaction runs with its agent and its item bound; the item's
+                # profile is static, so `item.<x>` reads exactly that profile's state.
+                compiler = CommandCompiler(
+                    symbols.namespace,
+                    context=INTERACTION_PIPELINE.with_item(ItemBinding.of_profile(item_type.vfs_profile)),
+                    time_enabled=symbols.time_enabled,
+                    expressions=symbols.expressions,
+                )
                 # Convert raw dicts to CommandConfig objects
                 on_pickup_configs = [CommandConfig(**cmd) for cmd in item_type.interactions.on_pickup]
                 on_use_configs = [CommandConfig(**cmd) for cmd in item_type.interactions.on_use]
@@ -175,39 +277,38 @@ class ItemManager:
                     self.custom_action_specs.append((action_name, item_type.id, "inventory", custom.name))
 
         self.next_instance_id = 0
+        # Every live instance (any world, ground or held), by globally unique id.
+        self.live_items: dict[int, ItemInstance] = {}
+        self.worlds: list[WorldItemState] = [self._fresh_world(world) for world in range(num_worlds)]
+        # One random stream per world for item placement and spawn schedules, so one
+        # world's draws never shift another's (S1). Seeded from the run seed
+        # (`torch.initial_seed()`, set by `seed_all`), the world index and the episode,
+        # without consuming the global stream: the same seed is the same run.
+        # The run seed is captured here once: another environment's later seed_all never
+        # shifts these streams.
+        self._run_seed = torch.initial_seed()
+        self._episode = 0
+        self.world_rngs: list[torch.Generator] = []
+        self._reseed_world_rngs()
 
-        # Active items in the world (visible on grid)
-        self.active_items: dict[int, ItemInstance] = {}  # instance_id -> ItemInstance
-
-        # Held items (in agent inventories, not on grid)
-        # These items continue to tick (age/spoil) but are not spatially positioned
-        self.held_items: dict[int, ItemInstance] = {}
-
-        # VFS slot allocation (fixed-size pool)
-        self.vfs_free_slots: set[int] = set(range(max_items))  # Available VFS indices
-
-        # Cooldown tracking (item_type -> tick when can spawn again)
-        self.cooldown_until: dict[str, int] = {}
-
-        # Appearance config for periodic respawning
+        # Appearance config for periodic respawning (shared rules; state is per world).
         self.appearance_config: ItemsAppearanceConfig | None = None
-        self.grid_size: tuple[int, ...] | None = None
+        self._rule_keys: dict[int, str] = {}
+        # Enumerated grid cells, built on first use by `grid` placement.
+        self._cells: list[tuple[int, ...]] | None = None
 
-        # Respawn timers (item_type -> tick when should respawn)
-        self.respawn_timers: dict[str, int] = {}
+    def _reseed_world_rngs(self) -> None:
+        run_seed = self._run_seed
+        self.world_rngs = []
+        for world in range(self.num_worlds):
+            digest = hashlib.blake2b(f"items:{run_seed}:{self._episode}:{world}".encode(), digest_size=8).digest()
+            generator = torch.Generator(device=self.device)
+            generator.manual_seed(int.from_bytes(digest, "little") & ((1 << 63) - 1))
+            self.world_rngs.append(generator)
 
-        # Track cumulative spawns per appearance rule for max_total enforcement
-        self.rule_spawn_counts: dict[str, int] = {}
-
-        # Track next scheduled spawn tick for normal/poisson schedules per item_type
-        self.next_scheduled_tick: dict[str, int] = {}
-
-        # Track per-item scripted pointer (next event index) to avoid reusing past events
-        self.script_indices: dict[str, int] = {}
-
-        # Position index for O(1) occupancy checks (I1 performance fix)
-        # Maps position -> set of instance_ids at that position
-        self._position_index: dict[tuple[int, ...], set[int]] = {}
+    def _fresh_world(self, world: int) -> WorldItemState:
+        base = world * self.items_per_world
+        return WorldItemState(free_rows=set(range(base, base + self.items_per_world)))
 
     def _log_items(self, message: str, **kwargs: Any) -> None:
         """Emit debug logs when HAMLET_DEBUG_ITEMS is enabled."""
@@ -215,70 +316,145 @@ class ItemManager:
             return
         self._logger.debug(message, extra=kwargs)
 
+    # -- worlds -----------------------------------------------------------------------
+
+    @staticmethod
+    def world_of_agent(agent_idx: int) -> int:
+        """The world agent `agent_idx` lives in. S1: one agent per world, world i = agent i."""
+        return agent_idx
+
+    def world_of(self, item: ItemInstance) -> int:
+        """The world an item instance lives in, from its flat arena row."""
+        return item_row_world(item.vfs_index, self.items_per_world)
+
+    def world_state(self, world: int) -> WorldItemState:
+        if not 0 <= world < self.num_worlds:
+            raise IndexError(f"World {world} is outside the batch [0, {self.num_worlds})")
+        return self.worlds[world]
+
+    def items_in_world(self, world: int) -> list[ItemInstance]:
+        """Every live item of `world` (ground and held), in arena-row order."""
+        state = self.world_state(world)
+        return sorted([*state.active.values(), *state.held.values()], key=lambda item: item.vfs_index)
+
+    def item_at_row(self, vfs_index: int) -> ItemInstance | None:
+        """The live instance holding arena row `vfs_index`, if any."""
+        state = self.world_state(item_row_world(vfs_index, self.items_per_world))
+        for items in (state.active, state.held):
+            for item in items.values():
+                if item.vfs_index == vfs_index:
+                    return item
+        return None
+
+    def holder_of(self, item: ItemInstance) -> int | None:
+        """The agent carrying `item` in its own world (lowest index), or None on the ground."""
+        world = self.world_of(item)
+        holders = sorted(h for h in item.holder_agent_ids if self.world_of_agent(h) == world)
+        return holders[0] if holders else None
+
+    def items_at(self, world: int, position: torch.Tensor) -> list[ItemInstance]:
+        """Active items of `world` co-located with `position`, in spawn order.
+
+        Co-location is the substrate's own predicate (`is_on_position`): exact on a grid,
+        within the interaction radius on a continuous space, always on aspatial.
+        """
+        active = list(self.world_state(world).active.values())
+        if not active:
+            return []
+        dtype = self.substrate.position_dtype
+        item_positions = torch.tensor([list(item.position) for item in active], dtype=dtype, device=position.device)
+        item_positions = item_positions.reshape(len(active), self.substrate.position_dim)
+        here = self.substrate.is_on_position(item_positions, position.to(dtype=dtype))
+        return [item for item, on in zip(active, here.tolist(), strict=True) if on]
+
     def reset_state(self) -> None:
         """Clear all item runtime state for a fresh episode."""
-
-        self.active_items.clear()
-        self.held_items.clear()
-        self.vfs_free_slots = set(range(self.max_items))
-        self.cooldown_until.clear()
+        self.live_items.clear()
+        self.inventory.reset()  # every held item left with the episode
+        self.worlds = [self._fresh_world(world) for world in range(self.num_worlds)]
         self.appearance_config = None
-        self.grid_size = None
-        self.respawn_timers.clear()
+        self._rule_keys.clear()
         self.next_instance_id = 0
-        self.rule_spawn_counts.clear()
-        self.next_scheduled_tick.clear()
-        self.script_indices.clear()
-        self._position_index.clear()
+        self._episode += 1
+        self._reseed_world_rngs()
 
-        if self.vfs_registry is not None and self.vfs_registry.item_vfs is not None:
-            self.vfs_registry.item_vfs.zero_()
+        if self.vfs_registry is not None:
+            self.vfs_registry.item_vfs_index_to_profile.clear()
+            if self.vfs_registry.item_vfs is not None:
+                self.vfs_registry.item_vfs.zero_()
+
+    # -- positions --------------------------------------------------------------------
+
+    def _position_key(self, position: Iterable[Any] | torch.Tensor) -> tuple[int, ...] | tuple[float, ...]:
+        """A position in the substrate's own dtype: integer cells, or float coordinates."""
+        values = position.tolist() if isinstance(position, torch.Tensor) else list(position)
+        if self.substrate.position_dtype.is_floating_point:
+            return tuple(float(x) for x in values)
+        return tuple(int(round(float(x))) for x in values)
+
+    def _grid_cells(self) -> list[tuple[int, ...]]:
+        """Every cell of a discrete grid substrate, in the substrate's enumeration order.
+
+        `grid` placement is refused at compile on any other substrate.
+        """
+        if self._cells is None:
+            if self.substrate.position_dtype.is_floating_point or self.substrate.position_dim == 0:
+                raise RuntimeError("grid item placement needs a discrete grid substrate; the compiler refuses it here")
+            self._cells = [tuple(int(c) for c in cell) for cell in self.substrate.get_all_positions()]
+        return self._cells
+
+    def _position_occupied(self, world: int, position: tuple[int, ...] | tuple[float, ...]) -> bool:
+        """Check whether a position is occupied by an active item of `world` (O(1) lookup)."""
+        return bool(self.world_state(world).position_index.get(position))
+
+    def _index_position(self, state: WorldItemState, item: ItemInstance) -> None:
+        state.position_index.setdefault(self._position_key(item.position), set()).add(item.instance_id)
+
+    def _unindex_position(self, state: WorldItemState, item: ItemInstance) -> None:
+        key = self._position_key(item.position)
+        ids = state.position_index.get(key)
+        if ids is not None:
+            ids.discard(item.instance_id)
+            if not ids:
+                del state.position_index[key]
 
     def find_spawn_location(
         self,
+        world: int,
         strategy: str,
         origin: tuple[int, ...] | tuple[float, ...] | None = None,
         explicit: tuple[int, ...] | tuple[float, ...] | None = None,
         retries: int = 3,
-    ) -> tuple[int, ...]:
-        """Resolve spawn position with collision avoidance and fail-fast on unsupported inputs."""
-        if strategy in {"self", "target"}:
+    ) -> tuple[int, ...] | tuple[float, ...]:
+        """Resolve a spawn position in `world`; fail fast on unsupported inputs."""
+        if strategy in ENTITY_NAMES:
             if origin is None:
                 raise RuntimeError(f"Origin required for strategy '{strategy}'")
-            return tuple(int(round(float(x))) for x in origin)
+            return self._position_key(origin)
 
         if strategy == "explicit":
             if explicit is None:
                 raise RuntimeError("Explicit coordinates required for strategy 'explicit'")
-            return tuple(int(round(float(x))) for x in explicit)
+            return self._position_key(explicit)
 
         if strategy == "random":
             if origin is None:
                 raise RuntimeError("Origin required for strategy 'random'")
-            base = tuple(int(round(float(x))) for x in origin)
-            occupied = {item.position for item in self.active_items.values()}
+            dim = self.substrate.position_dim
+            dtype = self.substrate.position_dtype
+            base = torch.tensor([list(self._position_key(origin))], dtype=dtype, device=self.device).reshape(1, dim)
+            occupied = self.world_state(world).position_index
             for _ in range(retries):
-                dx = int(torch.randint(-1, 2, ()).item())
-                dy = int(torch.randint(-1, 2, ()).item())
-                candidate = (base[0] + dx, base[1] + dy)
-                if candidate not in occupied:
+                # A unit step per axis, through the substrate's own boundary rule.
+                step = torch.randint(-1, 2, (1, dim), device=self.device, generator=self.world_rngs[world]).to(dtype=dtype)
+                candidate = self._position_key(self.substrate.apply_movement(base.clone(), step)[0])
+                if not occupied.get(candidate):
                     return candidate
             raise RuntimeError("Failed to find free position for random spawn_item after retries")
 
         raise RuntimeError(f"Unsupported spawn strategy '{strategy}'")
 
-    def _valid_position(self, position: tuple[int, ...]) -> bool:
-        """Check position within grid bounds if grid_size known."""
-
-        if self.grid_size is None:
-            return True
-        if len(position) != len(self.grid_size):
-            return False
-        return all(0 <= coord < dim for coord, dim in zip(position, self.grid_size))
-
-    def _position_occupied(self, position: tuple[int, ...]) -> bool:
-        """Check whether a position is occupied by an active item (O(1) lookup)."""
-        return bool(self._position_index.get(position))
+    # -- lifecycle --------------------------------------------------------------------
 
     def _authorize_spawn_state(self, item_type: str, initial_state: dict[str, float] | None) -> dict[str, float]:
         """Resolve and authorize complete overrides without allocating an item."""
@@ -302,30 +478,33 @@ class ItemManager:
 
     def spawn_item(
         self,
+        world: int,
         item_type: str,
-        position: tuple[int, ...] | tuple[float, ...],
+        position: Iterable[Any] | torch.Tensor,
         current_tick: int,
         initial_state: dict[str, float] | None = None,
     ) -> ItemInstance | None:
-        """Spawn new item instance.
+        """Spawn a new item instance into `world`.
 
         Args:
+            world: The world the item lives in
             item_type: Item type ID from catalog
             position: Spawn position (grid or continuous coords)
             current_tick: Current environment tick
             initial_state: Optional VFS state overrides (e.g., {"durability": 50.0})
 
         Returns:
-            ItemInstance if spawned, None if at capacity or on cooldown
+            ItemInstance if spawned, None if the world is at capacity or on cooldown
         """
-        # Check max_items capacity
-        if len(self.active_items) >= self.max_items:
+        state = self.world_state(world)
+        # Ground capacity is the declared max_items_in_world; the arena (free_rows,
+        # checked below) also holds the world's carried items.
+        if len(state.active) >= self.catalog.max_items_in_world:
             return None
 
         # Check cooldown
-        if item_type in self.cooldown_until:
-            if current_tick < self.cooldown_until[item_type]:
-                return None  # Still on cooldown
+        if item_type in state.cooldown_until and current_tick < state.cooldown_until[item_type]:
+            return None  # Still on cooldown
 
         # Get item type definition
         item_def = next((t for t in self.catalog.item_types if t.id == item_type), None)
@@ -334,13 +513,13 @@ class ItemManager:
 
         overrides = self._authorize_spawn_state(item_type, initial_state)
 
-        # Allocate VFS slot
-        if not self.vfs_free_slots:
+        # Allocate an arena row of this world
+        if not state.free_rows:
             return None  # No VFS slots available
         # Row selection depends only on available membership. set.pop() keeps
         # a hidden cursor which a refused effect cascade cannot restore.
-        vfs_index = min(self.vfs_free_slots)
-        self.vfs_free_slots.remove(vfs_index)
+        vfs_index = min(state.free_rows)
+        state.free_rows.remove(vfs_index)
 
         # Initialize item VFS state from profile defaults + initial_state overrides
         if self.vfs_registry is not None and item_def.vfs_profile:
@@ -353,11 +532,10 @@ class ItemManager:
             for var_name, value in overrides.items():
                 self.vfs_registry.write_item(profile_name, var_name, value, vfs_index, writer="engine")
 
-        # Create instance
         instance = ItemInstance(
             item_type=item_type,
             instance_id=self.next_instance_id,
-            position=position,
+            position=self._position_key(position),
             vfs_index=vfs_index,
             vfs_profile=item_def.vfs_profile,  # Assign VFS profile from item type
             name=item_def.name,
@@ -370,229 +548,204 @@ class ItemManager:
         )
         self.next_instance_id += 1
 
-        # Store in active items
-        self.active_items[instance.instance_id] = instance
-
-        # Update position index (I1 performance fix)
-        pos_key = tuple(int(c) for c in position)
-        if pos_key not in self._position_index:
-            self._position_index[pos_key] = set()
-        self._position_index[pos_key].add(instance.instance_id)
+        state.active[instance.instance_id] = instance
+        self.live_items[instance.instance_id] = instance
+        self._index_position(state, instance)
 
         self._log_items(
             "spawn_item",
             instance_id=instance.instance_id,
             item_type=item_type,
-            position=tuple(position),
+            world=world,
+            position=instance.position,
             vfs_index=vfs_index,
         )
         return instance
 
     def lift_item(self, instance_id: int) -> ItemInstance | None:
-        """Move item from world to held state (pickup).
+        """Move an item from its world's ground to held state (pickup).
 
         Preserves item identity and VFS state. Item continues to tick.
 
-        Args:
-            instance_id: Item instance ID
-
         Returns:
-            ItemInstance if lifted, None if not found
+            ItemInstance if lifted, None if not on the ground
         """
-        if instance_id not in self.active_items:
+        item = self.live_items.get(instance_id)
+        if item is None:
             return None
-
-        item = self.active_items[instance_id]
+        state = self.worlds[self.world_of(item)]
+        if instance_id not in state.active:
+            return None
         if not item.exclusive:
             # Shared items stay in the world even when held.
             return item
 
-        # Move from active to held (do NOT free VFS slot - item still exists)
-        item = self.active_items.pop(instance_id)
-        self.held_items[instance_id] = item
-
-        # Remove from position index (I1 performance fix)
-        if item.position is not None:
-            pos_key = tuple(int(c) for c in item.position)
-            if pos_key in self._position_index:
-                self._position_index[pos_key].discard(instance_id)
-                if not self._position_index[pos_key]:
-                    del self._position_index[pos_key]
-
+        # Move from active to held (do NOT free the arena row - item still exists)
+        state.held[instance_id] = state.active.pop(instance_id)
+        self._unindex_position(state, item)
         return item
 
     def place_item(
         self,
         instance_id: int,
-        position: tuple[int, ...],
+        position: Iterable[Any] | torch.Tensor,
     ) -> ItemInstance | None:
-        """Move item from held state to world (drop).
+        """Move an item from held state back to its world's ground (drop).
 
         Preserves item identity and VFS state.
 
-        Args:
-            instance_id: Item instance ID
-            position: Position to place item
-
         Returns:
-            ItemInstance if placed, None if not found
+            ItemInstance if placed, None if not held
         """
-        if instance_id not in self.held_items:
+        item = self.live_items.get(instance_id)
+        if item is None:
+            return None
+        state = self.worlds[self.world_of(item)]
+        if instance_id not in state.held:
             return None
 
-        # Move from held to active
-        item = self.held_items.pop(instance_id)
-        item.position = position
+        state.active[instance_id] = state.held.pop(instance_id)
+        item.position = self._position_key(position)
         item.holder_agent_ids.clear()
-        self.active_items[instance_id] = item
-
-        # Update position index (I1 performance fix)
-        pos_key = tuple(int(c) for c in position)
-        if pos_key not in self._position_index:
-            self._position_index[pos_key] = set()
-        self._position_index[pos_key].add(instance_id)
-
+        self._index_position(state, item)
         return item
 
     def despawn_item(self, instance_id: int, current_tick: int) -> None:
-        """Despawn item from world or held state.
+        """Despawn an item from its world (ground or held).
 
         Args:
             instance_id: Item instance ID to despawn
             current_tick: Current tick (for cooldown tracking)
         """
-        # Check active items first
-        if instance_id in self.active_items:
-            item = self.active_items.pop(instance_id)
-            # Remove from position index (I1 performance fix)
-            if item.position is not None:
-                pos_key = tuple(int(c) for c in item.position)
-                if pos_key in self._position_index:
-                    self._position_index[pos_key].discard(instance_id)
-                    if not self._position_index[pos_key]:
-                        del self._position_index[pos_key]
-        # Then check held items
-        elif instance_id in self.held_items:
-            item = self.held_items.pop(instance_id)
-        else:
+        item = self.live_items.pop(instance_id, None)
+        if item is None:
             return  # Item not found
+        world = self.world_of(item)
+        state = self.worlds[world]
+        if instance_id in state.active:
+            del state.active[instance_id]
+            self._unindex_position(state, item)
+        else:
+            del state.held[instance_id]
 
         # Unregister item instance from VFS registry
         if self.vfs_registry is not None:
             self.vfs_registry.unregister_item_instance(item.vfs_index)
 
-        # Clean up inventory references (I2 memory leak fix)
-        if self.inventory is not None:
-            self.inventory.purge_instance(instance_id)
+        # A held item leaves its holder's slot with it (a stale slot would run a dead
+        # item's on_use and kill the batch).
+        self.inventory.purge_instance(instance_id)
 
-        # Cancel any scheduled delayed commands targeting this item
+        # Discard the item's live effects and delayed work before its row is freed: an
+        # effect outliving its item would read an unregistered row (and kill the batch).
         if self.effect_manager is not None:
-            self.effect_manager.cancel_scheduled_for_entity(scope="item", entity_id=item.vfs_index)
+            self.effect_manager.discard_item_effects(item.vfs_index)
 
-        # Free VFS slot
-        self.vfs_free_slots.add(item.vfs_index)
+        state.free_rows.add(item.vfs_index)
 
         # Set cooldown if configured
         item_def = next(t for t in self.catalog.item_types if t.id == item.item_type)
         if item_def.cooldown is not None:
-            self.cooldown_until[item.item_type] = current_tick + item_def.cooldown
+            state.cooldown_until[item.item_type] = current_tick + item_def.cooldown
 
         # Set respawn timer if configured in appearance config
-        # Note: Timer is per item_type, not per instance. If multiple items
+        # Note: Timer is per (world, item_type), not per instance. If multiple items
         # of the same type despawn, only the most recent despawn triggers respawn.
         if self.appearance_config is not None:
-            # Find appearance rule for this item type
             rule = next(
                 (r for r in self.appearance_config.items if r.item_type == item.item_type),
                 None,
             )
-
             if rule is not None:
-                schedule = getattr(rule, "schedule", None)
-
-                if schedule is not None and isinstance(schedule, SpawnScheduleConfig):
-                    if schedule.type == "periodic" and schedule.period is not None:
-                        self.respawn_timers[item.item_type] = current_tick + schedule.period
-                    elif schedule.type == "normal" and schedule.mean is not None and schedule.std_dev is not None:
-                        next_tick = int(
-                            max(
-                                0.0,
-                                torch.normal(
-                                    mean=torch.tensor(schedule.mean),
-                                    std=torch.tensor(schedule.std_dev),
-                                ).item(),
-                            )
-                        )
-                        self.respawn_timers[item.item_type] = next_tick
-                    elif schedule.type == "poisson" and schedule.rate is not None and schedule.rate > 0:
-                        self.respawn_timers[item.item_type] = current_tick + 1
-                    elif schedule.type == "time_window":
-                        if schedule.start_tick is not None and current_tick < schedule.start_tick:
-                            self.respawn_timers[item.item_type] = schedule.start_tick
-                        else:
-                            self.respawn_timers[item.item_type] = current_tick + 1
-                else:
-                    # No schedule: do not queue respawns automatically
-                    pass
+                self._arm_respawn_timer(world, rule, current_tick)
 
         self._log_items(
             "despawn_item",
             instance_id=instance_id,
             item_type=item.item_type,
+            world=world,
             vfs_index=item.vfs_index,
             current_tick=current_tick,
         )
 
-    def tick(self, current_tick: int) -> None:
-        """Advance all item lifecycles by one tick.
+    def _arm_respawn_timer(self, world: int, rule: Any, current_tick: int) -> None:
+        """Queue the rule's next spawn attempt in `world` from its declared schedule.
+
+        Called when an item despawns and when a rule's `when:` predicate rejects a spawn
+        in this world (initial or respawn), so a rejected rule retries on its declared
+        period rather than never (initial) or every tick (respawn). A rule without a
+        schedule queues nothing.
+        """
+        timers = self.worlds[world].respawn_timers
+        schedule = rule.schedule
+        if not isinstance(schedule, SpawnScheduleConfig):
+            return
+        if schedule.type == "periodic" and schedule.period is not None:
+            timers[rule.item_type] = current_tick + schedule.period
+        elif schedule.type == "normal" and schedule.mean is not None and schedule.std_dev is not None:
+            next_tick = int(
+                max(
+                    0.0,
+                    torch.normal(
+                        mean=torch.tensor([float(schedule.mean)]),
+                        std=torch.tensor([float(schedule.std_dev)]),
+                        generator=self.world_rngs[world],
+                    ).item(),
+                )
+            )
+            timers[rule.item_type] = next_tick
+        elif schedule.type == "poisson" and schedule.rate is not None and schedule.rate > 0:
+            timers[rule.item_type] = current_tick + 1
+        elif schedule.type == "time_window":
+            if schedule.start_tick is not None and current_tick < schedule.start_tick:
+                timers[rule.item_type] = schedule.start_tick
+            else:
+                timers[rule.item_type] = current_tick + 1
+
+    def tick(self, current_tick: int, *, live: torch.Tensor) -> None:
+        """Advance the item lifecycles of every live world by one tick.
 
         Args:
             current_tick: Current environment tick
+            live: `[num_worlds]` bool, the worlds whose agent is live this tick. A done
+                world is frozen (S1, as effects and VTC rules are): its items neither age
+                nor expire.
         """
-        # Collect expired items from BOTH registries (BEFORE ticking)
-        expired = []
-
-        # Check active items (on grid)
-        for instance_id, item in self.active_items.items():
-            if item.is_expired():
-                expired.append(instance_id)
-
-        # Check held items (in inventories) - they also expire!
-        for instance_id, item in self.held_items.items():
-            if item.is_expired():
-                expired.append(instance_id)
-
-        # Despawn expired items
+        live_worlds = self._live_worlds(live)
+        # Ground and held items both expire (collected BEFORE ticking).
+        expired = [instance_id for instance_id, item in self.live_items.items() if self.world_of(item) in live_worlds and item.is_expired()]
         for instance_id in expired:
             self.despawn_item(instance_id, current_tick)
 
-        # Tick all remaining items in BOTH registries (AFTER despawning)
-        for item in self.active_items.values():
-            item.tick()
+        # Tick all remaining items (AFTER despawning)
+        for item in self.live_items.values():
+            if self.world_of(item) in live_worlds:
+                item.tick()
 
-        for item in self.held_items.values():
-            item.tick()
-
-    def get_all_items(self) -> list[ItemInstance]:
-        """Get all active items (for testing/debugging)."""
-        return list(self.active_items.values())
+    def _live_worlds(self, live: torch.Tensor) -> frozenset[int]:
+        if tuple(live.shape) != (self.num_worlds,):
+            raise ValueError(f"live mask has shape {tuple(live.shape)}, expected ({self.num_worlds},)")
+        return frozenset(int(world) for world in torch.nonzero(live, as_tuple=False).flatten().tolist())
 
     def get_custom_action_specs(self) -> list[tuple[str, str, Literal["local", "inventory"], str]]:
         """Return (action_name, item_type, scope, command_name) tuples for custom item verbs."""
         return list(self.custom_action_specs)
+
+    # -- spawn rules ------------------------------------------------------------------
 
     def _should_spawn_rule(
         self,
         rule: Any,
         *,
         bars: dict[str, torch.Tensor] | None,
-        temporal: dict[str, torch.Tensor] | None,
-        current_tick: int,
-    ) -> bool:
-        """Evaluate spawn predicate if provided."""
+    ) -> list[bool]:
+        """The rule's spawn predicate per world, in the `SpawnPredicateReads` context.
 
+        Every readable value has one row per world (S1), so the predicate is a `[N]`
+        bool: each world decides its own spawn. There is no cross-world reduction.
+        """
         if rule.when is None:
-            return True
+            return [True] * self.num_worlds
 
         if rule.when_ast is None:
             raise RuntimeError("Spawn condition provided without compiled AST. Run UniverseCompiler before using spawn conditions.")
@@ -600,79 +753,69 @@ class ItemManager:
         if bars is None:
             raise RuntimeError("Spawn conditions require bar context; pass bars when invoking spawn routines")
 
-        vfs_state: dict[str, torch.Tensor] = {}
-        if self.vfs_registry is not None:
-            for var_id, _ in self.vfs_registry.variables.items():
-                vfs_state[var_id] = self.vfs_registry.get(var_id, reader="engine")
+        context = SpawnPredicateReads.context(bars=bars, registry=self.vfs_registry, device=self.device)
+        result = Evaluator(context).evaluate(rule.when_ast)
+        values = torch.as_tensor(result, device=self.device).to(dtype=torch.bool)
+        if values.numel() == 1:
+            return [bool(values.item())] * self.num_worlds
+        if tuple(values.shape) != (self.num_worlds,):
+            raise RuntimeError(
+                f"Spawn predicate {rule.when!r} for {rule.item_type!r} produced shape {tuple(values.shape)}; "
+                f"it must give one value per world ({self.num_worlds})"
+            )
+        return [bool(v) for v in values.tolist()]
 
-        temporal_context = temporal or {"tick": torch.tensor(current_tick, device=self.device)}
+    def _placement_mode(self, rule: Any) -> str:
+        placement = rule.placement
+        return placement.mode if isinstance(placement, SpawnPlacementConfig) else "random"
 
-        context = ExprExecutionContext(
-            bars=bars,
-            vfs=vfs_state,
-            affordances={},
-            temporal=temporal_context,
-            device=self.device,
-        )
-
-        evaluator = Evaluator(context)
-        result = evaluator.evaluate(rule.when_ast)
-
-        if isinstance(result, torch.Tensor):
-            if result.numel() == 1:
-                return bool(result.item())
-            # Vectorized contexts emit per-agent tensors; require all agents to satisfy.
-            return bool(torch.all(result).item())
-
-        return bool(result)
-
-    def _iter_positions(
+    def _placement_positions(
         self,
+        world: int,
         rule: Any,
-        grid_size: tuple[int, ...],
         *,
         current_tick: int,
         count: int,
-    ) -> list[tuple[int, ...]]:
-        """Generate up to `count` positions for a spawn event based on placement config."""
+    ) -> list[tuple[int, ...] | tuple[float, ...]]:
+        """Up to `count` positions in `world` for one spawn event of `rule`.
 
-        positions: list[tuple[int, ...]] = []
-        placement = getattr(rule, "placement", None)
-        placement_mode = placement.mode if isinstance(placement, SpawnPlacementConfig) else None
+        random: the substrate's own position initialization (every substrate, any rank).
+        fixed / grid / scripted: cells of a discrete grid. Every authored fixed and
+        scripted cell is checked against the grid at compile ([ITEM-PLACEMENT-SUBSTRATE]).
+        """
+        mode = self._placement_mode(rule)
+        placement = rule.placement
+        positions: list[tuple[int, ...] | tuple[float, ...]] = []
 
-        if placement_mode is None or placement_mode == "random":
-            for _ in range(count):
-                # Use torch.randint for GPU-friendly random (I3 performance fix)
-                positions.append(tuple(int(torch.randint(0, size, ()).item()) for size in grid_size))
-            return positions
+        if mode == "random":
+            if count <= 0:
+                return positions
+            drawn = self.substrate.initialize_positions(count, self.device, generator=self.world_rngs[world])
+            return [self._position_key(row) for row in drawn.reshape(count, self.substrate.position_dim)]
 
-        if placement_mode == "fixed":
-            assert isinstance(placement, SpawnPlacementConfig)  # Type narrowing for mypy
-            for pos in placement.fixed_positions or []:
+        assert isinstance(placement, SpawnPlacementConfig)  # Type narrowing for mypy
+        if mode == "fixed":
+            for raw in placement.fixed_positions or []:
                 if len(positions) >= count:
                     break
-                if not self._valid_position(pos) or self._position_occupied(pos):
-                    continue
-                positions.append(pos)
+                cell = tuple(int(c) for c in raw)
+                if not self._position_occupied(world, cell):
+                    positions.append(cell)
             return positions
 
-        if placement_mode == "grid":
-            assert isinstance(placement, SpawnPlacementConfig)  # Type narrowing for mypy
+        if mode == "grid":
             spacing = placement.grid_spacing or 1
-            for x in range(0, grid_size[0], spacing):
-                for y in range(0, grid_size[1], spacing):
-                    if len(positions) >= count:
-                        return positions
-                    pos = (x, y)
-                    if self._position_occupied(pos):
-                        continue
-                    positions.append(pos)
+            for cell in self._grid_cells():
+                if len(positions) >= count:
+                    break
+                if all(c % spacing == 0 for c in cell) and not self._position_occupied(world, cell):
+                    positions.append(cell)
             return positions
 
-        if placement_mode == "scripted":
-            assert isinstance(placement, SpawnPlacementConfig)  # Type narrowing for mypy
+        if mode == "scripted":
             script = placement.script or []
-            start_idx = self.script_indices.get(rule.item_type, 0)
+            indices = self.worlds[world].script_indices
+            start_idx = indices.get(rule.item_type, 0)
             # Advance past events before current_tick
             while start_idx < len(script):
                 tick = script[start_idx].get("tick")
@@ -686,96 +829,30 @@ class ItemManager:
                 tick = event.get("tick")
                 if tick is None or tick != current_tick:
                     break
-                pos = tuple(event.get("position", ()))
-                if not self._valid_position(pos) or self._position_occupied(pos):
-                    continue
-                positions.append(pos)
+                cell = tuple(int(c) for c in event.get("position", ()))
+                if not self._position_occupied(world, cell):
+                    positions.append(cell)
                 start_idx = idx + 1
-            self.script_indices[rule.item_type] = start_idx
+            indices[rule.item_type] = start_idx
             return positions
 
-        return positions
+        raise RuntimeError(f"Unknown item placement mode {mode!r}")
 
     def _next_script_tick(self, rule: Any, current_tick: int) -> int | None:
-        placement = getattr(rule, "placement", None)
-        placement_mode = placement.mode if isinstance(placement, SpawnPlacementConfig) else None
-        if placement_mode != "scripted":
+        if self._placement_mode(rule) != "scripted":
             return None
-        assert isinstance(placement, SpawnPlacementConfig)  # Type narrowing for mypy
-        script = placement.script or []
-        for event in script:
+        assert isinstance(rule.placement, SpawnPlacementConfig)  # Type narrowing for mypy
+        for event in rule.placement.script or []:
             tick = event.get("tick")
             if tick is not None and tick > current_tick:
                 return int(tick)
         return None
 
-    def _resolve_respawn_positions(self, rule: Any, *, current_tick: int, count: int) -> list[tuple[int, ...]]:
-        """Resolve placement for respawns; honor count and scripted tick alignment."""
+    def _schedule_allows_spawn(self, world: int, rule: Any, current_tick: int) -> bool:
+        """Check advanced schedule gating (time_window, poisson, normal) in `world`."""
 
-        placement = getattr(rule, "placement", None)
-        placement_mode = placement.mode if isinstance(placement, SpawnPlacementConfig) else None
-
-        positions: list[tuple[int, ...]] = []
-
-        if placement_mode is None or placement_mode == "random":
-            # Use torch.randint for GPU-friendly random (I3 performance fix)
-            return [tuple(int(torch.randint(0, size, ()).item()) for size in self.grid_size or (1,)) for _ in range(count)]
-
-        if placement_mode == "fixed":
-            assert isinstance(placement, SpawnPlacementConfig)  # Type narrowing for mypy
-            for pos in placement.fixed_positions or []:
-                if len(positions) >= count:
-                    break
-                if self._valid_position(pos) and not self._position_occupied(pos):
-                    positions.append(pos)
-            return positions
-
-        if placement_mode == "grid":
-            assert isinstance(placement, SpawnPlacementConfig)  # Type narrowing for mypy
-            spacing = placement.grid_spacing or 1
-            grid_size = self.grid_size or (0,)
-            for x in range(0, grid_size[0], spacing):
-                for y in range(0, grid_size[1], spacing):
-                    if len(positions) >= count:
-                        return positions
-                    pos = (x, y)
-                    if self._position_occupied(pos):
-                        continue
-                    positions.append(pos)
-            return positions
-
-        if placement_mode == "scripted":
-            assert isinstance(placement, SpawnPlacementConfig)  # Type narrowing for mypy
-            script = placement.script or []
-            start_idx = self.script_indices.get(rule.item_type, 0)
-            # Advance past events before current_tick
-            while start_idx < len(script):
-                tick = script[start_idx].get("tick")
-                if tick is None or tick >= current_tick:
-                    break
-                start_idx += 1
-            for idx in range(start_idx, len(script)):
-                if len(positions) >= count:
-                    break
-                event = script[idx]
-                tick = event.get("tick")
-                if tick is None or tick != current_tick:
-                    break
-                pos = tuple(event.get("position", ()))
-                if not self._valid_position(pos) or self._position_occupied(pos):
-                    continue
-                positions.append(pos)
-                start_idx = idx + 1
-            self.script_indices[rule.item_type] = start_idx
-            return positions
-
-        return positions
-
-    def _schedule_allows_spawn(self, rule: Any, current_tick: int) -> bool:
-        """Check advanced schedule gating (time_window, poisson, normal)."""
-
-        schedule = getattr(rule, "schedule", None)
-        if schedule is None or not isinstance(schedule, SpawnScheduleConfig):
+        schedule = rule.schedule
+        if not isinstance(schedule, SpawnScheduleConfig):
             return True
 
         if schedule.type == "time_window":
@@ -792,18 +869,19 @@ class ItemManager:
             prob = 1.0 - torch.exp(torch.tensor(-rate))
             if prob >= 0.9999:
                 return True
-            return bool(torch.rand((), device=self.device) < prob)
+            return bool(torch.rand((), device=self.device, generator=self.world_rngs[world]) < prob)
 
         if schedule.type == "normal":
-            next_tick = self.next_scheduled_tick.get(rule.item_type)
+            cursor = self.worlds[world].next_scheduled_tick
+            next_tick = cursor.get(rule.item_type)
             if next_tick is None:
                 next_tick = current_tick + 1
-                self.next_scheduled_tick[rule.item_type] = next_tick
+                cursor[rule.item_type] = next_tick
             if current_tick < next_tick:
                 return False
             # Schedule next window based on mean (deterministic cadence)
             mean_tick = schedule.mean or 1.0
-            self.next_scheduled_tick[rule.item_type] = int(max(current_tick + 1, math.ceil(mean_tick)))
+            cursor[rule.item_type] = int(max(current_tick + 1, math.ceil(mean_tick)))
             return True
 
         # periodic handled via timers, default allow here
@@ -812,165 +890,151 @@ class ItemManager:
     def spawn_initial_items(
         self,
         appearance_config: ItemsAppearanceConfig,
-        grid_size: tuple[int, ...],
         current_tick: int,
         *,
         bars: dict[str, torch.Tensor] | None = None,
-        temporal: dict[str, torch.Tensor] | None = None,
     ) -> None:
-        """Spawn items at level start based on ItemsAppearanceConfig.
+        """Spawn every world's level-start items from the level's spawn rules.
 
         Args:
             appearance_config: Level-specific item spawn rules
-            grid_size: Grid dimensions (e.g., (7, 7) for 7x7 grid)
             current_tick: Current environment tick
         """
         # Store config for periodic respawning
-        self.set_appearance_config(appearance_config, grid_size)
+        self.set_appearance_config(appearance_config)
 
         for rule in appearance_config.items:
             # Validate item type exists in catalog
             if not any(t.id == rule.item_type for t in self.catalog.item_types):
                 # Skip unknown item types (e.g., energy_drink in test config)
                 continue
-            rule_key = getattr(rule, "_rule_key", f"rule_{id(rule)}")
-
-            if not self._schedule_allows_spawn(rule, current_tick=current_tick):
-                continue
-
-            if not self._should_spawn_rule(rule, bars=bars, temporal=temporal, current_tick=current_tick):
-                continue
-
-            count = rule.spawn_count if rule.spawn_count is not None else 1
-            if count <= 0:
-                continue
-            positions = self._iter_positions(rule, grid_size, current_tick=current_tick, count=count)
-            current_total = self.rule_spawn_counts.get(rule_key, 0)
-            for position in positions:
-                max_total = getattr(rule, "max_total", None)
-                if max_total is not None and current_total >= max_total:
+            rule_key = self._rule_keys[id(rule)]
+            count = rule.spawn_count
+            spawn_ok: list[bool] | None = None
+            for world in range(self.num_worlds):
+                if not self._schedule_allows_spawn(world, rule, current_tick=current_tick):
                     continue
-                self.spawn_item(rule.item_type, position, current_tick)
-                current_total += 1
-                self.rule_spawn_counts[rule_key] = current_total
+                if spawn_ok is None:
+                    spawn_ok = self._should_spawn_rule(rule, bars=bars)
+                if not spawn_ok[world]:
+                    self._arm_respawn_timer(world, rule, current_tick)
+                    continue
+                if count <= 0:
+                    continue
+                counts = self.worlds[world].rule_spawn_counts
+                current_total = counts.get(rule_key, 0)
+                for position in self._placement_positions(world, rule, current_tick=current_tick, count=count):
+                    if rule.max_total is not None and current_total >= rule.max_total:
+                        continue
+                    self.spawn_item(world, rule.item_type, position, current_tick)
+                    current_total += 1
+                    counts[rule_key] = current_total
 
-    def set_appearance_config(
-        self,
-        appearance_config: ItemsAppearanceConfig,
-        grid_size: tuple[int, ...],
-    ) -> None:
-        """Store appearance config for periodic respawning.
-
-        Args:
-            appearance_config: Level-specific item spawn rules
-            grid_size: Grid dimensions for random position generation
-        """
+    def set_appearance_config(self, appearance_config: ItemsAppearanceConfig) -> None:
+        """Store the level's spawn rules for periodic respawning; reset every world's counters."""
         self.appearance_config = appearance_config
-        self.grid_size = grid_size
-        # Reset spawn counts when a new appearance config is applied
-        self.rule_spawn_counts.clear()
-        self.next_scheduled_tick.clear()
-        self.script_indices.clear()
-        for idx, rule in enumerate(appearance_config.items):
-            rule_key = f"rule_{idx}_{rule.item_type}"
-            setattr(rule, "_rule_key", rule_key)
-            self.rule_spawn_counts[rule_key] = 0
+        self._rule_keys = {id(rule): f"rule_{idx}_{rule.item_type}" for idx, rule in enumerate(appearance_config.items)}
+        for state in self.worlds:
+            state.next_scheduled_tick.clear()
+            state.script_indices.clear()
+            state.rule_spawn_counts = dict.fromkeys(self._rule_keys.values(), 0)
 
     def process_respawns(
         self,
         current_tick: int,
         *,
         bars: dict[str, torch.Tensor] | None = None,
-        temporal: dict[str, torch.Tensor] | None = None,
+        live: torch.Tensor,
     ) -> None:
-        """Process periodic item respawning based on timers.
+        """Process every live world's item respawns from its own timers.
 
         Args:
             current_tick: Current environment tick
+            live: `[num_worlds]` bool; a done world's timers do not fire (it is frozen, S1)
         """
-        if self.appearance_config is None or self.grid_size is None:
+        if self.appearance_config is None:
             return  # No appearance config, no respawning
 
-        expired_types = [item_type for item_type, respawn_tick in self.respawn_timers.items() if current_tick >= respawn_tick]
+        live_worlds = self._live_worlds(live)
+        # The predicate is per world; evaluate it at most once per rule this tick.
+        predicate: dict[int, list[bool]] = {}
+        for world in range(self.num_worlds):
+            if world in live_worlds:
+                self._process_world_respawns(world, current_tick, bars=bars, predicate=predicate)
 
-        # Attempt to spawn each expired type
+    def _process_world_respawns(
+        self,
+        world: int,
+        current_tick: int,
+        *,
+        bars: dict[str, torch.Tensor] | None,
+        predicate: dict[int, list[bool]],
+    ) -> None:
+        assert self.appearance_config is not None
+        state = self.worlds[world]
+        timers = state.respawn_timers
+        expired_types = [item_type for item_type, respawn_tick in timers.items() if current_tick >= respawn_tick]
+
         for item_type in expired_types:
-            # Find appearance rule for this item type
-            rule = next(
-                (r for r in self.appearance_config.items if r.item_type == item_type),
-                None,
-            )
-
+            rule = next((r for r in self.appearance_config.items if r.item_type == item_type), None)
             if rule is None:
                 # Rule removed from config, clear timer
-                del self.respawn_timers[item_type]
+                del timers[item_type]
                 continue
-            rule_key = getattr(rule, "_rule_key", f"rule_{id(rule)}")
+            rule_key = self._rule_keys[id(rule)]
+            schedule = rule.schedule
 
-            if not self._schedule_allows_spawn(rule, current_tick=current_tick):
+            if not self._schedule_allows_spawn(world, rule, current_tick=current_tick):
                 # Reschedule according to schedule type
-                schedule = getattr(rule, "schedule", None)
-                if schedule and isinstance(schedule, SpawnScheduleConfig):
+                if isinstance(schedule, SpawnScheduleConfig):
                     if schedule.type == "poisson" and schedule.rate and schedule.rate > 0:
-                        self.respawn_timers[item_type] = current_tick + 1
+                        timers[item_type] = current_tick + 1
                     elif schedule.type == "time_window":
                         if schedule.end_tick is not None and current_tick > schedule.end_tick:
-                            del self.respawn_timers[item_type]
+                            del timers[item_type]
                         else:
-                            next_tick = max(current_tick + 1, schedule.start_tick or current_tick + 1)
-                            self.respawn_timers[item_type] = next_tick
+                            timers[item_type] = max(current_tick + 1, schedule.start_tick or current_tick + 1)
                     elif schedule.type == "normal" and schedule.mean is not None and schedule.std_dev is not None:
                         sampled = torch.normal(
-                            mean=torch.tensor(schedule.mean),
-                            std=torch.tensor(schedule.std_dev),
+                            mean=torch.tensor([float(schedule.mean)]),
+                            std=torch.tensor([float(schedule.std_dev)]),
+                            generator=self.world_rngs[world],
                         ).item()
-                        next_tick_int = int(max(current_tick + 1, math.ceil(sampled)))
-                        self.respawn_timers[item_type] = next_tick_int
+                        timers[item_type] = int(max(current_tick + 1, math.ceil(sampled)))
                 continue
 
-            if not self._should_spawn_rule(rule, bars=bars, temporal=temporal, current_tick=current_tick):
+            if id(rule) not in predicate:
+                predicate[id(rule)] = self._should_spawn_rule(rule, bars=bars)
+            if not predicate[id(rule)][world]:
+                self._arm_respawn_timer(world, rule, current_tick)
                 continue
 
-            max_total = getattr(rule, "max_total", None)
-            current_total = self.rule_spawn_counts.get(rule_key, 0)
-            if max_total is not None and current_total >= max_total:
+            current_total = state.rule_spawn_counts.get(rule_key, 0)
+            if rule.max_total is not None and current_total >= rule.max_total:
                 continue
 
-            count = getattr(rule, "spawn_count", 1)
-            if count is None:
-                count = 1
+            count = rule.spawn_count
             if count <= 0:
-                del self.respawn_timers[item_type]
+                del timers[item_type]
                 continue
-            positions = self._resolve_respawn_positions(rule, current_tick=current_tick, count=count)
             spawned_any = False
-            for position in positions:
-                spawned = self.spawn_item(item_type, position, current_tick)
-                if spawned is not None:
+            for position in self._placement_positions(world, rule, current_tick=current_tick, count=count):
+                if self.spawn_item(world, item_type, position, current_tick) is not None:
                     spawned_any = True
-                    self.rule_spawn_counts[rule_key] = current_total + 1
+                    state.rule_spawn_counts[rule_key] = current_total + 1
                     break  # respawn one per timer
 
-            schedule = getattr(rule, "schedule", None)
             if spawned_any:
-                placement = getattr(rule, "placement", None)
-                placement_mode = placement.mode if isinstance(placement, SpawnPlacementConfig) else None
-                if placement_mode == "scripted":
-                    next_script_tick = self._next_script_tick(rule, current_tick)
-                    if next_script_tick is not None:
-                        self.respawn_timers[item_type] = next_script_tick
-                    else:
-                        del self.respawn_timers[item_type]
+                next_script_tick = self._next_script_tick(rule, current_tick)
+                if next_script_tick is not None:
+                    timers[item_type] = next_script_tick
                 else:
-                    del self.respawn_timers[item_type]
-            else:
+                    del timers[item_type]
+            elif isinstance(schedule, SpawnScheduleConfig):
                 # Reschedule retry
-                if schedule and isinstance(schedule, SpawnScheduleConfig):
-                    if schedule.type == "poisson" and schedule.rate and schedule.rate > 0:
-                        self.respawn_timers[item_type] = current_tick + 1
-                    elif schedule.type == "time_window":
-                        next_tick = max(current_tick + 1, schedule.start_tick or current_tick + 1)
-                        self.respawn_timers[item_type] = next_tick
-                    elif schedule.type == "normal" and schedule.mean is not None:
-                        next_tick_int = self.next_scheduled_tick.get(item_type, current_tick + 1)
-                        self.respawn_timers[item_type] = next_tick_int
+                if schedule.type == "poisson" and schedule.rate and schedule.rate > 0:
+                    timers[item_type] = current_tick + 1
+                elif schedule.type == "time_window":
+                    timers[item_type] = max(current_tick + 1, schedule.start_tick or current_tick + 1)
+                elif schedule.type == "normal" and schedule.mean is not None:
+                    timers[item_type] = state.next_scheduled_tick.get(item_type, current_tick + 1)

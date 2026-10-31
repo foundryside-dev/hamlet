@@ -20,11 +20,11 @@ def variable(**changes):
 
 
 def test_same_variable_contract_for_all_storage_scopes():
-    for scope in ["global", "agent", "agent_private", "pair", "affordance", "message"]:
+    for scope in ["global", "agent", "affordance"]:
         assert VariableDeclaration.model_validate(variable(scope=scope)).scope == scope
 
 
-@pytest.mark.parametrize("scope", ["zone", "group"])
+@pytest.mark.parametrize("scope", ["zone", "group", "pair", "message", "agent_private"])
 def test_deleted_storage_scopes_refuse(scope):
     with pytest.raises(ValidationError, match="scope"):
         VariableDeclaration.model_validate(variable(scope=scope))
@@ -58,7 +58,7 @@ def test_public_type_has_one_spelling(kind):
         VariableDeclaration.model_validate(variable(type=kind))
 
 
-@pytest.mark.parametrize("scope", ["agent_private", "pair", "affordance", "message"])
+@pytest.mark.parametrize("scope", ["affordance"])
 def test_unimplemented_expression_scopes_refuse(scope):
     with pytest.raises(ValidationError, match="expression"):
         VariableDeclaration.model_validate(variable(scope=scope, expression="tick"))
@@ -84,7 +84,6 @@ def test_empty_item_profile_remains_a_real_binding_target():
     config = VariablesConfig.model_validate(
         {
             "version": "1.0",
-            "extents": {},
             "item_profiles": ["default_item"],
             "declarations": [],
         }
@@ -126,7 +125,7 @@ def test_item_reference_null_initializes_actual_arena_as_unbound(tmp_path):
     for universe in (compiled, CompiledUniverse.from_dict(compiled.to_dict())):
         env = universe.create_environment(num_agents=1, level_name="L0_smoke", device="cpu")
         env.reset()
-        item = env.item_manager.spawn_item(item_type="apple", position=(0, 0), current_tick=0)
+        item = env.item_manager.spawn_item(0, item_type="apple", position=(0, 0), current_tick=0)
         assert item is not None
         assert env.vfs_registry.read_item("food", "claimant", item.vfs_index, reader="engine") == -1
 
@@ -134,7 +133,7 @@ def test_item_reference_null_initializes_actual_arena_as_unbound(tmp_path):
 @pytest.mark.parametrize("key,value", [("evaluation_mode", "eager"), ("evaluation_mode", "mark_and_sweep"), ("debug_logging", False)])
 def test_deleted_evaluation_settings_refuse_as_extra_fields(key, value):
     """Mark-and-sweep is the only evaluator (review-2026-10-24 F3): the settings are not vocabulary."""
-    payload = dict(version="1.0", extents={}, item_profiles=[], declarations=[variable(scope="global")])
+    payload = dict(version="1.0", item_profiles=[], declarations=[variable(scope="global")])
     payload[key] = value
     with pytest.raises(ValidationError, match=rf"{key}\n  Extra inputs are not permitted"):
         VariablesConfig.model_validate(payload)
@@ -150,9 +149,7 @@ def test_registry_exposure_refuses_non_float_storage_before_construction(dtype, 
         )
 
 
-@pytest.mark.parametrize(
-    "dtype,width,extra", [("vec2f", 2, {}), ("vec3f", 3, {}), ("vecNf", 1, {"dims": 1}), ("message_token", 1, {"dims": 1})]
-)
+@pytest.mark.parametrize("dtype,width,extra", [("vec2f", 2, {}), ("vec3f", 3, {}), ("vecNf", 1, {"dims": 1})])
 def test_float_vector_exposure_preserves_actual_declared_element_axes(tmp_path, dtype, width, extra):
     import shutil
 

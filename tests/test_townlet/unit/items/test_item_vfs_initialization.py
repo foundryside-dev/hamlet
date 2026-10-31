@@ -2,6 +2,7 @@
 
 import torch
 
+from tests.test_townlet.utils.builders import make_grid2d_substrate
 from townlet.config.items_config import ItemsCatalogConfig
 from townlet.items.manager import ItemManager
 from townlet.vfs.profiles import CompiledItemProfile, CompiledVariable
@@ -32,7 +33,7 @@ def test_spawn_item_initializes_vfs_state():
     vfs_registry = VariableRegistry(
         variables=[],  # No agent-scoped variables
         num_agents=4,
-        max_items=10,
+        items_per_world=10,
         device=torch.device("cpu"),
         item_profiles={"food": food_profile},
     )
@@ -41,14 +42,16 @@ def test_spawn_item_initializes_vfs_state():
     catalog = ItemsCatalogConfig.from_yaml("configs/test/items_smoke/items.yaml")
     manager = ItemManager(
         catalog=catalog,
-        max_items=10,
+        num_worlds=vfs_registry.num_worlds,
+        substrate=make_grid2d_substrate(),
+        items_per_world=10,
         device="cpu",
-        schema=None,  # Skip compilation - we're only testing VFS initialization
+        symbols=None,  # Skip compilation - we're only testing VFS initialization
         vfs_registry=vfs_registry,
     )
 
     # Spawn item
-    item = manager.spawn_item("apple", (3, 4), current_tick=0)
+    item = manager.spawn_item(0, "apple", (3, 4), current_tick=0)
 
     assert item is not None
     assert item.vfs_index == 0  # First VFS slot
@@ -60,7 +63,7 @@ def test_spawn_item_initializes_vfs_state():
 
     # Verify VFS tensor was allocated (unified storage)
     assert vfs_registry.item_vfs is not None
-    assert vfs_registry.item_vfs.shape == (10, 1)  # (max_items, max_vars_across_profiles)
+    assert vfs_registry.item_vfs.shape == (40, 1)  # (4 worlds x 10 rows per world, max_vars_across_profiles)
 
 
 def test_despawn_item_does_not_clear_vfs_state():
@@ -87,7 +90,7 @@ def test_despawn_item_does_not_clear_vfs_state():
     vfs_registry = VariableRegistry(
         variables=[],  # No agent-scoped variables
         num_agents=4,
-        max_items=10,
+        items_per_world=10,
         device=torch.device("cpu"),
         item_profiles={"food": food_profile},
     )
@@ -95,14 +98,16 @@ def test_despawn_item_does_not_clear_vfs_state():
     catalog = ItemsCatalogConfig.from_yaml("configs/test/items_smoke/items.yaml")
     manager = ItemManager(
         catalog=catalog,
-        max_items=10,
+        num_worlds=vfs_registry.num_worlds,
+        substrate=make_grid2d_substrate(),
+        items_per_world=10,
         device="cpu",
-        schema=None,  # Skip compilation - we're only testing VFS state persistence
+        symbols=None,  # Skip compilation - we're only testing VFS state persistence
         vfs_registry=vfs_registry,
     )
 
     # Spawn item
-    item = manager.spawn_item("apple", (3, 4), current_tick=0)
+    item = manager.spawn_item(0, "apple", (3, 4), current_tick=0)
     assert item is not None
     vfs_index = item.vfs_index
 
@@ -110,7 +115,7 @@ def test_despawn_item_does_not_clear_vfs_state():
     manager.despawn_item(item.instance_id, current_tick=10)
 
     # VFS slot should be freed for reuse
-    assert vfs_index in manager.vfs_free_slots
+    assert vfs_index in manager.worlds[0].free_rows
 
     # VFS profile mapping should still exist (not cleared on despawn)
     assert "food" in vfs_registry.item_profile_map
@@ -118,4 +123,4 @@ def test_despawn_item_does_not_clear_vfs_state():
 
     # VFS tensor should still be allocated (batch storage persists)
     assert vfs_registry.item_vfs is not None
-    assert vfs_registry.item_vfs.shape == (10, 1)  # (max_items, max_vars_across_profiles), unchanged
+    assert vfs_registry.item_vfs.shape == (40, 1)  # (4 worlds x 10 rows per world, max_vars), unchanged

@@ -103,23 +103,6 @@ class TestVariableDef:
 
         assert var.scope == "global"
 
-    def test_agent_private_scope_valid(self):
-        """Agent-private scope (not observable by other agents)."""
-        from townlet.vfs.schema import VariableDef
-
-        var = VariableDef(
-            id="home_position",
-            scope="agent_private",
-            type="vecNf",
-            dims=2,
-            lifetime="episode",
-            readable_by=["agent", "engine"],
-            writable_by=["engine"],
-            default=[0.0, 0.0],
-        )
-
-        assert var.scope == "agent_private"
-
     def test_invalid_scope_rejected(self):
         """Invalid scope should raise ValidationError."""
         from townlet.vfs.schema import VariableDef

@@ -8,8 +8,9 @@ today, so their wiring is pinned against constructed TokenTypeSchemas. The pins:
 - presence legitimately-zero != absent (a zero VALUE keeps presence 1; an absent
   dynamic slot is presence 0 with zeroed payload);
 - overflow at capacity+1 raises naming type, capacity, source;
-- `agent_private` never lands in any agent's rows — the registry publisher is the
-  enforcement point (hamlet-83a043a9b9 by mechanism), refusing BEFORE slot binding;
+- engine-only state (`agent` with `readable_by: [engine]`, `exposed_to: []`) never lands
+  in any agent's rows — the registry publisher authorizes every binding against the
+  declared roles BEFORE slot binding (hamlet-83a043a9b9 by mechanism);
 - visibility filter + egocentric wrap ride the substrate contract;
 - replay aliasing: two consecutive encoded ticks never share storage.
 """
@@ -205,7 +206,7 @@ def _var(name: str, *, scope: str = "global", normalization=_BOUNDED, dims: int 
         lifetime="episode",
         readable_by=["agent", "engine"],
         writable_by=["engine"],
-        exposed_to=["agent"] if scope != "agent_private" else [],
+        exposed_to=["agent"],
         default=[0.0] * dims if is_vector else default,
         description=f"test {name}",
         normalization=normalization,
@@ -356,10 +357,11 @@ def test_rank_zero_publishers_have_no_position_lane_or_context_requirement():
         TokenPublishContext(
             item_slots=ItemSlotBatch(
                 slot_indices=torch.tensor([0]),
-                positions=torch.empty((1, 0), dtype=torch.long),
-                vfs_indices=torch.tensor([0]),
+                active=torch.tensor([[True], [True]]),
+                positions=torch.empty((2, 1, 0), dtype=torch.long),
+                vfs_rows=torch.tensor([[0], [0]]),
                 carried=torch.tensor([[False], [False]]),
-                owner_slot=torch.tensor([-1]),
+                owner_slot=torch.tensor([[-1], [-1]]),
             )
         ),
     )
@@ -744,13 +746,29 @@ class TestAgentTokenPublisher:
             publisher.publish(_rows(1, "agent", batch=1), ctx)
 
 
-def _item_batch(slot_indices, positions, vfs_indices, carried, owner_slot):
+def _item_batch(slot_indices, positions, vfs_rows, carried, owner_slot, active=None):
+    """Per-world item batch. `positions` `[K, D]`, `vfs_rows` and `owner_slot` `[K]` are the
+    same in every world unless given per world; `active` defaults to every slot live in every
+    world (items are per world, S1: each world row is its own world's item)."""
+    carried_t = torch.tensor(carried)
+    n, k = carried_t.shape
+    positions_t = torch.tensor(positions)
+    if positions_t.dim() == 2:
+        positions_t = positions_t.unsqueeze(0).expand(n, k, positions_t.shape[1]).clone()
+    rows_t = torch.tensor(vfs_rows)
+    if rows_t.dim() == 1:
+        rows_t = rows_t.unsqueeze(0).expand(n, k).clone()
+    owner_t = torch.tensor(owner_slot)
+    if owner_t.dim() == 1:
+        owner_t = owner_t.unsqueeze(0).expand(n, k).clone()
+    active_t = torch.ones((n, k), dtype=torch.bool) if active is None else torch.tensor(active)
     return ItemSlotBatch(
         slot_indices=torch.tensor(slot_indices),
-        positions=torch.tensor(positions),
-        vfs_indices=torch.tensor(vfs_indices),
-        carried=torch.tensor(carried),
-        owner_slot=torch.tensor(owner_slot),
+        active=active_t,
+        positions=positions_t,
+        vfs_rows=rows_t,
+        carried=carried_t,
+        owner_slot=owner_t,
     )
 
 
@@ -972,6 +990,21 @@ class TestEffectTokenPublisher:
         assert not torch.equal(rows[0], rows[1])
 
 
+def _engine_only_agent_var(name: str, *, default: float = 0.0) -> VariableDef:
+    """Private per-agent state: readable by the engine only and exposed to nobody."""
+    return VariableDef(
+        id=name,
+        scope=VariableScope.AGENT,
+        type="scalar",
+        lifetime="episode",
+        readable_by=["engine"],
+        writable_by=["engine"],
+        exposed_to=[],
+        default=default,
+        description=f"test {name}",
+    )
+
+
 def _registry(extra_vars: list[VariableDef] | None = None, num_agents: int = 2) -> VariableRegistry:
     variables = [
         _var("temp", default=0.25),
@@ -983,7 +1016,7 @@ def _registry(extra_vars: list[VariableDef] | None = None, num_agents: int = 2) 
 
 
 def _registry_bindings(refs: list[str]) -> list[SlotBinding]:
-    scopes = {"mood": VariableScope.AGENT, "secret": VariableScope.AGENT_PRIVATE}
+    scopes = {"mood": VariableScope.AGENT, "secret": VariableScope.AGENT}
     return [
         SlotBinding(slot_index=i, filler_kind="static", filler_ref=ref, scope=scopes.get(parse_filler_ref(ref)[0], VariableScope.GLOBAL))
         for i, ref in enumerate(refs)
@@ -1070,13 +1103,13 @@ class TestRegistryVariableElementPublisher:
         rows = _rows(schema.capacity, "variable_element")
         publisher.publish(rows, TokenPublishContext())
         assert rows[0, 0, v0].item() == pytest.approx(0.25)
-        registry.set("temp", torch.tensor(0.75), writer="engine")
+        registry.set("temp", torch.tensor([0.75, 0.25]), writer="engine")  # one row per world (S1)
         registry.set("mood", torch.tensor([2.0, 8.0]), writer="engine")
-        registry.set("wind", torch.tensor([[0.0, 5.0, 0.0], [0.0, 5.0, 0.0]])[0], writer="engine")
+        registry.set("wind", torch.tensor([[0.0, 5.0, 0.0], [0.0, 5.0, 0.0]]), writer="engine")
         rows2 = _rows(schema.capacity, "variable_element")
         publisher.publish(rows2, TokenPublishContext())
-        assert rows2[0, 0, v0].item() == pytest.approx(0.75)  # global broadcasts to every world
-        assert rows2[1, 0, v0].item() == pytest.approx(0.75)
+        assert rows2[0, 0, v0].item() == pytest.approx(0.75)  # each world publishes its own global row
+        assert rows2[1, 0, v0].item() == pytest.approx(0.25)
         assert rows2[0, 1, v0].item() == pytest.approx(0.2)  # agent scope: per-world row
         assert rows2[1, 1, v0].item() == pytest.approx(0.8)
         assert rows2[0, 2, v0].item() == pytest.approx(0.5)  # wind[1] element
@@ -1120,7 +1153,7 @@ class TestRegistryVariableElementPublisher:
     def test_cyclical_fills_both_lanes_of_one_token(self):
         registry = _registry()
         publisher, schema = self._publisher(registry, ["phase"])
-        registry.set("phase", torch.tensor(6.0), writer="engine")
+        registry.set("phase", torch.tensor([6.0, 6.0]), writer="engine")
         rows = _rows(schema.capacity, "variable_element")
         publisher.publish(rows, TokenPublishContext())
         v0 = _lane("variable_element", "value_0")
@@ -1130,23 +1163,19 @@ class TestRegistryVariableElementPublisher:
         vw = 1 + PAYLOAD_SCHEMAS["variable_element"].index("value_width_used")
         assert expanded[0, 0, vw].item() == pytest.approx(2 / VALUE_BLOCK_WIDTH)
 
-    def test_agent_private_binding_refused_before_slot_binding(self):
-        registry = _registry(extra_vars=[_var("secret", scope="agent_private")])
+    def test_engine_only_binding_refused_before_slot_binding(self):
+        registry = _registry(extra_vars=[_engine_only_agent_var("secret")])
         bindings = _registry_bindings(["secret"])
         schema = _variable_type(bindings)
-        with pytest.raises(ValueError) as excinfo:
+        with pytest.raises(PermissionError, match="secret"):
             RegistryVariableElementPublisher(schema, _layout(schema), registry, tuple(range(schema.capacity)), DEVICE)
-        message = str(excinfo.value)
-        assert "agent_private" in message
-        assert "hamlet-83a043a9b9" in message
-        assert "enforcement point" in message
 
-    def test_agent_private_never_lands_in_any_agents_rows(self):
-        # The end-to-end pin: a registry CONTAINING an exposed-looking agent_private
-        # variable publishes identically to one without it, and its sentinel value
-        # appears nowhere in the token tensor.
+    def test_engine_only_state_never_lands_in_any_agents_rows(self):
+        # The end-to-end pin: a registry CONTAINING an engine-only agent variable
+        # publishes identically to one without it, and its sentinel value appears
+        # nowhere in the token tensor.
         sentinel = 0.937
-        with_private = _registry(extra_vars=[_var("secret", scope="agent_private", default=sentinel)])
+        with_private = _registry(extra_vars=[_engine_only_agent_var("secret", default=sentinel)])
         without_private = _registry()
         with_private.set("secret", torch.tensor([sentinel, sentinel]), writer="engine")
         refs = ["temp", "mood", "wind[0]", "wind[1]", "wind[2]", "phase"]
@@ -1158,9 +1187,6 @@ class TestRegistryVariableElementPublisher:
         publisher_b.publish(rows_b, TokenPublishContext())
         assert torch.equal(rows_a, rows_b)
         assert not bool(torch.isclose(rows_a, torch.tensor(sentinel)).any())
-        # ... and the arena itself never held it (excluded by construction).
-        for arena in with_private.scope_arenas.values():
-            assert "secret" not in arena.index
 
     def test_item_scope_ref_routed_away_loudly(self):
         registry = _registry()
@@ -1195,7 +1221,7 @@ def _item_profile_registry() -> VariableRegistry:
         variables=[],
         num_agents=2,
         device=DEVICE,
-        max_items=3,
+        items_per_world=3,
         item_profiles={"food": _Profile(["nutrition", "freshness"])},
     )
 
@@ -1207,7 +1233,9 @@ class TestItemArenaVariableElementPublisher:
         schema = _variable_type([binding])
         declaration = ItemStateSlotDeclaration(slot_index=0, owner_slot=0, normalization=_BOUNDED)
         with pytest.raises(ValueError, match="requires item scope"):
-            ItemArenaVariableElementPublisher(schema, _layout(schema), registry, [declaration], owner_capacity=2, device=DEVICE)
+            ItemArenaVariableElementPublisher(
+                schema, _layout(schema), registry, [declaration], owner_capacity=2, substrate=_substrate(), device=DEVICE
+            )
 
     def _publisher(self, registry, n_slots: int = 2):
         declarations = [
@@ -1228,7 +1256,12 @@ class TestItemArenaVariableElementPublisher:
             for i in range(n_slots)
         ]
         schema = _variable_type(bindings)
-        return ItemArenaVariableElementPublisher(schema, _layout(schema), registry, declarations, owner_capacity=2, device=DEVICE), schema
+        return (
+            ItemArenaVariableElementPublisher(
+                schema, _layout(schema), registry, declarations, owner_capacity=2, substrate=_substrate(), device=DEVICE
+            ),
+            schema,
+        )
 
     def test_live_owner_slot_publishes_normalized_state(self):
         registry = _item_profile_registry()
@@ -1240,15 +1273,32 @@ class TestItemArenaVariableElementPublisher:
         # liveness (a compiled item token slot can be occupied by any profile).
         publisher, schema = self._publisher(registry)
         rows = _rows(schema.capacity, "variable_element")
-        batch = _item_batch([0], [[1, 1]], [2], [[False], [False]], [-1])
+        # World 0 has its item at row 2; world 1 has no item at owner slot 0.
+        batch = _item_batch([0], [[1, 1]], [[2], [3]], [[False], [False]], [-1], active=[[True], [False]])
         publisher.publish(rows, TokenPublishContext(item_slots=batch))
         v0 = _lane("variable_element", "value_0")
         assert rows[0, 0, 0].item() == 1.0
         assert rows[0, 0, v0].item() == pytest.approx(0.75)
-        assert rows[1, 0, v0].item() == pytest.approx(0.75)  # world-shared item arena
+        # Items are per world (S1): world 1 does not see world 0's item or its state.
+        assert rows[1, 0, 0].item() == 0.0
+        assert rows[1, 0].abs().sum().item() == 0.0
         # dead owner slot 1: presence 0, payload zeroed.
         assert rows[0, 1, 0].item() == 0.0
         assert rows[0, 1].abs().sum().item() == 0.0
+
+    def test_each_world_reads_its_own_arena_row(self):
+        registry = _item_profile_registry()
+        registry.register_item_instance(0, "food")  # world 0, slot 0
+        registry.register_item_instance(3, "food")  # world 1, slot 0
+        registry.write_item("food", "nutrition", 0.75, vfs_index=0, writer="engine")
+        registry.write_item("food", "nutrition", 0.25, vfs_index=3, writer="engine")
+        publisher, schema = self._publisher(registry)
+        rows = _rows(schema.capacity, "variable_element")
+        batch = _item_batch([0], [[1, 1]], [[0], [3]], [[False], [False]], [-1])
+        publisher.publish(rows, TokenPublishContext(item_slots=batch))
+        v0 = _lane("variable_element", "value_0")
+        assert rows[:, 0, 0].tolist() == [1.0, 1.0]
+        assert rows[:, 0, v0].tolist() == pytest.approx([0.75, 0.25])
 
     def test_no_live_items_means_all_absent(self):
         registry = _item_profile_registry()
@@ -1294,7 +1344,9 @@ class TestItemArenaVariableElementPublisher:
         bindings = [SlotBinding(slot_index=0, filler_kind="static", filler_ref="ghost.x", scope=VariableScope.ITEM)]
         schema = _variable_type(bindings)
         with pytest.raises(ValueError, match="'ghost'"):
-            ItemArenaVariableElementPublisher(schema, _layout(schema), registry, [declaration], owner_capacity=2, device=DEVICE)
+            ItemArenaVariableElementPublisher(
+                schema, _layout(schema), registry, [declaration], owner_capacity=2, substrate=_substrate(), device=DEVICE
+            )
 
     def test_occupant_from_a_different_profile_reads_absent_not_the_declared_profiles_column(self):
         """Regression for the profile-match fix (unit 5 / hamlet-55b2826a02): a slot
@@ -1310,7 +1362,7 @@ class TestItemArenaVariableElementPublisher:
             variables=[],
             num_agents=2,
             device=DEVICE,
-            max_items=3,
+            items_per_world=3,
             item_profiles={
                 "food": _Profile(["nutrition"]),
                 "medical": _Profile(["durability"]),
@@ -1322,7 +1374,9 @@ class TestItemArenaVariableElementPublisher:
         declaration = ItemStateSlotDeclaration(slot_index=0, owner_slot=0, normalization=_BOUNDED)
         bindings = [SlotBinding(slot_index=0, filler_kind="static", filler_ref="medical.durability[0]", scope=VariableScope.ITEM)]
         schema = _variable_type(bindings)
-        publisher = ItemArenaVariableElementPublisher(schema, _layout(schema), registry, [declaration], owner_capacity=2, device=DEVICE)
+        publisher = ItemArenaVariableElementPublisher(
+            schema, _layout(schema), registry, [declaration], owner_capacity=2, substrate=_substrate(), device=DEVICE
+        )
 
         rows = _rows(schema.capacity, "variable_element")
         batch = _item_batch([0], [[1, 1]], [2], [[False]], [-1])
@@ -1387,7 +1441,9 @@ def _encoder(registry: VariableRegistry, spec: TokenSpec) -> TokenObservationEnc
         RegistryVariableElementPublisher(
             element_type, layout_for("variable_element"), registry, tuple(range(element_type.capacity)), DEVICE
         ),
-        ItemArenaVariableElementPublisher(element_type, layout_for("variable_element"), registry, [], owner_capacity=1, device=DEVICE),
+        ItemArenaVariableElementPublisher(
+            element_type, layout_for("variable_element"), registry, [], owner_capacity=1, substrate=_substrate(), device=DEVICE
+        ),
     ]
     return TokenObservationEncoder(spec, publishers, DEVICE)
 
@@ -1408,7 +1464,7 @@ class TestTokenObservationEncoder:
             variables=[_var("temp", default=0.25), _var("mood", scope="agent", default=0.75)],
             num_agents=2,
             device=DEVICE,
-            max_items=2,
+            items_per_world=2,
             item_profiles={"food": _Profile(["nutrition"])},
         )
         registry.register_item_instance(0, "food")
@@ -1439,14 +1495,18 @@ class TestTokenObservationEncoder:
                 artifact,
                 [
                     RegistryVariableElementPublisher(schema, layout, registry, registry_slots, DEVICE),
-                    ItemArenaVariableElementPublisher(schema, layout, registry, item_declarations, owner_capacity=1, device=DEVICE),
+                    ItemArenaVariableElementPublisher(
+                        schema, layout, registry, item_declarations, owner_capacity=1, substrate=_substrate(), device=DEVICE
+                    ),
                 ],
                 DEVICE,
             )
-            observations.append(encoder.encode(2, TokenPublishContext(item_slots=_item_batch([0], [[1, 1]], [0], [[False]], [-1]))))
+            # World 0 owns the item at row 0; world 1 has none (items are per world, S1).
+            batch = _item_batch([0], [[1, 1]], [[0], [2]], [[False], [False]], [-1], active=[[True], [False]])
+            observations.append(encoder.encode(2, TokenPublishContext(item_slots=batch)))
         assert torch.equal(observations[0], observations[1])
-        assert observations[0].reshape(2, 3, 3)[:, :, 0].tolist() == [[1.0, 1.0, 1.0], [1.0, 1.0, 1.0]]
-        assert observations[0].reshape(2, 3, 3)[:, :, 1].tolist() == [[0.25, 0.75, 0.5], [0.25, 0.75, 0.5]]
+        assert observations[0].reshape(2, 3, 3)[:, :, 0].tolist() == [[1.0, 1.0, 1.0], [1.0, 1.0, 0.0]]
+        assert observations[0].reshape(2, 3, 3)[:, :, 1].tolist() == [[0.25, 0.75, 0.5], [0.25, 0.75, 0.0]]
 
     def test_layout_matches_spec_serialization(self):
         registry = _registry()
@@ -1509,15 +1569,15 @@ class TestTokenObservationEncoder:
         encoder = _encoder(registry, spec)
         tick_one = encoder.encode(2, _full_ctx())
         stored = tick_one.clone()
-        registry.set("temp", torch.tensor(0.9), writer="engine")
+        registry.set("temp", torch.tensor([0.9, 0.9]), writer="engine")
         tick_two = encoder.encode(2, _full_ctx())
         assert tick_one.data_ptr() != tick_two.data_ptr()
         assert torch.equal(tick_one, stored)  # tick one is immutable history
         assert not torch.equal(tick_one, tick_two)  # the declared change moved tick two
 
-    def test_end_to_end_agent_private_never_lands(self):
+    def test_end_to_end_engine_only_state_never_lands(self):
         sentinel = 0.937
-        registry = _registry(extra_vars=[_var("secret", scope="agent_private", default=sentinel)])
+        registry = _registry(extra_vars=[_engine_only_agent_var("secret", default=sentinel)])
         registry.set("secret", torch.tensor([sentinel, sentinel]), writer="engine")
         spec = _full_spec(registry, ["temp", "mood"])
         encoder = _encoder(registry, spec)
@@ -1551,7 +1611,7 @@ def test_registry_publisher_and_getter_share_snapshot_after_dto_policy_mutation(
     registry.variables["temp"].exposed_to.clear()
     schema = _variable_type(_registry_bindings(["temp"]))
     publisher = RegistryVariableElementPublisher(schema, _layout(schema), registry, (0,), DEVICE)
-    assert registry.get("temp", reader="agent").item() == pytest.approx(0.25)
+    assert registry.get("temp", reader="agent").tolist() == pytest.approx([0.25, 0.25])
     monkeypatch.setattr(registry, "get", lambda *args, **kwargs: pytest.fail("publisher must retain batched arena gathers"))
     rows = _rows(1, "variable_element")
     publisher.publish(rows, TokenPublishContext())
@@ -1563,7 +1623,7 @@ def test_item_publisher_refuses_hidden_qualified_binding(readers, reason):
     profile = _Profile(["nutrition", "freshness"])
     profile.variables[0].readable_by = readers
     profile.variables[0].exposed_to = ()
-    registry = VariableRegistry([], 2, DEVICE, max_items=3, item_profiles={"food": profile})
+    registry = VariableRegistry([], 2, DEVICE, items_per_world=3, item_profiles={"food": profile})
     with pytest.raises(reason, match="food.*nutrition"):
         TestItemArenaVariableElementPublisher()._publisher(registry)
 
@@ -1620,5 +1680,7 @@ def test_item_slot_partition_does_not_reinterpret_mutated_exposure_lists():
     schema = _variable_type([SlotBinding(slot_index=0, filler_kind="static", filler_ref="food.nutrition[0]", scope=VariableScope.ITEM)])
     registry_slots, declarations = _split_variable_element_slots(schema, registry.item_profiles)
     assert not registry_slots
-    publisher = ItemArenaVariableElementPublisher(schema, _layout(schema), registry, declarations, owner_capacity=1, device=DEVICE)
+    publisher = ItemArenaVariableElementPublisher(
+        schema, _layout(schema), registry, declarations, owner_capacity=1, substrate=_substrate(), device=DEVICE
+    )
     assert publisher.claimed_slots == (0,)

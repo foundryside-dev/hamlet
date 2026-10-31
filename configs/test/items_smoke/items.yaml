@@ -2,6 +2,7 @@ items:
   version: '1.0'
   item_types:
   - id: apple
+    exclusive: true
     vfs_profile: food
     description: Restores energy when used
     duration: null
@@ -9,14 +10,15 @@ items:
     interactions:
       on_pickup: []
       on_use:
-      - modify: target.bar.energy
-        value: target.bar.energy + 0.3
+      - modify: bar.energy
+        value: bar.energy + 0.3
       on_drop: []
     name: Apple
     icon: "\U0001F34E"
     tags:
     - apple
   - id: medkit
+    exclusive: true
     vfs_profile: medical
     description: Restores health when used
     duration: 100
@@ -24,24 +26,25 @@ items:
     interactions:
       on_pickup: []
       on_use:
-      - modify: target.bar.health
-        value: target.bar.health + 0.5
-      - modify: self.vfs.durability
-        value: self.vfs.durability - 10
+      - modify: bar.health
+        value: bar.health + 0.5
+      - modify: item.durability
+        value: item.durability - 10
       on_drop: []
     name: Medkit
     icon: "\U0001F48A"
     tags:
     - medkit
   - id: coin
+    exclusive: true
     vfs_profile: currency
     description: Adds money when picked up
     duration: null
     cooldown: null
     interactions:
       on_pickup:
-      - modify: target.bar.money
-        value: target.bar.money + 0.1
+      - modify: bar.money
+        value: bar.money + 0.1
       on_use: []
       on_drop: []
     name: Coin

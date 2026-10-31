@@ -26,7 +26,6 @@ def _variable(identifier, *, scope="global", expression=None, initial_value=0.0,
 def _config(declarations):
     return VariablesConfig(
         version="1.0",
-        extents={},
         item_profiles=["default_item"],
         declarations=declarations,
     )

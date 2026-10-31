@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Hashable
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -14,8 +15,12 @@ class ScheduledItem:
     due_tick: int
     commands: list[Any]
     scope: str | None = None
-    entity_id: int | str | None = None
+    entity_id: Hashable | None = None
     context_overrides: dict[str, Any] = field(default_factory=dict)
+    # The effect instance that owns this work, if any: cancelling that effect cancels
+    # exactly its own work (two effects can share one scope/entity key, e.g. two global
+    # effects in one world).
+    effect_instance: int | None = None
 
 
 class Scheduler:
@@ -31,9 +36,10 @@ class Scheduler:
         commands: list[Any],
         delay_ticks: int,
         scope: str | None = None,
-        entity_id: int | str | None = None,
+        entity_id: Hashable | None = None,
         context_overrides: dict[str, Any] | None = None,
         base_tick: int | None = None,
+        effect_instance: int | None = None,
     ) -> None:
         """Schedule commands to run after delay_ticks, relative to base_tick (or current_tick)."""
         if not self.time_enabled:
@@ -51,6 +57,7 @@ class Scheduler:
             scope=scope,
             entity_id=entity_id,
             context_overrides=context_overrides or {},
+            effect_instance=effect_instance,
         )
 
         # Enforce max items cap
@@ -72,10 +79,19 @@ class Scheduler:
         items = self.pending.pop(self.current_tick, [])
         return items
 
-    def cancel(self, scope: str | None, entity_id: int | str | None) -> None:
+    def cancel(self, scope: str | None, entity_id: Hashable | None) -> None:
         """Cancel all pending items matching scope/entity_id."""
         for tick, items in list(self.pending.items()):
             filtered = [it for it in items if not (it.scope == scope and it.entity_id == entity_id)]
+            if filtered:
+                self.pending[tick] = filtered
+            else:
+                self.pending.pop(tick, None)
+
+    def cancel_effect_instance(self, effect_instance: int) -> None:
+        """Cancel all pending items owned by one effect instance."""
+        for tick, items in list(self.pending.items()):
+            filtered = [it for it in items if it.effect_instance != effect_instance]
             if filtered:
                 self.pending[tick] = filtered
             else:

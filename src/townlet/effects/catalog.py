@@ -5,19 +5,26 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from townlet.config.effects_config import EffectsConfig, EffectScope
-from townlet.effects.compiler import CommandCompiler
+from townlet.effects.compiler import CommandCompileError, CommandCompiler
 from townlet.effects.parser import CommandParser
 from townlet.effects.schema import CommandNode
+from townlet.vfs.namespace import CommandSymbols
 
 __all__ = ["CompiledEffect", "EffectCatalog", "EffectCompileError"]
 
 
 class EffectCompileError(Exception):
-    """An effect definition failed to compile; carries its id so the diagnostic is located."""
+    """An effect definition failed to compile.
 
-    def __init__(self, effect_id: str, message: str) -> None:
+    ``effect_id`` names the effect; ``origin`` is the refused command's positional
+    source-map key (``effects:effect_definitions[2].on_tick[1].then[0]``), so the
+    diagnostic is located at the command, nested ones included.
+    """
+
+    def __init__(self, effect_id: str, origin: str, message: str) -> None:
         super().__init__(message)
         self.effect_id = effect_id
+        self.origin = origin
 
 
 @dataclass
@@ -74,15 +81,13 @@ class EffectCatalog:
     def from_config(
         cls,
         config: EffectsConfig,
-        schema: dict[str, str] | None = None,
-        *,
-        time_enabled: bool = True,
+        symbols: CommandSymbols | None = None,
     ) -> EffectCatalog:
         """Compile effects catalog from config.
 
         Args:
             config: Effects configuration from YAML
-            schema: Type schema for command validation (optional for Phase 3.1)
+            symbols: The namespace, inlinable expressions and temporal capability commands compile against
 
         Returns:
             Compiled catalog with validated command pipelines
@@ -90,25 +95,35 @@ class EffectCatalog:
         parser = CommandParser()
 
         effects = {}
-        for defn in config.effect_definitions:
+        for position, defn in enumerate(config.effect_definitions):
             # Parse commands to AST
             on_spawn = parser.parse_commands(defn.on_spawn)
             on_tick = parser.parse_commands(defn.on_tick)
             on_despawn = parser.parse_commands(defn.on_despawn)
             on_interrupt = parser.parse_commands(defn.on_interrupt)
 
-            # Compile (validate) if schema provided. Only an agent-scoped effect runs
-            # with `target` bound to an agent row (EffectManager._lifecycle_context);
-            # global, item and affordance effects have no interacting agent.
-            if schema:
-                compiler = CommandCompiler(schema, time_enabled=time_enabled, agent_target=defn.scope == EffectScope.AGENT)
-                try:
-                    compiler.compile_commands(on_spawn)
-                    compiler.compile_commands(on_tick)
-                    compiler.compile_commands(on_despawn)
-                    compiler.compile_commands(on_interrupt)
-                except Exception as exc:
-                    raise EffectCompileError(defn.id, f"Effect '{defn.id}' failed to compile: {exc}") from exc
+            # Compile (validate) if schema provided, with `target` bound as
+            # EffectManager._lifecycle_context binds it for the effect's scope.
+            if symbols is not None:
+                compiler = CommandCompiler.for_effect_scope(
+                    symbols.namespace, scope=defn.scope, time_enabled=symbols.time_enabled, expressions=symbols.expressions
+                )
+                for stage, nodes in (
+                    ("on_spawn", on_spawn),
+                    ("on_tick", on_tick),
+                    ("on_despawn", on_despawn),
+                    ("on_interrupt", on_interrupt),
+                ):
+                    for index, node in enumerate(nodes):
+                        try:
+                            compiler.compile_command(node)
+                        except Exception as exc:
+                            suffix = exc.suffix if isinstance(exc, CommandCompileError) else ""
+                            raise EffectCompileError(
+                                defn.id,
+                                f"effects:effect_definitions[{position}].{stage}[{index}]{suffix}",
+                                f"Effect '{defn.id}' failed to compile at {stage}[{index}]{suffix}: {exc}",
+                            ) from exc
 
             compiled = CompiledEffect(
                 id=defn.id,

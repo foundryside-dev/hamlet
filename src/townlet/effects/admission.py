@@ -26,7 +26,7 @@ if TYPE_CHECKING:
     from townlet.effects.manager import ActiveEffect, EffectManager
     from townlet.effects.scheduler import ScheduledItem, Scheduler
     from townlet.items.instance import ItemInstance
-    from townlet.items.manager import ItemManager
+    from townlet.items.manager import ItemManager, WorldItemState
     from townlet.vfs.registry import VariableRegistry
 
 __all__ = ["EffectAdmissionSnapshot", "permission_denial_rng"]
@@ -117,45 +117,78 @@ class _RegistryState:
 
 
 @dataclass
-class _ItemSpawnState:
-    manager: ItemManager
+class _WorldSpawnState:
+    """One world's spawn-mutable item state: ground items, free arena rows, occupancy."""
+
+    state: WorldItemState
     active_items: dict[int, ItemInstance]
     active_entries: dict[int, ItemInstance]
-    next_instance_id: int
-    free_slots: set[int]
+    free_rows: set[int]
     free_values: set[int]
-    positions: dict[tuple[int, ...], set[int]]
-    position_entries: dict[tuple[int, ...], set[int]]
+    positions: dict[Any, set[int]]
+    position_entries: dict[Any, set[int]]
     position_values: list[tuple[set[int], set[int]]]
 
     @classmethod
-    def capture(cls, manager: ItemManager) -> _ItemSpawnState:
+    def capture(cls, state: WorldItemState) -> _WorldSpawnState:
         return cls(
-            manager=manager,
-            active_items=manager.active_items,
-            active_entries=manager.active_items.copy(),
-            next_instance_id=manager.next_instance_id,
-            free_slots=manager.vfs_free_slots,
-            free_values=manager.vfs_free_slots.copy(),
-            positions=manager._position_index,
-            position_entries=manager._position_index.copy(),
-            position_values=[(values, values.copy()) for values in manager._position_index.values()],
+            state=state,
+            active_items=state.active,
+            active_entries=state.active.copy(),
+            free_rows=state.free_rows,
+            free_values=state.free_rows.copy(),
+            positions=state.position_index,
+            position_entries=state.position_index.copy(),
+            position_values=[(values, values.copy()) for values in state.position_index.values()],
         )
 
     def restore(self) -> None:
-        self.manager.active_items = self.active_items
+        self.state.active = self.active_items
         self.active_items.clear()
         self.active_items.update(self.active_entries)
-        self.manager.next_instance_id = self.next_instance_id
-        self.manager.vfs_free_slots = self.free_slots
-        self.free_slots.clear()
-        self.free_slots.update(self.free_values)
-        self.manager._position_index = self.positions
+        self.state.free_rows = self.free_rows
+        self.free_rows.clear()
+        self.free_rows.update(self.free_values)
+        self.state.position_index = self.positions
         self.positions.clear()
         self.positions.update(self.position_entries)
         for values, contents in self.position_values:
             values.clear()
             values.update(contents)
+
+
+@dataclass
+class _ItemSpawnState:
+    manager: ItemManager
+    worlds: list[WorldItemState]
+    world_states: list[_WorldSpawnState]
+    live_items: dict[int, ItemInstance]
+    live_entries: dict[int, ItemInstance]
+    next_instance_id: int
+    world_rng_states: list[torch.Tensor]
+
+    @classmethod
+    def capture(cls, manager: ItemManager) -> _ItemSpawnState:
+        return cls(
+            manager=manager,
+            worlds=manager.worlds,
+            world_states=[_WorldSpawnState.capture(state) for state in manager.worlds],
+            live_items=manager.live_items,
+            live_entries=manager.live_items.copy(),
+            next_instance_id=manager.next_instance_id,
+            world_rng_states=[generator.get_state() for generator in manager.world_rngs],
+        )
+
+    def restore(self) -> None:
+        self.manager.worlds = self.worlds
+        for world_state in self.world_states:
+            world_state.restore()
+        self.manager.live_items = self.live_items
+        self.live_items.clear()
+        self.live_items.update(self.live_entries)
+        self.manager.next_instance_id = self.next_instance_id
+        for generator, state in zip(self.manager.world_rngs, self.world_rng_states, strict=True):
+            generator.set_state(state)
 
 
 @dataclass
@@ -170,11 +203,10 @@ class EffectAdmissionSnapshot:
     """
 
     manager: EffectManager
-    global_effects: list[ActiveEffect]
-    global_entries: list[ActiveEffect]
+    global_effects: _ListMappingState[int, ActiveEffect]
     agent_effects: _ListMappingState[int, ActiveEffect]
     item_effects: _ListMappingState[int, ActiveEffect]
-    affordance_effects: _ListMappingState[str, ActiveEffect]
+    affordance_effects: _ListMappingState[tuple[int, int], ActiveEffect]
     effect_values: list[tuple[ActiveEffect, dict[str, Any]]]
     next_instance_id: int
     current_step: int
@@ -184,10 +216,10 @@ class EffectAdmissionSnapshot:
     bars: _TensorMappingState | None
     registry: _RegistryState | None
     item_manager: _ItemSpawnState | None
-    affordance_overrides: dict[str, bool] | None
-    affordance_entries: dict[str, bool] | None
     cpu_rng: torch.Tensor
     cuda_rng: list[torch.Tensor] | None
+    world_rngs: dict[int, torch.Generator]
+    world_rng_entries: dict[int, tuple[torch.Generator, torch.Tensor]]
 
     @classmethod
     def capture(
@@ -201,8 +233,7 @@ class EffectAdmissionSnapshot:
         effects = manager.get_all_active_effects()
         return cls(
             manager=manager,
-            global_effects=manager.global_effects,
-            global_entries=manager.global_effects.copy(),
+            global_effects=_ListMappingState.capture(manager.global_effects),
             agent_effects=_ListMappingState.capture(manager.agent_effects),
             item_effects=_ListMappingState.capture(manager.item_effects),
             affordance_effects=_ListMappingState.capture(manager.affordance_effects),
@@ -215,10 +246,10 @@ class EffectAdmissionSnapshot:
             bars=None if bars is None else _TensorMappingState.capture(bars),
             registry=None if registry is None else _RegistryState.capture(registry),
             item_manager=None if item_manager is None else _ItemSpawnState.capture(item_manager),
-            affordance_overrides=manager.affordance_overrides,
-            affordance_entries=None if manager.affordance_overrides is None else manager.affordance_overrides.copy(),
             cpu_rng=torch.get_rng_state(),
             cuda_rng=torch.cuda.get_rng_state_all() if torch.cuda.is_initialized() else None,
+            world_rngs=manager.world_rngs,
+            world_rng_entries={world: (generator, generator.get_state()) for world, generator in manager.world_rngs.items()},
         )
 
     def restore(self) -> None:
@@ -233,8 +264,8 @@ class EffectAdmissionSnapshot:
         for effect, values in self.effect_values:
             for name, value in values.items():
                 setattr(effect, name, value)
-        self.manager.global_effects = self.global_effects
-        self.global_effects[:] = self.global_entries
+        self.manager.global_effects = self.global_effects.mapping
+        self.global_effects.restore()
         self.manager.agent_effects = self.agent_effects.mapping
         self.agent_effects.restore()
         self.manager.item_effects = self.item_effects.mapping
@@ -247,10 +278,11 @@ class EffectAdmissionSnapshot:
         self.scheduler.pending = self.pending.mapping
         self.pending.restore()
         self.scheduler.current_tick = self.scheduler_tick
-        self.manager.affordance_overrides = self.affordance_overrides
-        if self.affordance_overrides is not None and self.affordance_entries is not None:
-            self.affordance_overrides.clear()
-            self.affordance_overrides.update(self.affordance_entries)
         torch.set_rng_state(self.cpu_rng)
         if self.cuda_rng is not None:
             torch.cuda.set_rng_state_all(self.cuda_rng)
+        self.manager.world_rngs = self.world_rngs
+        self.world_rngs.clear()
+        for world, (generator, state) in self.world_rng_entries.items():
+            generator.set_state(state)
+            self.world_rngs[world] = generator

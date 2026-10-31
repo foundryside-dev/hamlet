@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import enum
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
@@ -307,3 +307,27 @@ class Reduce(ASTNode):
 
     def accept(self, visitor: Any) -> Any:
         return visitor.visit_reduce(self)
+
+
+def read_paths(node: ASTNode) -> frozenset[str]:
+    """The dotted name of every state read in `node`: each ``Variable`` and ``PathAccess``.
+
+    An expression whose result is empty reads no state, so it has the same value in every
+    world (a literal, or arithmetic and pure functions over literals).
+    """
+    found: set[str] = set()
+
+    def visit(value: Any) -> None:
+        if isinstance(value, Variable):
+            found.add(value.name)
+        elif isinstance(value, PathAccess):
+            found.add(".".join(value.segments))
+        if isinstance(value, ASTNode):
+            for field in fields(value):
+                visit(getattr(value, field.name))
+        elif isinstance(value, list | tuple):
+            for item in value:
+                visit(item)
+
+    visit(node)
+    return frozenset(found)

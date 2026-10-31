@@ -67,7 +67,7 @@ def test_gridnd_asymmetric_bounds():
     )
 
     # Test positions initialize within bounds
-    positions = substrate.initialize_positions(10, torch.device("cpu"))
+    positions = substrate.initialize_positions(10, torch.device("cpu"), generator=None)
     assert (positions[:, 0] >= 0).all() and (positions[:, 0] < 100).all()
     assert (positions[:, 1] >= 0).all() and (positions[:, 1] < 3).all()
     assert (positions[:, 2] >= 0).all() and (positions[:, 2] < 50).all()

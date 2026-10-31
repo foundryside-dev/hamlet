@@ -117,10 +117,10 @@ def test_vfs_expression_dependency_chain():
     b_value = env.vfs_registry._storage["b"]
     c_value = env.vfs_registry._storage["c"]
 
-    # Global VFS variables are scalar tensors (shape [])
-    assert a_value.item() == 10.0, f"Expected a=10.0, got {a_value.item()}"
-    assert b_value.item() == 15.0, f"Expected b=15.0, got {b_value.item()}"
-    assert c_value.item() == 30.0, f"Expected c=30.0, got {c_value.item()}"
+    # Global VFS variables hold one value per world (S1: shape [num_worlds])
+    assert torch.all(a_value == 10.0), f"Expected a=10.0, got {a_value}"
+    assert torch.all(b_value == 15.0), f"Expected b=15.0, got {b_value}"
+    assert torch.all(c_value == 30.0), f"Expected c=30.0, got {c_value}"
 
 
 def test_vfs_expressions_access_bars():

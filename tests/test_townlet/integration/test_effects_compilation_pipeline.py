@@ -31,17 +31,17 @@ class TestEffectsCompilationPipeline:
                     "observable": True,
                     "on_spawn": [
                         {
-                            "modify": "target.bar.health",
-                            "value": "target.bar.health + 0.1 * target.bar.energy",
+                            "modify": "bar.health",
+                            "value": "bar.health + 0.1 * bar.energy",
                         }
                     ],
                     "on_tick": [
                         {
-                            "if": "target.bar.health < 0.5",
+                            "if": "bar.health < 0.5",
                             "then": [
                                 {
-                                    "modify": "target.bar.health",
-                                    "value": "target.bar.health + 0.2",
+                                    "modify": "bar.health",
+                                    "value": "bar.health + 0.2",
                                 }
                             ],
                             "else": [],
@@ -64,13 +64,13 @@ class TestEffectsCompilationPipeline:
         # on_spawn modify should have precompiled value_ast
         spawn_cmd = effect.on_spawn[0]
         assert spawn_cmd.type == CommandType.MODIFY
-        assert spawn_cmd.value_expr == "target.bar.health + 0.1 * target.bar.energy"
+        assert spawn_cmd.value_expr == "bar.health + 0.1 * bar.energy"
         assert spawn_cmd.value_ast is not None
 
         # on_tick if should have condition_ast and nested modify with value_ast
         if_cmd = effect.on_tick[0]
         assert if_cmd.type == CommandType.IF
-        assert if_cmd.condition_expr == "target.bar.health < 0.5"
+        assert if_cmd.condition_expr == "bar.health < 0.5"
         assert if_cmd.condition_ast is not None
         assert if_cmd.then_commands is not None
         nested_modify = if_cmd.then_commands[0]
@@ -92,8 +92,8 @@ class TestEffectsCompilationPipeline:
                     "observable": True,
                     "on_spawn": [
                         {
-                            "modify": "target.bar.health",
-                            "value": "target.bar.health + 0.1 +",  # Syntax error
+                            "modify": "bar.health",
+                            "value": "bar.health + 0.1 +",  # Syntax error
                         }
                     ],
                     "on_tick": [],

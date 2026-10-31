@@ -22,7 +22,7 @@ def _profile(expr: str, name: str = "var", var_type: str = "float") -> CompiledG
 
 def test_distance_and_in_range_static_affordance():
     profile = _profile('distance_to_affordance("Fridge")', name="dist")
-    evaluator = VFSEvaluator()
+    evaluator = VFSEvaluator(history_spec=None)
 
     agent_pos = torch.tensor([[0.0, 0.0], [2.0, 0.0]])
     affordances = {"Fridge": torch.tensor([1.0, 0.0])}
@@ -54,7 +54,7 @@ def test_distance_and_in_range_static_affordance():
 
 def test_direction_and_metric_euclidean():
     profile = _profile('direction_to_affordance("Target")', name="dir")
-    evaluator = VFSEvaluator()
+    evaluator = VFSEvaluator(history_spec=None)
 
     agent_pos = torch.tensor([[0.0, 0.0], [2.0, 0.0]])
     affordances = {"Target": torch.tensor([2.0, 0.0])}
@@ -85,7 +85,7 @@ def test_direction_and_metric_euclidean():
 
 
 def test_empty_affordance_returns_inf_false_zero_dir():
-    evaluator = VFSEvaluator()
+    evaluator = VFSEvaluator(history_spec=None)
     agent_pos = torch.tensor([[0.0, 0.0]])
 
     dist_profile = _profile('distance_to_affordance("None")', name="dist")
@@ -114,7 +114,7 @@ def test_empty_affordance_returns_inf_false_zero_dir():
 
 
 def test_invalid_metric_raises():
-    evaluator = VFSEvaluator()
+    evaluator = VFSEvaluator(history_spec=None)
     agent_pos = torch.tensor([[0.0, 0.0]])
     affordances = {"Fridge": torch.tensor([0.0, 0.0])}
 

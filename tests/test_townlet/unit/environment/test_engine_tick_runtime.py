@@ -1,4 +1,4 @@
-"""Runtime tick: written at the top of step, zeroed on reset, engine-only."""
+"""Runtime tick: zeroed on reset, advanced once per step, engine-only."""
 
 from __future__ import annotations
 
@@ -25,29 +25,21 @@ def test_tick_counts_steps_and_resets(tmp_path):
     assert _tick_value(env) == 0.0
     for k in range(3):
         env.step(torch.zeros(env.num_agents, dtype=torch.long, device=env.device))
-    # The pinned write happens at the TOP of step(), before global_tick's end-of-step
-    # increment — the same pre-increment value effects consume via
-    # current_step=self.global_tick (vectorized_env.py step()). So after N step() calls
-    # the registry cell holds the index of the step just executed (N-1), one behind the
-    # post-increment step-count attribute. See test_tick_matches_value_seen_within_step
-    # below for the property this write point actually guarantees.
-    assert _tick_value(env) == float(env.global_tick - 1)
+    # The registry tick advances with global_tick at one point in step(), after the
+    # transition phases: the observation step() returns describes the instant the next
+    # action is taken in, so the two agree whenever step() is not running.
+    assert _tick_value(env) == float(env.global_tick) == 3.0
     env.reset()
     assert _tick_value(env) == 0.0
 
 
 def test_tick_matches_value_seen_within_step(tmp_path, monkeypatch):
-    """Pinned write point: every consumer of THIS step sees the same tick value.
+    """Every consumer of THIS step's action sees the same tick value.
 
-    Fix round 1, Finding 2: a fresh reset() already writes tick=0, so capturing on the
-    FIRST step() call doesn't discriminate — seen["tick"] would read 0 from reset's
-    write and seen["current_step"] would read 0 (pre-increment global_tick) even if the
-    step()-level write were deleted entirely or moved after action execution. Stepping
-    once, unmonitored, first advances global_tick past 0; capturing on the SECOND step
-    means only a write correctly placed at the top of step() (before the action
-    executor consumes current_step=self.global_tick) can match — a deleted or
-    misplaced write would leave the registry holding step 1's stale value (0) against
-    step 2's current_step (1).
+    Capturing on the SECOND step discriminates: after one step the clock has advanced to
+    1, so the action executor must see registry tick 1 alongside current_step
+    (global_tick) 1. A clock advance that skipped the registry write, or wrote it before
+    the transitions of the previous step committed, would leave the two apart.
     """
     env = _make_env(tmp_path)
     env.step(torch.zeros(env.num_agents, dtype=torch.long, device=env.device))

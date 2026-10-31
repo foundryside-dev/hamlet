@@ -58,8 +58,8 @@ jobs:
 
       - name: No-Defaults Linter - Enforce no unauthorized defaults
         run: |
-          echo "Running no-defaults linter - all defaults must be whitelisted"
-          python scripts/no_defaults_lint.py src/townlet/ --whitelist .defaults-whitelist.txt
+          echo "Running no-defaults linter - all defaults must be whitelisted, and the whitelisted count may only fall"
+          python scripts/no_defaults_lint.py src/townlet/ --whitelist .defaults-whitelist.txt --ratchet .defaults-ratchet
           if [ $? -ne 0 ]; then
             echo "❌ Unauthorized defaults found. See error output above."
             exit 1

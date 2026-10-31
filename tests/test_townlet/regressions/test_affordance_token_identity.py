@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import shutil
 from pathlib import Path
 
@@ -24,6 +25,7 @@ from townlet.universe.dto.token_spec import (
     affordance_signature,
     meter_signature,
 )
+from townlet.universe.errors import CompilationError
 
 REFERENCE_PACK = Path("configs/reference/model_pack")
 LEVEL = "L0_demo"
@@ -44,6 +46,16 @@ def _affordance_payload(pack: Path, name: str) -> tuple[Path, dict, dict]:
 
 def _write_yaml(path: Path, payload: dict) -> None:
     path.write_text(yaml.safe_dump(payload, sort_keys=False))
+
+
+def _compile_refuses(pack: Path, pattern: str) -> None:
+    """An affordance identity refusal is a located LEVELS-stage diagnostic, never a bare ValueError."""
+    with pytest.raises(CompilationError) as excinfo:
+        UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)
+    message = str(excinfo.value)
+    assert "[TOKEN-SPEC]" in message, message
+    assert re.search(r"affordances\.yaml:\d+", message), message
+    assert re.search(pattern, message), message
 
 
 def _compiled_affordance_signature(pack: Path, name: str) -> tuple[tuple[float, ...], str]:
@@ -136,7 +148,7 @@ def test_non_affine_meter_interaction_keeps_dynamic_target_identity(tmp_path: Pa
     affordances_path = pack / "levels" / LEVEL / "affordances.yaml"
     payload = yaml.safe_load(affordances_path.read_text())
     eat = next(affordance for affordance in payload["affordances"]["affordances"] if affordance["name"] == "EAT")
-    eat["interactions"]["on_start"][1]["value"] = "target.bar.energy * 2.0"
+    eat["interactions"]["on_start"][1]["value"] = "bar.energy * 2.0"
     affordances_path.write_text(yaml.safe_dump(payload, sort_keys=False))
 
     compiled = UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)
@@ -158,8 +170,8 @@ def test_repeated_opposite_deltas_remain_distinct_identity_declarations(tmp_path
     payload = yaml.safe_load(affordances_path.read_text())
     eat = next(affordance for affordance in payload["affordances"]["affordances"] if affordance["name"] == "EAT")
     eat["interactions"]["on_start"] = [
-        {"modify": "target.bar.energy", "value": "target.bar.energy + 0.1"},
-        {"modify": "target.bar.energy", "value": "target.bar.energy - 0.1"},
+        {"modify": "bar.energy", "value": "bar.energy + 0.1"},
+        {"modify": "bar.energy", "value": "bar.energy - 0.1"},
     ]
     eat["interactions"]["on_completion"] = []
     affordances_path.write_text(yaml.safe_dump(payload, sort_keys=False))
@@ -187,9 +199,9 @@ def test_mutually_exclusive_meter_writes_are_marked_dynamic_without_cancelling(t
     eat = next(affordance for affordance in payload["affordances"]["affordances"] if affordance["name"] == "EAT")
     eat["interactions"]["on_start"] = [
         {
-            "if": "target.bar.energy > 0.5",
-            "then": [{"modify": "target.bar.energy", "value": "target.bar.energy + 0.1"}],
-            "else": [{"modify": "target.bar.energy", "value": "target.bar.energy - 0.1"}],
+            "if": "bar.energy > 0.5",
+            "then": [{"modify": "bar.energy", "value": "bar.energy + 0.1"}],
+            "else": [{"modify": "bar.energy", "value": "bar.energy - 0.1"}],
         }
     ]
     eat["interactions"]["on_completion"] = []
@@ -220,7 +232,7 @@ def test_same_meter_delta_in_different_lifecycle_stage_changes_signature_and_has
         for lifecycle_stage in work["interactions"]:
             work["interactions"][lifecycle_stage] = []
         work["interactions"][stage] = [
-            {"modify": "target.bar.energy", "value": "target.bar.energy + 0.1"},
+            {"modify": "bar.energy", "value": "bar.energy + 0.1"},
         ]
         _write_yaml(path, payload)
         signatures.append(_compiled_affordance_signature(pack, "WORK"))
@@ -256,21 +268,19 @@ def test_spawned_effect_missing_reference_or_cycle_refuses(tmp_path: Path, effec
         effects_payload["effect_definitions"][0]["on_spawn"] = [{"spawn_effect": "ate_food", "target": "target", "intensity": 1.0}]
         _write_yaml(effects_path, effects_payload)
 
-    with pytest.raises(ValueError, match="spawn_effect.*(missing|cycle)|cycle.*spawn_effect"):
-        UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)
+    _compile_refuses(pack, "spawn_effect.*(missing|cycle)|cycle.*spawn_effect")
 
 
 def test_non_finite_affine_literal_refuses_instead_of_becoming_dynamic(tmp_path: Path) -> None:
     pack = _copy_reference_pack(tmp_path)
     path, payload, eat = _affordance_payload(pack, "EAT")
     eat["interactions"]["on_start"] = [
-        {"modify": "target.bar.energy", "value": "target.bar.energy + 1e309"},
+        {"modify": "bar.energy", "value": "bar.energy + 1e309"},
     ]
     eat["interactions"]["on_completion"] = []
     _write_yaml(path, payload)
 
-    with pytest.raises(ValueError, match="finite"):
-        UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)
+    _compile_refuses(pack, "finite")
 
 
 def test_costs_and_costs_per_tick_have_distinct_identity_and_hash(tmp_path: Path) -> None:
@@ -325,7 +335,7 @@ def _set_work_per_tick_writes(pack: Path, deltas: tuple[float, ...]) -> None:
     path, payload, work = _affordance_payload(pack, "WORK")
     work["costs"] = {}
     work["costs_per_tick"] = {}
-    work["interactions"]["per_tick"] = [{"modify": "target.bar.energy", "value": f"target.bar.energy + {delta}"} for delta in deltas]
+    work["interactions"]["per_tick"] = [{"modify": "bar.energy", "value": f"bar.energy + {delta}"} for delta in deltas]
     work["interactions"]["on_completion"] = []
     _write_yaml(path, payload)
 
@@ -341,8 +351,7 @@ def test_more_than_fixed_k_reachable_meter_writes_refuses(tmp_path: Path) -> Non
     pack = _copy_reference_pack(tmp_path)
     _set_work_per_tick_writes(pack, (0.1, 0.2, 0.3, 0.4, 0.5, 0.6))
 
-    with pytest.raises(ValueError, match=rf"EFFECT_SUMMARY_K|at most {EFFECT_SUMMARY_K}|{EFFECT_SUMMARY_K}.*writes"):
-        UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)
+    _compile_refuses(pack, rf"EFFECT_SUMMARY_K|at most {EFFECT_SUMMARY_K}|{EFFECT_SUMMARY_K}.*writes")
 
 
 @pytest.mark.parametrize(
@@ -352,7 +361,6 @@ def test_more_than_fixed_k_reachable_meter_writes_refuses(tmp_path: Path) -> Non
         pytest.param("duration", 2, 20, id="effect-duration"),
         pytest.param("reapply_policy", "renew", "stack", id="effect-reapply"),
         pytest.param("observable", False, True, id="effect-observable"),
-        pytest.param("spawn_target", "target", "0", id="spawn-target"),
     ),
 )
 def test_spawned_effect_behavior_parameters_change_identity_and_hash(
@@ -369,12 +377,12 @@ def test_spawned_effect_behavior_parameters_change_identity_and_hash(
         eat["interactions"]["on_start"] = [
             {
                 "spawn_effect": "ate_food",
-                "target": value if field == "spawn_target" else "target",
+                "target": "target",
                 "intensity": value if field == "spawn_intensity" else 1.0,
             }
         ]
         _write_yaml(path, payload)
-        if field not in {"spawn_target", "spawn_intensity"}:
+        if field != "spawn_intensity":
             effects_path = pack / "effects.yaml"
             effects_payload = yaml.safe_load(effects_path.read_text())
             effects_payload["effect_definitions"][0][field] = value
@@ -385,15 +393,16 @@ def test_spawned_effect_behavior_parameters_change_identity_and_hash(
     assert signatures[0][1] != signatures[1][1]
 
 
-@pytest.mark.parametrize("target", ("self", "1"))
+@pytest.mark.parametrize("target", ("self",))
 def test_unrepresentable_affordance_spawn_target_refuses(tmp_path: Path, target: str) -> None:
+    """A constant target ("0", "1") refuses earlier, as [EFFECT-SPAWN-TARGET] (S1):
+    tests/test_townlet/unit/universe/test_spawn_target_literal.py."""
     pack = _copy_reference_pack(tmp_path)
     path, payload, eat = _affordance_payload(pack, "EAT")
     eat["interactions"]["on_start"] = [{"spawn_effect": "ate_food", "target": target, "intensity": 1.0}]
     _write_yaml(path, payload)
 
-    with pytest.raises(ValueError, match="spawn_effect.*target|target.*represent"):
-        UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)
+    _compile_refuses(pack, "spawn_effect.*target|target.*represent")
 
 
 def test_non_cyclic_nested_spawn_effect_refuses_instead_of_flattening_chain(tmp_path: Path) -> None:
@@ -411,7 +420,7 @@ def test_non_cyclic_nested_spawn_effect_refuses_instead_of_flattening_chain(tmp_
             "reapply_policy": "renew",
             "observable": True,
             "on_spawn": [],
-            "on_tick": [{"modify": "target.bar.energy", "value": "target.bar.energy + 0.1"}],
+            "on_tick": [{"modify": "bar.energy", "value": "bar.energy + 0.1"}],
             "on_despawn": [],
             "on_interrupt": [],
         }
@@ -419,8 +428,7 @@ def test_non_cyclic_nested_spawn_effect_refuses_instead_of_flattening_chain(tmp_
     effects_payload["effect_definitions"][0]["on_spawn"] = [{"spawn_effect": "leaf", "target": "target", "intensity": 1.0}]
     _write_yaml(effects_path, effects_payload)
 
-    with pytest.raises(ValueError, match="nested spawn_effect.*fixed|fixed.*nested spawn_effect"):
-        UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)
+    _compile_refuses(pack, "nested spawn_effect.*fixed|fixed.*nested spawn_effect")
 
 
 def _contains_subsequence(haystack: tuple[float, ...], needle: tuple[float, ...]) -> bool:

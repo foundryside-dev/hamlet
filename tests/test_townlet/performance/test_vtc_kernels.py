@@ -1,10 +1,16 @@
-"""Performance guardrails for eager VTC kernels."""
+"""Eager VTC threshold kernel: correctness by default, wall-clock ratio behind ``perf``.
+
+The timing assert is a ratio of two ``perf_counter`` measurements; under the default
+selection's coverage instrumentation it measures the tracer, not the kernel, so it runs
+only when asked for: ``uv run pytest -m perf --no-cov``.
+"""
 
 from __future__ import annotations
 
 import time
 from collections.abc import Callable
 
+import pytest
 import torch
 
 from townlet.vfs import vtc_kernels
@@ -21,8 +27,7 @@ def _measure(fn: Callable[[], torch.Tensor], *, iterations: int) -> float:
     return (time.perf_counter() - start) / iterations
 
 
-def test_eager_vtc_threshold_kernel_within_hardcoded_baseline_tolerance() -> None:
-    """Eager hot path should stay close to the equivalent direct tensor equation."""
+def _kernels() -> tuple[Callable[[], torch.Tensor], Callable[[], torch.Tensor]]:
     source_value = torch.linspace(0.0, 1.0, steps=32768, dtype=torch.float32)
     target_value = torch.ones_like(source_value)
     active_mask = torch.ones_like(source_value, dtype=torch.bool)
@@ -44,7 +49,18 @@ def test_eager_vtc_threshold_kernel_within_hardcoded_baseline_tolerance() -> Non
             clamp_high=1.0,
         )
 
+    return hardcoded_baseline, eager_vtc
+
+
+def test_eager_vtc_threshold_kernel_matches_hardcoded_equation() -> None:
+    hardcoded_baseline, eager_vtc = _kernels()
     assert torch.allclose(eager_vtc(), hardcoded_baseline())
+
+
+@pytest.mark.perf
+def test_eager_vtc_threshold_kernel_within_hardcoded_baseline_tolerance() -> None:
+    """Eager hot path should stay close to the equivalent direct tensor equation."""
+    hardcoded_baseline, eager_vtc = _kernels()
 
     baseline_time = _measure(hardcoded_baseline, iterations=75)
     eager_time = _measure(eager_vtc, iterations=75)

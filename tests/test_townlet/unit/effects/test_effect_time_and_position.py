@@ -13,9 +13,8 @@ and every lifecycle context carries them.
 TemporalHistory` at runtime. Command pipelines keep no history, so history functions refuse at
 compile and name the VFS-profile surface where they work.
 
-`probe_a.py` B3: `nearby_agents` was unreachable from YAML (no `radius` on the DTO) and
-measured Euclidean distance with `torch.norm` whatever the stratum declared. It now takes a
-declared `radius` and the substrate's declared metric.
+`probe_a.py` B3 (`nearby_agents` by the declared metric) is gone with the collection: under
+owner ruling S1 no other agent shares an agent's world, so it was always empty and was deleted.
 
 The original probes build on a scratch copy of `effects_smoke` that the branch has since moved
 past, so these tests rebuild each assertion on the current pack.
@@ -30,11 +29,10 @@ import pytest
 import torch
 import yaml
 
-from townlet.effects.compiler import HISTORY_FUNCTIONS, CommandCompiler
+from tests.test_townlet._fixtures.command_namespace import command_compiler
 from townlet.effects.schema import CommandNode, CommandType
 from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.errors import CompilationError
-from townlet.world.expression.functions import FUNCTION_SPECS
 from townlet.world.expression.type_checker import TypeCheckError
 
 WITNESS = Path(__file__).resolve().parents[4] / "configs" / "test" / "effects_smoke"
@@ -75,11 +73,23 @@ def _env(pack: Path, num_agents: int):
     return env
 
 
-def _spawn(env, effect_id: str, target: int = 0) -> None:
+def _spawn(env, effect_id: str, target: int = 0, *, world: int | None = None) -> None:
     bars = {name: env.meters[:, idx] for name, idx in env.meter_name_to_index.items()}
     env.effect_manager.spawn_effect(
-        effect_id, target_entity_id=target, intensity=1.0, current_step=env.global_tick, bars=bars, vfs_registry=env.vfs_registry
+        effect_id,
+        target_entity_id=target,
+        intensity=1.0,
+        current_step=env.global_tick,
+        bars=bars,
+        vfs_registry=env.vfs_registry,
+        world=world,
     )
+
+
+def _spawn_in_every_world(env, effect_id: str) -> None:
+    """S1: an agent-scoped effect per agent, each in its own world."""
+    for agent in range(env.num_agents):
+        _spawn(env, effect_id, agent)
 
 
 def _wait(env) -> None:
@@ -95,15 +105,16 @@ def _place(env, positions: list[list[int]]) -> None:
 
 def test_tick_compiles_in_an_effect_and_reads_the_engine_tick(tmp_path: Path) -> None:
     """A global effect copies the engine tick into a global variable every tick."""
-    pack = _pack(tmp_path, _effect("clock", scope="global", on_tick=[{"modify": "vfs.day_count", "value": "tick"}]))
+    pack = _pack(tmp_path, _effect("clock", scope="global", on_tick=[{"modify": "day_count", "value": "tick"}]))
     env = _env(pack, num_agents=2)
-    _spawn(env, "clock")
+    _spawn(env, "clock", world=0)
 
     for _ in range(3):
         ticks_at_effect = env.global_tick
         _wait(env)
 
-    assert env.vfs_registry.get("day_count", reader="engine").item() == pytest.approx(float(ticks_at_effect))
+    # A global-scope effect lives in the world that spawned it (S1): world 1 is untouched.
+    assert env.vfs_registry.get("day_count", reader="engine").tolist() == pytest.approx([float(ticks_at_effect), 0.0])
     assert ticks_at_effect > 0
 
 
@@ -118,7 +129,7 @@ def test_distance_to_affordance_evaluates_per_agent_in_an_effect(tmp_path: Path)
     env = _env(_pack(tmp_path, effect), num_agents=3)
     _place(env, [[0, 0], [3, 3], [1, 3]])
     health = env.meter_name_to_index["health"]
-    _spawn(env, "pull")
+    _spawn_in_every_world(env, "pull")
 
     before = env.meters[:, health].clone()
     _wait(env)
@@ -137,7 +148,7 @@ def test_in_range_evaluates_in_an_effect(tmp_path: Path) -> None:
     env = _env(_pack(tmp_path, effect), num_agents=2)
     _place(env, [[0, 0], [3, 2]])
     health = env.meter_name_to_index["health"]
-    _spawn(env, "near_food")
+    _spawn_in_every_world(env, "near_food")
 
     before = env.meters[:, health].clone()
     _wait(env)
@@ -149,16 +160,16 @@ def test_in_range_evaluates_in_an_effect(tmp_path: Path) -> None:
 # -- probe_d.py Z: temporal history refuses at compile ------------------------------------
 
 
-@pytest.mark.parametrize("expression", ["bar.health - 0.1 * lag(bar.energy, 1)", "bar.health - 0.001 * elapsed_ticks()"])
+@pytest.mark.parametrize("expression", ["bar.health - 0.1 * lag(bar.energy, 1)", "bar.health - 0.001 * delta(bar.energy)"])
 def test_history_functions_refuse_at_compile_in_an_effect(tmp_path: Path, expression: str) -> None:
     pack = _pack(tmp_path, _effect("hist", scope="agent", on_tick=[{"modify": "bar.health", "value": expression}]))
 
-    with pytest.raises(CompilationError, match="reads temporal history, which only VFS profile expressions keep"):
+    with pytest.raises(CompilationError, match="which an effect pipeline does not carry"):
         UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)
 
 
 def test_history_refusal_reaches_nested_expressions_and_bodies() -> None:
-    schema = {"bar.health": "float", "target.bar.health": "float", "bar.energy": "float"}
+    schema = {"bar.health": "float", "bar.energy": "float"}
     nested = CommandNode(
         type=CommandType.MODIFY,
         path="bar.health",
@@ -167,44 +178,9 @@ def test_history_refusal_reaches_nested_expressions_and_bodies() -> None:
     in_body = CommandNode(
         type=CommandType.FOR_EACH,
         collection="all_agents",
-        body=[CommandNode(type=CommandType.MODIFY, path="target.bar.health", value_expr="target.bar.health - delta(bar.energy)")],
+        body=[CommandNode(type=CommandType.MODIFY, path="bar.health", value_expr="bar.health - delta(bar.energy)")],
     )
 
     for node in (nested, in_body):
-        with pytest.raises(TypeCheckError, match="reads temporal history"):
-            CommandCompiler(schema, agent_target=True).compile_command(node)
-
-
-def test_every_refused_history_function_is_a_registered_function() -> None:
-    """A rename in the function registry must not silently drop a refusal."""
-    assert HISTORY_FUNCTIONS <= FUNCTION_SPECS.keys()
-
-
-# -- probe_a.py B3: nearby_agents by the declared metric -----------------------------------
-
-
-@pytest.mark.parametrize(("metric", "hit"), [("manhattan", [False, False, True]), ("euclidean", [False, True, True])])
-def test_nearby_agents_iterates_neighbours_by_the_declared_metric(tmp_path: Path, metric: str, hit: list[bool]) -> None:
-    """Self (0,0), A (1,1), B (1,0), radius 1.5: manhattan reaches B only; euclidean reaches both."""
-    effect = _effect(
-        "aura",
-        scope="agent",
-        on_tick=[
-            {
-                "for_each": "nearby_agents",
-                "radius": 1.5,
-                "do": [{"modify": "target.bar.health", "value": "target.bar.health - 0.1"}],
-            }
-        ],
-    )
-    env = _env(_pack(tmp_path, effect, metric=metric), num_agents=3)
-    _place(env, [[0, 0], [1, 1], [1, 0]])
-    health = env.meter_name_to_index["health"]
-    _spawn(env, "aura", target=0)
-
-    before = env.meters[:, health].clone()
-    _wait(env)
-    loss = before - env.meters[:, health]
-
-    extra = [round((loss[i] - loss[0]).item(), 5) for i in range(3)]
-    assert extra == [0.1 if h else 0.0 for h in hit]
+        with pytest.raises(TypeCheckError, match="does not carry"):
+            command_compiler(schema).compile_command(node)

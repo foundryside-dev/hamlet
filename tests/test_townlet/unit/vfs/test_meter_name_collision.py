@@ -168,10 +168,17 @@ def test_global_variable_named_like_a_meter_refuses_too(tmp_path: Path) -> None:
 # --- namespace boundaries the rule must not over-refuse ---
 
 
-def test_bare_meter_name_in_a_vtc_expression_still_resolves_to_the_bar(tmp_path: Path) -> None:
-    """probe5 control: without a colliding variable, ``public_state := energy`` reads the meter."""
+def test_bare_meter_name_in_a_vtc_expression_refuses_naming_the_meter_spelling(tmp_path: Path) -> None:
+    """One spelling (VFS round-2 S5): a meter is ``bar.<name>``; the bare name refuses, naming it."""
     pack = _pack(tmp_path, "bare_meter_vtc")
     _set_advance_writes(pack, [_write("public_state", METER, composition="overwrite")])
+    with pytest.raises(CompilationError, match=f"write 'bar.{METER}'"):
+        _compile(pack)
+
+
+def test_the_meter_spelling_in_a_vtc_expression_reads_the_bar(tmp_path: Path) -> None:
+    pack = _pack(tmp_path, "meter_vtc")
+    _set_advance_writes(pack, [_write("public_state", f"bar.{METER}", composition="overwrite")])
 
     universe = _compile(pack)
     env = VectorizedHamletEnv.from_universe(universe, level_name=LEVEL, num_agents=2, device="cpu")

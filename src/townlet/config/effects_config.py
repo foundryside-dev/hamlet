@@ -19,7 +19,6 @@ from pydantic import (
 from townlet.numeric import require_float32
 
 __all__ = [
-    "SPATIAL_COLLECTIONS",
     "CommandConfig",
     "EffectDefinitionConfig",
     "EffectScope",
@@ -86,18 +85,13 @@ _COMMAND_KINDS: dict[str, tuple[frozenset[str], frozenset[str]]] = {
     "spawn_effect": (frozenset({"spawn_effect", "target", "intensity"}), frozenset()),
     "spawn_item": (frozenset({"spawn_item", "position", "quantity"}), frozenset()),
     "if": (frozenset({"if", "then", "else"}), frozenset()),
-    # `as` is accepted and not yet bound (effects remediation WP7 decides bind or delete);
-    # `radius` is required by, and refused outside, the SPATIAL_COLLECTIONS.
-    "for_each": (frozenset({"for_each", "do"}), frozenset({"as", "radius"})),
+    # `as` is accepted and not yet bound (effects remediation WP7 decides bind or delete).
+    "for_each": (frozenset({"for_each", "do"}), frozenset({"as"})),
     "switch": (frozenset({"switch", "cases", "default"}), frozenset()),
-    "reduce": (frozenset({"reduce", "reduce_as", "reduce_init", "reduce_body", "reduce_into"}), frozenset()),
     "parallel": (frozenset({"parallel"}), frozenset()),
     "delay": (frozenset({"delay", "do"}), frozenset()),
     "sample": (frozenset({"sample", "params", "store_in"}), frozenset()),
 }
-
-# for_each collections that select by distance under the substrate's declared metric.
-SPATIAL_COLLECTIONS = frozenset({"nearby_agents"})
 
 
 class CommandConfig(BaseModel):
@@ -109,9 +103,8 @@ class CommandConfig(BaseModel):
     - spawn_effect/target/intensity: Trigger another effect
     - spawn_item/position/quantity: Create items in the world
     - if/then/else: Conditional execution (per-agent mask)
-    - for_each/do (+ radius for nearby_agents; as): Iterate over collection
+    - for_each/do (+ as): Iterate over collection
     - switch/cases/default: Multi-branch dispatch
-    - reduce/reduce_as/reduce_init/reduce_body/reduce_into: Fixed-size reduction
     - parallel: Disjoint branch execution
     - delay/do: Schedule commands after N ticks
     - sample/params/store_in: Draw from distribution
@@ -146,20 +139,12 @@ class CommandConfig(BaseModel):
     # for_each command: Iterate over collection
     for_each: str | None = None  # Collection name or expression
     as_: str | None = Field(None, alias="as")  # Iterator variable name (not yet bound; WP7)
-    radius: float | None = Field(default=None, ge=0.0, allow_inf_nan=False)  # nearby_agents radius, world units
     do: list[CommandConfig] = []
 
     # switch command: Multi-branch equality dispatch
     switch: str | None = None  # Expression evaluated once
-    cases: list[dict[str, Any]] = []  # List of {when: expr, do: [...]} mappings
+    cases: list[SwitchCaseConfig] = []  # Typed {when, do} branches
     default: list[CommandConfig] = []  # Default branch commands
-
-    # reduce command: Fixed-size reduction into accumulator
-    reduce: str | None = None  # collection expression
-    reduce_as: str | None = None  # iterator name
-    reduce_init: str | None = None  # accumulator init expr
-    reduce_body: str | None = None  # accumulator update expr (uses acc + iterator)
-    reduce_into: str | None = None  # target path to store result
 
     # parallel command: disjoint branch execution
     parallel: list[CommandConfig] | None = None
@@ -180,14 +165,6 @@ class CommandConfig(BaseModel):
         if intensity is None:
             return None
         return require_float32(intensity, field="spawn_effect intensity")
-
-    @field_validator("radius")
-    @classmethod
-    def validate_radius_float32(cls, radius: float | None) -> float | None:
-        """Canonicalize an authored collection radius at the float32 runtime boundary."""
-        if radius is None:
-            return None
-        return require_float32(radius, field="for_each radius")
 
     def _authored_keys(self) -> set[str]:
         """The YAML keys this node authored (aliases, so `do` is one key for two fields)."""
@@ -224,20 +201,11 @@ class CommandConfig(BaseModel):
             raise ValueError(f"Exactly one command type required ({allowed}), got {len(kinds)}: {kinds}")
         kind = kinds[0]
         required, optional = _COMMAND_KINDS[kind]
-        if kind == "for_each":
-            optional = optional - {"radius"}
-            if self.for_each in SPATIAL_COLLECTIONS:
-                required = required | {"radius"}
         missing = sorted(required - authored)
         if missing:
             raise ValueError(f"{kind} command requires {missing}; every field of a command is authored explicitly")
         foreign = sorted(authored - required - optional)
         if foreign:
-            if kind == "for_each" and foreign == ["radius"]:
-                raise ValueError(
-                    f"for_each radius applies only to the spatial collections {sorted(SPATIAL_COLLECTIONS)}; "
-                    f"'{self.for_each}' does not select by distance"
-                )
             raise ValueError(f"{kind} command does not take {foreign}; a command node is exactly one command kind")
         values = {name: getattr(self, name) for name in self.model_fields_set}
         null = sorted(type(self).model_fields[name].alias or name for name, value in values.items() if value is None)
@@ -271,6 +239,23 @@ class CommandConfig(BaseModel):
                 raise ValueError(f"sample '{dist}' missing params: {missing_params}")
 
         return self
+
+
+class SwitchCaseConfig(BaseModel):
+    """One branch of a ``switch`` command: ``when`` is the equality expression, ``do`` its body.
+
+    Both keys are authored (an empty ``do`` is an authored empty body). The body is typed
+    command nodes, so parsing, static write authorization and pipeline compilation walk
+    one grammar, and a refusal inside it is located at the nested command.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    when: str
+    do: list[CommandConfig]
+
+
+CommandConfig.model_rebuild()
 
 
 class EffectDefinitionConfig(BaseModel):
@@ -320,10 +305,14 @@ class EffectsConfig(BaseModel):
     version: Literal["1.0"] = Field(..., description="Config schema version")
     effect_definitions: list[EffectDefinitionConfig] = Field(..., description="Catalog of reusable effect definitions")
     # Per-scope budget of concurrently active effects (token-obs spec §2 capacity table;
-    # hamlet-88578e629e). REQUIRED (No-Defaults) whenever any effect is declared —
-    # `effect` token capacity is Σ scope budget × scope denominator — and forbidden when
-    # the catalog is empty (a declaration that reaches nothing). Exceeding a scope's
-    # budget at runtime raises at publish time (overflow is loud, never truncated).
+    # hamlet-88578e629e): the instances ONE scope entity (a world's agent, an item row, a
+    # world's affordance, the world itself) may carry at once. REQUIRED (No-Defaults)
+    # whenever any effect is declared — `effect` token capacity is Σ scope budget × scope
+    # denominator — and forbidden when the catalog is empty (a declaration that reaches
+    # nothing). A spawn that would add an instance beyond the budget is not admitted, in
+    # that world only, and is recorded in `EffectManager.spawn_refusals` (step `info`
+    # `effect_spawn_refusals`); the publisher's overflow refusal is a backstop, never the
+    # enforcement.
     max_active_effects: dict[str, int] | None = Field(
         default=None,
         description="Per-EffectScope budget of concurrently active effects, e.g. {global: 0, agent: 4, item: 0, affordance: 0}",

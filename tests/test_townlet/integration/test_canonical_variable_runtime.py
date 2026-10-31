@@ -27,7 +27,6 @@ def _pack(tmp_path: Path, declarations: list[dict]) -> Path:
     payload = {
         "variables": {
             "version": "1.0",
-            "extents": {},
             "item_profiles": ["default_item"],
             "declarations": declarations,
         }
@@ -126,14 +125,15 @@ def test_lifetime_and_derived_state_do_not_depend_on_transport(tmp_path: Path, c
         original = env.vfs_registry.get(identifier, reader="engine")
         env.vfs_registry.set_engine_value(identifier, torch.full_like(original, 9.0))
     env.step(torch.zeros(2, dtype=torch.long))
-    assert env.vfs_registry.get("per_tick", reader="engine").item() == 1.0
-    assert env.vfs_registry.get("per_episode", reader="engine").item() == 9.0
-    assert env.vfs_registry.get("persistent", reader="engine").item() == 9.0
-    assert env.vfs_registry.get("derived", reader="engine").item() == 4.0
+    # Globals hold one row per world (S1); every row moves together here.
+    assert env.vfs_registry.get("per_tick", reader="engine").tolist() == [1.0] * 2
+    assert env.vfs_registry.get("per_episode", reader="engine").tolist() == [9.0] * 2
+    assert env.vfs_registry.get("persistent", reader="engine").tolist() == [9.0] * 2
+    assert env.vfs_registry.get("derived", reader="engine").tolist() == [5.0] * 2  # evaluated at the advanced clock: tick 1 + 4
     env.step(torch.zeros(2, dtype=torch.long))
-    assert env.vfs_registry.get("derived", reader="engine").item() == 5.0
+    assert env.vfs_registry.get("derived", reader="engine").tolist() == [6.0] * 2
     env.reset()
-    assert env.vfs_registry.get("per_tick", reader="engine").item() == 1.0
-    assert env.vfs_registry.get("per_episode", reader="engine").item() == 2.0
-    assert env.vfs_registry.get("persistent", reader="engine").item() == 9.0
-    assert env.vfs_registry.get("derived", reader="engine").item() == 4.0
+    assert env.vfs_registry.get("per_tick", reader="engine").tolist() == [1.0] * 2
+    assert env.vfs_registry.get("per_episode", reader="engine").tolist() == [2.0] * 2
+    assert env.vfs_registry.get("persistent", reader="engine").tolist() == [9.0] * 2
+    assert env.vfs_registry.get("derived", reader="engine").tolist() == [4.0] * 2

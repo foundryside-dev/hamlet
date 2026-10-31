@@ -12,11 +12,16 @@
         "differing": [
           "environment.yaml",
           "experiment.yaml",
+          "levels/L0_0_minimal/affordances.yaml",
           "levels/L0_0_minimal/training.yaml",
+          "levels/L0_5_dual_resource/affordances.yaml",
           "levels/L0_5_dual_resource/training.yaml",
+          "levels/L1_full_observability/affordances.yaml",
           "levels/L1_full_observability/training.yaml",
+          "levels/L2_partial_observability/affordances.yaml",
           "levels/L2_partial_observability/curriculum.yaml",
           "levels/L2_partial_observability/training.yaml",
+          "levels/L3_temporal_mechanics/affordances.yaml",
           "levels/L3_temporal_mechanics/curriculum.yaml",
           "levels/L3_temporal_mechanics/training.yaml",
           "stratum.yaml"
@@ -64,33 +69,33 @@
         "environment.yaml": "47713f31364ed06448495bb7f03c8458b270795663b45ece62f4828efb5d600b",
         "experiment.yaml": "d0e0d0116cbc4d0231907712dc4c63965f9864668c129d67924a89b6853dfef3",
         "items.yaml": "074f34266cf8a9c60d0760e2fa8ba6c6d73d85d3ea19c45699b504abc053c3d5",
-        "levels/L0_0_minimal/affordances.yaml": "a752e832eb7997c10ea1ecd617445ca7f9f8c82f14713cab6120068154fc2c9b",
+        "levels/L0_0_minimal/affordances.yaml": "d937ef40e4fa92ec89539386b9249944203ca82ba883892ef05695afc8f4e07c",
         "levels/L0_0_minimal/bars.yaml": "c55c7736c0c6ae948cdb8d597a1ea13c8087f19a04b91e341ff8c4a5d10cdc57",
         "levels/L0_0_minimal/curriculum.yaml": "e24d6f042e667615359ff43b8c6e2c84982695bfcd6c8ed5795f48a2eb3201e8",
         "levels/L0_0_minimal/drive.yaml": "1dfaca1e050a33fc1776b065481ce77f77789ea9b450a35ee3cf86171bb048e8",
         "levels/L0_0_minimal/training.yaml": "804809b1390e2cd5c5504bdd909577c9cd6d739f1c48ad9e555179cf2c1d8c32",
-        "levels/L0_5_dual_resource/affordances.yaml": "a752e832eb7997c10ea1ecd617445ca7f9f8c82f14713cab6120068154fc2c9b",
+        "levels/L0_5_dual_resource/affordances.yaml": "d937ef40e4fa92ec89539386b9249944203ca82ba883892ef05695afc8f4e07c",
         "levels/L0_5_dual_resource/bars.yaml": "c55c7736c0c6ae948cdb8d597a1ea13c8087f19a04b91e341ff8c4a5d10cdc57",
         "levels/L0_5_dual_resource/curriculum.yaml": "4fe63e0ff053cb2e6aebcfc7b8518e104c0809ec9394e16df2b5d546d41591d3",
         "levels/L0_5_dual_resource/drive.yaml": "1dfaca1e050a33fc1776b065481ce77f77789ea9b450a35ee3cf86171bb048e8",
         "levels/L0_5_dual_resource/training.yaml": "06d00ea1a3e712512f80897cb78efce52e5a4b3549af59050313ef7c7e764cf8",
-        "levels/L1_full_observability/affordances.yaml": "a752e832eb7997c10ea1ecd617445ca7f9f8c82f14713cab6120068154fc2c9b",
+        "levels/L1_full_observability/affordances.yaml": "d937ef40e4fa92ec89539386b9249944203ca82ba883892ef05695afc8f4e07c",
         "levels/L1_full_observability/bars.yaml": "c55c7736c0c6ae948cdb8d597a1ea13c8087f19a04b91e341ff8c4a5d10cdc57",
         "levels/L1_full_observability/curriculum.yaml": "fc41e113e7ca1d9a588a608a431fb6a6bb0cc02f422faad927201a6164b72243",
         "levels/L1_full_observability/drive.yaml": "1dfaca1e050a33fc1776b065481ce77f77789ea9b450a35ee3cf86171bb048e8",
         "levels/L1_full_observability/training.yaml": "405667dff01972d67478172c4452cd4fadda45ff90d985383ead1a18724b471d",
-        "levels/L2_partial_observability/affordances.yaml": "a752e832eb7997c10ea1ecd617445ca7f9f8c82f14713cab6120068154fc2c9b",
+        "levels/L2_partial_observability/affordances.yaml": "d937ef40e4fa92ec89539386b9249944203ca82ba883892ef05695afc8f4e07c",
         "levels/L2_partial_observability/bars.yaml": "c55c7736c0c6ae948cdb8d597a1ea13c8087f19a04b91e341ff8c4a5d10cdc57",
         "levels/L2_partial_observability/curriculum.yaml": "219785448971fea947685c45b5044904096bb102b331b99496ad7b7e44cfc795",
         "levels/L2_partial_observability/drive.yaml": "1dfaca1e050a33fc1776b065481ce77f77789ea9b450a35ee3cf86171bb048e8",
         "levels/L2_partial_observability/training.yaml": "01d9ce77e8114a7bbf618af44a2f877cd09eb3a54c87779a0ae0c1ad6f0cb1da",
-        "levels/L3_temporal_mechanics/affordances.yaml": "a752e832eb7997c10ea1ecd617445ca7f9f8c82f14713cab6120068154fc2c9b",
+        "levels/L3_temporal_mechanics/affordances.yaml": "d937ef40e4fa92ec89539386b9249944203ca82ba883892ef05695afc8f4e07c",
         "levels/L3_temporal_mechanics/bars.yaml": "c55c7736c0c6ae948cdb8d597a1ea13c8087f19a04b91e341ff8c4a5d10cdc57",
         "levels/L3_temporal_mechanics/curriculum.yaml": "51bc9217952ee8df8e90ea368d6a14093604f504234fdad65e56f3a7999d649f",
         "levels/L3_temporal_mechanics/drive.yaml": "1dfaca1e050a33fc1776b065481ce77f77789ea9b450a35ee3cf86171bb048e8",
         "levels/L3_temporal_mechanics/training.yaml": "fbaa4a9952f6553e4b9fee794c13c52ed1d5129f40106e1d0fbc7e6d137fda5b",
         "stratum.yaml": "740d99ed47564a8e8825cae83c1c03601715dc7d1ea70dbb458162bed165a545",
-        "variables.yaml": "82e2c45599ae1b6727e9be4b5a34c102538f27834cc8a44cc0bef0b847fac31b"
+        "variables.yaml": "ffb6c3d39e421df9304e997e90470479490641b99b49e88a033094f29b11dac2"
       },
       "pack": "configs/default_curriculum"
     },
@@ -105,6 +110,7 @@
         "differing": [
           "environment.yaml",
           "experiment.yaml",
+          "levels/L1_full_observability/affordances.yaml",
           "levels/L1_full_observability/training.yaml",
           "stratum.yaml"
         ]
@@ -131,13 +137,13 @@
         "environment.yaml": "47713f31364ed06448495bb7f03c8458b270795663b45ece62f4828efb5d600b",
         "experiment.yaml": "7e12bfb79d77393e67794d76736d16660044685b8d371e32389ac5f269932798",
         "items.yaml": "074f34266cf8a9c60d0760e2fa8ba6c6d73d85d3ea19c45699b504abc053c3d5",
-        "levels/L1_full_observability/affordances.yaml": "a752e832eb7997c10ea1ecd617445ca7f9f8c82f14713cab6120068154fc2c9b",
+        "levels/L1_full_observability/affordances.yaml": "d937ef40e4fa92ec89539386b9249944203ca82ba883892ef05695afc8f4e07c",
         "levels/L1_full_observability/bars.yaml": "c55c7736c0c6ae948cdb8d597a1ea13c8087f19a04b91e341ff8c4a5d10cdc57",
         "levels/L1_full_observability/curriculum.yaml": "fc41e113e7ca1d9a588a608a431fb6a6bb0cc02f422faad927201a6164b72243",
         "levels/L1_full_observability/drive.yaml": "1dfaca1e050a33fc1776b065481ce77f77789ea9b450a35ee3cf86171bb048e8",
         "levels/L1_full_observability/training.yaml": "405667dff01972d67478172c4452cd4fadda45ff90d985383ead1a18724b471d",
         "stratum.yaml": "b516656ecca108758df3152e0d96a312c94a674a4726018f8983b905849cdd4d",
-        "variables.yaml": "82e2c45599ae1b6727e9be4b5a34c102538f27834cc8a44cc0bef0b847fac31b"
+        "variables.yaml": "ffb6c3d39e421df9304e997e90470479490641b99b49e88a033094f29b11dac2"
       },
       "pack": "configs/differential/boundary_wrap"
     },
@@ -152,6 +158,7 @@
         "differing": [
           "environment.yaml",
           "experiment.yaml",
+          "levels/L2_partial_observability/affordances.yaml",
           "levels/L2_partial_observability/curriculum.yaml",
           "levels/L2_partial_observability/training.yaml",
           "stratum.yaml"
@@ -179,13 +186,13 @@
         "environment.yaml": "47713f31364ed06448495bb7f03c8458b270795663b45ece62f4828efb5d600b",
         "experiment.yaml": "7c1f679fbdac82d95fbd41919bc5c8d5d25d3b3bc2d87886a87bdfeba2930261",
         "items.yaml": "074f34266cf8a9c60d0760e2fa8ba6c6d73d85d3ea19c45699b504abc053c3d5",
-        "levels/L2_partial_observability/affordances.yaml": "a752e832eb7997c10ea1ecd617445ca7f9f8c82f14713cab6120068154fc2c9b",
+        "levels/L2_partial_observability/affordances.yaml": "d937ef40e4fa92ec89539386b9249944203ca82ba883892ef05695afc8f4e07c",
         "levels/L2_partial_observability/bars.yaml": "c55c7736c0c6ae948cdb8d597a1ea13c8087f19a04b91e341ff8c4a5d10cdc57",
         "levels/L2_partial_observability/curriculum.yaml": "219785448971fea947685c45b5044904096bb102b331b99496ad7b7e44cfc795",
         "levels/L2_partial_observability/drive.yaml": "1dfaca1e050a33fc1776b065481ce77f77789ea9b450a35ee3cf86171bb048e8",
         "levels/L2_partial_observability/training.yaml": "01d9ce77e8114a7bbf618af44a2f877cd09eb3a54c87779a0ae0c1ad6f0cb1da",
         "stratum.yaml": "bf3b7b7ad0582944fd9b769d83f3e6a540f6cb9e56f6cdde4115fb54326f1845",
-        "variables.yaml": "82e2c45599ae1b6727e9be4b5a34c102538f27834cc8a44cc0bef0b847fac31b"
+        "variables.yaml": "ffb6c3d39e421df9304e997e90470479490641b99b49e88a033094f29b11dac2"
       },
       "pack": "configs/differential/div003_cubic_partial"
     },
@@ -200,6 +207,7 @@
         "differing": [
           "environment.yaml",
           "experiment.yaml",
+          "levels/L1_full_observability/affordances.yaml",
           "levels/L1_full_observability/training.yaml",
           "stratum.yaml"
         ]
@@ -226,13 +234,13 @@
         "environment.yaml": "47713f31364ed06448495bb7f03c8458b270795663b45ece62f4828efb5d600b",
         "experiment.yaml": "0fc7c953b58f38626c8f8af4d68619519a01a6b61d805fcc6a560a9244e5efb0",
         "items.yaml": "074f34266cf8a9c60d0760e2fa8ba6c6d73d85d3ea19c45699b504abc053c3d5",
-        "levels/L1_full_observability/affordances.yaml": "a752e832eb7997c10ea1ecd617445ca7f9f8c82f14713cab6120068154fc2c9b",
+        "levels/L1_full_observability/affordances.yaml": "d937ef40e4fa92ec89539386b9249944203ca82ba883892ef05695afc8f4e07c",
         "levels/L1_full_observability/bars.yaml": "c55c7736c0c6ae948cdb8d597a1ea13c8087f19a04b91e341ff8c4a5d10cdc57",
         "levels/L1_full_observability/curriculum.yaml": "fc41e113e7ca1d9a588a608a431fb6a6bb0cc02f422faad927201a6164b72243",
         "levels/L1_full_observability/drive.yaml": "1dfaca1e050a33fc1776b065481ce77f77789ea9b450a35ee3cf86171bb048e8",
         "levels/L1_full_observability/training.yaml": "405667dff01972d67478172c4452cd4fadda45ff90d985383ead1a18724b471d",
         "stratum.yaml": "772242034c34fb5dd598ff2566473d123c287a9213730b50c8645508d5d8ca3d",
-        "variables.yaml": "82e2c45599ae1b6727e9be4b5a34c102538f27834cc8a44cc0bef0b847fac31b"
+        "variables.yaml": "ffb6c3d39e421df9304e997e90470479490641b99b49e88a033094f29b11dac2"
       },
       "pack": "configs/differential/div003_rect"
     },
@@ -249,6 +257,7 @@
           "effects.yaml",
           "environment.yaml",
           "experiment.yaml",
+          "levels/L0_effects/affordances.yaml",
           "levels/L0_effects/training.yaml",
           "stratum.yaml"
         ]
@@ -272,17 +281,17 @@
       "live_files": {
         "actions.yaml": "0669a6fe6b0fe7993f8df34c56381087c6c7d5ba51053d2eeed83472951c1a93",
         "brain.yaml": "190c53df401613b1fadd812033946d6c89b1cbcd7cc30bb62f5959ba710716b9",
-        "effects.yaml": "fb3c76b1560ccd07fe5b7d6b909483793f1b85e21553921e62615bc3ce7b0eeb",
+        "effects.yaml": "2fd5be1fe7702258e051dbf247381fbc06fad532fde8f85820cd0320a3bef786",
         "environment.yaml": "9a52a0e4d6ac28dae2455b60ca1ff529b8014400aad6d031fff3c36d915737a2",
         "experiment.yaml": "d0161a0e963d9f40d1a511e5eda1d0f76e960fd3db37aca82fde95c65f2b336d",
         "items.yaml": "074f34266cf8a9c60d0760e2fa8ba6c6d73d85d3ea19c45699b504abc053c3d5",
-        "levels/L0_effects/affordances.yaml": "02e0bd95778c3dc31d0e83cf3ac31741239f6b2e85465fed0e75d301e5db2a40",
+        "levels/L0_effects/affordances.yaml": "ae71d29aa54c369134db8c96e46edab9193f5e0070578edb1632d8ed234b4d50",
         "levels/L0_effects/bars.yaml": "7ee452518d4a3ad1bb0f47079ca1754fd4a11a61ff01a3295a3e14bebc9eed82",
         "levels/L0_effects/curriculum.yaml": "d48203cf3e965184e46be319a97c9babe815311f7efc41939682f6837bb3f4ad",
         "levels/L0_effects/drive.yaml": "4c3b0c9c278c8e872de2bbc87d2a36eaa6fd545e31ae3a1f34c92df87e04eddf",
         "levels/L0_effects/training.yaml": "528bbb3a8bcb0d406005caefc538244c004f7667d0ac7aca1f20043feef9ac9a",
         "stratum.yaml": "3d7d7c38f5879e30042d39af802e4844e935bd48f521903421199a60079ed97c",
-        "variables.yaml": "0f90355f393041d1683dd838c9dd813b19599741daa7a682ccfb403d4c36ecc0"
+        "variables.yaml": "2550ef32e6f60d16688069966e9ec978e4f1803e748b452aaa08655c752a1268"
       },
       "pack": "configs/test/effects_smoke"
     },
@@ -305,6 +314,8 @@
           "effects.yaml",
           "environment.yaml",
           "experiment.yaml",
+          "items.yaml",
+          "levels/L0_smoke/affordances.yaml",
           "levels/L0_smoke/training.yaml",
           "stratum.yaml"
         ]
@@ -335,18 +346,18 @@
       "live_files": {
         "actions.yaml": "c98d76e064dce68b4c51031904f632ac21b651eaee92f2c0d4661ce14fdd15ef",
         "brain.yaml": "e0fff02ab1af345bd9dedb056c606f67d719057ced39cf143ad68c5bcf5a7627",
-        "effects.yaml": "0e434a1b8a1e2ca957bf0a423049a459c383e5262b35dacc4cabdb03f29e2a1a",
+        "effects.yaml": "897a5d8d013f96e7f1f0d37dd90c38ccf05aedef493ad9099e2f960967a64d2e",
         "environment.yaml": "e9c11a3f51e29e459cb081c300b04c6c047ef4d53e8e640ba2d7d2b6e874b4c0",
         "experiment.yaml": "4bedc329e30775073b042ceb5d39c361390b8ef77d3d6493f5fdcc9ba846d2e0",
-        "items.yaml": "94ddb1f4fbddf2f5f91f9e24a0ddac74b9fbd57edfb1d21b81ce1cb825612127",
-        "levels/L0_smoke/affordances.yaml": "a5cc1b708460b901eaef66df75487fc9ba324d2858d713b516f6a73781ef7098",
+        "items.yaml": "1c17e72093af65a0bf72d6325f82fdb0ca647d4d00026fa674864078ecf46aea",
+        "levels/L0_smoke/affordances.yaml": "ea1bfad43a47adf749d5aa8e37cb8cd150d2c765018cbfa00a3cdee5698166b9",
         "levels/L0_smoke/bars.yaml": "040b63ba2a146cd3c762a547cae6d51243bee3a5cdf4fccecedde516d998d9d2",
         "levels/L0_smoke/curriculum.yaml": "ad5461940b42f7030c7c258441ccdbc4142ba1c1da409756c3520389f47b8963",
         "levels/L0_smoke/drive.yaml": "f6e177a29b05a16e43599bf8b05c42e978379925a6e813e7ae4eede2a725a396",
         "levels/L0_smoke/items.yaml": "5e170612edf95c3381f4f3c0e72ddf04b5286516be44a23e1f4eae5dfe715039",
         "levels/L0_smoke/training.yaml": "1a2a47c166b3ab3952850d359c048dbcdfba3c2ec31e63c37c5bd73c24458181",
         "stratum.yaml": "aad8b287c76fd5b1cb6f67b11934948757c854edc184f9a0a6791d3665df653e",
-        "variables.yaml": "64d5086f750b14273880a6a3632e2f7ea4e58b82a0b41f28f3c0c2658a76b9ba"
+        "variables.yaml": "cbc5eb5fd41dcb37b319d065e112be8b76979373187766cd67695ab1b85764ce"
       },
       "pack": "configs/test/items_smoke"
     }

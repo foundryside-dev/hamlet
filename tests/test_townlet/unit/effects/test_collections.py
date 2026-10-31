@@ -12,11 +12,6 @@ from townlet.effects.collections import (
     register_collection_resolver,
     resolve_collection,
 )
-from townlet.substrate.grid2d import Grid2DSubstrate
-
-
-def _grid(metric: str) -> Grid2DSubstrate:
-    return Grid2DSubstrate(width=16, height=16, boundary="clamp", distance_metric=metric, enable_diagonals=False)
 
 
 @dataclass
@@ -29,94 +24,33 @@ class MockContext:
     substrate: Any = None
     inventory: Any = None
     effect_manager: Any = None
+    world: int | None = None
+
+    def world_row(self) -> int | None:
+        return self.world
 
 
 # --- all_agents resolver tests ---
 
 
-def test_all_agents_returns_range_of_batch_size():
-    """all_agents returns [0..batch_size-1]."""
+def test_all_agents_is_the_agents_of_the_pipelines_world():
+    """S1: a world holds one agent, so all_agents in world 3 is agent 3 and nothing else."""
+    ctx = MockContext(bars={"energy": torch.zeros(5)}, world=3)
+
+    assert resolve_collection("all_agents", ctx) == [3]
+
+
+def test_all_agents_from_a_context_bound_to_no_world_iterates_every_world():
     ctx = MockContext(bars={"energy": torch.zeros(5)})
 
-    result = resolve_collection("all_agents", ctx)
-
-    assert result == [0, 1, 2, 3, 4]
+    assert resolve_collection("all_agents", ctx) == [0, 1, 2, 3, 4]
 
 
-# --- nearby_agents resolver tests ---
-
-
-def test_nearby_agents_requires_radius():
-    """nearby_agents raises if radius not provided."""
-    ctx = MockContext(
-        bars={"energy": torch.zeros(4)},
-        self_index=0,
-        agent_positions=torch.tensor([[0.0, 0.0], [1.0, 0.0], [5.0, 0.0], [10.0, 0.0]]),
-    )
-
-    with pytest.raises(ValueError, match="radius required"):
-        resolve_collection("nearby_agents", ctx, radius=None)
-
-
-def test_nearby_agents_requires_self_index():
-    """nearby_agents raises if self_index is None."""
-    ctx = MockContext(
-        bars={"energy": torch.zeros(4)},
-        self_index=None,  # Missing!
-        agent_positions=torch.tensor([[0.0, 0.0], [1.0, 0.0], [5.0, 0.0], [10.0, 0.0]]),
-    )
-
-    with pytest.raises(ValueError, match="self_index required"):
-        resolve_collection("nearby_agents", ctx, radius=2.0)
-
-
-def test_nearby_agents_requires_agent_positions():
-    """nearby_agents raises if agent_positions is None."""
-    ctx = MockContext(
-        bars={"energy": torch.zeros(4)},
-        self_index=0,
-        agent_positions=None,  # Missing!
-    )
-
-    with pytest.raises(ValueError, match="agent_positions required"):
-        resolve_collection("nearby_agents", ctx, radius=2.0)
-
-
-def test_nearby_agents_requires_substrate():
-    """nearby_agents measures distance with the substrate's declared metric, so it needs one."""
-    ctx = MockContext(
-        bars={"energy": torch.zeros(2)},
-        self_index=0,
-        agent_positions=torch.tensor([[0, 0], [1, 0]]),
-    )
-
-    with pytest.raises(ValueError, match="substrate required"):
-        resolve_collection("nearby_agents", ctx, radius=2.0)
-
-
-def test_nearby_agents_returns_agents_within_radius():
-    """nearby_agents returns indices of agents within radius (excluding self)."""
-    ctx = MockContext(
-        bars={"energy": torch.zeros(4)},
-        self_index=0,
-        agent_positions=torch.tensor([[0, 0], [1, 0], [5, 0], [10, 0]]),
-        substrate=_grid("manhattan"),
-    )
-
-    assert resolve_collection("nearby_agents", ctx, radius=2.0) == [1]
-
-
-@pytest.mark.parametrize(("metric", "expected"), [("manhattan", [2]), ("euclidean", [1, 2]), ("chebyshev", [1, 2])])
-def test_nearby_agents_uses_the_declared_metric(metric: str, expected: list[int]) -> None:
-    """Self (0,0), A (1,1), B (1,0), radius 1.5: manhattan excludes A at distance 2."""
-    ctx = MockContext(
-        bars={"energy": torch.zeros(3)},
-        self_index=0,
-        agent_positions=torch.tensor([[0, 0], [1, 1], [1, 0]]),
-        substrate=_grid(metric),
-    )
-
-    assert resolve_collection("nearby_agents", ctx, radius=1.5) == expected
+def test_nearby_agents_is_not_a_collection():
+    """Deleted under S1: another agent is never in an agent's world, so it was always empty."""
+    assert "nearby_agents" not in COLLECTION_RESOLVERS
+    with pytest.raises(ValueError, match="Unknown collection type"):
+        resolve_collection("nearby_agents", MockContext(bars={"energy": torch.zeros(2)}, self_index=0, world=0))
 
 
 # --- inventory_items resolver tests ---

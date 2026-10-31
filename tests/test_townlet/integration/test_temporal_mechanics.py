@@ -143,11 +143,11 @@ def _apply_temporal_pack(data: dict) -> None:
             affordance["costs_per_tick"] = {"money": REST_MONEY_PER_TICK}
             affordance["interactions"]["on_start"] = []
             affordance["interactions"]["per_tick"] = [
-                {"modify": "target.bar.energy", "value": f"target.bar.energy + {REST_ENERGY_PER_TICK}"},
+                {"modify": "bar.energy", "value": f"bar.energy + {REST_ENERGY_PER_TICK}"},
             ]
             affordance["interactions"]["on_completion"] = [
-                {"modify": "target.bar.energy", "value": f"target.bar.energy + {REST_COMPLETION_ENERGY}"},
-                {"modify": "target.bar.health", "value": f"target.bar.health + {REST_COMPLETION_HEALTH}"},
+                {"modify": "bar.energy", "value": f"bar.energy + {REST_COMPLETION_ENERGY}"},
+                {"modify": "bar.health", "value": f"bar.health + {REST_COMPLETION_HEALTH}"},
             ]
 
         elif name == JOB_AFFORDANCE:
@@ -157,10 +157,10 @@ def _apply_temporal_pack(data: dict) -> None:
             affordance["costs_per_tick"] = {}
             affordance["interactions"]["on_start"] = []
             affordance["interactions"]["per_tick"] = [
-                {"modify": "target.bar.money", "value": f"target.bar.money + {JOB_PAY_PER_TICK}"},
+                {"modify": "bar.money", "value": f"bar.money + {JOB_PAY_PER_TICK}"},
             ]
             affordance["interactions"]["on_completion"] = [
-                {"modify": "target.bar.money", "value": f"target.bar.money + {JOB_COMPLETION_PAY}"},
+                {"modify": "bar.money", "value": f"bar.money + {JOB_COMPLETION_PAY}"},
             ]
 
 
@@ -279,10 +279,12 @@ class TestAuthoredDayPhase:
         env.reset()
         wait = env.action_dim - 1
         obs = None
-        for _ in range(7):
+        for _ in range(6):
             obs, *_ = env.step(torch.tensor([wait], device=env.device))
-        # evaluation runs before the tick increments, so after 7 steps day_phase == 6
+        # the observation describes the instant the next action is taken in: after 6
+        # steps day_phase, the registry tick and the gating hour are all 6
         assert float(env.vfs_registry.get(self.VARIABLE, reader="engine").reshape(-1)[0]) == 6.0
+        assert env.time_of_day == 6
         _row, v0 = self._lanes(env)
         assert obs[0, v0].item() == pytest.approx(1.0, abs=1e-6)  # sin(2π·6/24)
         assert obs[0, v0 + 1].item() == pytest.approx(0.0, abs=1e-6)

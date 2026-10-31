@@ -1,7 +1,8 @@
 version: "1.0"
 
 effect_definitions:
-  # Effect that modifies item VFS (durability decay)
+  # Effect that wears an item down. An item-scoped effect may land on an item of any profile,
+  # so it reads only state every profile declares: `condition`.
   - id: "wear_and_tear"
     scope: item
     duration: 10
@@ -11,8 +12,8 @@ effect_definitions:
     on_spawn: []
 
     on_tick:
-      - modify: self.vfs.durability
-        value: "self.vfs.durability - (1.0 * intensity)"
+      - modify: item.condition
+        value: "item.condition - (1.0 * intensity)"
 
     on_despawn: []
     on_interrupt: []
@@ -25,15 +26,15 @@ effect_definitions:
     observable: true
 
     on_spawn:
-      - modify: self.vfs.durability
-        value: "self.vfs.durability - 5.0"
+      - modify: item.condition
+        value: "item.condition - 5.0"
 
     on_tick: []
 
     on_despawn: []
     on_interrupt: []
 
-  # Effect that spawns on item with low durability (cascade trigger)
+  # Effect that breaks an item (cascade trigger)
   - id: "item_break"
     scope: item
     duration: 1
@@ -41,7 +42,7 @@ effect_definitions:
     observable: true
 
     on_spawn:
-      - modify: self.vfs.durability
+      - modify: item.condition
         value: "0.0"
 
     on_tick: []
@@ -49,7 +50,7 @@ effect_definitions:
     on_despawn: []
     on_interrupt: []
 
-  # Effect that reads item freshness (food items)
+  # Effect that decays an item faster
   - id: "food_decay"
     scope: item
     duration: 15
@@ -59,8 +60,8 @@ effect_definitions:
     on_spawn: []
 
     on_tick:
-      - modify: self.vfs.freshness
-        value: "self.vfs.freshness - (2.0 * intensity)"
+      - modify: item.condition
+        value: "item.condition - (2.0 * intensity)"
 
     on_despawn: []
     on_interrupt: []

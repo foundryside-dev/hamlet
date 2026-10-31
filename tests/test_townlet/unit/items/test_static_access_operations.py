@@ -5,6 +5,8 @@ from __future__ import annotations
 import pytest
 import torch
 
+from tests.test_townlet._fixtures.command_namespace import command_compiler
+from tests.test_townlet.utils.builders import make_grid2d_substrate
 from townlet.config.items_config import ItemInteractionsConfig, ItemsCatalogConfig, ItemTypeConfig
 from townlet.effects.context import ExecutionContext
 from townlet.items.manager import ItemManager
@@ -20,7 +22,11 @@ def _manager() -> ItemManager:
         for name, writers in [("allowed", ("engine",)), ("constant", ())]
     ]
     registry = VariableRegistry(
-        [], 2, torch.device("cpu"), max_items=3, item_profiles={"object": CompiledItemProfile(profile_name="object", variables=variables)}
+        [],
+        2,
+        torch.device("cpu"),
+        items_per_world=3,
+        item_profiles={"object": CompiledItemProfile(profile_name="object", variables=variables)},
     )
     catalog = ItemsCatalogConfig(
         version="1.0",
@@ -28,6 +34,7 @@ def _manager() -> ItemManager:
         max_items_in_world=3,
         item_types=[
             ItemTypeConfig(
+                exclusive=True,
                 id="object",
                 name="Object",
                 icon="o",
@@ -39,7 +46,15 @@ def _manager() -> ItemManager:
             )
         ],
     )
-    return ItemManager(catalog=catalog, max_items=3, device="cpu", schema=None, vfs_registry=registry)
+    return ItemManager(
+        catalog=catalog,
+        num_worlds=registry.num_worlds,
+        substrate=make_grid2d_substrate(),
+        items_per_world=3,
+        device="cpu",
+        symbols=None,
+        vfs_registry=registry,
+    )
 
 
 @pytest.mark.parametrize("overrides", [{"constant": 2.0}, {"allowed": 9.0, "constant": 2.0}, {"allowed": 9.0, "missing": 2.0}])
@@ -48,26 +63,26 @@ def test_denied_spawn_overrides_leave_complete_operation_unchanged(overrides: di
     registry = manager.vfs_registry
     assert registry is not None and registry.item_vfs is not None
     before = registry.item_vfs.clone()
-    slots = manager.vfs_free_slots.copy()
+    slots = manager.worlds[0].free_rows.copy()
     with pytest.raises((PermissionError, KeyError)):
-        manager.spawn_item("object", (1, 1), 0, initial_state=overrides)
+        manager.spawn_item(0, "object", (1, 1), 0, initial_state=overrides)
     assert torch.equal(before, registry.item_vfs)
-    assert manager.vfs_free_slots == slots
+    assert manager.worlds[0].free_rows == slots
     assert manager.next_instance_id == 0
-    assert manager.active_items == manager.held_items == {}
+    assert manager.worlds[0].active == manager.worlds[0].held == {}
     assert registry.item_vfs_index_to_profile == {}
-    assert manager._position_index == {}
+    assert manager.worlds[0].position_index == {}
 
 
 def test_immutable_defaults_initialize_without_becoming_authored_writes() -> None:
     manager = _manager()
-    item = manager.spawn_item("object", (1, 1), 0)
+    item = manager.spawn_item(0, "object", (1, 1), 0)
     assert item is not None
     registry = manager.vfs_registry
     assert registry is not None
     assert registry.read_item("object", "constant", item.vfs_index, reader="engine") == 2.0
     manager.reset_state()
-    item = manager.spawn_item("object", (1, 1), 0, initial_state={"allowed": 7.0})
+    item = manager.spawn_item(0, "object", (1, 1), 0, initial_state={"allowed": 7.0})
     assert item is not None
     assert registry.read_item("object", "constant", item.vfs_index, reader="engine") == 2.0
     assert registry.read_item("object", "allowed", item.vfs_index, reader="engine") == 7.0
@@ -75,20 +90,19 @@ def test_immutable_defaults_initialize_without_becoming_authored_writes() -> Non
 
 def test_dynamic_path_authorization_denies_no_op_item_write() -> None:
     manager = _manager()
-    item = manager.spawn_item("object", (1, 1), 0)
+    item = manager.spawn_item(0, "object", (1, 1), 0)
     assert item is not None
     ctx = ExecutionContext(vfs_registry=manager.vfs_registry, self_is_item=True, self_index=item.vfs_index)
     with pytest.raises(PermissionError, match="constant"):
-        ctx.authorize_write_path("self.vfs.constant")
+        ctx.authorize_write_path("item.constant")
 
 
 def test_compound_spawn_denial_precedes_sibling_mutation() -> None:
-    from townlet.effects.compiler import CommandCompiler
     from townlet.effects.executor import CommandExecutor
     from townlet.effects.schema import CommandNode, CommandType
 
     manager = _manager()
-    command = CommandCompiler({"bar.energy": "float"}, agent_target=True).compile_command(
+    command = command_compiler({"bar.energy": "float"}).compile_command(
         CommandNode(
             type=CommandType.PARALLEL,
             parallel_commands=[
@@ -114,4 +128,4 @@ def test_compound_spawn_denial_precedes_sibling_mutation() -> None:
     with pytest.raises(PermissionError, match="constant"):
         CommandExecutor().execute(command, ctx)
     assert torch.equal(ctx.bars["energy"], before)
-    assert manager.active_items == {}
+    assert manager.worlds[0].active == {}

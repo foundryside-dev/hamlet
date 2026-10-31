@@ -2,6 +2,7 @@
 
 import torch
 
+from tests.test_townlet.utils.builders import make_grid2d_substrate
 from townlet.config.items_config import (
     ItemInteractionsConfig,
     ItemsCatalogConfig,
@@ -70,7 +71,7 @@ def test_effect_on_despawn_spawns_item_with_real_itemmanager():
     vfs_registry = VariableRegistry(
         variables=[],
         num_agents=3,
-        max_items=10,
+        items_per_world=10,
         device=torch.device("cpu"),
         item_profiles=item_profiles,
     )
@@ -79,6 +80,7 @@ def test_effect_on_despawn_spawns_item_with_real_itemmanager():
     items_catalog = _catalog(
         [
             ItemTypeConfig(
+                exclusive=True,
                 id="gold_coin",
                 name="Gold Coin",
                 icon="🪙",
@@ -93,6 +95,7 @@ def test_effect_on_despawn_spawns_item_with_real_itemmanager():
                 ),
             ),
             ItemTypeConfig(
+                exclusive=True,
                 id="rare_gem",
                 name="Rare Gem",
                 icon="💎",
@@ -111,9 +114,11 @@ def test_effect_on_despawn_spawns_item_with_real_itemmanager():
 
     item_manager = ItemManager(
         catalog=items_catalog,
-        max_items=10,
+        num_worlds=vfs_registry.num_worlds,
+        substrate=make_grid2d_substrate(),
+        items_per_world=10,
         device="cpu",
-        schema=None,
+        symbols=None,
         vfs_registry=vfs_registry,
     )
 
@@ -188,8 +193,9 @@ def test_effect_on_despawn_spawns_item_with_real_itemmanager():
     # Effect should be gone now
     assert 1 not in effect_manager.agent_effects or len(effect_manager.agent_effects[1]) == 0
 
-    # Verify loot spawned at agent 1 position
-    items = item_manager.get_all_items()
+    # Verify loot spawned at agent 1 position, in agent 1's world (items are per world, S1)
+    assert item_manager.items_in_world(0) == [] and item_manager.items_in_world(2) == []
+    items = item_manager.items_in_world(1)
     assert len(items) == 4  # 3 gold coins + 1 rare gem
 
     # All items at agent 1 position (5, 7)
@@ -217,6 +223,7 @@ def test_spawn_item_respects_itemmanager_capacity():
     catalog = _catalog(
         [
             ItemTypeConfig(
+                exclusive=True,
                 id="trash",
                 name="Trash",
                 icon="🗑️",
@@ -236,9 +243,11 @@ def test_spawn_item_respects_itemmanager_capacity():
     # Very small capacity
     item_manager = ItemManager(
         catalog=catalog,
-        max_items=2,  # Only 2 items max
+        num_worlds=1,
+        substrate=make_grid2d_substrate(),
+        items_per_world=2,  # Only 2 items max
         device="cpu",
-        schema=None,
+        symbols=None,
         vfs_registry=None,
     )
 
@@ -268,7 +277,7 @@ def test_spawn_item_respects_itemmanager_capacity():
     executor.execute(command, context)
 
     # Only 2 items spawned
-    items = item_manager.get_all_items()
+    items = item_manager.items_in_world(0)
     assert len(items) == 2
 
 
@@ -277,6 +286,7 @@ def test_spawn_item_respects_cooldown():
     catalog = _catalog(
         [
             ItemTypeConfig(
+                exclusive=True,
                 id="rare_item",
                 name="Rare Item",
                 icon="✨",
@@ -295,14 +305,16 @@ def test_spawn_item_respects_cooldown():
 
     item_manager = ItemManager(
         catalog=catalog,
-        max_items=10,
+        num_worlds=1,
+        substrate=make_grid2d_substrate(),
+        items_per_world=10,
         device="cpu",
-        schema=None,
+        symbols=None,
         vfs_registry=None,
     )
 
     # Spawn first item at tick 0
-    item1 = item_manager.spawn_item("rare_item", (3, 3), current_tick=0)
+    item1 = item_manager.spawn_item(0, "rare_item", (3, 3), current_tick=0)
     assert item1 is not None
 
     # Despawn to trigger cooldown
@@ -334,7 +346,7 @@ def test_spawn_item_respects_cooldown():
     executor.execute(command, context)
 
     # No new items (cooldown blocked spawn)
-    items = item_manager.get_all_items()
+    items = item_manager.items_in_world(0)
     assert len(items) == 0
 
     # Try again at tick 11 (cooldown expired)
@@ -342,5 +354,5 @@ def test_spawn_item_respects_cooldown():
     executor.execute(command, context)
 
     # Now item spawned
-    items = item_manager.get_all_items()
+    items = item_manager.items_in_world(0)
     assert len(items) == 1

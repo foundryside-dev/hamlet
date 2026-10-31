@@ -16,6 +16,7 @@ VectorizedHamletEnv in test_affordances.py and test_vectorized_env.py.
 import pytest
 import torch
 
+from tests.test_townlet._fixtures.command_namespace import command_symbols
 from townlet.config.affordances_v2_config import (
     AffordanceParamConfig,
     DeploymentConfig,
@@ -421,7 +422,7 @@ def test_affordance_engine_executes_effects_commands():
         interaction_type="instant",
         costs={},
         interactions={
-            "on_start": [{"modify": "target.bar.energy", "value": "target.bar.energy + 0.5"}],
+            "on_start": [{"modify": "bar.energy", "value": "bar.energy + 0.5"}],
             "per_tick": [],
             "on_completion": [],
             "on_early_exit": [],
@@ -436,9 +437,9 @@ def test_affordance_engine_executes_effects_commands():
     mock_registry.storage = {"energy": torch.tensor([0.2, 0.3])}
 
     # Effects schema is dict[str, str] mapping paths to types
-    effects_schema = {
-        "target.bar.energy": "float",
-        "target.bar.health": "float",
+    schema = {
+        "bar.energy": "float",
+        "bar.health": "float",
     }
 
     # Create mock command executor
@@ -454,7 +455,7 @@ def test_affordance_engine_executes_effects_commands():
         **_bounds_kwargs(meter_name_to_idx, torch.device("cpu")),
         modulation_program=None,
         vfs_registry=mock_registry,
-        effects_schema=effects_schema,
+        command_symbols=command_symbols(schema),
         command_executor=mock_executor,
     )
 
@@ -484,8 +485,8 @@ def test_vtc_multi_tick_effects_apply_completion_commands_only_for_completion_ma
         costs_per_tick={},
         interactions={
             "on_start": [],
-            "per_tick": [{"modify": "target.bar.energy", "value": "target.bar.energy + 0.1"}],
-            "on_completion": [{"modify": "target.bar.health", "value": "target.bar.health + 0.2"}],
+            "per_tick": [{"modify": "bar.energy", "value": "bar.energy + 0.1"}],
+            "on_completion": [{"modify": "bar.health", "value": "bar.health + 0.2"}],
             "on_early_exit": [],
             "on_failure": [],
         },
@@ -499,7 +500,7 @@ def test_vtc_multi_tick_effects_apply_completion_commands_only_for_completion_ma
         device=torch.device("cpu"),
         meter_name_to_idx={"energy": 0, "health": 1},
         **_bounds_kwargs({"energy": 0, "health": 1}, torch.device("cpu")),
-        effects_schema={"target.bar.energy": "float", "target.bar.health": "float"},
+        command_symbols=command_symbols({"bar.energy": "float", "bar.health": "float"}),
         command_executor=CommandExecutor(),
     )
 
@@ -538,7 +539,7 @@ def test_affordance_effects_apply_modulation_multiplier():
         interaction_type="instant",
         costs={},
         interactions={
-            "on_start": [{"modify": "target.bar.energy", "value": "target.bar.energy + 0.4"}],
+            "on_start": [{"modify": "bar.energy", "value": "bar.energy + 0.4"}],
             "per_tick": [],
             "on_completion": [],
             "on_early_exit": [],
@@ -548,8 +549,8 @@ def test_affordance_effects_apply_modulation_multiplier():
         deployment=DeploymentConfig(type="random"),
     )
 
-    effects_schema = {
-        "target.bar.energy": "float",
+    schema = {
+        "bar.energy": "float",
     }
 
     from townlet.config.affordances_v2_config import ModulationParamConfig
@@ -574,7 +575,7 @@ def test_affordance_effects_apply_modulation_multiplier():
         **_bounds_kwargs({"energy": 0}, torch.device("cpu")),
         modulation_program=modulation_program,
         vfs_registry=None,
-        effects_schema=effects_schema,
+        command_symbols=command_symbols(schema),
         command_executor=CommandExecutor(),
     )
 
@@ -601,7 +602,7 @@ def test_affordance_effects_apply_vtc_modulation_multiplier():
         interaction_type="instant",
         costs={},
         interactions={
-            "on_start": [{"modify": "target.bar.energy", "value": "target.bar.energy + 0.4"}],
+            "on_start": [{"modify": "bar.energy", "value": "bar.energy + 0.4"}],
             "per_tick": [],
             "on_completion": [],
             "on_early_exit": [],
@@ -630,7 +631,7 @@ def test_affordance_effects_apply_vtc_modulation_multiplier():
         **_bounds_kwargs({"energy": 0}, torch.device("cpu")),
         modulation_program=modulation_program,
         vfs_registry=None,
-        effects_schema={"target.bar.energy": "float"},
+        command_symbols=command_symbols({"bar.energy": "float"}),
         command_executor=CommandExecutor(),
     )
 
@@ -666,7 +667,7 @@ def test_get_meter_idx_validation_raises_on_unknown_meter():
         **_bounds_kwargs({"energy": 0, "health": 1}, torch.device("cpu")),
         modulation_program=None,
         vfs_registry=None,
-        effects_schema={},
+        command_symbols=command_symbols({}),
         command_executor=CommandExecutor(),
     )
 

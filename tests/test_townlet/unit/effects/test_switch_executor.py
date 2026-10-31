@@ -2,7 +2,7 @@
 
 import torch
 
-from townlet.effects.compiler import CommandCompiler
+from tests.test_townlet._fixtures.command_namespace import command_compiler
 from townlet.effects.context import ExecutionContext
 from townlet.effects.executor import CommandExecutor
 from townlet.effects.schema import CommandNode, CommandType
@@ -23,7 +23,7 @@ def test_switch_executes_matching_case():
     )
 
     schema = {"bar.energy": "float"}
-    compiler = CommandCompiler(schema, agent_target=True)
+    compiler = command_compiler(schema)
     compiled = compiler.compile_command(switch_node)
 
     context = ExecutionContext(bars={"energy": torch.tensor(0.0)})
@@ -44,7 +44,7 @@ def test_switch_executes_default_when_no_match():
     )
 
     schema = {"bar.energy": "float"}
-    compiler = CommandCompiler(schema, agent_target=True)
+    compiler = command_compiler(schema)
     compiled = compiler.compile_command(switch_node)
 
     context = ExecutionContext(bars={"energy": torch.tensor(0.0)})

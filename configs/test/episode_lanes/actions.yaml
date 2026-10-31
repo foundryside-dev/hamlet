@@ -13,7 +13,7 @@ actions:
     description: Deterministic lifecycle witness
     enabled_by_default: true
     writes:
-    - variable_id: energy
+    - variable_id: bar.energy
       expression: '0.0'
       condition: null
       composition: overwrite

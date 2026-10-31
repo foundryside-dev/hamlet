@@ -12,6 +12,7 @@ from typing import get_args
 
 import pytest
 
+from tests.test_townlet.helpers.token_widths import fixed_width_for
 from townlet.config.effects_config import EffectScope, ReapplyPolicy
 from townlet.config.interaction_type import InteractionType
 from townlet.effects.affordance_identity import AffordanceMeterWrite
@@ -48,7 +49,10 @@ from townlet.universe.dto.token_spec import (
     MeterDeclaration,
     SlotBinding,
     TokenContext,
+    TokenIdentity,
     TokenSpec,
+    TokenSpecRefusalError,
+    TokenSubject,
     TokenTypeSchema,
     affordance_capacity,
     agent_capacity,
@@ -105,6 +109,14 @@ def _var(
         normalization=normalization if normalization is not None else _minmax(),
         owner_slot=owner_slot,
     )
+
+
+def _subject(var_id: str) -> TokenSubject:
+    return TokenSubject("variable", var_id, None)
+
+
+def _identity(var: ExposedVariable) -> TokenIdentity:
+    return TokenIdentity(var.subject, ("variable", *static_payload_signature(var, owner_capacity=None)))
 
 
 def _meter(name: str = "energy", initial: float = 1.0, lo: float = 0.0, hi: float = 1.0) -> MeterDeclaration:
@@ -239,8 +251,9 @@ class TestDescriptorBlock:
             describe_variable(var, element_index=0, owner_capacity=None)
 
     def test_descriptor_block_width_is_pinned(self):
-        # Single pin so drift is loud: 7 (scope) + 2 (semantic) + 9 + 5 + 3 + 3 + 1 (initial) + 1 (log count) + 2.
-        assert DESCRIPTOR_BLOCK_WIDTH == 33
+        # Single pin so drift is loud: 4 (scope) + 2 (semantic) + 9 + 5 + 3 + 3 + 1 (initial) + 1 (log count) + 2.
+        # The scope one-hot fell 7 -> 4 when pair/message/agent_private were deleted (VFS WP15).
+        assert DESCRIPTOR_BLOCK_WIDTH == 30
         assert len(PAYLOAD_SCHEMAS["variable_element"]) == (MAX_POSITION_RANK + 1) + (VALUE_BLOCK_WIDTH + 1) + DESCRIPTOR_BLOCK_WIDTH
 
     def test_describe_variable_has_descriptor_width_and_marks_declaration(self):
@@ -279,7 +292,7 @@ class TestDescriptorBlock:
 class TestWidthRules:
     def test_cyclical_sin_cos_is_one_token_both_lanes(self):
         spec = NormalizationSpec(kind="cyclical_sin_cos", period=24.0)
-        require_exposure_normalization("day_phase", spec)
+        require_exposure_normalization(_subject("day_phase"), spec)
         assert value_block_width_used(spec) == 2 == VALUE_BLOCK_WIDTH
         var = _var("day_phase", normalization=spec, default=6.0)
         assert variable_element_capacity([var]) == 1
@@ -297,7 +310,7 @@ class TestWidthRules:
     def test_one_hot_exposure_refuses(self):
         spec = NormalizationSpec(kind="one_hot", categories=4)
         with pytest.raises(ValueError, match="one_hot"):
-            require_exposure_normalization("weather", spec)
+            require_exposure_normalization(_subject("weather"), spec)
 
     @pytest.mark.parametrize(
         "spec",
@@ -312,51 +325,89 @@ class TestWidthRules:
     )
     def test_unbounded_exposure_refuses(self, spec: NormalizationSpec):
         with pytest.raises(ValueError, match="bounded"):
-            require_exposure_normalization("odometer", spec)
+            require_exposure_normalization(_subject("odometer"), spec)
 
     def test_rank_scaled_exposure_refuses_naming_the_ruling(self):
         with pytest.raises(ValueError, match="rank_scaled.*hamlet-6a6e104523"):
-            require_exposure_normalization("rank", NormalizationSpec(kind="rank_scaled"))
+            require_exposure_normalization(_subject("rank"), NormalizationSpec(kind="rank_scaled"))
 
     def test_missing_normalization_at_exposure_refuses(self):
         with pytest.raises(ValueError, match="required at exposure"):
-            require_exposure_normalization("raw", None)
+            require_exposure_normalization(_subject("raw"), None)
 
     def test_bounded_kinds_pass(self):
-        require_exposure_normalization("a", NormalizationSpec(kind="minmax", min=0.0, max=1.0, clip=True))
-        require_exposure_normalization("b", NormalizationSpec(kind="log_scaled", min=0.0, max=100.0, clip=True))
-        require_exposure_normalization("c", NormalizationSpec(kind="binary", threshold=0.5))
+        require_exposure_normalization(_subject("a"), NormalizationSpec(kind="minmax", min=0.0, max=1.0, clip=True))
+        require_exposure_normalization(_subject("b"), NormalizationSpec(kind="log_scaled", min=0.0, max=100.0, clip=True))
+        require_exposure_normalization(_subject("c"), NormalizationSpec(kind="binary", threshold=0.5))
 
 
 # --------------------------------------------------------------------------- indistinguishability
 
 
 class TestIndistinguishability:
-    def test_identical_signatures_refuse_naming_both(self):
+    def test_identical_signatures_refuse_naming_both_with_code_and_pair(self):
         a = _var("world_temp", default=0.3)
         b = _var("season_clock", default=0.3)
-        with pytest.raises(ValueError, match="world_temp.*season_clock|season_clock.*world_temp"):
-            check_indistinguishability([a, b], owner_capacity=None)
+        with pytest.raises(TokenSpecRefusalError, match="world_temp.*season_clock.*permutation-invariant") as excinfo:
+            check_indistinguishability([_identity(a), _identity(b)])
+        refusal = excinfo.value
+        assert refusal.code == "TOKEN-IDENTITY"
+        assert refusal.subject == TokenSubject("variable", "season_clock", None)
+        assert refusal.related == TokenSubject("variable", "world_temp", None)
+        # The message names what the descriptor carries and never prescribes a behavioural change.
+        message = str(refusal)
+        assert "scope, semantic type, normalization kind and bounds" in message
+        assert "Add a distinguishing" not in message and "initial value." not in message
 
-    def test_one_distinguishing_parameter_compiles(self):
+    def test_one_distinguishing_parameter_passes(self):
         a = _var("world_temp", default=0.3)
         b = _var("season_clock", default=0.3, lifetime="tick")
-        check_indistinguishability([a, b], owner_capacity=None)
+        check_indistinguishability([_identity(a), _identity(b)])
         c = _var("season_clock", default=0.3, semantic_type="temporal")
-        check_indistinguishability([a, c], owner_capacity=None)
+        check_indistinguishability([_identity(a), _identity(c)])
         d = _var("season_clock", default=0.3, normalization=_minmax(0.0, 24.0))
-        check_indistinguishability([a, d], owner_capacity=None)
+        check_indistinguishability([_identity(a), _identity(d)])
 
     def test_different_declared_initial_distinguishes(self):
         a = _var("world_temp", default=0.3)
         b = _var("season_clock", default=0.7)
-        check_indistinguishability([a, b], owner_capacity=None)
+        check_indistinguishability([_identity(a), _identity(b)])
         assert static_payload_signature(a, owner_capacity=None) != static_payload_signature(b, owner_capacity=None)
 
     def test_scope_is_part_of_coordinate_space(self):
         a = _var("x", scope="global")
         b = _var("y", scope="agent")
-        check_indistinguishability([a, b], owner_capacity=None)
+        check_indistinguishability([_identity(a), _identity(b)])
+
+    def test_identities_of_different_kinds_never_collide(self):
+        # The kind leads the signature: an affordance and an effect cannot alias a variable.
+        shared = ("payload", 1.0, 0.0)
+        check_indistinguishability(
+            [
+                TokenIdentity(TokenSubject("affordance", "BED", None), ("affordance", *shared)),
+                TokenIdentity(TokenSubject("effect", "rest", None), ("effect", *shared)),
+            ]
+        )
+
+    def test_item_variable_subject_is_profile_qualified(self):
+        var = _var("medical.durability", scope="item")
+        qualified = ExposedVariable(
+            var.id, var.scope, var.semantic_type, var.type, var.lifetime, var.default, var.shape, var.normalization, profile="medical"
+        )
+        assert qualified.subject == TokenSubject("variable", "durability", "medical")
+        assert qualified.subject.display == "Item variable 'medical.durability'"
+        with pytest.raises(ValueError, match="qualified by its profile"):
+            ExposedVariable(
+                "durability",
+                var.scope,
+                var.semantic_type,
+                var.type,
+                var.lifetime,
+                var.default,
+                var.shape,
+                var.normalization,
+                profile="medical",
+            )
 
 
 # --------------------------------------------------------------------------- capacity
@@ -683,7 +734,7 @@ class TestTokenSpecArtifact:
             compact.get_type(t.type_name).capacity * compact.get_type(t.type_name).compact_row_width for t in spec.types
         )
         assert spec.total_dims == 1 * 5 + 8 * 3 + 14 * 5 + 2 * 8 == 115
-        assert spec.fixed_total_dims == sum(t.capacity * t.fixed_row_width for t in spec.types) == 4090
+        assert spec.fixed_total_dims == sum(t.capacity * t.fixed_row_width for t in spec.types) == fixed_width_for(spec.census)
 
     def test_width_names_are_explicit_and_compact_layout_is_per_type(self):
         spec = self._spec()

@@ -41,7 +41,7 @@ def test_reward_calculator_routes_reward_phase_through_vtc_program() -> None:
             self.step_counts = torch.tensor([1, 2], device=device)
             self.dones = torch.tensor([False, True], device=device)
             self.meters = torch.tensor([[0.8], [0.2]], device=device)
-            self.time_of_day = torch.tensor([12, 12], device=device)
+            self.time_of_day = 12  # the env's real type: an int hour
             self.enable_temporal_mechanics = True
             self.intrinsic_weights: torch.Tensor | None = None
             self._last_reward_components: dict[str, torch.Tensor] = {}
@@ -76,7 +76,7 @@ def test_reward_calculator_routes_reward_phase_through_vtc_program() -> None:
     assert torch.equal(env.vtc_reward_program.kwargs["intrinsic_raw"], torch.zeros(2, device=device))
     reward_context = env.vtc_reward_program.kwargs["reward_context"]
     assert isinstance(reward_context, dict)
-    assert reward_context["current_hour"] is env.time_of_day
+    assert torch.equal(reward_context["current_hour"], torch.tensor(12, device=device))
     assert env.intrinsic_weights is not None
     assert torch.equal(env.intrinsic_weights, torch.tensor([1.0, 0.0], device=device))
     assert set(env._last_reward_components) == {"extrinsic", "intrinsic", "intrinsic_raw", "shaping"}

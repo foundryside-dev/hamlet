@@ -21,13 +21,13 @@ class ItemInstance:
     item_type: str  # Reference to ItemTypeConfig.id
     instance_id: int  # Unique instance ID (incrementing counter)
     position: tuple[int, ...] | tuple[float, ...]  # Spatial position (grid or continuous)
-    vfs_index: int  # Index into item_vfs tensor ([max_items, num_profiles])
+    vfs_index: int  # Flat item-arena row: world * items_per_world + slot (`VariableRegistry.item_world`)
     vfs_profile: str  # VFS profile name (e.g., "food_stats", "weapon_stats")
 
     spawn_tick: int  # When item was spawned
     duration_total: int | None  # Total lifetime (None = permanent)
     duration_remaining: int | None  # Ticks until despawn (None = permanent)
-    exclusive: bool = True  # Single-holder (exclusive) vs shared (multi-holder)
+    exclusive: bool  # Single-holder (exclusive) vs shared (multi-holder)
     holder_agent_ids: set[int] = field(default_factory=set)  # Agents holding this item (empty when on ground)
 
     def tick(self) -> None:

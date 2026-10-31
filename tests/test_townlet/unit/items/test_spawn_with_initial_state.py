@@ -2,6 +2,7 @@
 
 import torch
 
+from tests.test_townlet.utils.builders import make_grid2d_substrate
 from townlet.config.items_config import (
     ItemInteractionsConfig,
     ItemsCatalogConfig,
@@ -60,7 +61,7 @@ def test_spawn_item_with_initial_state():
     vfs_registry = VariableRegistry(
         variables=[],  # No agent-scoped variables
         num_agents=1,
-        max_items=10,
+        items_per_world=10,
         device=torch.device("cpu"),
         item_profiles={"weapon": weapon_profile},
     )
@@ -69,6 +70,7 @@ def test_spawn_item_with_initial_state():
     catalog = _catalog(
         [
             ItemTypeConfig(
+                exclusive=True,
                 id="sword",
                 name="Sword",
                 icon="🗡️",
@@ -87,14 +89,17 @@ def test_spawn_item_with_initial_state():
 
     manager = ItemManager(
         catalog=catalog,
-        max_items=10,
+        num_worlds=vfs_registry.num_worlds,
+        substrate=make_grid2d_substrate(),
+        items_per_world=10,
         device="cpu",
-        schema=None,  # No Effects compilation needed
+        symbols=None,  # No Effects compilation needed
         vfs_registry=vfs_registry,
     )
 
     # Spawn with empty initial_state (profile-driven path doesn't use it yet)
     item = manager.spawn_item(
+        0,
         item_type="sword",
         position=(3, 4),
         current_tick=0,
@@ -139,7 +144,7 @@ def test_spawn_item_without_initial_state_uses_defaults():
     vfs_registry = VariableRegistry(
         variables=[],
         num_agents=1,
-        max_items=10,
+        items_per_world=10,
         device=torch.device("cpu"),
         item_profiles={"weapon": weapon_profile},
     )
@@ -147,6 +152,7 @@ def test_spawn_item_without_initial_state_uses_defaults():
     catalog = _catalog(
         [
             ItemTypeConfig(
+                exclusive=True,
                 id="sword",
                 name="Sword",
                 icon="🗡️",
@@ -165,14 +171,17 @@ def test_spawn_item_without_initial_state_uses_defaults():
 
     manager = ItemManager(
         catalog=catalog,
-        max_items=10,
+        num_worlds=vfs_registry.num_worlds,
+        substrate=make_grid2d_substrate(),
+        items_per_world=10,
         device="cpu",
-        schema=None,
+        symbols=None,
         vfs_registry=vfs_registry,
     )
 
     # Spawn WITHOUT initial_state
     item = manager.spawn_item(
+        0,
         item_type="sword",
         position=(3, 4),
         current_tick=0,

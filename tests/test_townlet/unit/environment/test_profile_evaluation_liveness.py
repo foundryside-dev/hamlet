@@ -24,7 +24,6 @@ def _make_env(tmp_path, profile_payload, num_agents=2):
 _PROFILES = {
     "variables": {
         "version": "1.0",
-        "extents": {},
         "item_profiles": ["default_item"],
         "declarations": [
             {
@@ -56,21 +55,24 @@ _PROFILES = {
 
 
 def _global_value(env, name) -> float:
-    return float(env.vfs_registry.get(name, reader="engine").reshape(-1)[0])
+    """A global's value, asserted equal in every world (one row per world, S1)."""
+    rows = env.vfs_registry.get(name, reader="engine")
+    assert rows.shape == (env.num_agents,) and bool((rows == rows[0]).all()), rows
+    return float(rows[0])
 
 
 def test_global_expression_advances_under_mark_and_sweep_default(tmp_path):
     env = _make_env(tmp_path, _PROFILES)
     for _ in range(3):
         env.step(torch.zeros(env.num_agents, dtype=torch.long, device=env.device))
-    # evaluator ran at tick k-1 on the last step (pre-increment) — the value MOVED,
-    # which is the whole ticket; pin the exact phase relation:
-    assert _global_value(env, "tick_echo") == 2.0 * (env.global_tick - 1)
+    # The value MOVED, which is the whole ticket; pin the exact phase relation: the
+    # evaluator runs after the clock advance, at the instant the observation describes.
+    assert _global_value(env, "tick_echo") == 2.0 * env.global_tick
 
 
 def test_static_survives_engine_write_unclobbered(tmp_path):
     env = _make_env(tmp_path, _PROFILES)
-    env.vfs_registry.set_engine_value("stash", torch.tensor(7.0))
+    env.vfs_registry.set_engine_value("stash", torch.full((env.num_agents,), 7.0))
     env.step(torch.zeros(env.num_agents, dtype=torch.long, device=env.device))
     assert _global_value(env, "stash") == 7.0  # statics are storage, never re-evaluated
 
@@ -78,7 +80,6 @@ def test_static_survives_engine_write_unclobbered(tmp_path):
 _DEPENDENCY_PROFILES = {
     "variables": {
         "version": "1.0",
-        "extents": {},
         "item_profiles": ["default_item"],
         "declarations": [
             {
@@ -117,7 +118,7 @@ def test_static_dependency_of_marked_expression_is_not_clobbered_by_write_back(t
     letting the dependency chase feed the evaluation of `derived` itself.
     """
     env = _make_env(tmp_path, _DEPENDENCY_PROFILES)
-    env.vfs_registry.set_engine_value("base", torch.tensor(99.0))
+    env.vfs_registry.set_engine_value("base", torch.full((env.num_agents,), 99.0))
     env.step(torch.zeros(env.num_agents, dtype=torch.long, device=env.device))
     assert _global_value(env, "base") == 99.0  # static write-back skipped, not clobbered to 1.0
     assert _global_value(env, "derived") == 100.0  # evaluated FROM the engine-written base
@@ -128,7 +129,6 @@ def test_static_dependency_of_marked_expression_is_not_clobbered_by_write_back(t
 _AGENT_PROFILES = {
     "variables": {
         "version": "1.0",
-        "extents": {},
         "item_profiles": ["default_item"],
         "declarations": [
             {
@@ -179,7 +179,6 @@ def test_agent_static_is_never_clobbered(tmp_path):
 _AGENT_DEPENDENCY_PROFILES = {
     "variables": {
         "version": "1.0",
-        "extents": {},
         "item_profiles": ["default_item"],
         "declarations": [
             {
@@ -231,7 +230,6 @@ def test_agent_static_dependency_of_marked_expression_is_not_clobbered_by_write_
 _AGENT_SCALAR_EXPRESSION_PROFILES = {
     "variables": {
         "version": "1.0",
-        "extents": {},
         "item_profiles": ["default_item"],
         "declarations": [
             {
@@ -263,7 +261,6 @@ def test_agent_expression_wrong_shape_raises_naming_variable_and_shapes(tmp_path
 _STATIC_INPUT_PROFILES = {
     "variables": {
         "version": "1.0",
-        "extents": {},
         "item_profiles": ["default_item"],
         "declarations": [
             {
@@ -298,7 +295,7 @@ def test_static_survives_engine_write_and_feeds_dependents_its_runtime_value(tmp
     """The write-back filter keeps an engine-written static unclobbered, and the expression
     that depends on it reads the written value, never the declared literal 1.0."""
     env = _make_env(tmp_path, _STATIC_INPUT_PROFILES)
-    env.vfs_registry.set_engine_value("stash", torch.tensor(7.0))
+    env.vfs_registry.set_engine_value("stash", torch.full((env.num_agents,), 7.0))
     env.step(torch.zeros(env.num_agents, dtype=torch.long, device=env.device))
     assert _global_value(env, "stash") == 7.0
     assert _global_value(env, "stash_twice") == 14.0

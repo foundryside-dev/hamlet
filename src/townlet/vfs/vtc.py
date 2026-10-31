@@ -3,20 +3,40 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field, fields, replace
 from typing import Any, ClassVar, Protocol, cast
 
 import torch
 
 from townlet.config.interaction_type import INTERACTION_TYPES, PROGRESS_INTERACTION_TYPES
 from townlet.vfs import vtc_kernels
+from townlet.vfs.namespace import (
+    ENGINE_AGENT_ID,
+    TRANSITION_WRITE,
+    ExpressionSource,
+    Namespace,
+    SpellingError,
+    expression_sources,
+    inline_expression_reads,
+)
+from townlet.vfs.profiles import CompiledGlobalProfile, VFSProfileCompiler
+from townlet.vfs.random_draws import DrawInstant
 from townlet.vfs.schema import VariableDef, VariableScope, WriteSpec
-from townlet.vfs.storage_dtype import admitted_write_result_types, to_storage_dtype
+from townlet.vfs.storage_dtype import (
+    BATCH_ROW_REFERENCE_TYPES,
+    ELEMENT_PAYLOAD_TYPES,
+    NON_NUMERIC_TYPES,
+    admitted_write_result_types,
+    to_storage_dtype,
+)
 from townlet.vfs.transition_graph import TransitionPhaseGraph
-from townlet.world.expression import ASTNode, ExpressionParser
+from townlet.world.expression import ASTNode, ExpressionParser, FunctionCall, IfThenElse, PathAccess, Variable, read_paths
 from townlet.world.expression.context import ExecutionContext
 from townlet.world.expression.evaluator import Evaluator
+from townlet.world.expression.functions import FUNCTION_SPECS, REQUIRES_HISTORY, REQUIRES_POSITIONS, REQUIRES_RANDOM, unserved_requirement
 from townlet.world.expression.type_checker import TypeChecker, TypeCheckError
+
+_EVERY_FUNCTION_REQUIREMENT = frozenset({REQUIRES_HISTORY, REQUIRES_POSITIONS, REQUIRES_RANDOM})
 
 
 class VTCActionWriteSource(Protocol):
@@ -116,20 +136,14 @@ class VTCTerminalConditionSource(Protocol):
     def bounds(self) -> Any: ...
 
 
-class VTCSocialResidueSource(Protocol):
-    """Minimal social rule shape needed by the VTC social-residue compiler."""
+class VTCTransitionRuleSource(Protocol):
+    """Minimal rule shape needed by the VTC transition-rule compiler."""
 
     @property
     def id(self) -> str: ...
 
     @property
     def phase(self) -> str: ...
-
-    @property
-    def kind(self) -> str: ...
-
-    @property
-    def reads(self) -> Sequence[str]: ...
 
     @property
     def condition(self) -> str | None: ...
@@ -157,6 +171,8 @@ class CompiledVTCActionWrite:
     priority: int
     clamp: tuple[float, float] | None
     telemetry_label: str
+    draw_site: str | None = field(metadata={"derived": True})
+    """``action:<name>:<write index>`` when the expression or condition draws (``random_draws``); else None."""
 
 
 @dataclass(frozen=True)
@@ -329,11 +345,10 @@ class CompiledVTCTerminalCondition:
 
 
 @dataclass(frozen=True)
-class CompiledVTCSocialResidueRule:
-    """A parsed VTC rule for visibility, social-residue, and institutional effects."""
+class CompiledVTCTransitionRule:
+    """A parsed VTC transition rule: one condition-gated write to a VFS variable."""
 
     rule_id: str
-    kind: str
     effect: str | None
     variable_id: str
     expression: str
@@ -345,8 +360,27 @@ class CompiledVTCSocialResidueRule:
     priority: int
     clamp: tuple[float, float] | None
     telemetry_label: str
-    reads: tuple[str, ...]
     target_scope: VariableScope
+    draw_site: str | None = field(metadata={"derived": True})
+    """``rule:<id>:<write index>`` when the expression or condition draws (``random_draws``); else None."""
+    rule_condition_draws: int = field(metadata={"derived": True})
+    """How many draws the rule-level condition makes; they lead the combined condition and are
+    keyed on the rule (``rule:<id>:condition``), so every write of the rule sees the same ones."""
+    reads: tuple[str, ...] = field(metadata={"derived": True})
+    """The ids of the variables (and meter bars) the expression and condition read, sorted.
+
+    Derived from the two ASTs at compile time, never authored (VFS round-2 S8): each read
+    (``x`` for a variable, ``bar.x`` for a meter) resolves through the one resolver
+    (``townlet.vfs.namespace``) to its storage name. The ASTs are already identity, so
+    this is not hashed."""
+    world_columns: frozenset[str] = field(metadata={"derived": True})
+    """Globals a rule targeting affordance state reads as its world's column (S1).
+
+    A global is ``[worlds, ...]`` and affordance state ``[worlds, affordances, ...]``;
+    evaluated as stored, the evaluator would align the global's world axis with the
+    affordance axis. Each listed global is given a singleton affordance axis first, so
+    it spreads along its own world's affordance rows. Derived from the targets' declared
+    scopes (already identity in ``vfs_hash``), so it is not rule identity."""
 
 
 @dataclass(frozen=True)
@@ -359,10 +393,10 @@ class _VTCActionWriteEffect:
 
 
 @dataclass(frozen=True)
-class _VTCSocialResidueEffect:
+class _VTCTransitionRuleEffect:
     """Computed social-rule candidate for one atomic VTC phase commit."""
 
-    rule: CompiledVTCSocialResidueRule
+    rule: CompiledVTCTransitionRule
     expression_value: torch.Tensor
     write_mask: torch.Tensor
 
@@ -407,38 +441,188 @@ class VTCWriteTarget:
     """Declared identity of one state an authored write may name.
 
     ``type`` is the declared VFS type (``scalar``, ``bool``, ``agent_ref``, ...); a
-    meter bar is agent-scoped ``scalar`` storage with ``meter=True`` so the expression
-    schema also admits its ``bar.<name>`` spelling.
+    meter bar is agent-scoped ``scalar`` storage with ``meter=True``, spelled
+    ``bar.<name>`` by every write and read (``townlet.vfs.namespace``).
     """
 
     scope: VariableScope
     type: str
     meter: bool
+    expression: ExpressionSource | None
+    """The variable's compiled expression as a write reads it; None for storage (VFS round-2 S4)."""
 
 
-def vtc_write_targets(vfs_variables: Iterable[VariableDef], meter_names: Iterable[str]) -> dict[str, VTCWriteTarget]:
-    """Every state a VTC write expression may read or write, by bare name."""
-    targets = {variable.id: VTCWriteTarget(VariableScope(variable.scope), variable.type, meter=False) for variable in vfs_variables}
-    targets.update({name: VTCWriteTarget(VariableScope.AGENT, "scalar", meter=True) for name in meter_names})
+def vtc_write_targets(
+    vfs_variables: Iterable[VariableDef],
+    meter_names: Iterable[str],
+    expression_profiles: Sequence[CompiledGlobalProfile | None],
+) -> dict[str, VTCWriteTarget]:
+    """Every state a VTC write expression may read or write, by bare name, with its expression if it has one."""
+    expressions = expression_sources(expression_profiles)
+    targets = {
+        variable.id: VTCWriteTarget(
+            VariableScope(variable.scope), variable.type, meter=False, expression=expressions.pop(variable.id, None)
+        )
+        for variable in vfs_variables
+    }
+    if expressions:
+        raise ValueError(f"Compiled expression variable(s) {sorted(expressions)} have no runtime VFS variable")
+    targets.update({name: VTCWriteTarget(VariableScope.AGENT, "scalar", meter=True, expression=None) for name in meter_names})
     return targets
 
 
-def _write_expression_schema(targets: Mapping[str, VTCWriteTarget]) -> dict[str, str]:
-    """The type schema of a VTC write expression, mirroring the runtime ExecutionContext.
+def _write_namespace(targets: Mapping[str, VTCWriteTarget]) -> Namespace:
+    """The one resolver (VFS round-2 S5) over every state a transition write may read or write."""
+    return Namespace(
+        variables=[(name, target.scope, target.type) for name, target in targets.items() if not target.meter],
+        meters=[name for name, target in targets.items() if target.meter],
+        item_profiles={},
+    )
 
-    The context resolves a bare name against the phase snapshot (every registry
-    variable, every meter bar, and ``agent_id``), ``bar.<meter>`` against the bars, and
-    ``vfs.`` / ``self.vfs.`` / ``target.vfs.`` chains against the snapshot.
+
+def _resolve_write_target(variable_id: str, namespace: Namespace, prefix: str) -> tuple[str, None] | tuple[None, str]:
+    """The storage name a write's authored target spells, or why the spelling refuses.
+
+    A write target is a reference like any read: a variable by its bare id, a meter as
+    ``bar.<name>``. An engine name (``agent_id``) is no state.
     """
-    schema: dict[str, str] = {"agent_id": "int"}
-    for name, target in targets.items():
-        result_type = "float" if target.type == "scalar" else target.type
-        for key in (name, f"vfs.{name}", f"self.vfs.{name}", f"target.vfs.{name}"):
-            schema[key] = result_type
-        if target.meter:
-            for key in (f"bar.{name}", f"self.bar.{name}", f"target.bar.{name}"):
-                schema[key] = result_type
-    return schema
+    try:
+        symbol = namespace.resolve_write(variable_id, TRANSITION_WRITE)
+    except SpellingError as exc:
+        return None, f"{prefix} targets {exc}"
+    return symbol.name, None
+
+
+def _spelling_refusal(
+    namespace: Namespace,
+    *,
+    expression_ast: ASTNode,
+    expression: str,
+    condition_ast: ASTNode | None,
+    condition: str | None,
+    prefix: str,
+) -> str | None:
+    """Why a write's expression or condition reads something the one resolver refuses, or None.
+
+    Every read resolves through ``namespace`` (an old spelling refuses naming the
+    canonical one), and a function needing context a transition phase does not carry
+    (history, the engine step, positions) refuses. Runs before the type check, so the
+    author reads the spelling to write rather than "not found in schema".
+    """
+    checks = [("expression", expression_ast, expression)]
+    if condition_ast is not None:
+        assert condition is not None
+        checks.append(("condition", condition_ast, condition))
+    for kind, ast, text in checks:
+        refusals = namespace.refusals(ast, TRANSITION_WRITE)
+        if refusals:
+            return f"{prefix} {kind} '{text}': {' '.join(refusals)}"
+    return None
+
+
+def _inline_write_reads(
+    sources: Mapping[str, ExpressionSource],
+    *,
+    expression_ast: ASTNode,
+    expression: str,
+    condition_ast: ASTNode | None,
+    condition: str | None,
+    prefix: str,
+) -> tuple[ASTNode, ASTNode | None] | str:
+    """A write's expression and condition with every expression variable they read inlined (VFS round-2 S4).
+
+    Returns the substituted ASTs, or why the write refuses: it reads (directly or
+    through an inlined expression) a context-bound ``tick``-lifetime expression
+    variable, which has no stored value while the transition phases run.
+    """
+    checks = [("expression", expression_ast, expression)]
+    if condition_ast is not None:
+        assert condition is not None
+        checks.append(("condition", condition_ast, condition))
+    inlined: list[ASTNode] = []
+    for kind, ast, text in checks:
+        try:
+            inlined.append(inline_expression_reads(ast, sources, consumer="a transition write"))
+        except SpellingError as exc:
+            return f"{prefix} {kind} '{text}' {exc}"
+    return inlined[0], (inlined[1] if condition_ast is not None else None)
+
+
+def _expression_sources_of(targets: Mapping[str, VTCWriteTarget]) -> dict[str, ExpressionSource]:
+    return {name: target.expression for name, target in targets.items() if target.expression is not None}
+
+
+def _write_shape_refusal(
+    *,
+    expression_ast: ASTNode,
+    expression: str,
+    condition_ast: ASTNode | None,
+    condition: str | None,
+    shapes: Mapping[str, str],
+    admitted_expression: frozenset[str],
+    admitted_condition: frozenset[str],
+    target_id: str,
+    target_scope: VariableScope,
+    prefix: str,
+) -> str | None:
+    """Why a write's expression or condition has a shape its target's scope cannot hold, or None.
+
+    Runs after the type check: the type proves the payload, this proves the axes, so
+    an affordance read into an agent row, or an agent value into a global target,
+    refuses here instead of failing (or broadcasting by coincidence) at step.
+    """
+    checks = [("expression", expression_ast, expression, admitted_expression)]
+    if condition_ast is not None:
+        assert condition is not None
+        checks.append(("condition", condition_ast, condition, admitted_condition))
+    for kind, ast, text, admitted in checks:
+        try:
+            shape = VFSProfileCompiler.expression_shape(ast, dict(shapes))
+        except TypeCheckError as exc:
+            return f"{prefix} {kind} '{text}' has no provable shape: {exc}"
+        if shape in admitted:
+            continue
+        return (
+            f"{prefix} {kind} '{text}' is {shape}-shaped, but its target '{target_id}' has declared scope "
+            f"'{target_scope.value}', which admits {' or '.join(sorted(admitted))}-shaped values."
+        )
+    return None
+
+
+def _element_payload_refusal(
+    *, expression_ast: ASTNode, expression: str, target_id: str, target_type: str, composition: str, prefix: str
+) -> str | None:
+    """Why a write's value cannot fill the elements of a vector/tensor target, or None.
+
+    A write expression is a number (``admitted_write_result_types``), so on a target whose row
+    carries elements it fills every element. A constant fills them the same way in every
+    world, everywhere it runs. A per-row value (an agent variable, a meter, a global,
+    ``agent_id``) would be spread over the elements implicitly; action writes and transition
+    rules share one policy, explicit over implicit, and refuse it. An occupancy claim writes
+    its claimant payload into a slot, not across elements, and is checked by its own program.
+    ``expression_ast`` is the inlined AST: an expression variable that is itself constant
+    is a constant.
+    """
+    if target_type not in ELEMENT_PAYLOAD_TYPES or composition in AFFORDANCE_OCCUPANCY_COMPOSITIONS:
+        return None
+    if _is_constant(expression_ast):
+        return None
+    reads = sorted(read_paths(expression_ast))
+    what = "it draws a random value per row"
+    if reads:
+        what = f"it reads {', '.join(reads)}"
+    return (
+        f"{prefix} writes '{expression}' ({what}) into {target_type} '{target_id}'. A write "
+        f"expression is one number per row, and a {target_type} row has elements, so the value would be spread over "
+        "every element implicitly. A vector or tensor target takes a constant (it fills every element); to carry a "
+        "per-row quantity, declare a scalar variable and write that."
+    )
+
+
+REFERENCE_WRITE_COMPOSITIONS = frozenset({"overwrite", "claim_if_free"})
+"""How a write into an ``agent_ref``/``item_ref`` may compose: by replacing the row (an occupancy
+claim replaces it with the claimant when free). Every other composition does arithmetic or
+ordering on a row index."""
 
 
 def _write_type_refusal(
@@ -450,9 +634,24 @@ def _write_type_refusal(
     condition: str | None,
     target_id: str,
     target_type: str,
+    composition: str,
+    clamp: tuple[float, float] | None,
     prefix: str,
 ) -> str | None:
     """Why a write's expression or condition cannot type-check against its target, or None."""
+    if target_type in BATCH_ROW_REFERENCE_TYPES and composition not in REFERENCE_WRITE_COMPOSITIONS:
+        return (
+            f"{prefix} composes '{composition}' into {target_type} '{target_id}'. A reference names a row; arithmetic "
+            f"or ordering on it can name any row, so a reference write composes only as "
+            f"{' or '.join(sorted(REFERENCE_WRITE_COMPOSITIONS))}."
+        )
+    # A capacity claim's clamp declares the slot count, not a bound on the value.
+    if clamp is not None and target_type in NON_NUMERIC_TYPES and composition != "capacity_claim":
+        if target_type == "bool":
+            what = "a bool is a truth value, which no bounds apply to"
+        else:
+            what = f"an {target_type} is a row index, and bounding it would rewrite which row it names"
+        return f"{prefix} clamps {target_type} '{target_id}' to {list(clamp)}. A clamp bounds a number; {what}. Write 'clamp: null'."
     try:
         result_type = checker.check(expression_ast)
     except TypeCheckError as exc:
@@ -463,6 +662,24 @@ def _write_type_refusal(
             f"{prefix} assigns a {result_type} expression '{expression}' to '{target_id}', declared {target_type} "
             f"(admits {', '.join(sorted(admitted))}). Storage writes never coerce dtype; author an expression of the declared type."
         )
+    if target_type in BATCH_ROW_REFERENCE_TYPES and _is_constant(expression_ast):
+        constant = _constant_value(expression_ast)
+        if constant != -1:
+            return (
+                f"{prefix} assigns the constant {constant} to {target_type} '{target_id}'. A constant is the same "
+                "batch row in every world, and the batch is independent worlds (S1), so in every other world it names "
+                "another world's entity. Write -1 (null), or a reference this world holds (agent_id for its agent)."
+            )
+    if target_type in BATCH_ROW_REFERENCE_TYPES and not _world_local_reference(expression_ast, target_type, checker.schema):
+        own = ""
+        if target_type == "agent_ref":
+            own = "agent_id (the acting agent), "
+        return (
+            f"{prefix} assigns '{expression}' to {target_type} '{target_id}', which is not provably an entity of the "
+            "writing world. The batch is independent worlds (S1), so a reference holds a row of its own world or null; "
+            f"a reference write is -1 (null), {own}a {target_type} read of this world's state, or where(...) / "
+            "if-then-else choosing between those. Arithmetic on a reference is refused: it can name any row."
+        )
     if condition_ast is None:
         return None
     try:
@@ -472,6 +689,90 @@ def _write_type_refusal(
     if condition_type != "bool":
         return f"{prefix} condition '{condition}' is {condition_type}, not bool."
     return None
+
+
+def _draws(ast: ASTNode) -> bool:
+    """Whether ``ast`` calls a function that requires randomness (``uniform``, ``normal_dist``)."""
+    return _draw_count(ast) > 0
+
+
+def _draw_count(ast: ASTNode) -> int:
+    """How many sampling calls ``ast`` makes, each a draw site of its owner."""
+    count = 0
+
+    def visit(value: Any) -> None:
+        nonlocal count
+        if isinstance(value, FunctionCall):
+            spec = FUNCTION_SPECS.get(value.function_name)
+            if spec is not None and REQUIRES_RANDOM in spec.requires:
+                count += 1
+        if isinstance(value, ASTNode):
+            for ast_field in fields(value):
+                visit(getattr(value, ast_field.name))
+        elif isinstance(value, list | tuple):
+            for item in value:
+                visit(item)
+
+    visit(ast)
+    return count
+
+
+def _draw_site(site: str, expression_ast: ASTNode, condition_ast: ASTNode | None) -> str | None:
+    """``site`` when the write's expression or condition draws, else None (it needs no draws)."""
+    if _draws(expression_ast) or (condition_ast is not None and _draws(condition_ast)):
+        return site
+    return None
+
+
+def _optional_draw_count(parser: ExpressionParser, text: str | None) -> int:
+    if text is None:
+        return 0
+    return _draw_count(parser.parse(text))
+
+
+def _is_constant(ast: ASTNode) -> bool:
+    """A constant reads no state and draws nothing: the same value in every world, every tick.
+
+    "Reads nothing" alone is not constancy once draws are admitted: ``uniform()`` reads nothing
+    and differs per world and per tick, and folding it would draw from torch's global stream
+    at compile time.
+    """
+    return not read_paths(ast) and not _draws(ast)
+
+
+def _constant_value(ast: ASTNode) -> int:
+    """The integer a constant expression (``_is_constant``) evaluates to."""
+    assert _is_constant(ast), "only a constant folds at compile time"
+    return int(Evaluator(ExecutionContext(bars={}, vfs={}, temporal={})).evaluate(ast))
+
+
+def _world_local_reference(ast: ASTNode, target_type: str, schema: Mapping[str, str]) -> bool:
+    """Whether ``ast`` provably names an entity of the writing world, or null, for a ``target_type`` reference.
+
+    A syntactic rule, since the type system cannot prove row membership: null (a
+    read-free expression equal to -1), ``agent_id`` for an ``agent_ref`` (the acting
+    agent's own row, its world under S1), a read of a ``target_type`` reference (the
+    registry refuses any stored reference outside its row's world), or ``where`` /
+    if-then-else whose two value branches are themselves such. Anything else, such as
+    ``agent_id * 0``, can name another world's row and is refused.
+    """
+    if _is_constant(ast):
+        return _constant_value(ast) == -1
+    if not read_paths(ast):
+        return False  # a draw reads nothing and is no world's entity
+    if isinstance(ast, Variable | PathAccess):
+        if isinstance(ast, Variable):
+            path = ast.name
+        else:
+            path = ".".join(ast.segments)
+        return (target_type == "agent_ref" and path == ENGINE_AGENT_ID) or schema.get(path) == target_type
+    if isinstance(ast, IfThenElse):
+        branches = [ast.true_branch, ast.false_branch]
+    elif isinstance(ast, FunctionCall) and ast.function_name == "where" and len(ast.arguments) == 3:
+        branches = list(ast.arguments[1:])
+    else:
+        return False
+    return all(_world_local_reference(branch, target_type, schema) for branch in branches)
 
 
 class VTCWriteRefusalError(ValueError):
@@ -502,6 +803,25 @@ def _clamp_in_dtype(value: torch.Tensor, clamp: tuple[float, float] | None) -> t
     return torch.clamp(value, min=low, max=high).to(dtype=value.dtype)
 
 
+def _require_draws(expressions: Iterable[ASTNode], draws: DrawInstant | None, worlds: int, label: str) -> None:
+    """A program whose expression samples runs with the instant's draws, never torch's global stream (S1).
+
+    The compiler admits a draw in a write or rule because the transition phases carry the
+    counter-based draws (``TRANSITION_WRITE``); a caller that runs them without them, or for
+    the wrong number of worlds, is an engine defect, refused here rather than drawn from
+    the global generator.
+    """
+    if draws is not None:
+        if draws.worlds != worlds:
+            raise RuntimeError(f"Engine defect: {label} ran with draws for {draws.worlds} worlds, not {worlds}")
+        return
+    served = frozenset(requirement for requirement in _EVERY_FUNCTION_REQUIREMENT if requirement != REQUIRES_RANDOM)
+    for expression in expressions:
+        call = unserved_requirement(expression, served)
+        if call is not None:
+            raise RuntimeError(f"Engine defect: {label} ran without the instant's draws, but an expression calls {call}")
+
+
 @dataclass(frozen=True)
 class VTCActionWriteProgram:
     """Executable collection of compiled VTC action writes."""
@@ -516,10 +836,22 @@ class VTCActionWriteProgram:
         bars_state: Mapping[str, torch.Tensor],
         active_mask: torch.Tensor,
         device: torch.device,
+        draws: DrawInstant | None,
     ) -> VTCWriteResult:
-        """Apply compiled VTC writes to a VFS state snapshot using action and active-agent masks."""
+        """Apply compiled VTC writes to a VFS state snapshot using action and active-agent masks.
+
+        ``draws`` is the instant's counter-based draws (``townlet.vfs.random_draws``); a write
+        that samples draws from its own sites (``draw_site``), one value per agent row. None
+        only when no write samples (``_require_draws``).
+        """
         if actions.shape != active_mask.shape:
             raise ValueError(f"actions shape {tuple(actions.shape)} must match active_mask shape {tuple(active_mask.shape)}")
+        _require_draws(
+            (ast for write in self.writes for ast in (write.expression_ast, write.condition_ast) if ast is not None),
+            draws,
+            actions.shape[0],
+            "VTC action writes",
+        )
 
         # Bar names and variable ids are disjoint: the universe compiler's symbol
         # table refuses the collision (SYMBOL_METER_COLLISION).
@@ -539,6 +871,7 @@ class VTCActionWriteProgram:
                 actions=actions_on_device,
                 active_mask=active_mask_on_device,
                 device=device,
+                draws=draws,
             )
             attempted_targets.update(effect.write.variable_id for effect in phase_effects if bool(effect.write_mask.any()))
             updated = self._commit_phase_effects(phase_snapshot, phase_effects)
@@ -572,17 +905,16 @@ class VTCActionWriteProgram:
         actions: torch.Tensor,
         active_mask: torch.Tensor,
         device: torch.device,
+        draws: DrawInstant | None,
     ) -> tuple[_VTCActionWriteEffect, ...]:
         phase_effects: list[_VTCActionWriteEffect] = []
         context_vfs = dict(phase_snapshot)
-        context_vfs.setdefault("agent_id", torch.arange(actions.shape[0], device=device))
+        context_vfs[ENGINE_AGENT_ID] = torch.arange(actions.shape[0], device=device)
         context = ExecutionContext(
             bars={name: phase_snapshot[name] for name in bar_names},
             vfs=context_vfs,
-            affordances={},
             temporal={},
             device=device,
-            num_agents=actions.shape[0],
         )
         evaluator = Evaluator(context)
 
@@ -591,8 +923,15 @@ class VTCActionWriteProgram:
                 raise KeyError(f"VTC action write targets unknown VFS variable '{write.variable_id}'")
 
             target_snapshot = phase_snapshot[write.variable_id]
+            if write.draw_site is not None:
+                assert draws is not None  # _require_draws
+                context.draws = draws.stream(f"{write.draw_site}:condition", (draws.worlds,))
             write_mask = self._build_write_mask(write, actions, active_mask, evaluator)
+            if write.draw_site is not None:
+                assert draws is not None
+                context.draws = draws.stream(f"{write.draw_site}:expression", (draws.worlds,))
             expression_value = self._evaluate_tensor(evaluator, write.expression_ast, "expression", write)
+            context.draws = None
             phase_effects.append(
                 _VTCActionWriteEffect(
                     write=write,
@@ -632,12 +971,11 @@ class VTCActionWriteProgram:
         write_mask: torch.Tensor,
         priority_state: dict[str, torch.Tensor],
     ) -> torch.Tensor:
+        # The compiler admits a claim composition only as an affordance occupancy claim.
         if write.composition == "claim_if_free":
-            return self._apply_claim_if_free(write, phase_value, expression_value, write_mask)
+            return self._apply_affordance_claim_if_free(write, phase_value, expression_value, write_mask)
         if write.composition == "capacity_claim":
-            return self._apply_capacity_claim(write, phase_value, expression_value, write_mask)
-        if write.composition == "append_event":
-            return self._apply_append_event(write, phase_value, expression_value, write_mask)
+            return self._apply_affordance_capacity_claim(write, phase_value, expression_value, write_mask)
 
         candidate = self._compose_candidate(write, phase_value, expression_value)
         candidate = self._apply_optional_clamp(write, candidate)
@@ -663,58 +1001,6 @@ class VTCActionWriteProgram:
             return torch.maximum(phase_value, expression)
         raise NotImplementedError(f"VTC action write composition '{write.composition}' is not implemented yet")
 
-    def _apply_claim_if_free(
-        self,
-        write: CompiledVTCActionWrite,
-        phase_value: torch.Tensor,
-        expression_value: torch.Tensor,
-        write_mask: torch.Tensor,
-    ) -> torch.Tensor:
-        if self._targets_affordance_occupancy(write):
-            return self._apply_affordance_claim_if_free(write, phase_value, expression_value, write_mask)
-
-        candidate = self._apply_optional_clamp(write, expression_value)
-        free_mask = self._row_free_for_claim(phase_value)
-        broadcast_mask = self._broadcast_agent_mask(write_mask & free_mask, phase_value, write)
-        return cast(
-            torch.Tensor,
-            vtc_kernels.apply_masked_candidate(
-                phase_value,
-                candidate,
-                broadcast_mask,
-            ),
-        )
-
-    def _apply_capacity_claim(
-        self,
-        write: CompiledVTCActionWrite,
-        phase_value: torch.Tensor,
-        expression_value: torch.Tensor,
-        write_mask: torch.Tensor,
-    ) -> torch.Tensor:
-        if self._targets_affordance_occupancy(write):
-            return self._apply_affordance_capacity_claim(write, phase_value, expression_value, write_mask)
-
-        if write.clamp is None:
-            raise ValueError(f"VTC capacity_claim write '{write.telemetry_label}' requires clamp high to declare capacity")
-
-        capacity = self._capacity_from_clamp(write)
-        claimed_mask = self._row_claimed_for_capacity(phase_value)
-        remaining_capacity = capacity - int(claimed_mask.sum().item())
-        if remaining_capacity <= 0:
-            return phase_value
-
-        eligible_mask = write_mask & self._row_free_for_capacity(phase_value)
-        eligible_indices = torch.nonzero(eligible_mask, as_tuple=False).flatten()
-        if eligible_indices.numel() == 0:
-            return phase_value
-
-        selected_indices = eligible_indices[:remaining_capacity]
-        selected_mask = torch.zeros_like(write_mask, dtype=torch.bool, device=write_mask.device)
-        selected_mask[selected_indices] = True
-        broadcast_mask = self._broadcast_agent_mask(selected_mask, phase_value, write)
-        return cast(torch.Tensor, vtc_kernels.apply_masked_candidate(phase_value, expression_value, broadcast_mask))
-
     @staticmethod
     def _capacity_from_clamp(write: CompiledVTCActionWrite) -> int:
         assert write.clamp is not None
@@ -731,17 +1017,17 @@ class VTCActionWriteProgram:
         expression_value: torch.Tensor,
         write_mask: torch.Tensor,
     ) -> torch.Tensor:
+        """Each world's claimant takes its own world's source-affordance row when that row is free.
+
+        Affordance state is per world (S1: storage ``[worlds, affordances, ...]``), and a
+        world has one agent, so a claim never contends with another world's: there is
+        no cross-world "lower index wins".
+        """
         affordance_index = self._require_affordance_index(write, phase_value)
-        if not bool(self._row_free_for_claim(phase_value[affordance_index].unsqueeze(0))[0].item()):
-            return phase_value
-
-        claimant_indices = torch.nonzero(write_mask.bool(), as_tuple=False).flatten()
-        if claimant_indices.numel() == 0:
-            return phase_value
-
-        winner_index = int(claimant_indices[0].item())
+        rows = phase_value[:, affordance_index]  # [worlds, ...]
+        claim = write_mask.bool() & self._row_free_for_claim(rows)
         candidate = phase_value.clone()
-        candidate[affordance_index] = expression_value[winner_index]
+        candidate[:, affordance_index] = torch.where(self._broadcast_rows(claim, rows), expression_value, rows)
         return candidate
 
     def _apply_affordance_capacity_claim(
@@ -751,39 +1037,52 @@ class VTCActionWriteProgram:
         expression_value: torch.Tensor,
         write_mask: torch.Tensor,
     ) -> torch.Tensor:
+        """Each world's claimant takes the first free slot of its own world's source affordance."""
         if write.clamp is None:
             raise ValueError(f"VTC capacity_claim write '{write.telemetry_label}' requires clamp high to declare capacity")
-        if phase_value.dim() < 2:
+        if phase_value.dim() < 3:
             raise ValueError(
-                f"VTC affordance capacity_claim write '{write.telemetry_label}' requires target shape [affordances, slots, ...]"
+                f"VTC affordance capacity_claim write '{write.telemetry_label}' requires target shape [worlds, affordances, slots, ...]"
             )
 
         affordance_index = self._require_affordance_index(write, phase_value)
         capacity = self._capacity_from_clamp(write)
-        if capacity > phase_value.shape[1]:
+        if capacity > phase_value.shape[2]:
             raise ValueError(
                 f"VTC affordance capacity_claim write '{write.telemetry_label}' declares capacity {capacity} "
-                f"but target only has {phase_value.shape[1]} slots"
+                f"but target only has {phase_value.shape[2]} slots"
             )
         if capacity == 0:
             return phase_value
 
-        slot_values = phase_value[affordance_index, :capacity]
-        free_slot_indices = torch.nonzero(self._slot_free_for_claim(slot_values), as_tuple=False).flatten()
-        if free_slot_indices.numel() == 0:
-            return phase_value
-
-        claimant_indices = torch.nonzero(write_mask.bool(), as_tuple=False).flatten()
-        if claimant_indices.numel() == 0:
-            return phase_value
-
-        assignments = min(int(free_slot_indices.numel()), int(claimant_indices.numel()))
+        slots = phase_value[:, affordance_index, :capacity]  # [worlds, capacity, ...]
+        free = self._slot_free_per_world(slots)  # [worlds, capacity]
+        has_free = free.any(dim=1)
+        first_free = torch.argmax(free.to(torch.int8), dim=1)  # first True per world
+        claim = write_mask.bool() & has_free
+        chosen = torch.zeros_like(free)
+        chosen[torch.arange(free.shape[0], device=free.device), first_free] = True
+        chosen &= claim.unsqueeze(1)
+        payload = expression_value.unsqueeze(1).expand_as(slots)
         candidate = phase_value.clone()
-        for offset in range(assignments):
-            slot_index = int(free_slot_indices[offset].item())
-            claimant_index = int(claimant_indices[offset].item())
-            candidate[affordance_index, slot_index] = expression_value[claimant_index]
+        candidate[:, affordance_index, :capacity] = torch.where(self._broadcast_rows(chosen, slots), payload, slots)
         return candidate
+
+    @staticmethod
+    def _broadcast_rows(mask: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+        """`mask` with trailing singleton axes added until it broadcasts over `target`."""
+        while mask.dim() < target.dim():
+            mask = mask.unsqueeze(-1)
+        return mask
+
+    @staticmethod
+    def _slot_free_per_world(slots: torch.Tensor) -> torch.Tensor:
+        """Free slots ``[worlds, capacity]`` of a ``[worlds, capacity, ...]`` slot block."""
+        if slots.dim() == 2:
+            return ~slots if slots.dtype == torch.bool else slots < 0
+        if slots.dtype == torch.bool:
+            return ~slots.flatten(start_dim=2).any(dim=2)
+        return (slots < 0).flatten(start_dim=2).all(dim=2)
 
     @staticmethod
     def _targets_affordance_occupancy(write: CompiledVTCActionWrite) -> bool:
@@ -794,55 +1093,23 @@ class VTCActionWriteProgram:
     def _require_affordance_index(write: CompiledVTCActionWrite, target: torch.Tensor) -> int:
         if write.affordance_index is None:
             raise ValueError(f"VTC affordance occupancy write '{write.telemetry_label}' has no source affordance index")
-        if target.dim() == 0:
-            raise ValueError(f"VTC affordance occupancy write '{write.telemetry_label}' cannot target scalar storage")
-        if write.affordance_index < 0 or write.affordance_index >= target.shape[0]:
+        if target.dim() < 2:
+            raise ValueError(
+                f"VTC affordance occupancy write '{write.telemetry_label}' needs [worlds, affordances, ...] storage, "
+                f"got shape {tuple(target.shape)}"
+            )
+        if write.affordance_index < 0 or write.affordance_index >= target.shape[1]:
             raise ValueError(
                 f"VTC affordance occupancy write '{write.telemetry_label}' source affordance index {write.affordance_index} "
-                f"is outside target extent {target.shape[0]}"
+                f"is outside target extent {target.shape[1]}"
             )
         return write.affordance_index
-
-    def _apply_append_event(
-        self,
-        write: CompiledVTCActionWrite,
-        phase_value: torch.Tensor,
-        expression_value: torch.Tensor,
-        write_mask: torch.Tensor,
-    ) -> torch.Tensor:
-        if phase_value.dim() < 2:
-            raise ValueError(f"VTC append_event write '{write.telemetry_label}' requires target shape [agents, event_slots, ...]")
-
-        candidate = phase_value.clone()
-        payload = self._apply_optional_clamp(write, expression_value)
-        free_slots = self._event_slot_free_mask(phase_value)
-
-        for agent_index_tensor in torch.nonzero(write_mask.bool(), as_tuple=False).flatten():
-            agent_index = int(agent_index_tensor.item())
-            free_slot_indices = torch.nonzero(free_slots[agent_index], as_tuple=False).flatten()
-            if free_slot_indices.numel() == 0:
-                continue
-            candidate[agent_index, int(free_slot_indices[0].item())] = payload[agent_index]
-
-        return candidate
 
     @staticmethod
     def _row_free_for_claim(value: torch.Tensor) -> torch.Tensor:
         if value.dtype == torch.bool:
             return ~VTCActionWriteProgram._row_any(value)
         return VTCActionWriteProgram._row_all(value < 0)
-
-    @staticmethod
-    def _row_free_for_capacity(value: torch.Tensor) -> torch.Tensor:
-        if value.dtype == torch.bool:
-            return ~VTCActionWriteProgram._row_any(value)
-        return VTCActionWriteProgram._row_all(value <= 0)
-
-    @staticmethod
-    def _row_claimed_for_capacity(value: torch.Tensor) -> torch.Tensor:
-        if value.dtype == torch.bool:
-            return VTCActionWriteProgram._row_any(value)
-        return VTCActionWriteProgram._row_any(value > 0)
 
     @staticmethod
     def _row_all(mask: torch.Tensor) -> torch.Tensor:
@@ -855,19 +1122,6 @@ class VTCActionWriteProgram:
         if mask.dim() <= 1:
             return mask.bool()
         return mask.bool().flatten(start_dim=1).any(dim=1)
-
-    @staticmethod
-    def _event_slot_free_mask(value: torch.Tensor) -> torch.Tensor:
-        if value.dim() == 2:
-            return ~value.bool() if value.dtype == torch.bool else value == 0
-        occupied = value if value.dtype == torch.bool else value != 0
-        return ~occupied.bool().flatten(start_dim=2).any(dim=2)
-
-    @staticmethod
-    def _slot_free_for_claim(value: torch.Tensor) -> torch.Tensor:
-        if value.dtype == torch.bool:
-            return ~VTCActionWriteProgram._row_any(value)
-        return VTCActionWriteProgram._row_all(value < 0)
 
     @staticmethod
     def _apply_optional_clamp(write: CompiledVTCActionWrite, value: torch.Tensor) -> torch.Tensor:
@@ -936,8 +1190,6 @@ class VTCActionWriteProgram:
         value = to_storage_dtype(value, target.dtype, f"Expression for VTC action write '{write.telemetry_label}'").to(device=target.device)
         if VTCActionWriteProgram._targets_affordance_occupancy(write):
             return VTCActionWriteProgram._coerce_affordance_payload_tensor(value, target, actions, write)
-        if write.composition == "append_event":
-            return VTCActionWriteProgram._coerce_event_payload_tensor(value, target, write)
         if value.dim() == 0:
             return value.expand_as(target)
         if value.shape != target.shape:
@@ -954,49 +1206,31 @@ class VTCActionWriteProgram:
         actions: torch.Tensor,
         write: CompiledVTCActionWrite,
     ) -> torch.Tensor:
-        if target.dim() == 0:
-            raise ValueError(f"VTC affordance occupancy write '{write.telemetry_label}' cannot target scalar storage")
+        """The claimant payload, one per world: ``[worlds, *row]`` (claim) or ``[worlds, *slot]`` (capacity)."""
+        if target.dim() < 2:
+            raise ValueError(f"VTC affordance occupancy write '{write.telemetry_label}' needs [worlds, affordances, ...] storage")
         if write.composition == "capacity_claim":
-            if target.dim() < 2:
+            if target.dim() < 3:
                 raise ValueError(
-                    f"VTC affordance capacity_claim write '{write.telemetry_label}' requires target shape [affordances, slots, ...]"
+                    f"VTC affordance capacity_claim write '{write.telemetry_label}' requires target shape [worlds, affordances, slots, ...]"
                 )
-            payload_shape = torch.Size((actions.shape[0], *tuple(target.shape[2:])))
+            payload_shape = torch.Size((actions.shape[0], *tuple(target.shape[3:])))
         else:
-            payload_shape = torch.Size((actions.shape[0], *tuple(target.shape[1:])))
+            payload_shape = torch.Size((actions.shape[0], *tuple(target.shape[2:])))
 
         if value.dim() == 0:
             return value.expand(payload_shape)
         if value.shape == payload_shape:
             return value
 
-        per_affordance_payload_shape = torch.Size(payload_shape[1:])
-        if value.shape == per_affordance_payload_shape:
+        per_claimant_shape = torch.Size(payload_shape[1:])
+        if per_claimant_shape and value.shape == per_claimant_shape:
             return value.expand(payload_shape)
 
         raise ValueError(
             f"Expression for VTC affordance occupancy write '{write.telemetry_label}' produced shape {tuple(value.shape)}, "
             f"expected claimant payload shape {tuple(payload_shape)}"
         )
-
-    @staticmethod
-    def _coerce_event_payload_tensor(
-        value: torch.Tensor,
-        target: torch.Tensor,
-        write: CompiledVTCActionWrite,
-    ) -> torch.Tensor:
-        if target.dim() < 2:
-            raise ValueError(f"VTC append_event write '{write.telemetry_label}' requires target shape [agents, event_slots, ...]")
-
-        payload_shape = torch.Size((target.shape[0], *tuple(target.shape[2:])))
-        if value.dim() == 0:
-            return value.expand(payload_shape)
-        if value.shape != payload_shape:
-            raise ValueError(
-                f"Expression for VTC append_event write '{write.telemetry_label}' produced shape {tuple(value.shape)}, "
-                f"expected event payload shape {tuple(payload_shape)}"
-            )
-        return value
 
     @staticmethod
     def _broadcast_agent_mask(mask: torch.Tensor, target: torch.Tensor, write: CompiledVTCActionWrite) -> torch.Tensor:
@@ -1281,7 +1515,6 @@ class VTCAffordanceGateProgram:
         context = ExecutionContext(
             bars={},
             vfs={},
-            affordances={},
             temporal={"time_of_day": time_tensor},
             device=device,
         )
@@ -1517,10 +1750,10 @@ class VTCTerminalConditionProgram:
 
 
 @dataclass(frozen=True)
-class VTCSocialResidueProgram:
-    """Executable collection of compiled VTC social-residue rules."""
+class VTCTransitionRuleProgram:
+    """Executable collection of compiled VTC transition rules."""
 
-    rules: tuple[CompiledVTCSocialResidueRule, ...]
+    rules: tuple[CompiledVTCTransitionRule, ...]
 
     def apply(
         self,
@@ -1528,15 +1761,38 @@ class VTCSocialResidueProgram:
         vfs_state: Mapping[str, torch.Tensor],
         active_mask: torch.Tensor,
         device: torch.device,
+        draws: DrawInstant | None,
         bars_state: Mapping[str, torch.Tensor] | None = None,
     ) -> VTCWriteResult:
-        """Apply compiled social-state writes using phase snapshots and masked commits."""
+        """Apply compiled transition-rule writes using phase snapshots and masked commits.
+
+        A meter bar is a rule target like an agent variable (``bar.<m>`` resolves to
+        agent-scoped ``scalar`` storage): bars join the snapshot, exactly as in
+        ``VTCActionWriteProgram.apply``, and the result carries every bar and variable.
+        The caller splits them (``_split_vfs_and_bars``) and holds each written meter to its
+        declared bounds at the phase commit (``VTCTransitionRunner._clamp_written_meters``);
+        the compiler refuses a meter rule scheduled after ``clamp_and_validate``.
+
+        ``draws`` is the instant's counter-based draws (``townlet.vfs.random_draws``); a rule
+        write that samples draws from its own sites (``draw_site``) over the full shape of its
+        target's rows (per world, or per ``[world, affordance]``); the rule-level condition's
+        draws are shared by every write of the rule. None only when no rule samples.
+        """
         if active_mask.dim() != 1:
             raise ValueError(f"active_mask must be rank-1, got shape {tuple(active_mask.shape)}")
+        _require_draws(
+            (ast for rule in self.rules for ast in (rule.expression_ast, rule.condition_ast) if ast is not None),
+            draws,
+            active_mask.shape[0],
+            "VTC transition rules",
+        )
 
         bars = {} if bars_state is None else dict(bars_state)
+        # Bar names and variable ids are disjoint: the universe compiler's symbol
+        # table refuses the collision (SYMBOL_METER_COLLISION).
         updated = {name: value.to(device=device).clone() for name, value in vfs_state.items()}
-        bars_on_device = {name: value.to(device=device) for name, value in bars.items()}
+        updated.update({bar_name: value.to(device=device).clone() for bar_name, value in bars.items()})
+        bar_names = frozenset(bars)
 
         active = active_mask.to(device=device, dtype=torch.bool)
         attempted_targets: set[str] = set()
@@ -1545,9 +1801,10 @@ class VTCSocialResidueProgram:
             phase_effects = self._compute_phase_effects(
                 phase_rules=phase_rules,
                 phase_snapshot=phase_snapshot,
-                bars_state=bars_on_device,
+                bar_names=bar_names,
                 active_mask=active,
                 device=device,
+                draws=draws,
             )
             attempted_targets.update(effect.rule.variable_id for effect in phase_effects if bool(effect.write_mask.any()))
             updated = self._commit_phase_effects(phase_snapshot, phase_effects)
@@ -1555,10 +1812,10 @@ class VTCSocialResidueProgram:
         return VTCWriteResult(updated, frozenset(attempted_targets))
 
     @staticmethod
-    def _iter_phase_groups(rules: Sequence[CompiledVTCSocialResidueRule]) -> list[tuple[CompiledVTCSocialResidueRule, ...]]:
-        phase_groups: list[tuple[CompiledVTCSocialResidueRule, ...]] = []
+    def _iter_phase_groups(rules: Sequence[CompiledVTCTransitionRule]) -> list[tuple[CompiledVTCTransitionRule, ...]]:
+        phase_groups: list[tuple[CompiledVTCTransitionRule, ...]] = []
         current_phase: str | None = None
-        current_group: list[CompiledVTCSocialResidueRule] = []
+        current_group: list[CompiledVTCTransitionRule] = []
 
         for rule in rules:
             if current_phase is None:
@@ -1576,34 +1833,51 @@ class VTCSocialResidueProgram:
     def _compute_phase_effects(
         self,
         *,
-        phase_rules: Sequence[CompiledVTCSocialResidueRule],
+        phase_rules: Sequence[CompiledVTCTransitionRule],
         phase_snapshot: Mapping[str, torch.Tensor],
-        bars_state: Mapping[str, torch.Tensor],
+        bar_names: frozenset[str],
         active_mask: torch.Tensor,
         device: torch.device,
-    ) -> tuple[_VTCSocialResidueEffect, ...]:
-        phase_effects: list[_VTCSocialResidueEffect] = []
-        context_vfs = dict(phase_snapshot)
-        context_vfs.setdefault("agent_id", torch.arange(active_mask.shape[0], device=device))
+        draws: DrawInstant | None,
+    ) -> tuple[_VTCTransitionRuleEffect, ...]:
+        phase_effects: list[_VTCTransitionRuleEffect] = []
+        context_vfs = {name: value for name, value in phase_snapshot.items() if name not in bar_names}
+        context_vfs[ENGINE_AGENT_ID] = torch.arange(active_mask.shape[0], device=device)
         context = ExecutionContext(
-            bars=dict(bars_state),
+            bars={name: phase_snapshot[name] for name in bar_names},
             vfs=context_vfs,
-            affordances={},
             temporal={},
             device=device,
-            num_agents=active_mask.shape[0],
         )
         evaluator = Evaluator(context)
 
         for rule in phase_rules:
-            if rule.variable_id not in phase_snapshot:
-                raise KeyError(f"VTC social residue targets unknown VFS variable '{rule.variable_id}'")
+            # The compiler resolves every target to declared state (a variable or a meter),
+            # and the env snapshots all of it; a miss is an engine defect.
+            assert rule.variable_id in phase_snapshot, (rule.telemetry_label, rule.variable_id)
 
             target_snapshot = phase_snapshot[rule.variable_id]
-            condition_mask = self._build_write_mask(rule, target_snapshot, active_mask, evaluator)
-            expression_value = self._evaluate_tensor(evaluator, rule.expression_ast, "expression", rule)
+            rule_evaluator = evaluator
+            if rule.world_columns:
+                rule_evaluator = Evaluator(replace(context, vfs=self._world_column_view(context_vfs, rule, target_snapshot)))
+            rule_context = rule_evaluator.context
+            row_shape = self._target_row_shape(rule, target_snapshot)
+            if rule.draw_site is not None:
+                assert draws is not None  # _require_draws
+                rule_context.draws = draws.stream_with_shared_prefix(
+                    f"{rule.draw_site}:condition",
+                    row_shape,
+                    shared_site=f"rule:{rule.rule_id}:condition",
+                    shared_draws=rule.rule_condition_draws,
+                )
+            condition_mask = self._build_write_mask(rule, target_snapshot, active_mask, rule_evaluator)
+            if rule.draw_site is not None:
+                assert draws is not None
+                rule_context.draws = draws.stream(f"{rule.draw_site}:expression", row_shape)
+            expression_value = self._evaluate_tensor(rule_evaluator, rule.expression_ast, "expression", rule)
+            rule_context.draws = None
             phase_effects.append(
-                _VTCSocialResidueEffect(
+                _VTCTransitionRuleEffect(
                     rule=rule,
                     expression_value=self._coerce_expression_tensor(expression_value, target_snapshot, rule, active_mask),
                     write_mask=condition_mask,
@@ -1612,10 +1886,37 @@ class VTCSocialResidueProgram:
 
         return tuple(phase_effects)
 
+    @staticmethod
+    def _target_row_shape(rule: CompiledVTCTransitionRule, target: torch.Tensor) -> tuple[int, ...]:
+        """The leading registry axes of the target's rows: ``[worlds]``, or ``[worlds, affordances]``."""
+        if rule.target_scope == VariableScope.AFFORDANCE:
+            return tuple(int(axis) for axis in target.shape[:2])
+        return (int(target.shape[0]),)
+
+    @staticmethod
+    def _world_column_view(
+        context_vfs: Mapping[str, torch.Tensor], rule: CompiledVTCTransitionRule, target: torch.Tensor
+    ) -> dict[str, torch.Tensor]:
+        """The snapshot with each of `rule.world_columns` given a singleton affordance axis.
+
+        A global ``[worlds, *payload]`` becomes ``[worlds, 1, *payload]``; a scalar global
+        also gets the target's trailing axes as singletons, so it broadcasts over its own
+        world's affordance rows (and their element axes), never over another world's.
+        """
+        view = dict(context_vfs)
+        for name in rule.world_columns:
+            value = view[name]
+            if value.dim() == 1:
+                value = value.view(value.shape[0], *([1] * (target.dim() - 1)))
+            else:
+                value = value.unsqueeze(1)
+            view[name] = value
+        return view
+
     def _commit_phase_effects(
         self,
         phase_snapshot: Mapping[str, torch.Tensor],
-        phase_effects: Sequence[_VTCSocialResidueEffect],
+        phase_effects: Sequence[_VTCTransitionRuleEffect],
     ) -> dict[str, torch.Tensor]:
         phase_values = dict(phase_snapshot)
         priority_state: dict[str, torch.Tensor] = {}
@@ -1635,7 +1936,7 @@ class VTCSocialResidueProgram:
     def _apply_composed_write(
         self,
         *,
-        rule: CompiledVTCSocialResidueRule,
+        rule: CompiledVTCTransitionRule,
         phase_value: torch.Tensor,
         expression_value: torch.Tensor,
         write_mask: torch.Tensor,
@@ -1646,14 +1947,11 @@ class VTCSocialResidueProgram:
 
         if rule.composition == "priority_write":
             return self._apply_priority_write(rule, phase_value, candidate, write_mask, priority_state)
-        if rule.composition in {"claim_if_free", "capacity_claim", "append_event"}:
-            raise NotImplementedError(f"VTC social residue composition '{rule.composition}' is not supported")
-
         return cast(torch.Tensor, vtc_kernels.apply_masked_candidate(phase_value, candidate, write_mask))
 
     @staticmethod
     def _compose_candidate(
-        rule: CompiledVTCSocialResidueRule,
+        rule: CompiledVTCTransitionRule,
         phase_value: torch.Tensor,
         expression_value: torch.Tensor,
     ) -> torch.Tensor:
@@ -1669,15 +1967,15 @@ class VTCSocialResidueProgram:
             return torch.minimum(phase_value, expression)
         if rule.composition == "max":
             return torch.maximum(phase_value, expression)
-        raise NotImplementedError(f"VTC social residue composition '{rule.composition}' is not implemented yet")
+        raise AssertionError(f"VTC transition rule composition '{rule.composition}' is outside RULE_WRITE_COMPOSITIONS")
 
     @staticmethod
-    def _apply_optional_clamp(rule: CompiledVTCSocialResidueRule, value: torch.Tensor) -> torch.Tensor:
+    def _apply_optional_clamp(rule: CompiledVTCTransitionRule, value: torch.Tensor) -> torch.Tensor:
         return _clamp_in_dtype(value, rule.clamp)
 
     def _apply_priority_write(
         self,
-        rule: CompiledVTCSocialResidueRule,
+        rule: CompiledVTCTransitionRule,
         phase_value: torch.Tensor,
         candidate: torch.Tensor,
         write_mask: torch.Tensor,
@@ -1694,7 +1992,7 @@ class VTCSocialResidueProgram:
 
     def _build_write_mask(
         self,
-        rule: CompiledVTCSocialResidueRule,
+        rule: CompiledVTCTransitionRule,
         target: torch.Tensor,
         active_mask: torch.Tensor,
         evaluator: Evaluator,
@@ -1712,21 +2010,21 @@ class VTCSocialResidueProgram:
         evaluator: Evaluator,
         ast: ASTNode,
         kind: str,
-        rule: CompiledVTCSocialResidueRule,
+        rule: CompiledVTCTransitionRule,
     ) -> torch.Tensor:
         value: Any = evaluator.evaluate(ast)
         if not isinstance(value, torch.Tensor):
-            raise TypeError(f"VTC social residue {rule.telemetry_label} {kind} resolved to non-tensor value")
+            raise TypeError(f"VTC transition rule {rule.telemetry_label} {kind} resolved to non-tensor value")
         return value
 
     @staticmethod
     def _coerce_expression_tensor(
         value: torch.Tensor,
         target: torch.Tensor,
-        rule: CompiledVTCSocialResidueRule,
+        rule: CompiledVTCTransitionRule,
         active_mask: torch.Tensor,
     ) -> torch.Tensor:
-        return VTCSocialResidueProgram._coerce_tensor_to_target(
+        return VTCTransitionRuleProgram._coerce_tensor_to_target(
             value,
             target,
             rule,
@@ -1739,10 +2037,10 @@ class VTCSocialResidueProgram:
     def _coerce_mask_to_target(
         value: torch.Tensor,
         target: torch.Tensor,
-        rule: CompiledVTCSocialResidueRule,
+        rule: CompiledVTCTransitionRule,
         active_mask: torch.Tensor,
     ) -> torch.Tensor:
-        return VTCSocialResidueProgram._coerce_tensor_to_target(
+        return VTCTransitionRuleProgram._coerce_tensor_to_target(
             value,
             target,
             rule,
@@ -1755,13 +2053,13 @@ class VTCSocialResidueProgram:
     def _coerce_tensor_to_target(
         value: torch.Tensor,
         target: torch.Tensor,
-        rule: CompiledVTCSocialResidueRule,
+        rule: CompiledVTCTransitionRule,
         active_mask: torch.Tensor,
         *,
         label: str,
         dtype: torch.dtype,
     ) -> torch.Tensor:
-        value_on_device = to_storage_dtype(value, dtype, f"{label} for VTC social residue '{rule.telemetry_label}'").to(
+        value_on_device = to_storage_dtype(value, dtype, f"{label} for VTC transition rule '{rule.telemetry_label}'").to(
             device=target.device
         )
         if value_on_device.dim() == 0:
@@ -1769,58 +2067,49 @@ class VTCSocialResidueProgram:
         if value_on_device.shape == target.shape:
             return value_on_device
 
+        # The compile-time shape proof admits one more case: a per-row value (an agent
+        # row, a global's per-world value, or a world column of one) on a target with
+        # further scope axes (affordance rows), spread along them. A per-row value is never
+        # spread over a vector or tensor row's elements: the compiler refuses it
+        # (`_element_payload_refusal`), as it does for action writes.
         num_agents = active_mask.shape[0]
-        if value_on_device.shape == active_mask.shape and rule.target_scope == VariableScope.PAIR:
-            VTCSocialResidueProgram._assert_target_shape(rule, target, num_agents)
-            view_shape = (1, num_agents, *([1] * (target.dim() - 2)))
-            return value_on_device.reshape(view_shape).expand_as(target)
+        if rule.target_scope in BATCH_AXIS_SCOPES and 1 <= value_on_device.dim() <= target.dim() and value_on_device.shape[0] == num_agents:
+            VTCTransitionRuleProgram._assert_target_shape(rule, target, num_agents)
+            padded = value_on_device.reshape(*value_on_device.shape, *([1] * (target.dim() - value_on_device.dim())))
+            try:
+                return padded.expand_as(target)
+            except RuntimeError:
+                pass
 
-        if value_on_device.shape == active_mask.shape and rule.target_scope in ACTION_WRITE_AGENT_AXIS_SCOPES:
-            VTCSocialResidueProgram._assert_target_shape(rule, target, num_agents)
-            view_shape = (num_agents, *([1] * (target.dim() - 1)))
-            return value_on_device.reshape(view_shape).expand_as(target)
-
-        try:
-            return torch.broadcast_to(value_on_device, target.shape)
-        except RuntimeError as exc:
-            raise ValueError(
-                f"{label} for VTC social residue '{rule.telemetry_label}' produced shape {tuple(value.shape)}, "
-                f"expected broadcastable to {tuple(target.shape)}"
-            ) from exc
+        raise ValueError(
+            f"{label} for VTC transition rule '{rule.telemetry_label}' produced shape {tuple(value.shape)} for "
+            f"{rule.target_scope.value}-scope target shape {tuple(target.shape)}; the compiled shape proof admits none such"
+        )
 
     @staticmethod
     def _active_mask_for_target(
-        rule: CompiledVTCSocialResidueRule,
+        rule: CompiledVTCTransitionRule,
         target: torch.Tensor,
         active_mask: torch.Tensor,
     ) -> torch.Tensor:
         active = active_mask.to(device=target.device, dtype=torch.bool)
         num_agents = active.shape[0]
-        if rule.target_scope == VariableScope.PAIR:
-            VTCSocialResidueProgram._assert_target_shape(rule, target, num_agents)
-            pair_mask = active.reshape(num_agents, 1) & active.reshape(1, num_agents)
-            while pair_mask.dim() < target.dim():
-                pair_mask = pair_mask.unsqueeze(-1)
-            return pair_mask.expand_as(target)
-
-        if rule.target_scope in ACTION_WRITE_AGENT_AXIS_SCOPES:
-            VTCSocialResidueProgram._assert_target_shape(rule, target, num_agents)
-            agent_mask = active
-            while agent_mask.dim() < target.dim():
-                agent_mask = agent_mask.unsqueeze(-1)
-            return agent_mask.expand_as(target)
-
-        # Global and affordance state has no row per agent: it is written while any agent is active.
-        return torch.full_like(target, bool(active.any()), dtype=torch.bool, device=target.device)
+        # Every rule target scope leads with the batch axis (the compiler admits no other):
+        # an agent row, or a world's global or affordance rows (S1), each advancing while
+        # its own agent is active.
+        assert rule.target_scope in BATCH_AXIS_SCOPES, rule
+        VTCTransitionRuleProgram._assert_target_shape(rule, target, num_agents)
+        agent_mask = active
+        while agent_mask.dim() < target.dim():
+            agent_mask = agent_mask.unsqueeze(-1)
+        return agent_mask.expand_as(target)
 
     @staticmethod
-    def _assert_target_shape(rule: CompiledVTCSocialResidueRule, target: torch.Tensor, num_agents: int) -> None:
-        """The declared scope fixes the leading axes; storage that disagrees is a registry defect."""
-        agent_axes = 2 if rule.target_scope == VariableScope.PAIR else 1
-        assert target.dim() >= agent_axes and all(int(extent) == num_agents for extent in target.shape[:agent_axes]), (
-            f"VTC social residue '{rule.telemetry_label}' targets {rule.target_scope.value}-scope "
-            f"'{rule.variable_id}' with storage shape {tuple(target.shape)}; expected {agent_axes} leading "
-            f"agent axes of {num_agents}"
+    def _assert_target_shape(rule: CompiledVTCTransitionRule, target: torch.Tensor, num_agents: int) -> None:
+        """The declared scope fixes the leading axis; storage that disagrees is a registry defect."""
+        assert target.dim() >= 1 and int(target.shape[0]) == num_agents, (
+            f"VTC transition rule '{rule.telemetry_label}' targets {rule.target_scope.value}-scope "
+            f"'{rule.variable_id}' with storage shape {tuple(target.shape)}; expected a leading batch axis of {num_agents}"
         )
 
 
@@ -1882,22 +2171,33 @@ class VTCRewardProgram:
                 )
 
 
-_SOCIAL_RESIDUE_RULE_KINDS = frozenset({"visibility_effect", "social_residue", "institutional_rule"})
+#: Transition-rule write compositions. The occupancy claims (``claim_if_free``,
+#: ``capacity_claim``) are action-write only: a rule has no claimant and no source affordance.
+RULE_WRITE_COMPOSITIONS: tuple[str, ...] = (
+    "overwrite",
+    "additive_delta",
+    "multiplicative_modifier",
+    "min",
+    "max",
+    "clamp",
+    "priority_write",
+    "last_write_wins",
+)
 
 
-def compile_vtc_social_residue_rules(
-    rules: Sequence[VTCSocialResidueSource | Mapping[str, Any]],
+def compile_vtc_transition_rules(
+    rules: Sequence[VTCTransitionRuleSource | Mapping[str, Any]],
     targets: Mapping[str, VTCWriteTarget],
-) -> VTCSocialResidueProgram:
-    """Compile relationship/social-state rules into VTC social-residue writes."""
-    return compile_vtc_social_residue_rules_with_phase_graph(rules, targets, TransitionPhaseGraph.default())
+) -> VTCTransitionRuleProgram:
+    """Compile declarative transition rules into VTC writes."""
+    return compile_vtc_transition_rules_with_phase_graph(rules, targets, TransitionPhaseGraph.default())
 
 
-def compile_vtc_social_residue_rules_with_phase_graph(
-    rules: Sequence[VTCSocialResidueSource | Mapping[str, Any]],
+def compile_vtc_transition_rules_with_phase_graph(
+    rules: Sequence[VTCTransitionRuleSource | Mapping[str, Any]],
     targets: Mapping[str, VTCWriteTarget],
     phase_graph: TransitionPhaseGraph,
-) -> VTCSocialResidueProgram:
+) -> VTCTransitionRuleProgram:
     """Compile relationship/social-state rules using an explicit transition phase graph.
 
     ``targets`` names every state a rule may read or write with its declared scope and
@@ -1905,14 +2205,17 @@ def compile_vtc_social_residue_rules_with_phase_graph(
     broadcast; the type is what the write expression must type-check to.
     """
     parser = ExpressionParser()
-    checker = TypeChecker(schema=_write_expression_schema(targets))
-    compiled_rules: list[CompiledVTCSocialResidueRule] = []
+    namespace = _write_namespace(targets)
+    sources = _expression_sources_of(targets)
+    checker = TypeChecker(schema=namespace.schema(TRANSITION_WRITE))
+    shapes = namespace.shapes(TRANSITION_WRITE)
+    compiled_rules: list[CompiledVTCTransitionRule] = []
     refusals: list[VTCWriteRefusal] = []
 
     for rule_index, raw_rule in enumerate(rules):
-        rule = _coerce_social_residue_rule(raw_rule, rule_index)
+        rule = _coerce_transition_rule(raw_rule, rule_index)
         for write_index, raw_write in enumerate(rule["writes"]):
-            write = _coerce_social_residue_write(raw_write, rule, write_index)
+            write = _coerce_transition_rule_write(raw_write, rule, write_index)
             if write["phase"] not in phase_graph.ordered_phases:
                 refusals.append(
                     VTCWriteRefusal(
@@ -1926,26 +2229,51 @@ def compile_vtc_social_residue_rules_with_phase_graph(
                     )
                 )
                 continue
-            target = targets.get(write["variable_id"])
-            if target is None or target.scope == VariableScope.ITEM:
+            prefix = f"Transition rule '{rule['rule_id']}' write '{write['telemetry_label']}'"
+            target_name, target_refusal = _resolve_write_target(write["variable_id"], namespace, prefix)
+            if target_refusal is not None:
+                refusals.append(VTCWriteRefusal(origin_key=f"transition_rules:{rule['rule_id']}", kind="scope", message=target_refusal))
+                continue
+            assert target_name is not None
+            target = targets[target_name]
+            if target.meter and phase_graph.sort_key(write["phase"]) > phase_graph.sort_key(METER_BOUNDS_PHASE):
+                refusals.append(
+                    VTCWriteRefusal(
+                        origin_key=f"transition_rules:{rule['rule_id']}",
+                        kind="phase",
+                        message=(
+                            f"{prefix} writes the meter '{write['variable_id']}' at phase '{write['phase']}', after "
+                            f"'{METER_BOUNDS_PHASE}', where every meter is clamped to its declared bounds, so the write "
+                            f"could leave the meter outside them. Schedule a meter write at '{METER_BOUNDS_PHASE}' or earlier; "
+                            "a write meant to end the episode this tick (bar.<m> to its lethal bound) belongs at "
+                            "'apply_transition_rules', which runs before 'evaluate_terminal_conditions'."
+                        ),
+                    )
+                )
+                continue
+            if target.scope not in _RULE_ADMITTED_SHAPES:
                 refusals.append(
                     VTCWriteRefusal(
                         origin_key=f"transition_rules:{rule['rule_id']}",
                         kind="scope",
-                        message=(
-                            f"Transition rule '{rule['rule_id']}' write '{write['telemetry_label']}' targets "
-                            + (
-                                f"unknown VFS variable '{write['variable_id']}'"
-                                if target is None
-                                else f"item-scope variable '{write['variable_id']}', which has no registry row"
-                            )
-                        ),
+                        message=f"{prefix} targets {target.scope.value}-scope variable '{target_name}', which has no registry row",
                     )
                 )
                 continue
             condition = _combined_condition(rule["condition"], write["condition"])
             expression_ast = parser.parse(write["expression"])
             condition_ast = parser.parse(condition) if condition is not None else None
+            spelling_refusal = _spelling_refusal(
+                namespace,
+                expression_ast=expression_ast,
+                expression=write["expression"],
+                condition_ast=condition_ast,
+                condition=condition,
+                prefix=prefix,
+            )
+            if spelling_refusal is not None:
+                refusals.append(VTCWriteRefusal(origin_key=f"transition_rules:{rule['rule_id']}", kind="type", message=spelling_refusal))
+                continue
             type_refusal = _write_type_refusal(
                 checker,
                 expression_ast=expression_ast,
@@ -1954,17 +2282,58 @@ def compile_vtc_social_residue_rules_with_phase_graph(
                 condition=condition,
                 target_id=write["variable_id"],
                 target_type=target.type,
+                composition=write["composition"],
+                clamp=write["clamp"],
                 prefix=f"Transition rule '{rule['rule_id']}' write '{write['telemetry_label']}'",
             )
             if type_refusal is not None:
                 refusals.append(VTCWriteRefusal(origin_key=f"transition_rules:{rule['rule_id']}", kind="type", message=type_refusal))
                 continue
+            # From here on the ASTs are the inlined ones: what the rule evaluates (S4).
+            inlined = _inline_write_reads(
+                sources,
+                expression_ast=expression_ast,
+                expression=write["expression"],
+                condition_ast=condition_ast,
+                condition=condition,
+                prefix=prefix,
+            )
+            if isinstance(inlined, str):
+                refusals.append(VTCWriteRefusal(origin_key=f"transition_rules:{rule['rule_id']}", kind="type", message=inlined))
+                continue
+            expression_ast, condition_ast = inlined
+            payload_refusal = _element_payload_refusal(
+                expression_ast=expression_ast,
+                expression=write["expression"],
+                target_id=write["variable_id"],
+                target_type=target.type,
+                composition=write["composition"],
+                prefix=prefix,
+            )
+            if payload_refusal is not None:
+                refusals.append(VTCWriteRefusal(origin_key=f"transition_rules:{rule['rule_id']}", kind="type", message=payload_refusal))
+                continue
+            admitted_shapes = _RULE_ADMITTED_SHAPES[target.scope]
+            shape_refusal = _write_shape_refusal(
+                expression_ast=expression_ast,
+                expression=write["expression"],
+                condition_ast=condition_ast,
+                condition=condition,
+                shapes=shapes,
+                admitted_expression=admitted_shapes,
+                admitted_condition=admitted_shapes,
+                target_id=write["variable_id"],
+                target_scope=target.scope,
+                prefix=f"Transition rule '{rule['rule_id']}' write '{write['telemetry_label']}'",
+            )
+            if shape_refusal is not None:
+                refusals.append(VTCWriteRefusal(origin_key=f"transition_rules:{rule['rule_id']}", kind="type", message=shape_refusal))
+                continue
             compiled_rules.append(
-                CompiledVTCSocialResidueRule(
+                CompiledVTCTransitionRule(
                     rule_id=rule["rule_id"],
-                    kind=rule["kind"],
                     effect=write["effect"],
-                    variable_id=write["variable_id"],
+                    variable_id=target_name,
                     expression=write["expression"],
                     expression_ast=expression_ast,
                     condition=condition,
@@ -1974,14 +2343,17 @@ def compile_vtc_social_residue_rules_with_phase_graph(
                     priority=write["priority"],
                     clamp=write["clamp"],
                     telemetry_label=write["telemetry_label"],
-                    reads=rule["reads"],
                     target_scope=target.scope,
+                    draw_site=_draw_site(f"rule:{rule['rule_id']}:{write_index}", expression_ast, condition_ast),
+                    rule_condition_draws=_optional_draw_count(parser, rule["condition"]),
+                    reads=_rule_reads(namespace, expression_ast, condition_ast),
+                    world_columns=_world_columns(target.scope, namespace, expression_ast, condition_ast),
                 )
             )
 
     if refusals:
         raise VTCWriteRefusalError(tuple(refusals))
-    return VTCSocialResidueProgram(
+    return VTCTransitionRuleProgram(
         rules=tuple(
             sorted(
                 compiled_rules,
@@ -1991,54 +2363,54 @@ def compile_vtc_social_residue_rules_with_phase_graph(
     )
 
 
-def _coerce_social_residue_rule(rule: VTCSocialResidueSource | Mapping[str, Any], rule_index: int) -> dict[str, Any]:
-    rule_id = str(_config_field(rule, "id", _config_field(rule, "rule_id", ""))).strip()
-    if not rule_id:
-        raise ValueError("VTC social residue rule requires non-empty id")
+#: Rule fields the compiler used to accept and now refuses: ``reads`` is derived from
+#: the ASTs and ``kind`` was a label with no behaviour (VFS round-2 S8). The authored
+#: DTO refuses them as unknown keys; this catches a mapping source that bypasses it.
+_DELETED_RULE_FIELDS = ("reads", "kind")
 
-    kind = str(_config_field(rule, "kind", "")).strip()
-    if kind not in _SOCIAL_RESIDUE_RULE_KINDS:
-        allowed = ", ".join(sorted(_SOCIAL_RESIDUE_RULE_KINDS))
-        raise ValueError(f"Unsupported VTC social residue kind '{kind}' for rule '{rule_id}'; expected one of: {allowed}")
+
+def _coerce_transition_rule(rule: VTCTransitionRuleSource | Mapping[str, Any], rule_index: int) -> dict[str, Any]:
+    rule_id = str(_config_field(rule, "id", "")).strip()
+    if not rule_id:
+        raise ValueError("VTC transition rule requires non-empty id")
+
+    for deleted in _DELETED_RULE_FIELDS:
+        if _config_field(rule, deleted, None) is not None:
+            raise ValueError(
+                f"VTC transition rule '{rule_id}' declares '{deleted}', which no longer exists: "
+                "a rule's reads are derived from its expression and condition, and a rule has no kind"
+            )
 
     phase = _config_field(rule, "phase", None)
     if phase is None or not str(phase).strip():
-        raise ValueError(f"VTC social residue rule '{rule_id}' requires explicit phase")
-
-    raw_reads = _config_field(rule, "reads", None)
-    if raw_reads is None:
-        raise ValueError(f"VTC social residue rule '{rule_id}' requires explicit reads")
-    reads = _dedupe([str(read) for read in _iter_config_items(raw_reads)])
+        raise ValueError(f"VTC transition rule '{rule_id}' requires explicit phase")
 
     raw_condition = _config_field(rule, "condition", None)
     condition = None if raw_condition is None else str(raw_condition).strip()
     if condition == "":
-        raise ValueError(f"VTC social residue rule '{rule_id}' condition must be non-empty when provided")
+        raise ValueError(f"VTC transition rule '{rule_id}' condition must be non-empty when provided")
 
     raw_writes = _config_field(rule, "writes", None)
     writes = _iter_config_items(raw_writes)
     if not writes:
-        raise ValueError(f"VTC social residue rule '{rule_id}' requires at least one write")
+        raise ValueError(f"VTC transition rule '{rule_id}' requires at least one write")
 
     raw_priority = _config_field(rule, "priority", None)
     priority = rule_index if raw_priority is None else int(raw_priority)
     if priority < 0:
-        raise ValueError(f"VTC social residue rule '{rule_id}' priority must be non-negative")
+        raise ValueError(f"VTC transition rule '{rule_id}' priority must be non-negative")
 
     return {
         "rule_id": rule_id,
-        "kind": kind,
         "phase": str(phase),
-        "reads": reads,
         "condition": condition,
         "writes": writes,
         "priority": priority,
     }
 
 
-def _coerce_social_residue_write(raw_write: Mapping[str, Any] | WriteSpec, rule: Mapping[str, Any], write_index: int) -> dict[str, Any]:
+def _coerce_transition_rule_write(raw_write: Mapping[str, Any] | WriteSpec, rule: Mapping[str, Any], write_index: int) -> dict[str, Any]:
     rule_id = str(rule["rule_id"])
-    kind = str(rule["kind"])
     condition: str | None
     composition: str
     effect: str | None
@@ -2063,28 +2435,31 @@ def _coerce_social_residue_write(raw_write: Mapping[str, Any] | WriteSpec, rule:
         raw_priority = raw_write.get("priority")
         priority = int(rule["priority"]) + write_index if raw_priority is None else int(raw_priority)
         clamp = _coerce_optional_clamp(raw_write.get("clamp"))
-        telemetry_label = str(raw_write.get("telemetry_label") or _social_residue_telemetry_label(rule_id, kind, raw_write)).strip()
+        telemetry_label = str(raw_write.get("telemetry_label") or _transition_rule_telemetry_label(rule_id, raw_write)).strip()
         effect_raw = raw_write.get("effect")
         effect = None if effect_raw is None else str(effect_raw).strip()
     else:
-        raise TypeError(f"VTC social residue rule '{rule_id}' write entry must be a WriteSpec or mapping")
+        raise TypeError(f"VTC transition rule '{rule_id}' write entry must be a WriteSpec or mapping")
 
     if not variable_id:
-        raise ValueError(f"VTC social residue rule '{rule_id}' write requires variable_id")
+        raise ValueError(f"VTC transition rule '{rule_id}' write requires variable_id")
     if not expression:
-        raise ValueError(f"VTC social residue rule '{rule_id}' write to '{variable_id}' requires expression")
+        raise ValueError(f"VTC transition rule '{rule_id}' write to '{variable_id}' requires expression")
     if condition == "":
-        raise ValueError(f"VTC social residue rule '{rule_id}' write to '{variable_id}' condition must be non-empty when provided")
-    if not composition:
-        raise ValueError(f"VTC social residue rule '{rule_id}' write to '{variable_id}' requires composition")
+        raise ValueError(f"VTC transition rule '{rule_id}' write to '{variable_id}' condition must be non-empty when provided")
+    if composition not in RULE_WRITE_COMPOSITIONS:
+        raise ValueError(
+            f"VTC transition rule '{rule_id}' write to '{variable_id}' composition '{composition}' is not one of "
+            f"{', '.join(RULE_WRITE_COMPOSITIONS)}"
+        )
     if not phase:
-        raise ValueError(f"VTC social residue rule '{rule_id}' write to '{variable_id}' requires phase")
+        raise ValueError(f"VTC transition rule '{rule_id}' write to '{variable_id}' requires phase")
     if priority < 0:
-        raise ValueError(f"VTC social residue rule '{rule_id}' write to '{variable_id}' priority must be non-negative")
+        raise ValueError(f"VTC transition rule '{rule_id}' write to '{variable_id}' priority must be non-negative")
     if not telemetry_label:
-        raise ValueError(f"VTC social residue rule '{rule_id}' write to '{variable_id}' requires telemetry_label")
+        raise ValueError(f"VTC transition rule '{rule_id}' write to '{variable_id}' requires telemetry_label")
     if effect == "":
-        raise ValueError(f"VTC social residue rule '{rule_id}' write to '{variable_id}' effect must be non-empty when provided")
+        raise ValueError(f"VTC transition rule '{rule_id}' write to '{variable_id}' effect must be non-empty when provided")
 
     return {
         "variable_id": variable_id,
@@ -2104,19 +2479,20 @@ def _coerce_optional_clamp(raw_clamp: Any) -> tuple[float, float] | None:
         return None
     clamp_values = list(raw_clamp)
     if len(clamp_values) != 2:
-        raise ValueError("VTC social residue clamp must contain exactly two values")
+        raise ValueError("VTC transition rule clamp must contain exactly two values")
     low = float(clamp_values[0])
     high = float(clamp_values[1])
     if low > high:
-        raise ValueError("VTC social residue clamp lower bound must be <= upper bound")
+        raise ValueError("VTC transition rule clamp lower bound must be <= upper bound")
     return (low, high)
 
 
-def _social_residue_telemetry_label(rule_id: str, kind: str, write: Mapping[str, Any]) -> str:
+def _transition_rule_telemetry_label(rule_id: str, write: Mapping[str, Any]) -> str:
+    """``rule_id:effect``, or ``rule_id:variable_id`` for an unlabelled write. The id names the rule."""
     effect = write.get("effect")
     variable_id = write.get("variable_id", "unknown")
     suffix = effect if effect is not None else variable_id
-    return f"{kind}:{rule_id}:{suffix}"
+    return f"{rule_id}:{suffix}"
 
 
 def _combined_condition(rule_condition: str | None, write_condition: str | None) -> str | None:
@@ -2164,19 +2540,70 @@ def compile_vtc_affordance_occupancy_with_phase_graph(
     return _compile_vtc_action_writes_with_phase_graph(actions, targets, phase_graph, affordance_index_by_name=affordance_index_by_name)
 
 
-ACTION_WRITE_AGENT_AXIS_SCOPES: frozenset[VariableScope] = frozenset(
-    {VariableScope.AGENT, VariableScope.AGENT_PRIVATE, VariableScope.MESSAGE}
-)
-"""Scopes whose registry storage leads with the agent axis, so an action write lands on the acting agent's row."""
+ACTION_WRITE_AGENT_AXIS_SCOPES: frozenset[VariableScope] = frozenset({VariableScope.AGENT})
+"""Scopes an action write may target: an action write lands on the acting agent's row.
+
+A global also has one row per world, and under S1 the acting agent's world is its row,
+but admitting action writes to world state is an authoring decision of its own; a
+global is written by a transition rule or an interaction effect."""
+
+BATCH_AXIS_SCOPES: frozenset[VariableScope] = frozenset({VariableScope.GLOBAL, VariableScope.AGENT, VariableScope.AFFORDANCE})
+"""Scopes whose registry storage leads with the batch axis: one row per agent, or per world.
+
+Under S1 (2026-10-25) the batch is independent single-agent worlds, so the world axis
+of a global or an affordance variable and the agent axis coincide at runtime; a
+transition rule's target row in any of them is masked by its own agent's (world's)
+activity. The authoring contract still tells them apart: a global reads as a scalar in
+its world, an affordance variable as one row per affordance (`townlet.vfs.namespace`)."""
 
 AFFORDANCE_OCCUPANCY_PHASE = "resolve_affordance_access_and_occupancy"
+METER_BOUNDS_PHASE = "clamp_and_validate"
+"""The phase at which every meter is clamped to its declared bounds (``compile_vtc_bounds_clamps``).
+
+A transition rule may write a meter at this phase or any earlier one; later, the write would
+escape the bounds, so the compiler refuses it."""
 AFFORDANCE_OCCUPANCY_COMPOSITIONS = frozenset({"claim_if_free", "capacity_claim"})
+
+
+_AGENT_ROW_SHAPES = frozenset({"scalar", "agent"})
+"""Value shapes an action write's expression and condition may produce.
+
+An action write lands per acting agent, so its value is one per agent (or a
+scalar): an agent row or an occupancy claimant's payload."""
+
+
+def _rule_reads(namespace: Namespace, *asts: ASTNode | None) -> tuple[str, ...]:
+    """The storage names of every variable and meter the ASTs read, sorted: a rule's reads are derived, never authored (S8).
+
+    Runs after the spelling check and the type check, so every path the ASTs read
+    resolves through the one resolver; ``agent_id`` is an engine name, no state.
+    """
+    paths = frozenset().union(*(read_paths(ast) for ast in asts if ast is not None))
+    symbols = (namespace.resolve(path, TRANSITION_WRITE) for path in paths)
+    return tuple(sorted({symbol.name for symbol in symbols if symbol.stored}))
+
+
+def _world_columns(target_scope: VariableScope, namespace: Namespace, *asts: ASTNode | None) -> frozenset[str]:
+    """The globals a rule on affordance state reads; none for other targets."""
+    if target_scope != VariableScope.AFFORDANCE:
+        return frozenset()
+    paths = frozenset().union(*(read_paths(ast) for ast in asts if ast is not None))
+    symbols = (namespace.resolve(path, TRANSITION_WRITE) for path in paths)
+    return frozenset(symbol.name for symbol in symbols if symbol.stored and symbol.scope == VariableScope.GLOBAL)
+
+
+_RULE_ADMITTED_SHAPES: dict[VariableScope, frozenset[str]] = {
+    VariableScope.GLOBAL: frozenset({"scalar"}),
+    VariableScope.AGENT: _AGENT_ROW_SHAPES,
+    VariableScope.AFFORDANCE: frozenset({"scalar", "affordance"}),
+}
+"""Value shapes a transition-rule write (expression and condition) may produce, by target scope."""
 
 
 def _action_write_scope_refusal(
     write: WriteSpec,
     action_name: str,
-    target_scope: VariableScope | None,
+    target_scope: VariableScope,
     affordance_index: int | None,
 ) -> str | None:
     """Why an action write cannot apply to its target's declared scope, or None when it can.
@@ -2187,8 +2614,6 @@ def _action_write_scope_refusal(
     affordance-scoped variable.
     """
     prefix = f"Action '{action_name}' write '{write.telemetry_label}' targets"
-    if target_scope is None:
-        return f"{prefix} unknown state variable '{write.variable_id}'. Declare it as a VFS variable or meter bar."
     if target_scope == VariableScope.AFFORDANCE:
         is_claim = (
             write.composition in AFFORDANCE_OCCUPANCY_COMPOSITIONS
@@ -2202,13 +2627,19 @@ def _action_write_scope_refusal(
             f"state only as an occupancy claim: composition {' or '.join(sorted(AFFORDANCE_OCCUPANCY_COMPOSITIONS))} "
             f"at phase '{AFFORDANCE_OCCUPANCY_PHASE}', from an action that declares source_affordance."
         )
+    if write.composition in AFFORDANCE_OCCUPANCY_COMPOSITIONS:
+        return (
+            f"{prefix} variable '{write.variable_id}', declared scope '{target_scope.value}', with composition "
+            f"'{write.composition}'. An occupancy claim writes its action's source-affordance row of an "
+            "affordance-scoped variable; declare the claimed state with scope affordance."
+        )
     if target_scope in ACTION_WRITE_AGENT_AXIS_SCOPES:
         return None
     admitted = ", ".join(sorted(scope.value for scope in ACTION_WRITE_AGENT_AXIS_SCOPES))
     return (
         f"{prefix} variable '{write.variable_id}', declared scope '{target_scope.value}'. An action write applies to "
-        f"the acting agent's row, so its target must be a meter bar or a variable of scope {admitted}; "
-        f"a '{target_scope.value}' variable has no row per agent."
+        f"the acting agent's row, so its target must be a meter bar or a variable of scope {admitted}. "
+        f"A '{target_scope.value}' variable is written by a transition rule or an interaction effect."
     )
 
 
@@ -2220,7 +2651,10 @@ def _compile_vtc_action_writes_with_phase_graph(
     affordance_index_by_name: Mapping[str, int] | None,
 ) -> VTCActionWriteProgram:
     parser = ExpressionParser()
-    checker = TypeChecker(schema=_write_expression_schema(targets))
+    namespace = _write_namespace(targets)
+    sources = _expression_sources_of(targets)
+    checker = TypeChecker(schema=namespace.schema(TRANSITION_WRITE))
+    shapes = namespace.shapes(TRANSITION_WRITE)
     compiled_writes: list[CompiledVTCActionWrite] = []
     refusals: list[VTCWriteRefusal] = []
     admitted = phase_graph.action_phases
@@ -2247,14 +2681,30 @@ def _compile_vtc_action_writes_with_phase_graph(
                     )
                 )
                 continue
-            target = targets.get(write.variable_id)
-            scope_refusal = _action_write_scope_refusal(write, action.name, None if target is None else target.scope, affordance_index)
+            prefix = f"Action '{action.name}' write '{write.telemetry_label}'"
+            target_name, target_refusal = _resolve_write_target(write.variable_id, namespace, prefix)
+            if target_refusal is not None:
+                refusals.append(VTCWriteRefusal(origin_key=origin_key, kind="scope", message=target_refusal))
+                continue
+            assert target_name is not None
+            target = targets[target_name]
+            scope_refusal = _action_write_scope_refusal(write, action.name, target.scope, affordance_index)
             if scope_refusal is not None:
                 refusals.append(VTCWriteRefusal(origin_key=origin_key, kind="scope", message=scope_refusal))
                 continue
-            assert target is not None
             expression_ast = parser.parse(write.expression)
             condition_ast = parser.parse(write.condition) if write.condition is not None else None
+            spelling_refusal = _spelling_refusal(
+                namespace,
+                expression_ast=expression_ast,
+                expression=write.expression,
+                condition_ast=condition_ast,
+                condition=write.condition,
+                prefix=prefix,
+            )
+            if spelling_refusal is not None:
+                refusals.append(VTCWriteRefusal(origin_key=origin_key, kind="type", message=spelling_refusal))
+                continue
             type_refusal = _write_type_refusal(
                 checker,
                 expression_ast=expression_ast,
@@ -2263,10 +2713,53 @@ def _compile_vtc_action_writes_with_phase_graph(
                 condition=write.condition,
                 target_id=write.variable_id,
                 target_type=target.type,
+                composition=write.composition,
+                clamp=write.clamp,
                 prefix=f"Action '{action.name}' write '{write.telemetry_label}'",
             )
             if type_refusal is not None:
                 refusals.append(VTCWriteRefusal(origin_key=origin_key, kind="type", message=type_refusal))
+                continue
+            # From here on the ASTs are the inlined ones: what the write evaluates (S4).
+            inlined = _inline_write_reads(
+                sources,
+                expression_ast=expression_ast,
+                expression=write.expression,
+                condition_ast=condition_ast,
+                condition=write.condition,
+                prefix=prefix,
+            )
+            if isinstance(inlined, str):
+                refusals.append(VTCWriteRefusal(origin_key=origin_key, kind="type", message=inlined))
+                continue
+            expression_ast, condition_ast = inlined
+            payload_refusal = _element_payload_refusal(
+                expression_ast=expression_ast,
+                expression=write.expression,
+                target_id=write.variable_id,
+                target_type=target.type,
+                composition=write.composition,
+                prefix=prefix,
+            )
+            if payload_refusal is not None:
+                refusals.append(VTCWriteRefusal(origin_key=origin_key, kind="type", message=payload_refusal))
+                continue
+            # A shape refusal is the second half of the type proof (payload, then axes),
+            # so it reports under the same kind.
+            shape_refusal = _write_shape_refusal(
+                expression_ast=expression_ast,
+                expression=write.expression,
+                condition_ast=condition_ast,
+                condition=write.condition,
+                shapes=shapes,
+                admitted_expression=_AGENT_ROW_SHAPES,
+                admitted_condition=_AGENT_ROW_SHAPES,
+                target_id=write.variable_id,
+                target_scope=target.scope,
+                prefix=f"Action '{action.name}' write '{write.telemetry_label}'",
+            )
+            if shape_refusal is not None:
+                refusals.append(VTCWriteRefusal(origin_key=origin_key, kind="type", message=shape_refusal))
                 continue
             compiled_writes.append(
                 CompiledVTCActionWrite(
@@ -2274,7 +2767,7 @@ def _compile_vtc_action_writes_with_phase_graph(
                     action_name=action.name,
                     source_affordance=source_affordance,
                     affordance_index=affordance_index,
-                    variable_id=write.variable_id,
+                    variable_id=target_name,
                     target_scope=target.scope,
                     expression=write.expression,
                     expression_ast=expression_ast,
@@ -2285,6 +2778,7 @@ def _compile_vtc_action_writes_with_phase_graph(
                     priority=write.priority,
                     clamp=write.clamp,
                     telemetry_label=write.telemetry_label,
+                    draw_site=_draw_site(f"action:{action.name}:{write_index}", expression_ast, condition_ast),
                 )
             )
 
@@ -2463,7 +2957,7 @@ def compile_vtc_bounds_clamps_with_phase_graph(
                 expression=f"clamp(bar.{meter['name']}, {low_literal}, {high_literal})",
                 condition=None,
                 composition="overwrite",
-                phase="clamp_and_validate",
+                phase=METER_BOUNDS_PHASE,
                 priority=priority,
                 clamp=(meter["bounds_min"], meter["bounds_max"]),
                 telemetry_label=f"bounds_clamp:{meter['name']}",
@@ -2654,7 +3148,11 @@ def _coerce_modulation(modulation: VTCModulationSource | Mapping[str, Any]) -> d
         min_multiplier = float(modulation.min_multiplier)
 
     if modulation_type != "linear_multiplier":
-        raise ValueError(f"Unsupported VTC modulation type '{modulation_type}' for bar '{bar}'")
+        raise ValueError(
+            f"Unsupported VTC modulation type '{modulation_type}' for bar '{bar}': the one modulation type is "
+            "'linear_multiplier' (an affordance's effect scales linearly from min_multiplier at bar value 0.0 up to "
+            "1.0 at threshold). Declare type: linear_multiplier."
+        )
 
     return {
         "bar": bar,
@@ -2766,10 +3264,19 @@ def _coerce_interaction_progress_affordance(
         )
     if interaction_type in PROGRESS_INTERACTION_TYPES:
         if duration_ticks is None:
-            raise ValueError(f"Affordance '{name}' interaction_type='{interaction_type}' requires duration_ticks")
+            raise ValueError(
+                f"Affordance '{name}' interaction_type='{interaction_type}' requires duration_ticks: a progress "
+                f"interaction ({', '.join(sorted(PROGRESS_INTERACTION_TYPES))}) runs over several ticks. Declare "
+                f"duration_ticks: <positive integer>, or use an interaction type without progress "
+                f"({', '.join(sorted(INTERACTION_TYPES - PROGRESS_INTERACTION_TYPES))})."
+            )
         duration = int(duration_ticks)
         if duration <= 0:
-            raise ValueError(f"Affordance '{name}' duration_ticks must be positive, got {duration}")
+            raise ValueError(
+                f"Affordance '{name}' duration_ticks must be a positive integer (the ticks the interaction runs), got "
+                f"{duration}. For an interaction that completes at once, use an interaction type without progress "
+                f"({', '.join(sorted(INTERACTION_TYPES - PROGRESS_INTERACTION_TYPES))})."
+            )
     else:
         duration = None
 
@@ -2907,7 +3414,7 @@ def compile_vtc_affordance_gates_with_phase_graph(
                 kind="affordance_gate",
                 source_variable_id="time_of_day",
                 target_affordance_id=name,
-                variable_id=f"affordance.{name}.available",
+                variable_id=f"opening_hours:{name}",
                 expression=expression,
                 expression_ast=parser.parse(expression),
                 condition=None,
@@ -2985,16 +3492,6 @@ def _iter_config_items(value: Any) -> list[Any]:
     if value is None:
         return []
     return list(value)
-
-
-def _dedupe(values: Sequence[str]) -> tuple[str, ...]:
-    seen: set[str] = set()
-    deduped: list[str] = []
-    for value in values:
-        if value not in seen:
-            deduped.append(value)
-            seen.add(value)
-    return tuple(deduped)
 
 
 def _rule_slug(name: str) -> str:

@@ -97,7 +97,7 @@ target-version = ['py313']
 line-length = 140
 target-version = "py313"
 # Review evidence: reproduction scripts frozen as they ran, not maintained code.
-extend-exclude = ["review-2026-10-24"]
+extend-exclude = ["review-2026-10-24", "rereview-2026-10-31"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP"]
@@ -116,6 +116,7 @@ python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = [
     "--verbose",
+    "-m", "not perf",
     "--cov=townlet",
     "--cov-branch",
     "--cov-report=term-missing",
@@ -127,6 +128,7 @@ markers = [
     "gpu: marks tests requiring CUDA/GPU hardware",
     "integration: marks tests as integration tests",
     "e2e: marks tests as end-to-end tests",
+    "perf: wall-clock ratio asserts; excluded by default (addopts), run with `pytest -m perf --no-cov`",
 ]
 
 [tool.coverage.run]

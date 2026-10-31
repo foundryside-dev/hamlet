@@ -55,7 +55,7 @@ class TestExpressionVFSEffectsFlow:
         ast = expression_parser.parse(expr_str)
 
         # Evaluate with context
-        context = ExecutionContext(bars={}, vfs={}, affordances={}, temporal={}, device=torch.device("cpu"))
+        context = ExecutionContext(bars={}, vfs={}, temporal={}, device=torch.device("cpu"))
         evaluator = Evaluator(context)
         result = evaluator.evaluate(ast)
 
@@ -71,7 +71,7 @@ class TestExpressionVFSEffectsFlow:
 
         # Setup context with bars
         bars = {"energy": torch.tensor([0.5, 0.6])}
-        context = ExecutionContext(bars=bars, vfs={}, affordances={}, temporal={}, device=torch.device("cpu"))
+        context = ExecutionContext(bars=bars, vfs={}, temporal={}, device=torch.device("cpu"))
 
         # Evaluate (context indexes into the batch for us)
         evaluator = Evaluator(context)
@@ -87,12 +87,12 @@ class TestExpressionVFSEffectsFlow:
         vfs_registry.set("computed_value", torch.tensor([1.0, 2.0]), writer="engine")
 
         # Parse expression referencing VFS
-        expr_str = "vfs.computed_value * 2.0"
+        expr_str = "computed_value * 2.0"
         ast = expression_parser.parse(expr_str)
 
         # Setup context with vfs dict
         vfs_dict = {"computed_value": torch.tensor([1.0, 2.0])}
-        context = ExecutionContext(bars={}, vfs=vfs_dict, affordances={}, temporal={}, device=torch.device("cpu"))
+        context = ExecutionContext(bars={}, vfs=vfs_dict, temporal={}, device=torch.device("cpu"))
 
         # Evaluate
         evaluator = Evaluator(context)
@@ -112,13 +112,13 @@ class TestExpressionVFSEffectsFlow:
         executor = CommandExecutor()
 
         # Parse expression to get AST
-        expr_str = "target.bar.energy + 0.3"
+        expr_str = "bar.energy + 0.3"
         ast = expression_parser.parse(expr_str)
 
         # Create command with pre-compiled AST
         command = CommandNode(
             type=CommandType.MODIFY,
-            path="target.bar.energy",
+            path="bar.energy",
             value_expr=expr_str,
             value_ast=ast,
         )

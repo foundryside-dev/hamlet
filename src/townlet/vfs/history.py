@@ -1,108 +1,147 @@
-"""History requirement analysis for VFS expressions."""
+"""History requirements of VFS profile expressions: which keys keep a ring, and how deep.
+
+The temporal operators (``lag``, ``delta``, ``moving_average``, ``ema``,
+``rate_of_change``, ``rising_edge``, ``falling_edge``) read the past of a named value.
+Their runtime contract lives in ``townlet.world.expression.history``; this module is the
+compile side: it refuses a temporal call the runtime could not serve, with a
+``TypeCheckError`` that stage 6 locates at the variables declaration, and derives the
+ring depth every history key needs, from the global and the agent profile alike.
+"""
 
 from __future__ import annotations
 
-from townlet.vfs.profiles import CompiledGlobalProfile
-from townlet.world.expression import ASTVisitor, Constant, FunctionCall, PathAccess, Variable
+from collections.abc import Iterator
+from typing import TYPE_CHECKING
 
-TEMPORAL_FUNCTIONS = {"lag", "delta", "moving_average", "ema", "rate_of_change", "rising_edge", "falling_edge"}
+from townlet.world.expression.ast_nodes import (
+    ASTNode,
+    BinaryOp,
+    Constant,
+    FunctionCall,
+    IfThenElse,
+    IndexAccess,
+    PathAccess,
+    UnaryOp,
+    Variable,
+)
+from townlet.world.expression.functions import TEMPORAL_FUNCTIONS
+from townlet.world.expression.history import MAX_WINDOW_SIZE, history_key
+from townlet.world.expression.type_checker import TypeCheckError
 
+if TYPE_CHECKING:
+    from townlet.vfs.profiles import CompiledGlobalProfile
 
-def _key_from_node(node) -> str:
-    if isinstance(node, PathAccess):
-        return ".".join(node.segments)
-    if isinstance(node, Variable):
-        return f"vfs.{node.name}"
-    raise ValueError("Temporal operators require first argument to be a variable or path")
-
-
-def _extract_int(node, name: str) -> int:
-    if not isinstance(node, Constant) or not isinstance(node.value, int):
-        raise ValueError(f"Function '{name}' requires integer literal argument for window/offset")
-    return int(node.value)
-
-
-class HistoryCollector(ASTVisitor):
-    """Collects history window requirements from an expression AST."""
-
-    def __init__(self) -> None:
-        self.requirements: dict[str, int] = {}
-
-    def visit_constant(self, node: Constant):  # noqa: D401
-        return None
-
-    def visit_variable(self, node: Variable):  # noqa: D401
-        return None
-
-    def visit_path_access(self, node: PathAccess):  # noqa: D401
-        return None
-
-    def visit_binary_op(self, node):  # noqa: D401
-        node.left.accept(self)
-        node.right.accept(self)
-
-    def visit_unary_op(self, node):  # noqa: D401
-        node.operand.accept(self)
-
-    def visit_if_then_else(self, node):  # noqa: D401
-        node.condition.accept(self)
-        node.true_branch.accept(self)
-        node.false_branch.accept(self)
-
-    def visit_index_access(self, node):  # noqa: D401
-        node.base.accept(self)
-        node.index.accept(self)
-
-    def visit_switch(self, node):  # pragma: no cover - not used here
-        for case in getattr(node, "cases", []):
-            case.accept(self)
-        getattr(node, "default", None) and node.default.accept(self)
-
-    def visit_reduce(self, node):  # pragma: no cover - not used here
-        node.source.accept(self)
-        node.initial.accept(self)
-
-    def visit_function_call(self, node: FunctionCall):  # noqa: D401
-        func = node.function_name
-        for arg in node.arguments:
-            arg.accept(self)
-
-        if func not in TEMPORAL_FUNCTIONS:
-            return
-
-        key = _key_from_node(node.arguments[0])
-        required_window = 1
-        if func == "lag":
-            required_window = _extract_int(node.arguments[1], func) + 1
-        elif func == "moving_average":
-            required_window = _extract_int(node.arguments[1], func)
-        elif func == "delta":
-            required_window = 2
-        elif func == "rate_of_change":
-            required_window = _extract_int(node.arguments[1], func) + 1
-
-        # Minimum 1
-        required_window = max(required_window, 1)
-        self.requirements[key] = max(self.requirements.get(key, 0), required_window)
+__all__ = ["TEMPORAL_FUNCTIONS", "collect_history_requirements", "expression_history", "same_instant_refs", "walk"]
 
 
-def collect_history_requirements(profile: CompiledGlobalProfile | None) -> dict[str, int]:
-    """Collect per-key window requirements from compiled global profile.
+def _children(node: ASTNode) -> tuple[ASTNode, ...]:
+    if isinstance(node, BinaryOp):
+        return (node.left, node.right)
+    if isinstance(node, UnaryOp):
+        return (node.operand,)
+    if isinstance(node, FunctionCall):
+        return tuple(node.arguments)
+    if isinstance(node, IfThenElse):
+        return (node.condition, node.true_branch, node.false_branch)
+    if isinstance(node, IndexAccess):
+        return (node.base, node.index)
+    return ()
 
-    Returns a mapping of key -> max window required for temporal operators.
+
+def walk(node: ASTNode) -> Iterator[ASTNode]:
+    """Every node of a profile expression, the root first."""
+    yield node
+    for child in _children(node):
+        yield from walk(child)
+
+
+def same_instant_refs(node: ASTNode) -> set[str]:
+    """The bare names an expression reads at the current instant: its dependency edges.
+
+    A ``lag(x, n)`` read is the one exception: it reads ``x``'s ring, which the engine
+    commits after every variable has evaluated, never ``x``'s in-evaluation value. So
+    it is not an edge, and ``t: where(e, 0.0, lag(t, 1) + 1.0)`` is no cycle. Every other
+    temporal operator also reads its argument's current value, so its read is an edge.
     """
+    if isinstance(node, Variable):
+        return {node.name}
+    if isinstance(node, PathAccess):
+        return set()  # a meter (``bar.x``) or item state (``item.x``): never a profile variable
+    if isinstance(node, FunctionCall) and node.function_name == "lag":
+        return set().union(*(same_instant_refs(argument) for argument in node.arguments[1:]))
+    return set().union(*(same_instant_refs(child) for child in _children(node)))
 
-    if profile is None:
-        return {}
 
+def _literal_int(call: FunctionCall, what: str, *, low: int) -> int:
+    argument = call.arguments[1]
+    if not isinstance(argument, Constant) or isinstance(argument.value, bool) or not isinstance(argument.value, int):
+        raise TypeCheckError(f"Function '{call.function_name}' takes its {what} as an integer literal; got a computed value")
+    value = int(argument.value)
+    if not low <= value <= MAX_WINDOW_SIZE:
+        raise TypeCheckError(f"Function '{call.function_name}' {what} must be in {low}..{MAX_WINDOW_SIZE}; got {value}")
+    return value
+
+
+def _ring_depth(call: FunctionCall) -> int:
+    """How many committed instants back one temporal call reads (at least 1)."""
+    name = call.function_name
+    if name == "lag":
+        return _literal_int(call, "depth n", low=1)
+    if name == "rate_of_change":
+        return _literal_int(call, "window", low=1)
+    if name == "moving_average":
+        return max(_literal_int(call, "window", low=1) - 1, 1)
+    if name == "ema":
+        argument = call.arguments[1]
+        if not isinstance(argument, Constant) or isinstance(argument.value, bool) or not isinstance(argument.value, (int, float)):
+            raise TypeCheckError("Function 'ema' takes its smoothing alpha as a numeric literal; got a computed value")
+        if not 0.0 < float(argument.value) <= 1.0:
+            raise TypeCheckError(f"Function 'ema' alpha must be in (0, 1]; got {argument.value}")
+        return 1
+    return 1  # delta, rising_edge, falling_edge read one instant back
+
+
+def expression_history(node: ASTNode) -> dict[str, int]:
+    """The ring depth each history key read by one expression needs; refuses what cannot be served.
+
+    A temporal operator reads the past of a NAMED value: a variable (``vfs.<id>``, the
+    clock ``vfs.tick``) or a meter (``bar.<meter>``). A computed argument has no ring to
+    read, so it refuses with the fix: declare the computation as its own variable.
+    """
     requirements: dict[str, int] = {}
-
-    for var in profile.variables:
-        if var.ast is None:
+    for found in walk(node):
+        if not isinstance(found, FunctionCall) or found.function_name not in TEMPORAL_FUNCTIONS:
             continue
-        collector = HistoryCollector()
-        var.ast.accept(collector)
-        for key, window in collector.requirements.items():
-            requirements[key] = max(requirements.get(key, 0), window)
-
+        if not found.arguments:
+            raise TypeCheckError(f"Function '{found.function_name}' needs the named value whose history it reads")
+        key = history_key(found.arguments[0])
+        if key is None:
+            raise TypeCheckError(
+                f"Function '{found.function_name}' reads the history of a named value, but its first argument is a "
+                "computed expression. Declare that expression as its own variable (a bool variable for an edge) "
+                f"and apply '{found.function_name}' to the variable."
+            )
+        requirements[key] = max(requirements.get(key, 0), _ring_depth(found))
     return requirements
+
+
+def collect_history_requirements(
+    global_profile: CompiledGlobalProfile | None,
+    agent_profile: CompiledGlobalProfile | None,
+) -> dict[str, int]:
+    """Every history key either profile reads, with the deepest ring any read needs.
+
+    Keys are one namespace across both profiles (a variable id is unique in the
+    registry; a meter or the clock read by both profiles shares one ring), and every
+    key's rows are worlds, ``[N]``: a global is per world (S1) and a world holds one agent.
+    """
+    requirements: dict[str, int] = {}
+    for profile in (global_profile, agent_profile):
+        if profile is None:
+            continue
+        for variable in profile.variables:
+            if variable.ast is None:
+                continue
+            for key, depth in expression_history(variable.ast).items():
+                requirements[key] = max(requirements.get(key, 0), depth)
+    return dict(sorted(requirements.items()))

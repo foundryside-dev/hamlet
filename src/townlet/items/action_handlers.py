@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, Literal
 
 import torch
@@ -30,29 +31,29 @@ class ItemActionHandler:
     def __init__(
         self,
         manager: ItemManager,
-        inventory: InventoryState,
         command_executor: CommandExecutor,
         vfs_registry: VariableRegistry,
         meter_name_to_index: dict[str, int],
         effect_manager: Any | None = None,
-        affordance_overrides: dict[str, bool] | None = None,
+        agent_positions: Callable[[], torch.Tensor] | None = None,
     ) -> None:
         """Initialize action handler.
 
         Args:
-            manager: ItemManager instance
-            inventory: InventoryState instance
+            manager: ItemManager instance (its `inventory` is the one this handler moves items in)
             command_executor: CommandExecutor for Effects
             vfs_registry: VFS registry for Effects context
             meter_name_to_index: Bar name to index mapping
+            agent_positions: The env's current agent positions, read when a command runs
+                (a carried item is at its holder's position, e.g. `spawn_item position: self`)
         """
         self.manager = manager
-        self.inventory = inventory
+        self.inventory: InventoryState = manager.inventory
         self.command_executor = command_executor
         self.vfs_registry = vfs_registry
         self.meter_name_to_index = meter_name_to_index
         self.effect_manager = effect_manager or NullEffectManager()
-        self.affordance_overrides = affordance_overrides
+        self.agent_positions = agent_positions
         # Cache custom verb specs for masking/dispatch
         self.custom_action_specs = {
             name: (item_type, scope, command_name) for name, item_type, scope, command_name in manager.get_custom_action_specs()
@@ -102,9 +103,8 @@ class ItemActionHandler:
         # Pattern: Same as affordance Effects execution
         bars_dict = {name: meters[:, idx] for name, idx in self.meter_name_to_index.items()}
 
-        # Context mapping for item interactions:
-        # - target = Agent performing the action (can access target.bar.*, target.vfs.*)
-        # - self = The Item itself (can access self.vfs.durability, etc.)
+        # Context mapping for item interactions: the agent performing the action is the
+        # world's agent (bare variables, `bar.<m>`); the item is bound (`item.<x>`).
         context = ExecutionContext(
             bars=bars_dict,
             vfs_registry=self.vfs_registry,
@@ -115,29 +115,12 @@ class ItemActionHandler:
             item_manager=self.manager,
             scheduler=getattr(self.effect_manager, "scheduler", None),
             current_tick=current_tick or 0,
-            affordance_overrides=self.affordance_overrides,
+            agent_positions=None if self.agent_positions is None else self.agent_positions(),
         )
 
         # Execute all commands
         for command in commands:
             self.command_executor.execute(command, context)
-
-    @staticmethod
-    def _positions_match(agent_pos: torch.Tensor, item_pos: tuple[int, ...] | tuple[float, ...]) -> bool:
-        """Match agent/item positions without forcing integer rounding.
-
-        Continuous substrates keep fractional coordinates; rounding them to ints
-        breaks equality checks for local custom verbs. Compare in float space
-        with a small tolerance so both discrete and continuous positions work.
-        """
-
-        if agent_pos.numel() != len(item_pos):
-            return False
-
-        # Always compare in float space; rtol=0 keeps comparisons strict.
-        agent_f = agent_pos.to(dtype=torch.float32)
-        item_f = torch.as_tensor(item_pos, device=agent_f.device, dtype=agent_f.dtype)
-        return torch.allclose(agent_f, item_f, atol=1e-4, rtol=0.0)
 
     def handle_get_action(
         self,
@@ -157,17 +140,12 @@ class ItemActionHandler:
         Returns:
             True if item picked up, False otherwise
         """
-        # Find item at agent's position
-        agent_pos_tuple = tuple(agent_position.tolist())
-
-        item = None
-        for active_item in self.manager.active_items.values():
-            if active_item.position == agent_pos_tuple:
-                item = active_item
-                break
-
-        if item is None:
+        # Find an item of this agent's world at its position (the substrate's own
+        # co-location rule: exact cell on a grid, interaction radius on continuous).
+        here = self.manager.items_at(self.manager.world_of_agent(agent_idx), agent_position)
+        if not here:
             return False  # No item at position
+        item = here[0]
 
         # Try to add to inventory (DENY_PICKUP if full)
         success = self.inventory.add_item(agent_idx, item)
@@ -256,7 +234,7 @@ class ItemActionHandler:
             item_manager=self.manager,
             scheduler=getattr(self.effect_manager, "scheduler", None),
             current_tick=current_tick,
-            affordance_overrides=self.affordance_overrides,
+            agent_positions=None if self.agent_positions is None else self.agent_positions(),
         )
 
         for command in commands:
@@ -288,10 +266,8 @@ class ItemActionHandler:
                             break
             else:  # local
                 for agent_idx, agent_pos in enumerate(agent_positions):
-                    for item in self.manager.active_items.values():
-                        if item.item_type == item_type and self._positions_match(agent_pos, item.position):
-                            available[agent_idx] = True
-                            break
+                    here = self.manager.items_at(self.manager.world_of_agent(agent_idx), agent_pos)
+                    available[agent_idx] = any(item.item_type == item_type for item in here)
 
             action_masks[~available, action_id] = False
 
@@ -331,12 +307,9 @@ class ItemActionHandler:
             self._execute_commands(commands, agent_idx=agent_idx, item=item_obj, meters=meters, current_tick=current_tick)
             return True
 
-        # local scope: find matching item at agent position (support continuous coords)
-        item_obj = None
-        for item in self.manager.active_items.values():
-            if item.item_type == item_type and self._positions_match(agent_position, item.position):
-                item_obj = item
-                break
+        # local scope: a matching item of this agent's world at its position
+        here = self.manager.items_at(self.manager.world_of_agent(agent_idx), agent_position)
+        item_obj = next((item for item in here if item.item_type == item_type), None)
         if item_obj is None:
             return False
         commands = compiled.compiled_local_commands.get(command_name, [])
@@ -375,10 +348,9 @@ class ItemActionHandler:
 
         # Shared items remain in the world; exclusive items return to the grid.
         if item.exclusive:
-            agent_pos_tuple = tuple(agent_position.tolist())
             self.manager.place_item(
                 instance_id=instance_id,  # Use existing instance (NOT spawn_item)
-                position=agent_pos_tuple,
+                position=agent_position,
             )
 
         return True

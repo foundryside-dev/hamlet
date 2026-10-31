@@ -8,7 +8,7 @@ import pytest
 import yaml
 
 from tests.test_townlet.helpers.config_builder import PRIMARY_LEVEL_NAME, prepare_config_dir
-from townlet.config.variables_config import VariableDeclaration, VariablesConfig
+from townlet.config.variables_config import VariableDeclaration
 from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.errors import CompilationError
 
@@ -23,7 +23,6 @@ def _write_variables(config_dir: Path, declarations: list[dict]) -> None:
             {
                 "variables": {
                     "version": "1.0",
-                    "extents": {},
                     "item_profiles": ["default_item"],
                     "declarations": declarations,
                 }
@@ -63,11 +62,10 @@ def test_authored_variable_named_tick_refuses_at_full_compile(tmp_path, scope):
         _compile(config_dir)
 
 
-def test_authored_static_variable_named_tick_refuses_in_canonical_inventory():
-    """The complete roster cannot silently deduplicate an authored engine tick."""
-    authored_tick = VariableDeclaration.model_validate(_variable("tick", initial_value=1.0))
-    with pytest.raises(ValueError, match="tick"):
-        VariablesConfig(version="1.0", extents={}, item_profiles=[], declarations=[authored_tick])
+def test_authored_static_variable_named_tick_refuses_at_its_declaration():
+    """The engine tick is a reserved name: the declaration itself refuses, so the roster never sees it."""
+    with pytest.raises(ValueError, match="Variable id 'tick' is reserved"):
+        VariableDeclaration.model_validate(_variable("tick", initial_value=1.0))
 
 
 def test_expression_may_reference_bare_tick(tmp_path):

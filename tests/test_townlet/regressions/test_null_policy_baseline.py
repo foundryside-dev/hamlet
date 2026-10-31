@@ -73,9 +73,7 @@ def restoring_affordance(affordances: Sequence[AffordanceParamConfig], meter_nam
     candidates = [
         affordance.name
         for affordance in affordances
-        if any(
-            command.modify is not None and command.modify.endswith(f".bar.{meter_name}") for command in affordance.interactions["on_start"]
-        )
+        if any(command.modify is not None and command.modify == f"bar.{meter_name}" for command in affordance.interactions["on_start"])
     ]
     assert len(candidates) == 1, f"expected exactly one affordance writing bar {meter_name!r} on start, found {candidates}"
     return candidates[0]

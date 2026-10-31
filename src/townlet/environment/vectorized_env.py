@@ -34,7 +34,9 @@ from townlet.items import InventoryState, ItemActionHandler, ItemManager
 from townlet.universe.dto import RuntimeActionSpace
 from townlet.universe.dto.token_spec import item_capacity
 from townlet.vfs.evaluator import VFSEvaluator
+from townlet.vfs.namespace import CommandSymbols, Namespace, expression_sources
 from townlet.vfs.profiles import CompiledGlobalProfile
+from townlet.vfs.random_draws import DrawInstant, VFSRandomness
 from townlet.vfs.registry import VariableRegistry
 from townlet.vfs.transition_schedule import VTCTransitionContext, VTCTransitionRunner, VTCTransitionState
 from townlet.vfs.vtc import (
@@ -201,21 +203,16 @@ class VectorizedHamletEnv:
         # If affordances exist but catalog missing, compilation would have failed
 
         self.command_executor = CommandExecutor()
-        self.affordance_overrides: dict[str, bool] = {}
         self.effect_manager = (
             EffectManager(
                 catalog=effect_catalog,
                 command_executor=self.command_executor,
                 device=str(self.device),
                 time_enabled=self.temporal_support_enabled,
-                affordance_overrides=self.affordance_overrides,
             )
             if effect_catalog is not None
             else None
         )
-        if universe.effects_schema is None:
-            raise ValueError("Compiled universe is missing effects_schema. Recompile the config pack before creating an environment.")
-        self.effects_schema = dict(universe.effects_schema)
 
         # Bars configuration (per-level)
         self.bars_config = level.bars
@@ -485,11 +482,13 @@ class VectorizedHamletEnv:
 
         return tensor
 
-    def _is_affordance_open(self, affordance_name: str, hour: int | None = None) -> bool:
-        """Return True if an affordance is open for the specified (or current) hour."""
+    def _affordance_open_mask(self, affordance_name: str) -> torch.Tensor:
+        """`[num_worlds]` bool: whether each world's affordance is open now (its declared opening hours)."""
+        scheduled = self._is_affordance_open(affordance_name)
+        return torch.full((self.num_agents,), scheduled, dtype=torch.bool, device=self.device)
 
-        if affordance_name in self.affordance_overrides:
-            return bool(self.affordance_overrides[affordance_name])
+    def _is_affordance_open(self, affordance_name: str, hour: int | None = None) -> bool:
+        """Return True if an affordance's declared opening hours admit the specified (or current) hour."""
 
         if not self.enable_temporal_mechanics:
             return True
@@ -504,30 +503,17 @@ class VectorizedHamletEnv:
         except KeyError as exc:
             raise ValueError(f"Missing VTC operating-hour gate for affordance '{affordance_name}'") from exc
 
-    def _build_vfs_affordance_context(self) -> dict[str, dict[str, torch.Tensor]]:
-        """Build affordance state exposed to VFS expressions."""
-        return {
-            affordance_name: {"available": torch.tensor(self._is_affordance_open(affordance_name), device=self.device)}
-            for affordance_name in self.affordances
-        }
+    def _clock_hour(self) -> int:
+        """The hour `global_tick` falls in: the one derivation of every hour the engine uses."""
+        return (self.global_tick % int(self.day_length)) if self.enable_temporal_mechanics else 0
 
-    def _build_vfs_temporal_context(self) -> dict[str, torch.Tensor]:
-        """Build temporal state exposed to VFS expressions."""
-        if not self.enable_temporal_mechanics:
-            return {}
+    def _publish_engine_tick(self) -> None:
+        """Write `global_tick` into the registry's engine `tick` (the one temporal primitive).
 
-        day_length = float(self.day_length)
-        time_of_day = float(self.time_of_day)
-        day_progress = time_of_day / day_length
-        night_threshold = day_length * 0.25
-        is_night = time_of_day < night_threshold or time_of_day >= (day_length - night_threshold)
-
-        return {
-            "tick": torch.tensor(self.global_tick, device=self.device),
-            "time_of_day": torch.tensor(time_of_day, device=self.device),
-            "day_progress": torch.tensor(day_progress, device=self.device),
-            "is_night": torch.tensor(is_night, device=self.device),
-        }
+        `tick` is a global like any other: one row per world. Every world steps in
+        lockstep, so the engine writes the same instant into every row.
+        """
+        self.vfs_registry.set_engine_value("tick", torch.full((self.vfs_registry.num_worlds,), float(self.global_tick), device=self.device))
 
     def _build_action_space_from_runtime_artifact(self, runtime_action_space: RuntimeActionSpace) -> ComposedActionSpace:
         """Build ComposedActionSpace from compiler-emitted runtime actions."""
@@ -545,7 +531,6 @@ class VectorizedHamletEnv:
                 icon=action.icon,
                 source=action.source,
                 source_affordance=action.source_affordance,
-                reads=list(action.reads),
                 writes=cast(Any, [dict(write) for write in action.writes]),
             )
             for action in runtime_action_space.actions
@@ -572,10 +557,10 @@ class VectorizedHamletEnv:
         universe = self.universe
         self.vfs_variables: list[VariableDef] = list(self.level.vfs_variables)
 
-        # The item arena is world slots plus per-agent carried slots; the registry's item
-        # storage and the item manager are sized by it, not by the world slots alone, so a
-        # catalog with max_items_in_world: 0 and max_items_per_agent: n still has n*agents slots.
-        max_items_in_world = (
+        # Items are per world (S1). One world's arena is its ground slots plus its agents'
+        # carried slots (`item_capacity`, the same count that sizes the `item` token); the
+        # registry holds one such block per world, flat: row = world * C + slot.
+        self.items_per_world = (
             item_capacity(
                 max_items_in_world=universe.items_catalog.max_items_in_world,
                 max_items_per_agent=universe.items_catalog.max_items_per_agent,
@@ -592,12 +577,15 @@ class VectorizedHamletEnv:
             variables=self.vfs_variables,
             num_agents=self.num_agents,
             device=self.device,
-            max_items=max_items_in_world,
+            items_per_world=self.items_per_world,
             num_affordances=self.metadata.affordance_count,
             item_profiles=item_profiles,
-            num_message_slots=self.metadata.num_message_slots,
         )
 
+        # Counter-based VFS draws (expressions, action writes, transition rules), separate
+        # from the effects engine's streams (S1). The run seed is captured here, once: a
+        # later seed_all elsewhere in the process never shifts this environment's draws.
+        self.vfs_randomness = VFSRandomness(torch.initial_seed())
         self.vfs_evaluator: VFSEvaluator | None = None
         if universe.compiled_vfs_profiles is not None:
             self.vfs_evaluator = VFSEvaluator(history_spec=universe.vfs_history_spec)
@@ -607,6 +595,21 @@ class VectorizedHamletEnv:
 
         meter_name_to_index = dict(self.metadata.meter_name_to_index)
         self.meter_name_to_index = meter_name_to_index
+
+        # The one resolver every interaction pipeline compiles against (VFS round-2 S5),
+        # built from the same compiled products, by the same constructor, as the compiler's.
+        expression_profiles = (
+            ()
+            if universe.compiled_vfs_profiles is None
+            else (universe.compiled_vfs_profiles.global_profile, universe.compiled_vfs_profiles.agent_profile)
+        )
+        self.command_symbols = CommandSymbols(
+            namespace=Namespace.of_registry(
+                self.vfs_variables, meters=tuple(meter.name for meter in self.level.bars.meters), item_profiles=item_profiles or {}
+            ),
+            expressions=expression_sources(expression_profiles),
+            time_enabled=self.temporal_support_enabled,
+        )
 
     def _initialize_dac_engine(self) -> None:
         """Construct the DAC reward backend and prepare the runtime-registry slot.
@@ -647,31 +650,33 @@ class VectorizedHamletEnv:
                 "Declare item profile names and state in the canonical variables declaration for all item types."
             )
 
+        item_token = self.token_spec.get_type("item")
+        token_capacity = 0 if item_token is None else item_token.capacity
+        if token_capacity != self.items_per_world:
+            # One compiled `item` slot per per-world arena row (slot = row - world * C);
+            # anything else would drop or alias items in the observation.
+            raise ValueError(
+                f"Compiled item token capacity {token_capacity} disagrees with the per-world item arena "
+                f"({self.items_per_world} rows); recompile the config pack"
+            )
         self.item_manager = ItemManager(
             catalog=universe.items_catalog,
-            max_items=item_capacity(
-                max_items_in_world=universe.items_catalog.max_items_in_world,
-                max_items_per_agent=universe.items_catalog.max_items_per_agent,
-                declared_agents_per_world=None,
-            ),
+            items_per_world=self.items_per_world,
+            num_worlds=num_agents,
+            substrate=self.substrate,
             device=self.device,
-            schema=self.effects_schema,
+            symbols=self.command_symbols,
             vfs_registry=self.vfs_registry,
             effect_manager=self.effect_manager,
         )
-        self.item_inventory = InventoryState(
-            batch_size=num_agents,
-            max_items_per_agent=universe.items_catalog.max_items_per_agent,
-            device=str(self.device),
-        )
+        self.item_inventory = self.item_manager.inventory
         self.item_handler = ItemActionHandler(
             manager=self.item_manager,
-            inventory=self.item_inventory,
             command_executor=self.command_executor,
             vfs_registry=self.vfs_registry,
             meter_name_to_index=self.meter_name_to_index,
             effect_manager=self.effect_manager,
-            affordance_overrides=self.affordance_overrides,
+            agent_positions=lambda: self.positions,
         )
 
     def _initialize_affordance_engine(self, num_agents: int) -> None:
@@ -679,7 +684,7 @@ class VectorizedHamletEnv:
 
         Phase method of __init__ (hamlet-2559b98232). Must run after the
         item subsystem; depends on the VTC modulation program, VFS registry,
-        effects schema, command executor, and effect manager.
+        command symbols, command executor, and effect manager.
         """
         self.affordance_engine = AffordanceEngine(
             tuple(self.level.affordances.affordances),
@@ -688,13 +693,12 @@ class VectorizedHamletEnv:
             self.meter_name_to_index,
             modulation_program=self.vtc_modulation_program,
             vfs_registry=self.vfs_registry,
-            effects_schema=self.effects_schema,
+            command_symbols=self.command_symbols,
             command_executor=self.command_executor,
             effect_manager=self.effect_manager,
             meter_bounds_min=self.meter_bounds_min,
             meter_bounds_max=self.meter_bounds_max,
             item_manager=self.item_manager or NullItemManager(),
-            affordance_overrides=self.affordance_overrides,
         )
 
     def _build_movement_deltas(self) -> torch.Tensor:
@@ -750,25 +754,38 @@ class VectorizedHamletEnv:
         return bars_dict
 
     def reset(self) -> torch.Tensor:
-        """
-        Reset all environments.
+        """Reset all environments and return the first observation of the episode.
 
-        Returns:
-            observations: [num_agents, observation_dim]
+        The observation describes the state the first action is taken in, exactly as
+        `step()`'s observation describes the state the next action is taken in. Reset runs
+        the tail of `step()`'s phase order from an empty world, at instant 0:
+
+        1. world state: affordance layout, positions, velocity, meters, dones, step counts;
+        2. clock: `global_tick = 0`, registry `tick` written after `reset_episode_scoped`
+           (tick is episode-lifetime, so an earlier write would be clobbered), hour 0;
+        3. episode-scoped engine state: affordance tracking and overrides, effects,
+           expression history, items and inventories;
+        4. expressions: `_evaluate_vfs_profiles()` over that state (step: after the clock
+           advance), so no expression shows its declared literal or, for a persistent
+           one, the previous episode's value;
+        5. item spawn, whose predicates read the evaluated expressions (step: respawn
+           after evaluation);
+        6. observation.
         """
-        # Refresh affordance layout each episode so randomization/configured layouts stay in sync
-        # BUG-15 fix: randomize_affordance_positions() now returns agent positions to prevent collisions
+        # Refresh affordance layout each episode so randomization/configured layouts stay in sync.
+        # randomize_affordance_positions() returns agent positions clear of every affordance.
         if self.randomize_affordances:
             agent_positions = self.randomize_affordance_positions()
-            # Use returned positions (guaranteed collision-free with affordances)
             self.positions = (
-                agent_positions if agent_positions is not None else self.substrate.initialize_positions(self.num_agents, self.device)
+                agent_positions
+                if agent_positions is not None
+                else self.substrate.initialize_positions(self.num_agents, self.device, generator=None)
             )
         else:
             self._apply_configured_affordance_positions()
             # When using configured positions, agents still spawn randomly (could still collide)
             # TODO: Consider also handling configured affordance case for complete collision-free guarantee
-            self.positions = self.substrate.initialize_positions(self.num_agents, self.device)
+            self.positions = self.substrate.initialize_positions(self.num_agents, self.device, generator=None)
 
         # At episode start, velocity is zero.
         self._velocity = torch.zeros(
@@ -782,31 +799,23 @@ class VectorizedHamletEnv:
 
         self.dones = torch.zeros(self.num_agents, dtype=torch.bool, device=self.device)
         self.step_counts = torch.zeros(self.num_agents, dtype=torch.long, device=self.device)
-        self.global_tick = 0  # HIGH-01: Reset global time counter
         self.intrinsic_weights = torch.ones(self.num_agents, dtype=torch.float32, device=self.device)  # Reset to 1.0
-        self.vfs_registry.reset_episode_scoped()
-        # Pinned tick write point (token-obs unit 2): same registry cell as step()'s.
-        # Ordered AFTER reset_episode_scoped: the tick variable is episode-lifetime, so
-        # a write before the reset would be clobbered back to its declared initial —
-        # value-identically today (both are 0.0), but the pinned write must be the
-        # authoritative one, not a coincidence (comment-242 item 3, reorder chosen).
-        self.vfs_registry.set_engine_value("tick", torch.tensor(float(self.global_tick), device=self.device))
 
-        # Reset temporal mechanics state
+        # 2. Clock at instant 0.
+        self.global_tick = 0
+        self.vfs_registry.reset_episode_scoped()
+        self._publish_engine_tick()
+        self.time_of_day = self._clock_hour()
         if self.enable_temporal_mechanics:
-            self.time_of_day = 0
             self.interaction_progress.fill_(0)
             self.last_interaction_affordance = [None] * self.num_agents
             self.last_interaction_position.fill_(0)
 
-        # Reset affordance history tracking
+        # 3. Episode-scoped engine state.
         self._last_affordances = [None] * self.num_agents
         self._affordance_streaks = {}
         self._unique_affordances_count.zero_()
         self._affordances_seen = [set() for _ in range(self.num_agents)]
-        # Clear any runtime overrides so each episode starts from configured availability
-        self.affordance_overrides.clear()
-
         # Effects are episode-scoped: discard every active effect and all delayed work
         # (no hooks run) before anything in this episode can spawn one.
         if self.effect_manager is not None:
@@ -815,36 +824,23 @@ class VectorizedHamletEnv:
         # Reset temporal history so temporal VFS ops don't leak across episodes
         if self.vfs_evaluator is not None:
             self.vfs_evaluator.reset()
+        # A new episode: every VFS draw is keyed on the episode counter.
+        self.vfs_randomness.reset()
 
-        # Clear item/inventory state between episodes
         if self.item_manager is not None:
-            self.item_manager.reset_state()
-        if self.item_inventory is not None:
-            self.item_inventory.reset()
+            self.item_manager.reset_state()  # and its inventory
 
-        # Spawn initial items if configured
+        # 4. Expressions over the instant-0 state.
+        self._evaluate_vfs_profiles()
+
+        # 5. Initial item spawn into every world (predicates read the evaluated
+        # expressions; placement asks the substrate, so every substrate spawns).
         if self.item_manager is not None and self.level.items_appearance is not None:
-            # Get grid size from substrate (only works for Grid2D/Grid3D/GridND)
-            # For continuous substrates, this would need different handling
-            grid_size: tuple[int, ...] | None = None
-            if hasattr(self.substrate, "width") and hasattr(self.substrate, "height"):
-                if hasattr(self.substrate, "depth"):
-                    # Grid3D
-                    grid_size = (self.substrate.width, self.substrate.height, self.substrate.depth)
-                else:
-                    # Grid2D
-                    grid_size = (self.substrate.width, self.substrate.height)
-
-            if grid_size is not None:
-                bars_dict_spawn = {name: self.meters[:, idx] for name, idx in self.meter_name_to_index.items()}
-                temporal_context = {"tick": torch.tensor(0, device=self.device)} if self.enable_temporal_mechanics else None
-                self.item_manager.spawn_initial_items(
-                    appearance_config=self.level.items_appearance,
-                    grid_size=grid_size,
-                    current_tick=0,
-                    bars=bars_dict_spawn,
-                    temporal=temporal_context,
-                )
+            self.item_manager.spawn_initial_items(
+                appearance_config=self.level.items_appearance,
+                current_tick=self.global_tick,
+                bars=self.bars,
+            )
 
         return self._get_observations()
 
@@ -882,39 +878,76 @@ class VectorizedHamletEnv:
         return self._observation_encoder.encode(self.num_agents, self._build_token_publish_context())
 
     def _item_slot_batch(self) -> ItemSlotBatch | None:
-        """Live item instances keyed by compiled `item` token slot.
+        """Every world's live items keyed by compiled `item` token slot.
 
-        Item state is world-SHARED (one `ItemManager` behind N independent agent
-        batches); only `carried` is per world. Slot assignment is the item's `vfs_index`,
-        which is the item arena row and therefore already unique and stable per instance.
+        Items are per world (S1): world `w`'s item at arena row `r` occupies compiled slot
+        `r - w * C` (`C` = the per-world arena = the `item` token capacity, checked at
+        init). Ground and carried items both publish: a carried item (an exclusive one is
+        lifted into `held`; a shared one stays on the ground) takes its holder's position
+        and inventory slot, in the holder's world.
         """
         manager = self.item_manager
-        if manager is None:
+        if manager is None or self.items_per_world == 0:
             return None
-        item_type = self.token_spec.get_type("item")
-        if item_type is None or item_type.capacity == 0:
-            return None
-        instances = [item for item in manager.get_all_items() if item.vfs_index < item_type.capacity]
-        if not instances:
-            return None
+        inventory = self.item_inventory
         dim = self.substrate.position_dim
-        slot_indices = torch.tensor([item.vfs_index for item in instances], dtype=torch.long, device=self.device)
-        vfs_indices = slot_indices.clone()
+        per_world = self.items_per_world
+        # Host-side assembly in plain Python lists, then one tensor per field: no per-item
+        # tensor ops. Holder inventories and agent positions cross to the host once.
+        inventory_rows: list[list[int]] | None = None
+        if inventory is not None:
+            inventory_rows = inventory.slots.tolist()
+        agent_positions: list[list[Any]] | None = None
         if dim > 0:
-            positions = torch.tensor([list(item.position) for item in instances], dtype=self.substrate.position_dtype, device=self.device)
-        else:
-            positions = torch.zeros((len(instances), 0), dtype=self.substrate.position_dtype, device=self.device)
-        carried = torch.zeros((self.num_agents, len(instances)), dtype=torch.bool, device=self.device)
-        for column, item in enumerate(instances):
-            for holder in item.holder_agent_ids:
-                if 0 <= holder < self.num_agents:
-                    carried[holder, column] = True
-        owner_slot = torch.full((len(instances),), -1, dtype=torch.long, device=self.device)
+            agent_positions = self.positions.tolist()
+        entry_worlds: list[int] = []
+        entry_slots: list[int] = []
+        entry_positions: list[list[Any]] = []
+        entry_carried: list[bool] = []
+        entry_owner: list[int] = []
+        for world in range(self.num_agents):
+            for item in manager.items_in_world(world):
+                position: list[Any] = list(item.position)
+                carried = False
+                inventory_slot = -1
+                holder = manager.holder_of(item)
+                if holder is not None and inventory_rows is not None and item.instance_id in inventory_rows[holder]:
+                    carried = True
+                    inventory_slot = inventory_rows[holder].index(item.instance_id)
+                    if agent_positions is not None:
+                        position = agent_positions[holder]
+                entry_worlds.append(world)
+                entry_slots.append(item.vfs_index - world * per_world)
+                entry_positions.append(position)
+                entry_carried.append(carried)
+                entry_owner.append(inventory_slot)
+
+        if not entry_slots:
+            return None
+        used = sorted(set(entry_slots))
+        column_of = {slot: column for column, slot in enumerate(used)}
+        k = len(used)
+        n = self.num_agents
+        slot_tensor = torch.tensor(used, dtype=torch.long, device=self.device)
+        world_index = torch.tensor(entry_worlds, dtype=torch.long, device=self.device)
+        column_index = torch.tensor([column_of[slot] for slot in entry_slots], dtype=torch.long, device=self.device)
+        active = torch.zeros((n, k), dtype=torch.bool, device=self.device)
+        active[world_index, column_index] = True
+        positions = torch.zeros((n, k, dim), dtype=self.substrate.position_dtype, device=self.device)
+        if dim > 0:
+            positions[world_index, column_index] = torch.tensor(entry_positions, dtype=self.substrate.position_dtype, device=self.device)
+        # Every world's row for a column is its own block's row for that slot.
+        vfs_rows = torch.arange(n, device=self.device).unsqueeze(1) * per_world + slot_tensor.unsqueeze(0)
+        carried_mask = torch.zeros((n, k), dtype=torch.bool, device=self.device)
+        carried_mask[world_index, column_index] = torch.tensor(entry_carried, dtype=torch.bool, device=self.device)
+        owner_slot = torch.full((n, k), -1, dtype=torch.long, device=self.device)
+        owner_slot[world_index, column_index] = torch.tensor(entry_owner, dtype=torch.long, device=self.device)
         return ItemSlotBatch(
-            slot_indices=slot_indices,
+            slot_indices=slot_tensor,
+            active=active,
             positions=positions,
-            vfs_indices=vfs_indices,
-            carried=carried,
+            vfs_rows=vfs_rows,
+            carried=carried_mask,
             owner_slot=owner_slot,
             source="item_manager",
         )
@@ -996,40 +1029,16 @@ class VectorizedHamletEnv:
         )
 
     def _observable_effects_for_world(self, world: int) -> list[Any]:
-        """Every observable active effect this world's agent can see, any scope."""
+        """Every observable active effect living in `world`, any scope (each effect has one world)."""
         manager = self.effect_manager
         assert manager is not None
-        effects = [effect for effect in manager.global_effects if effect.observable]
-        effects.extend(manager.get_observable_agent_effects(world))
-        for store in (manager.item_effects, manager.affordance_effects):
-            for entries in store.values():
-                effects.extend(effect for effect in entries if effect.observable)
-        return effects
+        return [effect for effect in manager.effects_in_world(world) if effect.observable]
 
     def _encode_velocity_observation(self) -> torch.Tensor | None:
-        """Encode agent velocity as delta position per step.
-
-        Returns:
-            [num_agents, position_dim] tensor or None for aspatial substrates.
-        """
-        if getattr(self.substrate, "position_dim", 0) == 0:
+        """Agent velocity (delta position per step), `[num_agents, position_dim]`; None when aspatial."""
+        if self.substrate.position_dim == 0:
             return None
-
-        # Velocity is tracked per-step in _execute_actions; default to zeros if unset.
-        if not hasattr(self, "_velocity"):
-            return torch.zeros(
-                (self.num_agents, self.substrate.position_dim),
-                dtype=torch.float32,
-                device=self.device,
-            )
-        velocity: torch.Tensor | None = getattr(self, "_velocity")
-        if velocity is None:
-            return torch.zeros(
-                (self.num_agents, self.substrate.position_dim),
-                dtype=torch.float32,
-                device=self.device,
-            )
-        return velocity
+        return self._velocity
 
     def get_action_masks(self) -> torch.Tensor:
         """Compute valid-action masks for the current tick.
@@ -1046,7 +1055,7 @@ class VectorizedHamletEnv:
             item_manager=self.item_manager,
             item_handler=self.item_handler,
             affordances=self.affordances,
-            is_affordance_open=self._is_affordance_open,
+            affordance_open=self._affordance_open_mask,
         )
 
     def step(
@@ -1056,6 +1065,15 @@ class VectorizedHamletEnv:
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, dict]:
         """
         Execute one step for all agents.
+
+        Clock contract: the step's action is taken at instant `global_tick` (k) — the
+        registry `tick`, `time_of_day` (which gates opening hours), effects'
+        `current_step` and the action executor all read k. Once the transition phases have
+        committed, the clock advances to k+1 at ONE point (`global_tick`, then the registry
+        `tick`); expressions, terminal conditions, item aging/respawn and the observation
+        all describe that instant, because the observation describes the state the next
+        action is taken in. `time_of_day` flips to k+1's hour last, after the reward
+        calculator has read the hour the action was taken at.
 
         Args:
             actions: [num_agents] tensor of actions (0-4)
@@ -1067,13 +1085,12 @@ class VectorizedHamletEnv:
             dones: [num_agents] bool
             info: dict with metadata
         """
-        # Pinned tick write point (token-obs unit 2): every consumer of THIS step —
-        # action executor, effects (current_step), evaluator — sees this one value,
-        # and any read of the registry's tick returns the same.
-        self.vfs_registry.set_engine_value("tick", torch.tensor(float(self.global_tick), device=self.device))
         prev_dones = self.dones.clone()
         active_on_entry = ~prev_dones
         self.vfs_registry.reset_tick_scoped()
+        refusals_before = 0
+        if self.effect_manager is not None:
+            refusals_before = len(self.effect_manager.spawn_refusals)
         # 1. Execute actions and track successful interactions
         successful_interactions = self._action_executor._execute_actions(actions)
         self._run_vtc_transition_phases(
@@ -1103,6 +1120,9 @@ class VectorizedHamletEnv:
                 agent_positions=self.positions,
                 affordance_positions=self.affordances,
                 substrate=self.substrate,
+                # A world whose agent is done is frozen: its effects write nothing,
+                # exactly as VTC rules are masked by activity.
+                live=active_on_entry,
             )
 
         # Sync meters back from bars dict (effects may have modified them)
@@ -1114,9 +1134,14 @@ class VectorizedHamletEnv:
             active_mask=active_on_entry,
         )
 
-        # 3.6. Evaluate VFS expressions over the tick's committed state: after every
-        # transition phase that writes VFS variables (action writes, social residue)
-        # and after clamp_and_validate, so expressions never lag a transition write.
+        # 3.6. Advance the clock to k+1: the transitions of instant k have committed.
+        self.global_tick += 1  # HIGH-01: Track global time independently of agent 0
+        self._publish_engine_tick()
+
+        # 3.7. Evaluate VFS expressions over the committed state at the new instant: after
+        # every transition phase that writes VFS variables (action writes, transition rules)
+        # and after clamp_and_validate, so expressions never lag a transition write or
+        # the clock.
         self._evaluate_vfs_profiles()
 
         # 4. Evaluate VTC terminal conditions
@@ -1125,18 +1150,14 @@ class VectorizedHamletEnv:
 
         # 5. Count eligible transitions, including the transition that ends a lane.
         self.step_counts += active_on_entry.to(dtype=self.step_counts.dtype)
-        self.global_tick += 1  # HIGH-01: Increment global time counter
 
-        # 5.1. Age items and process periodic respawning (after step count increment)
-        # Items age/despawn/respawn based on the NEW tick count after incrementing
+        # 5.1. Age items and process periodic respawning at the new instant; respawn
+        # predicates read the expressions evaluated at 3.7.
         if self.item_manager is not None:
-            # HIGH-01: Use global tick instead of agent 0
             # Age all items (expire items that reach duration limit)
-            self.item_manager.tick(self.global_tick)
+            self.item_manager.tick(self.global_tick, live=active_on_entry)
             # Respawn items whose periodic schedule timer has expired.
-            bars_dict_spawn = {name: self.meters[:, idx] for name, idx in self.meter_name_to_index.items()}
-            temporal_context = {"tick": torch.tensor(self.global_tick, device=self.device)} if self.enable_temporal_mechanics else None
-            self.item_manager.process_respawns(self.global_tick, bars=bars_dict_spawn, temporal=temporal_context)
+            self.item_manager.process_respawns(self.global_tick, bars=self.bars, live=active_on_entry)
 
         # 5.5. Check for retirement (reached maximum lifespan)
         # Authored termination wins coincidence with the configured lifespan.
@@ -1161,11 +1182,11 @@ class VectorizedHamletEnv:
                 for idx in torch.nonzero(newly_terminal, as_tuple=False).flatten():
                     self.effect_manager.cancel_scheduled_for_entity(scope="agent", entity_id=int(idx))
 
-        # 6. time_of_day is DERIVED from global_tick at this same point in the step —
-        # one temporal pipeline (token-obs unit 2c). The update point is load-bearing:
-        # the reward calculator reads time_of_day between the global_tick increment and
-        # here, and moving this line changes reward timing against the pinned oracle.
-        self.time_of_day = (self.global_tick % int(self.day_length)) if self.enable_temporal_mechanics else 0
+        # 7. time_of_day is DERIVED from global_tick — one temporal pipeline (token-obs
+        # unit 2c). It flips to the new instant's hour only here: the reward calculator
+        # (6) reads the hour the action was taken at, and from here on it gates the next
+        # action, matching the registry tick and every expression in the observation.
+        self.time_of_day = self._clock_hour()
 
         observations = self._get_observations()
 
@@ -1178,6 +1199,8 @@ class VectorizedHamletEnv:
             "successful_interactions": successful_interactions,  # {agent_idx: affordance_name}
             "reward_components": self._last_reward_components,  # DAC breakdown
             "intrinsic_weight": self.intrinsic_weights,  # Effective modifier weight
+            # Effect spawns this step refused at `max_active_effects`, each naming its world.
+            "effect_spawn_refusals": () if self.effect_manager is None else tuple(self.effect_manager.spawn_refusals[refusals_before:]),
         }
 
         return observations, rewards, self.dones, info
@@ -1191,6 +1214,9 @@ class VectorizedHamletEnv:
             # Get current VFS state from registry
             # HIGH-02: Use proper VFS API instead of direct _storage access
             current_vfs_state = self._current_vfs_state()
+            # One instant of history: seeded at the episode's first instant from this
+            # pre-evaluation state, committed after both profiles (WP14).
+            self.vfs_evaluator.begin_instant(bars_dict_vfs, current_vfs_state, self.device)
 
             # Evaluate global profile
             global_profile = self.universe.compiled_vfs_profiles.global_profile
@@ -1203,16 +1229,9 @@ class VectorizedHamletEnv:
                     vfs_state=current_vfs_state,
                     marks=marks,
                     device=self.device,
-                    step=self.global_tick,  # HIGH-01: Use global tick instead of agent 0
-                    affordances=self._build_vfs_affordance_context(),
-                    temporal=self._build_vfs_temporal_context(),
                     agent_positions=self.positions.to(dtype=torch.float32, device=self.device),
                     affordance_positions={k: v.to(dtype=torch.float32, device=self.device) for k, v in self.affordances.items()},
-                    vfs_types={name: var.type for name, var in self.vfs_registry.variables.items()},
-                    num_agents=self.num_agents,
-                    item_vfs=self.vfs_registry.item_vfs,
-                    item_profile_map=self.vfs_registry.item_profile_map,
-                    item_index_to_profile=self.vfs_registry.item_vfs_index_to_profile,
+                    draws=self._vfs_draws(),
                 )
 
                 self._write_back_profile_expressions(
@@ -1238,20 +1257,29 @@ class VectorizedHamletEnv:
                     vfs_state=current_vfs_state,
                     marks=agent_marks,
                     device=self.device,
-                    step=self.global_tick,
-                    affordances=self._build_vfs_affordance_context(),
-                    temporal=self._build_vfs_temporal_context(),
                     agent_positions=self.positions.to(dtype=torch.float32, device=self.device),
                     affordance_positions={k: v.to(dtype=torch.float32, device=self.device) for k, v in self.affordances.items()},
-                    vfs_types={name: var.type for name, var in self.vfs_registry.variables.items()},
-                    num_agents=self.num_agents,
-                    item_vfs=self.vfs_registry.item_vfs,
-                    item_profile_map=self.vfs_registry.item_profile_map,
-                    item_index_to_profile=self.vfs_registry.item_vfs_index_to_profile,
+                    draws=self._vfs_draws(),
                 )
                 self._write_back_profile_expressions(
                     "Agent-profile", "agent_profile", agent_profile, updated_agent_vfs, require_agent_shape=True
                 )
+
+            # A world whose agent is done is frozen: its history does not advance. At the
+            # step's evaluation `dones` is still the entry mask (terminals run after it).
+            self.vfs_evaluator.commit_instant(bars_dict_vfs, self._current_vfs_state(), live=~self.dones)
+
+    def _vfs_draws(self) -> DrawInstant:
+        """This instant's VFS draws: keyed on the run seed, the episode and the engine tick."""
+        return self.vfs_randomness.instant(tick=self.global_tick, worlds=self.num_agents, device=self.device)
+
+    def vfs_random_state(self) -> dict[str, int]:
+        """The VFS draw state a checkpoint carries (run seed and episode counter)."""
+        return self.vfs_randomness.state()
+
+    def restore_vfs_random_state(self, state: dict[str, int]) -> None:
+        """Adopt a checkpoint's VFS draw state; the next ``reset`` resumes the original run's draws."""
+        self.vfs_randomness.restore(state)
 
     def _execute_actions(self, actions: torch.Tensor) -> dict:
         """Execute movement, interaction, and wait actions."""
@@ -1301,6 +1329,7 @@ class VectorizedHamletEnv:
                 bars_state=self._current_bar_state(),
                 active_mask=active_mask,
                 device=self.device,
+                draws=self._vfs_draws(),
                 dones=dones,
                 depletion_multiplier=depletion_multiplier,
             ),
@@ -1335,12 +1364,16 @@ class VectorizedHamletEnv:
         (comment-242 item 2) so the global and agent branches share one implementation.
 
         The evaluator chases in-profile dependencies of marked variables, so
-        `updated_vfs` can contain a STATIC dependency re-emitted at its initial value
-        (evaluator.py's add_with_deps; statics also enter vars_to_eval via
+        `updated_vfs` can contain a STATIC dependency, reported at its current runtime
+        value (evaluator.py's add_with_deps; statics also enter vars_to_eval via
         history_spec). Statics are storage, not evaluation output: write back only
         expression variables, or a dependency chase silently clobbers an engine-written
         static every step (hamlet-df3a96bbac). An unknown variable id is a refusal
         (hamlet-0ddc83e377); agent-profile expressions must land [num_agents]-shaped.
+
+        A global expression evaluates per world: one that reads a global or `tick`
+        yields one value per world; one that reads only literals is world-invariant and
+        yields a 0-d value, which is that same value in every world's row.
         """
         expression_var_names = {var.name for var in profile.variables if var.ast is not None}
         for var_name, value in updated_vfs.items():
@@ -1357,6 +1390,8 @@ class VectorizedHamletEnv:
                     f"Agent-profile variable '{var_name}' evaluated to shape {tuple(value.shape)}, "
                     f"expected ({self.num_agents},). A constant belongs in initial_value, not an expression."
                 )
+            if not require_agent_shape and value.dim() == 0:
+                value = value.expand(self.vfs_registry.num_worlds).clone()
             self.vfs_registry.set_engine_value(var_name, value)
 
     def _current_vfs_state(self) -> dict[str, torch.Tensor]:
@@ -1585,12 +1620,15 @@ class VectorizedHamletEnv:
         """Randomize affordance positions and return agent spawn positions.
 
         Returns:
-            Agent spawn positions [num_agents, position_dim] or None if not randomizing.
-            Positions are guaranteed collision-free with affordances.
+            Agent spawn positions [num_agents, position_dim], or None when the level does
+            not randomize (or deploys no affordance).
 
-        Note:
-            BUG-15 fix: Samples (affordances + agents) positions together to prevent
-            agents spawning on top of affordances.
+        Placement follows owner ruling S1: the batch is N independent single-agent worlds
+        sharing one affordance layout. Affordances take distinct cells; each world's one
+        agent takes a cell no affordance holds. Agents of different worlds never meet, so
+        they may share a cell. The compiler refuses a level whose substrate cannot hold
+        its deployed affordances plus one agent (`GRID_CAPACITY_EXCEEDED`), so this never
+        reads a declared position: under `randomize_affordances: true` none is consulted.
         """
 
         if not self.randomize_affordances:
@@ -1608,70 +1646,57 @@ class VectorizedHamletEnv:
             # Return empty agent positions for aspatial
             return torch.zeros(self.num_agents, 0, dtype=self.substrate.position_dtype, device=self.device)
 
-        # Check capacity analytically without enumerating positions (JANK-10 fix)
+        affordance_count = len(self.affordances)
         capacity = self.substrate.get_capacity()
 
-        # If capacity is finite, validate there's enough space
-        if capacity is not None:
-            required_slots = len(self.affordances) + self.num_agents
-            if required_slots > capacity:
-                # Align with v2.1 compiler behavior: treat this as an operator warning
-                # rather than a hard error (RawConfigsV21 already emits a warning).
-                import logging
-
-                logger = logging.getLogger(__name__)
-                logger.warning(
-                    "Grid capacity warning at runtime: %s positions may not fit %s agents + %s affordances "
-                    "(%s entities total). Disabling affordance randomization for this run.",
-                    capacity,
-                    self.num_agents,
-                    len(self.affordances),
-                    required_slots,
-                )
-                # Disable randomization for this environment instance and fall back
-                # to configured positions (env will call _apply_configured_affordance_positions()).
-                self.randomize_affordances = False
-                return None
-
-        # Sample (affordances + agents) positions together (BUG-15 fix)
-        # For discrete grids: retry on collision to guarantee unique positions
-        # For continuous: collisions are acceptable (infinite positions)
-        total_positions_needed = len(self.affordances) + self.num_agents
-        sampled = None
-
-        if capacity is not None:
-            # Discrete grid: try random sampling with collision detection
-            max_attempts = 10
-            for attempt in range(max_attempts):
-                sampled = self.substrate.initialize_positions(total_positions_needed, self.device)
-
-                # Convert positions to tuples for uniqueness check
-                positions_as_tuples = [tuple(sampled[i].tolist()) for i in range(total_positions_needed)]
-                if len(positions_as_tuples) == len(set(positions_as_tuples)):
-                    break  # No collisions, we're done
-            else:
-                # Retries exhausted (very rare for large grids, possible for small grids)
-                # Fall back to enumeration to guarantee collision-free placement.
-                # Permutation is drawn from torch's CPU RNG, not Python's global
-                # `random` — placement must be reproducible from seed_all alone.
-                all_positions = self.substrate.get_all_positions()
-                perm = torch.randperm(len(all_positions))
-                sampled = torch.stack(
-                    [
-                        torch.tensor(all_positions[int(perm[idx])], dtype=self.substrate.position_dtype, device=self.device)
-                        for idx in range(total_positions_needed)
-                    ]
-                )
+        if capacity is None:
+            # Continuous: sample directly (infinite positions, collisions are measure-zero).
+            sampled = self.substrate.initialize_positions(affordance_count + self.num_agents, self.device, generator=None)
+            affordance_positions = sampled[:affordance_count]
+            agent_positions = sampled[affordance_count:]
         else:
-            # Continuous/aspatial: sample directly (infinite positions, collisions OK)
-            sampled = self.substrate.initialize_positions(total_positions_needed, self.device)
-
-        # Split: first N for affordances, remaining M for agents
-        affordance_positions = sampled[: len(self.affordances)]
-        agent_positions = sampled[len(self.affordances) :]
+            if affordance_count + 1 > capacity:
+                # The compiler refuses this per world (GRID_CAPACITY_EXCEEDED); reaching it means
+                # the universe bypassed the compile.
+                raise ValueError(f"Substrate capacity {capacity} cannot hold {affordance_count} affordance(s) plus one agent per world.")
+            affordance_positions = self._sample_distinct_cells(affordance_count)
+            agent_positions = self._sample_free_cells(self.num_agents, affordance_positions)
 
         for idx, name in enumerate(self.affordances.keys()):
             self.affordances[name] = affordance_positions[idx].clone()
         self._affordance_layout_cache = None
 
         return agent_positions
+
+    def _sample_distinct_cells(self, count: int) -> torch.Tensor:
+        """`count` pairwise-distinct cells of a finite substrate, drawn from torch's RNG only.
+
+        Rejection sampling first; when retries are exhausted (a crowded substrate) the cells
+        are drawn by a permutation of the enumerated positions. Never Python's `random`:
+        placement must be reproducible from `seed_all` alone.
+        """
+        for _ in range(10):
+            sampled = self.substrate.initialize_positions(count, self.device, generator=None)
+            if len({tuple(row) for row in sampled.tolist()}) == count:
+                return sampled
+        all_positions = self.substrate.get_all_positions()
+        perm = torch.randperm(len(all_positions))
+        return torch.tensor(
+            [all_positions[int(perm[idx])] for idx in range(count)], dtype=self.substrate.position_dtype, device=self.device
+        )
+
+    def _sample_free_cells(self, count: int, occupied: torch.Tensor) -> torch.Tensor:
+        """One cell per world that no affordance holds; worlds are independent, so rows may repeat."""
+        taken = {tuple(row) for row in occupied.tolist()}
+        sampled = self.substrate.initialize_positions(count, self.device, generator=None)
+        for _ in range(10):
+            clashes = [index for index, row in enumerate(sampled.tolist()) if tuple(row) in taken]
+            if not clashes:
+                return sampled
+            sampled[clashes] = self.substrate.initialize_positions(len(clashes), self.device, generator=None)
+        clashes = [index for index, row in enumerate(sampled.tolist()) if tuple(row) in taken]
+        if clashes:
+            free = [position for position in self.substrate.get_all_positions() if tuple(position) not in taken]
+            picks = torch.randint(0, len(free), (len(clashes),))
+            sampled[clashes] = torch.tensor([free[int(pick)] for pick in picks], dtype=self.substrate.position_dtype, device=self.device)
+        return sampled

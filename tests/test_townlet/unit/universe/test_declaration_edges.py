@@ -75,7 +75,7 @@ def test_registry_collision_across_scopes_names_both_origins(pack: Path) -> None
     }
     data["variables"]["declarations"].append(variable)
     source.write_text(yaml.safe_dump(data, sort_keys=False))
-    headers = {key: data["variables"][key] for key in ("version", "extents")}
+    headers = {key: data["variables"][key] for key in ("version",)}
     duplicate = pack / "z_agent.yml"
     duplicate.write_text(yaml.safe_dump({"variables": {**headers, "declarations": [{**variable, "scope": "agent"}]}}, sort_keys=False))
     with pytest.raises(CompilationError) as caught:
@@ -87,14 +87,14 @@ def test_registry_collision_across_scopes_names_both_origins(pack: Path) -> None
 
 
 @pytest.mark.parametrize("fragmented", [False, True])
-@pytest.mark.parametrize("first_identity", [(None, "tool:charge"), ("tool:heavy", "charge")])
+@pytest.mark.parametrize("first_identity", [(None, "tool_charge"), ("tool_heavy", "charge")])
 def test_variable_identity_preserves_profile_and_identifier_components(
     pack: Path, fragmented: bool, first_identity: tuple[str | None, str]
 ) -> None:
     source = pack / "variables.yaml"
     data = yaml.safe_load(source.read_text())
     declarations = []
-    for profile, identifier in (first_identity, ("tool", "charge" if first_identity[0] is None else "heavy:charge")):
+    for profile, identifier in (first_identity, ("tool", "charge" if first_identity[0] is None else "heavy_charge")):
         declaration = {
             "id": identifier,
             "scope": "global" if profile is None else "item",
@@ -346,6 +346,13 @@ def test_clock_authority_mutation_changes_both_resolved_consumers(pack: Path) ->
     profiles = yaml.safe_load(path.read_text())
     next(var for var in profiles["variables"]["declarations"] if var["id"] == "day_phase")["normalization"]["period"] = 30
     path.write_text(yaml.safe_dump(profiles, sort_keys=False))
+    # Opening hours require a 24-tick day (compiler re-review A4); the 30-tick clock is the
+    # subject here, so the level's schedules are switched off rather than refused.
+    affordances_path = pack / "levels" / "L3_temporal_mechanics" / "affordances.yaml"
+    affordances = yaml.safe_load(affordances_path.read_text())
+    for affordance in affordances["affordances"]["affordances"]:
+        affordance["opening_hours"] = {"enabled": False}
+    affordances_path.write_text(yaml.safe_dump(affordances, sort_keys=False))
     after = compiler.compile(pack, primary_level="L3_temporal_mechanics", use_cache=False)
     level = after.get_level("L3_temporal_mechanics")
     clock = next(variable for variable in level.vfs_variables if variable.id == "day_phase")

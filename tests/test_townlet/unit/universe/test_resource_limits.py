@@ -23,6 +23,7 @@ def _make_item_types(count: int, *, profile: str = "default") -> list[dict]:
             "name": f"Item {idx}",
             "icon": "i",
             "tags": ["tag"],
+            "exclusive": True,
             "vfs_profile": profile,
             "duration": None,
             "cooldown": None,
@@ -57,7 +58,6 @@ def _write_variables(config_dir: Path, *, profile_count: int) -> None:
     variables = {
         "variables": {
             "version": "1.0",
-            "extents": {},
             "item_profiles": profiles,
             "declarations": [
                 {

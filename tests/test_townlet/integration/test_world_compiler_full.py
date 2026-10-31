@@ -83,5 +83,5 @@ class TestWorldCompilerPipeline:
         cmd = on_start_commands[0]
         assert hasattr(cmd, "modify")
         assert hasattr(cmd, "value")
-        assert cmd.modify == "target.bar.satiation"
-        assert "target.bar.satiation + 0.4" in cmd.value
+        assert cmd.modify == "bar.satiation"
+        assert "bar.satiation + 0.4" in cmd.value

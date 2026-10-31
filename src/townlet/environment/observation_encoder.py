@@ -114,6 +114,7 @@ def build_token_observation_encoder(env: VectorizedHamletEnv) -> TokenObservatio
                     env.vfs_registry,
                     item_declarations,
                     owner_capacity=item_type.capacity if item_type is not None else 0,
+                    substrate=env.substrate,
                     device=device,
                 )
             )

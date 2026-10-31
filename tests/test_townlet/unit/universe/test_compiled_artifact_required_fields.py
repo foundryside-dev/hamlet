@@ -72,15 +72,9 @@ COMMAND_NODE_FIELDS = (
     "collection_expr",
     "iterator",
     "body",
-    "radius",
     "switch_expr",
     "cases",
     "default_commands",
-    "reduce_expr",
-    "reduce_iterator",
-    "reduce_init_expr",
-    "reduce_body_expr",
-    "reduce_target",
     "parallel_commands",
     "delay_ticks_expr",
     "delay_commands",
@@ -157,8 +151,8 @@ def test_primary_level_products_exist_only_on_level_metadata(artifact_payload: d
     assert set(PRIMARY_LEVEL_PAYLOAD_FIELDS) <= set(artifact_payload["all_levels"]["L0_demo"])
 
 
-def test_presentation_cut_bumps_exact_artifact_schema() -> None:
-    assert COMPILED_SCHEMA_VERSION == "1.34"
+def test_scope_surface_cut_bumps_exact_artifact_schema() -> None:
+    assert COMPILED_SCHEMA_VERSION == "1.40"
 
 
 def test_compiled_artifact_requires_presentation(artifact_payload: dict[str, Any]) -> None:

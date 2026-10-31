@@ -47,6 +47,7 @@ WITNESSES = {
     ErrorCode.DECLARATION_COLLISION: "duplicate_drive",
     ErrorCode.DECLARATION_MISSING: "missing_brain",
     ErrorCode.CLOCK_REFERENCE: "unknown_clock",
+    ErrorCode.PRIMARY_LEVEL_UNKNOWN: "unknown_primary_level",
     ErrorCode.LOAD_ERROR: "invalid_experiment",
     ErrorCode.LEVEL_LOAD_ERROR: "invalid_curriculum",
     ErrorCode.NO_CURRICULUM_LEVELS: "absent_levels",
@@ -105,6 +106,9 @@ def test_every_pinned_refusal_has_an_actual_source_and_line(tmp_path: Path, monk
         shutil.copyfile(level / "drive.yaml", level / "duplicate.yml")
     elif case == "missing_brain":
         (root / "brain.yaml").unlink()
+    elif case == "unknown_primary_level":
+        (root / "levels" / "README.md").write_text("a stray file is not a level\n")
+        primary = "README.md"
     elif case == "unknown_clock":
         change_document(level / "curriculum.yaml", lambda doc: doc["curriculum"].update(day_length={"period_of": "missing_clock"}))
     elif case == "invalid_experiment":

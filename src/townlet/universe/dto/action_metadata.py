@@ -7,8 +7,6 @@ from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import Any, Literal
 
-import torch
-
 
 @dataclass(frozen=True)
 class ActionMetadata:
@@ -48,23 +46,6 @@ class ActionSpaceMetadata:
         if self.total_actions < 0:
             raise ValueError("total_actions must be >= 0")
 
-    def get_enabled_actions(self) -> list[ActionMetadata]:
-        """Return the subset of enabled actions."""
-        return [action for action in self.actions if action.enabled]
-
-    def get_action_mask(self, num_agents: int, device: torch.device) -> torch.Tensor:
-        """Return a [num_agents, total_actions] bool mask with disabled actions masked out."""
-        if num_agents <= 0:
-            raise ValueError("num_agents must be positive")
-
-        mask = torch.ones(num_agents, self.total_actions, dtype=torch.bool, device=device)
-        for action in self.actions:
-            if action.id >= self.total_actions:
-                raise ValueError(f"Action '{action.name}' has id {action.id} which exceeds total_actions={self.total_actions}")
-            if not action.enabled:
-                mask[:, action.id] = False
-        return mask
-
 
 @dataclass(frozen=True)
 class RuntimeAction:
@@ -82,13 +63,11 @@ class RuntimeAction:
     description: str | None = None
     icon: str | None = None
     source_affordance: str | None = None
-    reads: tuple[str, ...] = field(default_factory=tuple)
     writes: tuple[Mapping[str, Any], ...] = field(default_factory=tuple)
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "costs", MappingProxyType(dict(self.costs)))
         object.__setattr__(self, "effects", MappingProxyType(dict(self.effects)))
-        object.__setattr__(self, "reads", tuple(self.reads))
         object.__setattr__(self, "writes", tuple(dict(write) for write in self.writes))
         if self.delta is not None:
             object.__setattr__(self, "delta", tuple(self.delta))

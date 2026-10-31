@@ -554,5 +554,22 @@ def test_parse_rejects_keyword_as_identifier():
     """Parser rejects reserved keywords used as identifiers."""
     parser = ExpressionParser()
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ParseException):
         parser.parse("and + 1")
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        "if (energy < 0.2) then 1.0 else 0.0",
+        "if (a) and (b) then 1.0 else 0.0",
+        "max(a, if (b) then 1.0 else 2.0)",
+    ],
+)
+def test_parse_if_with_parenthesised_condition(source):
+    """A keyword is never a function name: ``if (c)`` opens an if-expression, not a call to ``if``."""
+    parser = ExpressionParser()
+    result = parser.parse(source)
+
+    found = result if isinstance(result, IfThenElse) else result.arguments[1]
+    assert isinstance(found, IfThenElse)

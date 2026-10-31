@@ -20,7 +20,7 @@ def test_substrate_initialize_positions_correctness():
     """Grid2D.initialize_positions() should return valid grid positions."""
     substrate = Grid2DSubstrate(width=8, height=8, boundary="clamp", distance_metric="manhattan")
 
-    positions = substrate.initialize_positions(num_agents=10, device=torch.device("cpu"))
+    positions = substrate.initialize_positions(num_agents=10, device=torch.device("cpu"), generator=None)
 
     # Correct shape and type
     assert positions.shape == (10, 2)

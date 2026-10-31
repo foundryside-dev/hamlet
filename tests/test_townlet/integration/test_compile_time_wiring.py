@@ -17,12 +17,6 @@ def test_compiler_wires_vfs_and_effects_together():
     # Verify: Both artifacts present
     assert compiled.compiled_vfs_profiles is not None
     assert compiled.compiled_effect_catalog is not None
-    assert compiled.vfs_expression_schema is not None
-
-    # Verify: Effects schema includes VFS global variables
-    # effects_smoke has day_count in global profile
-    assert "vfs.day_count" in compiled.vfs_expression_schema
-    assert compiled.vfs_expression_schema["vfs.day_count"] == "float"
 
     # Verify: Effects catalog has effects that can reference VFS
     energy_regen = compiled.compiled_effect_catalog.get("energy_regen")
@@ -47,21 +41,14 @@ def test_compiler_handles_explicit_empty_variable_catalog():
     assert compiled.compiled_effect_catalog is not None
 
 
-def test_vfs_expression_schema_includes_bars():
-    """VFS expression schema should include bar paths for effects."""
-    # Setup: Use effects_smoke config
+def test_command_namespace_includes_bars_and_globals():
+    """The environment's command namespace reads meters as bar.<m> and globals by bare id (VFS round-2 S5)."""
+    from townlet.vfs.namespace import EFFECT_PIPELINE
+
     config_dir = Path(__file__).parent.parent.parent.parent / "configs" / "test" / "effects_smoke"
-
-    # Exercise
-    compiler = UniverseCompiler()
-    compiled = compiler.compile(config_dir, primary_level="L0_effects", use_cache=False)
-
-    # Verify: Schema includes both bars and VFS
-    assert "bar.energy" in compiled.vfs_expression_schema
-    assert "bar.health" in compiled.vfs_expression_schema
-    assert "vfs.day_count" in compiled.vfs_expression_schema
-
-    # Verify: Types are correct
-    assert compiled.vfs_expression_schema["bar.energy"] == "float"
-    assert compiled.vfs_expression_schema["bar.health"] == "float"
-    assert compiled.vfs_expression_schema["vfs.day_count"] == "float"
+    compiled = UniverseCompiler().compile(config_dir, primary_level="L0_effects", use_cache=False)
+    env = compiled.create_environment(num_agents=1, level_name="L0_effects", device="cpu")
+    schema = env.command_symbols.namespace.schema(EFFECT_PIPELINE)
+    assert schema["bar.energy"] == "float"
+    assert schema["bar.health"] == "float"
+    assert schema["day_count"] == "float"

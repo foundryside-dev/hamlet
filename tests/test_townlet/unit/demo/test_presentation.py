@@ -175,7 +175,7 @@ def test_presentation_enters_no_semantic_hash(universe, test_config_pack_path: P
     declaration yields identical behavioural provenance."""
     with_declaration = _compile(_pack_with_presentation(test_config_pack_path, tmp_path / "pack", DECLARED))
     assert with_declaration.presentation is not None
-    for field in ("experiment_hash", "stratum_hash", "environment_hash", "actions_hash", "items_hash", "brain_hash"):
+    for field in ("experiment_hash", "stratum_hash", "environment_hash", "actions_hash", "items_hash", "variables_hash", "brain_hash"):
         assert getattr(with_declaration, field) == getattr(universe, field), field
 
     declared_level = with_declaration.get_level(with_declaration.metadata.primary_level)

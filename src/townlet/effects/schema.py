@@ -25,7 +25,6 @@ class CommandType(enum.Enum):
     IF = "if"
     FOR_EACH = "for_each"
     SWITCH = "switch"
-    REDUCE = "reduce"
     PARALLEL = "parallel"
     DELAY = "delay"
 
@@ -40,13 +39,14 @@ class CommandNode:
     type: CommandType
 
     # modify command fields
-    path: str | None = None  # Target path (e.g., "target.bar.energy")
+    path: str | None = None  # Target path (e.g., "bar.energy")
     value_expr: str | None = None  # Expression string (for debugging/serialization)
     value_ast: Any | None = None  # ✅ Pre-compiled AST (from Phase 1 expression language)
 
     # spawn_effect command fields
     effect_id: str | None = None  # Effect ID to spawn
-    target: str | int | None = None  # Simple target ("self", "target", or explicit index)
+    # "self" / "target"; an int is an engine-built row (authored integer literals are refused at compile, S1)
+    target: str | int | None = None
     target_expr: str | None = None  # Expression string (for complex expressions)
     target_ast: Any | None = None  # ✅ Pre-compiled AST
     intensity: float | None = None  # Intensity multiplier
@@ -79,7 +79,6 @@ class CommandNode:
     collection_ast: Any | None = None  # ✅ Pre-compiled AST
     iterator: str | None = None  # Iterator variable name
     body: list[CommandNode] | None = None  # Body commands
-    radius: float | None = None  # nearby_agents radius under the substrate's declared metric
 
     # switch command fields
     switch_expr: str | None = None
@@ -87,15 +86,6 @@ class CommandNode:
     cases: list[tuple[str, list[CommandNode]]] | None = None
     case_asts: list[tuple[Any, list[CommandNode]]] | None = None
     default_commands: list[CommandNode] | None = None
-
-    # reduce command fields
-    reduce_expr: str | None = None  # collection expression
-    reduce_iterator: str | None = None
-    reduce_init_expr: str | None = None
-    reduce_init_ast: Any | None = None
-    reduce_body_expr: str | None = None  # accumulator update expr (uses acc + iterator)
-    reduce_body_ast: Any | None = None
-    reduce_target: str | None = None
 
     # parallel command fields
     parallel_commands: list[CommandNode] | None = None

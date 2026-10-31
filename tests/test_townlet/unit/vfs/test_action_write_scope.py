@@ -96,15 +96,12 @@ def _scoped_write_pack(
     name: str,
     declaration: dict[str, Any],
     *,
-    extents: dict[str, int] | None = None,
     write: dict[str, Any] | None = None,
 ) -> Path:
     pack = _pack(tmp_path, name)
 
     def edit_variables(payload: dict[str, Any]) -> None:
         payload["variables"]["declarations"].append(declaration)
-        if extents is not None:
-            payload["variables"]["extents"] = extents
 
     def edit_actions(payload: dict[str, Any]) -> None:
         advance = next(a for a in payload["actions"]["custom_actions"] if a["name"] == "ADVANCE")
@@ -117,20 +114,18 @@ def _scoped_write_pack(
 
 NON_AGENT_TARGETS = {
     # probe1 F: the global tensor whose extent coincided with num_agents=2.
-    "global_tensor": (_declaration("gvec", "global", type="tensor1d", shape=[2], initial_value=[0.0, 0.0]), None, "global"),
+    "global_tensor": (_declaration("gvec", "global", type="tensor1d", shape=[2], initial_value=[0.0, 0.0]), "global"),
     # probe1 F: compiled green, crashed at step.
-    "global_scalar": (_declaration("gscalar", "global"), None, "global"),
-    # probe2 G: row 0 of a pair tensor was written as the acting agent's "source row".
-    "pair": (_declaration("trust", "pair"), None, "pair"),
+    "global_scalar": (_declaration("gscalar", "global"), "global"),
     # An affordance variable outside the occupancy-claim form has no row per agent either.
-    "affordance": (_declaration("wear", "affordance"), None, "affordance"),
+    "affordance": (_declaration("wear", "affordance"), "affordance"),
 }
 
 
 @pytest.mark.parametrize("case", sorted(NON_AGENT_TARGETS))
 def test_non_agent_action_write_target_refuses_at_compile(tmp_path: Path, case: str) -> None:
-    declaration, extents, scope = NON_AGENT_TARGETS[case]
-    pack = _scoped_write_pack(tmp_path, case, declaration, extents=extents)
+    declaration, scope = NON_AGENT_TARGETS[case]
+    pack = _scoped_write_pack(tmp_path, case, declaration)
 
     with pytest.raises(CompilationError) as refusal:
         _compile(pack)
@@ -150,10 +145,9 @@ def test_zone_and_group_scopes_are_deleted(tmp_path: Path, scope: str) -> None:
         _compile(pack)
 
 
-@pytest.mark.parametrize("scope", ["agent", "agent_private"])
-def test_agent_axis_action_write_runs_identically_at_any_num_agents(tmp_path: Path, scope: str) -> None:
+def test_agent_axis_action_write_runs_identically_at_any_num_agents(tmp_path: Path) -> None:
     """num_agents never decides whether a pack runs: the same compiled universe steps at 2 and 3."""
-    universe = _compile(_scoped_write_pack(tmp_path, scope, _declaration("own_heat", scope)))
+    universe = _compile(_scoped_write_pack(tmp_path, "agent", _declaration("own_heat", "agent")))
 
     for num_agents in (2, 3):
         env = _env(universe, num_agents)
@@ -194,13 +188,11 @@ def test_affordance_occupancy_claim_is_the_one_affordance_write(tmp_path: Path) 
     assert claim.affordance_index == 0
 
 
-def _residue_pack(tmp_path: Path, phase: str) -> Path:
-    pack = _pack(tmp_path, f"residue_{phase}")
+def _rule_pack(tmp_path: Path, phase: str) -> Path:
+    pack = _pack(tmp_path, f"rule_{phase}")
     rule = {
         "id": "inc",
-        "kind": "institutional_rule",
         "phase": phase,
-        "reads": ["public_state"],
         "condition": None,
         "writes": [
             {
@@ -213,13 +205,13 @@ def _residue_pack(tmp_path: Path, phase: str) -> Path:
             }
         ],
     }
-    (pack / "transition_rules.yaml").write_text(yaml.safe_dump({"version": "1.0", "social_residue": [rule]}, sort_keys=False))
+    (pack / "transition_rules.yaml").write_text(yaml.safe_dump({"version": "1.0", "transition_rules": [rule]}, sort_keys=False))
     return pack
 
 
 @pytest.mark.parametrize("phase", ["apply_passive_depletion", "apply_threshold_cascades"])
 def test_transition_rule_skips_done_agents_at_depletion_and_cascade_phases(tmp_path: Path, phase: str) -> None:
-    env = _env(_compile(_residue_pack(tmp_path, phase)), num_agents=2)
+    env = _env(_compile(_rule_pack(tmp_path, phase)), num_agents=2)
     env.dones[1] = True
     meters_before = env.meters.clone()
 

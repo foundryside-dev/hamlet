@@ -33,7 +33,7 @@ def _registry() -> VariableRegistry:
 
 def test_scope_batch_shapes() -> None:
     registry = _registry()
-    assert registry.get("world", reader="engine").shape == ()
+    assert registry.get("world", reader="engine").shape == (3,)  # one row per world (S1)
     assert registry.get("local", reader="agent").shape == (3,)
 
 

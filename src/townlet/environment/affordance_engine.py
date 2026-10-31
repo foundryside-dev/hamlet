@@ -29,7 +29,9 @@ from townlet.effects.compiler import CommandCompiler
 from townlet.effects.executor import CommandExecutor, ExecutionContext
 from townlet.effects.parser import CommandParser
 from townlet.effects.schema import CommandNode
+from townlet.environment.action_executor import clamp_rows
 from townlet.environment.null_managers import NullItemManager
+from townlet.vfs.namespace import INTERACTION_PIPELINE, CommandSymbols
 
 
 @dataclass
@@ -59,11 +61,10 @@ class AffordanceEngine:
         meter_name_to_idx: dict[str, int],
         modulation_program: Any | None = None,
         vfs_registry: Any | None = None,  # NEW: VFS registry for Effects
-        effects_schema: Any | None = None,  # NEW: Effects schema for compilation
+        command_symbols: CommandSymbols | None = None,
         command_executor: CommandExecutor | None = None,  # NEW: Effects executor
         effect_manager: Any | None = None,  # NEW: EffectManager required for Effects commands
         item_manager: Any | None = None,  # NEW: ItemManager required for spawn_item
-        affordance_overrides: dict[str, bool] | None = None,  # NEW: dynamic availability toggles
         *,
         meter_bounds_min: torch.Tensor,
         meter_bounds_max: torch.Tensor,
@@ -78,7 +79,7 @@ class AffordanceEngine:
             meter_name_to_idx: Mapping of meter names to indices (from bars_config)
             modulation_program: Compiled VTC modulation program for affordance effectiveness
             vfs_registry: VFS registry for Effects system (optional)
-            effects_schema: Effects schema for command compilation (optional)
+            command_symbols: The namespace and inlinable expressions interactions compile against (optional)
             command_executor: Effects command executor (optional)
             meter_bounds_min: Declared per-meter floors, shape [meter_count]. Required.
             meter_bounds_max: Declared per-meter ceilings, shape [meter_count]. Required.
@@ -101,7 +102,6 @@ class AffordanceEngine:
         self.command_executor = command_executor  # NEW
         self.effect_manager = effect_manager or NullEffectManager()
         self.item_manager = item_manager or NullItemManager()
-        self.affordance_overrides = affordance_overrides
 
         # Build lookup maps
         self._build_lookup_maps()
@@ -109,9 +109,14 @@ class AffordanceEngine:
         # Compile affordance Effects commands at startup (CRITICAL: Performance)
         self.compiled_affordances: dict[str, CompiledAffordance] = {}
 
-        if command_executor is not None and effects_schema is not None:
+        if command_executor is not None and command_symbols is not None:
             parser = CommandParser()
-            compiler = CommandCompiler(schema=effects_schema, agent_target=True)
+            compiler = CommandCompiler(
+                command_symbols.namespace,
+                context=INTERACTION_PIPELINE,
+                time_enabled=command_symbols.time_enabled,
+                expressions=command_symbols.expressions,
+            )
 
             for affordance in affordance_config:
                 compiled = CompiledAffordance(
@@ -222,10 +227,11 @@ class AffordanceEngine:
             current_tick=current_tick,
         )
 
-        # Clamp meters to their DECLARED per-meter bounds (WS-1(e)).
+        # Clamp the interacting agents' meters to their DECLARED per-meter bounds (WS-1(e)).
         # RETAINED deliberately (PDR-0014 B3 / PDR-0015): this is a real ceiling, not a
-        # duplicate of the VTC clamp — do not delete it and do not add a second.
-        updated_meters = torch.clamp(updated_meters, self.meter_bounds_min, self.meter_bounds_max)
+        # duplicate of the VTC clamp — do not delete it and do not add a second. Only the
+        # interacting rows: another world's meters are not this interaction's (S1).
+        updated_meters = clamp_rows(updated_meters, agent_mask, self.meter_bounds_min, self.meter_bounds_max)
 
         return updated_meters
 
@@ -323,8 +329,8 @@ class AffordanceEngine:
                 current_tick=current_tick,
             )
 
-        # Clamp meters to their DECLARED per-meter bounds (WS-1(e)).
-        updated_meters = torch.clamp(updated_meters, self.meter_bounds_min, self.meter_bounds_max)
+        # Clamp the interacting agents' meters to their DECLARED per-meter bounds (WS-1(e)).
+        updated_meters = clamp_rows(updated_meters, agent_mask | completion_mask, self.meter_bounds_min, self.meter_bounds_max)
 
         return updated_meters
 
@@ -483,7 +489,6 @@ class AffordanceEngine:
                 item_manager=self.item_manager,
                 scheduler=getattr(self.effect_manager, "scheduler", None),
                 current_tick=current_tick or 0,
-                affordance_overrides=self.affordance_overrides,
             )
 
             for command in commands:

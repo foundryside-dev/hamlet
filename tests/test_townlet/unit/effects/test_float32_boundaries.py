@@ -79,7 +79,7 @@ def test_spawn_intensity_refuses_values_without_float32_runtime_meaning(intensit
         CommandConfig(spawn_effect="poison", target="target", intensity=intensity)
 
     with pytest.raises(ValueError, match="intensity.*float32"):
-        SpawnedEffectIdentity("target", intensity, 2, "agent", "merge", True)
+        SpawnedEffectIdentity(intensity, 2, "agent", "merge", True)
 
 
 def _catalog() -> EffectCatalog:
@@ -108,6 +108,7 @@ def test_active_effect_refuses_invalid_runtime_intensity() -> None:
             instance_id=0,
             target_entity_id=0,
             scope="agent",
+            world=0,
             intensity=1.0e39,
             duration_total=10,
             duration_remaining=10,

@@ -252,7 +252,7 @@ class DemoRunner:
         for agent_idx in range(self.population.num_agents):
             self.population.flush_episode(agent_idx, reason="checkpoint")
 
-    def save_checkpoint(self):
+    def save_checkpoint(self) -> None:
         """Save checkpoint at current episode."""
         if self.env is None or self.population is None or self.curriculum is None:
             raise RuntimeError("Checkpoint save requires initialized env, population, and curriculum components.")
@@ -285,6 +285,8 @@ class DemoRunner:
             "population_state": population_state,
             "curriculum_state": curriculum_state,
             "affordance_layout": affordance_layout,
+            "vfs_persistent_state": env.vfs_registry.persistent_state(),
+            "vfs_random_state": env.vfs_random_state(),
             "agent_ids": population.agent_ids,
             "epsilon": population._get_current_epsilon_value(),
             "completed_live_agent_steps": self.completed_live_agent_steps,
@@ -359,10 +361,13 @@ class DemoRunner:
         population.validate_checkpoint_state(checkpoint["population_state"])
         curriculum.validate_checkpoint_state(checkpoint["curriculum_state"])
         env.validate_affordance_positions(checkpoint["affordance_layout"])
+        env.vfs_registry.validate_persistent_state(checkpoint["vfs_persistent_state"])
 
         population.load_checkpoint_state(checkpoint["population_state"])
         curriculum.load_state(checkpoint["curriculum_state"])
         env.set_affordance_positions(checkpoint["affordance_layout"])
+        env.vfs_registry.restore_persistent_state(checkpoint["vfs_persistent_state"])
+        env.restore_vfs_random_state(checkpoint["vfs_random_state"])
         population.agent_ids = checkpoint["agent_ids"]
         self.current_episode = checkpoint["episode"]
         self.completed_live_agent_steps = completed_live_agent_steps

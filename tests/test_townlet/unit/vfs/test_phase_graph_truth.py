@@ -84,13 +84,11 @@ def _action_write_pack(tmp_path: Path, phase: str) -> Path:
     return pack
 
 
-def _residue_rule_pack(tmp_path: Path, phase: str, *, variable_id: str = "public_state") -> Path:
-    pack = _pack(tmp_path, f"residue_{phase}")
+def _transition_rule_pack(tmp_path: Path, phase: str, *, variable_id: str = "public_state") -> Path:
+    pack = _pack(tmp_path, f"rule_{phase}")
     rule = {
         "id": "inc",
-        "kind": "institutional_rule",
         "phase": phase,
-        "reads": [variable_id],
         "condition": None,
         "writes": [
             {
@@ -103,7 +101,7 @@ def _residue_rule_pack(tmp_path: Path, phase: str, *, variable_id: str = "public
             }
         ],
     }
-    (pack / "transition_rules.yaml").write_text(yaml.safe_dump({"version": "1.0", "social_residue": [rule]}, sort_keys=False))
+    (pack / "transition_rules.yaml").write_text(yaml.safe_dump({"version": "1.0", "transition_rules": [rule]}, sort_keys=False))
     return pack
 
 
@@ -142,7 +140,7 @@ def test_action_write_applies_or_refuses_at_compile(tmp_path: Path, phase: str) 
 
 @pytest.mark.parametrize("phase", DEFAULT_TRANSITION_PHASES)
 def test_transition_rule_applies_at_every_phase(tmp_path: Path, phase: str) -> None:
-    env = _env(_compile(_residue_rule_pack(tmp_path, phase)))
+    env = _env(_compile(_transition_rule_pack(tmp_path, phase)))
     _step(env, "WAIT")
     _step(env, "WAIT")
     assert _read(env, "public_state") == [2.0, 2.0]
@@ -155,7 +153,7 @@ def test_deleted_phantom_phases_refuse_with_origin(tmp_path: Path, phase: str) -
         _compile(action_pack)
     assert f"{action_pack / 'actions.yaml'}:" in str(action_refusal.value)
 
-    rule_pack = _residue_rule_pack(tmp_path, phase)
+    rule_pack = _transition_rule_pack(tmp_path, phase)
     with pytest.raises(CompilationError, match=f"phase '{phase}', which is not a transition phase") as rule_refusal:
         _compile(rule_pack)
     assert f"{rule_pack / 'transition_rules.yaml'}:" in str(rule_refusal.value)
@@ -177,7 +175,7 @@ def test_transition_graph_hash_carries_no_reward_program(tmp_path: Path) -> None
         threshold_cascade_program=schedule.threshold_cascade_program,
         modulation_program=schedule.modulation_program,
         passive_depletion_program=schedule.passive_depletion_program,
-        social_residue_program=schedule.social_residue_program,
+        transition_rule_program=schedule.transition_rule_program,
         bounds_clamp_program=schedule.bounds_clamp_program,
     )
     assert payload["phase_graph"]["phases"] == list(DEFAULT_TRANSITION_PHASES)
@@ -192,14 +190,14 @@ def test_transition_graph_hash_carries_no_reward_program(tmp_path: Path) -> None
         threshold_cascade_program=schedule.threshold_cascade_program,
         modulation_program=schedule.modulation_program,
         passive_depletion_program=schedule.passive_depletion_program,
-        social_residue_program=schedule.social_residue_program,
+        transition_rule_program=schedule.transition_rule_program,
         bounds_clamp_program=schedule.bounds_clamp_program,
     )
 
 
 def test_expressions_observe_transition_rule_writes_in_the_same_tick(tmp_path: Path) -> None:
-    """V14 (probe2 F mas_control): profile evaluation runs after the residue phase."""
-    pack = _residue_rule_pack(tmp_path, "apply_social_residue_effects", variable_id="gcount")
+    """V14 (probe2 F mas_control): profile evaluation runs after the transition-rule phase."""
+    pack = _transition_rule_pack(tmp_path, "apply_transition_rules", variable_id="gcount")
 
     def edit(payload: dict[str, Any]) -> None:
         base = {
@@ -220,5 +218,5 @@ def test_expressions_observe_transition_rule_writes_in_the_same_tick(tmp_path: P
     env = _env(_compile(pack))
     for tick in range(1, 4):
         _step(env, "WAIT")
-        assert env.vfs_registry.get("gcount", reader="engine").item() == float(tick)
-        assert env.vfs_registry.get("gtwice", reader="engine").item() == 2.0 * tick
+        assert env.vfs_registry.get("gcount", reader="engine").tolist() == [float(tick)] * env.num_agents
+        assert env.vfs_registry.get("gtwice", reader="engine").tolist() == [2.0 * tick] * env.num_agents

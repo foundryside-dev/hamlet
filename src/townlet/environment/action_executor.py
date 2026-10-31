@@ -11,6 +11,20 @@ if TYPE_CHECKING:
     from townlet.vfs import VTCInteractionProgressResult
 
 
+def clamp_rows(meters: torch.Tensor, rows: torch.Tensor, low: torch.Tensor, high: torch.Tensor) -> torch.Tensor:
+    """`meters` with only the `rows` agents' meters clamped to their declared bounds.
+
+    The clamp rule (S1: the batch is independent worlds): a meter write made by an
+    agent's own action (a movement or interaction cost, an interaction's effects) is
+    clamped in that agent's row at once; every world's meters are clamped at
+    `clamp_and_validate` each step. One world's action never clamps another world's
+    meters, so the order in which a world's own writes meet its bounds never depends on
+    what another world did.
+    """
+    clamped = torch.clamp(meters, low, high)
+    return torch.where(rows.to(device=meters.device, dtype=torch.bool).unsqueeze(-1), clamped, meters)
+
+
 class ActionExecutor:
     """Execute movement, custom, item, and affordance interaction actions."""
 
@@ -29,21 +43,7 @@ class ActionExecutor:
             movement_deltas = env._movement_deltas[actions[substrate_mask]]
             env.positions[substrate_mask] = env.substrate.apply_movement(env.positions[substrate_mask], movement_deltas)
 
-        velocity = (env.positions - old_positions).float()
-        env._velocity = velocity
-
-        if "velocity_x" in env.vfs_registry._definitions:
-            env.vfs_registry.set("velocity_x", velocity[:, 0], writer="engine")
-
-        if "velocity_y" in env.vfs_registry._definitions and velocity.shape[1] >= 2:
-            env.vfs_registry.set("velocity_y", velocity[:, 1], writer="engine")
-
-        if "velocity_z" in env.vfs_registry._definitions and velocity.shape[1] >= 3:
-            env.vfs_registry.set("velocity_z", velocity[:, 2], writer="engine")
-
-        if "velocity_magnitude" in env.vfs_registry._definitions:
-            magnitude = torch.norm(velocity, dim=1)
-            env.vfs_registry.set("velocity_magnitude", magnitude, writer="engine")
+        env._velocity = (env.positions - old_positions).float()
 
         movement_actions = env._movement_deltas.ne(0).any(dim=1)
         movement_mask = torch.zeros(env.num_agents, dtype=torch.bool, device=env.device)
@@ -57,7 +57,7 @@ class ActionExecutor:
                     movement_costs[idx] = float(bar.depletion.move)
 
             env.meters[movement_mask] -= movement_costs.unsqueeze(0)
-            env.meters = torch.clamp(env.meters, env.meter_bounds_min, env.meter_bounds_max)
+            env.meters = clamp_rows(env.meters, movement_mask, env.meter_bounds_min, env.meter_bounds_max)
 
         if env.item_handler is not None:
             current_ticks = env.step_counts.clone()
@@ -153,7 +153,7 @@ class ActionExecutor:
                         interaction_costs[idx] = float(bar.depletion.interact)
 
                 env.meters[interact_mask] -= interaction_costs.unsqueeze(0)
-                env.meters = torch.clamp(env.meters, env.meter_bounds_min, env.meter_bounds_max)
+                env.meters = clamp_rows(env.meters, interact_mask, env.meter_bounds_min, env.meter_bounds_max)
 
                 successful_interactions = env._handle_interactions(interact_mask)
                 progress_advanced = env.enable_temporal_mechanics and env.vtc_interaction_progress_program.has_multi_tick_affordances()
@@ -177,10 +177,9 @@ class ActionExecutor:
         interaction_agents_by_affordance: dict[str, list[int]] = {}
 
         for affordance_name, affordance_pos in env.affordances.items():
-            if not env._is_affordance_open(affordance_name):
-                continue
-
-            at_affordance = env.substrate.is_on_position(env.positions, affordance_pos) & interact_mask
+            at_affordance = (
+                env.substrate.is_on_position(env.positions, affordance_pos) & interact_mask & env._affordance_open_mask(affordance_name)
+            )
 
             if not at_affordance.any():
                 continue
@@ -261,10 +260,9 @@ class ActionExecutor:
         successful_interactions = {}
 
         for affordance_name, affordance_pos in env.affordances.items():
-            if env.enable_temporal_mechanics and not env._is_affordance_open(affordance_name):
-                continue
-
             at_affordance = env.substrate.is_on_position(env.positions, affordance_pos) & interact_mask
+            if env.enable_temporal_mechanics:
+                at_affordance = at_affordance & env._affordance_open_mask(affordance_name)
 
             if not at_affordance.any():
                 continue

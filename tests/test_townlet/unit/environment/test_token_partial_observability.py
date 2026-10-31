@@ -1,6 +1,7 @@
 """Partial observability filters tokens without allocating raster windows."""
 
 import torch
+import yaml
 
 from tests.test_townlet.helpers.config_builder import mutate_curriculum_yaml, mutate_stratum_yaml
 from tests.test_townlet.utils.builders import make_vectorized_env_from_pack
@@ -22,6 +23,11 @@ def test_gridnd_4d_partial_observability_is_supported(config_pack_factory) -> No
 
     mutate_stratum_yaml(config_dir, set_gridnd)
     mutate_curriculum_yaml(config_dir, lambda data: data["curriculum"].update({"active_vision": "partial", "vision_range": 0.5}))
+    # GridND binds WAIT itself; the template's custom WAIT would shadow it and is refused.
+    actions_path = config_dir / "actions.yaml"
+    actions = yaml.safe_load(actions_path.read_text())
+    actions["actions"]["custom_actions"] = [action for action in actions["actions"]["custom_actions"] if action["name"] != "WAIT"]
+    actions_path.write_text(yaml.safe_dump(actions, sort_keys=False))
 
     env = make_vectorized_env_from_pack(
         config_dir,

@@ -32,6 +32,7 @@ class ExperimentConfigRoot(BaseModel):
     version: str = Field(..., description="Config schema version")
     experiment_name: str = Field(
         ...,
+        min_length=1,
         description=(
             "Canonical experiment name used for runtime batch labeling and telemetry. " "Must be explicitly set in experiment.yaml."
         ),

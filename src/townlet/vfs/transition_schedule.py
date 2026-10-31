@@ -8,6 +8,8 @@ from typing import Any
 
 import torch
 
+from townlet.vfs.profiles import CompiledGlobalProfile
+from townlet.vfs.random_draws import DrawInstant
 from townlet.vfs.schema import VariableDef
 from townlet.vfs.transition_graph import TransitionPhaseGraph
 from townlet.vfs.vtc import (
@@ -17,18 +19,18 @@ from townlet.vfs.vtc import (
     VTCInteractionProgressProgram,
     VTCModulationProgram,
     VTCPassiveDepletionProgram,
-    VTCSocialResidueProgram,
     VTCTerminalConditionProgram,
     VTCThresholdCascadeProgram,
+    VTCTransitionRuleProgram,
     compile_vtc_affordance_gates_with_phase_graph,
     compile_vtc_affordance_occupancy_with_phase_graph,
     compile_vtc_bounds_clamps_with_phase_graph,
     compile_vtc_interaction_progress_with_phase_graph,
     compile_vtc_modulations_with_phase_graph,
     compile_vtc_passive_depletions_with_phase_graph,
-    compile_vtc_social_residue_rules_with_phase_graph,
     compile_vtc_terminal_conditions_with_phase_graph,
     compile_vtc_threshold_cascades_with_phase_graph,
+    compile_vtc_transition_rules_with_phase_graph,
     vtc_write_targets,
 )
 
@@ -45,7 +47,7 @@ class VTCTransitionSchedule:
     passive_depletion_program: VTCPassiveDepletionProgram
     modulation_program: VTCModulationProgram
     threshold_cascade_program: VTCThresholdCascadeProgram
-    social_residue_program: VTCSocialResidueProgram
+    transition_rule_program: VTCTransitionRuleProgram
     bounds_clamp_program: VTCBoundsClampProgram
 
 
@@ -57,6 +59,9 @@ class VTCTransitionContext:
     bars_state: Mapping[str, torch.Tensor]
     active_mask: torch.Tensor
     device: torch.device
+    # The instant's counter-based draws (S1; ``townlet.vfs.random_draws``): what a sampling
+    # call in a write or rule draws from, each write from its own sites.
+    draws: DrawInstant
     actions: torch.Tensor | None = None
     dones: torch.Tensor | None = None
     depletion_multiplier: float = 1.0
@@ -77,6 +82,14 @@ class VTCTransitionRunner:
 
     def __init__(self, schedule: VTCTransitionSchedule) -> None:
         self.schedule = schedule
+        # Each meter's declared bounds, from its clamp_and_validate rule (one per meter).
+        # An action write or transition rule that targets `bar.<m>` is held to them when its
+        # phase commits, as passive depletion and cascades clamp their own writes: no later
+        # phase, cascade or effect reads an out-of-bounds meter.
+        self._meter_bounds: dict[str, tuple[float, float]] = {}
+        for rule in schedule.bounds_clamp_program.rules:
+            assert rule.clamp is not None, rule.telemetry_label
+            self._meter_bounds[rule.variable_id] = rule.clamp
 
     def phases_between(self, after_phase: str, before_phase: str) -> tuple[str, ...]:
         """Return configured phases after one boundary and before another."""
@@ -99,8 +112,8 @@ class VTCTransitionRunner:
             attempted_vfs_targets.update(action_targets)
             bars_state = self._run_passive_depletions(phase, context, bars_state)
             bars_state = self._run_threshold_cascades(phase, context, bars_state)
-            vfs_state, residue_targets = self._run_state_residue(phase, context, vfs_state, bars_state)
-            attempted_vfs_targets.update(residue_targets)
+            vfs_state, bars_state, rule_targets = self._run_transition_rules(phase, context, vfs_state, bars_state)
+            attempted_vfs_targets.update(rule_targets)
             bars_state = self._run_bounds_clamps(phase, context, bars_state)
             dones = self._run_terminal_conditions(phase, context, bars_state, dones)
 
@@ -129,8 +142,10 @@ class VTCTransitionRunner:
             bars_state=bars_state,
             active_mask=context.active_mask,
             device=context.device,
+            draws=context.draws,
         )
         next_vfs, next_bars = _split_vfs_and_bars(updated.values, vfs_state.keys(), bars_state.keys())
+        next_bars = self._clamp_written_meters(next_bars, updated.attempted_targets)
         return next_vfs, next_bars, updated.attempted_targets.intersection(vfs_state)
 
     def _run_passive_depletions(
@@ -164,23 +179,41 @@ class VTCTransitionRunner:
             device=context.device,
         )
 
-    def _run_state_residue(
+    def _run_transition_rules(
         self,
         phase: str,
         context: VTCTransitionContext,
         vfs_state: dict[str, torch.Tensor],
         bars_state: dict[str, torch.Tensor],
-    ) -> tuple[dict[str, torch.Tensor], frozenset[str]]:
-        rules = tuple(rule for rule in self.schedule.social_residue_program.rules if rule.phase == phase)
+    ) -> tuple[dict[str, torch.Tensor], dict[str, torch.Tensor], frozenset[str]]:
+        rules = tuple(rule for rule in self.schedule.transition_rule_program.rules if rule.phase == phase)
         if not rules:
-            return vfs_state, frozenset()
-        result = VTCSocialResidueProgram(rules).apply(
+            return vfs_state, bars_state, frozenset()
+        result = VTCTransitionRuleProgram(rules).apply(
             vfs_state=vfs_state,
             active_mask=context.active_mask,
             device=context.device,
+            draws=context.draws,
             bars_state=bars_state,
         )
-        return result.values, result.attempted_targets
+        # A rule on a meter commits through bars_state, as an action write's does, held to
+        # the meter's bounds; only VFS targets are authorized against the registry's policy.
+        next_vfs, next_bars = _split_vfs_and_bars(result.values, vfs_state.keys(), bars_state.keys())
+        next_bars = self._clamp_written_meters(next_bars, result.attempted_targets)
+        return next_vfs, next_bars, result.attempted_targets.intersection(vfs_state)
+
+    def _clamp_written_meters(self, bars_state: dict[str, torch.Tensor], written: frozenset[str]) -> dict[str, torch.Tensor]:
+        """Hold every meter a phase's writes targeted to its declared bounds, at the phase commit.
+
+        The writes of one phase compose first (each reads the phase-entry snapshot; additive
+        deltas commute), then the committed meter is clamped once, so the next reader (a rule
+        in the same phase after the action writes, a cascade, an effect) never sees a value
+        outside the meter's bounds.
+        """
+        for name in written.intersection(bars_state):
+            low, high = self._meter_bounds[name]
+            bars_state[name] = torch.clamp(bars_state[name], min=low, max=high)
+        return bars_state
 
     def _run_bounds_clamps(
         self,
@@ -220,10 +253,16 @@ def build_vtc_transition_schedule(
     *,
     runtime_action_space: Any,
     level: Any,
-    social_residue_rules: Sequence[Mapping[str, Any]],
+    transition_rules: Sequence[Mapping[str, Any]],
     vfs_variables: Sequence[VariableDef],
+    expression_profiles: Sequence[CompiledGlobalProfile | None],
 ) -> VTCTransitionSchedule:
-    """Compile all VTC rule families into one runtime transition schedule."""
+    """Compile all VTC rule families into one runtime transition schedule.
+
+    ``expression_profiles`` are the compiled global and agent profiles, in evaluation
+    order: writes and rules that read an expression variable inline its expression
+    (VFS round-2 S4), on the fresh-compile and the cache-load path alike.
+    """
     phase_graph = TransitionPhaseGraph.default()
     # The occupancy-aware compiler is a superset of the plain action-writes
     # compiler: actions without a source_affordance compile identically, and
@@ -231,7 +270,7 @@ def build_vtc_transition_schedule(
     # row. The id order below is the registry's affordance-scope row order
     # (build_affordance_metadata enumerates the same sequence).
     affordance_ids = tuple(aff.name for aff in level.affordances.affordances)
-    targets = vtc_write_targets(vfs_variables, (meter.name for meter in level.bars.meters))
+    targets = vtc_write_targets(vfs_variables, (meter.name for meter in level.bars.meters), expression_profiles)
     action_writes = compile_vtc_affordance_occupancy_with_phase_graph(
         runtime_action_space.actions,
         targets,
@@ -244,7 +283,7 @@ def build_vtc_transition_schedule(
     passive_depletions = compile_vtc_passive_depletions_with_phase_graph(level.bars.meters, phase_graph)
     modulations = compile_vtc_modulations_with_phase_graph(level.affordances.modulations, phase_graph)
     threshold_cascades = compile_vtc_threshold_cascades_with_phase_graph(level.bars.cascades, level.bars.meters, phase_graph)
-    social_program = compile_vtc_social_residue_rules_with_phase_graph(social_residue_rules, targets, phase_graph)
+    rule_program = compile_vtc_transition_rules_with_phase_graph(transition_rules, targets, phase_graph)
     bounds_clamps = compile_vtc_bounds_clamps_with_phase_graph(level.bars.meters, phase_graph)
     return VTCTransitionSchedule(
         phase_graph=phase_graph,
@@ -255,7 +294,7 @@ def build_vtc_transition_schedule(
         passive_depletion_program=passive_depletions,
         modulation_program=modulations,
         threshold_cascade_program=threshold_cascades,
-        social_residue_program=social_program,
+        transition_rule_program=rule_program,
         bounds_clamp_program=bounds_clamps,
     )
 
@@ -264,7 +303,7 @@ def serialize_vtc_transition_schedule(schedule: VTCTransitionSchedule) -> dict[s
     """Serialize the persisted transition runtime payload."""
     return {
         "phase_graph": list(schedule.phase_graph.ordered_phases),
-        "social_residue_rules": [_social_rule_to_source(rule) for rule in schedule.social_residue_program.rules],
+        "transition_rules": [_transition_rule_to_source(rule) for rule in schedule.transition_rule_program.rules],
         # Only experiment-level rule families need source round-tripping here today.
         # The other programs are rebuilt from their existing compiled-universe inputs;
         # these counts are diagnostic metadata, not the load-bearing program payload.
@@ -276,19 +315,19 @@ def serialize_vtc_transition_schedule(schedule: VTCTransitionSchedule) -> dict[s
             "passive_depletions": len(schedule.passive_depletion_program.rules),
             "modulations": len(schedule.modulation_program.rules),
             "threshold_cascades": len(schedule.threshold_cascade_program.rules),
-            "social_residue": len(schedule.social_residue_program.rules),
+            "transition_rules": len(schedule.transition_rule_program.rules),
             "bounds_clamps": len(schedule.bounds_clamp_program.rules),
         },
     }
 
 
-def social_rules_from_transition_payload(payload: Mapping[str, Any], *, field_name: str) -> tuple[Mapping[str, Any], ...]:
-    """Return persisted social-state rules from a serialized transition schedule."""
+def transition_rules_from_payload(payload: Mapping[str, Any], *, field_name: str) -> tuple[Mapping[str, Any], ...]:
+    """Return persisted transition rules from a serialized transition schedule."""
     if "phase_graph" not in payload:
         raise ValueError(f"Compiled universe cache field '{field_name}.phase_graph' is required; recompile the config pack.")
-    if "social_residue_rules" not in payload:
-        raise ValueError(f"Compiled universe cache field '{field_name}.social_residue_rules' is required; recompile the config pack.")
-    return tuple(_ensure_mapping(rule, f"{field_name}.social_residue_rules") for rule in payload["social_residue_rules"])
+    if "transition_rules" not in payload:
+        raise ValueError(f"Compiled universe cache field '{field_name}.transition_rules' is required; recompile the config pack.")
+    return tuple(_ensure_mapping(rule, f"{field_name}.transition_rules") for rule in payload["transition_rules"])
 
 
 def _split_vfs_and_bars(
@@ -310,12 +349,10 @@ def _split_vfs_and_bars(
     return vfs_state, bars_state
 
 
-def _social_rule_to_source(rule: Any) -> dict[str, Any]:
+def _transition_rule_to_source(rule: Any) -> dict[str, Any]:
     return {
         "id": rule.rule_id,
         "phase": rule.phase,
-        "kind": rule.kind,
-        "reads": list(rule.reads),
         "condition": rule.condition,
         "priority": rule.priority,
         "writes": [

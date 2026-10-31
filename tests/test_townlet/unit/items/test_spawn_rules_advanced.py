@@ -2,6 +2,7 @@ from pathlib import Path
 
 import torch
 
+from tests.test_townlet.utils.builders import make_grid2d_substrate
 from townlet.config.items_config import (
     ItemAppearanceRuleConfig,
     ItemsAppearanceConfig,
@@ -31,9 +32,11 @@ def test_fixed_placement_spawns_at_given_positions() -> None:
             )
         ]
     )
-    manager = ItemManager(catalog=catalog, max_items=5, device="cpu")
-    manager.spawn_initial_items(appearance, grid_size=(5, 5), current_tick=0, bars=_bars(1.0))
-    positions = {item.position for item in manager.active_items.values()}
+    manager = ItemManager(
+        catalog=catalog, num_worlds=1, substrate=make_grid2d_substrate(width=5, height=5), items_per_world=5, device="cpu"
+    )
+    manager.spawn_initial_items(appearance, current_tick=0, bars=_bars(1.0))
+    positions = {item.position for item in manager.worlds[0].active.values()}
     assert (0, 0) in positions and (1, 1) in positions
     assert (10, 10) not in positions  # OOB skipped
 
@@ -49,9 +52,11 @@ def test_grid_placement_respects_spacing_and_count() -> None:
             )
         ]
     )
-    manager = ItemManager(catalog=catalog, max_items=5, device="cpu")
-    manager.spawn_initial_items(appearance, grid_size=(5, 5), current_tick=0, bars=_bars(1.0))
-    positions = [item.position for item in manager.active_items.values()]
+    manager = ItemManager(
+        catalog=catalog, num_worlds=1, substrate=make_grid2d_substrate(width=5, height=5), items_per_world=5, device="cpu"
+    )
+    manager.spawn_initial_items(appearance, current_tick=0, bars=_bars(1.0))
+    positions = [item.position for item in manager.worlds[0].active.values()]
     assert len(positions) == 3
     assert positions[0] == (0, 0)
     assert positions[1] == (0, 2)
@@ -70,13 +75,15 @@ def test_scripted_initial_spawns_only_matching_tick() -> None:
             )
         ]
     )
-    manager = ItemManager(catalog=catalog, max_items=5, device="cpu")
-    manager.spawn_initial_items(appearance, grid_size=(3, 3), current_tick=0, bars=_bars(1.0))
-    assert len(manager.active_items) == 0
+    manager = ItemManager(
+        catalog=catalog, num_worlds=1, substrate=make_grid2d_substrate(width=3, height=3), items_per_world=5, device="cpu"
+    )
+    manager.spawn_initial_items(appearance, current_tick=0, bars=_bars(1.0))
+    assert len(manager.worlds[0].active) == 0
 
-    manager.spawn_initial_items(appearance, grid_size=(3, 3), current_tick=1, bars=_bars(1.0))
-    assert len(manager.active_items) == 1
-    assert next(iter(manager.active_items.values())).position == (0, 0)
+    manager.spawn_initial_items(appearance, current_tick=1, bars=_bars(1.0))
+    assert len(manager.worlds[0].active) == 1
+    assert next(iter(manager.worlds[0].active.values())).position == (0, 0)
 
 
 def test_time_window_gates_initial_spawn() -> None:
@@ -90,11 +97,13 @@ def test_time_window_gates_initial_spawn() -> None:
             )
         ]
     )
-    manager = ItemManager(catalog=catalog, max_items=5, device="cpu")
-    manager.spawn_initial_items(appearance, grid_size=(3, 3), current_tick=0, bars=_bars(1.0))
-    assert len(manager.active_items) == 0
-    manager.spawn_initial_items(appearance, grid_size=(3, 3), current_tick=6, bars=_bars(1.0))
-    assert len(manager.active_items) == 1
+    manager = ItemManager(
+        catalog=catalog, num_worlds=1, substrate=make_grid2d_substrate(width=3, height=3), items_per_world=5, device="cpu"
+    )
+    manager.spawn_initial_items(appearance, current_tick=0, bars=_bars(1.0))
+    assert len(manager.worlds[0].active) == 0
+    manager.spawn_initial_items(appearance, current_tick=6, bars=_bars(1.0))
+    assert len(manager.worlds[0].active) == 1
 
 
 def test_poisson_respawn_probabilistic_gate() -> None:
@@ -109,11 +118,13 @@ def test_poisson_respawn_probabilistic_gate() -> None:
             )
         ]
     )
-    manager = ItemManager(catalog=catalog, max_items=5, device="cpu")
-    manager.set_appearance_config(appearance, grid_size=(3, 3))
-    manager.respawn_timers["apple"] = 0
-    manager.process_respawns(current_tick=0, bars=_bars(1.0))
-    assert len(manager.active_items) == 1
+    manager = ItemManager(
+        catalog=catalog, num_worlds=1, substrate=make_grid2d_substrate(width=3, height=3), items_per_world=5, device="cpu"
+    )
+    manager.set_appearance_config(appearance)
+    manager.worlds[0].respawn_timers["apple"] = 0
+    manager.process_respawns(current_tick=0, bars=_bars(1.0), live=torch.ones(manager.num_worlds, dtype=torch.bool))
+    assert len(manager.worlds[0].active) == 1
 
 
 def test_normal_respawn_samples_future_tick() -> None:
@@ -128,16 +139,18 @@ def test_normal_respawn_samples_future_tick() -> None:
             )
         ]
     )
-    manager = ItemManager(catalog=catalog, max_items=5, device="cpu")
-    manager.set_appearance_config(appearance, grid_size=(3, 3))
-    manager.respawn_timers["apple"] = 0
-    manager.process_respawns(current_tick=0, bars=_bars(1.0))
+    manager = ItemManager(
+        catalog=catalog, num_worlds=1, substrate=make_grid2d_substrate(width=3, height=3), items_per_world=5, device="cpu"
+    )
+    manager.set_appearance_config(appearance)
+    manager.worlds[0].respawn_timers["apple"] = 0
+    manager.process_respawns(current_tick=0, bars=_bars(1.0), live=torch.ones(manager.num_worlds, dtype=torch.bool))
     # normal mean=1 should schedule around tick 1, so not yet
-    assert len(manager.active_items) == 0
+    assert len(manager.worlds[0].active) == 0
     spawned = False
     for tick in (1, 2, 3):
-        manager.process_respawns(current_tick=tick, bars=_bars(1.0))
-        if len(manager.active_items) > 0:
+        manager.process_respawns(current_tick=tick, bars=_bars(1.0), live=torch.ones(manager.num_worlds, dtype=torch.bool))
+        if len(manager.worlds[0].active) > 0:
             spawned = True
             break
     assert spawned
@@ -155,9 +168,11 @@ def test_max_total_caps_spawns() -> None:
             )
         ]
     )
-    manager = ItemManager(catalog=catalog, max_items=5, device="cpu")
-    manager.spawn_initial_items(appearance, grid_size=(3, 3), current_tick=0, bars=_bars(1.0))
-    assert len(manager.active_items) == 1
+    manager = ItemManager(
+        catalog=catalog, num_worlds=1, substrate=make_grid2d_substrate(width=3, height=3), items_per_world=5, device="cpu"
+    )
+    manager.spawn_initial_items(appearance, current_tick=0, bars=_bars(1.0))
+    assert len(manager.worlds[0].active) == 1
 
 
 def test_time_window_respawn_stops_after_end() -> None:
@@ -171,17 +186,19 @@ def test_time_window_respawn_stops_after_end() -> None:
             )
         ]
     )
-    manager = ItemManager(catalog=catalog, max_items=5, device="cpu")
-    manager.set_appearance_config(appearance, grid_size=(3, 3))
-    manager.respawn_timers["apple"] = 0
-    manager.process_respawns(current_tick=0, bars=_bars(1.0))
+    manager = ItemManager(
+        catalog=catalog, num_worlds=1, substrate=make_grid2d_substrate(width=3, height=3), items_per_world=5, device="cpu"
+    )
+    manager.set_appearance_config(appearance)
+    manager.worlds[0].respawn_timers["apple"] = 0
+    manager.process_respawns(current_tick=0, bars=_bars(1.0), live=torch.ones(manager.num_worlds, dtype=torch.bool))
     # before window
-    assert len(manager.active_items) == 0
-    manager.process_respawns(current_tick=1, bars=_bars(1.0))
-    assert len(manager.active_items) == 1
+    assert len(manager.worlds[0].active) == 0
+    manager.process_respawns(current_tick=1, bars=_bars(1.0), live=torch.ones(manager.num_worlds, dtype=torch.bool))
+    assert len(manager.worlds[0].active) == 1
     # after window should clear timer and not spawn more
-    manager.process_respawns(current_tick=3, bars=_bars(1.0))
-    assert len(manager.active_items) == 1
+    manager.process_respawns(current_tick=3, bars=_bars(1.0), live=torch.ones(manager.num_worlds, dtype=torch.bool))
+    assert len(manager.worlds[0].active) == 1
 
 
 def test_scripted_respawn_consumes_events_by_tick() -> None:
@@ -197,32 +214,35 @@ def test_scripted_respawn_consumes_events_by_tick() -> None:
             )
         ]
     )
-    manager = ItemManager(catalog=catalog, max_items=5, device="cpu")
-    manager.set_appearance_config(appearance, grid_size=(3, 3))
-    manager.respawn_timers["apple"] = 1
-    manager.process_respawns(current_tick=1, bars=_bars(1.0))
-    assert len(manager.active_items) == 1
-    assert next(iter(manager.active_items.values())).position == (0, 0)
-    manager.process_respawns(current_tick=2, bars=_bars(1.0))
-    positions = {item.position for item in manager.active_items.values()}
+    manager = ItemManager(
+        catalog=catalog, num_worlds=1, substrate=make_grid2d_substrate(width=3, height=3), items_per_world=5, device="cpu"
+    )
+    manager.set_appearance_config(appearance)
+    manager.worlds[0].respawn_timers["apple"] = 1
+    manager.process_respawns(current_tick=1, bars=_bars(1.0), live=torch.ones(manager.num_worlds, dtype=torch.bool))
+    assert len(manager.worlds[0].active) == 1
+    assert next(iter(manager.worlds[0].active.values())).position == (0, 0)
+    manager.process_respawns(current_tick=2, bars=_bars(1.0), live=torch.ones(manager.num_worlds, dtype=torch.bool))
+    positions = {item.position for item in manager.worlds[0].active.values()}
     assert (1, 1) in positions
 
 
-def test_fixed_placement_skips_occupied_and_oob() -> None:
+def test_fixed_placement_skips_occupied_cells() -> None:
     catalog = ItemsCatalogConfig.from_yaml(path=Path("configs/test/items_smoke/items.yaml"))
     appearance = _appearance(
         items=[
             ItemAppearanceRuleConfig(
                 item_type="apple",
                 spawn_count=2,
-                placement=SpawnPlacementConfig(mode="fixed", fixed_positions=[(0, 0), (0, 0), (10, 10), (1, 1)]),
+                placement=SpawnPlacementConfig(mode="fixed", fixed_positions=[(0, 0), (0, 0), (1, 1)]),
             )
         ]
     )
-    manager = ItemManager(catalog=catalog, max_items=5, device="cpu")
+    manager = ItemManager(
+        catalog=catalog, num_worlds=1, substrate=make_grid2d_substrate(width=3, height=3), items_per_world=5, device="cpu"
+    )
     # Occupy (0,0)
-    manager.spawn_item("apple", position=(0, 0), current_tick=0)
-    manager.spawn_initial_items(appearance, grid_size=(3, 3), current_tick=0, bars=_bars(1.0))
-    positions = {item.position for item in manager.active_items.values()}
-    assert (1, 1) in positions
-    assert (10, 10) not in positions
+    manager.spawn_item(0, "apple", position=(0, 0), current_tick=0)
+    manager.spawn_initial_items(appearance, current_tick=0, bars=_bars(1.0))
+    positions = {item.position for item in manager.worlds[0].active.values()}
+    assert positions == {(0, 0), (1, 1)}

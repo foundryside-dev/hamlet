@@ -39,12 +39,12 @@ from townlet.universe.error_codes import ErrorCode
 from townlet.universe.errors import CompilationError
 from townlet.vfs.profiles import CompiledGlobalProfile, CompiledVariable
 from townlet.vfs.schema import WriteSpec
-from townlet.vfs.schema_hashes import compute_transition_graph_hash, compute_vfs_hash
+from townlet.vfs.schema_hashes import compute_expression_schema_hash, compute_transition_graph_hash, compute_vfs_hash
 from townlet.vfs.transition_schedule import (
     VTCTransitionState,
     build_vtc_transition_schedule,
     serialize_vtc_transition_schedule,
-    social_rules_from_transition_payload,
+    transition_rules_from_payload,
 )
 
 DEFAULT_CURRICULUM_LEVELS = (
@@ -96,8 +96,11 @@ def _with_runtime_action_surface(
     transition_schedule = build_vtc_transition_schedule(
         runtime_action_space=runtime_action_space,
         level=patched_level,
-        social_residue_rules=social_rules_from_transition_payload(schedule_payload, field_name="test.transition_schedule"),
+        transition_rules=transition_rules_from_payload(schedule_payload, field_name="test.transition_schedule"),
         vfs_variables=level.vfs_variables,
+        expression_profiles=(
+            () if disable_vfs_profiles else (universe.compiled_vfs_profiles.global_profile, universe.compiled_vfs_profiles.agent_profile)
+        ),
     )
     transition_graph_hash = compute_transition_graph_hash(
         transition_schedule.phase_graph,
@@ -108,14 +111,19 @@ def _with_runtime_action_surface(
         threshold_cascade_program=transition_schedule.threshold_cascade_program,
         modulation_program=transition_schedule.modulation_program,
         passive_depletion_program=transition_schedule.passive_depletion_program,
-        social_residue_program=transition_schedule.social_residue_program,
+        transition_rule_program=transition_schedule.transition_rule_program,
         bounds_clamp_program=transition_schedule.bounds_clamp_program,
     )
+    profiles = None if disable_vfs_profiles else universe.compiled_vfs_profiles
     vfs_hash = compute_vfs_hash(
         level.variable_schema_hash,
         level.observation_schema_hash,
         level.action_schema_hash,
         transition_graph_hash,
+        compute_expression_schema_hash(
+            global_profile=None if profiles is None else profiles.global_profile,
+            agent_profile=None if profiles is None else profiles.agent_profile,
+        ),
     )
     patched_level = replace(
         patched_level,
@@ -401,7 +409,7 @@ class TestVectorizedHamletEnvStep:
 
     def test_vtc_action_effects_apply_all_curriculum_levels(self, compile_universe, cpu_device):
         write = WriteSpec(
-            variable_id="energy",
+            variable_id="bar.energy",
             expression="0.13",
             condition=None,
             composition="additive_delta",
@@ -541,59 +549,6 @@ class TestVectorizedHamletEnvStep:
         assert "intrinsic_weight" in info
         assert isinstance(info["intrinsic_weight"], torch.Tensor)
         assert info["intrinsic_weight"].shape == (2,)
-
-    def test_step_threads_vfs_affordance_and_temporal_context(self, custom_env_builder, monkeypatch):
-        """Runtime VFS evaluation should receive current affordance and temporal state."""
-        env = custom_env_builder(overrides={"environment": {"enable_temporal_mechanics": True}})
-        env.reset()
-        env.time_of_day = 10
-        env.global_tick = 7
-
-        profile = CompiledGlobalProfile(
-            variables=[
-                CompiledVariable(
-                    readable_by=("engine", "agent"),
-                    writable_by=("engine",),
-                    name="context_probe",
-                    lifetime="persistent",
-                    type="bool",
-                    exposed_to=("agent",),
-                    initial_value=True,
-                    result_type="bool",
-                )
-            ],
-            dependencies={"context_probe": tuple()},
-        )
-        env.universe = replace(
-            env.universe,
-            compiled_vfs_profiles=CompiledVFSProfiles(
-                global_profile=profile,
-                item_profiles={},
-            ),
-        )
-        env.vfs_evaluation_marks = {"global": {"context_probe"}}
-
-        captured_context: dict[str, object] = {}
-
-        def capture_evaluation(**kwargs):
-            captured_context.update(kwargs)
-            return {}
-
-        assert env.vfs_evaluator is not None
-        monkeypatch.setattr(env.vfs_evaluator, "evaluate_global_profile", capture_evaluation)
-
-        env.step(torch.zeros(env.num_agents, dtype=torch.long))
-
-        assert set(captured_context["affordances"]) == set(env.affordances)
-        first_affordance = env.affordance_names[0]
-        affordance_state = captured_context["affordances"][first_affordance]
-        assert torch.equal(affordance_state["available"], torch.tensor(env._is_affordance_open(first_affordance), device=env.device))
-
-        temporal = captured_context["temporal"]
-        assert torch.equal(temporal["tick"], torch.tensor(7, device=env.device))
-        assert torch.equal(temporal["time_of_day"], torch.tensor(10.0, device=env.device))
-        assert torch.equal(temporal["day_progress"], torch.tensor(10.0 / float(env.day_length), device=env.device))
-        assert torch.equal(temporal["is_night"], torch.tensor(False, device=env.device))
 
 
 class TestVFSWriteBackLoudness:
@@ -1006,8 +961,8 @@ class TestHandleInteractions:
                 )
 
             @staticmethod
-            def _is_affordance_open(_affordance_name):
-                return True
+            def _affordance_open_mask(_affordance_name):
+                return torch.tensor([True])
 
             def _update_affordance_tracking(self, successful_interactions):
                 self.tracked_interactions = dict(successful_interactions)

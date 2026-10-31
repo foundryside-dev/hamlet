@@ -9,9 +9,10 @@ Two pins:
 
 2. **Spawn placement is independent of Python's global `random` state** — the
    collision-exhaustion fallback in `randomize_affordance_positions` used
-   `random.shuffle` off the global RNG. The pin forces the fallback (agents + 14
-   affordances ≈ grid capacity, so 10 with-replacement sampling attempts always
-   collide) and perturbs the global `random` stream differently between two
+   `random.shuffle` off the global RNG. The pin forces both enumeration fallbacks
+   (14 affordances on a 4×4 copy of the grid, so 10 with-replacement attempts at
+   distinct affordance cells always collide, and 45 worlds' agents share the two
+   free cells) and perturbs the global `random` stream differently between two
    otherwise-identical runs: placements must not move. Reverting the fix
    (torch.randperm → random.shuffle) fails this test by name.
 """
@@ -20,6 +21,7 @@ from __future__ import annotations
 
 import hashlib
 import random
+import shutil
 from pathlib import Path
 
 import pytest
@@ -85,6 +87,16 @@ def test_different_seed_produces_different_trace_cuda(universe: CompiledUniverse
     assert _trace_hash(universe, 42, device="cuda") != _trace_hash(universe, 43, device="cuda")
 
 
+@pytest.fixture(scope="module")
+def crowded_universe(tmp_path_factory: pytest.TempPathFactory) -> CompiledUniverse:
+    """default_curriculum on a 4x4 grid: 14 affordances + one agent fit 16 cells, barely."""
+    pack = tmp_path_factory.mktemp("crowded") / "default_curriculum"
+    shutil.copytree(SOURCE_PACK, pack, ignore=shutil.ignore_patterns(".compiled"))
+    stratum = pack / "stratum.yaml"
+    stratum.write_text(stratum.read_text().replace("width: 8", "width: 4").replace("height: 8", "height: 4"))
+    return UniverseCompiler().compile(pack, primary_level=L0, use_cache=False)
+
+
 def _forced_fallback_placement(universe: CompiledUniverse, perturb: int) -> tuple[list, dict[str, list]]:
     seed_all(42)
     # Perturb ONLY Python's global RNG. If any placement path still consumes it,
@@ -92,9 +104,12 @@ def _forced_fallback_placement(universe: CompiledUniverse, perturb: int) -> tupl
     random.seed(perturb)
     env = VectorizedHamletEnv(universe=universe, level_name=L0, num_agents=45, device=torch.device("cpu"))
     env.reset()
-    assert env.randomize_affordances, "capacity warning tripped — the pin no longer forces the fallback, shrink num_agents"
+    assert env.randomize_affordances
+    affordance_cells = {tuple(pos.tolist()) for pos in env.affordances.values()}
+    assert len(affordance_cells) == len(env.affordances), "affordances must take distinct cells"
+    assert not affordance_cells & {tuple(row) for row in env.positions.tolist()}, "an agent spawned on an affordance"
     return env.positions.tolist(), {name: pos.tolist() for name, pos in env.affordances.items()}
 
 
-def test_spawn_placement_ignores_global_random_state(universe: CompiledUniverse) -> None:
-    assert _forced_fallback_placement(universe, 111) == _forced_fallback_placement(universe, 222)
+def test_spawn_placement_ignores_global_random_state(crowded_universe: CompiledUniverse) -> None:
+    assert _forced_fallback_placement(crowded_universe, 111) == _forced_fallback_placement(crowded_universe, 222)

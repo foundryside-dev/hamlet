@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 import re
-from collections.abc import Iterable
 from pathlib import Path
 
 _TRAILING_SEGMENT = re.compile(r"(\.[A-Za-z_0-9]+|\[\d+\])$")
@@ -56,10 +55,6 @@ class SourceMap:
         if line is None:
             return path
         return f"{path}:{line}"
-
-    def bulk_record(self, entries: Iterable[tuple[str, Path, int | None]]) -> None:
-        for key, path, line in entries:
-            self.record(key, path, line)
 
 
 def locate(source_map: SourceMap | None, key: str, fallback: str | None = None) -> str:

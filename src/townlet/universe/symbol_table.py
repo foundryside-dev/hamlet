@@ -9,8 +9,14 @@ from townlet.config.environment_config import AffordanceDefinition, CascadeConfi
 from townlet.config.items_config import ItemTypeConfig
 from townlet.config.variables_config import VariableDeclaration
 
-from .errors import CompilationError
+from .error_codes import ErrorCode
+from .errors import CompilationError, CompilationMessage
 from .stages import CompilationStage
+
+
+def _duplicate(message: str) -> CompilationMessage:
+    """A duplicate-identity refusal; ``build_symbol_table`` supplies the declaration's location."""
+    return CompilationMessage(code=ErrorCode.SYMBOL_DUPLICATE, message=message, location=None)
 
 
 @dataclass
@@ -33,7 +39,7 @@ class UniverseSymbolTable:
 
     def register_meter(self, config: MeterConfig) -> None:
         if config.name in self.meters:
-            raise CompilationError(CompilationStage.SYMBOLS.label, [f"Duplicate meter '{config.name}' detected."])
+            raise CompilationError(CompilationStage.SYMBOLS.label, [_duplicate(f"Duplicate meter '{config.name}' detected.")])
         self.meters[config.name] = config
 
     def register_variable(self, config: VariableDeclaration) -> None:
@@ -42,32 +48,34 @@ class UniverseSymbolTable:
             assert config.profile is not None
             identity = (config.profile, identifier)
             if identity in self.item_variables:
-                raise CompilationError(CompilationStage.SYMBOLS.label, [f"Duplicate variable '{config.profile}:{identifier}' detected."])
+                raise CompilationError(
+                    CompilationStage.SYMBOLS.label, [_duplicate(f"Duplicate variable '{config.profile}:{identifier}' detected.")]
+                )
             self.item_variables[identity] = config
             return
         if identifier in self.variables:
-            raise CompilationError(CompilationStage.SYMBOLS.label, [f"Duplicate variable '{identifier}' detected."])
+            raise CompilationError(CompilationStage.SYMBOLS.label, [_duplicate(f"Duplicate variable '{identifier}' detected.")])
         self.variables[identifier] = config
 
     def register_action(self, config: CustomActionConfig) -> None:
         if config.name in self.actions:
-            raise CompilationError(CompilationStage.SYMBOLS.label, [f"Duplicate action id '{config.name}' detected."])
+            raise CompilationError(CompilationStage.SYMBOLS.label, [_duplicate(f"Duplicate action id '{config.name}' detected.")])
         self.actions[config.name] = config
 
     def register_cascade(self, config: CascadeConfig) -> None:
         cascade_name = f"{config.source}->{config.target}"
         if cascade_name in self.cascades:
-            raise CompilationError(CompilationStage.SYMBOLS.label, [f"Duplicate cascade '{cascade_name}' detected."])
+            raise CompilationError(CompilationStage.SYMBOLS.label, [_duplicate(f"Duplicate cascade '{cascade_name}' detected.")])
         self.cascades[cascade_name] = config
 
     def register_affordance(self, config: AffordanceDefinition) -> None:
         if config.name in self.affordances:
-            raise CompilationError(CompilationStage.SYMBOLS.label, [f"Duplicate affordance '{config.name}' detected."])
+            raise CompilationError(CompilationStage.SYMBOLS.label, [_duplicate(f"Duplicate affordance '{config.name}' detected.")])
         self.affordances[config.name] = config
 
     def register_item(self, item: ItemTypeConfig) -> None:
         if item.id in self.items:
-            raise CompilationError(CompilationStage.SYMBOLS.label, [f"Duplicate item '{item.id}' detected."])
+            raise CompilationError(CompilationStage.SYMBOLS.label, [_duplicate(f"Duplicate item '{item.id}' detected.")])
         self.items[item.id] = item
 
     @property

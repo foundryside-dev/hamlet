@@ -11,6 +11,7 @@ from typing import Any
 import pytest
 import torch
 
+from tests.test_townlet.helpers.token_widths import fixed_width_for
 from townlet.agent.network_factory import NetworkFactory
 from townlet.config.brain_config import FeedforwardConfig, SetAggregatorConfig, TokenSetConfig
 from townlet.curriculum.static import StaticCurriculum
@@ -31,6 +32,7 @@ ALLOWED_FIXED_REFERENCES = Counter(
         ("universe/dto/token_spec.py", "definition", "fixed_total_dims"): 1,
         ("universe/dto/token_spec.py", "definition", "fixed_row_layout"): 1,
         ("universe/__main__.py", "attribute", "fixed_total_dims"): 2,
+        ("universe/__main__.py", "attribute", "fixed_row_layout"): 1,
     }
 )
 FORBIDDEN_WHOLE_OBSERVATION_CALLABLES = frozenset(
@@ -87,8 +89,9 @@ def test_vertical_runtime_has_no_whole_fixed_observation_surface_or_allocation(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     initial = UniverseCompiler().compile(PACK, primary_level=LEVEL, use_cache=False)
-    fixed_width = initial.get_level(LEVEL).token_spec.fixed_total_dims
-    assert fixed_width == 4136  # measured 2026-10-24 after the semantic_type cut to temporal|custom (VFS WP6)
+    spec = initial.get_level(LEVEL).token_spec
+    fixed_width = spec.fixed_total_dims
+    assert fixed_width == fixed_width_for(spec.census)
 
     for name in ("zeros", "full", "zeros_like"):
         allocator = getattr(torch, name)

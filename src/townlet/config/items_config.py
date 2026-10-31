@@ -132,8 +132,8 @@ class ItemTypeConfig(BaseModel):
         description="Categorization tags for expressions/UI",
     )
     exclusive: bool = Field(
-        default=True,
-        description="True for single-holder items, False for shared/environmental items",
+        ...,
+        description="True for single-holder items (a pickup lifts the item off the ground), False for shared items",
     )
 
     id: str = Field(..., description="Unique item type identifier")
@@ -315,9 +315,9 @@ class SpawnPlacementConfig(BaseModel):
         description="Placement mode: random | fixed | grid | scripted",
     )
 
-    fixed_positions: list[tuple[int, int]] | None = Field(
+    fixed_positions: list[tuple[int, ...]] | None = Field(
         default=None,
-        description="Explicit positions for fixed placement",
+        description="Explicit grid cells for fixed placement; each has the substrate's rank (checked at compile)",
     )
 
     grid_spacing: int | None = Field(
@@ -328,7 +328,7 @@ class SpawnPlacementConfig(BaseModel):
 
     script: list[dict[str, Any]] | None = Field(
         default=None,
-        description="Scripted spawn events: list of {tick: int, position: (x,y)}",
+        description="Scripted spawn events: list of {tick: int, position: [grid cell of the substrate's rank]}",
     )
 
 

@@ -121,27 +121,41 @@ per level (`.compiled/universe-<level>.msgpack`).
 
 ### 5.2 Declared hashes vs. enforced hashes
 
-The artifact carries **seventeen declared `*_hash` fields** (`src/townlet/universe/compiled.py`,
-counted 2026-08-24), plus `metadata.config_hash`. Declared is not the same as enforced, and the
-distinction is the architectural content:
+The artifact carries **twenty-two declared `*_hash` fields** (`src/townlet/universe/compiled.py`:
+nine on `CompiledUniverse`, thirteen on `LevelMetadata`; recounted from `dataclasses.fields`
+2026-10-31 at the `effects_hash` / `items_appearance_hash` addition — the previous "twenty" was
+counted 2026-10-25 at the `variables_hash` addition), plus `metadata.config_hash`. Declared is
+not the same as enforced, and the distinction is the architectural content:
 
 - **Enforced.** One shared gate, `assert_checkpoint_identity`
   (`src/townlet/training/checkpoint_utils.py`), is called by both the training-resume path
-  (`demo/runner.py`) and the serving path (`demo/live_inference.py`). Fourteen hash stamps enter
-  a checkpoint; **twelve are hard-compared** — `vfs_hash`, `drive_hash`, the effective
-  `brain_hash`, the four per-level content hashes (`curriculum`, `bars`, `affordances`,
-  `training`) and the five pack-scope hashes (`experiment`, `stratum`, `environment`, `actions`,
-  nullable `items`) — alongside the token/layout contract, action count and `primary_level`. A
-  checkpoint therefore refuses to load into a universe it does not match, *including a different
-  level of the same pack* or the same level with an edited stratum or item catalog.
+  (`demo/runner.py`) and the serving path (`demo/live_inference.py`). Nineteen hash stamps enter
+  a checkpoint; **fifteen are hard-compared** — `vfs_hash`, `drive_hash`, the effective
+  `brain_hash`, the five per-level content hashes (`curriculum`, `bars`, `affordances`,
+  `training`, nullable `items_appearance`) and the seven pack-scope hashes (`experiment`,
+  `stratum`, `environment`, `actions`, nullable `items`, `variables`, nullable `effects`) —
+  alongside the token/layout contract, action count and `primary_level`. A checkpoint
+  therefore refuses to load into a universe it does not match, *including a different level of
+  the same pack* or the same level with an edited stratum, item catalog, variable roster,
+  effect body or spawn rules (`effects_hash` and `items_appearance_hash` are canonical
+  content with expression text as its AST; both landed 2026-10-31, compiler re-review N5).
+  `vfs_hash` is five terms: variable schema (storage, reset,
+  access, exposure, `semantic_type`, normalization), observation schema, action schema,
+  transition graph, and the compiled global/agent expression programs (canonical AST,
+  result type, dependency set) — so a hidden expression's text is identity (VFS round-2 F5).
+  `variables_hash` is the canonical content of the discovered `variables` declaration:
+  declarations sorted by identity, role lists sorted; file placement and declaration order are
+  transport (order is semantic only for a flat reader's slot layout, which `layout_hash` carries).
 - **Computed but not enforced, recorded rather than hidden.** `observation_schema_hash` is
   stamped and never compared. `pack_brain_hash` is stamped and required present, but compared
   only to *state* a brain-lineage fork at load (a logged warning, PDR-0027), never to refuse.
   `config_hash` is the cache fingerprint over raw pack bytes and is not stamped into
-  checkpoints at all (a file rename moves it while semantics stay). The five pack-scope hashes
-  were once stamped by nobody (`DIV-001`, resolved 2026-10-24).
-- `config_hash` (with `provenance_id`: compiler version, git sha, python/torch/pydantic
-  versions) is the **cache** fingerprint, not the checkpoint gate — it is stamped into
+  checkpoints at all (a file rename moves it while semantics stay). The first five pack-scope
+  hashes were once stamped by nobody (`DIV-001`, resolved 2026-10-24); `variables_hash` landed
+  2026-10-25 (VFS round-2 WP10).
+- `config_hash` (with `provenance_id`: resolved `experiment_dir`, compiler version, a digest of
+  the townlet package source, python/torch/pydantic versions; the git sha is stamped as
+  `compiler_git_sha` but is not an input) is the **cache** fingerprint, not the checkpoint gate — it is stamped into
   checkpoints but never compared (the comparison warning was deleted per PDR-0022).
   `brain_hash` is the SHA256 of the primary level's *effective* brain config after overrides —
   level-scoped, like `drive_hash`; `pack_brain_hash` differing from it means the level declared
@@ -255,7 +269,7 @@ restatement. The one systemic story: declared epistemic state has no working aut
 `readable_by` / `writable_by` are compiler-hardcoded on both required surfaces, `exposed_to`
 fails open, the observation path bypasses the checked accessor, and the one file where an author
 *could* declare access and the pair/affordance/zone/group/message scopes
-(`variables_reference.yaml`) never enters the compiler symbol table. Every privacy /
+(`variables_reference.yaml`) never enters the compiler symbol table. *(Superseded 2026-10-31: zone, group, pair, message and agent_private are deleted; the scopes are global, agent, item and affordance.)* Every privacy /
 hidden-state / social-inference mechanic VFS presents as its payoff is currently unauthorable
 while appearing authorable. It is one gap wearing about six ticket numbers and should be fixed
 as one design unit.

@@ -6,12 +6,16 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 import networkx as nx  # type: ignore[import-untyped]
+from pyparsing import ParseBaseException
 
 from townlet.config.variables_config import VariableDeclaration
 from townlet.vfs.access_policy import validate_static_access
+from townlet.vfs.history import expression_history, same_instant_refs, walk
+from townlet.vfs.namespace import AGENT_EXPRESSION, ENGINE_TICK, GLOBAL_EXPRESSION, Namespace, ReadContext
 from townlet.vfs.schema import NormalizationSpec, VariableScope
 from townlet.world.expression import ASTNode, ExpressionParser, PathAccess, Variable
 from townlet.world.expression.ast_nodes import BinaryOp, Constant, FunctionCall, IfThenElse, UnaryOp
+from townlet.world.expression.functions import FUNCTION_SPECS, SHAPE_AGENT_ROWS, SHAPE_DRAW, SHAPE_POINTWISE
 from townlet.world.expression.type_checker import TypeChecker, TypeCheckError
 
 __all__ = [
@@ -20,19 +24,8 @@ __all__ = [
     "CompiledVariable",
     "CompiledGlobalProfile",
     "CompiledItemProfile",
-    "AMBIENT_ENGINE_NAMES",
+    "VariableExpressionError",
 ]
-
-# Names the engine publishes as VFS globals that global/agent profile expressions may
-# reference by bare name without declaring them as profile variables (token-obs design
-# ruling 6: the engine publishes ONE temporal primitive — tick). Ambient names are
-# admitted into the expression type schema but never become an in-profile dependency
-# edge — they aren't sorted, they're just always there. Authored globals enter an agent
-# profile's schema the same way (see `compile_profile`'s `cross_scope`): the runtime
-# evaluates the global profile first and hands the agent profile the registry state, so
-# a global is an input, never a dependency edge. Item profiles do not get this admission
-# (item expressions refuse entirely — Task 6).
-AMBIENT_ENGINE_NAMES: dict[str, str] = {"tick": "float"}
 
 
 @dataclass
@@ -88,9 +81,19 @@ class CompiledItemProfile:
 
 
 class CircularDependencyError(Exception):
-    """Raised when circular dependency detected in VFS variables."""
+    """Raised when circular dependency detected in VFS variables; ``variable_id`` is one variable on the cycle."""
 
-    pass
+    def __init__(self, variable_id: str, message: str) -> None:
+        super().__init__(message)
+        self.variable_id = variable_id
+
+
+class VariableExpressionError(TypeCheckError):
+    """A variable's expression is refused; ``variable_id`` locates the refusal at its declaration."""
+
+    def __init__(self, variable_id: str, message: str) -> None:
+        super().__init__(message)
+        self.variable_id = variable_id
 
 
 class VFSProfileCompiler:
@@ -100,84 +103,30 @@ class VFSProfileCompiler:
         self.parser = ExpressionParser()
 
     def build_dependency_graph(self, variables: Sequence[VariableDeclaration]) -> nx.DiGraph:
-        """Build dependency graph for variables.
+        """Build the same-instant dependency graph of one profile (edges dependency -> dependent).
 
-        Args:
-            variables: List of variable configs
-
-        Returns:
-            Directed graph with edges from dependency -> dependent
+        An edge is a read of another in-profile variable's value at the current instant.
+        A ``lag(x, n)`` read is not one: it reads ``x``'s history ring, committed after
+        every variable evaluates (``vfs.history.same_instant_refs``). So a self-reference
+        or a cycle closed only through ``lag`` sorts, and any other cycle refuses.
+        The engine clock ``tick`` is an input, never an edge.
         """
         graph: nx.DiGraph = nx.DiGraph()
-
-        # Add all variables as nodes
-        for var in variables:
-            graph.add_node(var.id)
-
-        # Add edges for expression dependencies
-        # Pre-compute variable names as a set for O(1) lookup instead of O(n)
+        graph.add_nodes_from(var.id for var in variables)
         variable_names = {v.id for v in variables}
-
         for var in variables:
-            if var.expression is not None:
-                # Extract variable references from expression
-                deps = self._extract_variable_refs(var.expression) - AMBIENT_ENGINE_NAMES.keys()
-                for dep in deps:
-                    # Only add edge if dependency is in same profile
-                    if dep in variable_names:
-                        graph.add_edge(dep, var.id)
-
+            if var.expression is None:
+                continue
+            for dep in same_instant_refs(self.parser.parse(var.expression)) - {ENGINE_TICK}:
+                if dep in variable_names:
+                    graph.add_edge(dep, var.id)
         return graph
 
     def _extract_variable_refs(self, expression: str) -> set[str]:
-        """Extract variable references by parsing AST (robust, not regex).
+        """Every variable an expression reads, at any instant (``lag`` reads included): its bare names.
 
-        Uses Phase 1 parser to build AST, then traverses to find Variable nodes.
-        This is 100% accurate - no false matches from string literals or partial matches.
-
-        Args:
-            expression: Expression string (e.g., "a + b * c")
-
-        Returns:
-            Set of variable names referenced
-        """
-        # Parse expression to AST (reuse Phase 1 parser!)
-        ast = self.parser.parse(expression)
-
-        # Traverse AST to collect Variable nodes
-        refs = set()
-
-        def visit(node: ASTNode) -> None:
-            """Recursively visit AST nodes to find Variables and PathAccess."""
-            if isinstance(node, Variable):
-                refs.add(node.name)
-            elif isinstance(node, PathAccess):
-                # Extract root namespace (e.g., "bar" from "bar.energy")
-                refs.add(node.segments[0])
-
-            # Visit children (handles BinaryOp, UnaryOp, FunctionCall, etc.)
-            if hasattr(node, "left"):
-                visit(node.left)
-            if hasattr(node, "right"):
-                visit(node.right)
-            if hasattr(node, "operand"):
-                visit(node.operand)
-            if hasattr(node, "arguments"):
-                for arg in node.arguments:
-                    visit(arg)
-            if hasattr(node, "condition"):
-                visit(node.condition)
-            if hasattr(node, "true_branch"):
-                visit(node.true_branch)
-            if hasattr(node, "false_branch"):
-                visit(node.false_branch)
-            if hasattr(node, "base"):
-                visit(node.base)
-            if hasattr(node, "index"):
-                visit(node.index)
-
-        visit(ast)
-        return refs
+        A dotted path is a meter (``bar.<m>``) or item state (``item.<x>``), never a variable."""
+        return {node.name for node in walk(self.parser.parse(expression)) if isinstance(node, Variable)}
 
     def topological_sort(self, variables: Sequence[VariableDeclaration]) -> list[VariableDeclaration]:
         """Sort variables in dependency order.
@@ -207,7 +156,11 @@ class VFSProfileCompiler:
             # Find a cycle for error message
             cycles = list(nx.simple_cycles(graph))
             cycle_str = " -> ".join(cycles[0] + [cycles[0][0]])
-            raise CircularDependencyError(f"Circular dependency detected in cycle: {cycle_str}")
+            raise CircularDependencyError(
+                cycles[0][0],
+                f"Circular dependency detected in cycle: {cycle_str}. Each variable in it reads another's value at the "
+                "same instant; only a lag(x, n) read (the value n ticks ago) may close a cycle or a self-reference.",
+            )
 
         # Map names back to variable configs
         name_to_var = {v.id: v for v in variables}
@@ -325,124 +278,193 @@ class VFSProfileCompiler:
                 f"cross_scope for a {scope} profile holds {other_scope} declarations only; got {sorted(str(s) for s in stray_scopes)}"
             )
 
+        # Every expression parses before anything orders or reads it, so a parse error
+        # is located at its declaration like every other refusal here.
+        for var in variables:
+            if var.expression is not None:
+                try:
+                    self.parser.parse(var.expression)
+                except (ParseBaseException, ValueError) as exc:
+                    raise VariableExpressionError(
+                        var.id, f"Variable '{var.id}' expression '{var.expression}' does not parse: {exc}"
+                    ) from exc
+
         # Sort variables in dependency order
         sorted_vars, dependencies = self.topological_sort_with_dependencies(variables)
 
-        # Build type schema for expression type checking. Ambient engine names (tick)
-        # come first so an authored variable of the same name still fails loudly at the
-        # collision check in universe/compilers/vfs.py rather than shadowing silently here.
-        schema: dict[str, str] = dict(AMBIENT_ENGINE_NAMES)
-
-        # Add bar paths to schema
-        if bar_schema:
-            for bar_name, bar_type in bar_schema.items():
-                schema[f"bar.{bar_name}"] = bar_type
-
-        # Compile each variable
+        # The one resolver (VFS round-2 S5): the namespace of this profile's scope. An
+        # agent expression reads every global by bare name (the runtime evaluates the
+        # global profile first and feeds the agent profile the registry state, so these
+        # are inputs, not dependency edges: build_dependency_graph only links
+        # same-profile ids). Every profile variable enters up front with its declared
+        # type and scope shape; a same-instant read is still ordered by the sort above,
+        # a lag read may name a variable later in the order, or the variable itself.
+        namespace = Namespace(
+            variables=[(var.id, var.scope, var.type) for var in (*variables, *cross_scope)],
+            meters=bar_schema or {},
+            item_profiles={},
+        )
+        context = AGENT_EXPRESSION if scope == VariableScope.AGENT else GLOBAL_EXPRESSION
+        schema = namespace.schema(context)
+        shapes = namespace.shapes(context)
         compiled_vars = []
-        shapes = {"tick": "scalar"}
-        if bar_schema:
-            shapes.update({f"bar.{bar_name}": "agent" for bar_name in bar_schema})
 
-        # Cross-scope namespace. An agent expression reads every global by bare name
-        # with the global's declared type and a scalar (batch-free) shape; the runtime
-        # evaluates the global profile first and feeds the agent profile the registry
-        # state, so these are inputs, not dependency edges (build_dependency_graph only
-        # links same-profile ids). The reverse direction is scope widening: a global
-        # expression has no agent axis to hold per-agent state, so it refuses here, by
-        # name, before the type checker can only say "not found".
+        # The reverse direction is scope widening: a global expression has no agent axis
+        # to hold per-agent state, so it refuses here, by name, before the namespace can
+        # only say the scope is unreadable.
         widening_ids: set[str] = set()
-        if scope == VariableScope.AGENT:
-            for global_var in cross_scope:
-                schema[global_var.id] = "float" if global_var.type == "scalar" else global_var.type
-                shapes[global_var.id] = "scalar" if global_var.type in {"scalar", "bool"} else "payload"
-        else:
+        if scope == VariableScope.GLOBAL:
             widening_ids = {agent_var.id for agent_var in cross_scope}
 
         for var in sorted_vars:
-            if var.expression is not None and widening_ids:
-                widened = sorted(self._extract_variable_refs(var.expression) & widening_ids)
-                if widened:
-                    raise TypeCheckError(
-                        f"Variable '{var.id}' is global-scope but its expression reads agent-scope "
-                        f"variable(s) {widened}; a global expression cannot widen to per-agent state. "
-                        f"Declare '{var.id}' with scope agent, or read global state only."
-                    )
-            compiled = self.compile_variable(var, schema)
-            if compiled.ast is not None:
-                if var.type not in {"scalar", "bool"}:
-                    raise TypeCheckError(f"Variable '{var.id}' expression shape supports scalar and bool outputs only")
-                output_shape = self._expression_shape(compiled.ast, shapes)
-                expected_shape = "agent" if var.scope == VariableScope.AGENT else "scalar"
-                if output_shape != expected_shape:
-                    raise TypeCheckError(
-                        f"Variable '{var.id}' expression shape is {output_shape}, expected {expected_shape} for {var.scope} scope"
-                    )
-            compiled_vars.append(compiled)
-
-            # Add this variable to schema for subsequent variables
-            schema[var.id] = "float" if var.type == "scalar" else var.type
-            if var.type not in {"scalar", "bool"}:
-                shapes[var.id] = "payload"
-            else:
-                shapes[var.id] = "agent" if var.scope == VariableScope.AGENT else "scalar"
+            try:
+                compiled_vars.append(self._compile_profile_variable(var, schema, shapes, namespace, context, widening_ids))
+            except VariableExpressionError:
+                raise
+            except TypeCheckError as exc:
+                raise VariableExpressionError(var.id, str(exc)) from exc
 
         return CompiledGlobalProfile(variables=compiled_vars, dependencies=dependencies)
 
-    @classmethod
-    def _expression_shape(cls, node: ASTNode, shapes: dict[str, str]) -> str:
-        """Prove the currently supported scalar/batch output shape without runtime sampling.
+    def _compile_profile_variable(
+        self,
+        var: VariableDeclaration,
+        schema: dict[str, str],
+        shapes: dict[str, str],
+        namespace: Namespace,
+        context: ReadContext,
+        widening_ids: set[str],
+    ) -> CompiledVariable:
+        """One profile variable, its expression resolved, type-checked and shape-proved."""
+        if var.expression is not None and widening_ids:
+            widened = sorted(self._extract_variable_refs(var.expression) & widening_ids)
+            if widened:
+                raise TypeCheckError(
+                    f"Variable '{var.id}' is global-scope but its expression reads agent-scope "
+                    f"variable(s) {widened}; a global expression cannot widen to per-agent state. "
+                    f"Declare '{var.id}' with scope agent, or read global state only."
+                )
+        if var.expression is not None:
+            refusals = namespace.refusals(self.parser.parse(var.expression), context)
+            if refusals:
+                raise TypeCheckError(f"Variable '{var.id}' expression '{var.expression}': {' '.join(refusals)}")
+        compiled = self.compile_variable(var, schema)
+        if compiled.ast is not None:
+            if var.type not in {"scalar", "bool"}:
+                raise TypeCheckError(
+                    f"Variable '{var.id}' declares type '{var.type}' with an expression, but an expression variable is "
+                    "scalar or bool: a vector or tensor variable takes initial_value / initial_value_mode and is written "
+                    "by action writes, rules or effects. Read a vector through a function that consumes it "
+                    "(distance, within_radius, gather) in a scalar or bool expression variable."
+                )
+            try:
+                expression_history(compiled.ast)
+            except TypeCheckError as exc:
+                raise TypeCheckError(f"Variable '{var.id}' expression '{var.expression}': {exc}") from exc
+            expected_shape = "agent" if var.scope == VariableScope.AGENT else "scalar"
+            try:
+                output_shape = self._shape(compiled.ast, shapes, draw_axis=expected_shape)
+            except TypeCheckError as exc:
+                raise TypeCheckError(f"Variable '{var.id}' expression '{var.expression}': {exc}") from exc
+            if output_shape != expected_shape:
+                raise TypeCheckError(self._scope_shape_refusal(var, output_shape))
+        return compiled
 
-        Batch size remains symbolic: a one-agent execution cannot establish global
-        versus per-agent compatibility. Unqualified shape-changing functions refuse.
+    @staticmethod
+    def _scope_shape_refusal(var: VariableDeclaration, output_shape: str) -> str:
+        """Why an expression's row shape does not fit its declared scope, and what to declare instead."""
+        if var.scope == VariableScope.AGENT:
+            return (
+                f"Variable '{var.id}' is agent-scope but its expression '{var.expression}' reads no per-agent state: "
+                f"its shape is {output_shape}, one value per world. Declare '{var.id}' with scope: global, or read "
+                "agent state (an agent variable, a meter 'bar.<m>', a position function) so it varies per agent."
+            )
+        return (
+            f"Variable '{var.id}' is global-scope but its expression '{var.expression}' is {output_shape}-shaped, "
+            f"one value per agent (it reads agent state or calls a position function). Declare '{var.id}' with "
+            "scope: agent, or read global state only."
+        )
+
+    @classmethod
+    def expression_shape(cls, node: ASTNode, shapes: dict[str, str]) -> str:
+        """Prove the output shape of an action write's or transition rule's expression.
+
+        A draw there is one per world row (``draw_axis`` ``scalar``), which every target
+        scope admits: per agent on an agent target (S1: one agent per world), spread along
+        the affordance rows of an affordance target.
+        """
+        return cls._shape(node, shapes, draw_axis="scalar")
+
+    @classmethod
+    def _shape(cls, node: ASTNode, shapes: dict[str, str], *, draw_axis: str) -> str:
+        """Prove the leading registry axes of an expression's value without evaluating it.
+
+        A shape names the leading registry axes of a value: ``scalar`` (one value per
+        world, no further axis), ``agent`` (one row per agent) or ``affordance`` (one row
+        per affordance). ``scalar`` joins with anything; two distinct axes refuse, because
+        the evaluator aligns trailing dimensions and would combine them by coincidence
+        of extents. Batch size stays symbolic throughout.
+
+        A call's shape comes from its registry spec (``FunctionSpec.shape``), never from
+        a list kept here: ``SHAPE_POINTWISE`` joins the arguments' axes (a vector
+        argument contributes its scope's axis; the payload is the type checker's);
+        ``SHAPE_AGENT_ROWS`` is one row per agent; ``SHAPE_DRAW`` joins the arguments'
+        axes with ``draw_axis``, the row axis of the context the expression runs in, so
+        a literal-only draw is still one draw per row. Whether a context carries what a
+        call needs (history, positions, a random stream) is ``Namespace.refusals``'s
+        question, answered before this runs.
         """
         if isinstance(node, Constant):
             return "scalar"
         if isinstance(node, Variable):
             if node.name not in shapes:
-                raise TypeCheckError(f"Variable '{node.name}' has no qualified expression shape")
+                raise TypeCheckError(
+                    f"'{node.name}' is no variable, meter or engine name this context reads; declare it in the pack's "
+                    "variables declaration, or spell a meter 'bar.<name>'"
+                )
             return shapes[node.name]
         if isinstance(node, PathAccess):
             path = ".".join(node.segments)
             if path not in shapes:
-                raise TypeCheckError(f"Expression path '{path}' has no qualified variable output shape")
+                raise TypeCheckError(f"'{path}' is no meter or item state this context reads; a meter is 'bar.<name>'")
             return shapes[path]
         if isinstance(node, UnaryOp):
-            return cls._expression_shape(node.operand, shapes)
+            return cls._shape(node.operand, shapes, draw_axis=draw_axis)
         if isinstance(node, BinaryOp):
-            operands = [node.left, node.right]
-        elif isinstance(node, IfThenElse):
-            operands = [node.condition, node.true_branch, node.false_branch]
-        elif isinstance(node, FunctionCall):
-            pointwise = {
-                "max",
-                "min",
-                "abs",
-                "clamp",
-                "clamp01",
-                "sigmoid",
-                "tanh",
-                "smoothstep",
-                "threshold",
-                "where",
-                "time_in_window",
-                "phase_sin",
-                "phase_cos",
-            }
-            stacked = {"mean", "variance", "sum", "product", "min_all", "max_all", "count_where", "argmin", "argmax", "all", "any"}
-            if node.function_name not in pointwise | stacked:
-                raise TypeCheckError(f"Expression function '{node.function_name}' has no qualified variable output shape")
-            operands = list(node.arguments)
-            if node.function_name in stacked:
-                argument_shapes = {cls._expression_shape(argument, shapes) for argument in operands}
-                if len(argument_shapes) != 1:
-                    raise TypeCheckError(f"Expression function '{node.function_name}' requires equal argument shapes")
-        else:
-            raise TypeCheckError(f"Expression node '{type(node).__name__}' has no qualified variable output shape")
-        operand_shapes = {cls._expression_shape(operand, shapes) for operand in operands}
-        if "payload" in operand_shapes:
-            raise TypeCheckError("Expression shape with vector/tensor payloads is not supported")
-        return "agent" if "agent" in operand_shapes else "scalar"
+            return cls._join([node.left, node.right], shapes, draw_axis, extra=None)
+        if isinstance(node, IfThenElse):
+            return cls._join([node.condition, node.true_branch, node.false_branch], shapes, draw_axis, extra=None)
+        if isinstance(node, FunctionCall):
+            spec = FUNCTION_SPECS.get(node.function_name)
+            if spec is None:
+                raise TypeCheckError(f"'{node.function_name}' is not a registered expression function")
+            if spec.shape == SHAPE_POINTWISE:
+                return cls._join(list(node.arguments), shapes, draw_axis, extra=None)
+            if spec.shape == SHAPE_AGENT_ROWS:
+                return cls._join(list(node.arguments), shapes, draw_axis, extra="agent")
+            assert spec.shape == SHAPE_DRAW, spec
+            return cls._join(list(node.arguments), shapes, draw_axis, extra=draw_axis)
+        raise TypeCheckError(
+            f"a {type(node).__name__} has no row shape in a variable expression, action write or transition rule; "
+            "read one element of a vector with gather(vector, index)"
+        )
+
+    @classmethod
+    def _join(cls, operands: Sequence[ASTNode], shapes: dict[str, str], draw_axis: str, *, extra: str | None) -> str:
+        """The one axis ``operands`` (and ``extra``) share, ``scalar`` joining with anything."""
+        axes = {cls._shape(operand, shapes, draw_axis=draw_axis) for operand in operands}
+        if extra is not None:
+            axes.add(extra)
+        axes.discard("scalar")
+        if not axes:
+            return "scalar"
+        if len(axes) == 1:
+            (axis,) = axes
+            return axis
+        raise TypeCheckError(
+            f"it combines values of different shapes {sorted(axes)}; their axes do not align, so the result "
+            "would depend on coincidences of extent"
+        )
 
     def compile_item_profile(
         self,

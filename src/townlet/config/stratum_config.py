@@ -12,11 +12,29 @@ Example:
     8
 """
 
+import math
 from pathlib import Path
-from typing import Literal
+from typing import Final, Literal
 
+import numpy as np
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator, model_validator
+
+# Every substrate rule the factory's constructors enforce (`substrate/grid2d.py`,
+# `grid3d.py`, `gridnd.py`, `continuous.py`, `continuousnd.py`) is stated here too, so a pack
+# that breaks one refuses at parse, located at its declaration, instead of as a bare
+# ValueError from inside the compiler.
+GRIDND_MIN_RANK = 4
+CONTINUOUSND_MIN_RANK = 4
+CONTINUOUS_MAX_RANK = 3
+
+FLOAT32_MAX: Final[float] = float(np.finfo(np.float32).max)
+"""The largest magnitude a float32 position can hold; continuous bounds and spans stay within it."""
+
+MAX_POSITION_RANK: Final[int] = 8
+"""The widest position a token carries (`universe/dto/token_spec.py` pads every position to
+it, and the transfer contract `token_type_schema_hash` covers that width). A substrate's rank
+cannot exceed it, so it is also the upper rank bound of `gridnd` and `continuousnd`."""
 
 
 class GridConfig(BaseModel):
@@ -65,8 +83,14 @@ class GridNDConfig(BaseModel):
 
     @model_validator(mode="after")
     def validate_dimensions(self) -> "GridNDConfig":
-        if not self.dimension_sizes:
-            raise ValueError("GridNDConfig.dimension_sizes must contain at least one dimension size.")
+        """The rank rule GridNDSubstrate enforces, refused here so it is located at the declaration."""
+        rank = len(self.dimension_sizes)
+        if rank < GRIDND_MIN_RANK or rank > MAX_POSITION_RANK:
+            raise ValueError(
+                f"gridnd.dimension_sizes declares {rank} dimension(s); a gridnd substrate has "
+                f"{GRIDND_MIN_RANK} to {MAX_POSITION_RANK} (MAX_POSITION_RANK, the widest position a token "
+                "carries). For 2 or 3 dimensions use type: grid (topology: square or cubic)."
+            )
         if any(size <= 0 for size in self.dimension_sizes):
             raise ValueError("All GridNDConfig.dimension_sizes entries must be positive integers.")
         return self
@@ -96,9 +120,9 @@ class ActionDiscretizationConfig(BaseModel):
 
 
 class ContinuousConfig(BaseModel):
-    """Continuous substrate configuration (1D-100D)."""
+    """Continuous substrate configuration (1 to MAX_POSITION_RANK dimensions)."""
 
-    dimensions: int = Field(..., ge=1, le=100, description="Number of continuous dimensions")
+    dimensions: int = Field(..., ge=1, le=MAX_POSITION_RANK, description="Number of continuous dimensions")
     bounds: list[tuple[float, float]] = Field(..., description="Bounds for each dimension [(min, max), ...]")
     boundary: Literal["clamp", "wrap", "bounce", "sticky"] = Field(..., description="Boundary behavior at edges")
     movement_delta: float = Field(..., gt=0, description="Discrete movement step for navigation")
@@ -114,6 +138,20 @@ class ContinuousConfig(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
+    @field_validator("interaction_radius")
+    @classmethod
+    def validate_interaction_radius_fits_bounds(cls, value: float, info: ValidationInfo) -> float:
+        """The substrate refuses a space too small to interact in; refused here at its own key."""
+        for index, bound in enumerate(info.data.get("bounds") or ()):
+            low, high = bound
+            # An unordered or infinite bound is refused by validate_bounds, by its own message.
+            if math.isfinite(low) and math.isfinite(high) and low < high and high - low < value:
+                raise ValueError(
+                    f"interaction_radius ({value}) exceeds the span of bounds[{index}] ({high - low}): the space is "
+                    "too small for affordance interaction. Widen the bounds or shrink interaction_radius."
+                )
+        return value
+
     @model_validator(mode="after")
     def validate_bounds(self) -> "ContinuousConfig":
         """Ensure bounds match dimensions and are strictly ordered."""
@@ -124,8 +162,23 @@ class ContinuousConfig(BaseModel):
             )
 
         for i, (min_val, max_val) in enumerate(self.bounds):
+            # An infinite bound compiles and then every position and observation is NaN
+            # (normalization divides by the span): refuse it where it is authored.
+            if not (math.isfinite(min_val) and math.isfinite(max_val)):
+                raise ValueError(f"bounds[{i}] invalid: both bounds must be finite numbers, got [{min_val}, {max_val}]")
+            # Positions are float32: a bound (or the span normalization divides by) beyond float32
+            # range compiles and then overflows on the first step.
+            if max(abs(min_val), abs(max_val), max_val - min_val) > FLOAT32_MAX:
+                raise ValueError(
+                    f"bounds[{i}] invalid: positions are float32, so each bound and the span must be at most "
+                    f"{FLOAT32_MAX:.4g} in magnitude, got [{min_val}, {max_val}]"
+                )
             if min_val >= max_val:
                 raise ValueError(f"bounds[{i}] invalid: min ({min_val}) must be < max ({max_val})")
+        if not math.isfinite(self.movement_delta):
+            raise ValueError(f"movement_delta must be a finite number, got {self.movement_delta}")
+        if not math.isfinite(self.interaction_radius):
+            raise ValueError(f"interaction_radius must be a finite number, got {self.interaction_radius}")
 
         return self
 
@@ -162,6 +215,17 @@ class SubstrateConfig(BaseModel):
             raise ValueError(f"type='{self.type}' requires a continuous block.")
         if self.type == "aspatial" and self.aspatial is None:
             raise ValueError("type='aspatial' requires an aspatial block.")
+        # The rank each continuous family serves (`substrate/factory.py` dispatches on it).
+        if self.type == "continuous" and self.continuous is not None and self.continuous.dimensions > CONTINUOUS_MAX_RANK:
+            raise ValueError(
+                f"type='continuous' serves 1 to {CONTINUOUS_MAX_RANK} dimensions, got continuous.dimensions="
+                f"{self.continuous.dimensions}. Use type: continuousnd for {CONTINUOUSND_MIN_RANK} or more."
+            )
+        if self.type == "continuousnd" and self.continuous is not None and self.continuous.dimensions < CONTINUOUSND_MIN_RANK:
+            raise ValueError(
+                f"type='continuousnd' serves {CONTINUOUSND_MIN_RANK} to {MAX_POSITION_RANK} dimensions, got "
+                f"continuous.dimensions={self.continuous.dimensions}. Use type: continuous for 1 to {CONTINUOUS_MAX_RANK}."
+            )
 
         provided = [
             cfg is not None

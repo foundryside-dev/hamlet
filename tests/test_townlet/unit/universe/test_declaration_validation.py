@@ -38,7 +38,7 @@ def test_malformed_fragmented_item_profile_reports_its_own_origin(tmp_path, file
     assert issue.location == f"{malformed}:3"
 
 
-def test_pair_reward_reader_refuses_without_an_explicit_reduction(tmp_path):
+def test_affordance_reward_reader_refuses_without_an_explicit_reduction(tmp_path):
     pack = tmp_path / "pack"
     shutil.copytree(PACK, pack)
     variable_path = pack / "variables.yaml"
@@ -48,7 +48,7 @@ def test_pair_reward_reader_refuses_without_an_explicit_reduction(tmp_path):
             readable_by=["engine", "agent"],
             writable_by=["engine"],
             id="score",
-            scope="pair",
+            scope="affordance",
             type="scalar",
             lifetime="episode",
             semantic_type="custom",
@@ -137,6 +137,7 @@ def test_limit_diagnostics_use_relocated_family_origin(tmp_path: Path, monkeypat
                 "name": "Tool",
                 "icon": "t",
                 "tags": ["tool"],
+                "exclusive": True,
                 "vfs_profile": "tool",
                 "duration": None,
                 "cooldown": None,
@@ -174,21 +175,6 @@ def test_nested_dac_reference_uses_relocated_entry_origin(tmp_path: Path) -> Non
 
     issue = next(issue for issue in caught.value.issues if issue.code == ErrorCode.DAC_REF_UNDEFINED_BAR_BONUS_BAR)
     assert issue.location == f"{origin}:29"
-
-
-def test_affordance_reference_uses_relocated_named_origin(tmp_path: Path) -> None:
-    raw = load_v21_configs(PACK)
-    affordance = raw.levels[LEVEL].affordances.affordances[0]
-    affordance.interactions["on_start"][0].modify = "target.vfs.missing_value"
-    origin = tmp_path / "levels" / LEVEL / "mechanics" / "interactions.yml"
-    source_map = SourceMap()
-    source_map.record(f"levels/{LEVEL}/affordances:{affordance.name}", origin, 11)
-
-    with pytest.raises(CompilationError) as caught:
-        resolve_references(raw, build_symbol_table(raw), PACK, source_map)
-
-    issue = next(issue for issue in caught.value.issues if issue.code == ErrorCode.UAC_RES_VFS)
-    assert issue.location == f"{origin}:11"
 
 
 def test_item_appearance_reference_uses_relocated_family_origin(tmp_path: Path) -> None:
@@ -235,7 +221,6 @@ def test_profile_registration_error_uses_qualified_profile_origin(tmp_path: Path
         raw,
         variables=VariablesConfig(
             version="1.0",
-            extents={},
             item_profiles=["tool", "food"],
             declarations=declarations,
         ),

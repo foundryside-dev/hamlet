@@ -1,6 +1,5 @@
 variables:
   version: '1.0'
-  extents: {}
   item_profiles:
   - default_item
   declarations:
@@ -9,7 +8,7 @@ variables:
     writable_by: [engine]
     scope: global
     type: scalar
-    lifetime: persistent
+    lifetime: episode
     semantic_type: temporal
     exposed_to:
     - agent

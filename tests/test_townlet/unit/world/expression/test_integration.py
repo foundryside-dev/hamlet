@@ -26,7 +26,7 @@ def test_full_pipeline():
     type_checker.check(ast)
 
     # Evaluate
-    context = ExecutionContext(bars={"health": torch.tensor(50.0)}, vfs={}, affordances={}, temporal={})
+    context = ExecutionContext(bars={"health": torch.tensor(50.0)}, vfs={}, temporal={})
     evaluator = Evaluator(context=context)
     result = evaluator.evaluate(ast)
     assert torch.allclose(result, torch.tensor(60.0))
@@ -41,7 +41,7 @@ def test_pipeline_with_complex_expression():
     type_checker = TypeChecker(schema=schema)
     type_checker.check(ast)
 
-    context = ExecutionContext(bars={"energy": torch.tensor(25.0), "health": torch.tensor(100.0)}, vfs={}, affordances={}, temporal={})
+    context = ExecutionContext(bars={"energy": torch.tensor(25.0), "health": torch.tensor(100.0)}, vfs={}, temporal={})
     evaluator = Evaluator(context=context)
     result = evaluator.evaluate(ast)
 
@@ -57,7 +57,7 @@ def test_pipeline_with_comparison():
     type_checker = TypeChecker(schema=schema)
     type_checker.check(ast)
 
-    context = ExecutionContext(bars={"health": torch.tensor(75.0)}, vfs={}, affordances={}, temporal={})
+    context = ExecutionContext(bars={"health": torch.tensor(75.0)}, vfs={}, temporal={})
     evaluator = Evaluator(context=context)
     result = evaluator.evaluate(ast)
 
@@ -73,7 +73,7 @@ def test_pipeline_with_logical_operators():
     type_checker = TypeChecker(schema=schema)
     type_checker.check(ast)
 
-    context = ExecutionContext(bars={"energy": torch.tensor(30.0), "health": torch.tensor(50.0)}, vfs={}, affordances={}, temporal={})
+    context = ExecutionContext(bars={"energy": torch.tensor(30.0), "health": torch.tensor(50.0)}, vfs={}, temporal={})
     evaluator = Evaluator(context=context)
     result = evaluator.evaluate(ast)
 
@@ -88,7 +88,7 @@ def test_pipeline_with_function_call():
     schema = {"bar.energy": "float"}
     assert TypeChecker(schema=schema).check(ast) == "float"
 
-    context = ExecutionContext(bars={"energy": torch.tensor([45.0, 20.0])}, vfs={}, affordances={}, temporal={})
+    context = ExecutionContext(bars={"energy": torch.tensor([45.0, 20.0])}, vfs={}, temporal={})
     result = Evaluator(context=context).evaluate(ast)
 
     assert torch.allclose(result, torch.tensor([50.0, 30.0]))
@@ -118,7 +118,7 @@ def test_pipeline_with_unary_negation():
     type_checker = TypeChecker(schema=schema)
     type_checker.check(ast)
 
-    context = ExecutionContext(bars={"energy": torch.tensor(25.0)}, vfs={}, affordances={}, temporal={})
+    context = ExecutionContext(bars={"energy": torch.tensor(25.0)}, vfs={}, temporal={})
     evaluator = Evaluator(context=context)
     result = evaluator.evaluate(ast)
 
@@ -134,7 +134,7 @@ def test_pipeline_with_logical_not():
     type_checker = TypeChecker(schema=schema)
     type_checker.check(ast)
 
-    context = ExecutionContext(bars={"health": torch.tensor(30.0)}, vfs={}, affordances={}, temporal={})
+    context = ExecutionContext(bars={"health": torch.tensor(30.0)}, vfs={}, temporal={})
     evaluator = Evaluator(context=context)
     result = evaluator.evaluate(ast)
 
@@ -163,7 +163,7 @@ def test_pipeline_multiple_expressions():
         type_checker = TypeChecker(schema=schema)
         type_checker.check(ast)
 
-        context = ExecutionContext(bars={k: torch.tensor(v) for k, v in bars.items()}, vfs={}, affordances={}, temporal={})
+        context = ExecutionContext(bars={k: torch.tensor(v) for k, v in bars.items()}, vfs={}, temporal={})
         evaluator = Evaluator(context=context)
         result = evaluator.evaluate(ast)
 

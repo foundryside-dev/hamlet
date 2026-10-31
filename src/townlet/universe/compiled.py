@@ -55,15 +55,17 @@ from townlet.universe.token_hashes import (
     compute_token_layout_hash,
     compute_token_type_schema_hash,
 )
-from townlet.vfs.profiles import AMBIENT_ENGINE_NAMES, CompiledGlobalProfile, CompiledItemProfile
+from townlet.vfs.namespace import ENGINE_TICK, ExpressionSource, expression_sources, inline_expression_reads
+from townlet.vfs.profiles import CompiledGlobalProfile, CompiledItemProfile
 from townlet.vfs.schema import NormalizationSpec, VariableDef, VariableScope
-from townlet.vfs.schema_hashes import compute_variable_schema_hash, compute_vfs_hash
+from townlet.vfs.schema_hashes import compute_expression_schema_hash, compute_variable_schema_hash, compute_vfs_hash
 from townlet.vfs.transition_schedule import (
     VTCTransitionSchedule,
     build_vtc_transition_schedule,
     serialize_vtc_transition_schedule,
-    social_rules_from_transition_payload,
+    transition_rules_from_payload,
 )
+from townlet.world.expression.references import ENTITY_NAMES
 
 # 1.15: the bars block became N per-meter observation fields with per-meter normalization
 # specs, and VFS source widths split from observed widths (PDR-0054 W3/W4). Every cache built
@@ -134,7 +136,37 @@ from townlet.vfs.transition_schedule import (
 # validated in resolve, never hashed). The runtime reads it from the artifact instead of
 # re-opening a fixed filename, so one vocabulary covers compile and serve. A 1.33 artifact
 # has no such block and is refused rather than served as "no presentation".
-COMPILED_SCHEMA_VERSION = "1.34"
+# 1.35: `vfs_hash` gains a fifth term — the canonical global/agent expression programs
+# (`compute_expression_schema_hash`) — and `variable_schema_hash` binds `semantic_type`,
+# `exposed_to` and the complete normalization (VFS round-2 F5: expression text and
+# semantic_type entered no checkpoint-gated hash). The artifact also carries the required
+# pack-scope `variables_hash`, the canonical content of the discovered `variables`
+# declaration. The cache key does not move for an unchanged pack, so a 1.34 artifact
+# would serve the old `vfs_hash` and lack the new field; refuse it as stale.
+# 1.36: the pair/message/agent_private scopes, the `extents` block, `message_token` and
+# `UniverseMetadata.num_message_slots` are deleted (VFS WP15). The variable_element scope
+# one-hot falls 7 -> 4 lanes, so its row width and the token type schema change; a 1.35
+# artifact of an unchanged pack would serve the old layout, so it is refused as stale.
+# 1.37: the for_each `radius` field is deleted with the `nearby_agents` collection (S1: no
+# other agent shares an agent's world). Serialized command nodes lose the key; a 1.36
+# artifact carries it and is refused as stale.
+# 1.38: two dead features leave the artifact. The effects `reduce` command is deleted (no
+# declared path is typed `list` or `tensor`, so it never compiled from a pack): serialized
+# command nodes lose the five `reduce_*` keys. The affordance identity loses its spawn-target
+# lanes (`spawn_target_target` / `spawn_target_index_zero`): a constant spawn target refuses
+# at compile, so `target` was the only value and the lanes carried nothing beyond the
+# `spawn_effect_*` write source. The affordance payload width and the token type schema
+# hash move; a 1.37 artifact of an unchanged pack would serve both stale, so it is refused.
+# 1.39: one spelling per reference (VFS round-2 S5). `effects_schema` and the dead
+# `vfs_expression_schema` leave the artifact: the environment builds a command pipeline's
+# namespace from the compiled roster (`Namespace.of_registry`), exactly as the compiler does.
+# Hydrated command and spawn-predicate ASTs inline pure expression variables; a 1.38
+# artifact carries the deleted fields and old spellings, so it is refused as stale.
+# 1.40: two hashes join checkpoint identity (compiler re-review N5, 2026-10-31): the pack-scope
+# `effects_hash` (canonical content of the `effects` declaration, None without one) and each
+# level's `items_appearance_hash` (canonical spawn rules, None without a declaration). Both
+# are required on load; a 1.39 artifact lacks them and is refused as stale.
+COMPILED_SCHEMA_VERSION = "1.40"
 
 REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "compiled_schema_version",
@@ -148,8 +180,6 @@ REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "presentation",
     "compiled_vfs_profiles",
     "compiled_effect_catalog",
-    "effects_schema",
-    "vfs_expression_schema",
     "vfs_history_spec",
     "vfs_evaluation_marks",
     "experiment_dir",
@@ -160,6 +190,8 @@ REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "environment_hash",
     "actions_hash",
     "items_hash",
+    "variables_hash",
+    "effects_hash",
     "all_levels",
 )
 
@@ -198,6 +230,11 @@ class CompiledUniverse:
     # Every compiled level product, including the selected level's products.
     all_levels: dict[str, CompiledUniverse.LevelMetadata]
 
+    # The sixth pack-scope content hash: the canonical content of the discovered
+    # `variables` declaration (`townlet.vfs.schema_hashes.compute_variables_hash`),
+    # independent of which file carries it. Required: every pack declares `variables`.
+    variables_hash: str
+
     items_catalog: ItemsCatalogConfig | None = None
 
     # Observer-only presentation (PDR-0025). References resolved at compile time; enters no
@@ -209,10 +246,6 @@ class CompiledUniverse:
 
     # Compiled effects catalog (per-level artifact)
     compiled_effect_catalog: EffectCatalog | None = None
-    effects_schema: dict[str, str] | None = None
-
-    # Type schema for runtime VFS expression validation
-    vfs_expression_schema: dict[str, str] | None = None
 
     # Temporal history requirements for VFS expressions
     vfs_history_spec: dict[str, int] | None = None
@@ -237,6 +270,9 @@ class CompiledUniverse:
     environment_hash: str | None = None
     actions_hash: str | None = None
     items_hash: str | None = None
+    # The seventh pack-scope content hash: canonical content of the `effects` declaration
+    # (`townlet.vfs.schema_hashes.compute_effects_hash`); None when the pack declares none.
+    effects_hash: str | None = None
 
     @property
     def brain_forked(self) -> bool:
@@ -275,6 +311,9 @@ class CompiledUniverse:
         bars_hash: str | None
         affordances_hash: str | None
         training_hash: str | None
+        # Canonical content of the level's spawn rules (`compute_items_appearance_hash`);
+        # None when the level declares no item appearance. Compared on resume.
+        items_appearance_hash: str | None
         # Spawn rules; `None` when the level declares no item appearance. Each rule's
         # `when_ast` is derived from its `when` text (re-parsed on load, never serialized).
         items_appearance: ItemsAppearanceConfig | None
@@ -341,13 +380,12 @@ class CompiledUniverse:
             environment=deepcopy(self.environment),
             actions=deepcopy(self.actions),
             brain=deepcopy(self.brain),
-            all_levels=deepcopy(self.all_levels),
+            all_levels={name: _clone_level(level) for name, level in self.all_levels.items()},
+            variables_hash=self.variables_hash,
             items_catalog=deepcopy(self.items_catalog) if self.items_catalog is not None else None,
             presentation=deepcopy(self.presentation) if self.presentation is not None else None,
             compiled_vfs_profiles=deepcopy(self.compiled_vfs_profiles) if self.compiled_vfs_profiles is not None else None,
             compiled_effect_catalog=deepcopy(self.compiled_effect_catalog) if self.compiled_effect_catalog is not None else None,
-            effects_schema=deepcopy(self.effects_schema) if self.effects_schema is not None else None,
-            vfs_expression_schema=deepcopy(self.vfs_expression_schema) if self.vfs_expression_schema is not None else None,
             vfs_history_spec=deepcopy(self.vfs_history_spec) if self.vfs_history_spec is not None else None,
             vfs_evaluation_marks=deepcopy(self.vfs_evaluation_marks) if self.vfs_evaluation_marks is not None else None,
             experiment_dir=self.experiment_dir,
@@ -358,6 +396,7 @@ class CompiledUniverse:
             environment_hash=self.environment_hash,
             actions_hash=self.actions_hash,
             items_hash=self.items_hash,
+            effects_hash=self.effects_hash,
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -378,12 +417,13 @@ class CompiledUniverse:
             "compiled_effect_catalog": (
                 _serialize_effect_catalog(self.compiled_effect_catalog) if self.compiled_effect_catalog is not None else None
             ),
-            "effects_schema": self.effects_schema,
-            "vfs_expression_schema": self.vfs_expression_schema,
             "vfs_history_spec": self.vfs_history_spec,
             "vfs_evaluation_marks": (
-                {k: list(v) for k, v in self.vfs_evaluation_marks.items()} if self.vfs_evaluation_marks is not None else None
-            ),  # Convert sets to lists for JSON serialization
+                # Sets become sorted lists: the artifact bytes do not follow PYTHONHASHSEED.
+                {k: sorted(v) for k, v in self.vfs_evaluation_marks.items()}
+                if self.vfs_evaluation_marks is not None
+                else None
+            ),
             "experiment_dir": None if self.experiment_dir is None else str(self.experiment_dir),
             "brain_hash": self.brain_hash,
             "pack_brain_hash": self.pack_brain_hash,
@@ -392,6 +432,8 @@ class CompiledUniverse:
             "environment_hash": self.environment_hash,
             "actions_hash": self.actions_hash,
             "items_hash": self.items_hash,
+            "variables_hash": self.variables_hash,
+            "effects_hash": self.effects_hash,
             "all_levels": {
                 name: {
                     "level_name": meta.level_name,
@@ -403,6 +445,7 @@ class CompiledUniverse:
                     "bars_hash": meta.bars_hash,
                     "affordances_hash": meta.affordances_hash,
                     "training_hash": meta.training_hash,
+                    "items_appearance_hash": meta.items_appearance_hash,
                     "curriculum": meta.curriculum.model_dump(),
                     "training": meta.training.model_dump(),
                     "token_spec": _serialize_token_spec(meta.token_spec),
@@ -439,6 +482,18 @@ class CompiledUniverse:
         for field_name in REQUIRED_COMPILED_UNIVERSE_FIELDS:
             _required_field(payload, field_name)
 
+        # The profiles deserialize before the levels: each level's transition schedule
+        # inlines the expression variables its writes and rules read (VFS round-2 S4).
+        raw_vfs_profiles = _required_field(payload, "compiled_vfs_profiles")
+        compiled_vfs_profiles: CompiledVFSProfiles | None
+        expression_profiles: tuple[CompiledGlobalProfile | None, ...]
+        if raw_vfs_profiles is None:
+            compiled_vfs_profiles = None
+            expression_profiles = ()
+        else:
+            compiled_vfs_profiles = _deserialize_vfs_profiles(raw_vfs_profiles)
+            expression_profiles = (compiled_vfs_profiles.global_profile, compiled_vfs_profiles.agent_profile)
+        sources = expression_sources(expression_profiles)
         all_levels: dict[str, CompiledUniverse.LevelMetadata] = {}
         raw_levels = _required_mapping(payload, "all_levels")
         for name, meta in raw_levels.items():
@@ -468,11 +523,12 @@ class CompiledUniverse:
                     bars=level_bars,
                     affordances=level_affordances,
                 ),
-                social_residue_rules=social_rules_from_transition_payload(
+                transition_rules=transition_rules_from_payload(
                     level_transition_payload,
                     field_name=f"all_levels.{name}.transition_schedule",
                 ),
                 vfs_variables=level_vfs_variables,
+                expression_profiles=expression_profiles,
             )
             all_levels[name] = CompiledUniverse.LevelMetadata(
                 level_name=_required_field(meta, f"{level_field}.level_name"),
@@ -484,6 +540,7 @@ class CompiledUniverse:
                 bars_hash=_required_field(meta, f"all_levels.{name}.bars_hash"),
                 affordances_hash=_required_field(meta, f"all_levels.{name}.affordances_hash"),
                 training_hash=_required_field(meta, f"all_levels.{name}.training_hash"),
+                items_appearance_hash=_required_field(meta, f"all_levels.{name}.items_appearance_hash"),
                 curriculum=level_curriculum,
                 training=level_training,
                 token_spec=_token_spec_from_plain(_required_field(meta, f"all_levels.{name}.token_spec")),
@@ -515,7 +572,7 @@ class CompiledUniverse:
                 observation_schema_hash=_required_field(meta, f"all_levels.{name}.observation_schema_hash"),
                 vfs_variables=level_vfs_variables,
                 variable_schema_hash=_required_field(meta, f"all_levels.{name}.variable_schema_hash"),
-                items_appearance=_items_appearance_from_plain(_required_field(meta, f"{level_field}.items_appearance")),
+                items_appearance=_items_appearance_from_plain(_required_field(meta, f"{level_field}.items_appearance"), sources),
                 token_advisories=tuple(_required_field(meta, f"all_levels.{name}.token_advisories")),
             )
 
@@ -536,18 +593,12 @@ class CompiledUniverse:
                 if _required_field(payload, "presentation") is not None
                 else None
             ),
-            compiled_vfs_profiles=(
-                _deserialize_vfs_profiles(_required_field(payload, "compiled_vfs_profiles"))
-                if _required_field(payload, "compiled_vfs_profiles") is not None
-                else None
-            ),
+            compiled_vfs_profiles=compiled_vfs_profiles,
             compiled_effect_catalog=(
-                _deserialize_effect_catalog(_required_field(payload, "compiled_effect_catalog"))
+                _deserialize_effect_catalog(_required_field(payload, "compiled_effect_catalog"), sources)
                 if _required_field(payload, "compiled_effect_catalog") is not None
                 else None
             ),
-            effects_schema=_required_field(payload, "effects_schema"),
-            vfs_expression_schema=_required_field(payload, "vfs_expression_schema"),
             vfs_history_spec=_required_field(payload, "vfs_history_spec"),
             vfs_evaluation_marks=(
                 {k: set(v) for k, v in _required_field(payload, "vfs_evaluation_marks").items()}
@@ -562,6 +613,8 @@ class CompiledUniverse:
             environment_hash=_required_field(payload, "environment_hash"),
             actions_hash=_required_field(payload, "actions_hash"),
             items_hash=_required_field(payload, "items_hash"),
+            variables_hash=_required_field(payload, "variables_hash"),
+            effects_hash=_required_field(payload, "effects_hash"),
             all_levels=all_levels,
         )
         _validate_compiled_token_coherence(compiled)
@@ -618,12 +671,12 @@ class CompiledUniverse:
         )
 
 
-def _items_appearance_from_plain(payload: Any) -> ItemsAppearanceConfig | None:
+def _items_appearance_from_plain(payload: Any, sources: Mapping[str, ExpressionSource]) -> ItemsAppearanceConfig | None:
     """Rebuild a level's spawn rules, re-deriving each `when_ast` from its `when` text.
 
-    The `when` string is the authority; the AST is a parse of it, exactly as for compiled
-    VFS variables and effect commands. Type checking is a compile-time stage
-    (`VFSCompiler.compile_item_spawn_conditions`) and is not repeated here.
+    The `when` string is the authority; the AST is a parse of it with every pure
+    expression variable inlined, exactly as `VFSCompiler.compile_item_spawn_conditions`
+    stored it. Type checking and refusals are compile-time and are not repeated here.
     """
     if payload is None:
         return None
@@ -633,8 +686,27 @@ def _items_appearance_from_plain(payload: Any) -> ItemsAppearanceConfig | None:
     parser = ExpressionParser()
     for rule in appearance.items:
         if rule.when is not None:
-            rule.when_ast = parser.parse(rule.when)
+            rule.when_ast = inline_expression_reads(parser.parse(rule.when), sources, consumer="an item spawn")
     return appearance
+
+
+def _clone_level(level: CompiledUniverse.LevelMetadata) -> CompiledUniverse.LevelMetadata:
+    """Deep-copy one level; the two action products go through their own plain round trip.
+
+    `ActionInfo` and `RuntimeAction` hold `costs` as a read-only mappingproxy, which
+    `copy.deepcopy` cannot pickle. The artifact serializers already know how to take
+    them apart and rebuild them, so a clone uses that path instead of sharing them.
+    """
+    return replace(
+        level,
+        **{
+            field.name: deepcopy(getattr(level, field.name))
+            for field in fields(level)
+            if field.name not in {"action_metadata", "runtime_action_space"}
+        },
+        action_metadata=_action_space_metadata_from_plain(_dataclass_to_plain(level.action_metadata)),
+        runtime_action_space=_runtime_action_space_from_plain(_dataclass_to_plain(level.runtime_action_space)),
+    )
 
 
 def _dataclass_to_plain(obj: Any) -> Any:
@@ -715,7 +787,7 @@ def _validate_compiled_policy_coherence(
         expected = {
             variable.id: variable
             for variable in level.vfs_variables
-            if variable.scope == scope and not (scope == VariableScope.GLOBAL and variable.id in AMBIENT_ENGINE_NAMES)
+            if variable.scope == scope and not (scope == VariableScope.GLOBAL and variable.id == ENGINE_TICK)
         }
         variables = () if profile is None else profile.variables
         actual = {variable.name: variable for variable in variables}
@@ -821,11 +893,18 @@ def _validate_compiled_token_coherence(compiled: CompiledUniverse) -> None:
             "layout_hash": compute_token_layout_hash(level.token_spec),
             "observation_schema_hash": compute_observation_schema_hash(level.token_spec),
         }
+        # The expression programs are universe-scoped and deserialized with their ASTs
+        # re-parsed from source text, so the fifth term recomputes from the artifact alone.
+        profiles = compiled.compiled_vfs_profiles
         computed_hashes["vfs_hash"] = compute_vfs_hash(
             computed_hashes["variable_schema_hash"],
             computed_hashes["observation_schema_hash"],
             level.action_schema_hash,
             level.transition_graph_hash,
+            compute_expression_schema_hash(
+                global_profile=None if profiles is None else profiles.global_profile,
+                agent_profile=None if profiles is None else profiles.agent_profile,
+            ),
         )
         for field_name, computed_value in computed_hashes.items():
             stored_value = getattr(level, field_name)
@@ -1222,7 +1301,7 @@ def _serialize_effect_catalog(catalog: EffectCatalog) -> dict[str, Any]:
     }
 
 
-def _deserialize_effect_catalog(payload: dict[str, Any]) -> EffectCatalog:
+def _deserialize_effect_catalog(payload: dict[str, Any], sources: Mapping[str, ExpressionSource]) -> EffectCatalog:
     """Deserialize EffectCatalog from dict."""
     from townlet.effects.catalog import CompiledEffect
 
@@ -1235,10 +1314,10 @@ def _deserialize_effect_catalog(payload: dict[str, Any]) -> EffectCatalog:
             duration=effect_data["duration"],
             reapply_policy=effect_data["reapply_policy"],
             observable=effect_data["observable"],
-            on_spawn=_deserialize_command_pipeline(effect_data["on_spawn"], field_name=f"{effect_field}.on_spawn"),
-            on_tick=_deserialize_command_pipeline(effect_data["on_tick"], field_name=f"{effect_field}.on_tick"),
-            on_despawn=_deserialize_command_pipeline(effect_data["on_despawn"], field_name=f"{effect_field}.on_despawn"),
-            on_interrupt=_deserialize_command_pipeline(effect_data["on_interrupt"], field_name=f"{effect_field}.on_interrupt"),
+            on_spawn=_deserialize_command_pipeline(effect_data["on_spawn"], sources, field_name=f"{effect_field}.on_spawn"),
+            on_tick=_deserialize_command_pipeline(effect_data["on_tick"], sources, field_name=f"{effect_field}.on_tick"),
+            on_despawn=_deserialize_command_pipeline(effect_data["on_despawn"], sources, field_name=f"{effect_field}.on_despawn"),
+            on_interrupt=_deserialize_command_pipeline(effect_data["on_interrupt"], sources, field_name=f"{effect_field}.on_interrupt"),
         )
 
     max_active_effects = _effect_budget_from_plain(
@@ -1312,30 +1391,26 @@ def _serialize_command_node(command: CommandNode) -> dict[str, Any]:
         "collection_expr": command.collection_expr,
         "iterator": command.iterator,
         "body": _serialize_command_pipeline(command.body or []),
-        "radius": command.radius,
         "switch_expr": command.switch_expr,
         "cases": [
             {"when": when_expr, "commands": _serialize_command_pipeline(case_commands)} for when_expr, case_commands in command.cases or []
         ],
         "default_commands": _serialize_command_pipeline(command.default_commands or []),
-        "reduce_expr": command.reduce_expr,
-        "reduce_iterator": command.reduce_iterator,
-        "reduce_init_expr": command.reduce_init_expr,
-        "reduce_body_expr": command.reduce_body_expr,
-        "reduce_target": command.reduce_target,
         "parallel_commands": _serialize_command_pipeline(command.parallel_commands or []),
         "delay_ticks_expr": command.delay_ticks_expr,
         "delay_commands": _serialize_command_pipeline(command.delay_commands or []),
     }
 
 
-def _deserialize_command_pipeline(payload: list[dict[str, Any]], *, field_name: str) -> list[CommandNode]:
+def _deserialize_command_pipeline(
+    payload: list[dict[str, Any]], sources: Mapping[str, ExpressionSource], *, field_name: str
+) -> list[CommandNode]:
     from townlet.world.expression import ExpressionParser
 
     commands = [_deserialize_command_node(command_data, field_name=f"{field_name}[{index}]") for index, command_data in enumerate(payload)]
     parser = ExpressionParser()
     for command in commands:
-        _hydrate_command_asts(command, parser)
+        _hydrate_command_asts(command, parser, sources)
     return commands
 
 
@@ -1380,63 +1455,55 @@ def _deserialize_command_node(payload: dict[str, Any], *, field_name: str) -> Co
         collection_expr=required("collection_expr"),
         iterator=required("iterator"),
         body=command_list("body"),
-        radius=required("radius"),
         switch_expr=required("switch_expr"),
         cases=cases,
         default_commands=command_list("default_commands"),
-        reduce_expr=required("reduce_expr"),
-        reduce_iterator=required("reduce_iterator"),
-        reduce_init_expr=required("reduce_init_expr"),
-        reduce_body_expr=required("reduce_body_expr"),
-        reduce_target=required("reduce_target"),
         parallel_commands=command_list("parallel_commands"),
         delay_ticks_expr=required("delay_ticks_expr"),
         delay_commands=command_list("delay_commands"),
     )
 
 
-def _hydrate_command_asts(command: CommandNode, parser: Any) -> None:
+def _hydrate_command_asts(command: CommandNode, parser: Any, sources: Mapping[str, ExpressionSource]) -> None:
+    """Re-derive every AST of ``command`` from its text, inlining pure expression variables as ``CommandCompiler`` did."""
+
+    def parse(text: str) -> Any:
+        return inline_expression_reads(parser.parse(text), sources, consumer="a command pipeline")
+
     if command.value_expr is not None:
-        command.value_ast = parser.parse(command.value_expr)
+        command.value_ast = parse(command.value_expr)
 
-    simple_target = command.target in {"self", "target"} or isinstance(command.target, int)
+    simple_target = command.target in ENTITY_NAMES or isinstance(command.target, int)
     if command.target_expr is not None and not simple_target:
-        command.target_ast = parser.parse(command.target_expr)
+        command.target_ast = parse(command.target_expr)
 
-    simple_position = command.position in {"random", "self", "target"} or command.position is None
+    simple_position = command.position == "random" or command.position in ENTITY_NAMES or command.position is None
     if command.position_expr is not None and not simple_position:
-        command.position_ast = parser.parse(command.position_expr)
+        command.position_ast = parse(command.position_expr)
 
     if command.sample_params:
         command.sample_param_asts = {}
         for name, raw_value in command.sample_params.items():
             if (command.sample_distribution or "").lower() == "categorical" and name == "probs":
-                command.sample_param_asts[name] = [parser.parse(str(probability)) for probability in raw_value]
+                command.sample_param_asts[name] = [parse(str(probability)) for probability in raw_value]
             else:
-                command.sample_param_asts[name] = parser.parse(str(raw_value))
+                command.sample_param_asts[name] = parse(str(raw_value))
 
     if command.condition_expr is not None:
-        command.condition_ast = parser.parse(command.condition_expr)
+        command.condition_ast = parse(command.condition_expr)
 
     if command.collection_expr is not None:
-        command.collection_ast = parser.parse(command.collection_expr)
+        command.collection_ast = parse(command.collection_expr)
 
     if command.switch_expr is not None:
-        command.switch_ast = parser.parse(command.switch_expr)
-        command.case_asts = [(parser.parse(when_expr), case_commands) for when_expr, case_commands in command.cases or []]
-
-    if command.reduce_expr is not None:
-        command.collection_ast = parser.parse(command.reduce_expr)
-    if command.reduce_init_expr is not None:
-        command.reduce_init_ast = parser.parse(command.reduce_init_expr)
-    if command.reduce_body_expr is not None:
-        command.reduce_body_ast = parser.parse(command.reduce_body_expr)
+        command.switch_ast = parse(command.switch_expr)
+        command.case_asts = [(parse(when_expr), case_commands) for when_expr, case_commands in command.cases or []]
 
     if command.delay_ticks_expr is not None:
-        command.delay_ticks_ast = parser.parse(command.delay_ticks_expr)
+        command.delay_ticks_ast = parse(command.delay_ticks_expr)
 
     for child in _iter_nested_commands(command):
-        _hydrate_command_asts(child, parser)
+        _hydrate_command_asts(child, parser, sources)
 
 
 def _iter_nested_commands(command: CommandNode) -> list[CommandNode]:

@@ -6,14 +6,15 @@ from dataclasses import asdict
 import pytest
 import torch
 
+from tests.test_townlet._fixtures.command_namespace import command_compiler
 from townlet.effects.catalog import CompiledEffect, EffectCatalog
-from townlet.effects.compiler import CommandCompiler
 from townlet.effects.context import ExecutionContext
 from townlet.effects.executor import CommandExecutor
 from townlet.effects.manager import EffectManager
 from townlet.effects.schema import CommandNode, CommandType
 from townlet.vfs.profiles import CompiledItemProfile, CompiledVariable
 from townlet.vfs.registry import VariableRegistry
+from townlet.world.expression import ExpressionParser
 
 
 def _setup(policy: str) -> tuple[EffectManager, VariableRegistry, dict[str, torch.Tensor]]:
@@ -34,7 +35,7 @@ def _setup(policy: str) -> tuple[EffectManager, VariableRegistry, dict[str, torc
         )
         for profile, writers in [("writable", ("engine",)), ("sealed", ())]
     }
-    registry = VariableRegistry([], 2, torch.device("cpu"), max_items=2, item_profiles=profiles)
+    registry = VariableRegistry([], 2, torch.device("cpu"), items_per_world=2, item_profiles=profiles)
     for index, profile in enumerate(profiles):
         registry._initialize_item_row(profile, index)
         registry.register_item_instance(index, profile)
@@ -49,22 +50,25 @@ def _setup(policy: str) -> tuple[EffectManager, VariableRegistry, dict[str, torc
         on_despawn=[],
         on_interrupt=[],
     )
+    # item: 3 — one item carries two stacked `charging` plus the `child` these cascades
+    # spawn; the budget is enforced at admission, and a refused child would never reach
+    # the sealed write whose denial these tests exercise.
     manager = EffectManager(
-        catalog=EffectCatalog(effects={effect.id: effect}, max_active_effects={"global": 0, "agent": 0, "item": 2, "affordance": 0}),
+        catalog=EffectCatalog(effects={effect.id: effect}, max_active_effects={"global": 0, "agent": 0, "item": 3, "affordance": 0}),
         command_executor=CommandExecutor(),
     )
     return manager, registry, {"energy": torch.full((2,), 3.0)}
 
 
 def _write(path: str, value: str) -> CommandNode:
-    return CommandCompiler({"self.vfs.charge": "float", "bar.energy": "float"}, agent_target=True).compile_command(
+    return command_compiler({"item.charge": "float", "bar.energy": "float"}, item=True).compile_command(
         CommandNode(type=CommandType.MODIFY, path=path, value_expr=value)
     )
 
 
 def _pipeline_with_denial() -> list[CommandNode]:
     """Earlier mutation, RNG and scheduling expose a late authorization failure."""
-    compiler = CommandCompiler({"self.vfs.charge": "float", "bar.energy": "float"}, agent_target=True)
+    compiler = command_compiler({"item.charge": "float", "bar.energy": "float"}, item=True)
     return compiler.compile_commands(
         [
             CommandNode(type=CommandType.MODIFY, path="bar.energy", value_expr="9.0"),
@@ -75,7 +79,7 @@ def _pipeline_with_denial() -> list[CommandNode]:
                 sample_params={"min": 0.0, "max": 1.0},
             ),
             CommandNode(type=CommandType.DELAY, delay_ticks_expr="2", delay_commands=[_write("bar.energy", "7.0")]),
-            CommandNode(type=CommandType.MODIFY, path="self.vfs.charge", value_expr="2.0"),
+            CommandNode(type=CommandType.MODIFY, path="item.charge", value_expr="2.0"),
         ]
     )
 
@@ -83,14 +87,12 @@ def _pipeline_with_denial() -> list[CommandNode]:
 @pytest.mark.parametrize("entry", ["manager", "command"])
 def test_denied_item_spawn_cannot_leave_a_live_effect(entry: str) -> None:
     manager, registry, bars = _setup("stack")
-    manager.catalog.effects["charging"].on_spawn = [_write("self.vfs.charge", "2.0")]
+    manager.catalog.effects["charging"].on_spawn = [_write("item.charge", "2.0")]
     with pytest.raises(PermissionError, match="sealed"):
         if entry == "manager":
             manager.spawn_effect("charging", 1, 1.0, 0, bars=bars, vfs_registry=registry)
         else:
-            command = CommandCompiler({}, agent_target=True).compile_command(
-                CommandNode(type=CommandType.SPAWN_EFFECT, effect_id="charging", target_expr="1 + 0", intensity=1.0)
-            )
+            command = _engine_spawn("charging", "1 + 0")
             CommandExecutor().execute(command, ExecutionContext(bars=bars, vfs_registry=registry, effect_manager=manager))
     # A later tick must not execute the rejected effect's otherwise permitted hook.
     manager.tick(bars, registry, current_step=1)
@@ -131,7 +133,7 @@ def test_denied_reapplication_preserves_existing_effect_and_all_state(policy: st
 
 def test_item_spawn_authorizes_the_resolved_profile() -> None:
     manager, registry, bars = _setup("stack")
-    manager.catalog.effects["charging"].on_spawn = [_write("self.vfs.charge", "4.0")]
+    manager.catalog.effects["charging"].on_spawn = [_write("item.charge", "4.0")]
     manager.spawn_effect("charging", 0, 1.0, 0, bars=bars, vfs_registry=registry)
     assert registry.read_item("writable", "charge", 0, reader="engine") == 4.0
     with pytest.raises(PermissionError, match="sealed"):
@@ -145,7 +147,7 @@ def test_reapplication_does_not_authorize_unused_spawn_hook(policy: str) -> None
     manager, registry, bars = _setup(policy)
     existing = manager.spawn_effect("charging", 1, 1.0, 0, bars=bars, vfs_registry=registry)
     existing.duration_remaining = 2
-    manager.catalog.effects["charging"].on_spawn = [_write("self.vfs.charge", "9.0")]
+    manager.catalog.effects["charging"].on_spawn = [_write("item.charge", "9.0")]
     reapplied = manager.spawn_effect("charging", 1, 0.5, 1, bars=bars, vfs_registry=registry)
     assert reapplied is existing
     assert existing.duration_remaining == (5 if policy == "renew" else 2)
@@ -153,10 +155,23 @@ def test_reapplication_does_not_authorize_unused_spawn_hook(policy: str) -> None
     assert manager.next_instance_id == 1
 
 
-def _child_spawn(target_expr: str) -> CommandNode:
-    return CommandCompiler({"bar.energy": "float"}, agent_target=True).compile_command(
-        CommandNode(type=CommandType.SPAWN_EFFECT, effect_id="child", target_expr=target_expr, intensity=1.0)
+def _engine_spawn(effect_id: str, target_expr: str) -> CommandNode:
+    """An engine-built spawn on a fixed item row (these tests run in a context bound to no world).
+
+    An authored constant target is refused at compile (S1: a row is one world's entity), so
+    the node is built with its target AST directly, as an engine caller would.
+    """
+    return CommandNode(
+        type=CommandType.SPAWN_EFFECT,
+        effect_id=effect_id,
+        target_expr=target_expr,
+        target_ast=ExpressionParser().parse(target_expr),
+        intensity=1.0,
     )
+
+
+def _child_spawn(target_expr: str) -> CommandNode:
+    return _engine_spawn("child", target_expr)
 
 
 def _add_child(manager: EffectManager) -> None:
@@ -166,7 +181,7 @@ def _add_child(manager: EffectManager) -> None:
         duration=5,
         reapply_policy="stack",
         observable=True,
-        on_spawn=[_write("self.vfs.charge", "4.0")],
+        on_spawn=[_write("item.charge", "4.0")],
         on_tick=[],
         on_despawn=[],
         on_interrupt=[],
@@ -186,7 +201,7 @@ def test_descendant_denial_restores_parent_reapplication_and_aliases(policy: str
     before_rng = torch.get_rng_state().clone()
     pipeline = [
         _write("bar.energy", "9.0"),
-        CommandCompiler({"bar.energy": "float"}, agent_target=True).compile_command(
+        command_compiler({"bar.energy": "float"}).compile_command(
             CommandNode(type=CommandType.DELAY, delay_ticks_expr="2", delay_commands=[_write("bar.energy", "7.0")])
         ),
         _child_spawn("where(uniform(0.0, 1.0) > -1.0, 1, 0)"),
@@ -223,20 +238,24 @@ def test_denied_top_level_dynamic_target_preserves_rng() -> None:
 
 
 def test_successful_cascade_uses_prior_writes_and_samples_target_once() -> None:
+    # The manager captures the run seed at construction, so seed before building it.
+    torch.manual_seed(16)
     manager, registry, bars = _setup("stack")
     _add_child(manager)
     manager.catalog.effects["charging"].on_spawn = [
         _write("bar.energy", "9.0"),
-        _child_spawn("where(bar.energy[0] > 8.0 and uniform(0.0, 1.0) > -1.0, 0, 1)"),
+        _child_spawn("where(bar.energy > 8.0 and uniform(0.0, 1.0) > -1.0, 0, 1)"),
     ]
-    torch.manual_seed(16)
-    torch.rand(())
-    expected_rng = torch.get_rng_state().clone()
-    torch.manual_seed(16)
+    global_rng = torch.get_rng_state().clone()
     manager.spawn_effect("charging", 0, 1.0, 0, bars=bars, vfs_registry=registry)
     assert registry.read_item("writable", "charge", 0, reader="engine") == 4.0
     assert [effect.effect_id for effect in manager.get_all_active_effects()] == ["charging", "child"]
-    assert torch.equal(torch.get_rng_state(), expected_rng)
+    # The target is sampled once, from the effect's world stream (S1), not the global one.
+    assert torch.equal(torch.get_rng_state(), global_rng)
+    world = manager.get_all_active_effects()[0].world
+    reference = EffectManager(catalog=manager.catalog).world_rng(world, torch.device("cpu"))
+    torch.rand((), generator=reference)
+    assert torch.equal(manager.world_rngs[world].get_state(), reference.get_state())
 
 
 @pytest.mark.parametrize("entry", ["context", "environment"])
@@ -247,9 +266,7 @@ def test_successful_cascade_with_disabled_item_service(entry: str) -> None:
     _add_child(manager)
     manager.catalog.effects["charging"].on_spawn = [_child_spawn("0")]
     if entry == "context":
-        command = CommandCompiler({}, agent_target=True).compile_command(
-            CommandNode(type=CommandType.SPAWN_EFFECT, effect_id="charging", target=0, intensity=1.0)
-        )
+        command = CommandNode(type=CommandType.SPAWN_EFFECT, effect_id="charging", target=0, intensity=1.0)
         CommandExecutor().execute(command, ExecutionContext(bars=bars, vfs_registry=registry, effect_manager=manager))
     else:
         manager.spawn_effect("charging", 0, 1.0, 0, bars=bars, vfs_registry=registry, item_manager=NullItemManager())
@@ -259,11 +276,11 @@ def test_successful_cascade_with_disabled_item_service(entry: str) -> None:
 def test_compiled_switch_cascade_denial_preserves_parent_state() -> None:
     manager, registry, bars = _setup("stack")
     _add_child(manager)
-    switch = CommandCompiler({"bar.energy": "float"}, agent_target=True).compile_command(
-        CommandNode(type=CommandType.SWITCH, switch_expr="1", cases=[("1", [_child_spawn("1")])])
+    parse = ExpressionParser().parse
+    # Execution consumes compiled branches (case_asts); there are no source cases.
+    switch = CommandNode(
+        type=CommandType.SWITCH, switch_expr="1", switch_ast=parse("1"), cases=[], case_asts=[(parse("1"), [_child_spawn("1")])]
     )
-    # Execution consumes compiled branches; source diagnostics are not authority.
-    switch.cases = []
     manager.catalog.effects["charging"].on_spawn = [_write("bar.energy", "9.0"), switch]
     with pytest.raises(PermissionError, match="sealed"):
         manager.spawn_effect("charging", 1, 1.0, 0, bars=bars, vfs_registry=registry)

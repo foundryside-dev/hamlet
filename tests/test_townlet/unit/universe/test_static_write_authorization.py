@@ -28,21 +28,20 @@ def _raw():
     ]
     return replace(
         raw,
-        variables=VariablesConfig(version="1.0", extents={}, item_profiles=[], declarations=declarations),
+        variables=VariablesConfig(version="1.0", item_profiles=[], declarations=declarations),
     )
 
 
 @pytest.mark.parametrize(
     "command",
     [
-        {"modify": "vfs.secret", "value": "3"},
-        {"if": "false", "then": [{"modify": "target.vfs.secret", "value": "3"}], "else": []},
-        {"parallel": [{"modify": "self.vfs.secret", "value": "3"}]},
-        {"delay": "3", "do": [{"modify": "vfs.secret", "value": "3"}]},
-        {"switch": "0", "cases": [{"when": "1", "do": [{"modify": "vfs.secret", "value": "3"}]}], "default": []},
-        {"for_each": "all_agents", "as": "agent", "do": [{"modify": "target.vfs.secret", "value": "3"}]},
-        {"sample": "uniform", "params": {"min": "0", "max": "1"}, "store_in": "vfs.secret"},
-        {"reduce": "all_agents", "reduce_as": "agent", "reduce_init": "0", "reduce_body": "acc + 1", "reduce_into": "vfs.secret"},
+        {"modify": "secret", "value": "3"},
+        {"if": "false", "then": [{"modify": "secret", "value": "3"}], "else": []},
+        {"parallel": [{"modify": "secret", "value": "3"}]},
+        {"delay": "3", "do": [{"modify": "secret", "value": "3"}]},
+        {"switch": "0", "cases": [{"when": "1", "do": [{"modify": "secret", "value": "3"}]}], "default": []},
+        {"for_each": "all_agents", "as": "agent", "do": [{"modify": "secret", "value": "3"}]},
+        {"sample": "uniform", "params": {"min": "0", "max": "1"}, "store_in": "secret"},
     ],
 )
 def test_all_effect_command_write_forms_are_checked(command):
@@ -103,12 +102,10 @@ def test_conditional_action_and_social_writes_are_checked():
         validate_static_write_targets(
             replace(
                 raw,
-                social_residue_rules=(
+                transition_rules=(
                     {
                         "id": "bad",
-                        "kind": "social_residue",
-                        "phase": "apply_social_residue_effects",
-                        "reads": ["secret"],
+                        "phase": "apply_transition_rules",
                         "condition": "false",
                         "writes": [
                             {
@@ -135,7 +132,7 @@ def test_affordance_and_qualified_item_hook_write_targets_refuse():
     raw = _raw()
     level = next(iter(raw.levels.values()))
     level.affordances.affordances[0].interactions["on_start"] = [
-        CommandConfig.model_validate({"if": "false", "then": [{"modify": "vfs.secret", "value": "3"}], "else": []})
+        CommandConfig.model_validate({"if": "false", "then": [{"modify": "secret", "value": "3"}], "else": []})
     ]
     with pytest.raises(CompilationError, match="secret.*engine write"):
         validate_static_write_targets(raw, raw.source_map)
@@ -153,8 +150,9 @@ def test_affordance_and_qualified_item_hook_write_targets_refuse():
                 name="Locked",
                 icon="x",
                 tags=["locked"],
+                exclusive=True,
                 vfs_profile="locked",
-                interactions={"on_use": [{"modify": "self.vfs.secret", "value": "3"}]},
+                interactions={"on_use": [{"modify": "item.secret", "value": "3"}]},
             )
         ],
     )
@@ -221,9 +219,11 @@ def test_unsupported_authored_initial_state_refuses_at_typed_boundary():
 @pytest.mark.parametrize(
     "effect_scope,collection,path,denied",
     [
-        ("agent", "inventory_items", "target.vfs.secret", False),
-        ("item", "all_agents", "target.vfs.secret", True),
-        ("agent", "inventory_items", "self.vfs.secret", True),
+        # A bare name is the registry variable wherever it is written (S5); `item.<x>` in an
+        # inventory loop names a dynamically selected item, authorized at runtime.
+        ("agent", "inventory_items", "secret", True),
+        ("item", "all_agents", "secret", True),
+        ("agent", "inventory_items", "item.secret", False),
     ],
 )
 def test_for_each_preserves_self_and_retargets_target_namespace(effect_scope, collection, path, denied):

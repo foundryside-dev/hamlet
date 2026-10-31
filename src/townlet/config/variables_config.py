@@ -8,8 +8,10 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, StrictInt, model_validator
 
 from townlet.vfs.access_policy import validate_static_access
-from townlet.vfs.schema import NormalizationSpec, VariableScope, VFSScopeExtents
+from townlet.vfs.schema import NormalizationSpec, VariableScope
 from townlet.vfs.semantic_type import SemanticType
+from townlet.vfs.storage_dtype import BATCH_ROW_REFERENCE_TYPES
+from townlet.world.expression.references import EXPRESSION_KEYWORDS, IDENTIFIER_GRAMMAR, RESERVED_NAMES, is_identifier
 
 VariableType = Literal[
     "scalar",
@@ -28,10 +30,23 @@ VariableType = Literal[
     "tensor2d",
     "tensor3d",
     "tensorNd",
-    "message_token",
 ]
 VariableLifetime = Literal["tick", "episode", "persistent"]
 _REFERENCE_TYPES = frozenset({"agent_ref", "item_ref", "affordance_ref", "effect_ref"})
+# A reference whose target row is episode state: reset() rebuilds what the row holds, so a
+# persistent reference would dangle into the next episode. Each names why.
+_EPISODE_ROW_REFERENCES: dict[str, str] = {
+    "item_ref": (
+        "item rows are episode-lifetime: reset() clears the item arena and respawns into the same rows, "
+        "so it would name whatever item the next episode puts there"
+    ),
+    "effect_ref": (
+        "effect rows are episode-lifetime: reset() clears every active effect and the next episode's spawns " "reuse the same rows"
+    ),
+    "affordance_ref": (
+        "what an affordance row holds is episode state: reset() re-places the affordances and clears every " "occupancy claim on them"
+    ),
+}
 _TENSOR_TYPES = frozenset({"tensor1d", "tensor2d", "tensor3d", "tensorNd"})
 _FIXED_VECTOR_WIDTHS = {"vec2i": 2, "vec3i": 3, "vec2f": 2, "vec3f": 3}
 
@@ -62,8 +77,20 @@ class VariableDeclaration(BaseModel):
     @model_validator(mode="after")
     def validate_contract(self) -> VariableDeclaration:
         validate_static_access(self.id, self.readable_by, self.writable_by, self.exposed_to)
-        if "[" in self.id or "]" in self.id:
-            raise ValueError(f"Variable '{self.id}' cannot contain slot-index delimiters")
+        if not is_identifier(self.id):
+            # One grammar: the expression lexer's identifier rule and keyword table. A dotted
+            # name is a qualified reference ('bar.<meter>', 'item.<name>'), `true`/`false`
+            # are the literals, `and`/`or`/`not`/`if`/`then`/`else` the operators; anything
+            # else could never be read.
+            raise ValueError(
+                f"Variable id '{self.id}' is not an expression identifier ({IDENTIFIER_GRAMMAR}, not a keyword: "
+                f"{', '.join(sorted(EXPRESSION_KEYWORDS))}); no expression could reference it. Choose another id."
+            )
+        if self.scope != VariableScope.ITEM and self.id in RESERVED_NAMES:
+            raise ValueError(
+                f"Variable id '{self.id}' is reserved: the engine or an effect pipeline binds it by bare name "
+                f"(reserved: {', '.join(sorted(RESERVED_NAMES))}). Choose another id."
+            )
         has_literal = "initial_value" in self.model_fields_set
         has_mode = self.initial_value_mode is not None
         if has_literal == has_mode:
@@ -78,14 +105,17 @@ class VariableDeclaration(BaseModel):
         if self.scope == VariableScope.ITEM:
             if not self.profile or "." in self.profile or "[" in self.profile or "]" in self.profile:
                 raise ValueError(f"Item variable '{self.id}' requires a simple declared profile identifier")
-            if "." in self.id:
-                raise ValueError(f"Item variable '{self.id}' cannot contain profile separators")
             if self.type not in {"scalar", "bool", *_REFERENCE_TYPES}:
                 raise ValueError(f"Item variable '{self.id}' type has no supported scalar item-arena storage")
             if self.lifetime != "episode":
                 raise ValueError(f"Item variable '{self.id}' lifetime must be episode")
         elif self.profile is not None:
             raise ValueError(f"Variable '{self.id}' profile is only meaningful for item scope")
+        if self.lifetime == "persistent" and self.type in _EPISODE_ROW_REFERENCES:
+            raise ValueError(
+                f"Variable '{self.id}' is an {self.type} with lifetime persistent, but {_EPISODE_ROW_REFERENCES[self.type]}, "
+                "so a carried reference would name something the next episode never gave it. Declare it lifetime: episode."
+            )
         if bool(self.exposed_to) != (self.normalization is not None):
             raise ValueError(f"Variable '{self.id}' normalization is required exactly when exposed_to is nonempty")
         if self.exposed_to and self.scope not in {VariableScope.GLOBAL, VariableScope.AGENT, VariableScope.ITEM}:
@@ -104,7 +134,7 @@ class VariableDeclaration(BaseModel):
                 raise ValueError(f"Variable '{self.id}' tensor uses shape, not dims")
         elif self.shape is not None:
             raise ValueError(f"Variable '{self.id}' shape is only meaningful for tensor types")
-        if self.type in {"vecNi", "vecNf", "message_token"}:
+        if self.type in {"vecNi", "vecNf"}:
             if self.dims is None or self.dims <= 0:
                 raise ValueError(f"Variable '{self.id}' requires dims")
         elif self.dims is not None:
@@ -155,6 +185,12 @@ class VariableDeclaration(BaseModel):
                 raise ValueError(f"Variable '{self.id}' initial_value must be a finite number")
             if self.type in _REFERENCE_TYPES and (int(value) != value or value < -1):
                 raise ValueError(f"Variable '{self.id}' reference initial_value must be an integer >= -1 or null")
+            if self.type in BATCH_ROW_REFERENCE_TYPES and value != -1:
+                raise ValueError(
+                    f"Variable '{self.id}' {self.type} initial_value {value} names one fixed batch row, but the initial "
+                    "value is every world's: the batch is independent worlds (S1), so in every other world it would "
+                    "name another world's entity. Declare it null (or -1) and bind it at runtime."
+                )
             return
         if self.type in _TENSOR_TYPES:
             assert self.shape is not None
@@ -184,11 +220,10 @@ class VariableDeclaration(BaseModel):
 
 
 class VariablesConfig(BaseModel):
-    """Canonical pack variable roster, scope extents and named item schemas."""
+    """Canonical pack variable roster and named item schemas."""
 
     model_config = ConfigDict(extra="forbid")
     version: Literal["1.0"]
-    extents: VFSScopeExtents
     item_profiles: list[str]
     declarations: list[VariableDeclaration]
 
@@ -199,19 +234,13 @@ class VariablesConfig(BaseModel):
         if any(not name or "." in name or "[" in name or "]" in name for name in self.item_profiles):
             raise ValueError("Item profile identifiers must be nonempty and contain no element separators")
         seen: set[tuple[str | None, str]] = set()
-        extent_fields = {VariableScope.MESSAGE: "num_message_slots"}
         for variable in self.declarations:
             identity = (variable.profile if variable.scope == VariableScope.ITEM else None, variable.id)
             if identity in seen:
                 raise ValueError(f"Duplicate variable identifier {identity}")
             seen.add(identity)
-            if variable.id == "tick" and variable.scope != VariableScope.ITEM:
-                raise ValueError("Variable id 'tick' is reserved for the engine-written step counter")
             if variable.scope == VariableScope.ITEM and variable.profile not in self.item_profiles:
                 raise ValueError(f"Variable '{variable.id}' uses unknown item profile '{variable.profile}'")
-            field = extent_fields.get(variable.scope)
-            if field is not None and getattr(self.extents, field) is None:
-                raise ValueError(f"Variable '{variable.id}' scope requires explicit '{field}' extent")
         return self
 
     def for_scope(self, scope: VariableScope) -> tuple[VariableDeclaration, ...]:

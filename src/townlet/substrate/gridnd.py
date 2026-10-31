@@ -11,6 +11,7 @@ from townlet.substrate.base import (
     SpatialSubstrate,
     combine_metric,
     pairwise_axis_deltas,
+    require_entity_batch,
     require_position_batch,
 )
 
@@ -119,14 +120,17 @@ class GridNDSubstrate(SpatialSubstrate):
         return 2 * self.position_dim + 2
 
     # Implementation methods
-    def initialize_positions(self, num_agents: int, device: torch.device) -> torch.Tensor:
+    def initialize_positions(self, num_agents: int, device: torch.device, *, generator: torch.Generator | None) -> torch.Tensor:
         """Initialize random positions uniformly across N-dimensional grid.
 
         Returns:
             [num_agents, N] tensor of integer positions
         """
         return torch.stack(
-            [torch.randint(0, dim_size, (num_agents,), device=device, dtype=torch.long) for dim_size in self.dimension_sizes],
+            [
+                torch.randint(0, dim_size, (num_agents,), device=device, generator=generator, dtype=torch.long)
+                for dim_size in self.dimension_sizes
+            ],
             dim=1,
         )
 
@@ -358,9 +362,9 @@ class GridNDSubstrate(SpatialSubstrate):
     def visible(self, self_pos: torch.Tensor, entity_pos: torch.Tensor, vision_range: float | None) -> torch.Tensor:
         """Declared-metric visibility; wrap-aware (toroidal shortest path under `wrap`)."""
         require_position_batch(self_pos, self.position_dim, argument="self_pos")
-        require_position_batch(entity_pos, self.position_dim, argument="entity_pos")
+        entity_count = require_entity_batch(entity_pos, self_pos, self.position_dim)
         if vision_range is None:
-            return torch.ones((self_pos.shape[0], entity_pos.shape[0]), dtype=torch.bool, device=self_pos.device)
+            return torch.ones((self_pos.shape[0], entity_count), dtype=torch.bool, device=self_pos.device)
         radius = float(self._token_vision_radius(vision_range))
         wrap = self._token_axis_sizes(self_pos.device) if self.boundary == "wrap" else None
         deltas = pairwise_axis_deltas(self_pos, entity_pos, wrap)
@@ -369,7 +373,7 @@ class GridNDSubstrate(SpatialSubstrate):
     def egocentric_delta(self, self_pos: torch.Tensor, entity_pos: torch.Tensor) -> torch.Tensor:
         """Bounded entity − self per axis, using the shortest path under wrap."""
         require_position_batch(self_pos, self.position_dim, argument="self_pos")
-        require_position_batch(entity_pos, self.position_dim, argument="entity_pos")
+        require_entity_batch(entity_pos, self_pos, self.position_dim)
         wrap = self._token_axis_sizes(self_pos.device) if self.boundary == "wrap" else None
         deltas = pairwise_axis_deltas(self_pos, entity_pos, wrap)
         denominators = torch.tensor(

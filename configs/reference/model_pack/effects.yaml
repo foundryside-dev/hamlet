@@ -7,19 +7,20 @@ effect_definitions:
     reapply_policy: stack
     observable: true
     on_spawn:
-      - modify: target.vfs.is_digesting
+      - modify: is_digesting
         value: "true"
     on_tick:
-      - modify: target.bar.energy
-        value: target.bar.energy + (0.05 * intensity)
+      - modify: bar.energy
+        value: bar.energy + (0.05 * intensity)
     on_despawn:
-      - modify: target.vfs.is_digesting
+      - modify: is_digesting
         value: "false"
     on_interrupt: []
 
 # Per-scope budget of concurrently active effects (token-obs spec S2, required because
-# effects are declared). Values: one active instance per declared effect per scope
-# entity; a `stack`-policy effect exceeding its scope budget raises loudly at publish.
+# effects are declared). Values: instances one scope entity may carry at once; a spawn
+# beyond it (here, a second `stack` of ate_food on one agent) is refused in that world and
+# recorded in the step's `effect_spawn_refusals`.
 max_active_effects:
   global: 0
   agent: 1

@@ -7,7 +7,7 @@ import torch
 
 from townlet.environment.action_config import ActionConfig
 
-from .base import SpatialSubstrate, combine_metric, pairwise_axis_deltas, require_position_batch
+from .base import SpatialSubstrate, combine_metric, pairwise_axis_deltas, require_entity_batch, require_position_batch
 
 
 class ContinuousSubstrate(SpatialSubstrate):
@@ -142,11 +142,11 @@ class ContinuousSubstrate(SpatialSubstrate):
         names = {1: {"X": "position"}, 2: {"X": "horizontal", "Y": "vertical"}, 3: {"X": "horizontal", "Y": "vertical", "Z": "depth"}}
         return names.get(self.dimensions, {})
 
-    def initialize_positions(self, num_agents: int, device: torch.device) -> torch.Tensor:
+    def initialize_positions(self, num_agents: int, device: torch.device, *, generator: torch.Generator | None) -> torch.Tensor:
         """Randomly initialize positions in continuous space."""
         positions = []
         for min_val, max_val in self.bounds:
-            dim_positions = torch.rand(num_agents, device=device) * (max_val - min_val) + min_val
+            dim_positions = torch.rand(num_agents, device=device, generator=generator) * (max_val - min_val) + min_val
             positions.append(dim_positions)
 
         return torch.stack(positions, dim=1)
@@ -316,9 +316,9 @@ class ContinuousSubstrate(SpatialSubstrate):
     def visible(self, self_pos: torch.Tensor, entity_pos: torch.Tensor, vision_range: float | None) -> torch.Tensor:
         """Declared-metric visibility; wrap-aware (toroidal shortest path under `wrap`)."""
         require_position_batch(self_pos, self.position_dim, argument="self_pos")
-        require_position_batch(entity_pos, self.position_dim, argument="entity_pos")
+        entity_count = require_entity_batch(entity_pos, self_pos, self.position_dim)
         if vision_range is None:
-            return torch.ones((self_pos.shape[0], entity_pos.shape[0]), dtype=torch.bool, device=self_pos.device)
+            return torch.ones((self_pos.shape[0], entity_count), dtype=torch.bool, device=self_pos.device)
         radius = self._token_vision_radius(vision_range)
         wrap = self._token_axis_extents(self_pos.device) if self.boundary == "wrap" else None
         deltas = pairwise_axis_deltas(self_pos, entity_pos, wrap)
@@ -327,7 +327,7 @@ class ContinuousSubstrate(SpatialSubstrate):
     def egocentric_delta(self, self_pos: torch.Tensor, entity_pos: torch.Tensor) -> torch.Tensor:
         """Bounded entity − self per axis, using the shortest path under wrap."""
         require_position_batch(self_pos, self.position_dim, argument="self_pos")
-        require_position_batch(entity_pos, self.position_dim, argument="entity_pos")
+        require_entity_batch(entity_pos, self_pos, self.position_dim)
         wrap = self._token_axis_extents(self_pos.device) if self.boundary == "wrap" else None
         deltas = pairwise_axis_deltas(self_pos, entity_pos, wrap)
         return deltas / self._token_axis_extents(deltas.device)

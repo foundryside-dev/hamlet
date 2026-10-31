@@ -3,6 +3,8 @@
 import pytest
 import torch
 
+from tests.test_townlet._fixtures.command_namespace import command_compiler
+from tests.test_townlet.utils.builders import make_grid2d_substrate
 from townlet.config.items_config import ItemInteractionsConfig, ItemsCatalogConfig, ItemTypeConfig
 from townlet.effects.catalog import CompiledEffect, EffectCatalog
 from townlet.effects.compiler import CommandCompiler
@@ -47,23 +49,35 @@ def _services(
                 readable_by=["engine"],
                 writable_by=["engine"],
             )
-            for name, scope in [("global_state", "global"), ("agent_state", "agent"), ("private_state", "agent_private")]
+            for name, scope in [("global_state", "global"), ("agent_state", "agent")]
+        ]
+        # Bool storage stays outside the float32 arenas, so an ordinary write rebinds it.
+        + [
+            VariableDef(
+                id="standalone_flag",
+                scope="global",
+                type="bool",
+                lifetime="episode",
+                default=True,
+                readable_by=["engine"],
+                writable_by=["engine"],
+            )
         ],
         num_agents=2,
         device=torch.device("cpu"),
-        max_items=max_items,
+        items_per_world=max_items,
         item_profiles=profiles,
     )
-    compiler = CommandCompiler(
+    compiler = command_compiler(
         {
             "bar.energy": "float",
-            "self.vfs.charge": "float",
-            "vfs.global_state": "float",
-            "self.vfs.agent_state": "float",
-            "vfs.private_state": "float",
-            "affordance.bank.available": "bool",
+            "item.charge": "float",
+            "global_state": "float",
+            "agent_state": "float",
+            "standalone_flag": "bool",
         },
-        agent_target=True,
+        item=True,
+        scopes={"global_state": "global", "standalone_flag": "global"},
     )
     effects = {
         "parent": CompiledEffect(
@@ -83,7 +97,7 @@ def _services(
             duration=5,
             reapply_policy="stack",
             observable=True,
-            on_spawn=compiler.compile_commands([CommandNode(type=CommandType.MODIFY, path="self.vfs.charge", value_expr="4.0")]),
+            on_spawn=compiler.compile_commands([CommandNode(type=CommandType.MODIFY, path="item.charge", value_expr="4.0")]),
             on_tick=[],
             on_despawn=[],
             on_interrupt=[],
@@ -92,12 +106,12 @@ def _services(
     manager = EffectManager(
         catalog=EffectCatalog(effects=effects, max_active_effects={"global": 0, "agent": 2, "item": 2, "affordance": 0}),
         command_executor=CommandExecutor(),
-        affordance_overrides={"bank": True},
     )
     catalog = ItemsCatalogConfig(
         version="1.0",
         item_types=[
             ItemTypeConfig(
+                exclusive=True,
                 id=name,
                 name=name,
                 icon="x",
@@ -112,8 +126,17 @@ def _services(
         max_items_per_agent=3,
         max_items_in_world=max_items,
     )
-    items = ItemManager(catalog=catalog, max_items=max_items, device="cpu", schema=None, vfs_registry=registry, effect_manager=manager)
-    sealed = items.spawn_item("sealed", (0, 0), 0)
+    items = ItemManager(
+        catalog=catalog,
+        num_worlds=registry.num_worlds,
+        substrate=make_grid2d_substrate(),
+        items_per_world=max_items,
+        device="cpu",
+        symbols=None,
+        vfs_registry=registry,
+        effect_manager=manager,
+    )
+    sealed = items.spawn_item(0, "sealed", (0, 0), 0)
     assert sealed is not None
     return manager, registry, items, sealed, {"energy": torch.full((2,), 3.0)}, compiler
 
@@ -123,9 +146,11 @@ def test_fresh_parent_denial_releases_items_positions_and_profile_rows() -> None
     manager.catalog.effects["parent"].on_spawn = compiler.compile_commands(
         [
             CommandNode(type=CommandType.SPAWN_ITEM, item_type="writable", position="self", quantity=1, initial_state={"charge": 7.0}),
-            CommandNode(type=CommandType.SPAWN_EFFECT, effect_id="child", target=sealed.vfs_index, intensity=1.0),
         ]
-    )
+    ) + [
+        # Engine-built: an authored constant spawn target is refused at compile (S1).
+        CommandNode(type=CommandType.SPAWN_EFFECT, effect_id="child", target=sealed.vfs_index, intensity=1.0)
+    ]
     assert registry.item_vfs is not None
     arena = registry.item_vfs
     before_arena = arena.clone()
@@ -141,9 +166,9 @@ def test_fresh_parent_denial_releases_items_positions_and_profile_rows() -> None
             item_manager=items,
             agent_positions=torch.tensor([[4, 5], [6, 7]]),
         )
-    assert items.get_all_items() == [sealed]
-    assert items.get_all_items()[0] is sealed
-    assert not items._position_occupied((4, 5))
+    assert items.items_in_world(0) == [sealed]
+    assert items.items_in_world(0)[0] is sealed
+    assert not items._position_occupied(0, (4, 5))
     assert registry.item_vfs is arena
     assert torch.equal(arena, before_arena)
     assert registry.item_vfs_index_to_profile == before_profiles
@@ -152,8 +177,8 @@ def test_fresh_parent_denial_releases_items_positions_and_profile_rows() -> None
     assert torch.equal(bars["energy"], torch.full((2,), 3.0))
     # A failed cascade must leave both free rows and the next public item ID
     # available. No hidden item can consume capacity or retain its profile.
-    first = items.spawn_item("writable", (4, 5), 1, initial_state={"charge": 6.0})
-    second = items.spawn_item("writable", (6, 7), 1)
+    first = items.spawn_item(0, "writable", (4, 5), 1, initial_state={"charge": 6.0})
+    second = items.spawn_item(0, "writable", (6, 7), 1)
     assert first is not None and second is not None
     assert (first.instance_id, second.instance_id) == (1, 2)
     assert first.vfs_index != second.vfs_index
@@ -161,38 +186,36 @@ def test_fresh_parent_denial_releases_items_positions_and_profile_rows() -> None
     assert registry.read_item("sealed", "charge", sealed.vfs_index, reader="engine") == 2.0
 
 
-def test_descendant_denial_restores_published_arenas_private_aliases_and_affordance() -> None:
+def test_descendant_denial_restores_published_arenas_and_standalone_aliases() -> None:
     manager, registry, items, sealed, bars, compiler = _services(3)
-    # Hold the views used by runtime publishers, and the original private tensor
+    # Hold the views used by runtime publishers, and the original standalone tensor
     # which ordinary registry writes replace. The rollback must repair both.
     original = {name: tensor for name, tensor in registry._storage.items()}
+    original_values = {name: tensor.clone() for name, tensor in registry._storage.items()}
     published_global = registry._scope_arenas["global"].tensor
     published_agents = registry._scope_arenas["agent"].tensor
     global_values = published_global.clone()
     agent_values = published_agents.clone()
-    availability = manager.affordance_overrides
-    assert availability is not None
     manager.catalog.effects["parent"].on_spawn = compiler.compile_commands(
         [
-            CommandNode(type=CommandType.MODIFY, path="vfs.global_state", value_expr="9.0"),
-            CommandNode(type=CommandType.MODIFY, path="self.vfs.agent_state", value_expr="8.0"),
-            CommandNode(type=CommandType.MODIFY, path="vfs.private_state", value_expr="7.0"),
-            CommandNode(type=CommandType.MODIFY, path="affordance.bank.available", value_expr="false"),
-            CommandNode(type=CommandType.SPAWN_EFFECT, effect_id="child", target=sealed.vfs_index, intensity=1.0),
+            CommandNode(type=CommandType.MODIFY, path="global_state", value_expr="9.0"),
+            CommandNode(type=CommandType.MODIFY, path="agent_state", value_expr="8.0"),
+            CommandNode(type=CommandType.MODIFY, path="standalone_flag", value_expr="false"),
         ]
-    )
+    ) + [
+        # Engine-built: an authored constant spawn target is refused at compile (S1).
+        CommandNode(type=CommandType.SPAWN_EFFECT, effect_id="child", target=sealed.vfs_index, intensity=1.0),
+    ]
     with pytest.raises(PermissionError, match="sealed"):
         manager.spawn_effect("parent", 0, 1.0, 0, bars=bars, vfs_registry=registry, item_manager=items)
     for name, tensor in original.items():
         assert registry._storage[name] is tensor
-        assert torch.equal(tensor, torch.full_like(tensor, 2.0))
+        assert torch.equal(tensor, original_values[name])
         assert torch.equal(registry.get(name, reader="engine"), tensor)
     assert registry._scope_arenas["global"].tensor is published_global
     assert registry._scope_arenas["agent"].tensor is published_agents
     assert torch.equal(published_global, global_values)
     assert torch.equal(published_agents, agent_values)
-    assert manager.affordance_overrides is availability
-    assert availability == {"bank": True}
     assert manager.get_all_active_effects() == []
 
 
@@ -201,8 +224,8 @@ def test_refused_cascade_preserves_next_item_row_after_allocation_and_reuse() ->
     rejected = _services(4)
     targets = []
     for _, registry, items, initial, _, _ in [control, rejected]:
-        sealed = items.spawn_item("sealed", (1, 0), 0)
-        writable = items.spawn_item("writable", (2, 0), 0)
+        sealed = items.spawn_item(0, "sealed", (1, 0), 0)
+        writable = items.spawn_item(0, "writable", (2, 0), 0)
         assert sealed is not None and writable is not None
         assert [initial.vfs_index, sealed.vfs_index, writable.vfs_index] == [0, 1, 2]
         items.despawn_item(initial.instance_id, current_tick=1)
@@ -213,9 +236,11 @@ def test_refused_cascade_preserves_next_item_row_after_allocation_and_reuse() ->
     manager.catalog.effects["parent"].on_spawn = compiler.compile_commands(
         [
             CommandNode(type=CommandType.SPAWN_ITEM, item_type="writable", position="self", quantity=1, initial_state={"charge": 7.0}),
-            CommandNode(type=CommandType.SPAWN_EFFECT, effect_id="child", target=targets[1].vfs_index, intensity=1.0),
         ]
-    )
+    ) + [
+        # Engine-built: an authored constant spawn target is refused at compile (S1).
+        CommandNode(type=CommandType.SPAWN_EFFECT, effect_id="child", target=targets[1].vfs_index, intensity=1.0)
+    ]
     with pytest.raises(PermissionError, match="sealed"):
         manager.spawn_effect(
             "parent",
@@ -227,8 +252,8 @@ def test_refused_cascade_preserves_next_item_row_after_allocation_and_reuse() ->
             item_manager=items,
             agent_positions=torch.tensor([[4, 5], [6, 7]]),
         )
-    expected = control[2].spawn_item("writable", (4, 5), 2, initial_state={"charge": 6.0})
-    actual = items.spawn_item("writable", (4, 5), 2, initial_state={"charge": 6.0})
+    expected = control[2].spawn_item(0, "writable", (4, 5), 2, initial_state={"charge": 6.0})
+    actual = items.spawn_item(0, "writable", (4, 5), 2, initial_state={"charge": 6.0})
     assert expected is not None and actual is not None
     assert actual.vfs_index == expected.vfs_index
     # Allocation is determined by the available rows, including reused lower
@@ -237,6 +262,6 @@ def test_refused_cascade_preserves_next_item_row_after_allocation_and_reuse() ->
     assert actual.instance_id == expected.instance_id == 3
     assert actual.position == expected.position == (4, 5)
     assert actual.item_type == expected.item_type == "writable"
-    assert len(items.get_all_items()) == len(control[2].get_all_items()) == 3
+    assert len(items.items_in_world(0)) == len(control[2].items_in_world(0)) == 3
     assert registry.read_item("writable", "charge", actual.vfs_index, reader="engine") == 6.0
     assert registry.read_item("sealed", "charge", targets[1].vfs_index, reader="engine") == 2.0

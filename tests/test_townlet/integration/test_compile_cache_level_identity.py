@@ -31,6 +31,7 @@ import pytest
 import yaml
 
 from townlet.universe.compiler import UniverseCompiler
+from townlet.universe.errors import CompilationError
 
 PACK = Path("configs/default_curriculum")
 LEVELS = (
@@ -158,7 +159,7 @@ def test_artifact_stamped_with_a_foreign_primary_level_is_fatal(tmp_path: Path) 
     # Masquerade L0's artifact as L1's.
     shutil.copyfile(l0_artifact, cache_dir / "universe-L1_full_observability.msgpack")
 
-    with pytest.raises(ValueError, match="primary_level"):
+    with pytest.raises(CompilationError, match="ARTIFACT_LOAD_REFUSED.*primary_level"):
         compiler.compile(pack, primary_level="L1_full_observability", use_cache=True)
 
 

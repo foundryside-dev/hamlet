@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
+import hashlib
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
-if TYPE_CHECKING:
-    import torch
+import torch
 
+if TYPE_CHECKING:
     from townlet.effects.catalog import EffectCatalog
     from townlet.effects.context import ExecutionContext
     from townlet.effects.executor import CommandExecutor
@@ -21,6 +22,7 @@ from townlet.numeric import require_float32
 __all__ = [
     "ActiveEffect",
     "EffectManager",
+    "SpawnRefusal",
 ]
 
 
@@ -28,6 +30,12 @@ class NullItemManager:
     """Fallback ItemManager to satisfy ExecutionContext when items are disabled."""
 
     def spawn_item(self, *args: Any, **kwargs: Any) -> None:
+        raise RuntimeError("ItemManager is not configured; spawn_item is unavailable")
+
+    find_spawn_location = spawn_item
+
+    @property
+    def num_worlds(self) -> int:
         raise RuntimeError("ItemManager is not configured; spawn_item is unavailable")
 
     def tick(self, *args: Any, **kwargs: Any) -> None:
@@ -49,6 +57,9 @@ class ActiveEffect:
     instance_id: int  # Unique instance ID
     target_entity_id: int  # What it's attached to (agent/item/affordance index)
     scope: EffectScope  # Where it lives (global/agent/item/affordance)
+    # The one world it lives in (S1: the batch is independent single-agent worlds). It
+    # reads and writes only this world; see EffectManager.spawn_effect for the rule.
+    world: int
 
     # Lifecycle state
     intensity: float  # Current intensity multiplier
@@ -61,6 +72,25 @@ class ActiveEffect:
 
     def __post_init__(self) -> None:
         self.intensity = require_float32(self.intensity, field=f"active effect {self.effect_id!r} intensity")
+
+
+@dataclass(frozen=True)
+class SpawnRefusal:
+    """One spawn the manager did not admit: its scope entity was at the declared budget.
+
+    `max_active_effects.<scope>` is the number of effect instances one scope entity (a
+    world's agent, an item row, a world's affordance, the world itself) may carry at once.
+    A spawn that would add an instance beyond it is not admitted, in that world only; the
+    refusal is recorded here instead of overflowing the effect token block at publish.
+    """
+
+    world: int
+    effect_id: str
+    scope: EffectScope
+    key: Any
+    budget: int
+    live: int
+    step: int
 
 
 @dataclass(frozen=True)
@@ -82,7 +112,6 @@ class EffectManager:
         command_executor: CommandExecutor | None = None,
         scheduler: Any | None = None,
         time_enabled: bool = True,
-        affordance_overrides: dict[str, bool] | None = None,
     ) -> None:
         """Initialize effect manager with compiled catalog.
 
@@ -97,16 +126,26 @@ class EffectManager:
         from townlet.effects.scheduler import Scheduler
 
         self.scheduler = scheduler or Scheduler(time_enabled=time_enabled)
-        self.affordance_overrides = affordance_overrides
         self.current_step = 0  # Track environment step
         self.next_instance_id = 0
         self._admission_transaction_active = False
+        # One random stream per world for effect sampling (`sample`, `uniform()`,
+        # `normal_dist()`), so one world's draws never shift another's (S1). Seeded from
+        # the run seed (`torch.initial_seed()`, captured here once, so another environment's
+        # later seed_all never shifts these streams), the world and the episode; made on first use.
+        self._run_seed = torch.initial_seed()
+        self._episode = 0
+        self.world_rngs: dict[int, torch.Generator] = {}
+        # Spawns refused at the declared per-entity budget this episode (telemetry).
+        self.spawn_refusals: list[SpawnRefusal] = []
 
-        # Scoped storage
-        self.global_effects: list[ActiveEffect] = []
-        self.agent_effects: dict[int, list[ActiveEffect]] = {}  # agent_id -> effects
-        self.item_effects: dict[int, list[ActiveEffect]] = {}  # item_id -> effects
-        self.affordance_effects: dict[str, list[ActiveEffect]] = {}  # affordance_id -> effects
+        # Scoped storage. Every effect lives in one world (S1); a store's key carries it:
+        # an agent row and an item-arena row each belong to exactly one world, and the
+        # global and affordance stores are keyed by world explicitly.
+        self.global_effects: dict[int, list[ActiveEffect]] = {}  # world -> effects
+        self.agent_effects: dict[int, list[ActiveEffect]] = {}  # agent row -> effects
+        self.item_effects: dict[int, list[ActiveEffect]] = {}  # item-arena row -> effects
+        self.affordance_effects: dict[tuple[int, int], list[ActiveEffect]] = {}  # (world, entity) -> effects
 
     def spawn_effect(
         self,
@@ -121,8 +160,16 @@ class EffectManager:
         item_manager: Any | None = None,
         affordance_positions: dict[str, torch.Tensor] | None = None,
         substrate: SpatialSubstrate | None = None,
-    ) -> ActiveEffect:
+        world: int | None = None,
+    ) -> ActiveEffect | None:
         """Spawn new effect instance, handling reapply policies.
+
+        Every effect lives in exactly one world (S1: the batch is independent
+        single-agent worlds). An agent-scoped effect lives in its agent's world and an
+        item-scoped one in its item's world; `world`, when given, must agree. A global- or
+        affordance-scoped effect has no entity that names a world, so `world` (the world
+        whose event spawned it) is required. A spawner bound to no world spawns one
+        instance per world: `CommandExecutor` loops; this method never broadcasts.
 
         Args:
             effect_id: Effect definition ID from catalog
@@ -135,15 +182,33 @@ class EffectManager:
             agent_positions: Agent positions [num_agents, position_dim] (spatial reads, spawn_item origins)
             item_manager: ItemManager for spawn_item commands
             affordance_positions: Affordance positions by name (affordance-spatial functions)
-            substrate: Substrate whose declared metric measures distance (nearby_agents)
+            substrate: Substrate whose declared metric measures distance
+            world: The world the spawning event happened in
 
         Returns:
-            ActiveEffect instance
+            The live ActiveEffect (new, renewed, merged or replacing), or None when the
+            spawn was not admitted: the scope entity already carries
+            `max_active_effects.<scope>` instances and this spawn would add one (a new
+            effect, or a `stack` reapplication). The refusal is appended to
+            `spawn_refusals`; no other world is affected.
         """
         effect_def = self.catalog.effects[effect_id]
-        existing = self._find_existing(effect_id, target_entity_id, EffectScope(effect_def.scope))
+        scope = EffectScope(effect_def.scope)
+        world = self.effect_world(scope, target_entity_id, world=world, vfs_registry=vfs_registry)
+        key = self._scope_key(scope, target_entity_id, world)
+        existing = self._find_existing(effect_id, key, scope)
         pipelines = []
         if existing is None or effect_def.reapply_policy == "stack":
+            # `renew` and `merge` add no instance; `replace` removes one and adds one.
+            # Only this path grows the entity's instance count, so only it is budgeted.
+            store = self._store(scope)
+            live = len(store[key]) if key in store else 0
+            budget = self.scope_budget(scope)
+            if live >= budget:
+                self.spawn_refusals.append(
+                    SpawnRefusal(world=world, effect_id=effect_id, scope=scope, key=key, budget=budget, live=live, step=current_step)
+                )
+                return None
             pipelines.append(effect_def.on_spawn)
         elif effect_def.reapply_policy in {"merge", "replace"}:
             pipelines.append(effect_def.on_interrupt)
@@ -174,6 +239,7 @@ class EffectManager:
             return self._spawn_effect(
                 effect_id,
                 target_entity_id,
+                world,
                 intensity,
                 current_step,
                 bars,
@@ -202,10 +268,76 @@ class EffectManager:
                 return True
         return False
 
+    @staticmethod
+    def effect_world(scope: EffectScope, target_entity_id: int, *, world: int | None, vfs_registry: Any | None) -> int:
+        """The one world an effect of `scope` attached to `target_entity_id` lives in.
+
+        An agent's world is its row (S1: world i is agent i's); an item's world is its
+        arena row's; a global or affordance effect's is the spawning world. A spawn
+        that names an entity outside the spawning world would write another world's
+        state, so it is refused.
+        """
+        if scope is EffectScope.AGENT:
+            entity_world = int(target_entity_id)
+        elif scope is EffectScope.ITEM:
+            if vfs_registry is None:
+                if world is None:
+                    raise ValueError("An item-scoped effect needs the VFS registry (or world=) to find its item's world")
+                return int(world)
+            entity_world = vfs_registry.item_world(int(target_entity_id))
+        else:
+            if world is None:
+                raise ValueError(
+                    f"A {scope.value}-scoped effect lives in the world whose event spawned it; spawn it with world= "
+                    "(a spawner bound to no world spawns one instance per world)"
+                )
+            return int(world)
+        if world is not None and int(world) != entity_world:
+            raise ValueError(
+                f"Cannot spawn a {scope.value}-scoped effect on {scope.value} {target_entity_id} (world {entity_world}) "
+                f"from world {world}: worlds are independent, an event writes only its own world"
+            )
+        return entity_world
+
+    def scope_budget(self, scope: EffectScope) -> int:
+        """`max_active_effects.<scope>`: instances one scope entity may carry at once."""
+        budget = self.catalog.max_active_effects
+        assert budget is not None, "an EffectCatalog with effects declares max_active_effects"
+        return int(budget[scope.value])
+
+    @staticmethod
+    def _scope_key(scope: EffectScope, target_entity_id: int, world: int) -> Any:
+        """The key of an effect in its scope's store (agent row, item row, world, or (world, entity))."""
+        if scope is EffectScope.GLOBAL:
+            return world
+        if scope is EffectScope.AFFORDANCE:
+            return (world, int(target_entity_id))
+        return int(target_entity_id)
+
+    def world_rng(self, world: int, device: torch.device) -> torch.Generator:
+        """World `world`'s effect random stream for this episode."""
+        generator = self.world_rngs.get(world)
+        if generator is None:
+            digest = hashlib.blake2b(f"effects:{self._run_seed}:{self._episode}:{world}".encode(), digest_size=8).digest()
+            generator = torch.Generator(device=device)
+            generator.manual_seed(int.from_bytes(digest, "little") & ((1 << 63) - 1))
+            self.world_rngs[world] = generator
+        return generator
+
+    def _store(self, scope: EffectScope) -> dict[Any, list[ActiveEffect]]:
+        if scope is EffectScope.GLOBAL:
+            return self.global_effects
+        if scope is EffectScope.AGENT:
+            return self.agent_effects
+        if scope is EffectScope.ITEM:
+            return self.item_effects
+        return self.affordance_effects
+
     def _spawn_effect(
         self,
         effect_id: str,
         target_entity_id: int,
+        world: int,
         intensity: float,
         current_step: int,
         bars: dict[str, torch.Tensor] | None,
@@ -222,8 +354,8 @@ class EffectManager:
         effect_index = self.catalog.get_effect_index(effect_id)
         observable = effect_def.observable
 
-        # Check for existing effect on same target
-        existing = self._find_existing(effect_id, target_entity_id, scope)
+        # Check for existing effect on same target (in the same world)
+        existing = self._find_existing(effect_id, self._scope_key(scope, target_entity_id, world), scope)
 
         if existing and effect_def.reapply_policy == "renew":
             # Renew invokes no lifecycle commands.
@@ -245,6 +377,7 @@ class EffectManager:
                 instance_id=self.next_instance_id,
                 target_entity_id=target_entity_id,
                 scope=scope,
+                world=world,
                 intensity=intensity,
                 duration_total=duration,
                 duration_remaining=duration,
@@ -321,20 +454,28 @@ class EffectManager:
         current_tick: int,
         spatial: _Spatial,
         interrupt_reason: str | None = None,
+        write_mask: torch.Tensor | None = None,
     ) -> ExecutionContext:
-        """Build one scope-authoritative context for every effect lifecycle hook."""
+        """Build one scope-authoritative context for every effect lifecycle hook.
+
+        An agent- or item-scoped effect's `self` and `target` are its entity. A global-
+        or affordance-scoped effect has no agent: it addresses its world's agents with
+        `for_each: all_agents`, never through a vestigial entity index.
+        """
         from townlet.effects.context import ExecutionContext
 
         scope = EffectScope(effect.scope)
-        entity_id = effect.target_entity_id
-        entity_is_indexed_self = scope in {EffectScope.AGENT, EffectScope.ITEM}
+        entity_id: int | None = None
+        if scope in {EffectScope.AGENT, EffectScope.ITEM}:
+            entity_id = effect.target_entity_id
         is_item = scope == EffectScope.ITEM
         return ExecutionContext(
             bars=bars,
             vfs_registry=vfs_registry,
-            self_index=entity_id if entity_is_indexed_self else None,
+            self_index=entity_id,
             target_index=entity_id,
             effect=effect,
+            write_mask=write_mask,
             self_is_item=is_item,
             target_is_item=is_item,
             effect_manager=self,
@@ -346,77 +487,30 @@ class EffectManager:
             interrupt_reason=interrupt_reason,
             current_tick=current_tick,
             scheduler=self.scheduler,
-            affordance_overrides=self.affordance_overrides,
         )
 
     def _add_to_scope(self, effect: ActiveEffect) -> None:
-        """Add effect to appropriate scoped collection."""
-        if effect.scope == EffectScope.GLOBAL:
-            self.global_effects.append(effect)
-        elif effect.scope == EffectScope.AGENT:
-            if effect.target_entity_id not in self.agent_effects:
-                self.agent_effects[effect.target_entity_id] = []
-            self.agent_effects[effect.target_entity_id].append(effect)
-        elif effect.scope == EffectScope.ITEM:
-            if effect.target_entity_id not in self.item_effects:
-                self.item_effects[effect.target_entity_id] = []
-            self.item_effects[effect.target_entity_id].append(effect)
-        elif effect.scope == EffectScope.AFFORDANCE:
-            # Note: affordance_effects keyed by affordance_id (string), not entity_id
-            # For now, store by string representation of target_entity_id
-            key = str(effect.target_entity_id)
-            if key not in self.affordance_effects:
-                self.affordance_effects[key] = []
-            self.affordance_effects[key].append(effect)
+        """Add effect to its scope's store, under its world-carrying key."""
+        key = self._scope_key(effect.scope, effect.target_entity_id, effect.world)
+        store = self._store(effect.scope)
+        if key not in store:
+            store[key] = []
+        store[key].append(effect)
 
-    def _find_existing(self, effect_id: str, target_entity_id: int, scope: EffectScope) -> ActiveEffect | None:
-        """Find existing effect on target.
-
-        Args:
-            effect_id: Effect definition ID
-            target_entity_id: Target entity ID
-            scope: Effect scope
-
-        Returns:
-            ActiveEffect if found, None otherwise
-        """
-        collection = self._get_scope_collection(target_entity_id, scope)
-        if collection is None:
+    def _find_existing(self, effect_id: str, key: Any, scope: EffectScope) -> ActiveEffect | None:
+        """The live instance of `effect_id` under scope-store `key`, if any."""
+        store = self._store(scope)
+        if key not in store:
             return None
-
-        for effect in collection:
+        for effect in store[key]:
             if effect.effect_id == effect_id:
                 return effect
-
-        return None
-
-    def _get_scope_collection(self, target_entity_id: int, scope: EffectScope) -> list[ActiveEffect] | None:
-        """Get scoped collection for target.
-
-        Args:
-            target_entity_id: Target entity ID
-            scope: Effect scope
-
-        Returns:
-            List of effects for this scope/target, or None if not found
-        """
-        if scope == EffectScope.GLOBAL:
-            return self.global_effects
-        elif scope == EffectScope.AGENT:
-            return self.agent_effects.get(target_entity_id)
-        elif scope == EffectScope.ITEM:
-            return self.item_effects.get(target_entity_id)
-        elif scope == EffectScope.AFFORDANCE:
-            return self.affordance_effects.get(str(target_entity_id))
         return None
 
     def _remove_from_scope(self, effect: ActiveEffect) -> None:
-        """Remove effect from scoped collection.
-
-        Args:
-            effect: Effect to remove
-        """
-        collection = self._get_scope_collection(effect.target_entity_id, effect.scope)
+        """Remove effect from its scope's store."""
+        key = self._scope_key(effect.scope, effect.target_entity_id, effect.world)
+        collection = self._store(effect.scope).get(key)
         if collection is not None and effect in collection:
             collection.remove(effect)
 
@@ -425,23 +519,34 @@ class EffectManager:
         effects = self.agent_effects.get(agent_id, [])
         return [eff for eff in effects if eff.observable]
 
+    @classmethod
+    def schedule_key(cls, effect: ActiveEffect) -> tuple[str, Any]:
+        """The scheduler (scope, entity) key of delayed work an effect schedules.
+
+        One key per effect entity in its world, so cancelling one world's global effect
+        never cancels another world's delayed work.
+        """
+        scope = EffectScope(effect.scope)
+        return scope.value, cls._scope_key(scope, effect.target_entity_id, effect.world)
+
     def _cancel_scheduled_for_effect(self, effect: ActiveEffect) -> None:
-        """Cancel any scheduled commands tied to the effect's scope/entity."""
+        """Cancel the delayed work this effect instance scheduled, and no other effect's."""
         if not self.scheduler:
             return
+        self.scheduler.cancel_effect_instance(int(effect.instance_id))
 
-        scope_value = effect.scope.value
+    def discard_item_effects(self, item_row: int) -> None:
+        """Drop every effect on item row `item_row`, and their delayed work, as the item leaves.
 
-        if effect.scope == EffectScope.AGENT:
-            self.scheduler.cancel(scope=scope_value, entity_id=effect.target_entity_id)
-        elif effect.scope == EffectScope.ITEM:
-            self.scheduler.cancel(scope=scope_value, entity_id=effect.target_entity_id)
-        elif effect.scope == EffectScope.AFFORDANCE:
-            self.scheduler.cancel(scope=scope_value, entity_id=str(effect.target_entity_id))
-        elif effect.scope == EffectScope.GLOBAL:
-            self.scheduler.cancel(scope=scope_value, entity_id=None)
+        A hard clear (no on_interrupt / on_despawn): the item's state row is being
+        unregistered, so a hook would read a row that no longer has a profile. The
+        same hard-clear rule as an episode reset, scoped to one item.
+        """
+        for effect in self.item_effects.pop(item_row, []):
+            self._cancel_scheduled_for_effect(effect)
+        self.cancel_scheduled_for_entity(scope=EffectScope.ITEM.value, entity_id=item_row)
 
-    def cancel_scheduled_for_entity(self, scope: str, entity_id: int | str | None) -> None:
+    def cancel_scheduled_for_entity(self, scope: str, entity_id: Any) -> None:
         """Cancel scheduled commands for a given scope/entity (external callers)."""
         if not self.scheduler:
             return
@@ -476,6 +581,9 @@ class EffectManager:
         self.next_instance_id = 0
         self.current_step = 0
         self._admission_transaction_active = False
+        self._episode += 1
+        self.world_rngs.clear()
+        self.spawn_refusals.clear()
 
     def tick(
         self,
@@ -486,6 +594,7 @@ class EffectManager:
         agent_positions: torch.Tensor | None = None,
         affordance_positions: dict[str, torch.Tensor] | None = None,
         substrate: SpatialSubstrate | None = None,
+        live: torch.Tensor | None = None,
     ) -> None:
         """Execute all active effects for one timestep.
 
@@ -501,6 +610,10 @@ class EffectManager:
             agent_positions: Agent positions [num_agents, position_dim] this tick
             affordance_positions: Affordance positions by name this tick
             substrate: Substrate whose declared metric measures distance
+            live: `[num_worlds]` bool, the worlds whose agent is live this tick (None: all).
+                Every hook and delayed block runs under it as a write mask, so an effect in
+                a world whose agent is done writes nothing (dead agents freeze, as VTC
+                rules do), and a persistent global carries no posthumous advance.
 
         Every lifecycle hook and delayed block run by this tick sees the same spatial
         state, so position reads (`distance_to_affordance`, `in_range`, `nearby_agents`)
@@ -514,15 +627,11 @@ class EffectManager:
         # Execute any scheduled commands due at this tick before on_tick handlers
         if self.scheduler:
             due_items = self.scheduler.advance(current_step)
-            self._execute_scheduled_items(due_items, bars, vfs_registry, item_manager, spatial)
+            self._execute_scheduled_items(due_items, bars, vfs_registry, item_manager, spatial, live)
 
-        self._tick_scope_collection(self.global_effects, bars, vfs_registry, item_manager, spatial)
-        for effects in list(self.agent_effects.values()):
-            self._tick_scope_collection(effects, bars, vfs_registry, item_manager, spatial)
-        for effects in list(self.item_effects.values()):
-            self._tick_scope_collection(effects, bars, vfs_registry, item_manager, spatial)
-        for effects in list(self.affordance_effects.values()):
-            self._tick_scope_collection(effects, bars, vfs_registry, item_manager, spatial)
+        for store in (self.global_effects, self.agent_effects, self.item_effects, self.affordance_effects):
+            for effects in list(store.values()):
+                self._tick_scope_collection(effects, bars, vfs_registry, item_manager, spatial, live)
 
         # Drain any zero-delay commands scheduled during this tick
         if self.scheduler:
@@ -530,7 +639,7 @@ class EffectManager:
                 pending_now = self.scheduler.drain_due()
                 if not pending_now:
                     break
-                self._execute_scheduled_items(pending_now, bars, vfs_registry, item_manager, spatial)
+                self._execute_scheduled_items(pending_now, bars, vfs_registry, item_manager, spatial, live)
 
     def _tick_scope_collection(
         self,
@@ -539,12 +648,13 @@ class EffectManager:
         vfs_registry: Any | None,
         item_manager: Any | None,
         spatial: _Spatial,
+        live: torch.Tensor | None,
     ) -> None:
         """Tick and naturally despawn one scope collection in reverse removal order."""
         for effect in reversed(effects.copy()):
-            self._tick_effect(effect, bars, vfs_registry, item_manager, spatial)
+            self._tick_effect(effect, bars, vfs_registry, item_manager, spatial, live)
             if effect.duration_remaining <= 0:
-                self._despawn_effect(effect, bars, vfs_registry, item_manager, spatial, interrupt_reason=None)
+                self._despawn_effect(effect, bars, vfs_registry, item_manager, spatial, interrupt_reason=None, write_mask=live)
 
     def _execute_scheduled_items(
         self,
@@ -553,8 +663,13 @@ class EffectManager:
         vfs_registry: Any | None,
         item_manager: Any | None,
         spatial: _Spatial,
+        live: torch.Tensor | None,
     ) -> None:
-        """Execute scheduled commands using the current tick context."""
+        """Execute scheduled commands using the current tick context.
+
+        A delayed block keeps the mask that was live when it was scheduled, narrowed by
+        this tick's live worlds.
+        """
 
         if not scheduled_items or self.command_executor is None:
             return
@@ -573,20 +688,18 @@ class EffectManager:
             spawn_depth = overrides.pop("spawn_depth", 0)
             effect_override = overrides.pop("effect", None)
             write_mask = overrides.pop("write_mask", None)
+            if live is not None and write_mask is None:
+                write_mask = live
+            elif live is not None:
+                write_mask = write_mask & live
 
             # Derive defaults from scope/entity when not explicitly provided
             if item.scope == "agent" and self_index is None and item.entity_id is not None:
-                try:
-                    self_index = int(item.entity_id)
-                except Exception:
-                    self_index = item.entity_id
+                self_index = int(item.entity_id)
                 if target_index is None:
                     target_index = self_index
             if item.scope == "item" and self_index is None and item.entity_id is not None:
-                try:
-                    self_index = int(item.entity_id)
-                except Exception:
-                    self_index = item.entity_id
+                self_index = int(item.entity_id)
                 self_is_item = True
 
             ctx = ExecutionContext(
@@ -606,7 +719,6 @@ class EffectManager:
                 substrate=spatial.substrate,
                 current_tick=self.current_step,
                 scheduler=self.scheduler,
-                affordance_overrides=self.affordance_overrides,
             )
 
             for cmd in item.commands:
@@ -624,6 +736,7 @@ class EffectManager:
         vfs_registry: Any | None,
         item_manager: Any | None,
         spatial: _Spatial,
+        live: torch.Tensor | None,
     ) -> None:
         """Tick a single effect (execute on_tick and update counters)."""
         # Execute on_tick commands
@@ -639,6 +752,7 @@ class EffectManager:
                     spawn_depth=0,  # Reset depth for top-level tick
                     current_tick=self.current_step,
                     spatial=spatial,
+                    write_mask=live,
                 )
 
                 for command in compiled.on_tick:
@@ -656,6 +770,7 @@ class EffectManager:
         item_manager: Any | None,
         spatial: _Spatial,
         interrupt_reason: str | None = None,
+        write_mask: torch.Tensor | None = None,
     ) -> None:
         """Despawn effect and execute on_despawn commands."""
         if effect.effect_id in self.catalog.effects:
@@ -674,6 +789,7 @@ class EffectManager:
                     interrupt_reason=interrupt_reason,
                     current_tick=self.current_step,
                     spatial=spatial,
+                    write_mask=write_mask,
                 )
 
                 for command in compiled.on_despawn:
@@ -687,15 +803,15 @@ class EffectManager:
         Returns:
             List of all active effects
         """
-        result = []
-        result.extend(self.global_effects)
-        for effects in self.agent_effects.values():
-            result.extend(effects)
-        for effects in self.item_effects.values():
-            result.extend(effects)
-        for effects in self.affordance_effects.values():
-            result.extend(effects)
+        result: list[ActiveEffect] = []
+        for store in (self.global_effects, self.agent_effects, self.item_effects, self.affordance_effects):
+            for effects in store.values():
+                result.extend(effects)
         return result
+
+    def effects_in_world(self, world: int) -> list[ActiveEffect]:
+        """Every active effect living in `world`, any scope."""
+        return [effect for effect in self.get_all_active_effects() if effect.world == world]
 
     def cancel_effect(
         self,
@@ -717,11 +833,11 @@ class EffectManager:
         if target_effect is None:
             raise ValueError(f"Effect instance {instance_id} not found for cancel_effect")
 
+        # A cancelled effect's delayed work never runs, whether or not it has on_interrupt;
+        # it is cancelled before the interrupt commands run.
+        self._cancel_scheduled_for_effect(target_effect)
         compiled = self.catalog.effects.get(target_effect.effect_id)
         if compiled and compiled.on_interrupt and self.command_executor:
-            # Cancel pending delayed work tied to this effect before interrupt commands run
-            self._cancel_scheduled_for_effect(target_effect)
-
             context = self._lifecycle_context(
                 target_effect,
                 bars=bars,

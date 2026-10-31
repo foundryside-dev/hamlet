@@ -3,8 +3,8 @@
 import pytest
 import torch
 
+from tests.test_townlet._fixtures.command_namespace import command_compiler
 from townlet.effects.catalog import EffectCatalog
-from townlet.effects.compiler import CommandCompiler
 from townlet.effects.context import ExecutionContext
 from townlet.effects.executor import CommandExecutor
 from townlet.effects.manager import EffectManager
@@ -22,17 +22,17 @@ def _modify(path: str, value: str) -> CommandNode:
 
 
 def test_delay_rejects_non_int_ticks():
-    node = _delay_command("true", [_modify("bar.energy", "1")])
-    compiler = CommandCompiler(schema={"bar.energy": "int"}, agent_target=True)
+    node = _delay_command("true", [_modify("bar.energy", "1.0")])
+    compiler = command_compiler({"bar.energy": "float"})
     with pytest.raises(TypeCheckError, match="int"):
         compiler.compile_command(node)
 
 
 def test_delay_enqueues_and_executes_after_ticks():
     # Build delay command: after 2 ticks, set bar.energy to 5
-    delay_cmd = _delay_command("2", [_modify("bar.energy", "5")])
-    schema = {"bar.energy": "int"}
-    compiler = CommandCompiler(schema, agent_target=True)
+    delay_cmd = _delay_command("2", [_modify("bar.energy", "5.0")])
+    schema = {"bar.energy": "float"}
+    compiler = command_compiler(schema)
     compiled_delay = compiler.compile_command(delay_cmd)
 
     scheduler = Scheduler(time_enabled=True)
@@ -64,9 +64,9 @@ def test_delay_enqueues_and_executes_after_ticks():
 
 def test_delay_runs_through_effect_manager_tick():
     # delay 2 ticks then modify energy via manager tick scheduling
-    delay_cmd = _delay_command("2", [_modify("bar.energy", "5")])
-    schema = {"bar.energy": "int"}
-    compiler = CommandCompiler(schema, agent_target=True)
+    delay_cmd = _delay_command("2", [_modify("bar.energy", "5.0")])
+    schema = {"bar.energy": "float"}
+    compiler = command_compiler(schema)
     compiled_delay = compiler.compile_command(delay_cmd)
 
     scheduler = Scheduler(time_enabled=True)
@@ -90,9 +90,9 @@ def test_delay_runs_through_effect_manager_tick():
 
 def test_delay_cancelled_on_effect_despawn():
     # Effect with duration 1 schedules a delayed modify; despawn should cancel pending
-    delay_cmd = _delay_command("5", [_modify("bar.energy", "5")])
-    schema = {"bar.energy": "int"}
-    compiler = CommandCompiler(schema, agent_target=True)
+    delay_cmd = _delay_command("5", [_modify("bar.energy", "5.0")])
+    schema = {"bar.energy": "float"}
+    compiler = command_compiler(schema)
     compiled_delay = compiler.compile_command(delay_cmd)
 
     # Build a minimal compiled effect with on_tick containing delay

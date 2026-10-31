@@ -464,8 +464,15 @@ class LiveInferenceServer:
         self.population.validate_checkpoint_state(population_state)
         self.curriculum.validate_checkpoint_state(checkpoint["curriculum_state"])
         self.env.validate_affordance_positions(checkpoint["affordance_layout"])
+        self.env.vfs_registry.validate_persistent_state(checkpoint["vfs_persistent_state"])
         self.population.q_network.load_state_dict(population_state["q_network"])
         logger.info("Loaded Q-network weights")
+        # The policy was trained into this persistent world state (a season, a price);
+        # serving it against fresh initial values would show it a world it never saw.
+        # Episode resets keep it, so the next served episode starts from training's state.
+        self.env.vfs_registry.restore_persistent_state(checkpoint["vfs_persistent_state"])
+        # And the run's draw state, so served episodes draw what training's next episode would.
+        self.env.restore_vfs_random_state(checkpoint["vfs_random_state"])
 
         epsilon = checkpoint["epsilon"]
         logger.info("Loaded canonical checkpoint epsilon: %.3f", epsilon)

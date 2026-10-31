@@ -18,7 +18,6 @@ __all__ = [
     "WriteSpec",
     "VariableDef",
     "VariableScope",
-    "VFSScopeExtents",
     "variable_element_shape",
 ]
 
@@ -34,22 +33,24 @@ def variable_element_shape(variable: "VariableDef") -> tuple[int, ...]:
     fixed_widths = {"vec2i": 2, "vec3i": 3, "vec2f": 2, "vec3f": 3}
     if variable.type in fixed_widths:
         return (fixed_widths[variable.type],)
-    if variable.type in {"vecNi", "vecNf", "message_token"}:
+    if variable.type in {"vecNi", "vecNf"}:
         assert variable.dims is not None
         return (variable.dims,)
     return ()
 
 
 class VariableScope(StrEnum):
-    """Variable scope determines storage layout and access patterns."""
+    """Variable scope determines storage layout and access patterns.
 
-    GLOBAL = "global"  # Shared across all agents (world state)
+    The batch is N independent single-agent worlds (owner ruling S1, 2026-10-25), so
+    there is no scope relating two agents: a pair or a message would have no partner
+    or addressee. Privacy is not a scope either; it is ``readable_by``/``exposed_to``.
+    """
+
+    GLOBAL = "global"  # World state
     AGENT = "agent"  # Per-agent state ([batch, ...])
-    AGENT_PRIVATE = "agent_private"  # Hidden from agent observations
     ITEM = "item"  # Per-item state ([max_items, ...])
-    PAIR = "pair"  # Directed agent-agent state ([num_agents, num_agents, ...])
     AFFORDANCE = "affordance"  # Per-affordance-instance state ([num_affordances, ...])
-    MESSAGE = "message"  # Recent communication buffer state ([num_agents, num_message_slots, ...])
 
 
 class NormalizationSpec(BaseModel):
@@ -240,11 +241,11 @@ class WriteSpec(BaseModel):
     Examples:
         # Simple constant
         WriteSpec(
-            variable_id="energy",
+            variable_id="bar.energy",
             expression="-0.005",
             condition=None,
             composition="additive_delta",
-            phase="action_costs",
+            phase="apply_action_costs",
             priority=10,
             clamp=(0.0, 1.0),
             telemetry_label="movement_energy_cost",
@@ -252,11 +253,11 @@ class WriteSpec(BaseModel):
 
         # Complex expression
         WriteSpec(
-            variable_id="money",
-            expression="money + 10.0",
+            variable_id="bar.money",
+            expression="bar.money + 10.0",
             condition=None,
             composition="overwrite",
-            phase="action_effects",
+            phase="apply_action_effects",
             priority=0,
             clamp=None,
             telemetry_label="wage_credit",
@@ -290,7 +291,6 @@ class WriteSpec(BaseModel):
         "last_write_wins",
         "claim_if_free",
         "capacity_claim",
-        "append_event",
     ] = Field(
         description="How to compose this write with other writes targeting the same variable in the same phase",
     )
@@ -337,9 +337,8 @@ class VariableDef(BaseModel):
     lifetime, and access control.
 
     Scope semantics:
-    - global: Single value shared by all agents (e.g., time_of_day)
-    - agent: Per-agent value, observable by all agents (e.g., energy, position)
-    - agent_private: Per-agent value, observable only by owner (e.g., home_position)
+    - global: One value per world (e.g., time_of_day)
+    - agent: Per-agent value (e.g., energy, position); privacy is readable_by/exposed_to
 
     Type system (Phase 1):
     - scalar: Single float value
@@ -389,12 +388,7 @@ class VariableDef(BaseModel):
         description="Direct policy exposure selection, independent of agent-read permission",
     )
 
-    scope: VariableScope | Literal["global", "agent", "agent_private", "item", "pair", "affordance", "message"] = Field(
-        description=(
-            "Scope: global (shared), agent (per-agent public), agent_private (per-agent private), item (per-item), "
-            "pair (directed agent-agent), affordance, or message"
-        ),
-    )
+    scope: VariableScope = Field(description="Scope: global (world state), agent (per agent), item (per item), or affordance")
 
     type: Literal[
         "scalar",
@@ -413,8 +407,7 @@ class VariableDef(BaseModel):
         "tensor2d",
         "tensor3d",
         "tensorNd",
-        "message_token",
-    ] = Field(description="Variable type (scalar, vector, bool, reference, tensor, or message token)")
+    ] = Field(description="Variable type (scalar, vector, bool, reference, or tensor)")
 
     dims: int | None = Field(
         default=None,
@@ -467,7 +460,7 @@ class VariableDef(BaseModel):
     @model_validator(mode="after")
     def validate_vector_types(self) -> "VariableDef":
         """Validate that vecNi/vecNf have dims field, scalar/bool do not."""
-        if self.type in ("vecNi", "vecNf", "message_token"):
+        if self.type in ("vecNi", "vecNf"):
             if self.dims is None:
                 raise ValueError(f"Variable '{self.id}' with type '{self.type}' requires 'dims' field")
         elif self.type in ("scalar", "bool"):
@@ -492,23 +485,4 @@ class VariableDef(BaseModel):
             if self.type == "tensorNd" and rank < 1:
                 raise ValueError(f"Variable '{self.id}' with type 'tensorNd' must have shape of rank ≥1")
 
-        if self.type == "message_token" and self.shape is not None:
-            raise ValueError(f"Variable '{self.id}' with type 'message_token' should not set 'shape'; use 'dims' instead")
-
         return self
-
-
-class VFSScopeExtents(BaseModel):
-    """Storage extent for the message variable scope.
-
-    Declared in the required ``extents:`` block of the canonical variables
-    declaration. ``num_message_slots`` is required exactly when a message-scope
-    variable is declared; the loader rejects the pack otherwise, so the failure is
-    a compile error and never a green compile that crashes at env construction
-    (hamlet-9e1ae3b7a2). Affordance-scope rows have no authored extent: the
-    level's affordance count is the only authority.
-    """
-
-    model_config = ConfigDict(extra="forbid")
-
-    num_message_slots: int | None = Field(default=None, ge=1, description="Recent-message buffer slots per agent")

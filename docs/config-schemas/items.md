@@ -103,6 +103,7 @@ items:
 
   item_types:
     - id: string                    # Unique item type identifier
+      exclusive: bool               # Required: true = a pickup lifts the item off the ground
       vfs_profile: string           # VFS profile ID (item scope)
       description: string           # Human-readable description (optional)
       duration: int | null          # Lifetime in ticks (null = permanent)
@@ -126,6 +127,32 @@ arena and is refused at parse — `items declares N item type(s) but max_items_i
 max_items_per_agent × agents_per_world is 0: there is no item arena for them` — never silently
 discarded. An `items` declaration with `item_types: []` and both capacities 0 declares no items
 and compiles exactly as an absent declaration does (`items_catalog` and `items_hash` are `None`).
+
+**Items are per world** (owner ruling S1, 2026-10-25: the env batch is N independent
+single-agent worlds). Every world has its own items: its own level-start spawns, ground
+occupancy, capacity, cooldowns, respawn timers, rule spawn counts and item-scope state. A pickup,
+spawn, despawn or item effect in one world never touches another. A world whose agent is
+done is frozen: its items neither age nor expire, and its respawn timers do not fire (as its
+effects and transition rules are frozen). The item manager owns every world's inventory, so an
+item that despawns while held (it expired in a slot) leaves its slot in the same call. The arena above is **per
+world**, and it is exactly the compiled `item` token capacity, so the observation layout and
+every observation hash are independent of the batch size. At runtime the registry holds one
+arena block per world, flat: `item_vfs` is `[num_worlds × item_capacity, V]` and world `w`'s
+item in compiled slot `s` lives at row `w × item_capacity + s` (`VariableRegistry.item_world(row)`
+recovers `w`). Rows are globally unique, so an effect or `item_ref` keyed by row needs no world
+beside it; an `item_ref` written in world `w` must name a row of world `w` (or be null, `-1`),
+and any other value is refused at the write as an engine defect. A spawn predicate (`when:`) is
+evaluated per world: each world spawns when the predicate holds for its own values; there is no
+reduction across worlds.
+
+Ground capacity is `max_items_in_world` per world: a spawn into a world already holding that many
+items on the ground is refused. The rest of the arena (`max_items_per_agent × agents_per_world`)
+is for carried items. Each world draws its item randomness (random placement, `random` spawn
+positions, poisson and normal schedules) from its own stream, seeded from the run seed, the
+world and the episode, so one world's spawns never move another world's placements and the same
+seed is the same run. When an item despawns its live item-scoped effects and their delayed work
+are discarded with it (no hook runs: the item's state row is gone). A carried item's position,
+for `spawn_item position: self` as for its observation token, is its holder's.
 
 ### 2. Items Appearance (Level-Specific)
 
@@ -165,8 +192,8 @@ items:
       interactions:
         on_pickup: []
         on_use:
-          - modify: "target.bar.energy"
-            value: "target.bar.energy + 0.3"
+          - modify: "bar.energy"
+            value: "bar.energy + 0.3"
         on_drop: []
 
     - id: "medkit"
@@ -177,10 +204,10 @@ items:
       interactions:
         on_pickup: []
         on_use:
-          - modify: "target.bar.health"
-            value: "target.bar.health + 0.5"
-          - modify: "self.vfs.durability"
-            value: "self.vfs.durability - 10"
+          - modify: "bar.health"
+            value: "bar.health + 0.5"
+          - modify: "item.durability"
+            value: "item.durability - 10"
         on_drop: []
 
   max_items_per_agent: 3
@@ -194,6 +221,7 @@ items:
 | Field | Type | Description |
 |-------|------|-------------|
 | `id` | string | Unique item type identifier (lowercase, alphanumeric + underscores) |
+| `exclusive` | bool | `true`: single holder — `GET` lifts the item off the ground into the holder's inventory, `DROP` puts it back. `false`: shared — the item stays on the ground while held. No default (No-Defaults Principle); a catalog without it fails to parse |
 | `vfs_profile` | string | Named item profile from the canonical variables catalog |
 | `interactions` | object | Item interaction commands (on_pickup, on_use, on_drop) |
 
@@ -257,16 +285,35 @@ items:
 | `spawn_interval` | int \| null | null | Ticks between respawns (null = no periodic respawn) |
 | `spawn_position` | enum | random | Position strategy: `random` or `fixed` |
 | `when` | string \| null | null | Boolean expression gating spawn (e.g., `bar.energy > 0.5`) |
-| `placement` | object | null | Advanced placement: `random` (default), `fixed` with `fixed_positions`, `grid` with `grid_spacing`, `scripted` with `script` events |
+| `placement` | object | null | Advanced placement: `random` (default), `fixed` with `fixed_positions`, `grid` with `grid_spacing`, `scripted` with `script` events. See "Placement and substrates" below |
 | `schedule` | object | null | Advanced scheduling: `periodic`, `time_window` (start_tick/end_tick), `poisson` (rate), `normal` (mean/std_dev) |
 | `max_total` | int \| null | null | Maximum total spawns for this rule (caps all attempts) |
+
+### Placement and substrates
+
+Each world places its own items.
+
+- `random` asks the substrate's own position initialization (`initialize_positions`), so it works
+  on every substrate: 2-D/3-D grids, N-D grids, continuous spaces of any rank, and aspatial
+  (position `()`).
+- `fixed`, `grid` and `scripted` name grid **cells**, so they need a discrete grid substrate
+  (`grid`, square or cubic, or `gridnd`). A cell has the grid's rank (`[x, y]` on a square grid,
+  `[x, y, z]` on a cubic one, one coordinate per axis on `gridnd`) and must lie inside it. `grid`
+  mode places on every cell whose coordinates are all multiples of `grid_spacing`, in the
+  substrate's own cell order. Any other combination is refused at compile with
+  `ITEM-PLACEMENT-SUBSTRATE` and the appearance declaration's `file:line`: a `fixed`/`grid`/
+  `scripted` placement on a continuous or aspatial substrate, or a cell of the wrong rank or out
+  of bounds.
+
+Picking an item up uses the substrate's co-location rule (`is_on_position`): the exact cell on
+a grid, within `interaction_radius` on a continuous space, always on aspatial.
 
 ### Validation Rules
 
 1. **Item Type Exists**: `item_type` must reference existing catalog item
 2. **Spawn Count Non-Negative**: `spawn_count` must be >= 0
 3. **Spawn Interval Positive**: `spawn_interval` must be >= 1 if specified
-4. **Condition is Boolean**: `when` must type-check to bool against bars/VFS/temporal schema (temporal symbols only when temporal mechanics enabled)
+4. **Condition is Boolean and served**: `when` must read only the names listed below and type-check to bool; anything else is refused at compile time with `[ITEM-SPAWN-CONDITION]` and the rule's `file:line`
 
 ### Spawn Condition Examples
 
@@ -277,23 +324,23 @@ items:
     spawn_count: 2
     spawn_position: random
     spawn_interval: 50
-    when: "vfs.is_raining"
+    when: "is_raining"
 
-# Time-gated spawn (requires temporal mechanics enabled)
+# Time-gated spawn: the engine clock is the global variable `tick`
   - item_type: "night_flower"
     spawn_count: 1
     spawn_position: random
-    when: "temporal.tick % 1000 > 500"  # Only after halfway through the day
+    when: "tick % 1000 > 500"  # Only after halfway through the day
 
 # State-based gate with boolean logic
   - item_type: "health_potion"
     spawn_count: 3
     spawn_interval: 25
     spawn_position: random
-    when: "(bar.energy < 0.4) and vfs.danger_level >= 3"
+    when: "(bar.energy < 0.4) and danger_level >= 3"
 ```
 
-Supported symbols: `bar.<meter>`, `vfs.<variable>`, `temporal.tick` (only when temporal mechanics are enabled). All standard comparison operators and boolean logic (`and`, `or`, `not`) are available via the expression language.
+Supported symbols (one spelling per reference, VFS round-2 S5): `bar.<meter>`, and the bare id of every global- or agent-scope registry variable, including the engine clock `tick`. There is no `temporal.*` namespace; `env.*`, `vfs.<id>`, `agent.vfs.<id>` and a bare meter name are refused at compile with the spelling to write; derive an hour or a season as a declared global expression variable and read it by its bare id. A pure expression variable a predicate reads is inlined, so the predicate sees it evaluated on the current state; a context-bound `tick`-lifetime one (its expression calls a history operator) refuses, because tick state resets before spawns run. A history operator (`lag`, `delta`, ...) in a predicate refuses at compile: a spawn keeps no history. An agent-scope read is the value of the world's own agent (world `w` holds agent `w`), so each world spawns or not on its own values. Predicates evaluate after the instant's expressions (at `reset()` and on every respawn), so an expression variable reads its evaluated value, never its declared literal. All standard comparison operators and boolean logic (`and`, `or`, `not`) are available via the expression language.
 
 ### Advanced Spawn Rules Examples
 
@@ -374,8 +421,8 @@ items:
       vfs_profile: "food"
       interactions:
         on_use:
-          - modify: "target.bar.energy"
-            value: "target.bar.energy + 0.3"
+          - modify: "bar.energy"
+            value: "bar.energy + 0.3"
   # ... other settings
 ```
 
@@ -424,15 +471,12 @@ All item interactions use Effects command language. Commands are compiled at Uni
 
 ### Context Mapping
 
-When Effects execute during item interactions:
+An item interaction has two entities: the world's agent (S1: one per world) and the item.
 
-- **`target`**: Agent performing the action
-  - Can access `target.bar.*` (agent meters)
-  - Can access `target.vfs.*` (agent VFS variables)
-
-- **`self`**: Item instance
-  - Can access `self.vfs.*` (item VFS variables like durability)
-  - Cannot access `self.bar.*` (items don't have meters)
+- The agent: meters as `bar.<name>`, agent and global variables by bare id
+- The item: its state as `item.<name>`, from its item type's `vfs_profile` only (a name another
+  profile declares refuses at compile, naming the profiles that declare it)
+- `target.`/`self.` qualifiers and `vfs.` prefixes are refused at compile, naming the spelling to write
 
 ### Effects Command Reference
 
@@ -440,11 +484,11 @@ Items support all Effects commands:
 
 **modify**: Mutate bar or VFS variable
 ```yaml
-- modify: "target.bar.energy"
-  value: "target.bar.energy + 0.3"
+- modify: "bar.energy"
+  value: "bar.energy + 0.3"
 
-- modify: "self.vfs.durability"
-  value: "self.vfs.durability - 10"
+- modify: "item.durability"
+  value: "item.durability - 10"
 ```
 
 **spawn_effect**: Spawn persistent effect on agent
@@ -466,10 +510,10 @@ Items support all Effects commands:
 **if**: Conditional execution
 ```yaml
 - if:
-    condition: "self.vfs.durability > 0"
+    condition: "item.durability > 0"
     then:
-      - modify: "target.bar.health"
-        value: "target.bar.health + 0.5"
+      - modify: "bar.health"
+        value: "bar.health + 0.5"
     else:
       - spawn_effect: "broken_item"  # sibling-key grammar (PDR-0143)
         target: "self"
@@ -482,7 +526,7 @@ See `docs/config-schemas/effects.md` for complete Effects command reference.
 
 ## VFS State
 
-Items use VFS profiles to store persistent state. Each item instance has a unique VFS index into the item-scoped tensor `[max_items, num_item_profiles]`.
+Items use VFS profiles to store persistent state. Each item instance has a unique VFS index (arena row) into the item-scoped tensor `[num_worlds × item_capacity, max_profile_vars]`; world `w` owns rows `[w × item_capacity, (w + 1) × item_capacity)`.
 
 ### VFS Profile Configuration
 
@@ -491,7 +535,6 @@ Items use VFS profiles to store persistent state. Each item instance has a uniqu
 ```yaml
 variables:
   version: '1.0'
-  extents: {}
   item_profiles: [durable]
   declarations:
   - id: durability
@@ -516,17 +559,17 @@ variable model as registry state.
 ```yaml
 # Read item state
 - if:
-    condition: "self.vfs.durability > 0"
+    condition: "item.durability > 0"
     then:
-      - modify: "target.bar.health"
-        value: "target.bar.health + 0.5"
+      - modify: "bar.health"
+        value: "bar.health + 0.5"
 
 # Modify item state
-- modify: "self.vfs.durability"
-  value: "self.vfs.durability - 10"
+- modify: "item.durability"
+  value: "item.durability - 10"
 
-- modify: "self.vfs.charges"
-  value: "self.vfs.charges - 1"
+- modify: "item.charges"
+  value: "item.charges - 1"
 ```
 
 **Item state persists** across:
@@ -651,7 +694,11 @@ max_items_per_agent: 3    # Each agent can hold 3 items
 - Adds to first empty inventory slot
 - Fails if inventory full (DENY_PICKUP policy)
 - Executes `on_pickup` Effects
-- Item moved from world (`active_items`) to held state (`held_items`)
+- An item of the agent's own world only (items are per world)
+- An exclusive item moves from its world's ground (`WorldItemState.active`) to held state
+  (`WorldItemState.held`); a shared item stays on the ground with the agent recorded as a holder
+- A carried item is still observed: its `item` token (`carried = 1`, the holder's inventory slot
+  in `owner_slot`) and its item-state rows publish at the holder's position, in the holder's world
 
 **USE_SLOT_N**: Use item in slot N
 - N = 0, 1, 2, ... (zero-indexed)
@@ -690,8 +737,8 @@ When inventory full, GET action fails:
   interactions:
     on_pickup: []       # No effect on pickup
     on_use:
-      - modify: "target.bar.energy"
-        value: "target.bar.energy + 0.3"
+      - modify: "bar.energy"
+        value: "bar.energy + 0.3"
       # Note: To actually remove from inventory, need custom consume logic
       # Phase 1-3: Items remain in inventory after use
     on_drop: []
@@ -734,12 +781,12 @@ declarations:
   interactions:
     on_pickup: []
     on_use:
-      - modify: "self.vfs.durability"
-        value: "self.vfs.durability - 5"
-      - modify: "target.bar.mood"
-        value: "target.bar.mood + 0.1"  # Light improves mood
+      - modify: "item.durability"
+        value: "item.durability - 5"
+      - modify: "bar.mood"
+        value: "bar.mood + 0.1"  # Light improves mood
       - if:
-          condition: "self.vfs.durability <= 0"
+          condition: "item.durability <= 0"
           then:
             # sibling-key grammar (PDR-0143): no `duration` key on CommandConfig
             - spawn_effect: "darkness"
@@ -783,8 +830,8 @@ item_profiles:
   cooldown: null
   interactions:
     on_pickup:
-      - modify: "target.bar.money"
-        value: "target.bar.money + 0.1"  # Add 10 currency units
+      - modify: "bar.money"
+        value: "bar.money + 0.1"  # Add 10 currency units
     on_use: []          # No use action (consumed on pickup)
     on_drop: []
 ```
@@ -822,12 +869,12 @@ item_profiles:
     on_pickup: []
     on_use:
       - if:
-          condition: "self.vfs.charges > 0"
+          condition: "item.charges > 0"
           then:
-            - modify: "target.bar.health"
-              value: "target.bar.health + 0.5"
-            - modify: "self.vfs.charges"
-              value: "self.vfs.charges - 1"
+            - modify: "bar.health"
+              value: "bar.health + 0.5"
+            - modify: "item.charges"
+              value: "item.charges - 1"
           else:
             # sibling-key grammar (PDR-0143): no `duration` key on CommandConfig
             - spawn_effect: "empty_medkit"
@@ -873,19 +920,19 @@ item_profiles:
     on_pickup: []
     on_use:
       - if:
-          condition: "self.vfs.freshness > 0.5"
+          condition: "item.freshness > 0.5"
           then:
-            - modify: "target.bar.satiation"
-              value: "target.bar.satiation + 0.4"
-            - modify: "target.bar.mood"
-              value: "target.bar.mood + 0.1"  # Fresh bread tastes good
+            - modify: "bar.satiation"
+              value: "bar.satiation + 0.4"
+            - modify: "bar.mood"
+              value: "bar.mood + 0.1"  # Fresh bread tastes good
           else:
-            - modify: "target.bar.satiation"
-              value: "target.bar.satiation + 0.2"  # Less filling when stale
-            - modify: "target.bar.health"
-              value: "target.bar.health - 0.1"  # Spoiled food hurts health
-      - modify: "self.vfs.freshness"
-        value: "self.vfs.freshness - 0.2"  # Degrades with each use
+            - modify: "bar.satiation"
+              value: "bar.satiation + 0.2"  # Less filling when stale
+            - modify: "bar.health"
+              value: "bar.health - 0.1"  # Spoiled food hurts health
+      - modify: "item.freshness"
+        value: "item.freshness - 0.2"  # Degrades with each use
     on_drop: []
 ```
 
@@ -918,13 +965,13 @@ item_profiles:
 ### VFS Integration
 
 **Item-scoped variables** stored in VFS registry:
-- Tensor shape: `[max_items, num_item_profiles]`
-- Each item instance has unique `vfs_index`
+- Tensor shape: `[num_worlds × item_capacity, max_profile_vars]`, one block per world
+- Each item instance has a unique `vfs_index` (its arena row, in its own world's block)
 - VFS slot allocated on spawn, freed on despawn
 - State persists across inventory transitions
 
 **Access control**:
-- Items can read/write their own VFS variables via `self.vfs.*`
+- Items can read/write their own VFS variables via `item.*`
 - Agents can read item VFS variables when interacting (future: for observation)
 
 ### Effects Integration
@@ -959,8 +1006,8 @@ item_profiles:
 - id: "coin"
   interactions:
     on_pickup:
-      - modify: "target.bar.money"
-        value: "target.bar.money + 0.1"
+      - modify: "bar.money"
+        value: "bar.money + 0.1"
     on_use: []    # No use action needed
 ```
 
@@ -971,13 +1018,13 @@ item_profiles:
 - id: "pickaxe"
   interactions:
     on_use:
-      - modify: "self.vfs.durability"
-        value: "self.vfs.durability - 5"
+      - modify: "item.durability"
+        value: "item.durability - 5"
       - if:
-          condition: "self.vfs.durability > 0"
+          condition: "item.durability > 0"
           then:
-            - modify: "target.bar.resources"
-              value: "target.bar.resources + 0.1"
+            - modify: "bar.resources"
+              value: "bar.resources + 0.1"
 ```
 
 ### Pattern: Charge Consumption
@@ -988,15 +1035,15 @@ item_profiles:
   interactions:
     on_use:
       - if:
-          condition: "self.vfs.charges > 0"
+          condition: "item.charges > 0"
           then:
             # sibling-key grammar (PDR-0143): no `duration` key on CommandConfig;
             # `target` and `intensity` are both required by `spawn_effect`.
             - spawn_effect: "powered"
               target: "self"
               intensity: 1.0
-            - modify: "self.vfs.charges"
-              value: "self.vfs.charges - 1"
+            - modify: "item.charges"
+              value: "item.charges - 1"
 ```
 
 ### Pattern: Quality-Based Effects
@@ -1006,8 +1053,8 @@ item_profiles:
 - id: "potion"
   interactions:
     on_use:
-      - modify: "target.bar.health"
-        value: "target.bar.health + (0.3 * self.vfs.quality)"
+      - modify: "bar.health"
+        value: "bar.health + (0.3 * item.quality)"
       # Quality 1.0 = +0.3, Quality 0.5 = +0.15
 ```
 
@@ -1043,7 +1090,7 @@ item_profiles:
 ### Runtime Validation
 
 **ItemManager enforces**:
-1. Max items in world (capacity limit)
+1. Max items in world (capacity limit, per world)
 2. Max items per agent (inventory limit)
 3. Cooldown periods (prevent spam spawning)
 4. VFS slot allocation (finite pool)
@@ -1060,8 +1107,8 @@ item_profiles:
 ### VFS Slot Pool
 
 **Fixed-size allocation**:
-- Pre-allocate `max_items_in_world` VFS slots
-- Slot recycling on despawn
+- Pre-allocate `item_capacity` arena rows per world
+- Row recycling on despawn, within the item's own world
 - O(1) allocation/deallocation using free set
 
 **Recommendation**: Set `max_items_in_world` >= (num_item_types × spawn_count)
@@ -1077,8 +1124,8 @@ item_profiles:
 
 ### Respawn Timers
 
-**Per-type timers**:
-- Only one respawn timer per item type
+**Per-type timers, per world**:
+- Only one respawn timer per item type in each world
 - Multiple despawns → most recent sets timer
 - O(num_item_types) timer checks per tick
 
@@ -1088,7 +1135,6 @@ item_profiles:
 
 **Phase 1-3 Limitations**:
 - No custom item commands (only Effects: modify, spawn_effect, spawn_item, if)
-- No fixed spawn positions (only random)
 - Items don't auto-consume on use (require explicit Effects to remove)
 - No item-to-item interactions
 - No item observations (agents can't see what's in inventory via obs)
@@ -1097,7 +1143,6 @@ item_profiles:
 - Item observations (inventory composition visible)
 - Crafting system (combine items)
 - Item-to-item effects (poison apple damages nearby food)
-- Fixed spawn positions
 - Item wear/repair system
 - Item rarity/quality on spawn
 

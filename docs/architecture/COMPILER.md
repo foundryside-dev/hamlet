@@ -34,8 +34,8 @@ Other dated architecture descriptions below are not a current symbol inventory.
   See [the authoring contract](../config-schemas/declarations.md) for required families,
   fragments, source provenance and clock references. Conventional names such as `stratum.yaml`
   remain useful examples; no filename reader or aliases select semantics.
-- **Outputs**: an immutable `CompiledUniverse` carrying canonical DTOs, the observation spec
-  and activity mask, rich metadata, optimization tensors, and the declared provenance hashes.
+- **Outputs**: an immutable `CompiledUniverse` carrying canonical DTOs, each level's compiled
+  `TokenSpec`, rich metadata, optimization tensors, and the declared provenance hashes.
 - **Consumers**: `VectorizedHamletEnv` (runtime), `DemoRunner` / the training pipeline,
   checkpoint utilities, the live-inference server, and the differential oracle harness.
 - **Out of scope**: substrate implementations themselves (`STRATA.md`), and a standalone brain
@@ -59,25 +59,26 @@ metadata → optimization → emit/cache.
 | 2. **Symbol table** | Register meters, variables, actions, affordances, items, effects; fail fast on duplicates | `symbol_table.py` |
 | 3. **Resolve** | Walk every cross-file reference (affordance effects, action costs, training overrides) emitting UAC error codes | `validation/references.py` |
 | 4. **Cross-validate** | Safety limits, semantic checks, spatial feasibility (grid capacity), cascade cycles, temporal rules, substrate/action alignment, capability semantics | `validation/limits.py`, `validation/semantics.py`, `validation/feasibility.py` |
-| 5. **Metadata & observation spec** | Build shared schemas (bars/VFS) and the effects catalog; compute the observation spec, activity mask, per-field UUIDs, counts and hashes | `compilers/vfs.py`, `compilers/observation.py`, `compilers/metadata.py`, `compilers/effects.py`, `compilers/actions.py` |
+| 5. **Metadata & token spec** | *Shared* (source stage 6): compile the `variables` declaration into the internal global/agent/item profiles, check item-profile bindings, collect history requirements, build the one command-pipeline namespace (`vfs/namespace.py`) and expression sources, compile the effects catalog, and check every level's affordance and item interaction pipelines. *Per level* (source stage 7): action-space metadata, meter and affordance metadata, item spawn predicates, the registry roster, the compiled `TokenSpec` (exposure, capacity and identity refusals), the VTC transition schedule, and the hashes over them (`token_type_schema_hash`, `layout_hash`, `observation_schema_hash` over the `TokenSpec`, `variable_schema_hash`, `action_schema_hash`, `transition_graph_hash`, `expression_schema_hash`, `vfs_hash`). There is no observation spec, activity mask or per-field UUID (deleted at the token cut) | `compilers/vfs.py`, `compilers/observation.py`, `compilers/metadata.py`, `compilers/effects.py`, `compilers/actions.py`, `universe/dto/token_spec.py`, `vfs/transition_schedule.py` |
 | 6. **Optimization** | Pre-compute tensors in deterministic order — base depletions, cascade/modulation tables, hourly action masks, position maps | `optimization.py`, `compilers/optimization.py` |
-| 7. **Emit / cache** | Construct the frozen `CompiledUniverse`, serialize and cache via MessagePack, expose runtime DTOs | `compiler.py:_stage_7_emit_artifact` |
+| 7. **Emit / cache** | Construct the frozen `CompiledUniverse`, serialize and cache via MessagePack, expose runtime DTOs | `compiler.py:_stage_8_emit_artifact` |
 
-⚠ **The stage numbering in the source does not map one-to-one onto that table.** `compile()`
-runs, in order: Stage 0 scoping preflight, Stage 0 YAML-syntax validation, Stage 1 config load,
-Stage 1b safety limits, Stage 1c semantic cross-validation, Stage 2 symbol table, Stage 3
-reference resolution, Stage 5 `_stage_5_prepare_shared_artifacts`, Stage 6
-`_stage_6_compile_levels` (level compilation *and* optimization), Stage 7
-`_stage_7_emit_artifact`. There is no `_stage_4_cross_validate` method — cross-validation runs
-as 1b/1c over loaded DTOs. The archived guide's stage table names methods that no longer exist;
-read the seven stages as the conceptual contract and `compiler.py:93` for the actual order.
+⚠ **The stage numbering in the source does not map one-to-one onto that table.** The source
+numbering has one authority, `CompilationStage` (`universe/stages.py`): 0 preflight (directory
+check and declaration discovery), 1 parse, 2 safety limits, 3 semantic cross-validation,
+4 symbol table, 5 reference resolution (plus presentation references and static write
+targets), 6 shared schemas and effects (`_stage_6_prepare_shared_artifacts`), 7 levels and
+optimization data (`_stage_7_compile_levels`), 8 emit (`_stage_8_emit_artifact`). There is no
+separate cross-validate method; limits and semantics run as source stages 2 and 3 over the
+loaded DTOs. Read the seven stages above as the conceptual contract and
+`UniverseCompiler.compile` for the actual order. (Corrected 2026-10-31.)
 
 Each stage emits an INFO log marker (`Stage N: …`) from `townlet.universe.compiler`, so pipeline
 order is observable in tests and runtime diagnostics.
 
 **Determinism.** The compiler is intentionally pure: given the same YAML content and the same
-compiler version, the emitted artifact — including `metadata.config_hash` and
-`metadata.provenance_id` — is stable. That is what unlocks both cache hits and checkpoint
+compiler source, the emitted artifact is stable; `metadata.config_hash` depends on content alone,
+and `metadata.provenance_id` additionally on the pack path and the toolchain (§5). That is what unlocks both cache hits and checkpoint
 identity checking.
 
 ---
@@ -90,8 +91,8 @@ identity checking.
 - **`RawConfigs`** (`raw_configs_v21.py`) — staged DTO bundle built from that store. Existing
   strict config shapes remain the content vocabulary; transport names do not select loaders.
 - **`UniverseSymbolTable`** (`symbol_table.py`) — the central registry for stages 2→4.
-- **`CompiledUniverse`** (`compiled.py`) — frozen dataclass with DTO copies, observation spec,
-  `ObservationActivity`, rich metadata, optimization tensors, and the seventeen declared `*_hash`
+- **`CompiledUniverse`** (`compiled.py`) — frozen dataclass with DTO copies, each level's
+  `token_spec` (`ObservationActivity` and the observation spec were deleted at the token cut), rich metadata, optimization tensors, and the seventeen declared `*_hash`
   fields. Navigation: `all_levels` (a dict field, not a method), `get_level`, `to_level`.
   Instantiation: `create_environment(num_agents=…, level_name=…, device=…)` — all three
   keyword-only and all three required, delegating to `VectorizedHamletEnv.from_universe`.
@@ -99,10 +100,11 @@ identity checking.
   ⚠ The archived guide's `to_runtime()` and `check_checkpoint_compatibility()` **do not exist**
   (zero hits in `src/`, verified 2026-08-24). Checkpoint identity is enforced by
   `assert_checkpoint_identity` in `training/checkpoint_utils.py`, not by a method on the artifact.
-- **`ObservationSpec` / `ObservationField`** — deterministic UUID-backed observation definitions
-  derived from VFS exposures. The field is **`total_dims`**, not `total_dim`.
-- **`ObservationActivity`** (`dto/observation_activity.py`) — `active_mask`, `group_slices`
-  (bars / spatial / affordance / temporal / custom), `active_field_uuids`.
+- **`TokenSpec`** (`dto/token_spec.py`) — the compiled token observation: seven engine token
+  types with fixed payload widths, per-universe capacities and slot bindings. `total_dims` is
+  the flat width, `census` the per-type counts, `row_layout()` the per-row layout. It replaced
+  `ObservationSpec`, `ObservationField` and `ObservationActivity` (deleted at the token cut,
+  DIV-008); there is no activity mask.
 - **`OptimizationData`** — tensors and lookup tables consumed by the runtime.
 
 ---
@@ -137,7 +139,7 @@ Representative, grouped by what they catch:
 | vocabulary agreement | `METER_VOCAB_MISMATCH`, `AFFORDANCE_VOCAB_MISMATCH`, `ENABLED_AFFORDANCES_INVALID` |
 | affordances & cascades | `AFFORDANCE_INVALID_METER`, `AFFORDANCE_OPENING_HOURS_MISSING`, `AFFORDANCE_DEPLOYMENT_POSITIONS_MISSING`, `CASCADE_CYCLE`, `CASCADE_MISSING`, `CASCADE_EXTRA`, `CASCADE_INVALID_METER`, `MODULATION_MISSING`, `MODULATION_EXTRA`, `MODULATION_INVALID_REFERENCE` |
 | required declarations | `LEVEL_DRIVE_MISSING`, `LEVEL_DRIVE_EXTRINSIC_MISSING`, `LEVEL_DRIVE_INTRINSIC_MISSING` |
-| substrate / temporal / vision | `SUBSTRATE_ACTION_INCOMPATIBLE`, `SUBSTRATE_ACTION_WARNING_AS_ERROR`, `INTERACTION_RADIUS_MISSING`, `TEMPORAL_DAY_LENGTH_MISSING`, `MULTI_TICK_REQUIRES_TEMPORAL`, `VISION_INCOMPATIBLE` |
+| substrate / temporal / vision | `EXPRESSION-POSITION-ASPATIAL` (a position function on an aspatial substrate), `SUBSTRATE_ACTION_INCOMPATIBLE`, `SUBSTRATE_ACTION_WARNING_AS_ERROR`, `INTERACTION_RADIUS_MISSING`, `TEMPORAL_DAY_LENGTH_MISSING`, `MULTI_TICK_REQUIRES_TEMPORAL`, `VISION_INCOMPATIBLE` |
 | safety limits | `CONFIG_LIMIT_EXCEEDED`, `GRID_SIZE_LIMIT_EXCEEDED`, `GRID_CAPACITY_EXCEEDED`, `ITEM_TYPES_LIMIT_EXCEEDED`, `SPAWN_RULE_LIMIT_EXCEEDED` |
 
 **Drive diagnostics follow the declaration.** `DAC-REF-*` errors refer to the authored
@@ -146,11 +148,15 @@ is a convention, and no `drive_as_code.yaml` alias is used to construct location
 
 **Security limits.** Hard caps guard against accidental or malicious config explosion — meter
 and affordance counts, item types, spawn rules, and grid cells (a grid that would exceed the
-cell ceiling raises `GRID_SIZE_LIMIT_EXCEEDED`; a grid too small to hold its affordances plus
-agents raises `GRID_CAPACITY_EXCEEDED`).
+cell ceiling raises `GRID_SIZE_LIMIT_EXCEEDED`; a level with `randomize_affordances: true`
+whose grid cannot hold its deployed affordances plus one agent raises `GRID_CAPACITY_EXCEEDED`
+at its `randomize_affordances:` line — per world, since the batch is N independent
+single-agent worlds (S1), so the population size never enters it and the runtime never falls
+back to declared positions).
 
 **There is no warning channel in practice — every finding is a hard error.** Verified
-2026-08-24: `CompilationErrorCollector.add_warning` exists but has **zero callers**; the one
+2026-08-24, re-checked 2026-10-25: the collector has no warning-adding method (the
+zero-caller `add_warning` was deleted); the one
 producer of soft findings, `SubstrateActionValidator`, has its warnings escalated to errors
 (`SUBSTRATE_ACTION_WARNING_AS_ERROR`, `validation/semantics.py:151-156`). The archived guide's
 economic-imbalance *warning* has no current counterpart at all: economic-balance analysis is not
@@ -186,18 +192,29 @@ compiler assessment and is slated for deletion by the in-flight cleanup (§7).
   artifact per level**, since `CompiledUniverse` is single-level by construction
   (`compiler.py:677`). The archived guide's flat `universe.msgpack` path is stale.
 - The compiler normalizes YAML (sorted keys) before hashing, then folds in file names to avoid
-  collisions, producing `config_hash`. `provenance_id` folds in compiler version, git SHA, and
-  Python / torch / pydantic versions.
-- Cache validation uses `config_hash` **plus** the maximum mtime across recursively discovered
-  `.yaml`/`.yml` files outside `.compiled`. If the hash changes or any config is newer than the artifact,
-  the compiler recompiles rather than loading.
+  collisions, producing `config_hash` (pack content only: two identical packs share it).
+  `provenance_id` folds in `config_hash`, the resolved pack path (`experiment_dir`), the compiler
+  version, a SHA-256 over every `.py` file of the installed `townlet` package (so an uncommitted
+  source edit invalidates the cache and a docs-only commit does not), and Python / torch /
+  pydantic versions. The git SHA is not a cache input; it is recorded as
+  `metadata.compiler_git_sha`, resolved from the package root, never the cwd.
+- Cache validation (`UniverseCompiler.cache_staleness`) requires the artifact's `experiment_dir`
+  to be this pack, equal `config_hash` and `provenance_id`, and no recursively discovered
+  `.yaml`/`.yml` file outside `.compiled` newer than the artifact; otherwise the compiler
+  recompiles. A pack copied with its `.compiled/` therefore recompiles at the new path.
+  `inspect` applies the same rule against the source pack and prints `Freshness: FRESH`,
+  `STALE - <reasons>` or `UNKNOWN` (source pack gone), with a stderr warning when not fresh.
 - `CompiledUniverse.save_to_cache` / `load_from_cache` use MessagePack with defensive fallbacks:
   a corrupt cache triggers full recompilation plus a warning.
 
 **Checkpoint identity is a separate contract from the cache.** `config_hash` is the cache
 fingerprint; the checkpoint gate is `assert_checkpoint_identity`
-(`src/townlet/training/checkpoint_utils.py`), which hard-compares twelve of the artifact's
-declared `*_hash` fields, including the five pack-scope hashes; `config_hash` is not stamped. Full declared-vs-enforced breakdown: `HLD.md` §5.2.
+(`src/townlet/training/checkpoint_utils.py`), which hard-compares fifteen of the artifact's
+declared `*_hash` fields, including the seven pack-scope hashes (`actions_hash`,
+`variables_hash` and `effects_hash` are canonical declaration content, not a pydantic dump:
+expression text enters as its AST, and a `variables` declaration moved between files does not
+move it) and the five per-level hashes (`items_appearance_hash` joined on 2026-10-31);
+`config_hash` is not stamped. Full declared-vs-enforced breakdown: `HLD.md` §5.2.
 
 A rough edge README records here is **fixed**: README §Known rough edges (stamped 2026-08-20)
 describes agent-profile packs compiling green while their cache artifact silently fails to
@@ -229,8 +246,9 @@ env = compiled.create_environment(          # every argument keyword-only and re
     device="cpu",                           # no default device; omitting it raises
 )
 
-compiled.observation_spec.total_dims              # allocated observation width
-sum(compiled.observation_activity.active_mask)    # active width at this level
+spec = compiled.get_level("L1_full_observability").token_spec
+spec.total_dims                             # flat observation width
+spec.census                                 # {token type: count}
 ```
 
 Never copy a dimension number out of a run into a document — ask the artifact
@@ -263,8 +281,11 @@ python -m townlet.universe validate configs/default_curriculum \
 
 Flags: `compile --no-cache` skips cache reads and writes and always rebuilds;
 `inspect --format {table,json}` selects human or machine-readable output (json carries the
-artifact path and metadata hashes); `validate` compiles and discards, so `.compiled/` never
-appears. `scripts/validate_compiler_cli.py` iterates every pack in `configs/`.
+artifact path, `freshness`, metadata hashes, the token census, `token_types` with payload
+features and row widths, and `token_rows`: one entry per slot with its filler kind, `filler_ref`,
+scope, compact `start`/`end` and network-boundary `fixed_start`/`fixed_end`); `validate`
+compiles and discards, so `.compiled/` never appears. Every CLI refusal exits 1 with a
+`[CODE] file:line - message` diagnostic, never a traceback. `scripts/validate_compiler_cli.py` iterates every pack in `configs/`.
 
 The CLI is wired into CI via `.github/workflows/config-validation.yml`. **Caveat: no workflow
 has ever run on `project-recovery`** (filigree `hamlet-2100105c9a`) — the gates that actually

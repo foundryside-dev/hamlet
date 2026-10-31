@@ -12,13 +12,20 @@ test_function_registry_agreement.py`` holds the first two to each other.
 Shape contract: a scalar-typed result (``int``, ``float``, ``bool``) carries the batch
 axis of its per-agent inputs, ``[batch]``; a vector-typed result (``vec2f``, ``vec3f``,
 ``vecNf``) carries it in front of the vector axis, ``[batch, D]``. No function collapses
-the batch axis. A literal has no batch axis, so a result built only from literals is
+or indexes the batch axis: the batch is independent worlds (S1), so ``gather`` and
+``scatter`` index a vector's element axis, never another row. A literal has no batch axis, so a result built only from literals is
 unbatched: ``one_hot(2, 3)`` is ``[3]``, ``one_hot(bar.slot, 3)`` is ``[batch, 3]``.
 
 Vector widths: ``vec2*`` and ``vec3*`` carry their width in the type, so a pair of
 mismatched widths is refused at type check; ``vecN*`` and ``tensor2d`` do not, so their
 widths are checked when the function runs and a mismatch raises a ``ValueError`` naming
 the function.
+
+Row shape: every spec declares ``shape``, the rule the VFS shape proof
+(``townlet.vfs.profiles.VFSProfileCompiler``) derives a call's leading registry axes by,
+and ``requires``, the context a call needs (history, positions, a random stream). A
+consumer admits a call by ``requires`` alone (``unserved_requirement``), and proves its
+axes by ``shape`` alone; there is no hand-kept list of admitted functions anywhere.
 """
 
 from __future__ import annotations
@@ -56,8 +63,23 @@ FAMILY_ORDER: tuple[str, ...] = (
 )
 
 REQUIRES_HISTORY = "temporal history on the context"
-REQUIRES_STEP = "the engine step counter on the context"
 REQUIRES_POSITIONS = "agent and affordance positions on the context"
+REQUIRES_RANDOM = "a random stream on the context"
+
+SHAPE_POINTWISE = "pointwise"
+"""The result has the join of its arguments' leading axes: a literal joins with anything,
+a per-agent argument makes the result per agent, and two distinct axes refuse. Every
+function that computes from its arguments alone, history operators included (their
+other arguments are literals)."""
+SHAPE_AGENT_ROWS = "agent rows"
+"""One row per agent whatever the arguments: the functions that read the agent positions
+the context carries. In a global expression (no agent axis) such a call refuses."""
+SHAPE_DRAW = "draw"
+"""One independent draw per row: the join of the arguments' axes with the row axis of the
+context the call runs in (per world in a global expression or on a global target, per
+agent in an agent expression, an action write or on an agent target), so a literal-only
+call still draws once per row, never once for the whole batch."""
+SHAPES = frozenset({SHAPE_POINTWISE, SHAPE_AGENT_ROWS, SHAPE_DRAW})
 
 
 @dataclass(frozen=True)
@@ -70,6 +92,7 @@ class FunctionSpec:
     returns: str
     family: str
     requires: tuple[str, ...]
+    shape: str
     min_args: int
     max_args: int | None
     return_type: Callable[[list[str]], str]
@@ -123,10 +146,46 @@ def _ensure_vector_arg(name: str, arg: str, position: int) -> None:
     raise ValueError(f"Function '{name}' argument {position} must be a vector variable, got {arg}")
 
 
-def _ensure_candidates_arg(name: str, arg: str, position: int) -> None:
-    if arg in VectorTypes or arg == "tensor2d":
+ElementVectorTypes = VectorTypes | {"tensor1d"}
+"""Value types with exactly one element axis inside each world's row: what `gather` and
+`scatter` index. A scalar type's only axis is the batch, and the batch is independent
+worlds (S1), so indexing it would read or write another world's row."""
+
+
+def _ensure_element_vector_arg(name: str, arg: str, position: int) -> None:
+    if arg in ElementVectorTypes:
         return
-    raise ValueError(f"Function '{name}' argument {position} must be a vector variable or a tensor2d of candidate rows, got {arg}")
+    raise ValueError(
+        f"Function '{name}' argument {position} must be a vector (vec2i, vec3i, vec2f, vec3f, vecNi, vecNf) or tensor1d, "
+        f"got {arg}: it indexes the element axis inside one world's value. A {arg} value has no element axis, and its "
+        "only row axis is the batch of independent worlds, so an index there would reach another world."
+    )
+
+
+def _element_type(vector_type: str) -> str:
+    """The element type of an element-vector type: int for the integer vectors, float otherwise."""
+    return "int" if vector_type in {"vec2i", "vec3i", "vecNi"} else "float"
+
+
+def _ensure_element_update(name: str, base: str, update: str) -> None:
+    """A scatter update is one element of `base`: an int into an integer vector, any number into a float one."""
+    if update not in Numeric or (_element_type(base) == "int" and update != "int"):
+        raise ValueError(f"Function '{name}' writes one {_element_type(base)} element of {base}, got {update}")
+
+
+def _ensure_candidates_arg(name: str, arg: str, position: int) -> None:
+    """Candidates are a tensor2d of rows, held per world.
+
+    A vector variable's only row axis is the batch, and the batch is independent worlds
+    (S1): its rows as candidates would let one world pick another world's row. So a
+    vector variable is refused; a tensor2d's candidate rows sit inside each world's row.
+    """
+    if arg == "tensor2d":
+        return
+    raise ValueError(
+        f"Function '{name}' argument {position} must be a tensor2d of candidate rows, got {arg}: a vector variable's rows "
+        "are the batch's independent worlds, never one world's candidates"
+    )
 
 
 def _static_vector_width(arg: str) -> int | None:
@@ -145,6 +204,35 @@ def _ensure_same_vector_width(name: str, left: str, right: str) -> None:
     if left_width is not None and right_width is not None and left_width != right_width:
         raise ValueError(
             f"Function '{name}' requires vectors of one width, got {left} (width {left_width}) and {right} (width {right_width})"
+        )
+
+
+REFERENCE_TYPES = frozenset({"agent_ref", "item_ref"})
+"""Batch-row reference types: a row of this world, or the null row -1 (an int)."""
+
+
+def branch_type(left: str, right: str) -> str | None:
+    """The type two selected branches unify to, or None when they do not.
+
+    Equal types unify to themselves, numerics promote, and a reference unifies with an
+    int (its null, ``-1``) to the reference: ``where(c, ref, -1)``. Whether the int is
+    the null is the write's world-locality proof to make, not the type checker's.
+    """
+    if left == right:
+        return left
+    if left in Numeric and right in Numeric:
+        return "float" if "float" in {left, right} else "int"
+    if left in REFERENCE_TYPES and right == "int":
+        return left
+    if right in REFERENCE_TYPES and left == "int":
+        return right
+    return None
+
+
+def _ensure_branches(name: str, left: str, right: str) -> None:
+    if branch_type(left, right) is None:
+        raise ValueError(
+            f"Function '{name}' requires matching branch types, numeric promotion, or a reference and its int null; got {left} and {right}"
         )
 
 
@@ -190,15 +278,19 @@ def _return_first(args: list[str]) -> str:
     return args[0]
 
 
+def _return_element(args: list[str]) -> str:
+    return _element_type(args[0])
+
+
 def _return_vecnf(_: list[str]) -> str:
     return "vecNf"
 
 
 def _return_where(args: list[str]) -> str:
-    left, right = args[1], args[2]
-    if left in Numeric and right in Numeric:
-        return "float" if "float" in {left, right} else "int"
-    return left
+    unified = branch_type(args[1], args[2])
+    if unified is None:
+        return args[1]
+    return unified
 
 
 def _return_masked_numeric(args: list[str]) -> str:
@@ -260,20 +352,15 @@ def _scalar_float(arg: torch.Tensor, name: str) -> float:
     return float(arg.item())
 
 
-def _temporal_key(arg_node: ASTNode) -> str:
-    from townlet.world.expression.ast_nodes import PathAccess, Variable
-
-    if isinstance(arg_node, PathAccess):
-        return ".".join(arg_node.segments)
-    if isinstance(arg_node, Variable):
-        return f"vfs.{arg_node.name}"
-    raise ValueError("Temporal operators require a variable or path argument as the first parameter")
-
-
 def _history_key(name: str, arg_nodes: list[ASTNode]) -> str:
+    from townlet.world.expression.history import history_key
+
     if not arg_nodes:
-        raise ValueError(f"Function '{name}' requires at least one argument")
-    return _temporal_key(arg_nodes[0])
+        raise ValueError(f"Function '{name}' needs the named value whose history it reads")
+    key = history_key(arg_nodes[0])
+    if key is None:
+        raise ValueError(f"Function '{name}' reads the history of a named value: its first argument must be a variable or path")
+    return key
 
 
 def _get_history(context: ExecutionContext) -> TemporalHistory:
@@ -490,22 +577,32 @@ def _eval_masked_set(args: list[Any], context: ExecutionContext, arg_nodes: list
     return torch.where(_broadcast_bool_mask(mask, value), replacement, value)
 
 
+def _element_broadcast(values: torch.Tensor, indices: torch.Tensor, name: str) -> tuple[torch.Tensor, torch.Tensor]:
+    """`values` ``[..., D]`` and integer `indices` ``[...]`` broadcast to one leading shape.
+
+    The index addresses the element axis (the last) inside each row; it never addresses
+    the batch axis, so every row reads and writes its own world's value (S1).
+    """
+    width = int(values.shape[-1])
+    indices = indices.to(device=values.device, dtype=torch.long)
+    if bool(((indices < 0) | (indices >= width)).any()):
+        raise ValueError(f"Function '{name}' index is outside the element axis [0, {width})")
+    leading = torch.broadcast_shapes(values.shape[:-1], indices.shape)
+    return values.expand(*leading, width), indices.expand(leading)
+
+
 def _eval_gather(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
-    values = cast(torch.Tensor, args[0])
-    indices = cast(torch.Tensor, args[1]).to(device=values.device, dtype=torch.long)
-    if values.dim() == 0:
-        raise ValueError("Function 'gather' cannot gather from a scalar tensor")
-    return values[indices]
+    values, indices = _element_broadcast(cast(torch.Tensor, args[0]), cast(torch.Tensor, args[1]), "gather")
+    return torch.gather(values, -1, indices.unsqueeze(-1)).squeeze(-1)
 
 
 def _eval_scatter(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
-    base = cast(torch.Tensor, args[0]).clone()
-    indices = cast(torch.Tensor, args[1]).to(device=base.device, dtype=torch.long)
-    updates = cast(torch.Tensor, args[2]).to(device=base.device, dtype=base.dtype)
-    if base.dim() == 0:
-        raise ValueError("Function 'scatter' cannot scatter into a scalar tensor")
-    base[indices] = updates
-    return base
+    base = cast(torch.Tensor, args[0])
+    update = cast(torch.Tensor, args[2]).to(device=base.device, dtype=base.dtype)
+    leading = torch.broadcast_shapes(base.shape[:-1], cast(torch.Tensor, args[1]).shape, update.shape)
+    values, indices = _element_broadcast(base.expand(*leading, base.shape[-1]), cast(torch.Tensor, args[1]), "scatter")
+    mask = torch.nn.functional.one_hot(indices, num_classes=int(values.shape[-1])).bool()
+    return torch.where(mask, update.expand(leading).unsqueeze(-1), values)
 
 
 def _eval_one_hot(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
@@ -522,22 +619,50 @@ def _eval_normalize(args: list[Any], context: ExecutionContext, arg_nodes: list[
     return vector / norm
 
 
+def _draw(name: str, kind: str, like: torch.Tensor, context: ExecutionContext) -> torch.Tensor:
+    """One independent draw per element of the context's joined shape (``SHAPE_DRAW``).
+
+    A VFS context (a profile variable, an action write, a transition-rule write) carries
+    its owner's counter-based draw sites, ``context.draws``: every element is a pure
+    function of the run seed, the episode, the tick, the draw site, its world and its
+    position, so world ``w``'s draws depend neither on the batch size nor on any other
+    world (S1), and a literal-only call still draws once per element of the context
+    (per world, per agent row, per ``[world, affordance]`` row). A command pipeline is
+    bound to one world and carries that world's generator as ``context.rng``; a context
+    bound to no world carries neither and draws from torch's global stream, which only
+    direct engine or test callers build.
+    """
+    if context.draws is not None:
+        if kind == "uniform":
+            return context.draws.uniform(name, like)
+        return context.draws.normal(name, like)
+    if kind == "uniform":
+        return torch.rand(like.shape, device=like.device, generator=context.rng)
+    return torch.randn(like.shape, device=like.device, generator=context.rng)
+
+
 def _eval_normal_dist(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
     if not args:
-        return torch.randn((), device=context.device)
+        return _draw("normal_dist", "normal", torch.zeros((), device=context.device), context)
     mean = cast(torch.Tensor, args[0]).to(dtype=torch.float32)
-    std = cast(torch.Tensor, args[1]).to(device=mean.device, dtype=torch.float32) if len(args) > 1 else 1.0
-    return torch.randn_like(mean) * std + mean
+    if len(args) == 1:
+        return _draw("normal_dist", "normal", mean, context) + mean
+    std = cast(torch.Tensor, args[1]).to(device=mean.device, dtype=torch.float32)
+    like = torch.zeros(torch.broadcast_shapes(mean.shape, std.shape), device=mean.device)
+    return _draw("normal_dist", "normal", like, context) * std + mean
 
 
 def _eval_uniform(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
     if not args:
-        return torch.rand((), device=context.device)
+        return _draw("uniform", "uniform", torch.zeros((), device=context.device), context)
     low = cast(torch.Tensor, args[0]).to(dtype=torch.float32)
     if len(args) == 1:
-        return torch.rand_like(low)
+        return _draw("uniform", "uniform", low, context)
     high = cast(torch.Tensor, args[1]).to(device=low.device, dtype=torch.float32)
-    return torch.rand_like(low) * (high - low) + low
+    return (
+        _draw("uniform", "uniform", torch.zeros(torch.broadcast_shapes(low.shape, high.shape), device=low.device), context) * (high - low)
+        + low
+    )
 
 
 def _eval_perlin_noise(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
@@ -581,64 +706,44 @@ def _eval_phase_cos(args: list[Any], context: ExecutionContext, arg_nodes: list[
     return torch.cos(_phase_radians(args[0], args[1], "phase_cos"))
 
 
-def _validate_elapsed_ticks_args(args: list[str]) -> None:
-    _ensure_arg_count("elapsed_ticks", args, 0, 2)
-    if args:
-        _ensure_all_numeric("elapsed_ticks", args)
-
-
-def _eval_elapsed_ticks(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
-    if not args:
-        if context.step is None:
-            raise RuntimeError("Function 'elapsed_ticks' requires context.step when called without arguments")
-        return torch.tensor(context.step, device=context.device, dtype=torch.long)
-
-    start = args[0]
-    if len(args) == 1:
-        if context.step is None:
-            raise RuntimeError("Function 'elapsed_ticks' requires context.step or an explicit current tick")
-        current = torch.full(start.shape, context.step, device=start.device, dtype=start.dtype)
-    else:
-        current = args[1].to(device=start.device, dtype=start.dtype)
-
-    return torch.clamp(current - start, min=0).to(dtype=torch.long)
-
-
 def _eval_lag(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
-    return _get_history(context).lag(_history_key("lag", arg_nodes), _scalar_int(args[1], "lag"), torch.zeros_like(args[0]))
+    return _get_history(context).lag(_history_key("lag", arg_nodes), _scalar_int(args[1], "lag"))
 
 
 def _eval_delta(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
     current = cast(torch.Tensor, args[0])
-    key = _history_key("delta", arg_nodes)
-    history = _get_history(context)
-    lagged = history.lag(key, 1, torch.zeros_like(current))
-    valid = history.has_history(key, 1)
-    if valid is None:
-        return torch.zeros_like(current)
-    return torch.where(_broadcast_bool_mask(valid, current), current - lagged, torch.zeros_like(current))
+    return current - _get_history(context).lag(_history_key("delta", arg_nodes), 1).to(current.dtype)
 
 
 def _eval_moving_average(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
     current = cast(torch.Tensor, args[0]).to(dtype=torch.float32)
-    return _get_history(context).moving_average(_history_key("moving_average", arg_nodes), _scalar_int(args[1], "moving_average"), current)
+    key = _history_key("moving_average", arg_nodes)
+    window = _scalar_int(args[1], "moving_average")
+    history = _get_history(context)
+    total = current
+    for offset in range(1, window):
+        total = total + history.lag(key, offset).to(torch.float32)
+    return total / float(window)
 
 
 def _eval_ema(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
-    current = cast(torch.Tensor, args[0]).to(dtype=torch.float32)
-    return _get_history(context).ema(_history_key("ema", arg_nodes), _scalar_float(args[1], "ema"), current)
+    return _get_history(context).ema(_history_key("ema", arg_nodes), _scalar_float(args[1], "ema"), cast(torch.Tensor, args[0]))
 
 
 def _eval_rate_of_change(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
-    return _get_history(context).rate_of_change(_history_key("rate_of_change", arg_nodes), _scalar_int(args[1], "rate_of_change"), args[0])
+    window = _scalar_int(args[1], "rate_of_change")
+    lagged = _get_history(context).lag(_history_key("rate_of_change", arg_nodes), window)
+    return (cast(torch.Tensor, args[0]).to(torch.float32) - lagged.to(torch.float32)) / float(window)
 
 
 def _eval_rising_edge(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
-    return _get_history(context).edge(_history_key("rising_edge", arg_nodes), args[0], rising=True)
+    previous = _get_history(context).lag(_history_key("rising_edge", arg_nodes), 1).to(torch.bool)
+    return torch.logical_and(cast(torch.Tensor, args[0]), torch.logical_not(previous))
 
 
 def _eval_falling_edge(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
-    return _get_history(context).edge(_history_key("falling_edge", arg_nodes), args[0], rising=False)
+    previous = _get_history(context).lag(_history_key("falling_edge", arg_nodes), 1).to(torch.bool)
+    return torch.logical_and(torch.logical_not(cast(torch.Tensor, args[0])), previous)
 
 
 def _eval_distance(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
@@ -658,8 +763,13 @@ def _eval_within_radius(args: list[Any], context: ExecutionContext, arg_nodes: l
 def _eval_nearest(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
     points = cast(torch.Tensor, args[0])
     candidates = _as_float_vector(cast(torch.Tensor, args[1]), points.device)
-    if candidates.dim() == 1:
-        candidates = candidates.unsqueeze(0)
+    # Candidates are [..., K, D] with the point's leading (per-world) axes: each point
+    # chooses among its own world's rows only.
+    if candidates.dim() != points.dim() + 1 or candidates.shape[: points.dim() - 1] != points.shape[:-1]:
+        raise ValueError(
+            f"Function 'nearest' needs candidates shaped [..., K, D] with the point's leading axes "
+            f"{tuple(points.shape[:-1])}, got {tuple(candidates.shape)}: candidates are per world, never the batch's rows"
+        )
     _check_vector_widths("nearest", points, candidates)
     diff = _as_float_vector(points, points.device).unsqueeze(-2) - candidates
     distances = _reduce_vector(diff, _metric_from_args("nearest", args[2:], "euclidean"))
@@ -710,6 +820,8 @@ def _register(spec: FunctionSpec) -> None:
         raise ValueError(f"Expression function '{spec.name}' registered twice")
     if spec.family not in FAMILY_ORDER:
         raise ValueError(f"Expression function '{spec.name}' names unknown family {spec.family!r}")
+    if spec.shape not in SHAPES:
+        raise ValueError(f"Expression function '{spec.name}' names unknown shape rule {spec.shape!r}")
     FUNCTION_SPECS[spec.name] = spec
 
 
@@ -732,6 +844,7 @@ def _numeric_spec(
         returns=returns,
         family=family,
         requires=(),
+        shape=SHAPE_POINTWISE,
         min_args=arity,
         max_args=arity,
         return_type=return_type,
@@ -761,6 +874,7 @@ def _variadic_spec(
         returns=returns,
         family=family,
         requires=(),
+        shape=SHAPE_POINTWISE,
         min_args=1,
         max_args=None,
         return_type=return_type,
@@ -1021,16 +1135,17 @@ _register(
         name="where",
         signature="where(condition, if_true, if_false)",
         summary="Select `if_true` where `condition` holds, else `if_false`; the branches must share a type.",
-        returns="the branch type (numeric branches promote)",
+        returns="the branch type (numeric branches promote; a reference and an int give the reference)",
         family=FAMILY_LOGIC,
         requires=(),
+        shape=SHAPE_POINTWISE,
         min_args=3,
         max_args=3,
         return_type=_return_where,
         validate_args=lambda args: _run_validators(
             lambda: _ensure_arg_count("where", args, 3, 3),
             lambda: _ensure_bool_arg("where", args[0], 1),
-            lambda: _ensure_matching_or_numeric("where", args[1], args[2]),
+            lambda: _ensure_branches("where", args[1], args[2]),
         ),
         eval_fn=_eval_where,
     )
@@ -1043,6 +1158,7 @@ _register(
         returns="the numeric type of `value` and `delta` (promoted)",
         family=FAMILY_LOGIC,
         requires=(),
+        shape=SHAPE_POINTWISE,
         min_args=3,
         max_args=3,
         return_type=_return_masked_numeric,
@@ -1062,6 +1178,7 @@ _register(
         returns="the type of `value` (numeric pairs promote)",
         family=FAMILY_LOGIC,
         requires=(),
+        shape=SHAPE_POINTWISE,
         min_args=3,
         max_args=3,
         return_type=_return_masked_numeric,
@@ -1077,15 +1194,17 @@ _register(
     FunctionSpec(
         name="gather",
         signature="gather(values, index)",
-        summary="`values[index]`: read another row of a per-agent value by integer index.",
-        returns="the type of `values`",
+        summary="`values[index]`: one element of a vector (or tensor1d) inside the reading world's value.",
+        returns="the element type of `values` (int for vec2i/vec3i/vecNi, else float)",
         family=FAMILY_LOGIC,
         requires=(),
+        shape=SHAPE_POINTWISE,
         min_args=2,
         max_args=2,
-        return_type=_return_first,
+        return_type=_return_element,
         validate_args=lambda args: _run_validators(
             lambda: _ensure_arg_count("gather", args, 2, 2),
+            lambda: _ensure_element_vector_arg("gather", args[0], 1),
             lambda: _ensure_int("gather", args[1]),
         ),
         eval_fn=_eval_gather,
@@ -1094,18 +1213,20 @@ _register(
 _register(
     FunctionSpec(
         name="scatter",
-        signature="scatter(base, index, updates)",
-        summary="A copy of `base` with `updates` written at `index`.",
+        signature="scatter(base, index, update)",
+        summary="A copy of the vector (or tensor1d) `base` with element `index` set to `update`, inside each world's value.",
         returns="the type of `base`",
         family=FAMILY_LOGIC,
         requires=(),
+        shape=SHAPE_POINTWISE,
         min_args=3,
         max_args=3,
         return_type=_return_first,
         validate_args=lambda args: _run_validators(
             lambda: _ensure_arg_count("scatter", args, 3, 3),
+            lambda: _ensure_element_vector_arg("scatter", args[0], 1),
             lambda: _ensure_int("scatter", args[1]),
-            lambda: _ensure_matching_or_numeric("scatter", args[0], args[2]),
+            lambda: _ensure_element_update("scatter", args[0], args[2]),
         ),
         eval_fn=_eval_scatter,
     )
@@ -1118,6 +1239,7 @@ _register(
         returns="vecNf of width `classes`",
         family=FAMILY_LOGIC,
         requires=(),
+        shape=SHAPE_POINTWISE,
         min_args=2,
         max_args=2,
         return_type=_return_vecnf,
@@ -1135,10 +1257,11 @@ _register(
     FunctionSpec(
         name="normal_dist",
         signature="normal_dist([mean[, std]])",
-        summary="Gaussian draw; one draw per element of `mean`, a single scalar draw with no arguments.",
+        summary="Gaussian draw, one per element of the context, each its own world's.",
         returns="float",
         family=FAMILY_SAMPLING,
-        requires=(),
+        requires=(REQUIRES_RANDOM,),
+        shape=SHAPE_DRAW,
         min_args=0,
         max_args=2,
         return_type=_return_float,
@@ -1152,10 +1275,13 @@ _register(
     FunctionSpec(
         name="uniform",
         signature="uniform([low[, high]])",
-        summary="Uniform draw in `[low, high)` (`[0, 1)` with one or no arguments); one draw per element of `low`.",
+        summary=(
+            "Uniform draw in `[low, high)` (`[0, 1)` with one or no arguments), one per element of the context, each its own world's."
+        ),
         returns="float",
         family=FAMILY_SAMPLING,
-        requires=(),
+        requires=(REQUIRES_RANDOM,),
+        shape=SHAPE_DRAW,
         min_args=0,
         max_args=2,
         return_type=_return_float,
@@ -1173,6 +1299,7 @@ _register(
         returns="float",
         family=FAMILY_SAMPLING,
         requires=(),
+        shape=SHAPE_POINTWISE,
         min_args=1,
         max_args=3,
         return_type=_return_float,
@@ -1190,6 +1317,7 @@ _register(
         returns="float",
         family=FAMILY_SAMPLING,
         requires=(),
+        shape=SHAPE_POINTWISE,
         min_args=1,
         max_args=3,
         return_type=_return_float,
@@ -1239,27 +1367,16 @@ _register(
 )
 _register(
     FunctionSpec(
-        name="elapsed_ticks",
-        signature="elapsed_ticks([start[, now]])",
-        summary="Ticks since `start` (clamped at 0); `now` defaults to the engine step, and with no arguments the step itself.",
-        returns="int",
-        family=FAMILY_TEMPORAL,
-        requires=(REQUIRES_STEP,),
-        min_args=0,
-        max_args=2,
-        return_type=_return_int,
-        validate_args=_validate_elapsed_ticks_args,
-        eval_fn=_eval_elapsed_ticks,
-    )
-)
-_register(
-    FunctionSpec(
         name="lag",
         signature="lag(x, n)",
-        summary="The value `x` held `n` ticks ago (0 before the history is that deep).",
+        summary=(
+            "The value `x` held `n` ticks ago (`n` a literal, 1 to 256); before `n` ticks of the episode exist, "
+            "the value `x` held when the episode began."
+        ),
         returns=NUMERIC_RETURNS,
         family=FAMILY_TEMPORAL,
         requires=(REQUIRES_HISTORY,),
+        shape=SHAPE_POINTWISE,
         min_args=2,
         max_args=2,
         return_type=_return_numeric,
@@ -1273,10 +1390,11 @@ _register(
     FunctionSpec(
         name="delta",
         signature="delta(x)",
-        summary="`x - lag(x, 1)`, 0 on the first tick.",
+        summary="`x - lag(x, 1)`.",
         returns=NUMERIC_RETURNS,
         family=FAMILY_TEMPORAL,
         requires=(REQUIRES_HISTORY,),
+        shape=SHAPE_POINTWISE,
         min_args=1,
         max_args=1,
         return_type=_return_numeric,
@@ -1290,10 +1408,11 @@ _register(
     FunctionSpec(
         name="moving_average",
         signature="moving_average(x, window)",
-        summary="Mean of `x` over the last `window` ticks including this one.",
+        summary="Mean of `x, lag(x, 1), …, lag(x, window - 1)` (`window` a literal, 1 to 256).",
         returns="float",
         family=FAMILY_TEMPORAL,
         requires=(REQUIRES_HISTORY,),
+        shape=SHAPE_POINTWISE,
         min_args=2,
         max_args=2,
         return_type=_return_float,
@@ -1309,10 +1428,11 @@ _register(
     FunctionSpec(
         name="ema",
         signature="ema(x, alpha)",
-        summary="Exponential moving average of `x` with smoothing `alpha` in `(0, 1]`.",
+        summary="`alpha · x + (1 − alpha) · ema` of the previous tick, `alpha` a literal in `(0, 1]`; the episode-start value seeds it.",
         returns="float",
         family=FAMILY_TEMPORAL,
         requires=(REQUIRES_HISTORY,),
+        shape=SHAPE_POINTWISE,
         min_args=2,
         max_args=2,
         return_type=_return_float,
@@ -1328,10 +1448,11 @@ _register(
     FunctionSpec(
         name="rate_of_change",
         signature="rate_of_change(x, window)",
-        summary="`(x - lag(x, window)) / window`.",
+        summary="`(x - lag(x, window)) / window` (`window` a literal, 1 to 256).",
         returns="float",
         family=FAMILY_TEMPORAL,
         requires=(REQUIRES_HISTORY,),
+        shape=SHAPE_POINTWISE,
         min_args=2,
         max_args=2,
         return_type=_return_float,
@@ -1347,10 +1468,11 @@ _register(
     FunctionSpec(
         name="rising_edge",
         signature="rising_edge(flag)",
-        summary="True on the tick `flag` turns from false to true.",
+        summary="`flag and not lag(flag, 1)`: true on the tick `flag` turns from false to true.",
         returns="bool",
         family=FAMILY_TEMPORAL,
         requires=(REQUIRES_HISTORY,),
+        shape=SHAPE_POINTWISE,
         min_args=1,
         max_args=1,
         return_type=_return_bool,
@@ -1364,10 +1486,11 @@ _register(
     FunctionSpec(
         name="falling_edge",
         signature="falling_edge(flag)",
-        summary="True on the tick `flag` turns from true to false.",
+        summary="`not flag and lag(flag, 1)`: true on the tick `flag` turns from true to false.",
         returns="bool",
         family=FAMILY_TEMPORAL,
         requires=(REQUIRES_HISTORY,),
+        shape=SHAPE_POINTWISE,
         min_args=1,
         max_args=1,
         return_type=_return_bool,
@@ -1387,6 +1510,7 @@ _register(
         returns="float",
         family=FAMILY_SPATIAL,
         requires=(),
+        shape=SHAPE_POINTWISE,
         min_args=2,
         max_args=3,
         return_type=_return_float,
@@ -1408,6 +1532,7 @@ _register(
         returns="float",
         family=FAMILY_SPATIAL,
         requires=(),
+        shape=SHAPE_POINTWISE,
         min_args=2,
         max_args=2,
         return_type=_return_float,
@@ -1428,6 +1553,7 @@ _register(
         returns="bool",
         family=FAMILY_SPATIAL,
         requires=(),
+        shape=SHAPE_POINTWISE,
         min_args=3,
         max_args=4,
         return_type=_return_bool,
@@ -1446,10 +1572,11 @@ _register(
     FunctionSpec(
         name="nearest",
         signature='nearest(point, candidates[, "manhattan" | "euclidean"])',
-        summary="Row index of the candidate nearest to `point`; `candidates` is a vector variable or a tensor2d of rows.",
+        summary="Row index of the candidate nearest to `point`; `candidates` is a tensor2d of rows in the point's world.",
         returns="int",
         family=FAMILY_SPATIAL,
         requires=(),
+        shape=SHAPE_POINTWISE,
         min_args=2,
         max_args=3,
         return_type=_return_int,
@@ -1471,6 +1598,7 @@ _register(
         returns="the float vector type of `v`'s width (vec2f, vec3f or vecNf)",
         family=FAMILY_SPATIAL,
         requires=(),
+        shape=SHAPE_POINTWISE,
         min_args=1,
         max_args=1,
         return_type=_return_float_vector,
@@ -1487,10 +1615,14 @@ _register(
     FunctionSpec(
         name="distance_to_affordance",
         signature='distance_to_affordance("NAME"[, "manhattan" | "euclidean"])',
-        summary="Each agent's distance to the named affordance (default manhattan); infinity when it is not deployed.",
+        summary=(
+            "Each agent's distance to the named affordance (default manhattan); "
+            "the affordance must be deployed (refused at compile otherwise)."
+        ),
         returns="float",
         family=FAMILY_AFFORDANCE,
         requires=(REQUIRES_POSITIONS,),
+        shape=SHAPE_AGENT_ROWS,
         min_args=1,
         max_args=2,
         return_type=_return_float,
@@ -1510,6 +1642,7 @@ _register(
         returns="bool",
         family=FAMILY_AFFORDANCE,
         requires=(REQUIRES_POSITIONS,),
+        shape=SHAPE_AGENT_ROWS,
         min_args=2,
         max_args=3,
         return_type=_return_bool,
@@ -1526,10 +1659,11 @@ _register(
     FunctionSpec(
         name="direction_to_affordance",
         signature='direction_to_affordance("NAME"[, "manhattan" | "euclidean"])',
-        summary="Unit vector from each agent towards the named affordance (zero at the affordance or when it is not deployed).",
+        summary="Unit vector from each agent towards the named affordance (zero at the affordance).",
         returns="vecNf of the substrate's position width",
         family=FAMILY_AFFORDANCE,
         requires=(REQUIRES_POSITIONS,),
+        shape=SHAPE_AGENT_ROWS,
         min_args=1,
         max_args=2,
         return_type=_return_vecnf,
@@ -1541,3 +1675,46 @@ _register(
         eval_fn=_eval_direction_to_affordance,
     )
 )
+
+
+TEMPORAL_FUNCTIONS: frozenset[str] = frozenset(name for name, spec in FUNCTION_SPECS.items() if REQUIRES_HISTORY in spec.requires)
+"""The operators that read a history ring: every function that requires temporal history.
+
+Derived from ``FUNCTION_SPECS``, never listed by hand, so a new history operator joins
+it by declaring ``REQUIRES_HISTORY``. ``lag`` alone never reads its argument's current
+value, so it alone may close a self-reference."""
+
+
+def unserved_requirement(node: ASTNode, carried: frozenset[str]) -> str | None:
+    """The first function ``node`` calls whose context requirement ``carried`` lacks, described; None if all are served.
+
+    The one predicate every consumer refuses context-bound functions by: a profile
+    expression carries history, positions and a random stream; a transition write or
+    rule carries a random stream; an effect or interaction pipeline carries positions and
+    a random stream; a spawn predicate carries none (``townlet.vfs.namespace``).
+    """
+    from dataclasses import fields
+
+    from townlet.world.expression.ast_nodes import ASTNode as _ASTNode
+    from townlet.world.expression.ast_nodes import FunctionCall
+
+    found: list[str] = []
+
+    def visit(value: Any) -> None:
+        if found:
+            return
+        if isinstance(value, FunctionCall):
+            spec = FUNCTION_SPECS.get(value.function_name)
+            missing = [requirement for requirement in (spec.requires if spec is not None else ()) if requirement not in carried]
+            if missing:
+                found.append(f"'{value.function_name}', which needs {' and '.join(missing)}")
+                return
+        if isinstance(value, _ASTNode):
+            for ast_field in fields(value):
+                visit(getattr(value, ast_field.name))
+        elif isinstance(value, list | tuple):
+            for item in value:
+                visit(item)
+
+    visit(node)
+    return found[0] if found else None

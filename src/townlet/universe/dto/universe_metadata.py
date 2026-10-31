@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import dataclass, field
+from copy import deepcopy
+from dataclasses import dataclass, field, fields
 from types import MappingProxyType
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -40,12 +42,6 @@ class UniverseMetadata:
     action_count: int = 0
     observation_dim: int = 0
 
-    # VFS scope extents (canonical variables `extents:` block). Zero means
-    # the pack declares no variables of that scope — the loader rejects a
-    # scoped variable whose extent is undeclared, so 0 never reaches a registry
-    # that needs it.
-    num_message_slots: int = 0
-
     # Spatial metadata for finite substrates. Axis dimensions remain owned by
     # the substrate; collapsing them to one square-only number loses identity.
     grid_cells: int | None = None
@@ -75,3 +71,17 @@ class UniverseMetadata:
             "affordance_id_to_index",
             MappingProxyType(dict(self.affordance_id_to_index)),
         )
+
+    def __deepcopy__(self, memo: dict[int, Any]) -> UniverseMetadata:
+        """Rebuild through the constructor: `copy.deepcopy` cannot pickle a mappingproxy.
+
+        The two index maps are read-only views installed by ``__post_init__``; copying
+        their plain-dict contents and re-constructing re-installs the views, so a clone
+        is as immutable as the original and ``CompiledUniverse.clone()`` works on a
+        freshly compiled universe, not only on one rebuilt from an artifact.
+        """
+        values: dict[str, Any] = {}
+        for member in fields(self):
+            value = getattr(self, member.name)
+            values[member.name] = deepcopy(dict(value) if isinstance(value, MappingProxyType) else value, memo)
+        return UniverseMetadata(**values)

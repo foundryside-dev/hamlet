@@ -23,20 +23,30 @@ Townlet is pre-release: version 0.1.0, classified Alpha, with no backwards-compa
 Removed declarations and artifact versions fail loudly; there are no compatibility readers or
 migration paths.
 
-**Source review:** `project-recovery-4` at
-`ea9fc5fafe451cd59e7231ccef06d221e73ff99d`, 2026-10-01 Australia/Canberra.
-Its execution files match the qualified implementation
-`b70fda104e5061ed2735e8b31b7f8f9caaf99f19`. This README's source review and that implementation's
-executed qualification are separate records. Full local tests, Ruff, Black, mypy, no-defaults,
-compiler-fleet validation, direct-parent comparison and frozen CPU qualification passed at the
-qualified source. Commands, terminal outcomes and scope are retained in the
+**Source review:** `fix/vfs-compiler-remediation-2` at
+`6475cc5b377a6f876afad92de48fe221710e96e7`, 2026-11-01 Australia/Canberra, by the
+[`PDR-0039`](docs/product/decisions/0039-the-readme-ships-and-its-claims-expire-at-the-merge-to-main.md)
+method: a ground-truth sweep against source, a draft from verified facts only, and a separate
+adversarial pass. At that commit the compiler-fleet script and the no-defaults linter with its
+ratchet passed locally, and all 33 levels of the 28 packs carrying `levels/` (the three negative
+VFS fixtures aside) compiled. Hosted CI at that exact head (pull-request runs): Lint and Config
+Validation succeeded (runs `41203711050`, `41203710923`); Tests succeeded with 5,531 passed,
+16 skipped and 1 deselected (run `41203710897`).
+
+At this review `origin/main` was `11c74398` (PR #54, merged 2026-10-24 UTC). Its per-push Lint,
+Config Validation and Tests succeeded, and the nightly Full Test Suite succeeded on each scheduled
+run from 2026-10-25 to 2026-10-31 UTC. Local success and historical hosted success are not
+results for a new published head. The [current-state record](docs/product/current-state.md) is
+dated 2026-10-02 and predates PRs #49, #51, #53 and #54.
+
+The previous review (`project-recovery-4` at `ea9fc5fa`, 2026-10-01) rested on the static-access
+qualification at `b70fda104e5061ed2735e8b31b7f8f9caaf99f19`: full local tests, Ruff, Black, mypy,
+no-defaults, compiler-fleet validation, direct-parent comparison and frozen CPU qualification
+passed at that source. Commands, terminal outcomes and scope are retained in the
 [static-access evidence](docs/product/evidence/static-epistemic-access/acceptance.md) and
 [local integration receipt](docs/product/evidence/static-epistemic-access/local-integration.json).
-
-At this review, hosted CI for the consolidation into GitHub `main` is pending. Local success and
-historical hosted success are not results for a new published head. The eventual main landing
-and exact-head hosted checks belong in the [current-state record](docs/product/current-state.md).
-No fresh browser, CUDA or learned-policy convergence campaign is claimed by this source review.
+They are records for that source, not for later commits. No fresh browser, CUDA, oracle-matrix or
+learned-policy convergence campaign is claimed by this source review.
 
 The project remains a rewrite behind a pinned oracle. `oracle-2026-08-17` at
 `4222a9176e68e232a0e46c7004183440e27f22c3` is the preserved-behavior reference;
@@ -57,13 +67,13 @@ A conventional pack layout is:
 configs/default_curriculum/
   experiment.yaml       # declared levels and experiment identity
   stratum.yaml          # pack-wide spatial topology and capabilities
-  environment.yaml      # meter observation types and cascade graph
+  environment.yaml      # meter types, cascade/modulation graphs, affordance vocabulary
   actions.yaml          # substrate/custom actions, writes and labels
   brain.yaml            # architecture, optimizer, loss, Q-learning and replay
-  variables.yaml        # canonical state, policies, profiles and scope extents
-  items.yaml            # item catalog
-  effects.yaml          # effect catalog
-  transition_rules.yaml # optional transition declarations
+  variables.yaml        # canonical state, policies and item profiles
+  items.yaml            # optional item catalog
+  effects.yaml          # optional effect catalog
+  transition_rules.yaml # optional per-tick transition rules
   presentation.yaml     # optional display metadata (discovered by content)
   levels/<level>/
     curriculum.yaml     # vision and temporal configuration
@@ -75,7 +85,8 @@ configs/default_curriculum/
     items.yaml          # optional level item appearances
 ```
 
-This tree is a convention, not the compiler's discovery rule. The required level families are
+This tree is a convention, not the compiler's discovery rule. The required pack families are
+experiment, stratum, environment, actions, brain and variables; the required level families are
 curriculum, bars, affordances, drive and training. Pack catalogs cannot be moved to level scope.
 A level brain replaces the complete pack brain; partial patches are not supported. Training
 overrides five effective-brain scalars: gamma, target-update frequency, Double DQN, learning
@@ -108,8 +119,8 @@ stratum:
   temporal_support: enabled
 ```
 
-The stratum is pack-wide. Changing it changes every level's spatial execution; a level-local
-stratum is not a separate world. The current vocabulary includes square/cubic grids, GridND,
+The stratum is pack-wide. Changing it changes every level's spatial execution; a stratum
+declaration at level scope is refused. The current vocabulary includes square/cubic grids, GridND,
 continuous spaces and aspatial worlds, with family-specific support boundaries. Coordinate and
 egocentric normalization are canonical; the deleted `observation_encoding` and
 `observation_mode` selectors are not accepted. The live viewer supports a narrower surface than
@@ -124,7 +135,10 @@ compile/reset/step witness, not full support for every topology or a learning re
 
 Cut B replaced the separate environment/profile/overlay authoring surfaces with one canonical
 variable roster. Each declaration specifies scope, lifetime, initialization, semantic type and
-exposure. `variables.extents` supplies the sizes of zone, group, message and affordance storage;
+exposure. Scopes are `global`, `agent`, `item` and `affordance`; the batch is N independent
+single-agent worlds, so `global` holds one value per world, there is no pair or message scope
+(and no `agent_private` scope: privacy is `readable_by`/`exposed_to`), and no scope takes an
+authored extent;
 item state uses the same contract, qualified by its declared item profile. The authored day
 clock is derived from engine `tick`, and a curriculum can refer to its period with
 `day_length: {period_of: day_phase}`. See [variables](docs/config-schemas/variables.md).
@@ -164,6 +178,29 @@ cache-loaded artifacts, two rows and two episodes. Qualified item probes are sep
 Static roles do not implement ownership or spatial privacy, engine confidentiality, a Python
 sandbox or information-theoretic noninterference: rewards and public derived values can reveal
 hidden inputs. See [static-access acceptance](docs/product/evidence/static-epistemic-access/acceptance.md).
+
+### Expressions and transition rules
+
+Variable expressions, action writes, transition rules, effect and interaction pipelines and item
+spawn predicates share one expression language and one reference grammar. A bare `x` is a
+registry variable read in this world by its declared scope (engine names such as `tick` are also
+bare), `bar.m` is a meter of this world's agent, and `item.x` is the state of the item the
+context is bound to. Other spellings (`vfs.x`, `self.…`, `target.…`, a bare meter name) refuse
+at compile with the accepted spelling named.
+
+Variable expressions can read history (`lag`, `delta`, `moving_average`, `ema`,
+`rate_of_change`, `rising_edge`, `falling_edge`; depths and windows are integer literals up to
+256), draw randomness (`uniform`, `normal_dist`) and read affordance positions
+(`distance_to_affordance`, `in_range`, `direction_to_affordance`; refused in a global
+expression, which has no agent row). A draw is a pure function of run seed, episode, tick,
+declaration site, world and element: it does not depend on batch size or on unrelated
+declarations, and the seed and episode counter travel in the checkpoint. The effects engine
+keeps its own generators.
+
+Pack-scope `transition_rules` write VFS variables or meters (`bar.<name>`) at a declared phase.
+A meter write commits through the meter path with its declared bounds; one scheduled after
+`clamp_and_validate` refuses at compile. See [expressions](docs/config-schemas/expressions.md)
+and [transition rules](docs/config-schemas/transition_rules.md).
 
 ### Rewards
 
@@ -264,11 +301,13 @@ uv run python -m townlet.universe inspect configs/default_curriculum \
     --primary-level L1_full_observability --format json
 ```
 
+`inspect` reports whether the artifact is still fresh against its source pack and, under
+`--format json`, where every token row lands (`token_rows`: type, slot, `filler_ref`, offsets).
 `--primary-level` is required for compile/validate and directory inspection. Compilation builds
 all world levels, with one cache artifact per selected primary level:
 `<pack>/.compiled/universe-<level>.msgpack`. The top-level effective brain is primary-level scoped.
-The current compiled artifact schema is **1.34**; older versions and missing policies refuse.
-This is separate from authored declaration versions and checkpoint format **6**.
+At `6475cc5b` the compiled artifact schema is **1.40**; any other version and missing policies
+refuse. This is separate from authored declaration versions and checkpoint format **9**.
 
 Train using the pack root:
 
@@ -301,15 +340,25 @@ uv run python -m townlet.demo.live_inference <checkpoint_dir> 8766 0.2 10000 \
     configs/default_curriculum L1_full_observability
 ```
 
-Training resume and serving share an identity gate. They check selected world, effective brain,
-VFS, the architecture-appropriate token/layout contract, the four per-level content hashes and
-the five pack-scope content hashes (`experiment`, `stratum`, `environment`, `actions`, nullable
-`items`) before loading weights; every leg is a hard refusal. A `stratum.yaml` edit such as
-`boundary: clamp -> wrap` therefore refuses resume even though no level hash moves.
+Training resume and serving share an identity gate. Before loading weights it checks the
+checkpoint format version, VFS, action count, the architecture-appropriate token/layout
+contract, the reward (`drive`) hash, the effective brain, the five per-level content hashes
+(`curriculum`, `bars`, `affordances`, `training`, nullable `items_appearance`), the seven
+pack-scope content hashes (`experiment`, `stratum`, `environment`, `actions`, nullable `items`,
+`variables`, nullable `effects`) and the selected primary level. Every mismatch refuses, with one
+explicit exception: a VFS mismatch under `--force-new-vfs` starts a fresh run instead of
+resuming. An effect body or a level's spawn rules refuse resume too (they were outside every
+gate until 2026-10-31), and a `stratum.yaml` edit such as `boundary: clamp -> wrap` refuses
+even though no level hash moves. Resume restores persistent-lifetime VFS state and the random
+draw state (run seed and episode counter).
 Permission-only changes in ordinary or qualified item state move variable/VFS identity and
-refuse exact resume. Transfer is a distinct operation. The compile-cache fingerprint
-(`metadata.config_hash`) is not stamped into checkpoints: it moves on a comment edit or a file
-rename while every semantic hash stays put.
+refuse exact resume; so does a hidden variable's `semantic_type` (through
+`variable_schema_hash`, a `vfs_hash` input) or its expression text (through the compiled
+expression programs). Both also move `variables_hash`, the declaration's canonical content
+(declaration order and file placement are transport, not identity). Transfer is a distinct
+operation. The compile-cache fingerprint (`metadata.config_hash`) is not stamped into
+checkpoints: it hashes each file's parsed YAML with its path, so a file rename, a list reorder or
+a split across files moves it while every semantic hash stays put; a comment edit does not.
 
 ## Architecture and completion
 
@@ -318,9 +367,14 @@ rename while every semantic hash stays put.
 | Compiler | Nested declaration discovery, typed/scoped validation, compiled token and transition products, cache and CLI | Not every authored failure is yet a complete structured diagnostic; some command lowering remains runtime-owned |
 | Strata | Multiple spatial families and vectorized torch state | Edge/action/renderer semantics are uneven across families |
 | Universe as Code | Meters, affordances, effects, items, variables, rewards and transition programs | Some accepted settings and lifecycle/item semantics remain incomplete |
-| Brain as Code | `feedforward`, `dueling`, `token_set`, token-native `recurrent`; optimizer/loss/replay factories | Cognitive topology, personality, goals, panic/compliance and think-loop graph are not implemented |
-| Observation | Seven typed token families, compact serialization, masked publishers, policy-authorized registry/item plans | Agent-token capacity remains zero in shipped packs; held-item/locality relationships are incomplete |
+| Brain as Code | `feedforward`, `dueling`, `token_set`, token-native `recurrent`; optimizer/loss/network factories and declared replay configuration | Cognitive topology, personality, goals, panic/compliance and think-loop graph are not implemented |
+| Observation | Seven typed token families, compact serialization, masked publishers, policy-authorized registry/item plans | Agent-token capacity is zero by construction: the batch is independent single-agent worlds and agents-per-world cannot be declared; held-item/locality relationships are incomplete |
 | Integration/UX | Training, checkpoints, live server, Vue observer and recording machinery | Experiment controls, terminal lanes, randomness isolation, model handoff and browser journeys need further qualification |
+
+The token type schema is the transfer contract; the serialization layout is per universe. At
+`6475cc5b` every one of the 33 compilable levels has `token_type_schema_hash`
+`de093a6e9f59924e` (2-D and 3-D grids, GridND, continuous and aspatial packs alike), while
+`total_dims` ranges from 19 to 474.
 
 `CompiledUniverse` is a frozen dataclass, not a deeply immutable object graph. World products and
 runtime state remain separate concerns. The completed static-access work seals permission
@@ -361,9 +415,11 @@ registered divergence must match its declared field/stream/crash shape; unexplai
 stale allowances and empty or all-skipped runs fail. A registered observation difference does
 not authorize changing actions, rewards or dones.
 
-The register now contains DIV-001 through DIV-015. Cut B's DIV-014 and static access's DIV-015
-append measured variable/VFS causes without widening historical stream allowances. DIV-015
-also binds a complete frozen/live byte inventory for the six matrix packs. The direct-parent
+The register contains DIV-001 through DIV-016. Cut B's DIV-014 and static access's DIV-015
+append measured variable/VFS causes without widening historical stream allowances; DIV-016
+(episode lanes, 2026-10-02) adds no matrix binding or stream allowance. No entry has been added
+since, and no harness run is recorded for the later compiler/VFS changes: whether they move
+oracle streams or hashes is unmeasured. DIV-015 also binds a complete frozen/live byte inventory for the six matrix packs. The direct-parent
 static-access comparison independently requires unchanged streams and resets; it does not
 inherit historical observation suppression. The qualified implementation's parent and frozen
 CPU reports, attributions and raw-evidence reconstruction are linked in its
@@ -377,20 +433,28 @@ Run locally:
 uv run ruff check .
 uv run black --check src tests
 uv run mypy src/townlet --show-error-codes
-uv run python scripts/no_defaults_lint.py src/townlet/ --whitelist .defaults-whitelist.txt
+uv run python scripts/no_defaults_lint.py src/townlet/ --whitelist .defaults-whitelist.txt \
+    --ratchet .defaults-ratchet
 uv run python scripts/validate_compiler_cli.py
 uv run pytest
 ```
 
-Bare pytest runs the default complete selection; no `slow` deselection remains. Hardware skips
-remain possible. The pack smoke test discovers current positive packs, constructs two CPU lanes,
-resets and steps them; this is a finite-output/contract gate, not a training qualification.
+The ratchet holds the whitelisted no-defaults count to the committed ceiling in
+`.defaults-ratchet` (617 at `6475cc5b`): the linter fails above or below it, so a removed default
+must lower the file in the same change; that the ceiling is never raised is review policy, not a
+mechanical check. Bare pytest deselects only the `perf` wall-clock tests (`-m "not perf"` in
+`pyproject.toml`); no `slow` deselection remains. Some skips do not depend on hardware (one
+deferred test skips unconditionally; others depend on fixture contents or an ffmpeg binary). The
+suite is gated on hosted CPU runners; at `6475cc5b` two tests fail on a CUDA host from
+test-side device placement. The pack smoke test discovers current positive packs, constructs
+two CPU lanes, resets and steps them; this is a finite-output/contract gate, not a training
+qualification.
 
 Four GitHub Actions workflows are configured with Python 3.13 and `uv sync --all-extras`:
 
 | Workflow | Configured trigger and checks |
 | --- | --- |
-| Lint | Push to `main`/`project-recovery*`, PR; Ruff, Black, mypy, no-defaults |
+| Lint | Push to `main`/`project-recovery*`, PR; Ruff, Black, mypy, no-defaults with ratchet |
 | Config Validation | Push to `main`/`project-recovery*`, PR; public compiler CLI fleet |
 | Tests | Push to `main`/`project-recovery*`, PR; config validation then bare pytest |
 | Full Test Suite | Dispatch and nightly `0 6 * * *`; config validation then bare pytest |
@@ -406,18 +470,18 @@ the exact published head, and a main-merge success requires its actual landing r
 hosted readings are retained in [product decisions](docs/product/decisions/), including
 [PDR-0145](docs/product/decisions/0145-gate-2-executed-for-the-fifth-merge-29-stale-claims-22-omissions-and-nine-defects-in-the-drafts-corrections.md)
 and [PDR-0146](docs/product/decisions/0146-the-fifth-merge-landed-at-ea3648db-and-work-continues-on-project-recovery-4.md).
-They are not substituted for consolidation CI.
+They are not results for any later head.
 
 ## Known work ahead
 
 - Reconcile shipped scenarios and BAC configurations, wire experiment controls, repair terminal
   lane/replay/metric accounting and isolate evaluation/serving randomness before relying on new
   convergence claims.
-- Complete reward strategy/composition consumption and command/time lifecycle contracts. The
-  compiled artifact now carries `items_appearance`, so a cache-served compile spawns the same
-  items as a fresh one.
-- Complete carried-item observation, item identity/locality/capacity and independent/shared-world
-  semantics. Qualified static access does not solve those relationships.
+- Complete reward strategy/composition consumption and command/time lifecycle contracts.
+- Complete carried-item observation and item identity/locality/capacity. The batch is N
+  independent single-agent worlds; shared-world populations (and with them agent tokens and
+  pair or message state) wait on a declarable agents-per-world count. Qualified static access
+  does not solve those relationships.
 - Make the viewer's loaded model, run identity, controls, reconnect and replay states truthful;
   add meaningful frontend/browser gates.
 - Deliver BAC cognition and execution graphs, a second genuinely different configuration-authored

@@ -64,8 +64,9 @@ class TestFactoryConfigValidation:
                 "action_discretization": BASE_ACTION_DISC,
             },
         }
-        # v2.1: Validation happens at substrate level with different error message
-        with pytest.raises(ValueError, match="ContinuousND requires at least 4 dimensions"):
+        # The rank rule is the DTO's (compiler re-review N2): it refuses at parse, located,
+        # before the substrate constructor can raise a bare ValueError.
+        with pytest.raises(ValueError, match="type='continuousnd' serves 4 to 8 dimensions"):
             config = SubstrateConfig(**config_dict)
             SubstrateFactory.build(config, torch.device("cpu"))
 
@@ -141,11 +142,13 @@ class TestFactoryEdgeCases:
     """Test factory behavior with edge cases and boundary conditions."""
 
     def test_gridnd_max_dimensions(self):
-        """Test GridND with maximum allowed dimensions (100D)."""
+        """Test GridND with the maximum rank (MAX_POSITION_RANK, the widest token position)."""
+        from townlet.config.stratum_config import MAX_POSITION_RANK
+
         config_dict = {
             "type": "gridnd",
             "gridnd": {
-                "dimension_sizes": [2] * 100,  # 100D grid
+                "dimension_sizes": [2] * MAX_POSITION_RANK,
                 "boundary": "clamp",
                 "distance_metric": "manhattan",
                 "topology": "hypercube",
@@ -154,16 +157,18 @@ class TestFactoryEdgeCases:
         config = SubstrateConfig(**config_dict)
         substrate = SubstrateFactory.build(config, torch.device("cpu"))
 
-        assert substrate.position_dim == 100
-        assert substrate.action_space_size == 202  # 2*100 + 2
+        assert substrate.position_dim == MAX_POSITION_RANK
+        assert substrate.action_space_size == 2 * MAX_POSITION_RANK + 2
 
     def test_continuousnd_max_dimensions(self):
-        """Test ContinuousND with maximum allowed dimensions (100D)."""
-        bounds = [(0.0, 1.0)] * 100
+        """Test ContinuousND with the maximum rank (MAX_POSITION_RANK)."""
+        from townlet.config.stratum_config import MAX_POSITION_RANK
+
+        bounds = [(0.0, 1.0)] * MAX_POSITION_RANK
         config_dict = {
             "type": "continuousnd",
             "continuous": {
-                "dimensions": 100,
+                "dimensions": MAX_POSITION_RANK,
                 "bounds": bounds,
                 "boundary": "clamp",
                 "movement_delta": 0.01,
@@ -175,7 +180,7 @@ class TestFactoryEdgeCases:
         config = SubstrateConfig(**config_dict)
         substrate = SubstrateFactory.build(config, torch.device("cpu"))
 
-        assert substrate.position_dim == 100
+        assert substrate.position_dim == MAX_POSITION_RANK
 
     def test_gridnd_boundary_modes(self):
         """Test GridND with all boundary modes."""

@@ -41,7 +41,7 @@ class SubstrateFactory:
             >>> config = load_substrate_config(Path("substrate.yaml"))
             >>> substrate = SubstrateFactory.build(config, torch.device("cuda"))
             >>> # Device specified here, not at construction:
-            >>> positions = substrate.initialize_positions(num_agents=100, device=device)
+            >>> positions = substrate.initialize_positions(num_agents=100, device=device, generator=None)
         """
         if config.type == "grid":
             assert config.grid is not None  # Validated by pydantic

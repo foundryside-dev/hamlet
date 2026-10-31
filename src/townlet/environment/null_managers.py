@@ -48,6 +48,15 @@ class NullItemManager:
             "ItemManager is not configured; spawn_item is unavailable. " "Configure items in the universe config to enable item spawning."
         )
 
+    find_spawn_location = spawn_item
+
+    @property
+    def num_worlds(self) -> int:
+        """Worlds to spawn into - raises when items are disabled."""
+        raise RuntimeError(
+            "ItemManager is not configured; spawn_item is unavailable. " "Configure items in the universe config to enable item spawning."
+        )
+
     def tick(self, *args: Any, **kwargs: Any) -> None:
         """Lifecycle tick - no-op when items are disabled.
 

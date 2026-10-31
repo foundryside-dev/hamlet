@@ -19,7 +19,7 @@ def test_default_transition_phase_graph_is_the_executed_schedule() -> None:
         "apply_completion_bonuses",
         "apply_passive_depletion",
         "apply_threshold_cascades",
-        "apply_social_residue_effects",
+        "apply_transition_rules",
         "clamp_and_validate",
         "evaluate_terminal_conditions",
     )

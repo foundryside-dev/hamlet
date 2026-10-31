@@ -11,8 +11,8 @@ effect_definitions:
     on_spawn: []
 
     on_tick:
-      - modify: target.bar.energy
-        value: "target.bar.energy + (0.05 * intensity)"
+      - modify: bar.energy
+        value: "bar.energy + (0.05 * intensity)"
 
     on_despawn: []
     on_interrupt: []
@@ -25,8 +25,8 @@ effect_definitions:
     observable: true
 
     on_spawn:
-      - modify: target.bar.health
-        value: "target.bar.health + (0.2 * intensity)"
+      - modify: bar.health
+        value: "bar.health + (0.2 * intensity)"
 
     on_tick: []
 
@@ -43,8 +43,8 @@ effect_definitions:
     on_spawn: []
 
     on_tick:
-      - modify: target.bar.health
-        value: "target.bar.health - (0.02 * intensity)"
+      - modify: bar.health
+        value: "bar.health - (0.02 * intensity)"
 
     on_despawn: []
     on_interrupt: []

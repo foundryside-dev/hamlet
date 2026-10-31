@@ -3,5 +3,5 @@ items:
 
   item_types: []
 
-  max_items_per_agent: 1
-  max_items_in_world: 1
+  max_items_per_agent: 0
+  max_items_in_world: 0

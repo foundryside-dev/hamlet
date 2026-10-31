@@ -73,7 +73,7 @@ def test_build_dependency_graph_no_deps():
             readable_by=["engine", "agent"],
             writable_by=["engine"],
             semantic_type="custom",
-            id="tick",
+            id="hour",
             type="scalar",
             initial_value=0,
             scope="global",
@@ -84,7 +84,7 @@ def test_build_dependency_graph_no_deps():
     compiler = VFSProfileCompiler()
     graph = compiler.build_dependency_graph(profile)
     assert len(graph.edges) == 0
-    assert set(graph.nodes) == {"day_count", "tick"}
+    assert set(graph.nodes) == {"day_count", "hour"}
 
 
 def test_build_dependency_graph_with_deps():
@@ -168,39 +168,6 @@ def test_build_dependency_graph_nested_deps():
     graph = compiler.build_dependency_graph(profile)
     assert ("a", "b") in graph.edges
     assert ("b", "c") in graph.edges
-
-
-def test_build_dependency_graph_with_path_deps():
-    """Variables with PathAccess dependencies (e.g., target.bar.energy) extract root namespace."""
-    profile = [
-        VariableDeclaration(
-            readable_by=["engine", "agent"],
-            writable_by=["engine"],
-            semantic_type="custom",
-            id="target",
-            type="agent_ref",
-            initial_value=0,
-            scope="global",
-            lifetime="persistent",
-            exposed_to=[],
-        ),
-        VariableDeclaration(
-            readable_by=["engine", "agent"],
-            writable_by=["engine"],
-            semantic_type="custom",
-            id="is_low",
-            type="bool",
-            expression="target.bar.energy < 0.2",
-            scope="global",
-            lifetime="persistent",
-            exposed_to=[],
-            initial_value=False,
-        ),
-    ]
-    compiler = VFSProfileCompiler()
-    graph = compiler.build_dependency_graph(profile)
-    assert ("target", "is_low") in graph.edges
-    assert len(graph.edges) == 1
 
 
 def test_detect_circular_dependency_simple():
@@ -552,8 +519,8 @@ def test_agent_expression_reads_globals_by_bare_name_without_a_dependency_edge()
 
 
 def test_agent_expression_over_a_global_alone_is_still_batch_shaped_at_compile():
-    """A global-only agent expression has no agent axis; the shape proof refuses it as before."""
-    with pytest.raises(TypeCheckError, match="expression shape is scalar, expected agent"):
+    """A global-only agent expression has no agent axis; the shape proof refuses it, naming `scope: global`."""
+    with pytest.raises(TypeCheckError, match="is agent-scope but its expression 'day_phase > 0.5' reads no per-agent state.*scope: global"):
         VFSProfileCompiler().compile_profile(
             [_declaration("flag", scope="agent", type="bool", expression="day_phase > 0.5")],
             {"energy": "float"},

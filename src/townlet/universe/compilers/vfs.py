@@ -2,18 +2,30 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import Any
 
-from townlet.config.bars_v2_config import BarsV2Config
-from townlet.config.items_config import ItemsAppearanceConfig, ItemsCatalogConfig
+from pyparsing import ParseBaseException
+
+from townlet.config.items_config import ItemsAppearanceConfig
 from townlet.config.variables_config import VariableDeclaration, VariablesConfig
+from townlet.items.manager import SpawnPredicateReads
 from townlet.universe.compiled import CompiledVFSProfiles
+from townlet.universe.error_codes import ErrorCode
+from townlet.universe.errors import CompilationError, CompilationMessage
+from townlet.universe.source_map import SourceMap, locate
+from townlet.vfs.namespace import ExpressionSource, Namespace, SpellingError, inline_expression_reads
 from townlet.vfs.profiles import VFSProfileCompiler
 from townlet.vfs.schema import VariableDef, VariableScope
 from townlet.world.expression import ExpressionParser
 from townlet.world.expression.type_checker import TypeChecker, TypeCheckError
 
 _ENGINE_TICK_ID = "tick"
+
+
+class _SpawnPredicateRefusedError(Exception):
+    """One spawn predicate the runtime could not evaluate; the message says why."""
+
 
 _DETERMINISTIC_TENSOR_INITIALIZERS = frozenset({"zeros", "ones", "eye"})
 
@@ -38,7 +50,7 @@ def _literal_tensor_default(mode: str, shape: list[int], *, var_id: str) -> list
 def _engine_tick_variable_def() -> VariableDef:
     return VariableDef(
         id=_ENGINE_TICK_ID,
-        scope="global",
+        scope=VariableScope.GLOBAL,
         type="scalar",
         default=0.0,
         lifetime="episode",
@@ -106,25 +118,6 @@ class VFSCompiler:
             description=variable.description,
         )
 
-    def build_expression_schema(self, bars: BarsV2Config, compiled_vfs_profiles: CompiledVFSProfiles | None) -> dict[str, str]:
-        """Build type schema for VFS expression runtime validation."""
-        schema = {}
-
-        for meter in bars.meters:
-            schema[f"bar.{meter.name}"] = "float"
-
-        if compiled_vfs_profiles and compiled_vfs_profiles.global_profile:
-            for var in compiled_vfs_profiles.global_profile.variables:
-                schema[f"vfs.{var.name}"] = var.type
-
-        if compiled_vfs_profiles and compiled_vfs_profiles.item_profiles:
-            for profile in compiled_vfs_profiles.item_profiles.values():
-                for var in profile.variables:
-                    schema[f"self.vfs.{var.name}"] = var.type
-                    schema[f"target.vfs.{var.name}"] = var.type
-
-        return schema
-
     def derive_evaluation_marks(self, config: VariablesConfig) -> dict[str, set[str]]:
         """Expressions are state; evaluate them irrespective of observation exposure."""
         return {
@@ -133,103 +126,74 @@ class VFSCompiler:
             if any(variable.expression is not None for variable in config.for_scope(scope))
         }
 
-    def validate_item_profile_bindings(
-        self,
-        items: ItemsCatalogConfig | None,
-        compiled_vfs_profiles: CompiledVFSProfiles | None,
-    ) -> None:
-        """Validate item profile references from items.yaml against compiled VFS profiles."""
-        if items is None:
-            return
-        item_profiles = compiled_vfs_profiles.item_profiles if compiled_vfs_profiles is not None else None
-        available_profiles = set(item_profiles.keys()) if item_profiles is not None else set()
-        for item in items.item_types:
-            profile_name = item.vfs_profile
-            if profile_name is None:
-                continue
-            if profile_name not in available_profiles:
-                raise ValueError(
-                    "Invalid item VFS profile binding.\n"
-                    f"  Item: {item.id}\n"
-                    f"  vfs_profile: {profile_name!r}\n"
-                    f"  Available item profiles: {sorted(available_profiles)}\n"
-                    "Define the profile in the pack-scope item_profiles declaration or update the item catalog binding."
-                )
-
     def compile_item_spawn_conditions(
         self,
         appearance: ItemsAppearanceConfig | None,
         *,
         bar_schema: dict[str, str],
         variables: VariablesConfig,
-        compiled_vfs_profiles: CompiledVFSProfiles | None,
-        temporal_supported: bool,
+        expressions: Mapping[str, ExpressionSource],
+        source_map: SourceMap | None,
+        level_name: str,
     ) -> None:
-        """Compile item spawn predicates into parsed ASTs for runtime reuse."""
+        """Resolve, type-check and inline each spawn predicate; store its AST.
+
+        The readable names come from `SpawnPredicateReads.namespace`, fed the same
+        registry roster the runtime registry is built from, so a predicate that compiles
+        is one the spawn context can evaluate. A spelling the resolver refuses, a call to
+        a function whose context a spawn does not carry (temporal history, the step,
+        positions), a non-bool result, or a read of a context-bound tick-lifetime
+        expression variable is refused here with the rule's `file:line`. Every pure
+        expression variable a predicate reads is inlined (S4 follow-up): spawns run after
+        tick state resets, so a stored value would be stale or a literal.
+        """
         if appearance is None:
             return
-        schema = self._build_spawn_condition_schema(
-            bar_schema=bar_schema,
-            variables=variables,
-            compiled_vfs_profiles=compiled_vfs_profiles,
-            temporal_supported=temporal_supported,
-        )
+        namespace = SpawnPredicateReads.namespace(meter_names=bar_schema, variables=self.build_runtime_variables(variables))
         parser = ExpressionParser()
-        type_checker = TypeChecker(schema)
-        for rule in appearance.items:
+        type_checker = TypeChecker(namespace.schema(SpawnPredicateReads.CONTEXT))
+        declaration = f"levels/{level_name}/items_appearance"
+        issues: list[CompilationMessage] = []
+        for index, rule in enumerate(appearance.items):
             rule.when_ast = None
             if rule.when is None:
                 continue
+            try:
+                rule.when_ast = self._check_spawn_predicate(rule.when, namespace, expressions, parser, type_checker)
+            except _SpawnPredicateRefusedError as refusal:
+                issues.append(
+                    CompilationMessage(
+                        code=ErrorCode.ITEM_SPAWN_CONDITION,
+                        message=f"Spawn condition for item '{rule.item_type}': {rule.when!r} {refusal}",
+                        location=locate(source_map, f"{declaration}:items[{index}].when", declaration),
+                    )
+                )
+        if issues:
+            raise CompilationError("Item spawn conditions", issues)
 
-            ast = parser.parse(rule.when)
-
-            if not temporal_supported and self._ast_uses_temporal(ast):
-                raise TypeCheckError("Spawn condition references temporal.* but temporal mechanics are disabled for this level")
-
+    @staticmethod
+    def _check_spawn_predicate(
+        when: str,
+        namespace: Namespace,
+        expressions: Mapping[str, ExpressionSource],
+        parser: ExpressionParser,
+        type_checker: TypeChecker,
+    ) -> Any:
+        """Return the parsed, inlined predicate, or raise `_SpawnPredicateRefusedError` saying why not."""
+        try:
+            ast = parser.parse(when)
+        except (ParseBaseException, ValueError) as exc:
+            raise _SpawnPredicateRefusedError(f"does not parse: {exc}") from exc
+        refusals = namespace.refusals(ast, SpawnPredicateReads.CONTEXT)
+        if refusals:
+            raise _SpawnPredicateRefusedError(f"is refused: {' '.join(refusals)}")
+        try:
             result_type = type_checker.check(ast)
-            if result_type != "bool":
-                raise TypeCheckError(f"Spawn condition must return bool, got {result_type}")
-
-            rule.when_ast = ast
-
-    def _build_spawn_condition_schema(
-        self,
-        *,
-        bar_schema: dict[str, str],
-        variables: VariablesConfig,
-        compiled_vfs_profiles: CompiledVFSProfiles | None,
-        temporal_supported: bool,
-    ) -> dict[str, str]:
-        """Build expression schema for item spawn conditions."""
-        schema: dict[str, str] = {**bar_schema}
-        for var in variables.declarations:
-            if var.scope in {VariableScope.GLOBAL, VariableScope.AGENT}:
-                schema[f"env.{var.id}"] = "float" if var.type == "scalar" else var.type
-        if temporal_supported:
-            schema["temporal.time_of_day"] = "float"
-            schema["temporal.day_progress"] = "float"
-            schema["temporal.is_night"] = "bool"
-
-        if compiled_vfs_profiles is not None:
-            if compiled_vfs_profiles.global_profile is not None:
-                for compiled_var in compiled_vfs_profiles.global_profile.variables:
-                    schema[f"vfs.{compiled_var.name}"] = compiled_var.type
-            if compiled_vfs_profiles.agent_profile is not None:
-                for compiled_var in compiled_vfs_profiles.agent_profile.variables:
-                    schema[f"agent.vfs.{compiled_var.name}"] = compiled_var.type
-
-        return schema
-
-    def _ast_uses_temporal(self, ast: Any) -> bool:
-        """Return True if parsed expression AST references temporal.* paths."""
-        if isinstance(ast, dict):
-            if ast.get("type") == "path":
-                path = ast.get("path")
-                if isinstance(path, str) and path.startswith("temporal."):
-                    return True
-            return any(self._ast_uses_temporal(value) for value in ast.values())
-        if isinstance(ast, list):
-            return any(self._ast_uses_temporal(item) for item in ast)
-        if hasattr(ast, "__dict__"):
-            return self._ast_uses_temporal(vars(ast))
-        return False
+        except TypeCheckError as exc:
+            raise _SpawnPredicateRefusedError(f"does not type-check: {exc}") from exc
+        if result_type != "bool":
+            raise _SpawnPredicateRefusedError(f"must return bool, got {result_type}")
+        try:
+            return inline_expression_reads(ast, expressions, consumer="an item spawn")
+        except SpellingError as exc:
+            raise _SpawnPredicateRefusedError(f"is refused: {exc}") from exc

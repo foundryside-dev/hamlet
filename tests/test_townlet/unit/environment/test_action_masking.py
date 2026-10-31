@@ -748,7 +748,7 @@ class TestActionMaskBuilderDelegation:
             item_manager=masking_env.item_manager,
             item_handler=masking_env.item_handler,
             affordances=masking_env.affordances,
-            is_affordance_open=masking_env._is_affordance_open,
+            affordance_open=masking_env._affordance_open_mask,
         )
         assert torch.equal(from_env, from_builder), "Env.get_action_masks must delegate to ActionMaskBuilder without modification."
 
@@ -762,7 +762,7 @@ class TestActionMaskBuilderDelegation:
             item_manager=masking_env.item_manager,
             item_handler=masking_env.item_handler,
             affordances=masking_env.affordances,
-            is_affordance_open=masking_env._is_affordance_open,
+            affordance_open=masking_env._affordance_open_mask,
         )
         second = masking_env.action_mask_builder.build(
             num_agents=masking_env.num_agents,
@@ -772,6 +772,6 @@ class TestActionMaskBuilderDelegation:
             item_manager=masking_env.item_manager,
             item_handler=masking_env.item_handler,
             affordances=masking_env.affordances,
-            is_affordance_open=masking_env._is_affordance_open,
+            affordance_open=masking_env._affordance_open_mask,
         )
         assert torch.equal(first, second)

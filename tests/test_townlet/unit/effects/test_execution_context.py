@@ -62,7 +62,7 @@ def test_execution_context_vfs_access():
     registry = VariableRegistry(variables=variables, num_agents=3, device=torch.device("cpu"))
 
     # Set initial values
-    registry.set("day_count", torch.tensor(42.0), writer="engine")
+    registry.set("day_count", torch.tensor([42.0, 7.0, 3.0]), writer="engine")  # one row per world
     registry.set("motivation", torch.tensor([1.0, 0.8, 1.2]), writer="engine")
 
     context = ExecutionContext(
@@ -74,10 +74,13 @@ def test_execution_context_vfs_access():
         item_manager=DummyItemManager(),
     )
 
-    day_count = context.get_path("vfs.day_count")
-    assert torch.equal(day_count, torch.tensor(42.0))
+    # No agent binding: the context is world-shared and reads every world's row.
+    day_count = context.get_path("day_count")
+    assert torch.equal(day_count, torch.tensor([42.0, 7.0, 3.0]))
+    # Bound to agent 1, the context reads its own world's row.
+    assert torch.equal(context.copy(target_index=1).get_path("day_count"), torch.tensor(7.0))
 
-    motivation = context.get_path("vfs.motivation")
+    motivation = context.get_path("motivation")
     assert torch.equal(motivation, torch.tensor([1.0, 0.8, 1.2]))
 
 
@@ -95,7 +98,7 @@ def test_execution_context_target_prefix():
     )
 
     # target.bar.energy should resolve to energy[1]
-    target_energy = context.get_path("target.bar.energy")
+    target_energy = context.get_path("bar.energy")
     assert target_energy.item() == 0.5
 
 
@@ -137,12 +140,12 @@ def test_execution_context_self_prefix_bar():
     )
 
     # self.bar.energy should resolve to energy[2]
-    self_energy = context.get_path("self.bar.energy")
+    self_energy = context.get_path("bar.energy")
     assert self_energy.item() == pytest.approx(0.8)
 
 
 def test_execution_context_self_prefix_vfs():
-    """ExecutionContext resolves 'self.vfs.' for agent VFS variables."""
+    """A bare agent variable is the addressed agent's row (``self`` here, S1)."""
     import pytest
 
     variables = [
@@ -168,59 +171,18 @@ def test_execution_context_self_prefix_vfs():
         item_manager=DummyItemManager(),
     )
 
-    # self.vfs.motivation should resolve to motivation[1]
-    self_motivation = context.get_path("self.vfs.motivation")
+    self_motivation = context.get_path("motivation")
     assert self_motivation.item() == pytest.approx(0.8)
 
 
 # --- Affordance availability tests ---
 
 
-def test_execution_context_affordance_available():
-    """ExecutionContext resolves affordance availability paths."""
-    bar_storage = {"energy": torch.tensor([1.0])}
-
-    context = ExecutionContext(
-        bars=bar_storage,
-        vfs_registry=None,
-        self_index=0,
-        target_index=None,
-        effect_manager=DummyEffectManager(),
-        item_manager=DummyItemManager(),
-        affordance_overrides={"food": True, "water": False},
-    )
-
-    food_available = context.get_path("affordance.food.available")
-    assert food_available.item() is True
-
-    water_available = context.get_path("affordance.water.available")
-    assert water_available.item() is False
-
-
-def test_execution_context_set_affordance_available():
-    """ExecutionContext can set affordance availability."""
-    bar_storage = {"energy": torch.tensor([1.0])}
-
-    context = ExecutionContext(
-        bars=bar_storage,
-        vfs_registry=None,
-        self_index=0,
-        target_index=None,
-        effect_manager=DummyEffectManager(),
-        item_manager=DummyItemManager(),
-        affordance_overrides={},
-    )
-
-    # Set affordance availability
-    context.set_path("affordance.gym.available", torch.tensor(False))
-    assert context.affordance_overrides["gym"] is False
-
-
 # --- Target VFS tests ---
 
 
 def test_execution_context_target_vfs():
-    """ExecutionContext resolves 'target.vfs.' for agent VFS variables."""
+    """ExecutionContext resolves '' for agent VFS variables."""
     import pytest
 
     variables = [
@@ -247,12 +209,12 @@ def test_execution_context_target_vfs():
     )
 
     # target.vfs.motivation should resolve to motivation[2]
-    target_motivation = context.get_path("target.vfs.motivation")
+    target_motivation = context.get_path("motivation")
     assert target_motivation.item() == pytest.approx(1.2)
 
 
 def test_execution_context_set_target_vfs():
-    """ExecutionContext can set 'target.vfs.' for agent VFS variables."""
+    """ExecutionContext can set '' for agent VFS variables."""
     variables = [
         VariableDef(
             id="motivation",
@@ -277,7 +239,7 @@ def test_execution_context_set_target_vfs():
     )
 
     # Set target.vfs.motivation
-    context.set_path("target.vfs.motivation", torch.tensor(0.5))
+    context.set_path("motivation", torch.tensor(0.5))
 
     # Verify it was set
     all_motivation = registry.get("motivation", reader="engine")
@@ -287,42 +249,21 @@ def test_execution_context_set_target_vfs():
 # --- Error path tests ---
 
 
-def test_execution_context_target_index_not_set_raises():
-    """ExecutionContext raises when target_index not set for target. paths."""
+def test_execution_context_item_state_without_a_bound_item_raises():
+    """``item.<x>`` names the bound item; a context bound to none refuses it."""
     import pytest
 
-    bar_storage = {"energy": torch.tensor([1.0, 0.5, 0.8])}
-
     context = ExecutionContext(
-        bars=bar_storage,
+        bars={"energy": torch.tensor([1.0, 0.5, 0.8])},
         vfs_registry=None,
         self_index=0,
-        target_index=None,  # Not set!
+        target_index=None,
         effect_manager=DummyEffectManager(),
         item_manager=DummyItemManager(),
     )
 
-    with pytest.raises(ValueError, match="target_index not set"):
-        context.get_path("target.bar.energy")
-
-
-def test_execution_context_self_index_not_set_raises():
-    """ExecutionContext raises when self_index not set for self. paths."""
-    import pytest
-
-    bar_storage = {"energy": torch.tensor([1.0, 0.5, 0.8])}
-
-    context = ExecutionContext(
-        bars=bar_storage,
-        vfs_registry=None,
-        self_index=None,  # Not set!
-        target_index=0,
-        effect_manager=DummyEffectManager(),
-        item_manager=DummyItemManager(),
-    )
-
-    with pytest.raises(ValueError, match="self_index not set"):
-        context.get_path("self.bar.energy")
+    with pytest.raises(ValueError, match="bound to no item"):
+        context.get_path("item.durability")
 
 
 def test_execution_context_bar_not_found_raises():
@@ -358,7 +299,7 @@ def test_execution_context_vfs_registry_not_set_raises():
     )
 
     with pytest.raises(ValueError, match="VFS registry not set"):
-        context.get_path("vfs.some_var")
+        context.get_path("some_var")
 
 
 def test_execution_context_invalid_path_raises():
@@ -374,7 +315,7 @@ def test_execution_context_invalid_path_raises():
         item_manager=DummyItemManager(),
     )
 
-    with pytest.raises(ValueError, match="Invalid path"):
+    with pytest.raises(ValueError, match="not a reference spelling"):
         context.get_path("invalid.path.here")
 
 

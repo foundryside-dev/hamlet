@@ -4,8 +4,9 @@ compile_vtc_affordance_occupancy existed and passed unit tests, but nothing call
 it from the universe pipeline, so no config pack could express bed/queue/capacity
 contention end-to-end. These tests pin the whole path: a custom action declared in
 actions.yaml with `source_affordance` and a claim write compiles into the
-transition schedule with its affordance row resolved, and env.step resolves two
-agents contending for a capacity-1 affordance deterministically.
+transition schedule with its affordance row resolved, and env.step lands each world's
+claim in that world's own affordance row (S1: affordance state is per world, so two worlds
+never contend for one bed).
 """
 
 from __future__ import annotations
@@ -85,9 +86,9 @@ def test_claim_action_compiles_into_schedule_with_affordance_row(temp_config_pac
     assert write.phase == "resolve_affordance_access_and_occupancy"
 
 
-def test_two_agents_contending_resolve_deterministically(temp_config_pack: Path) -> None:
-    """Two agents both claiming a capacity-1 affordance in the same tick: the
-    lower-indexed agent wins, the loser does not overwrite, other rows stay free."""
+def test_each_world_claims_its_own_bed(temp_config_pack: Path) -> None:
+    """Both worlds claim SLEEP in the same tick: each world's own row records its agent;
+    neither claim reaches the other world, and no other affordance row moves."""
     _declare_claim_action(temp_config_pack)
 
     universe = UniverseCompiler().compile(temp_config_pack, primary_level=PRIMARY_LEVEL, use_cache=False)
@@ -104,10 +105,10 @@ def test_two_agents_contending_resolve_deterministically(temp_config_pack: Path)
 
     occupied = env.vfs_registry.get("occupied_by", reader="engine")
     sleep_index = universe.metadata.affordance_id_to_index["SLEEP"]
-    assert occupied[sleep_index].item() == 0.0
-    for index in range(occupied.shape[0]):
-        if index != sleep_index:
-            assert occupied[index].item() == -1.0
+    assert occupied.shape == (2, universe.metadata.affordance_count)
+    assert occupied[:, sleep_index].tolist() == [0.0, 1.0]
+    others = [index for index in range(occupied.shape[1]) if index != sleep_index]
+    assert bool((occupied[:, others] == -1.0).all())
 
 
 def test_unknown_source_affordance_fails_at_compile(temp_config_pack: Path) -> None:

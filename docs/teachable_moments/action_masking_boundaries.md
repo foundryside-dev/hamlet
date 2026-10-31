@@ -338,7 +338,7 @@ If you mask the door action, it can't learn this sequence.
 
 ## Code Files Changed
 
-### `/home/john/hamlet/src/hamlet/environment/hamlet_env.py`
+### `src/hamlet/environment/hamlet_env.py`
 
 **Added method** (`get_valid_actions()`):
 
@@ -351,7 +351,7 @@ If you mask the door action, it can't learn this sequence.
 - Added `action_mask` to observation dictionary
 - Agent now receives mask with every observation
 
-### `/home/john/hamlet/src/hamlet/agent/drl_agent.py`
+### `src/hamlet/agent/drl_agent.py`
 
 **Modified** (`select_action()`):
 

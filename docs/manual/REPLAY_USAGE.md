@@ -18,7 +18,7 @@
 ### 1. Start Inference Server with Replay Support
 
 ```bash
-cd /home/john/hamlet
+cd hamlet  # repository root
 
 # Start server with replay enabled
 python -m townlet.demo.live_inference \
@@ -44,7 +44,7 @@ python -m townlet.demo.live_inference \
 ### 2. Connect Frontend
 
 ```bash
-cd /home/john/hamlet/frontend
+cd frontend
 npm run dev
 # Open http://localhost:5173
 ```

@@ -1,161 +1,41 @@
-# Security Policy
+# Security policy
 
-## Supported Versions
+## Supported versions
 
-HAMLET is currently in active development. Security updates are provided for the latest version only.
+Townlet is pre-release. Only the latest commit on `main` receives fixes.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 0.1.x   | :white_check_mark: |
-| < 0.1   | :x:                |
+## Reporting a vulnerability
 
-## Reporting a Vulnerability
+Please do not open a public issue. Email <john@foundryside.dev> with `[SECURITY]` in the
+subject.
 
-We take security seriously. If you discover a security vulnerability in HAMLET, please report it responsibly.
+Include what an attacker could do, the affected files or components, and steps to reproduce.
+This is a one-person project, so responses are best-effort; you should hear back within a week.
+Once a fix is on `main` the issue will be disclosed in a GitHub security advisory, with credit
+if you want it.
 
-### How to Report
+## Trust boundaries
 
-**Please DO NOT create a public GitHub issue for security vulnerabilities.**
+Townlet is research software meant to run on your own machine. Keep these limits in mind:
 
-Instead, report security issues by email to:
+- **Checkpoints.** Training resume and the live inference server load checkpoints with
+  `weights_only=False`, because checkpoints carry curriculum and replay state as Python objects.
+  Loading a checkpoint can therefore run arbitrary code. Each checkpoint has a `.sha256`
+  sidecar, which detects corruption but is not a signature. Only load checkpoints you produced
+  or fully trust.
+- **Config packs.** YAML is parsed with PyYAML's safe loader and validated against strict schemas.
+  A config pack can still make training consume a lot of memory or compute, so review packs from
+  others before running them.
+- **Network servers.** The training WebSocket server and the inference server listen on all
+  interfaces (`0.0.0.0`) with no authentication or encryption. Run them on a trusted network or
+  behind a firewall, and do not expose them to the internet.
+- **Variable access policies.** `readable_by`, `writable_by` and `exposed_to` control what an
+  agent can read and observe. They are not a confidentiality mechanism: rewards and other
+  values derived from hidden state can still reveal it.
 
-- **Email**: <john@foundryside.dev>
-- **Subject**: [SECURITY] Brief description of vulnerability
+## Out of scope
 
-### What to Include
-
-Please include the following information in your report:
-
-1. **Description**: Clear description of the vulnerability
-2. **Impact**: What could an attacker accomplish?
-3. **Affected Components**: Which parts of HAMLET are affected?
-4. **Reproduction Steps**: Step-by-step instructions to reproduce
-5. **Proof of Concept**: Code or commands demonstrating the issue (if applicable)
-6. **Suggested Fix**: If you have ideas on how to fix it
-7. **Your Details**: Name and contact info for acknowledgment (optional)
-
-### Example Report
-
-```
-Subject: [SECURITY] Arbitrary Code Execution via Malicious Config Files
-
-Description:
-HAMLET loads YAML config files without proper validation, allowing an attacker
-to execute arbitrary Python code via PyYAML's unsafe load() function.
-
-Impact:
-An attacker who can provide a malicious config file could execute arbitrary
-code on the system running HAMLET.
-
-Affected Components:
-- src/townlet/environment/config_loader.py (line 45)
-
-Reproduction Steps:
-1. Create a malicious config file with PyYAML gadgets
-2. Run: python scripts/run_demo.py --config malicious.yaml
-3. Observe code execution
-
-Suggested Fix:
-Use yaml.safe_load() instead of yaml.load()
-```
-
-### Response Timeline
-
-- **Initial Response**: Within 48 hours of receiving your report
-- **Vulnerability Assessment**: Within 5 business days
-- **Fix Development**: Depends on severity
-  - Critical: Within 7 days
-  - High: Within 14 days
-  - Medium: Within 30 days
-  - Low: Next minor release
-- **Public Disclosure**: After fix is released and users have time to update
-
-### What to Expect
-
-1. **Acknowledgment**: We'll confirm receipt of your report
-2. **Investigation**: We'll verify and assess the vulnerability
-3. **Communication**: We'll keep you updated on our progress
-4. **Fix Development**: We'll develop and test a fix
-5. **Release**: We'll release a patched version
-6. **Disclosure**: We'll publicly disclose the vulnerability (with your permission)
-7. **Credit**: We'll credit you in the CHANGELOG and security advisory (if you wish)
-
-## Security Best Practices
-
-When using HAMLET, follow these best practices:
-
-### Configuration Files
-
-- **Validate configs**: Only load configs from trusted sources
-- **Avoid user-supplied configs**: Don't load configs directly from user input without validation
-- **Review YAML files**: Inspect config files before using them
-
-### Training Data
-
-- **Sanitize inputs**: Validate all external data before use
-- **Checkpoint integrity**: Verify checkpoint integrity before loading
-- **Isolated environments**: Train in isolated environments when possible
-
-### Deployment
-
-- **Latest version**: Use the latest version of HAMLET
-- **Updated dependencies**: Keep PyTorch, NumPy, and other dependencies up-to-date
-- **Minimal permissions**: Run HAMLET with minimal required permissions
-- **Network isolation**: Isolate training environments from production networks
-
-### Development
-
-- **Code review**: Review all code changes for security implications
-- **Dependency scanning**: Regularly scan dependencies for vulnerabilities
-- **Static analysis**: Use tools like Bandit for Python security checks
-- **Input validation**: Validate all user inputs and external data
-
-## Known Security Considerations
-
-### PyTorch Model Loading
-
-HAMLET now enforces PyTorch's `weights_only=True` guard for all runtime checkpoint loads and stores a `.sha256` digest next to every checkpoint. When loading, we verify the digest (if present) and refuse to hydrate pickled Python objects. If you encounter the "weights only load failed" error, regenerate the checkpoint with the current release instead of bypassing the guard. **Only load checkpoints from trusted sources.**
-
-### YAML Config Loading
-
-HAMLET loads configuration files using PyYAML. We use `yaml.safe_load()` to prevent code execution vulnerabilities. Always verify config files come from trusted sources.
-
-### WebSocket Inference Server
-
-The live inference server (port 8766) is intended for local use only. Do not expose it directly to the internet without proper authentication and encryption.
-
-### User-Supplied Affordances
-
-If extending HAMLET to allow user-defined affordances or game mechanics, validate all custom logic thoroughly to prevent code injection.
-
-## Security Updates
-
-Security updates will be announced via:
-
-1. GitHub Security Advisories
-2. CHANGELOG.md with [SECURITY] prefix
-3. Release notes
-
-## Out of Scope
-
-The following are explicitly out of scope for security reports:
-
-- Denial of Service via resource exhaustion (training RL models is resource-intensive by design)
-- Issues requiring physical access to the machine
-- Social engineering attacks
-- Issues in third-party dependencies (report to those projects directly)
-- Pedagogical "interesting failures" (e.g., reward hacking) - these are features, not bugs!
-
-## Questions?
-
-For non-security questions about HAMLET, please:
-
-- Open a GitHub Discussion
-- Create a public GitHub Issue
-- Read the documentation in `docs/`
-
-For security-related questions (not vulnerabilities), you can email <john@foundryside.dev> with subject line "[SECURITY QUESTION]".
-
----
-
-Thank you for helping keep HAMLET and its users safe!
+- Resource exhaustion from training itself.
+- Reward hacking and other "interesting failures" in learned behaviour. Those are research
+  findings, not vulnerabilities; please open an ordinary issue.
+- Vulnerabilities in dependencies. Report those upstream.

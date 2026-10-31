@@ -1,8 +1,8 @@
 blank_issues_enabled: true
 contact_links:
-  - name: Question or Discussion
-    url: https://github.com/tachyon-beep/hamlet/discussions
-    about: Ask questions or discuss ideas that aren't bugs or feature requests
+  - name: Question
+    url: https://github.com/foundryside-dev/hamlet/issues
+    about: Ask a question by opening an issue
   - name: Documentation
-    url: https://github.com/tachyon-beep/hamlet/tree/main/docs
-    about: Browse the comprehensive documentation
+    url: https://github.com/foundryside-dev/hamlet/tree/main/docs
+    about: Browse the documentation

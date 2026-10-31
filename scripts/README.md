@@ -240,7 +240,7 @@ python scripts/validate_substrates.py --parallel 4
 Ensure you're running from the project root:
 
 ```bash
-cd /home/john/hamlet
+cd hamlet  # repository root
 python scripts/validate_substrates.py
 ```
 

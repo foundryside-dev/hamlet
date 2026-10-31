@@ -1,12 +1,12 @@
 [project]
 name = "townlet"
 version = "0.1.0"
-description = "A pedagogical Deep Reinforcement Learning environment designed to trick students into learning graduate-level RL"
+description = "Deep reinforcement-learning environments authored as configuration: declare a world in YAML, compile it, and train on it with PyTorch"
 readme = "README.md"
 requires-python = ">=3.13"
 license = { text = "MIT" }
 authors = [
-    { name = "John", email = "john@foundryside.dev" }
+    { name = "John Morrissey", email = "john@foundryside.dev" }
 ]
 keywords = [
     "reinforcement-learning",
@@ -41,7 +41,7 @@ classifiers = [
 # floor is a claim about compatibility that nothing verifies.
 dependencies = [
     "numpy>=2.4.4",
-    "torch>=2.11.0,<2.12",  # upper bound: triton 3.7.0 segfaults inside pytest (filigree hamlet-74197422b3)
+    "torch>=2.11.0,<2.12",  # upper bound: triton 3.7.0 segfaults inside pytest
     "tensorboard>=2.20.0",  # no direct import: required by torch.utils.tensorboard.SummaryWriter
     "fastapi>=0.136.1",
     "uvicorn[standard]>=0.46.0",
@@ -54,11 +54,11 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/tachyon-beep/hamlet"
-Repository = "https://github.com/tachyon-beep/hamlet"
-Documentation = "https://github.com/tachyon-beep/hamlet/tree/main/docs"
-Issues = "https://github.com/tachyon-beep/hamlet/issues"
-Changelog = "https://github.com/tachyon-beep/hamlet/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/foundryside-dev/hamlet"
+Repository = "https://github.com/foundryside-dev/hamlet"
+Documentation = "https://github.com/foundryside-dev/hamlet/tree/main/docs"
+Issues = "https://github.com/foundryside-dev/hamlet/issues"
+Changelog = "https://github.com/foundryside-dev/hamlet/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = [
@@ -75,7 +75,7 @@ dev = [
     "pytest-xdist>=3.6",
 ]
 # Consumed only by src/townlet/recording/. That subsystem is slated for removal
-# once its intent is captured (filigree hamlet-16ae192d42) — delete this extra in
+# once its intent is captured — delete this extra in
 # the same change. msgpack/lz4 are not repeated here: they are runtime deps.
 recording = [
     "ffmpeg-python>=0.2.0", # Video export
@@ -97,8 +97,8 @@ target-version = ['py313']
 [tool.ruff]
 line-length = 140
 target-version = "py313"
-# Review evidence: reproduction scripts frozen as they ran, not maintained code.
-extend-exclude = ["review-2026-10-24", "rereview-2026-10-31"]
+# Internal working material (gitignored): review scripts frozen as they ran, not maintained code.
+extend-exclude = ["internal"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP"]

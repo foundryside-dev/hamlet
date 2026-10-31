@@ -1,6 +1,0 @@
-curriculum:
-  version: "1.0"
-  active_vision: global
-  vision_range: 0.0
-  active_temporal: false
-  day_length: null

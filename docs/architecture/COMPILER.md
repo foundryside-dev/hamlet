@@ -288,7 +288,7 @@ compiles and discards, so `.compiled/` never appears. Every CLI refusal exits 1 
 `[CODE] file:line - message` diagnostic, never a traceback. `scripts/validate_compiler_cli.py` iterates every pack in `configs/`.
 
 The CLI is wired into CI via `.github/workflows/config-validation.yml`. **Caveat: no workflow
-has ever run on `project-recovery`** (filigree `hamlet-2100105c9a`) — the gates that actually
+has ever run on `project-recovery`** — the gates that actually
 hold on the recovery branches are run locally, by hand.
 
 ### Testing

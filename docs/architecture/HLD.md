@@ -282,5 +282,5 @@ Delirium" reward-hacking lesson (no shipped level declares the multiplicative re
 on); the deployment/export path (`hamlet-0cdb8a6d1a`); and PDR-0117 discovery-merge.
 
 **A note on CI.** The gates that hold on `project-recovery*` branches are run locally, by hand —
-no workflow has ever run on `project-recovery` (filigree `hamlet-2100105c9a`). `main` carries the
+no workflow has ever run on `project-recovery`. `main` carries the
 recovery and its nightly is green; between merges `main` trails the branch by design.

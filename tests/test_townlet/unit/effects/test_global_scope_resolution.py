@@ -9,7 +9,7 @@ rows, and never touches another world's row.
 import pytest
 import torch
 
-from townlet.effects.compiler import CommandCompiler
+from tests.test_townlet._fixtures.command_namespace import command_compiler
 from townlet.effects.context import ExecutionContext
 from townlet.effects.executor import CommandExecutor
 from townlet.effects.schema import CommandNode, CommandType
@@ -55,13 +55,13 @@ def test_effect_expression_reads_and_writes_global_tensor_whole():
     """modify vfs.<global> with a value expression reading the container back works whole-container.
 
     This is the exact route Trial B's blind run recorded as rejected:
-    value expression 'vfs.grid' gathered to (batch, ...) and registry.set refused the shape.
+    value expression 'grid' gathered to (batch, ...) and registry.set refused the shape.
     """
     registry = _make_registry()
     context = _make_context(registry, target_index=1)
 
-    command = CommandNode(type=CommandType.MODIFY, path="vfs.grid", value_expr="vfs.grid + 1.0")
-    compiler = CommandCompiler(schema={"vfs.grid": "float"}, agent_target=True)
+    command = CommandNode(type=CommandType.MODIFY, path="grid", value_expr="grid + 1.0")
+    compiler = command_compiler({"grid": "float"})
     compiler.compile_command(command)
 
     CommandExecutor().execute(command, context)
@@ -73,12 +73,12 @@ def test_effect_expression_reads_and_writes_global_tensor_whole():
 
 
 def test_effect_expression_global_root_reads_global_tensor():
-    """The explicit global.vfs.<name> root works end-to-end through compile and execute."""
+    """The explicit <name> root works end-to-end through compile and execute."""
     registry = _make_registry()
     context = _make_context(registry, target_index=1)
 
-    command = CommandNode(type=CommandType.MODIFY, path="vfs.grid", value_expr="global.vfs.grid + 2.0")
-    compiler = CommandCompiler(schema={"vfs.grid": "float", "global.vfs.grid": "float"}, agent_target=True)
+    command = CommandNode(type=CommandType.MODIFY, path="grid", value_expr="grid + 2.0")
+    compiler = command_compiler({"grid": "float"})
     compiler.compile_command(command)
 
     CommandExecutor().execute(command, context)
@@ -89,12 +89,12 @@ def test_effect_expression_global_root_reads_global_tensor():
 
 
 def test_global_vfs_write_path_lands_in_the_contexts_world():
-    """`global.vfs.<id>` is a write spelling too: the effects schema admits it, so the runtime serves it."""
+    """`<id>` is a write spelling too: the effects schema admits it, so the runtime serves it."""
     registry = _make_registry()
     context = _make_context(registry, target_index=0)
 
-    command = CommandNode(type=CommandType.MODIFY, path="global.vfs.grid", value_expr="global.vfs.grid + 3.0")
-    CommandCompiler(schema={"global.vfs.grid": "float"}, agent_target=True).compile_command(command)
+    command = CommandNode(type=CommandType.MODIFY, path="grid", value_expr="grid + 3.0")
+    command_compiler({"grid": "float"}).compile_command(command)
     CommandExecutor().execute(command, context)
 
     result = registry.get("grid", reader="engine")
@@ -106,13 +106,13 @@ def test_a_row_write_to_a_global_writes_the_whole_payload_of_one_world():
     """A row write never slab-writes container[agent_index] of the payload (hamlet-57a5126baa):
     the row a global has is its world's, and the payload is written whole.
 
-    The effects schema never admits `target.vfs.<global>`; this simulates a stale artifact.
+    The effects schema never admits `<global>`; this simulates a stale artifact.
     """
     registry = _make_registry()
     context = _make_context(registry, target_index=1)
 
-    command = CommandNode(type=CommandType.MODIFY, path="target.vfs.grid", value_expr="0.5")
-    compiler = CommandCompiler(schema={"target.vfs.grid": "float"}, agent_target=True)
+    command = CommandNode(type=CommandType.MODIFY, path="grid", value_expr="0.5")
+    compiler = command_compiler({"grid": "float"})
     compiler.compile_command(command)
 
     CommandExecutor().execute(command, context)
@@ -122,26 +122,13 @@ def test_a_row_write_to_a_global_writes_the_whole_payload_of_one_world():
     assert torch.equal(result[0], torch.zeros(3, 3))
 
 
-def test_target_vfs_read_of_global_not_available():
-    """target.vfs.<global> is not a readable view: globals are excluded from per-entity views."""
-    registry = _make_registry()
-    context = _make_context(registry, target_index=1)
-
-    command = CommandNode(type=CommandType.MODIFY, path="vfs.mood", value_expr="target.vfs.grid + 1.0")
-    compiler = CommandCompiler(schema={"vfs.mood": "float", "target.vfs.grid": "float"}, agent_target=True)
-    compiler.compile_command(command)
-
-    with pytest.raises(KeyError):
-        CommandExecutor().execute(command, context)
-
-
 def test_target_vfs_write_to_agent_var_still_works():
     """The per-agent target write path is untouched for agent-scoped variables."""
     registry = _make_registry()
     context = _make_context(registry, target_index=1)
 
-    command = CommandNode(type=CommandType.MODIFY, path="target.vfs.mood", value_expr="0.7")
-    compiler = CommandCompiler(schema={"target.vfs.mood": "float"}, agent_target=True)
+    command = CommandNode(type=CommandType.MODIFY, path="mood", value_expr="0.7")
+    compiler = command_compiler({"mood": "float"})
     compiler.compile_command(command)
 
     CommandExecutor().execute(command, context)
@@ -151,7 +138,7 @@ def test_target_vfs_write_to_agent_var_still_works():
     assert mood[0].item() == pytest.approx(0.0)
 
 
-@pytest.mark.parametrize("path", ["target.vfs.sealed", "self.vfs.sealed", "vfs.sealed"])
+@pytest.mark.parametrize("path", ["sealed"])
 def test_effect_writes_enforce_writable_by(path: str):
     """Every effects write route commits through registry.set: writable_by is
     enforced and a refused write leaves storage untouched (hamlet-57a5126baa).
@@ -179,7 +166,7 @@ def test_effect_writes_enforce_writable_by(path: str):
     )
 
     command = CommandNode(type=CommandType.MODIFY, path=path, value_expr="0.7")
-    CommandCompiler(schema={path: "float"}, agent_target=True).compile_command(command)
+    command_compiler({path: "float"}).compile_command(command)
 
     with pytest.raises(PermissionError, match="not allowed to write"):
         CommandExecutor().execute(command, context)

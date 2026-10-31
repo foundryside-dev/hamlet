@@ -59,7 +59,7 @@ def test_get_action_picks_up_item():
                 tags=["food"],
                 vfs_profile="food",
                 interactions=ItemInteractionsConfig(
-                    on_pickup=[{"modify": "target.vfs.has_food", "value": "true"}],
+                    on_pickup=[{"modify": "has_food", "value": "true"}],
                     on_use=[],
                     on_drop=[],
                 ),
@@ -186,7 +186,7 @@ def test_use_slot_action_succeeds_when_slot_occupied():
                 tags=["medical"],
                 vfs_profile="medical",
                 interactions=ItemInteractionsConfig(
-                    on_use=[{"modify": "target.bar.health", "value": "0.5"}],
+                    on_use=[{"modify": "bar.health", "value": "0.5"}],
                     on_pickup=[],
                     on_drop=[],
                 ),

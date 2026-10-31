@@ -3,13 +3,22 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping, Sequence
-from dataclasses import dataclass, field, fields, replace
+from dataclasses import dataclass, field, replace
 from typing import Any, ClassVar, Protocol, cast
 
 import torch
 
 from townlet.config.interaction_type import INTERACTION_TYPES, PROGRESS_INTERACTION_TYPES
 from townlet.vfs import vtc_kernels
+from townlet.vfs.namespace import (
+    TRANSITION_WRITE,
+    ExpressionSource,
+    Namespace,
+    SpellingError,
+    SymbolKind,
+    expression_sources,
+    inline_expression_reads,
+)
 from townlet.vfs.profiles import CompiledGlobalProfile, VFSProfileCompiler
 from townlet.vfs.schema import VariableDef, VariableScope, WriteSpec
 from townlet.vfs.storage_dtype import BATCH_ROW_REFERENCE_TYPES, admitted_write_result_types, to_storage_dtype
@@ -17,7 +26,6 @@ from townlet.vfs.transition_graph import TransitionPhaseGraph
 from townlet.world.expression import ASTNode, ExpressionParser, FunctionCall, IfThenElse, PathAccess, Variable, read_paths
 from townlet.world.expression.context import ExecutionContext
 from townlet.world.expression.evaluator import Evaluator
-from townlet.world.expression.functions import FUNCTION_SPECS
 from townlet.world.expression.type_checker import TypeChecker, TypeCheckError
 
 
@@ -344,10 +352,10 @@ class CompiledVTCTransitionRule:
     reads: tuple[str, ...] = field(metadata={"derived": True})
     """The ids of the variables (and meter bars) the expression and condition read, sorted.
 
-    Derived from the two ASTs at compile time, never authored (VFS round-2 S8): every
-    spelling the write namespace admits (``x``, ``vfs.x``, ``self.vfs.x``,
-    ``target.vfs.x``, ``bar.x``, ``self.bar.x``, ``target.bar.x``) resolves to its
-    target id. The ASTs are already identity, so this is not hashed."""
+    Derived from the two ASTs at compile time, never authored (VFS round-2 S8): each read
+    (``x`` for a variable, ``bar.x`` for a meter) resolves through the one resolver
+    (``townlet.vfs.namespace``) to its storage name. The ASTs are already identity, so
+    this is not hashed."""
     world_columns: frozenset[str] = field(metadata={"derived": True})
     """Globals a rule targeting affordance state reads as its world's column (S1).
 
@@ -416,63 +424,15 @@ class VTCWriteTarget:
     """Declared identity of one state an authored write may name.
 
     ``type`` is the declared VFS type (``scalar``, ``bool``, ``agent_ref``, ...); a
-    meter bar is agent-scoped ``scalar`` storage with ``meter=True`` so the expression
-    schema also admits its ``bar.<name>`` spelling.
+    meter bar is agent-scoped ``scalar`` storage with ``meter=True``, spelled
+    ``bar.<name>`` by every write and read (``townlet.vfs.namespace``).
     """
 
     scope: VariableScope
     type: str
     meter: bool
-    expression: VTCExpressionSource | None
+    expression: ExpressionSource | None
     """The variable's compiled expression as a write reads it; None for storage (VFS round-2 S4)."""
-
-
-@dataclass(frozen=True)
-class VTCExpressionSource:
-    """An expression variable as a transition write or rule reads it (VFS round-2 S4).
-
-    An expression variable is a name for a function of state. A write that reads one
-    reads that function evaluated on the state the write sees, not the value the last
-    profile evaluation stored: ``ast`` (the expression with every inlinable expression
-    variable it reads substituted, recursively) is substituted into the write's
-    expression and condition at compile, so the write needs no evaluation order.
-
-    ``stored_because`` is None for such a context-free expression. Otherwise it names
-    the function that needs evaluation-time context a transition phase does not carry
-    (temporal history, the engine step, positions): re-evaluating a history operator
-    mid-tick would read its buffers a second time, so the expression is not inlined
-    and a write reads the value its last profile evaluation stored, which is the value
-    the observation the action was chosen on showed. A ``tick``-lifetime one has no
-    stored value by then (tick state resets before the action phases), so reading it
-    from a write refuses at compile.
-    """
-
-    ast: ASTNode
-    lifetime: str
-    stored_because: str | None
-
-
-def vtc_expression_sources(profiles: Sequence[CompiledGlobalProfile | None]) -> dict[str, VTCExpressionSource]:
-    """Every compiled global/agent expression variable as a write reads it, by id.
-
-    ``profiles`` come in evaluation order (global, then agent), each profile's
-    variables topologically sorted, so every expression variable an expression reads is
-    resolved before the expression itself; cycles were refused by the profile compiler.
-    """
-    sources: dict[str, VTCExpressionSource] = {}
-    for profile in profiles:
-        if profile is None:
-            continue
-        for variable in profile.variables:
-            if variable.ast is None:
-                continue
-            context_call = _context_bound_call(variable.ast)
-            if context_call is not None:
-                sources[variable.name] = VTCExpressionSource(variable.ast, variable.lifetime, context_call)
-                continue
-            inlined = {name: source.ast for name, source in sources.items() if source.stored_because is None}
-            sources[variable.name] = VTCExpressionSource(_substitute_reads(variable.ast, inlined), variable.lifetime, None)
-    return sources
 
 
 def vtc_write_targets(
@@ -481,7 +441,7 @@ def vtc_write_targets(
     expression_profiles: Sequence[CompiledGlobalProfile | None],
 ) -> dict[str, VTCWriteTarget]:
     """Every state a VTC write expression may read or write, by bare name, with its expression if it has one."""
-    expressions = vtc_expression_sources(expression_profiles)
+    expressions = expression_sources(expression_profiles)
     targets = {
         variable.id: VTCWriteTarget(
             VariableScope(variable.scope), variable.type, meter=False, expression=expressions.pop(variable.id, None)
@@ -494,56 +454,59 @@ def vtc_write_targets(
     return targets
 
 
-def _context_bound_call(ast: ASTNode) -> str | None:
-    """The first function ``ast`` calls that needs evaluation-time context, described; None if it is context-free."""
-    found: list[str] = []
-
-    def visit(value: Any) -> None:
-        if found:
-            return
-        if isinstance(value, FunctionCall):
-            spec = FUNCTION_SPECS.get(value.function_name)
-            if spec is not None and spec.requires:
-                found.append(f"'{value.function_name}', which needs {' and '.join(spec.requires)}")
-                return
-        if isinstance(value, ASTNode):
-            for ast_field in fields(value):
-                visit(getattr(value, ast_field.name))
-        elif isinstance(value, list | tuple):
-            for item in value:
-                visit(item)
-
-    visit(ast)
-    return found[0] if found else None
+def _write_namespace(targets: Mapping[str, VTCWriteTarget]) -> Namespace:
+    """The one resolver (VFS round-2 S5) over every state a transition write may read or write."""
+    return Namespace(
+        variables=[(name, target.scope, target.type) for name, target in targets.items() if not target.meter],
+        meters=[name for name, target in targets.items() if target.meter],
+        item_state={},
+    )
 
 
-def _substitute_reads(node: ASTNode, replacements: Mapping[str, ASTNode]) -> ASTNode:
-    """``node`` with every read (``Variable`` or ``PathAccess``) named in ``replacements`` replaced by its AST."""
-    if isinstance(node, Variable) and node.name in replacements:
-        return replacements[node.name]
-    if isinstance(node, PathAccess) and ".".join(node.segments) in replacements:
-        return replacements[".".join(node.segments)]
+def _resolve_write_target(variable_id: str, namespace: Namespace, prefix: str) -> tuple[str, None] | tuple[None, str]:
+    """The storage name a write's authored target spells, or why the spelling refuses.
 
-    def substitute(value: Any) -> Any:
-        if isinstance(value, ASTNode):
-            return _substitute_reads(value, replacements)
-        if isinstance(value, list):
-            return [substitute(item) for item in value]
-        if isinstance(value, tuple):
-            return tuple(substitute(item) for item in value)
-        return value
-
-    changes = {}
-    for ast_field in fields(node):
-        value = getattr(node, ast_field.name)
-        substituted = substitute(value)
-        if substituted != value:
-            changes[ast_field.name] = substituted
-    return replace(node, **changes) if changes else node
+    A write target is a reference like any read: a variable by its bare id, a meter as
+    ``bar.<name>``. An engine name (``agent_id``) is no state.
+    """
+    try:
+        symbol = namespace.resolve(variable_id, TRANSITION_WRITE)
+    except SpellingError as exc:
+        return None, f"{prefix} targets {exc}"
+    if symbol.kind not in {SymbolKind.VARIABLE, SymbolKind.METER}:
+        return None, f"{prefix} targets '{variable_id}', the {symbol.kind}, which is no state a write can change."
+    return symbol.name, None
 
 
-def _inline_expression_reads(
-    targets: Mapping[str, VTCWriteTarget],
+def _spelling_refusal(
+    namespace: Namespace,
+    *,
+    expression_ast: ASTNode,
+    expression: str,
+    condition_ast: ASTNode | None,
+    condition: str | None,
+    prefix: str,
+) -> str | None:
+    """Why a write's expression or condition reads something the one resolver refuses, or None.
+
+    Every read resolves through ``namespace`` (an old spelling refuses naming the
+    canonical one), and a function needing context a transition phase does not carry
+    (history, the engine step, positions) refuses. Runs before the type check, so the
+    author reads the spelling to write rather than "not found in schema".
+    """
+    checks = [("expression", expression_ast, expression)]
+    if condition_ast is not None:
+        assert condition is not None
+        checks.append(("condition", condition_ast, condition))
+    for kind, ast, text in checks:
+        refusals = namespace.refusals(ast, TRANSITION_WRITE)
+        if refusals:
+            return f"{prefix} {kind} '{text}': {' '.join(refusals)}"
+    return None
+
+
+def _inline_write_reads(
+    sources: Mapping[str, ExpressionSource],
     *,
     expression_ast: ASTNode,
     expression: str,
@@ -553,81 +516,25 @@ def _inline_expression_reads(
 ) -> tuple[ASTNode, ASTNode | None] | str:
     """A write's expression and condition with every expression variable they read inlined (VFS round-2 S4).
 
-    Returns the substituted ASTs, or why the write refuses: it calls a function that
-    needs context a transition phase does not carry, or it reads (directly or through
-    an inlined expression) a context-bound ``tick``-lifetime expression variable,
-    which has no stored value while the transition phases run.
+    Returns the substituted ASTs, or why the write refuses: it reads (directly or
+    through an inlined expression) a context-bound ``tick``-lifetime expression
+    variable, which has no stored value while the transition phases run.
     """
-    replacements: dict[str, ASTNode] = {}
-    stored: dict[str, tuple[str, VTCExpressionSource]] = {}
-    for name, target in targets.items():
-        if target.expression is None:
-            continue
-        for spelling in _target_spellings(name, target):
-            if target.expression.stored_because is None:
-                replacements[spelling] = target.expression.ast
-            else:
-                stored[spelling] = (name, target.expression)
     checks = [("expression", expression_ast, expression)]
     if condition_ast is not None:
         assert condition is not None
         checks.append(("condition", condition_ast, condition))
     inlined: list[ASTNode] = []
     for kind, ast, text in checks:
-        context_call = _context_bound_call(ast)
-        if context_call is not None:
-            return (
-                f"{prefix} {kind} '{text}' calls {context_call}, which a transition write does not carry. "
-                "Declare the quantity as an expression variable and read it by name."
-            )
-        substituted = _substitute_reads(ast, replacements)
-        for path in sorted(read_paths(substituted)):
-            if path not in stored:
-                continue
-            name, source = stored[path]
-            if source.lifetime == "tick":
-                return (
-                    f"{prefix} {kind} '{text}' reads tick-lifetime expression variable '{name}', whose expression calls "
-                    f"{source.stored_because}, so it is not inlined and a write reads its stored value. Tick-lifetime state "
-                    "resets before the action phases, so a write would only ever see its declared literal. "
-                    f"Declare '{name}' with lifetime episode."
-                )
-        inlined.append(substituted)
+        try:
+            inlined.append(inline_expression_reads(ast, sources, consumer="a transition write"))
+        except SpellingError as exc:
+            return f"{prefix} {kind} '{text}' {exc}"
     return inlined[0], (inlined[1] if condition_ast is not None else None)
 
 
-_SCOPE_SHAPES: dict[VariableScope, str] = {
-    VariableScope.GLOBAL: "scalar",
-    VariableScope.AGENT: "agent",
-    VariableScope.AFFORDANCE: "affordance",
-}
-"""The leading registry axes a read of each scope yields (``VFSProfileCompiler.expression_shape`` labels).
-
-A vector/tensor-typed variable carries the same label: its payload width is the type
-checker's to prove (``vecNf`` against ``scalar``); the shape proof proves the axes.
-Scopes absent here have no registry row, so a write expression cannot read them."""
-
-
-def _write_expression_namespace(targets: Mapping[str, VTCWriteTarget]) -> tuple[dict[str, str], dict[str, str]]:
-    """The type schema and the shape map of a VTC write expression, mirroring the runtime ExecutionContext.
-
-    The context resolves a bare name against the phase snapshot (every registry
-    variable, every meter bar, and ``agent_id``), ``bar.<meter>`` against the bars, and
-    ``vfs.`` / ``self.vfs.`` / ``target.vfs.`` chains against the snapshot. Every
-    spelling reads the whole registry tensor, so every spelling carries its scope's shape.
-    """
-    schema: dict[str, str] = {"agent_id": "int"}
-    shapes: dict[str, str] = {"agent_id": "agent"}
-    for name, target in targets.items():
-        result_type = "float" if target.type == "scalar" else target.type
-        keys = [name, f"vfs.{name}", f"self.vfs.{name}", f"target.vfs.{name}"]
-        if target.meter:
-            keys += [f"bar.{name}", f"self.bar.{name}", f"target.bar.{name}"]
-        for key in keys:
-            schema[key] = result_type
-            if target.scope in _SCOPE_SHAPES:
-                shapes[key] = _SCOPE_SHAPES[target.scope]
-    return schema, shapes
+def _expression_sources_of(targets: Mapping[str, VTCWriteTarget]) -> dict[str, ExpressionSource]:
+    return {name: target.expression for name, target in targets.items() if target.expression is not None}
 
 
 def _write_shape_refusal(
@@ -720,7 +627,7 @@ def _write_type_refusal(
 
 def _constant_value(ast: ASTNode) -> int:
     """The integer a read-free expression evaluates to."""
-    return int(Evaluator(ExecutionContext(bars={}, vfs={}, affordances={}, temporal={})).evaluate(ast))
+    return int(Evaluator(ExecutionContext(bars={}, vfs={}, temporal={})).evaluate(ast))
 
 
 def _world_local_reference(ast: ASTNode, target_type: str, schema: Mapping[str, str]) -> bool:
@@ -855,10 +762,8 @@ class VTCActionWriteProgram:
         context = ExecutionContext(
             bars={name: phase_snapshot[name] for name in bar_names},
             vfs=context_vfs,
-            affordances={},
             temporal={},
             device=device,
-            num_agents=actions.shape[0],
         )
         evaluator = Evaluator(context)
 
@@ -1452,7 +1357,6 @@ class VTCAffordanceGateProgram:
         context = ExecutionContext(
             bars={},
             vfs={},
-            affordances={},
             temporal={"time_of_day": time_tensor},
             device=device,
         )
@@ -1759,10 +1663,8 @@ class VTCTransitionRuleProgram:
         context = ExecutionContext(
             bars=dict(bars_state),
             vfs=context_vfs,
-            affordances={},
             temporal={},
             device=device,
-            num_agents=active_mask.shape[0],
         )
         evaluator = Evaluator(context)
 
@@ -2096,9 +1998,10 @@ def compile_vtc_transition_rules_with_phase_graph(
     broadcast; the type is what the write expression must type-check to.
     """
     parser = ExpressionParser()
-    schema, shapes = _write_expression_namespace(targets)
-    global_ids = frozenset(name for name, target in targets.items() if target.scope == VariableScope.GLOBAL)
-    checker = TypeChecker(schema=schema)
+    namespace = _write_namespace(targets)
+    sources = _expression_sources_of(targets)
+    checker = TypeChecker(schema=namespace.schema(TRANSITION_WRITE))
+    shapes = namespace.shapes(TRANSITION_WRITE, payload_for_vectors=False)
     compiled_rules: list[CompiledVTCTransitionRule] = []
     refusals: list[VTCWriteRefusal] = []
 
@@ -2119,26 +2022,36 @@ def compile_vtc_transition_rules_with_phase_graph(
                     )
                 )
                 continue
-            target = targets.get(write["variable_id"])
-            if target is None or target.scope not in _RULE_ADMITTED_SHAPES:
+            prefix = f"Transition rule '{rule['rule_id']}' write '{write['telemetry_label']}'"
+            target_name, target_refusal = _resolve_write_target(write["variable_id"], namespace, prefix)
+            if target_refusal is not None:
+                refusals.append(VTCWriteRefusal(origin_key=f"transition_rules:{rule['rule_id']}", kind="scope", message=target_refusal))
+                continue
+            assert target_name is not None
+            target = targets[target_name]
+            if target.scope not in _RULE_ADMITTED_SHAPES:
                 refusals.append(
                     VTCWriteRefusal(
                         origin_key=f"transition_rules:{rule['rule_id']}",
                         kind="scope",
-                        message=(
-                            f"Transition rule '{rule['rule_id']}' write '{write['telemetry_label']}' targets "
-                            + (
-                                f"unknown VFS variable '{write['variable_id']}'"
-                                if target is None
-                                else f"{target.scope.value}-scope variable '{write['variable_id']}', which has no registry row"
-                            )
-                        ),
+                        message=f"{prefix} targets {target.scope.value}-scope variable '{target_name}', which has no registry row",
                     )
                 )
                 continue
             condition = _combined_condition(rule["condition"], write["condition"])
             expression_ast = parser.parse(write["expression"])
             condition_ast = parser.parse(condition) if condition is not None else None
+            spelling_refusal = _spelling_refusal(
+                namespace,
+                expression_ast=expression_ast,
+                expression=write["expression"],
+                condition_ast=condition_ast,
+                condition=condition,
+                prefix=prefix,
+            )
+            if spelling_refusal is not None:
+                refusals.append(VTCWriteRefusal(origin_key=f"transition_rules:{rule['rule_id']}", kind="type", message=spelling_refusal))
+                continue
             type_refusal = _write_type_refusal(
                 checker,
                 expression_ast=expression_ast,
@@ -2153,13 +2066,13 @@ def compile_vtc_transition_rules_with_phase_graph(
                 refusals.append(VTCWriteRefusal(origin_key=f"transition_rules:{rule['rule_id']}", kind="type", message=type_refusal))
                 continue
             # From here on the ASTs are the inlined ones: what the rule evaluates (S4).
-            inlined = _inline_expression_reads(
-                targets,
+            inlined = _inline_write_reads(
+                sources,
                 expression_ast=expression_ast,
                 expression=write["expression"],
                 condition_ast=condition_ast,
                 condition=condition,
-                prefix=f"Transition rule '{rule['rule_id']}' write '{write['telemetry_label']}'",
+                prefix=prefix,
             )
             if isinstance(inlined, str):
                 refusals.append(VTCWriteRefusal(origin_key=f"transition_rules:{rule['rule_id']}", kind="type", message=inlined))
@@ -2185,7 +2098,7 @@ def compile_vtc_transition_rules_with_phase_graph(
                 CompiledVTCTransitionRule(
                     rule_id=rule["rule_id"],
                     effect=write["effect"],
-                    variable_id=write["variable_id"],
+                    variable_id=target_name,
                     expression=write["expression"],
                     expression_ast=expression_ast,
                     condition=condition,
@@ -2196,8 +2109,8 @@ def compile_vtc_transition_rules_with_phase_graph(
                     clamp=write["clamp"],
                     telemetry_label=write["telemetry_label"],
                     target_scope=target.scope,
-                    reads=_rule_reads(targets, expression_ast, condition_ast),
-                    world_columns=_world_columns(target.scope, global_ids, expression_ast, condition_ast),
+                    reads=_rule_reads(namespace, expression_ast, condition_ast),
+                    world_columns=_world_columns(target.scope, namespace, expression_ast, condition_ast),
                 )
             )
 
@@ -2404,7 +2317,7 @@ Under S1 (2026-10-25) the batch is independent single-agent worlds, so the world
 of a global or an affordance variable and the agent axis coincide at runtime; a
 transition rule's target row in any of them is masked by its own agent's (world's)
 activity. The authoring contract still tells them apart: a global reads as a scalar in
-its world, an affordance variable as one row per affordance (`_SCOPE_SHAPES`)."""
+its world, an affordance variable as one row per affordance (`townlet.vfs.namespace`)."""
 
 AFFORDANCE_OCCUPANCY_PHASE = "resolve_affordance_access_and_occupancy"
 AFFORDANCE_OCCUPANCY_COMPOSITIONS = frozenset({"claim_if_free", "capacity_claim"})
@@ -2417,33 +2330,24 @@ An action write lands per acting agent, so its value is one per agent (or a
 scalar): an agent row or an occupancy claimant's payload."""
 
 
-def _target_spellings(name: str, target: VTCWriteTarget) -> tuple[str, ...]:
-    """Every spelling of ``name`` the write namespace admits (``_write_expression_namespace`` enumerates the same set)."""
-    keys = [name, f"vfs.{name}", f"self.vfs.{name}", f"target.vfs.{name}"]
-    if target.meter:
-        keys += [f"bar.{name}", f"self.bar.{name}", f"target.bar.{name}"]
-    return tuple(keys)
+def _rule_reads(namespace: Namespace, *asts: ASTNode | None) -> tuple[str, ...]:
+    """The storage names of every variable and meter the ASTs read, sorted: a rule's reads are derived, never authored (S8).
 
-
-def _rule_reads(targets: Mapping[str, VTCWriteTarget], *asts: ASTNode | None) -> tuple[str, ...]:
-    """The ids of every target the ASTs read, sorted: a rule's reads are derived, never authored (S8).
-
-    Runs after the type check, so every path the ASTs read is either a target
-    spelling or the context's own ``agent_id``, which is no variable.
+    Runs after the spelling check and the type check, so every path the ASTs read
+    resolves through the one resolver; ``agent_id`` is an engine name, no state.
     """
-    spellings = {spelling: name for name, target in targets.items() for spelling in _target_spellings(name, target)}
     paths = frozenset().union(*(read_paths(ast) for ast in asts if ast is not None))
-    return tuple(sorted({spellings[path] for path in paths if path in spellings}))
+    symbols = (namespace.resolve(path, TRANSITION_WRITE) for path in paths)
+    return tuple(sorted({symbol.name for symbol in symbols if symbol.kind in {SymbolKind.VARIABLE, SymbolKind.METER}}))
 
 
-def _world_columns(target_scope: VariableScope, global_ids: frozenset[str], *asts: ASTNode | None) -> frozenset[str]:
-    """The globals a rule on affordance state reads (any spelling the context resolves); none for other targets."""
+def _world_columns(target_scope: VariableScope, namespace: Namespace, *asts: ASTNode | None) -> frozenset[str]:
+    """The globals a rule on affordance state reads; none for other targets."""
     if target_scope != VariableScope.AFFORDANCE:
         return frozenset()
     paths = frozenset().union(*(read_paths(ast) for ast in asts if ast is not None))
-    return frozenset(
-        name for name in global_ids if paths & {name, f"vfs.{name}", f"self.vfs.{name}", f"target.vfs.{name}", f"global.vfs.{name}"}
-    )
+    symbols = (namespace.resolve(path, TRANSITION_WRITE) for path in paths)
+    return frozenset(symbol.name for symbol in symbols if symbol.kind == SymbolKind.VARIABLE and symbol.scope == VariableScope.GLOBAL)
 
 
 _RULE_ADMITTED_SHAPES: dict[VariableScope, frozenset[str]] = {
@@ -2457,7 +2361,7 @@ _RULE_ADMITTED_SHAPES: dict[VariableScope, frozenset[str]] = {
 def _action_write_scope_refusal(
     write: WriteSpec,
     action_name: str,
-    target_scope: VariableScope | None,
+    target_scope: VariableScope,
     affordance_index: int | None,
 ) -> str | None:
     """Why an action write cannot apply to its target's declared scope, or None when it can.
@@ -2468,8 +2372,6 @@ def _action_write_scope_refusal(
     affordance-scoped variable.
     """
     prefix = f"Action '{action_name}' write '{write.telemetry_label}' targets"
-    if target_scope is None:
-        return f"{prefix} unknown state variable '{write.variable_id}'. Declare it as a VFS variable or meter bar."
     if target_scope == VariableScope.AFFORDANCE:
         is_claim = (
             write.composition in AFFORDANCE_OCCUPANCY_COMPOSITIONS
@@ -2507,8 +2409,10 @@ def _compile_vtc_action_writes_with_phase_graph(
     affordance_index_by_name: Mapping[str, int] | None,
 ) -> VTCActionWriteProgram:
     parser = ExpressionParser()
-    schema, shapes = _write_expression_namespace(targets)
-    checker = TypeChecker(schema=schema)
+    namespace = _write_namespace(targets)
+    sources = _expression_sources_of(targets)
+    checker = TypeChecker(schema=namespace.schema(TRANSITION_WRITE))
+    shapes = namespace.shapes(TRANSITION_WRITE, payload_for_vectors=False)
     compiled_writes: list[CompiledVTCActionWrite] = []
     refusals: list[VTCWriteRefusal] = []
     admitted = phase_graph.action_phases
@@ -2535,14 +2439,30 @@ def _compile_vtc_action_writes_with_phase_graph(
                     )
                 )
                 continue
-            target = targets.get(write.variable_id)
-            scope_refusal = _action_write_scope_refusal(write, action.name, None if target is None else target.scope, affordance_index)
+            prefix = f"Action '{action.name}' write '{write.telemetry_label}'"
+            target_name, target_refusal = _resolve_write_target(write.variable_id, namespace, prefix)
+            if target_refusal is not None:
+                refusals.append(VTCWriteRefusal(origin_key=origin_key, kind="scope", message=target_refusal))
+                continue
+            assert target_name is not None
+            target = targets[target_name]
+            scope_refusal = _action_write_scope_refusal(write, action.name, target.scope, affordance_index)
             if scope_refusal is not None:
                 refusals.append(VTCWriteRefusal(origin_key=origin_key, kind="scope", message=scope_refusal))
                 continue
-            assert target is not None
             expression_ast = parser.parse(write.expression)
             condition_ast = parser.parse(write.condition) if write.condition is not None else None
+            spelling_refusal = _spelling_refusal(
+                namespace,
+                expression_ast=expression_ast,
+                expression=write.expression,
+                condition_ast=condition_ast,
+                condition=write.condition,
+                prefix=prefix,
+            )
+            if spelling_refusal is not None:
+                refusals.append(VTCWriteRefusal(origin_key=origin_key, kind="type", message=spelling_refusal))
+                continue
             type_refusal = _write_type_refusal(
                 checker,
                 expression_ast=expression_ast,
@@ -2557,13 +2477,13 @@ def _compile_vtc_action_writes_with_phase_graph(
                 refusals.append(VTCWriteRefusal(origin_key=origin_key, kind="type", message=type_refusal))
                 continue
             # From here on the ASTs are the inlined ones: what the write evaluates (S4).
-            inlined = _inline_expression_reads(
-                targets,
+            inlined = _inline_write_reads(
+                sources,
                 expression_ast=expression_ast,
                 expression=write.expression,
                 condition_ast=condition_ast,
                 condition=write.condition,
-                prefix=f"Action '{action.name}' write '{write.telemetry_label}'",
+                prefix=prefix,
             )
             if isinstance(inlined, str):
                 refusals.append(VTCWriteRefusal(origin_key=origin_key, kind="type", message=inlined))
@@ -2592,7 +2512,7 @@ def _compile_vtc_action_writes_with_phase_graph(
                     action_name=action.name,
                     source_affordance=source_affordance,
                     affordance_index=affordance_index,
-                    variable_id=write.variable_id,
+                    variable_id=target_name,
                     target_scope=target.scope,
                     expression=write.expression,
                     expression_ast=expression_ast,

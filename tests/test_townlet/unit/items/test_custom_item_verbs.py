@@ -50,12 +50,12 @@ def _catalog_with_custom() -> ItemsCatalogConfig:
     local_cmd = ItemCustomCommand(
         name="OPEN",
         description="Open locally",
-        effects=[{"modify": "target.bar.energy", "value": "1.0"}],
+        effects=[{"modify": "bar.energy", "value": "1.0"}],
     )
     inventory_cmd = ItemCustomCommand(
         name="USE",
         description="Use from inventory",
-        effects=[{"modify": "target.bar.energy", "value": "2.0"}],
+        effects=[{"modify": "bar.energy", "value": "2.0"}],
     )
     return ItemsCatalogConfig(
         version="1.0",
@@ -83,7 +83,7 @@ def _catalog_with_custom() -> ItemsCatalogConfig:
 
 def test_custom_item_verbs_masking_and_dispatch():
     catalog = _catalog_with_custom()
-    manager = ItemManager(catalog=catalog, num_worlds=2, substrate=make_grid2d_substrate(), items_per_world=4, device="cpu", schema=None)
+    manager = ItemManager(catalog=catalog, num_worlds=2, substrate=make_grid2d_substrate(), items_per_world=4, device="cpu", symbols=None)
     inventory = manager.inventory
     executor = _CommandExecutorStub()
     vfs_registry = _VFSRegistryStub()

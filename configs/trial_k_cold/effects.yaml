@@ -27,23 +27,23 @@ effect_definitions:
 
     on_tick:
       # Witness that the world process actually executed this tick.
-      - modify: vfs.winter_ticks
-        value: "vfs.winter_ticks + 1.0"
+      - modify: winter_ticks
+        value: "winter_ticks + 1.0"
 
       # The declared evolution rule: temperature falls 0.1/tick to a floor of
       # 0.0 and stays there. Boundary case 12 (world-variable saturation).
-      - modify: vfs.season_clock
-        value: "vfs.season_clock + 1.0"
-      - if: "vfs.world_temp > 0.0"
+      - modify: season_clock
+        value: "season_clock + 1.0"
+      - if: "world_temp > 0.0"
         then:
-          - modify: vfs.world_temp
-            value: "vfs.world_temp - 0.1"
+          - modify: world_temp
+            value: "world_temp - 0.1"
         else: []
 
       # F2 — the threshold gate. Cold below 0.5, not cold at or above it.
       # Boundary cases 1 (equality: `<` so 0.5 exactly is the WARM side) and
       # 2 (warm-side magnitude is exactly 0.0, not a residual).
-      - if: "vfs.world_temp < 0.5"
+      - if: "world_temp < 0.5"
         then:
           - for_each: all_agents
             as: a
@@ -52,21 +52,21 @@ effect_definitions:
               # insulation the wearer carries, which is declared on the item.
               # Boundary case 5 (over-mitigation): clamped at 0, never inverted
               # into a gain.
-              - if: "1.0 - target.bar.insulation_worn > 0.0"
+              - if: "1.0 - bar.insulation_worn > 0.0"
                 then:
-                  - modify: target.bar.cold_bite
-                    value: "0.1 * (1.0 - target.bar.insulation_worn)"
+                  - modify: bar.cold_bite
+                    value: "0.1 * (1.0 - bar.insulation_worn)"
                 else:
-                  - modify: target.bar.cold_bite
+                  - modify: bar.cold_bite
                     value: "0.0"
-              - modify: target.bar.comfort
-                value: "target.bar.comfort - target.bar.cold_bite"
+              - modify: bar.comfort
+                value: "bar.comfort - bar.cold_bite"
         else:
           # Warm side: the pressure is ABSENT, exactly.
           - for_each: all_agents
             as: a
             do:
-              - modify: target.bar.cold_bite
+              - modify: bar.cold_bite
                 value: "0.0"
 
     on_despawn: []

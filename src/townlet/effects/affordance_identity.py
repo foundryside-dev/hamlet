@@ -419,21 +419,18 @@ def _lifecycle_stage(stage: str) -> AffordanceLifecycleStage:
 def _meter_target(path: str | None, affordance_name: str, stage: str) -> tuple[str, AffordanceWriteTarget] | None:
     if path is None:
         return None
-    prefixes: tuple[tuple[str, AffordanceWriteTarget], ...] = (
-        ("target.bar.", "target"),
-        ("self.bar.", "self"),
-        ("bar.", "all"),
-    )
-    for prefix, target in prefixes:
-        if path.startswith(prefix):
-            meter_name = path.removeprefix(prefix)
-            if not meter_name or "." in meter_name:
-                raise AffordanceIdentityError(
-                    affordance_name,
-                    f"Affordance {affordance_name!r} stage {stage!r}: meter write path {path!r} does not identify exactly one meter",
-                )
-            return meter_name, target
-    return None
+    # One spelling per reference (VFS round-2 S5): a meter write is `bar.<m>`, the world's one
+    # agent (S1), which is the interacting agent the `target` lane names. The `self` and `all`
+    # lanes have no spelling left and stay zero until the lanes are cut from the payload.
+    if not path.startswith("bar."):
+        return None
+    meter_name = path.removeprefix("bar.")
+    if not meter_name or "." in meter_name:
+        raise AffordanceIdentityError(
+            affordance_name,
+            f"Affordance {affordance_name!r} stage {stage!r}: meter write path {path!r} does not identify exactly one meter",
+        )
+    return meter_name, "target"
 
 
 def _affine_delta(

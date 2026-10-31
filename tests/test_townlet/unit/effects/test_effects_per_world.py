@@ -18,6 +18,7 @@ import pytest
 import torch
 import yaml
 
+from tests.test_townlet._fixtures.command_namespace import command_compiler
 from townlet.determinism import seed_all
 from townlet.effects.context import ExecutionContext
 from townlet.effects.executor import CommandExecutor
@@ -177,28 +178,28 @@ WORLD_PROC = _effect(
     "world_proc",
     "global",
     [
-        {"modify": "vfs.g", "value": "vfs.g + 1.0"},
-        {"modify": "vfs.g_rand", "value": "uniform(0.0, 1.0)"},
+        {"modify": "g", "value": "g + 1.0"},
+        {"modify": "g_rand", "value": "uniform(0.0, 1.0)"},
         {"modify": "bar.money", "value": "bar.money + 0.01"},
         {
             "for_each": "all_agents",
             "do": [
-                {"modify": "target.bar.health", "value": "target.bar.health - 0.002"},
-                {"modify": "target.vfs.mood", "value": "target.vfs.mood + 1.0"},
+                {"modify": "bar.health", "value": "bar.health - 0.002"},
+                {"modify": "mood", "value": "mood + 1.0"},
             ],
         },
     ],
 )
 # SLEEP's reachable meter writes are capped (EFFECT_SUMMARY_K), so the other two scopes
 # write meters sparingly; every scope still writes a global and the world's agent.
-AFFORDANCE_PROC = _effect("aff_proc", "affordance", [{"modify": "vfs.g_aff", "value": "vfs.g_aff + 1.0"}])
+AFFORDANCE_PROC = _effect("aff_proc", "affordance", [{"modify": "g_aff", "value": "g_aff + 1.0"}])
 AGENT_PROC = _effect(
     "agent_proc",
     "agent",
     [
-        {"modify": "vfs.g_agent", "value": "vfs.g_agent + 1.0"},
+        {"modify": "g_agent", "value": "g_agent + 1.0"},
         {"modify": "bar.money", "value": "bar.money - 0.001"},
-        {"for_each": "all_agents", "do": [{"modify": "target.vfs.mood", "value": "target.vfs.mood + 10.0"}]},
+        {"for_each": "all_agents", "do": [{"modify": "mood", "value": "mood + 10.0"}]},
     ],
 )
 
@@ -289,11 +290,10 @@ def test_an_agent_scoped_spawn_into_another_world_is_refused(effects_universe) -
 
 
 def test_a_for_each_element_outside_the_pipelines_world_is_refused() -> None:
-    from townlet.effects.compiler import CommandCompiler
     from townlet.world.expression.parser import ExpressionParser
 
-    body = CommandCompiler({"target.bar.energy": "float"}, agent_target=True).compile_command(
-        CommandNode(type=CommandType.MODIFY, path="target.bar.energy", value_expr="0.0")
+    body = command_compiler({"bar.energy": "float"}).compile_command(
+        CommandNode(type=CommandType.MODIFY, path="bar.energy", value_expr="0.0")
     )
     command = CommandNode(
         type=CommandType.FOR_EACH, collection_expr="1", collection_ast=ExpressionParser().parse("1"), iterator="x", body=[body]
@@ -340,7 +340,7 @@ def test_a_dead_agents_world_is_frozen_and_its_persistent_global_carries_no_post
     ticker = _effect(
         "ticker",
         "agent",
-        [{"modify": "vfs.g_eff", "value": "vfs.g_eff + 1.0"}, {"modify": "vfs.g_persist", "value": "vfs.g_persist + 1.0"}],
+        [{"modify": "g_eff", "value": "g_eff + 1.0"}, {"modify": "g_persist", "value": "g_persist + 1.0"}],
         duration=100,
     )
     pack = _epistemic_pack(
@@ -375,7 +375,7 @@ def test_a_dead_agents_world_is_frozen_and_its_persistent_global_carries_no_post
 
 
 def test_nearest_over_vector_candidates_is_refused_at_compile(tmp_path: Path) -> None:
-    pick = _effect("pick", "agent", [{"modify": "vfs.g", "value": "nearest(vfs.spot, vfs.spot)"}])
+    pick = _effect("pick", "agent", [{"modify": "g", "value": "nearest(spot, spot)"}])
     spot = {**_declaration("spot", scope="agent"), "type": "vec2f", "initial_value": [0.0, 0.0]}
     pack = _epistemic_pack(
         tmp_path,

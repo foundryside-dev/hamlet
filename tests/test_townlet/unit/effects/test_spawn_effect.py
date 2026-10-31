@@ -1,14 +1,16 @@
 import pytest
 import torch
 
+from tests.test_townlet._fixtures.command_namespace import command_compiler
 from townlet.config.effects_config import CommandConfig, EffectScope
 from townlet.effects.catalog import CompiledEffect, EffectCatalog
-from townlet.effects.compiler import CommandCompiler
 from townlet.effects.context import ExecutionContext
 from townlet.effects.executor import CommandExecutor
 from townlet.effects.manager import EffectManager
 from townlet.effects.parser import CommandParser
 from townlet.effects.schema import CommandNode, CommandType
+from townlet.vfs.registry import VariableRegistry
+from townlet.vfs.schema import VariableDef
 from townlet.world.expression.type_checker import TypeCheckError
 
 
@@ -295,7 +297,7 @@ def test_spawn_effect_pipeline_requires_explicit_target_and_intensity():
     """Parser+compiler should execute only explicitly targeted spawn commands."""
     config = CommandConfig(spawn_effect="poison", target="self", intensity=1.0)
     parser = CommandParser()
-    compiler = CommandCompiler(schema={}, agent_target=True)
+    compiler = command_compiler({})
 
     node = compiler.compile_command(parser.parse_command(config))
 
@@ -340,14 +342,14 @@ def test_a_constant_spawn_target_is_refused_at_compile(target: str) -> None:
     """A constant row is one world's entity, so it is another world's in every other world (S1)."""
     config = CommandConfig(spawn_effect="stun", target=target, intensity=1.0)
     with pytest.raises(TypeCheckError, match="constant row index"):
-        CommandCompiler(schema={}, agent_target=True).compile_command(CommandParser().parse_command(config))
+        command_compiler({}).compile_command(CommandParser().parse_command(config))
 
 
 def test_spawn_effect_evaluates_target_expression_when_not_literal():
     """Non-literal targets should be evaluated via target_ast at runtime."""
-    config = CommandConfig(spawn_effect="stun", target="target.bar.slot", intensity=1.0)
+    config = CommandConfig(spawn_effect="stun", target="slot", intensity=1.0)
     parser = CommandParser()
-    compiler = CommandCompiler(schema={"target.bar.slot": "int"}, agent_target=True)
+    compiler = command_compiler({"slot": "agent_ref"})
     node = compiler.compile_command(parser.parse_command(config))
 
     catalog = EffectCatalog(
@@ -370,11 +372,16 @@ def test_spawn_effect_evaluates_target_expression_when_not_literal():
     manager = EffectManager(catalog=catalog, device="cpu")
     executor = CommandExecutor()
 
-    # World 0's slot names world 2's agent; world 2's names its own.
-    bars = {"health": torch.tensor([1.0, 0.9, 0.7]), "slot": torch.tensor([2, 1, 2])}
+    # An agent_ref holds its own world's agent or null; the registry refuses any other (S1).
+    slot = VariableDef(
+        id="slot", scope="agent", type="agent_ref", lifetime="episode", default=-1, readable_by=["engine"], writable_by=["engine"]
+    )
+    registry = VariableRegistry([slot], 3, torch.device("cpu"))
+    registry.set("slot", torch.tensor([0, 1, 2]), writer="engine")
+    bars = {"health": torch.tensor([1.0, 0.9, 0.7])}
     context = ExecutionContext(
         bars=bars,
-        vfs_registry=None,
+        vfs_registry=registry,
         self_index=2,
         target_index=2,
         effect_manager=manager,
@@ -385,7 +392,3 @@ def test_spawn_effect_evaluates_target_expression_when_not_literal():
 
     assert 2 in manager.agent_effects
     assert manager.agent_effects[2][0].effect_id == "stun"
-
-    # From world 0 the same target is another world's agent: refused (S1).
-    with pytest.raises(ValueError, match="worlds are independent"):
-        executor.execute(node, context.copy(self_index=0, target_index=0))

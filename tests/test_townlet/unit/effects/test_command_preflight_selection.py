@@ -5,7 +5,7 @@ from types import SimpleNamespace
 import pytest
 import torch
 
-from townlet.effects.compiler import CommandCompiler
+from tests.test_townlet._fixtures.command_namespace import command_compiler
 from townlet.effects.context import ExecutionContext
 from townlet.effects.executor import CommandExecutor
 from townlet.effects.schema import CommandNode, CommandType
@@ -19,11 +19,11 @@ def _random_loop(body: list[CommandNode]) -> CommandNode:
 
 
 def _energy_write() -> CommandNode:
-    return CommandNode(type=CommandType.MODIFY, path="target.bar.energy", value_expr="9.0")
+    return CommandNode(type=CommandType.MODIFY, path="bar.energy", value_expr="9.0")
 
 
 def test_stochastic_loop_selects_once_and_reuses_the_exact_context() -> None:
-    command = CommandCompiler({"target.bar.energy": "float"}, agent_target=True).compile_command(_random_loop([_energy_write()]))
+    command = command_compiler({"bar.energy": "float"}).compile_command(_random_loop([_energy_write()]))
     executor = CommandExecutor()
     torch.manual_seed(1)
     selected = int((torch.rand(()) * 2).item())
@@ -47,7 +47,7 @@ def test_stochastic_loop_selects_once_and_reuses_the_exact_context() -> None:
 
 
 def test_loop_nested_under_compounds_evaluates_collection_once() -> None:
-    command = CommandCompiler({"target.bar.energy": "float"}, agent_target=True).compile_command(
+    command = command_compiler({"bar.energy": "float"}).compile_command(
         CommandNode(
             type=CommandType.PARALLEL,
             parallel_commands=[
@@ -74,7 +74,7 @@ def test_unselected_branch_does_not_evaluate_stochastic_loop(kind: str) -> None:
         command = CommandNode(type=CommandType.IF, condition_expr="0 > 1", then_commands=[loop], else_commands=[])
     else:
         command = CommandNode(type=CommandType.SWITCH, switch_expr="0", cases=[("1", [loop])], default_commands=[])
-    command = CommandCompiler({"target.bar.energy": "float"}, agent_target=True).compile_command(command)
+    command = command_compiler({"bar.energy": "float"}).compile_command(command)
     torch.manual_seed(1)
     before_rng = torch.get_rng_state().clone()
     context = ExecutionContext(bars={"energy": torch.full((2,), 3.0)})
@@ -99,12 +99,12 @@ def test_loop_selection_sees_earlier_compound_sibling_write() -> None:
         2,
         torch.device("cpu"),
     )
-    command = CommandCompiler({"vfs.selector": "float", "target.bar.energy": "float"}, agent_target=True).compile_command(
+    command = command_compiler({"selector": "float", "bar.energy": "float"}).compile_command(
         CommandNode(
             type=CommandType.PARALLEL,
             parallel_commands=[
-                CommandNode(type=CommandType.MODIFY, path="vfs.selector", value_expr="1.0"),
-                CommandNode(type=CommandType.FOR_EACH, collection_expr="vfs.selector", iterator="agent", body=[_energy_write()]),
+                CommandNode(type=CommandType.MODIFY, path="selector", value_expr="1.0"),
+                CommandNode(type=CommandType.FOR_EACH, collection_expr="selector", iterator="agent", body=[_energy_write()]),
             ],
         )
     )
@@ -121,12 +121,12 @@ def test_denied_stochastic_loop_body_precedes_compound_mutation_and_rng() -> Non
         2,
         torch.device("cpu"),
     )
-    command = CommandCompiler({"bar.energy": "float", "target.vfs.constant": "float"}, agent_target=True).compile_command(
+    command = command_compiler({"bar.energy": "float", "constant": "float"}).compile_command(
         CommandNode(
             type=CommandType.PARALLEL,
             parallel_commands=[
                 CommandNode(type=CommandType.MODIFY, path="bar.energy", value_expr="9.0"),
-                _random_loop([CommandNode(type=CommandType.MODIFY, path="target.vfs.constant", value_expr="2.0")]),
+                _random_loop([CommandNode(type=CommandType.MODIFY, path="constant", value_expr="2.0")]),
             ],
         )
     )
@@ -165,14 +165,13 @@ def test_inventory_profile_denial_precedes_first_selected_item_mutation() -> Non
     context.inventory = SimpleNamespace(
         slots=torch.tensor([[0, 1], [-1, -1]]), items={0: SimpleNamespace(vfs_index=0), 1: SimpleNamespace(vfs_index=1)}
     )
-    # The effects schema names item-profile state `self.vfs.X`; an inventory loop's
-    # `target` is the item, so `target.vfs.charge` is typed from it.
-    command = CommandCompiler({"self.vfs.charge": "float"}, agent_target=True).compile_command(
+    # An inventory loop binds each element as the item, so `item.charge` is its state.
+    command = command_compiler({"item.charge": "float"}).compile_command(
         CommandNode(
             type=CommandType.FOR_EACH,
             collection="inventory_items",
             iterator="item",
-            body=[CommandNode(type=CommandType.MODIFY, path="target.vfs.charge", value_expr="9.0")],
+            body=[CommandNode(type=CommandType.MODIFY, path="item.charge", value_expr="9.0")],
         )
     )
     assert registry.item_vfs is not None

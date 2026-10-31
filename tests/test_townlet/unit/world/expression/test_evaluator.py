@@ -9,7 +9,7 @@ from townlet.world.expression.evaluator import Evaluator
 
 def test_evaluate_constant():
     """Evaluator converts constants to tensors."""
-    ctx = ExecutionContext(bars={}, vfs={}, affordances={}, temporal={})
+    ctx = ExecutionContext(bars={}, vfs={}, temporal={})
     evaluator = Evaluator(context=ctx)
 
     node = Constant(value=3.14)
@@ -21,7 +21,7 @@ def test_evaluate_constant():
 
 def test_evaluate_binary_op_arithmetic_add():
     """Evaluator handles arithmetic addition."""
-    ctx = ExecutionContext(bars={}, vfs={}, affordances={}, temporal={})
+    ctx = ExecutionContext(bars={}, vfs={}, temporal={})
     evaluator = Evaluator(context=ctx)
 
     # 5 + 3
@@ -33,7 +33,7 @@ def test_evaluate_binary_op_arithmetic_add():
 
 def test_evaluate_binary_op_arithmetic_mul():
     """Evaluator handles arithmetic multiplication."""
-    ctx = ExecutionContext(bars={}, vfs={}, affordances={}, temporal={})
+    ctx = ExecutionContext(bars={}, vfs={}, temporal={})
     evaluator = Evaluator(context=ctx)
 
     # 4 * 2.5
@@ -45,7 +45,7 @@ def test_evaluate_binary_op_arithmetic_mul():
 
 def test_evaluate_binary_op_comparison_lt():
     """Evaluator handles comparison (less than)."""
-    ctx = ExecutionContext(bars={}, vfs={}, affordances={}, temporal={})
+    ctx = ExecutionContext(bars={}, vfs={}, temporal={})
     evaluator = Evaluator(context=ctx)
 
     # 3 < 5
@@ -57,7 +57,7 @@ def test_evaluate_binary_op_comparison_lt():
 
 def test_evaluate_binary_op_logical_and():
     """Evaluator handles logical AND."""
-    ctx = ExecutionContext(bars={}, vfs={}, affordances={}, temporal={})
+    ctx = ExecutionContext(bars={}, vfs={}, temporal={})
     evaluator = Evaluator(context=ctx)
 
     # True and False
@@ -71,7 +71,7 @@ def test_evaluate_unary_op_negation():
     """Evaluator handles unary negation (SUB)."""
     from townlet.world.expression import UnaryOp
 
-    ctx = ExecutionContext(bars={}, vfs={}, affordances={}, temporal={})
+    ctx = ExecutionContext(bars={}, vfs={}, temporal={})
     evaluator = Evaluator(context=ctx)
 
     # -5
@@ -85,7 +85,7 @@ def test_evaluate_unary_op_not():
     """Evaluator handles logical NOT."""
     from townlet.world.expression import UnaryOp
 
-    ctx = ExecutionContext(bars={}, vfs={}, affordances={}, temporal={})
+    ctx = ExecutionContext(bars={}, vfs={}, temporal={})
     evaluator = Evaluator(context=ctx)
 
     # not True
@@ -102,7 +102,6 @@ def test_evaluate_path_access_bar():
     ctx = ExecutionContext(
         bars={"energy": torch.tensor([0.5, 0.8])},
         vfs={},
-        affordances={},
         temporal={},
     )
     evaluator = Evaluator(context=ctx)
@@ -121,13 +120,12 @@ def test_evaluate_path_access_vfs():
     ctx = ExecutionContext(
         bars={},
         vfs={"is_night": torch.tensor([True, False])},
-        affordances={},
         temporal={},
     )
     evaluator = Evaluator(context=ctx)
 
-    # vfs.is_night
-    node = PathAccess(segments=["vfs", "is_night"])
+    # is_night: a variable is its bare id; a dotted path is a meter or item reference
+    node = PathAccess(segments=["is_night"])
     result = evaluator.evaluate(node)
 
     assert torch.equal(result, torch.tensor([True, False]))
@@ -140,7 +138,6 @@ def test_evaluate_variable():
     ctx = ExecutionContext(
         bars={"health": torch.tensor([0.9, 1.0])},
         vfs={},
-        affordances={},
         temporal={},
     )
     evaluator = Evaluator(context=ctx)
@@ -160,14 +157,13 @@ def test_evaluate_index_access():
     ctx = ExecutionContext(
         bars={},
         vfs={"items": torch.tensor([10, 20, 30])},
-        affordances={},
         temporal={},
     )
     evaluator = Evaluator(context=ctx)
 
-    # vfs.items[0]
+    # items[0]
     node = IndexAccess(
-        base=PathAccess(segments=["vfs", "items"]),
+        base=PathAccess(segments=["items"]),
         index=Constant(value=0),
     )
     result = evaluator.evaluate(node)
@@ -179,7 +175,7 @@ def test_evaluate_function_call_max():
     """Evaluator handles max() function."""
     from townlet.world.expression import FunctionCall
 
-    ctx = ExecutionContext(bars={}, vfs={}, affordances={}, temporal={})
+    ctx = ExecutionContext(bars={}, vfs={}, temporal={})
     evaluator = Evaluator(context=ctx)
 
     # max(3, 7)
@@ -196,7 +192,7 @@ def test_evaluate_function_call_min():
     """Evaluator handles min() function."""
     from townlet.world.expression import FunctionCall
 
-    ctx = ExecutionContext(bars={}, vfs={}, affordances={}, temporal={})
+    ctx = ExecutionContext(bars={}, vfs={}, temporal={})
     evaluator = Evaluator(context=ctx)
 
     # min(3, 7)
@@ -213,7 +209,7 @@ def test_evaluate_function_call_abs():
     """Evaluator handles abs() function."""
     from townlet.world.expression import FunctionCall
 
-    ctx = ExecutionContext(bars={}, vfs={}, affordances={}, temporal={})
+    ctx = ExecutionContext(bars={}, vfs={}, temporal={})
     evaluator = Evaluator(context=ctx)
 
     # abs(-5)
@@ -230,7 +226,7 @@ def test_evaluate_function_call_clamp():
     """Evaluator handles clamp() function."""
     from townlet.world.expression import FunctionCall
 
-    ctx = ExecutionContext(bars={}, vfs={}, affordances={}, temporal={})
+    ctx = ExecutionContext(bars={}, vfs={}, temporal={})
     evaluator = Evaluator(context=ctx)
 
     # clamp(15, 0, 10)
@@ -247,7 +243,7 @@ def test_evaluate_function_call_unknown():
     """Evaluator raises NotImplementedError for unknown functions."""
     from townlet.world.expression import FunctionCall
 
-    ctx = ExecutionContext(bars={}, vfs={}, affordances={}, temporal={})
+    ctx = ExecutionContext(bars={}, vfs={}, temporal={})
     evaluator = Evaluator(context=ctx)
 
     # unknown_func(42)
@@ -271,7 +267,6 @@ def test_evaluate_if_then_else_vectorized():
     ctx = ExecutionContext(
         bars={"energy": torch.tensor([0.1, 0.5, 0.9])},
         vfs={},
-        affordances={},
         temporal={},
     )
     evaluator = Evaluator(context=ctx)
@@ -303,7 +298,6 @@ def test_full_integration_if_then_else():
     ctx = ExecutionContext(
         bars={"energy": torch.tensor([0.1, 0.2, 0.5])},
         vfs={},
-        affordances={},
         temporal={},
     )
     evaluator = Evaluator(context=ctx)

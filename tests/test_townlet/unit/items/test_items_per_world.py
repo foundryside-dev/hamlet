@@ -258,16 +258,16 @@ def test_an_item_write_in_world_0_never_touches_world_1() -> None:
     assert gem0 is not None and gem1 is not None
     context = ExecutionContext(vfs_registry=registry, self_index=gem0.vfs_index, self_is_item=True, item_manager=manager)
     assert context.world_row() == 0
-    context.set_path("self.vfs.shine", torch.tensor(0.5))
+    context.set_path("item.shine", torch.tensor(0.5))
     assert registry.read_item("gem", "shine", gem0.vfs_index, reader="engine") == pytest.approx(0.5)
     assert registry.read_item("gem", "shine", gem1.vfs_index, reader="engine") == pytest.approx(1.0)
 
     # A per-agent condition gates an item's write by the item's own world, not the batch:
     # world 0 masked out skips world 0's item; world 1 live writes world 1's item.
     mask = torch.tensor([False, True])
-    context.copy(write_mask=mask).set_path("self.vfs.shine", torch.tensor(0.0))
+    context.copy(write_mask=mask).set_path("item.shine", torch.tensor(0.0))
     assert registry.read_item("gem", "shine", gem0.vfs_index, reader="engine") == pytest.approx(0.5)
-    context.copy(self_index=gem1.vfs_index, write_mask=mask).set_path("self.vfs.shine", torch.tensor(0.0))
+    context.copy(self_index=gem1.vfs_index, write_mask=mask).set_path("item.shine", torch.tensor(0.0))
     assert registry.read_item("gem", "shine", gem1.vfs_index, reader="engine") == pytest.approx(0.0)
 
 

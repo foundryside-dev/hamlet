@@ -115,8 +115,8 @@ class TestMultiTickVsInstant:
                 aff["costs_per_tick"] = {"money": 0.01}
                 aff["interactions"] = {
                     "on_start": [],
-                    "per_tick": [{"modify": "target.bar.energy", "value": "target.bar.energy + 0.05"}],
-                    "on_completion": [{"modify": "target.bar.energy", "value": "target.bar.energy + 0.25"}],
+                    "per_tick": [{"modify": "bar.energy", "value": "bar.energy + 0.05"}],
+                    "on_completion": [{"modify": "bar.energy", "value": "bar.energy + 0.25"}],
                     "on_early_exit": [],
                     "on_failure": [],
                 }
@@ -147,8 +147,8 @@ class TestMultiTickVsInstant:
                 aff["interactions"] = {
                     "on_start": [
                         {
-                            "modify": "target.bar.energy",
-                            "value": "target.bar.energy + (0.05 * 5 + 0.25)",
+                            "modify": "bar.energy",
+                            "value": "bar.energy + (0.05 * 5 + 0.25)",
                         }
                     ],
                     "per_tick": [],

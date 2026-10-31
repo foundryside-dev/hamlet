@@ -9,8 +9,8 @@ items:
     cooldown: null
     interactions:
       on_pickup:
-      - modify: target.vfs.inventory_weight
-        value: target.vfs.inventory_weight + 0.5
+      - modify: inventory_weight
+        value: inventory_weight + 0.5
       on_use:
       # Effects-command grammar: `spawn_effect: <id>` with sibling keys. Inside an item
       # command `target` is the agent using the item; `intensity` must be a float literal

@@ -64,6 +64,11 @@ class VariableDeclaration(BaseModel):
         validate_static_access(self.id, self.readable_by, self.writable_by, self.exposed_to)
         if "[" in self.id or "]" in self.id:
             raise ValueError(f"Variable '{self.id}' cannot contain slot-index delimiters")
+        if "." in self.id:
+            raise ValueError(
+                f"Variable '{self.id}' cannot contain '.': a variable is read by its bare id, and a dotted name "
+                "is a qualified reference ('bar.<meter>', 'item.<name>')"
+            )
         has_literal = "initial_value" in self.model_fields_set
         has_mode = self.initial_value_mode is not None
         if has_literal == has_mode:
@@ -78,8 +83,6 @@ class VariableDeclaration(BaseModel):
         if self.scope == VariableScope.ITEM:
             if not self.profile or "." in self.profile or "[" in self.profile or "]" in self.profile:
                 raise ValueError(f"Item variable '{self.id}' requires a simple declared profile identifier")
-            if "." in self.id:
-                raise ValueError(f"Item variable '{self.id}' cannot contain profile separators")
             if self.type not in {"scalar", "bool", *_REFERENCE_TYPES}:
                 raise ValueError(f"Item variable '{self.id}' type has no supported scalar item-arena storage")
             if self.lifetime != "episode":

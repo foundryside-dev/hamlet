@@ -103,7 +103,7 @@ def _action_write(variable_id: str, expression: str, *, condition: str | None = 
 def _rule(rule_id: str, variable_id: str, expression: str, *, condition: str | None = None) -> dict[str, Any]:
     return {
         "id": rule_id,
-        "phase": "apply_social_residue_effects",
+        "phase": "apply_transition_rules",
         "condition": condition,
         "writes": [
             {
@@ -267,7 +267,7 @@ class _Action:
 @pytest.mark.parametrize(
     "variable_id,expression,composition,ok",
     [
-        ("public", "energy + 1.0", "additive_delta", True),
+        ("public", "bar.energy + 1.0", "additive_delta", True),
         ("public", "agent_id", "overwrite", True),
         ("public", "pressure", "overwrite", True),
         ("public", "wear", "overwrite", False),

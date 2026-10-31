@@ -36,7 +36,7 @@ WITNESS = Path(__file__).resolve().parents[4] / "configs" / "static_epistemic_ac
 LEVEL = "L0_simple"
 EARLY_PHASE = "apply_action_effects"
 LATE_PHASE = "apply_completion_bonuses"
-RULE_PHASE = "apply_social_residue_effects"
+RULE_PHASE = "apply_transition_rules"
 
 
 def _yaml(path: Path) -> dict:
@@ -135,7 +135,7 @@ def _cash_pack(tmp_path: Path, *, rich: str = "cash > 0.5", rules: list[dict] | 
         writes=[
             _write("cash", "1.0", phase=EARLY_PHASE),
             _write("hits_t", "1.0", condition="rich_t"),
-            _write("hits_e", "1.0", condition="vfs.rich_e"),
+            _write("hits_e", "1.0", condition="rich_e"),
             _write("hits_nested", "1.0", condition="very_rich"),
         ],
         rules=rules,

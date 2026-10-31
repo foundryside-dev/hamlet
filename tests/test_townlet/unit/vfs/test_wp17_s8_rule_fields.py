@@ -28,7 +28,7 @@ from townlet.vfs.vtc import VTCWriteRefusalError, VTCWriteTarget, compile_vtc_ac
 
 WITNESS = Path(__file__).resolve().parents[4] / "configs" / "static_epistemic_access"
 LEVEL = "L0_simple"
-PHASE = "apply_social_residue_effects"
+PHASE = "apply_transition_rules"
 
 
 def _target(scope: VariableScope, var_type: str = "scalar", *, meter: bool = False) -> VTCWriteTarget:
@@ -53,9 +53,9 @@ def _rule(expression: str, *, condition: str | None = None, effect: str | None =
 # --- derived reads ------------------------------------------------------------------------
 
 
-def test_derived_reads_are_the_variables_the_asts_read_across_every_spelling() -> None:
-    """Expression and condition reads, through `x`, `vfs.x`, `self.vfs.x` and `bar.x`, resolve to variable ids, sorted."""
-    program = compile_vtc_transition_rules([_rule("vfs.state + vfs.gsum", condition="self.vfs.flag and bar.energy > 0.5")], TARGETS)
+def test_derived_reads_are_the_variables_and_meters_the_asts_read() -> None:
+    """Expression and condition reads, through `x` and `bar.x`, resolve to storage names, sorted."""
+    program = compile_vtc_transition_rules([_rule("state + gsum", condition="flag and bar.energy > 0.5")], TARGETS)
     (rule,) = program.rules
     assert rule.reads == ("energy", "flag", "gsum", "state")
 
@@ -106,7 +106,7 @@ def test_hash_is_stable_under_whitespace_and_moves_with_the_expression() -> None
 
     assert digest("state + 1.0") == digest("state   +   1.0") == digest("(state + 1.0)")
     assert digest("state + 1.0") != digest("state + 2.0")
-    assert digest("state + 1.0") != digest("energy + 1.0")
+    assert digest("state + 1.0") != digest("bar.energy + 1.0")
 
 
 def test_hash_payload_carries_no_authored_reads_or_kind() -> None:

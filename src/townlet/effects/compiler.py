@@ -2,14 +2,23 @@
 
 from __future__ import annotations
 
-from dataclasses import fields, replace
-from typing import Any, Literal
+from collections.abc import Mapping
+from typing import Any
 
 from townlet.config.effects_config import EffectScope
 from townlet.effects.schema import CommandNode, CommandType
+from townlet.vfs.namespace import (
+    EFFECT_PIPELINE,
+    ExpressionSource,
+    Namespace,
+    ReadContext,
+    SpellingError,
+    SymbolKind,
+    inline_expression_reads,
+)
 from townlet.world.expression import ExpressionParser, read_paths
-from townlet.world.expression.ast_nodes import ASTNode, FunctionCall, PathAccess
-from townlet.world.expression.type_checker import TypeChecker
+from townlet.world.expression.ast_nodes import ASTNode
+from townlet.world.expression.type_checker import TypeChecker, TypeCheckError
 
 __all__ = ["CommandCompiler"]
 
@@ -17,107 +26,82 @@ __all__ = ["CommandCompiler"]
 # (executor `_for_each_contexts`: only inventory_items sets target_is_item).
 _ITEM_TARGET_COLLECTIONS = frozenset({"inventory_items"})
 
-# Functions that read a TemporalHistory or the evaluation step. Only the VFS profile
-# evaluator keeps a history and a step (`vfs/evaluator.py`); a command pipeline (effect,
-# affordance interaction, item interaction) runs without one, so these refuse here
-# instead of compiling and raising at the first tick (review-2026-10-24 effects F9).
-HISTORY_FUNCTIONS = frozenset({"lag", "delta", "moving_average", "ema", "rate_of_change", "rising_edge", "falling_edge", "elapsed_ticks"})
-
-
-TargetBinding = Literal["agent", "item", "none"]
-"""What `target` names while a command runs: an agent row, an item row, or nothing."""
+_WRITABLE_KINDS = frozenset({SymbolKind.VARIABLE, SymbolKind.METER, SymbolKind.ITEM_STATE})
 
 
 class CommandCompiler:
-    """Compile commands with expression type checking."""
+    """Compile command pipelines: every path and expression resolves through the one resolver (VFS round-2 S5)."""
 
-    def __init__(self, schema: dict[str, str], *, agent_target: bool, time_enabled: bool = True):
-        """Initialize compiler with type schema.
+    def __init__(
+        self,
+        namespace: Namespace,
+        *,
+        context: ReadContext,
+        time_enabled: bool,
+        expressions: Mapping[str, ExpressionSource],
+    ):
+        """Initialize the compiler for one pipeline.
 
         Args:
-            schema: Type schema for paths (e.g., {"target.bar.energy": "float"})
+            namespace: The symbol table (``Namespace.of_registry`` over the compiled roster)
+            context: What the pipeline's runtime serves: ``INTERACTION_PIPELINE`` for an
+                affordance interaction, ``.with_item(True)`` for an item interaction,
+                ``EFFECT_PIPELINE`` (``.with_item(True)`` when item-scoped) for an effect.
+                A bare variable is read and written in the pipeline's world by its declared
+                scope (S1: a world has one agent, so an agent variable is that agent's row
+                wherever the pipeline runs); ``item.<x>`` names the bound item's state.
             time_enabled: Whether temporal mechanics are enabled (gates delay)
-            agent_target: Whether the compiled pipeline runs with `target` bound to one
-                agent row — true for affordance interactions, item interactions and
-                agent-scoped effects; false for global and affordance-scoped effects.
-                An item-scoped effect's `target` is the item itself: build its
-                compiler with `for_effect_scope`. A bare `vfs.X` naming an agent-scoped variable means that
-                agent's row, never the batch: with an agent target it is resolved to
-                `target.vfs.X` (reads and writes alike); without one a write to it is
-                refused here.
+            expressions: Every compiled expression variable as a consumer reads it; a
+                pure one is inlined into every expression that reads it (S4 follow-up)
         """
-        self.schema = schema
+        self.namespace = namespace
+        self.context = context
         self.time_enabled = time_enabled
-        self.root_binding: TargetBinding = "agent" if agent_target else "none"
+        self.expressions = expressions
         self.parser = ExpressionParser()  # type: ignore[no-untyped-call]
-        self.type_checker = TypeChecker(schema=schema)
-        # Under an item binding `target` is the item row (ExecutionContext
-        # `target_is_item`): `target.vfs.X` names item-profile state, typed like the
-        # schema's `self.vfs.X`, and an item has no bars or agent registry row.
-        self.item_schema = {key: value for key, value in schema.items() if not key.startswith("target.")}
-        self.item_schema.update({f"target.{key[len('self.'):]}": value for key, value in schema.items() if key.startswith("self.vfs.")})
-        self.item_type_checker = TypeChecker(schema=self.item_schema)
 
     @classmethod
-    def for_effect_scope(cls, schema: dict[str, str], *, scope: EffectScope, time_enabled: bool) -> CommandCompiler:
-        """The compiler for an effect of `scope`, with `target` bound as EffectManager binds it.
+    def for_effect_scope(
+        cls,
+        namespace: Namespace,
+        *,
+        scope: EffectScope,
+        time_enabled: bool,
+        expressions: Mapping[str, ExpressionSource],
+    ) -> CommandCompiler:
+        """The compiler for an effect of ``scope``: an item-scoped effect is bound to its item."""
+        return cls(
+            namespace,
+            context=EFFECT_PIPELINE.with_item(scope == EffectScope.ITEM),
+            time_enabled=time_enabled,
+            expressions=expressions,
+        )
 
-        An agent-scoped effect's target is its agent row; an item-scoped effect's target
-        is the item itself (`_lifecycle_context` sets `target_is_item`); global and
-        affordance effects have no target agent.
-        """
-        compiler = cls(schema, agent_target=scope == EffectScope.AGENT, time_enabled=time_enabled)
-        if scope == EffectScope.ITEM:
-            compiler.root_binding = "item"
-        return compiler
+    def _schema(self, context: ReadContext) -> dict[str, str]:
+        return self.namespace.schema(context)
 
-    def _schema(self, binding: TargetBinding) -> dict[str, str]:
-        return self.item_schema if binding == "item" else self.schema
+    def _checker(self, context: ReadContext) -> TypeChecker:
+        return TypeChecker(schema=self.namespace.schema(context))
 
-    def _checker(self, binding: TargetBinding) -> TypeChecker:
-        return self.item_type_checker if binding == "item" else self.type_checker
+    def _resolve_write_path(self, path: str, context: ReadContext, what: str) -> str:
+        """The canonical path a write lands on, or a TypeCheckError naming the spelling to use."""
+        try:
+            symbol = self.namespace.resolve(path, context)
+        except SpellingError as exc:
+            raise TypeCheckError(f"{what} {exc}") from exc
+        if symbol.kind not in _WRITABLE_KINDS:
+            raise TypeCheckError(f"{what} '{path}' is the {symbol.kind}, which is no state a command can change")
+        return path
 
-    # -- bare `vfs.X` resolution -------------------------------------------------
-
-    def _bare_agent_path(self, path: str) -> bool:
-        """True when `path` is a bare `vfs.X` naming an agent-scoped variable.
-
-        `EffectsCompiler.build_schema` registers agent variables under
-        both `vfs.X` and `target.vfs.X`, globals under `vfs.X` and `global.vfs.X`, and
-        item-profile variables under `self.vfs.X` only — so the `target.` twin is the
-        schema's statement that `X` has an agent axis.
-        """
-        return path.startswith("vfs.") and f"target.{path}" in self.schema
-
-    def _canonical_write_path(self, path: str) -> str:
-        """The path a write lands on once bare agent paths are resolved (no refusal)."""
-        return f"target.{path}" if self._bare_agent_path(path) else path
-
-    def _resolve_write_path(self, path: str, binding: TargetBinding, what: str) -> str:
-        if not self._bare_agent_path(path):
-            return path
-        if binding != "agent":
-            from townlet.world.expression.type_checker import TypeCheckError
-
-            name = path[len("vfs.") :]
-            raise TypeCheckError(
-                f"{what} '{path}' writes agent-scoped variable '{name}' but this pipeline runs with no interacting "
-                f"agent: a bare agent-scoped write is one agent's row, never the batch. Write it as "
-                f"'target.{path}' from an agent-scoped effect, an affordance or item interaction, or a for_each "
-                "over agents."
-            )
-        return f"target.{path}"
-
-    def _resolve_expression(self, ast: ASTNode, binding: TargetBinding) -> ASTNode:
-        """Rewrite bare agent-scoped `vfs.X` references to `target.vfs.X` under an agent target."""
-        if binding != "agent":
-            return ast
-        return _rewrite_ast(ast, self._bare_agent_path)
-
-    def _parse(self, expression: str, binding: TargetBinding) -> ASTNode:
+    def _parse(self, expression: str, context: ReadContext) -> ASTNode:
         ast = self.parser.parse(expression)
-        _refuse_history_functions(ast, expression)
-        return self._resolve_expression(ast, binding)
+        refusals = self.namespace.refusals(ast, context)
+        if refusals:
+            raise TypeCheckError(f"Expression '{expression}': {' '.join(refusals)}")
+        try:
+            return inline_expression_reads(ast, self.expressions, consumer="a command pipeline")
+        except SpellingError as exc:
+            raise TypeCheckError(f"Expression '{expression}' {exc}") from exc
 
     def compile_command(self, node: CommandNode) -> CommandNode:
         """Compile and validate command.
@@ -131,24 +115,20 @@ class CommandCompiler:
         Raises:
             TypeCheckError: If path invalid or type mismatch
         """
-        return self._compile_command(node, self.root_binding)
+        return self._compile_command(node, self.context)
 
-    def _compile_command(self, node: CommandNode, binding: TargetBinding) -> CommandNode:
+    def _compile_command(self, node: CommandNode, binding: ReadContext) -> CommandNode:
         schema = self._schema(binding)
         type_checker = self._checker(binding)
         if node.type == CommandType.MODIFY:
             # Validate required fields are present
             if node.path is None or node.value_expr is None:
-                from townlet.world.expression.type_checker import TypeCheckError
-
                 raise TypeCheckError("MODIFY command requires both 'path' and 'value_expr'")
 
             node.path = self._resolve_write_path(node.path, binding, "MODIFY target")
 
             # Validate path exists
             if node.path not in schema:
-                from townlet.world.expression.type_checker import TypeCheckError
-
                 raise TypeCheckError(f"Path '{node.path}' not found in schema. Available: {list(schema.keys())}")
 
             # Parse and type-check value expression
@@ -158,16 +138,12 @@ class CommandCompiler:
             # Verify type matches target path
             target_type = schema[node.path]
             if value_type != target_type:
-                from townlet.world.expression.type_checker import TypeCheckError
-
                 raise TypeCheckError(f"Type mismatch for path '{node.path}': expected {target_type}, got {value_type}")
 
             # ✅ PERF FIX: Store compiled AST for runtime use
             node.value_ast = value_ast
 
         elif node.type == CommandType.SPAWN_EFFECT:
-            from townlet.world.expression.type_checker import TypeCheckError
-
             if node.effect_id is None:
                 raise TypeCheckError("SPAWN_EFFECT command requires 'effect_id'")
             if node.target is None and node.target_expr is None:
@@ -182,15 +158,15 @@ class CommandCompiler:
             if node.target not in {"self", "target"} and node.target_expr:
                 target_ast = self._parse(node.target_expr, binding)
                 target_type = type_checker.check(target_ast)
-                if target_type != "int":
-                    raise TypeCheckError(f"spawn_effect target expression must be int, got {target_type} for '{node.target_expr}'")
+                if target_type not in {"int", "agent_ref", "item_ref"}:
+                    raise TypeCheckError(
+                        f"spawn_effect target expression must be an int or a reference, got {target_type} for '{node.target_expr}'"
+                    )
 
                 # ✅ Store compiled AST
                 node.target_ast = target_ast
 
         elif node.type == CommandType.SAMPLE:
-            from townlet.world.expression.type_checker import TypeCheckError
-
             dist = (node.sample_distribution or "").lower()
             if not dist:
                 raise TypeCheckError("SAMPLE command requires 'sample_distribution'")
@@ -263,8 +239,6 @@ class CommandCompiler:
         elif node.type == CommandType.IF:
             # Validate required fields are present
             if node.condition_expr is None:
-                from townlet.world.expression.type_checker import TypeCheckError
-
                 raise TypeCheckError("IF command requires 'condition_expr'")
 
             # Validate condition is boolean
@@ -272,8 +246,6 @@ class CommandCompiler:
             cond_type = type_checker.check(cond_ast)
 
             if cond_type != "bool":
-                from townlet.world.expression.type_checker import TypeCheckError
-
                 raise TypeCheckError(f"If condition must be bool, got {cond_type}")
 
             # ✅ Store compiled AST
@@ -290,7 +262,6 @@ class CommandCompiler:
         elif node.type == CommandType.FOR_EACH:
             # Validate required fields are present
             from townlet.effects.collections import COLLECTION_RESOLVERS
-            from townlet.world.expression.type_checker import TypeCheckError
 
             has_collection = node.collection is not None
             has_collection_expr = node.collection_expr is not None
@@ -313,7 +284,7 @@ class CommandCompiler:
 
             # The body runs once per element with `target` rebound to it: an agent row
             # for every collection except the item-row ones.
-            body_binding: TargetBinding = "item" if node.collection in _ITEM_TARGET_COLLECTIONS else "agent"
+            body_binding = binding.with_item(binding.item or node.collection in _ITEM_TARGET_COLLECTIONS)
 
             # Recursively compile nested commands (with None check for mypy)
             nested: list[CommandNode] = []
@@ -352,8 +323,6 @@ class CommandCompiler:
                 raise TypeCheckError("Nested for_each is not supported under current vectorized constraints")
 
         elif node.type == CommandType.SWITCH:
-            from townlet.world.expression.type_checker import TypeCheckError
-
             if node.switch_expr is None:
                 raise TypeCheckError("SWITCH command requires 'switch' expression")
 
@@ -378,18 +347,16 @@ class CommandCompiler:
                 self._compile_command(cmd, binding)
 
         elif node.type == CommandType.PARALLEL:
-            from townlet.world.expression.type_checker import TypeCheckError
-
             branches = node.parallel_commands or []
             if not branches:
                 raise TypeCheckError("PARALLEL command requires at least one branch")
 
             # Collect target paths written by branches to detect conflicts (modify targets only for now).
-            # Bare agent paths are compared in their resolved form so `vfs.x` and `target.vfs.x` collide.
+            # One spelling per reference, so two branches writing one target spell it alike.
             def collect_writes(cmd: CommandNode) -> set[str]:
                 writes: set[str] = set()
                 if cmd.type == CommandType.MODIFY and cmd.path:
-                    writes.add(self._canonical_write_path(cmd.path))
+                    writes.add(cmd.path)
                 # Recurse into nested blocks
                 for seq in (
                     cmd.then_commands or [],
@@ -416,8 +383,6 @@ class CommandCompiler:
                 self._compile_command(bc, binding)
 
         elif node.type == CommandType.DELAY:
-            from townlet.world.expression.type_checker import TypeCheckError
-
             if not self.time_enabled:
                 raise TypeCheckError("delay command not allowed when time is disabled")
             if node.delay_ticks_expr is None:
@@ -438,8 +403,6 @@ class CommandCompiler:
                 self._compile_command(cmd, binding)
 
         elif node.type == CommandType.SPAWN_ITEM:
-            from townlet.world.expression.type_checker import TypeCheckError
-
             if not node.item_type:
                 raise TypeCheckError("SPAWN_ITEM command requires 'item_type'")
             if node.quantity is None or node.quantity < 1:
@@ -467,65 +430,6 @@ class CommandCompiler:
         for node in nodes:
             self.compile_command(node)
         return nodes
-
-
-def _refuse_history_functions(node: ASTNode, expression: str) -> None:
-    """Refuse a temporal-history function anywhere in a command expression."""
-    for found in _walk(node):
-        if isinstance(found, FunctionCall) and found.function_name in HISTORY_FUNCTIONS:
-            from townlet.world.expression.type_checker import TypeCheckError
-
-            raise TypeCheckError(
-                f"Function '{found.function_name}' in '{expression}' reads temporal history, which only VFS "
-                "profile expressions keep. Declare a variable with `expression: "
-                f'"{found.function_name}(...)"` in the pack-scope variables declaration and read that '
-                "variable from the command instead."
-            )
-
-
-def _walk(node: ASTNode) -> list[ASTNode]:
-    found = [node]
-    for field in fields(node):
-        found.extend(_walk_value(getattr(node, field.name)))
-    return found
-
-
-def _walk_value(value: Any) -> list[ASTNode]:
-    if isinstance(value, ASTNode):
-        return _walk(value)
-    if isinstance(value, list | tuple):
-        return [nested for item in value for nested in _walk_value(item)]
-    return []
-
-
-def _rewrite_ast(node: ASTNode, is_bare_agent_path: Any) -> ASTNode:
-    """Return `node` with every bare agent-scoped `vfs.X` PathAccess rebased to `target.vfs.X`.
-
-    AST nodes are frozen dataclasses; untouched subtrees are returned by identity.
-    """
-    if isinstance(node, PathAccess):
-        if is_bare_agent_path(".".join(node.segments)):
-            return replace(node, segments=["target", *node.segments])
-        return node
-    changes: dict[str, Any] = {}
-    for field in fields(node):
-        value = getattr(node, field.name)
-        rewritten = _rewrite_value(value, is_bare_agent_path)
-        if rewritten is not value:
-            changes[field.name] = rewritten
-    return replace(node, **changes) if changes else node
-
-
-def _rewrite_value(value: Any, is_bare_agent_path: Any) -> Any:
-    if isinstance(value, ASTNode):
-        return _rewrite_ast(value, is_bare_agent_path)
-    if isinstance(value, list):
-        items = [_rewrite_value(item, is_bare_agent_path) for item in value]
-        return items if any(new is not old for new, old in zip(items, value, strict=True)) else value
-    if isinstance(value, tuple):
-        members = tuple(_rewrite_value(item, is_bare_agent_path) for item in value)
-        return members if any(new is not old for new, old in zip(members, value, strict=True)) else value
-    return value
 
 
 def spawn_target_reads_nothing(target: str) -> bool:

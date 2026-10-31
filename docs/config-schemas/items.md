@@ -192,8 +192,8 @@ items:
       interactions:
         on_pickup: []
         on_use:
-          - modify: "target.bar.energy"
-            value: "target.bar.energy + 0.3"
+          - modify: "bar.energy"
+            value: "bar.energy + 0.3"
         on_drop: []
 
     - id: "medkit"
@@ -204,10 +204,10 @@ items:
       interactions:
         on_pickup: []
         on_use:
-          - modify: "target.bar.health"
-            value: "target.bar.health + 0.5"
-          - modify: "self.vfs.durability"
-            value: "self.vfs.durability - 10"
+          - modify: "bar.health"
+            value: "bar.health + 0.5"
+          - modify: "item.durability"
+            value: "item.durability - 10"
         on_drop: []
 
   max_items_per_agent: 3
@@ -324,23 +324,23 @@ items:
     spawn_count: 2
     spawn_position: random
     spawn_interval: 50
-    when: "vfs.is_raining"
+    when: "is_raining"
 
 # Time-gated spawn: the engine clock is the global variable `tick`
   - item_type: "night_flower"
     spawn_count: 1
     spawn_position: random
-    when: "vfs.tick % 1000 > 500"  # Only after halfway through the day
+    when: "tick % 1000 > 500"  # Only after halfway through the day
 
 # State-based gate with boolean logic
   - item_type: "health_potion"
     spawn_count: 3
     spawn_interval: 25
     spawn_position: random
-    when: "(bar.energy < 0.4) and vfs.danger_level >= 3"
+    when: "(bar.energy < 0.4) and danger_level >= 3"
 ```
 
-Supported symbols: `bar.<meter>`, and `vfs.<variable>` for every global- or agent-scope registry variable, including the engine clock `vfs.tick`. There is no `temporal.*` namespace, and bare names, `env.*` and `agent.vfs.*` are refused; derive an hour or a season as a declared global expression variable and read it by `vfs.<id>`. An agent-scope read is the value of the world's own agent (world `w` holds agent `w`), so each world spawns or not on its own values. Predicates evaluate after the instant's expressions (at `reset()` and on every respawn), so an expression variable reads its evaluated value, never its declared literal. All standard comparison operators and boolean logic (`and`, `or`, `not`) are available via the expression language.
+Supported symbols (one spelling per reference, VFS round-2 S5): `bar.<meter>`, and the bare id of every global- or agent-scope registry variable, including the engine clock `tick`. There is no `temporal.*` namespace; `env.*`, `vfs.<id>`, `agent.vfs.<id>` and a bare meter name are refused at compile with the spelling to write; derive an hour or a season as a declared global expression variable and read it by its bare id. A pure expression variable a predicate reads is inlined, so the predicate sees it evaluated on the current state; a context-bound `tick`-lifetime one (its expression calls a history operator) refuses, because tick state resets before spawns run. A history operator (`lag`, `delta`, ...) in a predicate refuses at compile: a spawn keeps no history. An agent-scope read is the value of the world's own agent (world `w` holds agent `w`), so each world spawns or not on its own values. Predicates evaluate after the instant's expressions (at `reset()` and on every respawn), so an expression variable reads its evaluated value, never its declared literal. All standard comparison operators and boolean logic (`and`, `or`, `not`) are available via the expression language.
 
 ### Advanced Spawn Rules Examples
 
@@ -421,8 +421,8 @@ items:
       vfs_profile: "food"
       interactions:
         on_use:
-          - modify: "target.bar.energy"
-            value: "target.bar.energy + 0.3"
+          - modify: "bar.energy"
+            value: "bar.energy + 0.3"
   # ... other settings
 ```
 
@@ -471,15 +471,11 @@ All item interactions use Effects command language. Commands are compiled at Uni
 
 ### Context Mapping
 
-When Effects execute during item interactions:
+An item interaction has two entities: the world's agent (S1: one per world) and the item.
 
-- **`target`**: Agent performing the action
-  - Can access `target.bar.*` (agent meters)
-  - Can access `target.vfs.*` (agent VFS variables)
-
-- **`self`**: Item instance
-  - Can access `self.vfs.*` (item VFS variables like durability)
-  - Cannot access `self.bar.*` (items don't have meters)
+- The agent: meters as `bar.<name>`, agent and global variables by bare id
+- The item: its state as `item.<name>` (durability, charges, ...)
+- `target.`/`self.` qualifiers and `vfs.` prefixes are refused at compile, naming the spelling to write
 
 ### Effects Command Reference
 
@@ -487,11 +483,11 @@ Items support all Effects commands:
 
 **modify**: Mutate bar or VFS variable
 ```yaml
-- modify: "target.bar.energy"
-  value: "target.bar.energy + 0.3"
+- modify: "bar.energy"
+  value: "bar.energy + 0.3"
 
-- modify: "self.vfs.durability"
-  value: "self.vfs.durability - 10"
+- modify: "item.durability"
+  value: "item.durability - 10"
 ```
 
 **spawn_effect**: Spawn persistent effect on agent
@@ -513,10 +509,10 @@ Items support all Effects commands:
 **if**: Conditional execution
 ```yaml
 - if:
-    condition: "self.vfs.durability > 0"
+    condition: "item.durability > 0"
     then:
-      - modify: "target.bar.health"
-        value: "target.bar.health + 0.5"
+      - modify: "bar.health"
+        value: "bar.health + 0.5"
     else:
       - spawn_effect: "broken_item"  # sibling-key grammar (PDR-0143)
         target: "self"
@@ -562,17 +558,17 @@ variable model as registry state.
 ```yaml
 # Read item state
 - if:
-    condition: "self.vfs.durability > 0"
+    condition: "item.durability > 0"
     then:
-      - modify: "target.bar.health"
-        value: "target.bar.health + 0.5"
+      - modify: "bar.health"
+        value: "bar.health + 0.5"
 
 # Modify item state
-- modify: "self.vfs.durability"
-  value: "self.vfs.durability - 10"
+- modify: "item.durability"
+  value: "item.durability - 10"
 
-- modify: "self.vfs.charges"
-  value: "self.vfs.charges - 1"
+- modify: "item.charges"
+  value: "item.charges - 1"
 ```
 
 **Item state persists** across:
@@ -740,8 +736,8 @@ When inventory full, GET action fails:
   interactions:
     on_pickup: []       # No effect on pickup
     on_use:
-      - modify: "target.bar.energy"
-        value: "target.bar.energy + 0.3"
+      - modify: "bar.energy"
+        value: "bar.energy + 0.3"
       # Note: To actually remove from inventory, need custom consume logic
       # Phase 1-3: Items remain in inventory after use
     on_drop: []
@@ -784,12 +780,12 @@ declarations:
   interactions:
     on_pickup: []
     on_use:
-      - modify: "self.vfs.durability"
-        value: "self.vfs.durability - 5"
-      - modify: "target.bar.mood"
-        value: "target.bar.mood + 0.1"  # Light improves mood
+      - modify: "item.durability"
+        value: "item.durability - 5"
+      - modify: "bar.mood"
+        value: "bar.mood + 0.1"  # Light improves mood
       - if:
-          condition: "self.vfs.durability <= 0"
+          condition: "item.durability <= 0"
           then:
             # sibling-key grammar (PDR-0143): no `duration` key on CommandConfig
             - spawn_effect: "darkness"
@@ -833,8 +829,8 @@ item_profiles:
   cooldown: null
   interactions:
     on_pickup:
-      - modify: "target.bar.money"
-        value: "target.bar.money + 0.1"  # Add 10 currency units
+      - modify: "bar.money"
+        value: "bar.money + 0.1"  # Add 10 currency units
     on_use: []          # No use action (consumed on pickup)
     on_drop: []
 ```
@@ -872,12 +868,12 @@ item_profiles:
     on_pickup: []
     on_use:
       - if:
-          condition: "self.vfs.charges > 0"
+          condition: "item.charges > 0"
           then:
-            - modify: "target.bar.health"
-              value: "target.bar.health + 0.5"
-            - modify: "self.vfs.charges"
-              value: "self.vfs.charges - 1"
+            - modify: "bar.health"
+              value: "bar.health + 0.5"
+            - modify: "item.charges"
+              value: "item.charges - 1"
           else:
             # sibling-key grammar (PDR-0143): no `duration` key on CommandConfig
             - spawn_effect: "empty_medkit"
@@ -923,19 +919,19 @@ item_profiles:
     on_pickup: []
     on_use:
       - if:
-          condition: "self.vfs.freshness > 0.5"
+          condition: "item.freshness > 0.5"
           then:
-            - modify: "target.bar.satiation"
-              value: "target.bar.satiation + 0.4"
-            - modify: "target.bar.mood"
-              value: "target.bar.mood + 0.1"  # Fresh bread tastes good
+            - modify: "bar.satiation"
+              value: "bar.satiation + 0.4"
+            - modify: "bar.mood"
+              value: "bar.mood + 0.1"  # Fresh bread tastes good
           else:
-            - modify: "target.bar.satiation"
-              value: "target.bar.satiation + 0.2"  # Less filling when stale
-            - modify: "target.bar.health"
-              value: "target.bar.health - 0.1"  # Spoiled food hurts health
-      - modify: "self.vfs.freshness"
-        value: "self.vfs.freshness - 0.2"  # Degrades with each use
+            - modify: "bar.satiation"
+              value: "bar.satiation + 0.2"  # Less filling when stale
+            - modify: "bar.health"
+              value: "bar.health - 0.1"  # Spoiled food hurts health
+      - modify: "item.freshness"
+        value: "item.freshness - 0.2"  # Degrades with each use
     on_drop: []
 ```
 
@@ -974,7 +970,7 @@ item_profiles:
 - State persists across inventory transitions
 
 **Access control**:
-- Items can read/write their own VFS variables via `self.vfs.*`
+- Items can read/write their own VFS variables via `item.*`
 - Agents can read item VFS variables when interacting (future: for observation)
 
 ### Effects Integration
@@ -1009,8 +1005,8 @@ item_profiles:
 - id: "coin"
   interactions:
     on_pickup:
-      - modify: "target.bar.money"
-        value: "target.bar.money + 0.1"
+      - modify: "bar.money"
+        value: "bar.money + 0.1"
     on_use: []    # No use action needed
 ```
 
@@ -1021,13 +1017,13 @@ item_profiles:
 - id: "pickaxe"
   interactions:
     on_use:
-      - modify: "self.vfs.durability"
-        value: "self.vfs.durability - 5"
+      - modify: "item.durability"
+        value: "item.durability - 5"
       - if:
-          condition: "self.vfs.durability > 0"
+          condition: "item.durability > 0"
           then:
-            - modify: "target.bar.resources"
-              value: "target.bar.resources + 0.1"
+            - modify: "bar.resources"
+              value: "bar.resources + 0.1"
 ```
 
 ### Pattern: Charge Consumption
@@ -1038,15 +1034,15 @@ item_profiles:
   interactions:
     on_use:
       - if:
-          condition: "self.vfs.charges > 0"
+          condition: "item.charges > 0"
           then:
             # sibling-key grammar (PDR-0143): no `duration` key on CommandConfig;
             # `target` and `intensity` are both required by `spawn_effect`.
             - spawn_effect: "powered"
               target: "self"
               intensity: 1.0
-            - modify: "self.vfs.charges"
-              value: "self.vfs.charges - 1"
+            - modify: "item.charges"
+              value: "item.charges - 1"
 ```
 
 ### Pattern: Quality-Based Effects
@@ -1056,8 +1052,8 @@ item_profiles:
 - id: "potion"
   interactions:
     on_use:
-      - modify: "target.bar.health"
-        value: "target.bar.health + (0.3 * self.vfs.quality)"
+      - modify: "bar.health"
+        value: "bar.health + (0.3 * item.quality)"
       # Quality 1.0 = +0.3, Quality 0.5 = +0.15
 ```
 

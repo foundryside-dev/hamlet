@@ -21,7 +21,7 @@ import pytest
 import torch
 import yaml
 
-from townlet.effects.compiler import CommandCompiler
+from tests.test_townlet._fixtures.command_namespace import command_compiler
 from townlet.effects.context import ExecutionContext
 from townlet.effects.executor import CommandExecutor
 from townlet.effects.schema import CommandNode, CommandType
@@ -34,11 +34,9 @@ LEVEL = "L0_effects"
 
 SCHEMA = {
     "bar.health": "float",
-    "target.bar.health": "float",
     "bar.energy": "float",
-    "target.bar.energy": "float",
-    "bar.level": "int",
-    "vfs.counter": "float",
+    "bar.level": "float",
+    "counter": "float",
 }
 
 
@@ -51,7 +49,7 @@ def _if(condition: str, then: list[CommandNode], otherwise: list[CommandNode] | 
 
 
 def _compile(node: CommandNode, schema: dict[str, str] = SCHEMA) -> CommandNode:
-    return CommandCompiler(schema, agent_target=True).compile_command(node)
+    return command_compiler(schema).compile_command(node)
 
 
 def _scalar(var_id: str, *, scope: str) -> VariableDef:
@@ -74,7 +72,7 @@ def _no_broadcast_stride(tensor: torch.Tensor) -> bool:
 def test_scalar_modify_then_per_agent_modify_hits_one_agent() -> None:
     """probe_d.py I3, under S1: a bare bar write from agent 1's pipeline is world 1's row only."""
     scalar = _compile(_modify("bar.health", "0.3"))
-    indexed = _compile(_modify("target.bar.health", "target.bar.health + 0.1"))
+    indexed = _compile(_modify("bar.health", "bar.health + 0.1"))
     bars = {"health": torch.tensor([1.0, 1.0, 1.0])}
     original = bars["health"]
     context = ExecutionContext(bars=bars, target_index=1)
@@ -133,7 +131,7 @@ def test_if_runs_then_and_else_per_agent() -> None:
 
 def test_if_masks_an_indexed_write_by_the_targets_row() -> None:
     """An agent-scoped effect attached to a healthy agent does not penalise it because another agent is low."""
-    command = _compile(_if("bar.health < 0.5", then=[_modify("target.bar.energy", "target.bar.energy - 0.5")]))
+    command = _compile(_if("bar.health < 0.5", then=[_modify("bar.energy", "bar.energy - 0.5")]))
     bars = _bars()
     executor = CommandExecutor()
     executor.execute(command, ExecutionContext(bars=bars, self_index=0, target_index=0))
@@ -145,7 +143,7 @@ def test_if_masks_an_indexed_write_by_the_targets_row() -> None:
 def test_if_masks_a_bare_agent_vfs_write_by_row() -> None:
     mood = _scalar("mood", scope="agent")
     registry = VariableRegistry([mood], 3, torch.device("cpu"))
-    command = _compile(_if("bar.health < 0.5", then=[_modify("vfs.mood", "1.0")]), {"bar.health": "float", "vfs.mood": "float"})
+    command = _compile(_if("bar.health < 0.5", then=[_modify("mood", "1.0")]), {"bar.health": "float", "mood": "float"})
     bars = _bars()
     executor = CommandExecutor()
     executor.execute(command, ExecutionContext(bars=bars, vfs_registry=registry, target_index=0))
@@ -163,7 +161,7 @@ def test_nested_if_intersects_masks() -> None:
 
 def test_scalar_condition_is_the_degenerate_mask() -> None:
     command = _compile(
-        _if("target.bar.health < 0.5", then=[_modify("bar.energy", "0.0")], otherwise=[_modify("bar.energy", "0.5")]),
+        _if("bar.health < 0.5", then=[_modify("bar.energy", "0.0")], otherwise=[_modify("bar.energy", "0.5")]),
     )
     bars = _bars()
     executor = CommandExecutor()
@@ -178,7 +176,7 @@ def test_partial_mask_writes_a_global_in_the_live_worlds_only() -> None:
     """A global has one row per world (S1), so a per-agent mask is a per-world mask on it."""
     counter = _scalar("counter", scope="global")
     registry = VariableRegistry([counter], 3, torch.device("cpu"))
-    command = _compile(_if("bar.health < 0.5", then=[_modify("vfs.counter", "1.0")]))
+    command = _compile(_if("bar.health < 0.5", then=[_modify("counter", "1.0")]))
     CommandExecutor().execute(command, ExecutionContext(bars=_bars(), vfs_registry=registry))
     assert registry.get("counter", reader="engine").tolist() == [0.0, 1.0, 0.0]
 
@@ -186,7 +184,7 @@ def test_partial_mask_writes_a_global_in_the_live_worlds_only() -> None:
 def test_whole_batch_mask_writes_a_global_target() -> None:
     counter = _scalar("counter", scope="global")
     registry = VariableRegistry([counter], 3, torch.device("cpu"))
-    command = _compile(_if("bar.health < 2.0", then=[_modify("vfs.counter", "1.0")]))
+    command = _compile(_if("bar.health < 2.0", then=[_modify("counter", "1.0")]))
     CommandExecutor().execute(command, ExecutionContext(bars=_bars(), vfs_registry=registry))
     assert registry.get("counter", reader="engine").tolist() == [1.0, 1.0, 1.0]
 
@@ -197,14 +195,14 @@ def test_switch_selects_a_case_per_agent_first_match_wins() -> None:
             type=CommandType.SWITCH,
             switch_expr="bar.level",
             cases=[
-                ("1", [_modify("bar.energy", "0.1")]),
-                ("2", [_modify("bar.energy", "0.2")]),
+                ("1.0", [_modify("bar.energy", "0.1")]),
+                ("2.0", [_modify("bar.energy", "0.2")]),
                 ("bar.level", [_modify("bar.energy", "0.3")]),  # matches everyone; only agents no earlier case took
             ],
             default_commands=[_modify("bar.energy", "0.9")],
         )
     )
-    bars = {"level": torch.tensor([1, 2, 3, 2]), "energy": torch.zeros(4)}
+    bars = {"level": torch.tensor([1.0, 2.0, 3.0, 2.0]), "energy": torch.zeros(4)}
     CommandExecutor().execute(command, ExecutionContext(bars=bars))
     assert torch.allclose(bars["energy"], torch.tensor([0.1, 0.2, 0.3, 0.2]))
 
@@ -214,11 +212,11 @@ def test_switch_default_runs_for_the_agents_no_case_took() -> None:
         CommandNode(
             type=CommandType.SWITCH,
             switch_expr="bar.level",
-            cases=[("1", [_modify("bar.energy", "0.1")])],
+            cases=[("1.0", [_modify("bar.energy", "0.1")])],
             default_commands=[_modify("bar.energy", "0.9")],
         )
     )
-    bars = {"level": torch.tensor([1, 2, 3]), "energy": torch.zeros(3)}
+    bars = {"level": torch.tensor([1.0, 2.0, 3.0]), "energy": torch.zeros(3)}
     CommandExecutor().execute(command, ExecutionContext(bars=bars))
     assert torch.allclose(bars["energy"], torch.tensor([0.1, 0.9, 0.9]))
 

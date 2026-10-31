@@ -31,7 +31,7 @@ def test_vtc_transition_rules_compile_agent_affordance_and_conditional_writes() 
         [
             {
                 "id": "seen_stealing_damages_reputation",
-                "phase": "apply_social_residue_effects",
+                "phase": "apply_transition_rules",
                 "condition": "was_observed and chosen_action == 7",
                 "writes": [
                     {
@@ -45,7 +45,7 @@ def test_vtc_transition_rules_compile_agent_affordance_and_conditional_writes() 
             },
             {
                 "id": "working_wears_affordances",
-                "phase": "apply_social_residue_effects",
+                "phase": "apply_transition_rules",
                 "condition": None,
                 "writes": [
                     {
@@ -60,7 +60,7 @@ def test_vtc_transition_rules_compile_agent_affordance_and_conditional_writes() 
             },
             {
                 "id": "ambulance_abuse_social_penalty",
-                "phase": "apply_social_residue_effects",
+                "phase": "apply_transition_rules",
                 "condition": "chosen_action == 9",
                 "writes": [
                     {
@@ -76,7 +76,7 @@ def test_vtc_transition_rules_compile_agent_affordance_and_conditional_writes() 
     )
 
     assert [rule.effect for rule in program.rules] == ["seen_delta", "wear_delta", "reputation_delta"]
-    assert {rule.phase for rule in program.rules} == {"apply_social_residue_effects"}
+    assert {rule.phase for rule in program.rules} == {"apply_transition_rules"}
     # Derived from the condition AST (the expression is a literal), sorted.
     assert program.rules[0].reads == ("chosen_action", "was_observed")
     assert program.rules[1].reads == ()
@@ -87,7 +87,7 @@ def test_vtc_social_and_institutional_residue_updates_agent_variables() -> None:
         [
             {
                 "id": "observed_help_raises_reputation",
-                "phase": "apply_social_residue_effects",
+                "phase": "apply_transition_rules",
                 "condition": "chosen_action == 4",
                 "writes": [
                     {
@@ -102,7 +102,7 @@ def test_vtc_social_and_institutional_residue_updates_agent_variables() -> None:
             },
             {
                 "id": "ambulance_abuse_social_penalty",
-                "phase": "apply_social_residue_effects",
+                "phase": "apply_transition_rules",
                 "condition": "chosen_action == 9",
                 "writes": [
                     {
@@ -133,7 +133,7 @@ def test_vtc_social_and_institutional_residue_updates_agent_variables() -> None:
 def _rule(variable_id: str, *, expression: str = "1.0", composition: str = "additive_delta") -> dict:
     return {
         "id": f"bump_{variable_id}",
-        "phase": "apply_social_residue_effects",
+        "phase": "apply_transition_rules",
         "condition": None,
         "writes": [{"variable_id": variable_id, "expression": expression, "composition": composition}],
     }
@@ -190,5 +190,5 @@ def test_agent_target_without_an_agent_axis_is_an_assertion() -> None:
 
 
 def test_unknown_target_refuses_at_compile() -> None:
-    with pytest.raises(VTCWriteRefusalError, match="targets unknown VFS variable 'missing'"):
+    with pytest.raises(VTCWriteRefusalError, match="targets 'missing' names no variable"):
         _compile([_rule("missing")])

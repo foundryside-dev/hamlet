@@ -11,8 +11,8 @@ affordances:
       positions: []
     interactions:
       on_start:
-      - modify: target.bar.energy
-        value: target.bar.energy + 0.1
+      - modify: bar.energy
+        value: bar.energy + 0.1
       per_tick: []
       on_completion: []
       on_early_exit: []

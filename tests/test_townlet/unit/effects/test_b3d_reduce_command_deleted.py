@@ -25,7 +25,7 @@ REPO = Path(__file__).resolve().parents[4]
 WITNESS = REPO / "configs" / "static_epistemic_access"
 LEVEL = "L0_simple"
 
-REDUCE = {"reduce": "bar.col", "reduce_as": "x", "reduce_init": "0", "reduce_body": "acc + x", "reduce_into": "vfs.mood"}
+REDUCE = {"reduce": "bar.col", "reduce_as": "x", "reduce_init": "0", "reduce_body": "acc + x", "reduce_into": "mood"}
 
 
 def test_the_command_vocabulary_has_no_reduce() -> None:
@@ -67,5 +67,5 @@ def test_an_authored_reduce_is_refused_at_parse_at_its_line(tmp_path: Path) -> N
 
 
 def test_serialized_command_nodes_carry_no_reduce_keys() -> None:
-    payload = _serialize_command_node(CommandNode(type=CommandType.MODIFY, path="target.bar.energy", value_expr="0.5"))
+    payload = _serialize_command_node(CommandNode(type=CommandType.MODIFY, path="bar.energy", value_expr="0.5"))
     assert not any(key.startswith("reduce") for key in payload)

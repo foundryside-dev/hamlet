@@ -105,9 +105,8 @@ class ItemActionHandler:
         # Pattern: Same as affordance Effects execution
         bars_dict = {name: meters[:, idx] for name, idx in self.meter_name_to_index.items()}
 
-        # Context mapping for item interactions:
-        # - target = Agent performing the action (can access target.bar.*, target.vfs.*)
-        # - self = The Item itself (can access self.vfs.durability, etc.)
+        # Context mapping for item interactions: the agent performing the action is the
+        # world's agent (bare variables, `bar.<m>`); the item is bound (`item.<x>`).
         context = ExecutionContext(
             bars=bars_dict,
             vfs_registry=self.vfs_registry,

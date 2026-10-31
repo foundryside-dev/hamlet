@@ -9,6 +9,7 @@ import torch
 
 from townlet.vfs.registry import VariableRegistry
 from townlet.vfs.schema import VariableScope
+from townlet.world.expression.references import Reference, ReferenceKind, parse_reference
 
 if TYPE_CHECKING:
     from townlet.substrate.base import SpatialSubstrate
@@ -116,7 +117,7 @@ class ExecutionContext:
         its item's, or for a global- or affordance-scoped effect the world whose event
         spawned it). An affordance or item interaction acts in the world of the agent it
         addresses; a context whose only entity is an item acts in that item's world.
-        Every write such a context makes (globals, bare ``bar.X``, item state,
+        Every write such a context makes (variables, ``bar.X``, item state,
         affordance availability, spawns) lands in that world only.
 
         A context bound to no world (no effect, agent or item: only direct engine or
@@ -176,247 +177,128 @@ class ExecutionContext:
             "Condition on a scalar (target./self.) value, or write a per-agent target."
         )
 
-    def get_path(self, path: str) -> torch.Tensor:
-        """Resolve path to tensor value.
+    # -- reference resolution (VFS round-2 S5) ------------------------------------------
 
-        Args:
-            path: Dot-separated path (e.g., "bar.energy", "vfs.motivation", "target.bar.health")
+    def agent_read_row(self) -> int | None:
+        """The agent row a bare agent variable or a meter names here: this world's agent.
 
-        Returns:
-            Tensor value at path
-
-        Raises:
-            KeyError: If path not found
+        The batch is independent single-agent worlds (S1), so the agent is the one the
+        context addresses or, when it addresses none (a global-, affordance- or
+        item-scoped effect), its world's agent (world ``w`` holds agent ``w``). None for a
+        context bound to no world (direct engine or test callers), which spans the batch.
         """
-        # Handle target. prefix
-        if path.startswith("target."):
-            if self.target_index is None:
-                raise ValueError("target_index not set in context")
+        agent = self.agent_row()
+        if agent is not None:
+            return agent
+        return self.world_row()
 
-            rest = path[len("target.") :]
-            if rest.startswith("vfs."):
-                segments = rest.split(".")[1:]
-                if self.target_is_item:
-                    return self._resolve_vfs_path(scope="item", index=self.target_index, segments=segments)
-                tensor = self._resolve_vfs_path(
-                    scope="agent",
-                    index=None,  # keep batch for non-reference paths
-                    segments=segments,
-                    default_index=self.target_index,
-                )
-                if tensor.dim() > 0:
-                    return tensor[self.target_index]
-                return tensor
-            if rest.startswith("bar."):
-                bar_name = rest[len("bar.") :]
-                if bar_name not in self.bars:
-                    raise KeyError(f"Bar '{bar_name}' not found. Available: {list(self.bars.keys())}")
-                bar_tensor = self.bars[bar_name]
-                if bar_tensor.dim() == 0:
-                    return bar_tensor
-                return bar_tensor[self.target_index]
+    def bound_item(self) -> int | None:
+        """The item-arena row ``item.<x>`` names: the innermost bound item (a loop's element first)."""
+        if self.target_index is not None and self.target_is_item:
+            return self.target_index
+        if self.self_index is not None and self.self_is_item:
+            return self.self_index
+        return None
 
-            tensor = self.get_path(rest)
+    def _device(self) -> torch.device:
+        return self.bars[next(iter(self.bars))].device if self.bars else torch.device("cpu")
 
-            # If batched tensor, index into it
-            if tensor.dim() > 0:
-                return tensor[self.target_index]
-            return tensor
+    @staticmethod
+    def _availability(path: str) -> str | None:
+        """The affordance an engine availability path (``affordance.<NAME>.available``) toggles, or None."""
+        parts = path.split(".")
+        if len(parts) == 3 and parts[0] == "affordance" and parts[2] == "available":
+            return parts[1]
+        return None
 
-        # Handle self. prefix
-        if path.startswith("self."):
-            if self.self_index is None:
-                raise ValueError("self_index not set in context")
+    def _reference(self, path: str) -> Reference:
+        reference = parse_reference(path)
+        if reference is None:
+            raise ValueError(f"'{path}' is not a reference spelling (a bare name, 'bar.<meter>' or 'item.<name>')")
+        return reference
 
-            rest = path[len("self.") :]
+    def _registry(self) -> VariableRegistry:
+        if self.vfs_registry is None:
+            raise ValueError("VFS registry not set in context")
+        return self.vfs_registry
 
-            # NEW: Special handling for self.vfs.* when self is an item
-            if rest.startswith("vfs.") and self.self_is_item:
-                var_name = rest[len("vfs.") :]
-                if self.vfs_registry is None:
-                    raise ValueError("VFS registry not set in context")
-                profile_name = self.vfs_registry.get_item_profile_for_index(self.self_index)
-                if profile_name is None:
-                    raise KeyError(f"No item profile registered for vfs_index {self.self_index}")
-                value = self.vfs_registry.read_item(profile_name, var_name, self.self_index, reader="engine")
-                return torch.as_tensor(value, dtype=torch.float32)
+    def _required_item(self, path: str) -> int:
+        item = self.bound_item()
+        if item is None:
+            raise ValueError(f"'{path}' reads item state, but this pipeline is bound to no item")
+        return item
 
-            tensor = self.get_path(rest)
+    def read_item_state(self, item_row: int) -> dict[str, torch.Tensor]:
+        """Every state variable of the item at ``item_row``, by name."""
+        registry = self._registry()
+        profile_name = registry.get_item_profile_for_index(item_row)
+        if profile_name is None:
+            raise KeyError(f"No item profile registered for vfs_index {item_row}")
+        return {
+            name: torch.as_tensor(registry.read_item(profile_name, name, item_row, reader="engine"), device=self._device())
+            for name in registry.item_profile_map[profile_name]
+        }
 
-            if tensor.dim() > 0:
-                return tensor[self.self_index]
-            return tensor
+    def get_path(self, path: str) -> torch.Tensor:
+        """The value ``path`` names in this pipeline's world, resolved through the one reference grammar.
 
-        # Handle bar.* paths
-        if path.startswith("bar."):
-            bar_name = path[len("bar.") :]
-            if bar_name not in self.bars:
-                raise KeyError(f"Bar '{bar_name}' not found. Available: {list(self.bars.keys())}")
-            return self.bars[bar_name]
-
-        # Handle affordance availability
-        if path.startswith("affordance.") and path.endswith(".available"):
-            parts = path.split(".")
-            if len(parts) != 3:
-                raise ValueError(f"Invalid affordance path: {path}")
-            aff_name = parts[1]
-            device = torch.device("cpu")
-            if self.bars:
-                device = self.bars[next(iter(self.bars))].device
+        A bare global or affordance variable is this world's row; a bare agent variable
+        and ``bar.<m>`` are this world's agent's row; ``item.<x>`` is the bound item's
+        state. A context bound to no world reads the whole batch.
+        """
+        affordance = self._availability(path)
+        if affordance is not None:
+            device = self._device()
             if self.affordance_overrides is None:
                 return torch.tensor(True, device=device)
             world = self.world_row()
             if world is not None:
-                return torch.tensor(_available(self.affordance_overrides[world], aff_name), device=device)
-            return torch.tensor([_available(overrides, aff_name) for overrides in self.affordance_overrides], device=device)
+                return torch.tensor(_available(self.affordance_overrides[world], affordance), device=device)
+            return torch.tensor([_available(overrides, affordance) for overrides in self.affordance_overrides], device=device)
+        reference = self._reference(path)
+        if reference.kind == ReferenceKind.METER:
+            if reference.name not in self.bars:
+                raise KeyError(f"Bar '{reference.name}' not found. Available: {list(self.bars.keys())}")
+            return self._row(self.bars[reference.name], self.agent_read_row())
+        if reference.kind == ReferenceKind.ITEM:
+            return self.read_item_state(self._required_item(path))[reference.name]
+        registry = self._registry()
+        var_def = registry.variables.get(reference.name)
+        if var_def is None:
+            raise KeyError(f"VFS variable '{reference.name}' not found")
+        tensor = registry.get(reference.name, reader="engine")
+        if var_def.scope == VariableScope.AGENT:
+            return self._row(tensor, self.agent_read_row())
+        return self._row(tensor, self.world_row())
 
-        # Handle vfs.* paths
-        if path.startswith("vfs."):
-            if self.vfs_registry is None:
-                raise ValueError("VFS registry not set in context")
-            segments = path.split(".")[1:]  # drop leading "vfs"
-            # Keep batched tensors for bare vfs.* paths; callers (target./self.) index as needed.
-            return self._resolve_vfs_path(scope="agent", index=None, segments=segments)
-
-        # Handle global.vfs.* paths: the explicit spelling of a global, its world's value
-        if path.startswith("global.vfs."):
-            if self.vfs_registry is None:
-                raise ValueError("VFS registry not set in context")
-            return self._resolve_vfs_path(scope="global", index=None, segments=path.split(".")[2:])
-
-        raise ValueError(f"Invalid path: {path}")
+    @staticmethod
+    def _row(tensor: torch.Tensor, row: int | None) -> torch.Tensor:
+        if row is None or tensor.dim() == 0:
+            return tensor
+        return tensor[row]
 
     def authorize_write_path(self, path: str) -> None:
         """Preflight one resolved command target without reading or mutating storage."""
-        parts = path.split(".")
-        item_index: int | None = None
-        if parts[0] == "global":
-            parts.pop(0)
-        elif parts[0] in ("self", "target"):
-            actor = parts.pop(0)
-            is_item = self.self_is_item if actor == "self" else self.target_is_item
-            if is_item:
-                index = self.self_index if actor == "self" else self.target_index
-                if index is None:
-                    raise ValueError(f"{actor}_index not set in context")
-                item_index = index
-        if parts[0] != "vfs":
+        if self._availability(path) is not None:
             return
-        if len(parts) < 2:
-            raise ValueError(f"VFS write path '{path}' has no variable identity")
-        if self.vfs_registry is None:
-            raise ValueError("VFS registry not set in context")
-        # Bare VFS targets and item-profile IDs may contain dots. Resolve the
-        # complete declared identity rather than interpreting it as traversal.
-        variable_id = ".".join(parts[1:])
-        if item_index is None:
-            self.vfs_registry.authorize_write(variable_id, writer="engine")
-        else:
-            profile = self.vfs_registry.get_item_profile_for_index(item_index)
+        reference = self._reference(path)
+        if reference.kind == ReferenceKind.METER:
+            return
+        registry = self._registry()
+        if reference.kind == ReferenceKind.ITEM:
+            item = self._required_item(path)
+            profile = registry.get_item_profile_for_index(item)
             if profile is None:
-                raise KeyError(f"No item profile registered for vfs_index {item_index}")
-            self.vfs_registry.authorize_item_write(profile, variable_id, writer="engine")
+                raise KeyError(f"No item profile registered for vfs_index {item}")
+            registry.authorize_item_write(profile, reference.name, writer="engine")
+            return
+        registry.authorize_write(reference.name, writer="engine")
 
     def set_path(self, path: str, value: torch.Tensor) -> None:
-        """Set path to new tensor value (mutation).
-
-        Args:
-            path: Dot-separated path
-            value: New tensor value
-        """
+        """Write ``path`` in this pipeline's world (the same resolution as ``get_path``), under the write mask."""
         self.authorize_write_path(path)
-        # Handle target. prefix
-        if path.startswith("target."):
-            if self.target_index is None:
-                raise ValueError("target_index not set in context")
-
-            rest = path[len("target.") :]
-            # Get original tensor and mutate in-place
-            # Item target VFS handling
-            if rest.startswith("vfs.") and self.target_is_item:
-                var_name = rest[len("vfs.") :]
-                if self.vfs_registry is None:
-                    raise ValueError("VFS registry not set in context")
-                if not self.item_row_is_live(self.target_index):
-                    return
-                write_value = value.item() if isinstance(value, torch.Tensor) and value.numel() == 1 else value
-                profile_name = self.vfs_registry.get_item_profile_for_index(self.target_index)
-                if profile_name is None:
-                    raise KeyError(f"No item profile registered for vfs_index {self.target_index}")
-                self.vfs_registry.write_item(profile_name, var_name, write_value, self.target_index, writer="engine")
-                return
-
-            if rest.startswith("vfs."):
-                if self.vfs_registry is None:
-                    raise ValueError("VFS registry not set in context")
-                segments = rest.split(".")[1:]
-                var_name = segments[0]
-                if len(segments) > 1:
-                    raise ValueError(f"Setting target reference traversal '{rest}' is not supported.")
-                if self.row_is_live(self.target_index):
-                    self._write_agent_vfs_value(var_name, self.target_index, value)
-                return
-
-            self._write_indexed(rest, self.target_index, value)
-            return
-
-        # NEW: Handle self. prefix with special logic for items
-        if path.startswith("self."):
-            if self.self_index is None:
-                raise ValueError("self_index not set in context")
-
-            rest = path[len("self.") :]
-
-            # NEW: Special handling for self.vfs.* when self is an item
-            if rest.startswith("vfs.") and self.self_is_item:
-                var_name = rest[len("vfs.") :]
-                if self.vfs_registry is None:
-                    raise ValueError("VFS registry not set in context")
-                if not self.item_row_is_live(self.self_index):
-                    return
-                # Convert scalar tensors to Python floats for item VFS storage.
-                write_value = value.item() if isinstance(value, torch.Tensor) and value.numel() == 1 else value
-                profile_name = self.vfs_registry.get_item_profile_for_index(self.self_index)
-                if profile_name is None:
-                    raise KeyError(f"No item profile registered for vfs_index {self.self_index}")
-                self.vfs_registry.write_item(profile_name, var_name, write_value, self.self_index, writer="engine")
-                return
-
-            if rest.startswith("vfs."):
-                if self.vfs_registry is None:
-                    raise ValueError("VFS registry not set in context")
-                segments = rest.split(".")[1:]
-                var_name = segments[0]
-                if len(segments) > 1:
-                    raise ValueError(f"Setting reference traversal '{rest}' is not supported.")
-                if self.row_is_live(self.self_index):
-                    self._write_agent_vfs_value(var_name, self.self_index, value)
-                return
-
-            self._write_indexed(rest, self.self_index, value)
-            return
-
-        # Handle bar.* paths: a context bound to a world writes that world's row only
-        if path.startswith("bar."):
-            bar_name = path[len("bar.") :]
-            if bar_name not in self.bars:
-                raise KeyError(f"Bar '{bar_name}' not found")
-            destination = self.bars[bar_name]
-            world = self.world_row()
-            if world is None or destination.dim() == 0:
-                self._write_batch(path, destination, value)
-            elif self.row_is_live(world):
-                if isinstance(value, torch.Tensor) and value.dim() > 0 and value.shape == destination.shape:
-                    value = value[world]
-                destination[world] = value
-            return
-
-        # Handle affordance availability overrides
-        if path.startswith("affordance.") and path.endswith(".available"):
-            parts = path.split(".")
-            if len(parts) != 3:
-                raise ValueError(f"Invalid affordance path: {path}")
-            aff_name = parts[1]
+        affordance = self._availability(path)
+        if affordance is not None:
             if self.affordance_overrides is None:
                 raise ValueError(f"Cannot write '{path}': this pipeline was given no affordance availability store")
             worlds = self.live_worlds(len(self.affordance_overrides))
@@ -425,49 +307,40 @@ class ExecutionContext:
                 raise ValueError(f"'{path}' takes one value per world, but the expression produced shape {tuple(value.shape)}")
             for world in worlds:
                 if isinstance(value, torch.Tensor):
-                    self.affordance_overrides[world][aff_name] = bool((value[world] if per_world else value).item())
+                    self.affordance_overrides[world][affordance] = bool((value[world] if per_world else value).item())
                 else:
-                    self.affordance_overrides[world][aff_name] = bool(value)
+                    self.affordance_overrides[world][affordance] = bool(value)
             return
-
-        # Handle bare vfs.* paths, and global.vfs.* (the explicit spelling of a global)
-        if path.startswith(("vfs.", "global.vfs.")):
-            if self.vfs_registry is None:
-                raise ValueError("VFS registry not set in context")
-
-            var_name = path.split("vfs.", 1)[1]
-            var_def = self.vfs_registry.variables.get(var_name)
-            if var_def is None:
-                raise KeyError(f"VFS variable '{var_name}' not found")
-
-            if path.startswith("global.") and var_def.scope != VariableScope.GLOBAL:
-                raise ValueError(f"'{path}' names {var_def.scope}-scoped variable '{var_name}'; 'global.vfs.' spells a global only.")
-            if var_def.scope == VariableScope.AGENT:
-                # An agent-scoped bare write is one agent's row, never the batch. The
-                # compiler resolves it to target.vfs.X; a node reaching here unresolved
-                # is routed to the agent target or refused.
-                if self.target_index is None or self.target_is_item:
-                    raise ValueError(
-                        f"Bare write '{path}' names agent-scoped variable '{var_name}' but this context has no agent "
-                        f"target; an agent-scoped write is never a batch write. Write it as 'target.{path}'."
-                    )
-                if self.row_is_live(self.target_index):
-                    self._write_agent_vfs_value(var_name, self.target_index, value)
+        reference = self._reference(path)
+        if reference.kind == ReferenceKind.METER:
+            if reference.name not in self.bars:
+                raise KeyError(f"Bar '{reference.name}' not found")
+            destination = self.bars[reference.name]
+            row = self.agent_read_row()
+            if row is None or destination.dim() == 0:
+                self._write_batch(path, destination, value)
+            elif self.row_is_live(row):
+                destination[row] = value
+            return
+        registry = self._registry()
+        if reference.kind == ReferenceKind.ITEM:
+            item = self._required_item(path)
+            if not self.item_row_is_live(item):
                 return
-
-            self._write_global_vfs_value(var_name, value)
+            write_value = value.item() if isinstance(value, torch.Tensor) and value.numel() == 1 else value
+            profile_name = registry.get_item_profile_for_index(item)
+            if profile_name is None:
+                raise KeyError(f"No item profile registered for vfs_index {item}")
+            registry.write_item(profile_name, reference.name, write_value, item, writer="engine")
             return
-
-        raise ValueError(f"Invalid path: {path}")
-
-    def _write_indexed(self, path: str, index: int, value: torch.Tensor) -> None:
-        """Write one agent's row of a batched path, or the whole value of a scalar path."""
-        original = self.get_path(path)
-        if original.dim() == 0:
-            self.set_path(path, value)
-            return
-        if self.row_is_live(index):
-            original[index] = value
+        var_def = registry.variables.get(reference.name)
+        if var_def is None:
+            raise KeyError(f"VFS variable '{reference.name}' not found")
+        row = self.agent_read_row() if var_def.scope == VariableScope.AGENT else self.world_row()
+        if row is None:
+            self._write_batch_vfs_value(reference.name, value)
+        elif self.row_is_live(row):
+            self._write_agent_vfs_value(reference.name, row, value)
 
     def _write_batch(self, path: str, destination: torch.Tensor, value: torch.Tensor) -> None:
         """Copy `value` into `destination` in place, broadcasting a scalar over the batch.
@@ -486,133 +359,13 @@ class ExecutionContext:
             raise ValueError(f"Write mask shape {tuple(self.write_mask.shape)} does not match '{path}' shape {tuple(destination.shape)}")
         destination.copy_(torch.where(self.write_mask, value.to(destination.dtype), destination))
 
-    def _resolve_vfs_path(self, scope: str, index: int | None, segments: list[str], *, default_index: int | None = None) -> torch.Tensor:
-        """Traverse VFS paths, including reference types."""
-        if not segments:
-            raise ValueError("VFS path must include a variable name")
+    def _write_batch_vfs_value(self, var_name: str, value: torch.Tensor) -> None:
+        """Write every row of a batched VFS variable the write mask leaves live.
 
-        var_name = segments[0]
-        var_type = self._lookup_variable_type(scope, index, var_name)
-        ref_traversal = var_type in ("agent_ref", "item_ref")
-        read_index = index
-        if ref_traversal and read_index is None and scope != "global":
-            # Use the supplied default index (target/self) as the starting point for reference traversal.
-            read_index = default_index if default_index is not None else self.self_index
-            if read_index is None:
-                raise ValueError("VFS reference traversal requires an index (self_index missing).")
-        allow_batch = not ref_traversal and index is None
-        value = self._read_vfs_value(scope, read_index, var_name, allow_batch=allow_batch)
-
-        # No further traversal
-        if len(segments) == 1:
-            if isinstance(value, torch.Tensor):
-                return value
-            return torch.tensor(value, device=self.bars[next(iter(self.bars))].device if self.bars else torch.device("cpu"))
-
-        # Expect traversal of reference types only
-        if var_type not in ("agent_ref", "item_ref"):
-            raise ValueError(f"Cannot traverse non-reference VFS variable '{var_name}'")
-        if len(segments) < 3:
-            raise ValueError(f"Reference '{var_name}' must be followed by '.vfs.<name>' or '.bar.<name>'")
-
-        ref_kind = segments[1]
-        tail = segments[2:]
-        ref_idx = int(value.item() if isinstance(value, torch.Tensor) else value)
-
-        assert self.vfs_registry is not None  # _read_vfs_value above required it
-        if var_type == "agent_ref":
-            if ref_idx < 0 or ref_idx >= self.vfs_registry.num_agents:
-                raise ValueError(f"Invalid agent reference index {ref_idx}")
-            # S1: agent row i is world i, so an agent_ref can only name its own world's agent.
-            self.require_same_world(f"Agent reference '{var_name}' (agent {ref_idx})", ref_idx)
-            if ref_kind == "bar":
-                if not tail:
-                    raise ValueError("Reference traversal missing bar name")
-                bar_name = tail[0]
-                if bar_name not in self.bars:
-                    raise KeyError(f"Bar '{bar_name}' not found while traversing reference")
-                bar_tensor = self.bars[bar_name]
-                result = bar_tensor[ref_idx]
-                if len(tail) > 1:
-                    raise ValueError("Cannot traverse beyond bar values")
-                return result
-            if ref_kind != "vfs":
-                raise ValueError(f"Unsupported reference traversal segment '{ref_kind}' (expected 'vfs' or 'bar')")
-            return self._resolve_vfs_path(scope="agent", index=ref_idx, segments=tail)
-
-        # item_ref
-        if ref_kind != "vfs":
-            raise ValueError("Item references only support '.vfs.<name>' traversal")
-        if ref_idx < 0 or ref_idx >= self.vfs_registry.max_items:
-            raise ValueError(f"Invalid item reference index {ref_idx}")
-        self.require_same_world(f"Item reference '{var_name}' (row {ref_idx})", self.vfs_registry.item_world(ref_idx))
-        return self._resolve_vfs_path(scope="item", index=ref_idx, segments=tail)
-
-    def _read_vfs_value(self, scope: str, index: int | None, var_name: str, *, allow_batch: bool) -> torch.Tensor:
-        """Read a VFS variable for the given scope/index."""
-        if self.vfs_registry is None:
-            raise ValueError("VFS registry not set in context")
-
-        if scope == "global" or self._declared_world_state(var_name):
-            # One row per world (S1): the context's world reads its own row.
-            tensor = self.vfs_registry.get(var_name, reader="engine")
-            row = self.world_row()
-            return tensor if row is None else tensor[row]
-
-        if scope == "agent":
-            tensor = self.vfs_registry.get(var_name, reader="engine")
-            if tensor.dim() == 0 or allow_batch:
-                return tensor
-            if index is None:
-                raise ValueError(f"{scope} scope VFS access requires an index")
-            return tensor[index]
-
-        if scope == "item":
-            if index is None:
-                raise ValueError("Item scope VFS access requires an index")
-            profile_name = self.vfs_registry.get_item_profile_for_index(index)
-            if profile_name is None:
-                raise KeyError(f"No item profile registered for vfs_index {index}")
-            val = self.vfs_registry.read_item(profile_name, var_name, index, reader="engine")
-            if isinstance(val, torch.Tensor):
-                return val
-            return torch.tensor(val, device=self.bars[next(iter(self.bars))].device if self.bars else torch.device("cpu"))
-
-        raise ValueError(f"Unsupported VFS scope '{scope}'")
-
-    def _lookup_variable_type(self, scope: str, index: int | None, var_name: str) -> str | None:
-        """Return declared type for a VFS variable."""
-        if self.vfs_registry is None:
-            return None
-        if scope == "item":
-            if index is None:
-                return None
-            profile_name = self.vfs_registry.get_item_profile_for_index(index)
-            if profile_name:
-                return self.vfs_registry.get_item_variable_type(profile_name, var_name)
-        return self.vfs_registry.get_variable_type(var_name)
-
-    def _declared_world_state(self, var_name: str) -> bool:
-        """A global, or an affordance variable: world state with one row per world (S1)."""
-        assert self.vfs_registry is not None
-        var_def = self.vfs_registry.variables.get(var_name)
-        return var_def is not None and var_def.scope in (VariableScope.GLOBAL, VariableScope.AFFORDANCE)
-
-    def _write_global_vfs_value(self, var_name: str, value: torch.Tensor) -> None:
-        """Write world state (a global, or an affordance variable's rows) into the context's
-        world, or into every world under the write mask.
-
-        World state has one row per world (S1). A context bound to one world writes that
-        row only, so one world's interaction never moves another world's state
-        (review-2026-10-24 VFS F4). A world-shared context (see `world_row`) writes every
-        world's row that the write mask leaves live.
+        Only a context bound to no world (direct engine or test callers) writes this
+        way; a world-bound context writes its own row (S1, review-2026-10-24 VFS F4).
         """
         assert self.vfs_registry is not None
-        row = self.world_row()
-        if row is not None:
-            if self.row_is_live(row):
-                self._write_agent_vfs_value(var_name, row, value)
-            return
         batch = self.vfs_registry.get(var_name, reader="engine")
         # No dtype cast: the registry refuses a value whose dtype is not the declared one.
         candidate = value.to(device=batch.device).expand_as(batch)

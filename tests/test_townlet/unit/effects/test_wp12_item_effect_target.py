@@ -1,11 +1,13 @@
-"""An item-scoped effect's `target` is the item, at compile as at runtime (VFS WP12 follow-up).
+"""An item-scoped effect is bound to its item, at compile as at runtime (VFS WP12 follow-up, S5).
 
-EffectManager._lifecycle_context binds an item-scoped effect with `target_is_item`, so
-`target.vfs.X` reads and writes the item's profile row. The command compiler typed the
-same path against the agent registry: `on_tick: modify: target.vfs.derived` (an agent
-variable) compiled green and died at step with a bare `KeyError: ('food', 'derived')`.
-The compiler now binds `target` per effect scope (and per for_each body), so an agent path
-on an item target refuses at compile and an item-profile path compiles and runs.
+EffectManager._lifecycle_context binds an item-scoped effect with `target_is_item`. The
+command compiler once typed its paths against the agent registry: an agent variable
+compiled green and died at step with a bare `KeyError: ('food', 'derived')`.
+
+Under one spelling (VFS round-2 S5) the item's state is `item.<x>`, typed from the item
+profiles, and a bare agent variable or `bar.<m>` is the item's world's agent (S1: a
+world has one agent). Spelling the item's state as an agent variable refuses at compile,
+naming `item.<x>`.
 """
 
 from __future__ import annotations
@@ -18,7 +20,7 @@ import pytest
 import torch
 import yaml
 
-from townlet.effects.compiler import CommandCompiler
+from tests.test_townlet._fixtures.command_namespace import command_compiler
 from townlet.effects.schema import CommandNode, CommandType
 from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.universe.compiled import CompiledUniverse
@@ -70,22 +72,26 @@ def _compile(pack: Path) -> CompiledUniverse:
     return UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)
 
 
+def test_item_effect_spelling_item_state_bare_refuses_at_compile(tmp_path: Path) -> None:
+    with pytest.raises(CompilationError, match=r"\[EFFECT-COMPILE\].*effects\.yaml:\d+.*Effect 'poke'.*write 'item\.freshness'"):
+        _compile(_pack(tmp_path, {"modify": "freshness", "value": "1.0"}))
+
+
 @pytest.mark.parametrize(
     "command",
     [
-        {"modify": "target.vfs.public_state", "value": "5.0"},
-        {"modify": "target.vfs.freshness", "value": "target.vfs.public_state"},
-        {"modify": "target.bar.energy", "value": "0.5"},
+        {"modify": "public_state", "value": "5.0"},
+        {"modify": "item.freshness", "value": "public_state"},
+        {"modify": "bar.energy", "value": "0.5"},
     ],
     ids=["agent_write", "agent_read", "bar_write"],
 )
-def test_item_effect_naming_agent_state_on_its_target_refuses_at_compile(tmp_path: Path, command: dict[str, Any]) -> None:
-    with pytest.raises(CompilationError, match=r"\[EFFECT-COMPILE\].*effects\.yaml:\d+.*Effect 'poke'"):
-        _compile(_pack(tmp_path, command))
+def test_item_effect_reads_and_writes_its_worlds_agent(tmp_path: Path, command: dict[str, Any]) -> None:
+    assert _compile(_pack(tmp_path, command)).compiled_effect_catalog is not None
 
 
 def test_item_effect_writes_its_item_through_target(tmp_path: Path) -> None:
-    universe = _compile(_pack(tmp_path, {"modify": "target.vfs.freshness", "value": "target.vfs.freshness - 10.0"}))
+    universe = _compile(_pack(tmp_path, {"modify": "item.freshness", "value": "item.freshness - 10.0"}))
     env = VectorizedHamletEnv.from_universe(universe, level_name=LEVEL, num_agents=2, device="cpu")
     env.reset()
     registry = env.vfs_registry
@@ -109,12 +115,7 @@ def test_item_effect_writes_its_item_through_target(tmp_path: Path) -> None:
     assert after == pytest.approx(before - 10.0)
 
 
-SCHEMA = {
-    "vfs.mood": "float",
-    "target.vfs.mood": "float",
-    "target.bar.energy": "float",
-    "self.vfs.freshness": "float",
-}
+SCHEMA = {"mood": "float", "bar.energy": "float", "item.freshness": "float"}
 
 
 def _modify(path: str, value: str) -> CommandNode:
@@ -122,17 +123,15 @@ def _modify(path: str, value: str) -> CommandNode:
 
 
 def test_for_each_over_inventory_items_types_target_as_the_item() -> None:
-    """Inside an agent pipeline, an inventory loop rebinds `target` to each item row."""
+    """Inside an agent pipeline, an inventory loop binds each element as the item: `item.<x>` is its state."""
     loop = CommandNode(
         type=CommandType.FOR_EACH,
         collection="inventory_items",
         iterator="item",
-        body=[_modify("target.vfs.freshness", "target.vfs.freshness * 0.5")],
+        body=[_modify("item.freshness", "item.freshness * 0.5"), _modify("mood", "1.0")],
     )
-    CommandCompiler(SCHEMA, agent_target=True).compile_command(loop)
+    command_compiler(SCHEMA).compile_command(loop)
 
-    agent_path_on_item = CommandNode(
-        type=CommandType.FOR_EACH, collection="inventory_items", iterator="item", body=[_modify("target.vfs.mood", "1.0")]
-    )
-    with pytest.raises(TypeCheckError, match="target.vfs.mood"):
-        CommandCompiler(SCHEMA, agent_target=True).compile_command(agent_path_on_item)
+    outside_the_loop = _modify("item.freshness", "1.0")
+    with pytest.raises(TypeCheckError, match="bound to no item"):
+        command_compiler(SCHEMA).compile_command(outside_the_loop)

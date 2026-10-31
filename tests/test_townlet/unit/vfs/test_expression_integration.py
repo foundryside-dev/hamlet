@@ -170,39 +170,6 @@ def test_build_dependency_graph_nested_deps():
     assert ("b", "c") in graph.edges
 
 
-def test_build_dependency_graph_with_path_deps():
-    """Variables with PathAccess dependencies (e.g., target.bar.energy) extract root namespace."""
-    profile = [
-        VariableDeclaration(
-            readable_by=["engine", "agent"],
-            writable_by=["engine"],
-            semantic_type="custom",
-            id="target",
-            type="agent_ref",
-            initial_value=None,
-            scope="global",
-            lifetime="persistent",
-            exposed_to=[],
-        ),
-        VariableDeclaration(
-            readable_by=["engine", "agent"],
-            writable_by=["engine"],
-            semantic_type="custom",
-            id="is_low",
-            type="bool",
-            expression="target.bar.energy < 0.2",
-            scope="global",
-            lifetime="persistent",
-            exposed_to=[],
-            initial_value=False,
-        ),
-    ]
-    compiler = VFSProfileCompiler()
-    graph = compiler.build_dependency_graph(profile)
-    assert ("target", "is_low") in graph.edges
-    assert len(graph.edges) == 1
-
-
 def test_detect_circular_dependency_simple():
     """Detect simple circular dependency (a -> b -> a)."""
     profile = [

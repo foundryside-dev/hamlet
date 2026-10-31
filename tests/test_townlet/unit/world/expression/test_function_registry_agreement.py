@@ -31,14 +31,14 @@ SCHEMA = {
     "bar.i": "int",
     "bar.j": "int",
     "bar.b": "bool",
-    "vfs.pos": "vec2f",
-    "vfs.ipos": "vec2i",
-    "vfs.goal": "vec2f",
-    "vfs.home": "vec2f",
-    "vfs.v3": "vec3f",
-    "vfs.n": "vecNf",
-    "vfs.sites": "tensor2d",
-    "vfs.started": "int",
+    "pos": "vec2f",
+    "ipos": "vec2i",
+    "goal": "vec2f",
+    "home": "vec2f",
+    "v3": "vec3f",
+    "n": "vecNf",
+    "sites": "tensor2d",
+    "started": "int",
 }
 
 # One expression per registered function. Every row carries a per-agent argument so the
@@ -70,8 +70,8 @@ CASES: dict[str, str] = {
     "where": "where(bar.b, bar.f, bar.g)",
     "masked_add": "masked_add(bar.f, 1.0, bar.b)",
     "masked_set": "masked_set(bar.f, 1.0, bar.b)",
-    "gather": "gather(vfs.n, bar.i - 1)",
-    "scatter": "scatter(vfs.n, bar.i - 1, bar.g)",
+    "gather": "gather(n, bar.i - 1)",
+    "scatter": "scatter(n, bar.i - 1, bar.g)",
     "one_hot": "one_hot(bar.i - 1, 3)",
     # Sampling
     "normal_dist": "normal_dist(bar.f, 0.1)",
@@ -82,7 +82,7 @@ CASES: dict[str, str] = {
     "time_in_window": "time_in_window(bar.i, 1, 3)",
     "phase_sin": "phase_sin(bar.i, 24.0)",
     "phase_cos": "phase_cos(bar.i, 24)",
-    "elapsed_ticks": "elapsed_ticks(vfs.started)",
+    "elapsed_ticks": "elapsed_ticks(started)",
     "lag": "lag(bar.f, 1)",
     "delta": "delta(bar.f)",
     "moving_average": "moving_average(bar.i, 2)",
@@ -91,11 +91,11 @@ CASES: dict[str, str] = {
     "rising_edge": "rising_edge(bar.b)",
     "falling_edge": "falling_edge(bar.b)",
     # Spatial
-    "distance": "distance(vfs.pos, vfs.goal)",
-    "manhattan_distance": "manhattan_distance(vfs.pos, vfs.home)",
-    "within_radius": "within_radius(vfs.pos, vfs.goal, 0.5)",
-    "nearest": "nearest(vfs.pos, vfs.sites)",
-    "normalize": "normalize(vfs.pos)",
+    "distance": "distance(pos, goal)",
+    "manhattan_distance": "manhattan_distance(pos, home)",
+    "within_radius": "within_radius(pos, goal, 0.5)",
+    "nearest": "nearest(pos, sites)",
+    "normalize": "normalize(pos)",
     # Affordance
     "distance_to_affordance": 'distance_to_affordance("WORK")',
     "in_range": 'in_range("WORK", 2.0)',
@@ -116,11 +116,11 @@ MIXED_CASES: dict[str, str] = {
     "where": "where(bar.b, bar.i, 0.5)",
     "masked_add": "masked_add(bar.i, 0.5, bar.b)",
     "masked_set": "masked_set(bar.i, 0.5, bar.b)",
-    "gather": "gather(vfs.ipos, bar.j % 2)",
-    "scatter": "scatter(vfs.pos, bar.j % 2, bar.i)",
+    "gather": "gather(ipos, bar.j % 2)",
+    "scatter": "scatter(pos, bar.j % 2, bar.i)",
     "lag": "lag(bar.i, 1)",
     "delta": "delta(bar.i)",
-    "normalize": "normalize(vfs.ipos)",
+    "normalize": "normalize(ipos)",
 }
 
 POS = torch.tensor([[0.0, 0.0], [1.0, 1.0], [3.0, 4.0]])
@@ -157,21 +157,9 @@ def make_context() -> ExecutionContext:
     return ExecutionContext(
         bars=bars,
         vfs=vfs,
-        affordances={},
         temporal={},
         affordance_positions={"WORK": torch.tensor([2.0, 2.0])},
         agent_positions=POS.clone(),
-        vfs_types={
-            "pos": "vec2f",
-            "ipos": "vec2i",
-            "goal": "vec2f",
-            "home": "vec2f",
-            "v3": "vec3f",
-            "n": "vecNf",
-            "sites": "tensor2d",
-            "started": "scalar",
-        },
-        num_agents=BATCH,
         history=history,
         step=7,
     )
@@ -295,17 +283,17 @@ def test_integer_division_is_real_division() -> None:
 
 
 def test_distance_functions_reduce_the_vector_axis_only() -> None:
-    assert torch.allclose(check_and_evaluate("distance(vfs.pos, vfs.goal)")[1], torch.tensor([4.0, 0.0, 5.0]))
-    assert torch.allclose(check_and_evaluate('distance(vfs.pos, vfs.goal, "manhattan")')[1], torch.tensor([4.0, 0.0, 7.0]))
-    assert torch.allclose(check_and_evaluate("manhattan_distance(vfs.pos, vfs.goal)")[1], torch.tensor([4.0, 0.0, 7.0]))
-    assert torch.equal(check_and_evaluate("within_radius(vfs.pos, vfs.goal, 4.5)")[1], torch.tensor([True, True, False]))
-    assert torch.equal(check_and_evaluate("nearest(vfs.pos, vfs.sites)")[1], torch.tensor([0, 0, 1]))
+    assert torch.allclose(check_and_evaluate("distance(pos, goal)")[1], torch.tensor([4.0, 0.0, 5.0]))
+    assert torch.allclose(check_and_evaluate('distance(pos, goal, "manhattan")')[1], torch.tensor([4.0, 0.0, 7.0]))
+    assert torch.allclose(check_and_evaluate("manhattan_distance(pos, goal)")[1], torch.tensor([4.0, 0.0, 7.0]))
+    assert torch.equal(check_and_evaluate("within_radius(pos, goal, 4.5)")[1], torch.tensor([True, True, False]))
+    assert torch.equal(check_and_evaluate("nearest(pos, sites)")[1], torch.tensor([0, 0, 1]))
 
 
 def test_distance_against_a_global_vector_is_per_agent_and_between_globals_is_per_world() -> None:
-    per_agent = check_and_evaluate("manhattan_distance(vfs.pos, vfs.home)")[1]
+    per_agent = check_and_evaluate("manhattan_distance(pos, home)")[1]
     assert torch.allclose(per_agent, torch.tensor([4.0, 2.0, 3.0]))
-    per_world = check_and_evaluate("distance(vfs.home, vfs.home)")[1]
+    per_world = check_and_evaluate("distance(home, home)")[1]
     assert torch.equal(per_world, torch.zeros(BATCH))
 
 
@@ -328,16 +316,16 @@ def test_masked_functions_keep_an_int_value_against_an_int_argument() -> None:
 
 
 def test_distance_between_int_and_float_vectors_is_measured_in_float_and_symmetric() -> None:
-    """Reviewer probe: `distance(vfs.ipos, vfs.goal)` truncated the float vector to int, giving [0, 0, 5]."""
-    euclid = check_and_evaluate("distance(vfs.ipos, vfs.goal)")[1]
+    """Reviewer probe: `distance(ipos, goal)` truncated the float vector to int, giving [0, 0, 5]."""
+    euclid = check_and_evaluate("distance(ipos, goal)")[1]
     assert torch.allclose(euclid, torch.tensor([4.0, 0.0, 5.0]))
-    swapped = check_and_evaluate("distance(vfs.goal, vfs.ipos)")[1]
+    swapped = check_and_evaluate("distance(goal, ipos)")[1]
     assert torch.equal(euclid, swapped)
     goal_half = torch.tensor([[0.5, 0.5], [1.5, 1.5], [0.0, 0.0]])
-    assert torch.allclose(_distance_values("distance(vfs.ipos, vfs.goal)", goal_half), torch.tensor([0.70710678, 0.70710678, 5.0]))
-    assert torch.allclose(_distance_values("manhattan_distance(vfs.ipos, vfs.goal)", goal_half), torch.tensor([1.0, 1.0, 7.0]))
-    assert torch.allclose(_distance_values("manhattan_distance(vfs.goal, vfs.ipos)", goal_half), torch.tensor([1.0, 1.0, 7.0]))
-    assert torch.equal(_distance_values("within_radius(vfs.ipos, vfs.goal, 1)", goal_half), torch.tensor([True, True, False]))
+    assert torch.allclose(_distance_values("distance(ipos, goal)", goal_half), torch.tensor([0.70710678, 0.70710678, 5.0]))
+    assert torch.allclose(_distance_values("manhattan_distance(ipos, goal)", goal_half), torch.tensor([1.0, 1.0, 7.0]))
+    assert torch.allclose(_distance_values("manhattan_distance(goal, ipos)", goal_half), torch.tensor([1.0, 1.0, 7.0]))
+    assert torch.equal(_distance_values("within_radius(ipos, goal, 1)", goal_half), torch.tensor([True, True, False]))
 
 
 def _distance_values(expression: str, goal: torch.Tensor) -> torch.Tensor:
@@ -351,7 +339,7 @@ def _distance_values(expression: str, goal: torch.Tensor) -> torch.Tensor:
 def test_nearest_measures_int_points_against_float_candidates_in_float() -> None:
     context = make_context()
     context.vfs["sites"] = torch.tensor([[0.9, 0.9], [1.9, 1.9]]).expand(BATCH, 2, 2).clone()
-    ast = ExpressionParser().parse("nearest(vfs.ipos, vfs.sites)")
+    ast = ExpressionParser().parse("nearest(ipos, sites)")
     TypeChecker(SCHEMA).check(ast)
     # ipos row (1,1) is 0.14 from (0.9,0.9); truncating the candidates to (0,0)/(1,1) would pick row 1.
     assert torch.equal(Evaluator(context).evaluate(ast), torch.tensor([0, 0, 1]))
@@ -360,9 +348,9 @@ def test_nearest_measures_int_points_against_float_candidates_in_float() -> None
 @pytest.mark.parametrize(
     "expression",
     [
-        "distance(vfs.pos, vfs.v3)",
-        "manhattan_distance(vfs.pos, vfs.v3)",
-        "within_radius(vfs.pos, vfs.v3, 1.0)",
+        "distance(pos, v3)",
+        "manhattan_distance(pos, v3)",
+        "within_radius(pos, v3, 1.0)",
     ],
 )
 def test_vectors_of_different_static_widths_are_refused_at_type_check(expression: str) -> None:
@@ -372,10 +360,10 @@ def test_vectors_of_different_static_widths_are_refused_at_type_check(expression
         TypeChecker(SCHEMA).check(ast)
 
 
-@pytest.mark.parametrize("candidates", ["vfs.pos", "vfs.v3", "vfs.n"])
+@pytest.mark.parametrize("candidates", ["pos", "v3", "n"])
 def test_nearest_refuses_vector_candidates_at_type_check(candidates: str) -> None:
     """S1: a vector variable's rows are the batch's worlds, so they are never one world's candidates."""
-    ast = ExpressionParser().parse(f"nearest(vfs.pos, {candidates})")
+    ast = ExpressionParser().parse(f"nearest(pos, {candidates})")
     with pytest.raises(TypeCheckError, match="must be a tensor2d of candidate rows"):
         TypeChecker(SCHEMA).check(ast)
 
@@ -383,7 +371,7 @@ def test_nearest_refuses_vector_candidates_at_type_check(candidates: str) -> Non
 def test_nearest_refuses_candidates_without_the_points_world_axis_at_evaluation() -> None:
     context = make_context()
     context.vfs["sites"] = torch.tensor([[0.9, 0.9], [1.9, 1.9], [5.0, 5.0]])  # [K, D]: no per-world axis
-    ast = ExpressionParser().parse("nearest(vfs.pos, vfs.sites)")
+    ast = ExpressionParser().parse("nearest(pos, sites)")
     TypeChecker(SCHEMA).check(ast)
     with pytest.raises(ValueError, match="candidates are per world"):
         Evaluator(context).evaluate(ast)
@@ -392,10 +380,10 @@ def test_nearest_refuses_candidates_without_the_points_world_axis_at_evaluation(
 @pytest.mark.parametrize(
     "expression",
     [
-        "distance(vfs.pos, vfs.n)",
-        "manhattan_distance(vfs.n, vfs.pos)",
-        "within_radius(vfs.pos, vfs.n, 1.0)",
-        "nearest(vfs.n, vfs.sites)",
+        "distance(pos, n)",
+        "manhattan_distance(n, pos)",
+        "within_radius(pos, n, 1.0)",
+        "nearest(n, sites)",
     ],
 )
 def test_a_vecn_width_mismatch_is_a_named_error_at_evaluation(expression: str) -> None:
@@ -417,7 +405,7 @@ def test_a_result_built_only_from_literals_has_no_batch_axis() -> None:
 
 
 def test_normalize_returns_a_unit_vector_per_agent() -> None:
-    declared, value = check_and_evaluate("normalize(vfs.pos)")
+    declared, value = check_and_evaluate("normalize(pos)")
     assert declared == "vec2f"
     assert torch.allclose(value, torch.tensor([[0.0, 0.0], [0.70710678, 0.70710678], [0.6, 0.8]]))
 
@@ -428,7 +416,7 @@ def test_normalize_returns_a_unit_vector_per_agent() -> None:
         "distance(bar.f, bar.g)",
         "manhattan_distance(bar.f, 1.0)",
         "within_radius(bar.f, bar.g, 0.5)",
-        "nearest(bar.f, vfs.sites)",
+        "nearest(bar.f, sites)",
         "normalize(bar.f)",
     ],
 )

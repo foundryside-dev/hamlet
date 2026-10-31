@@ -5,6 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
+from tests.test_townlet._fixtures.command_namespace import command_compiler
 from tests.test_townlet.utils.builders import make_grid2d_substrate
 from townlet.config.items_config import ItemInteractionsConfig, ItemsCatalogConfig, ItemTypeConfig
 from townlet.effects.context import ExecutionContext
@@ -51,7 +52,7 @@ def _manager() -> ItemManager:
         substrate=make_grid2d_substrate(),
         items_per_world=3,
         device="cpu",
-        schema=None,
+        symbols=None,
         vfs_registry=registry,
     )
 
@@ -93,16 +94,15 @@ def test_dynamic_path_authorization_denies_no_op_item_write() -> None:
     assert item is not None
     ctx = ExecutionContext(vfs_registry=manager.vfs_registry, self_is_item=True, self_index=item.vfs_index)
     with pytest.raises(PermissionError, match="constant"):
-        ctx.authorize_write_path("self.vfs.constant")
+        ctx.authorize_write_path("item.constant")
 
 
 def test_compound_spawn_denial_precedes_sibling_mutation() -> None:
-    from townlet.effects.compiler import CommandCompiler
     from townlet.effects.executor import CommandExecutor
     from townlet.effects.schema import CommandNode, CommandType
 
     manager = _manager()
-    command = CommandCompiler({"bar.energy": "float"}, agent_target=True).compile_command(
+    command = command_compiler({"bar.energy": "float"}).compile_command(
         CommandNode(
             type=CommandType.PARALLEL,
             parallel_commands=[

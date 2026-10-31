@@ -3,7 +3,7 @@
 import pytest
 import torch
 
-from townlet.effects.compiler import CommandCompiler
+from tests.test_townlet._fixtures.command_namespace import command_compiler
 from townlet.effects.context import ExecutionContext
 from townlet.effects.executor import CommandExecutor
 from townlet.effects.schema import CommandNode, CommandType
@@ -22,12 +22,12 @@ def test_constructed_parallel_denial_preserves_earlier_target() -> None:
         2,
         torch.device("cpu"),
     )
-    command = CommandCompiler({"vfs.allowed": "float", "vfs.constant": "float"}, agent_target=True).compile_command(
+    command = command_compiler({"allowed": "float", "constant": "float"}).compile_command(
         CommandNode(
             type=CommandType.PARALLEL,
             parallel_commands=[
-                CommandNode(type=CommandType.MODIFY, path="vfs.allowed", value_expr="9.0"),
-                CommandNode(type=CommandType.MODIFY, path="vfs.constant", value_expr="2.0"),
+                CommandNode(type=CommandType.MODIFY, path="allowed", value_expr="9.0"),
+                CommandNode(type=CommandType.MODIFY, path="constant", value_expr="2.0"),
             ],
         )
     )
@@ -45,14 +45,14 @@ def test_constructed_for_each_denial_precedes_first_bar_mutation() -> None:
         2,
         torch.device("cpu"),
     )
-    command = CommandCompiler({"target.bar.energy": "float", "target.vfs.constant": "float"}, agent_target=True).compile_command(
+    command = command_compiler({"bar.energy": "float", "constant": "float"}).compile_command(
         CommandNode(
             type=CommandType.FOR_EACH,
             collection="all_agents",
             iterator="agent",
             body=[
-                CommandNode(type=CommandType.MODIFY, path="target.bar.energy", value_expr="9.0"),
-                CommandNode(type=CommandType.MODIFY, path="target.vfs.constant", value_expr="2.0"),
+                CommandNode(type=CommandType.MODIFY, path="bar.energy", value_expr="9.0"),
+                CommandNode(type=CommandType.MODIFY, path="constant", value_expr="2.0"),
             ],
         )
     )
@@ -73,9 +73,9 @@ def test_denied_sample_does_not_advance_random_generator() -> None:
         2,
         torch.device("cpu"),
     )
-    command = CommandCompiler({"vfs.constant": "float"}, agent_target=True).compile_command(
+    command = command_compiler({"constant": "float"}).compile_command(
         CommandNode(
-            type=CommandType.SAMPLE, sample_store_path="vfs.constant", sample_distribution="uniform", sample_params={"min": 0.0, "max": 1.0}
+            type=CommandType.SAMPLE, sample_store_path="constant", sample_distribution="uniform", sample_params={"min": 0.0, "max": 1.0}
         )
     )
     generator = torch.Generator().manual_seed(123)
@@ -84,30 +84,3 @@ def test_denied_sample_does_not_advance_random_generator() -> None:
     with pytest.raises(PermissionError, match="constant"):
         CommandExecutor().execute(command, ctx)
     assert torch.equal(generator.get_state(), before)
-
-
-@pytest.mark.parametrize("writers", [["engine"], []])
-def test_bare_dotted_registry_id_is_an_exact_target(writers: list[str]) -> None:
-    registry = VariableRegistry(
-        [
-            VariableDef(
-                id="food.freshness",
-                scope="global",
-                type="scalar",
-                lifetime="episode",
-                default=2.0,
-                readable_by=["engine"],
-                writable_by=writers,
-            )
-        ],
-        2,
-        torch.device("cpu"),
-    )
-    ctx = ExecutionContext(vfs_registry=registry)
-    if writers:
-        ctx.set_path("vfs.food.freshness", torch.tensor(7.0))
-        assert registry.get("food.freshness", reader="engine").tolist() == [7.0, 7.0]  # world-shared context: every world
-    else:
-        with pytest.raises(PermissionError, match="food.freshness"):
-            ctx.set_path("vfs.food.freshness", torch.tensor(2.0))
-        assert registry.get("food.freshness", reader="engine").tolist() == [2.0, 2.0]

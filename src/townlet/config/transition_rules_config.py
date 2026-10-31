@@ -122,7 +122,7 @@ class TransitionRuleConfig(BaseModel):
 
     phase: str = Field(
         min_length=1,
-        description="Transition phase the rule's writes default to (canonically apply_social_residue_effects)",
+        description="Transition phase the rule's writes default to (canonically apply_transition_rules)",
     )
 
     condition: str | None = Field(

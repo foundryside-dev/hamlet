@@ -84,7 +84,7 @@ def test_transition_rule_write_to_an_expression_variable_refuses_at_compile(tmp_
     pack = _pack(tmp_path)
     rule = {
         "id": "boost",
-        "phase": "apply_social_residue_effects",
+        "phase": "apply_transition_rules",
         "condition": None,
         "writes": [
             {
@@ -109,7 +109,7 @@ def test_effect_write_to_an_expression_variable_refuses_at_compile(tmp_path: Pat
         "duration": 3,
         "reapply_policy": "stack",
         "observable": False,
-        "on_spawn": [{"modify": f"target.vfs.{OWNED}", "value": "100.0"}],
+        "on_spawn": [{"modify": f"{OWNED}", "value": "100.0"}],
         "on_tick": [],
         "on_despawn": [],
         "on_interrupt": [],
@@ -132,7 +132,7 @@ def test_affordance_interaction_write_to_an_expression_variable_refuses_at_compi
     affordances = pack / "levels" / LEVEL / "affordances.yaml"
 
     def edit_affordances(payload: dict[str, Any]) -> None:
-        payload["affordances"]["affordances"][0]["interactions"]["on_start"].append({"modify": f"target.vfs.{OWNED}", "value": "100.0"})
+        payload["affordances"]["affordances"][0]["interactions"]["on_start"].append({"modify": f"{OWNED}", "value": "100.0"})
 
     _edit_yaml(affordances, edit_affordances)
     _assert_cites_both_origins(_refusal(pack), pack, "affordances.yaml")

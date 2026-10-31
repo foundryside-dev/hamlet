@@ -197,7 +197,7 @@ def test_transition_graph_hash_carries_no_reward_program(tmp_path: Path) -> None
 
 def test_expressions_observe_transition_rule_writes_in_the_same_tick(tmp_path: Path) -> None:
     """V14 (probe2 F mas_control): profile evaluation runs after the residue phase."""
-    pack = _residue_rule_pack(tmp_path, "apply_social_residue_effects", variable_id="gcount")
+    pack = _residue_rule_pack(tmp_path, "apply_transition_rules", variable_id="gcount")
 
     def edit(payload: dict[str, Any]) -> None:
         base = {

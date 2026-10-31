@@ -44,7 +44,7 @@ def _write_transition_rule(config_dir: Path, *, variable_id: str = "reputation",
         "transition_rules": [
             {
                 "id": "constant_reputation_delta",
-                "phase": "apply_social_residue_effects",
+                "phase": "apply_transition_rules",
                 "condition": None,
                 "writes": [
                     {
@@ -102,7 +102,7 @@ def test_transition_rules_typo_key_fails_at_load_not_silently(tmp_path: Path) ->
         "transition_rules": [
             {
                 "id": "constant_reputation_delta",
-                "phase": "apply_social_residue_effects",
+                "phase": "apply_transition_rules",
                 "condition": None,
                 "writes": [
                     {
@@ -138,7 +138,7 @@ def test_transition_rules_fail_loudly_for_unknown_targets(tmp_path: Path) -> Non
     config_dir = _copy_l5_pack(tmp_path, "missing-target")
     _write_transition_rule(config_dir, variable_id="missing_social_variable")
 
-    with pytest.raises(CompilationError, match="targets unknown VFS variable 'missing_social_variable'") as refusal:
+    with pytest.raises(CompilationError, match="targets 'missing_social_variable' names no variable") as refusal:
         UniverseCompiler().compile(config_dir, primary_level=LEVEL_NAME, use_cache=False)
     (issue,) = refusal.value.issues
     assert issue.location is not None and "transition_rules.yaml" in issue.location

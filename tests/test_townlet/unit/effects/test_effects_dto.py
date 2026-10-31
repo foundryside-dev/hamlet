@@ -43,10 +43,10 @@ def test_effect_scope_case_insensitive():
 
 def test_command_config_modify():
     """CommandConfig validates modify commands."""
-    cmd = CommandConfig(modify="target.bar.energy", value="target.bar.energy + 0.05")
+    cmd = CommandConfig(modify="bar.energy", value="bar.energy + 0.05")
 
-    assert cmd.modify == "target.bar.energy"
-    assert cmd.value == "target.bar.energy + 0.05"
+    assert cmd.modify == "bar.energy"
+    assert cmd.value == "bar.energy + 0.05"
     assert cmd.spawn_effect is None
     assert cmd.if_condition is None
 
@@ -78,7 +78,7 @@ def test_command_config_spawn_effect_refuses_nonfinite_intensity(intensity: floa
 def test_command_config_sample_rejects_distribution_alias():
     """sample is the only accepted stochastic command key."""
     with pytest.raises(ValidationError, match="Extra inputs"):
-        CommandConfig(distribution="uniform", params={"min": 0.0, "max": 1.0}, store_in="target.vfs.roll")
+        CommandConfig(distribution="uniform", params={"min": 0.0, "max": 1.0}, store_in="roll")
 
 
 def test_command_config_rejects_trigger_cascade_command():
@@ -91,8 +91,8 @@ def test_command_config_rejects_removed_trigger_cascade_even_with_valid_command(
     """Deleted command keys must fail loudly instead of being ignored."""
     with pytest.raises(ValidationError, match="Extra inputs"):
         CommandConfig(
-            modify="target.bar.energy",
-            value="target.bar.energy + 0.05",
+            modify="bar.energy",
+            value="bar.energy + 0.05",
             trigger_cascade="hunger_cascade",
             cascade_strength=1.0,
         )
@@ -105,7 +105,7 @@ def test_command_config_requires_one_command_type():
 
     with pytest.raises(ValidationError, match="Exactly one command"):
         CommandConfig(
-            modify="target.bar.energy",
+            modify="bar.energy",
             value="5.0",
             spawn_effect="poisoned",  # Can't have both
         )
@@ -114,12 +114,12 @@ def test_command_config_requires_one_command_type():
 def test_command_config_modify_requires_value():
     """modify command must have value field."""
     with pytest.raises(ValidationError, match=r"modify command requires \['value'\]"):
-        CommandConfig(modify="target.bar.energy")  # Missing value
+        CommandConfig(modify="bar.energy")  # Missing value
 
 
 def test_command_config_parallel_not_set():
     """parallel defaults to None to avoid tripping validation."""
-    cmd = CommandConfig(modify="target.bar.energy", value="5.0")
+    cmd = CommandConfig(modify="bar.energy", value="5.0")
     assert cmd.parallel is None
 
 
@@ -161,9 +161,9 @@ def test_effect_definition_with_commands():
         duration=20,
         reapply_policy="merge",
         observable=True,
-        on_spawn=[{"modify": "target.vfs.is_poisoned", "value": "true"}],
-        on_tick=[{"modify": "target.bar.health", "value": "target.bar.health - (0.1 * intensity)"}],
-        on_despawn=[{"modify": "target.vfs.is_poisoned", "value": "false"}],
+        on_spawn=[{"modify": "is_poisoned", "value": "true"}],
+        on_tick=[{"modify": "bar.health", "value": "bar.health - (0.1 * intensity)"}],
+        on_despawn=[{"modify": "is_poisoned", "value": "false"}],
         on_interrupt=[],
     )
 
@@ -305,8 +305,8 @@ effect_definitions:
     observable: true
     on_spawn: []
     on_tick:
-      - modify: target.bar.energy
-        value: target.bar.energy + 0.05
+      - modify: bar.energy
+        value: bar.energy + 0.05
     on_despawn: []
     on_interrupt: []
 
@@ -317,8 +317,8 @@ effect_definitions:
     observable: true
     on_spawn: []
     on_tick:
-      - modify: target.bar.health
-        value: target.bar.health - (0.1 * intensity)
+      - modify: bar.health
+        value: bar.health - (0.1 * intensity)
     on_despawn: []
     on_interrupt: []
 """
@@ -376,7 +376,7 @@ def test_effects_config_top_level_fields_are_required(missing: str) -> None:
     [
         {"if": "bar.x > 0", "then": [{"modify": "bar.x", "value": "0.0"}], "else": []},
         {"delay": "1", "do": [{"modify": "bar.x", "value": "0.0"}]},
-        {"for_each": "all_agents", "as": "n", "do": [{"modify": "target.bar.x", "value": "0.0"}]},
+        {"for_each": "all_agents", "as": "n", "do": [{"modify": "bar.x", "value": "0.0"}]},
         {"spawn_item": "potion", "position": "random", "quantity": 2},
     ],
 )

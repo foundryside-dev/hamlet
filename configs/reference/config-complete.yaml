@@ -615,10 +615,10 @@ affordances:
       # DSL: arithmetic expressions and bar/vfs paths are supported.
       interactions:
         on_start:
-          - modify: "target.bar.satiation"
-            value: "target.bar.satiation + 0.4"   # Restores 40% satiation
-          - modify: "target.bar.mood"
-            value: "target.bar.mood + 0.05"  # Small mood boost from eating
+          - modify: "bar.satiation"
+            value: "bar.satiation + 0.4"   # Restores 40% satiation
+          - modify: "bar.mood"
+            value: "bar.mood + 0.05"  # Small mood boost from eating
         per_tick: []
         on_completion: []
         on_early_exit: []
@@ -649,13 +649,13 @@ affordances:
       interactions:
         on_start: []  # No instant effects at start
         per_tick:
-          - modify: "target.bar.energy"
-            value: "target.bar.energy + 0.10"     # +10% energy per tick
+          - modify: "bar.energy"
+            value: "bar.energy + 0.10"     # +10% energy per tick
         on_completion:
-          - modify: "target.bar.energy"
-            value: "target.bar.energy + 0.30"     # +30% completion bonus (total ~80%)
-          - modify: "target.bar.mood"
-            value: "target.bar.mood + 0.10"     # Mood boost after good sleep
+          - modify: "bar.energy"
+            value: "bar.energy + 0.30"     # +30% completion bonus (total ~80%)
+          - modify: "bar.mood"
+            value: "bar.mood + 0.10"     # Mood boost after good sleep
         on_early_exit: []
         on_failure: []
       opening_hours:
@@ -677,8 +677,8 @@ affordances:
       interactions:
         on_start: []  # No immediate income at tick 0
         per_tick:
-          - modify: "target.bar.money"
-            value: "target.bar.money + 5.625"    # 4 × 5.625 = 22.5 total
+          - modify: "bar.money"
+            value: "bar.money + 5.625"    # 4 × 5.625 = 22.5 total
         on_completion: []     # All pay handled via per_tick in this example
         on_early_exit: []
         on_failure: []
@@ -936,7 +936,7 @@ vfs_profiles:
   agent:
     - id: is_encumbered
       type: bool
-      expression: "vfs.inventory_weight > 10.0"
+      expression: "inventory_weight > 10.0"
       observation:
         exposed_to: [agent]
 
@@ -982,14 +982,14 @@ items:
       interactions:
         pickup:
           commands:
-            - modify: target.vfs.inventory_weight
-              value: target.vfs.inventory_weight + 0.5
+            - modify: inventory_weight
+              value: inventory_weight + 0.5
         use:
           commands:
             - spawn_effect:
                 effect_id: ate_food
                 target: agent
-                intensity: self.vfs.calories
+                intensity: item.calories
             - delete: self
 
 # --- PART B: LEVEL-LEVEL APPEARANCE ---
@@ -1031,15 +1031,15 @@ effects:
       observable: true       # Agent sees "ate_food: true" in VFS obs
 
       on_spawn:
-        - modify: target.vfs.is_digesting
+        - modify: is_digesting
           value: true
 
       on_tick:
-        - modify: target.bar.energy
-          value: target.bar.energy + (0.05 * intensity)
+        - modify: bar.energy
+          value: bar.energy + (0.05 * intensity)
 
       on_despawn:
-        - modify: target.vfs.is_digesting
+        - modify: is_digesting
           value: false
 
 # =============================================================================

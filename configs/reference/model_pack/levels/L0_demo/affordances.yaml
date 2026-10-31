@@ -9,10 +9,10 @@ affordances:
       costs_per_tick: {}
       interactions:
         on_start:
-          - modify: "target.bar.mood"
-            value: "target.bar.mood + 0.05"
-          - modify: "target.bar.energy"
-            value: "target.bar.energy + 0.2"
+          - modify: "bar.mood"
+            value: "bar.mood + 0.05"
+          - modify: "bar.energy"
+            value: "bar.energy + 0.2"
         per_tick: []
         on_completion: []
         on_early_exit: []
@@ -35,8 +35,8 @@ affordances:
       interactions:
         on_start: []
         per_tick:
-          - modify: "target.bar.energy"
-            value: "target.bar.energy + 0.1"
+          - modify: "bar.energy"
+            value: "bar.energy + 0.1"
         on_completion: []
         on_early_exit: []
         on_failure: []
@@ -58,10 +58,10 @@ affordances:
       interactions:
         on_start: []
         per_tick:
-          - modify: "target.bar.energy"
-            value: "target.bar.energy - 0.01"
-          - modify: "target.bar.mood"
-            value: "target.bar.mood + 0.05"
+          - modify: "bar.energy"
+            value: "bar.energy - 0.01"
+          - modify: "bar.mood"
+            value: "bar.mood + 0.05"
         on_completion: []
         on_early_exit: []
         on_failure: []

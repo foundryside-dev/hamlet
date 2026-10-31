@@ -143,11 +143,11 @@ def _apply_temporal_pack(data: dict) -> None:
             affordance["costs_per_tick"] = {"money": REST_MONEY_PER_TICK}
             affordance["interactions"]["on_start"] = []
             affordance["interactions"]["per_tick"] = [
-                {"modify": "target.bar.energy", "value": f"target.bar.energy + {REST_ENERGY_PER_TICK}"},
+                {"modify": "bar.energy", "value": f"bar.energy + {REST_ENERGY_PER_TICK}"},
             ]
             affordance["interactions"]["on_completion"] = [
-                {"modify": "target.bar.energy", "value": f"target.bar.energy + {REST_COMPLETION_ENERGY}"},
-                {"modify": "target.bar.health", "value": f"target.bar.health + {REST_COMPLETION_HEALTH}"},
+                {"modify": "bar.energy", "value": f"bar.energy + {REST_COMPLETION_ENERGY}"},
+                {"modify": "bar.health", "value": f"bar.health + {REST_COMPLETION_HEALTH}"},
             ]
 
         elif name == JOB_AFFORDANCE:
@@ -157,10 +157,10 @@ def _apply_temporal_pack(data: dict) -> None:
             affordance["costs_per_tick"] = {}
             affordance["interactions"]["on_start"] = []
             affordance["interactions"]["per_tick"] = [
-                {"modify": "target.bar.money", "value": f"target.bar.money + {JOB_PAY_PER_TICK}"},
+                {"modify": "bar.money", "value": f"bar.money + {JOB_PAY_PER_TICK}"},
             ]
             affordance["interactions"]["on_completion"] = [
-                {"modify": "target.bar.money", "value": f"target.bar.money + {JOB_COMPLETION_PAY}"},
+                {"modify": "bar.money", "value": f"bar.money + {JOB_COMPLETION_PAY}"},
             ]
 
 

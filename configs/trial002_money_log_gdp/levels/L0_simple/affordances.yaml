@@ -16,8 +16,8 @@ affordances:
             - 3
       interactions:
         on_start:
-          - modify: target.bar.energy
-            value: target.bar.energy + 0.8
+          - modify: bar.energy
+            value: bar.energy + 0.8
         per_tick: []
         on_completion: []
         on_early_exit: []
@@ -38,8 +38,8 @@ affordances:
             - 2
       interactions:
         on_start:
-          - modify: target.bar.money
-            value: target.bar.money + 0.5
+          - modify: bar.money
+            value: bar.money + 0.5
           - spawn_effect: business_cycle
             target: target
             intensity: 1.0
@@ -62,8 +62,8 @@ affordances:
             - 0
       interactions:
         on_start:
-          - modify: target.bar.health
-            value: target.bar.health + 0.8
+          - modify: bar.health
+            value: bar.health + 0.8
         per_tick: []
         on_completion: []
         on_early_exit: []
@@ -82,8 +82,8 @@ affordances:
             - 2
       interactions:
         on_start:
-          - modify: target.bar.sustenance
-            value: target.bar.sustenance + 0.5
+          - modify: bar.sustenance
+            value: bar.sustenance + 0.5
         per_tick: []
         on_completion: []
         on_early_exit: []

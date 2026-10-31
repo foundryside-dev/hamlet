@@ -258,7 +258,7 @@ def test_validate_v21_semantics_rejects_affordance_interaction_with_unknown_mete
     config_dir = _copy_experiment(tmp_path)
     affordances_path = config_dir / "levels" / "L0_test" / "affordances.yaml"
     affordances_doc = yaml.safe_load(affordances_path.read_text())
-    affordances_doc["affordances"]["affordances"][0]["interactions"]["on_start"][0]["modify"] = "target.bar.bogus_meter"
+    affordances_doc["affordances"]["affordances"][0]["interactions"]["on_start"][0]["modify"] = "bar.bogus_meter"
     affordances_path.write_text(yaml.safe_dump(affordances_doc, sort_keys=False))
 
     raw = load_v21_configs(config_dir)

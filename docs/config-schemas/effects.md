@@ -21,11 +21,12 @@
 > - **✅ Time: the bare `tick` variable**, the engine-written step counter. The effects
 >   schema admits the engine's ambient names by bare name, exactly as VFS profile
 >   expressions do. A declared clock (a global variable whose `expression` derives from
->   `tick`, e.g. `day_phase: "tick % 24"`) is read as `vfs.<id>` like any global.
+>   `tick`, e.g. `day_phase: "tick % 24"`) is read by its bare id like any global.
 > - **❌ `temporal.*`** has no schema entry in a command pipeline and refuses at compile.
-> - **❌ Temporal-history functions** — `lag`, `delta`, `moving_average`, `ema`,
->   `rate_of_change`, `rising_edge`, `falling_edge`, and `elapsed_ticks()` — **refuse at
->   compile**: only the VFS profile evaluator keeps a history and a step. Declare a variable
+> - **❌ Context-bound functions** — every function whose `requires` names temporal history
+>   (`lag`, `delta`, `moving_average`, `ema`, `rate_of_change`, `rising_edge`,
+>   `falling_edge`) or the engine step (`elapsed_ticks()`) — **refuse at compile**, by one
+>   predicate on the function registry: only the VFS profile evaluator keeps a history and a step. Declare a variable
 >   with `expression: "lag(bar.energy, 1)"` in the pack-scope variables declaration and read
 >   that variable from the command.
 > - **✅ Position: `distance_to_affordance`, `in_range`, `direction_to_affordance`** evaluate
@@ -235,26 +236,25 @@ Determines where the effect can attach and what context is available to commands
 **Scope Semantics**:
 
 **`agent`** - Effect attaches to individual agents
-- **Access**: `target.bar.*`, `target.vfs.*`, `target.position`
+- **Access**: variables by bare id, meters as `bar.<name>`
 - **Storage**: Per-agent effect list `[num_agents]`
 - **Examples**: `energy_regen`, `poison`, `caffeinated`, `hungry`
 - **Typical Duration**: 1-100 ticks
 
 **`item`** - Effect attaches to item instances
-- **Access**: `target.vfs.*`, `target.position`, `target.holder_agent`
+- **Access**: the item's state as `item.<name>`; variables by bare id and `bar.<name>` (the item's world's agent)
 - **Storage**: Per-item effect list `[num_items]`
 - **Examples**: `item_decay`, `flaming`, `cursed`, `enchanted`
 - **Typical Duration**: 10-1000 ticks (long-lived items)
 
 **`global`** - Effect attaches to world state
-- **Access**: `global.vfs.*` (bare `vfs.X` for a global), its world's agents via `for_each: all_agents`
+- **Access**: variables by bare id and `bar.<name>`, all in its world (S1: a world has one agent)
 - **Storage**: One effect list per world
 - **Examples**: `day_cycle`, `nighttime`, `heatwave`, `rush_hour`
 - **Typical Duration**: 100-10000 ticks (persistent world state)
 
 **`affordance`** - Effect attaches to an affordance in its world
-- **Access**: globals (`vfs.X`, `global.vfs.X`) and its world's agents via `for_each: all_agents`;
-  no `target`, and no affordance state (see Example 8)
+- **Access**: variables by bare id and `bar.<name>` in its world; no affordance-scope state (see Example 8)
 - **Storage**: One effect list per (world, entity)
 - **Examples**: `broken`, `locked`, `occupied`, `on_cooldown`
 - **Typical Duration**: 5-50 ticks (temporary state changes)
@@ -271,20 +271,24 @@ Determines where the effect can attach and what context is available to commands
 - a spawner bound to no world (none exists in a pack today: there is no level-start spawner;
   only direct engine or test callers build one) spawns **one instance per live world**.
 
-Everything an effect does lands in its own world only: globals (`vfs.X`, `global.vfs.X`),
-bare `bar.X` writes (its world's agent's row), `for_each: all_agents` (its world's agents —
+Everything an effect does lands in its own world only: globals and agent variables (bare `X`),
+`bar.X` writes (its world's agent's row), `for_each: all_agents` (its world's agents —
 under S1 the one agent), `spawn_item` (into its world) and sampling (`sample`, `uniform()`, `normal_dist()`, which draw from the
 world's own random stream, seeded from the run seed, world and episode). A global- or
-affordance-scoped effect has no `self`/`target` agent of its own; it reaches its world's agent
-through `for_each: all_agents`. When a world's agent is done, that world's effects write
+affordance-scoped effect reads and writes its world's agent by the same bare spellings an
+agent-scoped effect uses (S1: a world has one agent). When a world's agent is done, that world's effects write
 nothing (the env ticks effects under the live mask, as VTC rules are masked), so a persistent
 global carries no posthumous advance into the next episode.
 
-**Path Resolution**:
-- `target.*` resolves to the entity the effect is attached to (agent and item scope)
-- `global.*` always resolves to the effect's world's state
-- `self.*` resolves to the effect instance itself (for effect-local state)
-- `temporal.*` provides current tick, time-of-day, etc.
+**Path Resolution** (one spelling per reference, VFS round-2 S5; the same in every consumer):
+- `x`: a registry variable, read and written in the effect's world by its declared scope (a
+  global is the world's value, an agent variable the world's agent's row)
+- `bar.<name>`: a meter of the world's agent
+- `item.<name>`: the state of the item the pipeline is bound to (an item-scoped effect, an item
+  interaction, a `for_each: inventory_items` element); refused where no item is bound
+- `tick`, and the effect's locals `intensity`, `elapsed_ticks`, `duration_remaining`
+- Every other spelling (`vfs.x`, `global.vfs.x`, `target.vfs.x`, `self.vfs.x`, `target.bar.m`,
+  `self.bar.m`, a bare meter name, `temporal.*`, `env.*`) refuses at compile, naming the one to write
 
 ---
 
@@ -336,8 +340,8 @@ Default intensity multiplier for effect strength. Can be overridden when spawnin
 **Usage in Commands**:
 ```yaml
 on_tick:
-  - modify: target.bar.energy
-    value: "target.bar.energy + (0.05 * intensity)"  # intensity is available as variable
+  - modify: bar.energy
+    value: "bar.energy + (0.05 * intensity)"  # intensity is available as variable
 ```
 
 **Typical Patterns**:
@@ -440,8 +444,8 @@ reapply_policy: merge
 **Best Practice**: Use `intensity` in expressions for proper scaling:
 ```yaml
 on_tick:
-  - modify: target.bar.health
-    value: "target.bar.health - (0.02 * intensity)"  # Scales with merges
+  - modify: bar.health
+    value: "bar.health - (0.02 * intensity)"  # Scales with merges
 ```
 
 ---
@@ -507,8 +511,8 @@ observable: false
 **Example**:
 ```yaml
 on_spawn:
-  - modify: target.bar.health
-    value: "target.bar.health + 0.2"
+  - modify: bar.health
+    value: "bar.health + 0.2"
 ```
 
 Command pipeline executed **immediately** when effect spawned. Executes before first tick.
@@ -521,7 +525,7 @@ Command pipeline executed **immediately** when effect spawned. Executes before f
 
 **Typical Uses**:
 - Instant stat changes (health boost, energy penalty)
-- Set initial flags (`target.vfs.is_buffed = true`)
+- Set initial flags (`is_buffed = true`)
 - Trigger secondary effects (`spawn_effect: "visual_glow"`)
 - Initialization logic for complex effects
 
@@ -538,8 +542,8 @@ Command pipeline executed **immediately** when effect spawned. Executes before f
 **Example**:
 ```yaml
 on_tick:
-  - modify: target.bar.energy
-    value: "target.bar.energy + (0.05 * intensity)"
+  - modify: bar.energy
+    value: "bar.energy + (0.05 * intensity)"
 ```
 
 Command pipeline executed **every tick** while effect active. Core effect behavior.
@@ -571,7 +575,7 @@ Command pipeline executed **every tick** while effect active. Core effect behavi
 **Example**:
 ```yaml
 on_despawn:
-  - modify: target.vfs.is_buffed
+  - modify: is_buffed
     value: false
 ```
 
@@ -583,7 +587,7 @@ Command pipeline executed **immediately** before effect removed from active effe
 3. Entity destroyed (cleanup on death/removal)
 
 **Typical Uses**:
-- Cleanup flags (`target.vfs.is_buffed = false`)
+- Cleanup flags (`is_buffed = false`)
 - Reversal of on_spawn changes (if not handled by duration naturally)
 - Final effects (penalty for buff expiring, reward for surviving duration)
 - Logging/analytics (record effect completion)
@@ -603,7 +607,7 @@ Command pipeline executed **immediately** before effect removed from active effe
 **Example**:
 ```yaml
 on_interrupt:
-  - modify: target.vfs.interrupted
+  - modify: interrupted
     value: true
 ```
 
@@ -657,30 +661,25 @@ All command types are fully implemented and production-ready.
 ```
 
 **Fields**:
-- `modify` (string, REQUIRED): Path to target variable (e.g., `target.bar.energy`, `global.vfs.is_night`)
+- `modify` (string, REQUIRED): Path to target variable (e.g., `bar.energy`, `is_night`)
 - `value` (string, REQUIRED): Expression string evaluating to new value
 
-**Path Resolution**:
-- `target.*`: Entity effect is attached to (scope-dependent)
-  - `target.bar.energy`: Agent's energy bar (agent scope)
-  - `target.vfs.durability`: Item's durability variable (item scope)
-- `global.*`: World state
-  - `global.vfs.is_night`: Global boolean flag
-  - `global.bar.economy`: Global economy meter (if exists)
-- `self.*`: Effect instance state (for effect-local variables)
-- `vfs.*` (bare) and `global.vfs.*`: a global variable is its world's value (one row per
-  world, VFS WP13). Every pipeline is bound to one world: an affordance or item interaction
-  to its agent's, an effect to its own (see "Every effect lives in one world" above). It reads
-  and writes that world's row only. Item-variable writes are gated by the item's own world
-  under a masked `if`/`switch`, and `spawn_item` spawns into the pipeline's world. A bare
-  `bar.X` write is the world's agent's row, never the batch. A bare `vfs.X` naming an
-  **agent-scoped** variable is the interacting agent's row, never the batch: wherever the
-  pipeline runs with an agent target (affordance and item interactions, agent-scoped effects,
-  `for_each` bodies over agents) the compiler resolves it to `target.vfs.X`, for reads and
-  writes alike; a write to it from a pipeline with no agent target (a global, item or
-  affordance-scoped effect, a `for_each: inventory_items` body) is refused at compile.
-- `tick` (bare): the engine step counter. `temporal.*` has no entry in a command pipeline and
-  refuses at compile; a declared clock is a global variable read as `vfs.<id>`.
+**Path Resolution** (VFS round-2 S5):
+- `bar.energy`: the world's agent's energy meter
+- `item.durability`: the bound item's durability (an item-scoped effect, an item interaction,
+  an inventory loop element)
+- `is_night`: a global variable, the world's value
+- `mood`: an agent variable, the world's agent's row
+- Every pipeline is bound to one world: an affordance or item interaction to its agent's, an
+  effect to its own (see "Every effect lives in one world" above). It reads and writes that
+  world's rows only, never the batch (S1: a world has one agent, so an agent variable or a
+  meter names the same row from an agent-, item-, global- or affordance-scoped effect).
+  Item-variable writes are gated by the item's own world under a masked `if`/`switch`, and
+  `spawn_item` spawns into the pipeline's world.
+- `tick` (bare): the engine step counter. `temporal.*` refuses at compile; a declared clock is
+  a global variable read by its bare id.
+- An old spelling (`vfs.x`, `target.vfs.x`, `global.vfs.x`, `self.vfs.x`, `target.bar.m`,
+  `self.bar.m`) refuses at compile with the one spelling to write, at `file:line`.
 
 **Expression Language**:
 Effects use HAMLET's VFS expression language (pure functional, type-safe):
@@ -700,8 +699,9 @@ Effects use HAMLET's VFS expression language (pure functional, type-safe):
 - `sin(x)`, `cos(x)`: Trigonometric functions
 
 **Variables Available in Expressions**:
-- `intensity`: Effect instance intensity
-- All paths: `target.bar.*`, `target.vfs.*`, `global.vfs.*`, `temporal.*`
+- `intensity`, `elapsed_ticks`, `duration_remaining`: the active effect's locals (an
+  interaction has no active effect, so they refuse there)
+- Variables by bare id, meters as `bar.<name>`, the bound item's state as `item.<name>`
 
 **Type Safety**:
 - Expressions type-checked at compile-time
@@ -710,12 +710,12 @@ Effects use HAMLET's VFS expression language (pure functional, type-safe):
 - Type mismatches cause compilation errors (fail-fast)
 
 **Write semantics** (2026-10-24, review F1):
-- A bare `bar.X` write is the pipeline's world's agent's row (S1); only a pipeline bound to
+- A `bar.X` write is the pipeline's world's agent's row (S1); only a pipeline bound to
   no world (a direct engine or test caller) writes the whole batch, a scalar `value`
-  broadcasting. `target.bar.X` / `self.bar.X` write one agent's row.
+  broadcasting.
 - Every write lands **in place** in the existing tensor. The bar is never rebound to a
   new tensor or a broadcast view, so a scalar `modify: bar.X` followed by a
-  `target.bar.X` write to the same bar in the same tick changes only the target's row
+  `bar.X` write to the same bar in the same tick changes only the target's row
   (world-less: `[0.3, 0.3, 0.3]` then `[0.3, 0.4, 0.3]`, never `[0.4, 0.4, 0.4]`). The executor
   checks after every command that no bar was rebound or left with a broadcast stride.
 - Inside a masked `if`/`switch` branch (below) a batch write lands only on the agents
@@ -725,24 +725,24 @@ Effects use HAMLET's VFS expression language (pure functional, type-safe):
 
 ```yaml
 # Simple increment (WRONG - doesn't clamp)
-- modify: target.bar.energy
-  value: "target.bar.energy + 0.05"
+- modify: bar.energy
+  value: "bar.energy + 0.05"
 
 # Clamped increment (CORRECT - bars bounded [0,1])
-- modify: target.bar.energy
-  value: "clamp(target.bar.energy + (0.05 * intensity), 0.0, 1.0)"
+- modify: bar.energy
+  value: "clamp(bar.energy + (0.05 * intensity), 0.0, 1.0)"
 
 # Conditional modification
-- modify: target.bar.health
-  value: "target.bar.health - 0.1 if target.vfs.is_poisoned else target.bar.health"
+- modify: bar.health
+  value: "bar.health - 0.1 if is_poisoned else bar.health"
 
 # Temporal logic (bare `tick`; `temporal.*` refuses in an effect)
-- modify: global.vfs.is_night
+- modify: is_night
   value: "tick % 24 >= 18"
 
 # Complex computation
-- modify: target.bar.mood
-  value: "clamp(target.bar.mood + (sqrt(intensity) * 0.02), 0.0, 1.0)"
+- modify: bar.mood
+  value: "clamp(bar.mood + (sqrt(intensity) * 0.02), 0.0, 1.0)"
 ```
 
 **Performance**:
@@ -771,7 +771,7 @@ Effects use HAMLET's VFS expression language (pure functional, type-safe):
 **Target Resolution**:
 - `"self"`: Apply to entity this effect is on (most common)
 - `"target"`: Apply to interaction target (for affordance effects)
-- Expression: an `int` expression that reads state (e.g. `target.bar.slot`), evaluated when
+- Expression: an `int` expression that reads state (e.g. `bar.slot`), evaluated when
   the command runs; the entity it names must be in the pipeline's world.
 - A constant target (`0`, `3`, `1 + 1`: an expression that reads no state) is refused at
   compile as `[EFFECT-SPAWN-TARGET]`, at the command's `file:line`. A row is one world's
@@ -798,7 +798,7 @@ Effects use HAMLET's VFS expression language (pure functional, type-safe):
 # Conditional spawn - low energy triggers weakness
 - id: "energy_monitor"
   on_tick:
-    - if: "target.bar.energy < 0.2"
+    - if: "bar.energy < 0.2"
       then:
         - spawn_effect: "weakness"
           target: "self"
@@ -905,10 +905,10 @@ One keyword, one meaning: the command form of `if` agrees with the expression fo
   agents it holds for and `else` for the agents it does not — both branches may run in
   the same tick, each on its own agents. Nothing is reduced with `any()`/`all()`.
 - Inside a masked branch, a batch write (`modify: bar.energy`) lands only on the live
-  agents; a row write (`target.bar.energy`, `target.vfs.X`, bare agent-scoped `vfs.X`)
+  agents; a row write (`bar.energy`, an agent variable `X`)
   lands only if that agent's row is live; an agent-scoped `spawn_effect` spawns only if
   its target agent's row is live. A nested `if` intersects its mask with the enclosing one.
-- A scalar condition (`target.bar.health < 0.5`, `intensity > 1.0`) is the degenerate
+- A scalar condition (`bar.health < 0.5`, `intensity > 1.0`) is the degenerate
   mask: it holds for every agent or for none, so exactly one branch runs, unmasked.
 - `then` runs to completion before `else`. Each agent's row is written by exactly one
   branch, so row-local expressions are unaffected, but an aggregate read in `else`
@@ -931,18 +931,18 @@ One keyword, one meaning: the command form of `if` agrees with the expression fo
 
 ```yaml
 # Simple threshold check
-- if: "target.bar.energy < 0.2"
+- if: "bar.energy < 0.2"
   then:
-    - modify: target.vfs.in_crisis
+    - modify: in_crisis
       value: true
     - spawn_effect: "energy_crash"
       target: "self"
   else:
-    - modify: target.vfs.in_crisis
+    - modify: in_crisis
       value: false
 
 # Multiple conditions
-- if: "target.bar.energy < 0.2 and target.bar.health < 0.3"
+- if: "bar.energy < 0.2 and bar.health < 0.3"
   then:
     - spawn_effect: "critical_condition"
       target: "self"
@@ -950,9 +950,9 @@ One keyword, one meaning: the command form of `if` agrees with the expression fo
   else: []
 
 # Nested conditionals
-- if: "target.bar.health < 0.5"
+- if: "bar.health < 0.5"
   then:
-    - if: "target.bar.health < 0.2"
+    - if: "bar.health < 0.2"
       then:
         - spawn_effect: "near_death"
           target: "self"
@@ -964,10 +964,10 @@ One keyword, one meaning: the command form of `if` agrees with the expression fo
 # Time-based logic
 - if: "tick % 24 >= 18"
   then:
-    - modify: global.vfs.is_night
+    - modify: is_night
       value: true
   else:
-    - modify: global.vfs.is_night
+    - modify: is_night
       value: false
 ```
 
@@ -1043,22 +1043,21 @@ The no-per-agent-row rule from `if` applies: an item, affordance, `spawn_item` o
 - for_each: all_agents | inventory_items | active_effects | <expression>
   as: <name>              # accepted, not yet bound to anything (see below)
   do:
-    - <command>           # `target.*` is the current element
+    - <command>           # an inventory_items element is the bound item (`item.<x>`)
 ```
 
 **Fields**:
 - `for_each` (string, REQUIRED): a collection name, or an expression evaluating to indices
-- `do` (list[Command], REQUIRED): commands run once per element; inside them `target.*`
-  addresses the element (an agent row, or an item row for `inventory_items`)
+- `do` (list[Command], REQUIRED): commands run once per element; for `inventory_items` the
+  element is the bound item, read and written as `item.<x>`; for `all_agents` it is the
+  world's one agent (S1), the same row a bare agent variable and `bar.<m>` name anyway
 - `as` (string, OPTIONAL): accepted but **not bound** — the body cannot read it yet
-  (review-2026-10-24 effects F4; remediation WP7 decides bind or delete). Address the
-  element as `target.*`.
+  (review-2026-10-24 effects F4; remediation WP7 decides bind or delete).
 
 **Collections**:
 - `all_agents`: every agent of the pipeline's world. Under S1 a world holds one agent, so
-  this is that agent; it is how a global- or affordance-scoped effect, which has no agent of
-  its own, reaches its world's agent. It keeps its meaning when agents-per-world becomes a
-  declared parameter.
+  this is that agent, the same row a bare agent variable and `bar.<m>` name from any effect.
+  It keeps its meaning when agents-per-world becomes a declared parameter.
 - `inventory_items`: the attached agent's held items (item rows).
 - An `<expression>` collection names agent rows; every element must be an agent of the
   pipeline's world (refused at runtime otherwise: worlds are independent).
@@ -1072,8 +1071,8 @@ The no-per-agent-row rule from `if` applies: an item, affordance, `spawn_item` o
 # Penalise the world's agent(s), from a global-scoped effect
 - for_each: all_agents
   do:
-    - modify: target.bar.comfort
-      value: "target.bar.comfort - 0.1"
+    - modify: bar.comfort
+      value: "bar.comfort - 0.1"
 ```
 
 **Validation**:
@@ -1103,8 +1102,8 @@ Real examples demonstrating common patterns and use cases:
   on_spawn: []
 
   on_tick:
-    - modify: target.bar.energy
-      value: "clamp(target.bar.energy + (0.05 * intensity), 0.0, 1.0)"
+    - modify: bar.energy
+      value: "clamp(bar.energy + (0.05 * intensity), 0.0, 1.0)"
 
   on_despawn: []
   on_interrupt: []
@@ -1134,8 +1133,8 @@ Real examples demonstrating common patterns and use cases:
   observable: true
 
   on_spawn:
-    - modify: target.bar.health
-      value: "clamp(target.bar.health + (0.2 * intensity), 0.0, 1.0)"
+    - modify: bar.health
+      value: "clamp(bar.health + (0.2 * intensity), 0.0, 1.0)"
 
   on_tick: []
   on_despawn: []
@@ -1168,8 +1167,8 @@ Real examples demonstrating common patterns and use cases:
   on_spawn: []
 
   on_tick:
-    - modify: target.bar.health
-      value: "clamp(target.bar.health - (0.02 * intensity), 0.0, 1.0)"
+    - modify: bar.health
+      value: "clamp(bar.health - (0.02 * intensity), 0.0, 1.0)"
 
   on_despawn: []
   on_interrupt: []
@@ -1201,24 +1200,24 @@ Real examples demonstrating common patterns and use cases:
   observable: true
 
   on_spawn:
-    - modify: target.vfs.is_caffeinated
+    - modify: is_caffeinated
       value: true
-    - modify: target.bar.energy
-      value: "clamp(target.bar.energy + 0.3, 0.0, 1.0)"
+    - modify: bar.energy
+      value: "clamp(bar.energy + 0.3, 0.0, 1.0)"
 
   on_tick:
-    - modify: target.bar.mood
-      value: "clamp(target.bar.mood + (0.01 * intensity), 0.0, 1.0)"
+    - modify: bar.mood
+      value: "clamp(bar.mood + (0.01 * intensity), 0.0, 1.0)"
 
   on_despawn:
-    - modify: target.vfs.is_caffeinated
+    - modify: is_caffeinated
       value: false
     - spawn_effect: "caffeine_crash"
       target: "self"
       intensity: 1.0
 
   on_interrupt:
-    - modify: target.vfs.is_caffeinated
+    - modify: is_caffeinated
       value: false
 ```
 
@@ -1247,12 +1246,12 @@ Real examples demonstrating common patterns and use cases:
   observable: true
 
   on_spawn:
-    - modify: target.vfs.is_wet
+    - modify: is_wet
       value: true
 
   on_tick:
-    - modify: target.bar.hygiene
-      value: "clamp(target.bar.hygiene - (0.01 * intensity), 0.0, 1.0)"
+    - modify: bar.hygiene
+      value: "clamp(bar.hygiene - (0.01 * intensity), 0.0, 1.0)"
     - if: "effect.elapsed_ticks > 30"
       then:
         - spawn_effect: "cold"
@@ -1261,11 +1260,11 @@ Real examples demonstrating common patterns and use cases:
       else: []
 
   on_despawn:
-    - modify: target.vfs.is_wet
+    - modify: is_wet
       value: false
 
   on_interrupt:
-    - modify: target.vfs.is_wet
+    - modify: is_wet
       value: false
 ```
 
@@ -1297,9 +1296,9 @@ Real examples demonstrating common patterns and use cases:
   on_spawn: []
 
   on_tick:
-    - modify: global.vfs.is_night
+    - modify: is_night
       value: "tick % 24 >= 18 or tick % 24 < 6"
-    - modify: global.vfs.time_of_day
+    - modify: time_of_day
       value: "tick % 24"
 
   on_despawn: []
@@ -1316,7 +1315,7 @@ Real examples demonstrating common patterns and use cases:
 
 **Key Pattern**: Global scope + temporal expressions for world state
 
-**Note**: Uses the bare `tick` for time-based logic, `global.vfs.*` for world state. A pack
+**Note**: Uses the bare `tick` for time-based logic and bare global ids for world state. A pack
 with a declared clock variable (`expression: "tick % 24"`) can read that instead.
 
 ---
@@ -1335,11 +1334,11 @@ with a declared clock variable (`expression: "tick % 24"`) can read that instead
   on_spawn: []
 
   on_tick:
-    - modify: target.vfs.freshness
-      value: "clamp(target.vfs.freshness - (0.005 * intensity), 0.0, 1.0)"
-    - if: "target.vfs.freshness < 0.1"
+    - modify: item.freshness
+      value: "clamp(item.freshness - (0.005 * intensity), 0.0, 1.0)"
+    - if: "item.freshness < 0.1"
       then:
-        - modify: target.vfs.is_spoiled
+        - modify: item.is_spoiled
           value: true
         - spawn_effect: "spoiled"
           target: "self"
@@ -1360,7 +1359,7 @@ with a declared clock variable (`expression: "tick % 24"`) can read that instead
 
 **Key Pattern**: Item scope + conditional state transitions
 
-**Note**: Items have their own VFS variables (target.vfs.*)
+**Note**: Items have their own VFS variables (`item.<name>`)
 
 ---
 
@@ -1390,18 +1389,18 @@ Affordance-scoped state (one row per affordance in each world, see
   observable: true
 
   on_spawn:
-    - modify: target.bar.mood
-      value: "clamp(target.bar.mood + 0.2, 0.0, 1.0)"
+    - modify: bar.mood
+      value: "clamp(bar.mood + 0.2, 0.0, 1.0)"
     - spawn_effect: "creative"
       target: "self"
       intensity: 1.5
 
   on_tick:
-    - modify: target.bar.mood
-      value: "clamp(target.bar.mood + (0.005 * intensity), 0.0, 1.0)"
+    - modify: bar.mood
+      value: "clamp(bar.mood + (0.005 * intensity), 0.0, 1.0)"
 
   on_despawn:
-    - modify: target.vfs.was_recently_inspired
+    - modify: was_recently_inspired
       value: true
 
   on_interrupt: []
@@ -1433,12 +1432,12 @@ Affordance-scoped state (one row per affordance in each world, see
   on_spawn: []
 
   on_tick:
-    - modify: vfs.temperature
-      value: "vfs.temperature - 0.1"
+    - modify: temperature
+      value: "temperature - 0.1"
     - for_each: all_agents
       do:
-        - modify: target.bar.health
-          value: "clamp(target.bar.health - (0.02 * intensity), 0.0, 1.0)"
+        - modify: bar.health
+          value: "clamp(bar.health - (0.02 * intensity), 0.0, 1.0)"
 
   on_despawn: []
   on_interrupt: []
@@ -1494,20 +1493,20 @@ effects.yaml → EffectsConfig (Pydantic) → EffectCatalog (runtime) → Effect
 
 **Invalid Path**:
 ```
-TypeCheckError: Path 'target.bar.invalid' not found in schema.
-Available: ['target.bar.energy', 'target.bar.health', ...]
+TypeCheckError: Path 'bar.invalid' not found in schema.
+Available: ['bar.energy', 'bar.health', ...]
 ```
 
 **Type Mismatch**:
 ```
-TypeCheckError: Type mismatch for path 'target.bar.energy':
+TypeCheckError: Type mismatch for path 'bar.energy':
 expected float, got bool
 ```
 
 **Expression Syntax Error**:
 ```
 ParseError: Invalid expression syntax at position 15:
-'target.bar.energy +' (expected operand)
+'bar.energy +' (expected operand)
 ```
 
 **Missing Effect Reference**:
@@ -1653,17 +1652,17 @@ is not a promise that every effect execution context supports every scope.
 
 **Linear Scaling** (simple, predictable):
 ```yaml
-value: "target.bar.energy + (0.05 * intensity)"
+value: "bar.energy + (0.05 * intensity)"
 ```
 
 **Diminishing Returns** (prevents overpowering stacks):
 ```yaml
-value: "target.bar.energy + (0.05 * sqrt(intensity))"
+value: "bar.energy + (0.05 * sqrt(intensity))"
 ```
 
 **Threshold Effects** (discrete breakpoints):
 ```yaml
-value: "target.bar.energy + (0.1 if intensity > 2.0 else 0.05)"
+value: "bar.energy + (0.1 if intensity > 2.0 else 0.05)"
 ```
 
 **Avoid**: Hardcoded values that don't scale with intensity (breaks MERGE policy!)
@@ -1781,15 +1780,15 @@ value: "target.bar.energy + (0.1 if intensity > 2.0 else 0.05)"
 **Type Mismatch in Expression**:
 ```yaml
 # ERROR: Boolean assigned to float path
-- modify: target.bar.energy  # Type: float
-  value: "target.bar.energy > 0.5"  # Returns: bool
+- modify: bar.energy  # Type: float
+  value: "bar.energy > 0.5"  # Returns: bool
 ```
 **Fix**: Ensure expression returns correct type (use ternary for conditionals)
 
 **Path Not Found**:
 ```yaml
 # ERROR: Path doesn't exist in VFS schema
-- modify: target.bar.mana  # If mana not defined in bars.yaml
+- modify: bar.mana  # If mana not defined in bars.yaml
   value: "0.5"
 ```
 **Fix**: Add variable to VFS schema or correct path typo

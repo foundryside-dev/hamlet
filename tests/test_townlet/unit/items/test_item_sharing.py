@@ -37,7 +37,7 @@ def _make_handler(*, exclusive: bool) -> tuple[ItemManager, InventoryState, Item
     catalog = _make_catalog(exclusive=exclusive)
     # S1: two independent single-agent worlds; agent i lives in world i.
     manager = ItemManager(
-        catalog=catalog, num_worlds=2, substrate=make_grid2d_substrate(), items_per_world=7, device="cpu", schema=None, vfs_registry=None
+        catalog=catalog, num_worlds=2, substrate=make_grid2d_substrate(), items_per_world=7, device="cpu", symbols=None, vfs_registry=None
     )
     inventory = manager.inventory
     handler = ItemActionHandler(

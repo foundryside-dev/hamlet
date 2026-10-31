@@ -20,10 +20,10 @@ affordances:
         - 5
     interactions:
       on_start:
-      - modify: target.bar.energy
-        value: target.bar.energy + 0.4
-      - modify: target.bar.mood
-        value: target.bar.mood + 0.05
+      - modify: bar.energy
+        value: bar.energy + 0.4
+      - modify: bar.mood
+        value: bar.mood + 0.05
       per_tick: []
       on_completion: []
       on_early_exit: []
@@ -43,10 +43,10 @@ affordances:
         - 7
     interactions:
       on_start:
-      - modify: target.bar.energy
-        value: target.bar.energy + 0.8
-      - modify: target.bar.mood
-        value: target.bar.mood + 0.1
+      - modify: bar.energy
+        value: bar.energy + 0.8
+      - modify: bar.mood
+        value: bar.mood + 0.1
       per_tick: []
       on_completion: []
       on_early_exit: []
@@ -68,8 +68,8 @@ affordances:
         - 4
     interactions:
       on_start:
-      - modify: target.bar.money
-        value: target.bar.money + 22.5
+      - modify: bar.money
+        value: bar.money + 22.5
       per_tick: []
       on_completion: []
       on_early_exit: []
@@ -88,10 +88,10 @@ affordances:
         - 1
     interactions:
       on_start:
-      - modify: target.bar.health
-        value: target.bar.health + 0.2
-      - modify: target.bar.mood
-        value: target.bar.mood + 0.1
+      - modify: bar.health
+        value: bar.health + 0.2
+      - modify: bar.mood
+        value: bar.mood + 0.1
       per_tick: []
       on_completion: []
       on_early_exit: []
@@ -110,10 +110,10 @@ affordances:
         - 6
     interactions:
       on_start:
-      - modify: target.bar.health
-        value: target.bar.health + 0.15
-      - modify: target.bar.mood
-        value: target.bar.mood + 0.05
+      - modify: bar.health
+        value: bar.health + 0.15
+      - modify: bar.mood
+        value: bar.mood + 0.05
       per_tick: []
       on_completion: []
       on_early_exit: []
@@ -131,8 +131,8 @@ affordances:
         - 3
     interactions:
       on_start:
-      - modify: target.bar.mood
-        value: target.bar.mood + 0.3
+      - modify: bar.mood
+        value: bar.mood + 0.3
       per_tick: []
       on_completion: []
       on_early_exit: []
@@ -150,8 +150,8 @@ affordances:
         - 6
     interactions:
       on_start:
-      - modify: target.bar.mood
-        value: target.bar.mood + 0.2
+      - modify: bar.mood
+        value: bar.mood + 0.2
       per_tick: []
       on_completion: []
       on_early_exit: []
@@ -169,8 +169,8 @@ affordances:
         - 2
     interactions:
       on_start:
-      - modify: target.bar.energy
-        value: target.bar.energy + 0.1
+      - modify: bar.energy
+        value: bar.energy + 0.1
       per_tick: []
       on_completion: []
       on_early_exit: []
@@ -188,8 +188,8 @@ affordances:
         - 1
     interactions:
       on_start:
-      - modify: target.bar.health
-        value: target.bar.health + 0.1
+      - modify: bar.health
+        value: bar.health + 0.1
       per_tick: []
       on_completion: []
       on_early_exit: []
@@ -208,8 +208,8 @@ affordances:
         - 1
     interactions:
       on_start:
-      - modify: target.bar.mood
-        value: target.bar.mood + 0.1
+      - modify: bar.mood
+        value: bar.mood + 0.1
       per_tick: []
       on_completion: []
       on_early_exit: []
@@ -228,10 +228,10 @@ affordances:
         - 2
     interactions:
       on_start:
-      - modify: target.bar.energy
-        value: target.bar.energy + 0.5
-      - modify: target.bar.mood
-        value: target.bar.mood + 0.1
+      - modify: bar.energy
+        value: bar.energy + 0.5
+      - modify: bar.mood
+        value: bar.mood + 0.1
       per_tick: []
       on_completion: []
       on_early_exit: []
@@ -249,8 +249,8 @@ affordances:
         - 2
     interactions:
       on_start:
-      - modify: target.bar.mood
-        value: target.bar.mood + 0.05
+      - modify: bar.mood
+        value: bar.mood + 0.05
       per_tick: []
       on_completion: []
       on_early_exit: []
@@ -269,8 +269,8 @@ affordances:
         - 2
     interactions:
       on_start:
-      - modify: target.bar.mood
-        value: target.bar.mood + 0.25
+      - modify: bar.mood
+        value: bar.mood + 0.25
       per_tick: []
       on_completion: []
       on_early_exit: []
@@ -292,8 +292,8 @@ affordances:
         - 4
     interactions:
       on_start:
-      - modify: target.bar.health
-        value: target.bar.health + 0.4
+      - modify: bar.health
+        value: bar.health + 0.4
       per_tick: []
       on_completion: []
       on_early_exit: []

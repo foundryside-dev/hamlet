@@ -8,6 +8,7 @@ from townlet.config.effects_config import EffectsConfig, EffectScope
 from townlet.effects.compiler import CommandCompiler
 from townlet.effects.parser import CommandParser
 from townlet.effects.schema import CommandNode
+from townlet.vfs.namespace import CommandSymbols
 
 __all__ = ["CompiledEffect", "EffectCatalog", "EffectCompileError"]
 
@@ -74,7 +75,7 @@ class EffectCatalog:
     def from_config(
         cls,
         config: EffectsConfig,
-        schema: dict[str, str] | None = None,
+        symbols: CommandSymbols | None = None,
         *,
         time_enabled: bool = True,
     ) -> EffectCatalog:
@@ -82,7 +83,7 @@ class EffectCatalog:
 
         Args:
             config: Effects configuration from YAML
-            schema: Type schema for command validation (optional for Phase 3.1)
+            symbols: The namespace and inlinable expressions commands compile against
 
         Returns:
             Compiled catalog with validated command pipelines
@@ -99,8 +100,10 @@ class EffectCatalog:
 
             # Compile (validate) if schema provided, with `target` bound as
             # EffectManager._lifecycle_context binds it for the effect's scope.
-            if schema:
-                compiler = CommandCompiler.for_effect_scope(schema, scope=defn.scope, time_enabled=time_enabled)
+            if symbols is not None:
+                compiler = CommandCompiler.for_effect_scope(
+                    symbols.namespace, scope=defn.scope, time_enabled=time_enabled, expressions=symbols.expressions
+                )
                 try:
                     compiler.compile_commands(on_spawn)
                     compiler.compile_commands(on_tick)

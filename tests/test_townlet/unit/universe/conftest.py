@@ -93,7 +93,7 @@ def minimal_compiled_universe_with_effects(tmp_path: Path):
                 "duration": 1,
                 "reapply_policy": "stack",
                 "observable": True,
-                "on_spawn": [{"modify": "target.bar.energy", "value": "target.bar.energy + 0.2"}],
+                "on_spawn": [{"modify": "bar.energy", "value": "bar.energy + 0.2"}],
                 "on_tick": [],
                 "on_despawn": [],
                 "on_interrupt": [],

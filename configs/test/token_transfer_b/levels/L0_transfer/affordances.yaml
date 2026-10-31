@@ -13,10 +13,10 @@ affordances:
         - 2
     interactions:
       on_start:
-      - modify: target.bar.energy
-        value: target.bar.energy + 0.1
-      - modify: target.bar.health
-        value: target.bar.health + 0.0
+      - modify: bar.energy
+        value: bar.energy + 0.1
+      - modify: bar.health
+        value: bar.health + 0.0
       per_tick: []
       on_completion: []
       on_early_exit: []
@@ -33,10 +33,10 @@ affordances:
         - 3
     interactions:
       on_start:
-      - modify: target.bar.energy
-        value: target.bar.energy + 0.2
-      - modify: target.bar.health
-        value: target.bar.health + 0.0
+      - modify: bar.energy
+        value: bar.energy + 0.2
+      - modify: bar.health
+        value: bar.health + 0.0
       per_tick: []
       on_completion: []
       on_early_exit: []

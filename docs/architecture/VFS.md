@@ -1123,7 +1123,7 @@ exactly the fourteen phases `VectorizedHamletEnv.step()` runs, in order, and no 
 8. apply_completion_bonuses          <- last_action_phase
 9. apply_passive_depletion
 10. apply_threshold_cascades
-11. apply_social_residue_effects
+11. apply_transition_rules
 12. clamp_and_validate
 13. evaluate_terminal_conditions
 ```
@@ -1417,13 +1417,20 @@ Interaction progress:
       composition: "overwrite"
 ```
 
-### 12.4 Ambient engine names (2026-08-25 note)
+### 12.4 One spelling per reference (2026-10-31, VFS round-2 S5)
 
-Profile expressions may reference one ambient engine-provided name without declaring it as a
-variable: **`tick`** (float). It is admitted into the expression type schema but excluded from
-dependency-graph edges (`AMBIENT_ENGINE_NAMES`, `vfs/profiles.py:35`; dependency exclusion at
-`:124`). This was shipped-but-undocumented authoring surface until the 2026-08-24 audit
-surfaced it; any extension of the ambient set is a design decision, not a call-site literal.
+The 12.3 examples are design-era shapes (`reads:` and bare meter names are not the shipped
+grammar). The shipped rule: every consumer (variable expressions, action writes, transition
+rules, effects, affordance and item interactions, item spawn predicates) resolves references
+through one resolver, `townlet.vfs.namespace.Namespace`, fed by the compiler's symbol table,
+whose type schema and the runtime contexts share one grammar
+(`townlet.world.expression.references`). A variable is its bare id, read in this world by its
+declared scope; a meter is `bar.<name>`; the bound item's state is `item.<name>`. The engine
+provides `tick` everywhere and `agent_id` in transition writes and rules; an active effect binds
+`intensity`, `elapsed_ticks` and `duration_remaining`. Every other spelling refuses at compile,
+naming the one to write. `tick` is a registry global like any other: it is no dependency edge
+(`ENGINE_TICK`, `vfs/namespace.py`). Canonical table: `docs/config-schemas/variables.md`
+("One spelling per reference").
 
 ---
 
@@ -1608,7 +1615,7 @@ the rule's reads are derived from its ASTs, and it has no `kind` — S8, 2026-10
 version: "1.0"
 transition_rules:
   - id: "seen_stealing_damages_reputation"
-    phase: "apply_social_residue_effects"
+    phase: "apply_transition_rules"
     condition: "was_observed and chosen_action == STEAL"
     writes:
       - variable_id: "public_reputation"
@@ -1619,14 +1626,15 @@ transition_rules:
         clamp: [0.0, 1.0]
 ```
 
-A rule gated on meters (the condition reads `health` and `mood` as bars):
+A rule gated on meters (the condition reads them as `bar.health` and `bar.mood`; one spelling
+per reference, VFS round-2 S5):
 
 ```yaml
 version: "1.0"
 transition_rules:
   - id: "ambulance_abuse_social_penalty"
-    phase: "apply_social_residue_effects"
-    condition: "chosen_action == CALL_AMBULANCE and health >= 0.7 and mood >= 0.8"
+    phase: "apply_transition_rules"
+    condition: "chosen_action == CALL_AMBULANCE and bar.health >= 0.7 and bar.mood >= 0.8"
     writes:
       - variable_id: "public_reputation"
         effect: "reputation_delta"
@@ -1840,7 +1848,7 @@ single-agent worlds). It returns only when agents-per-world becomes declarable.
 
 The VTC transition-rule compiler (`compile_vtc_transition_rules`) accepts
 declarative rules at any phase of the closed graph, canonically
-`apply_social_residue_effects`. A rule has no `kind` (the former three-valued
+`apply_transition_rules`. A rule has no `kind` (the former three-valued
 label changed nothing but a telemetry prefix; deleted 2026-10-31, S8) and no
 authored `reads` (derived from the expression and condition ASTs). Rule-level
 conditions and write-level conditions are combined before commit. A write is masked by its target's
@@ -1859,7 +1867,7 @@ the no-defaults DTO `townlet.config.transition_rules_config.TransitionRulesConfi
 old `social_residue:` family key included; `condition`, `clamp` and `effect` must
 be set explicitly, `null` included) and compiled by the universe compiler through
 `compile_vtc_transition_rules` into the transition schedule. Telemetry labels a
-write `id:effect` (or `id:variable_id`). The compiler and the `apply_social_residue_effects` phase
+write `id:effect` (or `id:variable_id`). The compiler and the `apply_transition_rules` phase
 are wired into `env.step`'s executed phase range;
 `tests/test_townlet/integration/test_vtc_transition_schedule_runtime.py`
 proves a declared rule mutates an agent-scope variable during `env.step`. No
@@ -1892,7 +1900,7 @@ no source affordance); a rule naming one fails at parse. The former compile-gree
 version: "1.0"
 transition_rules:
   - id: "observed_help_raises_reputation"
-    phase: "apply_social_residue_effects"
+    phase: "apply_transition_rules"
     condition: "chosen_action == HELP"
     writes:
       - variable_id: "public_reputation"
@@ -2413,7 +2421,7 @@ Prefer explicit rules (`transition_rules.yaml`):
 version: "1.0"
 transition_rules:
   - id: "public_help_increases_reputation"
-    phase: "apply_social_residue_effects"
+    phase: "apply_transition_rules"
     condition: "was_observed"
     writes:
       - variable_id: "public_reputation"

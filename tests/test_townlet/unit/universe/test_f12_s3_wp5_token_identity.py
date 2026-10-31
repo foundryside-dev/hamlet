@@ -133,7 +133,7 @@ def _effect(effect_id: str, *, observable: bool = True) -> dict[str, Any]:
         "reapply_policy": "renew",
         "observable": observable,
         "on_spawn": [],
-        "on_tick": [{"modify": "target.bar.energy", "value": "target.bar.energy + (0.05 * intensity)"}],
+        "on_tick": [{"modify": "bar.energy", "value": "bar.energy + (0.05 * intensity)"}],
         "on_despawn": [],
         "on_interrupt": [],
     }

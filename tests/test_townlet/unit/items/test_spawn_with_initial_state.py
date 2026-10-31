@@ -93,7 +93,7 @@ def test_spawn_item_with_initial_state():
         substrate=make_grid2d_substrate(),
         items_per_world=10,
         device="cpu",
-        schema=None,  # No Effects compilation needed
+        symbols=None,  # No Effects compilation needed
         vfs_registry=vfs_registry,
     )
 
@@ -175,7 +175,7 @@ def test_spawn_item_without_initial_state_uses_defaults():
         substrate=make_grid2d_substrate(),
         items_per_world=10,
         device="cpu",
-        schema=None,
+        symbols=None,
         vfs_registry=vfs_registry,
     )
 

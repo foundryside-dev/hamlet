@@ -148,7 +148,7 @@ def test_occupancy_claim_compositions_are_action_write_only(composition: str) ->
         )
     rule = {
         "id": "claim",
-        "phase": "apply_social_residue_effects",
+        "phase": "apply_transition_rules",
         "condition": None,
         "writes": [{"variable_id": "state", "expression": "1.0", "composition": composition}],
     }

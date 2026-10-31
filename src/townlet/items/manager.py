@@ -7,7 +7,7 @@ import logging
 import math
 import os
 from collections.abc import Iterable, Mapping
-from dataclasses import dataclass, field, fields, is_dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Literal
 
 import torch
@@ -26,9 +26,9 @@ from townlet.effects.compiler import CommandCompiler
 from townlet.effects.schema import CommandNode
 from townlet.items.instance import ItemInstance
 from townlet.items.inventory import InventoryState
+from townlet.vfs.namespace import INTERACTION_PIPELINE, SPAWN_PREDICATE, CommandSymbols, Namespace
 from townlet.vfs.registry import item_row_world
 from townlet.vfs.schema import VariableDef, VariableScope
-from townlet.world.expression.ast_nodes import PathAccess, Variable
 from townlet.world.expression.context import ExecutionContext as ExprExecutionContext
 from townlet.world.expression.evaluator import Evaluator
 
@@ -38,66 +38,25 @@ __all__ = ["ItemManager", "CompiledItemType", "SpawnPredicateReads", "WorldItemS
 class SpawnPredicateReads:
     """What an item spawn predicate (`when:`) may read, and the runtime values behind it.
 
-    One declaration owns both sides, so the compiler can never admit a name the runtime
-    does not serve: `schema()` is what the compiler type-checks a predicate against, and
-    `context()` is what `ItemManager` evaluates it in. Both are derived from the same
-    registry roster (`VFSCompiler.build_runtime_variables` at compile time, the live
-    `VariableRegistry` at run time) through the same scope rule:
+    One resolver owns both sides (VFS round-2 S5): `namespace()` is the compiler's
+    symbol table, read in the `SPAWN_PREDICATE` context, and `context()` serves exactly
+    the registry scopes that context admits, through the same reference grammar. A
+    predicate reads a global- or agent-scope variable by its bare id (the engine clock
+    is `tick`) and a meter as `bar.<name>`; every other spelling refuses at compile
+    with the canonical one named.
 
-    - a registry variable is readable iff its declared scope is in `VARIABLE_SCOPES`,
-      spelled `vfs.<id>`. That includes the engine-published `tick` (a global variable),
-      which is the one temporal primitive a predicate reads; there is no `temporal.*`
-      namespace here.
-    - a meter is readable as `bar.<name>`.
-
-    Every other spelling (bare names, `env.*`, `agent.vfs.*`, `temporal.*`) is refused at
-    compile time. Global and agent reads both yield one value per world (S1: one agent
-    per world), and items are per world too, so the predicate is evaluated per world
+    Global and agent reads both yield one value per world (S1: one agent per world),
+    and items are per world too, so the predicate is evaluated per world
     (`ItemManager._should_spawn_rule` gives one bool per world): each world decides its
     own spawn. There is no reduction across worlds.
     """
 
-    VARIABLE_ROOT = "vfs"
-    BAR_ROOT = "bar"
-    VARIABLE_SCOPES: frozenset[VariableScope] = frozenset({VariableScope.GLOBAL, VariableScope.AGENT})
-
-    @classmethod
-    def admits(cls, scope: VariableScope | str) -> bool:
-        return VariableScope(scope) in cls.VARIABLE_SCOPES
-
-    @classmethod
-    def variable_path(cls, variable_id: str) -> str:
-        return f"{cls.VARIABLE_ROOT}.{variable_id}"
-
-    @classmethod
-    def bar_path(cls, meter_name: str) -> str:
-        return f"{cls.BAR_ROOT}.{meter_name}"
+    CONTEXT = SPAWN_PREDICATE
 
     @staticmethod
-    def _expression_type(variable_type: str) -> str:
-        return "float" if variable_type == "scalar" else variable_type
-
-    @classmethod
-    def schema(cls, *, meter_names: Iterable[str], variables: Iterable[VariableDef]) -> dict[str, str]:
-        """The compile-time type schema: every readable path and its expression type."""
-        schema = {cls.bar_path(name): "float" for name in meter_names}
-        for variable in variables:
-            if cls.admits(variable.scope):
-                schema[cls.variable_path(variable.id)] = cls._expression_type(variable.type)
-        return schema
-
-    @classmethod
-    def reads(cls, ast: Any) -> list[str]:
-        """Every name a parsed predicate reads, in source order (paths joined by '.')."""
-        if isinstance(ast, PathAccess):
-            return [".".join(ast.segments)]
-        if isinstance(ast, Variable):
-            return [ast.name]
-        if is_dataclass(ast) and not isinstance(ast, type):
-            return [name for field in fields(ast) for name in cls.reads(getattr(ast, field.name))]
-        if isinstance(ast, list | tuple):
-            return [name for child in ast for name in cls.reads(child)]
-        return []
+    def namespace(*, meter_names: Iterable[str], variables: Iterable[VariableDef]) -> Namespace:
+        """The compile-time symbol table over the same registry roster the runtime registry holds."""
+        return Namespace.of_registry(variables, meters=meter_names, item_profiles={})
 
     @classmethod
     def context(
@@ -107,26 +66,13 @@ class SpawnPredicateReads:
         registry: VariableRegistry | None,
         device: torch.device,
     ) -> ExprExecutionContext:
-        """The runtime evaluation context, resolved variable id -> scope -> value."""
+        """The runtime evaluation context: every variable of an admitted scope, by bare id, and the meters."""
         values: dict[str, torch.Tensor] = {}
-        types: dict[str, str] = {}
-        num_agents: int | None = None
         if registry is not None:
-            num_agents = registry.num_agents
             for variable_id, variable in registry.variables.items():
-                if not cls.admits(variable.scope):
-                    continue
-                values[variable_id] = registry.get(variable_id, reader="engine")
-                types[variable_id] = variable.type
-        return ExprExecutionContext(
-            bars=dict(bars),
-            vfs=values,
-            affordances={},
-            temporal={},
-            device=device,
-            vfs_types=types,
-            num_agents=num_agents,
-        )
+                if VariableScope(variable.scope) in cls.CONTEXT.variable_scopes:
+                    values[variable_id] = registry.get(variable_id, reader="engine")
+        return ExprExecutionContext(bars=dict(bars), vfs=values, temporal={}, device=device)
 
 
 @dataclass
@@ -194,7 +140,7 @@ class ItemManager:
         num_worlds: int,
         substrate: SpatialSubstrate,
         device: torch.device | str,
-        schema: dict[str, str] | None = None,
+        symbols: CommandSymbols | None = None,
         vfs_registry: VariableRegistry | None = None,
         effect_manager: Any | None = None,
     ) -> None:
@@ -206,7 +152,7 @@ class ItemManager:
             num_worlds: Worlds in the batch (S1: one per agent)
             substrate: The world's substrate; placement and co-location ask it
             device: PyTorch device
-            schema: Variable type schema for Effects compilation
+            symbols: The namespace and inlinable expressions item interactions compile against
             vfs_registry: VFS registry for item state storage
 
         The manager owns its worlds' inventory (`self.inventory`, one row per world's
@@ -237,11 +183,17 @@ class ItemManager:
         self.compiled_item_types: list[CompiledItemType] = []
         self.custom_action_specs: list[tuple[str, str, Literal["local", "inventory"], str]] = []
 
-        if schema is not None:
+        if symbols is not None:
             from townlet.config.effects_config import CommandConfig
             from townlet.effects.parser import CommandParser
 
-            compiler = CommandCompiler(schema=schema, agent_target=True)
+            # An item interaction runs with its agent and its item bound: `item.<x>` is the item's state.
+            compiler = CommandCompiler(
+                symbols.namespace,
+                context=INTERACTION_PIPELINE.with_item(True),
+                time_enabled=True,
+                expressions=symbols.expressions,
+            )
             parser = CommandParser()
 
             for item_type in catalog.item_types:

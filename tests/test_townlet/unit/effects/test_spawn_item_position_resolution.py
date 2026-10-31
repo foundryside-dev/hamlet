@@ -59,7 +59,7 @@ def test_spawn_item_resolves_self_position():
         substrate=make_grid2d_substrate(),
         items_per_world=10,
         device="cpu",
-        schema=None,
+        symbols=None,
         vfs_registry=None,
     )
 
@@ -132,7 +132,7 @@ def test_spawn_item_resolves_target_position():
         substrate=make_grid2d_substrate(),
         items_per_world=10,
         device="cpu",
-        schema=None,
+        symbols=None,
         vfs_registry=None,
     )
 
@@ -200,7 +200,7 @@ def test_spawn_item_with_explicit_position():
         substrate=make_grid2d_substrate(),
         items_per_world=10,
         device="cpu",
-        schema=None,
+        symbols=None,
         vfs_registry=None,
     )
 
@@ -291,7 +291,7 @@ def test_spawn_item_with_initial_state():
         substrate=make_grid2d_substrate(),
         items_per_world=10,
         device="cpu",
-        schema=None,
+        symbols=None,
         vfs_registry=vfs_registry,
     )
 
@@ -350,7 +350,7 @@ def test_spawn_item_random_fails_when_blocked():
         substrate=make_grid2d_substrate(),
         items_per_world=20,
         device="cpu",
-        schema=None,
+        symbols=None,
         vfs_registry=None,
     )
 

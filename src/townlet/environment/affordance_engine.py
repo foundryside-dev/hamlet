@@ -31,6 +31,7 @@ from townlet.effects.parser import CommandParser
 from townlet.effects.schema import CommandNode
 from townlet.environment.action_executor import clamp_rows
 from townlet.environment.null_managers import NullItemManager
+from townlet.vfs.namespace import INTERACTION_PIPELINE, CommandSymbols
 
 
 @dataclass
@@ -60,7 +61,7 @@ class AffordanceEngine:
         meter_name_to_idx: dict[str, int],
         modulation_program: Any | None = None,
         vfs_registry: Any | None = None,  # NEW: VFS registry for Effects
-        effects_schema: Any | None = None,  # NEW: Effects schema for compilation
+        command_symbols: CommandSymbols | None = None,
         command_executor: CommandExecutor | None = None,  # NEW: Effects executor
         effect_manager: Any | None = None,  # NEW: EffectManager required for Effects commands
         item_manager: Any | None = None,  # NEW: ItemManager required for spawn_item
@@ -79,7 +80,7 @@ class AffordanceEngine:
             meter_name_to_idx: Mapping of meter names to indices (from bars_config)
             modulation_program: Compiled VTC modulation program for affordance effectiveness
             vfs_registry: VFS registry for Effects system (optional)
-            effects_schema: Effects schema for command compilation (optional)
+            command_symbols: The namespace and inlinable expressions interactions compile against (optional)
             command_executor: Effects command executor (optional)
             meter_bounds_min: Declared per-meter floors, shape [meter_count]. Required.
             meter_bounds_max: Declared per-meter ceilings, shape [meter_count]. Required.
@@ -110,9 +111,14 @@ class AffordanceEngine:
         # Compile affordance Effects commands at startup (CRITICAL: Performance)
         self.compiled_affordances: dict[str, CompiledAffordance] = {}
 
-        if command_executor is not None and effects_schema is not None:
+        if command_executor is not None and command_symbols is not None:
             parser = CommandParser()
-            compiler = CommandCompiler(schema=effects_schema, agent_target=True)
+            compiler = CommandCompiler(
+                command_symbols.namespace,
+                context=INTERACTION_PIPELINE,
+                time_enabled=True,
+                expressions=command_symbols.expressions,
+            )
 
             for affordance in affordance_config:
                 compiled = CompiledAffordance(

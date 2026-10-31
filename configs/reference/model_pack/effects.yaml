@@ -7,13 +7,13 @@ effect_definitions:
     reapply_policy: stack
     observable: true
     on_spawn:
-      - modify: target.vfs.is_digesting
+      - modify: is_digesting
         value: "true"
     on_tick:
-      - modify: target.bar.energy
-        value: target.bar.energy + (0.05 * intensity)
+      - modify: bar.energy
+        value: bar.energy + (0.05 * intensity)
     on_despawn:
-      - modify: target.vfs.is_digesting
+      - modify: is_digesting
         value: "false"
     on_interrupt: []
 

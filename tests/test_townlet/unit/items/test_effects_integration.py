@@ -2,6 +2,7 @@
 
 from pathlib import Path
 
+from tests.test_townlet._fixtures.command_namespace import command_symbols
 from tests.test_townlet.utils.builders import make_grid2d_substrate
 from townlet.config.items_config import ItemsCatalogConfig
 from townlet.effects.schema import CommandType
@@ -14,16 +15,16 @@ def test_item_interactions_are_compiled():
     config_path = Path("configs/test/items_smoke/items.yaml")
     catalog = ItemsCatalogConfig.from_yaml(config_path)
 
-    # Build schema (same pattern as VectorizedHamletEnv)
+    # The command namespace in canonical spelling (production builds it with Namespace.of_registry)
     schema = {
-        "target.bar.energy": "float",
-        "target.bar.health": "float",
-        "target.bar.money": "float",
-        "target.vfs.has_food": "bool",
-        # Item-scoped variables (for self.vfs.* paths)
-        "self.vfs.durability": "float",
-        "self.vfs.freshness": "float",
-        "self.vfs.charges": "float",
+        "bar.energy": "float",
+        "bar.health": "float",
+        "bar.money": "float",
+        "has_food": "bool",
+        # Item state, read as item.<name>
+        "item.durability": "float",
+        "item.freshness": "float",
+        "item.charges": "float",
     }
 
     # Create manager with schema
@@ -33,7 +34,7 @@ def test_item_interactions_are_compiled():
         substrate=make_grid2d_substrate(),
         items_per_world=10,
         device="cpu",
-        schema=schema,  # NEW PARAMETER
+        symbols=command_symbols(schema),
     )
 
     # Verify coin interactions are compiled (coin has on_pickup effect)
@@ -41,12 +42,12 @@ def test_item_interactions_are_compiled():
     assert coin_type.compiled_on_pickup is not None, "on_pickup not compiled"
     assert len(coin_type.compiled_on_pickup) == 1
     assert coin_type.compiled_on_pickup[0].type == CommandType.MODIFY
-    assert coin_type.compiled_on_pickup[0].path == "target.bar.money"
+    assert coin_type.compiled_on_pickup[0].path == "bar.money"
     assert coin_type.compiled_on_pickup[0].value_ast is not None, "AST not compiled"
 
     # Verify apple on_use commands compiled
     apple_type = next(t for t in manager.compiled_item_types if t.id == "apple")
     assert apple_type.compiled_on_use is not None
     assert len(apple_type.compiled_on_use) == 1
-    assert apple_type.compiled_on_use[0].path == "target.bar.energy"
+    assert apple_type.compiled_on_use[0].path == "bar.energy"
     assert apple_type.compiled_on_use[0].value_ast is not None

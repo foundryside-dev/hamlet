@@ -59,7 +59,7 @@ metadata → optimization → emit/cache.
 | 2. **Symbol table** | Register meters, variables, actions, affordances, items, effects; fail fast on duplicates | `symbol_table.py` |
 | 3. **Resolve** | Walk every cross-file reference (affordance effects, action costs, training overrides) emitting UAC error codes | `validation/references.py` |
 | 4. **Cross-validate** | Safety limits, semantic checks, spatial feasibility (grid capacity), cascade cycles, temporal rules, substrate/action alignment, capability semantics | `validation/limits.py`, `validation/semantics.py`, `validation/feasibility.py` |
-| 5. **Metadata & observation spec** | Build shared schemas (bars/VFS) and the effects catalog; compute the observation spec, activity mask, per-field UUIDs, counts and hashes | `compilers/vfs.py`, `compilers/observation.py`, `compilers/metadata.py`, `compilers/effects.py`, `compilers/actions.py` |
+| 5. **Metadata & observation spec** | Build shared schemas (bars/VFS), the command-pipeline namespace (`vfs/namespace.py`) and the effects catalog, and compile every interaction pipeline; compute the observation spec, activity mask, per-field UUIDs, counts and hashes | `compilers/vfs.py`, `compilers/observation.py`, `compilers/metadata.py`, `compilers/effects.py`, `compilers/actions.py` |
 | 6. **Optimization** | Pre-compute tensors in deterministic order — base depletions, cascade/modulation tables, hourly action masks, position maps | `optimization.py`, `compilers/optimization.py` |
 | 7. **Emit / cache** | Construct the frozen `CompiledUniverse`, serialize and cache via MessagePack, expose runtime DTOs | `compiler.py:_stage_7_emit_artifact` |
 

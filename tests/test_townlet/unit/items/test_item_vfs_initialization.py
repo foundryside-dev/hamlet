@@ -46,7 +46,7 @@ def test_spawn_item_initializes_vfs_state():
         substrate=make_grid2d_substrate(),
         items_per_world=10,
         device="cpu",
-        schema=None,  # Skip compilation - we're only testing VFS initialization
+        symbols=None,  # Skip compilation - we're only testing VFS initialization
         vfs_registry=vfs_registry,
     )
 
@@ -102,7 +102,7 @@ def test_despawn_item_does_not_clear_vfs_state():
         substrate=make_grid2d_substrate(),
         items_per_world=10,
         device="cpu",
-        schema=None,  # Skip compilation - we're only testing VFS state persistence
+        symbols=None,  # Skip compilation - we're only testing VFS state persistence
         vfs_registry=vfs_registry,
     )
 

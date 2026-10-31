@@ -5,8 +5,8 @@ from types import SimpleNamespace
 import pytest
 import torch
 
+from tests.test_townlet._fixtures.command_namespace import command_compiler
 from townlet.effects.collections import MAX_COLLECTION_SIZE
-from townlet.effects.compiler import CommandCompiler
 from townlet.effects.context import ExecutionContext
 from townlet.effects.executor import CommandExecutor
 from townlet.effects.schema import CommandNode, CommandType
@@ -42,15 +42,15 @@ def test_for_each_all_agents():
         body=[
             CommandNode(
                 type=CommandType.MODIFY,
-                path="target.bar.energy",
-                value_expr="target.bar.energy + 0.1",
+                path="bar.energy",
+                value_expr="bar.energy + 0.1",
             )
         ],
     )
 
     # Compile nested modify command
-    schema = {"target.bar.energy": "float"}
-    compiler = CommandCompiler(schema=schema, agent_target=True)
+    schema = {"bar.energy": "float"}
+    compiler = command_compiler(schema)
     for body_cmd in command.body:
         compiler.compile_command(body_cmd)
 
@@ -110,15 +110,15 @@ def test_for_each_collection_expression_executes():
         body=[
             CommandNode(
                 type=CommandType.MODIFY,
-                path="target.bar.energy",
-                value_expr="target.bar.energy + 1",
+                path="bar.energy",
+                value_expr="bar.energy + 1",
             )
         ],
     )
 
     # Compile nested modify command
-    schema = {"target.bar.energy": "float"}
-    compiler = CommandCompiler(schema=schema, agent_target=True)
+    schema = {"bar.energy": "float"}
+    compiler = command_compiler(schema)
     for body_cmd in command.body:
         compiler.compile_command(body_cmd)
 
@@ -147,7 +147,7 @@ def test_for_each_empty_collection_noop():
         iterator="item",
         body=[CommandNode(type=CommandType.MODIFY, path="bar.health", value_expr="0.0")],
     )
-    CommandCompiler(schema={"bar.health": "float"}, agent_target=True).compile_command(command.body[0])
+    command_compiler({"bar.health": "float"}).compile_command(command.body[0])
 
     bars = {"health": torch.tensor([0.5, 0.6])}
     context = ExecutionContext(
@@ -200,14 +200,14 @@ def test_for_each_inventory_items_skips_empty_and_uses_ints():
         body=[
             CommandNode(
                 type=CommandType.MODIFY,
-                path="target.vfs.durability",
-                value_expr="target.vfs.durability + 1.0",
+                path="item.durability",
+                value_expr="item.durability + 1.0",
             )
         ],
     )
 
-    schema = {"target.vfs.durability": "float"}
-    compiler = CommandCompiler(schema=schema, agent_target=True)
+    schema = {"item.durability": "float"}
+    compiler = command_compiler(schema, item=True)
     for body_cmd in command.body:
         compiler.compile_command(body_cmd)
 
@@ -227,6 +227,7 @@ def test_for_each_inventory_items_skips_empty_and_uses_ints():
         def __init__(self):
             self.values = {"durability": torch.tensor([5.0, 6.0, 7.0])}
             self.variables = {"durability": SimpleNamespace(scope="item")}
+            self.item_profile_map = {"default": {"durability": 0}}
 
         def read_item(self, profile_name, name, vfs_index, *, reader):
             return self.values[name][vfs_index]

@@ -11,8 +11,8 @@ from __future__ import annotations
 
 import torch
 
+from tests.test_townlet._fixtures.command_namespace import command_compiler
 from townlet.effects.catalog import CompiledEffect, EffectCatalog
-from townlet.effects.compiler import CommandCompiler
 from townlet.effects.executor import CommandExecutor
 from townlet.effects.manager import EffectManager
 from townlet.effects.scheduler import Scheduler
@@ -22,7 +22,7 @@ SCHEMA = {"bar.a": "float", "bar.b": "float"}
 
 
 def _delayed_set(bar: str) -> CommandNode:
-    return CommandCompiler(SCHEMA, agent_target=False).compile_command(
+    return command_compiler(SCHEMA).compile_command(
         CommandNode(
             type=CommandType.DELAY,
             delay_ticks_expr="2",
@@ -46,9 +46,7 @@ def _global(effect_id: str, bar: str, *, on_interrupt: list[CommandNode]) -> Com
 
 
 def _manager(*, interrupt: bool) -> tuple[EffectManager, dict[str, torch.Tensor]]:
-    noop = [
-        CommandCompiler(SCHEMA, agent_target=False).compile_command(CommandNode(type=CommandType.MODIFY, path="bar.b", value_expr="bar.b"))
-    ]
+    noop = [command_compiler(SCHEMA).compile_command(CommandNode(type=CommandType.MODIFY, path="bar.b", value_expr="bar.b"))]
     on_interrupt = noop if interrupt else []
     catalog = EffectCatalog(
         effects={"first": _global("first", "a", on_interrupt=on_interrupt), "second": _global("second", "b", on_interrupt=on_interrupt)},

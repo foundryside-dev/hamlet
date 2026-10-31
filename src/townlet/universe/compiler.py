@@ -25,7 +25,8 @@ from townlet.universe.token_hashes import (
     compute_token_type_schema_hash,
 )
 from townlet.vfs.history import collect_history_requirements
-from townlet.vfs.profiles import CircularDependencyError
+from townlet.vfs.namespace import expression_sources
+from townlet.vfs.profiles import CircularDependencyError, VariableExpressionError
 from townlet.vfs.schema_hashes import (
     compute_action_schema_hash,
     compute_actions_hash,
@@ -41,7 +42,7 @@ from townlet.world.expression.type_checker import TypeCheckError
 
 from .compiled import CompiledVFSProfiles
 from .compilers.actions import ActionCompiler
-from .compilers.effects import EffectsCompiler
+from .compilers.effects import EffectsCompiler, interaction_pipelines
 from .compilers.metadata import MetadataCompiler
 from .compilers.observation import ObservationCompiler
 from .compilers.optimization import OptimizationCompiler
@@ -49,7 +50,7 @@ from .compilers.vfs import VFSCompiler
 from .errors import CompilationError, CompilationErrorCollector, CompilationMessage
 from .loaders.preflight import validate_config_dir
 from .pipeline import CompiledLevelBundle, SharedCompilerArtifacts
-from .source_map import SourceMap, locate
+from .source_map import SourceMap, locate, variable_location_key
 from .stages import CompilationStage
 from .validation.limits import (
     MAX_CACHE_FILE_SIZE,
@@ -185,11 +186,19 @@ class UniverseCompiler:
                     )
                 ],
             ) from exc.__cause__
-        except (CircularDependencyError, TypeCheckError) as exc:
+        except (CircularDependencyError, VariableExpressionError) as exc:
+            # A variable's refusal is located at its declaration (VFS round-2 S5 follow-up).
             raise self._vfs_domain_compilation_error(
                 CompilationStage.SHARED.label,
                 ErrorCode.VFS_PROFILE_COMPILE,
-                Path(source_map.lookup("variables") or f"{experiment_dir}:1"),
+                locate(source_map, variable_location_key(None, exc.variable_id), source_map.lookup("variables") or f"{experiment_dir}:1"),
+                exc,
+            ) from exc
+        except TypeCheckError as exc:
+            raise self._vfs_domain_compilation_error(
+                CompilationStage.SHARED.label,
+                ErrorCode.VFS_PROFILE_COMPILE,
+                source_map.lookup("variables") or f"{experiment_dir}:1",
                 exc,
             ) from exc
 
@@ -254,8 +263,6 @@ class UniverseCompiler:
             level_bundle.all_levels,
             shared_artifacts.compiled_vfs_profiles,
             shared_artifacts.compiled_effect_catalog,
-            shared_artifacts.effects_schema,
-            level_bundle.vfs_expression_schema,
             level_bundle.vfs_evaluation_marks,
             shared_artifacts.vfs_history_spec,
             brain_hash=brain_hash,
@@ -305,7 +312,7 @@ class UniverseCompiler:
         self,
         stage: str,
         code: ErrorCode,
-        location: Path,
+        location: Path | str,
         exc: Exception,
     ) -> CompilationError:
         """Convert VFS/domain exceptions into compiler diagnostics."""
@@ -339,21 +346,42 @@ class UniverseCompiler:
         # compile above has already refused any temporal call the runtime cannot serve.
         vfs_history_spec = collect_history_requirements(compiled_vfs_profiles.global_profile, compiled_vfs_profiles.agent_profile)
 
-        effects_schema = self._effects_compiler.build_schema(
-            bar_names=tuple(meter.name for meter in primary_level_config.bars.meters),
-            variables=raw.variables,
+        # The one resolver every command pipeline compiles against (VFS round-2 S5),
+        # built from the same compiled products the environment builds it from.
+        runtime_variables = self._vfs_compiler.build_runtime_variables(raw.variables)
+        expressions = expression_sources((compiled_vfs_profiles.global_profile, compiled_vfs_profiles.agent_profile))
+        command_symbols = self._effects_compiler.build_symbols(
+            variables=runtime_variables,
+            meter_names=tuple(meter.name for meter in primary_level_config.bars.meters),
             compiled_vfs_profiles=compiled_vfs_profiles,
+            expressions=expressions,
         )
 
         compiled_effect_catalog = self._effects_compiler.compile_catalog(
             raw.effects,
-            effects_schema,
+            command_symbols,
             time_enabled=temporal_supported,
         )
+        # Affordance and item interactions compile when the environment builds its
+        # engines; compile each level's here too, so a refusal is located at file:line.
+        for level_name, level in raw.levels.items():
+            level_symbols = self._effects_compiler.build_symbols(
+                variables=runtime_variables,
+                meter_names=tuple(meter.name for meter in level.bars.meters),
+                compiled_vfs_profiles=compiled_vfs_profiles,
+                expressions=expressions,
+            )
+            self._effects_compiler.check_interactions(
+                interaction_pipelines(
+                    ((f"levels/{level_name}/affordances:{aff.name}", aff.interactions) for aff in level.affordances.affordances),
+                    raw.items,
+                ),
+                level_symbols,
+                source_map=raw.source_map,
+            )
         return SharedCompilerArtifacts(
             bar_schema=bar_schema,
             compiled_vfs_profiles=compiled_vfs_profiles,
-            effects_schema=effects_schema,
             compiled_effect_catalog=compiled_effect_catalog,
             vfs_history_spec=vfs_history_spec,
         )
@@ -393,6 +421,9 @@ class UniverseCompiler:
                 level.items_appearance,
                 bar_schema=bar_schema,
                 variables=raw.variables,
+                expressions=expression_sources(
+                    () if compiled_vfs_profiles is None else (compiled_vfs_profiles.global_profile, compiled_vfs_profiles.agent_profile)
+                ),
                 source_map=raw.source_map,
                 level_name=level_name,
             )
@@ -522,7 +553,6 @@ class UniverseCompiler:
             )
 
         primary_meta = all_levels[primary_level]
-        primary_level_config = raw.levels[primary_level]
 
         universe_metadata = self._metadata_compiler.build_universe_metadata(
             raw,
@@ -532,15 +562,12 @@ class UniverseCompiler:
             config_mtime=config_mtime,
         )
 
-        vfs_expression_schema = self._vfs_compiler.build_expression_schema(primary_level_config.bars, compiled_vfs_profiles)
-
         vfs_evaluation_marks = self._vfs_compiler.derive_evaluation_marks(raw.variables)
 
         return CompiledLevelBundle(
             all_levels=all_levels,
             primary_meta=primary_meta,
             universe_metadata=universe_metadata,
-            vfs_expression_schema=vfs_expression_schema,
             vfs_evaluation_marks=vfs_evaluation_marks,
         )
 
@@ -554,8 +581,6 @@ class UniverseCompiler:
         all_levels: dict[str, CompiledUniverse.LevelMetadata],
         compiled_vfs_profiles: CompiledVFSProfiles | None,
         compiled_effect_catalog: EffectCatalog | None,
-        effects_schema: dict[str, str],
-        vfs_expression_schema: dict[str, str],
         vfs_evaluation_marks: dict[str, set[str]] | None,
         vfs_history_spec: dict[str, int],
         brain_hash: str | None,
@@ -582,8 +607,6 @@ class UniverseCompiler:
             presentation=raw.presentation,
             compiled_vfs_profiles=compiled_vfs_profiles,
             compiled_effect_catalog=compiled_effect_catalog,
-            effects_schema=effects_schema,
-            vfs_expression_schema=vfs_expression_schema,
             vfs_history_spec=vfs_history_spec or None,
             vfs_evaluation_marks=vfs_evaluation_marks,
             experiment_dir=experiment_dir,

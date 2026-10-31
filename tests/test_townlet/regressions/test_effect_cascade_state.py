@@ -3,6 +3,7 @@
 import pytest
 import torch
 
+from tests.test_townlet._fixtures.command_namespace import command_compiler
 from tests.test_townlet.utils.builders import make_grid2d_substrate
 from townlet.config.items_config import ItemInteractionsConfig, ItemsCatalogConfig, ItemTypeConfig
 from townlet.effects.catalog import CompiledEffect, EffectCatalog
@@ -15,6 +16,7 @@ from townlet.items.manager import ItemManager
 from townlet.vfs.profiles import CompiledItemProfile, CompiledVariable
 from townlet.vfs.registry import VariableRegistry
 from townlet.vfs.schema import VariableDef
+from townlet.world.expression import ExpressionParser
 
 
 def _services(
@@ -67,16 +69,16 @@ def _services(
         items_per_world=max_items,
         item_profiles=profiles,
     )
-    compiler = CommandCompiler(
+    compiler = command_compiler(
         {
             "bar.energy": "float",
-            "self.vfs.charge": "float",
-            "vfs.global_state": "float",
-            "self.vfs.agent_state": "float",
-            "vfs.standalone_flag": "bool",
-            "affordance.bank.available": "bool",
+            "item.charge": "float",
+            "global_state": "float",
+            "agent_state": "float",
+            "standalone_flag": "bool",
         },
-        agent_target=True,
+        item=True,
+        scopes={"global_state": "global", "standalone_flag": "global"},
     )
     effects = {
         "parent": CompiledEffect(
@@ -96,7 +98,7 @@ def _services(
             duration=5,
             reapply_policy="stack",
             observable=True,
-            on_spawn=compiler.compile_commands([CommandNode(type=CommandType.MODIFY, path="self.vfs.charge", value_expr="4.0")]),
+            on_spawn=compiler.compile_commands([CommandNode(type=CommandType.MODIFY, path="item.charge", value_expr="4.0")]),
             on_tick=[],
             on_despawn=[],
             on_interrupt=[],
@@ -132,7 +134,7 @@ def _services(
         substrate=make_grid2d_substrate(),
         items_per_world=max_items,
         device="cpu",
-        schema=None,
+        symbols=None,
         vfs_registry=registry,
         effect_manager=manager,
     )
@@ -200,14 +202,17 @@ def test_descendant_denial_restores_published_arenas_standalone_aliases_and_affo
     assert availability is not None
     manager.catalog.effects["parent"].on_spawn = compiler.compile_commands(
         [
-            CommandNode(type=CommandType.MODIFY, path="vfs.global_state", value_expr="9.0"),
-            CommandNode(type=CommandType.MODIFY, path="self.vfs.agent_state", value_expr="8.0"),
-            CommandNode(type=CommandType.MODIFY, path="vfs.standalone_flag", value_expr="false"),
-            CommandNode(type=CommandType.MODIFY, path="affordance.bank.available", value_expr="false"),
+            CommandNode(type=CommandType.MODIFY, path="global_state", value_expr="9.0"),
+            CommandNode(type=CommandType.MODIFY, path="agent_state", value_expr="8.0"),
+            CommandNode(type=CommandType.MODIFY, path="standalone_flag", value_expr="false"),
         ]
     ) + [
+        # Engine-built: the affordance availability store has no authored spelling.
+        CommandNode(
+            type=CommandType.MODIFY, path="affordance.bank.available", value_expr="false", value_ast=ExpressionParser().parse("false")
+        ),
         # Engine-built: an authored constant spawn target is refused at compile (S1).
-        CommandNode(type=CommandType.SPAWN_EFFECT, effect_id="child", target=sealed.vfs_index, intensity=1.0)
+        CommandNode(type=CommandType.SPAWN_EFFECT, effect_id="child", target=sealed.vfs_index, intensity=1.0),
     ]
     with pytest.raises(PermissionError, match="sealed"):
         manager.spawn_effect("parent", 0, 1.0, 0, bars=bars, vfs_registry=registry, item_manager=items)

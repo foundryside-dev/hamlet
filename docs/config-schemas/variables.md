@@ -97,8 +97,7 @@ expression shape proof still treats it so: a global expression may not read agen
 an action write may not target a global. At runtime every reader and writer addresses its own
 world's row:
 
-- an affordance or item interaction writes the interacting agent's world (`vfs.X` and
-  `global.vfs.X` alike); every effect lives in one world (its agent's, its item's, or for a
+- an affordance or item interaction writes the interacting agent's world; every effect lives in one world (its agent's, its item's, or for a
   global- or affordance-scoped effect the world whose event spawned it) and writes that
   world's row only (`docs/config-schemas/effects.md`); a world whose agent is done writes
   nothing, by rule or by effect;
@@ -132,8 +131,9 @@ than -1 (`VTC-WRITE-TYPE`). A transition write into a reference must be provably
 by a syntactic rule: -1, `agent_id` (into an `agent_ref` only), a read of a reference of the
 target's type, or `where(...)` / if-then-else choosing between those. Anything else, such as
 `agent_id * 0`, can name another world's row and refuses at compile (`VTC-WRITE-TYPE`).
-Under S1 an `agent_ref` is a nullable self-pointer (bind it with `agent_id`); its traversal
-`x.ref.bar.y` reads the world's own agent.
+Under S1 an `agent_ref` is a nullable self-pointer (bind it with `agent_id`); there is no
+traversal spelling (`x.vfs.y`, `x.bar.y`): the referenced agent is the world's own, read by bare
+id and `bar.<m>`.
 
 `gather(values, index)` and `scatter(base, index, update)` index the element axis of a
 vector or `tensor1d` inside one world's value; a scalar argument (a meter, a scalar
@@ -195,8 +195,8 @@ Supported consumer boundaries are explicit:
 | Registry observation | Global/agent float32-backed state with bounded normalization |
 | Item observation | Profile-qualified scalar/bool/reference arena state |
 | Ordinary reward input | Global/agent scalar or boolean state |
-| Global effects | `vfs.X` or `global.vfs.X` in its typed schema |
-| Agent effects | `vfs.X` or `target.vfs.X` in its typed schema |
+| Command pipelines (effects, interactions) | Global/agent variables by bare id, meters as `bar.<m>`, the bound item's state as `item.<x>` |
+| Item spawn predicates | Global/agent variables by bare id, meters as `bar.<m>` |
 
 Symbol registration alone does not supply affordance-state reductions or arbitrary tensor
 operations to a consumer. Command expressions must satisfy that consumer's type contract.
@@ -213,7 +213,7 @@ exactly the schedule `step()` executes, in this order:
    `apply_completion_bonuses` — run together, with the tick's actions, after the action
    executor.
 2. `apply_passive_depletion`, then `apply_threshold_cascades`; then scheduled effects tick.
-3. `apply_social_residue_effects`, `clamp_and_validate`.
+3. `apply_transition_rules`, `clamp_and_validate`.
 4. Global then agent expressions are evaluated (see below).
 5. `evaluate_terminal_conditions`.
 
@@ -259,9 +259,9 @@ expression evaluated on the state the write sees, not a stored value: the compil
 substitutes the expression (recursively, through every expression variable it reads)
 into the write's expression and condition. A write gated on `rich: bar.money > 0.1` sees
 `rich` true on the tick an earlier phase raised `money`, whatever `rich`'s lifetime. The
-one exception is an expression that calls a function needing evaluation context a
-transition does not carry (a history operator such as `lag`, `elapsed_ticks`, or a
-position function): it is not inlined, and a write reads its stored value, the one
+one exception is an expression that calls a history operator (`lag`, `delta`, ...), which
+needs the history rings only the profile evaluator keeps (an expression variable may not call
+`elapsed_ticks` or a position function at all: the profile compiler refuses them): it is not inlined, and a write reads its stored value, the one
 evaluated at the end of the previous step (or by `reset()`), which the observation the
 action was chosen on showed. A `tick`-lifetime one has no stored value while the
 transition phases run, so a write or rule reading it refuses at compile
@@ -278,9 +278,9 @@ write's `file:line`, naming the expression variable's declaration `file:line`.
 `lag`, `delta`, `moving_average`, `ema`, `rate_of_change`, `rising_edge` and
 `falling_edge` read the past of a value. They run in global and agent variable expressions
 only: an action write, a transition rule, an effect or a spawn predicate keeps no history,
-so name the quantity as an expression variable and read that. Writes, rules and effects
-refuse a history operator at compile; a spawn predicate that calls one is not yet refused
-at compile and fails at its first evaluation.
+so name the quantity as an expression variable and read that. Writes, rules, effects,
+interactions and spawn predicates refuse a history operator at compile, by one predicate on
+the function registry (every function whose `requires` names temporal history).
 
 - **What they read.** The first argument names a value: a variable (`lag(public_state, 1)`),
   the clock `tick`, or a meter (`delta(bar.energy)`). A computed argument
@@ -330,6 +330,29 @@ at compile and fails at its first evaluation.
 - **Identity.** The compiled artifact carries `vfs_history_spec`, the history depth of every
   value read; it is derived from the expressions, whose canonical form (operator, literal
   depths, windows and alphas) is part of `vfs_hash`, so changing a `lag` depth refuses resume.
+
+## One spelling per reference
+
+Every consumer resolves a reference through one resolver (`townlet.vfs.namespace`, VFS
+round-2 S5), so a variable is written the same way in a variable expression, an action write,
+a transition rule, an effect, an affordance or item interaction and an item spawn predicate:
+
+| reference | spelling | where |
+| --- | --- | --- |
+| a registry variable | `x` (its bare id) | everywhere; read in this world by its declared scope (S1) |
+| a meter | `bar.<name>` | everywhere, including an action write's or rule's `variable_id` |
+| the bound item's state | `item.<name>` | item interactions, item-scoped effects, inventory loops |
+| the engine clock | `tick` | everywhere |
+| the acting agent's row | `agent_id` | action writes and transition rules |
+| an active effect's locals | `intensity`, `elapsed_ticks`, `duration_remaining` | effects |
+
+Under S1 a world has one agent, so `self.`/`target.`/`global.` carry no information; an item
+is the only second entity a context can have, and `item.` names it. Every other spelling
+(`vfs.x`, `self.vfs.x`, `target.vfs.x`, `global.vfs.x`, `agent.vfs.x`, `self.bar.m`,
+`target.bar.m`, a bare meter name, `temporal.*`, `env.*`) refuses at compile with the one
+spelling to write, at the author's `file:line`. A variable id contains no `.`: a dotted name is
+a qualified reference. DAC role fields keep their typed form (`variable: x`, `bar: m`). A
+refusal in a variable's own expression is located at that variable's declaration.
 
 ## Resolution, access and artifacts
 

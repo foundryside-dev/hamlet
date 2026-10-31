@@ -22,7 +22,7 @@ DEFAULT_TRANSITION_PHASES = (
     "apply_completion_bonuses",
     "apply_passive_depletion",
     "apply_threshold_cascades",
-    "apply_social_residue_effects",
+    "apply_transition_rules",
     "clamp_and_validate",
     "evaluate_terminal_conditions",
 )

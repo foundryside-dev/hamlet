@@ -528,7 +528,7 @@ def test_transition_graph_hash_binds_transition_rules() -> None:
             [
                 {
                     "id": "seen_stealing_damages_reputation",
-                    "phase": "apply_social_residue_effects",
+                    "phase": "apply_transition_rules",
                     "condition": "was_observed and chosen_action == 7",
                     "writes": [
                         {
@@ -563,7 +563,7 @@ def test_transition_graph_hash_binds_transition_rules() -> None:
             "expression": _ast("-0.15"),
             "condition": _ast("was_observed and chosen_action == 7"),
             "composition": "additive_delta",
-            "phase": "apply_social_residue_effects",
+            "phase": "apply_transition_rules",
             "priority": 0,
             "clamp": [0.0, 1.0],
             "telemetry_label": "seen_stealing_damages_reputation:reputation_delta",

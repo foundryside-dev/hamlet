@@ -1,7 +1,7 @@
 """VFS WP12 (spawn half), finding F6: one declaration owns what a spawn predicate reads.
 
-`SpawnPredicateReads` derives the compile-time schema and the runtime context from the
-same registry roster through the same scope rule. Every reproduction in
+`SpawnPredicateReads` derives the compile-time namespace and the runtime context from the
+same registry roster through the one resolver (VFS round-2 S5). Every reproduction in
 review-2026-10-24/vfs_round2/r13*.py either works end to end or is refused at compile
 time with the rule's `file:line`; none compiles and then raises at reset or step.
 """
@@ -22,7 +22,6 @@ from townlet.universe.declarations import DeclarationStore
 from townlet.universe.error_codes import ErrorCode
 from townlet.universe.errors import CompilationError
 from townlet.universe.raw_configs_v21 import RawConfigsV21
-from townlet.world.expression import ExpressionParser
 
 BASE = Path(__file__).resolve().parents[4] / "configs" / "test" / "items_smoke"
 LEVEL = "L0_smoke"
@@ -88,32 +87,33 @@ SEASON = _global("season", initial=1.0)
 
 
 @pytest.mark.parametrize(
-    ("when", "extra", "temporal"),
+    ("when", "extra", "temporal", "needle"),
     [
-        pytest.param("env.has_food", (), False, id="r13-env-prefix-agent-bool"),
-        pytest.param("env.season > 0.5", (SEASON,), False, id="r13-env-prefix-global"),
-        pytest.param("season > 0.5", (SEASON,), False, id="r13-bare-global"),
-        pytest.param("energy > 0.5", (), False, id="r13-bare-meter"),
-        pytest.param("agent.vfs.has_food", (), False, id="agent-vfs-prefix"),
-        pytest.param("temporal.is_night", (), True, id="r13b-is-night"),
-        pytest.param("temporal.time_of_day < 12.0", (), True, id="r13b-time-of-day"),
-        pytest.param("temporal.tick > 5", (), True, id="temporal-tick"),
-        pytest.param("vfs.freshness > 0.5", (), False, id="item-scope-variable"),
+        pytest.param("env.has_food", (), False, "is not a reference", id="r13-env-prefix-agent-bool"),
+        pytest.param("env.season > 0.5", (SEASON,), False, "is not a reference", id="r13-env-prefix-global"),
+        pytest.param("vfs.season > 0.5", (SEASON,), False, "write 'season'", id="vfs-prefix-global"),
+        pytest.param("energy > 0.5", (), False, "write 'bar.energy'", id="r13-bare-meter"),
+        pytest.param("agent.vfs.has_food", (), False, "write 'has_food'", id="agent-vfs-prefix"),
+        pytest.param("temporal.is_night", (), True, "is not a reference", id="r13b-is-night"),
+        pytest.param("temporal.time_of_day < 12.0", (), True, "is not a reference", id="r13b-time-of-day"),
+        pytest.param("vfs.tick > 5", (), True, "write 'tick'", id="vfs-tick"),
+        pytest.param("freshness > 0.5", (), False, "names no variable", id="item-scope-variable"),
+        pytest.param("lag(tick, 1) > 5.0", (), False, "temporal history", id="history-operator"),
     ],
 )
-def test_unserved_read_refuses_at_compile_with_file_line(tmp_path, when, extra, temporal):
+def test_unserved_read_refuses_at_compile_with_file_line(tmp_path, when, extra, temporal, needle):
     pack = _pack(tmp_path, when, extra, temporal=temporal)
     with pytest.raises(CompilationError) as excinfo:
         UniverseCompiler().compile(pack, primary_level=LEVEL)
     (issue,) = excinfo.value.issues
     assert issue.code == ErrorCode.ITEM_SPAWN_CONDITION
     assert issue.location == _when_location(pack)
-    assert "does not serve" in issue.message
+    assert needle in issue.message
     assert "apple" in issue.message
 
 
 def test_non_bool_predicate_refuses_with_file_line(tmp_path):
-    pack = _pack(tmp_path, "vfs.season + 1.0", (SEASON,))
+    pack = _pack(tmp_path, "season + 1.0", (SEASON,))
     with pytest.raises(CompilationError) as excinfo:
         UniverseCompiler().compile(pack, primary_level=LEVEL)
     (issue,) = excinfo.value.issues
@@ -125,11 +125,11 @@ def test_non_bool_predicate_refuses_with_file_line(tmp_path):
 @pytest.mark.parametrize(
     ("when", "extra", "expected"),
     [
-        pytest.param("vfs.season > 0.5", (SEASON,), APPLES_AT_RESET, id="r13-vfs-global-true"),
-        pytest.param("vfs.season < 0.5", (SEASON,), 0, id="r13-vfs-global-false"),
+        pytest.param("season > 0.5", (SEASON,), APPLES_AT_RESET, id="r13-vfs-global-true"),
+        pytest.param("season < 0.5", (SEASON,), 0, id="r13-vfs-global-false"),
         pytest.param("bar.energy > 0.5", (), APPLES_AT_RESET, id="meter"),
-        pytest.param("not vfs.has_food", (), APPLES_AT_RESET, id="agent-scope-variable"),
-        pytest.param("vfs.tick < 1.0", (), APPLES_AT_RESET, id="engine-clock"),
+        pytest.param("not has_food", (), APPLES_AT_RESET, id="agent-scope-variable"),
+        pytest.param("tick < 1.0", (), APPLES_AT_RESET, id="engine-clock"),
     ],
 )
 def test_served_reads_work_end_to_end(tmp_path, when, extra, expected):
@@ -137,37 +137,30 @@ def test_served_reads_work_end_to_end(tmp_path, when, extra, expected):
 
 
 def test_spawn_predicate_reads_expression_value_evaluated_at_reset(tmp_path):
-    """r13's `vfs.season > 0.5` with season an expression: the declared literal (0.0)
+    """r13's `season > 0.5` with season an expression: the declared literal (0.0)
     would gate the spawn shut; the evaluated value (tick + 1 = 1.0 at instant 0) opens it."""
     season = _global("season", initial=0.0, expression="tick + 1.0")
-    assert _apples_after_reset(_pack(tmp_path, "vfs.season > 0.5", (season,))) == APPLES_AT_RESET
+    assert _apples_after_reset(_pack(tmp_path, "season > 0.5", (season,))) == APPLES_AT_RESET
 
 
 def test_compile_schema_and_runtime_context_cannot_drift(tmp_path):
-    """Every name the compiler admits resolves in the runtime context, and vice versa."""
-    pack = _pack(tmp_path, "vfs.season > 0.5", (SEASON,))
+    """Every spelling the compiler admits resolves in the runtime context, and the context serves nothing else."""
+    pack = _pack(tmp_path, "season > 0.5", (SEASON,))
     universe = UniverseCompiler().compile(pack, primary_level=LEVEL)
     env = universe.create_environment(num_agents=2, level_name=LEVEL, device="cpu")
     env.reset()
 
     raw = RawConfigsV21.from_declarations(DeclarationStore.discover(pack))
-    schema = SpawnPredicateReads.schema(
+    schema = SpawnPredicateReads.namespace(
         meter_names=env.meter_name_to_index,
         variables=VFSCompiler().build_runtime_variables(raw.variables),
-    )
+    ).schema(SpawnPredicateReads.CONTEXT)
     context = SpawnPredicateReads.context(bars=env.bars, registry=env.vfs_registry, device=env.device)
-    served = {SpawnPredicateReads.bar_path(name) for name in context.bars} | {
-        SpawnPredicateReads.variable_path(identifier) for identifier in context.vfs
-    }
+    served = {f"bar.{name}" for name in context.bars} | set(context.vfs)
     assert set(schema) == served
     for path in schema:
         context.get(path)  # no KeyError
-    assert SpawnPredicateReads.variable_path("tick") in schema
-
-
-def test_reads_lists_every_name_in_source_order():
-    ast = ExpressionParser().parse("(bar.energy < 0.4) and vfs.danger >= 3 or not season")
-    assert SpawnPredicateReads.reads(ast) == ["bar.energy", "vfs.danger", "season"]
+    assert "tick" in schema
 
 
 def test_agent_scope_read_decides_per_world(tmp_path):
@@ -190,7 +183,7 @@ def test_rejected_initial_spawn_retries_on_its_declared_period(tmp_path):
     bloom = _global("bloom", initial=0.0, expression="tick >= 7.0")
     bloom["type"] = "bool"
     bloom["initial_value"] = False
-    pack = _pack(tmp_path, "vfs.bloom", (bloom,))
+    pack = _pack(tmp_path, "bloom", (bloom,))
     items_path = pack / "levels" / LEVEL / "items.yaml"
     items = yaml.safe_load(items_path.read_text())
     for rule in items["items"]:

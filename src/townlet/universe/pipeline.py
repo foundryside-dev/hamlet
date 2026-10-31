@@ -15,7 +15,6 @@ class SharedCompilerArtifacts:
 
     bar_schema: dict[str, str]
     compiled_vfs_profiles: CompiledVFSProfiles | None
-    effects_schema: dict[str, str]
     compiled_effect_catalog: EffectCatalog | None
     vfs_history_spec: dict[str, int]
 
@@ -27,5 +26,4 @@ class CompiledLevelBundle:
     all_levels: dict[str, CompiledUniverse.LevelMetadata]
     primary_meta: CompiledUniverse.LevelMetadata
     universe_metadata: UniverseMetadata
-    vfs_expression_schema: dict[str, str]
     vfs_evaluation_marks: dict[str, set[str]] | None

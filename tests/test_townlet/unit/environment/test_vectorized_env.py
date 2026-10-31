@@ -409,7 +409,7 @@ class TestVectorizedHamletEnvStep:
 
     def test_vtc_action_effects_apply_all_curriculum_levels(self, compile_universe, cpu_device):
         write = WriteSpec(
-            variable_id="energy",
+            variable_id="bar.energy",
             expression="0.13",
             condition=None,
             composition="additive_delta",

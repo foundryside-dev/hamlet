@@ -104,24 +104,6 @@ def test_compiled_universe_deserializes_effect_catalog(minimal_compiled_universe
     assert restored.compiled_effect_catalog.effects is not None
 
 
-def test_compiled_universe_serializes_effects_schema(minimal_compiled_universe_with_effects):
-    """CompiledUniverse.to_dict() should serialize the runtime effects schema."""
-    data = minimal_compiled_universe_with_effects.to_dict()
-
-    assert "effects_schema" in data
-    assert data["effects_schema"]["intensity"] == "float"
-    assert data["effects_schema"]["target.bar.energy"] == "float"
-
-
-def test_compiled_universe_deserializes_effects_schema(minimal_compiled_universe_with_effects):
-    """CompiledUniverse.from_dict() should deserialize the runtime effects schema."""
-    data = minimal_compiled_universe_with_effects.to_dict()
-
-    restored = CompiledUniverse.from_dict(data)
-
-    assert restored.effects_schema == minimal_compiled_universe_with_effects.effects_schema
-
-
 def test_compiled_universe_serializes_runtime_action_space(minimal_compiled_universe_with_profiles):
     """CompiledUniverse.to_dict() should serialize the runtime action-space artifact."""
     data = minimal_compiled_universe_with_profiles.to_dict()
@@ -162,29 +144,6 @@ def test_compiled_universe_cache_round_trip_preserves_effect_commands(tmp_path: 
     assert restored_effect.on_tick[0].value_ast is not None
 
 
-def test_compiled_universe_serializes_vfs_expression_schema(minimal_compiled_universe_with_profiles):
-    """CompiledUniverse.to_dict() should serialize VFS expression schema."""
-    # Exercise
-    data = minimal_compiled_universe_with_profiles.to_dict()
-
-    # Verify
-    assert "vfs_expression_schema" in data
-    assert isinstance(data["vfs_expression_schema"], dict)
-
-
-def test_compiled_universe_deserializes_vfs_expression_schema(minimal_compiled_universe_with_profiles):
-    """CompiledUniverse.from_dict() should deserialize VFS expression schema."""
-    # Setup
-    data = minimal_compiled_universe_with_profiles.to_dict()
-
-    # Exercise
-    restored = CompiledUniverse.from_dict(data)
-
-    # Verify
-    assert restored.vfs_expression_schema is not None
-    assert isinstance(restored.vfs_expression_schema, dict)
-
-
 def test_compiled_universe_round_trip_serialization(minimal_compiled_universe_with_profiles):
     """CompiledUniverse should survive round-trip serialization."""
     # Setup: Original universe with VFS profiles and expression schema
@@ -199,15 +158,12 @@ def test_compiled_universe_round_trip_serialization(minimal_compiled_universe_wi
     assert restored.compiled_vfs_profiles.global_profile is not None
     assert len(restored.compiled_vfs_profiles.global_profile.variables) == len(original.compiled_vfs_profiles.global_profile.variables)
 
-    assert restored.effects_schema == original.effects_schema
     assert _selected(restored).runtime_action_space == _selected(original).runtime_action_space
     assert _selected(restored).variable_schema_hash == _selected(original).variable_schema_hash
     assert _selected(restored).observation_schema_hash == _selected(original).observation_schema_hash
     assert _selected(restored).action_schema_hash == _selected(original).action_schema_hash
     assert _selected(restored).transition_graph_hash == _selected(original).transition_graph_hash
     assert _selected(restored).vfs_hash == _selected(original).vfs_hash
-    assert restored.vfs_expression_schema is not None
-    assert restored.vfs_expression_schema == original.vfs_expression_schema
     assert restored.all_levels.keys() == original.all_levels.keys()
     for name, level in original.all_levels.items():
         _assert_level_metadata_equal(level, restored.all_levels[name])
@@ -316,15 +272,12 @@ def test_compiled_universe_clone_preserves_new_fields(minimal_compiled_universe_
     # Verify
     assert cloned.compiled_vfs_profiles is not None
     assert cloned.compiled_vfs_profiles.global_profile is not None
-    assert cloned.effects_schema == original.effects_schema
     assert _selected(cloned).runtime_action_space == _selected(original).runtime_action_space
     assert _selected(cloned).variable_schema_hash == _selected(original).variable_schema_hash
     assert _selected(cloned).observation_schema_hash == _selected(original).observation_schema_hash
     assert _selected(cloned).action_schema_hash == _selected(original).action_schema_hash
     assert _selected(cloned).transition_graph_hash == _selected(original).transition_graph_hash
     assert _selected(cloned).vfs_hash == _selected(original).vfs_hash
-    assert cloned.vfs_expression_schema is not None
-    assert cloned.vfs_expression_schema == original.vfs_expression_schema
 
 
 def test_compiled_universe_serializes_vfs_evaluation_marks(minimal_compiled_universe_with_profiles):

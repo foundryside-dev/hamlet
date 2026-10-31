@@ -201,7 +201,7 @@ def _run_scripted(declarations: list[VariableDeclaration], xs: list[list[float]]
         bars = {"x": torch.tensor(x)}
         state["flag"] = torch.tensor(flag)
         evaluator.begin_instant(bars, state, torch.device("cpu"))
-        result = evaluator.evaluate_global_profile(profile, bars, dict(state), marks=expressions, num_agents=2)
+        result = evaluator.evaluate_global_profile(profile, bars, dict(state), marks=expressions)
         state.update({name: result[name] for name in expressions})
         evaluator.commit_instant(bars, state, live=torch.tensor(live))
         for name in expressions:

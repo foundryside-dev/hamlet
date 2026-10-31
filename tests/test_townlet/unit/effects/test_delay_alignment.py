@@ -2,7 +2,7 @@
 
 import torch
 
-from townlet.effects.compiler import CommandCompiler
+from tests.test_townlet._fixtures.command_namespace import command_compiler
 from townlet.effects.context import ExecutionContext
 from townlet.effects.executor import CommandExecutor
 from townlet.effects.scheduler import Scheduler
@@ -19,9 +19,9 @@ def _delay_cmd(ticks: str, path: str, value: str) -> CommandNode:
 
 def test_delay_respects_current_tick_anchor():
     # Build delay command: zero-delay should fire at current_tick anchor
-    delay_cmd = _delay_cmd("0", "bar.energy", "5")
-    schema = {"bar.energy": "int"}
-    compiler = CommandCompiler(schema, agent_target=True)
+    delay_cmd = _delay_cmd("0", "bar.energy", "5.0")
+    schema = {"bar.energy": "float"}
+    compiler = command_compiler(schema)
     compiled = compiler.compile_command(delay_cmd)
 
     scheduler = Scheduler(time_enabled=True)

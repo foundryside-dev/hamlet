@@ -130,7 +130,7 @@ def test_item_manager_assigns_vfs_profile_on_spawn():
         substrate=make_grid2d_substrate(),
         items_per_world=10,
         device=torch.device("cpu"),
-        schema=None,
+        symbols=None,
         vfs_registry=registry,
     )
 
@@ -227,7 +227,7 @@ def test_item_manager_preserves_vfs_profile_across_operations():
         substrate=make_grid2d_substrate(),
         items_per_world=10,
         device=torch.device("cpu"),
-        schema=None,
+        symbols=None,
         vfs_registry=registry,
     )
 

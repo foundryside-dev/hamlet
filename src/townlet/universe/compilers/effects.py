@@ -2,60 +2,49 @@
 
 from __future__ import annotations
 
-from typing import Any
+from collections.abc import Iterable, Mapping
 
-from townlet.config.effects_config import EffectsConfig
-from townlet.config.variables_config import VariablesConfig
+from pyparsing import ParseBaseException
+
+from townlet.config.effects_config import CommandConfig, EffectsConfig
+from townlet.config.items_config import ItemsCatalogConfig
 from townlet.effects.catalog import EffectCatalog
+from townlet.effects.compiler import CommandCompiler
+from townlet.effects.parser import CommandParser
 from townlet.universe.compiled import CompiledVFSProfiles
-from townlet.vfs.profiles import AMBIENT_ENGINE_NAMES
-from townlet.vfs.schema import VariableScope
+from townlet.universe.error_codes import ErrorCode
+from townlet.universe.errors import CompilationError, CompilationMessage
+from townlet.universe.source_map import SourceMap, locate
+from townlet.vfs.namespace import INTERACTION_PIPELINE, CommandSymbols, ExpressionSource, Namespace, ReadContext
+from townlet.vfs.profiles import CompiledItemProfile
+from townlet.vfs.schema import VariableDef
+from townlet.world.expression.type_checker import TypeCheckError
 
 
 class EffectsCompiler:
-    """Compile effects catalogs against the active schema."""
+    """Compile command pipelines (effects, affordance interactions, item interactions) against the one resolver."""
 
-    def build_schema(
+    def build_symbols(
         self,
         *,
-        bar_names: tuple[str, ...],
-        variables: VariablesConfig,
+        variables: Iterable[VariableDef],
+        meter_names: Iterable[str],
         compiled_vfs_profiles: CompiledVFSProfiles | None,
-    ) -> dict[str, str]:
-        """Build the runtime effect expression schema from compiler-owned artifacts."""
-        schema: dict[str, str] = {
-            "intensity": "float",
-            "elapsed_ticks": "float",
-            "duration_remaining": "float",
-        }
-        # The engine-published ambient names (`tick`) are read by bare name, exactly as
-        # VFS profile expressions read them (`vfs/profiles.py`). The registry carries
-        # them as global variables, so the effects runtime already resolves them; a
-        # declared clock is an authored global derived from `tick` and enters below.
-        schema.update(AMBIENT_ENGINE_NAMES)
-
-        for bar_name in bar_names:
-            schema[f"bar.{bar_name}"] = "float"
-            schema[f"target.bar.{bar_name}"] = "float"
-
-        for var in variables.declarations:
-            if var.scope == VariableScope.GLOBAL:
-                self._add_global_vfs_paths(schema, var.id, var.type)
-            elif var.scope == VariableScope.AGENT:
-                self._add_target_vfs_paths(schema, var.id, var.type)
-
-        if compiled_vfs_profiles is not None:
-            if compiled_vfs_profiles.item_profiles:
-                for profile in compiled_vfs_profiles.item_profiles.values():
-                    for compiled_var in profile.variables:
-                        schema[f"self.vfs.{compiled_var.name}"] = self._normalize_effect_schema_type(compiled_var.type)
-
-        return schema
+        expressions: Mapping[str, ExpressionSource],
+    ) -> CommandSymbols:
+        """The namespace every command pipeline resolves against, built as the environment builds it."""
+        item_profiles: Mapping[str, CompiledItemProfile] = {}
+        if compiled_vfs_profiles is not None and compiled_vfs_profiles.item_profiles is not None:
+            item_profiles = compiled_vfs_profiles.item_profiles
+        return CommandSymbols(
+            namespace=Namespace.of_registry(variables, meters=meter_names, item_profiles=item_profiles),
+            expressions=expressions,
+        )
 
     def compile_catalog(
         self,
         effects_config: EffectsConfig | None,
-        schema: dict[str, str],
+        symbols: CommandSymbols,
         *,
         time_enabled: bool,
     ) -> EffectCatalog | None:
@@ -63,23 +52,62 @@ class EffectsCompiler:
         if effects_config is None:
             return None
 
-        return EffectCatalog.from_config(effects_config, schema=schema, time_enabled=time_enabled)
+        return EffectCatalog.from_config(effects_config, symbols, time_enabled=time_enabled)
 
-    @staticmethod
-    def _add_target_vfs_paths(schema: dict[str, str], name: str, raw_type: Any) -> None:
-        schema_type = EffectsCompiler._normalize_effect_schema_type(raw_type)
-        schema[f"vfs.{name}"] = schema_type
-        schema[f"target.vfs.{name}"] = schema_type
+    def check_interactions(
+        self,
+        pipelines: Iterable[tuple[str, ReadContext, list[CommandConfig]]],
+        symbols: CommandSymbols,
+        *,
+        source_map: SourceMap | None,
+    ) -> None:
+        """Compile every affordance and item interaction pipeline once, refusing at the command's ``file:line``.
 
-    @staticmethod
-    def _add_global_vfs_paths(schema: dict[str, str], name: str, raw_type: Any) -> None:
-        """Register a global-scoped variable: plain and explicit-global roots, no target path."""
-        schema_type = EffectsCompiler._normalize_effect_schema_type(raw_type)
-        schema[f"vfs.{name}"] = schema_type
-        schema[f"global.vfs.{name}"] = schema_type
+        The environment compiles the same pipelines with the same compiler when it
+        builds its engines; this pass makes a spelling, type or context refusal a
+        compile-time diagnostic instead of a construction-time traceback.
+        """
+        parser = CommandParser()
+        issues: list[CompilationMessage] = []
+        for origin, context, commands in pipelines:
+            compiler = CommandCompiler(symbols.namespace, context=context, time_enabled=True, expressions=symbols.expressions)
+            for index, command in enumerate(commands):
+                command_origin = f"{origin}[{index}]"
+                try:
+                    compiler.compile_commands(parser.parse_commands([command]))
+                except (TypeCheckError, ValueError, ParseBaseException) as exc:
+                    issues.append(
+                        CompilationMessage(
+                            code=ErrorCode.EFFECT_COMPILE,
+                            message=f"{command_origin}: {exc}",
+                            location=locate(source_map, command_origin),
+                        )
+                    )
+        if issues:
+            raise CompilationError("Interaction pipelines", issues)
 
-    @staticmethod
-    def _normalize_effect_schema_type(raw_type: Any) -> str:
-        if raw_type == "scalar":
-            return "float"
-        return str(raw_type)
+
+def interaction_pipelines(
+    affordances: Iterable[tuple[str, Mapping[str, list[CommandConfig]]]],
+    items: ItemsCatalogConfig | None,
+) -> list[tuple[str, ReadContext, list[CommandConfig]]]:
+    """Every authored interaction pipeline with its source-map origin and read context.
+
+    ``affordances`` is ``(origin prefix, {stage: commands})`` per affordance. An item
+    interaction is bound to its item (``item.<x>``); an affordance interaction is not.
+    """
+    pipelines: list[tuple[str, ReadContext, list[CommandConfig]]] = []
+    for prefix, stages in affordances:
+        for stage, commands in stages.items():
+            pipelines.append((f"{prefix}:{stage}", INTERACTION_PIPELINE, list(commands)))
+    if items is not None:
+        item_context = INTERACTION_PIPELINE.with_item(True)
+        for item in items.item_types:
+            for stage in ("on_pickup", "on_use", "on_drop"):
+                commands = [CommandConfig.model_validate(command) for command in getattr(item.interactions, stage)]
+                pipelines.append((f"items:{item.id}:{stage}", item_context, commands))
+            for stage in ("local_commands", "inventory_commands"):
+                for verb in getattr(item.interactions, stage):
+                    commands = [CommandConfig.model_validate(command) for command in verb.effects]
+                    pipelines.append((f"items:{item.id}:{stage}:{verb.name}", item_context, commands))
+    return pipelines

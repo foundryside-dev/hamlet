@@ -46,7 +46,7 @@ def test_item_type_with_lifecycle():
         vfs_profile="food",
         interactions=ItemInteractionsConfig(
             on_pickup=[],
-            on_use=[{"modify": "target.bar.health", "value": "0.5"}],
+            on_use=[{"modify": "bar.health", "value": "0.5"}],
             on_drop=[],
         ),
         duration=100,  # Despawns after 100 ticks
@@ -60,16 +60,16 @@ def test_item_type_with_lifecycle():
 def test_item_interactions_use_effects_syntax():
     """Item interactions use Effects command syntax."""
     interactions = ItemInteractionsConfig(
-        on_pickup=[{"modify": "target.vfs.has_food", "value": "true"}],
+        on_pickup=[{"modify": "has_food", "value": "true"}],
         on_use=[
-            {"modify": "target.bar.energy", "value": "target.bar.energy + 0.3"},
+            {"modify": "bar.energy", "value": "bar.energy + 0.3"},
             {"spawn_effect": "ate_food", "target": "self", "intensity": 1.0},
         ],
-        on_drop=[{"modify": "target.vfs.has_food", "value": "false"}],
+        on_drop=[{"modify": "has_food", "value": "false"}],
     )
 
     assert len(interactions.on_use) == 2
-    assert interactions.on_use[0]["modify"] == "target.bar.energy"
+    assert interactions.on_use[0]["modify"] == "bar.energy"
 
 
 def test_item_type_rejects_custom_commands():
@@ -85,9 +85,7 @@ def test_item_type_rejects_custom_commands():
             on_pickup=[],
             on_use=[],
             on_drop=[],
-            local_commands=[
-                ItemCustomCommand(name="OPEN_UMBRELLA", description=None, effects=[{"modify": "target.bar.energy", "value": "1.0"}])
-            ],
+            local_commands=[ItemCustomCommand(name="OPEN_UMBRELLA", description=None, effects=[{"modify": "bar.energy", "value": "1.0"}])],
         ),
     )
     assert cfg.interactions.local_commands[0].name == "OPEN_UMBRELLA"
@@ -107,7 +105,7 @@ def test_items_catalog_minimal():
                 vfs_profile="food",
                 interactions=ItemInteractionsConfig(
                     on_pickup=[],
-                    on_use=[{"modify": "target.bar.energy", "value": "0.3"}],
+                    on_use=[{"modify": "bar.energy", "value": "0.3"}],
                     on_drop=[],
                 ),
             ),
@@ -287,7 +285,7 @@ def test_item_custom_commands_schema_and_naming():
     cmd = ItemCustomCommand(
         name="OPEN_UMBRELLA",
         description="Open it",
-        effects=[{"modify": "target.bar.energy", "value": "1.0"}],
+        effects=[{"modify": "bar.energy", "value": "1.0"}],
     )
     interactions = ItemInteractionsConfig(
         on_pickup=[],

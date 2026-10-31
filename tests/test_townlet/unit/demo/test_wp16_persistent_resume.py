@@ -69,7 +69,7 @@ def _author_pack(destination: Path, *, season_initial: float = 0.0) -> Path:
         "transition_rules": [
             {
                 "id": "advance_world",
-                "phase": "apply_social_residue_effects",
+                "phase": "apply_transition_rules",
                 "condition": None,
                 "writes": [
                     _advance("season", "1.0"),

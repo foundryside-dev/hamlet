@@ -7,11 +7,11 @@ from townlet.effects.schema import CommandNode, CommandType
 
 def test_command_node_modify():
     """CommandNode for modify command."""
-    node = CommandNode(type=CommandType.MODIFY, path="target.bar.energy", value_expr="target.bar.energy + 0.05")
+    node = CommandNode(type=CommandType.MODIFY, path="bar.energy", value_expr="bar.energy + 0.05")
 
     assert node.type == CommandType.MODIFY
-    assert node.path == "target.bar.energy"
-    assert node.value_expr == "target.bar.energy + 0.05"
+    assert node.path == "bar.energy"
+    assert node.value_expr == "bar.energy + 0.05"
 
 
 def test_command_node_spawn_effect():
@@ -28,27 +28,27 @@ def test_command_node_if():
     """CommandNode for if command with nested then/else."""
     node = CommandNode(
         type=CommandType.IF,
-        condition_expr="target.bar.energy < 0.2",
-        then_commands=[CommandNode(type=CommandType.MODIFY, path="target.vfs.is_crisis", value_expr="true")],
-        else_commands=[CommandNode(type=CommandType.MODIFY, path="target.vfs.is_crisis", value_expr="false")],
+        condition_expr="bar.energy < 0.2",
+        then_commands=[CommandNode(type=CommandType.MODIFY, path="is_crisis", value_expr="true")],
+        else_commands=[CommandNode(type=CommandType.MODIFY, path="is_crisis", value_expr="false")],
     )
 
     assert node.type == CommandType.IF
-    assert node.condition_expr == "target.bar.energy < 0.2"
+    assert node.condition_expr == "bar.energy < 0.2"
     assert len(node.then_commands) == 1
     assert len(node.else_commands) == 1
 
 
 def test_parser_modify_command():
     """Parser converts modify CommandConfig to CommandNode."""
-    config = CommandConfig(modify="target.bar.energy", value="target.bar.energy + 0.05")
+    config = CommandConfig(modify="bar.energy", value="bar.energy + 0.05")
 
     parser = CommandParser()
     node = parser.parse_command(config)
 
     assert node.type == CommandType.MODIFY
-    assert node.path == "target.bar.energy"
-    assert node.value_expr == "target.bar.energy + 0.05"
+    assert node.path == "bar.energy"
+    assert node.value_expr == "bar.energy + 0.05"
 
 
 def test_parser_spawn_effect_command():
@@ -70,9 +70,9 @@ def test_parser_if_command():
 
     config = CommandConfig.model_validate(
         {
-            "if": "target.bar.energy < 0.2",
-            "then": [{"modify": "target.vfs.is_crisis", "value": "true"}],
-            "else": [{"modify": "target.vfs.is_crisis", "value": "false"}],
+            "if": "bar.energy < 0.2",
+            "then": [{"modify": "is_crisis", "value": "true"}],
+            "else": [{"modify": "is_crisis", "value": "false"}],
         }
     )
 
@@ -80,7 +80,7 @@ def test_parser_if_command():
     node = parser.parse_command(config)
 
     assert node.type == CommandType.IF
-    assert node.condition_expr == "target.bar.energy < 0.2"
+    assert node.condition_expr == "bar.energy < 0.2"
     assert len(node.then_commands) == 1
     assert node.then_commands[0].type == CommandType.MODIFY
     assert len(node.else_commands) == 1
@@ -102,7 +102,7 @@ def test_parser_spawn_item_command():
 
 
 def test_parser_for_each_all_agents_is_a_resolver_collection():
-    config = CommandConfig.model_validate({"for_each": "all_agents", "do": [{"modify": "target.bar.health", "value": "target.bar.health"}]})
+    config = CommandConfig.model_validate({"for_each": "all_agents", "do": [{"modify": "bar.health", "value": "bar.health"}]})
 
     node = CommandParser().parse_command(config)
 
@@ -147,19 +147,19 @@ def test_parser_switch_command():
     """Parser converts switch CommandConfig to CommandNode."""
     # Note: cases[i]["do"] contains CommandConfig objects, not raw dicts
     config = CommandConfig(
-        switch="target.bar.energy",
+        switch="bar.energy",
         cases=[
-            {"when": "energy < 0.2", "do": [CommandConfig(modify="target.vfs.state", value="'critical'")]},
-            {"when": "energy < 0.5", "do": [CommandConfig(modify="target.vfs.state", value="'low'")]},
+            {"when": "energy < 0.2", "do": [CommandConfig(modify="state", value="'critical'")]},
+            {"when": "energy < 0.5", "do": [CommandConfig(modify="state", value="'low'")]},
         ],
-        default=[CommandConfig(modify="target.vfs.state", value="'normal'")],
+        default=[CommandConfig(modify="state", value="'normal'")],
     )
 
     parser = CommandParser()
     node = parser.parse_command(config)
 
     assert node.type == CommandType.SWITCH
-    assert node.switch_expr == "target.bar.energy"
+    assert node.switch_expr == "bar.energy"
     assert len(node.cases) == 2
     assert node.cases[0][0] == "energy < 0.2"  # when expression
     assert len(node.cases[0][1]) == 1  # do commands
@@ -171,8 +171,8 @@ def test_parser_parallel_command():
     config = CommandConfig.model_validate(
         {
             "parallel": [
-                {"modify": "target.bar.energy", "value": "target.bar.energy + 0.1"},
-                {"modify": "target.bar.mood", "value": "target.bar.mood + 0.05"},
+                {"modify": "bar.energy", "value": "bar.energy + 0.1"},
+                {"modify": "bar.mood", "value": "bar.mood + 0.05"},
             ]
         }
     )
@@ -188,7 +188,7 @@ def test_parser_parallel_command():
 
 def test_parser_delay_command():
     """Parser converts delay CommandConfig to CommandNode."""
-    config = CommandConfig.model_validate({"delay": "10", "do": [{"modify": "target.bar.energy", "value": "target.bar.energy + 0.5"}]})
+    config = CommandConfig.model_validate({"delay": "10", "do": [{"modify": "bar.energy", "value": "bar.energy + 0.5"}]})
 
     parser = CommandParser()
     node = parser.parse_command(config)
@@ -235,8 +235,8 @@ def test_parser_spawn_effect_expression_target():
 def test_parser_parse_commands_list():
     """Parser handles list of commands."""
     configs = [
-        CommandConfig(modify="target.bar.energy", value="target.bar.energy + 0.1"),
-        CommandConfig(modify="target.bar.mood", value="target.bar.mood + 0.05"),
+        CommandConfig(modify="bar.energy", value="bar.energy + 0.1"),
+        CommandConfig(modify="bar.mood", value="bar.mood + 0.05"),
     ]
 
     parser = CommandParser()

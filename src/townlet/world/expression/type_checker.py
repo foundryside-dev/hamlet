@@ -33,6 +33,7 @@ from townlet.world.expression.ast_nodes import (
     UnaryOp,
     Variable,
 )
+from townlet.world.expression.functions import branch_type
 
 
 class TypeCheckError(Exception):
@@ -375,12 +376,11 @@ class TypeChecker(ASTVisitor):
         true_type = node.true_branch.accept(self)
         false_type = node.false_branch.accept(self)
 
-        # Branches must match
-        if true_type != false_type:
+        # Branches must unify: equal, numeric promotion only if equal, or a reference and its int null.
+        unified = branch_type(true_type, false_type)
+        if true_type != false_type and (unified is None or {true_type, false_type} <= {"int", "float"}):
             raise TypeCheckError(f"If branches must have same type. Got {true_type} (true) and {false_type} (false)")
-
-        # Result type is branch type (type cast for mypy)
-        return str(true_type)
+        return str(unified)
 
     def visit_index_access(self, node: IndexAccess) -> str:
         """Type check index access.

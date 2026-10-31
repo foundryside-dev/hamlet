@@ -166,8 +166,6 @@ def test_compile_recovers_from_corrupted_cache(tmp_path: Path, monkeypatch: pyte
     [
         "compiled_vfs_profiles",
         "compiled_effect_catalog",
-        "effects_schema",
-        "vfs_expression_schema",
         "vfs_history_spec",
         "vfs_evaluation_marks",
         "all_levels",

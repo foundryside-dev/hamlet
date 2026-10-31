@@ -37,10 +37,6 @@ from townlet.world.expression.ast_nodes import ASTNode, PathAccess, Variable
 
 MAX_WINDOW_SIZE = 256
 
-TEMPORAL_FUNCTIONS = frozenset({"lag", "delta", "moving_average", "ema", "rate_of_change", "rising_edge", "falling_edge"})
-"""The operators that read a history ring. ``lag`` alone never reads its argument's
-current value, so it alone may close a self-reference."""
-
 
 def history_key(node: ASTNode) -> str | None:
     """The history key a temporal operator's first argument names, or None if it names no value."""

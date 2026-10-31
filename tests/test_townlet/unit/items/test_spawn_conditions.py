@@ -97,13 +97,13 @@ def test_vfs_condition_gates_spawn() -> None:
                 "item_type": "apple",
                 "spawn_count": 1,
                 "placement": {"mode": "random"},
-                "when": "vfs.is_raining",
+                "when": "is_raining",
             }
         ]
     )
 
     rule = appearance.items[0]
-    _compile_when(rule, {"vfs.is_raining": "bool", "bar.energy": "float"})
+    _compile_when(rule, {"is_raining": "bool", "bar.energy": "float"})
 
     class _DummyProfile:
         variables: tuple = ()
@@ -148,7 +148,7 @@ def test_vfs_condition_gates_spawn() -> None:
 
 
 def test_engine_tick_condition_and_boolean_logic() -> None:
-    """The engine clock is a global registry variable, read as `vfs.tick` like any other."""
+    """The engine clock is a global registry variable, read as `tick` like any other."""
     catalog = ItemsCatalogConfig.from_yaml(path=Path("configs/test/items_smoke/items.yaml"))
     appearance = _appearance(
         items=[
@@ -156,13 +156,13 @@ def test_engine_tick_condition_and_boolean_logic() -> None:
                 "item_type": "apple",
                 "spawn_count": 1,
                 "placement": {"mode": "random"},
-                "when": "vfs.is_raining and vfs.tick > 5",
+                "when": "is_raining and tick > 5",
             }
         ]
     )
 
     rule = appearance.items[0]
-    _compile_when(rule, {"vfs.is_raining": "bool", "vfs.tick": "float", "bar.energy": "float"})
+    _compile_when(rule, {"is_raining": "bool", "tick": "float", "bar.energy": "float"})
 
     class _DummyProfile:
         variables: tuple = ()
@@ -249,7 +249,7 @@ def test_unknown_symbol_rejected_at_compile_time() -> None:
         item_type="apple",
         spawn_count=1,
         placement={"mode": "random"},
-        when="vfs.unknown_flag",
+        when="unknown_flag",
     )
 
     with pytest.raises(TypeCheckError):
@@ -289,12 +289,12 @@ def test_equality_and_inequality_operators() -> None:
                 "item_type": "apple",
                 "spawn_count": 1,
                 "placement": {"mode": "random"},
-                "when": "vfs.mode == 1",
+                "when": "mode == 1",
             }
         ]
     )
     rule_eq = appearance_eq.items[0]
-    _compile_when(rule_eq, {"vfs.mode": "float", "bar.energy": "float"})
+    _compile_when(rule_eq, {"mode": "float", "bar.energy": "float"})
 
     class _DummyProfile:
         variables: tuple = ()
@@ -345,12 +345,12 @@ def test_equality_and_inequality_operators() -> None:
                 "item_type": "apple",
                 "spawn_count": 1,
                 "placement": {"mode": "random"},
-                "when": "vfs.mode != 0",
+                "when": "mode != 0",
             }
         ]
     )
     rule_neq = appearance_neq.items[0]
-    _compile_when(rule_neq, {"vfs.mode": "float", "bar.energy": "float"})
+    _compile_when(rule_neq, {"mode": "float", "bar.energy": "float"})
 
     # mode=0 -> no spawn
     registry._storage["mode"] = torch.tensor(0)
@@ -374,12 +374,12 @@ def test_or_and_not_boolean_operators() -> None:
                 "item_type": "apple",
                 "spawn_count": 1,
                 "placement": {"mode": "random"},
-                "when": "vfs.is_day or vfs.is_special",
+                "when": "is_day or is_special",
             }
         ]
     )
     rule_or = appearance_or.items[0]
-    _compile_when(rule_or, {"vfs.is_day": "bool", "vfs.is_special": "bool", "bar.energy": "float"})
+    _compile_when(rule_or, {"is_day": "bool", "is_special": "bool", "bar.energy": "float"})
 
     class _DummyProfile:
         variables: tuple = ()
@@ -440,12 +440,12 @@ def test_or_and_not_boolean_operators() -> None:
                 "item_type": "apple",
                 "spawn_count": 1,
                 "placement": {"mode": "random"},
-                "when": "not vfs.is_day",
+                "when": "not is_day",
             }
         ]
     )
     rule_not = appearance_not.items[0]
-    _compile_when(rule_not, {"vfs.is_day": "bool", "bar.energy": "float"})
+    _compile_when(rule_not, {"is_day": "bool", "bar.energy": "float"})
 
     # is_day=True -> no spawn (because NOT)
     registry._storage["is_day"] = torch.tensor(True)

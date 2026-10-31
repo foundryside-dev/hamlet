@@ -39,7 +39,7 @@ class CommandNode:
     type: CommandType
 
     # modify command fields
-    path: str | None = None  # Target path (e.g., "target.bar.energy")
+    path: str | None = None  # Target path (e.g., "bar.energy")
     value_expr: str | None = None  # Expression string (for debugging/serialization)
     value_ast: Any | None = None  # ✅ Pre-compiled AST (from Phase 1 expression language)
 

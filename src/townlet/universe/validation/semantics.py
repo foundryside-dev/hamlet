@@ -340,7 +340,7 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path, source_map:
             for stage_commands in aff.interactions.values():
                 for cmd in stage_commands:
                     modify = getattr(cmd, "modify", None)
-                    if isinstance(modify, str) and modify.startswith("target.bar."):
+                    if isinstance(modify, str) and modify.startswith("bar."):
                         meter_name = modify.split(".")[-1]
                         if meter_name not in env_meter_names:
                             invalid_interaction_meters.append(meter_name)

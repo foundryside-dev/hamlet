@@ -53,7 +53,7 @@ def test_scalar_social_write_respects_active_selection(active, condition, attemp
         [
             dict(
                 id="global",
-                phase="apply_social_residue_effects",
+                phase="apply_transition_rules",
                 condition=condition,
                 writes=[dict(variable_id="state", expression="state", composition="overwrite")],
             )

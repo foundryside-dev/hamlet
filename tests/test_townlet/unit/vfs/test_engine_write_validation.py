@@ -113,7 +113,7 @@ def _advance_writes(pack: Path, *writes: dict[str, Any]) -> None:
 def _transition_rule(pack: Path, write: dict[str, Any]) -> None:
     rule = {
         "id": "typed",
-        "phase": "apply_social_residue_effects",
+        "phase": "apply_transition_rules",
         "condition": None,
         "writes": [{**write, "effect": None}],
     }

@@ -24,7 +24,8 @@ from townlet.world.expression.ast_nodes import (
     UnaryOp,
     Variable,
 )
-from townlet.world.expression.history import MAX_WINDOW_SIZE, TEMPORAL_FUNCTIONS, history_key
+from townlet.world.expression.functions import TEMPORAL_FUNCTIONS
+from townlet.world.expression.history import MAX_WINDOW_SIZE, history_key
 from townlet.world.expression.type_checker import TypeCheckError
 
 if TYPE_CHECKING:
@@ -65,7 +66,7 @@ def same_instant_refs(node: ASTNode) -> set[str]:
     if isinstance(node, Variable):
         return {node.name}
     if isinstance(node, PathAccess):
-        return {node.segments[0]}  # a reference variable a path dereferences (``target.bar.x``)
+        return set()  # a meter (``bar.x``) or item state (``item.x``): never a profile variable
     if isinstance(node, FunctionCall) and node.function_name == "lag":
         return set().union(*(same_instant_refs(argument) for argument in node.arguments[1:]))
     return set().union(*(same_instant_refs(child) for child in _children(node)))

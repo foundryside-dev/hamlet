@@ -185,6 +185,35 @@ def _ensure_same_vector_width(name: str, left: str, right: str) -> None:
         )
 
 
+REFERENCE_TYPES = frozenset({"agent_ref", "item_ref"})
+"""Batch-row reference types: a row of this world, or the null row -1 (an int)."""
+
+
+def branch_type(left: str, right: str) -> str | None:
+    """The type two selected branches unify to, or None when they do not.
+
+    Equal types unify to themselves, numerics promote, and a reference unifies with an
+    int (its null, ``-1``) to the reference: ``where(c, ref, -1)``. Whether the int is
+    the null is the write's world-locality proof to make, not the type checker's.
+    """
+    if left == right:
+        return left
+    if left in Numeric and right in Numeric:
+        return "float" if "float" in {left, right} else "int"
+    if left in REFERENCE_TYPES and right == "int":
+        return left
+    if right in REFERENCE_TYPES and left == "int":
+        return right
+    return None
+
+
+def _ensure_branches(name: str, left: str, right: str) -> None:
+    if branch_type(left, right) is None:
+        raise ValueError(
+            f"Function '{name}' requires matching branch types, numeric promotion, or a reference and its int null; got {left} and {right}"
+        )
+
+
 def _ensure_matching_or_numeric(name: str, left: str, right: str) -> None:
     if left == right:
         return
@@ -236,10 +265,10 @@ def _return_vecnf(_: list[str]) -> str:
 
 
 def _return_where(args: list[str]) -> str:
-    left, right = args[1], args[2]
-    if left in Numeric and right in Numeric:
-        return "float" if "float" in {left, right} else "int"
-    return left
+    unified = branch_type(args[1], args[2])
+    if unified is None:
+        return args[1]
+    return unified
 
 
 def _return_masked_numeric(args: list[str]) -> str:
@@ -1075,7 +1104,7 @@ _register(
         name="where",
         signature="where(condition, if_true, if_false)",
         summary="Select `if_true` where `condition` holds, else `if_false`; the branches must share a type.",
-        returns="the branch type (numeric branches promote)",
+        returns="the branch type (numeric branches promote; a reference and an int give the reference)",
         family=FAMILY_LOGIC,
         requires=(),
         min_args=3,
@@ -1084,7 +1113,7 @@ _register(
         validate_args=lambda args: _run_validators(
             lambda: _ensure_arg_count("where", args, 3, 3),
             lambda: _ensure_bool_arg("where", args[0], 1),
-            lambda: _ensure_matching_or_numeric("where", args[1], args[2]),
+            lambda: _ensure_branches("where", args[1], args[2]),
         ),
         eval_fn=_eval_where,
     )
@@ -1600,3 +1629,45 @@ _register(
         eval_fn=_eval_direction_to_affordance,
     )
 )
+
+
+TEMPORAL_FUNCTIONS: frozenset[str] = frozenset(name for name, spec in FUNCTION_SPECS.items() if REQUIRES_HISTORY in spec.requires)
+"""The operators that read a history ring: every function that requires temporal history.
+
+Derived from ``FUNCTION_SPECS``, never listed by hand, so a new history operator joins
+it by declaring ``REQUIRES_HISTORY``. ``lag`` alone never reads its argument's current
+value, so it alone may close a self-reference."""
+
+
+def unserved_requirement(node: ASTNode, carried: frozenset[str]) -> str | None:
+    """The first function ``node`` calls whose context requirement ``carried`` lacks, described; None if all are served.
+
+    The one predicate every consumer refuses context-bound functions by: a profile
+    expression carries history, step and positions; an effect pipeline carries
+    positions; a transition write and a spawn predicate carry none.
+    """
+    from dataclasses import fields
+
+    from townlet.world.expression.ast_nodes import ASTNode as _ASTNode
+    from townlet.world.expression.ast_nodes import FunctionCall
+
+    found: list[str] = []
+
+    def visit(value: Any) -> None:
+        if found:
+            return
+        if isinstance(value, FunctionCall):
+            spec = FUNCTION_SPECS.get(value.function_name)
+            missing = [requirement for requirement in (spec.requires if spec is not None else ()) if requirement not in carried]
+            if missing:
+                found.append(f"'{value.function_name}', which needs {' and '.join(missing)}")
+                return
+        if isinstance(value, _ASTNode):
+            for ast_field in fields(value):
+                visit(getattr(value, ast_field.name))
+        elif isinstance(value, list | tuple):
+            for item in value:
+                visit(item)
+
+    visit(node)
+    return found[0] if found else None

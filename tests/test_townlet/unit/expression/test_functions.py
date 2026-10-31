@@ -26,7 +26,6 @@ def _eval_expr(expr: str, vfs: dict[str, torch.Tensor], step: int | None) -> tor
     context = ExecutionContext(
         bars={},
         vfs=vfs,
-        affordances={},
         temporal={},
         device=torch.device("cpu"),
         step=step,

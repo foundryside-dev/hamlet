@@ -35,7 +35,7 @@ def _write_payload(**overrides) -> dict:
 def _rule_payload(**overrides) -> dict:
     payload = {
         "id": "seen_stealing_damages_reputation",
-        "phase": "apply_social_residue_effects",
+        "phase": "apply_transition_rules",
         "condition": "was_observed and chosen_action == 7",
         "writes": [_write_payload()],
     }

@@ -64,116 +64,6 @@ def _check_bars_materialised(bars: dict[str, torch.Tensor], before: dict[str, to
             raise RuntimeError(f"Bar '{name}' is a broadcast view (stride {tuple(tensor.stride())}); a bar must own its rows")
 
 
-class _TargetAwareExecutionContext(ExprExecutionContext):
-    """Execution context that supports target. and self. prefix resolution.
-
-    This wrapper extends ExprExecutionContext to handle target.bar.*, target.vfs.*,
-    self.bar.*, and self.vfs.* paths by delegating to pre-indexed dictionaries.
-    """
-
-    def __init__(
-        self,
-        bars: dict[str, torch.Tensor],
-        vfs: dict[str, torch.Tensor],
-        target_bars: dict[str, torch.Tensor],
-        target_vfs: dict[str, torch.Tensor],
-        self_bars: dict[str, torch.Tensor] | None = None,  # NEW
-        self_vfs: dict[str, torch.Tensor] | None = None,  # NEW
-        vfs_registry: Any | None = None,  # NEW: For item-scoped VFS lookups
-        self_index: int | None = None,  # NEW
-        self_is_item: bool = False,  # NEW
-        device: torch.device | str | None = None,
-        agent_positions: torch.Tensor | None = None,
-        affordance_positions: dict[str, torch.Tensor] | None = None,
-        *,
-        target_index: int | None,
-        target_is_item: bool,
-        world_globals: frozenset[str],
-        rng: torch.Generator | None,
-    ):
-        resolved_device = torch.device(device) if device is not None else torch.device("cpu")
-        super().__init__(
-            bars=bars,
-            vfs=vfs,
-            affordances={},
-            temporal={},
-            device=resolved_device,
-            agent_positions=agent_positions,
-            affordance_positions=affordance_positions,
-            rng=rng,
-        )
-        self.target_bars = target_bars
-        self.target_vfs = target_vfs
-        self.self_bars = self_bars or {}  # NEW
-        self.self_vfs = self_vfs or {}  # NEW
-        self.vfs_registry = vfs_registry  # NEW
-        self.self_index = self_index  # NEW
-        self.self_is_item = self_is_item  # NEW
-        self.target_index = target_index
-        self.target_is_item = target_is_item
-        # Globals whose `vfs` entry is already this context's world value (S1), so a
-        # `vfs.<id>` read returns it as-is instead of gathering it by agent rows.
-        self.world_globals = world_globals
-
-    def get(self, path: str) -> torch.Tensor:
-        """Resolve dotted path with target. and self. prefix support.
-
-        Args:
-            path: Dotted path like "bar.energy", "target.bar.energy", or "self.vfs.durability"
-
-        Returns:
-            Tensor value from context
-
-        Raises:
-            KeyError: If path not found
-        """
-        parts = path.split(".")
-
-        # Handle target. prefix. An item target (item-scoped effect, inventory loop) is
-        # an item row, read from its profile exactly as `set_path` writes it.
-        if parts[0] == "target":
-            if self.target_is_item:
-                if parts[1] == "vfs" and len(parts) >= 3:
-                    return self._read_item_vfs(self.target_index, ".".join(parts[2:]))
-                raise KeyError(f"Target path '{path}' not found: the target is an item, which has only item-profile state")
-            if parts[1] == "bar" and len(parts) == 3:
-                return self.target_bars[parts[2]]
-            elif parts[1] == "vfs" and len(parts) >= 3:
-                return self.target_vfs[".".join(parts[2:])]
-            else:
-                raise KeyError(f"Target path '{path}' not found in execution context")
-
-        # NEW: Handle self. prefix
-        if parts[0] == "self":
-            # Special handling for self.vfs.* when self is an item
-            if parts[1] == "vfs" and len(parts) >= 3 and self.self_is_item:
-                return self._read_item_vfs(self.self_index, ".".join(parts[2:]))
-            elif parts[1] == "bar" and len(parts) == 3:
-                return self.self_bars[parts[2]]
-            elif parts[1] == "vfs" and len(parts) >= 3:
-                return self.self_vfs[".".join(parts[2:])]
-            else:
-                raise KeyError(f"Self path '{path}' not found in execution context")
-
-        if parts[0] == "vfs" and len(parts) == 2 and parts[1] in self.world_globals:
-            return self.vfs[parts[1]]
-
-        # Delegate to parent for non-target/non-self paths
-        return super().get(path)
-
-    def _read_item_vfs(self, index: int | None, var_name: str) -> torch.Tensor:
-        """One item row's profile variable, as a tensor on this context's device."""
-        if self.vfs_registry is None or index is None:
-            raise ValueError("VFS registry or item index not set for item-scoped VFS lookup")
-        profile_name = self.vfs_registry.get_item_profile_for_index(index)
-        if profile_name is None:
-            raise KeyError(f"No item profile registered for vfs_index {index}")
-        value = self.vfs_registry.read_item(profile_name, var_name, index, reader="engine")
-        if not isinstance(value, torch.Tensor):
-            return torch.tensor(value, dtype=torch.float32, device=self.device)
-        return value.to(self.device)
-
-
 class CommandExecutor:
     """Execute effect commands against runtime context.
 
@@ -782,110 +672,62 @@ class CommandExecutor:
         return None
 
     def _make_eval_context(self, context: ExecutionContext, effect: Any | None = None) -> ExprExecutionContext:
-        """Convert ExecutionContext to ExprExecutionContext.
+        """The expression context of one pipeline step, resolved as ``ExecutionContext.get_path`` resolves.
+
+        Every value is this pipeline's world's (S1): a bare global or affordance variable
+        is the world's row, a bare agent variable and ``bar.<m>`` the world's agent's row,
+        ``item.<x>`` the bound item's state, and the active effect binds its locals
+        (``intensity``, ``elapsed_ticks``, ``duration_remaining``). A context bound to no
+        world reads the whole batch.
 
         Args:
             context: Effect execution context
             effect: Optional ActiveEffect instance (overrides context.effect)
-
-        Returns:
-            Expression evaluation context
         """
         active_effect = effect if effect is not None else context.effect
-
-        # Build dictionaries for ExprExecutionContext
-        bars_dict = {}
-        vfs_dict = {}
-        # Resolve device from bars when available; otherwise CPU.
         device = next(iter(context.bars.values())).device if context.bars else torch.device("cpu")
+        agent_row = context.agent_read_row()
+        world_row = context.world_row()
 
-        # Add effect-specific variables (if available)
+        vfs_dict: dict[str, torch.Tensor] = {}
         if active_effect:
-            # Make effect variables available as scalars
             vfs_dict["intensity"] = torch.tensor(active_effect.intensity, device=device)
             vfs_dict["elapsed_ticks"] = torch.tensor(active_effect.elapsed_ticks, device=device, dtype=torch.float32)
             vfs_dict["duration_remaining"] = torch.tensor(active_effect.duration_remaining, device=device, dtype=torch.float32)
 
-        # Add bars
-        for bar_name, tensor in context.bars.items():
-            bars_dict[bar_name] = tensor
-
-        # Add VFS variables from the current registry. World state (a global, or an
-        # affordance variable's rows) has one row per world (S1); a context bound to one
-        # world reads that world's row, a context bound to no world reads every world's.
-        world_row = context.world_row()
-        global_ids: set[str] = set()
+        bars_dict = {name: ExecutionContext._row(tensor, agent_row) for name, tensor in context.bars.items()}
         if context.vfs_registry:
             for var_id, var_def in context.vfs_registry.variables.items():
-                tensor = context.vfs_registry.get(var_id, reader="engine")
-                if var_def.scope in (VariableScope.GLOBAL, VariableScope.AFFORDANCE):
-                    global_ids.add(var_id)
-                    if world_row is not None:
-                        tensor = tensor[world_row]
-                vfs_dict[var_id] = tensor
+                row = agent_row if var_def.scope == VariableScope.AGENT else world_row
+                vfs_dict[var_id] = ExecutionContext._row(context.vfs_registry.get(var_id, reader="engine"), row)
 
-        # Build target/self scoped views when present. World state is not entity state: it
-        # has no `target.`/`self.` spelling.
-        target_bars = {}
-        target_vfs = {}
-        if context.target_index is not None and not context.target_is_item:
-            for bar_name, tensor in bars_dict.items():
-                target_bars[bar_name] = tensor if tensor.dim() == 0 else tensor[context.target_index]
-            for var_name, tensor in vfs_dict.items():
-                if var_name not in global_ids:
-                    target_vfs[var_name] = tensor if tensor.dim() == 0 else tensor[context.target_index]
-
-        self_bars = {}
-        self_vfs = {}
-        if context.self_index is not None and not context.self_is_item:
-            for bar_name, tensor in bars_dict.items():
-                self_bars[bar_name] = tensor if tensor.dim() == 0 else tensor[context.self_index]
-            for var_name, tensor in vfs_dict.items():
-                if var_name not in global_ids:
-                    self_vfs[var_name] = tensor if tensor.dim() == 0 else tensor[context.self_index]
+        item_row = context.bound_item()
+        item_state = None if item_row is None else context.read_item_state(item_row)
 
         # Spatial reads evaluate in float32, as the VFS evaluator hands them (grid
         # positions are integer cells; euclidean distance takes a square root).
-        agent_positions = None if context.agent_positions is None else context.agent_positions.to(dtype=torch.float32, device=device)
+        # The agent's own position row when the pipeline has a world (S1), so a spatial
+        # read is that agent's, like every other read here.
+        agent_positions = None
+        if context.agent_positions is not None:
+            agent_positions = context.agent_positions.to(dtype=torch.float32, device=device)
+            if agent_row is not None:
+                agent_positions = agent_positions[agent_row : agent_row + 1]
         affordance_positions = (
             None
             if context.affordance_positions is None
             else {name: position.to(dtype=torch.float32, device=device) for name, position in context.affordance_positions.items()}
         )
 
-        rng = self._random_stream(context, device)
-
-        # Always use the prefix-aware context when self or target indices are present
-        if context.target_index is not None or context.self_index is not None:
-            return _TargetAwareExecutionContext(
-                rng=rng,
-                bars=bars_dict,
-                vfs=vfs_dict,
-                target_bars=target_bars,
-                target_vfs=target_vfs,
-                self_bars=self_bars,
-                self_vfs=self_vfs,
-                vfs_registry=context.vfs_registry,
-                self_index=context.self_index,
-                self_is_item=context.self_is_item,
-                target_index=context.target_index,
-                target_is_item=context.target_is_item,
-                world_globals=frozenset(global_ids) if world_row is not None else frozenset(),
-                device=device,
-                agent_positions=agent_positions,
-                affordance_positions=affordance_positions,
-            )
-
-        # No self/target: fall back to basic context
         return ExprExecutionContext(
             bars=bars_dict,
             vfs=vfs_dict,
-            affordances={},
             temporal={},
+            item_state=item_state,
             device=device,
             agent_positions=agent_positions,
             affordance_positions=affordance_positions,
-            rng=rng,
+            rng=self._random_stream(context, device),
         )
 
     def execute_commands(self, commands: list[CommandNode], context: ExecutionContext) -> None:

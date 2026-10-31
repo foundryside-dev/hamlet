@@ -19,7 +19,7 @@
 **When to Read**: Authoring any "state changes every tick when ..." mechanic — decay, accumulation, social traces (trust damage, reputation, sanctions), wear — or debugging why a rule does or does not fire
 
 **AI-Friendly Summary**:
-The pack-scope `transition_rules` declaration (conventionally `<config_pack>/transition_rules.yaml`) is the authoring surface for VTC transition rules. Each rule declares a `phase`, an optional `condition`, and one or more writes to `global`, `agent` or `affordance` VFS variables, executed by `env.step` at the declared phase (canonically `apply_social_residue_effects`). The declaration is validated at load by a no-defaults DTO (`townlet.config.transition_rules_config.TransitionRulesConfig`, `extra="forbid"`): unknown or typo'd keys fail at parse, and the behavioural fields `condition`, `clamp`, `effect` must be set explicitly (`null` included). What a rule reads is derived from its ASTs at compile (`CompiledVTCTransitionRule.reads`); masking follows the target variable's declared scope, never an authored annotation; telemetry identifies a rule by its `id`.
+The pack-scope `transition_rules` declaration (conventionally `<config_pack>/transition_rules.yaml`) is the authoring surface for VTC transition rules. Each rule declares a `phase`, an optional `condition`, and one or more writes to `global`, `agent` or `affordance` VFS variables, executed by `env.step` at the declared phase (canonically `apply_transition_rules`). The declaration is validated at load by a no-defaults DTO (`townlet.config.transition_rules_config.TransitionRulesConfig`, `extra="forbid"`): unknown or typo'd keys fail at parse, and the behavioural fields `condition`, `clamp`, `effect` must be set explicitly (`null` included). What a rule reads is derived from its ASTs at compile (`CompiledVTCTransitionRule.reads`); masking follows the target variable's declared scope, never an authored annotation; telemetry identifies a rule by its `id`.
 
 **Reading Strategy**:
 - **Quick Reference**: "Field Reference" below
@@ -47,7 +47,7 @@ See [declaration discovery](declarations.md).
 version: "1.0"            # required, literal
 transition_rules:         # required list (may be empty, but say so explicitly)
   - id: "seen_stealing_damages_reputation"
-    phase: "apply_social_residue_effects"
+    phase: "apply_transition_rules"
     condition: "was_observed and chosen_action == STEAL"   # or null
     writes:
       - variable_id: "public_reputation"
@@ -59,10 +59,12 @@ transition_rules:         # required list (may be empty, but say so explicitly)
 ```
 
 The compiler derives this rule's reads as `("chosen_action", "was_observed")` — the
-variables its condition names (the expression is a literal). Every spelling the write
-namespace admits (`x`, `vfs.x`, `self.vfs.x`, `target.vfs.x`, and `bar.x` / `self.bar.x` /
-`target.bar.x` for a meter) resolves to the variable's id; an expression naming nothing
-declared is refused by the type check, so a rule cannot claim to read what does not exist.
+variables its condition names (the expression is a literal). A rule reads a variable by its
+bare id and a meter as `bar.<name>` (one spelling per reference, VFS round-2 S5; a write's
+`variable_id` naming a meter is `bar.<name>` too); reads resolve to storage names through the
+one resolver, an old spelling (`vfs.x`, `self.vfs.x`, `target.bar.m`, a bare meter name)
+refuses naming the one to write, and an expression naming nothing declared refuses, so a rule
+cannot claim to read what does not exist.
 When a rule reads an *expression* variable, the compiler inlines that variable's expression
 into the rule's AST first (WP17 S4), so the derived reads name the **stored** state the rule
 actually reads — a condition `scaled_public > 0.0` over `scaled_public: public_state *
@@ -75,7 +77,7 @@ immutable_scale` derives `("immutable_scale", "public_state")`, not `("scaled_pu
 | field | required | notes |
 |---|---|---|
 | `id` | yes | unique across pack-scope transition declarations; the telemetry label is `id:effect` (or `id:variable_id` when `effect` is null) |
-| `phase` | yes | canonically `apply_social_residue_effects`; writes inherit it; any phase in the closed graph is admitted |
+| `phase` | yes | canonically `apply_transition_rules`; writes inherit it; any phase in the closed graph is admitted |
 | `condition` | yes, nullable | rule-level gate; `null` = unconditional |
 | `writes` | yes, non-empty | see below |
 | `priority` | no (computed) | defaults to declaration order |

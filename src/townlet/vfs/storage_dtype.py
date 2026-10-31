@@ -43,8 +43,14 @@ def admitted_write_result_types(var_type: str) -> frozenset[str]:
     """Expression-DSL result types a write expression may produce for ``var_type``.
 
     Mirrors ``VFSProfileCompiler.compile_variable``: a scalar admits the DSL's two
-    numeric types, a bool admits only bool, integer storage admits only int.
+    numeric types, a bool admits only bool, integer storage admits only int, and a
+    batch-row reference also admits a read of its own type (``aref <- aref2``,
+    ``where(c, aref2, -1)``). A cross-typed reference (``item_ref <- agent_ref``) is
+    refused; whether an int is the null or ``agent_id`` is the write's world-locality
+    proof (``vfs.vtc._world_local_reference``).
     """
+    if var_type in BATCH_ROW_REFERENCE_TYPES:
+        return frozenset({"int", var_type})
     dtype = storage_dtype(var_type)
     if dtype == torch.bool:
         return frozenset({"bool"})

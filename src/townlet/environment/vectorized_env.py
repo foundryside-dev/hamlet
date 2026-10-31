@@ -34,6 +34,7 @@ from townlet.items import InventoryState, ItemActionHandler, ItemManager
 from townlet.universe.dto import RuntimeActionSpace
 from townlet.universe.dto.token_spec import item_capacity
 from townlet.vfs.evaluator import VFSEvaluator
+from townlet.vfs.namespace import CommandSymbols, Namespace, expression_sources
 from townlet.vfs.profiles import CompiledGlobalProfile
 from townlet.vfs.registry import VariableRegistry
 from townlet.vfs.transition_schedule import VTCTransitionContext, VTCTransitionRunner, VTCTransitionState
@@ -216,9 +217,6 @@ class VectorizedHamletEnv:
             if effect_catalog is not None
             else None
         )
-        if universe.effects_schema is None:
-            raise ValueError("Compiled universe is missing effects_schema. Recompile the config pack before creating an environment.")
-        self.effects_schema = dict(universe.effects_schema)
 
         # Bars configuration (per-level)
         self.bars_config = level.bars
@@ -608,6 +606,20 @@ class VectorizedHamletEnv:
         meter_name_to_index = dict(self.metadata.meter_name_to_index)
         self.meter_name_to_index = meter_name_to_index
 
+        # The one resolver every interaction pipeline compiles against (VFS round-2 S5),
+        # built from the same compiled products, by the same constructor, as the compiler's.
+        expression_profiles = (
+            ()
+            if universe.compiled_vfs_profiles is None
+            else (universe.compiled_vfs_profiles.global_profile, universe.compiled_vfs_profiles.agent_profile)
+        )
+        self.command_symbols = CommandSymbols(
+            namespace=Namespace.of_registry(
+                self.vfs_variables, meters=tuple(meter.name for meter in self.level.bars.meters), item_profiles=item_profiles or {}
+            ),
+            expressions=expression_sources(expression_profiles),
+        )
+
     def _initialize_dac_engine(self) -> None:
         """Construct the DAC reward backend and prepare the runtime-registry slot.
 
@@ -662,7 +674,7 @@ class VectorizedHamletEnv:
             num_worlds=num_agents,
             substrate=self.substrate,
             device=self.device,
-            schema=self.effects_schema,
+            symbols=self.command_symbols,
             vfs_registry=self.vfs_registry,
             effect_manager=self.effect_manager,
         )
@@ -682,7 +694,7 @@ class VectorizedHamletEnv:
 
         Phase method of __init__ (hamlet-2559b98232). Must run after the
         item subsystem; depends on the VTC modulation program, VFS registry,
-        effects schema, command executor, and effect manager.
+        command symbols, command executor, and effect manager.
         """
         self.affordance_engine = AffordanceEngine(
             tuple(self.level.affordances.affordances),
@@ -691,7 +703,7 @@ class VectorizedHamletEnv:
             self.meter_name_to_index,
             modulation_program=self.vtc_modulation_program,
             vfs_registry=self.vfs_registry,
-            effects_schema=self.effects_schema,
+            command_symbols=self.command_symbols,
             command_executor=self.command_executor,
             effect_manager=self.effect_manager,
             meter_bounds_min=self.meter_bounds_min,
@@ -1234,11 +1246,6 @@ class VectorizedHamletEnv:
                     step=self.global_tick,  # HIGH-01: Use global tick instead of agent 0
                     agent_positions=self.positions.to(dtype=torch.float32, device=self.device),
                     affordance_positions={k: v.to(dtype=torch.float32, device=self.device) for k, v in self.affordances.items()},
-                    vfs_types={name: var.type for name, var in self.vfs_registry.variables.items()},
-                    num_agents=self.num_agents,
-                    item_vfs=self.vfs_registry.item_vfs,
-                    item_profile_map=self.vfs_registry.item_profile_map,
-                    item_index_to_profile=self.vfs_registry.item_vfs_index_to_profile,
                 )
 
                 self._write_back_profile_expressions(
@@ -1267,11 +1274,6 @@ class VectorizedHamletEnv:
                     step=self.global_tick,
                     agent_positions=self.positions.to(dtype=torch.float32, device=self.device),
                     affordance_positions={k: v.to(dtype=torch.float32, device=self.device) for k, v in self.affordances.items()},
-                    vfs_types={name: var.type for name, var in self.vfs_registry.variables.items()},
-                    num_agents=self.num_agents,
-                    item_vfs=self.vfs_registry.item_vfs,
-                    item_profile_map=self.vfs_registry.item_profile_map,
-                    item_index_to_profile=self.vfs_registry.item_vfs_index_to_profile,
                 )
                 self._write_back_profile_expressions(
                     "Agent-profile", "agent_profile", agent_profile, updated_agent_vfs, require_agent_shape=True

@@ -180,7 +180,7 @@ def test_nested_dac_reference_uses_relocated_entry_origin(tmp_path: Path) -> Non
 def test_affordance_reference_uses_relocated_named_origin(tmp_path: Path) -> None:
     raw = load_v21_configs(PACK)
     affordance = raw.levels[LEVEL].affordances.affordances[0]
-    affordance.interactions["on_start"][0].modify = "target.vfs.missing_value"
+    affordance.interactions["on_start"][0].modify = "missing_value"  # a bare name: a registry variable
     origin = tmp_path / "levels" / LEVEL / "mechanics" / "interactions.yml"
     source_map = SourceMap()
     source_map.record(f"levels/{LEVEL}/affordances:{affordance.name}", origin, 11)

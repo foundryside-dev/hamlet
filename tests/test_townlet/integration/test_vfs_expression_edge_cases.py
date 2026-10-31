@@ -28,7 +28,7 @@ def test_missing_vfs_variable_reference():
     config_dir = Path(__file__).parent.parent.parent.parent / "configs" / "test" / "vfs_undefined_var"
 
     # Exercise & Verify: Compilation should fail
-    with pytest.raises(CompilationError, match="not found"):
+    with pytest.raises(CompilationError, match="names no variable"):
         compiler = UniverseCompiler()
         compiler.compile(config_dir, primary_level="L0_undefined", use_cache=False)
 

@@ -26,7 +26,7 @@ _INCREMENT_GCOUNT = {
     "transition_rules": [
         {
             "id": "inc",
-            "phase": "apply_social_residue_effects",
+            "phase": "apply_transition_rules",
             "condition": None,
             "writes": [
                 {

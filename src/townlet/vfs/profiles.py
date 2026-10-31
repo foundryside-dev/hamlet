@@ -6,14 +6,16 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 import networkx as nx  # type: ignore[import-untyped]
+from pyparsing import ParseBaseException
 
 from townlet.config.variables_config import VariableDeclaration
 from townlet.vfs.access_policy import validate_static_access
 from townlet.vfs.history import expression_history, same_instant_refs, walk
+from townlet.vfs.namespace import AGENT_EXPRESSION, ENGINE_TICK, GLOBAL_EXPRESSION, Namespace, ReadContext
 from townlet.vfs.schema import NormalizationSpec, VariableScope
 from townlet.world.expression import ASTNode, ExpressionParser, PathAccess, Variable
 from townlet.world.expression.ast_nodes import BinaryOp, Constant, FunctionCall, IfThenElse, UnaryOp
-from townlet.world.expression.history import TEMPORAL_FUNCTIONS
+from townlet.world.expression.functions import TEMPORAL_FUNCTIONS
 from townlet.world.expression.type_checker import TypeChecker, TypeCheckError
 
 __all__ = [
@@ -22,19 +24,8 @@ __all__ = [
     "CompiledVariable",
     "CompiledGlobalProfile",
     "CompiledItemProfile",
-    "AMBIENT_ENGINE_NAMES",
+    "VariableExpressionError",
 ]
-
-# Names the engine publishes as VFS globals that global/agent profile expressions may
-# reference by bare name without declaring them as profile variables (token-obs design
-# ruling 6: the engine publishes ONE temporal primitive — tick). Ambient names are
-# admitted into the expression type schema but never become an in-profile dependency
-# edge — they aren't sorted, they're just always there. Authored globals enter an agent
-# profile's schema the same way (see `compile_profile`'s `cross_scope`): the runtime
-# evaluates the global profile first and hands the agent profile the registry state, so
-# a global is an input, never a dependency edge. Item profiles do not get this admission
-# (item expressions refuse entirely — Task 6).
-AMBIENT_ENGINE_NAMES: dict[str, str] = {"tick": "float"}
 
 
 @dataclass
@@ -90,9 +81,19 @@ class CompiledItemProfile:
 
 
 class CircularDependencyError(Exception):
-    """Raised when circular dependency detected in VFS variables."""
+    """Raised when circular dependency detected in VFS variables; ``variable_id`` is one variable on the cycle."""
 
-    pass
+    def __init__(self, variable_id: str, message: str) -> None:
+        super().__init__(message)
+        self.variable_id = variable_id
+
+
+class VariableExpressionError(TypeCheckError):
+    """A variable's expression is refused; ``variable_id`` locates the refusal at its declaration."""
+
+    def __init__(self, variable_id: str, message: str) -> None:
+        super().__init__(message)
+        self.variable_id = variable_id
 
 
 class VFSProfileCompiler:
@@ -108,7 +109,7 @@ class VFSProfileCompiler:
         A ``lag(x, n)`` read is not one: it reads ``x``'s history ring, committed after
         every variable evaluates (``vfs.history.same_instant_refs``). So a self-reference
         or a cycle closed only through ``lag`` sorts, and any other cycle refuses.
-        Ambient engine names are inputs, never edges.
+        The engine clock ``tick`` is an input, never an edge.
         """
         graph: nx.DiGraph = nx.DiGraph()
         graph.add_nodes_from(var.id for var in variables)
@@ -116,21 +117,16 @@ class VFSProfileCompiler:
         for var in variables:
             if var.expression is None:
                 continue
-            for dep in same_instant_refs(self.parser.parse(var.expression)) - AMBIENT_ENGINE_NAMES.keys():
+            for dep in same_instant_refs(self.parser.parse(var.expression)) - {ENGINE_TICK}:
                 if dep in variable_names:
                     graph.add_edge(dep, var.id)
         return graph
 
     def _extract_variable_refs(self, expression: str) -> set[str]:
-        """Every name an expression reads, at any instant (``lag`` reads included): bare
-        names and the root of each path (a reference variable it dereferences)."""
-        refs: set[str] = set()
-        for node in walk(self.parser.parse(expression)):
-            if isinstance(node, Variable):
-                refs.add(node.name)
-            elif isinstance(node, PathAccess):
-                refs.add(node.segments[0])
-        return refs
+        """Every variable an expression reads, at any instant (``lag`` reads included): its bare names.
+
+        A dotted path is a meter (``bar.<m>``) or item state (``item.<x>``), never a variable."""
+        return {node.name for node in walk(self.parser.parse(expression)) if isinstance(node, Variable)}
 
     def topological_sort(self, variables: Sequence[VariableDeclaration]) -> list[VariableDeclaration]:
         """Sort variables in dependency order.
@@ -161,8 +157,9 @@ class VFSProfileCompiler:
             cycles = list(nx.simple_cycles(graph))
             cycle_str = " -> ".join(cycles[0] + [cycles[0][0]])
             raise CircularDependencyError(
+                cycles[0][0],
                 f"Circular dependency detected in cycle: {cycle_str}. Each variable in it reads another's value at the "
-                "same instant; only a lag(x, n) read (the value n ticks ago) may close a cycle or a self-reference."
+                "same instant; only a lag(x, n) read (the value n ticks ago) may close a cycle or a self-reference.",
             )
 
         # Map names back to variable configs
@@ -281,77 +278,91 @@ class VFSProfileCompiler:
                 f"cross_scope for a {scope} profile holds {other_scope} declarations only; got {sorted(str(s) for s in stray_scopes)}"
             )
 
+        # Every expression parses before anything orders or reads it, so a parse error
+        # is located at its declaration like every other refusal here.
+        for var in variables:
+            if var.expression is not None:
+                try:
+                    self.parser.parse(var.expression)
+                except (ParseBaseException, ValueError) as exc:
+                    raise VariableExpressionError(
+                        var.id, f"Variable '{var.id}' expression '{var.expression}' does not parse: {exc}"
+                    ) from exc
+
         # Sort variables in dependency order
         sorted_vars, dependencies = self.topological_sort_with_dependencies(variables)
 
-        # Build type schema for expression type checking. Ambient engine names (tick)
-        # come first so an authored variable of the same name still fails loudly at the
-        # collision check in universe/compilers/vfs.py rather than shadowing silently here.
-        schema: dict[str, str] = dict(AMBIENT_ENGINE_NAMES)
-
-        # Add bar paths to schema
-        if bar_schema:
-            for bar_name, bar_type in bar_schema.items():
-                schema[f"bar.{bar_name}"] = bar_type
-
-        # Compile each variable
+        # The one resolver (VFS round-2 S5): the namespace of this profile's scope. An
+        # agent expression reads every global by bare name (the runtime evaluates the
+        # global profile first and feeds the agent profile the registry state, so these
+        # are inputs, not dependency edges: build_dependency_graph only links
+        # same-profile ids). Every profile variable enters up front with its declared
+        # type and scope shape; a same-instant read is still ordered by the sort above,
+        # a lag read may name a variable later in the order, or the variable itself.
+        namespace = Namespace(
+            variables=[(var.id, var.scope, var.type) for var in (*variables, *cross_scope)],
+            meters=bar_schema or {},
+            item_state={},
+        )
+        context = AGENT_EXPRESSION if scope == VariableScope.AGENT else GLOBAL_EXPRESSION
+        schema = namespace.schema(context)
+        shapes = namespace.shapes(context, payload_for_vectors=True)
         compiled_vars = []
-        shapes = {"tick": "scalar"}
-        if bar_schema:
-            shapes.update({f"bar.{bar_name}": "agent" for bar_name in bar_schema})
 
-        # Cross-scope namespace. An agent expression reads every global by bare name
-        # with the global's declared type and a scalar (batch-free) shape; the runtime
-        # evaluates the global profile first and feeds the agent profile the registry
-        # state, so these are inputs, not dependency edges (build_dependency_graph only
-        # links same-profile ids). The reverse direction is scope widening: a global
-        # expression has no agent axis to hold per-agent state, so it refuses here, by
-        # name, before the type checker can only say "not found".
+        # The reverse direction is scope widening: a global expression has no agent axis
+        # to hold per-agent state, so it refuses here, by name, before the namespace can
+        # only say the scope is unreadable.
         widening_ids: set[str] = set()
-        if scope == VariableScope.AGENT:
-            for global_var in cross_scope:
-                schema[global_var.id] = "float" if global_var.type == "scalar" else global_var.type
-                shapes[global_var.id] = "scalar" if global_var.type in {"scalar", "bool"} else "payload"
-        else:
+        if scope == VariableScope.GLOBAL:
             widening_ids = {agent_var.id for agent_var in cross_scope}
 
-        # Every profile variable enters the namespace up front with its declared type and
-        # scope shape. A same-instant read is still ordered by the sort above (its
-        # dependency precedes it); a lag read may name a variable later in the order, or
-        # the variable itself, because it reads the committed history, not this instant.
         for var in sorted_vars:
-            schema[var.id] = "float" if var.type == "scalar" else var.type
-            if var.type not in {"scalar", "bool"}:
-                shapes[var.id] = "payload"
-            else:
-                shapes[var.id] = "agent" if var.scope == VariableScope.AGENT else "scalar"
-
-        for var in sorted_vars:
-            if var.expression is not None and widening_ids:
-                widened = sorted(self._extract_variable_refs(var.expression) & widening_ids)
-                if widened:
-                    raise TypeCheckError(
-                        f"Variable '{var.id}' is global-scope but its expression reads agent-scope "
-                        f"variable(s) {widened}; a global expression cannot widen to per-agent state. "
-                        f"Declare '{var.id}' with scope agent, or read global state only."
-                    )
-            compiled = self.compile_variable(var, schema)
-            if compiled.ast is not None:
-                if var.type not in {"scalar", "bool"}:
-                    raise TypeCheckError(f"Variable '{var.id}' expression shape supports scalar and bool outputs only")
-                try:
-                    expression_history(compiled.ast)
-                except TypeCheckError as exc:
-                    raise TypeCheckError(f"Variable '{var.id}' expression '{var.expression}': {exc}") from exc
-                output_shape = self._shape(compiled.ast, shapes, temporal=True)
-                expected_shape = "agent" if var.scope == VariableScope.AGENT else "scalar"
-                if output_shape != expected_shape:
-                    raise TypeCheckError(
-                        f"Variable '{var.id}' expression shape is {output_shape}, expected {expected_shape} for {var.scope} scope"
-                    )
-            compiled_vars.append(compiled)
+            try:
+                compiled_vars.append(self._compile_profile_variable(var, schema, shapes, namespace, context, widening_ids))
+            except VariableExpressionError:
+                raise
+            except TypeCheckError as exc:
+                raise VariableExpressionError(var.id, str(exc)) from exc
 
         return CompiledGlobalProfile(variables=compiled_vars, dependencies=dependencies)
+
+    def _compile_profile_variable(
+        self,
+        var: VariableDeclaration,
+        schema: dict[str, str],
+        shapes: dict[str, str],
+        namespace: Namespace,
+        context: ReadContext,
+        widening_ids: set[str],
+    ) -> CompiledVariable:
+        """One profile variable, its expression resolved, type-checked and shape-proved."""
+        if var.expression is not None and widening_ids:
+            widened = sorted(self._extract_variable_refs(var.expression) & widening_ids)
+            if widened:
+                raise TypeCheckError(
+                    f"Variable '{var.id}' is global-scope but its expression reads agent-scope "
+                    f"variable(s) {widened}; a global expression cannot widen to per-agent state. "
+                    f"Declare '{var.id}' with scope agent, or read global state only."
+                )
+        if var.expression is not None:
+            refusals = namespace.refusals(self.parser.parse(var.expression), context)
+            if refusals:
+                raise TypeCheckError(f"Variable '{var.id}' expression '{var.expression}': {' '.join(refusals)}")
+        compiled = self.compile_variable(var, schema)
+        if compiled.ast is not None:
+            if var.type not in {"scalar", "bool"}:
+                raise TypeCheckError(f"Variable '{var.id}' expression shape supports scalar and bool outputs only")
+            try:
+                expression_history(compiled.ast)
+            except TypeCheckError as exc:
+                raise TypeCheckError(f"Variable '{var.id}' expression '{var.expression}': {exc}") from exc
+            output_shape = self._shape(compiled.ast, shapes, temporal=True)
+            expected_shape = "agent" if var.scope == VariableScope.AGENT else "scalar"
+            if output_shape != expected_shape:
+                raise TypeCheckError(
+                    f"Variable '{var.id}' expression shape is {output_shape}, expected {expected_shape} for {var.scope} scope"
+                )
+        return compiled
 
     @classmethod
     def expression_shape(cls, node: ASTNode, shapes: dict[str, str]) -> str:

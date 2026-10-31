@@ -118,7 +118,7 @@ def test_effect_on_despawn_spawns_item_with_real_itemmanager():
         substrate=make_grid2d_substrate(),
         items_per_world=10,
         device="cpu",
-        schema=None,
+        symbols=None,
         vfs_registry=vfs_registry,
     )
 
@@ -247,7 +247,7 @@ def test_spawn_item_respects_itemmanager_capacity():
         substrate=make_grid2d_substrate(),
         items_per_world=2,  # Only 2 items max
         device="cpu",
-        schema=None,
+        symbols=None,
         vfs_registry=None,
     )
 
@@ -309,7 +309,7 @@ def test_spawn_item_respects_cooldown():
         substrate=make_grid2d_substrate(),
         items_per_world=10,
         device="cpu",
-        schema=None,
+        symbols=None,
         vfs_registry=None,
     )
 

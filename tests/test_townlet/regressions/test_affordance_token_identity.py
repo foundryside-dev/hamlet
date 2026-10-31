@@ -148,7 +148,7 @@ def test_non_affine_meter_interaction_keeps_dynamic_target_identity(tmp_path: Pa
     affordances_path = pack / "levels" / LEVEL / "affordances.yaml"
     payload = yaml.safe_load(affordances_path.read_text())
     eat = next(affordance for affordance in payload["affordances"]["affordances"] if affordance["name"] == "EAT")
-    eat["interactions"]["on_start"][1]["value"] = "target.bar.energy * 2.0"
+    eat["interactions"]["on_start"][1]["value"] = "bar.energy * 2.0"
     affordances_path.write_text(yaml.safe_dump(payload, sort_keys=False))
 
     compiled = UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)
@@ -170,8 +170,8 @@ def test_repeated_opposite_deltas_remain_distinct_identity_declarations(tmp_path
     payload = yaml.safe_load(affordances_path.read_text())
     eat = next(affordance for affordance in payload["affordances"]["affordances"] if affordance["name"] == "EAT")
     eat["interactions"]["on_start"] = [
-        {"modify": "target.bar.energy", "value": "target.bar.energy + 0.1"},
-        {"modify": "target.bar.energy", "value": "target.bar.energy - 0.1"},
+        {"modify": "bar.energy", "value": "bar.energy + 0.1"},
+        {"modify": "bar.energy", "value": "bar.energy - 0.1"},
     ]
     eat["interactions"]["on_completion"] = []
     affordances_path.write_text(yaml.safe_dump(payload, sort_keys=False))
@@ -199,9 +199,9 @@ def test_mutually_exclusive_meter_writes_are_marked_dynamic_without_cancelling(t
     eat = next(affordance for affordance in payload["affordances"]["affordances"] if affordance["name"] == "EAT")
     eat["interactions"]["on_start"] = [
         {
-            "if": "target.bar.energy > 0.5",
-            "then": [{"modify": "target.bar.energy", "value": "target.bar.energy + 0.1"}],
-            "else": [{"modify": "target.bar.energy", "value": "target.bar.energy - 0.1"}],
+            "if": "bar.energy > 0.5",
+            "then": [{"modify": "bar.energy", "value": "bar.energy + 0.1"}],
+            "else": [{"modify": "bar.energy", "value": "bar.energy - 0.1"}],
         }
     ]
     eat["interactions"]["on_completion"] = []
@@ -232,7 +232,7 @@ def test_same_meter_delta_in_different_lifecycle_stage_changes_signature_and_has
         for lifecycle_stage in work["interactions"]:
             work["interactions"][lifecycle_stage] = []
         work["interactions"][stage] = [
-            {"modify": "target.bar.energy", "value": "target.bar.energy + 0.1"},
+            {"modify": "bar.energy", "value": "bar.energy + 0.1"},
         ]
         _write_yaml(path, payload)
         signatures.append(_compiled_affordance_signature(pack, "WORK"))
@@ -275,7 +275,7 @@ def test_non_finite_affine_literal_refuses_instead_of_becoming_dynamic(tmp_path:
     pack = _copy_reference_pack(tmp_path)
     path, payload, eat = _affordance_payload(pack, "EAT")
     eat["interactions"]["on_start"] = [
-        {"modify": "target.bar.energy", "value": "target.bar.energy + 1e309"},
+        {"modify": "bar.energy", "value": "bar.energy + 1e309"},
     ]
     eat["interactions"]["on_completion"] = []
     _write_yaml(path, payload)
@@ -335,7 +335,7 @@ def _set_work_per_tick_writes(pack: Path, deltas: tuple[float, ...]) -> None:
     path, payload, work = _affordance_payload(pack, "WORK")
     work["costs"] = {}
     work["costs_per_tick"] = {}
-    work["interactions"]["per_tick"] = [{"modify": "target.bar.energy", "value": f"target.bar.energy + {delta}"} for delta in deltas]
+    work["interactions"]["per_tick"] = [{"modify": "bar.energy", "value": f"bar.energy + {delta}"} for delta in deltas]
     work["interactions"]["on_completion"] = []
     _write_yaml(path, payload)
 
@@ -420,7 +420,7 @@ def test_non_cyclic_nested_spawn_effect_refuses_instead_of_flattening_chain(tmp_
             "reapply_policy": "renew",
             "observable": True,
             "on_spawn": [],
-            "on_tick": [{"modify": "target.bar.energy", "value": "target.bar.energy + 0.1"}],
+            "on_tick": [{"modify": "bar.energy", "value": "bar.energy + 0.1"}],
             "on_despawn": [],
             "on_interrupt": [],
         }

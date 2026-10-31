@@ -24,14 +24,14 @@ def test_custom_item_verbs_flow_from_config_to_runtime(tmp_path):
         {
             "name": "EAT_LOCAL",
             "description": "Eat an apple on the ground",
-            "effects": [{"modify": "target.bar.energy", "value": "target.bar.energy - 0.05"}],
+            "effects": [{"modify": "bar.energy", "value": "bar.energy - 0.05"}],
         }
     ]
     apple["interactions"]["inventory_commands"] = [
         {
             "name": "EAT_HELD",
             "description": "Eat an apple while holding it",
-            "effects": [{"modify": "target.bar.energy", "value": "target.bar.energy - 0.10"}],
+            "effects": [{"modify": "bar.energy", "value": "bar.energy - 0.10"}],
         }
     ]
     items_path.write_text(yaml.safe_dump(data, sort_keys=False))

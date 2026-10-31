@@ -135,7 +135,7 @@ def test_vtc_action_writes_can_target_meter_bars() -> None:
         name="REST",
         writes=[
             _write(
-                variable_id="energy",
+                variable_id="bar.energy",
                 expression="bar.energy + 0.25",
                 condition=None,
                 composition="overwrite",

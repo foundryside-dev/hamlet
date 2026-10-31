@@ -12,7 +12,7 @@ from townlet.universe.errors import CompilationErrorCollector
 from townlet.universe.raw_configs_v21 import RawConfigsV21
 from townlet.universe.source_map import SourceMap, locate, variable_location_key
 from townlet.vfs.schema import VariableScope
-from townlet.world.expression import ExpressionParser, PathAccess
+from townlet.world.expression.references import ReferenceKind, parse_reference
 
 
 def validate_static_write_targets(raw: RawConfigsV21, source_map: SourceMap | None) -> None:
@@ -24,14 +24,13 @@ def validate_static_write_targets(raw: RawConfigsV21, source_map: SourceMap | No
     recomputes an expression variable after every authored write, so a write to one
     would be silently discarded; the second refusal also names the declaration.
 
-    Item-hook self targets have a known qualified profile. Item-effect targets
-    and reference traversal are resolved and authorized by the runtime because
-    their destination is selected dynamically.
+    An item hook's ``item.<x>`` targets have a known qualified profile. An item-scoped
+    effect's or an inventory loop's ``item.<x>`` is authorized by the runtime, because
+    its item is selected dynamically.
     """
     errors = CompilationErrorCollector(stage="Static write authorization")
     registry = {v.id: v for v in raw.variables.declarations if v.scope != VariableScope.ITEM}
     items = {(v.profile, v.id): v for v in raw.variables.declarations if v.scope == VariableScope.ITEM}
-    parser = ExpressionParser()
 
     def identity(variable: VariableDeclaration) -> str:
         return f"{variable.profile}:{variable.id}" if variable.profile is not None else variable.id
@@ -59,23 +58,14 @@ def validate_static_write_targets(raw: RawConfigsV21, source_map: SourceMap | No
             )
 
     def check_path(path: str, origin: str, item_profile: str | None, self_is_item: bool, target_is_item: bool) -> None:
-        ast = parser.parse(path)
-        if not isinstance(ast, PathAccess):
-            return
-        segments = ast.segments
-        if segments[0] in {"self", "target", "global"}:
-            prefix, segments = segments[0], segments[1:]
-        else:
-            prefix = ""
-        if len(segments) < 2 or segments[0] != "vfs":
-            return
-        identifier = ".".join(segments[1:])
-        if prefix == "self" and item_profile is not None:
-            check_authored(items.get((item_profile, identifier)), origin)
-        elif (self_is_item and prefix == "self") or (target_is_item and prefix == "target"):
-            return  # The effect's item instance/profile is selected dynamically.
-        else:
-            check_authored(registry.get(identifier), origin)
+        reference = parse_reference(path)
+        if reference is None or reference.kind == ReferenceKind.METER:
+            return  # A non-spelling refuses when the pipeline compiles; a meter is no registry variable.
+        if reference.kind == ReferenceKind.NAME:
+            check_authored(registry.get(reference.name), origin)
+        elif item_profile is not None and not target_is_item:
+            check_authored(items.get((item_profile, reference.name)), origin)
+        # Otherwise the bound item (an item-scoped effect's, an inventory loop's) is selected dynamically.
 
     def commands(nodes: Iterable[CommandConfig], origin: str, item_profile: str | None, self_is_item: bool, target_is_item: bool) -> None:
         for index, node in enumerate(nodes):

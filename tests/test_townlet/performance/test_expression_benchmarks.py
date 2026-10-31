@@ -37,7 +37,6 @@ class TestExpressionBenchmarks:
         context = ExecutionContext(
             bars=bars,
             vfs={},
-            affordances={},
             temporal={},
             device=torch.device("cpu"),
         )
@@ -60,7 +59,6 @@ class TestExpressionBenchmarks:
         context = ExecutionContext(
             bars=bars,
             vfs={},
-            affordances={},
             temporal={},
             device=torch.device("cpu"),
         )
@@ -86,7 +84,6 @@ class TestExpressionBenchmarks:
                 context = ExecutionContext(
                     bars=bars,
                     vfs={},
-                    affordances={},
                     temporal={},
                     device=torch.device("cpu"),
                 )

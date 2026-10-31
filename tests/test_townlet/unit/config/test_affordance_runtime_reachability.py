@@ -36,12 +36,12 @@ def _affordance(
 @pytest.mark.parametrize(
     ("interaction_type", "interactions", "costs", "costs_per_tick"),
     (
-        pytest.param("instant", {"on_completion": [{"modify": "target.bar.energy", "value": "0.0"}]}, {}, {}, id="instant-completion"),
+        pytest.param("instant", {"on_completion": [{"modify": "bar.energy", "value": "0.0"}]}, {}, {}, id="instant-completion"),
         pytest.param("instant", {}, {}, {"energy": 0.1}, id="instant-per-tick-cost"),
-        pytest.param("multi_tick", {"on_start": [{"modify": "target.bar.energy", "value": "0.0"}]}, {}, {}, id="multi-start"),
+        pytest.param("multi_tick", {"on_start": [{"modify": "bar.energy", "value": "0.0"}]}, {}, {}, id="multi-start"),
         pytest.param("multi_tick", {}, {"energy": 0.1}, {}, id="multi-instant-cost"),
-        pytest.param("instant", {"on_early_exit": [{"modify": "target.bar.energy", "value": "0.0"}]}, {}, {}, id="instant-early-exit"),
-        pytest.param("multi_tick", {"on_failure": [{"modify": "target.bar.energy", "value": "0.0"}]}, {}, {}, id="multi-failure"),
+        pytest.param("instant", {"on_early_exit": [{"modify": "bar.energy", "value": "0.0"}]}, {}, {}, id="instant-early-exit"),
+        pytest.param("multi_tick", {"on_failure": [{"modify": "bar.energy", "value": "0.0"}]}, {}, {}, id="multi-failure"),
     ),
 )
 def test_unreachable_stage_or_cost_declaration_refuses(
@@ -65,11 +65,11 @@ def test_reachable_stage_and_cost_matrix_is_admitted(interaction_type: str) -> N
     costs: dict[str, float] = {}
     costs_per_tick: dict[str, float] = {}
     if interaction_type == "instant":
-        interactions["on_start"] = [{"modify": "target.bar.energy", "value": "0.0"}]
+        interactions["on_start"] = [{"modify": "bar.energy", "value": "0.0"}]
         costs = {"energy": 0.1}
     if interaction_type == "multi_tick":
-        interactions["per_tick"] = [{"modify": "target.bar.energy", "value": "0.0"}]
-        interactions["on_completion"] = [{"modify": "target.bar.energy", "value": "0.0"}]
+        interactions["per_tick"] = [{"modify": "bar.energy", "value": "0.0"}]
+        interactions["on_completion"] = [{"modify": "bar.energy", "value": "0.0"}]
         costs_per_tick = {"energy": 0.1}
 
     result = _affordance(
@@ -93,7 +93,7 @@ def test_multi_tick_duration_must_be_positive_at_authoring_boundary(duration_tic
             costs_per_tick={},
             interactions={
                 "on_start": [],
-                "per_tick": [{"modify": "target.bar.energy", "value": "0.0"}],
+                "per_tick": [{"modify": "bar.energy", "value": "0.0"}],
                 "on_completion": [],
                 "on_early_exit": [],
                 "on_failure": [],

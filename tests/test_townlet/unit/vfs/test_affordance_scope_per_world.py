@@ -102,7 +102,7 @@ def universe(tmp_path_factory: pytest.TempPathFactory):
     # affordance state) and by one where its world's bed is claimed.
     rule = {
         "id": "wear_from_pressure",
-        "phase": "apply_social_residue_effects",
+        "phase": "apply_transition_rules",
         "condition": None,
         "writes": [
             {
@@ -195,7 +195,7 @@ _RULE_TARGETS = {
 def _wear_rule(expression: str, condition: str | None = None, target: str = "wear") -> dict:
     return {
         "id": "wear_from_pressure",
-        "phase": "apply_social_residue_effects",
+        "phase": "apply_transition_rules",
         "condition": condition,
         "writes": [{"variable_id": target, "expression": expression, "composition": "additive_delta"}],
     }
@@ -279,6 +279,6 @@ def test_an_effect_bound_to_a_world_reads_and_writes_only_its_worlds_affordance_
     registry.set_engine_value("wear", torch.tensor([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]]))
     bound = ExecutionContext(bars={"energy": torch.ones(3)}, vfs_registry=registry, target_index=1)
 
-    assert torch.equal(bound.get_path("vfs.wear"), torch.tensor([3.0, 4.0]))
-    bound.set_path("vfs.wear", torch.tensor([9.0, 9.0]))
+    assert torch.equal(bound.get_path("wear"), torch.tensor([3.0, 4.0]))
+    bound.set_path("wear", torch.tensor([9.0, 9.0]))
     assert torch.equal(registry.get("wear", reader="engine"), torch.tensor([[1.0, 2.0], [9.0, 9.0], [5.0, 6.0]]))

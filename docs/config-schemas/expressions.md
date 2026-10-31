@@ -7,12 +7,13 @@
 > `tests/test_townlet/unit/world/expression/test_function_registry_agreement.py` holds every
 > function's declared return type to its evaluated dtype and batch shape.
 >
-> Two caveats that remain true (2026-10-24). First, the compile-time schemas resolve only these
-> path roots: `bar.*`, `vfs.*`, `self.vfs.*` and `target.vfs.*` for VFS expressions, plus
-> `target.bar.*` and `global.vfs.*` inside effects; `temporal.*`, `self.position`, `item.*` and the
-> other roots the namespace list below mentions do not resolve, and the engine step counter is read
-> through the bare `tick` variable. Second, the YAML examples in this file are illustrative, not
-> test-pinned.
+> One spelling per reference (2026-10-31, VFS round-2 S5). Every consumer (a variable
+> expression, an action write, a transition rule, an effect or interaction pipeline, a spawn
+> predicate) resolves references through one resolver (`townlet.vfs.namespace`): a variable is
+> its bare id, a meter is `bar.<name>`, and the bound item's state is `item.<name>`; the engine
+> step counter is the bare `tick`. `temporal.*`, `self.*`, `target.*`, `vfs.*` and `env.*` do not
+> resolve: an old spelling refuses at compile with the one to write. The YAML examples in this
+> file are illustrative, not test-pinned.
 
 ## Overview
 
@@ -20,7 +21,7 @@ The HAMLET Expression Language is a declarative, type-safe scripting language fo
 
 **Where expressions are used:**
 - **VFS (Variable & Feature System)**: Computed variables (`expression: "bar.energy < 0.2"`)
-- **Effects System**: Dynamic effect values (`value: "target.bar.health + (0.2 * intensity)"`)
+- **Effects System**: Dynamic effect values (`value: "bar.health + (0.2 * intensity)"`)
 - **Drive As Code (DAC)**: Reward modifiers (future), shaping bonuses (future)
 - **Action Dependencies**: Preconditions (future), resource costs (future)
 
@@ -84,27 +85,28 @@ slot_index      # Item inventory slot
 
 **Note**: Variables must be defined in the expression schema (VFS variables, effect parameters, etc.). Undefined variables fail type checking.
 
-### Path Access
+### References
 
-Dot notation accesses nested state:
+One spelling per reference (VFS round-2 S5), the same in every consumer:
 
 ```
-bar.energy                  # Agent's energy meter
-bar.health                  # Agent's health meter
-vfs.is_night               # Global VFS variable
-vfs.agent.motivation       # Agent VFS variable
-temporal.tick              # Current simulation tick
-target.bar.health          # Target agent's health (in effects)
-self.position              # Item's position (in item expressions)
+bar.energy                  # the agent's energy meter (this world's agent, S1)
+is_night                    # a global variable: this world's value
+motivation                  # an agent variable: this world's agent's row
+tick                        # the engine step counter
+item.durability             # the bound item's state (item interactions, item effects, inventory loops)
+intensity                   # an active effect's intensity (effects only)
+agent_id                    # the acting agent's row (transition writes and rules only)
 ```
 
-**Path namespaces:**
-- `bar.*` - Meter values (energy, health, satiation, etc.)
-- `vfs.*` - VFS variables (global or agent scope)
-- `temporal.*` - Time-based values (tick, day, hour, is_night)
-- `target.*` - Target entity in effects (agent, item, affordance)
-- `self.*` - Current entity in expressions (item age, position)
-- `item.*` - Item-local state when evaluating item rules (e.g., `item.vfs.durability`)
+**Reference kinds:**
+- bare `x` - a registry variable, read in this world by its declared scope; an engine or pipeline-local name
+- `bar.<name>` - a meter
+- `item.<name>` - the state of the item the context is bound to; refused where none is bound
+
+Every other spelling (`vfs.x`, `self.vfs.x`, `target.vfs.x`, `global.vfs.x`, `agent.vfs.x`,
+`self.bar.m`, `target.bar.m`, a bare meter name, `temporal.*`, `env.*`) refuses at compile,
+naming the one spelling to write.
 
 **Type checking**: Paths must exist in the schema. Invalid paths fail at compile time.
 
@@ -135,7 +137,7 @@ a ** b          # Exponentiation (right-associative)
 ```
 bar.energy + 0.05           # Add to energy
 bar.health * 2              # Double health
-temporal.tick % 24          # Hour of day (0-23)
+tick % 24          # Hour of day (0-23)
 2 ** 3                      # Power: 8
 ```
 
@@ -158,7 +160,7 @@ a >= b          # Greater than or equal
 ```
 bar.energy < 0.2            # Crisis detection
 bar.health > 50             # Health threshold
-temporal.tick >= 18         # Night time check
+tick >= 18         # Night time check
 ```
 
 #### Logical Operators
@@ -176,7 +178,7 @@ not a           # Logical NOT
 **Examples:**
 ```
 bar.energy < 0.2 or bar.health < 0.2        # Any crisis
-bar.energy > 0.5 and vfs.is_night           # Energy and night
+bar.energy > 0.5 and is_night           # Energy and night
 not (bar.health > 50)                       # Health not above 50
 ```
 
@@ -207,10 +209,10 @@ effects_catalog:
     regeneration:
       commands:
         - type: "if"
-          condition: "target.bar.health < 0.5"
+          condition: "bar.health < 0.5"
           then:
             - type: "modify"
-              path: "target.bar.health"
+              path: "bar.health"
               operation: "add"
               value: 0.1
 ```
@@ -220,7 +222,7 @@ effects_catalog:
 ```yaml
 spawn_rules:
   - item_type: "apple"
-    when: "not vfs.is_winter and bar.energy < 0.8"
+    when: "not is_winter and bar.energy < 0.8"
 ```
 
 ## Type System Reference
@@ -241,9 +243,10 @@ spawn_rules:
 
 ## Troubleshooting
 
-- **Undefined variable**: `Path 'vfs.foo' not found in schema` → Ensure the variable is declared in the relevant profile.
+- **Undefined variable**: `Path 'foo' not found in schema` → Ensure the variable is declared in the relevant profile.
 - **Type mismatch**: `Logical operator and requires bool operands` → Wrap numeric expressions in comparisons.
-- **Unknown path**: `Path 'item.vfs.durability' not found` → Ensure schema includes item VFS variables for item contexts.
+- **Old spelling**: `'target.bar.energy' is not a spelling an effect pipeline accepts: write 'bar.energy'` → write the spelling the refusal names.
+- **No item bound**: `'item.durability' ... is bound to no item` → item state is readable only in an item interaction, an item-scoped effect or an inventory loop.
 
 ## Functions That Do Not Exist
 
@@ -293,7 +296,7 @@ if condition then true_branch else false_branch
 **Examples:**
 ```
 if bar.energy < 0.2 then 1.0 else 0.0                       # Crisis bonus
-if vfs.is_night then 0.5 else 1.0                           # Time multiplier
+if is_night then 0.5 else 1.0                           # Time multiplier
 if a then (if b then 1.0 else 2.0) else 3.0                 # Nested conditionals
 ```
 
@@ -330,7 +333,7 @@ function_name(arg1, arg2, ...)
 max(bar.energy, 0.0)                        # Ensure non-negative
 clamp(bar.health + 0.2, 0.0, 1.0)           # Add health, clamp to [0,1]
 mean(bar.energy, bar.health)                # Each agent's mean of two meters
-distance(vfs.position, vfs.home)            # Per-agent distance between two vec2f variables
+distance(position, home)            # Per-agent distance between two vec2f variables
 ```
 
 **Type checking**: every call is checked against the registry: an unknown name, a wrong
@@ -391,7 +394,7 @@ Boolean combination and masked selection; `gather`/`scatter` index rows of a per
 | `masked_set(value, replacement, mask)` | the type of `value` (numeric pairs promote) | `replacement` where `mask` holds, `value` elsewhere. | — |
 | `one_hot(index, classes)` | vecNf of width `classes` | One-hot vector of width `classes` (a literal >= 2) with a 1.0 at `index`. | — |
 | `scatter(base, index, update)` | the type of `base` | A copy of the vector (or tensor1d) `base` with element `index` set to `update`, inside each world's value. | — |
-| `where(condition, if_true, if_false)` | the branch type (numeric branches promote) | Select `if_true` where `condition` holds, else `if_false`; the branches must share a type. | — |
+| `where(condition, if_true, if_false)` | the branch type (numeric branches promote; a reference and an int give the reference) | Select `if_true` where `condition` holds, else `if_false`; the branches must share a type. | — |
 
 ### Sampling
 
@@ -554,7 +557,7 @@ expression: "duration"          # Effect parameter
 **Path access:**
 ```yaml
 expression: "bar.energy"        # Agent's energy meter
-expression: "vfs.is_night"      # Global VFS variable
+expression: "is_night"      # Global VFS variable
 ```
 
 ### Arithmetic Expressions
@@ -562,13 +565,13 @@ expression: "vfs.is_night"      # Global VFS variable
 **Meter modifications:**
 ```yaml
 # Energy regeneration
-value: "target.bar.energy + 0.05"
+value: "bar.energy + 0.05"
 
 # Health boost with intensity scaling
-value: "target.bar.health + (0.2 * intensity)"
+value: "bar.health + (0.2 * intensity)"
 
 # Damage over time
-value: "target.bar.health - (0.02 * intensity)"
+value: "bar.health - (0.02 * intensity)"
 ```
 
 **Computed values:**
@@ -577,7 +580,7 @@ value: "target.bar.health - (0.02 * intensity)"
 expression: "(bar.energy + bar.health) / 2.0"
 
 # Hour of day (0-23)
-expression: "temporal.tick % 24"
+expression: "tick % 24"
 
 # Energy deficit
 expression: "1.0 - bar.energy"
@@ -600,22 +603,19 @@ expression: "bar.energy < 0.1 and bar.health < 0.1"
 **Time-based conditions:**
 ```yaml
 # Night time (ticks 18-23, 0-5 in 24-tick day)
-expression: "temporal.tick % 24 >= 18 or temporal.tick % 24 < 6"
+expression: "tick % 24 >= 18 or tick % 24 < 6"
 
 # Simplified night check (using modulo wrap)
 expression: "tick % 24 >= 18"
 
 # Day time
-expression: "temporal.tick % 24 >= 6 and temporal.tick % 24 < 18"
+expression: "tick % 24 >= 6 and tick % 24 < 18"
 ```
 
 **Item state:**
 ```yaml
-# Food spoilage (item age > 100 ticks)
-expression: "self.age > 100"
-
-# Weapon durability check
-expression: "self.durability > 0"
+# Weapon durability check (in an item interaction or an item-scoped effect)
+condition: "item.durability > 0"
 ```
 
 ### Conditional Expressions
@@ -626,7 +626,7 @@ expression: "self.durability > 0"
 expression: "if bar.energy < 0.2 then 1.0 else 0.0"
 
 # Time-of-day multiplier
-expression: "if vfs.is_night then 0.5 else 1.0"
+expression: "if is_night then 0.5 else 1.0"
 
 # Status-based reward
 expression: "if bar.health > 0.8 then 10.0 else 5.0"
@@ -638,7 +638,7 @@ expression: "if bar.health > 0.8 then 10.0 else 5.0"
 expression: "if bar.energy < 0.2 then 2.0 else (if bar.energy < 0.5 then 1.0 else 0.0)"
 
 # Complex logic
-expression: "if vfs.is_night and bar.energy < 0.3 then 3.0 else 1.0"
+expression: "if is_night and bar.energy < 0.3 then 3.0 else 1.0"
 ```
 
 ### Complex Expressions
@@ -679,13 +679,13 @@ expression: "if vfs.is_night and bar.energy < 0.3 then 3.0 else 1.0"
 **Effect modifications:**
 ```yaml
 # Energy regeneration with time-of-day scaling
-value: "target.bar.energy + (0.05 * intensity * (if vfs.is_night then 1.5 else 1.0))"
+value: "bar.energy + (0.05 * intensity * (if is_night then 1.5 else 1.0))"
 
 # Health decay with crisis acceleration
-value: "target.bar.health - (0.02 * (if bar.health < 0.2 then 2.0 else 1.0))"
+value: "bar.health - (0.02 * (if bar.health < 0.2 then 2.0 else 1.0))"
 
 # Conditional resource transfer
-value: "if target.bar.energy < 0.5 then target.bar.energy + 0.1 else target.bar.energy"
+value: "if bar.energy < 0.5 then bar.energy + 0.1 else bar.energy"
 ```
 
 **Drive As Code (future):**
@@ -694,7 +694,7 @@ value: "if target.bar.energy < 0.5 then target.bar.energy + 0.1 else target.bar.
 expression: "if bar.energy < 0.2 or bar.health < 0.2 then 0.0 else 1.0"
 
 # Shaping bonus - efficiency reward
-expression: "if temporal.tick < 100 then 0.1 else 0.0"
+expression: "if tick < 100 then 0.1 else 0.0"
 ```
 
 ### Function Call Examples
@@ -702,16 +702,16 @@ expression: "if temporal.tick < 100 then 0.1 else 0.0"
 **Range clamping:**
 ```yaml
 # Add energy, clamp to [0,1]
-value: "clamp(target.bar.energy + 0.2, 0.0, 1.0)"
+value: "clamp(bar.energy + 0.2, 0.0, 1.0)"
 
 # Ensure non-negative
-value: "max(target.bar.health - 0.05, 0.0)"
+value: "max(bar.health - 0.05, 0.0)"
 ```
 
 **Math operations:**
 ```yaml
-# Absolute value for distance
-expression: "abs(target.position.x - self.position.x)"
+# Absolute value
+expression: "abs(bar.energy - 0.5)"
 
 # Nested function calls
 expression: "max(abs(bar.energy - 0.5), abs(bar.health - 0.5))"
@@ -779,16 +779,16 @@ Expressions require a schema defining available variables and their types:
 schema = {
     "bar.energy": "float",
     "bar.health": "float",
-    "temporal.tick": "int",
-    "vfs.is_night": "bool",
+    "tick": "float",
+    "is_night": "bool",
 }
 ```
 
 **Effect expressions:**
 ```python
 schema = {
-    "target.bar.energy": "float",
-    "target.bar.health": "float",
+    "bar.energy": "float",
+    "bar.health": "float",
     "intensity": "float",
     "duration": "int",
 }
@@ -797,9 +797,8 @@ schema = {
 **Item expressions:**
 ```python
 schema = {
-    "self.age": "int",
-    "self.durability": "int",
-    "bar.energy": "float",  # Host agent's meters
+    "item.durability": "float",
+    "bar.energy": "float",  # the world's agent's meters
 }
 ```
 
@@ -866,10 +865,10 @@ Meter values should stay in valid ranges (typically [0,1]):
 
 ```yaml
 # Bad - can overflow
-value: "target.bar.energy + 0.2"
+value: "bar.energy + 0.2"
 
 # Good - clamped to [0,1]
-value: "clamp(target.bar.energy + 0.2, 0.0, 1.0)"
+value: "clamp(bar.energy + 0.2, 0.0, 1.0)"
 ```
 
 ### 3. Use Consistent Types in Conditionals
@@ -890,7 +889,7 @@ Break complex expressions into VFS computed variables:
 
 ```yaml
 # Bad - hard to read
-expression: "if (bar.energy < 0.2 or bar.health < 0.2) and (temporal.tick % 24 >= 18) then 2.0 else (if bar.energy < 0.5 then 1.0 else 0.0)"
+expression: "if (bar.energy < 0.2 or bar.health < 0.2) and (tick % 24 >= 18) then 2.0 else (if bar.energy < 0.5 then 1.0 else 0.0)"
 
 # Good - use VFS variables
 # In variables.declarations (complete required fields shown in variables.md):
@@ -903,7 +902,7 @@ expression: "if (bar.energy < 0.2 or bar.health < 0.2) and (temporal.tick % 24 >
   expression: "tick % 24 >= 18"
 
 # In effects.yaml:
-expression: "if vfs.is_crisis and vfs.is_night then 2.0 else (if bar.energy < 0.5 then 1.0 else 0.0)"
+expression: "if is_crisis and is_night then 2.0 else (if bar.energy < 0.5 then 1.0 else 0.0)"
 ```
 
 ### 5. Use Meaningful Variable Names

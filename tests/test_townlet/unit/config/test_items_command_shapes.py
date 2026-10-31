@@ -8,7 +8,7 @@ from townlet.config.items_config import ItemInteractionsConfig
 
 def test_nested_spawn_effect_mapping_refuses_at_parse():
     with pytest.raises(ValidationError, match="spawn_effect"):
-        ItemInteractionsConfig(on_use=[{"spawn_effect": {"effect_id": "ate_food", "target": "agent", "intensity": "self.vfs.calories"}}])
+        ItemInteractionsConfig(on_use=[{"spawn_effect": {"effect_id": "ate_food", "target": "agent", "intensity": "item.calories"}}])
 
 
 def test_sibling_key_spawn_effect_is_accepted():
@@ -18,4 +18,4 @@ def test_sibling_key_spawn_effect_is_accepted():
 
 def test_unknown_command_key_refuses():
     with pytest.raises(ValidationError, match="Extra inputs are not permitted"):
-        ItemInteractionsConfig(on_drop=[{"modify": "target.bar.energy", "value": "1.0", "bogus": 1}])
+        ItemInteractionsConfig(on_drop=[{"modify": "bar.energy", "value": "1.0", "bogus": 1}])

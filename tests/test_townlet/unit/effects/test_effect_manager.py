@@ -268,10 +268,10 @@ def test_item_scope_context_is_authoritative_across_spawn_merge_and_cancel():
         duration=3,
         reapply_policy="merge",
         observable=True,
-        on_spawn=[CommandNode(type=CommandType.MODIFY, path="spawn", value_expr="0")],
+        on_spawn=[CommandNode(type=CommandType.MODIFY, path="bar.spawn", value_expr="0")],
         on_tick=[],
         on_despawn=[],
-        on_interrupt=[CommandNode(type=CommandType.MODIFY, path="interrupt", value_expr="0")],
+        on_interrupt=[CommandNode(type=CommandType.MODIFY, path="bar.interrupt", value_expr="0")],
     )
     executor = RecordingExecutor()
     manager = EffectManager(
@@ -287,9 +287,9 @@ def test_item_scope_context_is_authoritative_across_spawn_merge_and_cancel():
     manager.cancel_effect(active.instance_id, bars={}, vfs_registry=None, current_step=2)
 
     assert executor.calls == [
-        ("spawn", 42, 42, True, True),
-        ("interrupt", 42, 42, True, True),
-        ("interrupt", 42, 42, True, True),
+        ("bar.spawn", 42, 42, True, True),
+        ("bar.interrupt", 42, 42, True, True),
+        ("bar.interrupt", 42, 42, True, True),
     ]
 
 
@@ -366,8 +366,8 @@ def catalog_with_commands():
                 reapply_policy=ReapplyPolicy.STACK,
                 observable=True,
                 on_spawn=[],
-                on_tick=[CommandConfig(modify="target.bar.energy", value="target.bar.energy + 0.1")],
-                on_despawn=[CommandConfig(modify="target.bar.energy", value="target.bar.energy + 5.0")],
+                on_tick=[CommandConfig(modify="bar.energy", value="bar.energy + 0.1")],
+                on_despawn=[CommandConfig(modify="bar.energy", value="bar.energy + 5.0")],
                 on_interrupt=[],
             ),
             EffectDefinitionConfig(
@@ -377,8 +377,8 @@ def catalog_with_commands():
                 reapply_policy=ReapplyPolicy.STACK,
                 observable=True,
                 on_spawn=[],
-                on_tick=[CommandConfig(modify="target.bar.health", value="target.bar.health + 0.5")],
-                on_despawn=[CommandConfig(modify="target.bar.health", value="target.bar.health + 10.0")],
+                on_tick=[CommandConfig(modify="bar.health", value="bar.health + 0.5")],
+                on_despawn=[CommandConfig(modify="bar.health", value="bar.health + 10.0")],
                 on_interrupt=[],
             ),
         ],
@@ -445,7 +445,7 @@ def test_spawn_effect_executes_on_spawn():
                 duration=30,
                 reapply_policy=ReapplyPolicy.STACK,
                 observable=True,
-                on_spawn=[CommandConfig(modify="target.bar.health", value="target.bar.health - 5.0")],
+                on_spawn=[CommandConfig(modify="bar.health", value="bar.health - 5.0")],
                 on_tick=[],
                 on_despawn=[],
                 on_interrupt=[],
@@ -496,7 +496,7 @@ def test_spawn_effect_skips_on_spawn_without_bars():
                 duration=30,
                 reapply_policy=ReapplyPolicy.STACK,
                 observable=True,
-                on_spawn=[CommandConfig(modify="target.bar.health", value="target.bar.health - 5.0")],
+                on_spawn=[CommandConfig(modify="bar.health", value="bar.health - 5.0")],
                 on_tick=[],
                 on_despawn=[],
                 on_interrupt=[],

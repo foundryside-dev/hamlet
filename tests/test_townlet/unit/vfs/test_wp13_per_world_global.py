@@ -65,7 +65,7 @@ def _pack(tmp_path: Path, *, declarations: list[dict] = (), rules: list[dict] | 
     affordances_path = pack / "levels" / LEVEL / "affordances.yaml"
     affordances = _yaml(affordances_path)
     sleep = next(a for a in affordances["affordances"]["affordances"] if a["name"] == "SLEEP")
-    sleep["interactions"]["on_start"].append({"modify": "vfs.visits", "value": "vfs.visits + 1.0"})
+    sleep["interactions"]["on_start"].append({"modify": "visits", "value": "visits + 1.0"})
     _write(affordances_path, affordances)
 
     drive_path = pack / "levels" / LEVEL / "drive.yaml"
@@ -158,7 +158,7 @@ def test_the_engine_tick_is_the_same_instant_in_every_world(tmp_path: Path) -> N
 def test_a_global_rule_advances_each_world_independently(tmp_path: Path) -> None:
     rule = {
         "id": "afterglow",
-        "phase": "apply_social_residue_effects",
+        "phase": "apply_transition_rules",
         "condition": "visits > 0.0",
         "writes": [
             {
@@ -268,7 +268,7 @@ def test_an_availability_override_is_per_world() -> None:
     overrides: list[dict[str, bool]] = [{}, {}]
     context = ExecutionContext(bars={"energy": torch.ones(2)}, vfs_registry=registry, affordance_overrides=overrides)
     # Bound to no world, the per-world read writes each world's own value.
-    context.set_path("affordance.SLEEP.available", context.get_path("vfs.open_flag"))
+    context.set_path("affordance.SLEEP.available", context.get_path("open_flag"))
     assert overrides == [{"SLEEP": True}, {"SLEEP": True}]
     # Bound to agent 1's world, the write lands in world 1 only.
     bound = context.copy(target_index=1)

@@ -11,6 +11,7 @@ import townlet.environment.vectorized_env as vectorized_env_module
 from tests.test_townlet.helpers.config_builder import PRIMARY_LEVEL_NAME, prepare_config_dir
 from townlet.substrate.grid2d import Grid2DSubstrate
 from townlet.universe.compiler import UniverseCompiler
+from townlet.vfs.namespace import EFFECT_PIPELINE
 
 
 @pytest.mark.parametrize("config_name", ["configs/default_curriculum/levels/L0_0_minimal"])
@@ -95,8 +96,8 @@ def test_vectorized_env_uses_compiled_vfs_variables_without_profile_synthesis(tm
     assert runtime_variable_ids == compiled_variable_ids
 
 
-def test_vectorized_env_uses_compiled_effects_schema(tmp_path: Path) -> None:
-    """Runtime effect schema should be consumed from the compiled artifact."""
+def test_vectorized_env_builds_the_command_namespace_from_the_compiled_roster(tmp_path: Path) -> None:
+    """The environment's command namespace is the compiler's, built from the same compiled products (S5)."""
     experiment_dir = prepare_config_dir(tmp_path, name="experiment")
     profiles = {
         "variables": {
@@ -131,33 +132,31 @@ def test_vectorized_env_uses_compiled_effects_schema(tmp_path: Path) -> None:
     (experiment_dir / "variables.yaml").write_text(yaml.dump(profiles))
 
     compiled = UniverseCompiler().compile(experiment_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
-    assert compiled.effects_schema is not None
-    assert compiled.effects_schema["vfs.day_count"] == "float"
-    assert compiled.effects_schema["target.vfs.motivation"] == "float"
-
     env = compiled.create_environment(num_agents=1, level_name=PRIMARY_LEVEL_NAME, device="cpu")
 
-    assert env.effects_schema == compiled.effects_schema
+    schema = env.command_symbols.namespace.schema(EFFECT_PIPELINE)
+    assert schema["day_count"] == "float"
+    assert schema["motivation"] == "float"
 
 
-def test_vectorized_env_passes_compiled_effects_schema_to_item_manager(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Item interaction compilation should receive the compiler-emitted effect schema."""
+def test_vectorized_env_passes_its_command_symbols_to_item_manager(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Item interaction compilation receives the environment's command symbols."""
     compiled = UniverseCompiler().compile(Path("configs/test/items_smoke"), primary_level="L0_smoke", use_cache=False)
-    assert compiled.effects_schema is not None
 
-    captured: dict[str, dict[str, str] | None] = {}
+    captured: dict[str, object] = {}
     original_item_manager = vectorized_env_module.ItemManager
 
     class CapturingItemManager(original_item_manager):
-        def __init__(self, *args, schema=None, **kwargs):
-            captured["schema"] = schema
-            super().__init__(*args, schema=schema, **kwargs)
+        def __init__(self, *args, symbols=None, **kwargs):
+            captured["symbols"] = symbols
+            super().__init__(*args, symbols=symbols, **kwargs)
 
     monkeypatch.setattr(vectorized_env_module, "ItemManager", CapturingItemManager)
 
-    compiled.create_environment(num_agents=1, level_name="L0_smoke", device="cpu")
+    env = compiled.create_environment(num_agents=1, level_name="L0_smoke", device="cpu")
 
-    assert captured["schema"] == compiled.effects_schema
+    assert captured["symbols"] is env.command_symbols
+    assert "item.durability" in env.command_symbols.namespace.schema(EFFECT_PIPELINE.with_item(True))
 
 
 def test_vectorized_env_uses_compiled_runtime_action_space_without_substrate_rebuild(monkeypatch: pytest.MonkeyPatch) -> None:

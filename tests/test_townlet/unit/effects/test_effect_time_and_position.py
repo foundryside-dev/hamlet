@@ -29,11 +29,10 @@ import pytest
 import torch
 import yaml
 
-from townlet.effects.compiler import HISTORY_FUNCTIONS, CommandCompiler
+from tests.test_townlet._fixtures.command_namespace import command_compiler
 from townlet.effects.schema import CommandNode, CommandType
 from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.errors import CompilationError
-from townlet.world.expression.functions import FUNCTION_SPECS
 from townlet.world.expression.type_checker import TypeCheckError
 
 WITNESS = Path(__file__).resolve().parents[4] / "configs" / "test" / "effects_smoke"
@@ -106,7 +105,7 @@ def _place(env, positions: list[list[int]]) -> None:
 
 def test_tick_compiles_in_an_effect_and_reads_the_engine_tick(tmp_path: Path) -> None:
     """A global effect copies the engine tick into a global variable every tick."""
-    pack = _pack(tmp_path, _effect("clock", scope="global", on_tick=[{"modify": "vfs.day_count", "value": "tick"}]))
+    pack = _pack(tmp_path, _effect("clock", scope="global", on_tick=[{"modify": "day_count", "value": "tick"}]))
     env = _env(pack, num_agents=2)
     _spawn(env, "clock", world=0)
 
@@ -165,12 +164,12 @@ def test_in_range_evaluates_in_an_effect(tmp_path: Path) -> None:
 def test_history_functions_refuse_at_compile_in_an_effect(tmp_path: Path, expression: str) -> None:
     pack = _pack(tmp_path, _effect("hist", scope="agent", on_tick=[{"modify": "bar.health", "value": expression}]))
 
-    with pytest.raises(CompilationError, match="reads temporal history, which only VFS profile expressions keep"):
+    with pytest.raises(CompilationError, match="which an effect pipeline does not carry"):
         UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)
 
 
 def test_history_refusal_reaches_nested_expressions_and_bodies() -> None:
-    schema = {"bar.health": "float", "target.bar.health": "float", "bar.energy": "float"}
+    schema = {"bar.health": "float", "bar.energy": "float"}
     nested = CommandNode(
         type=CommandType.MODIFY,
         path="bar.health",
@@ -179,14 +178,9 @@ def test_history_refusal_reaches_nested_expressions_and_bodies() -> None:
     in_body = CommandNode(
         type=CommandType.FOR_EACH,
         collection="all_agents",
-        body=[CommandNode(type=CommandType.MODIFY, path="target.bar.health", value_expr="target.bar.health - delta(bar.energy)")],
+        body=[CommandNode(type=CommandType.MODIFY, path="bar.health", value_expr="bar.health - delta(bar.energy)")],
     )
 
     for node in (nested, in_body):
-        with pytest.raises(TypeCheckError, match="reads temporal history"):
-            CommandCompiler(schema, agent_target=True).compile_command(node)
-
-
-def test_every_refused_history_function_is_a_registered_function() -> None:
-    """A rename in the function registry must not silently drop a refusal."""
-    assert HISTORY_FUNCTIONS <= FUNCTION_SPECS.keys()
+        with pytest.raises(TypeCheckError, match="does not carry"):
+            command_compiler(schema).compile_command(node)

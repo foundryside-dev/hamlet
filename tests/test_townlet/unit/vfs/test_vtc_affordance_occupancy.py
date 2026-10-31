@@ -80,7 +80,7 @@ def test_vtc_affordance_occupancy_claim_if_free_targets_source_affordance_row() 
         bars_state={},
         active_mask=torch.tensor([True, True, True, True]),
         device=torch.device("cpu"),
-        world_rngs=None,
+        draws=None,
     ).values
 
     # Each world's claim lands in its own row only: world 0 takes its bed, world 1 keeps
@@ -104,7 +104,7 @@ def test_vtc_affordance_capacity_claim_fills_first_free_slots_without_overalloca
         bars_state={},
         active_mask=torch.tensor([True, True, True, True]),
         device=torch.device("cpu"),
-        world_rngs=None,
+        draws=None,
     ).values
 
     # One claimant per world takes its world's first free slot; a full world is unchanged

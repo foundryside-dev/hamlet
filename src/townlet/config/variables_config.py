@@ -33,6 +33,20 @@ VariableType = Literal[
 ]
 VariableLifetime = Literal["tick", "episode", "persistent"]
 _REFERENCE_TYPES = frozenset({"agent_ref", "item_ref", "affordance_ref", "effect_ref"})
+# A reference whose target row is episode state: reset() rebuilds what the row holds, so a
+# persistent reference would dangle into the next episode. Each names why.
+_EPISODE_ROW_REFERENCES: dict[str, str] = {
+    "item_ref": (
+        "item rows are episode-lifetime: reset() clears the item arena and respawns into the same rows, "
+        "so it would name whatever item the next episode puts there"
+    ),
+    "effect_ref": (
+        "effect rows are episode-lifetime: reset() clears every active effect and the next episode's spawns " "reuse the same rows"
+    ),
+    "affordance_ref": (
+        "what an affordance row holds is episode state: reset() re-places the affordances and clears every " "occupancy claim on them"
+    ),
+}
 _TENSOR_TYPES = frozenset({"tensor1d", "tensor2d", "tensor3d", "tensorNd"})
 _FIXED_VECTOR_WIDTHS = {"vec2i": 2, "vec3i": 3, "vec2f": 2, "vec3f": 3}
 
@@ -97,11 +111,10 @@ class VariableDeclaration(BaseModel):
                 raise ValueError(f"Item variable '{self.id}' lifetime must be episode")
         elif self.profile is not None:
             raise ValueError(f"Variable '{self.id}' profile is only meaningful for item scope")
-        if self.type == "item_ref" and self.lifetime == "persistent":
+        if self.lifetime == "persistent" and self.type in _EPISODE_ROW_REFERENCES:
             raise ValueError(
-                f"Variable '{self.id}' is an item_ref with lifetime persistent, but item rows are episode-lifetime: "
-                "reset() clears the item arena and respawns into the same rows, so a carried reference would name "
-                "whatever item the next episode puts there. Declare it lifetime: episode."
+                f"Variable '{self.id}' is an {self.type} with lifetime persistent, but {_EPISODE_ROW_REFERENCES[self.type]}, "
+                "so a carried reference would name something the next episode never gave it. Declare it lifetime: episode."
             )
         if bool(self.exposed_to) != (self.normalization is not None):
             raise ValueError(f"Variable '{self.id}' normalization is required exactly when exposed_to is nonempty")

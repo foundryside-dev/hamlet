@@ -35,6 +35,7 @@ from typing import TYPE_CHECKING, Final, Literal, get_args
 from townlet.config.affordances_v2_config import AffordanceParamConfig
 from townlet.config.effects_config import EffectScope, ReapplyPolicy
 from townlet.config.interaction_type import InteractionType
+from townlet.config.stratum_config import MAX_POSITION_RANK
 from townlet.effects.affordance_identity import (
     AFFORDANCE_LIFECYCLE_STAGES,
     AFFORDANCE_WRITE_SOURCES,
@@ -113,9 +114,9 @@ _STRATUM_SUBJECT: Final = TokenSubject("stratum", None, None)
 
 # --------------------------------------------------------------------------- engine constants
 
-#: Position payloads pad to this rank, with a rank feature (spec §1). A substrate of rank > 8
-#: is refused at compile time; raising the constant is a superseding PDR (breaks checkpoints).
-MAX_POSITION_RANK: Final[int] = 8
+#: Position payloads pad to MAX_POSITION_RANK, with a rank feature (spec §1). It is defined once,
+#: in the stratum DTO (`config/stratum_config.py`), whose `gridnd`/`continuousnd` rank bound it
+#: is, so a substrate of a larger rank refuses at parse; raising it breaks checkpoints.
 
 #: Value sub-block width. Scalar kinds use lane 0; ``cyclical_sin_cos`` lands sin/cos in lanes
 #: 0–1 of ONE token (spec §1 width rule). A width-used feature accompanies the lanes.

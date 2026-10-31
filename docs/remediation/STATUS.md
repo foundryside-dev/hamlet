@@ -238,10 +238,10 @@ doc examples shipped as crashes.
 | Step | State at the time of writing |
 |---|---|
 | R1 + R2 committed (`39825727`) | ✅ full suite green |
-| **Verifier of `39825727`** | ✅ done; record in `rereview-2026-10-31/verify_R12/RESULTS.md`. **4 defects, repair pass pending** (below) |
-| **R3 expressions** | ⚠ committed **before its full-suite gate finished**, so a cloud docs session gets the latest code. Lint, mypy and the doc check were clean at commit; confirm the full suite at the next commit |
+| **Verifier of `39825727`** | ✅ done; record in `rereview-2026-10-31/verify_R12/RESULTS.md`. 4 defects, **repaired in R4** |
+| **R3 expressions** (`636192e0`) | ✅ full suite green on exactly that tree (`5438 passed`) |
 
-**R1+R2 verifier defects (repair pass pending, after R3 lands):**
+**R1+R2 verifier defects (repaired in R4; kept here for the record):**
 - **D1, P1: keyword prefixes misparse.** The parser matches `not`, `true` and `false` with
   `Literal`, not `Keyword` (`world/expression/parser.py:61-62`, plus the unary `not`).
   - Effect: an id `notable` parses as `not able` and silently reads the wrong value, and
@@ -273,8 +273,42 @@ doc examples shipped as crashes.
   - action writes commit before rules within a phase, which is undocumented;
   - leftover doc nits: `variables.md:370`, `expressions.md:585/785/980`, VFS.md illustrative
     names.
-| R3 verifier | ⏭ after R3 commits; must include a world-0 differential with random expressions |
-| Repairs for either verifier | ⏭ as needed |
+
+**R3 verifier defects (repaired in R4):**
+- **V1, P1:** a draw on an affordance-scope target filled `[W]` and broadcast along the affordance axis
+  (cross-world leak at N == A, crash otherwise).
+- **V2, P2:** compile-time constant folding evaluated draws from torch's global generator.
+- **V3, P2:** draw order followed declaration order, so moving a declaration or adding an
+  unrelated random variable re-rolled every draw.
+- **V4–V6, P2:** three things compiled and crashed at reset: `gather` over a `tensor1d` static
+  with an initializer mode, vector `==` into a bool, and a position function naming an unknown
+  affordance.
+
+**R4 design calls (reversible by the owner):**
+- **Counter-based randomness** (`vfs/random_draws.py`). Each value is splitmix64(seed, episode,
+  tick, site, world, element), vectorised, keyed on a stable draw-site identity
+  (`var:<id>`, `rule:<id>:<write>`, `action:<name>:<write>`).
+  - There is no generator state: checkpoints carry `vfs_random_state = {seed, episode}`, and
+    `CHECKPOINT_FORMAT_VERSION` is 9.
+  - The effects and items generators capture the seed at construction but are still stateful
+    and not checkpointed (§7.4).
+- **Placement is per world (S1).** The capacity check is affordances + 1 per world, at compile
+  (`GRID_CAPACITY_EXCEEDED`). The joint-draw fallback is deleted, so same-seed trajectories of
+  `randomize_affordances: true` packs differ from `636192e0`.
+- **Undeployed affordances refuse in position functions.** A position function naming an
+  affordance that some level of the pack does not deploy refuses at compile
+  (`EXPRESSION-AFFORDANCE-UNDEPLOYED`).
+  - This is stricter than the old documented "infinity".
+  - It bites a curriculum whose early levels deploy fewer affordances than a pack-scope variable
+    names. Revisit in UaC if that pattern is wanted.
+- **One canonical form for the effects hash.** `effects_hash` sorts definitions by id, and
+  `1` vs `1.0` still moves it, as in every other canonical-AST hash, because the type checker
+  distinguishes them.
+
+| Step | State at the time of writing |
+|---|---|
+| R3 verifier | ✅ done; record in `rereview-2026-10-31/verify_R3/RESULTS.md`. 1 P1 and 5 P2s, **repaired in R4** (below) |
+| **R4 repair** (D1–D4, aspatial position functions, V1–V6, P3s) | ✅ committed after the full gate (design calls above). R4 verifier and the green call follow |
 | **Green call** | ⏭ resume each lens on the final SHA: rerun its own NEW-findings probes (`rereview-2026-10-31/<lens>/probes/`), report which still fail, flag anything new. The compiler lens's full gate is the one gate to rerun |
 
 R3 covers:
@@ -404,7 +438,15 @@ only the owner can make.
   `random_*` initializers and epsilon-greedy. "Exact checkpoint resume" is therefore not
   literally true. Check this against what R3 finds for per-world RNG.
 
+- After R4, VFS draws are counter-based and resume from `{seed, episode}`. Still stateful
+  and not checkpointed: the effects and items generators, `random_*` initializers and spawn
+  positions (the last two also draw from the global stream, so their values depend on N).
+- Bar writes made by `effects.tick` are not clamped at commit (R4's D3 clamp covers VTC action
+  writes and rules only). Effects phase, or here.
+
 ### 7.5 P3 backlog (non-blocking)
+- `CLAUDE.md` still says gridnd and continuousnd are "4D-100D". The DTO now caps both at
+  `MAX_POSITION_RANK` (8). CLAUDE.md is owner-edited: ask before changing it.
 **Hashing and the artifact**
 - Hash false moves:
   - `initial_value: 2` vs `2.0`;

@@ -284,6 +284,9 @@ class ItemManager:
         # world's draws never shift another's (S1). Seeded from the run seed
         # (`torch.initial_seed()`, set by `seed_all`), the world index and the episode,
         # without consuming the global stream: the same seed is the same run.
+        # The run seed is captured here once: another environment's later seed_all never
+        # shifts these streams.
+        self._run_seed = torch.initial_seed()
         self._episode = 0
         self.world_rngs: list[torch.Generator] = []
         self._reseed_world_rngs()
@@ -295,7 +298,7 @@ class ItemManager:
         self._cells: list[tuple[int, ...]] | None = None
 
     def _reseed_world_rngs(self) -> None:
-        run_seed = torch.initial_seed()
+        run_seed = self._run_seed
         self.world_rngs = []
         for world in range(self.num_worlds):
             digest = hashlib.blake2b(f"items:{run_seed}:{self._episode}:{world}".encode(), digest_size=8).digest()

@@ -63,7 +63,8 @@ variables its condition names (the expression is a literal). A rule reads a vari
 bare id and a meter as `bar.<name>` (one spelling per reference, VFS round-2 S5; a write's
 `variable_id` naming a meter is `bar.<name>` too, and the rule commits to the meter exactly as
 an action write does: masked by its world's activity, clamped by the write's `clamp`, then held
-to the meter's declared bounds at `clamp_and_validate`); reads resolve to storage names through the
+to the meter's declared bounds when its phase commits, so no later phase, cascade or effect reads
+it out of bounds; `clamp_and_validate` re-asserts the bounds at the end of the transition); reads resolve to storage names through the
 one resolver, an old spelling (`vfs.x`, `self.vfs.x`, `target.bar.m`, a bare meter name)
 refuses naming the one to write, and an expression naming nothing declared refuses, so a rule
 cannot claim to read what does not exist.
@@ -79,7 +80,7 @@ immutable_scale` derives `("immutable_scale", "public_state")`, not `("scaled_pu
 | field | required | notes |
 |---|---|---|
 | `id` | yes | unique across pack-scope transition declarations; the telemetry label is `id:effect` (or `id:variable_id` when `effect` is null) |
-| `phase` | yes | canonically `apply_transition_rules`; writes inherit it; any phase in the closed graph is admitted, except that a write to a meter must run at `clamp_and_validate` or earlier (meter bounds are enforced there) |
+| `phase` | yes | canonically `apply_transition_rules`; writes inherit it; any phase in the closed graph is admitted, except that a write to a meter must run at `clamp_and_validate` or earlier (a meter write is held to its bounds at its phase commit, and the end-of-transition bounds invariant runs there) |
 | `condition` | yes, nullable | rule-level gate; `null` = unconditional |
 | `writes` | yes, non-empty | see below |
 | `priority` | no (computed) | defaults to declaration order |

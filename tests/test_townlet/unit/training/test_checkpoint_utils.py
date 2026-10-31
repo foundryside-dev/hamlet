@@ -55,6 +55,7 @@ def test_demo_checkpoint_runtime_fields_require_exact_bound_values() -> None:
     payload["epsilon"] = 0.25
     payload["completed_live_agent_steps"] = 123
     payload["vfs_persistent_state"] = {"season": torch.tensor(3.0)}
+    payload["vfs_random_state"] = {"seed": 42, "episode": 3}
 
     validate_demo_checkpoint_runtime_fields(
         payload,
@@ -109,6 +110,17 @@ def test_demo_checkpoint_runtime_fields_require_exact_bound_values() -> None:
         with pytest.raises(ValueError, match="vfs_persistent_state must be a dictionary of variable id to tensor"):
             validate_demo_checkpoint_runtime_fields(
                 invalid_persistent,
+                position_dim=2,
+                substrate_type="Grid2DSubstrate",
+                num_agents=1,
+            )
+
+    for malformed_random in (None, {"seed": 1}, {"seed": -1, "episode": 0}, {"seed": 1, "episode": True}, {"seed": 1, "episode": 2.0}):
+        invalid_random = dict(payload)
+        invalid_random["vfs_random_state"] = malformed_random
+        with pytest.raises(ValueError, match="vfs_random_state must be"):
+            validate_demo_checkpoint_runtime_fields(
+                invalid_random,
                 position_dim=2,
                 substrate_type="Grid2DSubstrate",
                 num_agents=1,

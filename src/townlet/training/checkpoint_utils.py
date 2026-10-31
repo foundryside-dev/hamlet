@@ -26,7 +26,9 @@ _DIGEST_BUFFER_SIZE = 1024 * 1024  # 1 MiB chunks keep memory bounded
 # 7: persistent-lifetime VFS registry state (`vfs_persistent_state`) is part of resume.
 # 8: `effects_hash` (pack scope) and `items_appearance_hash` (level scope) are stamped and
 #    compared (compiler re-review N5): effect dynamics and spawn rules were outside every gate.
-CHECKPOINT_FORMAT_VERSION = 8
+# 9: the counter-based VFS draw state (`vfs_random_state`: run seed and episode counter) is
+#    part of resume, so a resumed run draws exactly what the original drew.
+CHECKPOINT_FORMAT_VERSION = 9
 
 # The complete DemoRunner artifact. Producers and both consumers share this one
 # closed schema: only artifacts emitted by the current code are accepted.
@@ -40,6 +42,7 @@ DEMO_CHECKPOINT_KEYS = frozenset(
         "curriculum_state",
         "affordance_layout",
         "vfs_persistent_state",
+        "vfs_random_state",
         "agent_ids",
         "epsilon",
         "completed_live_agent_steps",
@@ -178,6 +181,14 @@ def validate_demo_checkpoint_runtime_fields(
         not isinstance(variable_id, str) or not isinstance(value, torch.Tensor) for variable_id, value in persistent_state.items()
     ):
         raise ValueError("Demo checkpoint vfs_persistent_state must be a dictionary of variable id to tensor.")
+
+    random_state = checkpoint["vfs_random_state"]
+    if (
+        not isinstance(random_state, dict)
+        or set(random_state) != {"seed", "episode"}
+        or any(isinstance(value, bool) or not isinstance(value, int) or value < 0 for value in random_state.values())
+    ):
+        raise ValueError("Demo checkpoint vfs_random_state must be {'seed': int >= 0, 'episode': int >= 0}.")
 
 
 def attach_universe_metadata(checkpoint: dict[str, Any], universe: CompiledUniverse) -> None:
@@ -470,10 +481,12 @@ def assert_checkpoint_identity(checkpoint: Mapping[str, Any], universe: Compiled
          (the explicit force-new-VFS branch: start fresh, skip state load);
       3. ``assert_checkpoint_dimensions`` — action count, the architecture's
          observation contract, ``drive_hash``, effective ``brain_hash``, and the
-         four per-level content hashes;
-      4. ``assert_checkpoint_pack_hashes`` — the six pack-scope content hashes
-         (``experiment``, ``stratum``, ``environment``, ``actions``, nullable
-         ``items``, ``variables``), so a pack edit no level hash sees still refuses;
+         per-level content hashes of ``LEVEL_HASH_KEYS`` (``curriculum``, ``bars``,
+         ``affordances``, ``training``, nullable ``items_appearance``);
+      4. ``assert_checkpoint_pack_hashes`` — the pack-scope content hashes of
+         ``PACK_HASH_KEYS`` (``experiment``, ``stratum``, ``environment``, ``actions``,
+         nullable ``items``, ``variables``, nullable ``effects``), so a pack edit no
+         level hash sees still refuses;
       5. ``primary_level`` equality (D5) — the only field separating two levels
          that collide on every content hash (see
          ``test_two_levels_collide_on_almost_every_identity_field``).

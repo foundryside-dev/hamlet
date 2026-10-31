@@ -286,6 +286,7 @@ class DemoRunner:
             "curriculum_state": curriculum_state,
             "affordance_layout": affordance_layout,
             "vfs_persistent_state": env.vfs_registry.persistent_state(),
+            "vfs_random_state": env.vfs_random_state(),
             "agent_ids": population.agent_ids,
             "epsilon": population._get_current_epsilon_value(),
             "completed_live_agent_steps": self.completed_live_agent_steps,
@@ -366,6 +367,7 @@ class DemoRunner:
         curriculum.load_state(checkpoint["curriculum_state"])
         env.set_affordance_positions(checkpoint["affordance_layout"])
         env.vfs_registry.restore_persistent_state(checkpoint["vfs_persistent_state"])
+        env.restore_vfs_random_state(checkpoint["vfs_random_state"])
         population.agent_ids = checkpoint["agent_ids"]
         self.current_episode = checkpoint["episode"]
         self.completed_live_agent_steps = completed_live_agent_steps

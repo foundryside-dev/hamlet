@@ -4,6 +4,7 @@ from typing import cast
 
 from pyparsing import (
     Forward,
+    Keyword,
     Literal,
     Optional,
     ParserElement,
@@ -57,10 +58,18 @@ class ExpressionParser:
         # Forward declaration for recursive grammar
         expression_ref = Forward()
 
+        # Every word token is whole-word: a keyword matches only when the next character is not an
+        # identifier body character, so ``notable`` is one identifier, never ``not able``, and
+        # ``true_count`` is a name, never ``true`` followed by junk.
+        def kw(word: str) -> Keyword:
+            if word not in EXPRESSION_KEYWORDS:
+                raise ValueError(f"'{word}' is not a declared expression keyword")
+            return Keyword(word, ident_chars=IDENTIFIER_BODY_CHARS)
+
         # Literals
         # Boolean literals (must come before identifiers)
-        true_literal = Literal("true").set_parse_action(lambda: Constant(value=True))
-        false_literal = Literal("false").set_parse_action(lambda: Constant(value=False))
+        true_literal = kw("true").set_parse_action(lambda: Constant(value=True))
+        false_literal = kw("false").set_parse_action(lambda: Constant(value=False))
         bool_literal = true_literal | false_literal
 
         # Numeric literals
@@ -115,9 +124,9 @@ class ExpressionParser:
 
         # If-Then-Else (ternary conditional)
         # if x > 0 then 1 else -1
-        if_kw = Literal("if")
-        then_kw = Literal("then")
-        else_kw = Literal("else")
+        if_kw = kw("if")
+        then_kw = kw("then")
+        else_kw = kw("else")
 
         def make_if_then_else(tokens):
             # tokens: [condition, true_branch, false_branch]
@@ -216,7 +225,7 @@ class ExpressionParser:
         expression_with_ops = infix_notation(
             primary,
             [
-                (Literal("-") | Literal("not"), 1, opAssoc.RIGHT, make_unaryop),
+                (Literal("-") | kw("not"), 1, opAssoc.RIGHT, make_unaryop),
                 (Literal("**"), 2, opAssoc.RIGHT, make_right_binop),
                 (Literal("*") | Literal("/") | Literal("%"), 2, opAssoc.LEFT, make_binop),
                 (Literal("+") | Literal("-"), 2, opAssoc.LEFT, make_binop),
@@ -226,8 +235,8 @@ class ExpressionParser:
                     opAssoc.LEFT,
                     make_binop,
                 ),
-                (Literal("and"), 2, opAssoc.LEFT, make_binop),
-                (Literal("or"), 2, opAssoc.LEFT, make_binop),
+                (kw("and"), 2, opAssoc.LEFT, make_binop),
+                (kw("or"), 2, opAssoc.LEFT, make_binop),
             ],
         )
 

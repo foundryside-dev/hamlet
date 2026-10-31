@@ -83,6 +83,15 @@ def _refuse_meter_variable_collisions(
         )
 
 
+def _locate_leaf(source_map: SourceMap | None, parent: str, leaf: str) -> str:
+    """The exact child key that holds a refused reference (``parent.leaf``, or ``parent[i]`` for a
+    ``[i]`` leaf), falling back to the parent key; a parent-only lookup points one line up
+    whenever the reference is not the parent's first child."""
+    if leaf.startswith("["):
+        return locate(source_map, parent + leaf, locate(source_map, parent))
+    return locate(source_map, f"{parent}.{leaf}", locate(source_map, parent))
+
+
 def validate_dac_references(
     dac_config: DriveAsCodeConfig,
     symbol_table: UniverseSymbolTable,
@@ -97,7 +106,7 @@ def validate_dac_references(
     (e.g. ``levels/L1_full_observability/drive``), resolved through provenance.
     """
 
-    def validate_reward_variable(variable_id: str, consumer_location: str) -> None:
+    def validate_reward_variable(variable_id: str, consumer_parent: str) -> None:
         if variable_id not in symbol_table.vfs_variables:
             return  # The existing reference check reports undefined names separately.
         declaration = symbol_table.vfs_variables[variable_id]
@@ -107,7 +116,7 @@ def validate_dac_references(
                     code=ErrorCode.UAC_RES_VFS,
                     message=f"Reward variable '{variable_id}' must use global/agent scalar or bool storage; "
                     f"'{declaration.scope}/{declaration.type}' has no ordinary reward reduction",
-                    location=locate(source_map, consumer_location),
+                    location=_locate_leaf(source_map, consumer_parent, "variable"),
                 )
             )
 
@@ -120,7 +129,7 @@ def validate_dac_references(
                     CompilationMessage(
                         code=ErrorCode.DAC_REF_UNDEFINED_MODIFIER_BAR,
                         message=f"Modifier '{mod_name}' references undefined bar: {bar_ref}",
-                        location=locate(source_map, f"{drive_location}:modifiers.{mod_name}"),
+                        location=_locate_leaf(source_map, f"{drive_location}:modifiers.{mod_name}", "bar"),
                     )
                 )
         elif variable_ref:
@@ -130,19 +139,19 @@ def validate_dac_references(
                     CompilationMessage(
                         code=ErrorCode.DAC_REF_UNDEFINED_MODIFIER_VARIABLE,
                         message=f"Modifier '{mod_name}' references undefined VFS variable: {variable_ref}",
-                        location=locate(source_map, f"{drive_location}:modifiers.{mod_name}"),
+                        location=_locate_leaf(source_map, f"{drive_location}:modifiers.{mod_name}", "variable"),
                     )
                 )
 
     extrinsic_bars = getattr(dac_config.extrinsic, "bars", None)
     if extrinsic_bars:
-        for bar in extrinsic_bars:
+        for bar_idx, bar in enumerate(extrinsic_bars):
             if bar not in symbol_table.meters:
                 errors.add(
                     CompilationMessage(
                         code=ErrorCode.DAC_REF_UNDEFINED_EXTRINSIC_BAR,
                         message=f"Extrinsic strategy references undefined bar: {bar}",
-                        location=locate(source_map, f"{drive_location}:extrinsic.bars"),
+                        location=_locate_leaf(source_map, f"{drive_location}:extrinsic.bars", f"[{bar_idx}]"),
                     )
                 )
 
@@ -153,7 +162,7 @@ def validate_dac_references(
                 CompilationMessage(
                     code=ErrorCode.DAC_REF_UNDEFINED_BAR_BONUS_BAR,
                     message=f"Extrinsic bar bonus references undefined bar: {bonus_bar}",
-                    location=locate(source_map, f"{drive_location}:extrinsic.bar_bonuses[{idx}]"),
+                    location=_locate_leaf(source_map, f"{drive_location}:extrinsic.bar_bonuses[{idx}]", "bar"),
                 )
             )
 
@@ -166,7 +175,7 @@ def validate_dac_references(
                 CompilationMessage(
                     code=ErrorCode.DAC_REF_UNDEFINED_VARIABLE_BONUS,
                     message=f"Extrinsic variable bonus references undefined VFS variable: {var_ref}",
-                    location=locate(source_map, f"{drive_location}:extrinsic.variable_bonuses[{idx}]"),
+                    location=_locate_leaf(source_map, f"{drive_location}:extrinsic.variable_bonuses[{idx}]", "variable"),
                 )
             )
 
@@ -178,7 +187,7 @@ def validate_dac_references(
                     CompilationMessage(
                         code=ErrorCode.DAC_REF_UNDEFINED_APPROACH_AFFORDANCE,
                         message=f"Shaping bonus references undefined affordance: {target_aff}",
-                        location=locate(source_map, f"{drive_location}:shaping[{idx}]"),
+                        location=_locate_leaf(source_map, f"{drive_location}:shaping[{idx}]", "target_affordance"),
                     )
                 )
         elif shaping.type == "completion_bonus":
@@ -188,7 +197,7 @@ def validate_dac_references(
                     CompilationMessage(
                         code=ErrorCode.DAC_REF_UNDEFINED_COMPLETION_AFFORDANCE,
                         message=f"Shaping bonus (completion_bonus) references undefined affordance: {aff_ref}",
-                        location=locate(source_map, f"{drive_location}:shaping[{idx}]"),
+                        location=_locate_leaf(source_map, f"{drive_location}:shaping[{idx}]", "affordance"),
                     )
                 )
         elif shaping.type == "streak_bonus":
@@ -198,7 +207,7 @@ def validate_dac_references(
                     CompilationMessage(
                         code=ErrorCode.DAC_REF_UNDEFINED_STREAK_AFFORDANCE,
                         message=f"Shaping bonus (streak_bonus) references undefined affordance: {aff_ref}",
-                        location=locate(source_map, f"{drive_location}:shaping[{idx}]"),
+                        location=_locate_leaf(source_map, f"{drive_location}:shaping[{idx}]", "affordance"),
                     )
                 )
         elif shaping.type == "timing_bonus":
@@ -209,7 +218,9 @@ def validate_dac_references(
                         CompilationMessage(
                             code=ErrorCode.DAC_REF_UNDEFINED_TIMING_AFFORDANCE,
                             message=f"Shaping bonus (timing_bonus) references undefined affordance: {aff_ref}",
-                            location=locate(source_map, f"{drive_location}:shaping[{idx}].time_ranges[{time_range_idx}]"),
+                            location=_locate_leaf(
+                                source_map, f"{drive_location}:shaping[{idx}].time_ranges[{time_range_idx}]", "affordance"
+                            ),
                         )
                     )
         elif shaping.type == "efficiency_bonus":
@@ -219,7 +230,7 @@ def validate_dac_references(
                     CompilationMessage(
                         code=ErrorCode.DAC_REF_UNDEFINED_EFFICIENCY_BAR,
                         message=f"Shaping bonus (efficiency_bonus) references undefined bar: {bar_ref}",
-                        location=locate(source_map, f"{drive_location}:shaping[{idx}]"),
+                        location=_locate_leaf(source_map, f"{drive_location}:shaping[{idx}]", "bar"),
                     )
                 )
         elif shaping.type == "crisis_avoidance":
@@ -229,7 +240,7 @@ def validate_dac_references(
                     CompilationMessage(
                         code=ErrorCode.DAC_REF_UNDEFINED_CRISIS_BAR,
                         message=f"Shaping bonus (crisis_avoidance) references undefined bar: {bar_ref}",
-                        location=locate(source_map, f"{drive_location}:shaping[{idx}]"),
+                        location=_locate_leaf(source_map, f"{drive_location}:shaping[{idx}]", "bar"),
                     )
                 )
         elif shaping.type == "economic_efficiency":
@@ -239,17 +250,17 @@ def validate_dac_references(
                     CompilationMessage(
                         code=ErrorCode.DAC_REF_UNDEFINED_ECONOMIC_BAR,
                         message=f"Shaping bonus (economic_efficiency) references undefined bar: {money_bar}",
-                        location=locate(source_map, f"{drive_location}:shaping[{idx}]"),
+                        location=_locate_leaf(source_map, f"{drive_location}:shaping[{idx}]", "money_bar"),
                     )
                 )
         elif shaping.type == "balance_bonus":
-            for bar in getattr(shaping, "bars", []) or []:
+            for bar_idx, bar in enumerate(getattr(shaping, "bars", []) or []):
                 if bar and bar not in symbol_table.meters:
                     errors.add(
                         CompilationMessage(
                             code=ErrorCode.DAC_REF_UNDEFINED_BALANCE_BAR,
                             message=f"Shaping bonus (balance_bonus) references undefined bar: {bar}",
-                            location=locate(source_map, f"{drive_location}:shaping[{idx}]"),
+                            location=_locate_leaf(source_map, f"{drive_location}:shaping[{idx}].bars", f"[{bar_idx}]"),
                         )
                     )
         elif shaping.type == "state_achievement":
@@ -260,7 +271,7 @@ def validate_dac_references(
                         CompilationMessage(
                             code=ErrorCode.DAC_REF_UNDEFINED_ACHIEVEMENT_BAR,
                             message=f"Shaping bonus (state_achievement) references undefined bar: {condition_bar}",
-                            location=locate(source_map, f"{drive_location}:shaping[{idx}].conditions[{condition_idx}]"),
+                            location=_locate_leaf(source_map, f"{drive_location}:shaping[{idx}].conditions[{condition_idx}]", "bar"),
                         )
                     )
         elif shaping.type == "vfs_variable":
@@ -272,7 +283,7 @@ def validate_dac_references(
                     CompilationMessage(
                         code=ErrorCode.DAC_REF_UNDEFINED_VFS_VARIABLE,
                         message=f"Shaping bonus (vfs_variable) references undefined VFS variable: {var_ref}",
-                        location=locate(source_map, f"{drive_location}:shaping[{idx}]"),
+                        location=_locate_leaf(source_map, f"{drive_location}:shaping[{idx}]", "variable"),
                     )
                 )
 

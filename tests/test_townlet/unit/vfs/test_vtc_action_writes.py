@@ -97,7 +97,7 @@ def test_vtc_action_writes_applies_write_only_to_selected_active_agents() -> Non
         bars_state={},
         active_mask=torch.tensor([True, True, False]),
         device=torch.device("cpu"),
-        world_rngs=None,
+        draws=None,
     ).values
 
     assert torch.allclose(updated["energy"], torch.tensor([0.35, 0.2, 0.3]))
@@ -125,7 +125,7 @@ def test_vtc_action_writes_combines_action_mask_with_condition() -> None:
         bars_state={},
         active_mask=torch.tensor([True, True, True]),
         device=torch.device("cpu"),
-        world_rngs=None,
+        draws=None,
     ).values
 
     assert torch.allclose(updated["energy"], torch.tensor([0.6, 0.8, 0.8]))
@@ -153,7 +153,7 @@ def test_vtc_action_writes_can_target_meter_bars() -> None:
         bars_state={"energy": torch.tensor([0.2, 0.3])},
         active_mask=torch.tensor([True, True]),
         device=torch.device("cpu"),
-        world_rngs=None,
+        draws=None,
     ).values
 
     assert torch.allclose(updated["energy"], torch.tensor([0.45, 0.3]))
@@ -214,7 +214,7 @@ def test_vtc_action_writes_composes_additive_and_multiplicative_writes() -> None
         bars_state={},
         active_mask=torch.tensor([True, True]),
         device=torch.device("cpu"),
-        world_rngs=None,
+        draws=None,
     ).values
 
     assert torch.allclose(updated["energy"], torch.tensor([1.0, 0.7]))
@@ -261,7 +261,7 @@ def test_vtc_action_writes_composes_min_max_and_clamp_writes() -> None:
         bars_state={},
         active_mask=torch.tensor([True, True]),
         device=torch.device("cpu"),
-        world_rngs=None,
+        draws=None,
     ).values
 
     assert torch.allclose(updated["floor_value"], torch.tensor([0.4, 0.2]))
@@ -352,7 +352,7 @@ def test_vtc_action_writes_resolves_priority_and_last_write_wins() -> None:
         bars_state={},
         active_mask=torch.tensor([True, True]),
         device=torch.device("cpu"),
-        world_rngs=None,
+        draws=None,
     ).values
 
     assert torch.allclose(updated["winner"], torch.tensor([0.9, 0.0]))
@@ -394,7 +394,7 @@ def test_vtc_action_writes_reads_phase_snapshot_before_committing_writes() -> No
         bars_state={},
         active_mask=torch.tensor([True]),
         device=torch.device("cpu"),
-        world_rngs=None,
+        draws=None,
     ).values
 
     assert torch.allclose(updated["energy"], torch.tensor([2.0]))
@@ -470,7 +470,7 @@ def test_vtc_action_writes_uses_spec_phase_order_not_lexical_order() -> None:
         bars_state={},
         active_mask=torch.tensor([True]),
         device=torch.device("cpu"),
-        world_rngs=None,
+        draws=None,
     ).values
 
     assert torch.allclose(updated["energy"], torch.tensor([20.0]))
@@ -512,7 +512,7 @@ def test_vtc_action_writes_accepts_configured_transition_phase_order() -> None:
         bars_state={},
         active_mask=torch.tensor([True]),
         device=torch.device("cpu"),
-        world_rngs=None,
+        draws=None,
     ).values
 
     assert torch.allclose(updated["energy"], torch.tensor([11.0]))

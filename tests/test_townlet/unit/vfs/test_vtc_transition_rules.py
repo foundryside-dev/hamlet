@@ -125,7 +125,7 @@ def test_vtc_transition_rules_update_agent_variables() -> None:
         },
         active_mask=torch.tensor([True, True, True]),
         device=torch.device("cpu"),
-        world_rngs=None,
+        draws=None,
     ).values
 
     assert torch.allclose(updated["public_reputation"], torch.tensor([0.55, 0.4, 0.5]))
@@ -151,7 +151,7 @@ def test_global_target_advances_only_in_worlds_whose_agent_is_active() -> None:
         vfs_state={"pressure": torch.zeros(2)},
         active_mask=torch.tensor([True, False]),
         device=torch.device("cpu"),
-        world_rngs=None,
+        draws=None,
     ).values
 
     assert updated["pressure"].tolist() == [1.0, 0.0]
@@ -164,7 +164,7 @@ def test_affordance_target_rows_are_masked_by_their_own_worlds_agent() -> None:
         vfs_state={"wear": torch.zeros(2, 3)},
         active_mask=torch.tensor([False, True]),
         device=torch.device("cpu"),
-        world_rngs=None,
+        draws=None,
     ).values
 
     assert updated["wear"].tolist() == [[0.0, 0.0, 0.0], [1.0, 1.0, 1.0]]
@@ -176,7 +176,7 @@ def test_agent_target_masks_the_done_agent_row() -> None:
         vfs_state={"public_reputation": torch.zeros(3)},
         active_mask=torch.tensor([True, False, True]),
         device=torch.device("cpu"),
-        world_rngs=None,
+        draws=None,
     ).values
 
     assert updated["public_reputation"].tolist() == [1.0, 0.0, 1.0]
@@ -190,7 +190,7 @@ def test_agent_target_without_an_agent_axis_is_an_assertion() -> None:
             vfs_state={"public_reputation": torch.zeros(5)},
             active_mask=torch.tensor([True, True]),
             device=torch.device("cpu"),
-            world_rngs=None,
+            draws=None,
         )
 
 

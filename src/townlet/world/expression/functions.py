@@ -619,48 +619,50 @@ def _eval_normalize(args: list[Any], context: ExecutionContext, arg_nodes: list[
     return vector / norm
 
 
-def _draw(name: str, sampler: Callable[..., torch.Tensor], like: torch.Tensor, context: ExecutionContext) -> torch.Tensor:
-    """One independent draw per row, shaped like ``like`` (``SHAPE_DRAW``).
+def _draw(name: str, kind: str, like: torch.Tensor, context: ExecutionContext) -> torch.Tensor:
+    """One independent draw per element of the context's joined shape (``SHAPE_DRAW``).
 
-    A VFS context (a profile expression, an action write, a transition rule) carries one
-    generator per world, ``context.world_rngs``: world ``w``'s draws come from its own
-    stream only, so they depend neither on the batch size nor on any other world (S1),
-    and a literal argument still draws once per row. A command pipeline is bound to one
-    world and carries that world's generator as ``context.rng``; a context bound to no
-    world carries neither and draws from torch's global stream, which only direct engine
-    or test callers build.
+    A VFS context (a profile variable, an action write, a transition-rule write) carries
+    its owner's counter-based draw sites, ``context.draws``: every element is a pure
+    function of the run seed, the episode, the tick, the draw site, its world and its
+    position, so world ``w``'s draws depend neither on the batch size nor on any other
+    world (S1), and a literal-only call still draws once per element of the context
+    (per world, per agent row, per ``[world, affordance]`` row). A command pipeline is
+    bound to one world and carries that world's generator as ``context.rng``; a context
+    bound to no world carries neither and draws from torch's global stream, which only
+    direct engine or test callers build.
     """
-    if context.world_rngs is not None:
-        rows = len(context.world_rngs)
-        if like.dim() == 0:
-            tail: tuple[int, ...] = ()
-        elif int(like.shape[0]) == rows:
-            tail = tuple(like.shape[1:])
-        else:
-            raise RuntimeError(
-                f"Engine defect: function '{name}' draws one value per world ({rows} worlds) but its argument has "
-                f"shape {tuple(like.shape)}; the compiled shape proof admits no such argument"
-            )
-        return torch.stack([sampler(tail, device=like.device, generator=generator) for generator in context.world_rngs])
-    return sampler(like.shape, device=like.device, generator=context.rng)
+    if context.draws is not None:
+        if kind == "uniform":
+            return context.draws.uniform(name, like)
+        return context.draws.normal(name, like)
+    if kind == "uniform":
+        return torch.rand(like.shape, device=like.device, generator=context.rng)
+    return torch.randn(like.shape, device=like.device, generator=context.rng)
 
 
 def _eval_normal_dist(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
     if not args:
-        return _draw("normal_dist", torch.randn, torch.zeros((), device=context.device), context)
+        return _draw("normal_dist", "normal", torch.zeros((), device=context.device), context)
     mean = cast(torch.Tensor, args[0]).to(dtype=torch.float32)
-    std = cast(torch.Tensor, args[1]).to(device=mean.device, dtype=torch.float32) if len(args) > 1 else 1.0
-    return _draw("normal_dist", torch.randn, mean, context) * std + mean
+    if len(args) == 1:
+        return _draw("normal_dist", "normal", mean, context) + mean
+    std = cast(torch.Tensor, args[1]).to(device=mean.device, dtype=torch.float32)
+    like = torch.zeros(torch.broadcast_shapes(mean.shape, std.shape), device=mean.device)
+    return _draw("normal_dist", "normal", like, context) * std + mean
 
 
 def _eval_uniform(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
     if not args:
-        return _draw("uniform", torch.rand, torch.zeros((), device=context.device), context)
+        return _draw("uniform", "uniform", torch.zeros((), device=context.device), context)
     low = cast(torch.Tensor, args[0]).to(dtype=torch.float32)
     if len(args) == 1:
-        return _draw("uniform", torch.rand, low, context)
+        return _draw("uniform", "uniform", low, context)
     high = cast(torch.Tensor, args[1]).to(device=low.device, dtype=torch.float32)
-    return _draw("uniform", torch.rand, low, context) * (high - low) + low
+    return (
+        _draw("uniform", "uniform", torch.zeros(torch.broadcast_shapes(low.shape, high.shape), device=low.device), context) * (high - low)
+        + low
+    )
 
 
 def _eval_perlin_noise(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
@@ -1255,7 +1257,7 @@ _register(
     FunctionSpec(
         name="normal_dist",
         signature="normal_dist([mean[, std]])",
-        summary="Gaussian draw, one per row of the context, from the world's own stream.",
+        summary="Gaussian draw, one per element of the context, each its own world's.",
         returns="float",
         family=FAMILY_SAMPLING,
         requires=(REQUIRES_RANDOM,),
@@ -1274,7 +1276,7 @@ _register(
         name="uniform",
         signature="uniform([low[, high]])",
         summary=(
-            "Uniform draw in `[low, high)` (`[0, 1)` with one or no arguments), one per row of the context, from the " "world's own stream."
+            "Uniform draw in `[low, high)` (`[0, 1)` with one or no arguments), one per element of the context, each its own world's."
         ),
         returns="float",
         family=FAMILY_SAMPLING,
@@ -1613,7 +1615,10 @@ _register(
     FunctionSpec(
         name="distance_to_affordance",
         signature='distance_to_affordance("NAME"[, "manhattan" | "euclidean"])',
-        summary="Each agent's distance to the named affordance (default manhattan); infinity when it is not deployed.",
+        summary=(
+            "Each agent's distance to the named affordance (default manhattan); "
+            "the affordance must be deployed (refused at compile otherwise)."
+        ),
         returns="float",
         family=FAMILY_AFFORDANCE,
         requires=(REQUIRES_POSITIONS,),
@@ -1654,7 +1659,7 @@ _register(
     FunctionSpec(
         name="direction_to_affordance",
         signature='direction_to_affordance("NAME"[, "manhattan" | "euclidean"])',
-        summary="Unit vector from each agent towards the named affordance (zero at the affordance or when it is not deployed).",
+        summary="Unit vector from each agent towards the named affordance (zero at the affordance).",
         returns="vecNf of the substrate's position width",
         family=FAMILY_AFFORDANCE,
         requires=(REQUIRES_POSITIONS,),

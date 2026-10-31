@@ -269,6 +269,14 @@ class TypeChecker(ASTVisitor):
             OperatorType.GTE,
         }:
             if node.op in {OperatorType.EQ, OperatorType.NEQ}:
+                # A vector or tensor compared elementwise is a vector of truth values, not the one
+                # bool the operator is typed as; refuse it rather than define an implicit all().
+                for operand_type in (left_type, right_type):
+                    if operand_type.startswith(("vec", "tensor")):
+                        raise TypeCheckError(
+                            f"Comparison operator {node.op.value} compares one value per row, but '{operand_type}' has elements. "
+                            "Compare an element (gather(v, i) == x) or a distance (distance(a, b) == 0.0)."
+                        )
                 # Equality/inequality: allow matching types or numeric pair with promotion
                 if left_type == right_type:
                     return "bool"

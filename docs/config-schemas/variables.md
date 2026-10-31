@@ -283,10 +283,17 @@ Two further write rules hold for action writes and transition rules alike, refus
 
 A transition rule may target a meter (`variable_id: bar.<name>`). It commits to the meter as
 an action write does — masked by its world's activity, composed, clamped by the write's
-`clamp` — and the meter is then held to its declared bounds at `clamp_and_validate`. A meter
-write scheduled after `clamp_and_validate` (at `evaluate_terminal_conditions`) is refused
-(`UAC-STATIC-WRITE`), since it would escape those bounds; a rule meant to end the episode this
-tick (a lethal meter to its bound) belongs at `apply_transition_rules`.
+`clamp` — and when its phase commits, the meter is held to its declared `bounds`, as passive
+depletion and the cascades clamp their own writes. So no later reader — a rule in a later
+phase, a cascade, an effect, a terminal condition — ever sees a meter outside its bounds:
+`bar.satiation += -5.0` at `apply_passive_depletion` leaves satiation at its lower bound, and
+the starvation cascades that tick read that bound, not `-4.x`. The writes of one phase compose
+first and the committed meter is clamped once, so two `additive_delta` writes of `+0.8` and
+`-0.8` in one phase cancel. An action write to a meter is held to its bounds the same way.
+`clamp_and_validate` then re-asserts every meter's bounds as the end-of-transition invariant.
+A meter write scheduled after `clamp_and_validate` (at `evaluate_terminal_conditions`) is
+refused (`UAC-STATIC-WRITE`), since it would escape that invariant; a rule meant to end the
+episode this tick (a lethal meter to its bound) belongs at `apply_transition_rules`.
 
 Expressions are evaluated once per instant, after every transition phase that writes VFS
 state (action writes, scheduled effects, transition rules) and after
@@ -312,6 +319,11 @@ reads at `clamp_and_validate` or earlier. (A rule on a meter cannot run there; s
 **Writes within one phase read the phase-entry snapshot.** All the transition rules (and,
 separately, all the action writes) scheduled at one phase evaluate their expressions and
 conditions against the state as it was when the phase began, then commit in priority order.
+When one phase holds both, **the action writes commit first and the rules second**: the rules'
+snapshot is taken after the action writes committed, so a rule sees the action's result. With
+an action write `bar.satiation = 0.5` and a rule `bar.satiation = bar.satiation * 0.5` at one
+phase, the meter ends at `0.25`; with a rule overwrite of `0.2` against an action overwrite of
+`0.5`, the rule's `0.2` stands.
 So a priority-0 write is not visible to a priority-1 write in the same phase, whether that
 write reads the target directly or through an inlined expression variable; two
 `additive_delta` writes to one target both apply (each composes onto the running value); a
@@ -344,19 +356,34 @@ write's `file:line`, naming the expression variable's declaration `file:line`.
 
 `uniform` and `normal_dist` run in global and agent variable expressions, action writes and
 transition rules (and in effect and interaction pipelines; an item spawn predicate carries
-no stream and refuses, naming the expression-variable route). **One independent draw per
-row of the expression's context**: a global expression draws once per world, an agent
-expression, an action write or a rule once per agent row (one agent per world, S1); the
-arguments are numbers. A literal-only call, `uniform(0.0, 1.0)`, still
-draws once per row, never once for the whole batch, so an agent expression over it is
-per-agent state and compiles as `agent` scope.
+no randomness and refuses, naming the expression-variable route). **One independent draw per
+element of the expression's context**: a global expression draws once per world, an agent
+expression or an action write once per agent row (one agent per world, S1), a rule once per
+row of its target (per world, or per `[world, affordance]` row on an affordance target); the
+arguments are numbers, and an argument that carries those axes shapes the draw. A
+literal-only call, `uniform(0.0, 1.0)`, still draws once per element, never once for the
+whole batch, so an agent expression over it is per-agent state and compiles as `agent` scope.
+A draw is never a compile-time constant: `where(uniform() < 0.5, -1, 0)` into a reference is
+refused as not provably the writing world's, whatever the global seed.
 
-Every world draws from its own stream (`townlet.vfs.random_streams`), seeded from the run
-seed, the episode and the world alone: world w's draws are the same whatever the batch
-size and whatever any other world does, and a run is reproducible per seed. These streams
-are separate from the effects engine's (an effect's `sample` never shifts a world's
-expression draws). They are not checkpointed: a resumed run re-derives them from the seed
-and the episode it restarts at, as the effects streams and torch's global stream are.
+VFS draws are **counter-based** (`townlet.vfs.random_draws`): every value is a pure function
+of the run seed, the episode, the engine tick, the **draw site** and its world and element,
+mixed with splitmix64 into a uniform float (normals by Box-Muller). A draw site is the owner
+— the expression variable's id, the transition rule's id and write index, the custom
+action's name and write index — plus the call's position among the owner's draws. So:
+
+- world w's draws are the same whatever the batch size and whatever any other world does;
+- moving a declaration to another file, reordering declarations, or adding an unrelated
+  random mechanic re-rolls nothing else (renaming the owner does re-roll its own draws);
+- a transition rule's own `condition` is one site for the whole rule, so all its writes
+  fire together; each write's own `condition` and `expression` are sites of that write;
+- the run seed is captured when the environment is built (`torch.initial_seed()`, which
+  `seed_all` sets), so another environment seeding the process later shifts nothing.
+
+The draw state is that seed and the episode counter, and nothing else. Both travel in the
+checkpoint (`vfs_random_state`), so a resumed run draws exactly what the original run drew
+at the same episode and tick. These draws are separate from the effects engine's
+generators (an effect's `sample` never shifts an expression draw).
 
 A random expression variable is stored, never inlined into a write: a rule reading
 `coin: uniform(0.0, 1.0)` sees the draw the observation showed, and `lag(coin, 1)` reads
@@ -417,9 +444,14 @@ the function registry (every function whose `requires` names temporal history).
   "time since" mechanic is one declaration, and its `initial_value` seeds the count:
 
   ```yaml
-  - id: time_since_last_sleep          # configs/L5_multi_agent
+  - id: time_since_last_sleep          # as in configs/L5_multi_agent, unexposed here
     scope: agent
+    type: scalar
     lifetime: episode
+    semantic_type: custom
+    readable_by: [engine]
+    writable_by: [engine]
+    exposed_to: []
     initial_value: -1.0                # lag at instant 0 is -1.0, so the first tick reads 0
     expression: where(delta(bar.energy) > 0.0, 0.0, lag(time_since_last_sleep, 1) + 1.0)
   ```

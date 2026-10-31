@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping, Sequence
-from dataclasses import dataclass, field, replace
+from dataclasses import dataclass, field, fields, replace
 from typing import Any, ClassVar, Protocol, cast
 
 import torch
@@ -20,6 +20,7 @@ from townlet.vfs.namespace import (
     inline_expression_reads,
 )
 from townlet.vfs.profiles import CompiledGlobalProfile, VFSProfileCompiler
+from townlet.vfs.random_draws import DrawInstant
 from townlet.vfs.schema import VariableDef, VariableScope, WriteSpec
 from townlet.vfs.storage_dtype import (
     BATCH_ROW_REFERENCE_TYPES,
@@ -32,7 +33,7 @@ from townlet.vfs.transition_graph import TransitionPhaseGraph
 from townlet.world.expression import ASTNode, ExpressionParser, FunctionCall, IfThenElse, PathAccess, Variable, read_paths
 from townlet.world.expression.context import ExecutionContext
 from townlet.world.expression.evaluator import Evaluator
-from townlet.world.expression.functions import REQUIRES_HISTORY, REQUIRES_POSITIONS, REQUIRES_RANDOM, unserved_requirement
+from townlet.world.expression.functions import FUNCTION_SPECS, REQUIRES_HISTORY, REQUIRES_POSITIONS, REQUIRES_RANDOM, unserved_requirement
 from townlet.world.expression.type_checker import TypeChecker, TypeCheckError
 
 _EVERY_FUNCTION_REQUIREMENT = frozenset({REQUIRES_HISTORY, REQUIRES_POSITIONS, REQUIRES_RANDOM})
@@ -170,6 +171,8 @@ class CompiledVTCActionWrite:
     priority: int
     clamp: tuple[float, float] | None
     telemetry_label: str
+    draw_site: str | None = field(metadata={"derived": True})
+    """``action:<name>:<write index>`` when the expression or condition draws (``random_draws``); else None."""
 
 
 @dataclass(frozen=True)
@@ -358,6 +361,11 @@ class CompiledVTCTransitionRule:
     clamp: tuple[float, float] | None
     telemetry_label: str
     target_scope: VariableScope
+    draw_site: str | None = field(metadata={"derived": True})
+    """``rule:<id>:<write index>`` when the expression or condition draws (``random_draws``); else None."""
+    rule_condition_draws: int = field(metadata={"derived": True})
+    """How many draws the rule-level condition makes; they lead the combined condition and are
+    keyed on the rule (``rule:<id>:condition``), so every write of the rule sees the same ones."""
     reads: tuple[str, ...] = field(metadata={"derived": True})
     """The ids of the variables (and meter bars) the expression and condition read, sorted.
 
@@ -597,11 +605,14 @@ def _element_payload_refusal(
     """
     if target_type not in ELEMENT_PAYLOAD_TYPES or composition in AFFORDANCE_OCCUPANCY_COMPOSITIONS:
         return None
-    reads = sorted(read_paths(expression_ast))
-    if not reads:
+    if _is_constant(expression_ast):
         return None
+    reads = sorted(read_paths(expression_ast))
+    what = "it draws a random value per row"
+    if reads:
+        what = f"it reads {', '.join(reads)}"
     return (
-        f"{prefix} writes '{expression}' (it reads {', '.join(reads)}) into {target_type} '{target_id}'. A write "
+        f"{prefix} writes '{expression}' ({what}) into {target_type} '{target_id}'. A write "
         f"expression is one number per row, and a {target_type} row has elements, so the value would be spread over "
         "every element implicitly. A vector or tensor target takes a constant (it fills every element); to carry a "
         "per-row quantity, declare a scalar variable and write that."
@@ -651,7 +662,7 @@ def _write_type_refusal(
             f"{prefix} assigns a {result_type} expression '{expression}' to '{target_id}', declared {target_type} "
             f"(admits {', '.join(sorted(admitted))}). Storage writes never coerce dtype; author an expression of the declared type."
         )
-    if target_type in BATCH_ROW_REFERENCE_TYPES and not read_paths(expression_ast):
+    if target_type in BATCH_ROW_REFERENCE_TYPES and _is_constant(expression_ast):
         constant = _constant_value(expression_ast)
         if constant != -1:
             return (
@@ -680,8 +691,58 @@ def _write_type_refusal(
     return None
 
 
+def _draws(ast: ASTNode) -> bool:
+    """Whether ``ast`` calls a function that requires randomness (``uniform``, ``normal_dist``)."""
+    return _draw_count(ast) > 0
+
+
+def _draw_count(ast: ASTNode) -> int:
+    """How many sampling calls ``ast`` makes, each a draw site of its owner."""
+    count = 0
+
+    def visit(value: Any) -> None:
+        nonlocal count
+        if isinstance(value, FunctionCall):
+            spec = FUNCTION_SPECS.get(value.function_name)
+            if spec is not None and REQUIRES_RANDOM in spec.requires:
+                count += 1
+        if isinstance(value, ASTNode):
+            for ast_field in fields(value):
+                visit(getattr(value, ast_field.name))
+        elif isinstance(value, list | tuple):
+            for item in value:
+                visit(item)
+
+    visit(ast)
+    return count
+
+
+def _draw_site(site: str, expression_ast: ASTNode, condition_ast: ASTNode | None) -> str | None:
+    """``site`` when the write's expression or condition draws, else None (it needs no draws)."""
+    if _draws(expression_ast) or (condition_ast is not None and _draws(condition_ast)):
+        return site
+    return None
+
+
+def _optional_draw_count(parser: ExpressionParser, text: str | None) -> int:
+    if text is None:
+        return 0
+    return _draw_count(parser.parse(text))
+
+
+def _is_constant(ast: ASTNode) -> bool:
+    """A constant reads no state and draws nothing: the same value in every world, every tick.
+
+    "Reads nothing" alone is not constancy once draws are admitted: ``uniform()`` reads nothing
+    and differs per world and per tick, and folding it would draw from torch's global stream
+    at compile time.
+    """
+    return not read_paths(ast) and not _draws(ast)
+
+
 def _constant_value(ast: ASTNode) -> int:
-    """The integer a read-free expression evaluates to."""
+    """The integer a constant expression (``_is_constant``) evaluates to."""
+    assert _is_constant(ast), "only a constant folds at compile time"
     return int(Evaluator(ExecutionContext(bars={}, vfs={}, temporal={})).evaluate(ast))
 
 
@@ -695,8 +756,10 @@ def _world_local_reference(ast: ASTNode, target_type: str, schema: Mapping[str, 
     if-then-else whose two value branches are themselves such. Anything else, such as
     ``agent_id * 0``, can name another world's row and is refused.
     """
-    if not read_paths(ast):
+    if _is_constant(ast):
         return _constant_value(ast) == -1
+    if not read_paths(ast):
+        return False  # a draw reads nothing and is no world's entity
     if isinstance(ast, Variable | PathAccess):
         if isinstance(ast, Variable):
             path = ast.name
@@ -740,23 +803,23 @@ def _clamp_in_dtype(value: torch.Tensor, clamp: tuple[float, float] | None) -> t
     return torch.clamp(value, min=low, max=high).to(dtype=value.dtype)
 
 
-def _require_streams(expressions: Iterable[ASTNode], world_rngs: Sequence[torch.Generator] | None, worlds: int, label: str) -> None:
-    """A program whose expression samples runs with one stream per world, never torch's global one (S1).
+def _require_draws(expressions: Iterable[ASTNode], draws: DrawInstant | None, worlds: int, label: str) -> None:
+    """A program whose expression samples runs with the instant's draws, never torch's global stream (S1).
 
-    The compiler admits a draw in a write or rule because the transition phases carry a
-    random stream (``TRANSITION_WRITE``); a caller that runs them without one, or with
+    The compiler admits a draw in a write or rule because the transition phases carry the
+    counter-based draws (``TRANSITION_WRITE``); a caller that runs them without them, or for
     the wrong number of worlds, is an engine defect, refused here rather than drawn from
     the global generator.
     """
-    if world_rngs is not None:
-        if len(world_rngs) != worlds:
-            raise RuntimeError(f"Engine defect: {label} ran with {len(world_rngs)} world streams for {worlds} worlds")
+    if draws is not None:
+        if draws.worlds != worlds:
+            raise RuntimeError(f"Engine defect: {label} ran with draws for {draws.worlds} worlds, not {worlds}")
         return
     served = frozenset(requirement for requirement in _EVERY_FUNCTION_REQUIREMENT if requirement != REQUIRES_RANDOM)
     for expression in expressions:
         call = unserved_requirement(expression, served)
         if call is not None:
-            raise RuntimeError(f"Engine defect: {label} ran without the world random streams, but an expression calls {call}")
+            raise RuntimeError(f"Engine defect: {label} ran without the instant's draws, but an expression calls {call}")
 
 
 @dataclass(frozen=True)
@@ -773,18 +836,19 @@ class VTCActionWriteProgram:
         bars_state: Mapping[str, torch.Tensor],
         active_mask: torch.Tensor,
         device: torch.device,
-        world_rngs: Sequence[torch.Generator] | None,
+        draws: DrawInstant | None,
     ) -> VTCWriteResult:
         """Apply compiled VTC writes to a VFS state snapshot using action and active-agent masks.
 
-        ``world_rngs`` is one generator per world (S1), the streams a sampling call draws
-        from, one draw per row; None only when no write samples (``_require_streams``).
+        ``draws`` is the instant's counter-based draws (``townlet.vfs.random_draws``); a write
+        that samples draws from its own sites (``draw_site``), one value per agent row. None
+        only when no write samples (``_require_draws``).
         """
         if actions.shape != active_mask.shape:
             raise ValueError(f"actions shape {tuple(actions.shape)} must match active_mask shape {tuple(active_mask.shape)}")
-        _require_streams(
+        _require_draws(
             (ast for write in self.writes for ast in (write.expression_ast, write.condition_ast) if ast is not None),
-            world_rngs,
+            draws,
             actions.shape[0],
             "VTC action writes",
         )
@@ -807,7 +871,7 @@ class VTCActionWriteProgram:
                 actions=actions_on_device,
                 active_mask=active_mask_on_device,
                 device=device,
-                world_rngs=world_rngs,
+                draws=draws,
             )
             attempted_targets.update(effect.write.variable_id for effect in phase_effects if bool(effect.write_mask.any()))
             updated = self._commit_phase_effects(phase_snapshot, phase_effects)
@@ -841,7 +905,7 @@ class VTCActionWriteProgram:
         actions: torch.Tensor,
         active_mask: torch.Tensor,
         device: torch.device,
-        world_rngs: Sequence[torch.Generator] | None,
+        draws: DrawInstant | None,
     ) -> tuple[_VTCActionWriteEffect, ...]:
         phase_effects: list[_VTCActionWriteEffect] = []
         context_vfs = dict(phase_snapshot)
@@ -851,7 +915,6 @@ class VTCActionWriteProgram:
             vfs=context_vfs,
             temporal={},
             device=device,
-            world_rngs=world_rngs,
         )
         evaluator = Evaluator(context)
 
@@ -860,8 +923,15 @@ class VTCActionWriteProgram:
                 raise KeyError(f"VTC action write targets unknown VFS variable '{write.variable_id}'")
 
             target_snapshot = phase_snapshot[write.variable_id]
+            if write.draw_site is not None:
+                assert draws is not None  # _require_draws
+                context.draws = draws.stream(f"{write.draw_site}:condition", (draws.worlds,))
             write_mask = self._build_write_mask(write, actions, active_mask, evaluator)
+            if write.draw_site is not None:
+                assert draws is not None
+                context.draws = draws.stream(f"{write.draw_site}:expression", (draws.worlds,))
             expression_value = self._evaluate_tensor(evaluator, write.expression_ast, "expression", write)
+            context.draws = None
             phase_effects.append(
                 _VTCActionWriteEffect(
                     write=write,
@@ -1691,7 +1761,7 @@ class VTCTransitionRuleProgram:
         vfs_state: Mapping[str, torch.Tensor],
         active_mask: torch.Tensor,
         device: torch.device,
-        world_rngs: Sequence[torch.Generator] | None,
+        draws: DrawInstant | None,
         bars_state: Mapping[str, torch.Tensor] | None = None,
     ) -> VTCWriteResult:
         """Apply compiled transition-rule writes using phase snapshots and masked commits.
@@ -1699,17 +1769,20 @@ class VTCTransitionRuleProgram:
         A meter bar is a rule target like an agent variable (``bar.<m>`` resolves to
         agent-scoped ``scalar`` storage): bars join the snapshot, exactly as in
         ``VTCActionWriteProgram.apply``, and the result carries every bar and variable.
-        The caller splits them (``_split_vfs_and_bars``); meter bounds are enforced by
-        ``clamp_and_validate``, the compiler refusing a meter rule scheduled after it.
+        The caller splits them (``_split_vfs_and_bars``) and holds each written meter to its
+        declared bounds at the phase commit (``VTCTransitionRunner._clamp_written_meters``);
+        the compiler refuses a meter rule scheduled after ``clamp_and_validate``.
 
-        ``world_rngs`` is one generator per world (S1), the streams a sampling call draws
-        from, one draw per row; None only when no rule samples (``_require_streams``).
+        ``draws`` is the instant's counter-based draws (``townlet.vfs.random_draws``); a rule
+        write that samples draws from its own sites (``draw_site``) over the full shape of its
+        target's rows (per world, or per ``[world, affordance]``); the rule-level condition's
+        draws are shared by every write of the rule. None only when no rule samples.
         """
         if active_mask.dim() != 1:
             raise ValueError(f"active_mask must be rank-1, got shape {tuple(active_mask.shape)}")
-        _require_streams(
+        _require_draws(
             (ast for rule in self.rules for ast in (rule.expression_ast, rule.condition_ast) if ast is not None),
-            world_rngs,
+            draws,
             active_mask.shape[0],
             "VTC transition rules",
         )
@@ -1731,7 +1804,7 @@ class VTCTransitionRuleProgram:
                 bar_names=bar_names,
                 active_mask=active,
                 device=device,
-                world_rngs=world_rngs,
+                draws=draws,
             )
             attempted_targets.update(effect.rule.variable_id for effect in phase_effects if bool(effect.write_mask.any()))
             updated = self._commit_phase_effects(phase_snapshot, phase_effects)
@@ -1765,7 +1838,7 @@ class VTCTransitionRuleProgram:
         bar_names: frozenset[str],
         active_mask: torch.Tensor,
         device: torch.device,
-        world_rngs: Sequence[torch.Generator] | None,
+        draws: DrawInstant | None,
     ) -> tuple[_VTCTransitionRuleEffect, ...]:
         phase_effects: list[_VTCTransitionRuleEffect] = []
         context_vfs = {name: value for name, value in phase_snapshot.items() if name not in bar_names}
@@ -1775,7 +1848,6 @@ class VTCTransitionRuleProgram:
             vfs=context_vfs,
             temporal={},
             device=device,
-            world_rngs=world_rngs,
         )
         evaluator = Evaluator(context)
 
@@ -1788,8 +1860,22 @@ class VTCTransitionRuleProgram:
             rule_evaluator = evaluator
             if rule.world_columns:
                 rule_evaluator = Evaluator(replace(context, vfs=self._world_column_view(context_vfs, rule, target_snapshot)))
+            rule_context = rule_evaluator.context
+            row_shape = self._target_row_shape(rule, target_snapshot)
+            if rule.draw_site is not None:
+                assert draws is not None  # _require_draws
+                rule_context.draws = draws.stream_with_shared_prefix(
+                    f"{rule.draw_site}:condition",
+                    row_shape,
+                    shared_site=f"rule:{rule.rule_id}:condition",
+                    shared_draws=rule.rule_condition_draws,
+                )
             condition_mask = self._build_write_mask(rule, target_snapshot, active_mask, rule_evaluator)
+            if rule.draw_site is not None:
+                assert draws is not None
+                rule_context.draws = draws.stream(f"{rule.draw_site}:expression", row_shape)
             expression_value = self._evaluate_tensor(rule_evaluator, rule.expression_ast, "expression", rule)
+            rule_context.draws = None
             phase_effects.append(
                 _VTCTransitionRuleEffect(
                     rule=rule,
@@ -1799,6 +1885,13 @@ class VTCTransitionRuleProgram:
             )
 
         return tuple(phase_effects)
+
+    @staticmethod
+    def _target_row_shape(rule: CompiledVTCTransitionRule, target: torch.Tensor) -> tuple[int, ...]:
+        """The leading registry axes of the target's rows: ``[worlds]``, or ``[worlds, affordances]``."""
+        if rule.target_scope == VariableScope.AFFORDANCE:
+            return tuple(int(axis) for axis in target.shape[:2])
+        return (int(target.shape[0]),)
 
     @staticmethod
     def _world_column_view(
@@ -2251,6 +2344,8 @@ def compile_vtc_transition_rules_with_phase_graph(
                     clamp=write["clamp"],
                     telemetry_label=write["telemetry_label"],
                     target_scope=target.scope,
+                    draw_site=_draw_site(f"rule:{rule['rule_id']}:{write_index}", expression_ast, condition_ast),
+                    rule_condition_draws=_optional_draw_count(parser, rule["condition"]),
                     reads=_rule_reads(namespace, expression_ast, condition_ast),
                     world_columns=_world_columns(target.scope, namespace, expression_ast, condition_ast),
                 )
@@ -2683,6 +2778,7 @@ def _compile_vtc_action_writes_with_phase_graph(
                     priority=write.priority,
                     clamp=write.clamp,
                     telemetry_label=write.telemetry_label,
+                    draw_site=_draw_site(f"action:{action.name}:{write_index}", expression_ast, condition_ast),
                 )
             )
 

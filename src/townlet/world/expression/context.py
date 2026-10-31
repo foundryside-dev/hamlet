@@ -1,12 +1,17 @@
 """Execution context for expression evaluation."""
 
-from collections.abc import Sequence
+from __future__ import annotations
+
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 import torch
 
 from townlet.world.expression.history import TemporalHistory
 from townlet.world.expression.references import ReferenceKind, parse_reference
+
+if TYPE_CHECKING:
+    from townlet.vfs.random_draws import DrawStream
 
 
 @dataclass
@@ -36,14 +41,14 @@ class ExecutionContext:
     agent_positions: torch.Tensor | None = None
     device: torch.device = torch.device("cpu")
     history: TemporalHistory | None = None
-    # The random streams sampling functions draw from (S1: one world's draws never shift
-    # another's). A VFS context (profile expressions, action writes, transition rules)
-    # carries ``world_rngs``, one generator per batch row, and draws once per row from
-    # each. A command pipeline is bound to one world and carries that world's generator
-    # as ``rng``. Neither set means torch's global stream, which only direct engine or
-    # test callers build.
+    # Where sampling functions draw from (S1: one world's draws never shift another's).
+    # A VFS context (one profile variable, one action write, one transition-rule write)
+    # carries ``draws``, the owner's counter-based draw sites (``townlet.vfs.random_draws``):
+    # each value a pure function of seed, episode, tick, site, world and element. A command
+    # pipeline is bound to one world and carries that world's generator as ``rng``. Neither
+    # set means torch's global stream, which only direct engine or test callers build.
     rng: torch.Generator | None = None
-    world_rngs: Sequence[torch.Generator] | None = None
+    draws: DrawStream | None = None
 
     def get(self, path: str) -> torch.Tensor:
         """The value ``path`` names; KeyError when it is no spelling this context serves."""

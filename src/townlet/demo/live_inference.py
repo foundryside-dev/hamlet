@@ -471,6 +471,8 @@ class LiveInferenceServer:
         # serving it against fresh initial values would show it a world it never saw.
         # Episode resets keep it, so the next served episode starts from training's state.
         self.env.vfs_registry.restore_persistent_state(checkpoint["vfs_persistent_state"])
+        # And the run's draw state, so served episodes draw what training's next episode would.
+        self.env.restore_vfs_random_state(checkpoint["vfs_random_state"])
 
         epsilon = checkpoint["epsilon"]
         logger.info("Loaded canonical checkpoint epsilon: %.3f", epsilon)

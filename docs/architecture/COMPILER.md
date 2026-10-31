@@ -139,7 +139,7 @@ Representative, grouped by what they catch:
 | vocabulary agreement | `METER_VOCAB_MISMATCH`, `AFFORDANCE_VOCAB_MISMATCH`, `ENABLED_AFFORDANCES_INVALID` |
 | affordances & cascades | `AFFORDANCE_INVALID_METER`, `AFFORDANCE_OPENING_HOURS_MISSING`, `AFFORDANCE_DEPLOYMENT_POSITIONS_MISSING`, `CASCADE_CYCLE`, `CASCADE_MISSING`, `CASCADE_EXTRA`, `CASCADE_INVALID_METER`, `MODULATION_MISSING`, `MODULATION_EXTRA`, `MODULATION_INVALID_REFERENCE` |
 | required declarations | `LEVEL_DRIVE_MISSING`, `LEVEL_DRIVE_EXTRINSIC_MISSING`, `LEVEL_DRIVE_INTRINSIC_MISSING` |
-| substrate / temporal / vision | `SUBSTRATE_ACTION_INCOMPATIBLE`, `SUBSTRATE_ACTION_WARNING_AS_ERROR`, `INTERACTION_RADIUS_MISSING`, `TEMPORAL_DAY_LENGTH_MISSING`, `MULTI_TICK_REQUIRES_TEMPORAL`, `VISION_INCOMPATIBLE` |
+| substrate / temporal / vision | `EXPRESSION-POSITION-ASPATIAL` (a position function on an aspatial substrate), `SUBSTRATE_ACTION_INCOMPATIBLE`, `SUBSTRATE_ACTION_WARNING_AS_ERROR`, `INTERACTION_RADIUS_MISSING`, `TEMPORAL_DAY_LENGTH_MISSING`, `MULTI_TICK_REQUIRES_TEMPORAL`, `VISION_INCOMPATIBLE` |
 | safety limits | `CONFIG_LIMIT_EXCEEDED`, `GRID_SIZE_LIMIT_EXCEEDED`, `GRID_CAPACITY_EXCEEDED`, `ITEM_TYPES_LIMIT_EXCEEDED`, `SPAWN_RULE_LIMIT_EXCEEDED` |
 
 **Drive diagnostics follow the declaration.** `DAC-REF-*` errors refer to the authored
@@ -148,8 +148,11 @@ is a convention, and no `drive_as_code.yaml` alias is used to construct location
 
 **Security limits.** Hard caps guard against accidental or malicious config explosion — meter
 and affordance counts, item types, spawn rules, and grid cells (a grid that would exceed the
-cell ceiling raises `GRID_SIZE_LIMIT_EXCEEDED`; a grid too small to hold its affordances plus
-agents raises `GRID_CAPACITY_EXCEEDED`).
+cell ceiling raises `GRID_SIZE_LIMIT_EXCEEDED`; a level with `randomize_affordances: true`
+whose grid cannot hold its deployed affordances plus one agent raises `GRID_CAPACITY_EXCEEDED`
+at its `randomize_affordances:` line — per world, since the batch is N independent
+single-agent worlds (S1), so the population size never enters it and the runtime never falls
+back to declared positions).
 
 **There is no warning channel in practice — every finding is a hard error.** Verified
 2026-08-24, re-checked 2026-10-25: the collector has no warning-adding method (the

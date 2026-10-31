@@ -238,13 +238,14 @@ def test_denied_top_level_dynamic_target_preserves_rng() -> None:
 
 
 def test_successful_cascade_uses_prior_writes_and_samples_target_once() -> None:
+    # The manager captures the run seed at construction, so seed before building it.
+    torch.manual_seed(16)
     manager, registry, bars = _setup("stack")
     _add_child(manager)
     manager.catalog.effects["charging"].on_spawn = [
         _write("bar.energy", "9.0"),
         _child_spawn("where(bar.energy > 8.0 and uniform(0.0, 1.0) > -1.0, 0, 1)"),
     ]
-    torch.manual_seed(16)
     global_rng = torch.get_rng_state().clone()
     manager.spawn_effect("charging", 0, 1.0, 0, bars=bars, vfs_registry=registry)
     assert registry.read_item("writable", "charge", 0, reader="engine") == 4.0

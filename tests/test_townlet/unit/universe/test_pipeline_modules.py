@@ -280,18 +280,16 @@ def test_validate_v21_semantics_rejects_unknown_enabled_affordance(tmp_path: Pat
         validate_v21_semantics(raw, config_dir, source_map=None)
 
 
-@pytest.mark.parametrize("missing_field", ("enabled_affordances", "population.size"))
-def test_validate_v21_semantics_has_no_fallback_for_required_training_fields(tmp_path: Path, missing_field: str) -> None:
-    """Schema-erased required fields must fail instead of acquiring compatibility defaults."""
+def test_validate_v21_semantics_has_no_fallback_for_required_training_fields(tmp_path: Path) -> None:
+    """Schema-erased required fields must fail instead of acquiring compatibility defaults.
+
+    (`population.size` is no longer read here: under S1 the capacity check is per world.)
+    """
     config_dir = _copy_experiment(tmp_path)
     raw = load_v21_configs(config_dir)
-    training = raw.levels["L0_test"].training
-    if missing_field == "population.size":
-        del training.population.size
-    else:
-        del training.enabled_affordances
+    del raw.levels["L0_test"].training.enabled_affordances
 
-    with pytest.raises(AttributeError, match=missing_field.rsplit(".", maxsplit=1)[-1]):
+    with pytest.raises(AttributeError, match="enabled_affordances"):
         validate_v21_semantics(raw, config_dir, source_map=None)
 
 

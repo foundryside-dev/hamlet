@@ -36,7 +36,7 @@ from townlet.universe.dto.token_spec import item_capacity
 from townlet.vfs.evaluator import VFSEvaluator
 from townlet.vfs.namespace import CommandSymbols, Namespace, expression_sources
 from townlet.vfs.profiles import CompiledGlobalProfile
-from townlet.vfs.random_streams import WorldRandomStreams
+from townlet.vfs.random_draws import DrawInstant, VFSRandomness
 from townlet.vfs.registry import VariableRegistry
 from townlet.vfs.transition_schedule import VTCTransitionContext, VTCTransitionRunner, VTCTransitionState
 from townlet.vfs.vtc import (
@@ -582,9 +582,10 @@ class VectorizedHamletEnv:
             item_profiles=item_profiles,
         )
 
-        # One random stream per world for the VFS draws (expressions, action writes,
-        # transition rules), separate from the effects engine's streams (S1).
-        self.vfs_random_streams = WorldRandomStreams("vfs")
+        # Counter-based VFS draws (expressions, action writes, transition rules), separate
+        # from the effects engine's streams (S1). The run seed is captured here, once: a
+        # later seed_all elsewhere in the process never shifts this environment's draws.
+        self.vfs_randomness = VFSRandomness(torch.initial_seed())
         self.vfs_evaluator: VFSEvaluator | None = None
         if universe.compiled_vfs_profiles is not None:
             self.vfs_evaluator = VFSEvaluator(history_spec=universe.vfs_history_spec)
@@ -771,11 +772,10 @@ class VectorizedHamletEnv:
            after evaluation);
         6. observation.
         """
-        # Refresh affordance layout each episode so randomization/configured layouts stay in sync
-        # BUG-15 fix: randomize_affordance_positions() now returns agent positions to prevent collisions
+        # Refresh affordance layout each episode so randomization/configured layouts stay in sync.
+        # randomize_affordance_positions() returns agent positions clear of every affordance.
         if self.randomize_affordances:
             agent_positions = self.randomize_affordance_positions()
-            # Use returned positions (guaranteed collision-free with affordances)
             self.positions = (
                 agent_positions
                 if agent_positions is not None
@@ -824,8 +824,8 @@ class VectorizedHamletEnv:
         # Reset temporal history so temporal VFS ops don't leak across episodes
         if self.vfs_evaluator is not None:
             self.vfs_evaluator.reset()
-        # Every world's VFS random stream is re-derived for the new episode.
-        self.vfs_random_streams.reset()
+        # A new episode: every VFS draw is keyed on the episode counter.
+        self.vfs_randomness.reset()
 
         if self.item_manager is not None:
             self.item_manager.reset_state()  # and its inventory
@@ -1231,7 +1231,7 @@ class VectorizedHamletEnv:
                     device=self.device,
                     agent_positions=self.positions.to(dtype=torch.float32, device=self.device),
                     affordance_positions={k: v.to(dtype=torch.float32, device=self.device) for k, v in self.affordances.items()},
-                    world_rngs=self.vfs_random_streams.generators(self.num_agents, self.device),
+                    draws=self._vfs_draws(),
                 )
 
                 self._write_back_profile_expressions(
@@ -1259,7 +1259,7 @@ class VectorizedHamletEnv:
                     device=self.device,
                     agent_positions=self.positions.to(dtype=torch.float32, device=self.device),
                     affordance_positions={k: v.to(dtype=torch.float32, device=self.device) for k, v in self.affordances.items()},
-                    world_rngs=self.vfs_random_streams.generators(self.num_agents, self.device),
+                    draws=self._vfs_draws(),
                 )
                 self._write_back_profile_expressions(
                     "Agent-profile", "agent_profile", agent_profile, updated_agent_vfs, require_agent_shape=True
@@ -1268,6 +1268,18 @@ class VectorizedHamletEnv:
             # A world whose agent is done is frozen: its history does not advance. At the
             # step's evaluation `dones` is still the entry mask (terminals run after it).
             self.vfs_evaluator.commit_instant(bars_dict_vfs, self._current_vfs_state(), live=~self.dones)
+
+    def _vfs_draws(self) -> DrawInstant:
+        """This instant's VFS draws: keyed on the run seed, the episode and the engine tick."""
+        return self.vfs_randomness.instant(tick=self.global_tick, worlds=self.num_agents, device=self.device)
+
+    def vfs_random_state(self) -> dict[str, int]:
+        """The VFS draw state a checkpoint carries (run seed and episode counter)."""
+        return self.vfs_randomness.state()
+
+    def restore_vfs_random_state(self, state: dict[str, int]) -> None:
+        """Adopt a checkpoint's VFS draw state; the next ``reset`` resumes the original run's draws."""
+        self.vfs_randomness.restore(state)
 
     def _execute_actions(self, actions: torch.Tensor) -> dict:
         """Execute movement, interaction, and wait actions."""
@@ -1317,7 +1329,7 @@ class VectorizedHamletEnv:
                 bars_state=self._current_bar_state(),
                 active_mask=active_mask,
                 device=self.device,
-                world_rngs=self.vfs_random_streams.generators(self.num_agents, self.device),
+                draws=self._vfs_draws(),
                 dones=dones,
                 depletion_multiplier=depletion_multiplier,
             ),
@@ -1352,8 +1364,8 @@ class VectorizedHamletEnv:
         (comment-242 item 2) so the global and agent branches share one implementation.
 
         The evaluator chases in-profile dependencies of marked variables, so
-        `updated_vfs` can contain a STATIC dependency re-emitted at its initial value
-        (evaluator.py's add_with_deps; statics also enter vars_to_eval via
+        `updated_vfs` can contain a STATIC dependency, reported at its current runtime
+        value (evaluator.py's add_with_deps; statics also enter vars_to_eval via
         history_spec). Statics are storage, not evaluation output: write back only
         expression variables, or a dependency chase silently clobbers an engine-written
         static every step (hamlet-df3a96bbac). An unknown variable id is a refusal
@@ -1608,12 +1620,15 @@ class VectorizedHamletEnv:
         """Randomize affordance positions and return agent spawn positions.
 
         Returns:
-            Agent spawn positions [num_agents, position_dim] or None if not randomizing.
-            Positions are guaranteed collision-free with affordances.
+            Agent spawn positions [num_agents, position_dim], or None when the level does
+            not randomize (or deploys no affordance).
 
-        Note:
-            BUG-15 fix: Samples (affordances + agents) positions together to prevent
-            agents spawning on top of affordances.
+        Placement follows owner ruling S1: the batch is N independent single-agent worlds
+        sharing one affordance layout. Affordances take distinct cells; each world's one
+        agent takes a cell no affordance holds. Agents of different worlds never meet, so
+        they may share a cell. The compiler refuses a level whose substrate cannot hold
+        its deployed affordances plus one agent (`GRID_CAPACITY_EXCEEDED`), so this never
+        reads a declared position: under `randomize_affordances: true` none is consulted.
         """
 
         if not self.randomize_affordances:
@@ -1631,70 +1646,57 @@ class VectorizedHamletEnv:
             # Return empty agent positions for aspatial
             return torch.zeros(self.num_agents, 0, dtype=self.substrate.position_dtype, device=self.device)
 
-        # Check capacity analytically without enumerating positions (JANK-10 fix)
+        affordance_count = len(self.affordances)
         capacity = self.substrate.get_capacity()
 
-        # If capacity is finite, validate there's enough space
-        if capacity is not None:
-            required_slots = len(self.affordances) + self.num_agents
-            if required_slots > capacity:
-                # Align with v2.1 compiler behavior: treat this as an operator warning
-                # rather than a hard error (RawConfigsV21 already emits a warning).
-                import logging
-
-                logger = logging.getLogger(__name__)
-                logger.warning(
-                    "Grid capacity warning at runtime: %s positions may not fit %s agents + %s affordances "
-                    "(%s entities total). Disabling affordance randomization for this run.",
-                    capacity,
-                    self.num_agents,
-                    len(self.affordances),
-                    required_slots,
-                )
-                # Disable randomization for this environment instance and fall back
-                # to configured positions (env will call _apply_configured_affordance_positions()).
-                self.randomize_affordances = False
-                return None
-
-        # Sample (affordances + agents) positions together (BUG-15 fix)
-        # For discrete grids: retry on collision to guarantee unique positions
-        # For continuous: collisions are acceptable (infinite positions)
-        total_positions_needed = len(self.affordances) + self.num_agents
-        sampled = None
-
-        if capacity is not None:
-            # Discrete grid: try random sampling with collision detection
-            max_attempts = 10
-            for attempt in range(max_attempts):
-                sampled = self.substrate.initialize_positions(total_positions_needed, self.device, generator=None)
-
-                # Convert positions to tuples for uniqueness check
-                positions_as_tuples = [tuple(sampled[i].tolist()) for i in range(total_positions_needed)]
-                if len(positions_as_tuples) == len(set(positions_as_tuples)):
-                    break  # No collisions, we're done
-            else:
-                # Retries exhausted (very rare for large grids, possible for small grids)
-                # Fall back to enumeration to guarantee collision-free placement.
-                # Permutation is drawn from torch's CPU RNG, not Python's global
-                # `random` — placement must be reproducible from seed_all alone.
-                all_positions = self.substrate.get_all_positions()
-                perm = torch.randperm(len(all_positions))
-                sampled = torch.stack(
-                    [
-                        torch.tensor(all_positions[int(perm[idx])], dtype=self.substrate.position_dtype, device=self.device)
-                        for idx in range(total_positions_needed)
-                    ]
-                )
+        if capacity is None:
+            # Continuous: sample directly (infinite positions, collisions are measure-zero).
+            sampled = self.substrate.initialize_positions(affordance_count + self.num_agents, self.device, generator=None)
+            affordance_positions = sampled[:affordance_count]
+            agent_positions = sampled[affordance_count:]
         else:
-            # Continuous/aspatial: sample directly (infinite positions, collisions OK)
-            sampled = self.substrate.initialize_positions(total_positions_needed, self.device, generator=None)
-
-        # Split: first N for affordances, remaining M for agents
-        affordance_positions = sampled[: len(self.affordances)]
-        agent_positions = sampled[len(self.affordances) :]
+            if affordance_count + 1 > capacity:
+                # The compiler refuses this per world (GRID_CAPACITY_EXCEEDED); reaching it means
+                # the universe bypassed the compile.
+                raise ValueError(f"Substrate capacity {capacity} cannot hold {affordance_count} affordance(s) plus one agent per world.")
+            affordance_positions = self._sample_distinct_cells(affordance_count)
+            agent_positions = self._sample_free_cells(self.num_agents, affordance_positions)
 
         for idx, name in enumerate(self.affordances.keys()):
             self.affordances[name] = affordance_positions[idx].clone()
         self._affordance_layout_cache = None
 
         return agent_positions
+
+    def _sample_distinct_cells(self, count: int) -> torch.Tensor:
+        """`count` pairwise-distinct cells of a finite substrate, drawn from torch's RNG only.
+
+        Rejection sampling first; when retries are exhausted (a crowded substrate) the cells
+        are drawn by a permutation of the enumerated positions. Never Python's `random`:
+        placement must be reproducible from `seed_all` alone.
+        """
+        for _ in range(10):
+            sampled = self.substrate.initialize_positions(count, self.device, generator=None)
+            if len({tuple(row) for row in sampled.tolist()}) == count:
+                return sampled
+        all_positions = self.substrate.get_all_positions()
+        perm = torch.randperm(len(all_positions))
+        return torch.tensor(
+            [all_positions[int(perm[idx])] for idx in range(count)], dtype=self.substrate.position_dtype, device=self.device
+        )
+
+    def _sample_free_cells(self, count: int, occupied: torch.Tensor) -> torch.Tensor:
+        """One cell per world that no affordance holds; worlds are independent, so rows may repeat."""
+        taken = {tuple(row) for row in occupied.tolist()}
+        sampled = self.substrate.initialize_positions(count, self.device, generator=None)
+        for _ in range(10):
+            clashes = [index for index, row in enumerate(sampled.tolist()) if tuple(row) in taken]
+            if not clashes:
+                return sampled
+            sampled[clashes] = self.substrate.initialize_positions(len(clashes), self.device, generator=None)
+        clashes = [index for index, row in enumerate(sampled.tolist()) if tuple(row) in taken]
+        if clashes:
+            free = [position for position in self.substrate.get_all_positions() if tuple(position) not in taken]
+            picks = torch.randint(0, len(free), (len(clashes),))
+            sampled[clashes] = torch.tensor([free[int(pick)] for pick in picks], dtype=self.substrate.position_dtype, device=self.device)
+        return sampled

@@ -68,6 +68,14 @@ class _CheckpointEnv:
     def set_affordance_positions(_positions: dict[str, tuple[int, int]]) -> None:
         raise AssertionError("outer schema validation must run before environment mutation")
 
+    @staticmethod
+    def vfs_random_state() -> dict[str, int]:
+        return {"seed": 42, "episode": 0}
+
+    @staticmethod
+    def restore_vfs_random_state(_state: dict[str, int]) -> None:
+        raise AssertionError("outer schema validation must run before environment mutation")
+
 
 class _CheckpointPopulation:
     num_agents = 1

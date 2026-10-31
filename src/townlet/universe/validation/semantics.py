@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
+from dataclasses import fields
 from pathlib import Path
 from typing import Any
 
@@ -13,6 +14,9 @@ from townlet.universe.raw_configs_v21 import RawConfigsV21
 from townlet.universe.source_map import SourceMap, locate
 from townlet.universe.stages import CompilationStage
 from townlet.universe.validation.feasibility import grid_capacity_for_substrate
+from townlet.world.expression import ASTNode, Constant, FunctionCall, OperatorType, UnaryOp, Variable
+from townlet.world.expression.functions import FUNCTION_SPECS, REQUIRES_POSITIONS
+from townlet.world.expression.parser import ExpressionParser
 
 
 def select_primary_level(levels: Mapping[str, Any], requested: str | None) -> str:
@@ -136,6 +140,172 @@ def _validate_item_arena_profiles(raw: RawConfigsV21, source_map: SourceMap | No
             code=ErrorCode.ITEM_ARENA_PROFILE_MISSING,
             location=locate(source_map, "items:max_items_in_world", locate(source_map, "items")),
         )
+
+
+_POSITION_FUNCTIONS = frozenset(name for name, spec in FUNCTION_SPECS.items() if REQUIRES_POSITIONS in spec.requires)
+_SAME_WIDTH_FUNCTIONS = frozenset({"distance", "manhattan_distance", "within_radius", "nearest"})
+"""The functions whose first two arguments must be vectors of one width (`_ensure_same_vector_width`)."""
+_ELEMENT_INDEX_FUNCTIONS = frozenset({"gather", "scatter"})
+
+
+def _string_leaves(value: Any, path: str) -> Iterable[tuple[str, str]]:
+    """Every string in a dumped declaration, with its source-map key path (``a.b[0].c``)."""
+    if isinstance(value, str):
+        yield path, value
+    elif isinstance(value, Mapping):
+        for key, child in value.items():
+            yield from _string_leaves(child, f"{path}.{key}" if path else str(key))
+    elif isinstance(value, list | tuple):
+        for index, child in enumerate(value):
+            yield from _string_leaves(child, f"{path}[{index}]")
+
+
+def _calls(node: Any) -> Iterable[FunctionCall]:
+    """Every function call in an expression AST."""
+    if isinstance(node, FunctionCall):
+        yield node
+    if isinstance(node, ASTNode):
+        for ast_field in fields(node):
+            yield from _calls(getattr(node, ast_field.name))
+    elif isinstance(node, list | tuple):
+        for item in node:
+            yield from _calls(item)
+
+
+def _literal_int(node: ASTNode) -> int | None:
+    if isinstance(node, Constant) and isinstance(node.value, int) and not isinstance(node.value, bool):
+        return node.value
+    if isinstance(node, UnaryOp) and node.op == OperatorType.SUB:
+        inner = _literal_int(node.operand)
+        if inner is not None:
+            return -inner
+    return None
+
+
+def _declared_widths(raw: RawConfigsV21) -> dict[str, int]:
+    """The element width of every registry variable with elements, from its declaration."""
+    widths: dict[str, int] = {}
+    for declaration in raw.variables.declarations:
+        if declaration.profile is not None:
+            continue
+        kind = declaration.type
+        if kind in {"vec2f", "vec2i"}:
+            widths[declaration.id] = 2
+        elif kind in {"vec3f", "vec3i"}:
+            widths[declaration.id] = 3
+        elif kind in {"vecNf", "vecNi"} and declaration.dims is not None:
+            widths[declaration.id] = declaration.dims
+        elif kind.startswith("tensor") and declaration.shape:
+            widths[declaration.id] = declaration.shape[-1]
+    return widths
+
+
+def _expression_documents(raw: RawConfigsV21) -> list[tuple[str, Any]]:
+    """Every authored declaration that may hold an expression, as ``(source-map prefix, dumped payload)``."""
+    documents: list[tuple[str, Any]] = [("variables", raw.variables.model_dump(mode="python", by_alias=True))]
+    documents.append(("actions", raw.actions.model_dump(mode="python", by_alias=True)["actions"]))
+    for prefix, model in (("effects", raw.effects), ("items", raw.items)):
+        if model is not None:
+            documents.append((prefix, model.model_dump(mode="python", by_alias=True)))
+    for name, level in raw.levels.items():
+        documents.append((f"levels/{name}/affordances", level.affordances.model_dump(mode="python", by_alias=True)))
+    return documents
+
+
+def _validate_expression_static_facts(raw: RawConfigsV21, source_map: SourceMap | None, errors: CompilationErrorCollector) -> None:
+    """Refuse, at the expression's own line, what an expression's literals make wrong before it runs.
+
+    - A position function (``distance_to_affordance``, ``in_range``, ``direction_to_affordance``,
+      found from ``FUNCTION_SPECS`` by ``requires`` positions) on an aspatial substrate, which has
+      no positions: the call would yield a constant.
+    - A position function naming an affordance the pack does not declare (a typo), or one a level
+      does not deploy (``training.enabled_affordances``): it has no position there, so the call
+      would read infinity, false or a zero vector, and an exposed one crashes the observation.
+    - Two vectors of declared, different widths given to a same-width function (``distance``,
+      ``manhattan_distance``, ``within_radius``, ``nearest``).
+    - A literal ``gather``/``scatter`` index outside its vector's declared width.
+
+    Every declaration that may hold an expression is scanned (variable expressions, action writes,
+    transition rules, effect and interaction pipelines); prose (a description) does not parse as
+    an expression and is skipped.
+    """
+    aspatial = raw.stratum.stratum.substrate.type == "aspatial"
+    declared_affordances = {affordance.name for level in raw.levels.values() for affordance in level.affordances.affordances}
+    deployed = {name: set(level.training.enabled_affordances) for name, level in raw.levels.items()}
+    widths = _declared_widths(raw)
+    parser = ExpressionParser()
+
+    documents = _expression_documents(raw)
+    located: list[tuple[str, str, str]] = []  # (key, fallback key, text)
+    for prefix, payload in documents:
+        for path, text in _string_leaves(payload, ""):
+            located.append((f"{prefix}:{path}", prefix, text))
+    for rule in raw.transition_rules:
+        rule_key = f"transition_rules:{rule.get('id')}"
+        for path, text in _string_leaves(dict(rule), ""):
+            located.append((rule_key, "transition_rules", text))
+
+    for key, fallback_key, text in located:
+        if "(" not in text:
+            continue
+        try:
+            ast = parser.parse(text)
+        except Exception:  # noqa: BLE001 - prose (a description) is not an expression; nothing to refuse
+            continue
+        location = locate(source_map, key, locate(source_map, fallback_key, str(raw.experiment_dir / fallback_key.split(":")[0])))
+        for call in _calls(ast):
+            name = call.function_name
+            arguments = call.arguments
+            if name in _POSITION_FUNCTIONS:
+                if aspatial:
+                    errors.add(
+                        f"{key} calls '{name}', which needs agent and affordance positions, but the substrate is aspatial: "
+                        "it has no positions, so the call would yield a constant. Remove the position read, or declare "
+                        "a spatial substrate.",
+                        code=ErrorCode.EXPRESSION_POSITION_ASPATIAL,
+                        location=location,
+                    )
+                    continue
+                if not arguments:
+                    continue
+                target = arguments[0]
+                if not isinstance(target, Constant) or not isinstance(target.value, str):
+                    continue
+                if target.value not in declared_affordances:
+                    errors.add(
+                        f"{key} calls {name}(\"{target.value}\"), but no affordance is named '{target.value}'. "
+                        f"Declared affordances: {sorted(declared_affordances)}.",
+                        code=ErrorCode.EXPRESSION_AFFORDANCE_UNKNOWN,
+                        location=location,
+                    )
+                    continue
+                for level_name, enabled in sorted(deployed.items()):
+                    if target.value not in enabled:
+                        errors.add(
+                            f"{key} calls {name}(\"{target.value}\"), but level '{level_name}' does not deploy "
+                            f"'{target.value}' (training.enabled_affordances), so it has no position there and the call "
+                            "would read infinity, false or a zero vector. Deploy it in every level, or read a deployed one.",
+                            code=ErrorCode.EXPRESSION_AFFORDANCE_UNDEPLOYED,
+                            location=location,
+                        )
+            elif name in _SAME_WIDTH_FUNCTIONS and len(arguments) >= 2:
+                left, right = (widths.get(arg.name) if isinstance(arg, Variable) else None for arg in arguments[:2])
+                if left is not None and right is not None and left != right:
+                    errors.add(
+                        f"{key} calls {name}() on vectors of declared widths {left} and {right}; '{name}' needs one width.",
+                        code=ErrorCode.EXPRESSION_VECTOR_WIDTH,
+                        location=location,
+                    )
+            elif name in _ELEMENT_INDEX_FUNCTIONS and len(arguments) >= 2 and isinstance(arguments[0], Variable):
+                width = widths.get(arguments[0].name)
+                index = _literal_int(arguments[1])
+                if width is not None and index is not None and not 0 <= index < width:
+                    errors.add(
+                        f"{key} calls {name}({arguments[0].name}, {index}), but '{arguments[0].name}' has declared width "
+                        f"{width}: an index is 0 to {width - 1}.",
+                        code=ErrorCode.EXPRESSION_INDEX_RANGE,
+                        location=location,
+                    )
 
 
 def _validate_affordance_deployments(
@@ -391,6 +561,7 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path, source_map:
     _validate_item_placements(raw, experiment_dir, source_map, errors)
     _validate_item_arena_profiles(raw, source_map, errors)
     _validate_affordance_deployments(raw, experiment_dir, source_map, errors)
+    _validate_expression_static_facts(raw, source_map, errors)
     _validate_opening_hours_day_period(raw, experiment_dir, source_map, errors)
 
     for level_name, level in raw.levels.items():
@@ -498,15 +669,25 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path, source_map:
                 location=locate(source_map, f"levels/{level_name}/training", str(level_dir / "training")),
             )
 
-        if grid_capacity is not None:
+        # Under S1 the batch is N independent single-agent worlds sharing one affordance layout:
+        # random placement needs one world to hold its deployed affordances plus its one agent,
+        # whatever the population size. That is a fact of the pack, so it refuses here rather
+        # than at runtime (which used to fall back, silently, to declared positions).
+        if grid_capacity is not None and level.training.randomize_affordances:
             deployed_count = len(normalized_enabled)
-            population_size = level.training.population.size
-            required_slots = deployed_count + population_size
+            required_slots = deployed_count + 1
             if required_slots > grid_capacity:
+                training_fallback = str(level_dir / "training")
                 errors.add(
-                    f"Grid capacity exceeded: {required_slots} entities (agents + affordances) vs grid capacity {grid_capacity}.",
+                    f"Grid capacity exceeded: level '{level_name}' randomizes {deployed_count} deployed affordance(s) plus one "
+                    f"agent per world ({required_slots} distinct cells), but the substrate has {grid_capacity} cell(s). "
+                    "Enlarge the substrate, deploy fewer affordances, or set randomize_affordances: false with fixed positions.",
                     code=ErrorCode.GRID_CAPACITY_EXCEEDED,
-                    location=locate(source_map, f"levels/{level_name}/training", str(level_dir / "training")),
+                    location=locate(
+                        source_map,
+                        f"levels/{level_name}/training:randomize_affordances",
+                        locate(source_map, f"levels/{level_name}/training", training_fallback),
+                    ),
                 )
 
     for level_name, level in raw.levels.items():

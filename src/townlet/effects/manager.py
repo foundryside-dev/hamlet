@@ -131,7 +131,9 @@ class EffectManager:
         self._admission_transaction_active = False
         # One random stream per world for effect sampling (`sample`, `uniform()`,
         # `normal_dist()`), so one world's draws never shift another's (S1). Seeded from
-        # the run seed (`torch.initial_seed()`), the world and the episode; made on first use.
+        # the run seed (`torch.initial_seed()`, captured here once, so another environment's
+        # later seed_all never shifts these streams), the world and the episode; made on first use.
+        self._run_seed = torch.initial_seed()
         self._episode = 0
         self.world_rngs: dict[int, torch.Generator] = {}
         # Spawns refused at the declared per-entity budget this episode (telemetry).
@@ -316,7 +318,7 @@ class EffectManager:
         """World `world`'s effect random stream for this episode."""
         generator = self.world_rngs.get(world)
         if generator is None:
-            digest = hashlib.blake2b(f"effects:{torch.initial_seed()}:{self._episode}:{world}".encode(), digest_size=8).digest()
+            digest = hashlib.blake2b(f"effects:{self._run_seed}:{self._episode}:{world}".encode(), digest_size=8).digest()
             generator = torch.Generator(device=device)
             generator.manual_seed(int.from_bytes(digest, "little") & ((1 << 63) - 1))
             self.world_rngs[world] = generator

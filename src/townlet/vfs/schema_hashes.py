@@ -306,11 +306,20 @@ def canonical_effects_declaration(config: EffectsConfig) -> dict[str, Any]:
     ``item.condition - (1.0 * intensity)`` becoming ``50.0 * intensity`` moved only the cache
     fingerprint before this. ``by_alias`` keeps the authored spellings (``if``/``else``/``do``)
     that ``CommandConfig``'s serializer emits for exactly the keys each node authored.
+
+    ``effects`` is a collection family: discovery merges its fragments in sorted pack-relative
+    path order, so moving a definition to an earlier-sorting file reorders the list while
+    changing no fact about any effect. Definition order is not identity: the catalog keys
+    effects by id and binds token slots in sorted-id order (``EffectCatalog``), so the
+    definitions sort by id here. Numeric literals inside expressions hash as
+    ``canonical_expression_ast`` hashes them in every sibling pack hash — by value and type,
+    so ``1`` and ``1.0`` stay distinct (the type checker reads them differently).
     """
     payload: dict[str, Any] = config.model_dump(mode="json", by_alias=True)
     for definition in payload["effect_definitions"]:
         for stage in ("on_spawn", "on_tick", "on_despawn", "on_interrupt"):
             definition[stage] = [_canonical_command(command) for command in definition[stage]]
+    payload["effect_definitions"] = sorted(payload["effect_definitions"], key=lambda definition: definition["id"])
     return payload
 
 

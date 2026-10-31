@@ -141,14 +141,14 @@ def test_n2_gridnd_rank_below_four_refuses_at_the_declaration(tmp_path: Path, si
     pack = _pack(tmp_path, GRIDND[0])
     _edit(pack, "stratum.yaml", "dimension_sizes: [5, 5, 5, 5]", f"dimension_sizes: {sizes}")
     error = _refused(pack, GRIDND[1], ErrorCode.LOAD_ERROR, "stratum.yaml")
-    assert "a gridnd substrate has 4 to 100" in str(error)
+    assert "a gridnd substrate has 4 to 8" in str(error)
 
 
 def test_n2_continuousnd_rank_below_four_refuses_at_the_declaration(tmp_path: Path) -> None:
     pack = _pack(tmp_path, CONTINUOUS[0])
     _edit(pack, "stratum.yaml", "type: continuous\n", "type: continuousnd\n")
     error = _refused(pack, CONTINUOUS[1], ErrorCode.LOAD_ERROR, "stratum.yaml")
-    assert "type='continuousnd' serves 4 to 100 dimensions" in str(error)
+    assert "type='continuousnd' serves 4 to 8 dimensions" in str(error)
 
 
 def test_n2_continuous_rank_above_three_refuses_at_the_declaration(tmp_path: Path) -> None:

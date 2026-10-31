@@ -14,19 +14,23 @@ Example:
 
 import math
 from pathlib import Path
-from typing import Literal
+from typing import Final, Literal
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator, model_validator
 
-# The substrate rank rules the factory's constructors enforce (`substrate/gridnd.py`,
-# `substrate/continuousnd.py`, `substrate/continuous.py`), stated once here so a pack that
-# breaks one refuses at parse, located at its declaration, instead of as a bare ValueError
-# from inside the compiler's level stage.
+# Every substrate rule the factory's constructors enforce (`substrate/grid2d.py`,
+# `grid3d.py`, `gridnd.py`, `continuous.py`, `continuousnd.py`) is stated here too, so a pack
+# that breaks one refuses at parse, located at its declaration, instead of as a bare
+# ValueError from inside the compiler.
 GRIDND_MIN_RANK = 4
 CONTINUOUSND_MIN_RANK = 4
 CONTINUOUS_MAX_RANK = 3
-MAX_SUBSTRATE_RANK = 100
+
+MAX_POSITION_RANK: Final[int] = 8
+"""The widest position a token carries (`universe/dto/token_spec.py` pads every position to
+it, and the transfer contract `token_type_schema_hash` covers that width). A substrate's rank
+cannot exceed it, so it is also the upper rank bound of `gridnd` and `continuousnd`."""
 
 
 class GridConfig(BaseModel):
@@ -77,11 +81,11 @@ class GridNDConfig(BaseModel):
     def validate_dimensions(self) -> "GridNDConfig":
         """The rank rule GridNDSubstrate enforces, refused here so it is located at the declaration."""
         rank = len(self.dimension_sizes)
-        if rank < GRIDND_MIN_RANK or rank > MAX_SUBSTRATE_RANK:
+        if rank < GRIDND_MIN_RANK or rank > MAX_POSITION_RANK:
             raise ValueError(
                 f"gridnd.dimension_sizes declares {rank} dimension(s); a gridnd substrate has "
-                f"{GRIDND_MIN_RANK} to {MAX_SUBSTRATE_RANK}. For 2 or 3 dimensions use type: grid "
-                "(topology: square or cubic)."
+                f"{GRIDND_MIN_RANK} to {MAX_POSITION_RANK} (MAX_POSITION_RANK, the widest position a token "
+                "carries). For 2 or 3 dimensions use type: grid (topology: square or cubic)."
             )
         if any(size <= 0 for size in self.dimension_sizes):
             raise ValueError("All GridNDConfig.dimension_sizes entries must be positive integers.")
@@ -112,9 +116,9 @@ class ActionDiscretizationConfig(BaseModel):
 
 
 class ContinuousConfig(BaseModel):
-    """Continuous substrate configuration (1D-100D)."""
+    """Continuous substrate configuration (1 to MAX_POSITION_RANK dimensions)."""
 
-    dimensions: int = Field(..., ge=1, le=100, description="Number of continuous dimensions")
+    dimensions: int = Field(..., ge=1, le=MAX_POSITION_RANK, description="Number of continuous dimensions")
     bounds: list[tuple[float, float]] = Field(..., description="Bounds for each dimension [(min, max), ...]")
     boundary: Literal["clamp", "wrap", "bounce", "sticky"] = Field(..., description="Boundary behavior at edges")
     movement_delta: float = Field(..., gt=0, description="Discrete movement step for navigation")
@@ -129,6 +133,20 @@ class ContinuousConfig(BaseModel):
     )
 
     model_config = ConfigDict(extra="forbid")
+
+    @field_validator("interaction_radius")
+    @classmethod
+    def validate_interaction_radius_fits_bounds(cls, value: float, info: ValidationInfo) -> float:
+        """The substrate refuses a space too small to interact in; refused here at its own key."""
+        for index, bound in enumerate(info.data.get("bounds") or ()):
+            low, high = bound
+            # An unordered or infinite bound is refused by validate_bounds, by its own message.
+            if math.isfinite(low) and math.isfinite(high) and low < high and high - low < value:
+                raise ValueError(
+                    f"interaction_radius ({value}) exceeds the span of bounds[{index}] ({high - low}): the space is "
+                    "too small for affordance interaction. Widen the bounds or shrink interaction_radius."
+                )
+        return value
 
     @model_validator(mode="after")
     def validate_bounds(self) -> "ContinuousConfig":
@@ -194,7 +212,7 @@ class SubstrateConfig(BaseModel):
             )
         if self.type == "continuousnd" and self.continuous is not None and self.continuous.dimensions < CONTINUOUSND_MIN_RANK:
             raise ValueError(
-                f"type='continuousnd' serves {CONTINUOUSND_MIN_RANK} to {MAX_SUBSTRATE_RANK} dimensions, got "
+                f"type='continuousnd' serves {CONTINUOUSND_MIN_RANK} to {MAX_POSITION_RANK} dimensions, got "
                 f"continuous.dimensions={self.continuous.dimensions}. Use type: continuous for 1 to {CONTINUOUS_MAX_RANK}."
             )
 

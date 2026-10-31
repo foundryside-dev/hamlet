@@ -1753,6 +1753,8 @@ Transition-rule example, in the shipped `transition_rules` grammar
 per the No-Defaults Principle; a write is masked by its target's declared scope;
 the rule's reads are derived from its ASTs, and it has no `kind` — S8, 2026-10-31):
 
+*Illustrative names: `public_reputation`, `was_observed`, `chosen_action`, `STEAL` are declared by no shipped pack. Declare each in the pack's `variables` before this rule compiles (a bare upper-case name such as `STEAL` is an identifier like any other, not an action literal).*
+
 ```yaml
 version: "1.0"
 transition_rules:
@@ -1770,6 +1772,8 @@ transition_rules:
 
 A rule gated on meters (the condition reads them as `bar.health` and `bar.mood`; one spelling
 per reference, VFS round-2 S5):
+
+*Illustrative names: `public_reputation`, `chosen_action`, `CALL_AMBULANCE` are declared by no shipped pack. Declare each in the pack's `variables` before this rule compiles (a bare upper-case name such as `CALL_AMBULANCE` is an identifier like any other, not an action literal).*
 
 ```yaml
 version: "1.0"
@@ -2042,6 +2046,8 @@ no source affordance); a rule naming one fails at parse. The former compile-gree
 | `gossip_event` | Add event to communication/rumour buffer |
 
 ### 16.4 Example: helping another agent
+
+*Illustrative names: `public_reputation`, `was_observed`, `chosen_action`, `HELP` are declared by no shipped pack. Declare each in the pack's `variables` before this rule compiles (a bare upper-case name such as `HELP` is an identifier like any other, not an action literal).*
 
 ```yaml
 version: "1.0"
@@ -2565,6 +2571,8 @@ Any change to field count, order, shape, or normalisation must be considered che
 Social effects should not be hidden inside action handlers.
 
 Prefer explicit rules (`transition_rules.yaml`):
+
+*Illustrative names: `public_reputation`, `was_observed` are declared by no shipped pack. Declare each in the pack's `variables` before this rule compiles.*
 
 ```yaml
 version: "1.0"

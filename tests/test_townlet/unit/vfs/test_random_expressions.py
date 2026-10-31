@@ -2,9 +2,9 @@
 
 `uniform` and `normal_dist` are admitted in global and agent variable expressions,
 transition rules and action writes. A draw is one per row of its context, from that
-world's own stream (`townlet.vfs.random_streams.WorldRandomStreams`, S1): world w's
-draws depend on the run seed, the episode and w alone, never on the batch size or on
-another world's actions. The item spawn predicate carries no stream and refuses.
+world's own counter-based values (`townlet.vfs.random_draws`, S1): world w's draws
+depend on the run seed, the episode, the tick, the draw site and w alone, never on the
+batch size or on another world's actions. The item spawn predicate carries no stream and refuses.
 """
 
 from __future__ import annotations
@@ -24,6 +24,7 @@ from townlet.universe.errors import CompilationError
 from townlet.vfs.evaluator import VFSEvaluator
 from townlet.vfs.namespace import SPAWN_PREDICATE
 from townlet.vfs.profiles import CompiledGlobalProfile, CompiledVariable
+from townlet.vfs.random_draws import VFSRandomness, reference_uniform
 from townlet.vfs.schema import VariableDef, VariableScope
 from townlet.vfs.vtc import VTCTransitionRuleProgram, VTCWriteTarget, compile_vtc_transition_rules
 from townlet.world.expression import ExpressionParser
@@ -389,27 +390,34 @@ def _profile(expression: str) -> CompiledGlobalProfile:
 
 def test_the_profile_evaluator_refuses_to_sample_without_the_world_streams() -> None:
     evaluator = VFSEvaluator(history_spec=None)
-    with pytest.raises(RuntimeError, match="Engine defect: expression variable 'x' samples"):
+    with pytest.raises(RuntimeError, match=r"Engine defect: expression variable\(s\) \['x'\] sample"):
         evaluator.evaluate_global_profile(_profile("uniform(0.0, 1.0)"), bars={}, vfs_state={}, marks={"x"}, device=torch.device("cpu"))
-    generators = tuple(torch.Generator().manual_seed(seed) for seed in (1, 2, 3))
+    randomness = VFSRandomness(7)
+    randomness.reset()
     drawn = evaluator.evaluate_global_profile(
-        _profile("uniform(0.0, 1.0)"), bars={}, vfs_state={}, marks={"x"}, device=torch.device("cpu"), world_rngs=generators
+        _profile("uniform(0.0, 1.0)"),
+        bars={},
+        vfs_state={},
+        marks={"x"},
+        device=torch.device("cpu"),
+        draws=randomness.instant(tick=5, worlds=3, device=torch.device("cpu")),
     )["x"]
     assert drawn.shape == (3,)
-    assert torch.equal(drawn, torch.stack([torch.rand((), generator=torch.Generator().manual_seed(seed)) for seed in (1, 2, 3)]))
+    expected = [reference_uniform(seed=7, episode=1, tick=5, site="var:x", ordinal=0, world=world, element=0) for world in range(3)]
+    assert drawn.tolist() == pytest.approx(expected, abs=0.0)
 
 
 def test_a_rule_program_refuses_to_sample_without_the_world_streams() -> None:
     targets = {"g": VTCWriteTarget(VariableScope.GLOBAL, "scalar", meter=False, expression=None)}
     program = compile_vtc_transition_rules([_rule("r", "g", "uniform(0.0, 1.0)")], targets)
-    with pytest.raises(RuntimeError, match="Engine defect: VTC transition rules ran without the world random streams"):
+    with pytest.raises(RuntimeError, match="Engine defect: VTC transition rules ran without the instant's draws"):
         VTCTransitionRuleProgram(program.rules).apply(
-            vfs_state={"g": torch.zeros(2)}, active_mask=torch.tensor([True, True]), device=torch.device("cpu"), world_rngs=None
+            vfs_state={"g": torch.zeros(2)}, active_mask=torch.tensor([True, True]), device=torch.device("cpu"), draws=None
         )
-    with pytest.raises(RuntimeError, match="3 world streams for 2 worlds"):
+    with pytest.raises(RuntimeError, match="draws for 3 worlds, not 2"):
         VTCTransitionRuleProgram(program.rules).apply(
             vfs_state={"g": torch.zeros(2)},
             active_mask=torch.tensor([True, True]),
             device=torch.device("cpu"),
-            world_rngs=tuple(torch.Generator() for _ in range(3)),
+            draws=VFSRandomness(0).instant(tick=0, worlds=3, device=torch.device("cpu")),
         )

@@ -9,6 +9,7 @@ from typing import Any
 import torch
 
 from townlet.vfs.profiles import CompiledGlobalProfile
+from townlet.vfs.random_draws import DrawInstant
 from townlet.vfs.schema import VariableDef
 from townlet.vfs.transition_graph import TransitionPhaseGraph
 from townlet.vfs.vtc import (
@@ -58,8 +59,9 @@ class VTCTransitionContext:
     bars_state: Mapping[str, torch.Tensor]
     active_mask: torch.Tensor
     device: torch.device
-    # One generator per world (S1): the streams a sampling call in a write or rule draws from.
-    world_rngs: Sequence[torch.Generator]
+    # The instant's counter-based draws (S1; ``townlet.vfs.random_draws``): what a sampling
+    # call in a write or rule draws from, each write from its own sites.
+    draws: DrawInstant
     actions: torch.Tensor | None = None
     dones: torch.Tensor | None = None
     depletion_multiplier: float = 1.0
@@ -80,6 +82,14 @@ class VTCTransitionRunner:
 
     def __init__(self, schedule: VTCTransitionSchedule) -> None:
         self.schedule = schedule
+        # Each meter's declared bounds, from its clamp_and_validate rule (one per meter).
+        # An action write or transition rule that targets `bar.<m>` is held to them when its
+        # phase commits, as passive depletion and cascades clamp their own writes: no later
+        # phase, cascade or effect reads an out-of-bounds meter.
+        self._meter_bounds: dict[str, tuple[float, float]] = {}
+        for rule in schedule.bounds_clamp_program.rules:
+            assert rule.clamp is not None, rule.telemetry_label
+            self._meter_bounds[rule.variable_id] = rule.clamp
 
     def phases_between(self, after_phase: str, before_phase: str) -> tuple[str, ...]:
         """Return configured phases after one boundary and before another."""
@@ -132,9 +142,10 @@ class VTCTransitionRunner:
             bars_state=bars_state,
             active_mask=context.active_mask,
             device=context.device,
-            world_rngs=context.world_rngs,
+            draws=context.draws,
         )
         next_vfs, next_bars = _split_vfs_and_bars(updated.values, vfs_state.keys(), bars_state.keys())
+        next_bars = self._clamp_written_meters(next_bars, updated.attempted_targets)
         return next_vfs, next_bars, updated.attempted_targets.intersection(vfs_state)
 
     def _run_passive_depletions(
@@ -182,13 +193,27 @@ class VTCTransitionRunner:
             vfs_state=vfs_state,
             active_mask=context.active_mask,
             device=context.device,
-            world_rngs=context.world_rngs,
+            draws=context.draws,
             bars_state=bars_state,
         )
-        # A rule on a meter commits through bars_state, as an action write's does; only
-        # VFS targets are authorized against the registry's access policy.
+        # A rule on a meter commits through bars_state, as an action write's does, held to
+        # the meter's bounds; only VFS targets are authorized against the registry's policy.
         next_vfs, next_bars = _split_vfs_and_bars(result.values, vfs_state.keys(), bars_state.keys())
+        next_bars = self._clamp_written_meters(next_bars, result.attempted_targets)
         return next_vfs, next_bars, result.attempted_targets.intersection(vfs_state)
+
+    def _clamp_written_meters(self, bars_state: dict[str, torch.Tensor], written: frozenset[str]) -> dict[str, torch.Tensor]:
+        """Hold every meter a phase's writes targeted to its declared bounds, at the phase commit.
+
+        The writes of one phase compose first (each reads the phase-entry snapshot; additive
+        deltas commute), then the committed meter is clamped once, so the next reader (a rule
+        in the same phase after the action writes, a cascade, an effect) never sees a value
+        outside the meter's bounds.
+        """
+        for name in written.intersection(bars_state):
+            low, high = self._meter_bounds[name]
+            bars_state[name] = torch.clamp(bars_state[name], min=low, max=high)
+        return bars_state
 
     def _run_bounds_clamps(
         self,

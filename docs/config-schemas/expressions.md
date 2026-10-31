@@ -32,8 +32,8 @@ expression-variable route:
 
 | consumer | temporal history (`lag`, `delta`, ...) | positions (`distance_to_affordance`, `in_range`, `direction_to_affordance`) | random stream (`uniform`, `normal_dist`) |
 |---|---|---|---|
-| global / agent variable expression | yes | yes (agent-scope variables; a global expression has no agent axis) | yes, one draw per row |
-| action write, transition rule | no | no | yes, one draw per row |
+| global / agent variable expression | yes | yes (agent-scope variables; a global expression has no agent axis) | yes, counter-based, one draw per element |
+| action write, transition rule | no | no | yes, counter-based, one draw per element of the target's rows |
 | effect or interaction pipeline | no | yes | yes, the world's stream |
 | item spawn predicate | no | no | no |
 
@@ -453,14 +453,14 @@ Boolean combination and masked selection; `gather`/`scatter` index rows of a per
 
 ### Sampling
 
-`uniform` and `normal_dist` draw once per row of the context they run in, each row from its own world's stream (S1): per world in a global expression or on a global rule target, per agent in an agent expression, an action write or on an agent target (the arguments are numbers). A literal-only call still draws once per row, never once for the batch. They run wherever the runtime carries a world stream: global and agent variable expressions, action writes, transition rules, effect and interaction pipelines; an item spawn predicate carries none and refuses. A random expression variable is stored, never inlined into a write (the write reads the draw the observation showed); see [variables.md](variables.md#random-draws). Noise fields are deterministic in their inputs.
+`uniform` and `normal_dist` draw once per element of the context they run in, every element its own world's (S1): per world in a global expression or on a global rule target, per agent in an agent expression, an action write or on an agent target, per `[world, affordance]` row on an affordance target (the arguments are numbers). A literal-only call still draws once per element, never once for the batch. In VFS contexts each value is a pure function of the run seed, the episode, the tick, the draw site and its world and element, so a world's draws never depend on the batch size, on other worlds, or on the order of declarations. They run wherever the runtime carries randomness: global and agent variable expressions, action writes, transition rules (whose rule-level condition draws once for all its writes), effect and interaction pipelines; an item spawn predicate carries none and refuses. A draw is never a compile-time constant. A random expression variable is stored, never inlined into a write (the write reads the draw the observation showed); see [variables.md](variables.md#random-draws). Noise fields are deterministic in their inputs.
 
 | Function | Returns | What it computes | Needs |
 |---|---|---|---|
-| `normal_dist([mean[, std]])` | float | Gaussian draw, one per row of the context, from the world's own stream. | a random stream on the context |
+| `normal_dist([mean[, std]])` | float | Gaussian draw, one per element of the context, each its own world's. | a random stream on the context |
 | `perlin_noise(x[, y[, seed]])` | float | Deterministic 2-D Perlin gradient noise at `(x, y)`. | — |
 | `simplex_noise(x[, y[, seed]])` | float | Alias of `perlin_noise`: the same gradient-noise field, not a simplex lattice. | — |
-| `uniform([low[, high]])` | float | Uniform draw in `[low, high)` (`[0, 1)` with one or no arguments), one per row of the context, from the world's own stream. | a random stream on the context |
+| `uniform([low[, high]])` | float | Uniform draw in `[low, high)` (`[0, 1)` with one or no arguments), one per element of the context, each its own world's. | a random stream on the context |
 
 ### Temporal
 
@@ -481,7 +481,7 @@ History operators (`lag`, `delta`, `moving_average`, `ema`, `rate_of_change`, `r
 
 ### Spatial
 
-Vector variables only (`vec2i`, `vec3i`, `vec2f`, `vec3f`, `vecNi`, `vecNf`); the distance between two scalars is `abs(a - b)`. Both vectors must share a width: `vec2*` against `vec3*` is refused at compile time; a `vecN*` or `tensor2d` width is only known at run time, and a mismatch there raises an error naming the function. Int and float vectors mix freely and are measured in float. A scalar- or bool-returning vector function (`distance`, `manhattan_distance`, `within_radius`, `nearest`, `gather`) runs in every context, a variable expression included: its result has its arguments' row axis, and that is how a declared vector variable is read into a scalar or bool expression variable. A vector-returning function (`normalize`, `scatter`, `one_hot`, `direction_to_affordance`) fits no scalar or bool target.
+Vector variables only (`vec2i`, `vec3i`, `vec2f`, `vec3f`, `vecNi`, `vecNf`); the distance between two scalars is `abs(a - b)`. Both vectors must share a width: `vec2*` against `vec3*`, and two declared variables of different `dims` or `shape`, are refused at compile time, as is a literal `gather`/`scatter` index outside a declared width; a width only an expression produces is checked at run time, and a mismatch there raises an error naming the function. Vector equality (`v == w`) is refused: compare an element or a distance. Int and float vectors mix freely and are measured in float. A scalar- or bool-returning vector function (`distance`, `manhattan_distance`, `within_radius`, `nearest`, `gather`) runs in every context, a variable expression included: its result has its arguments' row axis, and that is how a declared vector variable is read into a scalar or bool expression variable. A vector-returning function (`normalize`, `scatter`, `one_hot`, `direction_to_affordance`) fits no scalar or bool target.
 
 | Function | Returns | What it computes | Needs |
 |---|---|---|---|
@@ -493,12 +493,12 @@ Vector variables only (`vec2i`, `vec3i`, `vec2f`, `vec3f`, `vecNi`, `vecNf`); th
 
 ### Affordance
 
-Read the agent and affordance positions the engine threads into the context: one value per agent, so in a variable expression they belong to an `agent`-scope variable (a global expression has no agent axis and refuses, naming `scope: agent`). The environment lays out affordances and positions before the instant-0 evaluation at `reset()`, so `distance_to_affordance("EAT")` is live in the first observation. Served in global and agent variable expressions and in effect pipelines; a transition write or rule and a spawn predicate are handed no positions and refuse, naming the expression-variable route (declare the distance as an agent expression variable and read it by name).
+Read the agent and affordance positions the engine threads into the context: one value per agent, so in a variable expression they belong to an `agent`-scope variable (a global expression has no agent axis and refuses, naming `scope: agent`). The environment lays out affordances and positions before the instant-0 evaluation at `reset()`, so `distance_to_affordance("EAT")` is live in the first observation. Served in global and agent variable expressions and in effect pipelines; a transition write or rule and a spawn predicate are handed no positions and refuse, naming the expression-variable route (declare the distance as an agent expression variable and read it by name). The name is a literal: an affordance the pack does not declare, or one a level does not deploy, refuses at compile at the expression's line; so does any position function on an aspatial substrate, which has no positions.
 
 | Function | Returns | What it computes | Needs |
 |---|---|---|---|
-| `direction_to_affordance("NAME"[, "manhattan" \| "euclidean"])` | vecNf of the substrate's position width | Unit vector from each agent towards the named affordance (zero at the affordance or when it is not deployed). | agent and affordance positions on the context |
-| `distance_to_affordance("NAME"[, "manhattan" \| "euclidean"])` | float | Each agent's distance to the named affordance (default manhattan); infinity when it is not deployed. | agent and affordance positions on the context |
+| `direction_to_affordance("NAME"[, "manhattan" \| "euclidean"])` | vecNf of the substrate's position width | Unit vector from each agent towards the named affordance (zero at the affordance). | agent and affordance positions on the context |
+| `distance_to_affordance("NAME"[, "manhattan" \| "euclidean"])` | float | Each agent's distance to the named affordance (default manhattan); the affordance must be deployed (refused at compile otherwise). | agent and affordance positions on the context |
 | `in_range("NAME", radius[, "manhattan" \| "euclidean"])` | bool | True for each agent within `radius` of the named affordance. | agent and affordance positions on the context |
 <!-- END GENERATED: expression-functions -->
 
@@ -604,8 +604,8 @@ expression: "true"              # Boolean literal
 
 **Variable access:**
 ```yaml
-expression: "intensity"         # Effect parameter
-expression: "duration"          # Effect parameter
+expression: "intensity"           # Effect local
+expression: "duration_remaining"  # Effect local (elapsed_ticks is the third)
 ```
 
 **Path access:**
@@ -748,13 +748,30 @@ value: "bar.health - (0.02 * (if bar.health < 0.2 then 2.0 else 1.0))"
 value: "if bar.energy < 0.5 then bar.energy + 0.1 else bar.energy"
 ```
 
-**Drive As Code (future):**
-```yaml
-# Modifier - crisis suppression
-expression: "if bar.energy < 0.2 or bar.health < 0.2 then 0.0 else 1.0"
+**Drive As Code** (in production) takes no expression strings: its modifiers and shaping
+bonuses are typed blocks that name a meter (`bar:`) or a variable (`variable:`). To reward a
+derived quantity, declare it as an expression variable and reference it by name:
 
-# Shaping bonus - efficiency reward
-expression: "if tick < 100 then 0.1 else 0.0"
+```yaml
+# variables.yaml (in variables.declarations): the derived quantity
+- id: in_crisis
+  scope: agent
+  type: bool
+  lifetime: episode
+  semantic_type: custom
+  readable_by: [engine]
+  writable_by: [engine]
+  exposed_to: []
+  initial_value: false
+  expression: "bar.energy < 0.2 or bar.health < 0.2"
+```
+
+```yaml
+# drive.yaml (inside drive:): a vfs_variable shaping bonus reads it
+shaping:
+  - type: vfs_variable
+    weight: -0.1
+    variable: in_crisis
 ```
 
 ### Function Call Examples
@@ -804,7 +821,7 @@ Type checker provides actionable error messages with context:
 ```
 Expression: motivation + 0.1
 Error: Variable 'motivation' not found in schema.
-       Available variables: ['intensity', 'duration', 'slot_index']
+       Available variables: ['duration_remaining', 'elapsed_ticks', 'intensity']
 ```
 
 **Unknown path:**
@@ -850,7 +867,8 @@ schema = {
     "bar.energy": "float",
     "bar.health": "float",
     "intensity": "float",
-    "duration": "int",
+    "elapsed_ticks": "float",
+    "duration_remaining": "float",
 }
 ```
 
@@ -948,10 +966,13 @@ expression: "if bar.energy < 0.2 then 1.0 else 0.0"
 Break complex expressions into VFS computed variables:
 
 ```yaml
-# Bad - hard to read
-expression: "if (bar.energy < 0.2 or bar.health < 0.2) and (tick % 24 >= 18) then 2.0 else (if bar.energy < 0.5 then 1.0 else 0.0)"
+# Bad - hard to read (an effect command's value)
+value: "if (bar.energy < 0.2 or bar.health < 0.2) and (tick % 24 >= 18) then 2.0 else (if bar.energy < 0.5 then 1.0 else 0.0)"
+```
 
-# Good - use VFS variables
+Good - name the parts as VFS variables:
+
+```yaml
 # In variables.declarations (complete required fields shown in variables.md):
 - id: is_crisis
   type: bool
@@ -960,9 +981,11 @@ expression: "if (bar.energy < 0.2 or bar.health < 0.2) and (tick % 24 >= 18) the
 - id: is_night
   type: bool
   expression: "tick % 24 >= 18"
+```
 
-# In effects.yaml:
-expression: "if is_crisis and is_night then 2.0 else (if bar.energy < 0.5 then 1.0 else 0.0)"
+```yaml
+# In effects.yaml, the command's value reads them by name:
+value: "if is_crisis and is_night then 2.0 else (if bar.energy < 0.5 then 1.0 else 0.0)"
 ```
 
 ### 5. Use Meaningful Variable Names
@@ -1004,7 +1027,9 @@ Add YAML comments explaining non-obvious expressions:
 - id: is_night
   type: bool
   expression: "tick % 24 >= 18"
+```
 
+```yaml
 # Tiered crisis bonuses: 2x for severe (<0.1), 1.5x for moderate (<0.2)
 value: "if bar.energy < 0.1 then 2.0 else (if bar.energy < 0.2 then 1.5 else 1.0)"
 ```
@@ -1085,6 +1110,6 @@ Not in the registry today (they fail at type check with `Unknown function`):
 
 - **VFS Configuration**: `docs/config-schemas/variables.md` - Variable definitions and computed variables
 - **Effects System**: `docs/plans/2025-11-15-phase-5-effects-integration.md` - Effect value expressions
-- **Drive As Code**: `docs/config-schemas/drive_as_code.md` - Reward modifiers (future)
+- **Drive As Code**: `docs/config-schemas/drive_as_code.md` - Reward modifiers, extrinsic and shaping (in production)
 - **Implementation**: `src/townlet/world/expression/` - Parser, evaluator, type checker source code
 - **Tests**: `tests/test_townlet/unit/world/expression/` - Expression system test suite

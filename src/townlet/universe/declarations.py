@@ -568,7 +568,13 @@ class DeclarationStore:
             if declaration is None:
                 continue
             day_length = declaration.payload.get("day_length")
-            origin = self.source_map.lookup(f"{declaration.key}:day_length")
+            # The exact key the refusal is about: `day_length.period_of` when it is authored, so the
+            # location is the reference's own line, not its parent mapping's.
+            origin = None
+            if isinstance(day_length, dict) and "period_of" in day_length:
+                origin = self.source_map.lookup(f"{declaration.key}:day_length.period_of")
+            if origin is None:
+                origin = self.source_map.lookup(f"{declaration.key}:day_length")
             if origin is None:
                 origin = declaration.origin
             if isinstance(day_length, dict):

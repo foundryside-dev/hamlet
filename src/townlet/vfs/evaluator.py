@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
-
 import torch
 
 from townlet.vfs.profiles import CompiledGlobalProfile
+from townlet.vfs.random_draws import DrawInstant
 from townlet.vfs.storage_dtype import storage_dtype, to_storage_dtype
 from townlet.world.expression.context import ExecutionContext
 from townlet.world.expression.evaluator import Evaluator
@@ -76,7 +75,7 @@ class VFSEvaluator:
         device: torch.device = torch.device("cpu"),
         agent_positions: torch.Tensor | None = None,
         affordance_positions: dict[str, torch.Tensor] | None = None,
-        world_rngs: Sequence[torch.Generator] | None = None,
+        draws: DrawInstant | None = None,
     ) -> dict[str, torch.Tensor]:
         """Evaluate global VFS profile expressions.
 
@@ -88,9 +87,10 @@ class VFSEvaluator:
             device: PyTorch device
             agent_positions: ``[worlds, D]`` agent positions, for the position functions
             affordance_positions: deployed affordance positions by name, likewise
-            world_rngs: one generator per world (S1), the streams a sampling call draws
-                from, one draw per row. None only when no evaluated expression samples:
-                a draw never falls through to torch's global stream.
+            draws: this instant's counter-based draws (``townlet.vfs.random_draws``); each
+                variable draws from its own sites (``var:<id>``), one value per world row.
+                None only when no evaluated expression samples: a draw never falls through
+                to torch's global stream.
 
         Returns:
             Dict mapping variable names to evaluated tensors
@@ -114,13 +114,16 @@ class VFSEvaluator:
 
         if self._history is not None and not self._history.seeded:
             raise RuntimeError("Engine defect: a profile with history evaluated outside begin_instant/commit_instant")
-        if world_rngs is None:
-            for var in profile.variables:
-                if var.name in vars_to_eval and var.ast is not None and unserved_requirement(var.ast, _SERVED_WITHOUT_STREAMS) is not None:
-                    raise RuntimeError(
-                        f"Engine defect: expression variable '{var.name}' samples, but the profile was evaluated "
-                        "without the world random streams (world_rngs)"
-                    )
+        sampling = {
+            var.name
+            for var in profile.variables
+            if var.name in vars_to_eval and var.ast is not None and unserved_requirement(var.ast, _SERVED_WITHOUT_STREAMS) is not None
+        }
+        if sampling and draws is None:
+            raise RuntimeError(
+                f"Engine defect: expression variable(s) {sorted(sampling)} sample, but the profile was evaluated "
+                "without the instant's draws"
+            )
 
         # Build execution context
         context = ExecutionContext(
@@ -131,7 +134,6 @@ class VFSEvaluator:
             agent_positions=agent_positions,
             device=device,
             history=self._history,
-            world_rngs=world_rngs,
         )
 
         evaluator = Evaluator(context)
@@ -150,12 +152,20 @@ class VFSEvaluator:
             # declared initial value is reported in `result` only and never fed to a
             # dependent expression (hamlet-df3a96bbac).
             if var.ast is None:
-                result[var.name] = torch.tensor(var.initial_value, device=device)
+                # Report the runtime value (a static initialised by `initial_value_mode` has
+                # no literal initial_value); write-back skips statics either way.
+                if var.name in context.vfs:
+                    result[var.name] = context.vfs[var.name]
                 continue
 
             # Evaluate, then settle the DSL result into the variable's storage dtype: a
             # scalar expression may type-check to int (``where(c, 1, 0)``) and lands in
             # float32 storage; any other dtype disagreement is refused, never cast.
+            if var.name in sampling:
+                assert draws is not None
+                context.draws = draws.stream(f"var:{var.name}", (draws.worlds,))
+            else:
+                context.draws = None
             value = to_storage_dtype(
                 evaluator.evaluate(var.ast),
                 torch.float32 if var.type == "float" else storage_dtype(var.type),

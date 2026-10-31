@@ -9,6 +9,7 @@ from townlet.effects.executor import CommandExecutor
 from townlet.effects.manager import EffectManager
 from townlet.effects.parser import CommandParser
 from townlet.effects.schema import CommandNode, CommandType
+from townlet.world.expression.type_checker import TypeCheckError
 
 
 class DummyItemManager:
@@ -334,11 +335,19 @@ def test_spawn_effect_pipeline_requires_explicit_target_and_intensity():
     assert manager.agent_effects[1][0].effect_id == "poison"
 
 
+@pytest.mark.parametrize("target", ["5", "-1", "1 + 1"])
+def test_a_constant_spawn_target_is_refused_at_compile(target: str) -> None:
+    """A constant row is one world's entity, so it is another world's in every other world (S1)."""
+    config = CommandConfig(spawn_effect="stun", target=target, intensity=1.0)
+    with pytest.raises(TypeCheckError, match="constant row index"):
+        CommandCompiler(schema={}, agent_target=True).compile_command(CommandParser().parse_command(config))
+
+
 def test_spawn_effect_evaluates_target_expression_when_not_literal():
     """Non-literal targets should be evaluated via target_ast at runtime."""
-    config = CommandConfig(spawn_effect="stun", target="1 + 1", intensity=1.0)
+    config = CommandConfig(spawn_effect="stun", target="target.bar.slot", intensity=1.0)
     parser = CommandParser()
-    compiler = CommandCompiler(schema={}, agent_target=True)
+    compiler = CommandCompiler(schema={"target.bar.slot": "int"}, agent_target=True)
     node = compiler.compile_command(parser.parse_command(config))
 
     catalog = EffectCatalog(
@@ -361,12 +370,13 @@ def test_spawn_effect_evaluates_target_expression_when_not_literal():
     manager = EffectManager(catalog=catalog, device="cpu")
     executor = CommandExecutor()
 
-    bars = {"health": torch.tensor([1.0, 0.9, 0.7])}
+    # World 0's slot names world 2's agent; world 2's names its own.
+    bars = {"health": torch.tensor([1.0, 0.9, 0.7]), "slot": torch.tensor([2, 1, 2])}
     context = ExecutionContext(
         bars=bars,
         vfs_registry=None,
         self_index=2,
-        target_index=None,
+        target_index=2,
         effect_manager=manager,
         item_manager=DummyItemManager(),
     )
@@ -378,4 +388,4 @@ def test_spawn_effect_evaluates_target_expression_when_not_literal():
 
     # From world 0 the same target is another world's agent: refused (S1).
     with pytest.raises(ValueError, match="worlds are independent"):
-        executor.execute(node, context.copy(self_index=0))
+        executor.execute(node, context.copy(self_index=0, target_index=0))

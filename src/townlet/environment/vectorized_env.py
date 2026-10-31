@@ -667,14 +667,9 @@ class VectorizedHamletEnv:
             vfs_registry=self.vfs_registry,
             effect_manager=self.effect_manager,
         )
-        self.item_inventory = InventoryState(
-            batch_size=num_agents,
-            max_items_per_agent=universe.items_catalog.max_items_per_agent,
-            device=str(self.device),
-        )
+        self.item_inventory = self.item_manager.inventory
         self.item_handler = ItemActionHandler(
             manager=self.item_manager,
-            inventory=self.item_inventory,
             command_executor=self.command_executor,
             vfs_registry=self.vfs_registry,
             meter_name_to_index=self.meter_name_to_index,
@@ -836,9 +831,7 @@ class VectorizedHamletEnv:
             self.vfs_evaluator.reset()
 
         if self.item_manager is not None:
-            self.item_manager.reset_state()
-        if self.item_inventory is not None:
-            self.item_inventory.reset()
+            self.item_manager.reset_state()  # and its inventory
 
         # 4. Expressions over the instant-0 state.
         self._evaluate_vfs_profiles()
@@ -1162,9 +1155,9 @@ class VectorizedHamletEnv:
         # predicates read the expressions evaluated at 3.7.
         if self.item_manager is not None:
             # Age all items (expire items that reach duration limit)
-            self.item_manager.tick(self.global_tick)
+            self.item_manager.tick(self.global_tick, live=active_on_entry)
             # Respawn items whose periodic schedule timer has expired.
-            self.item_manager.process_respawns(self.global_tick, bars=self.bars)
+            self.item_manager.process_respawns(self.global_tick, bars=self.bars, live=active_on_entry)
 
         # 5.5. Check for retirement (reached maximum lifespan)
         # Authored termination wins coincidence with the configured lifespan.

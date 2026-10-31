@@ -111,6 +111,29 @@ every world's episode- and tick-lifetime state is re-initialized together. Items
 too (their own spawns, state and arena rows; see [items](items.md)), so an item spawn predicate
 is evaluated per world: each world spawns when it holds for that world's values.
 
+`affordance` state is per world too: one row per affordance in each world (storage
+`[worlds, affordances, ...]`, the world axis engine-internal as for `global`). An occupancy
+claim writes its own world's row of the action's source affordance, so a world's claim never
+contends with another world's (a world has one agent, so there is no "lower index wins"); a
+transition rule on affordance state advances a world's rows while that world's agent is
+active, and may read a global, which is its own world's value spread along that world's
+affordance rows. An affordance rule still may not read agent state. An effect cannot name
+affordance state (it is not in the effect schema), and an affordance variable has no
+observation publisher. Persistent save and restore carry every world's rows.
+
+**References stay in their world.** An `agent_ref` in world w holds world w's agent or null
+(-1), and an `item_ref` an item row of world w or null: every write is checked, in every
+scope, in the item arena and on restore, and a violation is an engine defect. A constant
+reference is every world's value, so it is refused at compile: a reference `initial_value`
+other than null/-1 (at the declaration's `file:line`) and a constant write expression other
+than -1 (`VTC-WRITE-TYPE`). Under S1 an `agent_ref` is a nullable self-pointer (bind it with
+`agent_id`); its traversal `x.ref.bar.y` reads the world's own agent.
+
+`gather(values, index)` and `scatter(base, index, update)` index the element axis of a
+vector or `tensor1d` inside one world's value; a scalar argument (a meter, a scalar
+variable) has no element axis and is refused at type check, since its only row axis is
+the batch of independent worlds.
+
 **Non-goal: cross-world quantities.** There is no spelling for a value that reduces over
 worlds (a batch-wide total, mean or maximum of a global or agent variable). Under S1 such a
 value would leak one world's events into another world's observation or reward, so its
@@ -198,7 +221,8 @@ have one row per agent: a meter bar, or a variable of scope `agent`. The one exc
 an affordance occupancy claim: an action that declares
 `source_affordance` may write an `affordance`-scoped variable with composition
 `claim_if_free` or `capacity_claim` at `resolve_affordance_access_and_occupancy`, which
-writes that affordance's row. Any other target (`global`, `item`, or an
+writes that affordance's row in the acting agent's world. A claim composition is an
+occupancy claim only: on any other target it is refused. Any other target (`global`, `item`, or an
 `affordance` variable outside that form) is refused at compile with the variable, its
 declared scope and the write's `actions.yaml` `file:line`. Whether a pack compiles never
 depends on `num_agents`. A transition rule applies at any phase of the graph. Rewards are not a
@@ -206,7 +230,7 @@ transition phase: they are computed by the drive (DAC) after the transition.
 
 A write's expression and condition are shape-proved as well as type-checked. A read has
 its scope's shape: `agent` variables, meters and `agent_id` are one per agent,
-`affordance` is one per affordance, `global` is scalar. Values of two different shapes do
+`affordance` is one per affordance (in the reading world), `global` is scalar. Values of two different shapes do
 not combine. The result must fit the target: an action write and its condition take
 scalar or agent-shaped values; a transition-rule write to a `global` target takes scalars
 only, to `agent` scalar or agent-shaped values, and to `affordance` scalar or

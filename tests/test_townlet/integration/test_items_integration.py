@@ -297,6 +297,9 @@ def test_periodic_item_respawning():
 
     # Reset spawns initial items (1 medkit with duration=100, periodic schedule=200)
     env.reset()
+    # The world must stay live past the item's expiry: a done world's items are frozen (S1),
+    # and the pack's lifespan (100) would retire the agent first.
+    env.agent_lifespan = 10_000
 
     # Verify initial spawn (should have 1 medkit from appearance config)
     initial_medkits = [i for i in env.item_manager.worlds[0].active.values() if i.item_type == "medkit"]
@@ -307,6 +310,7 @@ def test_periodic_item_respawning():
     # Then respawn_timer = despawn_tick + schedule period = 101 + 200 = 301
     wait_action = env.action_space.get_action_by_name("WAIT")
     for _ in range(101):  # Wait for item to expire
+        env.meters.fill_(1.0)  # and keep its agent alive
         env.step(torch.tensor([wait_action.id]))
 
     # Verify medkit despawned after duration expired
@@ -318,6 +322,7 @@ def test_periodic_item_respawning():
 
     # Step until respawn_timer expires (200 more ticks to reach tick 301)
     for _ in range(200):
+        env.meters.fill_(1.0)  # and keep its agent alive
         env.step(torch.tensor([wait_action.id]))
 
     # Verify medkit respawned after the schedule period elapsed

@@ -11,6 +11,20 @@ if TYPE_CHECKING:
     from townlet.vfs import VTCInteractionProgressResult
 
 
+def clamp_rows(meters: torch.Tensor, rows: torch.Tensor, low: torch.Tensor, high: torch.Tensor) -> torch.Tensor:
+    """`meters` with only the `rows` agents' meters clamped to their declared bounds.
+
+    The clamp rule (S1: the batch is independent worlds): a meter write made by an
+    agent's own action (a movement or interaction cost, an interaction's effects) is
+    clamped in that agent's row at once; every world's meters are clamped at
+    `clamp_and_validate` each step. One world's action never clamps another world's
+    meters, so the order in which a world's own writes meet its bounds never depends on
+    what another world did.
+    """
+    clamped = torch.clamp(meters, low, high)
+    return torch.where(rows.to(device=meters.device, dtype=torch.bool).unsqueeze(-1), clamped, meters)
+
+
 class ActionExecutor:
     """Execute movement, custom, item, and affordance interaction actions."""
 
@@ -43,7 +57,7 @@ class ActionExecutor:
                     movement_costs[idx] = float(bar.depletion.move)
 
             env.meters[movement_mask] -= movement_costs.unsqueeze(0)
-            env.meters = torch.clamp(env.meters, env.meter_bounds_min, env.meter_bounds_max)
+            env.meters = clamp_rows(env.meters, movement_mask, env.meter_bounds_min, env.meter_bounds_max)
 
         if env.item_handler is not None:
             current_ticks = env.step_counts.clone()
@@ -139,7 +153,7 @@ class ActionExecutor:
                         interaction_costs[idx] = float(bar.depletion.interact)
 
                 env.meters[interact_mask] -= interaction_costs.unsqueeze(0)
-                env.meters = torch.clamp(env.meters, env.meter_bounds_min, env.meter_bounds_max)
+                env.meters = clamp_rows(env.meters, interact_mask, env.meter_bounds_min, env.meter_bounds_max)
 
                 successful_interactions = env._handle_interactions(interact_mask)
                 progress_advanced = env.enable_temporal_mechanics and env.vtc_interaction_progress_program.has_multi_tick_affordances()

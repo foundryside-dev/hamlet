@@ -5,7 +5,6 @@ import torch
 from tests.test_townlet.utils.builders import make_grid2d_substrate
 from townlet.config.items_config import ItemInteractionsConfig, ItemsCatalogConfig, ItemTypeConfig
 from townlet.items.action_handlers import ItemActionHandler
-from townlet.items.inventory import InventoryState
 from townlet.items.manager import ItemManager
 
 
@@ -69,10 +68,9 @@ def test_get_action_picks_up_item():
     )
 
     manager = ItemManager(catalog=catalog, num_worlds=1, substrate=make_grid2d_substrate(), items_per_world=10, device="cpu")
-    inventory = InventoryState(batch_size=1, max_items_per_agent=3, device="cpu")
+    inventory = manager.inventory
     handler = ItemActionHandler(
         manager=manager,
-        inventory=inventory,
         command_executor=MockCommandExecutor(),
         vfs_registry=MockVariableRegistry(),
         meter_name_to_index={"energy": 0, "health": 1},
@@ -118,21 +116,18 @@ def test_get_action_fails_when_inventory_full():
     )
 
     manager = ItemManager(catalog=catalog, num_worlds=1, substrate=make_grid2d_substrate(), items_per_world=10, device="cpu")
-    inventory = InventoryState(batch_size=1, max_items_per_agent=2, device="cpu")
+    inventory = manager.inventory
     handler = ItemActionHandler(
         manager=manager,
-        inventory=inventory,
         command_executor=MockCommandExecutor(),
         vfs_registry=MockVariableRegistry(),
         meter_name_to_index={"energy": 0, "health": 1},
         effect_manager=MockEffectManager(),
     )
 
-    # Fill inventory
-    item1 = manager.spawn_item(0, "apple", (0, 0), 100)
-    item2 = manager.spawn_item(0, "apple", (0, 0), 100)
-    inventory.add_item(0, item1)
-    inventory.add_item(0, item2)
+    # Fill inventory (the catalog's max_items_per_agent is 3)
+    for _ in range(3):
+        inventory.add_item(0, manager.spawn_item(0, "apple", (0, 0), 100))
 
     # Try to pick up third item
     item3 = manager.spawn_item(0, "apple", (3, 5), 100)
@@ -147,7 +142,7 @@ def test_get_action_fails_when_inventory_full():
     )
 
     assert success is False  # DENY_PICKUP
-    assert inventory.count_items(0) == 2
+    assert inventory.count_items(0) == 3
     assert item3.instance_id in manager.worlds[0].active  # Still in world
 
 
@@ -155,10 +150,9 @@ def test_get_action_fails_when_no_item_at_position():
     """GET action: fails when no item at agent position."""
     catalog = _catalog([])
     manager = ItemManager(catalog=catalog, num_worlds=1, substrate=make_grid2d_substrate(), items_per_world=10, device="cpu")
-    inventory = InventoryState(batch_size=1, max_items_per_agent=3, device="cpu")
+    inventory = manager.inventory
     handler = ItemActionHandler(
         manager=manager,
-        inventory=inventory,
         command_executor=MockCommandExecutor(),
         vfs_registry=MockVariableRegistry(),
         meter_name_to_index={"energy": 0, "health": 1},
@@ -201,10 +195,9 @@ def test_use_slot_action_succeeds_when_slot_occupied():
     )
 
     manager = ItemManager(catalog=catalog, num_worlds=1, substrate=make_grid2d_substrate(), items_per_world=10, device="cpu")
-    inventory = InventoryState(batch_size=1, max_items_per_agent=3, device="cpu")
+    inventory = manager.inventory
     handler = ItemActionHandler(
         manager=manager,
-        inventory=inventory,
         command_executor=MockCommandExecutor(),
         vfs_registry=MockVariableRegistry(),
         meter_name_to_index={"energy": 0, "health": 1},
@@ -232,10 +225,8 @@ def test_use_slot_action_fails_when_slot_empty():
     """USE_SLOT_N: fails when slot is empty."""
     catalog = _catalog([])
     manager = ItemManager(catalog=catalog, num_worlds=1, substrate=make_grid2d_substrate(), items_per_world=10, device="cpu")
-    inventory = InventoryState(batch_size=1, max_items_per_agent=3, device="cpu")
     handler = ItemActionHandler(
         manager=manager,
-        inventory=inventory,
         command_executor=MockCommandExecutor(),
         vfs_registry=MockVariableRegistry(),
         meter_name_to_index={"energy": 0, "health": 1},
@@ -270,10 +261,9 @@ def test_drop_slot_action_removes_from_inventory():
     )
 
     manager = ItemManager(catalog=catalog, num_worlds=1, substrate=make_grid2d_substrate(), items_per_world=10, device="cpu")
-    inventory = InventoryState(batch_size=1, max_items_per_agent=3, device="cpu")
+    inventory = manager.inventory
     handler = ItemActionHandler(
         manager=manager,
-        inventory=inventory,
         command_executor=MockCommandExecutor(),
         vfs_registry=MockVariableRegistry(),
         meter_name_to_index={"energy": 0, "health": 1},
@@ -303,10 +293,8 @@ def test_drop_slot_action_fails_when_slot_empty():
     """DROP_SLOT_N: fails when slot is empty."""
     catalog = _catalog([])
     manager = ItemManager(catalog=catalog, num_worlds=1, substrate=make_grid2d_substrate(), items_per_world=10, device="cpu")
-    inventory = InventoryState(batch_size=1, max_items_per_agent=3, device="cpu")
     handler = ItemActionHandler(
         manager=manager,
-        inventory=inventory,
         command_executor=MockCommandExecutor(),
         vfs_registry=MockVariableRegistry(),
         meter_name_to_index={"energy": 0, "health": 1},

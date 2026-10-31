@@ -7,7 +7,7 @@ from typing import Any, Literal
 
 from townlet.config.effects_config import EffectScope
 from townlet.effects.schema import CommandNode, CommandType
-from townlet.world.expression import ExpressionParser
+from townlet.world.expression import ExpressionParser, read_paths
 from townlet.world.expression.ast_nodes import ASTNode, FunctionCall, PathAccess
 from townlet.world.expression.type_checker import TypeChecker
 
@@ -175,9 +175,11 @@ class CommandCompiler:
             if node.intensity is None:
                 raise TypeCheckError("SPAWN_EFFECT command requires 'intensity'")
 
-            # Validate and compile target expression only when not a simple literal
-            simple_target = node.target in {"self", "target"} or isinstance(node.target, int)
-            if not simple_target and node.target_expr:
+            if isinstance(node.target, int):
+                raise TypeCheckError(spawn_target_literal_refusal(str(node.target)))
+            if node.target is None and node.target_expr and spawn_target_reads_nothing(node.target_expr):
+                raise TypeCheckError(spawn_target_literal_refusal(node.target_expr))
+            if node.target not in {"self", "target"} and node.target_expr:
                 target_ast = self._parse(node.target_expr, binding)
                 target_type = type_checker.check(target_ast)
                 if target_type != "int":
@@ -577,3 +579,24 @@ def _rewrite_value(value: Any, is_bare_agent_path: Any) -> Any:
         members = tuple(_rewrite_value(item, is_bare_agent_path) for item in value)
         return members if any(new is not old for new, old in zip(members, value, strict=True)) else value
     return value
+
+
+def spawn_target_reads_nothing(target: str) -> bool:
+    """Whether an authored spawn_effect target is a constant: it reads no state.
+
+    `self` and `target` name the spawning context's entity. Any other target is an int
+    expression; one that reads nothing (``3``, ``-1``, ``1 + 1``) is the same row in
+    every world.
+    """
+    if target in {"self", "target"}:
+        return False
+    return not read_paths(ExpressionParser().parse(target))
+
+
+def spawn_target_literal_refusal(target: str) -> str:
+    """Why a constant spawn_effect target is refused (shared by the compile-time walker)."""
+    return (
+        f"spawn_effect target '{target}' is a constant row index. A row is one world's entity (an agent row is its "
+        "world; an item row belongs to one world), and the batch is independent worlds (S1), so in every other world "
+        "it names another world's entity. Spawn on 'self' or 'target', or an int expression over this world's state."
+    )

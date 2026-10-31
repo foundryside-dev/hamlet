@@ -166,16 +166,16 @@ def test_global_target_advances_only_in_worlds_whose_agent_is_active() -> None:
     assert updated["pressure"].tolist() == [1.0, 0.0]
 
 
-def test_affordance_target_is_not_masked_per_agent() -> None:
-    """Affordance rows are not agent rows, even when there are as many affordances as agents."""
+def test_affordance_target_rows_are_masked_by_their_own_worlds_agent() -> None:
+    """Affordance state is per world (S1): a done world's affordance rows are frozen, a live world's advance."""
     program = _compile([_rule("wear")])
     updated = program.apply(
-        vfs_state={"wear": torch.zeros(2)},
+        vfs_state={"wear": torch.zeros(2, 3)},
         active_mask=torch.tensor([False, True]),
         device=torch.device("cpu"),
     ).values
 
-    assert updated["wear"].tolist() == [1.0, 1.0]
+    assert updated["wear"].tolist() == [[0.0, 0.0, 0.0], [1.0, 1.0, 1.0]]
 
 
 def test_agent_target_masks_the_done_agent_row() -> None:

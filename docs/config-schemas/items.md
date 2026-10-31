@@ -131,7 +131,10 @@ and compiles exactly as an absent declaration does (`items_catalog` and `items_h
 **Items are per world** (owner ruling S1, 2026-10-25: the env batch is N independent
 single-agent worlds). Every world has its own items: its own level-start spawns, ground
 occupancy, capacity, cooldowns, respawn timers, rule spawn counts and item-scope state. A pickup,
-spawn, despawn or item effect in one world never touches another. The arena above is **per
+spawn, despawn or item effect in one world never touches another. A world whose agent is
+done is frozen: its items neither age nor expire, and its respawn timers do not fire (as its
+effects and transition rules are frozen). The item manager owns every world's inventory, so an
+item that despawns while held (it expired in a slot) leaves its slot in the same call. The arena above is **per
 world**, and it is exactly the compiled `item` token capacity, so the observation layout and
 every observation hash are independent of the batch size. At runtime the registry holds one
 arena block per world, flat: `item_vfs` is `[num_worlds × item_capacity, V]` and world `w`'s

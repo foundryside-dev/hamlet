@@ -30,27 +30,19 @@ class CommandParser:
             )
 
         elif config.spawn_effect is not None:
-            # Normalize target: keep simple values on `target` for executor, preserve expr string
+            # `self` / `target` name the context's entity; anything else is an int expression
+            # the compiler type-checks (an integer literal is refused there: S1).
             raw_target = config.target
             assert raw_target is not None
-            resolved_target: str | int | None
-            if isinstance(raw_target, str):
-                if raw_target in {"self", "target"}:
-                    resolved_target = raw_target
-                else:
-                    try:
-                        # Allow numeric strings (including negatives) to be treated as explicit indices
-                        resolved_target = int(raw_target)
-                    except ValueError:
-                        resolved_target = None  # Expression resolved at runtime
-            else:
+            resolved_target: str | None = None
+            if raw_target in {"self", "target"}:
                 resolved_target = raw_target
 
             return CommandNode(
                 type=CommandType.SPAWN_EFFECT,
                 effect_id=config.spawn_effect,
                 target=resolved_target,
-                target_expr=str(raw_target),
+                target_expr=raw_target,
                 intensity=config.intensity,
             )
 

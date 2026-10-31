@@ -229,15 +229,15 @@ def test_parser_invalid_command_raises():
         CommandConfig()
 
 
-def test_parser_spawn_effect_numeric_target():
-    """Parser handles numeric string targets for spawn_effect."""
+def test_parser_spawn_effect_numeric_target_stays_an_expression():
+    """A numeric target is an expression for the compiler to judge (it refuses a constant row, S1)."""
     config = CommandConfig(spawn_effect="buff", target="5", intensity=1.0)
 
     parser = CommandParser()
     node = parser.parse_command(config)
 
     assert node.type == CommandType.SPAWN_EFFECT
-    assert node.target == 5  # Should be resolved to int
+    assert node.target is None
     assert node.target_expr == "5"
 
 

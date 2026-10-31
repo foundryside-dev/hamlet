@@ -361,7 +361,6 @@ def test_more_than_fixed_k_reachable_meter_writes_refuses(tmp_path: Path) -> Non
         pytest.param("duration", 2, 20, id="effect-duration"),
         pytest.param("reapply_policy", "renew", "stack", id="effect-reapply"),
         pytest.param("observable", False, True, id="effect-observable"),
-        pytest.param("spawn_target", "target", "0", id="spawn-target"),
     ),
 )
 def test_spawned_effect_behavior_parameters_change_identity_and_hash(
@@ -378,12 +377,12 @@ def test_spawned_effect_behavior_parameters_change_identity_and_hash(
         eat["interactions"]["on_start"] = [
             {
                 "spawn_effect": "ate_food",
-                "target": value if field == "spawn_target" else "target",
+                "target": "target",
                 "intensity": value if field == "spawn_intensity" else 1.0,
             }
         ]
         _write_yaml(path, payload)
-        if field not in {"spawn_target", "spawn_intensity"}:
+        if field != "spawn_intensity":
             effects_path = pack / "effects.yaml"
             effects_payload = yaml.safe_load(effects_path.read_text())
             effects_payload["effect_definitions"][0][field] = value
@@ -394,8 +393,10 @@ def test_spawned_effect_behavior_parameters_change_identity_and_hash(
     assert signatures[0][1] != signatures[1][1]
 
 
-@pytest.mark.parametrize("target", ("self", "1"))
+@pytest.mark.parametrize("target", ("self",))
 def test_unrepresentable_affordance_spawn_target_refuses(tmp_path: Path, target: str) -> None:
+    """A constant target ("0", "1") refuses earlier, as [EFFECT-SPAWN-TARGET] (S1):
+    tests/test_townlet/unit/universe/test_spawn_target_literal.py."""
     pack = _copy_reference_pack(tmp_path)
     path, payload, eat = _affordance_payload(pack, "EAT")
     eat["interactions"]["on_start"] = [{"spawn_effect": "ate_food", "target": target, "intensity": 1.0}]

@@ -10,8 +10,9 @@ from townlet.vfs.vtc import VTCWriteTarget, compile_vtc_action_writes, compile_v
 STATE_SCOPES = {"state": VTCWriteTarget(VariableScope.AGENT, "scalar", meter=False)}
 
 
-@pytest.mark.parametrize("composition,expression", [("overwrite", "state"), ("additive_delta", "0"), ("claim_if_free", "7")])
-def test_same_value_or_failed_claim_is_still_an_attempt(composition, expression):
+@pytest.mark.parametrize("composition,expression", [("overwrite", "state"), ("additive_delta", "0")])
+def test_same_value_write_is_still_an_attempt(composition, expression):
+    """A failed affordance claim is the same case: test_affordance_scope_per_world.py."""
     action = _action(
         action_id=2,
         name="ATTEMPT",

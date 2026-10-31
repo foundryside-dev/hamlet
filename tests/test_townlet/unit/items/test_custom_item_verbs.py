@@ -11,7 +11,6 @@ from townlet.config.items_config import (
     build_item_command_action_name,
 )
 from townlet.items.action_handlers import ItemActionHandler
-from townlet.items.inventory import InventoryState
 from townlet.items.manager import ItemManager
 
 
@@ -85,13 +84,12 @@ def _catalog_with_custom() -> ItemsCatalogConfig:
 def test_custom_item_verbs_masking_and_dispatch():
     catalog = _catalog_with_custom()
     manager = ItemManager(catalog=catalog, num_worlds=2, substrate=make_grid2d_substrate(), items_per_world=4, device="cpu", schema=None)
-    inventory = InventoryState(batch_size=2, max_items_per_agent=2, device="cpu")
+    inventory = manager.inventory
     executor = _CommandExecutorStub()
     vfs_registry = _VFSRegistryStub()
 
     handler = ItemActionHandler(
         manager=manager,
-        inventory=inventory,
         command_executor=executor,
         vfs_registry=vfs_registry,
         meter_name_to_index={"energy": 0},

@@ -248,9 +248,10 @@ Determines where the effect can attach and what context is available to commands
 - **Examples**: `day_cycle`, `nighttime`, `heatwave`, `rush_hour`
 - **Typical Duration**: 100-10000 ticks (persistent world state)
 
-**`affordance`** - Effect attaches to affordance instances
-- **Access**: `target.vfs.*`, `target.position`, `target.availability`
-- **Storage**: Per-affordance effect list `[num_affordances]`
+**`affordance`** - Effect attaches to an affordance in its world
+- **Access**: globals (`vfs.X`, `global.vfs.X`) and its world's agents via `for_each: all_agents`;
+  no `target`, and no affordance state (see Example 8)
+- **Storage**: One effect list per (world, entity)
 - **Examples**: `broken`, `locked`, `occupied`, `on_cooldown`
 - **Typical Duration**: 5-50 ticks (temporary state changes)
 
@@ -268,8 +269,7 @@ Determines where the effect can attach and what context is available to commands
 
 Everything an effect does lands in its own world only: globals (`vfs.X`, `global.vfs.X`),
 bare `bar.X` writes (its world's agent's row), `for_each: all_agents` (its world's agents —
-under S1 the one agent), `affordance.X.available` (one override per world), `spawn_item`
-(into its world) and sampling (`sample`, `uniform()`, `normal_dist()`, which draw from the
+under S1 the one agent), `spawn_item` (into its world) and sampling (`sample`, `uniform()`, `normal_dist()`, which draw from the
 world's own random stream, seeded from the run seed, world and episode). A global- or
 affordance-scoped effect has no `self`/`target` agent of its own; it reaches its world's agent
 through `for_each: all_agents`. When a world's agent is done, that world's effects write
@@ -755,19 +755,25 @@ Effects use HAMLET's VFS expression language (pure functional, type-safe):
 **Schema**:
 ```yaml
 - spawn_effect: <effect_id>
-  target: <expression>      # Optional, default: "self"
-  intensity: <float>        # Optional, default: 1.0
+  target: <expression>      # Required: "self", "target", or an int expression over state
+  intensity: <float>        # Required
 ```
 
 **Fields**:
 - `spawn_effect` (string, REQUIRED): Effect ID from catalog
-- `target` (expression, OPTIONAL): Target entity for new effect (default: `"self"`)
-- `intensity` (float, OPTIONAL): Intensity multiplier for spawned effect (default: 1.0)
+- `target` (expression, REQUIRED): Target entity for new effect
+- `intensity` (float, REQUIRED): Intensity multiplier for spawned effect
 
 **Target Resolution**:
 - `"self"`: Apply to entity this effect is on (most common)
 - `"target"`: Apply to interaction target (for affordance effects)
-- Expression: Dynamic target selection (future: nearby agents, held items)
+- Expression: an `int` expression that reads state (e.g. `target.bar.slot`), evaluated when
+  the command runs; the entity it names must be in the pipeline's world.
+- A constant target (`0`, `3`, `1 + 1`: an expression that reads no state) is refused at
+  compile as `[EFFECT-SPAWN-TARGET]`, at the command's `file:line`. A row is one world's
+  entity (an agent row is its world, an item row belongs to one world), so a constant is
+  another world's entity in every world but one (S1). An affordance's spawn may only target
+  `target` (its interacting agent): that is the one spawn target its token identity represents.
 
 **Use Cases**:
 - **Chained Effects**: Poisoned → spawn "nauseous" after 5 ticks
@@ -906,8 +912,8 @@ One keyword, one meaning: the command form of `if` agrees with the expression fo
 - A global variable has one row per world, so a per-agent mask is a per-world mask on it:
   a masked write lands in the live worlds only.
 - Every other target has one world, and the mask is per world: an item variable lands if
-  its item's world is live, `affordance.X.available`, `spawn_item` and a global- or
-  affordance-scoped `spawn_effect` act in the pipeline's world if it is live, and a `delay`
+  its item's world is live, `spawn_item` and a global- or affordance-scoped `spawn_effect`
+  act in the pipeline's world if it is live, and a `delay`
   block carries the mask it was scheduled under. Only a 0-dimensional bar (no per-world
   row at all) needs the whole mask live, and is refused at runtime otherwise.
 
@@ -1354,43 +1360,17 @@ with a declared clock variable (`expression: "tick % 24"`) can read that instead
 
 ---
 
-### Example 8: Affordance Cooldown (AFFORDANCE Scope)
+### Example 8: Affordance State (not reachable from an effect)
 
-```yaml
-- id: "on_cooldown"
-  description: "Prevents affordance reuse for duration"
-  scope: affordance
-  duration: 10
-  intensity: 1.0
-  reapply_policy: renew
-  observable: true
+An effect cannot read or write affordance state. The effect schema has no
+`affordance.X.available` path and no affordance-scoped variable path, so a pipeline that
+names either is refused at compile (`[EFFECT-COMPILE]`, at the effect's declaration). An
+affordance-scoped effect still lives in its world and runs its pipelines there; it reaches
+its world's agent through `for_each: all_agents`.
 
-  on_spawn:
-    - modify: target.vfs.available
-      value: false
-
-  on_tick: []
-
-  on_despawn:
-    - modify: target.vfs.available
-      value: true
-
-  on_interrupt:
-    - modify: target.vfs.available
-      value: true
-```
-
-**Behavior**:
-- Marks affordance as unavailable on spawn
-- Lasts 10 ticks (cooldown period)
-- Renew policy extends cooldown if triggered again
-- Restores availability on despawn/interrupt
-
-**Use Case**: Prevent spam-clicking affordances, enforce cooldown periods
-
-**Key Pattern**: Affordance scope + availability flag manipulation
-
-**Note**: AffordanceEngine can check target.vfs.available before allowing interaction
+Affordance-scoped state (one row per affordance in each world, see
+[variables.md](variables.md)) is written by an action's occupancy claim
+(`claim_if_free` / `capacity_claim`) or by a transition rule.
 
 ---
 

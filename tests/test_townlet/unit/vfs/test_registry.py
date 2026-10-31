@@ -6,7 +6,7 @@ with access control and scope semantics.
 Scope patterns:
 - global: One value per world (shape [num_worlds] or [num_worlds, dims]; S1: num_worlds == num_agents)
 - agent: Per-agent values (shape [num_agents] or [num_agents, dims])
-- affordance: Per-affordance values (shape [num_affordances, ...])
+- affordance: Per-affordance values in each world (shape [num_worlds, num_affordances, ...])
 """
 
 import pytest
@@ -757,7 +757,7 @@ class TestRegistryWorldStructureScopes:
             device=torch.device("cpu"),
         )
 
-        assert registry.get("occupied_by", reader="engine").shape == torch.Size([4])
+        assert registry.get("occupied_by", reader="engine").shape == torch.Size([3, 4])
         assert torch.all(registry.get("occupied_by", reader="engine") == -1)
 
     def test_registry_prefixes_vectors_and_tensors_with_scope_dimensions(self):
@@ -796,7 +796,7 @@ class TestRegistryWorldStructureScopes:
         )
 
         assert registry.get("relative_offset", reader="engine").shape == torch.Size([4, 2])
-        assert registry.get("affordance_slots", reader="engine").shape == torch.Size([6, 2, 3])
+        assert registry.get("affordance_slots", reader="engine").shape == torch.Size([4, 6, 2, 3])
 
     def test_registry_requires_explicit_extent_for_non_agent_relational_scope(self):
         """Missing world extents should fail loudly instead of allocating ambiguous storage."""

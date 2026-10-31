@@ -29,6 +29,7 @@ from townlet.effects.compiler import CommandCompiler
 from townlet.effects.executor import CommandExecutor, ExecutionContext
 from townlet.effects.parser import CommandParser
 from townlet.effects.schema import CommandNode
+from townlet.environment.action_executor import clamp_rows
 from townlet.environment.null_managers import NullItemManager
 
 
@@ -222,10 +223,11 @@ class AffordanceEngine:
             current_tick=current_tick,
         )
 
-        # Clamp meters to their DECLARED per-meter bounds (WS-1(e)).
+        # Clamp the interacting agents' meters to their DECLARED per-meter bounds (WS-1(e)).
         # RETAINED deliberately (PDR-0014 B3 / PDR-0015): this is a real ceiling, not a
-        # duplicate of the VTC clamp — do not delete it and do not add a second.
-        updated_meters = torch.clamp(updated_meters, self.meter_bounds_min, self.meter_bounds_max)
+        # duplicate of the VTC clamp — do not delete it and do not add a second. Only the
+        # interacting rows: another world's meters are not this interaction's (S1).
+        updated_meters = clamp_rows(updated_meters, agent_mask, self.meter_bounds_min, self.meter_bounds_max)
 
         return updated_meters
 
@@ -323,8 +325,8 @@ class AffordanceEngine:
                 current_tick=current_tick,
             )
 
-        # Clamp meters to their DECLARED per-meter bounds (WS-1(e)).
-        updated_meters = torch.clamp(updated_meters, self.meter_bounds_min, self.meter_bounds_max)
+        # Clamp the interacting agents' meters to their DECLARED per-meter bounds (WS-1(e)).
+        updated_meters = clamp_rows(updated_meters, agent_mask | completion_mask, self.meter_bounds_min, self.meter_bounds_max)
 
         return updated_meters
 

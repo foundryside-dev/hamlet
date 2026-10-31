@@ -2,6 +2,8 @@
 
 from pathlib import Path
 
+import torch
+
 from tests.test_townlet.utils.builders import make_grid2d_substrate
 from townlet.config.items_config import ItemsAppearanceConfig, ItemsCatalogConfig
 from townlet.items.manager import ItemManager
@@ -118,11 +120,11 @@ def test_process_respawns_spawns_item_when_timer_expires():
     assert manager.worlds[0].respawn_timers["apple"] == 100
 
     # Process respawns at tick 99 (not yet)
-    manager.process_respawns(current_tick=99)
+    manager.process_respawns(current_tick=99, live=torch.ones(manager.num_worlds, dtype=torch.bool))
     assert len(manager.worlds[0].active) == 0
 
     # Process respawns at tick 100 (timer expires)
-    manager.process_respawns(current_tick=100)
+    manager.process_respawns(current_tick=100, live=torch.ones(manager.num_worlds, dtype=torch.bool))
     assert len(manager.worlds[0].active) == 1
 
     # Verify apple spawned
@@ -169,7 +171,7 @@ def test_process_respawns_respects_max_items_capacity():
     manager.worlds[0].respawn_timers["apple"] = 10
 
     # Try to respawn apple
-    manager.process_respawns(current_tick=10)
+    manager.process_respawns(current_tick=10, live=torch.ones(manager.num_worlds, dtype=torch.bool))
 
     # Apple should NOT spawn (at capacity)
     assert len(manager.worlds[0].active) == 2  # Still just 2 coins

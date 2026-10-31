@@ -10,6 +10,7 @@ from pydantic import BaseModel, ConfigDict, Field, StrictInt, model_validator
 from townlet.vfs.access_policy import validate_static_access
 from townlet.vfs.schema import NormalizationSpec, VariableScope
 from townlet.vfs.semantic_type import SemanticType
+from townlet.vfs.storage_dtype import BATCH_ROW_REFERENCE_TYPES
 
 VariableType = Literal[
     "scalar",
@@ -154,6 +155,12 @@ class VariableDeclaration(BaseModel):
                 raise ValueError(f"Variable '{self.id}' initial_value must be a finite number")
             if self.type in _REFERENCE_TYPES and (int(value) != value or value < -1):
                 raise ValueError(f"Variable '{self.id}' reference initial_value must be an integer >= -1 or null")
+            if self.type in BATCH_ROW_REFERENCE_TYPES and value != -1:
+                raise ValueError(
+                    f"Variable '{self.id}' {self.type} initial_value {value} names one fixed batch row, but the initial "
+                    "value is every world's: the batch is independent worlds (S1), so in every other world it would "
+                    "name another world's entity. Declare it null (or -1) and bind it at runtime."
+                )
             return
         if self.type in _TENSOR_TYPES:
             assert self.shape is not None

@@ -74,7 +74,7 @@ def test_extents_block_refuses_at_parse_with_its_location(temp_config_pack: Path
 
 def test_affordance_scope_rows_come_from_the_level(temp_config_pack: Path) -> None:
     """findings_vfs F4: an affordance-scope variable needs no authored extent; its
-    registry rows are the level's affordance count, the one authority."""
+    registry rows are the level's affordance count, the one authority, in every world (S1)."""
     _add_variable(temp_config_pack, AFFORDANCE_VARIABLE)
 
     universe = UniverseCompiler().compile(temp_config_pack, primary_level=PRIMARY_LEVEL, use_cache=False)
@@ -86,4 +86,4 @@ def test_affordance_scope_rows_come_from_the_level(temp_config_pack: Path) -> No
     )
 
     rows = env.vfs_registry.get(AFFORDANCE_VARIABLE["id"], reader="engine")
-    assert rows.shape == (universe.metadata.affordance_count,)
+    assert rows.shape == (2, universe.metadata.affordance_count)

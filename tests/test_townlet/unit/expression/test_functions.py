@@ -138,7 +138,9 @@ def test_mask_tensor_operator_catalogue_evaluates_with_parser():
         "value": torch.tensor([1.0, 2.0, 3.0]),
         "mask": torch.tensor([True, False, True]),
         "idx": torch.tensor([2, 0]),
-        "base": torch.zeros(3),
+        # Two worlds' vectors: gather/scatter index each world's element axis, never the batch.
+        "rows": torch.tensor([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]),
+        "base": torch.zeros(2, 3),
         "updates": torch.tensor([9.0, 8.0]),
     }
 
@@ -147,8 +149,8 @@ def test_mask_tensor_operator_catalogue_evaluates_with_parser():
     assert torch.allclose(_eval_expr("masked_set(value, 0.0, mask)", vfs, None), torch.tensor([0.0, 2.0, 0.0]))
     assert torch.equal(_eval_expr("all(mask, value > 0.0)", vfs, None), torch.tensor([True, False, True]))
     assert torch.equal(_eval_expr("any(mask, value < 2.0)", vfs, None), torch.tensor([True, False, True]))
-    assert torch.allclose(_eval_expr("gather(value, idx)", vfs, None), torch.tensor([3.0, 1.0]))
-    assert torch.allclose(_eval_expr("scatter(base, idx, updates)", vfs, None), torch.tensor([8.0, 0.0, 9.0]))
+    assert torch.allclose(_eval_expr("gather(rows, idx)", vfs, None), torch.tensor([3.0, 4.0]))
+    assert torch.allclose(_eval_expr("scatter(base, idx, updates)", vfs, None), torch.tensor([[0.0, 0.0, 9.0], [8.0, 0.0, 0.0]]))
     assert torch.equal(
         _eval_expr("one_hot(idx, 3)", vfs, None),
         torch.tensor([[0.0, 0.0, 1.0], [1.0, 0.0, 0.0]]),

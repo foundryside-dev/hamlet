@@ -14,6 +14,7 @@ from townlet.effects.manager import EffectManager
 from townlet.effects.schema import CommandNode, CommandType
 from townlet.vfs.profiles import CompiledItemProfile, CompiledVariable
 from townlet.vfs.registry import VariableRegistry
+from townlet.world.expression import ExpressionParser
 
 
 def _setup(policy: str) -> tuple[EffectManager, VariableRegistry, dict[str, torch.Tensor]]:
@@ -88,9 +89,7 @@ def test_denied_item_spawn_cannot_leave_a_live_effect(entry: str) -> None:
         if entry == "manager":
             manager.spawn_effect("charging", 1, 1.0, 0, bars=bars, vfs_registry=registry)
         else:
-            command = CommandCompiler({}, agent_target=True).compile_command(
-                CommandNode(type=CommandType.SPAWN_EFFECT, effect_id="charging", target_expr="1 + 0", intensity=1.0)
-            )
+            command = _engine_spawn("charging", "1 + 0")
             CommandExecutor().execute(command, ExecutionContext(bars=bars, vfs_registry=registry, effect_manager=manager))
     # A later tick must not execute the rejected effect's otherwise permitted hook.
     manager.tick(bars, registry, current_step=1)
@@ -153,10 +152,23 @@ def test_reapplication_does_not_authorize_unused_spawn_hook(policy: str) -> None
     assert manager.next_instance_id == 1
 
 
-def _child_spawn(target_expr: str) -> CommandNode:
-    return CommandCompiler({"bar.energy": "float"}, agent_target=True).compile_command(
-        CommandNode(type=CommandType.SPAWN_EFFECT, effect_id="child", target_expr=target_expr, intensity=1.0)
+def _engine_spawn(effect_id: str, target_expr: str) -> CommandNode:
+    """An engine-built spawn on a fixed item row (these tests run in a context bound to no world).
+
+    An authored constant target is refused at compile (S1: a row is one world's entity), so
+    the node is built with its target AST directly, as an engine caller would.
+    """
+    return CommandNode(
+        type=CommandType.SPAWN_EFFECT,
+        effect_id=effect_id,
+        target_expr=target_expr,
+        target_ast=ExpressionParser().parse(target_expr),
+        intensity=1.0,
     )
+
+
+def _child_spawn(target_expr: str) -> CommandNode:
+    return _engine_spawn("child", target_expr)
 
 
 def _add_child(manager: EffectManager) -> None:
@@ -250,9 +262,7 @@ def test_successful_cascade_with_disabled_item_service(entry: str) -> None:
     _add_child(manager)
     manager.catalog.effects["charging"].on_spawn = [_child_spawn("0")]
     if entry == "context":
-        command = CommandCompiler({}, agent_target=True).compile_command(
-            CommandNode(type=CommandType.SPAWN_EFFECT, effect_id="charging", target=0, intensity=1.0)
-        )
+        command = CommandNode(type=CommandType.SPAWN_EFFECT, effect_id="charging", target=0, intensity=1.0)
         CommandExecutor().execute(command, ExecutionContext(bars=bars, vfs_registry=registry, effect_manager=manager))
     else:
         manager.spawn_effect("charging", 0, 1.0, 0, bars=bars, vfs_registry=registry, item_manager=NullItemManager())
@@ -262,11 +272,11 @@ def test_successful_cascade_with_disabled_item_service(entry: str) -> None:
 def test_compiled_switch_cascade_denial_preserves_parent_state() -> None:
     manager, registry, bars = _setup("stack")
     _add_child(manager)
-    switch = CommandCompiler({"bar.energy": "float"}, agent_target=True).compile_command(
-        CommandNode(type=CommandType.SWITCH, switch_expr="1", cases=[("1", [_child_spawn("1")])])
+    parse = ExpressionParser().parse
+    # Execution consumes compiled branches (case_asts); there are no source cases.
+    switch = CommandNode(
+        type=CommandType.SWITCH, switch_expr="1", switch_ast=parse("1"), cases=[], case_asts=[(parse("1"), [_child_spawn("1")])]
     )
-    # Execution consumes compiled branches; source diagnostics are not authority.
-    switch.cases = []
     manager.catalog.effects["charging"].on_spawn = [_write("bar.energy", "9.0"), switch]
     with pytest.raises(PermissionError, match="sealed"):
         manager.spawn_effect("charging", 1, 1.0, 0, bars=bars, vfs_registry=registry)

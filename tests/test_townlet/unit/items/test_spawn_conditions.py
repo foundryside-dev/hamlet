@@ -79,12 +79,12 @@ def test_process_respawns_respects_condition() -> None:
 
     manager.worlds[0].respawn_timers["apple"] = 0
     low_bars = {"energy": torch.tensor([0.1])}
-    manager.process_respawns(current_tick=0, bars=low_bars)
+    manager.process_respawns(current_tick=0, bars=low_bars, live=torch.ones(manager.num_worlds, dtype=torch.bool))
     assert len(manager.worlds[0].active) == 0
 
     manager.worlds[0].respawn_timers["apple"] = 0
     high_bars = {"energy": torch.tensor([1.0])}
-    manager.process_respawns(current_tick=0, bars=high_bars)
+    manager.process_respawns(current_tick=0, bars=high_bars, live=torch.ones(manager.num_worlds, dtype=torch.bool))
     assert len(manager.worlds[0].active) == 1
 
 

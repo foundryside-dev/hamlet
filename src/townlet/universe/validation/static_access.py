@@ -2,8 +2,11 @@
 
 from collections.abc import Iterable
 
+from pyparsing import ParseBaseException
+
 from townlet.config.effects_config import CommandConfig, EffectScope
 from townlet.config.variables_config import VariableDeclaration
+from townlet.effects.compiler import spawn_target_literal_refusal, spawn_target_reads_nothing
 from townlet.universe.error_codes import ErrorCode
 from townlet.universe.errors import CompilationErrorCollector
 from townlet.universe.raw_configs_v21 import RawConfigsV21
@@ -15,8 +18,9 @@ from townlet.world.expression import ExpressionParser, PathAccess
 def validate_static_write_targets(raw: RawConfigsV21, source_map: SourceMap | None) -> None:
     """Refuse known denied writes independent of runtime branch selection.
 
-    Two refusals, both citing the authored write site: a target that denies the
-    engine write, and a target that carries an ``expression``. Profile evaluation
+    Three refusals, all citing the authored write site: a target that denies the
+    engine write, a target that carries an ``expression``, and a ``spawn_effect`` target
+    that is a constant row (another world's entity in every world but one, S1). Profile evaluation
     recomputes an expression variable after every authored write, so a write to one
     would be silently discarded; the second refusal also names the declaration.
 
@@ -76,6 +80,24 @@ def validate_static_write_targets(raw: RawConfigsV21, source_map: SourceMap | No
     def commands(nodes: Iterable[CommandConfig], origin: str, item_profile: str | None, self_is_item: bool, target_is_item: bool) -> None:
         for index, node in enumerate(nodes):
             command_origin = f"{origin}[{index}]"
+            if node.spawn_effect is not None and node.target is not None:
+                # The entity a spawn attaches to is the write's destination: a constant row
+                # is another world's entity in every world but one (S1).
+                try:
+                    constant = spawn_target_reads_nothing(node.target)
+                except ParseBaseException as exc:
+                    errors.add(
+                        f"{command_origin}: spawn_effect target '{node.target}' does not parse: {exc}",
+                        code=ErrorCode.EFFECT_SPAWN_TARGET,
+                        location=locate(source_map, command_origin),
+                    )
+                    constant = False
+                if constant:
+                    errors.add(
+                        f"{command_origin}: {spawn_target_literal_refusal(node.target)}",
+                        code=ErrorCode.EFFECT_SPAWN_TARGET,
+                        location=locate(source_map, command_origin),
+                    )
             for path in (node.modify, node.store_in, node.reduce_into):
                 if path is not None:
                     check_path(path, command_origin, item_profile, self_is_item, target_is_item)

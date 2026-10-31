@@ -424,12 +424,24 @@ cross-world quantities have no spelling by design (`docs/config-schemas/variable
 `item_profile_map[profile_name][var_name] -> tensor_index`, and masks unused profile slots.
 Item profiles are named in the variables declaration's `item_profiles` list.
 
-`affordance` scope storage is dense, one row per affordance of the level. The row count is the
-level's affordance count (`metadata.affordance_count`); there is no authored extent, and the
-variables declaration has no `extents` block (a stale one fails at parse). Its one engine writer is an action's
-occupancy claim (`claim_if_free` / `capacity_claim` at `resolve_affordance_access_and_occupancy`,
-from an action that declares `source_affordance`); transition rules may read and write it. It
-has no observation publisher and no reward reduction.
+`affordance` scope storage is dense and per world: `[num_worlds, affordance_count, *payload]`
+(corrected 2026-10-31, S1 — it was one `[affordance_count]` store shared by every world, so
+world 0's claim took world 1's bed). The affordance count is the level's
+(`metadata.affordance_count`); there is no authored extent, and the variables declaration has
+no `extents` block (a stale one fails at parse). Its one action writer is an occupancy claim
+(`claim_if_free` / `capacity_claim` at `resolve_affordance_access_and_occupancy`, from an
+action that declares `source_affordance`), which writes the acting agent's own world's row;
+a claim composition on any other target is refused at compile. Transition rules may read and
+write it: a world's rows advance while its agent is active, and a global the rule reads is
+that world's value, broadcast along the world's affordance rows (`world_columns` on the
+compiled rule; the former "no single world" refusal is gone). An effect cannot name it (it is
+not in the effect schema). It has no observation publisher and no reward reduction;
+persistent snapshots carry every world's rows.
+
+References stay in their world: an `agent_ref` in world w is w or -1, an `item_ref` a row of
+world w or -1, checked on every registry write, item-arena write and restore (an engine defect
+otherwise); constant reference initial values and constant reference writes are refused at
+compile. `gather`/`scatter` index a vector's element axis, never the batch.
 
 ### 5.2 Recommended future scopes
 
@@ -703,7 +715,7 @@ The registry should guarantee:
 - all tensors are on the configured device,
 - global variables have leading dimension `num_worlds` (S1: equal to `num_agents`),
 - agent variables have leading dimension `num_agents`,
-- affordance variables have leading dimension `affordance_count`,
+- affordance variables have leading dimensions `[num_worlds, affordance_count]`,
 - all values respect declared dtype,
 - optional clamps are applied after transition phases,
 - access control is enforced consistently, including `set_engine_value()` engine permission checks,
@@ -1158,7 +1170,9 @@ phases and evaluation order").
 `VTCTransitionRunner` at the already-scheduled slot after the effect-manager tick. It is the
 end-of-transition invariant net — before it, an effect's `bar.*` write could carry a meter
 past its declared bounds into terminal/reward/observation reads. The per-write clamps
-(`action_executor`, `affordance_engine`, and the per-rule VTC clamps) are retained
+(`action_executor`, `affordance_engine`, and the per-rule VTC clamps) clamp only the rows of
+the agents whose action made the write (2026-10-31, S1: they clamped every row, so one world's
+interaction clamped another world's overshoot before its depletion instead of after) and are retained
 deliberately (PDR-0014 B3 / PDR-0015): a mid-tick ceiling is semantic — a 0.5 ceiling with
 `passive: 0.01` reads back 0.49, not 0.5 — and those sites die only when their write paths
 migrate into VTC action writes, not before.
@@ -1457,22 +1471,24 @@ per-phase snapshot/accumulator boundary:
   Boolean rows are free when false; numeric/reference rows are free when every
   row element is negative, matching `-1` reference sentinels. Later same-phase
   claim writes therefore cannot overwrite an earlier successful claim.
-- `capacity_claim` uses binary/numeric claim rows and requires `clamp` with an
-  integer high value declaring the total capacity for that write. Rows already
-  greater than zero count against capacity, and remaining eligible claimants are
-  accepted deterministically in action-batch order without over-allocation.
+- `capacity_claim` uses binary/numeric slot rows and requires `clamp` with an
+  integer high value declaring the capacity of each affordance row. Both claim
+  compositions are admitted only as affordance occupancy claims (below); on an
+  agent row `capacity_claim` counted claims across the whole batch, one world's
+  claim spending another world's capacity, and it is refused at compile.
 
 Affordance occupancy uses the same action-write machinery with source-affordance
 row targeting. `compile_vtc_affordance_occupancy(...)` resolves each
 `source_affordance` to an affordance-scope row before runtime, exposes `agent_id`
 as an action-batch payload expression, and applies writes scheduled in
-`resolve_affordance_access_and_occupancy` as deterministic contention:
+`resolve_affordance_access_and_occupancy`, each world's claim in its own world's
+row (S1: a world has one agent, so claims never contend across worlds):
 
-- `claim_if_free` writes the first active claimant's payload into the targeted
-  affordance row only when the row is still free.
-- `capacity_claim` targets `[affordances, slots, ...]` storage, requires an
-  integer `clamp` high value declaring capacity, and fills the first free slots
-  with active claimants in action-batch order without over-allocation.
+- `claim_if_free` writes the world's active claimant's payload into the targeted
+  affordance row of its world only when that row is still free.
+- `capacity_claim` targets `[worlds, affordances, slots, ...]` storage, requires an
+  integer `clamp` high value declaring capacity, and gives the world's claimant the
+  first free slot of its world's row without over-allocation.
 
 **Wiring status (2026-08-21, second pass).** Wired end-to-end (hamlet-ef6699ab2a).
 `build_vtc_transition_schedule` compiles ALL action writes through

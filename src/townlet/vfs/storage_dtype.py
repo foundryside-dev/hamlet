@@ -18,7 +18,13 @@ from __future__ import annotations
 
 import torch
 
-__all__ = ["admitted_write_result_types", "storage_dtype", "to_storage_dtype"]
+__all__ = ["BATCH_ROW_REFERENCE_TYPES", "admitted_write_result_types", "storage_dtype", "to_storage_dtype"]
+
+#: References whose stored value is a batch row: an agent row is its world (S1), an item
+#: row belongs to one world. A constant one is another world's entity everywhere but one
+#: world, so authored constants are refused (declaration and write) and the registry
+#: refuses any stored value outside the row's own world.
+BATCH_ROW_REFERENCE_TYPES = frozenset({"agent_ref", "item_ref"})
 
 _LONG_TYPES = frozenset({"agent_ref", "item_ref", "affordance_ref", "effect_ref", "vecNi", "vec2i", "vec3i"})
 _INTEGER_DTYPES = frozenset({torch.int8, torch.int16, torch.int32, torch.int64, torch.uint8})

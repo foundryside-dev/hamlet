@@ -488,11 +488,10 @@ class EffectManager:
         return scope.value, cls._scope_key(scope, effect.target_entity_id, effect.world)
 
     def _cancel_scheduled_for_effect(self, effect: ActiveEffect) -> None:
-        """Cancel any scheduled commands tied to the effect's scope/entity."""
+        """Cancel the delayed work this effect instance scheduled, and no other effect's."""
         if not self.scheduler:
             return
-        scope_value, entity = self.schedule_key(effect)
-        self.scheduler.cancel(scope=scope_value, entity_id=entity)
+        self.scheduler.cancel_effect_instance(int(effect.instance_id))
 
     def discard_item_effects(self, item_row: int) -> None:
         """Drop every effect on item row `item_row`, and their delayed work, as the item leaves.
@@ -792,11 +791,11 @@ class EffectManager:
         if target_effect is None:
             raise ValueError(f"Effect instance {instance_id} not found for cancel_effect")
 
+        # A cancelled effect's delayed work never runs, whether or not it has on_interrupt;
+        # it is cancelled before the interrupt commands run.
+        self._cancel_scheduled_for_effect(target_effect)
         compiled = self.catalog.effects.get(target_effect.effect_id)
         if compiled and compiled.on_interrupt and self.command_executor:
-            # Cancel pending delayed work tied to this effect before interrupt commands run
-            self._cancel_scheduled_for_effect(target_effect)
-
             context = self._lifecycle_context(
                 target_effect,
                 bars=bars,

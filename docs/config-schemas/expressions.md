@@ -386,11 +386,11 @@ Boolean combination and masked selection; `gather`/`scatter` index rows of a per
 |---|---|---|---|
 | `all(c1, c2, ...)` | bool | True when every bool argument is true. | — |
 | `any(c1, c2, ...)` | bool | True when at least one bool argument is true. | — |
-| `gather(values, index)` | the type of `values` | `values[index]`: read another row of a per-agent value by integer index. | — |
+| `gather(values, index)` | the element type of `values` (int for vec2i/vec3i/vecNi, else float) | `values[index]`: one element of a vector (or tensor1d) inside the reading world's value. | — |
 | `masked_add(value, delta, mask)` | the numeric type of `value` and `delta` (promoted) | `value + delta` where `mask` holds, `value` elsewhere. | — |
 | `masked_set(value, replacement, mask)` | the type of `value` (numeric pairs promote) | `replacement` where `mask` holds, `value` elsewhere. | — |
 | `one_hot(index, classes)` | vecNf of width `classes` | One-hot vector of width `classes` (a literal >= 2) with a 1.0 at `index`. | — |
-| `scatter(base, index, updates)` | the type of `base` | A copy of `base` with `updates` written at `index`. | — |
+| `scatter(base, index, update)` | the type of `base` | A copy of the vector (or tensor1d) `base` with element `index` set to `update`, inside each world's value. | — |
 | `where(condition, if_true, if_false)` | the branch type (numeric branches promote) | Select `if_true` where `condition` holds, else `if_false`; the branches must share a type. | — |
 
 ### Sampling

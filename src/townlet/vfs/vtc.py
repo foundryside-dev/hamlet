@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field, replace
 from typing import Any, ClassVar, Protocol, cast
 
 import torch
@@ -12,9 +12,9 @@ from townlet.config.interaction_type import INTERACTION_TYPES, PROGRESS_INTERACT
 from townlet.vfs import vtc_kernels
 from townlet.vfs.profiles import VFSProfileCompiler
 from townlet.vfs.schema import VariableDef, VariableScope, WriteSpec
-from townlet.vfs.storage_dtype import admitted_write_result_types, to_storage_dtype
+from townlet.vfs.storage_dtype import BATCH_ROW_REFERENCE_TYPES, admitted_write_result_types, to_storage_dtype
 from townlet.vfs.transition_graph import TransitionPhaseGraph
-from townlet.world.expression import ASTNode, ExpressionParser
+from townlet.world.expression import ASTNode, ExpressionParser, read_paths
 from townlet.world.expression.context import ExecutionContext
 from townlet.world.expression.evaluator import Evaluator
 from townlet.world.expression.type_checker import TypeChecker, TypeCheckError
@@ -348,6 +348,14 @@ class CompiledVTCSocialResidueRule:
     telemetry_label: str
     reads: tuple[str, ...]
     target_scope: VariableScope
+    world_columns: frozenset[str] = field(metadata={"derived": True})
+    """Globals a rule targeting affordance state reads as its world's column (S1).
+
+    A global is ``[worlds, ...]`` and affordance state ``[worlds, affordances, ...]``;
+    evaluated as stored, the evaluator would align the global's world axis with the
+    affordance axis. Each listed global is given a singleton affordance axis first, so
+    it spreads along its own world's affordance rows. Derived from the targets' declared
+    scopes (already identity in ``vfs_hash``), so it is not rule identity."""
 
 
 @dataclass(frozen=True)
@@ -517,6 +525,14 @@ def _write_type_refusal(
             f"{prefix} assigns a {result_type} expression '{expression}' to '{target_id}', declared {target_type} "
             f"(admits {', '.join(sorted(admitted))}). Storage writes never coerce dtype; author an expression of the declared type."
         )
+    if target_type in BATCH_ROW_REFERENCE_TYPES and not read_paths(expression_ast):
+        constant = Evaluator(ExecutionContext(bars={}, vfs={}, affordances={}, temporal={})).evaluate(expression_ast)
+        if int(constant) != -1:
+            return (
+                f"{prefix} assigns the constant {int(constant)} to {target_type} '{target_id}'. A constant is the same "
+                "batch row in every world, and the batch is independent worlds (S1), so in every other world it names "
+                "another world's entity. Write -1 (null), or a reference this world holds (agent_id for its agent)."
+            )
     if condition_ast is None:
         return None
     try:
@@ -686,10 +702,11 @@ class VTCActionWriteProgram:
         write_mask: torch.Tensor,
         priority_state: dict[str, torch.Tensor],
     ) -> torch.Tensor:
+        # The compiler admits a claim composition only as an affordance occupancy claim.
         if write.composition == "claim_if_free":
-            return self._apply_claim_if_free(write, phase_value, expression_value, write_mask)
+            return self._apply_affordance_claim_if_free(write, phase_value, expression_value, write_mask)
         if write.composition == "capacity_claim":
-            return self._apply_capacity_claim(write, phase_value, expression_value, write_mask)
+            return self._apply_affordance_capacity_claim(write, phase_value, expression_value, write_mask)
 
         candidate = self._compose_candidate(write, phase_value, expression_value)
         candidate = self._apply_optional_clamp(write, candidate)
@@ -715,58 +732,6 @@ class VTCActionWriteProgram:
             return torch.maximum(phase_value, expression)
         raise NotImplementedError(f"VTC action write composition '{write.composition}' is not implemented yet")
 
-    def _apply_claim_if_free(
-        self,
-        write: CompiledVTCActionWrite,
-        phase_value: torch.Tensor,
-        expression_value: torch.Tensor,
-        write_mask: torch.Tensor,
-    ) -> torch.Tensor:
-        if self._targets_affordance_occupancy(write):
-            return self._apply_affordance_claim_if_free(write, phase_value, expression_value, write_mask)
-
-        candidate = self._apply_optional_clamp(write, expression_value)
-        free_mask = self._row_free_for_claim(phase_value)
-        broadcast_mask = self._broadcast_agent_mask(write_mask & free_mask, phase_value, write)
-        return cast(
-            torch.Tensor,
-            vtc_kernels.apply_masked_candidate(
-                phase_value,
-                candidate,
-                broadcast_mask,
-            ),
-        )
-
-    def _apply_capacity_claim(
-        self,
-        write: CompiledVTCActionWrite,
-        phase_value: torch.Tensor,
-        expression_value: torch.Tensor,
-        write_mask: torch.Tensor,
-    ) -> torch.Tensor:
-        if self._targets_affordance_occupancy(write):
-            return self._apply_affordance_capacity_claim(write, phase_value, expression_value, write_mask)
-
-        if write.clamp is None:
-            raise ValueError(f"VTC capacity_claim write '{write.telemetry_label}' requires clamp high to declare capacity")
-
-        capacity = self._capacity_from_clamp(write)
-        claimed_mask = self._row_claimed_for_capacity(phase_value)
-        remaining_capacity = capacity - int(claimed_mask.sum().item())
-        if remaining_capacity <= 0:
-            return phase_value
-
-        eligible_mask = write_mask & self._row_free_for_capacity(phase_value)
-        eligible_indices = torch.nonzero(eligible_mask, as_tuple=False).flatten()
-        if eligible_indices.numel() == 0:
-            return phase_value
-
-        selected_indices = eligible_indices[:remaining_capacity]
-        selected_mask = torch.zeros_like(write_mask, dtype=torch.bool, device=write_mask.device)
-        selected_mask[selected_indices] = True
-        broadcast_mask = self._broadcast_agent_mask(selected_mask, phase_value, write)
-        return cast(torch.Tensor, vtc_kernels.apply_masked_candidate(phase_value, expression_value, broadcast_mask))
-
     @staticmethod
     def _capacity_from_clamp(write: CompiledVTCActionWrite) -> int:
         assert write.clamp is not None
@@ -783,17 +748,17 @@ class VTCActionWriteProgram:
         expression_value: torch.Tensor,
         write_mask: torch.Tensor,
     ) -> torch.Tensor:
+        """Each world's claimant takes its own world's source-affordance row when that row is free.
+
+        Affordance state is per world (S1: storage ``[worlds, affordances, ...]``), and a
+        world has one agent, so a claim never contends with another world's: there is
+        no cross-world "lower index wins".
+        """
         affordance_index = self._require_affordance_index(write, phase_value)
-        if not bool(self._row_free_for_claim(phase_value[affordance_index].unsqueeze(0))[0].item()):
-            return phase_value
-
-        claimant_indices = torch.nonzero(write_mask.bool(), as_tuple=False).flatten()
-        if claimant_indices.numel() == 0:
-            return phase_value
-
-        winner_index = int(claimant_indices[0].item())
+        rows = phase_value[:, affordance_index]  # [worlds, ...]
+        claim = write_mask.bool() & self._row_free_for_claim(rows)
         candidate = phase_value.clone()
-        candidate[affordance_index] = expression_value[winner_index]
+        candidate[:, affordance_index] = torch.where(self._broadcast_rows(claim, rows), expression_value, rows)
         return candidate
 
     def _apply_affordance_capacity_claim(
@@ -803,39 +768,52 @@ class VTCActionWriteProgram:
         expression_value: torch.Tensor,
         write_mask: torch.Tensor,
     ) -> torch.Tensor:
+        """Each world's claimant takes the first free slot of its own world's source affordance."""
         if write.clamp is None:
             raise ValueError(f"VTC capacity_claim write '{write.telemetry_label}' requires clamp high to declare capacity")
-        if phase_value.dim() < 2:
+        if phase_value.dim() < 3:
             raise ValueError(
-                f"VTC affordance capacity_claim write '{write.telemetry_label}' requires target shape [affordances, slots, ...]"
+                f"VTC affordance capacity_claim write '{write.telemetry_label}' requires target shape [worlds, affordances, slots, ...]"
             )
 
         affordance_index = self._require_affordance_index(write, phase_value)
         capacity = self._capacity_from_clamp(write)
-        if capacity > phase_value.shape[1]:
+        if capacity > phase_value.shape[2]:
             raise ValueError(
                 f"VTC affordance capacity_claim write '{write.telemetry_label}' declares capacity {capacity} "
-                f"but target only has {phase_value.shape[1]} slots"
+                f"but target only has {phase_value.shape[2]} slots"
             )
         if capacity == 0:
             return phase_value
 
-        slot_values = phase_value[affordance_index, :capacity]
-        free_slot_indices = torch.nonzero(self._slot_free_for_claim(slot_values), as_tuple=False).flatten()
-        if free_slot_indices.numel() == 0:
-            return phase_value
-
-        claimant_indices = torch.nonzero(write_mask.bool(), as_tuple=False).flatten()
-        if claimant_indices.numel() == 0:
-            return phase_value
-
-        assignments = min(int(free_slot_indices.numel()), int(claimant_indices.numel()))
+        slots = phase_value[:, affordance_index, :capacity]  # [worlds, capacity, ...]
+        free = self._slot_free_per_world(slots)  # [worlds, capacity]
+        has_free = free.any(dim=1)
+        first_free = torch.argmax(free.to(torch.int8), dim=1)  # first True per world
+        claim = write_mask.bool() & has_free
+        chosen = torch.zeros_like(free)
+        chosen[torch.arange(free.shape[0], device=free.device), first_free] = True
+        chosen &= claim.unsqueeze(1)
+        payload = expression_value.unsqueeze(1).expand_as(slots)
         candidate = phase_value.clone()
-        for offset in range(assignments):
-            slot_index = int(free_slot_indices[offset].item())
-            claimant_index = int(claimant_indices[offset].item())
-            candidate[affordance_index, slot_index] = expression_value[claimant_index]
+        candidate[:, affordance_index, :capacity] = torch.where(self._broadcast_rows(chosen, slots), payload, slots)
         return candidate
+
+    @staticmethod
+    def _broadcast_rows(mask: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+        """`mask` with trailing singleton axes added until it broadcasts over `target`."""
+        while mask.dim() < target.dim():
+            mask = mask.unsqueeze(-1)
+        return mask
+
+    @staticmethod
+    def _slot_free_per_world(slots: torch.Tensor) -> torch.Tensor:
+        """Free slots ``[worlds, capacity]`` of a ``[worlds, capacity, ...]`` slot block."""
+        if slots.dim() == 2:
+            return ~slots if slots.dtype == torch.bool else slots < 0
+        if slots.dtype == torch.bool:
+            return ~slots.flatten(start_dim=2).any(dim=2)
+        return (slots < 0).flatten(start_dim=2).all(dim=2)
 
     @staticmethod
     def _targets_affordance_occupancy(write: CompiledVTCActionWrite) -> bool:
@@ -846,12 +824,15 @@ class VTCActionWriteProgram:
     def _require_affordance_index(write: CompiledVTCActionWrite, target: torch.Tensor) -> int:
         if write.affordance_index is None:
             raise ValueError(f"VTC affordance occupancy write '{write.telemetry_label}' has no source affordance index")
-        if target.dim() == 0:
-            raise ValueError(f"VTC affordance occupancy write '{write.telemetry_label}' cannot target scalar storage")
-        if write.affordance_index < 0 or write.affordance_index >= target.shape[0]:
+        if target.dim() < 2:
+            raise ValueError(
+                f"VTC affordance occupancy write '{write.telemetry_label}' needs [worlds, affordances, ...] storage, "
+                f"got shape {tuple(target.shape)}"
+            )
+        if write.affordance_index < 0 or write.affordance_index >= target.shape[1]:
             raise ValueError(
                 f"VTC affordance occupancy write '{write.telemetry_label}' source affordance index {write.affordance_index} "
-                f"is outside target extent {target.shape[0]}"
+                f"is outside target extent {target.shape[1]}"
             )
         return write.affordance_index
 
@@ -860,18 +841,6 @@ class VTCActionWriteProgram:
         if value.dtype == torch.bool:
             return ~VTCActionWriteProgram._row_any(value)
         return VTCActionWriteProgram._row_all(value < 0)
-
-    @staticmethod
-    def _row_free_for_capacity(value: torch.Tensor) -> torch.Tensor:
-        if value.dtype == torch.bool:
-            return ~VTCActionWriteProgram._row_any(value)
-        return VTCActionWriteProgram._row_all(value <= 0)
-
-    @staticmethod
-    def _row_claimed_for_capacity(value: torch.Tensor) -> torch.Tensor:
-        if value.dtype == torch.bool:
-            return VTCActionWriteProgram._row_any(value)
-        return VTCActionWriteProgram._row_any(value > 0)
 
     @staticmethod
     def _row_all(mask: torch.Tensor) -> torch.Tensor:
@@ -884,12 +853,6 @@ class VTCActionWriteProgram:
         if mask.dim() <= 1:
             return mask.bool()
         return mask.bool().flatten(start_dim=1).any(dim=1)
-
-    @staticmethod
-    def _slot_free_for_claim(value: torch.Tensor) -> torch.Tensor:
-        if value.dtype == torch.bool:
-            return ~VTCActionWriteProgram._row_any(value)
-        return VTCActionWriteProgram._row_all(value < 0)
 
     @staticmethod
     def _apply_optional_clamp(write: CompiledVTCActionWrite, value: torch.Tensor) -> torch.Tensor:
@@ -974,24 +937,25 @@ class VTCActionWriteProgram:
         actions: torch.Tensor,
         write: CompiledVTCActionWrite,
     ) -> torch.Tensor:
-        if target.dim() == 0:
-            raise ValueError(f"VTC affordance occupancy write '{write.telemetry_label}' cannot target scalar storage")
+        """The claimant payload, one per world: ``[worlds, *row]`` (claim) or ``[worlds, *slot]`` (capacity)."""
+        if target.dim() < 2:
+            raise ValueError(f"VTC affordance occupancy write '{write.telemetry_label}' needs [worlds, affordances, ...] storage")
         if write.composition == "capacity_claim":
-            if target.dim() < 2:
+            if target.dim() < 3:
                 raise ValueError(
-                    f"VTC affordance capacity_claim write '{write.telemetry_label}' requires target shape [affordances, slots, ...]"
+                    f"VTC affordance capacity_claim write '{write.telemetry_label}' requires target shape [worlds, affordances, slots, ...]"
                 )
-            payload_shape = torch.Size((actions.shape[0], *tuple(target.shape[2:])))
+            payload_shape = torch.Size((actions.shape[0], *tuple(target.shape[3:])))
         else:
-            payload_shape = torch.Size((actions.shape[0], *tuple(target.shape[1:])))
+            payload_shape = torch.Size((actions.shape[0], *tuple(target.shape[2:])))
 
         if value.dim() == 0:
             return value.expand(payload_shape)
         if value.shape == payload_shape:
             return value
 
-        per_affordance_payload_shape = torch.Size(payload_shape[1:])
-        if value.shape == per_affordance_payload_shape:
+        per_claimant_shape = torch.Size(payload_shape[1:])
+        if per_claimant_shape and value.shape == per_claimant_shape:
             return value.expand(payload_shape)
 
         raise ValueError(
@@ -1601,8 +1565,11 @@ class VTCSocialResidueProgram:
                 raise KeyError(f"VTC social residue targets unknown VFS variable '{rule.variable_id}'")
 
             target_snapshot = phase_snapshot[rule.variable_id]
-            condition_mask = self._build_write_mask(rule, target_snapshot, active_mask, evaluator)
-            expression_value = self._evaluate_tensor(evaluator, rule.expression_ast, "expression", rule)
+            rule_evaluator = evaluator
+            if rule.world_columns:
+                rule_evaluator = Evaluator(replace(context, vfs=self._world_column_view(context_vfs, rule, target_snapshot)))
+            condition_mask = self._build_write_mask(rule, target_snapshot, active_mask, rule_evaluator)
+            expression_value = self._evaluate_tensor(rule_evaluator, rule.expression_ast, "expression", rule)
             phase_effects.append(
                 _VTCSocialResidueEffect(
                     rule=rule,
@@ -1612,6 +1579,26 @@ class VTCSocialResidueProgram:
             )
 
         return tuple(phase_effects)
+
+    @staticmethod
+    def _world_column_view(
+        context_vfs: Mapping[str, torch.Tensor], rule: CompiledVTCSocialResidueRule, target: torch.Tensor
+    ) -> dict[str, torch.Tensor]:
+        """The snapshot with each of `rule.world_columns` given a singleton affordance axis.
+
+        A global ``[worlds, *payload]`` becomes ``[worlds, 1, *payload]``; a scalar global
+        also gets the target's trailing axes as singletons, so it broadcasts over its own
+        world's affordance rows (and their element axes), never over another world's.
+        """
+        view = dict(context_vfs)
+        for name in rule.world_columns:
+            value = view[name]
+            if value.dim() == 1:
+                value = value.view(value.shape[0], *([1] * (target.dim() - 1)))
+            else:
+                value = value.unsqueeze(1)
+            view[name] = value
+        return view
 
     def _commit_phase_effects(
         self,
@@ -1768,13 +1755,16 @@ class VTCSocialResidueProgram:
             return value_on_device
 
         # The compile-time shape proof admits one more case: a per-row value (an agent
-        # row, or a global's per-world value) on a target with an element axis (a vector
-        # or tensor row), spread along it.
+        # row, a global's per-world value, or a world column of one) on a target with
+        # further axes (affordance rows, or a vector or tensor row), spread along them.
         num_agents = active_mask.shape[0]
-        if value_on_device.shape == active_mask.shape and rule.target_scope in BATCH_AXIS_SCOPES:
+        if rule.target_scope in BATCH_AXIS_SCOPES and 1 <= value_on_device.dim() <= target.dim() and value_on_device.shape[0] == num_agents:
             VTCSocialResidueProgram._assert_target_shape(rule, target, num_agents)
-            view_shape = (num_agents, *([1] * (target.dim() - 1)))
-            return value_on_device.reshape(view_shape).expand_as(target)
+            padded = value_on_device.reshape(*value_on_device.shape, *([1] * (target.dim() - value_on_device.dim())))
+            try:
+                return padded.expand_as(target)
+            except RuntimeError:
+                pass
 
         raise ValueError(
             f"{label} for VTC social residue '{rule.telemetry_label}' produced shape {tuple(value.shape)} for "
@@ -1789,16 +1779,15 @@ class VTCSocialResidueProgram:
     ) -> torch.Tensor:
         active = active_mask.to(device=target.device, dtype=torch.bool)
         num_agents = active.shape[0]
-        if rule.target_scope in BATCH_AXIS_SCOPES:
-            # An agent row, or a world's global row (S1): each advances while its own agent is active.
-            VTCSocialResidueProgram._assert_target_shape(rule, target, num_agents)
-            agent_mask = active
-            while agent_mask.dim() < target.dim():
-                agent_mask = agent_mask.unsqueeze(-1)
-            return agent_mask.expand_as(target)
-
-        # Affordance state has no row per agent: it is written while any agent is active.
-        return torch.full_like(target, bool(active.any()), dtype=torch.bool, device=target.device)
+        # Every rule target scope leads with the batch axis (the compiler admits no other):
+        # an agent row, or a world's global or affordance rows (S1), each advancing while
+        # its own agent is active.
+        assert rule.target_scope in BATCH_AXIS_SCOPES, rule
+        VTCSocialResidueProgram._assert_target_shape(rule, target, num_agents)
+        agent_mask = active
+        while agent_mask.dim() < target.dim():
+            agent_mask = agent_mask.unsqueeze(-1)
+        return agent_mask.expand_as(target)
 
     @staticmethod
     def _assert_target_shape(rule: CompiledVTCSocialResidueRule, target: torch.Tensor, num_agents: int) -> None:
@@ -1904,7 +1893,7 @@ def compile_vtc_social_residue_rules_with_phase_graph(
     """
     parser = ExpressionParser()
     schema, shapes = _write_expression_namespace(targets)
-    affordance_target_shapes = _affordance_target_shapes(targets, shapes)
+    global_ids = frozenset(name for name, target in targets.items() if target.scope == VariableScope.GLOBAL)
     checker = TypeChecker(schema=schema)
     compiled_rules: list[CompiledVTCSocialResidueRule] = []
     refusals: list[VTCWriteRefusal] = []
@@ -1965,7 +1954,7 @@ def compile_vtc_social_residue_rules_with_phase_graph(
                 expression=write["expression"],
                 condition_ast=condition_ast,
                 condition=condition,
-                shapes=affordance_target_shapes if target.scope == VariableScope.AFFORDANCE else shapes,
+                shapes=shapes,
                 admitted_expression=admitted_shapes,
                 admitted_condition=admitted_shapes,
                 target_id=write["variable_id"],
@@ -1973,11 +1962,6 @@ def compile_vtc_social_residue_rules_with_phase_graph(
                 prefix=f"Transition rule '{rule['rule_id']}' write '{write['telemetry_label']}'",
             )
             if shape_refusal is not None:
-                if target.scope == VariableScope.AFFORDANCE and _WORLD_SHAPE in shape_refusal:
-                    shape_refusal += (
-                        " A global holds one value per world, and affordance state is shared by every world, "
-                        "so a global read here has no single world."
-                    )
                 refusals.append(VTCWriteRefusal(origin_key=f"transition_rules:{rule['rule_id']}", kind="type", message=shape_refusal))
                 continue
             compiled_rules.append(
@@ -1997,6 +1981,7 @@ def compile_vtc_social_residue_rules_with_phase_graph(
                     telemetry_label=write["telemetry_label"],
                     reads=rule["reads"],
                     target_scope=target.scope,
+                    world_columns=_world_columns(target.scope, global_ids, expression_ast, condition_ast),
                 )
             )
 
@@ -2195,13 +2180,14 @@ A global also has one row per world, and under S1 the acting agent's world is it
 but admitting action writes to world state is an authoring decision of its own; a
 global is written by a transition rule or an interaction effect."""
 
-BATCH_AXIS_SCOPES: frozenset[VariableScope] = frozenset({VariableScope.GLOBAL, VariableScope.AGENT})
+BATCH_AXIS_SCOPES: frozenset[VariableScope] = frozenset({VariableScope.GLOBAL, VariableScope.AGENT, VariableScope.AFFORDANCE})
 """Scopes whose registry storage leads with the batch axis: one row per agent, or per world.
 
 Under S1 (2026-10-25) the batch is independent single-agent worlds, so the world axis
-of a global and the agent axis coincide at runtime; a transition rule's target row in
-either scope is masked by its own agent's (world's) activity. The authoring contract
-still tells them apart: a global reads as a scalar in its world (`_SCOPE_SHAPES`)."""
+of a global or an affordance variable and the agent axis coincide at runtime; a
+transition rule's target row in any of them is masked by its own agent's (world's)
+activity. The authoring contract still tells them apart: a global reads as a scalar in
+its world, an affordance variable as one row per affordance (`_SCOPE_SHAPES`)."""
 
 AFFORDANCE_OCCUPANCY_PHASE = "resolve_affordance_access_and_occupancy"
 AFFORDANCE_OCCUPANCY_COMPOSITIONS = frozenset({"claim_if_free", "capacity_claim"})
@@ -2214,24 +2200,14 @@ An action write lands per acting agent, so its value is one per agent (or a
 scalar): an agent row or an occupancy claimant's payload."""
 
 
-_WORLD_SHAPE = "world"
-"""The shape a global read takes where the target is batch-shared (affordance state).
-
-A global is one value per world (S1); within its world it reads as a scalar
-(`_SCOPE_SHAPES`). Affordance state is shared by the whole batch, so a global read
-feeding it has no single world: labelled with its own axis, it neither joins an
-affordance row nor passes as a scalar, and the shape proof refuses it at compile."""
-
-
-def _affordance_target_shapes(targets: Mapping[str, VTCWriteTarget], shapes: Mapping[str, str]) -> dict[str, str]:
-    """The write-expression shape map for a rule targeting affordance state: globals read world-shaped."""
-    global_names = {name for name, target in targets.items() if target.scope == VariableScope.GLOBAL}
-    relabelled = dict(shapes)
-    for name in global_names:
-        for key in (name, f"vfs.{name}", f"self.vfs.{name}", f"target.vfs.{name}"):
-            if key in relabelled:
-                relabelled[key] = _WORLD_SHAPE
-    return relabelled
+def _world_columns(target_scope: VariableScope, global_ids: frozenset[str], *asts: ASTNode | None) -> frozenset[str]:
+    """The globals a rule on affordance state reads (any spelling the context resolves); none for other targets."""
+    if target_scope != VariableScope.AFFORDANCE:
+        return frozenset()
+    paths = frozenset().union(*(read_paths(ast) for ast in asts if ast is not None))
+    return frozenset(
+        name for name in global_ids if paths & {name, f"vfs.{name}", f"self.vfs.{name}", f"target.vfs.{name}", f"global.vfs.{name}"}
+    )
 
 
 _RULE_ADMITTED_SHAPES: dict[VariableScope, frozenset[str]] = {
@@ -2270,6 +2246,12 @@ def _action_write_scope_refusal(
             f"{prefix} variable '{write.variable_id}', declared scope 'affordance'. An action writes affordance-scoped "
             f"state only as an occupancy claim: composition {' or '.join(sorted(AFFORDANCE_OCCUPANCY_COMPOSITIONS))} "
             f"at phase '{AFFORDANCE_OCCUPANCY_PHASE}', from an action that declares source_affordance."
+        )
+    if write.composition in AFFORDANCE_OCCUPANCY_COMPOSITIONS:
+        return (
+            f"{prefix} variable '{write.variable_id}', declared scope '{target_scope.value}', with composition "
+            f"'{write.composition}'. An occupancy claim writes its action's source-affordance row of an "
+            "affordance-scoped variable; declare the claimed state with scope affordance."
         )
     if target_scope in ACTION_WRITE_AGENT_AXIS_SCOPES:
         return None

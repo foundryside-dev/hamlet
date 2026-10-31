@@ -7,7 +7,7 @@ from townlet.items.manager import ItemManager
 
 def test_item_manager_debug_logging(monkeypatch, caplog):
     monkeypatch.setenv("HAMLET_DEBUG_ITEMS", "1")
-    catalog = SimpleNamespace(item_types=[])
+    catalog = SimpleNamespace(item_types=[], max_items_per_agent=1)
 
     with caplog.at_level(logging.DEBUG):
         manager = ItemManager(catalog=catalog, num_worlds=1, substrate=make_grid2d_substrate(), items_per_world=1, device="cpu")
@@ -17,7 +17,7 @@ def test_item_manager_debug_logging(monkeypatch, caplog):
 
 
 def test_item_manager_debug_disabled_by_default(caplog):
-    catalog = SimpleNamespace(item_types=[])
+    catalog = SimpleNamespace(item_types=[], max_items_per_agent=1)
 
     with caplog.at_level(logging.DEBUG):
         manager = ItemManager(catalog=catalog, num_worlds=1, substrate=make_grid2d_substrate(), items_per_world=1, device="cpu")

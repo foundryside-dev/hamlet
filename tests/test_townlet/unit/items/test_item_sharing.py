@@ -39,10 +39,9 @@ def _make_handler(*, exclusive: bool) -> tuple[ItemManager, InventoryState, Item
     manager = ItemManager(
         catalog=catalog, num_worlds=2, substrate=make_grid2d_substrate(), items_per_world=7, device="cpu", schema=None, vfs_registry=None
     )
-    inventory = InventoryState(batch_size=2, max_items_per_agent=2, device="cpu")
+    inventory = manager.inventory
     handler = ItemActionHandler(
         manager=manager,
-        inventory=inventory,
         command_executor=CommandExecutor(),
         vfs_registry=None,  # Not used because interactions are empty
         meter_name_to_index={},

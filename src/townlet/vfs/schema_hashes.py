@@ -428,13 +428,14 @@ def _canonical_transition_rule(rule: Any) -> dict[str, Any]:
     Every rule family is a frozen dataclass; its fields are the identity. The
     ``expression`` and ``condition`` source text enters as its canonical AST (so a
     respelling that parses identically is the same rule); the parsed ``*_ast`` fields
-    are that same parse and are skipped.
+    are that same parse and are skipped, as is a field marked ``derived`` (computed from
+    declarations that are identity elsewhere).
     """
     if not dataclasses.is_dataclass(rule) or isinstance(rule, type):
         raise TypeError(f"Transition rule {rule!r} is not a compiled VTC rule dataclass")
     payload: dict[str, Any] = {}
     for field in dataclasses.fields(rule):
-        if field.name.endswith("_ast"):
+        if field.name.endswith("_ast") or field.metadata.get("derived"):
             continue
         value = getattr(rule, field.name)
         payload[field.name] = _canonical_expression_text(value) if field.name in _RULE_EXPRESSION_FIELDS else _plain_payload(value)

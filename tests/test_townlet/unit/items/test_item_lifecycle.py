@@ -2,6 +2,8 @@
 
 from pathlib import Path
 
+import torch
+
 from tests.test_townlet.utils.builders import make_grid2d_substrate
 from townlet.config.items_config import ItemsCatalogConfig
 from townlet.items.manager import ItemManager
@@ -70,7 +72,7 @@ def test_held_items_continue_ticking():
 
     # Tick 50 times
     for tick in range(1, 51):
-        manager.tick(tick)
+        manager.tick(tick, live=torch.ones(manager.num_worlds, dtype=torch.bool))
 
     # Verify item aged (duration_remaining decreased)
     held_item = manager.worlds[0].held[item.instance_id]

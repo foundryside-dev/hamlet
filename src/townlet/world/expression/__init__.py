@@ -34,6 +34,7 @@ from townlet.world.expression.ast_nodes import (
     Switch,
     UnaryOp,
     Variable,
+    read_paths,
 )
 from townlet.world.expression.context import ExecutionContext
 from townlet.world.expression.evaluator import Evaluator
@@ -58,5 +59,6 @@ __all__ = [
     "TypeCheckError",
     "TypeChecker",
     "UnaryOp",
+    "read_paths",
     "Variable",
 ]

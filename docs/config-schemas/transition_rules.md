@@ -89,8 +89,9 @@ social_residue:           # required list (may be empty, but say so explicitly)
 - Omitting `condition`/`clamp`/`effect` → load error; write `null` to mean "none".
 - `variable_id` not a declared VFS variable → compile error (`targets unknown VFS variable`).
 - The removed write-level `target` role annotation and `scope` masking annotation → load
-  error as unknown keys. A write is masked by its target's declared scope: `agent` by the
-  agent row, and `global`/`affordance` state is written while any agent is active.
+  error as unknown keys. A write is masked by its target's declared scope: every scope has
+  one row (or, for `affordance`, one row per affordance) per world, and a world's rows are
+  written while that world's agent is active (S1).
 - An expression or condition whose shape does not fit the target scope → compile error
   (`VTC-WRITE-TYPE`; rules in [variables.md](variables.md#transition-phases-and-evaluation-order)).
 - A write to a variable that carries an `expression` → compile error (`UAC-STATIC-WRITE`),

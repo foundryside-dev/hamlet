@@ -123,7 +123,7 @@ def test_poisson_respawn_probabilistic_gate() -> None:
     )
     manager.set_appearance_config(appearance)
     manager.worlds[0].respawn_timers["apple"] = 0
-    manager.process_respawns(current_tick=0, bars=_bars(1.0))
+    manager.process_respawns(current_tick=0, bars=_bars(1.0), live=torch.ones(manager.num_worlds, dtype=torch.bool))
     assert len(manager.worlds[0].active) == 1
 
 
@@ -144,12 +144,12 @@ def test_normal_respawn_samples_future_tick() -> None:
     )
     manager.set_appearance_config(appearance)
     manager.worlds[0].respawn_timers["apple"] = 0
-    manager.process_respawns(current_tick=0, bars=_bars(1.0))
+    manager.process_respawns(current_tick=0, bars=_bars(1.0), live=torch.ones(manager.num_worlds, dtype=torch.bool))
     # normal mean=1 should schedule around tick 1, so not yet
     assert len(manager.worlds[0].active) == 0
     spawned = False
     for tick in (1, 2, 3):
-        manager.process_respawns(current_tick=tick, bars=_bars(1.0))
+        manager.process_respawns(current_tick=tick, bars=_bars(1.0), live=torch.ones(manager.num_worlds, dtype=torch.bool))
         if len(manager.worlds[0].active) > 0:
             spawned = True
             break
@@ -191,13 +191,13 @@ def test_time_window_respawn_stops_after_end() -> None:
     )
     manager.set_appearance_config(appearance)
     manager.worlds[0].respawn_timers["apple"] = 0
-    manager.process_respawns(current_tick=0, bars=_bars(1.0))
+    manager.process_respawns(current_tick=0, bars=_bars(1.0), live=torch.ones(manager.num_worlds, dtype=torch.bool))
     # before window
     assert len(manager.worlds[0].active) == 0
-    manager.process_respawns(current_tick=1, bars=_bars(1.0))
+    manager.process_respawns(current_tick=1, bars=_bars(1.0), live=torch.ones(manager.num_worlds, dtype=torch.bool))
     assert len(manager.worlds[0].active) == 1
     # after window should clear timer and not spawn more
-    manager.process_respawns(current_tick=3, bars=_bars(1.0))
+    manager.process_respawns(current_tick=3, bars=_bars(1.0), live=torch.ones(manager.num_worlds, dtype=torch.bool))
     assert len(manager.worlds[0].active) == 1
 
 
@@ -219,10 +219,10 @@ def test_scripted_respawn_consumes_events_by_tick() -> None:
     )
     manager.set_appearance_config(appearance)
     manager.worlds[0].respawn_timers["apple"] = 1
-    manager.process_respawns(current_tick=1, bars=_bars(1.0))
+    manager.process_respawns(current_tick=1, bars=_bars(1.0), live=torch.ones(manager.num_worlds, dtype=torch.bool))
     assert len(manager.worlds[0].active) == 1
     assert next(iter(manager.worlds[0].active.values())).position == (0, 0)
-    manager.process_respawns(current_tick=2, bars=_bars(1.0))
+    manager.process_respawns(current_tick=2, bars=_bars(1.0), live=torch.ones(manager.num_worlds, dtype=torch.bool))
     positions = {item.position for item in manager.worlds[0].active.values()}
     assert (1, 1) in positions
 

@@ -46,7 +46,8 @@ class CommandNode:
 
     # spawn_effect command fields
     effect_id: str | None = None  # Effect ID to spawn
-    target: str | int | None = None  # Simple target ("self", "target", or explicit index)
+    # "self" / "target"; an int is an engine-built row (authored integer literals are refused at compile, S1)
+    target: str | int | None = None
     target_expr: str | None = None  # Expression string (for complex expressions)
     target_ast: Any | None = None  # ✅ Pre-compiled AST
     intensity: float | None = None  # Intensity multiplier

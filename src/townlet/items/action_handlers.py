@@ -31,7 +31,6 @@ class ItemActionHandler:
     def __init__(
         self,
         manager: ItemManager,
-        inventory: InventoryState,
         command_executor: CommandExecutor,
         vfs_registry: VariableRegistry,
         meter_name_to_index: dict[str, int],
@@ -42,8 +41,7 @@ class ItemActionHandler:
         """Initialize action handler.
 
         Args:
-            manager: ItemManager instance
-            inventory: InventoryState instance
+            manager: ItemManager instance (its `inventory` is the one this handler moves items in)
             command_executor: CommandExecutor for Effects
             vfs_registry: VFS registry for Effects context
             meter_name_to_index: Bar name to index mapping
@@ -51,7 +49,7 @@ class ItemActionHandler:
                 (a carried item is at its holder's position, e.g. `spawn_item position: self`)
         """
         self.manager = manager
-        self.inventory = inventory
+        self.inventory: InventoryState = manager.inventory
         self.command_executor = command_executor
         self.vfs_registry = vfs_registry
         self.meter_name_to_index = meter_name_to_index

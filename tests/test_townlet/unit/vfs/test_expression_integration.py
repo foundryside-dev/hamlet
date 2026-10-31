@@ -179,7 +179,7 @@ def test_build_dependency_graph_with_path_deps():
             semantic_type="custom",
             id="target",
             type="agent_ref",
-            initial_value=0,
+            initial_value=None,
             scope="global",
             lifetime="persistent",
             exposed_to=[],

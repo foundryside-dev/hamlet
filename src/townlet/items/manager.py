@@ -25,6 +25,7 @@ from townlet.config.items_config import (
 from townlet.effects.compiler import CommandCompiler
 from townlet.effects.schema import CommandNode
 from townlet.items.instance import ItemInstance
+from townlet.items.inventory import InventoryState
 from townlet.vfs.registry import item_row_world
 from townlet.vfs.schema import VariableDef, VariableScope
 from townlet.world.expression.ast_nodes import PathAccess, Variable
@@ -196,7 +197,6 @@ class ItemManager:
         schema: dict[str, str] | None = None,
         vfs_registry: VariableRegistry | None = None,
         effect_manager: Any | None = None,
-        inventory: Any | None = None,
     ) -> None:
         """Initialize ItemManager.
 
@@ -208,7 +208,10 @@ class ItemManager:
             device: PyTorch device
             schema: Variable type schema for Effects compilation
             vfs_registry: VFS registry for item state storage
-            inventory: InventoryState reference for cleanup on despawn
+
+        The manager owns its worlds' inventory (`self.inventory`, one row per world's
+        agent): a held item that despawns (expiry, effect) is purged from its slot in
+        the same call, so no slot ever names a dead item.
         """
         if items_per_world < 0:
             raise ValueError(f"items_per_world must be >= 0, got {items_per_world}")
@@ -226,7 +229,7 @@ class ItemManager:
         self.device = torch.device(device) if isinstance(device, str) else device
         self.vfs_registry = vfs_registry  # Store VFS registry
         self.effect_manager = effect_manager
-        self.inventory = inventory  # Store inventory for despawn cleanup (I2 fix)
+        self.inventory = InventoryState(batch_size=num_worlds, max_items_per_agent=catalog.max_items_per_agent, device=str(self.device))
         self._debug_items = os.getenv("HAMLET_DEBUG_ITEMS", "").strip().lower() in {"1", "true", "yes", "on"}
         self._logger = logging.getLogger("hamlet.items")
 
@@ -410,6 +413,7 @@ class ItemManager:
     def reset_state(self) -> None:
         """Clear all item runtime state for a fresh episode."""
         self.live_items.clear()
+        self.inventory.reset()  # every held item left with the episode
         self.worlds = [self._fresh_world(world) for world in range(self.num_worlds)]
         self.appearance_config = None
         self._rule_keys.clear()
@@ -671,9 +675,9 @@ class ItemManager:
         if self.vfs_registry is not None:
             self.vfs_registry.unregister_item_instance(item.vfs_index)
 
-        # Clean up inventory references (I2 memory leak fix)
-        if self.inventory is not None:
-            self.inventory.purge_instance(instance_id)
+        # A held item leaves its holder's slot with it (a stale slot would run a dead
+        # item's on_use and kill the batch).
+        self.inventory.purge_instance(instance_id)
 
         # Discard the item's live effects and delayed work before its row is freed: an
         # effect outliving its item would read an unregistered row (and kill the batch).
@@ -741,20 +745,30 @@ class ItemManager:
             else:
                 timers[rule.item_type] = current_tick + 1
 
-    def tick(self, current_tick: int) -> None:
-        """Advance every world's item lifecycles by one tick.
+    def tick(self, current_tick: int, *, live: torch.Tensor) -> None:
+        """Advance the item lifecycles of every live world by one tick.
 
         Args:
             current_tick: Current environment tick
+            live: `[num_worlds]` bool, the worlds whose agent is live this tick. A done
+                world is frozen (S1, as effects and VTC rules are): its items neither age
+                nor expire.
         """
+        live_worlds = self._live_worlds(live)
         # Ground and held items both expire (collected BEFORE ticking).
-        expired = [instance_id for instance_id, item in self.live_items.items() if item.is_expired()]
+        expired = [instance_id for instance_id, item in self.live_items.items() if self.world_of(item) in live_worlds and item.is_expired()]
         for instance_id in expired:
             self.despawn_item(instance_id, current_tick)
 
         # Tick all remaining items (AFTER despawning)
         for item in self.live_items.values():
-            item.tick()
+            if self.world_of(item) in live_worlds:
+                item.tick()
+
+    def _live_worlds(self, live: torch.Tensor) -> frozenset[int]:
+        if tuple(live.shape) != (self.num_worlds,):
+            raise ValueError(f"live mask has shape {tuple(live.shape)}, expected ({self.num_worlds},)")
+        return frozenset(int(world) for world in torch.nonzero(live, as_tuple=False).flatten().tolist())
 
     def get_custom_action_specs(self) -> list[tuple[str, str, Literal["local", "inventory"], str]]:
         """Return (action_name, item_type, scope, command_name) tuples for custom item verbs."""
@@ -973,19 +987,23 @@ class ItemManager:
         current_tick: int,
         *,
         bars: dict[str, torch.Tensor] | None = None,
+        live: torch.Tensor,
     ) -> None:
-        """Process every world's item respawns from its own timers.
+        """Process every live world's item respawns from its own timers.
 
         Args:
             current_tick: Current environment tick
+            live: `[num_worlds]` bool; a done world's timers do not fire (it is frozen, S1)
         """
         if self.appearance_config is None:
             return  # No appearance config, no respawning
 
+        live_worlds = self._live_worlds(live)
         # The predicate is per world; evaluate it at most once per rule this tick.
         predicate: dict[int, list[bool]] = {}
         for world in range(self.num_worlds):
-            self._process_world_respawns(world, current_tick, bars=bars, predicate=predicate)
+            if world in live_worlds:
+                self._process_world_respawns(world, current_tick, bars=bars, predicate=predicate)
 
     def _process_world_respawns(
         self,

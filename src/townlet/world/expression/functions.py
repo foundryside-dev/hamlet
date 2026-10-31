@@ -12,7 +12,8 @@ test_function_registry_agreement.py`` holds the first two to each other.
 Shape contract: a scalar-typed result (``int``, ``float``, ``bool``) carries the batch
 axis of its per-agent inputs, ``[batch]``; a vector-typed result (``vec2f``, ``vec3f``,
 ``vecNf``) carries it in front of the vector axis, ``[batch, D]``. No function collapses
-the batch axis. A literal has no batch axis, so a result built only from literals is
+or indexes the batch axis: the batch is independent worlds (S1), so ``gather`` and
+``scatter`` index a vector's element axis, never another row. A literal has no batch axis, so a result built only from literals is
 unbatched: ``one_hot(2, 3)`` is ``[3]``, ``one_hot(bar.slot, 3)`` is ``[batch, 3]``.
 
 Vector widths: ``vec2*`` and ``vec3*`` carry their width in the type, so a pair of
@@ -123,6 +124,33 @@ def _ensure_vector_arg(name: str, arg: str, position: int) -> None:
     raise ValueError(f"Function '{name}' argument {position} must be a vector variable, got {arg}")
 
 
+ElementVectorTypes = VectorTypes | {"tensor1d"}
+"""Value types with exactly one element axis inside each world's row: what `gather` and
+`scatter` index. A scalar type's only axis is the batch, and the batch is independent
+worlds (S1), so indexing it would read or write another world's row."""
+
+
+def _ensure_element_vector_arg(name: str, arg: str, position: int) -> None:
+    if arg in ElementVectorTypes:
+        return
+    raise ValueError(
+        f"Function '{name}' argument {position} must be a vector (vec2i, vec3i, vec2f, vec3f, vecNi, vecNf) or tensor1d, "
+        f"got {arg}: it indexes the element axis inside one world's value. A {arg} value has no element axis, and its "
+        "only row axis is the batch of independent worlds, so an index there would reach another world."
+    )
+
+
+def _element_type(vector_type: str) -> str:
+    """The element type of an element-vector type: int for the integer vectors, float otherwise."""
+    return "int" if vector_type in {"vec2i", "vec3i", "vecNi"} else "float"
+
+
+def _ensure_element_update(name: str, base: str, update: str) -> None:
+    """A scatter update is one element of `base`: an int into an integer vector, any number into a float one."""
+    if update not in Numeric or (_element_type(base) == "int" and update != "int"):
+        raise ValueError(f"Function '{name}' writes one {_element_type(base)} element of {base}, got {update}")
+
+
 def _ensure_candidates_arg(name: str, arg: str, position: int) -> None:
     """Candidates are a tensor2d of rows, held per world.
 
@@ -197,6 +225,10 @@ def _return_int(_: list[str]) -> str:
 
 def _return_first(args: list[str]) -> str:
     return args[0]
+
+
+def _return_element(args: list[str]) -> str:
+    return _element_type(args[0])
 
 
 def _return_vecnf(_: list[str]) -> str:
@@ -499,22 +531,32 @@ def _eval_masked_set(args: list[Any], context: ExecutionContext, arg_nodes: list
     return torch.where(_broadcast_bool_mask(mask, value), replacement, value)
 
 
+def _element_broadcast(values: torch.Tensor, indices: torch.Tensor, name: str) -> tuple[torch.Tensor, torch.Tensor]:
+    """`values` ``[..., D]`` and integer `indices` ``[...]`` broadcast to one leading shape.
+
+    The index addresses the element axis (the last) inside each row; it never addresses
+    the batch axis, so every row reads and writes its own world's value (S1).
+    """
+    width = int(values.shape[-1])
+    indices = indices.to(device=values.device, dtype=torch.long)
+    if bool(((indices < 0) | (indices >= width)).any()):
+        raise ValueError(f"Function '{name}' index is outside the element axis [0, {width})")
+    leading = torch.broadcast_shapes(values.shape[:-1], indices.shape)
+    return values.expand(*leading, width), indices.expand(leading)
+
+
 def _eval_gather(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
-    values = cast(torch.Tensor, args[0])
-    indices = cast(torch.Tensor, args[1]).to(device=values.device, dtype=torch.long)
-    if values.dim() == 0:
-        raise ValueError("Function 'gather' cannot gather from a scalar tensor")
-    return values[indices]
+    values, indices = _element_broadcast(cast(torch.Tensor, args[0]), cast(torch.Tensor, args[1]), "gather")
+    return torch.gather(values, -1, indices.unsqueeze(-1)).squeeze(-1)
 
 
 def _eval_scatter(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
-    base = cast(torch.Tensor, args[0]).clone()
-    indices = cast(torch.Tensor, args[1]).to(device=base.device, dtype=torch.long)
-    updates = cast(torch.Tensor, args[2]).to(device=base.device, dtype=base.dtype)
-    if base.dim() == 0:
-        raise ValueError("Function 'scatter' cannot scatter into a scalar tensor")
-    base[indices] = updates
-    return base
+    base = cast(torch.Tensor, args[0])
+    update = cast(torch.Tensor, args[2]).to(device=base.device, dtype=base.dtype)
+    leading = torch.broadcast_shapes(base.shape[:-1], cast(torch.Tensor, args[1]).shape, update.shape)
+    values, indices = _element_broadcast(base.expand(*leading, base.shape[-1]), cast(torch.Tensor, args[1]), "scatter")
+    mask = torch.nn.functional.one_hot(indices, num_classes=int(values.shape[-1])).bool()
+    return torch.where(mask, update.expand(leading).unsqueeze(-1), values)
 
 
 def _eval_one_hot(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
@@ -1091,15 +1133,16 @@ _register(
     FunctionSpec(
         name="gather",
         signature="gather(values, index)",
-        summary="`values[index]`: read another row of a per-agent value by integer index.",
-        returns="the type of `values`",
+        summary="`values[index]`: one element of a vector (or tensor1d) inside the reading world's value.",
+        returns="the element type of `values` (int for vec2i/vec3i/vecNi, else float)",
         family=FAMILY_LOGIC,
         requires=(),
         min_args=2,
         max_args=2,
-        return_type=_return_first,
+        return_type=_return_element,
         validate_args=lambda args: _run_validators(
             lambda: _ensure_arg_count("gather", args, 2, 2),
+            lambda: _ensure_element_vector_arg("gather", args[0], 1),
             lambda: _ensure_int("gather", args[1]),
         ),
         eval_fn=_eval_gather,
@@ -1108,8 +1151,8 @@ _register(
 _register(
     FunctionSpec(
         name="scatter",
-        signature="scatter(base, index, updates)",
-        summary="A copy of `base` with `updates` written at `index`.",
+        signature="scatter(base, index, update)",
+        summary="A copy of the vector (or tensor1d) `base` with element `index` set to `update`, inside each world's value.",
         returns="the type of `base`",
         family=FAMILY_LOGIC,
         requires=(),
@@ -1118,8 +1161,9 @@ _register(
         return_type=_return_first,
         validate_args=lambda args: _run_validators(
             lambda: _ensure_arg_count("scatter", args, 3, 3),
+            lambda: _ensure_element_vector_arg("scatter", args[0], 1),
             lambda: _ensure_int("scatter", args[1]),
-            lambda: _ensure_matching_or_numeric("scatter", args[0], args[2]),
+            lambda: _ensure_element_update("scatter", args[0], args[2]),
         ),
         eval_fn=_eval_scatter,
     )

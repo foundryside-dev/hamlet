@@ -146,9 +146,11 @@ def test_fresh_parent_denial_releases_items_positions_and_profile_rows() -> None
     manager.catalog.effects["parent"].on_spawn = compiler.compile_commands(
         [
             CommandNode(type=CommandType.SPAWN_ITEM, item_type="writable", position="self", quantity=1, initial_state={"charge": 7.0}),
-            CommandNode(type=CommandType.SPAWN_EFFECT, effect_id="child", target=sealed.vfs_index, intensity=1.0),
         ]
-    )
+    ) + [
+        # Engine-built: an authored constant spawn target is refused at compile (S1).
+        CommandNode(type=CommandType.SPAWN_EFFECT, effect_id="child", target=sealed.vfs_index, intensity=1.0)
+    ]
     assert registry.item_vfs is not None
     arena = registry.item_vfs
     before_arena = arena.clone()
@@ -202,9 +204,11 @@ def test_descendant_denial_restores_published_arenas_standalone_aliases_and_affo
             CommandNode(type=CommandType.MODIFY, path="self.vfs.agent_state", value_expr="8.0"),
             CommandNode(type=CommandType.MODIFY, path="vfs.standalone_flag", value_expr="false"),
             CommandNode(type=CommandType.MODIFY, path="affordance.bank.available", value_expr="false"),
-            CommandNode(type=CommandType.SPAWN_EFFECT, effect_id="child", target=sealed.vfs_index, intensity=1.0),
         ]
-    )
+    ) + [
+        # Engine-built: an authored constant spawn target is refused at compile (S1).
+        CommandNode(type=CommandType.SPAWN_EFFECT, effect_id="child", target=sealed.vfs_index, intensity=1.0)
+    ]
     with pytest.raises(PermissionError, match="sealed"):
         manager.spawn_effect("parent", 0, 1.0, 0, bars=bars, vfs_registry=registry, item_manager=items)
     for name, tensor in original.items():
@@ -237,9 +241,11 @@ def test_refused_cascade_preserves_next_item_row_after_allocation_and_reuse() ->
     manager.catalog.effects["parent"].on_spawn = compiler.compile_commands(
         [
             CommandNode(type=CommandType.SPAWN_ITEM, item_type="writable", position="self", quantity=1, initial_state={"charge": 7.0}),
-            CommandNode(type=CommandType.SPAWN_EFFECT, effect_id="child", target=targets[1].vfs_index, intensity=1.0),
         ]
-    )
+    ) + [
+        # Engine-built: an authored constant spawn target is refused at compile (S1).
+        CommandNode(type=CommandType.SPAWN_EFFECT, effect_id="child", target=targets[1].vfs_index, intensity=1.0)
+    ]
     with pytest.raises(PermissionError, match="sealed"):
         manager.spawn_effect(
             "parent",

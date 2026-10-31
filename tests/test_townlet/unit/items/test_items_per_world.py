@@ -102,11 +102,10 @@ def _manager(*, num_worlds: int = 2, items_per_world: int = 4, registry: Variabl
 
 
 def _handler(manager: ItemManager) -> tuple[ItemActionHandler, InventoryState]:
-    inventory = InventoryState(batch_size=manager.num_worlds, max_items_per_agent=1, device="cpu")
+    inventory = manager.inventory
     manager.inventory = inventory
     handler = ItemActionHandler(
         manager=manager,
-        inventory=inventory,
         command_executor=CommandExecutor(),
         vfs_registry=manager.vfs_registry,
         meter_name_to_index={},
@@ -197,7 +196,7 @@ def test_respawn_timers_are_per_world() -> None:
     assert manager.worlds[0].respawn_timers == {"gem": 6}
     assert manager.worlds[1].respawn_timers == {}
 
-    manager.process_respawns(6)
+    manager.process_respawns(6, live=torch.ones(manager.num_worlds, dtype=torch.bool))
     assert [len(manager.items_in_world(world)) for world in range(2)] == [1, 1]
     assert manager.worlds[0].rule_spawn_counts == {"rule_0_gem": 2}
     assert manager.worlds[1].rule_spawn_counts == {"rule_0_gem": 1}
@@ -228,7 +227,7 @@ def test_a_rejected_spawn_predicate_arms_the_timer_only_in_the_rejecting_world()
     assert manager.worlds[0].respawn_timers == {}
     assert manager.worlds[1].respawn_timers == {"gem": 3}
 
-    manager.process_respawns(3, bars={"energy": torch.tensor([0.1, 0.9])})
+    manager.process_respawns(3, bars={"energy": torch.tensor([0.1, 0.9])}, live=torch.ones(manager.num_worlds, dtype=torch.bool))
     assert [len(manager.items_in_world(world)) for world in range(2)] == [1, 1]
 
 

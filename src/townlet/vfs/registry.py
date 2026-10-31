@@ -5,12 +5,13 @@ and scope semantics. It handles these scope patterns:
 
 - global: World state, one row per world (shape [num_worlds] or [num_worlds, dims])
 - agent: Per-agent values (shape [num_agents] or [num_agents, dims])
+- affordance: Per-affordance values in each world (shape [num_worlds, num_affordances, ...])
 
 The batch is N independent single-agent worlds (owner ruling S1, 2026-10-25), so
 ``num_worlds == num_agents`` and world ``i`` is agent ``i``'s world. The world axis is
-engine-internal: an author declares ``scope: global`` and reads it as one value in
-their world. No reader or writer reduces across worlds.
-- affordance: Per-affordance-instance values (shape [num_affordances, ...])
+engine-internal: an author declares ``scope: global`` (or ``affordance``) and reads it as
+one value (one row per affordance) in their world. No reader or writer reduces across
+worlds. Every scope with registry storage therefore leads with the batch axis.
 
 Item-scope state lives in the item arena (``item_vfs``), not in ordinary storage.
 """
@@ -28,7 +29,7 @@ import torch
 from townlet.vfs.access_policy import validate_static_access
 from townlet.vfs.schema import VariableDef, VariableScope
 from townlet.vfs.schema_hashes import compute_variable_schema_hash
-from townlet.vfs.storage_dtype import storage_dtype
+from townlet.vfs.storage_dtype import BATCH_ROW_REFERENCE_TYPES, storage_dtype
 
 __all__ = [
     "VariableRegistry",
@@ -114,7 +115,7 @@ class VariableRegistry:
             device: PyTorch device (cpu or cuda)
             items_per_world: Item-arena rows per world (`token_spec.item_capacity`)
             item_profiles: Compiled item profiles (profile_name → CompiledItemProfile)
-            num_affordances: Number of affordance-scope rows
+            num_affordances: Affordances per world (affordance-scope storage is [num_worlds, num_affordances, ...])
         """
         self.num_agents = num_agents
         # S1 (2026-10-25): the batch is independent single-agent worlds, so the global
@@ -296,6 +297,9 @@ class VariableRegistry:
         """Initialize storage tensors with default values for all variables."""
         for var_id, var_def in self._definitions.items():
             tensor = self._build_storage_tensor(var_def)
+            # A reference's declared initial value is broadcast to every world; the
+            # compiler refuses one that names an entity, so this holds by construction.
+            self._validate_world_refs(var_id, tensor)
             if var_id in self._arena_backed:
                 view = self._arena_storage_view(var_id, tensor.shape)
                 view.copy_(tensor)
@@ -339,6 +343,7 @@ class VariableRegistry:
             global vector (dims=2): (num_worlds, 2)
             agent scalar: (num_agents,)
             agent vector (dims=2): (num_agents, 2)
+            affordance scalar: (num_worlds, num_affordances)
         """
         prefix_shape = self._scope_prefix_shape(var_def)
         if var_def.type in ("scalar", "bool", "agent_ref", "item_ref", "affordance_ref", "effect_ref"):
@@ -369,9 +374,11 @@ class VariableRegistry:
         if scope == VariableScope.AGENT:
             return (self.num_agents,)
         if scope == VariableScope.AFFORDANCE:
+            # Affordance state is per world too (S1): world w's affordance k is row [w, k],
+            # so one world's occupancy claim or rule write never reaches another world.
             if self.num_affordances <= 0:
                 raise ValueError(f"Variable '{var_def.id}' uses affordance scope but num_affordances must be positive")
-            return (self.num_affordances,)
+            return (self.num_worlds, self.num_affordances)
         if scope == VariableScope.ITEM:
             raise ValueError(
                 "Item-scoped state requires an item arena and a declared item profile; it cannot enter ordinary registry storage."
@@ -463,29 +470,41 @@ class VariableRegistry:
             raise ValueError(f"Value for '{variable_id}' has shape {tuple(value.shape)}, expected {tuple(expected_shape)}")
         if value.dtype != expected_dtype:
             raise ValueError(f"Value for '{variable_id}' has dtype {value.dtype}, expected {expected_dtype}")
-        var_def = self._definitions[variable_id]
-        if var_def.type == "item_ref" and var_def.scope in (VariableScope.AGENT, VariableScope.GLOBAL):
-            self._validate_item_refs(variable_id, value)
+        self._validate_world_refs(variable_id, value)
 
-    def _validate_item_refs(self, variable_id: str, value: torch.Tensor) -> None:
-        """An `item_ref` written in world w names an item row of world w, or is null (-1).
+    def _validate_world_refs(self, variable_id: str, value: torch.Tensor) -> None:
+        """A reference written in world w names an entity of world w, or is null (-1).
 
-        Items are per world (S1) and row r of an agent or global variable is world r's,
-        so a reference into another world's arena would be a cross-world read waiting to
-        happen. Every writer (effects, VTC, profiles) passes through here.
+        Every registry scope leads with the batch axis and row w is world w's (S1), so a
+        reference into another world would be a cross-world read waiting to happen. An
+        ``agent_ref`` in world w can only be w's own agent (row w) or null; an ``item_ref``
+        an item row of world w or null. Every writer (effects, VTC, profiles, restore)
+        passes through here; the compiler refuses the constructs that could only produce
+        a cross-world reference, so reaching a refusal is an engine defect.
         """
-        rows = torch.arange(value.shape[0], device=value.device)
+        var_type = self._definitions[variable_id].type
+        if var_type not in BATCH_ROW_REFERENCE_TYPES:
+            return
         refs = value.to(torch.long)
-        null = refs == -1
-        in_world = (refs >= rows * self.items_per_world) & (refs < (rows + 1) * self.items_per_world)
-        bad = ~(null | in_world)
-        if bool(bad.any()):
-            row = int(torch.nonzero(bad, as_tuple=True)[0][0])
-            raise RuntimeError(
-                f"Engine defect: item_ref '{variable_id}' in world {row} names item row {int(refs[row])}, which is not "
-                f"a row of world {row} ([{row * self.items_per_world}, {(row + 1) * self.items_per_world})) and not null (-1); "
-                "worlds are independent"
-            )
+        rows = torch.arange(refs.shape[0], device=refs.device).view(-1, *([1] * (refs.dim() - 1)))
+        if var_type == "agent_ref":
+            in_world = refs == rows
+        else:
+            in_world = (refs >= rows * self.items_per_world) & (refs < (rows + 1) * self.items_per_world)
+        bad = ~((refs == -1) | in_world)
+        if not bool(bad.any()):
+            return
+        position = tuple(int(axis[0]) for axis in torch.nonzero(bad, as_tuple=True))
+        world, ref = position[0], int(refs[position])
+        if var_type == "agent_ref":
+            named, owned = f"agent {ref}", f"world {world}'s agent ({world})"
+        else:
+            named = f"item row {ref}"
+            owned = f"a row of world {world} ([{world * self.items_per_world}, {(world + 1) * self.items_per_world}))"
+        raise RuntimeError(
+            f"Engine defect: {var_type} '{variable_id}' in world {world} names {named}, which is not {owned} "
+            "and not null (-1); worlds are independent"
+        )
 
     def reset_tick_scoped(self) -> None:
         """Re-initialize tick-lifetime variables."""
@@ -553,6 +572,8 @@ class VariableRegistry:
         Writes go through the arena-aware storage commit, never a rebind.
         """
         self.validate_persistent_state(state)
+        for var_id in self._persistent_ids():
+            self._validate_world_refs(var_id, state[var_id])
         for var_id in self._persistent_ids():
             self._write_storage(var_id, state[var_id].to(self.device))
 
@@ -791,13 +812,19 @@ class VariableRegistry:
         if var_name not in profile_vars:
             raise KeyError(f"Variable '{var_name}' not found in profile '{profile_name}'. Available: {list(profile_vars.keys())}")
         var_idx = profile_vars[var_name]
-        if self.get_item_variable_type(profile_name, var_name) == "item_ref":
+        var_type = self.get_item_variable_type(profile_name, var_name)
+        if var_type in BATCH_ROW_REFERENCE_TYPES:
             ref = int(value.item() if isinstance(value, torch.Tensor) else value)
             world = self.item_world(vfs_index)
-            if ref != -1 and not world * self.items_per_world <= ref < (world + 1) * self.items_per_world:
+            if var_type == "agent_ref":
+                in_world, named, owned = ref == world, f"agent {ref}", f"world {world}'s agent ({world})"
+            else:
+                in_world = world * self.items_per_world <= ref < (world + 1) * self.items_per_world
+                named, owned = f"item row {ref}", f"a row of world {world}"
+            if ref != -1 and not in_world:
                 raise RuntimeError(
-                    f"Engine defect: item_ref '{profile_name}.{var_name}' on item row {vfs_index} (world {world}) names item "
-                    f"row {ref}, which is not a row of world {world} and not null (-1); worlds are independent"
+                    f"Engine defect: {var_type} '{profile_name}.{var_name}' on item row {vfs_index} (world {world}) names "
+                    f"{named}, which is not {owned} and not null (-1); worlds are independent"
                 )
         self.item_vfs[vfs_index, var_idx] = value
 

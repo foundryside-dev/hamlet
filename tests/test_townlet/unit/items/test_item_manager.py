@@ -1,6 +1,7 @@
 """Unit tests for ItemManager and ItemInstance."""
 
 import pytest
+import torch
 
 from tests.test_townlet.utils.builders import make_grid2d_substrate
 from townlet.config.items_config import ItemsCatalogConfig
@@ -172,18 +173,18 @@ def test_lifecycle_despawn_on_expiration(items_catalog):
 
     # Tick 199 times (not expired yet)
     for tick in range(1001, 1200):
-        manager.tick(tick)
+        manager.tick(tick, live=torch.ones(manager.num_worlds, dtype=torch.bool))
 
     assert item.instance_id in manager.worlds[0].active
     assert item.duration_remaining == 1
 
     # Tick once more (ticks to 0 but doesn't despawn yet - not expired at start of tick)
-    manager.tick(1200)
+    manager.tick(1200, live=torch.ones(manager.num_worlds, dtype=torch.bool))
     assert item.instance_id in manager.worlds[0].active  # Still alive
     assert item.duration_remaining == 0
 
     # Next tick despawns (expired at start of tick)
-    manager.tick(1201)
+    manager.tick(1201, live=torch.ones(manager.num_worlds, dtype=torch.bool))
     assert item.instance_id not in manager.worlds[0].active  # Now despawned
     assert len(manager.worlds[0].active) == 0
 
@@ -205,7 +206,7 @@ def test_permanent_items_never_expire(items_catalog):
 
     # Tick 1000 times
     for tick in range(1001, 2001):
-        manager.tick(tick)
+        manager.tick(tick, live=torch.ones(manager.num_worlds, dtype=torch.bool))
 
     # Item still exists
     assert item.instance_id in manager.worlds[0].active

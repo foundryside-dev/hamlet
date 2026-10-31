@@ -797,14 +797,17 @@ class CommandExecutor:
             "write_mask": context.write_mask,
         }
 
-        # Delayed work is keyed by the entity that owns it, so cancelling one effect
-        # (or one world's global effect) cancels its own work only.
+        # Delayed work is keyed by the entity that owns it (so an agent's death or an
+        # item's despawn cancels it) and, when an effect scheduled it, by that effect
+        # instance (so cancelling one effect cancels its own work only).
         scope: str | None = None
         entity_id: Any = context.self_index
+        effect_instance: int | None = None
         if context.effect is not None:
             from townlet.effects.manager import EffectManager
 
             scope, entity_id = EffectManager.schedule_key(context.effect)
+            effect_instance = int(context.effect.instance_id)
         elif context.self_index is not None:
             scope = "item" if context.self_is_item else "agent"
 
@@ -815,6 +818,7 @@ class CommandExecutor:
             entity_id=entity_id,
             context_overrides=context_overrides,
             base_tick=None if context.current_tick is None else context.current_tick,
+            effect_instance=effect_instance,
         )
 
     @staticmethod
@@ -858,22 +862,22 @@ class CommandExecutor:
         for bar_name, tensor in context.bars.items():
             bars_dict[bar_name] = tensor
 
-        # Add VFS variables from the current registry. A global has one row per world
-        # (S1); a context bound to one world reads that world's value, a context bound to
-        # no world reads every world's row.
+        # Add VFS variables from the current registry. World state (a global, or an
+        # affordance variable's rows) has one row per world (S1); a context bound to one
+        # world reads that world's row, a context bound to no world reads every world's.
         world_row = context.world_row()
         global_ids: set[str] = set()
         if context.vfs_registry:
             for var_id, var_def in context.vfs_registry.variables.items():
                 tensor = context.vfs_registry.get(var_id, reader="engine")
-                if var_def.scope == VariableScope.GLOBAL:
+                if var_def.scope in (VariableScope.GLOBAL, VariableScope.AFFORDANCE):
                     global_ids.add(var_id)
                     if world_row is not None:
                         tensor = tensor[world_row]
                 vfs_dict[var_id] = tensor
 
-        # Build target/self scoped views when present. Globals are world state, not entity
-        # state: they have no `target.`/`self.` spelling.
+        # Build target/self scoped views when present. World state is not entity state: it
+        # has no `target.`/`self.` spelling.
         target_bars = {}
         target_vfs = {}
         if context.target_index is not None and not context.target_is_item:

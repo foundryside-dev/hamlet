@@ -523,6 +523,8 @@ class ExecutionContext:
         if var_type == "agent_ref":
             if ref_idx < 0 or ref_idx >= self.vfs_registry.num_agents:
                 raise ValueError(f"Invalid agent reference index {ref_idx}")
+            # S1: agent row i is world i, so an agent_ref can only name its own world's agent.
+            self.require_same_world(f"Agent reference '{var_name}' (agent {ref_idx})", ref_idx)
             if ref_kind == "bar":
                 if not tail:
                     raise ValueError("Reference traversal missing bar name")
@@ -551,7 +553,7 @@ class ExecutionContext:
         if self.vfs_registry is None:
             raise ValueError("VFS registry not set in context")
 
-        if scope == "global" or self._declared_global(var_name):
+        if scope == "global" or self._declared_world_state(var_name):
             # One row per world (S1): the context's world reads its own row.
             tensor = self.vfs_registry.get(var_name, reader="engine")
             row = self.world_row()
@@ -590,15 +592,17 @@ class ExecutionContext:
                 return self.vfs_registry.get_item_variable_type(profile_name, var_name)
         return self.vfs_registry.get_variable_type(var_name)
 
-    def _declared_global(self, var_name: str) -> bool:
+    def _declared_world_state(self, var_name: str) -> bool:
+        """A global, or an affordance variable: world state with one row per world (S1)."""
         assert self.vfs_registry is not None
         var_def = self.vfs_registry.variables.get(var_name)
-        return var_def is not None and var_def.scope == VariableScope.GLOBAL
+        return var_def is not None and var_def.scope in (VariableScope.GLOBAL, VariableScope.AFFORDANCE)
 
     def _write_global_vfs_value(self, var_name: str, value: torch.Tensor) -> None:
-        """Write a global into the context's world, or into every world under the write mask.
+        """Write world state (a global, or an affordance variable's rows) into the context's
+        world, or into every world under the write mask.
 
-        A global has one row per world (S1). A context bound to one world writes that
+        World state has one row per world (S1). A context bound to one world writes that
         row only, so one world's interaction never moves another world's state
         (review-2026-10-24 VFS F4). A world-shared context (see `world_row`) writes every
         world's row that the write mask leaves live.

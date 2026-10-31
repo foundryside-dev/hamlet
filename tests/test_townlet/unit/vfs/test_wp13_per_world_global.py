@@ -19,10 +19,8 @@ import yaml
 from townlet.effects.context import ExecutionContext
 from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.errors import CompilationError
-from townlet.vfs import compile_vtc_social_residue_rules
 from townlet.vfs.registry import VariableRegistry
-from townlet.vfs.schema import VariableDef, VariableScope
-from townlet.vfs.vtc import VTCWriteRefusalError, VTCWriteTarget
+from townlet.vfs.schema import VariableDef
 
 WITNESS = Path(__file__).resolve().parents[4] / "configs" / "static_epistemic_access"
 LEVEL = "L0_simple"
@@ -250,41 +248,6 @@ def test_persistent_save_and_restore_round_trips_every_worlds_row() -> None:
     # A snapshot without the world axis is not this registry's state.
     with pytest.raises(RuntimeError, match="shape"):
         target.validate_persistent_state({"season": rows[0]})
-
-
-# --- batch-shared state cannot read a per-world global ------------------------------------
-
-_RULE_TARGETS = {
-    "pressure": VTCWriteTarget(VariableScope.GLOBAL, "scalar", meter=False),
-    "wear": VTCWriteTarget(VariableScope.AFFORDANCE, "scalar", meter=False),
-}
-
-
-def _wear_rule(expression: str, condition: str | None = None) -> dict:
-    return {
-        "id": "wear_from_pressure",
-        "phase": "apply_social_residue_effects",
-        "kind": "social_residue",
-        "reads": ["wear", "pressure"],
-        "condition": condition,
-        "writes": [{"variable_id": "wear", "expression": expression, "composition": "additive_delta"}],
-    }
-
-
-@pytest.mark.parametrize(("expression", "condition"), [("wear + pressure", None), ("pressure", None), ("1.0", "pressure > 0.5")])
-def test_an_affordance_rule_reading_a_global_refuses_at_compile(expression: str, condition: str | None) -> None:
-    """Affordance state is shared by every world; a global has one value per world, so the
-    read has no single world. Refused at compile, never broadcast by a coincidence of extents."""
-    with pytest.raises(VTCWriteRefusalError, match="no single world"):
-        compile_vtc_social_residue_rules([_wear_rule(expression, condition)], _RULE_TARGETS)
-
-
-def test_an_affordance_rule_reading_affordance_state_still_runs() -> None:
-    program = compile_vtc_social_residue_rules([_wear_rule("wear * 0.0 + 1.0")], _RULE_TARGETS)
-    updated = program.apply(
-        vfs_state={"wear": torch.zeros(3), "pressure": torch.zeros(2)}, active_mask=torch.tensor([True, True]), device=torch.device("cpu")
-    ).values
-    assert updated["wear"].tolist() == [1.0, 1.0, 1.0]
 
 
 def test_an_availability_override_is_per_world() -> None:

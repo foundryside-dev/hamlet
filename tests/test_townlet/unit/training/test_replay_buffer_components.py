@@ -1,6 +1,6 @@
 """Tests for ReplayBuffer reward component storage (format_version 4).
 
-Task 4 from docs/plans/2025-11-28-reward-tensor-wiring-implementation.md:
+Task 4 of the reward-tensor wiring plan:
 - Component storage and retrieval
 - Serialization format_version 4
 - Rejection of non-current format versions

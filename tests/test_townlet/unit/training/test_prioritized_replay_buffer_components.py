@@ -1,6 +1,6 @@
 """Tests for PrioritizedReplayBuffer reward component storage (format_version 4).
 
-Task 5 from docs/plans/2025-11-28-reward-tensor-wiring-implementation.md:
+Task 5 of the reward-tensor wiring plan:
 - Component storage and retrieval
 - Serialization format_version 4
 - Rejection of non-current format versions

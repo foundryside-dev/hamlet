@@ -5,7 +5,7 @@ Status: **Current** (reviewed 2026-08-24) — part of the six-document HLD set (
 
 Supersedes the archived UAC v2.5 document (2025-11-03) wholesale — the old text described
 `cascade_engine`, `affordance_engine`, `reward_model`, ageing/retirement and a money convention
-that no longer exist (or never shipped). Git history and `docs/architecture/archive/` preserve it.
+that no longer exist (or never shipped). Git history and `internal/docs/architecture-archive/` preserve it.
 
 This guide is deliberately thin: it defines what UAC *is*, maps the old vocabulary onto the
 current subsystems, states the current pack convention and the decided direction for it, and
@@ -137,7 +137,7 @@ Schemas for each declaration: `docs/config-schemas/`. Do not restate them here.
 declaration-store Cut A (content discovery, scope, merge and origins) and Cut B (one canonical
 `variables` declaration); see §3 and `docs/config-schemas/declarations.md`. The text below is
 the decision record. Source:
-`docs/product/decisions/0117-files-are-transport-declarations-are-the-unit.md`.
+`internal/docs/product/decisions/0117-files-are-transport-declarations-are-the-unit.md`.
 
 The 16-filename mandate is hardcoded across roughly nine compiler modules (parse/preflight plus
 error strings). The 2026-08-24 VFS audit showed the sharpest cost: **three separate files declared
@@ -216,7 +216,7 @@ Modifier, extrinsic, intrinsic and shaping vocabularies:
 
 UAC's mechanics are substantially built and verified; the gaps cluster at authoring doors. The
 full line-level audit is
-`docs/architecture/archive/REVIEW-2026-08-24-vfs-implementation-vs-spec.md`; its **Headline** and
+`internal/docs/architecture-archive/REVIEW-2026-08-24-vfs-implementation-vs-spec.md`; its **Headline** and
 **Top gaps** sections are the source of truth. Read them rather than a restatement. The headline
 shape: *the mechanics are built; the doors are missing.*
 

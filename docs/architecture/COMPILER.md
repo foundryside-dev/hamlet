@@ -332,9 +332,8 @@ DTO. The period must be finite, positive and integral; inactive levels remain ex
 Invalid targets and duplicated coupled clock facts fail with their origins. This is a narrow
 front-end reference, not a redesign of runtime clocks.
 
-See [the full authoring contract](../config-schemas/declarations.md),
-[the Cut A plan](../plans/2026-10-01-declaration-store-cut-a.md), and
-[PDR-0117](../product/decisions/0117-files-are-transport-declarations-are-the-unit.md).
+See [the full authoring contract](../config-schemas/declarations.md) and
+PDR-0117.
 
 ### Remaining boundaries
 

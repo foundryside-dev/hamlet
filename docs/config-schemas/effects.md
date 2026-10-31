@@ -59,11 +59,9 @@ The Effects System is HAMLET's foundational command pipeline language for all si
 - **First-Time Users**: Read "Overview" → "File Structure" → "Reapply Policies" → "Command Language" → "Examples"
 
 **Related Documents**:
-- `docs/zzz. archive/plans/archive/vfs_uplift/2025-11-19-effects-system-design.md` - Complete design document
-- `docs/plans/vfs_uplift/2025-11-19-task-3-1-effects-dtos.md` - Implementation plan
 - `docs/config-schemas/variables.md` - VFS variable definitions
 - `docs/config-schemas/affordances.md` - Affordance configuration (uses effects)
-- Expression language: See `docs/plans/vfs_uplift/2025-11-19-task-1-2-expression-parser.md`
+- `docs/config-schemas/expressions.md` - Expression language
 
 ---
 
@@ -1807,11 +1805,9 @@ value: "bar.energy + (0.1 if intensity > 2.0 else 0.05)"
 
 ## See Also
 
-- **Design Document**: `docs/zzz. archive/plans/archive/vfs_uplift/2025-11-19-effects-system-design.md` - Complete architecture
-- **Implementation Plan**: `docs/plans/vfs_uplift/2025-11-19-task-3-1-effects-dtos.md` - DTOs and catalog
 - **VFS Variables**: `docs/config-schemas/variables.md` - Variable system that effects modify
 - **Affordances**: `docs/config-schemas/affordances.md` - How affordances spawn effects
-- **Expression Language**: `docs/plans/vfs_uplift/2025-11-19-task-1-2-expression-parser.md` - Expression syntax and semantics
+- **Expression Language**: `docs/config-schemas/expressions.md` - Expression syntax and semantics
 - **Training Config**: `docs/config-schemas/training.md` - How to run experiments with effects
 
 ---

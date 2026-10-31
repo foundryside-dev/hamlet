@@ -9,7 +9,7 @@ from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.universe.compiler import UniverseCompiler
 
 # NOTE: These tests are designed to fail loudly until Task 3 of the Runtime VFS+Effects
-# Integration Plan is complete (see docs/plans/vfs_uplift/2025-11-23-runtime-vfs-effects-integration.md).
+# Integration Plan is complete.
 # Task 3 will implement profile-driven item VFS observations.
 # The tests verify test isolation and registry cleanup even when skipped.
 

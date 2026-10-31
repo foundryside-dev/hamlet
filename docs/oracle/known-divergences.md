@@ -1484,7 +1484,7 @@ bound, which is what stops a typo-bind from certifying the wrong entry.
 
 - **Status:** measured 2026-10-01 at `144788f8`: CPU matrix exit 0, ten CPU cells
   `DIVERGED_AS_REGISTERED`, ten CUDA cells skipped. Report retained in
-  `docs/product/evidence/declaration-cut-a/cpu-matrix.json`; formal acceptance remains
+  `internal/docs/product/evidence/declaration-cut-a/cpu-matrix.json`; formal acceptance remains
   separate from this engineering reading.
 - **Harness shape: pack-drift-only**. No hash fields or trace streams are declared by
   this entry. The existing DIV-008/009/010/012 output bindings remain unchanged.
@@ -1547,7 +1547,7 @@ unchanged: scope selects an owner/publisher, not a row width or ordering. The
 complete 31-case / 884-reading scope-only census records **106 movers**,
 exclusively per-level `observation_schema_hash` and composite `vfs_hash`.
 All layout, variable-schema, environment and other readings remain identical.
-Evidence: `docs/product/evidence/declaration-cut-b/scope-only-hashes.json`.
+Evidence: `internal/docs/product/evidence/declaration-cut-b/scope-only-hashes.json`.
 
 Task 3 (`8060ef19b820ddada047570825865b69e6b38b3b`) removes `EnvironmentConfigRoot.variables`, including empty lists. The raw
 `environment_hash` is computed over the resulting DTO dump, so it moves on every
@@ -1640,7 +1640,7 @@ ten explicit CUDA skips. The direct-parent comparison qualified all 31 cases /
 unexplained entries. All four streams in ten trajectories and eleven reset
 censuses matched the parent byte-for-byte. Input provenance and canonical
 causes remain bound to `8060ef19`; final measured source is `baced7db`.
-Reports and commands are banked under `docs/product/evidence/declaration-cut-b`.
+Reports and commands are banked under `internal/docs/product/evidence/declaration-cut-b`.
 Full local, integration and hosted product acceptance gates are recorded there
 separately; the CPU result does not imply their completion.
 No convergence, browser, CUDA execution or full variable/privacy-system
@@ -1659,7 +1659,7 @@ completion is claimed by the registration.
   propagation remain excluded. Frozen source and input fixtures are unchanged.
 - **Input binding:** DIV-015 supersedes DIV-014 for the six matrix packs. The
   complete frozen/live file digests and exact drift rows are retained in
-  [frozen-live-inputs](../product/evidence/static-epistemic-access/frozen-live-inputs.json).
+  [frozen-live-inputs](evidence/static-epistemic-access/frozen-live-inputs.json).
   Existing inherited drift remains explicitly listed. The harness's boolean input
   gate is unchanged; independent review and exact inventory tests pin these rows.
   The harness gate itself is not a row-wise validator.
@@ -1678,14 +1678,14 @@ readings. Empty declaration files do not acquire a behavioral default.
 
 `3db56521ff823c7108ae6a53688c95726efd9be5` adds tagged registry identities and `(item, profile, variable)` descriptors
 including hidden item permissions, type, dimensions, lifetime and normalization range.
-The [canonical reconstruction](../product/evidence/static-epistemic-access/canonical-schema-attribution.json)
+The canonical reconstruction
 independently reproduces every before hash and verifies all 53 after hashes. Ordinary
 sorted descriptor payloads remain identical; namespace tags and the qualified item
 roster are the added semantic inputs. Observation, action and transition hash inputs
 remain identical. The existing four-term VFS composition is unchanged.
 
 Every exact case/field/before/after value and its causing commit is recorded in
-[attributions](../product/evidence/static-epistemic-access/attributions.json).
+attributions.
 Older DIV-008/009/010/012/014 field sets remain unchanged. Their overlaps with DIV-015
 record separate causes; they do not excuse a direct-parent numeric difference.
 The new witness pack is independently qualified, outside the inherited equivalence bank.
@@ -1701,7 +1701,7 @@ The new witness pack is independently qualified, outside the inherited equivalen
   Completion occurs once, with an owned final outcome and an explicit reason.
   An authored death wins coincidence with the lifespan threshold; healthy
   retirement keeps its existing bonus in total and canonical extrinsic reward.
-- **Exact contract:** [intended differences](../product/evidence/episode-lanes/intended-differences.md)
+- **Exact contract:** intended differences
   registers every changed typed reading in six controlled CPU recipes before
   the runtime cut. Future causal SHAs and measured values belong in verification
   receipts, not invented preregistration revisions or broader allowances.
@@ -1726,7 +1726,7 @@ The new witness pack is independently qualified, outside the inherited equivalen
 
 ### DIV-016 bounded qualification — October 2
 
-[Verification](../product/evidence/episode-lanes/verification.md) records all799
+Verification records all799
 prospectively registered lifecycle changes and4,008 preserved parent readings,
 actual replay/learner/predictor and persisted consumer controls. The preregistration
 remains immutable. Eight real numerical recipes are qualified only through the

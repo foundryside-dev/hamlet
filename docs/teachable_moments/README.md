@@ -2,7 +2,7 @@
 
 > ✅ **Index rewritten 2026-08-26.** The previous README indexed 5 of 15 files, was dated
 > 2025-10-28, and every path in its "Related Files" section was dead. It was **left in the
-> archive** (`docs/zzz. archive/teachable_moments/README.md`) rather than recovered. This is a
+> archive** (`internal/docs/archive-2025/teachable_moments/README.md`) rather than recovered. This is a
 > fresh index; it covers everything actually in this directory.
 
 Emergent behaviours and "interesting failures" preserved as teaching material rather than
@@ -83,7 +83,7 @@ banner in `low_energy_delerium.md` — it corrects `CLAUDE.md` on this point.
 
 ## Left in the archive
 
-Four files stayed at `docs/zzz. archive/teachable_moments/`:
+Four files stayed at `internal/docs/archive-2025/teachable_moments/`:
 
 | File | Why |
 |---|---|
@@ -96,4 +96,4 @@ Four files stayed at `docs/zzz. archive/teachable_moments/`:
 
 - `CLAUDE.md` §"Development Philosophy" — why interesting failures are preserved
 - `docs/config-schemas/drive_as_code.md` — the reward vocabulary these lessons argue about
-- `docs/product/vision.md` — the product framing
+- `docs/vision.md` — the product framing

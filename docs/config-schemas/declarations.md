@@ -141,8 +141,7 @@ pack file, like every other family. See [presentation configuration](presentatio
 ## References and acceptance boundary
 
 - [Compiler front end](../architecture/COMPILER.md)
-- [Cut A implementation plan](../plans/2026-10-01-declaration-store-cut-a.md)
-- [PDR-0117: files are transport](../product/decisions/0117-files-are-transport-declarations-are-the-unit.md)
+- PDR-0117: files are transport
 
 Functional acceptance must compare the baseline semantic hashes and prove discovery, merge,
 source diagnostics and clock resolution. The owner extended the Cut A date; its accepted

@@ -1,7 +1,6 @@
 """Golden-path smoke test for the post-dormancy rescue.
 
-Named regression baseline for the rescue plan
-(`docs/plans/2026-05-14-hamlet-rescue-recovery-plan.md`, Tranche 1).
+Named regression baseline from the 2026-05 recovery work.
 
 Asserts the minimum viable Hamlet pipeline still works:
 `configs/default_curriculum` → `UniverseCompiler.compile(...,
@@ -10,9 +9,8 @@ primary_level="L0_0_minimal", use_cache=False)` →
 five deterministic WAIT steps.
 
 Each test recompiles to avoid sharing universe state between functions and
-to keep the failure isolation clean (see filigree hamlet-c1260e52ab for an
-example of why shared state across this suite has historically been
-hazardous).
+to keep the failure isolation clean; shared state across this suite has
+historically been hazardous.
 """
 
 from __future__ import annotations

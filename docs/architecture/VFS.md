@@ -2757,14 +2757,14 @@ This would make VFS teachable and debuggable.
 ### Documentation
 
 - `docs/architecture/VFS.md` (this document — formerly `vfs.md`, promoted 2026-08-24 per PDR-0118)
-- `docs/architecture/archive/vfs-current-implementation.md` — implementation overview, accurate
+- `internal/docs/architecture-archive/vfs-current-implementation.md` — implementation overview, accurate
   per the 2026-08-24 audit except its access-control and `agent_private` claims
-- `docs/architecture/archive/REVIEW-2026-08-24-vfs-implementation-vs-spec.md` — the two-auditor
+- `internal/docs/architecture-archive/REVIEW-2026-08-24-vfs-implementation-vs-spec.md` — the two-auditor
   claim-by-claim verdict tables behind this document's §5/§6 caveats
 - `docs/config-schemas/variables.md` — current canonical variable authoring contract
   introduced by declaration-store Cut B
-- `docs/zzz. archive/plans/archive/vfs_uplift/2025-11-18-items-and-vfs-profiles.md`
-- `docs/zzz. archive/plans/archive/vfs_uplift/master_requirements.md`
+- `internal/docs/archive-2025/plans/archive/vfs_uplift/2025-11-18-items-and-vfs-profiles.md`
+- `internal/docs/archive-2025/plans/archive/vfs_uplift/master_requirements.md`
 - `CLAUDE.md` VFS section
 - `Townlet v2.5: Universe as Code`
 - `Townlet v2.5: Brain as Code`

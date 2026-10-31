@@ -6,6 +6,7 @@ from pyparsing import (
     Forward,
     Keyword,
     Literal,
+    MatchFirst,
     Optional,
     ParserElement,
     QuotedString,
@@ -93,8 +94,10 @@ class ExpressionParser:
 
         # Identifiers and keywords: the one grammar `references.py` publishes, so a variable
         # id the DTO admits is a name this lexer reads.
-        keywords = EXPRESSION_KEYWORDS
-        identifier = Word(IDENTIFIER_START_CHARS, IDENTIFIER_BODY_CHARS)
+        # A keyword is never a name: without this guard ``if (c) then ...`` parsed as a call to a
+        # function named ``if`` and refused at ``then``.
+        any_keyword = MatchFirst([kw(word) for word in sorted(EXPRESSION_KEYWORDS)])
+        identifier = ~any_keyword + Word(IDENTIFIER_START_CHARS, IDENTIFIER_BODY_CHARS)
 
         # Function calls (must come before variables to parse correctly)
         lparen = Suppress("(")
@@ -114,10 +117,7 @@ class ExpressionParser:
         def make_path_access(tokens):
             segments = [str(t) for t in tokens]
             if len(segments) == 1:
-                name = segments[0]
-                if name in keywords:
-                    raise ValueError(f"Cannot use keyword '{name}' as variable")
-                return Variable(name=name)
+                return Variable(name=segments[0])
             return PathAccess(segments=segments)
 
         path_or_variable = (identifier + (Literal(".").suppress() + identifier)[...]).set_parse_action(make_path_access)

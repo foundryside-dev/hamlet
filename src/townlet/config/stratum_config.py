@@ -16,6 +16,7 @@ import math
 from pathlib import Path
 from typing import Final, Literal
 
+import numpy as np
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator, model_validator
 
@@ -26,6 +27,9 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validat
 GRIDND_MIN_RANK = 4
 CONTINUOUSND_MIN_RANK = 4
 CONTINUOUS_MAX_RANK = 3
+
+FLOAT32_MAX: Final[float] = float(np.finfo(np.float32).max)
+"""The largest magnitude a float32 position can hold; continuous bounds and spans stay within it."""
 
 MAX_POSITION_RANK: Final[int] = 8
 """The widest position a token carries (`universe/dto/token_spec.py` pads every position to
@@ -162,6 +166,13 @@ class ContinuousConfig(BaseModel):
             # (normalization divides by the span): refuse it where it is authored.
             if not (math.isfinite(min_val) and math.isfinite(max_val)):
                 raise ValueError(f"bounds[{i}] invalid: both bounds must be finite numbers, got [{min_val}, {max_val}]")
+            # Positions are float32: a bound (or the span normalization divides by) beyond float32
+            # range compiles and then overflows on the first step.
+            if max(abs(min_val), abs(max_val), max_val - min_val) > FLOAT32_MAX:
+                raise ValueError(
+                    f"bounds[{i}] invalid: positions are float32, so each bound and the span must be at most "
+                    f"{FLOAT32_MAX:.4g} in magnitude, got [{min_val}, {max_val}]"
+                )
             if min_val >= max_val:
                 raise ValueError(f"bounds[{i}] invalid: min ({min_val}) must be < max ({max_val})")
         if not math.isfinite(self.movement_delta):

@@ -137,7 +137,9 @@ class ActionCompiler:
                         )
                     ],
                 )
-            action_type = "passive" if custom.name == "WAIT" else "interaction"
+            # The label comes from what the action declares, never from its name (PDR-0045): an
+            # action that writes nothing and binds no affordance is passive.
+            action_type = "passive" if not custom.writes and custom.source_affordance is None else "interaction"
             if apply_global_filter and allowed_names is not None:
                 enabled = custom.name in allowed_names
             else:

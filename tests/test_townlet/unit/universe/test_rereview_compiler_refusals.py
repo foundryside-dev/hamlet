@@ -230,6 +230,42 @@ def test_n4_positive_control_finite_bounds_produce_finite_observations(tmp_path:
     assert torch.isfinite(observation).all()
 
 
+@pytest.mark.parametrize("bounds", ["[0.0, 1.0e39]", "[-1.0e308, 1.0e308]", "[-3.0e38, 3.0e38]"])
+def test_green_call_r2_bounds_beyond_float32_refuse_at_the_declaration(tmp_path: Path, bounds: str) -> None:
+    """Positions are float32: a bound or span beyond its range compiled and overflowed on step 1."""
+    pack = _pack(tmp_path, CONTINUOUS[0])
+    _edit(pack, "stratum.yaml", "- [0.0, 10.0]", f"- {bounds}")
+    error = _refused(pack, CONTINUOUS[1], ErrorCode.LOAD_ERROR, "stratum.yaml")
+    assert "float32" in str(error)
+
+
+def test_green_call_r2_large_float32_bounds_still_step(tmp_path: Path) -> None:
+    pack = _pack(tmp_path, CONTINUOUS[0])
+    _edit(pack, "stratum.yaml", "- [0.0, 10.0]", "- [0.0, 1.0e30]")
+    universe = _compile(pack, CONTINUOUS[1])
+    env = universe.create_environment(num_agents=2, level_name=CONTINUOUS[1], device="cpu")
+    env.reset()
+    env.step(torch.zeros(2, dtype=torch.long))
+    assert torch.isfinite(env.positions).all()
+
+
+def test_green_call_r1_empty_experiment_name_refuses_at_the_declaration(tmp_path: Path) -> None:
+    """An empty experiment_name compiled and then failed at env construction."""
+    pack = _pack(tmp_path, SEA[0])
+    _edit(pack, "experiment.yaml", "experiment_name: Static Epistemic Access", "experiment_name: ''")
+    _refused(pack, SEA[1], ErrorCode.LOAD_ERROR, "experiment.yaml")
+
+
+def test_green_call_custom_action_type_comes_from_its_declaration_not_its_name(tmp_path: Path) -> None:
+    """PDR-0045: WAIT was labelled passive because of its name; now the label follows what it declares."""
+    pack = _pack(tmp_path, SEA[0])
+    _edit(pack, "actions.yaml", "  - name: WAIT", "  - name: IDLE")
+    _edit(pack, "actions.yaml", "  - name: ADVANCE", "  - name: WAIT")
+    types = {action.name: action.type for action in _compile(pack, SEA[1]).get_level(SEA[1]).action_metadata.actions}
+    assert types["IDLE"] == "passive"  # writes nothing, binds no affordance
+    assert types["WAIT"] == "interaction"  # the name WAIT, but it declares writes
+
+
 # --- N6: a variable id is an expression identifier ----------------------------------
 
 

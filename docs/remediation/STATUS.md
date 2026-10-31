@@ -2,7 +2,7 @@
 
 **Written:** 2026-10-31.
 **Branch:** `fix/vfs-compiler-remediation-2` (tracks `origin`).
-**State recorded at:** `39825727`, plus one in-flight package (R3, described below).
+**State recorded at:** the green commit, the one that last touched this file (`git log -1 -- docs/remediation/STATUS.md`). VFS and the compiler are **green**.
 
 Read this first when resuming on another machine or in a cloud session. It is self-contained:
 everything that used to live only in a local session scratchpad is in the repo now (see
@@ -38,8 +38,8 @@ is **done when a fresh review finds nothing material** (§5.1 defines "material"
 | # | Phase | Status |
 |---|---|---|
 | 1 | VFS + compiler sprint: VFS round-2 WP9–WP17, compiler WP5–WP7 folded in | **Done** |
-| 2 | VFS + compiler re-review, then call VFS and the compiler green | **In progress: repairs closing** |
-| 3 | Open a PR to `main`, every CI row green at the tip, merge | Next |
+| 2 | VFS + compiler re-review, then call VFS and the compiler green | **Done: green (2026-10-31)** |
+| 3 | Open a PR to `main`, every CI row green at the tip, merge | **Next / in progress** |
 | 4 | Training-loop review (BaC layer 2) | Queued |
 | 5 | UaC: items, affordances, rewards (`uac-items-affordances-rewards.md`) | Queued |
 | 6 | Strata (`strata.md`) | Queued |
@@ -308,8 +308,24 @@ doc examples shipped as crashes.
 | Step | State at the time of writing |
 |---|---|
 | R3 verifier | ✅ done; record in `rereview-2026-10-31/verify_R3/RESULTS.md`. 1 P1 and 5 P2s, **repaired in R4** (below) |
-| **R4 repair** (D1–D4, aspatial position functions, V1–V6, P3s) | ✅ committed after the full gate (design calls above). R4 verifier and the green call follow |
-| **Green call** | ⏭ resume each lens on the final SHA: rerun its own NEW-findings probes (`rereview-2026-10-31/<lens>/probes/`), report which still fail, flag anything new. The compiler lens's full gate is the one gate to rerun |
+| **R4 repair** (D1–D4, aspatial position functions, V1–V6, P3s) | ✅ `f3a6d115` |
+| R4 verifier | ✅ **no P1, no P2**; all eight areas hold, including resume through a real `DemoRunner.run()` and statistical checks of the counter-based draws. Record: `rereview-2026-10-31/verify_R4/RESULTS.md` |
+| **Green call** at `f3a6d115` | ✅ runtime lens **GREEN**; authoring lens **GREEN** after A9; compiler lens NOT GREEN on R1/R2 only. Records: `rereview-2026-10-31/<lens>/RERUN.md` |
+| Final fixes, then **GREEN** | ✅ in the green commit (below) |
+
+**The final fixes (green commit):**
+- **A9 (authoring, P2):** `if (c) then …` refused, because `if (` parsed as a call to a function
+  named `if`. The parser's identifier rule now excludes every keyword.
+- **R1 (compiler, P2):** an empty `experiment_name` compiled and failed at env construction; it
+  now has `min_length=1`.
+- **R2 (compiler, P2):** continuous bounds beyond float32 range compiled and overflowed on step
+  1. Each bound and the span must fit in float32 (`FLOAT32_MAX` in `config/stratum_config.py`).
+- **PDR-0045 (found by the CLAUDE.md audit):** `compilers/actions.py` labelled WAIT passive
+  because of its name. The label now comes from the declaration: no writes and no source
+  affordance means passive. Nothing at runtime reads the label.
+
+**Verdict: VFS and the universe compiler are green.** No P1 or P2 remains in either, and no
+mechanic in VFS or compiler scope is unauthorable without Python.
 
 R3 covers:
 - `uniform`/`normal_dist` admitted in variable expressions, rules and writes, with one draw per
@@ -357,9 +373,9 @@ the plain `gh pr merge <n> --merge`.
 
 ## 6. Designer-mechanics scorecard (the product number)
 
-The authoring lens tried 15 mechanics in YAML only, at `559dd0f9`:
+The authoring lens tried 15 mechanics in YAML only, at `559dd0f9` and again at `f3a6d115`:
 
-| Mechanic | At `559dd0f9` | Expected after this section |
+| Mechanic | At `559dd0f9` | At green (`f3a6d115`, measured) |
 |---|---|---|
 | Ticks since the agent last ate | works | works |
 | Resource regenerates toward a cap | works | works |
@@ -368,20 +384,23 @@ The authoring lens tried 15 mechanics in YAML only, at `559dd0f9`:
 | Private variable drives a reward | works | works |
 | Moving average of a meter, exposed | works | works |
 | Item state decays while held | awkward (through effects) | awkward |
-| Per-world weather every K ticks | awkward (deterministic) / gap (random) | works once R3 lands |
-| Hunger decays faster at night | gap (A1) | works (R2) |
-| Terminal condition on a variable | gap (A1) | works (a rule zeroing a lethal meter, R2) |
-| Distance to nearest food, observed | gap (A3) | works once R3 lands |
-| Opening hours on a declared non-24 clock | gap (wrong silently) | refused (R1); full fix in §7 |
-| Cooldown on an action | awkward / gap (no mask) | UaC (A6) |
+| Per-world weather every K ticks | awkward (deterministic) / gap (random) | works (per world, per seed) |
+| Hunger decays faster at night | gap (A1) | works |
+| Terminal condition on a variable | gap (A1) | awkward (a rule zeroing a lethal meter) |
+| Distance to nearest food, observed | gap (A3) | works (correct from the first observation) |
+| Opening hours on a declared non-24 clock | gap (wrong silently) | refused at compile; full fix in §7.2 |
+| Cooldown on an action | awkward / gap (no mask) | awkward; the mask half is UaC (A6) |
 | Action masked unless a condition | gap | UaC (A6) |
 | Affordance closed by a variable | gap | UaC (A5) |
+
+At green: 9 work directly, 3 work awkwardly, 1 is refused by design, and 2 are UaC items. At
+`559dd0f9`, 6 worked directly.
 
 ---
 
 ## 7. Open items register
 
-Items still open at `39825727`, grouped by the phase that owns them. "Owner" marks a decision
+Items still open at green, grouped by the phase that owns them. "Owner" marks a decision
 only the owner can make.
 
 ### 7.1 UaC phase (phase 5): first items
@@ -445,6 +464,39 @@ only the owner can make.
   writes and rules only). Effects phase, or here.
 
 ### 7.5 P3 backlog (non-blocking)
+
+**Found at the green call (the P3 sweep after green takes the cheap ones):**
+- The `EXPRESSION-AFFORDANCE-UNDEPLOYED` check ignores declaration scope. A level-scoped
+  interaction is refused when some *other* level doesn't deploy the affordance
+  (`semantics.py:282`).
+- The stage-3 static-facts pass parses every string leaf, descriptions included, so a
+  description reading `distance_to_affordance("NOPE")` is refused (`semantics.py:241`).
+- Expression-produced vector widths and computed `gather` indices are checked only at reset
+  (documented at `expressions.md:484`).
+- `uniform(5.0, 2.0)` and `normal_dist(0, -2)` are admitted.
+- DemoRunner saves its final checkpoint after `current_episode += 1`, so a resume skips one
+  runner episode index (the draw counter stays consistent).
+- Continuous affordance positions are `list[list[int]]`
+  (`affordances_v2_config.py:81`), so a fractional position is refused (UaC).
+- A negative `max_active_effects` is refused at `effects.yaml:1`, not at the budget's own line.
+- `max_active_effects` has no upper bound (compiler N7).
+- Provenance ignores pyyaml/msgpack/numpy versions.
+- From the CLAUDE.md audit:
+  - `substrate/base.py:143-162` docstring claims INTERACT is at `[-2]` and WAIT at `[-1]`
+    (false; WAIT is custom). STRATA.md §5 and the enabled_actions.md banner repeat it.
+  - Two DAC shaping classes share `type: vfs_variable` (`drive_as_code.py:362`, `:536`).
+  - `StructuredQNetwork` (`agent/networks.py:478`) has no references.
+  - Annealing is declared in both `drive.yaml` and `training.yaml`; only `training.yaml` is read.
+  - `enabled_actions.md` says "omit the field to enable the entire vocabulary" (a default).
+- The runtime-lens P3s carried from 559dd0f9:
+  - N4: references can't be compared to null;
+  - N5: a rule at `evaluate_terminal_conditions` is seen one tick late;
+  - N6: exposure composes through expressions (now documented);
+  - N7: dead-world expressions shift once, and random ones keep drawing;
+  - N9: boolean compositions;
+  - the division-by-zero-at-publish doc sentence.
+
+**Carried from earlier:**
 **Hashing and the artifact**
 - Hash false moves:
   - `initial_value: 2` vs `2.0`;

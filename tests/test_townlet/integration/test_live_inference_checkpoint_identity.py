@@ -140,7 +140,7 @@ async def test_serving_refuses_population_version_five_before_network_load(tmp_p
     server = _make_server(pack, checkpoint_dir)
     checkpoint_path = _write_checkpoint(checkpoint_dir, server)
     checkpoint = torch.load(checkpoint_path, weights_only=False)
-    assert checkpoint["version"] == CHECKPOINT_FORMAT_VERSION == 7
+    assert checkpoint["version"] == CHECKPOINT_FORMAT_VERSION == 8
     checkpoint["population_state"]["version"] = 5
     torch.save(checkpoint, checkpoint_path)
     persist_checkpoint_digest(checkpoint_path)

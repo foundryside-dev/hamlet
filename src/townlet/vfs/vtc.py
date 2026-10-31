@@ -21,7 +21,13 @@ from townlet.vfs.namespace import (
 )
 from townlet.vfs.profiles import CompiledGlobalProfile, VFSProfileCompiler
 from townlet.vfs.schema import VariableDef, VariableScope, WriteSpec
-from townlet.vfs.storage_dtype import BATCH_ROW_REFERENCE_TYPES, admitted_write_result_types, to_storage_dtype
+from townlet.vfs.storage_dtype import (
+    BATCH_ROW_REFERENCE_TYPES,
+    ELEMENT_PAYLOAD_TYPES,
+    NON_NUMERIC_TYPES,
+    admitted_write_result_types,
+    to_storage_dtype,
+)
 from townlet.vfs.transition_graph import TransitionPhaseGraph
 from townlet.world.expression import ASTNode, ExpressionParser, FunctionCall, IfThenElse, PathAccess, Variable, read_paths
 from townlet.world.expression.context import ExecutionContext
@@ -572,6 +578,33 @@ def _write_shape_refusal(
     return None
 
 
+def _element_payload_refusal(
+    *, expression_ast: ASTNode, expression: str, target_id: str, target_type: str, composition: str, prefix: str
+) -> str | None:
+    """Why a write's value cannot fill the elements of a vector/tensor target, or None.
+
+    A write expression is a number (``admitted_write_result_types``), so on a target whose row
+    carries elements it fills every element. A constant fills them the same way in every
+    world, everywhere it runs. A per-row value (an agent variable, a meter, a global,
+    ``agent_id``) would be spread over the elements implicitly; action writes and transition
+    rules share one policy, explicit over implicit, and refuse it. An occupancy claim writes
+    its claimant payload into a slot, not across elements, and is checked by its own program.
+    ``expression_ast`` is the inlined AST: an expression variable that is itself constant
+    is a constant.
+    """
+    if target_type not in ELEMENT_PAYLOAD_TYPES or composition in AFFORDANCE_OCCUPANCY_COMPOSITIONS:
+        return None
+    reads = sorted(read_paths(expression_ast))
+    if not reads:
+        return None
+    return (
+        f"{prefix} writes '{expression}' (it reads {', '.join(reads)}) into {target_type} '{target_id}'. A write "
+        f"expression is one number per row, and a {target_type} row has elements, so the value would be spread over "
+        "every element implicitly. A vector or tensor target takes a constant (it fills every element); to carry a "
+        "per-row quantity, declare a scalar variable and write that."
+    )
+
+
 REFERENCE_WRITE_COMPOSITIONS = frozenset({"overwrite", "claim_if_free"})
 """How a write into an ``agent_ref``/``item_ref`` may compose: by replacing the row (an occupancy
 claim replaces it with the claimant when free). Every other composition does arithmetic or
@@ -588,6 +621,7 @@ def _write_type_refusal(
     target_id: str,
     target_type: str,
     composition: str,
+    clamp: tuple[float, float] | None,
     prefix: str,
 ) -> str | None:
     """Why a write's expression or condition cannot type-check against its target, or None."""
@@ -597,6 +631,13 @@ def _write_type_refusal(
             f"or ordering on it can name any row, so a reference write composes only as "
             f"{' or '.join(sorted(REFERENCE_WRITE_COMPOSITIONS))}."
         )
+    # A capacity claim's clamp declares the slot count, not a bound on the value.
+    if clamp is not None and target_type in NON_NUMERIC_TYPES and composition != "capacity_claim":
+        if target_type == "bool":
+            what = "a bool is a truth value, which no bounds apply to"
+        else:
+            what = f"an {target_type} is a row index, and bounding it would rewrite which row it names"
+        return f"{prefix} clamps {target_type} '{target_id}' to {list(clamp)}. A clamp bounds a number; {what}. Write 'clamp: null'."
     try:
         result_type = checker.check(expression_ast)
     except TypeCheckError as exc:
@@ -1616,13 +1657,23 @@ class VTCTransitionRuleProgram:
         device: torch.device,
         bars_state: Mapping[str, torch.Tensor] | None = None,
     ) -> VTCWriteResult:
-        """Apply compiled social-state writes using phase snapshots and masked commits."""
+        """Apply compiled transition-rule writes using phase snapshots and masked commits.
+
+        A meter bar is a rule target like an agent variable (``bar.<m>`` resolves to
+        agent-scoped ``scalar`` storage): bars join the snapshot, exactly as in
+        ``VTCActionWriteProgram.apply``, and the result carries every bar and variable.
+        The caller splits them (``_split_vfs_and_bars``); meter bounds are enforced by
+        ``clamp_and_validate``, the compiler refusing a meter rule scheduled after it.
+        """
         if active_mask.dim() != 1:
             raise ValueError(f"active_mask must be rank-1, got shape {tuple(active_mask.shape)}")
 
         bars = {} if bars_state is None else dict(bars_state)
+        # Bar names and variable ids are disjoint: the universe compiler's symbol
+        # table refuses the collision (SYMBOL_METER_COLLISION).
         updated = {name: value.to(device=device).clone() for name, value in vfs_state.items()}
-        bars_on_device = {name: value.to(device=device) for name, value in bars.items()}
+        updated.update({bar_name: value.to(device=device).clone() for bar_name, value in bars.items()})
+        bar_names = frozenset(bars)
 
         active = active_mask.to(device=device, dtype=torch.bool)
         attempted_targets: set[str] = set()
@@ -1631,7 +1682,7 @@ class VTCTransitionRuleProgram:
             phase_effects = self._compute_phase_effects(
                 phase_rules=phase_rules,
                 phase_snapshot=phase_snapshot,
-                bars_state=bars_on_device,
+                bar_names=bar_names,
                 active_mask=active,
                 device=device,
             )
@@ -1664,15 +1715,15 @@ class VTCTransitionRuleProgram:
         *,
         phase_rules: Sequence[CompiledVTCTransitionRule],
         phase_snapshot: Mapping[str, torch.Tensor],
-        bars_state: Mapping[str, torch.Tensor],
+        bar_names: frozenset[str],
         active_mask: torch.Tensor,
         device: torch.device,
     ) -> tuple[_VTCTransitionRuleEffect, ...]:
         phase_effects: list[_VTCTransitionRuleEffect] = []
-        context_vfs = dict(phase_snapshot)
+        context_vfs = {name: value for name, value in phase_snapshot.items() if name not in bar_names}
         context_vfs[ENGINE_AGENT_ID] = torch.arange(active_mask.shape[0], device=device)
         context = ExecutionContext(
-            bars=dict(bars_state),
+            bars={name: phase_snapshot[name] for name in bar_names},
             vfs=context_vfs,
             temporal={},
             device=device,
@@ -1680,8 +1731,9 @@ class VTCTransitionRuleProgram:
         evaluator = Evaluator(context)
 
         for rule in phase_rules:
-            if rule.variable_id not in phase_snapshot:
-                raise KeyError(f"VTC transition rule targets unknown VFS variable '{rule.variable_id}'")
+            # The compiler resolves every target to declared state (a variable or a meter),
+            # and the env snapshots all of it; a miss is an engine defect.
+            assert rule.variable_id in phase_snapshot, (rule.telemetry_label, rule.variable_id)
 
             target_snapshot = phase_snapshot[rule.variable_id]
             rule_evaluator = evaluator
@@ -1875,7 +1927,9 @@ class VTCTransitionRuleProgram:
 
         # The compile-time shape proof admits one more case: a per-row value (an agent
         # row, a global's per-world value, or a world column of one) on a target with
-        # further axes (affordance rows, or a vector or tensor row), spread along them.
+        # further scope axes (affordance rows), spread along them. A per-row value is never
+        # spread over a vector or tensor row's elements: the compiler refuses it
+        # (`_element_payload_refusal`), as it does for action writes.
         num_agents = active_mask.shape[0]
         if rule.target_scope in BATCH_AXIS_SCOPES and 1 <= value_on_device.dim() <= target.dim() and value_on_device.shape[0] == num_agents:
             VTCTransitionRuleProgram._assert_target_shape(rule, target, num_agents)
@@ -2040,6 +2094,21 @@ def compile_vtc_transition_rules_with_phase_graph(
                 continue
             assert target_name is not None
             target = targets[target_name]
+            if target.meter and phase_graph.sort_key(write["phase"]) > phase_graph.sort_key(METER_BOUNDS_PHASE):
+                refusals.append(
+                    VTCWriteRefusal(
+                        origin_key=f"transition_rules:{rule['rule_id']}",
+                        kind="phase",
+                        message=(
+                            f"{prefix} writes the meter '{write['variable_id']}' at phase '{write['phase']}', after "
+                            f"'{METER_BOUNDS_PHASE}', where every meter is clamped to its declared bounds, so the write "
+                            f"could leave the meter outside them. Schedule a meter write at '{METER_BOUNDS_PHASE}' or earlier; "
+                            "a write meant to end the episode this tick (bar.<m> to its lethal bound) belongs at "
+                            "'apply_transition_rules', which runs before 'evaluate_terminal_conditions'."
+                        ),
+                    )
+                )
+                continue
             if target.scope not in _RULE_ADMITTED_SHAPES:
                 refusals.append(
                     VTCWriteRefusal(
@@ -2072,6 +2141,7 @@ def compile_vtc_transition_rules_with_phase_graph(
                 target_id=write["variable_id"],
                 target_type=target.type,
                 composition=write["composition"],
+                clamp=write["clamp"],
                 prefix=f"Transition rule '{rule['rule_id']}' write '{write['telemetry_label']}'",
             )
             if type_refusal is not None:
@@ -2090,6 +2160,17 @@ def compile_vtc_transition_rules_with_phase_graph(
                 refusals.append(VTCWriteRefusal(origin_key=f"transition_rules:{rule['rule_id']}", kind="type", message=inlined))
                 continue
             expression_ast, condition_ast = inlined
+            payload_refusal = _element_payload_refusal(
+                expression_ast=expression_ast,
+                expression=write["expression"],
+                target_id=write["variable_id"],
+                target_type=target.type,
+                composition=write["composition"],
+                prefix=prefix,
+            )
+            if payload_refusal is not None:
+                refusals.append(VTCWriteRefusal(origin_key=f"transition_rules:{rule['rule_id']}", kind="type", message=payload_refusal))
+                continue
             admitted_shapes = _RULE_ADMITTED_SHAPES[target.scope]
             shape_refusal = _write_shape_refusal(
                 expression_ast=expression_ast,
@@ -2332,6 +2413,11 @@ activity. The authoring contract still tells them apart: a global reads as a sca
 its world, an affordance variable as one row per affordance (`townlet.vfs.namespace`)."""
 
 AFFORDANCE_OCCUPANCY_PHASE = "resolve_affordance_access_and_occupancy"
+METER_BOUNDS_PHASE = "clamp_and_validate"
+"""The phase at which every meter is clamped to its declared bounds (``compile_vtc_bounds_clamps``).
+
+A transition rule may write a meter at this phase or any earlier one; later, the write would
+escape the bounds, so the compiler refuses it."""
 AFFORDANCE_OCCUPANCY_COMPOSITIONS = frozenset({"claim_if_free", "capacity_claim"})
 
 
@@ -2484,6 +2570,7 @@ def _compile_vtc_action_writes_with_phase_graph(
                 target_id=write.variable_id,
                 target_type=target.type,
                 composition=write.composition,
+                clamp=write.clamp,
                 prefix=f"Action '{action.name}' write '{write.telemetry_label}'",
             )
             if type_refusal is not None:
@@ -2502,6 +2589,17 @@ def _compile_vtc_action_writes_with_phase_graph(
                 refusals.append(VTCWriteRefusal(origin_key=origin_key, kind="type", message=inlined))
                 continue
             expression_ast, condition_ast = inlined
+            payload_refusal = _element_payload_refusal(
+                expression_ast=expression_ast,
+                expression=write.expression,
+                target_id=write.variable_id,
+                target_type=target.type,
+                composition=write.composition,
+                prefix=prefix,
+            )
+            if payload_refusal is not None:
+                refusals.append(VTCWriteRefusal(origin_key=origin_key, kind="type", message=payload_refusal))
+                continue
             # A shape refusal is the second half of the type proof (payload, then axes),
             # so it reports under the same kind.
             shape_refusal = _write_shape_refusal(
@@ -2714,7 +2812,7 @@ def compile_vtc_bounds_clamps_with_phase_graph(
                 expression=f"clamp(bar.{meter['name']}, {low_literal}, {high_literal})",
                 condition=None,
                 composition="overwrite",
-                phase="clamp_and_validate",
+                phase=METER_BOUNDS_PHASE,
                 priority=priority,
                 clamp=(meter["bounds_min"], meter["bounds_max"]),
                 telemetry_label=f"bounds_clamp:{meter['name']}",
@@ -2905,7 +3003,11 @@ def _coerce_modulation(modulation: VTCModulationSource | Mapping[str, Any]) -> d
         min_multiplier = float(modulation.min_multiplier)
 
     if modulation_type != "linear_multiplier":
-        raise ValueError(f"Unsupported VTC modulation type '{modulation_type}' for bar '{bar}'")
+        raise ValueError(
+            f"Unsupported VTC modulation type '{modulation_type}' for bar '{bar}': the one modulation type is "
+            "'linear_multiplier' (an affordance's effect scales linearly from min_multiplier at bar value 0.0 up to "
+            "1.0 at threshold). Declare type: linear_multiplier."
+        )
 
     return {
         "bar": bar,
@@ -3017,10 +3119,19 @@ def _coerce_interaction_progress_affordance(
         )
     if interaction_type in PROGRESS_INTERACTION_TYPES:
         if duration_ticks is None:
-            raise ValueError(f"Affordance '{name}' interaction_type='{interaction_type}' requires duration_ticks")
+            raise ValueError(
+                f"Affordance '{name}' interaction_type='{interaction_type}' requires duration_ticks: a progress "
+                f"interaction ({', '.join(sorted(PROGRESS_INTERACTION_TYPES))}) runs over several ticks. Declare "
+                f"duration_ticks: <positive integer>, or use an interaction type without progress "
+                f"({', '.join(sorted(INTERACTION_TYPES - PROGRESS_INTERACTION_TYPES))})."
+            )
         duration = int(duration_ticks)
         if duration <= 0:
-            raise ValueError(f"Affordance '{name}' duration_ticks must be positive, got {duration}")
+            raise ValueError(
+                f"Affordance '{name}' duration_ticks must be a positive integer (the ticks the interaction runs), got "
+                f"{duration}. For an interaction that completes at once, use an interaction type without progress "
+                f"({', '.join(sorted(INTERACTION_TYPES - PROGRESS_INTERACTION_TYPES))})."
+            )
     else:
         duration = None
 

@@ -64,8 +64,9 @@ class TestFactoryConfigValidation:
                 "action_discretization": BASE_ACTION_DISC,
             },
         }
-        # v2.1: Validation happens at substrate level with different error message
-        with pytest.raises(ValueError, match="ContinuousND requires at least 4 dimensions"):
+        # The rank rule is the DTO's (compiler re-review N2): it refuses at parse, located,
+        # before the substrate constructor can raise a bare ValueError.
+        with pytest.raises(ValueError, match="type='continuousnd' serves 4 to 100 dimensions"):
             config = SubstrateConfig(**config_dict)
             SubstrateFactory.build(config, torch.device("cpu"))
 

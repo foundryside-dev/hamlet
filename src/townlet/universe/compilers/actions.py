@@ -13,6 +13,10 @@ from townlet.environment.action_config import ActionConfig
 from townlet.environment.action_labels import PRESET_LABELS, CanonicalAction
 from townlet.substrate.factory import SubstrateFactory
 from townlet.universe.dto import ActionMetadata, ActionSpaceMetadata, RuntimeAction, RuntimeActionSpace
+from townlet.universe.error_codes import ErrorCode
+from townlet.universe.errors import CompilationError, CompilationMessage
+from townlet.universe.source_map import SourceMap, locate
+from townlet.universe.stages import CompilationStage
 
 
 class ActionCompiler:
@@ -26,8 +30,16 @@ class ActionCompiler:
         affordances: AffordancesV2Config,
         items: ItemsCatalogConfig | None,
         action_label_overrides: dict[int, str] | None,
+        *,
+        source_map: SourceMap | None,
     ) -> ActionSpaceMetadata:
-        """Build action space metadata using substrate actions + custom actions."""
+        """Build action space metadata using substrate actions + custom actions.
+
+        A custom action may not take a name the substrate or the item system already binds
+        (``source_map`` locates the refusal at the action's declaration); the engine's name
+        wins by position in the canonical ordering, so a custom entry under it could only be
+        dropped silently, writes and all.
+        """
         entries: list[ActionMetadata] = []
         next_id = 0
 
@@ -106,10 +118,25 @@ class ActionCompiler:
 
         enabled_custom = set(allowed_names) if allowed_names is not None else set()
         for custom in actions.actions.custom_actions:
-            if custom.name in reserved_names:
-                raise ValueError(f"Action name '{custom.name}' is reserved for system actions and cannot be overridden")
-            if custom.name in substrate_names:
-                continue
+            if custom.name in reserved_names or custom.name in substrate_names:
+                if custom.name in substrate_names:
+                    owner = "the substrate's own action vocabulary"
+                else:
+                    owner = "the engine (INTERACT and the item actions)"
+                raise CompilationError(
+                    CompilationStage.LEVELS.label,
+                    [
+                        CompilationMessage(
+                            code=ErrorCode.ACTION_NAME_RESERVED,
+                            message=(
+                                f"Custom action '{custom.name}' takes a name {owner} already binds; it would be dropped "
+                                "silently, writes and all. Rename the custom action, or delete it if the engine's action "
+                                "is the one you meant."
+                            ),
+                            location=locate(source_map, f"actions:{custom.name}"),
+                        )
+                    ],
+                )
             action_type = "passive" if custom.name == "WAIT" else "interaction"
             if apply_global_filter and allowed_names is not None:
                 enabled = custom.name in allowed_names

@@ -35,7 +35,7 @@ def compiled_universe() -> CompiledUniverse:
 def test_variables_hash_is_a_pack_hash_and_a_checkpoint_key() -> None:
     assert "variables_hash" in PACK_HASH_KEYS
     assert "variables_hash" in DEMO_CHECKPOINT_KEYS
-    assert len(PACK_HASH_KEYS) == 6
+    assert len(PACK_HASH_KEYS) == 7  # + effects_hash (compiler re-review N5)
 
 
 def test_variables_hash_is_stamped_and_hard_compared(compiled_universe: CompiledUniverse) -> None:

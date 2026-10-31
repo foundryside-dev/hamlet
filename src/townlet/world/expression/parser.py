@@ -11,8 +11,6 @@ from pyparsing import (
     Regex,
     Suppress,
     Word,
-    alphanums,
-    alphas,
     infix_notation,
     opAssoc,
     pyparsing_common,
@@ -30,6 +28,7 @@ from townlet.world.expression import (
     UnaryOp,
     Variable,
 )
+from townlet.world.expression.references import EXPRESSION_KEYWORDS, IDENTIFIER_BODY_CHARS, IDENTIFIER_START_CHARS
 
 # Enable packrat parsing for performance
 ParserElement.enable_packrat()
@@ -83,9 +82,10 @@ class ExpressionParser:
         # Combine all constants
         constant = bool_literal | numeric_literal | string_literal
 
-        # Identifiers and keywords
-        keywords = {"true", "false", "and", "or", "not", "if", "then", "else"}
-        identifier = Word(alphas + "_", alphanums + "_")
+        # Identifiers and keywords: the one grammar `references.py` publishes, so a variable
+        # id the DTO admits is a name this lexer reads.
+        keywords = EXPRESSION_KEYWORDS
+        identifier = Word(IDENTIFIER_START_CHARS, IDENTIFIER_BODY_CHARS)
 
         # Function calls (must come before variables to parse correctly)
         lparen = Suppress("(")

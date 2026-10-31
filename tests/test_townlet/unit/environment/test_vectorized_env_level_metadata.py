@@ -80,11 +80,12 @@ def _build_two_level_pack(tmp_path: Path, config_pack_factory) -> Path:
     affordances_data["affordances"]["affordances"] = list(reversed(affordance_list))
     affordances_path.write_text(yaml.safe_dump(affordances_data, sort_keys=False))
 
-    # Turn on temporal mechanics for L1_alt so temporal masks are exercised.
+    # Turn on temporal mechanics for L1_alt so temporal masks are exercised. The level keeps
+    # its opening hours, which require a 24-tick day (compiler re-review A4).
     curriculum_path = dest_level / "curriculum.yaml"
     curriculum_data = yaml.safe_load(curriculum_path.read_text())
     curriculum_data.setdefault("curriculum", {})["active_temporal"] = True
-    curriculum_data["curriculum"]["day_length"] = 4
+    curriculum_data["curriculum"]["day_length"] = 24
     curriculum_path.write_text(yaml.safe_dump(curriculum_data, sort_keys=False))
 
     return pack_dir

@@ -100,7 +100,7 @@ class VTCTransitionRunner:
             attempted_vfs_targets.update(action_targets)
             bars_state = self._run_passive_depletions(phase, context, bars_state)
             bars_state = self._run_threshold_cascades(phase, context, bars_state)
-            vfs_state, rule_targets = self._run_transition_rules(phase, context, vfs_state, bars_state)
+            vfs_state, bars_state, rule_targets = self._run_transition_rules(phase, context, vfs_state, bars_state)
             attempted_vfs_targets.update(rule_targets)
             bars_state = self._run_bounds_clamps(phase, context, bars_state)
             dones = self._run_terminal_conditions(phase, context, bars_state, dones)
@@ -171,17 +171,20 @@ class VTCTransitionRunner:
         context: VTCTransitionContext,
         vfs_state: dict[str, torch.Tensor],
         bars_state: dict[str, torch.Tensor],
-    ) -> tuple[dict[str, torch.Tensor], frozenset[str]]:
+    ) -> tuple[dict[str, torch.Tensor], dict[str, torch.Tensor], frozenset[str]]:
         rules = tuple(rule for rule in self.schedule.transition_rule_program.rules if rule.phase == phase)
         if not rules:
-            return vfs_state, frozenset()
+            return vfs_state, bars_state, frozenset()
         result = VTCTransitionRuleProgram(rules).apply(
             vfs_state=vfs_state,
             active_mask=context.active_mask,
             device=context.device,
             bars_state=bars_state,
         )
-        return result.values, result.attempted_targets
+        # A rule on a meter commits through bars_state, as an action write's does; only
+        # VFS targets are authorized against the registry's access policy.
+        next_vfs, next_bars = _split_vfs_and_bars(result.values, vfs_state.keys(), bars_state.keys())
+        return next_vfs, next_bars, result.attempted_targets.intersection(vfs_state)
 
     def _run_bounds_clamps(
         self,

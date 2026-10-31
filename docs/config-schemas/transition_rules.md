@@ -19,11 +19,11 @@
 **When to Read**: Authoring any "state changes every tick when ..." mechanic — decay, accumulation, social traces (trust damage, reputation, sanctions), wear — or debugging why a rule does or does not fire
 
 **AI-Friendly Summary**:
-The pack-scope `transition_rules` declaration (conventionally `<config_pack>/transition_rules.yaml`) is the authoring surface for VTC transition rules. Each rule declares a `phase`, an optional `condition`, and one or more writes to `global`, `agent` or `affordance` VFS variables, executed by `env.step` at the declared phase (canonically `apply_transition_rules`). The declaration is validated at load by a no-defaults DTO (`townlet.config.transition_rules_config.TransitionRulesConfig`, `extra="forbid"`): unknown or typo'd keys fail at parse, and the behavioural fields `condition`, `clamp`, `effect` must be set explicitly (`null` included). What a rule reads is derived from its ASTs at compile (`CompiledVTCTransitionRule.reads`); masking follows the target variable's declared scope, never an authored annotation; telemetry identifies a rule by its `id`.
+The pack-scope `transition_rules` declaration (conventionally `<config_pack>/transition_rules.yaml`) is the authoring surface for VTC transition rules. Each rule declares a `phase`, an optional `condition`, and one or more writes to `global`, `agent` or `affordance` VFS variables or to meters (`bar.<name>`), executed by `env.step` at the declared phase (canonically `apply_transition_rules`). The declaration is validated at load by a no-defaults DTO (`townlet.config.transition_rules_config.TransitionRulesConfig`, `extra="forbid"`): unknown or typo'd keys fail at parse, and the behavioural fields `condition`, `clamp`, `effect` must be set explicitly (`null` included). What a rule reads is derived from its ASTs at compile (`CompiledVTCTransitionRule.reads`); masking follows the target variable's declared scope, never an authored annotation; telemetry identifies a rule by its `id`.
 
 **Reading Strategy**:
 - **Quick Reference**: "Field Reference" below
-- **Examples**: `docs/architecture/VFS.md` §14.3, §16.4, §20.7 (pinned to the shipped grammar by `tests/test_townlet/unit/config/test_vfs_doc_transition_rule_examples.py`)
+- **Examples**: `docs/architecture/VFS.md` §14.3, §16.4, §20.7 (every example, and the one below, is compiled and stepped in a scratch copy of `configs/default_curriculum` by `tests/test_townlet/unit/config/test_vfs_doc_transition_rule_examples.py`, which checks that each write moves its target)
 
 **Related Documents**:
 - `docs/architecture/VFS.md` §16.3 (semantics, effect vocabulary)
@@ -61,7 +61,9 @@ transition_rules:         # required list (may be empty, but say so explicitly)
 The compiler derives this rule's reads as `("chosen_action", "was_observed")` — the
 variables its condition names (the expression is a literal). A rule reads a variable by its
 bare id and a meter as `bar.<name>` (one spelling per reference, VFS round-2 S5; a write's
-`variable_id` naming a meter is `bar.<name>` too); reads resolve to storage names through the
+`variable_id` naming a meter is `bar.<name>` too, and the rule commits to the meter exactly as
+an action write does: masked by its world's activity, clamped by the write's `clamp`, then held
+to the meter's declared bounds at `clamp_and_validate`); reads resolve to storage names through the
 one resolver, an old spelling (`vfs.x`, `self.vfs.x`, `target.bar.m`, a bare meter name)
 refuses naming the one to write, and an expression naming nothing declared refuses, so a rule
 cannot claim to read what does not exist.
@@ -77,7 +79,7 @@ immutable_scale` derives `("immutable_scale", "public_state")`, not `("scaled_pu
 | field | required | notes |
 |---|---|---|
 | `id` | yes | unique across pack-scope transition declarations; the telemetry label is `id:effect` (or `id:variable_id` when `effect` is null) |
-| `phase` | yes | canonically `apply_transition_rules`; writes inherit it; any phase in the closed graph is admitted |
+| `phase` | yes | canonically `apply_transition_rules`; writes inherit it; any phase in the closed graph is admitted, except that a write to a meter must run at `clamp_and_validate` or earlier (meter bounds are enforced there) |
 | `condition` | yes, nullable | rule-level gate; `null` = unconditional |
 | `writes` | yes, non-empty | see below |
 | `priority` | no (computed) | defaults to declaration order |
@@ -86,11 +88,11 @@ immutable_scale` derives `("immutable_scale", "public_state")`, not `("scaled_pu
 
 | field | required | notes |
 |---|---|---|
-| `variable_id` | yes | must be a declared VFS variable (compile-time checked) |
+| `variable_id` | yes | a declared VFS variable by its bare id, or a meter as `bar.<name>` (compile-time checked) |
 | `expression` | yes | `additive_delta` expressions are deltas, not post-update values |
 | `composition` | yes | `WriteSpec`'s vocabulary minus the action-only occupancy claims: `overwrite`, `additive_delta`, `multiplicative_modifier`, `min`, `max`, `clamp`, `priority_write`, `last_write_wins`; `claim_if_free`/`capacity_claim` fail at parse |
 | `condition` | yes, nullable | ANDed with the rule condition |
-| `clamp` | yes, nullable | `[low, high]` post-write bounds |
+| `clamp` | yes, nullable | `[low, high]` post-write bounds; refused on a `bool` or reference target, which has no numeric value to bound |
 | `effect` | yes, nullable | vocabulary label (see VFS.md §16.3 table); used in the derived telemetry label |
 | `phase`, `priority`, `telemetry_label` | no (computed) | derived from the rule when omitted |
 
@@ -105,7 +107,8 @@ immutable_scale` derives `("immutable_scale", "public_state")`, not `("scaled_pu
   declaration fields: ['social_residue', 'version']` at the document's `file:line`. It is not
   an alias.
 - Omitting `condition`/`clamp`/`effect` → load error; write `null` to mean "none".
-- `variable_id` not a declared VFS variable → compile error (`targets unknown VFS variable`).
+- `variable_id` naming no declared variable or meter → compile error (`UAC-STATIC-WRITE`, "... names no
+  variable, meter or item state a transition write or rule can read"), at the rule's `file:line`.
 - An expression or condition naming an undeclared variable → compile error (`VTC-WRITE-TYPE`,
   unknown identifier).
 - The removed write-level `target` role annotation and `scope` masking annotation → load
@@ -116,3 +119,12 @@ immutable_scale` derives `("immutable_scale", "public_state")`, not `("scaled_pu
   (`VTC-WRITE-TYPE`; rules in [variables.md](variables.md#transition-phases-and-evaluation-order)).
 - A write to a variable that carries an `expression` → compile error (`UAC-STATIC-WRITE`),
   naming both the write and the declaration.
+- A write to a meter (`bar.<name>`) scheduled after `clamp_and_validate` → compile error
+  (`UAC-STATIC-WRITE`): the meter would escape its declared bounds. A write meant to end the
+  episode this tick belongs at `apply_transition_rules`, which runs before
+  `evaluate_terminal_conditions`.
+- A `clamp` on a `bool`, `agent_ref`, `item_ref`, `affordance_ref` or `effect_ref` target →
+  compile error (`VTC-WRITE-TYPE`): a clamp bounds a number, and a reference's number is a row.
+- A value that reads state (a variable, a meter, `agent_id`) written into a vector or tensor
+  target → compile error (`VTC-WRITE-TYPE`): it would spread one number over every element
+  implicitly. A constant fills every element; action writes follow the same rule.

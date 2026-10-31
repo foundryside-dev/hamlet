@@ -167,14 +167,14 @@ class TestAttachStampsTokenHashes:
 
 class TestCompactReplayArtifactCut:
     def test_checkpoint_format_moves_past_the_full_payload_abi(self) -> None:
-        assert CHECKPOINT_FORMAT_VERSION == 7
+        assert CHECKPOINT_FORMAT_VERSION == 8
 
     def test_full_payload_v4_checkpoint_refuses_before_any_state_is_read(self, compiled_universe) -> None:
-        with pytest.raises(ValueError, match=r"Unsupported checkpoint version: 6\nExpected version 7"):
+        with pytest.raises(ValueError, match=r"Unsupported checkpoint version: 6\nExpected version 8"):
             assert_checkpoint_identity({"version": 6}, compiled_universe, force_new_vfs=False)
 
     def test_outer_v4_refuses_before_exact_keys_or_nested_state_are_read(self) -> None:
-        with pytest.raises(ValueError, match=r"Unsupported checkpoint version: 6\nExpected version 7"):
+        with pytest.raises(ValueError, match=r"Unsupported checkpoint version: 6\nExpected version 8"):
             validate_demo_checkpoint_payload({"version": 6, "population_state": object()})
 
     @pytest.mark.parametrize("invalid_version", (5.0, True))

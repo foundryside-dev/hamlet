@@ -121,22 +121,25 @@ per level (`.compiled/universe-<level>.msgpack`).
 
 ### 5.2 Declared hashes vs. enforced hashes
 
-The artifact carries **twenty declared `*_hash` fields** (`src/townlet/universe/compiled.py`:
-eight on `CompiledUniverse`, twelve on `LevelMetadata`; recounted from `dataclasses.fields`
-2026-10-25 at the `variables_hash` addition — the previous "seventeen" was already stale), plus
-`metadata.config_hash`. Declared is not the same as enforced, and the distinction is the
-architectural content:
+The artifact carries **twenty-two declared `*_hash` fields** (`src/townlet/universe/compiled.py`:
+nine on `CompiledUniverse`, thirteen on `LevelMetadata`; recounted from `dataclasses.fields`
+2026-10-31 at the `effects_hash` / `items_appearance_hash` addition — the previous "twenty" was
+counted 2026-10-25 at the `variables_hash` addition), plus `metadata.config_hash`. Declared is
+not the same as enforced, and the distinction is the architectural content:
 
 - **Enforced.** One shared gate, `assert_checkpoint_identity`
   (`src/townlet/training/checkpoint_utils.py`), is called by both the training-resume path
-  (`demo/runner.py`) and the serving path (`demo/live_inference.py`). Seventeen hash stamps enter
-  a checkpoint; **thirteen are hard-compared** — `vfs_hash`, `drive_hash`, the effective
-  `brain_hash`, the four per-level content hashes (`curriculum`, `bars`, `affordances`,
-  `training`) and the six pack-scope hashes (`experiment`, `stratum`, `environment`, `actions`,
-  nullable `items`, `variables`) — alongside the token/layout contract, action count and
-  `primary_level`. A checkpoint therefore refuses to load into a universe it does not match,
-  *including a different level of the same pack* or the same level with an edited stratum,
-  item catalog or variable roster. `vfs_hash` is five terms: variable schema (storage, reset,
+  (`demo/runner.py`) and the serving path (`demo/live_inference.py`). Nineteen hash stamps enter
+  a checkpoint; **fifteen are hard-compared** — `vfs_hash`, `drive_hash`, the effective
+  `brain_hash`, the five per-level content hashes (`curriculum`, `bars`, `affordances`,
+  `training`, nullable `items_appearance`) and the seven pack-scope hashes (`experiment`,
+  `stratum`, `environment`, `actions`, nullable `items`, `variables`, nullable `effects`) —
+  alongside the token/layout contract, action count and `primary_level`. A checkpoint
+  therefore refuses to load into a universe it does not match, *including a different level of
+  the same pack* or the same level with an edited stratum, item catalog, variable roster,
+  effect body or spawn rules (`effects_hash` and `items_appearance_hash` are canonical
+  content with expression text as its AST; both landed 2026-10-31, compiler re-review N5).
+  `vfs_hash` is five terms: variable schema (storage, reset,
   access, exposure, `semantic_type`, normalization), observation schema, action schema,
   transition graph, and the compiled global/agent expression programs (canonical AST,
   result type, dependency set) — so a hidden expression's text is identity (VFS round-2 F5).

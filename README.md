@@ -305,9 +305,12 @@ uv run python -m townlet.demo.live_inference <checkpoint_dir> 8766 0.2 10000 \
 ```
 
 Training resume and serving share an identity gate. They check selected world, effective brain,
-VFS, the architecture-appropriate token/layout contract, the four per-level content hashes and
-the six pack-scope content hashes (`experiment`, `stratum`, `environment`, `actions`, nullable
-`items`, `variables`) before loading weights; every leg is a hard refusal. A `stratum.yaml` edit
+VFS, the architecture-appropriate token/layout contract, the five per-level content hashes
+(`curriculum`, `bars`, `affordances`, `training`, nullable `items_appearance`) and the seven
+pack-scope content hashes (`experiment`, `stratum`, `environment`, `actions`, nullable `items`,
+`variables`, nullable `effects`) before loading weights; every leg is a hard refusal. An effect
+body or a level's spawn rules therefore refuse resume too (they were outside every gate until
+2026-10-31). A `stratum.yaml` edit
 such as `boundary: clamp -> wrap` therefore refuses resume even though no level hash moves.
 Permission-only changes in ordinary or qualified item state move variable/VFS identity and
 refuse exact resume; so does a hidden variable's expression text or `semantic_type`, which

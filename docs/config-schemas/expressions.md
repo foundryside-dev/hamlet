@@ -21,9 +21,13 @@ The HAMLET Expression Language is a declarative, type-safe scripting language fo
 
 **Where expressions are used:**
 - **VFS (Variable & Feature System)**: Computed variables (`expression: "bar.energy < 0.2"`)
+- **Action writes and transition rules**: each write's `expression` and `condition`
 - **Effects System**: Dynamic effect values (`value: "bar.health + (0.2 * intensity)"`)
-- **Drive As Code (DAC)**: Reward modifiers (future), shaping bonuses (future)
-- **Action Dependencies**: Preconditions (future), resource costs (future)
+- **Item spawn predicates**: an appearance rule's `when:`
+- **Drive As Code (DAC)**: DAC does not parse expressions; it reads VFS variables, and a VFS
+  variable may be an expression variable. Declare the quantity as a global or agent expression
+  variable and name it in the drive (`extrinsic.type: vfs_variable` with `variable: x`, or
+  `variable_bonuses: [{variable: x, weight: w}]`); see `docs/config-schemas/drive_as_code.md`.
 
 **Key characteristics:**
 - **GPU-native**: Evaluates on batched tensors for vectorized environments
@@ -75,15 +79,18 @@ false
 
 ### Variables
 
-Simple identifiers reference values from the execution context:
+Simple identifiers reference values from the execution context. Besides declared variables
+and the engine names `tick` and `agent_id`, an active effect's pipeline binds three locals:
 
 ```
-intensity       # Effect intensity parameter
-duration        # Effect duration parameter
-slot_index      # Item inventory slot
+intensity           # the effect's intensity (effects only)
+elapsed_ticks       # ticks the effect has been active (effects only)
+duration_remaining  # ticks left before it expires (effects only)
 ```
 
-**Note**: Variables must be defined in the expression schema (VFS variables, effect parameters, etc.). Undefined variables fail type checking.
+**Note**: Variables must be declared (VFS variables) or be one of these engine names and
+effect locals; the names are reserved, so no variable may take them. Undefined variables fail
+type checking.
 
 ### References
 
@@ -196,6 +203,8 @@ variables:
     type: bool
     lifetime: episode
     semantic_type: custom
+    readable_by: [engine, agent]
+    writable_by: [engine]
     initial_value: false
     exposed_to: []
     expression: "bar.energy < 0.2 or bar.health < 0.3"
@@ -203,25 +212,48 @@ variables:
 
 ### Effect Conditions
 
+A pack's `effects` declaration (`effects.md`). A `modify` command's `value` is the new value,
+so an increment reads its target:
+
 ```yaml
-effects_catalog:
-  effects:
-    regeneration:
-      commands:
-        - type: "if"
-          condition: "bar.health < 0.5"
-          then:
-            - type: "modify"
-              path: "bar.health"
-              operation: "add"
-              value: 0.1
+version: "1.0"
+max_active_effects:
+  global: 0
+  agent: 1
+  item: 0
+  affordance: 0
+effect_definitions:
+  - id: "regeneration"
+    scope: agent
+    duration: 10
+    reapply_policy: renew
+    observable: true
+    on_spawn: []
+    on_tick:
+      - if: "bar.health < 0.5"
+        then:
+          - modify: bar.health
+            value: "bar.health + 0.1"
+        else: []
+    on_despawn: []
+    on_interrupt: []
 ```
 
 ### Spawn Conditions (Items)
 
+A level's `items_appearance` declaration (`items.md`); `is_winter` is a declared global
+`bool`, and the predicate reads it and the world's agent's meter:
+
 ```yaml
-spawn_rules:
+version: "1.0"
+items:
   - item_type: "apple"
+    spawn_count: 2
+    placement:
+      mode: random
+    schedule:
+      type: periodic
+      period: 50
     when: "not is_winter and bar.energy < 0.8"
 ```
 
@@ -651,6 +683,8 @@ expression: "if is_night and bar.energy < 0.3 then 3.0 else 1.0"
   type: bool
   lifetime: episode
   semantic_type: custom
+  readable_by: [engine, agent]
+  writable_by: [engine]
   initial_value: false
   exposed_to: []
   expression: "tick % 24 >= 18"
@@ -661,6 +695,8 @@ expression: "if is_night and bar.energy < 0.3 then 3.0 else 1.0"
   type: bool
   lifetime: episode
   semantic_type: custom
+  readable_by: [engine, agent]
+  writable_by: [engine]
   initial_value: false
   exposed_to: []
   expression: "bar.energy < 0.2 or bar.health < 0.2"
@@ -671,6 +707,8 @@ expression: "if is_night and bar.energy < 0.3 then 3.0 else 1.0"
   type: scalar
   lifetime: episode
   semantic_type: custom
+  readable_by: [engine, agent]
+  writable_by: [engine]
   initial_value: 1.0
   exposed_to: []
   expression: "max(0.1, 1.0 - (tick / 10000.0))"
@@ -911,13 +949,27 @@ VFS computed variables should have descriptive names:
 
 ```yaml
 # Bad
-- name: x
+- id: x
+  scope: agent
   type: bool
+  lifetime: episode
+  semantic_type: custom
+  readable_by: [engine, agent]
+  writable_by: [engine]
+  exposed_to: []
+  initial_value: false
   expression: "bar.energy < 0.2"
 
 # Good
-- name: energy_crisis
+- id: energy_crisis
+  scope: agent
   type: bool
+  lifetime: episode
+  semantic_type: custom
+  readable_by: [engine, agent]
+  writable_by: [engine]
+  exposed_to: []
+  initial_value: false
   expression: "bar.energy < 0.2"
 ```
 

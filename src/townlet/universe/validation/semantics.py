@@ -118,6 +118,140 @@ def _validate_item_placements(
                     )
 
 
+def _validate_item_arena_profiles(raw: RawConfigsV21, source_map: SourceMap | None, errors: CompilationErrorCollector) -> None:
+    """An item arena needs an item profile to store its rows in.
+
+    The registry refuses `max_items > 0` with no item profiles at environment construction
+    (`vfs/registry.py`); the two declarations are both visible here, so the refusal is
+    located at the arena size instead.
+    """
+    items = raw.items
+    if items is None:
+        return
+    if (items.max_items_in_world > 0 or items.max_items_per_agent > 0) and not raw.variables.item_profiles:
+        errors.add(
+            f"The item catalog declares an item arena (max_items_in_world={items.max_items_in_world}, "
+            f"max_items_per_agent={items.max_items_per_agent}) but variables.item_profiles is empty; item rows have no "
+            "profile to store their state in. Declare at least one item profile, or set both arena sizes to 0.",
+            code=ErrorCode.ITEM_ARENA_PROFILE_MISSING,
+            location=locate(source_map, "items:max_items_in_world", locate(source_map, "items")),
+        )
+
+
+def _validate_affordance_deployments(
+    raw: RawConfigsV21,
+    experiment_dir: Path,
+    source_map: SourceMap | None,
+    errors: CompilationErrorCollector,
+) -> None:
+    """Deployment against the placement mode, and fixed positions against the substrate.
+
+    With `training.randomize_affordances: false` the runtime places every deployed
+    affordance at its declared `deployment.positions[0]` (`vectorized_env._position_to_tensor`),
+    refusing a rank mismatch and a missing position only there, and never checking bounds
+    at all (a cell outside the grid is placed where no agent can reach it). Each of those is
+    a fact of the pack, so each is refused here at the line that declares it: every
+    deployed affordance must be `fixed`, and every fixed position the level declares must be
+    a position of the substrate. With `randomize_affordances: true` the runtime samples
+    positions and reads none of the declared ones, so nothing is checked.
+    """
+    substrate = raw.stratum.stratum.substrate
+    axes = grid_axis_sizes(substrate)
+    bounds: list[tuple[float, float]] | None = None
+    if substrate.type in {"continuous", "continuousnd"} and substrate.continuous is not None:
+        bounds = list(substrate.continuous.bounds)
+    if axes is not None:
+        rank: int | None = len(axes)
+        extent = "x".join(str(size) for size in axes)
+    elif bounds is not None:
+        rank = len(bounds)
+        extent = "x".join(f"[{low}, {high}]" for low, high in bounds)
+    else:
+        rank = None
+        extent = "aspatial"
+    for level_name, level in raw.levels.items():
+        if level.training.randomize_affordances:
+            continue
+        fallback = str(experiment_dir / "levels" / level_name / "affordances")
+        deployed = set(level.training.enabled_affordances)
+        for index, affordance in enumerate(level.affordances.affordances):
+            deployment = affordance.deployment
+            key = f"levels/{level_name}/affordances:affordances[{index}].deployment"
+            if rank is not None and affordance.name in deployed and deployment.type != "fixed":
+                errors.add(
+                    f"Affordance '{affordance.name}' has deployment.type='{deployment.type}' but level '{level_name}' declares "
+                    "training.randomize_affordances: false, so the runtime needs an explicit position for it. "
+                    "Declare deployment.type: fixed with positions, or set randomize_affordances: true.",
+                    code=ErrorCode.AFFORDANCE_POSITION_REQUIRED,
+                    location=locate(source_map, f"{key}.type", locate(source_map, key, fallback)),
+                )
+            if deployment.type != "fixed":
+                continue
+            positions_location = locate(source_map, f"{key}.positions", locate(source_map, key, fallback))
+            if rank is None:
+                errors.add(
+                    f"Affordance '{affordance.name}' declares fixed positions, but the substrate is aspatial and has no "
+                    "positions. Use deployment.type: random.",
+                    code=ErrorCode.AFFORDANCE_POSITION_SUBSTRATE,
+                    location=positions_location,
+                )
+                continue
+            for position in deployment.positions:
+                if len(position) != rank:
+                    errors.add(
+                        f"Affordance '{affordance.name}' fixed position {list(position)} has {len(position)} coordinate(s), "
+                        f"but the {substrate.type} substrate has rank {rank} ({extent}).",
+                        code=ErrorCode.AFFORDANCE_POSITION_SUBSTRATE,
+                        location=positions_location,
+                    )
+                    continue
+                if axes is not None:
+                    inside = all(0 <= coordinate < size for coordinate, size in zip(position, axes, strict=True))
+                else:
+                    assert bounds is not None
+                    inside = all(low <= coordinate <= high for coordinate, (low, high) in zip(position, bounds, strict=True))
+                if not inside:
+                    errors.add(
+                        f"Affordance '{affordance.name}' fixed position {list(position)} lies outside the {substrate.type} "
+                        f"substrate ({extent}); it would be placed where no agent can reach it.",
+                        code=ErrorCode.AFFORDANCE_POSITION_SUBSTRATE,
+                        location=positions_location,
+                    )
+
+
+def _validate_opening_hours_day_period(
+    raw: RawConfigsV21,
+    experiment_dir: Path,
+    source_map: SourceMap | None,
+    errors: CompilationErrorCollector,
+) -> None:
+    """Opening hours are authored on a 24-hour clock; refuse them on any other active day period.
+
+    The affordance gate compiles `time_in_window` over hours 0-23 and the affordance token
+    carries one open-hour lane per hour of a 24-tick day (`OPENING_HOURS_FEATURES`), so a
+    level whose resolved day clock period is not 24 would read its schedule against the
+    wrong clock. The gate only runs with active temporal mechanics, and an inactive level
+    declares no period, so only active levels are checked.
+    """
+    temporal_supported = raw.stratum.stratum.temporal_support == "enabled"
+    for level_name, level in raw.levels.items():
+        curriculum = level.curriculum.curriculum
+        day_length = curriculum.day_length
+        if not (temporal_supported and curriculum.active_temporal) or day_length is None or day_length == 24:
+            continue
+        fallback = str(experiment_dir / "levels" / level_name / "affordances")
+        for index, affordance in enumerate(level.affordances.affordances):
+            if not affordance.opening_hours.enabled:
+                continue
+            key = f"levels/{level_name}/affordances:affordances[{index}].opening_hours"
+            errors.add(
+                f"Affordance '{affordance.name}' declares opening_hours, but level '{level_name}' has a day clock period of "
+                f"{day_length}; opening hours currently require a 24-tick day period.",
+                code=ErrorCode.AFFORDANCE_OPENING_HOURS_DAY_PERIOD,
+                location=locate(source_map, key, locate(source_map, f"levels/{level_name}/affordances:{affordance.name}", fallback)),
+            )
+
+
 def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path, source_map: SourceMap | None) -> None:
     """Validate v2.1 semantic constraints after typed config loading.
 
@@ -255,6 +389,9 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path, source_map:
 
     grid_capacity = grid_capacity_for_substrate(substrate)
     _validate_item_placements(raw, experiment_dir, source_map, errors)
+    _validate_item_arena_profiles(raw, source_map, errors)
+    _validate_affordance_deployments(raw, experiment_dir, source_map, errors)
+    _validate_opening_hours_day_period(raw, experiment_dir, source_map, errors)
 
     for level_name, level in raw.levels.items():
         level_dir = experiment_dir / "levels" / level_name

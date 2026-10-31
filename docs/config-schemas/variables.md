@@ -50,7 +50,11 @@ entry remains a valid schema group for item types with no state variables.
   `persistent` retains state across episode resets, and the demo checkpoint saves it:
   checkpoint resume and live serving restore the saved value (tick and episode state is
   not saved; a resume starts a fresh episode). Authors choose this independently
-  of filename or scope, subject to item-arena restrictions below.
+  of filename or scope, subject to item-arena restrictions below. An `item_ref` may not be
+  `persistent`: item rows are episode state (`reset()` clears the arena and respawns into the
+  same rows), so a carried reference would name whatever the next episode puts there; it is
+  refused at the declaration line. A persistent `agent_ref` is admitted: a world's agent row
+  never changes.
 - **Initialization:** an explicit `initial_value`, or a supported tensor
   `initial_value_mode`. Reference null is an explicitly unbound value. Omitting a
   reference initial value is not the same as declaring null. A lifetime reset re-runs
@@ -69,13 +73,24 @@ entry remains a valid schema group for item types with no state variables.
   agent scalar/bool expressions produce an agent batch. An agent expression may read
   any global variable by bare name; the global profile evaluates before the agent profile
   each tick, so an agent expression sees this tick's global value. A global expression may
-  not read agent state (scope widening); it refuses at compile. A variable id may not
-  equal a meter name; the compiler refuses it at the symbol table with both origins
+  not read agent state (scope widening); it refuses at compile. A variable id must be an
+  expression identifier (`[A-Za-z_][A-Za-z0-9_]*`, not an expression keyword such as `true`,
+  `false`, `and`), may not take a reserved engine name (`tick`, `agent_id`, `self`, `target`,
+  `intensity`, `elapsed_ticks`, `duration_remaining`), and may not equal a meter name; the
+  compiler refuses a meter collision at the symbol table with both origins
   (`SYMBOL_METER_COLLISION`). Vector/tensor expression outputs
   and functions without a qualified shape refuse. A constant belongs in initialization.
 - **Exposure:** an empty list means hidden. Exposed variables require a supported bounded
   `normalization`; normalization on a hidden variable is refused. Exposure does not confer
-  new privacy guarantees.
+  new privacy guarantees. **Exposure composes through expressions, and that is the author's
+  responsibility:** `readable_by` gates who reads a variable by name, not what its
+  information reaches. An exposed expression over `readable_by: [engine]` inputs
+  (`hidden_score * immutable_scale`) compiles and publishes their combination in the agent's
+  observation; the engine-only variables themselves never get a token row. If an input must
+  stay hidden, do not expose an expression that reads it. An exposed value must be finite:
+  an exposed expression that divides by zero (or otherwise produces NaN/inf) compiles and
+  refuses at the first observation publish (`CompiledValueNormalizer received non-finite live
+  values`), loudly and data-dependently; guard the divisor (`where(d != 0.0, n / d, 0.0)`).
 - **Semantic type:** `temporal` or `custom`. An exposed variable's token descriptor carries
   it as a one-hot; a global `temporal` variable with `expression: tick` and a cyclical
   normalization is the pack's clock. The former members `bars`, `spatial`, `affordance` and
@@ -167,6 +182,9 @@ declared parameters that cannot enter a token (`[TOKEN-SPEC]`) — is a stage-7
 
 Item declarations use the same model, with `scope: item`, a declared `profile`,
 `lifetime: episode`, scalar/bool/reference literal state and an explicit semantic type.
+The item arena stores every profile's state in one float32 tensor; a pipeline reads each
+item variable in its declared type's dtype (a `bool` as a bool, a reference as an integer
+row), so `not item.flag` and `item.owner == r` mean what the type checker proved.
 The current item arena does not execute expressions, vectors, tensors or alternate
 lifetimes. Those declarations fail validation instead of being silently accepted.
 
@@ -242,6 +260,27 @@ scalar or agent-shaped values; a transition-rule write to a `global` target take
 only, to `agent` scalar or agent-shaped values, and to `affordance` scalar or
 affordance-shaped ones. A misfit refuses at compile (`VTC-WRITE-TYPE`) with the write's `file:line`.
 
+Two further write rules hold for action writes and transition rules alike, refused at compile
+(`VTC-WRITE-TYPE`, at the write's `file:line`):
+
+- **A vector or tensor target takes a constant.** A write expression is one number per row;
+  on a `vec*`/`tensor*` target it fills every element. A constant (a literal, or an expression
+  variable that is itself constant) fills them identically everywhere. A value that reads
+  state — a variable, a meter, a global, `agent_id` — would be spread over the elements
+  implicitly, so it is refused; declare a scalar variable for a per-row quantity. (An
+  occupancy claim's payload lands in a slot, not across elements, and is exempt.)
+- **`clamp` bounds a number.** A `clamp` on a `bool` target (a truth value) or on an
+  `agent_ref`, `item_ref`, `affordance_ref` or `effect_ref` target (a row index, which a clamp
+  would rewrite into another row) is refused; write `clamp: null`. A `capacity_claim`'s clamp
+  declares its slot count and is exempt.
+
+A transition rule may target a meter (`variable_id: bar.<name>`). It commits to the meter as
+an action write does — masked by its world's activity, composed, clamped by the write's
+`clamp` — and the meter is then held to its declared bounds at `clamp_and_validate`. A meter
+write scheduled after `clamp_and_validate` (at `evaluate_terminal_conditions`) is refused
+(`UAC-STATIC-WRITE`), since it would escape those bounds; a rule meant to end the episode this
+tick (a lethal meter to its bound) belongs at `apply_transition_rules`.
+
 Expressions are evaluated once per instant, after every transition phase that writes VFS
 state (action writes, scheduled effects, transition rules) and after
 `clamp_and_validate`, so an expression always reads this tick's writes and clamped bars.
@@ -253,6 +292,24 @@ observation all see k+1, as does the hour that gates the next action's opening h
 spawn and the first observation, so no expression ever shows its declared literal or a
 previous episode's value. An expression derived from `tick` is therefore `episode`
 lifetime, like `tick` itself.
+
+**One exception: `evaluate_terminal_conditions`.** It is the one phase after the expression
+evaluation (group 5 above). A transition rule scheduled there writes after expressions have
+been evaluated for the instant, so an expression reading its target sees the write **one
+tick late**: with `g += 1` at `evaluate_terminal_conditions` and `g2: g * 2.0`, the
+committed pairs `(g, g2)` are `(1, 0), (2, 2), (3, 4)`, where at any earlier phase they are
+`(1, 2), (2, 4), (3, 6)`. The observation and the reward also see the rule's write that
+tick, but expressions do not until the next. Schedule a rule whose target an expression
+reads at `clamp_and_validate` or earlier. (A rule on a meter cannot run there; see above.)
+
+**Writes within one phase read the phase-entry snapshot.** All the transition rules (and,
+separately, all the action writes) scheduled at one phase evaluate their expressions and
+conditions against the state as it was when the phase began, then commit in priority order.
+So a priority-0 write is not visible to a priority-1 write in the same phase, whether that
+write reads the target directly or through an inlined expression variable; two
+`additive_delta` writes to one target both apply (each composes onto the running value); a
+rule that reads its own target sees the entry value; and on `overwrite`/`priority_write` the
+later-priority write wins. To make one write see another, schedule it at a later phase.
 
 An action write or transition rule that reads an expression variable reads the
 expression evaluated on the state the write sees, not a stored value: the compiler
@@ -379,8 +436,8 @@ writes. Runtime APIs also check attempted writes, even if the value is unchanged
 Item `initial_state` is not an authored command/appearance field; constructed runtime
 spawn overrides are checked as writes before allocation.
 
-The runtime snapshots validated roles once. `get`, `set`, `get_global`, `get_agent`,
-`read_item` and `write_item` require explicit actors; `set_engine_value` has a fixed,
+The runtime snapshots validated roles once. `get`, `set`, `read_item` and `write_item`
+require explicit actors; `set_engine_value` has a fixed,
 checked engine actor. Item access requires a live row with the matching qualified
 profile. Returned values do not expose a mutable storage view. Publisher binding plans
 check the same immutable policy authority before batched gathers.

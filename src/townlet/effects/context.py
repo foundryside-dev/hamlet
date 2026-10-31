@@ -9,6 +9,7 @@ import torch
 
 from townlet.vfs.registry import VariableRegistry
 from townlet.vfs.schema import VariableScope
+from townlet.vfs.storage_dtype import storage_dtype
 from townlet.world.expression.references import Reference, ReferenceKind, parse_reference
 
 if TYPE_CHECKING:
@@ -212,15 +213,25 @@ class ExecutionContext:
         return item
 
     def read_item_state(self, item_row: int) -> dict[str, torch.Tensor]:
-        """Every state variable of the item at ``item_row``, by name."""
+        """Every state variable of the item at ``item_row``, by name, in its declared type's storage dtype.
+
+        The item arena is one float32 tensor shared by every profile, so a ``bool`` or a
+        reference column holds a float. Each read is cast to the dtype its declared type
+        stores as (``vfs.storage_dtype``), the dtype the type checker proved the
+        expression against: ``not item.flag`` needs a bool tensor, ``item.owner == r`` a
+        long one.
+        """
         registry = self._registry()
         profile_name = registry.get_item_profile_for_index(item_row)
         if profile_name is None:
             raise KeyError(f"No item profile registered for vfs_index {item_row}")
-        return {
-            name: torch.as_tensor(registry.read_item(profile_name, name, item_row, reader="engine"), device=self._device())
-            for name in registry.item_profile_map[profile_name]
-        }
+        state: dict[str, torch.Tensor] = {}
+        for name in registry.item_profile_map[profile_name]:
+            var_type = registry.get_item_variable_type(profile_name, name)
+            assert var_type is not None, (profile_name, name)
+            value = registry.read_item(profile_name, name, item_row, reader="engine")
+            state[name] = torch.as_tensor(value, dtype=storage_dtype(var_type), device=self._device())
+        return state
 
     def get_path(self, path: str) -> torch.Tensor:
         """The value ``path`` names in this pipeline's world, resolved through the one reference grammar.

@@ -42,7 +42,9 @@ class SubstrateActionsConfig(StrictBaseModel):
 class CustomActionConfig(StrictBaseModel):
     """Custom action definition."""
 
-    name: str = Field(..., description="Action name (e.g., 'INTERACT', 'WAIT')")
+    # The runtime `ActionConfig` (environment/action_config.py) requires a nonempty name;
+    # the authoring DTO enforces the same, so an empty name refuses at parse, not at env build.
+    name: str = Field(..., min_length=1, description="Action name (e.g., 'REST', 'MEDITATE')")
     description: str = Field(..., description="Human-readable description")
     enabled_by_default: bool = Field(..., description="Whether this action is enabled by default")
     source_affordance: str | None = Field(

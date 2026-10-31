@@ -8,6 +8,8 @@ import json
 from collections.abc import Iterable, Mapping
 from typing import TYPE_CHECKING, Any
 
+from townlet.config.effects_config import EffectsConfig
+from townlet.config.items_config import ItemsAppearanceConfig
 from townlet.config.variables_config import VariablesConfig
 from townlet.vfs.profiles import CompiledGlobalProfile, CompiledItemProfile
 from townlet.vfs.schema import NormalizationSpec, VariableDef, VariableScope
@@ -40,9 +42,13 @@ __all__ = [
     "canonical_transition_graph_schema",
     "canonical_variable_schema",
     "canonical_variables_declaration",
+    "canonical_effects_declaration",
+    "canonical_items_appearance_declaration",
     "compute_action_schema_hash",
     "compute_actions_hash",
+    "compute_effects_hash",
     "compute_expression_schema_hash",
+    "compute_items_appearance_hash",
     "compute_transition_graph_hash",
     "compute_variable_schema_hash",
     "compute_variables_hash",
@@ -268,6 +274,70 @@ def compute_actions_hash(config: ActionsConfig) -> str:
 
 
 _EXPRESSION_PARSER = ExpressionParser()
+
+# The command fields the effects compiler parses as expressions (`effects/compiler.py`:
+# `value`, `if`, `switch`, `cases[].when`, `delay`, and the spawn `target`). Every other
+# field is a name or a literal and hashes as text.
+_COMMAND_EXPRESSION_FIELDS = ("value", "if", "switch", "delay", "target")
+_COMMAND_BODY_FIELDS = ("then", "else", "do", "parallel", "default")
+
+
+def _canonical_command(command: Mapping[str, Any]) -> dict[str, Any]:
+    """One effect command node with its expression text canonicalized, recursively."""
+    entry: dict[str, Any] = _plain_payload(command)
+    for field in _COMMAND_EXPRESSION_FIELDS:
+        if entry.get(field) is not None:
+            entry[field] = _canonical_expression_text(entry[field])
+    for field in _COMMAND_BODY_FIELDS:
+        if entry.get(field):
+            entry[field] = [_canonical_command(child) for child in entry[field]]
+    if entry.get("cases"):
+        entry["cases"] = [
+            {"when": _canonical_expression_text(case["when"]), "do": [_canonical_command(child) for child in case["do"]]}
+            for case in entry["cases"]
+        ]
+    return entry
+
+
+def canonical_effects_declaration(config: EffectsConfig) -> dict[str, Any]:
+    """The ``effects`` declaration as content: pipeline expressions as canonical ASTs.
+
+    The pack hash for effect dynamics (compiler re-review N5): an effect body edit such as
+    ``item.condition - (1.0 * intensity)`` becoming ``50.0 * intensity`` moved only the cache
+    fingerprint before this. ``by_alias`` keeps the authored spellings (``if``/``else``/``do``)
+    that ``CommandConfig``'s serializer emits for exactly the keys each node authored.
+    """
+    payload: dict[str, Any] = config.model_dump(mode="json", by_alias=True)
+    for definition in payload["effect_definitions"]:
+        for stage in ("on_spawn", "on_tick", "on_despawn", "on_interrupt"):
+            definition[stage] = [_canonical_command(command) for command in definition[stage]]
+    return payload
+
+
+def compute_effects_hash(config: EffectsConfig | None) -> str | None:
+    """The SHA-256 digest of the canonical ``effects`` declaration; None when the pack declares none."""
+    if config is None:
+        return None
+    return _hash_payload(canonical_effects_declaration(config))
+
+
+def canonical_items_appearance_declaration(config: ItemsAppearanceConfig) -> dict[str, Any]:
+    """A level's ``items_appearance`` declaration as content: the ``when`` predicate as its AST.
+
+    Rule order is semantic (rules apply in authored order), so the list keeps it. The compiled
+    ``when_ast`` is excluded from the dump by the DTO; the text is re-parsed here.
+    """
+    payload: dict[str, Any] = config.model_dump(mode="json")
+    for rule in payload["items"]:
+        rule["when"] = _canonical_expression_text(rule["when"])
+    return payload
+
+
+def compute_items_appearance_hash(config: ItemsAppearanceConfig | None) -> str | None:
+    """The SHA-256 digest of the canonical ``items_appearance`` declaration; None when the level declares none."""
+    if config is None:
+        return None
+    return _hash_payload(canonical_items_appearance_declaration(config))
 
 
 def _canonical_expression_text(text: str | None) -> dict[str, Any] | None:

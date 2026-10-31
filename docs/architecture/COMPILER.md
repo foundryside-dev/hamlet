@@ -206,9 +206,11 @@ compiler assessment and is slated for deletion by the in-flight cleanup (§7).
 
 **Checkpoint identity is a separate contract from the cache.** `config_hash` is the cache
 fingerprint; the checkpoint gate is `assert_checkpoint_identity`
-(`src/townlet/training/checkpoint_utils.py`), which hard-compares thirteen of the artifact's
-declared `*_hash` fields, including the six pack-scope hashes (`variables_hash` is canonical
-declaration content, not a pydantic dump: a declaration moved between files does not move it);
+(`src/townlet/training/checkpoint_utils.py`), which hard-compares fifteen of the artifact's
+declared `*_hash` fields, including the seven pack-scope hashes (`actions_hash`,
+`variables_hash` and `effects_hash` are canonical declaration content, not a pydantic dump:
+expression text enters as its AST, and a `variables` declaration moved between files does not
+move it) and the five per-level hashes (`items_appearance_hash` joined on 2026-10-31);
 `config_hash` is not stamped. Full declared-vs-enforced breakdown: `HLD.md` §5.2.
 
 A rough edge README records here is **fixed**: README §Known rough edges (stamped 2026-08-20)

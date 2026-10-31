@@ -162,7 +162,11 @@ from townlet.world.expression.references import ENTITY_NAMES
 # namespace from the compiled roster (`Namespace.of_registry`), exactly as the compiler does.
 # Hydrated command and spawn-predicate ASTs inline pure expression variables; a 1.38
 # artifact carries the deleted fields and old spellings, so it is refused as stale.
-COMPILED_SCHEMA_VERSION = "1.39"
+# 1.40: two hashes join checkpoint identity (compiler re-review N5, 2026-10-31): the pack-scope
+# `effects_hash` (canonical content of the `effects` declaration, None without one) and each
+# level's `items_appearance_hash` (canonical spawn rules, None without a declaration). Both
+# are required on load; a 1.39 artifact lacks them and is refused as stale.
+COMPILED_SCHEMA_VERSION = "1.40"
 
 REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "compiled_schema_version",
@@ -187,6 +191,7 @@ REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "actions_hash",
     "items_hash",
     "variables_hash",
+    "effects_hash",
     "all_levels",
 )
 
@@ -265,6 +270,9 @@ class CompiledUniverse:
     environment_hash: str | None = None
     actions_hash: str | None = None
     items_hash: str | None = None
+    # The seventh pack-scope content hash: canonical content of the `effects` declaration
+    # (`townlet.vfs.schema_hashes.compute_effects_hash`); None when the pack declares none.
+    effects_hash: str | None = None
 
     @property
     def brain_forked(self) -> bool:
@@ -303,6 +311,9 @@ class CompiledUniverse:
         bars_hash: str | None
         affordances_hash: str | None
         training_hash: str | None
+        # Canonical content of the level's spawn rules (`compute_items_appearance_hash`);
+        # None when the level declares no item appearance. Compared on resume.
+        items_appearance_hash: str | None
         # Spawn rules; `None` when the level declares no item appearance. Each rule's
         # `when_ast` is derived from its `when` text (re-parsed on load, never serialized).
         items_appearance: ItemsAppearanceConfig | None
@@ -385,6 +396,7 @@ class CompiledUniverse:
             environment_hash=self.environment_hash,
             actions_hash=self.actions_hash,
             items_hash=self.items_hash,
+            effects_hash=self.effects_hash,
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -407,8 +419,11 @@ class CompiledUniverse:
             ),
             "vfs_history_spec": self.vfs_history_spec,
             "vfs_evaluation_marks": (
-                {k: list(v) for k, v in self.vfs_evaluation_marks.items()} if self.vfs_evaluation_marks is not None else None
-            ),  # Convert sets to lists for JSON serialization
+                # Sets become sorted lists: the artifact bytes do not follow PYTHONHASHSEED.
+                {k: sorted(v) for k, v in self.vfs_evaluation_marks.items()}
+                if self.vfs_evaluation_marks is not None
+                else None
+            ),
             "experiment_dir": None if self.experiment_dir is None else str(self.experiment_dir),
             "brain_hash": self.brain_hash,
             "pack_brain_hash": self.pack_brain_hash,
@@ -418,6 +433,7 @@ class CompiledUniverse:
             "actions_hash": self.actions_hash,
             "items_hash": self.items_hash,
             "variables_hash": self.variables_hash,
+            "effects_hash": self.effects_hash,
             "all_levels": {
                 name: {
                     "level_name": meta.level_name,
@@ -429,6 +445,7 @@ class CompiledUniverse:
                     "bars_hash": meta.bars_hash,
                     "affordances_hash": meta.affordances_hash,
                     "training_hash": meta.training_hash,
+                    "items_appearance_hash": meta.items_appearance_hash,
                     "curriculum": meta.curriculum.model_dump(),
                     "training": meta.training.model_dump(),
                     "token_spec": _serialize_token_spec(meta.token_spec),
@@ -523,6 +540,7 @@ class CompiledUniverse:
                 bars_hash=_required_field(meta, f"all_levels.{name}.bars_hash"),
                 affordances_hash=_required_field(meta, f"all_levels.{name}.affordances_hash"),
                 training_hash=_required_field(meta, f"all_levels.{name}.training_hash"),
+                items_appearance_hash=_required_field(meta, f"all_levels.{name}.items_appearance_hash"),
                 curriculum=level_curriculum,
                 training=level_training,
                 token_spec=_token_spec_from_plain(_required_field(meta, f"all_levels.{name}.token_spec")),
@@ -596,6 +614,7 @@ class CompiledUniverse:
             actions_hash=_required_field(payload, "actions_hash"),
             items_hash=_required_field(payload, "items_hash"),
             variables_hash=_required_field(payload, "variables_hash"),
+            effects_hash=_required_field(payload, "effects_hash"),
             all_levels=all_levels,
         )
         _validate_compiled_token_coherence(compiled)

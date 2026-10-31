@@ -11,7 +11,7 @@ from townlet.vfs.access_policy import validate_static_access
 from townlet.vfs.schema import NormalizationSpec, VariableScope
 from townlet.vfs.semantic_type import SemanticType
 from townlet.vfs.storage_dtype import BATCH_ROW_REFERENCE_TYPES
-from townlet.world.expression.references import RESERVED_NAMES
+from townlet.world.expression.references import EXPRESSION_KEYWORDS, IDENTIFIER_GRAMMAR, RESERVED_NAMES, is_identifier
 
 VariableType = Literal[
     "scalar",
@@ -63,17 +63,19 @@ class VariableDeclaration(BaseModel):
     @model_validator(mode="after")
     def validate_contract(self) -> VariableDeclaration:
         validate_static_access(self.id, self.readable_by, self.writable_by, self.exposed_to)
-        if "[" in self.id or "]" in self.id:
-            raise ValueError(f"Variable '{self.id}' cannot contain slot-index delimiters")
+        if not is_identifier(self.id):
+            # One grammar: the expression lexer's identifier rule and keyword table. A dotted
+            # name is a qualified reference ('bar.<meter>', 'item.<name>'), `true`/`false`
+            # are the literals, `and`/`or`/`not`/`if`/`then`/`else` the operators; anything
+            # else could never be read.
+            raise ValueError(
+                f"Variable id '{self.id}' is not an expression identifier ({IDENTIFIER_GRAMMAR}, not a keyword: "
+                f"{', '.join(sorted(EXPRESSION_KEYWORDS))}); no expression could reference it. Choose another id."
+            )
         if self.scope != VariableScope.ITEM and self.id in RESERVED_NAMES:
             raise ValueError(
                 f"Variable id '{self.id}' is reserved: the engine or an effect pipeline binds it by bare name "
                 f"(reserved: {', '.join(sorted(RESERVED_NAMES))}). Choose another id."
-            )
-        if "." in self.id:
-            raise ValueError(
-                f"Variable '{self.id}' cannot contain '.': a variable is read by its bare id, and a dotted name "
-                "is a qualified reference ('bar.<meter>', 'item.<name>')"
             )
         has_literal = "initial_value" in self.model_fields_set
         has_mode = self.initial_value_mode is not None
@@ -95,6 +97,12 @@ class VariableDeclaration(BaseModel):
                 raise ValueError(f"Item variable '{self.id}' lifetime must be episode")
         elif self.profile is not None:
             raise ValueError(f"Variable '{self.id}' profile is only meaningful for item scope")
+        if self.type == "item_ref" and self.lifetime == "persistent":
+            raise ValueError(
+                f"Variable '{self.id}' is an item_ref with lifetime persistent, but item rows are episode-lifetime: "
+                "reset() clears the item arena and respawns into the same rows, so a carried reference would name "
+                "whatever item the next episode puts there. Declare it lifetime: episode."
+            )
         if bool(self.exposed_to) != (self.normalization is not None):
             raise ValueError(f"Variable '{self.id}' normalization is required exactly when exposed_to is nonempty")
         if self.exposed_to and self.scope not in {VariableScope.GLOBAL, VariableScope.AGENT, VariableScope.ITEM}:

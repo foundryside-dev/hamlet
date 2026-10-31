@@ -24,7 +24,9 @@ _DIGEST_BUFFER_SIZE = 1024 * 1024  # 1 MiB chunks keep memory bounded
 # replay artifact now carries only the compact observation ABI and validates before
 # any runtime state is applied. The immediately previous version describes a different ABI.
 # 7: persistent-lifetime VFS registry state (`vfs_persistent_state`) is part of resume.
-CHECKPOINT_FORMAT_VERSION = 7
+# 8: `effects_hash` (pack scope) and `items_appearance_hash` (level scope) are stamped and
+#    compared (compiler re-review N5): effect dynamics and spawn rules were outside every gate.
+CHECKPOINT_FORMAT_VERSION = 8
 
 # The complete DemoRunner artifact. Producers and both consumers share this one
 # closed schema: only artifacts emitted by the current code are accepted.
@@ -63,17 +65,37 @@ DEMO_CHECKPOINT_KEYS = frozenset(
         "actions_hash",
         "items_hash",
         "variables_hash",
+        "effects_hash",
+        "items_appearance_hash",
     }
 )
 
-# The six pack-scope content hashes. Five are `_compute_pydantic_hash` over the parsed
-# declaration (compiler stage 1); `variables_hash` is the canonical content of the
-# discovered `variables` declaration (`townlet.vfs.schema_hashes.compute_variables_hash`),
-# so a declaration moved between files does not move it. `items_hash` is None when the
-# pack declares no item arena; that None is a stamped value, and None-versus-value is a
-# change like any other.
-PACK_HASH_KEYS = ("experiment_hash", "stratum_hash", "environment_hash", "actions_hash", "items_hash", "variables_hash")
-_NULLABLE_PACK_HASH_KEYS = frozenset({"items_hash"})
+# The seven pack-scope content hashes. Four are `_compute_pydantic_hash` over the parsed
+# declaration (compiler stage 1); `actions_hash`, `variables_hash` and `effects_hash` are
+# canonical content (`townlet.vfs.schema_hashes`: expression text as its AST, and for
+# `variables` a declaration moved between files does not move it). `items_hash` is None when
+# the pack declares no item arena and `effects_hash` is None when it declares no effects;
+# that None is a stamped value, and None-versus-value is a change like any other.
+PACK_HASH_KEYS = (
+    "experiment_hash",
+    "stratum_hash",
+    "environment_hash",
+    "actions_hash",
+    "items_hash",
+    "variables_hash",
+    "effects_hash",
+)
+_NULLABLE_PACK_HASH_KEYS = frozenset({"items_hash", "effects_hash"})
+# The five per-level content hashes `assert_checkpoint_dimensions` hard-compares beside
+# `drive_hash`. `items_appearance_hash` is None when the level declares no spawn rules.
+LEVEL_HASH_KEYS = (
+    ("curriculum_hash", "curriculum"),
+    ("bars_hash", "bars"),
+    ("affordances_hash", "affordances"),
+    ("training_hash", "training"),
+    ("items_appearance_hash", "items_appearance"),
+)
+_NULLABLE_LEVEL_HASH_KEYS = frozenset({"items_appearance_hash"})
 SUBSTRATE_METADATA_KEYS = frozenset({"position_dim", "substrate_type"})
 
 logger = logging.getLogger(__name__)
@@ -187,6 +209,7 @@ def attach_universe_metadata(checkpoint: dict[str, Any], universe: CompiledUnive
     checkpoint["bars_hash"] = level.bars_hash
     checkpoint["affordances_hash"] = level.affordances_hash
     checkpoint["training_hash"] = level.training_hash
+    checkpoint["items_appearance_hash"] = level.items_appearance_hash
     checkpoint["brain_hash"] = universe.brain_hash
     # PDR-0027: the pack baseline beside the effective hash, so a lineage fork (a per-level
     # brain.yaml override) is stated at load time instead of discovered at runtime.
@@ -198,9 +221,10 @@ def attach_universe_metadata(checkpoint: dict[str, Any], universe: CompiledUnive
     # `layout_hash` is the flat-net contract (capacities, slot bindings, total_dims).
     checkpoint["token_type_schema_hash"] = level.token_type_schema_hash
     checkpoint["layout_hash"] = level.layout_hash
-    # The six pack-scope content hashes (hamlet-2dde1015fe; `variables_hash` from VFS
-    # round-2 F5): a stratum, environment, actions, experiment, items or variables edit
-    # moves one of these even when no level hash moves.
+    # The seven pack-scope content hashes (hamlet-2dde1015fe; `variables_hash` from VFS
+    # round-2 F5; `effects_hash` from the compiler re-review N5): a stratum, environment,
+    # actions, experiment, items, variables or effects edit moves one of these even when no
+    # level hash moves.
     for key in PACK_HASH_KEYS:
         checkpoint[key] = getattr(universe, key)
 
@@ -336,26 +360,23 @@ def assert_checkpoint_dimensions(
             "The network architecture configuration has changed since the checkpoint was created."
         )
 
-    # WS-1 task 4: the four per-level content hashes. Computed and serialized since the
+    # WS-1 task 4: the per-level content hashes. Computed and serialized since the
     # compiler was written, compared by nobody until now — a level's bars/affordances/
     # curriculum/training could change under a checkpoint with no signal at all.
     # These copy the drive_hash pattern deliberately: missing on either side RAISES.
     # Do not reintroduce an `if universe.<x> is not None` escape; that is what made the
-    # brain_hash guard above vacuous on one side.
-    for key, description in (
-        ("curriculum_hash", "curriculum"),
-        ("bars_hash", "bars"),
-        ("affordances_hash", "affordances"),
-        ("training_hash", "training"),
-    ):
+    # brain_hash guard above vacuous on one side. `items_appearance_hash` is the one
+    # nullable leg: None is the stamped value of a level with no spawn rules, and
+    # None-versus-digest is a changed world (rules appeared or vanished).
+    for key, description in LEVEL_HASH_KEYS:
         current = getattr(level, key)
-        if current is None:
+        if current is None and key not in _NULLABLE_LEVEL_HASH_KEYS:
             raise ValueError(f"Universe missing {key}; recompile the config pack.")
         _require_hash_match(checkpoint, key, current, f"The {description} configuration")
 
 
 def assert_checkpoint_pack_hashes(checkpoint: Mapping[str, Any], universe: CompiledUniverse) -> None:
-    """Hard-compare the six pack-scope content hashes (hamlet-2dde1015fe, findings F2).
+    """Hard-compare the seven pack-scope content hashes (hamlet-2dde1015fe, findings F2).
 
     Grid size is pack scope and no level can override it, so a `stratum.yaml` edit —
     `boundary: clamp -> wrap`, `distance_metric: manhattan -> chebyshev` — moves no level
@@ -366,9 +387,9 @@ def assert_checkpoint_pack_hashes(checkpoint: Mapping[str, Any], universe: Compi
     any file, and a hidden variable's `semantic_type` or expression text is as much a part
     of it as an exposed one's normalization.
 
-    `items_hash` is nullable (no item arena declared). ``None`` on one side and a digest on
-    the other IS a changed world: a catalog appeared or vanished. There is no
-    ``universe.items_hash is None`` escape here on purpose.
+    `items_hash` and `effects_hash` are nullable (no item arena, no effects declared).
+    ``None`` on one side and a digest on the other IS a changed world: a catalog appeared or
+    vanished. There is no ``universe.items_hash is None`` escape here on purpose.
     """
     for key in PACK_HASH_KEYS:
         current = getattr(universe, key)

@@ -21,6 +21,7 @@ type checker admits is a spelling the runtime serves.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from enum import StrEnum
 
@@ -31,13 +32,40 @@ __all__ = [
     "ENTITY_NAMES",
     "ENTITY_SELF",
     "ENTITY_TARGET",
+    "EXPRESSION_KEYWORDS",
+    "IDENTIFIER_BODY_CHARS",
+    "IDENTIFIER_GRAMMAR",
+    "IDENTIFIER_START_CHARS",
     "ITEM_ROOT",
     "METER_ROOT",
     "RESERVED_NAMES",
     "Reference",
     "ReferenceKind",
+    "is_identifier",
     "parse_reference",
 ]
+
+IDENTIFIER_START_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_"
+IDENTIFIER_BODY_CHARS = IDENTIFIER_START_CHARS + "0123456789"
+"""The expression lexer's identifier alphabet (``ExpressionParser`` builds its ``Word`` from these)."""
+
+IDENTIFIER_GRAMMAR = "[A-Za-z_][A-Za-z0-9_]*"
+"""The identifier rule, spelled for a diagnostic."""
+_IDENTIFIER = re.compile(rf"{IDENTIFIER_GRAMMAR}\Z")
+
+EXPRESSION_KEYWORDS: frozenset[str] = frozenset({"true", "false", "and", "or", "not", "if", "then", "else"})
+"""The words the expression parser reads as literals or operators; never a variable."""
+
+
+def is_identifier(text: str) -> bool:
+    """Whether ``text`` is a bare name an expression can reference.
+
+    One grammar for a registry variable id and for the parser's identifier token: a name
+    that fails this could never be read (``'a b'``, ``1x``, ``x-y``, ``énergie``), or would
+    be read as something else (``true`` is the literal, ``and`` the operator).
+    """
+    return _IDENTIFIER.match(text) is not None and text not in EXPRESSION_KEYWORDS
+
 
 METER_ROOT = "bar"
 ITEM_ROOT = "item"

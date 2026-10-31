@@ -212,8 +212,7 @@ def _freshness(compiled: CompiledUniverse, source_pack: Path | None, requested_l
     if not source_pack.is_dir():
         return {"status": "unknown", "source_pack": str(source_pack), "reasons": [f"source pack {source_pack} not found"]}
     reasons = UniverseCompiler().cache_staleness(compiled, source_pack)
-    if requested_level is not None and compiled.metadata.primary_level != requested_level:
-        reasons.append(f"artifact is for level '{compiled.metadata.primary_level}', not '{requested_level}'")
+    assert requested_level is None or compiled.metadata.primary_level == requested_level
     return {"status": "stale" if reasons else "fresh", "source_pack": str(source_pack), "reasons": reasons}
 
 
@@ -248,6 +247,17 @@ def _cmd_inspect(args: argparse.Namespace) -> int:
         # The same breadth as the compile cache read (_read_cache_artifact): any malformed
         # artifact — wrong schema, wrong types, not msgpack at all — is a coded refusal.
         raise _refusal(INSPECT_STAGE, ErrorCode.ARTIFACT_LOAD_REFUSED, artifact_path, f"{type(exc).__name__}: {exc}") from exc
+
+    # An artifact is one level's projection; asked for another level, it is the wrong
+    # artifact, not a stale one (the cache fast-path refuses the same mislabelling).
+    if args.primary_level is not None and compiled.metadata.primary_level != args.primary_level:
+        raise _refusal(
+            INSPECT_STAGE,
+            ErrorCode.ARTIFACT_LOAD_REFUSED,
+            artifact_path,
+            f"Compiled artifact declares primary_level '{compiled.metadata.primary_level}' but was requested for "
+            f"'{args.primary_level}'; inspect the artifact for that level instead.",
+        )
 
     # Given a pack directory, freshness is checked against it; given an artifact file,
     # against the pack the artifact records (a copied pack's artifact still names its source).

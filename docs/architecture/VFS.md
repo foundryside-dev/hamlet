@@ -269,7 +269,7 @@ Phase 1 proves that VFS can:
 - preserve checkpoint compatibility through regression tests,
 - and attach declared writes to action definitions, whose reads the compiler derives.
 
-The repo no longer has "no transition compiler." The implemented VFS read path already parses profile expressions into ASTs, type-checks them, topologically sorts profile dependencies, and evaluates derived variables through `VFSEvaluator` in mark-and-sweep or eager mode. The action-write path also has an initial VTC slice: `ActionConfig.writes` compile into parsed, phase-ordered `VTCActionWriteProgram` rules that execute masked tensor writes during `env.step`.
+The repo no longer has "no transition compiler." The implemented VFS read path already parses profile expressions into ASTs, type-checks them, topologically sorts profile dependencies, and evaluates derived variables through `VFSEvaluator` by mark-and-sweep (the marked expressions and their in-profile dependencies, in dependency order, once per instant; statics are storage and are never re-evaluated). There is one evaluation mode: the former `eager` mode and its `evaluation_mode` field are deleted. The action-write path also has an initial VTC slice: `ActionConfig.writes` compile into parsed, phase-ordered `VTCActionWriteProgram` rules that execute masked tensor writes during `env.step`.
 
 The remaining VTC gap is full transition unification: write-expression type/shape validation, passive dynamics, cascades, temporal rules, rewards, terminal checks, telemetry, and non-action world physics still need to move into one validated transition graph.
 
@@ -306,9 +306,10 @@ Notes against the design-era shape this replaced:
   `agent`. Role names such as `bac` or `vtc` fail validation.
 - There is no `range` field. Bounds come from a write's `clamp` and from the exposure
   normalization.
-- A variable id may not equal a meter name (`SYMBOL_METER_COLLISION`), may not contain `.`, and
-  may not take a reserved engine name (`tick`, `agent_id`, `intensity`, `elapsed_ticks`,
-  `duration_remaining`). That is why this example is not called `energy`.
+- A variable id must be an expression identifier (`[A-Za-z_][A-Za-z0-9_]*`, not a keyword such
+  as `true`/`false`/`and`), may not equal a meter name (`SYMBOL_METER_COLLISION`), and may not
+  take a reserved engine name (`tick`, `agent_id`, `self`, `target`, `intensity`,
+  `elapsed_ticks`, `duration_remaining`). That is why this example is not called `energy`.
 
 Future versions could extend metadata so variables describe more of their causal role. This is
 a proposal: `metadata` is not a field today and fails at parse.
@@ -922,26 +923,48 @@ schema mismatch refuses before network or optimizer state mutates.
 
 ### 9.1 Current strategy
 
-Inputs should generally be normalised to `[0, 1]` or `[-1, 1]` for stable learning.
+Inputs should generally be normalised to `[0, 1]` or `[-1, 1]` for stable learning. Two entries
+of a pack's `variables.declarations`:
 
 ```yaml
-# Good: meter normalised to [0, 1]
+# Exposed: a meter-derived value normalised to [0, 1]
 - id: "obs_energy"
+  scope: "agent"
+  type: "scalar"
+  lifetime: "episode"
+  semantic_type: "custom"
+  readable_by: ["engine", "agent"]
+  writable_by: ["engine"]
+  exposed_to: ["agent"]
+  initial_value: 0.0
+  expression: "bar.energy"
   normalization:
     kind: "minmax"
     min: 0.0
     max: 1.0
+    clip: true
 
-# Warning: unbounded money may harm learning
-- id: "obs_money"
+# Hidden: no normalization (it is refused on a hidden variable). An unbounded value cannot
+# be exposed raw: exposure admits only bounded kinds (§9.3).
+- id: "raw_money"
+  scope: "agent"
+  type: "scalar"
+  lifetime: "episode"
+  semantic_type: "custom"
+  readable_by: ["engine"]
+  writable_by: ["engine"]
+  exposed_to: []
+  initial_value: 0.0
+  expression: "bar.money"
   normalization: null
 ```
 
 The existing Townlet convention keeps survival meters in `[0.0, 1.0]`. Money is also normalised in baseline packs, where `1.0` approximates `$100`.
 
-### 9.2 Recommended extensions
+### 9.2 Normalisation kinds
 
-Supported normalisation types should include:
+`NormalizationSpec` (`vfs/schema.py`) parses this vocabulary; exposure admits the four bounded
+kinds of §9.3 (`minmax`, `log_scaled`, `cyclical_sin_cos`, `binary`) and refuses the rest:
 
 ```text
 none
@@ -955,15 +978,34 @@ rank_scaled
 masked_value
 ```
 
-Examples:
+Examples, as entries of `variables.declarations` (normalisation is a field of the exposed
+variable; there is no separate `source_variable` mapping):
 
 ```yaml
-- source_variable: "time_of_day"
+- id: "hour_of_day"
+  scope: "global"
+  type: "scalar"
+  lifetime: "episode"
+  semantic_type: "custom"
+  readable_by: ["engine", "agent"]
+  writable_by: ["engine"]
+  exposed_to: ["agent"]
+  initial_value: 0.0
+  expression: "tick % 24"
   normalization:
     kind: "cyclical_sin_cos"
     period: 24
 
-- source_variable: "money"
+- id: "wealth"
+  scope: "agent"
+  type: "scalar"
+  lifetime: "episode"
+  semantic_type: "custom"
+  readable_by: ["engine", "agent"]
+  writable_by: ["engine"]
+  exposed_to: ["agent"]
+  initial_value: 0.0
+  expression: "bar.money"
   normalization:
     kind: "log_scaled"
     min: 0.0
@@ -1094,7 +1136,7 @@ This document uses **VTC** for the compiler family that executes VFS transition 
 Current implementation is partial but real:
 
 - `VFSProfileCompiler` compiles profile expressions on the read/derived-variable path: AST parsing, dependency graph construction, topological sorting, cycle detection, and expression type checking.
-- `VFSEvaluator` evaluates compiled profile variables in dependency order, with mark-and-sweep evaluation for observed variables plus dependencies and eager mode when all variables are needed.
+- `VFSEvaluator` evaluates compiled profile variables by mark-and-sweep — the marked expressions and their in-profile dependencies, in dependency order — once per instant, after the transition phases that write VFS state. There is one evaluation mode: `eager` and the `evaluation_mode` field are deleted.
 - `VTCActionWriteProgram` executes the first write-path slice for `ActionConfig.writes`: parsed expressions, phase ordering, composition modes, clamps, conditions, active-agent masks, and atomic per-phase commit batches.
 - Generated VTC programs own passive depletion, threshold cascades, affordance modulation, operating-hour gates, interaction progress, bounds clamps and terminal checks. Rewards are not a VTC program: `DACEngine` computes them after the transition, and `VTCRewardProgram` only checks the shape of what it returns (§11.4).
 - `vtc_kernels.py` contains TorchScript kernels for generated hot transition paths: masked action-write commits, passive depletion, threshold cascades, linear affordance modulation, and terminal-condition checks. Arbitrary action-write expressions still evaluate through the typed expression AST before entering scripted tensor composition.

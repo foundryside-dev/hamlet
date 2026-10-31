@@ -18,13 +18,31 @@ from __future__ import annotations
 
 import torch
 
-__all__ = ["BATCH_ROW_REFERENCE_TYPES", "admitted_write_result_types", "storage_dtype", "to_storage_dtype"]
+__all__ = [
+    "BATCH_ROW_REFERENCE_TYPES",
+    "ELEMENT_PAYLOAD_TYPES",
+    "NON_NUMERIC_TYPES",
+    "admitted_write_result_types",
+    "storage_dtype",
+    "to_storage_dtype",
+]
 
 #: References whose stored value is a batch row: an agent row is its world (S1), an item
 #: row belongs to one world. A constant one is another world's entity everywhere but one
 #: world, so authored constants are refused (declaration and write) and the registry
 #: refuses any stored value outside the row's own world.
 BATCH_ROW_REFERENCE_TYPES = frozenset({"agent_ref", "item_ref"})
+
+#: Declared types whose value is no quantity a clamp can bound: a truth value, or a row index
+#: (a reference names a row; bounding it rewrites which row it names). A write ``clamp`` on one
+#: is refused at compile (``vfs.vtc._write_type_refusal``).
+NON_NUMERIC_TYPES = frozenset({"bool", "agent_ref", "item_ref", "affordance_ref", "effect_ref"})
+
+#: Declared types whose row carries elements: a vector's components, a tensor's cells. A write
+#: expression is a number (``admitted_write_result_types``), so writing one spreads it over every
+#: element; the compiler admits that only for a constant, never for a per-row value
+#: (``vfs.vtc._element_payload_refusal``).
+ELEMENT_PAYLOAD_TYPES = frozenset({"vec2i", "vec3i", "vec2f", "vec3f", "vecNi", "vecNf", "tensor1d", "tensor2d", "tensor3d", "tensorNd"})
 
 _LONG_TYPES = frozenset({"agent_ref", "item_ref", "affordance_ref", "effect_ref", "vecNi", "vec2i", "vec3i"})
 _INTEGER_DTYPES = frozenset({torch.int8, torch.int16, torch.int32, torch.int64, torch.uint8})

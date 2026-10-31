@@ -6,16 +6,24 @@ This authoring path does not establish BAC cognition, all runtime contracts, ren
 
 ## Scope and discovery
 
-The compiler reads every `.yaml` and `.yml` document recursively within the pack, excluding
-`.compiled`. A file can contain multiple documents separated by `---`, or a document can contain
-several existing wrapped sections. Unknown, ambiguous, malformed or misplaced content is a
-compile error; arbitrary stray YAML is not silently ignored. Directory symlinks, escaping
-transports and broken YAML symlinks are refused; recursive YAML aliases are also refused.
+The compiler reads every `.yaml` and `.yml` document recursively within the pack. A file can
+contain multiple documents separated by `---`, or a document can contain several existing
+wrapped sections. Unknown, ambiguous, malformed or misplaced content is a compile error;
+arbitrary stray YAML is not silently ignored. Directory symlinks, escaping transports and
+broken YAML symlinks are refused; recursive YAML aliases are also refused.
+
+Transport has one spelling: the suffix is lowercase `.yaml` or `.yml`. A file whose suffix
+differs only in case (`extra.YAML`, `Bars.Yml`) is refused rather than ignored, because an
+ignored file is one whose edits can never be seen. Dotfiles and anything under a dot directory
+(`.compiled/`, `.git/`, an editor lock such as `.#bars.yaml`) are never transport: discovery,
+the config hash and the symlink walk all skip them, and a dot directory under `levels/` is not a
+level.
 
 Files outside `levels/` belong to pack scope. Files under `levels/<id>/` belong to that level;
 extra subfolders within either scope are transport. For example,
 `levels/L0/mechanics/rewards.yml` can carry the same `drive:` declaration as the conventional
-`levels/L0/drive.yaml`. Moving a level declaration out of its scope changes its meaning or makes
+`levels/L0/drive.yaml`. A file directly under `levels/` (`levels/x.yaml`) is in no level's
+scope and is refused. Moving a level declaration out of its scope changes its meaning or makes
 it invalid. There is no filename reader, alias list or compatibility path.
 
 ## Closed declaration families
@@ -68,9 +76,11 @@ references and shipped packs supply full field examples.
 ## Identity, fragments and order
 
 Singleton identity is `(scope, family)`. Two singleton declarations collide even when their
-values are identical. Named catalog entries use the existing identifier (`name`, `id` or profile
-name), qualified by family/profile; cascades use their ordered source/target pair. Duplicate
-entries fail with **both actual declaring `file:line` origins**. Different families and distinct
+values are identical. Named catalog entries (meters, affordances, cascades, item types, effect
+definitions, variables, item profiles, transition rules and custom actions) use the existing
+identifier (`name`, `id` or profile name), qualified by family/profile; cascades use their
+ordered source/target pair. Duplicate entries fail with **both actual declaring `file:line`
+origins**. Different families and distinct
 profile namespaces retain their own identities; filename changes do not create new entities.
 
 Catalog fragments merge in sorted pack-relative path order, then document order within each

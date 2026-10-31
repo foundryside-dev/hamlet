@@ -12,11 +12,21 @@ Example:
     8
 """
 
+import math
 from pathlib import Path
 from typing import Literal
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+# The substrate rank rules the factory's constructors enforce (`substrate/gridnd.py`,
+# `substrate/continuousnd.py`, `substrate/continuous.py`), stated once here so a pack that
+# breaks one refuses at parse, located at its declaration, instead of as a bare ValueError
+# from inside the compiler's level stage.
+GRIDND_MIN_RANK = 4
+CONTINUOUSND_MIN_RANK = 4
+CONTINUOUS_MAX_RANK = 3
+MAX_SUBSTRATE_RANK = 100
 
 
 class GridConfig(BaseModel):
@@ -65,8 +75,14 @@ class GridNDConfig(BaseModel):
 
     @model_validator(mode="after")
     def validate_dimensions(self) -> "GridNDConfig":
-        if not self.dimension_sizes:
-            raise ValueError("GridNDConfig.dimension_sizes must contain at least one dimension size.")
+        """The rank rule GridNDSubstrate enforces, refused here so it is located at the declaration."""
+        rank = len(self.dimension_sizes)
+        if rank < GRIDND_MIN_RANK or rank > MAX_SUBSTRATE_RANK:
+            raise ValueError(
+                f"gridnd.dimension_sizes declares {rank} dimension(s); a gridnd substrate has "
+                f"{GRIDND_MIN_RANK} to {MAX_SUBSTRATE_RANK}. For 2 or 3 dimensions use type: grid "
+                "(topology: square or cubic)."
+            )
         if any(size <= 0 for size in self.dimension_sizes):
             raise ValueError("All GridNDConfig.dimension_sizes entries must be positive integers.")
         return self
@@ -124,8 +140,16 @@ class ContinuousConfig(BaseModel):
             )
 
         for i, (min_val, max_val) in enumerate(self.bounds):
+            # An infinite bound compiles and then every position and observation is NaN
+            # (normalization divides by the span): refuse it where it is authored.
+            if not (math.isfinite(min_val) and math.isfinite(max_val)):
+                raise ValueError(f"bounds[{i}] invalid: both bounds must be finite numbers, got [{min_val}, {max_val}]")
             if min_val >= max_val:
                 raise ValueError(f"bounds[{i}] invalid: min ({min_val}) must be < max ({max_val})")
+        if not math.isfinite(self.movement_delta):
+            raise ValueError(f"movement_delta must be a finite number, got {self.movement_delta}")
+        if not math.isfinite(self.interaction_radius):
+            raise ValueError(f"interaction_radius must be a finite number, got {self.interaction_radius}")
 
         return self
 
@@ -162,6 +186,17 @@ class SubstrateConfig(BaseModel):
             raise ValueError(f"type='{self.type}' requires a continuous block.")
         if self.type == "aspatial" and self.aspatial is None:
             raise ValueError("type='aspatial' requires an aspatial block.")
+        # The rank each continuous family serves (`substrate/factory.py` dispatches on it).
+        if self.type == "continuous" and self.continuous is not None and self.continuous.dimensions > CONTINUOUS_MAX_RANK:
+            raise ValueError(
+                f"type='continuous' serves 1 to {CONTINUOUS_MAX_RANK} dimensions, got continuous.dimensions="
+                f"{self.continuous.dimensions}. Use type: continuousnd for {CONTINUOUSND_MIN_RANK} or more."
+            )
+        if self.type == "continuousnd" and self.continuous is not None and self.continuous.dimensions < CONTINUOUSND_MIN_RANK:
+            raise ValueError(
+                f"type='continuousnd' serves {CONTINUOUSND_MIN_RANK} to {MAX_SUBSTRATE_RANK} dimensions, got "
+                f"continuous.dimensions={self.continuous.dimensions}. Use type: continuous for 1 to {CONTINUOUS_MAX_RANK}."
+            )
 
         provided = [
             cfg is not None

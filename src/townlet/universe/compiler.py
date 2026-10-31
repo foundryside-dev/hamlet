@@ -18,7 +18,7 @@ from townlet.universe.compiled import CompiledUniverse
 from townlet.universe.declarations import DeclarationStore, config_documents
 from townlet.universe.dto import UniverseMetadata
 from townlet.universe.error_codes import ErrorCode
-from townlet.universe.raw_configs_v21 import RawConfigsV21
+from townlet.universe.raw_configs_v21 import CurriculumLevel, RawConfigsV21
 from townlet.universe.token_hashes import (
     compute_observation_schema_hash,
     compute_token_layout_hash,
@@ -30,7 +30,9 @@ from townlet.vfs.profiles import CircularDependencyError, VariableExpressionErro
 from townlet.vfs.schema_hashes import (
     compute_action_schema_hash,
     compute_actions_hash,
+    compute_effects_hash,
     compute_expression_schema_hash,
+    compute_items_appearance_hash,
     compute_transition_graph_hash,
     compute_variable_schema_hash,
     compute_variables_hash,
@@ -233,6 +235,9 @@ class UniverseCompiler:
         # is a collection family whose fragments merge in sorted-path order, so a pydantic
         # dump would move on a file move while no variable changed (VFS round-2 F5).
         variables_hash = compute_variables_hash(raw.variables)
+        # The seventh pack hash: effect dynamics. Canonical content (command expressions as
+        # ASTs); None when the pack declares no effects, and None-versus-digest is a change.
+        effects_hash = compute_effects_hash(raw.effects)
 
         try:
             level_bundle = self._stage_7_compile_levels(
@@ -273,6 +278,7 @@ class UniverseCompiler:
             actions_hash=actions_hash,
             items_hash=items_hash,
             variables_hash=variables_hash,
+            effects_hash=effects_hash,
         )
         return compiled
 
@@ -396,155 +402,28 @@ class UniverseCompiler:
         all_levels: dict[str, CompiledUniverse.LevelMetadata] = {}
         for level_name, level in raw.levels.items():
             logger.info("Compiling level: %s", level_name)
-            bar_schema = {meter.name: "float" for meter in level.bars.meters}
-            action_metadata = self._action_compiler.build_action_space_metadata(
-                raw.stratum,
-                raw.actions,
-                level.training,
-                level.affordances,
-                raw.items,
-                raw.action_label_overrides,
-            )
-            runtime_action_space = self._action_compiler.build_runtime_action_space(action_metadata)
-            action_schema_hash = compute_action_schema_hash(runtime_action_space.actions)
-            meter_metadata = self._metadata_compiler.build_meter_metadata(raw.environment, level.bars)
-            affordance_metadata = self._metadata_compiler.build_affordance_metadata(level.affordances)
-
-            # Compile item spawn predicates (type-check and store AST on rules)
-            self._vfs_compiler.compile_item_spawn_conditions(
-                level.items_appearance,
-                bar_schema=bar_schema,
-                variables=raw.variables,
-                expressions=expression_sources(
-                    () if compiled_vfs_profiles is None else (compiled_vfs_profiles.global_profile, compiled_vfs_profiles.agent_profile)
-                ),
-                source_map=raw.source_map,
-                level_name=level_name,
-            )
-            optimization_data = self._optimization_compiler.build_optimization_data(
-                level.bars,
-                level.affordances,
-                meter_metadata,
-                affordance_metadata,
-                action_metadata,
-                source_map=raw.source_map,
-                level_name=level_name,
-            )
-            vfs_variables = self._vfs_compiler.build_runtime_variables(raw.variables)
-
-            # The token observation artifact IS the compiler's observation product
-            # (unit-3 Task-10 cut). It is built BEFORE `observation_schema_hash`, which
-            # is now computed over it (token-obs spec §5) and enters slot 2 of the
-            # structurally-unchanged four-term `compute_vfs_hash` composition.
-            # Token-spec refusals (exposure, capacity, identity) leave the observation
-            # compiler as located LEVELS-stage CompilationErrors with their error code.
-            meter_declarations = self._observation_compiler.compile_meter_declarations(
-                raw.environment,
-                level.bars,
-                level_name=level_name,
-                source_map=raw.source_map,
-            )
-            token_spec, token_advisories = self._observation_compiler.build_token_spec(
-                raw.stratum,
-                meter_declarations,
-                level.affordances,
-                raw.items,
-                compiled_effect_catalog,
-                compiled_vfs_profiles,
-                vfs_variables,
-                # The EFFECTIVE brain for this level (PDR-0027 selection, same as stage 8);
-                # it also decides whether the indistinguishability check applies.
-                level.brain or raw.brain,
-                enabled_affordances=level.training.enabled_affordances,
-                level_name=level_name,
-                source_map=raw.source_map,
-            )
-            token_type_schema_hash = compute_token_type_schema_hash(token_spec)
-            layout_hash = compute_token_layout_hash(token_spec)
-            for advisory in token_advisories:
-                logger.warning("[%s] %s", level_name, advisory)
-
-            observation_schema_hash = compute_observation_schema_hash(token_spec)
-            assert compiled_vfs_profiles is not None and compiled_vfs_profiles.item_profiles is not None
-            variable_schema_hash = compute_variable_schema_hash(vfs_variables, compiled_vfs_profiles.item_profiles)
             try:
-                transition_schedule = build_vtc_transition_schedule(
-                    runtime_action_space=runtime_action_space,
-                    level=level,
-                    transition_rules=raw.transition_rules,
-                    vfs_variables=vfs_variables,
-                    expression_profiles=(compiled_vfs_profiles.global_profile, compiled_vfs_profiles.agent_profile),
+                all_levels[level_name] = self._compile_level(
+                    raw,
+                    level_name,
+                    level,
+                    compiled_vfs_profiles=compiled_vfs_profiles,
+                    compiled_effect_catalog=compiled_effect_catalog,
                 )
-            except VTCWriteRefusalError as exc:
+            except ValueError as exc:
+                # Nothing leaves the level stage unlocated: a refusal raised below the
+                # compiler (a substrate constructor, a schedule builder) that carries no
+                # code of its own is reported against the level it was compiling.
                 raise CompilationError(
                     CompilationStage.LEVELS.label,
                     [
                         CompilationMessage(
-                            code=ErrorCode.VTC_WRITE_TYPE if refusal.kind == "type" else ErrorCode.UAC_STATIC_WRITE,
-                            message=refusal.message,
-                            location=locate(raw.source_map, refusal.origin_key),
+                            code=ErrorCode.LEVEL_COMPILE_REFUSED,
+                            message=f"{type(exc).__name__}: {exc}",
+                            location=f"{experiment_dir / 'levels' / level_name}:1",
                         )
-                        for refusal in exc.refusals
                     ],
                 ) from exc
-            transition_graph_hash = compute_transition_graph_hash(
-                transition_schedule.phase_graph,
-                transition_schedule.action_write_program,
-                affordance_gate_program=transition_schedule.affordance_gate_program,
-                interaction_progress_program=transition_schedule.interaction_progress_program,
-                terminal_condition_program=transition_schedule.terminal_condition_program,
-                threshold_cascade_program=transition_schedule.threshold_cascade_program,
-                modulation_program=transition_schedule.modulation_program,
-                passive_depletion_program=transition_schedule.passive_depletion_program,
-                transition_rule_program=transition_schedule.transition_rule_program,
-                bounds_clamp_program=transition_schedule.bounds_clamp_program,
-            )
-            expression_schema_hash = compute_expression_schema_hash(
-                global_profile=compiled_vfs_profiles.global_profile,
-                agent_profile=compiled_vfs_profiles.agent_profile,
-            )
-            vfs_hash = compute_vfs_hash(
-                variable_schema_hash, observation_schema_hash, action_schema_hash, transition_graph_hash, expression_schema_hash
-            )
-
-            # Compute hashes for level-specific configs
-            drive_hash = self._compute_pydantic_hash(level.drive)
-            curriculum_hash = self._compute_pydantic_hash(level.curriculum)
-            bars_hash = self._compute_pydantic_hash(level.bars)
-            affordances_hash = self._compute_pydantic_hash(level.affordances)
-            training_hash = self._compute_pydantic_hash(level.training)
-
-            all_levels[level_name] = CompiledUniverse.LevelMetadata(
-                level_name=level_name,
-                bars=level.bars,
-                affordances=level.affordances,
-                drive=level.drive,
-                curriculum=level.curriculum,
-                training=level.training,
-                action_metadata=action_metadata,
-                runtime_action_space=runtime_action_space,
-                action_schema_hash=action_schema_hash,
-                transition_graph_hash=transition_graph_hash,
-                vfs_hash=vfs_hash,
-                meter_metadata=meter_metadata,
-                affordance_metadata=affordance_metadata,
-                optimization_data=optimization_data,
-                drive_hash=drive_hash,
-                curriculum_hash=curriculum_hash,
-                bars_hash=bars_hash,
-                affordances_hash=affordances_hash,
-                training_hash=training_hash,
-                observation_schema_hash=observation_schema_hash,
-                vfs_variables=vfs_variables,
-                variable_schema_hash=variable_schema_hash,
-                transition_schedule=transition_schedule,
-                items_appearance=level.items_appearance,
-                meter_declarations=meter_declarations,
-                token_spec=token_spec,
-                token_type_schema_hash=token_type_schema_hash,
-                layout_hash=layout_hash,
-                token_advisories=token_advisories,
-            )
 
         primary_meta = all_levels[primary_level]
 
@@ -563,6 +442,171 @@ class UniverseCompiler:
             primary_meta=primary_meta,
             universe_metadata=universe_metadata,
             vfs_evaluation_marks=vfs_evaluation_marks,
+        )
+
+    def _compile_level(
+        self,
+        raw: RawConfigsV21,
+        level_name: str,
+        level: CurriculumLevel,
+        *,
+        compiled_vfs_profiles: CompiledVFSProfiles | None,
+        compiled_effect_catalog: EffectCatalog | None,
+    ) -> CompiledUniverse.LevelMetadata:
+        """Compile one level's metadata, optimization data, token spec, schedule and hashes."""
+        bar_schema = {meter.name: "float" for meter in level.bars.meters}
+        action_metadata = self._action_compiler.build_action_space_metadata(
+            raw.stratum,
+            raw.actions,
+            level.training,
+            level.affordances,
+            raw.items,
+            raw.action_label_overrides,
+            source_map=raw.source_map,
+        )
+        runtime_action_space = self._action_compiler.build_runtime_action_space(action_metadata)
+        action_schema_hash = compute_action_schema_hash(runtime_action_space.actions)
+        meter_metadata = self._metadata_compiler.build_meter_metadata(raw.environment, level.bars)
+        affordance_metadata = self._metadata_compiler.build_affordance_metadata(level.affordances)
+
+        # Compile item spawn predicates (type-check and store AST on rules)
+        self._vfs_compiler.compile_item_spawn_conditions(
+            level.items_appearance,
+            bar_schema=bar_schema,
+            variables=raw.variables,
+            expressions=expression_sources(
+                () if compiled_vfs_profiles is None else (compiled_vfs_profiles.global_profile, compiled_vfs_profiles.agent_profile)
+            ),
+            source_map=raw.source_map,
+            level_name=level_name,
+        )
+        optimization_data = self._optimization_compiler.build_optimization_data(
+            level.bars,
+            level.affordances,
+            meter_metadata,
+            affordance_metadata,
+            action_metadata,
+            source_map=raw.source_map,
+            level_name=level_name,
+        )
+        vfs_variables = self._vfs_compiler.build_runtime_variables(raw.variables)
+
+        # The token observation artifact IS the compiler's observation product
+        # (unit-3 Task-10 cut). It is built BEFORE `observation_schema_hash`, which
+        # is now computed over it (token-obs spec §5) and enters slot 2 of the
+        # structurally-unchanged four-term `compute_vfs_hash` composition.
+        # Token-spec refusals (exposure, capacity, identity) leave the observation
+        # compiler as located LEVELS-stage CompilationErrors with their error code.
+        meter_declarations = self._observation_compiler.compile_meter_declarations(
+            raw.environment,
+            level.bars,
+            level_name=level_name,
+            source_map=raw.source_map,
+        )
+        token_spec, token_advisories = self._observation_compiler.build_token_spec(
+            raw.stratum,
+            meter_declarations,
+            level.affordances,
+            raw.items,
+            compiled_effect_catalog,
+            compiled_vfs_profiles,
+            vfs_variables,
+            # The EFFECTIVE brain for this level (PDR-0027 selection, same as stage 8);
+            # it also decides whether the indistinguishability check applies.
+            level.brain or raw.brain,
+            enabled_affordances=level.training.enabled_affordances,
+            level_name=level_name,
+            source_map=raw.source_map,
+        )
+        token_type_schema_hash = compute_token_type_schema_hash(token_spec)
+        layout_hash = compute_token_layout_hash(token_spec)
+        for advisory in token_advisories:
+            logger.warning("[%s] %s", level_name, advisory)
+
+        observation_schema_hash = compute_observation_schema_hash(token_spec)
+        assert compiled_vfs_profiles is not None and compiled_vfs_profiles.item_profiles is not None
+        variable_schema_hash = compute_variable_schema_hash(vfs_variables, compiled_vfs_profiles.item_profiles)
+        try:
+            transition_schedule = build_vtc_transition_schedule(
+                runtime_action_space=runtime_action_space,
+                level=level,
+                transition_rules=raw.transition_rules,
+                vfs_variables=vfs_variables,
+                expression_profiles=(compiled_vfs_profiles.global_profile, compiled_vfs_profiles.agent_profile),
+            )
+        except VTCWriteRefusalError as exc:
+            raise CompilationError(
+                CompilationStage.LEVELS.label,
+                [
+                    CompilationMessage(
+                        code=ErrorCode.VTC_WRITE_TYPE if refusal.kind == "type" else ErrorCode.UAC_STATIC_WRITE,
+                        message=refusal.message,
+                        location=locate(raw.source_map, refusal.origin_key),
+                    )
+                    for refusal in exc.refusals
+                ],
+            ) from exc
+        transition_graph_hash = compute_transition_graph_hash(
+            transition_schedule.phase_graph,
+            transition_schedule.action_write_program,
+            affordance_gate_program=transition_schedule.affordance_gate_program,
+            interaction_progress_program=transition_schedule.interaction_progress_program,
+            terminal_condition_program=transition_schedule.terminal_condition_program,
+            threshold_cascade_program=transition_schedule.threshold_cascade_program,
+            modulation_program=transition_schedule.modulation_program,
+            passive_depletion_program=transition_schedule.passive_depletion_program,
+            transition_rule_program=transition_schedule.transition_rule_program,
+            bounds_clamp_program=transition_schedule.bounds_clamp_program,
+        )
+        expression_schema_hash = compute_expression_schema_hash(
+            global_profile=compiled_vfs_profiles.global_profile,
+            agent_profile=compiled_vfs_profiles.agent_profile,
+        )
+        vfs_hash = compute_vfs_hash(
+            variable_schema_hash, observation_schema_hash, action_schema_hash, transition_graph_hash, expression_schema_hash
+        )
+
+        # Compute hashes for level-specific configs
+        drive_hash = self._compute_pydantic_hash(level.drive)
+        curriculum_hash = self._compute_pydantic_hash(level.curriculum)
+        bars_hash = self._compute_pydantic_hash(level.bars)
+        affordances_hash = self._compute_pydantic_hash(level.affordances)
+        training_hash = self._compute_pydantic_hash(level.training)
+        # Canonical content, like the pack hashes: a spawn predicate enters as its AST. None
+        # when the level declares no item appearance; None-versus-digest is a change.
+        items_appearance_hash = compute_items_appearance_hash(level.items_appearance)
+
+        return CompiledUniverse.LevelMetadata(
+            level_name=level_name,
+            bars=level.bars,
+            affordances=level.affordances,
+            drive=level.drive,
+            curriculum=level.curriculum,
+            training=level.training,
+            action_metadata=action_metadata,
+            runtime_action_space=runtime_action_space,
+            action_schema_hash=action_schema_hash,
+            transition_graph_hash=transition_graph_hash,
+            vfs_hash=vfs_hash,
+            meter_metadata=meter_metadata,
+            affordance_metadata=affordance_metadata,
+            optimization_data=optimization_data,
+            drive_hash=drive_hash,
+            curriculum_hash=curriculum_hash,
+            bars_hash=bars_hash,
+            affordances_hash=affordances_hash,
+            training_hash=training_hash,
+            items_appearance_hash=items_appearance_hash,
+            observation_schema_hash=observation_schema_hash,
+            vfs_variables=vfs_variables,
+            variable_schema_hash=variable_schema_hash,
+            transition_schedule=transition_schedule,
+            items_appearance=level.items_appearance,
+            meter_declarations=meter_declarations,
+            token_spec=token_spec,
+            token_type_schema_hash=token_type_schema_hash,
+            layout_hash=layout_hash,
+            token_advisories=token_advisories,
         )
 
     def _stage_8_emit_artifact(
@@ -585,6 +629,7 @@ class UniverseCompiler:
         actions_hash: str,
         items_hash: str | None,
         variables_hash: str,
+        effects_hash: str | None,
     ) -> CompiledUniverse:
         """Stage 8 – emit the compiled artifact and persist cache."""
         compiled = CompiledUniverse(
@@ -612,6 +657,7 @@ class UniverseCompiler:
             actions_hash=actions_hash,
             items_hash=items_hash,
             variables_hash=variables_hash,
+            effects_hash=effects_hash,
             all_levels=all_levels,
         )
 
@@ -626,7 +672,13 @@ class UniverseCompiler:
             except Exception as exc:
                 raise CompilationError(
                     stage="Cache Write",
-                    errors=[f"Failed to write cache artifact to {cache_path}: {exc}"],
+                    errors=[
+                        CompilationMessage(
+                            code=ErrorCode.CACHE_WRITE_FAILED,
+                            message=f"Failed to write cache artifact: {type(exc).__name__}: {exc}",
+                            location=f"{cache_path}:1",
+                        )
+                    ],
                     hints=["Pass --no-cache to compile without persisting an artifact."],
                 ) from exc
             logger.info("Saved compiled universe cache to %s", cache_path)
@@ -739,7 +791,11 @@ class UniverseCompiler:
         # Directories only: a stray file in levels/ (README.md) is not a level.
         # Exact-name membership, not (levels_dir / name).is_dir(), which would admit
         # "." and ".." and nested paths.
-        available = sorted(entry.name for entry in levels_dir.iterdir() if entry.is_dir()) if levels_dir.is_dir() else []
+        available = (
+            sorted(entry.name for entry in levels_dir.iterdir() if entry.is_dir() and not entry.name.startswith("."))
+            if levels_dir.is_dir()
+            else []
+        )
         if primary_level not in available:
             raise CompilationError(
                 CompilationStage.PREFLIGHT.label,

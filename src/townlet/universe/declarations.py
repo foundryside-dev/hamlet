@@ -72,12 +72,24 @@ def _construct_mapping(loader: DeclarationLoader, node: yaml.MappingNode) -> Mar
 DeclarationLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, _construct_mapping)
 
 
+YAML_SUFFIXES = frozenset({".yaml", ".yml"})
+
+
+def is_hidden(experiment_dir: Path, path: Path) -> bool:
+    """A dotfile or anything under a dot directory: editor locks, VCS, the compile cache.
+
+    These are never declaration transport, so discovery, the config hash and the symlink
+    walk all ignore them (`.compiled/` is one such directory).
+    """
+    return any(part.startswith(".") for part in path.relative_to(experiment_dir).parts)
+
+
 def config_documents(experiment_dir: Path) -> tuple[Path, ...]:
-    """Enumerate all YAML transports, excluding only compiler-owned cache files."""
+    """Enumerate all YAML transports: every lowercase ``.yaml``/``.yml`` file that is not hidden."""
     paths = [
         path
         for path in experiment_dir.rglob("*")
-        if path.is_file() and path.suffix in {".yaml", ".yml"} and ".compiled" not in path.relative_to(experiment_dir).parts
+        if path.is_file() and path.suffix in YAML_SUFFIXES and not is_hidden(experiment_dir, path)
     ]
     return tuple(
         sorted(paths, key=lambda path: (path.relative_to(experiment_dir).parts[0] == "levels", path.relative_to(experiment_dir).as_posix()))
@@ -110,7 +122,7 @@ class DeclarationStore:
         self.source_map = SourceMap()
         levels_dir = experiment_dir / "levels"
         if levels_dir.is_dir() and levels_dir.resolve().is_relative_to(experiment_dir):
-            self.level_names = tuple(sorted(path.name for path in levels_dir.iterdir() if path.is_dir()))
+            self.level_names = tuple(sorted(path.name for path in levels_dir.iterdir() if path.is_dir() and not path.name.startswith(".")))
         else:
             self.level_names = ()
         self.errors = CompilationErrorCollector(stage=CompilationStage.PARSE.label)
@@ -126,7 +138,17 @@ class DeclarationStore:
             )
             store.errors.check_and_raise()
         for path in store.experiment_dir.rglob("*"):
-            if ".compiled" not in path.relative_to(store.experiment_dir).parts and path.is_symlink():
+            if is_hidden(store.experiment_dir, path):
+                continue
+            # One spelling for transport: a `.YAML`/`.YML` file would otherwise be ignored by
+            # discovery and by the config hash, so an edit to it could never be seen.
+            if path.is_file() and path.suffix.lower() in YAML_SUFFIXES and path.suffix not in YAML_SUFFIXES:
+                store.errors.add(
+                    f"Declaration transport must use a lowercase .yaml or .yml suffix, not '{path.suffix}'",
+                    code=ErrorCode.DECLARATION_SCOPE,
+                    location=f"{path}:1",
+                )
+            if path.is_symlink():
                 if not path.resolve().is_relative_to(store.experiment_dir):
                     store.errors.add(
                         "Declaration transport resolves outside the pack", code=ErrorCode.DECLARATION_SCOPE, location=f"{path}:1"
@@ -147,6 +169,14 @@ class DeclarationStore:
             relative = path.relative_to(store.experiment_dir)
             if relative.parts[0] == "levels" and len(relative.parts) >= 3:
                 scope = relative.parts[1]
+            elif relative.parts[0] == "levels":
+                # Directly under levels/: in no level's scope, and not pack scope either.
+                store.errors.add(
+                    "A file directly under levels/ belongs to no level; move it into levels/<id>/ or out of levels/",
+                    code=ErrorCode.DECLARATION_SCOPE,
+                    location=f"{path}:1",
+                )
+                continue
             else:
                 scope = None
             try:
@@ -414,6 +444,7 @@ class DeclarationStore:
             "variables",
             "item_profiles",
             "transition_rules",
+            "custom_actions",
         } and all(cls._entry_id(entry) is not None for entry in [*left, *right])
 
     def _record_sources(self, declaration: Declaration) -> None:
@@ -444,8 +475,11 @@ class DeclarationStore:
                 for key, child in value.items():
                     child_segments = (*segments, str(key))
                     key_path, key_line = self._key_origin(value, key, declaration)
-                    self.source_map.record(f"{declaration.key}:{'.'.join(child_segments)}", key_path, key_line)
                     walk(child, child_segments, namespace)
+                    # Recorded after the walk so the key's own line wins over the value's
+                    # start line: a block mapping starts at its first child, but
+                    # `opening_hours:` is where the author wrote `opening_hours`.
+                    self.source_map.record(f"{declaration.key}:{'.'.join(child_segments)}", key_path, key_line)
             elif isinstance(value, list):
                 for index, child in enumerate(value):
                     if segments:

@@ -22,7 +22,7 @@ removed configuration keys and old artifact versions fail loudly rather than bei
 
 What works today:
 
-- A seven-stage compiler that discovers, validates and compiles a config pack, with a CLI.
+- A compiler that discovers, validates and compiles a config pack into one artifact, with a CLI.
 - Grid (2-D square and 3-D cubic), N-dimensional grid, continuous and aspatial worlds.
 - Declarative meters, affordances, effects, items, typed variables with read/write/exposure
   policies, and reward functions.
@@ -38,8 +38,9 @@ What is not finished:
   only.
 - The live viewer supports fewer spatial modes than the compiler and has known gaps around
   model readiness, controls and reconnects.
-- The five shipped curriculum levels share most of their content. Only L2 (partial
-  observability) and L3 (day/night cycle) differ at runtime.
+- The five shipped curriculum levels share most of their content. L0_0, L0_5 and L1 differ only
+  in training settings; only L2 (partial observability) and L3 (day/night cycle) change the
+  world.
 - No multi-seed convergence study of the current default scenarios has been published.
 
 See [Vision](docs/vision.md#known-gaps) for the larger gaps.
@@ -47,7 +48,7 @@ See [Vision](docs/vision.md#known-gaps) for the larger gaps.
 ## Quick start
 
 Townlet needs Python 3.13 or newer and [uv](https://github.com/astral-sh/uv). The viewer also
-needs Node.js 18 or newer.
+needs Node.js 20.19 or newer (Vite 7).
 
 ```bash
 git clone https://github.com/foundryside-dev/hamlet
@@ -71,17 +72,21 @@ uv run python -m townlet.universe inspect configs/default_curriculum \
     --primary-level L1_full_observability --format json
 ```
 
-Train an agent. This also starts the WebSocket backend for the viewer:
+Train an agent. This also starts the WebSocket backend for the viewer on port 8766, the port the
+viewer connects to:
 
 ```bash
 uv run scripts/run_demo.py --config configs/default_curriculum \
     --level L1_full_observability --episodes 10000 --inference-port 8766
 ```
 
-Run outputs (checkpoints with SHA-256 sidecars, a metrics database, TensorBoard logs and a config
-snapshot) go under `runs/<output_subdir>/<timestamp>/`.
+Training runs on CPU when no GPU is present, but 10,000 episodes then takes a long time; pass a
+smaller `--episodes` for a first look. Run outputs (checkpoints with SHA-256 sidecars, a metrics
+database, TensorBoard logs and a config snapshot) go under `runs/<output_subdir>/<timestamp>/`,
+for example `runs/L1_full_observability/2026-10-31_213045/`. Rerun with `--checkpoint-dir` to
+resume.
 
-Watch it in the browser, in a second terminal:
+To watch, start the viewer in a second terminal and open <http://localhost:5173>:
 
 ```bash
 cd frontend
@@ -89,10 +94,12 @@ npm ci
 npm run dev
 ```
 
-Or serve an existing checkpoint on its own:
+To serve a saved checkpoint without training, pass the checkpoint directory, port, delay between
+steps in seconds, number of episodes, pack and level:
 
 ```bash
-uv run python -m townlet.demo.live_inference <checkpoint_dir> 8766 0.2 10000 \
+uv run python -m townlet.demo.live_inference \
+    runs/L1_full_observability/<timestamp>/checkpoints 8766 0.2 10000 \
     configs/default_curriculum L1_full_observability
 ```
 
@@ -122,12 +129,11 @@ configs/default_curriculum/
     training.yaml       # training hyperparameters and enabled actions
 ```
 
-A pack must declare experiment, stratum, environment, actions, brain and variables; each level must
-declare curriculum, bars, affordances, drive and training. Every behavioural parameter has to be
-stated explicitly; there are no hidden defaults, and unknown
-keys are rejected. The demonstration pack in `configs/default_curriculum` is a small survival world
-(eight meters, fourteen affordances, an 8×8 grid). It is an example of what can be built, not a
-limit on it.
+A pack must declare experiment, stratum, environment, actions, brain and variables; each level
+must declare curriculum, bars, affordances, drive and training. Every behavioural parameter has to
+be stated explicitly: there are no hidden defaults, and unknown keys are rejected. The
+demonstration pack in `configs/default_curriculum` is a small survival world (eight meters,
+fourteen affordances, an 8×8 grid). It is an example of what can be built, not a limit on it.
 
 ### Space
 
@@ -151,14 +157,16 @@ stratum:
 
 Other substrate types are `gridnd` (4 to 8 dimensions), `continuous`, `continuousnd` and
 `aspatial`. Boundaries can clamp, wrap, bounce or stick, and distances can be Manhattan,
-Euclidean or Chebyshev. As a worked example, the survival rules have been moved onto a
-six-dimensional grid by editing configuration alone. See [Strata](docs/architecture/STRATA.md).
+Euclidean or Chebyshev. In August 2026 the survival rules were moved onto a six-dimensional
+grid by editing configuration alone; `configs/test/gridnd_4d_pack` is a shipped four-dimensional
+example. See [Strata](docs/architecture/STRATA.md).
 
 ### State
 
 Variables are declared with a scope (`global`, `agent`, `item` or `affordance`), type, lifetime,
 initial value and explicit access policy. A training batch is N independent single-agent worlds,
-so `global` means one value per world. This one is readable and writable only by the engine and is never shown to the agent:
+so `global` means one value per world. This variable is readable and writable only by the engine
+and is never shown to the agent:
 
 ```yaml
 - id: hidden_score
@@ -226,15 +234,15 @@ See [Drive as Code](docs/config-schemas/drive_as_code.md) for the full vocabular
 
 ## Reproducibility
 
-Every compiled universe and checkpoint carries content hashes. Before loading weights, resuming
-training or serving a checkpoint checks the checkpoint format, the selected level, the reward
-function, the effective brain, the variable layout, the observation contract and the content
-hashes of every pack and level declaration, and refuses on any mismatch. Changing
+Every compiled universe and checkpoint carries content hashes. Before it loads weights, a
+training resume or a checkpoint server compares the checkpoint format, the selected level, the
+reward function, the effective brain, the variable layout, the observation contract and the
+content hashes of every pack and level declaration, and refuses on any mismatch. Changing
 `boundary: clamp` to `wrap`, for example, stops a run from resuming.
 
-The observation's token type schema is the transfer contract. Every shipped level, across 2-D and
-3-D grids, N-dimensional grids, continuous and aspatial worlds, compiles to the same
-`token_type_schema_hash` even though the observation width ranges from 19 to 474.
+Observations are typed tokens, and the token type schema is the transfer contract. Every
+compilable shipped level, across 2-D and 3-D grids, N-dimensional grids, continuous and aspatial
+worlds, has the same `token_type_schema_hash`, while the observation width ranges from 19 to 474.
 
 Townlet is being rebuilt behind a frozen reference implementation, the *oracle*, pinned at the
 `oracle-2026-08-17` tag. A differential harness runs both side by side on the same inputs and

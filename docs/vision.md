@@ -10,9 +10,10 @@ Townlet started as a teaching tool: let students learn graduate-level reinforcem
 playing something that felt like The Sims. Its purpose has since moved one level up. **The
 interesting activity is no longer playing the simulation but authoring it.**
 
-Townlet is a deep-RL substrate expressed as code. The whole universe (variables, observations,
+Townlet is a deep-RL substrate expressed as configuration. The whole universe (variables, observations,
 spatial topology, affordances, effects, items, rewards and curriculum) is declared in YAML,
-compiled into a frozen, content-addressed `CompiledUniverse`, and executed on GPU tensors.
+compiled into a frozen, content-addressed `CompiledUniverse`, and executed on PyTorch tensors
+(on a GPU when one is available).
 Someone with an idea for a game mechanic should be able to turn it into a running, trainable and
 reproducible environment by writing config: no environment subclass, no observation-tensor
 plumbing, no reward-function code.
@@ -26,7 +27,7 @@ can declare this":
 | VFS (variable and feature system) | Typed state, scopes, access policies and observation exposure |
 | VTC (transition compiler) | Action writes, passive dynamics, cascades and terminal conditions |
 | DAC (drive as code) | Reward functions: extrinsic, intrinsic, shaping and modifiers |
-| Strata | Spatial topology, from aspatial worlds to 100-dimensional grids |
+| Strata | Spatial topology, from aspatial worlds to eight-dimensional grids |
 | BAC (brain as code) | Network architecture, optimizer, loss, replay and Q-learning variant |
 
 The longer arc has three steps. First the world is config (largely shipped). Then the agent's

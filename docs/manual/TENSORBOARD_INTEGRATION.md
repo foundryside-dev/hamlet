@@ -1,16 +1,13 @@
 # TensorBoard Integration for Hamlet
 
-> ⚠️ **Recovered from archive 2026-08-26 — accurate subsystem, stale config paths.**
+> **Partly out of date.** Training writes TensorBoard logs to `runs/<output_subdir>/<timestamp>/tensorboard/`
+> (see [UNIFIED_SERVER_USAGE.md](UNIFIED_SERVER_USAGE.md)). `demo_runner.py` and the
+> `townlet.demo.runner` command line shown below no longer exist; start training with
+> `scripts/run_demo.py`.
 >
-> The subsystem this document describes **does ship** (module paths verified against
-> `src/townlet/` on 2026-08-26). It is recovered because it is the only operator
-> documentation for that surface.
->
-> **Known wrong:** every example config path of the form `configs/<name>.yaml` is dead.
-> That flat layout was replaced by config *packs* — pack-root shared files plus
-> `levels/<level>/` overrides, e.g. `configs/default_curriculum/levels/L1_full_observability/`.
-> See `CLAUDE.md` §"Configuration System". Translate paths as you read; do not copy the
-> example invocations verbatim.
+> Checked against `src/townlet/` on 2026-10-31. Example paths of the form `configs/<name>.yaml`
+> predate config packs and are dead: use a pack directory and level, for example
+> `configs/default_curriculum` and `L1_full_observability`.
 
 
 **Status:** ✅ READY TO USE

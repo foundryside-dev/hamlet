@@ -20,7 +20,7 @@ says where everything else is and how far to rely on it.
 
 | I want to… | Read |
 | --- | --- |
-| Run training, the viewer, recording or replay | [manual/](manual/), starting with [TRAINING_SYSTEM.md](manual/TRAINING_SYSTEM.md) and [UNIFIED_SERVER_USAGE.md](manual/UNIFIED_SERVER_USAGE.md) |
+| Run training and the live viewer | [manual/UNIFIED_SERVER_USAGE.md](manual/UNIFIED_SERVER_USAGE.md) |
 | Write or change a config pack | [config-schemas/](config-schemas/), starting with [declarations.md](config-schemas/declarations.md) and [variables.md](config-schemas/variables.md) |
 | See worked substrate examples | [examples/](examples/) |
 | Understand how the system fits together | [architecture/HLD.md](architecture/HLD.md) |
@@ -34,7 +34,7 @@ says where everything else is and how far to rely on it.
 | [architecture/](architecture/) | Six-document design set: [HLD](architecture/HLD.md), [compiler](architecture/COMPILER.md), [spatial substrates](architecture/STRATA.md), [universe as code](architecture/UAC.md), [brain as code](architecture/BAC.md), [variables](architecture/VFS.md) | Reviewed against source in August 2026. |
 | [config-schemas/](config-schemas/) | Reference for each declaration family | Current, except pages carrying a staleness banner. The DTOs in `src/townlet/config/` are authoritative. |
 | [design/](design/) | Design specs for the differential harness and token observations | Accepted designs that the code cites. |
-| [manual/](manual/) | Operator guides: training, server, recording, replay, video export, TensorBoard, POMDP support | Mostly current; check commands against `--help`. |
+| [manual/](manual/) | Operator guides: training and the live viewer, TensorBoard, recording, replay, video export, POMDP support | The training guide and POMDP reference are current. The recording, replay, video and TensorBoard guides carry a banner listing what is out of date. |
 | [examples/](examples/) | Substrate configuration examples | Current. |
 | [oracle/](oracle/) | Rules for the frozen reference implementation, the register of accepted differences, and the frozen evidence inputs that scripts and tests compare against | Current and enforced by tests. |
 | [remediation/](remediation/) | The active compiler, VFS, strata and effects remediation programme and its review records | Working records for in-flight work; `STATUS.md` there is the entry point. |

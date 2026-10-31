@@ -8,7 +8,7 @@ By taking part you agree to follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 ## Setting up
 
 You need Python 3.13 or newer and [uv](https://github.com/astral-sh/uv). A CUDA GPU is optional.
-Frontend work also needs Node.js 18 or newer.
+Frontend work also needs Node.js 20.19 or newer (Vite 7).
 
 ```bash
 git clone https://github.com/foundryside-dev/hamlet

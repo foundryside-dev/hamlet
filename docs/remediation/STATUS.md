@@ -284,7 +284,7 @@ doc examples shipped as crashes.
   with an initializer mode, vector `==` into a bool, and a position function naming an unknown
   affordance.
 
-**R4 design calls (reversible by the owner):**
+**R4 design calls (the owner endorsed the placement and undeployed-affordance calls on 2026-10-31):**
 - **Counter-based randomness** (`vfs/random_draws.py`). Each value is splitmix64(seed, episode,
   tick, site, world, element), vectorised, keyed on a stable draw-site identity
   (`var:<id>`, `rule:<id>:<write>`, `action:<name>:<write>`).
@@ -445,8 +445,6 @@ only the owner can make.
   writes and rules only). Effects phase, or here.
 
 ### 7.5 P3 backlog (non-blocking)
-- `CLAUDE.md` still says gridnd and continuousnd are "4D-100D". The DTO now caps both at
-  `MAX_POSITION_RANK` (8). CLAUDE.md is owner-edited: ask before changing it.
 **Hashing and the artifact**
 - Hash false moves:
   - `initial_value: 2` vs `2.0`;

@@ -54,8 +54,9 @@ def _pack(tmp_path: Path, level: str, mutator: Callable[[dict], None] | None = N
     """Copy the shipped pack into tmp_path, optionally editing one level's bars.yaml.
 
     Every `.compiled` artifact is removed: cache validity keys on config hash +
-    provenance, and provenance uses `git rev-parse HEAD` rather than dirty state, so a
-    stale artifact would be judged valid and report the OLD hash (§0.2 correction 10).
+    provenance, and provenance is the package source digest (`_compute_package_source_digest`,
+    SHA-256 over every townlet `.py`), which a pack edit does not move, so a stale artifact
+    would be judged valid and report the OLD hash (§0.2 correction 10).
     """
     dest = tmp_path / "pack"
     shutil.copytree(SOURCE_PACK, dest)

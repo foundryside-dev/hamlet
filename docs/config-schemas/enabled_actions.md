@@ -12,8 +12,10 @@
 >
 > **Do not quote a per-substrate action count from this file.** The action space is *composed* —
 > substrate movement actions (a function of substrate type *and* declared parameters such as
-> `diagonals`) plus custom actions — under the ordering contract in `substrate/base.py`:
-> movement, then `INTERACT` at `[-2]`, then `WAIT` at `[-1]`. Ask the compiled artifact.
+> `diagonals`), then `INTERACT`, then custom actions in authored order, then item actions
+> (`docs/architecture/STRATA.md` §5). `WAIT` is a custom action on grid, continuous and aspatial
+> substrates and a substrate action only on `gridnd`/`continuousnd`; nothing sits at a fixed
+> `[-2]`/`[-1]` (corrected 2026-11-01). Ask the compiled artifact.
 
 
 **Purpose**: Control which actions from global vocabulary are available in this config.
@@ -24,8 +26,22 @@ arbitrarily named nested `.yaml`/`.yml` documents. See [declaration discovery](d
 
 **Pattern**: All curriculum levels share the same action vocabulary (same `action_dim`).
 Disabled actions are masked out at runtime but still occupy action IDs, so checkpoints stay compatible.
-Set `enabled_actions: null` (or omit the field) to enable the entire vocabulary, or use an explicit list to gate
-actions per config. Passing an empty list intentionally disables every action (useful for curriculum tests).
+The field is **required** (No-Defaults; `TrainingV2Config.enabled_actions` has no default, and
+omitting it is a parse error). What it does (`ActionCompiler.build_action_space_metadata`):
+
+- `enabled_actions: null` — the vocabulary's own defaults: substrate and item actions enabled,
+  each custom action enabled iff its `enabled_by_default`.
+- `enabled_actions: {custom: [...]}` naming only custom actions — those are enabled **in
+  addition to** the `enabled_by_default` set; a listed name cannot disable one. `custom` is
+  required inside the block; `custom: []` enables nothing beyond the defaults and is the same
+  level as `null`.
+- a list naming any action outside the custom vocabulary (`UP`, `INTERACT`, `GET`, ...) — the
+  list is then the **complete** enabled set for the level over every action source; everything
+  it does not name is disabled.
+
+(Corrected 2026-11-01: this page used to say the field could be omitted, that `null` enabled
+"the entire vocabulary", and that an empty list disabled every action. None of the three
+matched the compiler.)
 
 ## Example
 

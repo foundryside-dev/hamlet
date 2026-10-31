@@ -194,6 +194,41 @@ REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "effects_hash",
     "all_levels",
 )
+"""Every top-level key ``to_dict`` writes. A payload with a key outside this set is a foreign or stale artifact."""
+
+COMPILED_LEVEL_FIELDS = (
+    "level_name",
+    "bars",
+    "affordances",
+    "drive",
+    "drive_hash",
+    "curriculum_hash",
+    "bars_hash",
+    "affordances_hash",
+    "training_hash",
+    "items_appearance_hash",
+    "curriculum",
+    "training",
+    "token_spec",
+    "token_type_schema_hash",
+    "layout_hash",
+    "action_metadata",
+    "runtime_action_space",
+    "action_schema_hash",
+    "transition_graph_hash",
+    "transition_schedule",
+    "vfs_hash",
+    "meter_metadata",
+    "meter_declarations",
+    "affordance_metadata",
+    "optimization_data_raw",
+    "observation_schema_hash",
+    "vfs_variables",
+    "variable_schema_hash",
+    "items_appearance",
+    "token_advisories",
+)
+"""Every key ``to_dict`` writes for one level under ``all_levels``."""
 
 
 @dataclass(frozen=True)
@@ -479,6 +514,7 @@ class CompiledUniverse:
     def from_dict(cls, payload: Mapping[str, Any]) -> CompiledUniverse:
         """Create CompiledUniverse from a dictionary produced by to_dict/save_to_cache."""
         _validate_compiled_schema_version(payload, source="dictionary")
+        _refuse_unknown_fields(payload, REQUIRED_COMPILED_UNIVERSE_FIELDS, field_name="compiled universe")
         for field_name in REQUIRED_COMPILED_UNIVERSE_FIELDS:
             _required_field(payload, field_name)
 
@@ -499,6 +535,7 @@ class CompiledUniverse:
         for name, meta in raw_levels.items():
             meta = _required_mapping(raw_levels, f"all_levels.{name}")
             level_field = f"all_levels.{name}"
+            _refuse_unknown_fields(meta, COMPILED_LEVEL_FIELDS, field_name=level_field)
             level_opt_payload = _required_mapping(meta, f"all_levels.{name}.optimization_data_raw")
             level_affordance_position_map = _deserialize_affordance_positions(
                 _required_field(level_opt_payload, f"all_levels.{name}.optimization_data_raw.affordance_position_map")
@@ -752,6 +789,16 @@ def _validate_compiled_schema_version(payload: Mapping[str, Any], *, source: str
             f"Compiled universe schema mismatch for {source}: "
             f"found '{schema_version}', expected '{COMPILED_SCHEMA_VERSION}'. "
             "Recompile the config pack with `python -m townlet.universe compile <config_dir>`."
+        )
+
+
+def _refuse_unknown_fields(payload: Mapping[str, Any], known: tuple[str, ...], *, field_name: str) -> None:
+    """A key this schema version never writes marks a stale or foreign artifact; it fails loudly, never silently."""
+    unknown = sorted(set(payload) - set(known))
+    if unknown:
+        raise ValueError(
+            f"Compiled universe cache field '{field_name}' carries unknown field(s) {unknown!r} for schema "
+            f"{COMPILED_SCHEMA_VERSION}; the artifact is stale or foreign. Recompile the config pack."
         )
 
 

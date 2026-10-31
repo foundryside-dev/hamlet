@@ -75,7 +75,8 @@ observation width identical across a pack's levels, and cross-level checkpoint t
 Two seams matter at this altitude, and both are *composed* rather than constant. The **action
 vocabulary** is substrate movement actions (a function of substrate type *and* declared
 parameters such as `diagonals`) plus custom actions from `actions.yaml`, under a fixed ordering
-contract — movement, then `INTERACT` at `[-2]`, then `WAIT` at `[-1]`. The **observation
+contract — movement, then `INTERACT`, then custom actions in authored order, then item actions
+(`WAIT` is a custom action on most substrates; `STRATA.md` §5). The **observation
 seam** is the five-member shape contract on `SpatialSubstrate` (`src/townlet/substrate/base.py`):
 the compiler asks the substrate instance for every spatial width and derives none itself.
 `STRATA.md` carries the substrate family table, the three POMDP gates, and the corrections to

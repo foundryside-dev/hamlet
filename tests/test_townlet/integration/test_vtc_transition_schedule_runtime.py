@@ -138,7 +138,7 @@ def test_transition_rules_fail_loudly_for_unknown_targets(tmp_path: Path) -> Non
     config_dir = _copy_l5_pack(tmp_path, "missing-target")
     _write_transition_rule(config_dir, variable_id="missing_social_variable")
 
-    with pytest.raises(CompilationError, match="targets 'missing_social_variable' names no variable") as refusal:
+    with pytest.raises(CompilationError, match="the write target 'missing_social_variable' names no variable") as refusal:
         UniverseCompiler().compile(config_dir, primary_level=LEVEL_NAME, use_cache=False)
     (issue,) = refusal.value.issues
     assert issue.location is not None and "transition_rules.yaml" in issue.location

@@ -8,8 +8,9 @@ import json
 from collections.abc import Iterable, Mapping
 from typing import TYPE_CHECKING, Any
 
+from townlet.config.affordances_v2_config import AffordancesV2Config
 from townlet.config.effects_config import EffectsConfig
-from townlet.config.items_config import ItemsAppearanceConfig
+from townlet.config.items_config import ItemsAppearanceConfig, ItemsCatalogConfig
 from townlet.config.variables_config import VariablesConfig
 from townlet.vfs.profiles import CompiledGlobalProfile, CompiledItemProfile
 from townlet.vfs.schema import NormalizationSpec, VariableDef, VariableScope
@@ -347,6 +348,52 @@ def compute_items_appearance_hash(config: ItemsAppearanceConfig | None) -> str |
     if config is None:
         return None
     return _hash_payload(canonical_items_appearance_declaration(config))
+
+
+def canonical_affordances_declaration(config: AffordancesV2Config) -> dict[str, Any]:
+    """A level's ``affordances`` declaration as content: interaction pipelines as canonical ASTs.
+
+    Affordance order is semantic (slot binding for a flat reader), so the list keeps it;
+    ``costs`` and ``costs_per_tick`` are mappings and hash key-sorted (``_hash_payload``), so
+    reordering the entries under one is not a change. ``by_alias`` keeps the authored
+    command spellings, as the effects hash does.
+    """
+    payload: dict[str, Any] = config.model_dump(mode="json", by_alias=True)
+    for affordance in payload["affordances"]:
+        affordance["interactions"] = {
+            stage: [_canonical_command(command) for command in commands] for stage, commands in affordance["interactions"].items()
+        }
+    return payload
+
+
+def compute_affordances_hash(config: AffordancesV2Config) -> str:
+    """Return the SHA-256 digest of the canonical ``affordances`` declaration."""
+    return _hash_payload(canonical_affordances_declaration(config))
+
+
+def canonical_items_declaration(config: ItemsCatalogConfig) -> dict[str, Any]:
+    """The ``items`` declaration as content: hook and verb pipelines as canonical ASTs.
+
+    Item order is semantic (``item_types`` binds token slots in order), so the list keeps
+    it. The command pipelines are authored dicts (``on_pickup``/``on_use``/``on_drop`` and
+    each custom verb's ``effects``), so their keys are already the authored spellings.
+    """
+    payload: dict[str, Any] = config.model_dump(mode="json", by_alias=True)
+    for item in payload["item_types"]:
+        interactions = item["interactions"]
+        for hook in ("on_pickup", "on_use", "on_drop"):
+            interactions[hook] = [_canonical_command(command) for command in interactions[hook]]
+        for group in ("local_commands", "inventory_commands"):
+            for verb in interactions[group]:
+                verb["effects"] = [_canonical_command(command) for command in verb["effects"]]
+    return payload
+
+
+def compute_items_hash(config: ItemsCatalogConfig | None) -> str | None:
+    """The SHA-256 digest of the canonical ``items`` declaration; None when the pack declares none."""
+    if config is None:
+        return None
+    return _hash_payload(canonical_items_declaration(config))
 
 
 def _canonical_expression_text(text: str | None) -> dict[str, Any] | None:

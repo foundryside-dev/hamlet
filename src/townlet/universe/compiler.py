@@ -30,9 +30,11 @@ from townlet.vfs.profiles import CircularDependencyError, VariableExpressionErro
 from townlet.vfs.schema_hashes import (
     compute_action_schema_hash,
     compute_actions_hash,
+    compute_affordances_hash,
     compute_effects_hash,
     compute_expression_schema_hash,
     compute_items_appearance_hash,
+    compute_items_hash,
     compute_transition_graph_hash,
     compute_variable_schema_hash,
     compute_variables_hash,
@@ -230,7 +232,9 @@ class UniverseCompiler:
         # Canonical, not a pydantic dump: action-write expression text is hashed as its AST,
         # so a respelling that parses identically does not refuse resume.
         actions_hash = compute_actions_hash(raw.actions)
-        items_hash = self._compute_pydantic_hash(raw.items) if raw.items else None
+        # Canonical content: item hook and verb pipelines hash as ASTs, so a respelling that
+        # parses identically does not refuse resume. None when the pack declares no items.
+        items_hash = compute_items_hash(raw.items)
         # The sixth pack hash is canonical content, not `_compute_pydantic_hash`: `variables`
         # is a collection family whose fragments merge in sorted-path order, so a pydantic
         # dump would move on a file move while no variable changed (VFS round-2 F5).
@@ -570,7 +574,9 @@ class UniverseCompiler:
         drive_hash = self._compute_pydantic_hash(level.drive)
         curriculum_hash = self._compute_pydantic_hash(level.curriculum)
         bars_hash = self._compute_pydantic_hash(level.bars)
-        affordances_hash = self._compute_pydantic_hash(level.affordances)
+        # Canonical content: interaction pipelines hash as ASTs and the cost mappings key-sorted,
+        # so a respelling or a reordered `costs` entry does not refuse resume.
+        affordances_hash = compute_affordances_hash(level.affordances)
         training_hash = self._compute_pydantic_hash(level.training)
         # Canonical content, like the pack hashes: a spawn predicate enters as its AST. None
         # when the level declares no item appearance; None-versus-digest is a change.

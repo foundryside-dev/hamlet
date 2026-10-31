@@ -117,10 +117,10 @@ class AspatialSubstrate(SpatialSubstrate):
         return False
 
     def get_default_actions(self) -> list[ActionConfig]:
-        """Return Aspatial's 2 default actions (no movement).
+        """Return Aspatial's one default action (no movement).
 
         Returns:
-            [INTERACT, WAIT] only (no spatial movement)
+            [INTERACT] only (no spatial movement; WAIT is a custom action when a pack declares it)
         """
         return [
             ActionConfig(

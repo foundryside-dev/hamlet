@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
-from dataclasses import fields
+from dataclasses import dataclass, fields
 from pathlib import Path
 from typing import Any
 
@@ -148,16 +148,46 @@ _SAME_WIDTH_FUNCTIONS = frozenset({"distance", "manhattan_distance", "within_rad
 _ELEMENT_INDEX_FUNCTIONS = frozenset({"gather", "scatter"})
 
 
-def _string_leaves(value: Any, path: str) -> Iterable[tuple[str, str]]:
-    """Every string in a dumped declaration, with its source-map key path (``a.b[0].c``)."""
-    if isinstance(value, str):
-        yield path, value
-    elif isinstance(value, Mapping):
-        for key, child in value.items():
-            yield from _string_leaves(child, f"{path}.{key}" if path else str(key))
-    elif isinstance(value, list | tuple):
-        for index, child in enumerate(value):
-            yield from _string_leaves(child, f"{path}[{index}]")
+_COMMAND_EXPRESSION_KEYS = ("value", "if", "for_each", "switch", "delay", "target", "position")
+"""The command fields ``effects/compiler.py`` parses as expressions, plus ``params`` string values and ``cases[].when``.
+
+``target``, ``position`` and ``for_each`` also admit bare names (``self``, ``random``,
+``nearby_agents``); a name has no call in it and is skipped below.
+"""
+_COMMAND_BODY_KEYS = ("then", "else", "do", "parallel", "default")
+_WRITE_EXPRESSION_KEYS = ("expression", "condition")
+
+
+def _pipeline_expressions(commands: Iterable[Any], path: str) -> Iterable[tuple[str, str]]:
+    """Every expression text of a command pipeline, with its source-map key path (``a.b[0].c``)."""
+    for index, command in enumerate(commands):
+        if isinstance(command, Mapping):
+            yield from _command_expressions(command, f"{path}[{index}]")
+
+
+def _command_expressions(command: Mapping[str, Any], path: str) -> Iterable[tuple[str, str]]:
+    for key in _COMMAND_EXPRESSION_KEYS:
+        if isinstance(command.get(key), str):
+            yield f"{path}.{key}", command[key]
+    params = command.get("params")
+    if isinstance(params, Mapping):
+        for key, text in params.items():
+            if isinstance(text, str):
+                yield f"{path}.params.{key}", text
+    for case_index, case in enumerate(command.get("cases") or ()):
+        if isinstance(case.get("when"), str):
+            yield f"{path}.cases[{case_index}].when", case["when"]
+        yield from _pipeline_expressions(case.get("do") or (), f"{path}.cases[{case_index}].do")
+    for key in _COMMAND_BODY_KEYS:
+        yield from _pipeline_expressions(command.get(key) or (), f"{path}.{key}")
+
+
+def _write_expressions(writes: Iterable[Mapping[str, Any]], path: str) -> Iterable[tuple[str, str]]:
+    """The ``expression`` and ``condition`` texts of action and transition-rule writes."""
+    for index, write in enumerate(writes):
+        for key in _WRITE_EXPRESSION_KEYS:
+            if isinstance(write.get(key), str):
+                yield f"{path}[{index}].{key}", write[key]
 
 
 def _calls(node: Any) -> Iterable[FunctionCall]:
@@ -182,6 +212,17 @@ def _literal_int(node: ASTNode) -> int | None:
     return None
 
 
+def _literal_number(node: ASTNode) -> float | None:
+    """A numeric literal (``2``, ``2.5``, ``-1.0``) as a float; None for anything computed."""
+    if isinstance(node, Constant) and isinstance(node.value, int | float) and not isinstance(node.value, bool):
+        return float(node.value)
+    if isinstance(node, UnaryOp) and node.op == OperatorType.SUB:
+        inner = _literal_number(node.operand)
+        if inner is not None:
+            return -inner
+    return None
+
+
 def _declared_widths(raw: RawConfigsV21) -> dict[str, int]:
     """The element width of every registry variable with elements, from its declaration."""
     widths: dict[str, int] = {}
@@ -200,16 +241,71 @@ def _declared_widths(raw: RawConfigsV21) -> dict[str, int]:
     return widths
 
 
-def _expression_documents(raw: RawConfigsV21) -> list[tuple[str, Any]]:
-    """Every authored declaration that may hold an expression, as ``(source-map prefix, dumped payload)``."""
-    documents: list[tuple[str, Any]] = [("variables", raw.variables.model_dump(mode="python", by_alias=True))]
-    documents.append(("actions", raw.actions.model_dump(mode="python", by_alias=True)["actions"]))
-    for prefix, model in (("effects", raw.effects), ("items", raw.items)):
-        if model is not None:
-            documents.append((prefix, model.model_dump(mode="python", by_alias=True)))
+@dataclass(frozen=True)
+class _ExpressionSite:
+    """One authored expression: where it is, which level scope declared it, and its text."""
+
+    key: str
+    """Source-map key of the field (``variables:declarations[3].expression``)."""
+    declaration: str
+    """Source-map key of the declaration, the fallback location."""
+    level: str | None
+    """The level a level-scoped declaration belongs to; None for a pack-scoped one."""
+    text: str
+
+
+def _expression_sites(raw: RawConfigsV21) -> list[_ExpressionSite]:
+    """Every expression-bearing field of every authored declaration, by the field set the compiler parses.
+
+    Variable ``expression``; action and transition-rule write ``expression``/``condition``
+    and the rule ``condition``; effect, item and affordance command pipelines by
+    ``_COMMAND_EXPRESSION_KEYS``. Prose (``description``) is never an expression and is not
+    visited. Affordance interactions are level-scoped; everything else is pack-scoped.
+    """
+    sites: list[_ExpressionSite] = []
+
+    def add(declaration: str, level: str | None, found: Iterable[tuple[str, str]]) -> None:
+        sites.extend(_ExpressionSite(f"{declaration}:{path}", declaration, level, text) for path, text in found)
+
+    variables = raw.variables.model_dump(mode="python", by_alias=True)
+    for index, entry in enumerate(variables["declarations"]):
+        if isinstance(entry.get("expression"), str):
+            add("variables", None, [(f"declarations[{index}].expression", entry["expression"])])
+    actions = raw.actions.model_dump(mode="python", by_alias=True)["actions"]
+    for index, action in enumerate(actions["custom_actions"]):
+        add("actions", None, _write_expressions(action["writes"], f"custom_actions[{index}].writes"))
+    if raw.effects is not None:
+        effects = raw.effects.model_dump(mode="python", by_alias=True)
+        for index, definition in enumerate(effects["effect_definitions"]):
+            for stage in ("on_spawn", "on_tick", "on_despawn", "on_interrupt"):
+                add("effects", None, _pipeline_expressions(definition[stage], f"effect_definitions[{index}].{stage}"))
+    if raw.items is not None:
+        items = raw.items.model_dump(mode="python", by_alias=True)
+        for index, item in enumerate(items["item_types"]):
+            interactions = item["interactions"]
+            prefix = f"item_types[{index}].interactions"
+            for hook in ("on_pickup", "on_use", "on_drop"):
+                add("items", None, _pipeline_expressions(interactions[hook], f"{prefix}.{hook}"))
+            for group in ("local_commands", "inventory_commands"):
+                for command_index, command in enumerate(interactions[group]):
+                    add("items", None, _pipeline_expressions(command["effects"], f"{prefix}.{group}[{command_index}].effects"))
+    for rule in raw.transition_rules:
+        rule_key = f"transition_rules:{rule.get('id')}"
+        found: list[tuple[str, str]] = []
+        condition = rule.get("condition")
+        if isinstance(condition, str):
+            found.append(("condition", condition))
+        writes = rule.get("writes")
+        if isinstance(writes, list | tuple):
+            found.extend(_write_expressions([write for write in writes if isinstance(write, Mapping)], "writes"))
+        sites.extend(_ExpressionSite(rule_key, "transition_rules", None, text) for _path, text in found)
     for name, level in raw.levels.items():
-        documents.append((f"levels/{name}/affordances", level.affordances.model_dump(mode="python", by_alias=True)))
-    return documents
+        declaration = f"levels/{name}/affordances"
+        affordances = level.affordances.model_dump(mode="python", by_alias=True)
+        for index, affordance in enumerate(affordances["affordances"]):
+            for stage, commands in affordance["interactions"].items():
+                add(declaration, name, _pipeline_expressions(commands, f"affordances[{index}].interactions.{stage}"))
+    return sites
 
 
 def _validate_expression_static_facts(raw: RawConfigsV21, source_map: SourceMap | None, errors: CompilationErrorCollector) -> None:
@@ -218,16 +314,21 @@ def _validate_expression_static_facts(raw: RawConfigsV21, source_map: SourceMap 
     - A position function (``distance_to_affordance``, ``in_range``, ``direction_to_affordance``,
       found from ``FUNCTION_SPECS`` by ``requires`` positions) on an aspatial substrate, which has
       no positions: the call would yield a constant.
-    - A position function naming an affordance the pack does not declare (a typo), or one a level
-      does not deploy (``training.enabled_affordances``): it has no position there, so the call
-      would read infinity, false or a zero vector, and an exposed one crashes the observation.
+    - A position function naming an affordance the pack does not declare (a typo), one named
+      without quotes (``distance_to_affordance(SLEEP)`` reads a variable), or one a level does
+      not deploy (``training.enabled_affordances``): it has no position there, so the call would
+      read infinity, false or a zero vector, and an exposed one crashes the observation. A
+      level-scoped declaration (an affordance interaction) is checked against its own level
+      only; a pack-scoped one against every level.
     - Two vectors of declared, different widths given to a same-width function (``distance``,
       ``manhattan_distance``, ``within_radius``, ``nearest``).
     - A literal ``gather``/``scatter`` index outside its vector's declared width.
+    - A draw whose literal bounds can't be right: ``uniform(low, high)`` with ``low > high``,
+      ``normal_dist(mean, std)`` with a negative ``std``.
 
-    Every declaration that may hold an expression is scanned (variable expressions, action writes,
-    transition rules, effect and interaction pipelines); prose (a description) does not parse as
-    an expression and is skipped.
+    Only expression-bearing fields are visited (``_expression_sites``); a text with no call in
+    it has nothing to check, and a text that does not parse is left to the stage that
+    compiles it, which refuses with its own location.
     """
     aspatial = raw.stratum.stratum.substrate.type == "aspatial"
     declared_affordances = {affordance.name for level in raw.levels.values() for affordance in level.affordances.affordances}
@@ -235,24 +336,15 @@ def _validate_expression_static_facts(raw: RawConfigsV21, source_map: SourceMap 
     widths = _declared_widths(raw)
     parser = ExpressionParser()
 
-    documents = _expression_documents(raw)
-    located: list[tuple[str, str, str]] = []  # (key, fallback key, text)
-    for prefix, payload in documents:
-        for path, text in _string_leaves(payload, ""):
-            located.append((f"{prefix}:{path}", prefix, text))
-    for rule in raw.transition_rules:
-        rule_key = f"transition_rules:{rule.get('id')}"
-        for path, text in _string_leaves(dict(rule), ""):
-            located.append((rule_key, "transition_rules", text))
-
-    for key, fallback_key, text in located:
+    for site in _expression_sites(raw):
+        key, text = site.key, site.text
         if "(" not in text:
             continue
         try:
             ast = parser.parse(text)
-        except Exception:  # noqa: BLE001 - prose (a description) is not an expression; nothing to refuse
+        except Exception:  # noqa: BLE001 - the compiling stage refuses an unparseable expression at its own line
             continue
-        location = locate(source_map, key, locate(source_map, fallback_key, str(raw.experiment_dir / fallback_key.split(":")[0])))
+        location = locate(source_map, key, locate(source_map, site.declaration, str(raw.experiment_dir / site.declaration.split(":")[0])))
         for call in _calls(ast):
             name = call.function_name
             arguments = call.arguments
@@ -269,6 +361,14 @@ def _validate_expression_static_facts(raw: RawConfigsV21, source_map: SourceMap 
                 if not arguments:
                     continue
                 target = arguments[0]
+                if isinstance(target, Variable):
+                    errors.add(
+                        f"{key} calls {name}({target.name}), which reads a variable named '{target.name}'; an affordance "
+                        f'name is a string literal. Quote it: {name}("{target.name}").',
+                        code=ErrorCode.EXPRESSION_AFFORDANCE_UNQUOTED,
+                        location=location,
+                    )
+                    continue
                 if not isinstance(target, Constant) or not isinstance(target.value, str):
                     continue
                 if target.value not in declared_affordances:
@@ -279,12 +379,18 @@ def _validate_expression_static_facts(raw: RawConfigsV21, source_map: SourceMap 
                         location=location,
                     )
                     continue
-                for level_name, enabled in sorted(deployed.items()):
-                    if target.value not in enabled:
+                if site.level is not None:
+                    checked_levels = [site.level]
+                    remedy = "Deploy it in this level"
+                else:
+                    checked_levels = sorted(deployed)
+                    remedy = "Deploy it in every level"
+                for level_name in checked_levels:
+                    if target.value not in deployed[level_name]:
                         errors.add(
                             f"{key} calls {name}(\"{target.value}\"), but level '{level_name}' does not deploy "
                             f"'{target.value}' (training.enabled_affordances), so it has no position there and the call "
-                            "would read infinity, false or a zero vector. Deploy it in every level, or read a deployed one.",
+                            f"would read infinity, false or a zero vector. {remedy}, or read a deployed one.",
                             code=ErrorCode.EXPRESSION_AFFORDANCE_UNDEPLOYED,
                             location=location,
                         )
@@ -304,6 +410,23 @@ def _validate_expression_static_facts(raw: RawConfigsV21, source_map: SourceMap 
                         f"{key} calls {name}({arguments[0].name}, {index}), but '{arguments[0].name}' has declared width "
                         f"{width}: an index is 0 to {width - 1}.",
                         code=ErrorCode.EXPRESSION_INDEX_RANGE,
+                        location=location,
+                    )
+            elif name == "uniform" and len(arguments) == 2:
+                low, high = _literal_number(arguments[0]), _literal_number(arguments[1])
+                if low is not None and high is not None and low > high:
+                    errors.add(
+                        f"{key} calls uniform({low:g}, {high:g}), but a uniform draw is over [low, high) and {low:g} > {high:g}: "
+                        "the range is empty. Write the lower bound first.",
+                        code=ErrorCode.EXPRESSION_DRAW_RANGE,
+                        location=location,
+                    )
+            elif name == "normal_dist" and len(arguments) == 2:
+                std = _literal_number(arguments[1])
+                if std is not None and std < 0:
+                    errors.add(
+                        f"{key} calls normal_dist(..., {std:g}), but a standard deviation is not negative. " "Write a non-negative std.",
+                        code=ErrorCode.EXPRESSION_DRAW_RANGE,
                         location=location,
                     )
 

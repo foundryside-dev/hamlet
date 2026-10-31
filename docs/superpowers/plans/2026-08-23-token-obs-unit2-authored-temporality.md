@@ -23,7 +23,7 @@ compile. Unit-2's own hash movement is measured the same way and registered as D
 
 **Tech Stack:** Python 3.12, numpy, torch, pytest, uv. No new dependencies.
 
-**Spec:** `docs/superpowers/specs/2026-08-22-token-observation-representation-design.md`
+**Spec:** `docs/design/2026-08-22-token-observation-representation-design.md`
 (ruling 6, round-2 amendment 6, §6 unit 2). Tickets:
 `hamlet-5cc071f4b6` (Task 2), `hamlet-df3a96bbac` (Task 5), `hamlet-5d74335111` +
 `hamlet-bc0a5deeff` (Task 6). Tracker: `hamlet-fa6bb6da4a` (in progress, assignee
@@ -266,7 +266,7 @@ In `docs/oracle/known-divergences.md`, append after DIV-007:
 ## DIV-008 — RESERVED: the token-observation cut
 
 Reserved by the approved token-observation design
-(`docs/superpowers/specs/2026-08-22-token-observation-representation-design.md` §5);
+(`docs/design/2026-08-22-token-observation-representation-design.md` §5);
 registered at migration unit 3. Unit-1 code (`RegisteredStreamDivergence`) already names
 it. Listed here so the numbering gap is visible, never silent.
 

@@ -245,7 +245,7 @@ compiled products live only in `CompiledUniverse.all_levels`; navigate with `get
 There is no `.levels` mapping and no top-level copy of the primary level's products.
 
 **What a TokenSpec is** (spec
-`docs/superpowers/specs/2026-08-22-token-observation-representation-design.md` §§1-2): seven
+`docs/design/2026-08-22-token-observation-representation-design.md` §§1-2): seven
 engine token types in a fixed canonical order — `self`, `meter`, `affordance`, `agent`,
 `item`, `effect`, `variable_element` — each with a **fixed payload width across all
 universes**, and a **per-universe compiled capacity** with deterministic slot bindings.

@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build `src/townlet/oracle/` — the differential harness that runs the frozen oracle worktree (`oracle-2026-08-13`) and the working tree against the same config pack + seed and bit-compares their env-step traces (WS-7 content 3, spec: `docs/superpowers/specs/2026-08-13-differential-harness-design.md`).
+**Goal:** Build `src/townlet/oracle/` — the differential harness that runs the frozen oracle worktree (`oracle-2026-08-13`) and the working tree against the same config pack + seed and bit-compares their env-step traces (WS-7 content 3, spec: `docs/design/2026-08-13-differential-harness-design.md`).
 
 **Architecture:** A self-contained driver script produces a trace `.npz` (obs/rewards/dones + provenance hashes); the harness spawns it twice per matrix cell — once with `PYTHONPATH` at the oracle worktree's `src`, once at the working tree's `src` — then compares provenance hashes (stage 1) and exact trace bytes (stage 2), emitting per-cell verdicts and a JSON report.
 

@@ -1,6 +1,6 @@
 """TokenSpec — the compiled token-observation artifact and its pure derivations.
 
-Spec: docs/superpowers/specs/2026-08-22-token-observation-representation-design.md §§1–2
+Spec: docs/design/2026-08-22-token-observation-representation-design.md §§1–2
 (token type system, TokenSpec artifact, capacity table, serialization). This module is the
 ONE definition of the engine constants and payload schemas the token path dispatches on —
 same discipline as `observation_feature.py`: a new token type is a new roster member plus a

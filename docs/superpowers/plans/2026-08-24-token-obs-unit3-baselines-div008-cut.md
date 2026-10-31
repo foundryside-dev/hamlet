@@ -24,7 +24,7 @@ both modes, and moves the docs at gate-2 standard.
 **Tech Stack:** Python 3.12, torch, pytest, uv. No new dependencies. Two RTX 4060 Ti
 16GB GPUs available for Phase 0.
 
-**Spec:** `docs/superpowers/specs/2026-08-22-token-observation-representation-design.md`
+**Spec:** `docs/design/2026-08-22-token-observation-representation-design.md`
 (§§1–5 are the design; §6 unit 3 is this plan's mandate; the Reversal-triggers and
 Verify-at-implementation sections travel with every task). Tracker: `hamlet-fa6bb6da4a`
 (in progress, assignee `claude-fable` — all filigree ops use `--actor claude-fable`; do

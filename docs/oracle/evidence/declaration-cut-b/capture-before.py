@@ -34,7 +34,7 @@ def tensor_payload(value):
     return {"dtype": str(value.dtype), "shape": list(value.shape), "values": value.cpu().tolist()}
 
 
-baseline = json.loads((ROOT / "docs/product/evidence/declaration-cut-a/before-hashes.json").read_text())
+baseline = json.loads((ROOT / "docs/oracle/evidence/declaration-cut-a/before-hashes.json").read_text())
 cases = []
 compiled = []
 for case in baseline["cases"]:

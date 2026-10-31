@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """M4 equal-step L2 token feedforward/recurrent engineering check.
 
-The frozen denominator is ``docs/product/baselines/2026-08-l2-preraster``.
+The frozen denominator is the 2026-08 L2 pre-raster baseline (IQM 98.99; see docs/vision.md).
 Every candidate cell uses representative seed 45 and that baseline run's exact
 summed-live-agent transition budget. Seed 45 is the shortest and lowest-scoring
 member of the frozen cohort, so it is the strictest cheap deterministic engineering

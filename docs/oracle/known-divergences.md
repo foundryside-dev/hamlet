@@ -637,7 +637,7 @@ copy dissolves the drift).
   `"hash+stream"` shape (`trace_io.py`, the `shape` field of a `DIVERGED_AS_REGISTERED`
   detail).
 - **Provenance:** `hamlet-fa6bb6da4a` (unit 3, this entry's ticket) ·
-  `docs/superpowers/specs/2026-08-22-token-observation-representation-design.md` §§1-6 (the
+  `docs/design/2026-08-22-token-observation-representation-design.md` §§1-6 (the
   approved design; §5 "Transfer, provenance, and the oracle" is this entry's direct source)
   · `PDR-0037` (record-then-bind order) · `PDR-0033` (narrowness of a registered divergence
   declaration, enforced both directions in `compare_traces`) · `hamlet-56ec575ae2` (the
@@ -1226,7 +1226,7 @@ union still equals the observed movers exactly and both of this entry's fields s
   `--scripted` matrix runs recorded in the unit-3 Task 7 report, both exit 0.)
 - **Harness shape: hash-only** (`RegisteredHashDivergence`)
 - **Provenance:** `hamlet-fa6bb6da4a` (unit 3, token observations) · token-obs spec §5
-  (docs/superpowers/specs/2026-08-22-token-observation-representation-design.md) · unit-3
+  (docs/design/2026-08-22-token-observation-representation-design.md) · unit-3
   plan Task 7 under the controller's ALONGSIDE ruling (the brief's severing edits are
   deferred to Task 10).
 - **Surface:** `src/townlet/universe/compilers/observation.py` (`build_token_spec`),

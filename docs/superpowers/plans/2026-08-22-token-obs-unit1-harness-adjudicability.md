@@ -23,7 +23,7 @@ byte-compared against the old width, and must not mask the `rewards`/`dones` ver
 
 **Tech Stack:** Python 3.12, numpy, torch, pytest, uv. No new dependencies.
 
-**Spec:** `docs/superpowers/specs/2026-08-22-token-observation-representation-design.md`
+**Spec:** `docs/design/2026-08-22-token-observation-representation-design.md`
 (§5 "The oracle cut", §6 unit 1). Round-2 SA review finding C1 is the defect record.
 Tracker: `hamlet-fa6bb6da4a`.
 
@@ -421,7 +421,7 @@ class RegisteredStreamDivergence:
     stream diverges as intended, everything else does not.
 
     Built for DIV-008 (the token-observation cut, spec
-    docs/superpowers/specs/2026-08-22-token-observation-representation-design.md §5):
+    docs/design/2026-08-22-token-observation-representation-design.md §5):
     the observation representation changes, so the `obs` stream diverges on every
     cell, while world dynamics under scripted actions — `actions`, `dones`,
     `rewards` — must stay byte-exact. Added because that register entry needs it,

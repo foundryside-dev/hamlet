@@ -204,7 +204,7 @@ context at the network boundary, projects each type, and pools the mixed set wit
 `mean` or `attention` aggregator. `StructuredQNetwork` still has no authoring door (§2.3).
 
 The **token-observation migration** that established this representation is specified in:
-`docs/superpowers/specs/2026-08-22-token-observation-representation-design.md` — approved
+`docs/design/2026-08-22-token-observation-representation-design.md` — approved
 (PDR-0114, with a no-tech-debt rider), units 1 and 2 banked (PDR-0115, PDR-0116). It defines a
 token type system, a compiled `TokenSpec` artifact, runtime encoding with an explicit visibility
 filter, network consumption, and the transfer/provenance/oracle consequences. Read the spec;
@@ -236,7 +236,7 @@ merged by declared id rather than found at a mandated filename. See `UAC.md` §4
   `src/townlet/population/vectorized.py:405` (selection)
 - **Provenance**: `src/townlet/universe/compiled.py` (`brain_hash`, `pack_brain_hash`),
   `src/townlet/training/checkpoint_utils.py` (`assert_checkpoint_identity`)
-- **Token migration**: `docs/superpowers/specs/2026-08-22-token-observation-representation-design.md`
+- **Token migration**: `docs/design/2026-08-22-token-observation-representation-design.md`
 - **Architecture context**: `HLD.md` (the trio and the provenance contract), `UAC.md`, `VFS.md`
 - **Design history (status lines false, design content useful)**:
   `archive/BRAIN_AS_CODE-2026-live.md`, `archive/BRAIN_AS_CODE.md`,

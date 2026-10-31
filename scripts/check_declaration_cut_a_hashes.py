@@ -15,7 +15,7 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
-    baseline = json.loads((root / "docs/product/evidence/declaration-cut-a/before-hashes.json").read_text())
+    baseline = json.loads((root / "docs/oracle/evidence/declaration-cut-a/before-hashes.json").read_text())
     changes = []
     readings = 0
     for record in baseline["cases"]:

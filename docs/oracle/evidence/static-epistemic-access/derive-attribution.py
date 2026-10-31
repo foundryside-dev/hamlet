@@ -36,7 +36,7 @@ def write(path, obj):
 
 
 root = Path.cwd()
-out = root / "docs/product/evidence/static-epistemic-access"
+out = root / "docs/oracle/evidence/static-epistemic-access"
 diagnostic = root / "runs/static-epistemic-access/diagnostic-91374849"
 report = json.loads((diagnostic / "report.json").read_text())
 assert not report["trace_failed"] and not report["reset_failed"]

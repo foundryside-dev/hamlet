@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.13, pydantic v2, torch, pytest; `uv run` with `UV_CACHE_DIR=.uv-cache`.
 
-**Spec:** `docs/product/decisions/0143-unit-5-scope-is-ruled-observation-mode-dies-day-phase-is-authored-agent-tokens-stay-absent.md` (the ruling) over `docs/superpowers/specs/2026-08-22-token-observation-representation-design.md` §6 unit 5.
+**Spec:** `docs/product/decisions/0143-unit-5-scope-is-ruled-observation-mode-dies-day-phase-is-authored-agent-tokens-stay-absent.md` (the ruling) over `docs/design/2026-08-22-token-observation-representation-design.md` §6 unit 5.
 
 ## Global Constraints
 

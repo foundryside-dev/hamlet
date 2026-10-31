@@ -49,7 +49,7 @@ from townlet.oracle.matrix import default_cells
 def test_cut_a_recorded_input_delta_is_preserved(pack: str, delta: dict[str, list[str]]) -> None:
     """B replaces the live transport; the banked parent proves A's old reading."""
     root = Path(__file__).parents[4]
-    parent = json.loads((root / "docs/product/evidence/declaration-cut-b/before-inputs.json").read_text())
+    parent = json.loads((root / "docs/oracle/evidence/declaration-cut-b/before-inputs.json").read_text())
     assert parent["source_commit"] == "599cad15706ac8824c3f8e38276da6440c4816a3"
     prefix = f"{pack}/"
     old_live = {name.removeprefix(prefix): digest for name, digest in parent["files"].items() if name.startswith(prefix)}
@@ -72,7 +72,7 @@ def test_cut_b_historical_input_inventory_is_preserved() -> None:
     """Static access supersedes the binding without rewriting Cut B's evidence."""
     root = Path(__file__).parents[4]
     historical = json.loads((root / "docs/oracle/declaration-cut-b-inputs.json").read_text())
-    before_access = json.loads((root / "docs/product/evidence/static-epistemic-access/before/before-inputs.json").read_text())
+    before_access = json.loads((root / "docs/oracle/evidence/static-epistemic-access/before/before-inputs.json").read_text())
     expected_packs = {cell.params.pack for cell in default_cells()}
     assert historical["register_ref"] == "DIV-014"
     assert historical["baseline_source"] == "599cad15706ac8824c3f8e38276da6440c4816a3"
@@ -104,7 +104,7 @@ def test_cut_b_historical_input_inventory_is_preserved() -> None:
 def test_static_access_input_binding_matches_complete_pinned_bytes() -> None:
     """The complete current inventory catches edits outside measured DIV-015."""
     root = Path(__file__).parents[4]
-    inventory = json.loads((root / "docs/product/evidence/static-epistemic-access/frozen-live-inputs.json").read_text())
+    inventory = json.loads((root / "docs/oracle/evidence/static-epistemic-access/frozen-live-inputs.json").read_text())
     expected_packs = {cell.params.pack for cell in default_cells()}
     assert inventory["register_ref"] == "DIV-015"
     assert inventory["frozen_tag"] == "oracle-2026-08-17"

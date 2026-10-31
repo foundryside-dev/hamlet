@@ -72,6 +72,7 @@ dev = [
     "types-PyYAML>=6.0.12.20260510",
     "hypothesis>=6.152.7",
     "vulture>=2.16",
+    "pytest-xdist>=3.6",
 ]
 # Consumed only by src/townlet/recording/. That subsystem is slated for removal
 # once its intent is captured (filigree hamlet-16ae192d42) — delete this extra in

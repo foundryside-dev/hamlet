@@ -166,7 +166,7 @@ had no CI run. The first one will be the PR's. Do not read the absence of a red 
 ### 4.3 The gate, run before every commit
 
 ```bash
-CUDA_VISIBLE_DEVICES= uv run pytest tests -q --no-cov -p no:cacheprovider   # about 16 minutes on CPU
+CUDA_VISIBLE_DEVICES= uv run pytest tests -q --no-cov -p no:cacheprovider -n auto --dist worksteal   # under 10 minutes even on 4 workers
 uv run ruff check .
 uv run black --check src tests scripts
 uv run mypy src/townlet

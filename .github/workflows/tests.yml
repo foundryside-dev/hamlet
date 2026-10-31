@@ -31,7 +31,8 @@ jobs:
           echo "Running universe compiler validation before pytest to catch invalid configs early"
           uv run python scripts/validate_compiler_cli.py
 
+      # One worker per runner CPU; worksteal rebalances the uneven integration tests.
       - name: Run fast test suite
         env:
           PYTEST_ADDOPTS: ""
-        run: uv run pytest
+        run: uv run pytest -n auto --dist worksteal

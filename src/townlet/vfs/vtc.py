@@ -489,7 +489,7 @@ def _resolve_write_target(variable_id: str, namespace: Namespace, prefix: str) -
     try:
         symbol = namespace.resolve_write(variable_id, TRANSITION_WRITE)
     except SpellingError as exc:
-        return None, f"{prefix} targets {exc}"
+        return None, f"{prefix}: the write target {exc}"
     return symbol.name, None
 
 

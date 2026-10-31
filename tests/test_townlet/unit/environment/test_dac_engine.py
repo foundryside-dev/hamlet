@@ -1633,14 +1633,14 @@ class TestShapingBonuses:
 
     def test_vfs_variable_bonus(self, bar_index_map_single):
         """vfs_variable bonus uses VFS variable value as bonus."""
-        from townlet.config.drive_as_code import VfsVariableConfig
+        from townlet.config.drive_as_code import VFSVariableBonusConfig
 
         dac_config = DriveAsCodeConfig(
             modifiers={},
             extrinsic=ExtrinsicStrategyConfig(type="multiplicative", bars=["energy"]),
             intrinsic=IntrinsicStrategyConfig(strategy="rnd", base_weight=0.1, apply_modifiers=[]),
             shaping=[
-                VfsVariableConfig(
+                VFSVariableBonusConfig(
                     type="vfs_variable",
                     weight=2.0,
                     variable="custom_bonus",
@@ -2202,7 +2202,7 @@ class TestShapingBonusEdgeCases:
         """vfs_variable raises error when variable not in registry."""
         import pytest
 
-        from townlet.config.drive_as_code import VfsVariableConfig
+        from townlet.config.drive_as_code import VFSVariableBonusConfig
 
         dac_config = DriveAsCodeConfig(
             version="1.0",
@@ -2210,7 +2210,7 @@ class TestShapingBonusEdgeCases:
             extrinsic=ExtrinsicStrategyConfig(type="multiplicative", bars=["energy"]),
             intrinsic=IntrinsicStrategyConfig(strategy="none", base_weight=0.0),
             shaping=[
-                VfsVariableConfig(
+                VFSVariableBonusConfig(
                     type="vfs_variable",
                     weight=2.0,
                     variable="nonexistent_var",

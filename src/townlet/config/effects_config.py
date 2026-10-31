@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import enum
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
 from pydantic import (
     BaseModel,
@@ -313,7 +313,7 @@ class EffectsConfig(BaseModel):
     # that world only, and is recorded in `EffectManager.spawn_refusals` (step `info`
     # `effect_spawn_refusals`); the publisher's overflow refusal is a backstop, never the
     # enforcement.
-    max_active_effects: dict[str, int] | None = Field(
+    max_active_effects: dict[str, Annotated[int, Field(ge=0)]] | None = Field(
         default=None,
         description="Per-EffectScope budget of concurrently active effects, e.g. {global: 0, agent: 4, item: 0, affordance: 0}",
     )
@@ -350,9 +350,6 @@ class EffectsConfig(BaseModel):
                     f"max_active_effects must declare exactly the EffectScope members {scope_values}; "
                     f"missing {missing}, unknown {unknown}"
                 )
-            negative = {s: n for s, n in self.max_active_effects.items() if n < 0}
-            if negative:
-                raise ValueError(f"max_active_effects budgets must be >= 0; got {negative}")
         elif self.max_active_effects is not None:
             raise ValueError(
                 "effects.yaml declares `max_active_effects` but no effects, so the declaration reaches nothing.\n"

@@ -52,8 +52,9 @@ L3 = "L3_temporal_mechanics"
 def _pack(tmp_path: Path, name: str = "pack") -> Path:
     """Copy the shipped pack, stripping every compiled artifact.
 
-    Cache validity keys on config hash + provenance, and provenance uses `git rev-parse HEAD`
-    rather than dirty state, so a stale artifact would be judged valid and report the OLD hash.
+    Cache validity keys on config hash + provenance, and provenance is the package source
+    digest (`_compute_package_source_digest`, SHA-256 over every townlet `.py`), which this
+    test's edits do not move, so a stale artifact would be judged valid and report the OLD hash.
     """
     dest = tmp_path / name
     shutil.copytree(SOURCE_PACK, dest)

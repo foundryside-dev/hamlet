@@ -92,6 +92,22 @@ by a filename list in preflight. Both mechanisms, and `vfs_profiles.yaml` itself
 | `continuousnd` | `ContinuousConfig` | `ContinuousNDSubstrate` | float, `torch.float32` |
 | `aspatial` | `AspatialConfig` (empty marker) | `AspatialSubstrate` | none, `position_dim == 0` |
 
+**Rank and bound rules** (`stratum_config.py`; each refused at the declaration, not in the
+substrate constructor — the constants are `MAX_POSITION_RANK = 8`, `GRIDND_MIN_RANK = 4`,
+`CONTINUOUS_MAX_RANK = 3`, `CONTINUOUSND_MIN_RANK = 4`, `FLOAT32_MAX`):
+
+- `MAX_POSITION_RANK` (8) is the widest position a token carries, and the transfer contract
+  `token_type_schema_hash` covers that width; no substrate's rank may exceed it.
+- `gridnd.dimension_sizes` declares 4 to 8 dimensions; a 2-D or 3-D grid is `type: grid`.
+- `continuous.dimensions` is 1 to 3 under `type: continuous` and 4 to 8 under
+  `type: continuousnd` (`substrate/factory.py` dispatches on it); each type refuses the other's
+  range and names the type to use.
+- Every `continuous.bounds` pair is `[low, high]` with `low < high`, finite, and both the bound
+  and the span `high - low` at most `FLOAT32_MAX`: positions are `float32`, and the span is the
+  normalization denominator.
+- `continuous.interaction_radius` is finite, `> 0`, and at most the span of every axis: a radius
+  wider than the space cannot gate an interaction. `continuous.movement_delta` is finite and `> 0`.
+
 **There is no `grid3d` type.** The literal was deleted because it never had a
 `SubstrateFactory` branch — it could only compile toward a guaranteed factory crash. The working
 3-D path is `type: grid` with `topology: cubic`, which additionally requires `depth`
@@ -147,16 +163,26 @@ why older documents mention hex grids.
 movement half; `actions.yaml` contributes custom actions; the pack's compiled action metadata is
 the only authority on the result.
 
-The durable part is the **canonical ordering contract**
-(`src/townlet/substrate/base.py:80-103`), which every substrate must satisfy:
+The durable part is the **canonical ordering contract** (`SpatialSubstrate.get_default_actions`
+in `src/townlet/substrate/base.py`): every substrate emits its movement actions first and
+`INTERACT` last. The composed space (`ActionCompiler.build_action_space_metadata`,
+`src/townlet/universe/compilers/actions.py`) is then, in order:
 
-1. movement actions (substrate-specific),
-2. `INTERACT` at `[-2]`,
-3. `WAIT` at `[-1]`.
+1. substrate actions — movement, then `INTERACT`;
+2. custom actions from the pack's `actions` declaration, in authored order;
+3. item actions (`GET`, `USE_SLOT_n`, `DROP_SLOT_n`, then each item's verbs), when the pack
+   declares an item arena.
 
-Downstream systems identify meta-actions by position, so `actions[:-2]` is always movement.
-Aspatial is the special case: no movement actions at all, `[INTERACT, WAIT]` only
-(`aspatial.py:159-165`).
+`INTERACT` is therefore the last *substrate* action, not `actions[-2]` of the composed space, and
+`WAIT` has no fixed position: `grid`, `continuous` and `aspatial` substrates do not emit it (a pack
+declares it as a custom action — `default_curriculum` does, and it compiles to the first custom
+slot after `INTERACT`), while `gridnd` and `continuousnd` emit it as a substrate action after
+`INTERACT`. Measured 2026-11-01 on the compiled artifact: `default_curriculum/L1` is eight
+movement actions, `INTERACT`, then custom `WAIT`, `REST`, `MEDITATE`, then `GET`/`USE_SLOT_0`/
+`DROP_SLOT_0`; `gridnd_4d_pack` is eight movement actions, `INTERACT`, substrate `WAIT`, then the
+item actions. (Corrected 2026-11-01: this section, `base.py`'s docstring and
+`enabled_actions.md` used to claim `INTERACT` at `[-2]` and `WAIT` at `[-1]`.) Aspatial is the
+special case: no movement actions at all, `[INTERACT]` only (`aspatial.py`).
 
 **The movement set is a function of substrate type *plus declared parameters*.** `GridConfig`
 requires `diagonals: bool`, threaded through the factory to `Grid2DSubstrate(enable_diagonals=)`
@@ -167,11 +193,11 @@ Continuous substrates synthesize their movement set from `action_discretization`
 … per dimension.
 
 ⚠ **No action-count literals in this document**, for the same reason as dimension literals.
-CLAUDE.md's table ("Grid2D 8, Grid3D 10, GridND(7D) 16, Aspatial 4") **disagrees with the
-source**: `base.py`'s own docstring enumerates Grid2D as eight movement actions plus `INTERACT`
-and `WAIT`, and that is itself conditional on `diagonals`. Ask the compiled artifact. Schema:
-`docs/config-schemas/enabled_actions.md` (archived 2026-08-24; content may be
-stale).
+Any per-substrate count table (an old CLAUDE.md carried "Grid2D 8, Grid3D 10, GridND(7D) 16,
+Aspatial 4") **disagrees with the source**: a grid's movement set is conditional on
+`diagonals`, `WAIT` is a custom action on most substrates, and item actions join the space only
+when the pack declares an item arena. Ask the compiled artifact. Schema:
+`docs/config-schemas/enabled_actions.md`.
 
 Compile-time alignment between the two halves is checked by `SubstrateActionValidator`
 (`src/townlet/environment/substrate_action_validator.py`), surfaced as

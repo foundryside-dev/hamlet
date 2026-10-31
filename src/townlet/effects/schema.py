@@ -109,3 +109,5 @@ class CommandNode:
             self.default_commands = []
         if self.parallel_commands is None:
             self.parallel_commands = []
+        if self.delay_commands is None:
+            self.delay_commands = []

@@ -84,9 +84,6 @@ def _rehash_primary_token_artifact(payload: dict[str, Any]) -> None:
         level["transition_graph_hash"],
         compute_expression_schema_hash(global_profile=profiles.global_profile, agent_profile=profiles.agent_profile),
     )
-    payload["token_spec"] = deepcopy(level["token_spec"])
-    for field_name in ("token_type_schema_hash", "layout_hash", "observation_schema_hash", "vfs_hash"):
-        payload[field_name] = level[field_name]
 
 
 def test_load_rejects_token_rank_tampering_against_persisted_grid2d_substrate(

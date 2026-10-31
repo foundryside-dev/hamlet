@@ -57,10 +57,6 @@ class ComposedActionSpace:
                 return action
         raise ValueError(f"Action '{name}' not found")
 
-    def get_enabled_actions(self) -> list[ActionConfig]:
-        """Get only enabled actions."""
-        return [a for a in self.actions if a.enabled]
-
     def get_disabled_actions(self) -> list[ActionConfig]:
         """Get only disabled actions."""
         return [a for a in self.actions if not a.enabled]

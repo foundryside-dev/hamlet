@@ -138,28 +138,27 @@ class SpatialSubstrate(ABC):
         """Return substrate's default action space with default costs.
 
         **CANONICAL ORDERING CONTRACT:**
-        All substrates MUST emit actions in this order:
-        1. Movement actions (substrate-specific)
-        2. INTERACT (second-to-last position)
-        3. WAIT (last position)
+        Every substrate emits its movement actions first, then INTERACT last. The
+        composed action space (`universe/compilers/actions.py`) is then: substrate actions
+        in this order, custom actions from the pack's `actions` declaration in authored
+        order, then the item actions (GET, USE_SLOT_n, DROP_SLOT_n, item verbs). INTERACT
+        is therefore the last *substrate* action, not `actions[-2]` of the composed space,
+        and WAIT has no fixed position: grid, continuous and aspatial substrates do not
+        emit it (a pack declares it as a custom action; `default_curriculum` does), while
+        GridND and ContinuousND emit it after INTERACT. Read positions from the compiled
+        artifact's action metadata, never from this contract.
 
-        This ordering enables the action compiler and environment
-        to consistently identify meta-actions by position:
-        - actions[-2] is always INTERACT
-        - actions[-1] is always WAIT
-        - actions[:-2] are always movement actions (if any)
-
-        Special case: Aspatial substrates have NO movement actions, only [INTERACT, WAIT].
+        Aspatial substrates have no movement actions: [INTERACT] only.
 
         Returns:
             List of ActionConfig instances with substrate-provided actions.
             IDs are temporary (the action compiler assigns runtime IDs).
 
         Examples:
-            Grid2D: [UP, DOWN, LEFT, RIGHT, UP_LEFT, UP_RIGHT, DOWN_LEFT, DOWN_RIGHT, INTERACT, WAIT]
-            Grid3D: [UP, DOWN, LEFT, RIGHT, UP_LEFT, UP_RIGHT, DOWN_LEFT, DOWN_RIGHT, UP_Z, DOWN_Z, INTERACT, WAIT]
+            Grid2D (diagonals): [UP, DOWN, LEFT, RIGHT, UP_LEFT, UP_RIGHT, DOWN_LEFT, DOWN_RIGHT, INTERACT]
+            Grid3D (diagonals): [UP, DOWN, LEFT, RIGHT, UP_LEFT, UP_RIGHT, DOWN_LEFT, DOWN_RIGHT, UP_Z, DOWN_Z, INTERACT]
             GridND(7D): [DIM0_NEG, DIM0_POS, ..., DIM6_POS, INTERACT, WAIT]
-            Aspatial: [INTERACT, WAIT] (no movement)
+            Aspatial: [INTERACT] (no movement)
         """
         pass
 

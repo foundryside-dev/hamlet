@@ -61,13 +61,15 @@ class PopulationConfig(BaseModel):
 class EnabledActionsConfig(BaseModel):
     """Curriculum-level action control configuration.
 
-    Enables actions that have enabled_by_default: false in actions.yaml.
-    Cannot disable actions that have enabled_by_default: true.
+    `custom` naming only custom actions enables those on top of the vocabulary's
+    `enabled_by_default` set (it cannot disable one). A list that names any action outside
+    the custom vocabulary (a substrate or item action) is instead the complete enabled set
+    for the level, over every action source (`universe/compilers/actions.py`).
     """
 
     model_config = ConfigDict(extra="forbid")
 
-    custom: list[str] = Field(default_factory=list, description="Custom actions to enable for this level")
+    custom: list[str] = Field(description="Custom actions to enable for this level (an empty list enables none beyond the defaults)")
 
     @field_validator("custom")
     @classmethod

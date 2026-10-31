@@ -195,5 +195,5 @@ def test_agent_target_without_an_agent_axis_is_an_assertion() -> None:
 
 
 def test_unknown_target_refuses_at_compile() -> None:
-    with pytest.raises(VTCWriteRefusalError, match="targets 'missing' names no variable"):
+    with pytest.raises(VTCWriteRefusalError, match="the write target 'missing' names no variable"):
         _compile([_rule("missing")])

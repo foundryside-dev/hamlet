@@ -5,6 +5,7 @@ from __future__ import annotations
 from townlet.config.effects_config import CommandConfig
 from townlet.effects.collections import COLLECTION_RESOLVERS
 from townlet.effects.schema import CommandNode, CommandType
+from townlet.world.expression.references import ENTITY_NAMES
 
 __all__ = ["CommandParser"]
 
@@ -35,7 +36,7 @@ class CommandParser:
             raw_target = config.target
             assert raw_target is not None
             resolved_target: str | None = None
-            if raw_target in {"self", "target"}:
+            if raw_target in ENTITY_NAMES:
                 resolved_target = raw_target
 
             return CommandNode(
@@ -90,14 +91,7 @@ class CommandParser:
             )
 
         elif config.switch is not None:
-            parsed_cases: list[tuple[str, list[CommandNode]]] = []
-            for case in config.cases:
-                when_expr = case.get("when")
-                if when_expr is None:
-                    raise ValueError("Switch case 'when' expression is required")
-                do_cmds = case.get("do") or []
-                parsed_cases.append((when_expr, [self.parse_command(cmd) for cmd in do_cmds]))
-
+            parsed_cases = [(case.when, [self.parse_command(cmd) for cmd in case.do]) for case in config.cases]
             default_cmds = [self.parse_command(cmd) for cmd in config.default]
 
             return CommandNode(

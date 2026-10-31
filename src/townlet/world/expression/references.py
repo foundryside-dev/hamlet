@@ -28,6 +28,9 @@ __all__ = [
     "EFFECT_LOCALS",
     "ENGINE_AGENT_ID",
     "ENGINE_TICK",
+    "ENTITY_NAMES",
+    "ENTITY_SELF",
+    "ENTITY_TARGET",
     "ITEM_ROOT",
     "METER_ROOT",
     "RESERVED_NAMES",
@@ -48,9 +51,16 @@ ENGINE_AGENT_ID = "agent_id"
 EFFECT_LOCALS: dict[str, str] = {"intensity": "float", "elapsed_ticks": "float", "duration_remaining": "float"}
 """The names an active effect binds while its pipeline runs, with their expression types."""
 
-RESERVED_NAMES: frozenset[str] = frozenset({ENGINE_TICK, ENGINE_AGENT_ID, *EFFECT_LOCALS})
-"""Every bare name the engine or a pipeline binds. A registry variable may not take one: its bare
-spelling would name two things (``VariableDeclaration`` refuses it at the declaration line)."""
+ENTITY_SELF = "self"
+ENTITY_TARGET = "target"
+ENTITY_NAMES: frozenset[str] = frozenset({ENTITY_SELF, ENTITY_TARGET})
+"""The two entities a pipeline context binds, named by a ``spawn_effect`` target, a ``spawn_item``
+position and the item-state read qualifier (``self.<x>``, ``target.<x>``)."""
+
+RESERVED_NAMES: frozenset[str] = frozenset({ENGINE_TICK, ENGINE_AGENT_ID, *EFFECT_LOCALS, *ENTITY_NAMES})
+"""Every bare name the engine or a pipeline binds, and the two entity names. A registry variable may
+not take one: its bare spelling would name two things (``VariableDeclaration`` refuses it at the
+declaration line)."""
 
 
 class ReferenceKind(StrEnum):

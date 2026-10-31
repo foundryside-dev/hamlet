@@ -65,6 +65,7 @@ from townlet.vfs.transition_schedule import (
     serialize_vtc_transition_schedule,
     transition_rules_from_payload,
 )
+from townlet.world.expression.references import ENTITY_NAMES
 
 # 1.15: the bars block became N per-meter observation fields with per-meter normalization
 # specs, and VFS source widths split from observed widths (PDR-0054 W3/W4). Every cache built
@@ -1453,11 +1454,11 @@ def _hydrate_command_asts(command: CommandNode, parser: Any, sources: Mapping[st
     if command.value_expr is not None:
         command.value_ast = parse(command.value_expr)
 
-    simple_target = command.target in {"self", "target"} or isinstance(command.target, int)
+    simple_target = command.target in ENTITY_NAMES or isinstance(command.target, int)
     if command.target_expr is not None and not simple_target:
         command.target_ast = parse(command.target_expr)
 
-    simple_position = command.position in {"random", "self", "target"} or command.position is None
+    simple_position = command.position == "random" or command.position in ENTITY_NAMES or command.position is None
     if command.position_expr is not None and not simple_position:
         command.position_ast = parse(command.position_expr)
 

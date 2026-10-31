@@ -103,10 +103,7 @@ def validate_static_write_targets(raw: RawConfigsV21, source_map: SourceMap | No
             if node.delay is not None:
                 commands(node.delay_do, f"{command_origin}.delay_do", item_profile, self_is_item, target_is_item)
             for case_index, case in enumerate(node.cases):
-                if "do" not in case:
-                    continue
-                children = [CommandConfig.model_validate(command) for command in case["do"]]
-                commands(children, f"{command_origin}.cases[{case_index}].do", item_profile, self_is_item, target_is_item)
+                commands(case.do, f"{command_origin}.cases[{case_index}].do", item_profile, self_is_item, target_is_item)
 
     for variable in raw.variables.declarations:
         if variable.expression is not None:

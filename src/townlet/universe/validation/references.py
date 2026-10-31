@@ -289,6 +289,23 @@ def resolve_references(
     meter_names = set(symbol_table.meters.keys())
     item_ids = set(symbol_table.items.keys())
 
+    if raw.items is not None:
+        # An item type binds one declared item profile; the binding is a reference, resolved
+        # here at the item type's `vfs_profile` line, not when stage 6 compiles the profiles.
+        item_profiles = set(raw.variables.item_profiles)
+        for position, item in enumerate(raw.items.item_types):
+            if item.vfs_profile not in item_profiles:
+                errors.add(
+                    CompilationMessage(
+                        code=ErrorCode.UAC_RES_ITEM,
+                        message=(
+                            f"Item type '{item.id}' binds vfs_profile '{item.vfs_profile}', which the pack's variables "
+                            f"declaration does not declare (declared item profiles: {sorted(item_profiles)})."
+                        ),
+                        location=locate(source_map, f"items:item_types[{position}].vfs_profile", str(experiment_dir / "items")),
+                    )
+                )
+
     for level_name, level in raw.levels.items():
         level_dir = experiment_dir / "levels" / level_name
 

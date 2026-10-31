@@ -31,6 +31,7 @@ from townlet.vfs.registry import item_row_world
 from townlet.vfs.schema import VariableDef, VariableScope
 from townlet.world.expression.context import ExecutionContext as ExprExecutionContext
 from townlet.world.expression.evaluator import Evaluator
+from townlet.world.expression.references import ENTITY_NAMES
 
 __all__ = ["ItemManager", "CompiledItemType", "SpawnPredicateReads", "WorldItemState"]
 
@@ -423,7 +424,7 @@ class ItemManager:
         retries: int = 3,
     ) -> tuple[int, ...] | tuple[float, ...]:
         """Resolve a spawn position in `world`; fail fast on unsupported inputs."""
-        if strategy in {"self", "target"}:
+        if strategy in ENTITY_NAMES:
             if origin is None:
                 raise RuntimeError(f"Origin required for strategy '{strategy}'")
             return self._position_key(origin)

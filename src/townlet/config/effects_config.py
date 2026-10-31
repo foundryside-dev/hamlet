@@ -143,7 +143,7 @@ class CommandConfig(BaseModel):
 
     # switch command: Multi-branch equality dispatch
     switch: str | None = None  # Expression evaluated once
-    cases: list[dict[str, Any]] = []  # List of {when: expr, do: [...]} mappings
+    cases: list[SwitchCaseConfig] = []  # Typed {when, do} branches
     default: list[CommandConfig] = []  # Default branch commands
 
     # parallel command: disjoint branch execution
@@ -239,6 +239,23 @@ class CommandConfig(BaseModel):
                 raise ValueError(f"sample '{dist}' missing params: {missing_params}")
 
         return self
+
+
+class SwitchCaseConfig(BaseModel):
+    """One branch of a ``switch`` command: ``when`` is the equality expression, ``do`` its body.
+
+    Both keys are authored (an empty ``do`` is an authored empty body). The body is typed
+    command nodes, so parsing, static write authorization and pipeline compilation walk
+    one grammar, and a refusal inside it is located at the nested command.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    when: str
+    do: list[CommandConfig]
+
+
+CommandConfig.model_rebuild()
 
 
 class EffectDefinitionConfig(BaseModel):

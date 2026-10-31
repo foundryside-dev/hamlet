@@ -34,6 +34,7 @@ from townlet.world.expression.references import (
     EFFECT_LOCALS,
     ENGINE_AGENT_ID,
     ENGINE_TICK,
+    ENTITY_NAMES,
     ITEM_ROOT,
     METER_ROOT,
     RESERVED_NAMES,
@@ -134,21 +135,18 @@ class ItemBinding:
     """The item a context is bound to.
 
     ``profiles`` is the set of item profiles the bound item can have: one when it is
-    statically known (an item interaction binds its item type's ``vfs_profile``), empty
-    for an item type with no profile, and None when the item is chosen at run time (an
-    item-scoped effect, an inventory loop element). Only state declared, with one type,
-    in every candidate profile is readable: for None that is the intersection over every
-    declared profile, so a name one profile lacks is refused at compile, never served
-    to an item that does not have it.
+    statically known (an item interaction binds its item type's ``vfs_profile``), and
+    None when the item is chosen at run time (an item-scoped effect, an inventory loop
+    element). Only state declared, with one type, in every candidate profile is
+    readable: for None that is the intersection over every declared profile, so a name
+    one profile lacks is refused at compile, never served to an item that does not have it.
     """
 
     profiles: frozenset[str] | None
 
     @classmethod
-    def of_profile(cls, profile: str | None) -> ItemBinding:
-        """The binding of an item type with a statically known profile (or none)."""
-        if profile is None:
-            return cls(frozenset())
+    def of_profile(cls, profile: str) -> ItemBinding:
+        """The binding of an item type with a statically known profile."""
         return cls(frozenset({profile}))
 
 
@@ -235,7 +233,7 @@ EFFECT_PIPELINE = ReadContext(
 _WRITABLE_KINDS = frozenset({SymbolKind.VARIABLE, SymbolKind.METER, SymbolKind.ITEM_STATE})
 """What a write may target: state. An engine name or a pipeline local is read-only."""
 
-_LEGACY_ENTITY_QUALIFIERS = frozenset({"self", "target", "global", "agent"})
+_LEGACY_ENTITY_QUALIFIERS = frozenset({*ENTITY_NAMES, "global", "agent"})
 _LEGACY_STORAGE_ROOT = "vfs"
 
 
@@ -443,8 +441,6 @@ class Namespace:
                     "of any profile (an item-scoped effect or an inventory loop), so it reads only state every item "
                     "profile declares with one type."
                 )
-            if not context.item.profiles:
-                return f"but the bound item has no profile (declared by item profile(s) {declared})."
             bound = ", ".join(sorted(context.item.profiles))
             return f"which the bound item's profile ({bound}) does not declare (declared by item profile(s) {declared})."
         if symbol.kind == SymbolKind.METER:
@@ -474,7 +470,7 @@ class Namespace:
     def _bare(self, name: str, context: ReadContext, qualifier: str | None) -> Symbol | None:
         served = self.entries(context)
         item = self._any_item_state(name)
-        if item is not None and context.item is not None and qualifier in {"self", "target"}:
+        if item is not None and context.item is not None and qualifier in ENTITY_NAMES:
             return item
         if name in served and served[name].kind != SymbolKind.ITEM_STATE:
             return served[name]

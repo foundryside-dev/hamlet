@@ -7,7 +7,7 @@ from typing import Any
 
 from pyparsing import ParseBaseException
 
-from townlet.config.items_config import ItemsAppearanceConfig, ItemsCatalogConfig
+from townlet.config.items_config import ItemsAppearanceConfig
 from townlet.config.variables_config import VariableDeclaration, VariablesConfig
 from townlet.items.manager import SpawnPredicateReads
 from townlet.universe.compiled import CompiledVFSProfiles
@@ -125,29 +125,6 @@ class VFSCompiler:
             for scope in (VariableScope.GLOBAL, VariableScope.AGENT)
             if any(variable.expression is not None for variable in config.for_scope(scope))
         }
-
-    def validate_item_profile_bindings(
-        self,
-        items: ItemsCatalogConfig | None,
-        compiled_vfs_profiles: CompiledVFSProfiles | None,
-    ) -> None:
-        """Validate item profile references from items.yaml against compiled VFS profiles."""
-        if items is None:
-            return
-        item_profiles = compiled_vfs_profiles.item_profiles if compiled_vfs_profiles is not None else None
-        available_profiles = set(item_profiles.keys()) if item_profiles is not None else set()
-        for item in items.item_types:
-            profile_name = item.vfs_profile
-            if profile_name is None:
-                continue
-            if profile_name not in available_profiles:
-                raise ValueError(
-                    "Invalid item VFS profile binding.\n"
-                    f"  Item: {item.id}\n"
-                    f"  vfs_profile: {profile_name!r}\n"
-                    f"  Available item profiles: {sorted(available_profiles)}\n"
-                    "Define the profile in the pack-scope item_profiles declaration or update the item catalog binding."
-                )
 
     def compile_item_spawn_conditions(
         self,

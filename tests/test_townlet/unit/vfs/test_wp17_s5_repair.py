@@ -30,6 +30,7 @@ from townlet.vfs.namespace import (
     SpellingError,
     SymbolKind,
 )
+from townlet.world.expression.references import ENTITY_NAMES
 
 CONFIGS = Path(__file__).resolve().parents[4] / "configs"
 WITNESS = CONFIGS / "static_epistemic_access"
@@ -154,7 +155,7 @@ def _line_of(path: Path, needle: str, *, occurrence: int = 1) -> int:
 
 
 def test_the_reserved_set_is_derived_from_the_engine_names_and_effect_locals() -> None:
-    assert RESERVED_NAMES == {ENGINE_TICK, *TRANSITION_WRITE.engine, *EFFECT_LOCALS}
+    assert RESERVED_NAMES == {ENGINE_TICK, *TRANSITION_WRITE.engine, *EFFECT_LOCALS, *ENTITY_NAMES}
     assert ENGINE_AGENT_ID in RESERVED_NAMES
 
 
@@ -180,6 +181,31 @@ def test_item_state_may_reuse_a_reserved_name(tmp_path: Path) -> None:
 def test_the_namespace_refuses_a_reserved_variable_id() -> None:
     with pytest.raises(ValueError, match="reserved"):
         Namespace(variables=[("intensity", "agent", "scalar")], meters=[], item_profiles={})
+
+
+@pytest.mark.parametrize("entity", sorted(ENTITY_NAMES))
+def test_an_agent_ref_named_after_an_entity_refuses_at_its_declaration_line(tmp_path: Path, entity: str) -> None:
+    """`self` / `target` name the context's entities (`spawn_effect: e1, target: target`); a variable may not take them."""
+    pack = _pack(tmp_path, declarations=[_decl(entity, scope="agent", type="agent_ref")])
+    refusal = _refusal(pack)
+    (issue,) = refusal.issues
+    assert f"Variable id '{entity}' is reserved" in issue.message
+    assert issue.location == f"{pack / 'variables.yaml'}:{_line_of(pack / 'variables.yaml', f'id: {entity}')}"
+
+
+def test_no_shipped_pack_declares_a_reserved_variable_id() -> None:
+    declared: list[tuple[Path, str]] = []
+    for path in sorted(CONFIGS.rglob("*.y*ml")):
+        if ".compiled" in path.parts:
+            continue
+        for document in yaml.safe_load_all(path.read_text()):
+            variables = document.get("variables") if isinstance(document, dict) else None
+            if not isinstance(variables, dict):
+                continue
+            for declaration in variables.get("declarations", []) or []:
+                if isinstance(declaration, dict) and declaration.get("scope") != "item" and declaration.get("id") in RESERVED_NAMES:
+                    declared.append((path, declaration["id"]))
+    assert declared == []
 
 
 # -- P1-b: item state is the bound item's profile ----------------------------------------
@@ -238,7 +264,6 @@ def test_the_item_binding_is_the_intersection_with_one_type() -> None:
     )
     assert set(namespace.item_state(ANY_ITEM)) == {"x"}
     assert set(namespace.item_state(ItemBinding.of_profile("a"))) == {"x", "y", "z"}
-    assert namespace.item_state(ItemBinding.of_profile(None)) == {}
     assert "item.z" not in namespace.schema(EFFECT_PIPELINE.with_item(ANY_ITEM))
 
 

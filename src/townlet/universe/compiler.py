@@ -340,7 +340,6 @@ class UniverseCompiler:
         bar_schema: dict[str, str] = {meter.name: "float" for meter in primary_level_config.bars.meters}
 
         compiled_vfs_profiles = self._vfs_compiler.compile_profiles(raw.variables, bar_schema)
-        self._vfs_compiler.validate_item_profile_bindings(raw.items, compiled_vfs_profiles)
 
         # Every history ring either profile reads, at its deepest lag (WP14). The profile
         # compile above has already refused any temporal call the runtime cannot serve.

@@ -8,6 +8,7 @@ import yaml
 from tests.test_townlet.helpers.config_builder import PRIMARY_LEVEL_NAME, prepare_config_dir
 from townlet.universe.compiled import CompiledUniverse
 from townlet.universe.compiler import UniverseCompiler
+from townlet.universe.errors import CompilationError
 
 
 def _item_variable(profile: str, identifier: str, initial: float) -> dict:
@@ -87,12 +88,22 @@ def test_compiler_compiles_item_profiles(tmp_path: Path, cached: bool) -> None:
     assert all(var.lifetime == "episode" and var.semantic_type == "custom" for profile in profiles.values() for var in profile.variables)
 
 
-def test_compiler_rejects_unknown_item_vfs_profile(tmp_path: Path) -> None:
+def test_compiler_rejects_unknown_item_vfs_profile_at_the_binding_line(tmp_path: Path) -> None:
+    """An undeclared `vfs_profile` is a reference refusal located at the item type's binding, not a bare ValueError."""
     experiment_dir = prepare_config_dir(tmp_path, name="experiment")
     _write_variables(experiment_dir, ["food_stats"], [_item_variable("food_stats", "calories", 100.0)])
     _write_items(experiment_dir, [_item("apple", "food_stats"), _item("ghost_item", "missing_profile")])
-    with pytest.raises(ValueError, match="missing_profile"):
+    items_path = experiment_dir / "items.yaml"
+    binding_line = next(
+        number for number, text in enumerate(items_path.read_text().splitlines(), 1) if "vfs_profile: missing_profile" in text
+    )
+    with pytest.raises(CompilationError) as refusal:
         UniverseCompiler().compile(experiment_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
+    (issue,) = refusal.value.issues
+    assert issue.code == "UAC-RES-ITEM"
+    assert issue.location == f"{items_path}:{binding_line}"
+    assert "'ghost_item' binds vfs_profile 'missing_profile'" in issue.message
+    assert "declared item profiles: ['food_stats']" in issue.message
 
 
 def test_compiler_handles_empty_item_profile_inventory(tmp_path: Path) -> None:

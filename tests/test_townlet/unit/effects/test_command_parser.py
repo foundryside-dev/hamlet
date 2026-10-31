@@ -145,7 +145,6 @@ def test_parser_for_each_command():
 
 def test_parser_switch_command():
     """Parser converts switch CommandConfig to CommandNode."""
-    # Note: cases[i]["do"] contains CommandConfig objects, not raw dicts
     config = CommandConfig(
         switch="bar.energy",
         cases=[
@@ -246,16 +245,14 @@ def test_parser_parse_commands_list():
     assert all(n.type == CommandType.MODIFY for n in nodes)
 
 
-def test_parser_switch_missing_when_raises():
-    """Parser raises ValueError when switch case is missing 'when'."""
+def test_switch_case_missing_when_refuses_at_the_dto():
+    """A switch case is a typed {when, do} node: a case without 'when' never reaches the parser."""
     import pytest
+    from pydantic import ValidationError
 
-    config = CommandConfig(
-        switch="energy",
-        cases=[{"do": [CommandConfig(modify="x", value="1")]}],  # Missing 'when'
-        default=[],
-    )
-
-    parser = CommandParser()
-    with pytest.raises(ValueError, match="'when' expression is required"):
-        parser.parse_command(config)
+    with pytest.raises(ValidationError, match="when"):
+        CommandConfig(
+            switch="energy",
+            cases=[{"do": [{"modify": "x", "value": "1"}]}],  # Missing 'when'
+            default=[],
+        )

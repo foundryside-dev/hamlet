@@ -18,6 +18,7 @@ from townlet.vfs.namespace import (
 )
 from townlet.world.expression import ExpressionParser, read_paths
 from townlet.world.expression.ast_nodes import ASTNode
+from townlet.world.expression.references import ENTITY_NAMES
 from townlet.world.expression.type_checker import TypeChecker, TypeCheckError
 
 __all__ = ["CommandCompileError", "CommandCompiler"]
@@ -173,7 +174,7 @@ class CommandCompiler:
                 raise TypeCheckError(spawn_target_literal_refusal(str(node.target)))
             if node.target is None and node.target_expr and spawn_target_reads_nothing(node.target_expr):
                 raise TypeCheckError(spawn_target_literal_refusal(node.target_expr))
-            if node.target not in {"self", "target"} and node.target_expr:
+            if node.target not in ENTITY_NAMES and node.target_expr:
                 target_ast = self._parse(node.target_expr, binding)
                 target_type = type_checker.check(target_ast)
                 if target_type not in {"int", "agent_ref", "item_ref"}:
@@ -428,7 +429,7 @@ class CommandCompiler:
                 raise TypeCheckError(f"SPAWN_ITEM '{node.item_type}' requires a declared quantity >= 1, got {node.quantity}")
 
             # Validate position expression if provided (not simple "random"/"self"/"target")
-            simple_position = node.position in {"random", "self", "target"} or node.position is None
+            simple_position = node.position == "random" or node.position in ENTITY_NAMES or node.position is None
             if not simple_position and node.position_expr:
                 position_ast = self._parse(node.position_expr, binding)
                 # Position expressions should produce coordinates - type check for sanity
@@ -458,7 +459,7 @@ def spawn_target_reads_nothing(target: str) -> bool:
     expression; one that reads nothing (``3``, ``-1``, ``1 + 1``) is the same row in
     every world.
     """
-    if target in {"self", "target"}:
+    if target in ENTITY_NAMES:
         return False
     return not read_paths(ExpressionParser().parse(target))
 

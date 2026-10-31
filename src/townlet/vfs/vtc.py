@@ -3158,7 +3158,7 @@ def compile_vtc_affordance_gates_with_phase_graph(
                 kind="affordance_gate",
                 source_variable_id="time_of_day",
                 target_affordance_id=name,
-                variable_id=f"affordance.{name}.available",
+                variable_id=f"opening_hours:{name}",
                 expression=expression,
                 expression_ast=parser.parse(expression),
                 condition=None,

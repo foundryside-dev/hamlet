@@ -298,7 +298,7 @@ def test_vtc_action_writes_resolves_priority_and_last_write_wins() -> None:
         name="CONFLICT",
         writes=[
             _write_with_metadata(
-                variable_id="target",
+                variable_id="winner",
                 expression="0.1",
                 condition=None,
                 composition="priority_write",
@@ -308,7 +308,7 @@ def test_vtc_action_writes_resolves_priority_and_last_write_wins() -> None:
                 telemetry_label="low_priority",
             ),
             _write_with_metadata(
-                variable_id="target",
+                variable_id="winner",
                 expression="0.9",
                 condition=None,
                 composition="priority_write",
@@ -343,13 +343,13 @@ def test_vtc_action_writes_resolves_priority_and_last_write_wins() -> None:
     program = compile_vtc_action_writes([action], _agent_scopes(action))
     updated = program.apply(
         actions=torch.tensor([6, 0]),
-        vfs_state={"target": torch.tensor([0.0, 0.0]), "status": torch.tensor([0.0, 0.0])},
+        vfs_state={"winner": torch.tensor([0.0, 0.0]), "status": torch.tensor([0.0, 0.0])},
         bars_state={},
         active_mask=torch.tensor([True, True]),
         device=torch.device("cpu"),
     ).values
 
-    assert torch.allclose(updated["target"], torch.tensor([0.9, 0.0]))
+    assert torch.allclose(updated["winner"], torch.tensor([0.9, 0.0]))
     assert torch.allclose(updated["status"], torch.tensor([0.7, 0.0]))
 
 

@@ -27,7 +27,8 @@ Repo directory is `hamlet`; the distribution and the only source tree are `townl
 project. **Work only in `src/townlet/`.**
 
 Fuller framing, and the honest status section: `README.md` (prefer it over anything in
-`docs/architecture/archive/`). Product vision: `docs/product/vision.md`.
+`internal/docs/architecture-archive/`). Product vision: `docs/vision.md` (condensed; the full
+product workspace with PDRs, metrics and evidence is `internal/docs/product/`).
 
 **Pedagogical value is a property of the framework, not the mission.** The project deliberately
 preserves "interesting failures" (like reward hacking) as teaching material rather than
@@ -83,10 +84,15 @@ dormant.
 ## Reading `docs/` — intent vs record
 
 ⚠️ **Much of `docs/` is design intent, never a record of what shipped.** The old architecture
-corpus lives in `docs/architecture/archive/`; archive-internal links may dangle, by design.
+corpus lives in `internal/docs/architecture-archive/`; archive-internal links may dangle, by design.
 
-The sharpest case: `docs/architecture/archive/BRAIN_AS_CODE.md` and
-`docs/architecture/archive/hld/02-brain-as-code.md` both say
+**`internal/` is gitignored and not published** (reviews, plans, archived docs, the product
+workspace). A fresh clone or cloud session does not have it. Restore it locally with
+`git checkout a800da6a -- internal && git rm -r -q --cached internal`. Put new scratch or PM
+records there; keep anything a script or test reads (e.g. `docs/oracle/evidence/`) out of it.
+
+The sharpest case: `internal/docs/architecture-archive/BRAIN_AS_CODE.md` and
+`internal/docs/architecture-archive/hld/02-brain-as-code.md` both say
 *"Status: Approved for Implementation"*, while `execution_graph` / `cognitive_topology` /
 `agent_architecture` return **zero grep hits** in `src/` and `configs/`. The design is the
 target; the status line is false. That pattern repeats across the archived corpus.
@@ -96,15 +102,15 @@ target; the status line is false. That pattern repeats across the archived corpu
 1. **Never cite a doc as evidence something is implemented.** Check `src/townlet/` first.
 2. **Where a doc disagrees with `README.md`, README is right; where either disagrees with the
    code, the code is right.**
-3. `docs/architecture/archive/` does not know about `src/townlet/oracle/`, `items/`, `effects/`,
+3. `internal/docs/architecture-archive/` does not know about `src/townlet/oracle/`, `items/`, `effects/`,
    S1 or the token observation. Absence there means nothing.
 4. Many (not all) files carry frontmatter with an "AI-Friendly Summary" and "Reading Strategy".
    Where present, read it first to decide relevance before opening a 2000-line file.
 
-**Current-and-trustworthy:** `README.md`, `docs/product/`, `docs/remediation/STATUS.md`, the
+**Current-and-trustworthy:** `README.md`, `docs/vision.md`, `docs/remediation/STATUS.md`, the
 six-document HLD set in `docs/architecture/` — `HLD.md`, `STRATA.md`, `UAC.md`, `BAC.md`,
 `COMPILER.md`, `VFS.md` — and `docs/config-schemas/`. Not
-`docs/architecture/archive/vfs-current-implementation.md`: its scope vocabulary, authoring
+`internal/docs/architecture-archive/vfs-current-implementation.md`: its scope vocabulary, authoring
 files and access-control claims all predate Cut B and S1.
 
 **On `docs/config-schemas/`**: the reference tier the HLD set delegates to. Trust a file there
@@ -129,7 +135,7 @@ do not add to `docs/oracle/known-divergences.md` as a precondition for changing 
   (cross-validate) → 4 symbols → 5 resolve → 6 shared schemas and effects → 7 levels and
   optimization data → 8 emit/cache. Never hand-write "Stage N" strings.
 - **Docs**: `docs/architecture/COMPILER.md` (its seven-stage table is a framing; §2 maps it onto
-  the source numbering). `docs/architecture/archive/COMPILER_ARCHITECTURE.md` is design-era:
+  the source numbering). `internal/docs/architecture-archive/COMPILER_ARCHITECTURE.md` is design-era:
   useful for intent, but it describes sub-compilers that were never wired and asserts a
   backwards-compatibility success criterion this project rejects.
 - **Tests**: `uv run pytest tests/test_townlet/unit/universe/` (use `UV_CACHE_DIR=.uv-cache` in sandboxed environments)
@@ -173,7 +179,7 @@ uv sync --extra dev --extra recording      # Development environment
 **Both extras are required for development.** `mypy src/townlet` type-checks
 `src/townlet/recording/`, whose imports (matplotlib, pillow) live in the
 `recording` extra. Omitting it produces spurious `import-not-found` errors.
-Until the recording subsystem is removed (filigree `hamlet-16ae192d42`), the dev
+Until the recording subsystem is removed, the dev
 environment needs both. CI installs `--all-extras`.
 
 ### Training (Townlet System)
@@ -572,34 +578,3 @@ When in doubt:
   than immediately fixing it.
 - The goal is a framework others author in, not production-ready agents.
 - **Work only in `src/townlet/`.**
-
-## Filigree Issue Tracker
-
-`filigree` tracks this project's work: `filigree session-context` at session
-start, then `filigree start-next-work --assignee <name>`. Name yourself on
-writes: `filigree --actor <name>` (CLI) or `actor=<name>` (MCP);
-`session-context` also reads `FILIGREE_ACTOR`.
-
-Reference: the **filigree-workflow** skill, `filigree --help`, and the
-`mcp__filigree__*` tool schemas. Prefer MCP tools; fall back to the CLI.
-
-Two rules `--help` will not tell you:
-
-1. Claim atomically: `work_start` / `work_start_next` (MCP) or `start-work` /
-   `start-next-work` (CLI). Never chain a claim with a separate status update;
-   that two-step form races other agents.
-2. On `SCHEMA_MISMATCH` the installed filigree is older than the project
-   database. Surface it to the user; do not retry.
-## Loomweave (code structure + SEI identity)
-
-Loomweave pre-extracts this repo into a queryable map — entities, their
-call/reference/import/relation edges, and subsystems — each carrying a Stable
-Entity Identity (SEI). Ask its `mcp__loomweave__*` tools, not grep, for "what
-calls X", "what subclasses X", "where is X defined", "find the thing that
-does Y".
-
-- Never hand-construct an entity id: take it from `entity_find` / `entity_at` /
-  `entity_resolve`, and bind cross-tool records on the `sei`, not the `id`.
-- If `project_status_get` reports stale, re-index before answering.
-
-Full reference: `loomweave-workflow` skill, `loomweave --help`, MCP schemas.

@@ -17,7 +17,16 @@
 **Document Type**: Design Specification + Integration Specification  
 **Status**: Phase 1 Complete; observation path fully VFS-driven in production (shadow migration finished, old path deleted); VTC partially unified (Phase 2.x)  
 **Version**: 1.1 Draft  
-**Last Updated**: 25 August 2026, pass 3 (convergence check: pass-2 corrections re-derived from source — 4 confirmed, 1
+**Last Updated**: 31 October 2026 (one-spelling sweep: §0, §3.1, §3.2 drop the deleted
+`ActionConfig.reads`; §4.2 and §20.8 recast `FeatureDef` as an expression variable; §10.2,
+§11.6, §12.3, §13.3, §14.3 examples rewritten to the shipped grammar (`bar.<m>` for meters,
+real phase names, every required field, no `reads:`/`kind:`) and checked against the DTOs and
+the VTC compilers and by compiling them in a copy of `default_curriculum`; §12.3's temporal
+gate recast as an expression variable and its interaction-progress example removed as not
+authorable; §14.4 and §21.1 item 8 corrected
+(the modulation seam is unreachable from the affordances `modulations` surface); §16.3 rule
+masking is per world; §21.1 items 1 and 5 and §24.5 drop the deleted social-residue and
+relational-scope wording); 25 August 2026, pass 3 (convergence check: pass-2 corrections re-derived from source — 4 confirmed, 1
 sharpened; §7.2 `check_access` is dead in `src/`; §11.4 gains per-phase coverage and the phase-name compile gate the
 examples in §10.2/§12.3/§13.3/§14.3 fail; §6.2 load-time item-scope gate; §20.9 item-profile DTO fields; §21.1 item 2
 discharged; §4.3 field-UUID role restored from the archive); 25 August 2026, pass 2 (adversarial
@@ -49,7 +58,8 @@ In its current Phase 1 form, VFS provides:
 3. **Internal compiled global, agent and item profiles**, produced from that same declaration roster.
 4. **A runtime variable registry** that stores state tensors and enforces read/write access control.
 5. **TokenSpec compilation** that binds agent-facing token slots from declarative exposures.
-6. **ActionConfig dependency tracking** through declared `reads` and `writes` fields.
+6. **Action writes** through declared `writes` (`WriteSpec` entries); what an action reads is
+   derived from its write expressions (the authored `reads` list was deleted 2026-10-31).
 7. **Token schema/layout regression tests** that protect checkpoint compatibility.
 8. **Integration tests** proving that the schema → registry → token pipeline works end to end.
 
@@ -218,19 +228,31 @@ The long-term aim is that level changes are expressed primarily by changing vari
 
 Phase 1 implementation is complete.
 
-The current repo convention is split deliberately:
+Variables have one authoring surface (declaration-store Cut B, 2026-10-01; corrected here
+2026-10-31):
 
-- `configs/<experiment>/vfs_profiles.yaml` is required at the experiment root and is the authoritative source for compiled VFS profiles. It carries global, agent, and item profile definitions and feeds `CompiledUniverse.compiled_vfs_profiles`.
-- `configs/<experiment>/variables_reference.yaml` is optional at the experiment root. When present, variables that are not already emitted by observation primitives or VFS profiles become static runtime VFS variables. Duplicate IDs act as observation metadata overlays for the existing variable. The file cannot define item-scoped variables and cannot carry expression DSL fields.
-- Level directories must not contain `vfs_profiles.yaml`; profile definitions are shared across curriculum levels, while level-specific activity and masking come from the compiled level metadata.
+- One required pack-scope `variables:` declaration (conventionally `variables.yaml` at the pack
+  root; discovery identifies it by content) lists every registry variable explicitly, plus the
+  named `item_profiles`. Its contract is `docs/config-schemas/variables.md`; its DTO is
+  `townlet.config.variables_config.VariablesConfig` (`extra="forbid"`).
+- Global and agent variables that carry an `expression`, and item state grouped by `profile`,
+  lower into internal compiled profiles (`CompiledUniverse.compiled_vfs_profiles`). The
+  profiles are compiler products, not an authoring language.
+- `variables` is a pack-only family: a copy under `levels/<level>/` is refused with
+  `DECLARATION_SCOPE`. Per-level observation differences come from the level's compiled
+  `TokenSpec`.
+- The former `vfs_profiles.yaml`, `variables_reference.yaml` and `environment.yaml` variable
+  languages are deleted. An old payload fails at compile; there is no reader, alias or
+  translation.
 
 | Component | Status | Primary verification source |
 | --- | ---: | --- |
-| Schema Definitions (`VariableDef`, `ObservationField`) | Complete | `tests/test_townlet/unit/vfs/test_schema.py`, `tests/test_townlet/unit/vfs/test_observation_field_schema.py` |
+| Variable declaration and schema (`VariableDeclaration`, `VariableDef`) | Complete | `tests/test_townlet/unit/config/test_variables_dto.py`, `tests/test_townlet/unit/vfs/test_schema.py`, `tests/test_townlet/unit/universe/test_canonical_variable_compilation.py` |
 | Variable Registry runtime storage + access control | Complete | `tests/test_townlet/unit/vfs/test_registry.py`, `tests/test_townlet/unit/vfs/test_scoped_registry.py`, `tests/test_townlet/unit/vfs/test_variable_registry_tensor.py` |
-| Observation Spec Builder compile-time spec generation | Complete | `tests/test_townlet/unit/vfs/test_observation_builder.py`, `tests/test_townlet/unit/universe/test_evaluation_marks.py` |
-| `ActionConfig` extension with `reads` / `writes` fields | Complete | `tests/test_townlet/unit/vfs/test_vtc_action_writes.py`, `tests/test_townlet/unit/vfs/test_schema_hashes.py` |
-| Dimension regression coverage for checkpoint compatibility | Complete | `tests/test_townlet/unit/vfs/test_observation_dimension_regression.py` |
+| `TokenSpec` compilation (`universe/dto/token_spec.py`: exposure, capacity and identity refusals; slot bindings) | Complete | `tests/test_townlet/unit/universe/test_token_spec.py`, `tests/test_townlet/unit/universe/test_compiled_token_coherence.py`, `tests/test_townlet/unit/universe/test_token_numeric_contract.py`, `tests/test_townlet/unit/universe/test_evaluation_marks.py` |
+| Token publishers (`environment/token_publishers.py`: one per token type, normalization, partial observability) | Complete | `tests/test_townlet/unit/environment/test_token_publishers.py`, `tests/test_townlet/unit/environment/test_token_binding_scope.py`, `tests/test_townlet/unit/environment/test_token_partial_observability.py` |
+| `ActionConfig` extension with `writes` (authored `reads` deleted 2026-10-31; reads are derived) | Complete | `tests/test_townlet/unit/vfs/test_vtc_action_writes.py`, `tests/test_townlet/unit/vfs/test_schema_hashes.py` |
+| Token schema and layout hashes for checkpoint compatibility (`token_type_schema_hash`, `layout_hash`, `variable_schema_hash`) | Complete | `tests/test_townlet/integration/test_token_transfer_contract.py`, `tests/test_townlet/unit/vfs/test_schema_hashes.py` |
 | Integration coverage for end-to-end VFS flows | Complete | `tests/test_townlet/integration/vfs/`, `tests/test_townlet/integration/test_vfs_runtime_evaluation.py` |
 
 Use the current pytest and coverage artifacts as the source of truth for verification metrics. This spec intentionally does not freeze point-in-time metric snapshots.
@@ -245,7 +267,7 @@ Phase 1 proves that VFS can:
 - generate observation specifications,
 - calculate observation dimensions before runtime,
 - preserve checkpoint compatibility through regression tests,
-- and attach declared read/write dependencies to action definitions.
+- and attach declared writes to action definitions, whose reads the compiler derives.
 
 The repo no longer has "no transition compiler." The implemented VFS read path already parses profile expressions into ASTs, type-checks them, topologically sorts profile dependencies, and evaluates derived variables through `VFSEvaluator` in mark-and-sweep or eager mode. The action-write path also has an initial VTC slice: `ActionConfig.writes` compile into parsed, phase-ordered `VTCActionWriteProgram` rules that execute masked tensor writes during `env.step`.
 
@@ -259,22 +281,39 @@ The remaining VTC gap is full transition unification: write-expression type/shap
 
 A **variable** is stored state. It may represent a survival meter, position, time, progress counter, affordance occupancy, hidden motivation, public reputation, relationship trust, message buffer, or any other stateful element of the world or agent.
 
-A variable definition should minimally specify:
+A variable is one entry in the pack's `variables.declarations`
+(`townlet.config.variables_config.VariableDeclaration`, `extra="forbid"`; contract in
+`docs/config-schemas/variables.md`). Every entry declares `id`, `scope`, `type`, `lifetime`,
+`semantic_type`, an initializer, and `readable_by` / `writable_by` / `exposed_to`. An exposed
+variable also declares `normalization`:
 
 ```yaml
-- id: "energy"
-  type: "scalar"
+- id: "stamina"
   scope: "agent"
-  range: [0.0, 1.0]
-  initial: 1.0
-  readable_by: ["agent", "engine", "bac"]
-  writable_by: ["engine", "bac"]
+  type: "scalar"
+  lifetime: "episode"
+  semantic_type: "custom"
+  initial_value: 1.0
+  readable_by: ["engine", "agent"]
+  writable_by: ["engine"]
+  exposed_to: ["agent"]
+  normalization: { kind: "minmax", min: 0.0, max: 1.0, clip: true }
   description: "Ability to move and act"
 ```
 
-Phase 1 already supports the basic schema. Future versions should extend metadata so variables can describe more of their causal role:
+Notes against the design-era shape this replaced:
+- The access vocabulary is closed: readers `engine`/`agent`, writer `engine` (or none), exposure
+  `agent`. Role names such as `bac` or `vtc` fail validation.
+- There is no `range` field. Bounds come from a write's `clamp` and from the exposure
+  normalization.
+- A variable id may not equal a meter name (`SYMBOL_METER_COLLISION`), may not contain `.`, and
+  may not take a reserved engine name (`tick`, `agent_id`, `intensity`, `elapsed_ticks`,
+  `duration_remaining`). That is why this example is not called `energy`.
 
-```yaml
+Future versions could extend metadata so variables describe more of their causal role. This is
+a proposal: `metadata` is not a field today and fails at parse.
+
+```text
 metadata:
   tags: ["need", "pivotal", "survival", "normalised"]
   semantic_class: "survival_meter"
@@ -296,19 +335,32 @@ and the `bars`/`spatial`/`affordance`/`effects` members that named them, are del
 
 A **feature** is a derived observation component. It may be computed from stored variables but not stored as authoritative state.
 
-Examples:
+The shipped form of a feature is an **expression variable**: an entry in the pack's
+`variables.declarations` that carries an `expression` (global or agent scope only). Its reads
+are derived from the expression; there is no authored `reads` list and no separate `features`
+block. Example (compiles as an entry in `default_curriculum`'s roster):
 
 ```yaml
-features:
-  - id: "distance_to_nearest_food"
-    source: "derived"
-    reads: ["position", "affordance_positions", "affordance_categories"]
-    expression: "min_distance(position, affordance_category == food)"
-    readable_by: ["agent"]
-    normalization: { kind: "minmax", min: 0, max: 16 }
+- id: "need_pressure"
+  scope: "agent"
+  type: "scalar"
+  lifetime: "episode"
+  semantic_type: "custom"
+  initial_value: 0.0
+  expression: "max(1.0 - bar.energy, 1.0 - bar.satiation)"
+  readable_by: ["engine", "agent"]
+  writable_by: ["engine"]
+  exposed_to: ["agent"]
+  normalization: { kind: "minmax", min: 0.0, max: 1.0, clip: true }
 ```
 
-This separates:
+The design-era example here was "distance to nearest food". It is not declarable today.
+Spatial functions (`distance_to_affordance`, `in_range`, `nearest`, ...) have no qualified
+variable output shape, so the profile compiler refuses them in a variable expression
+(`VFS-PROFILE-COMPILE`). They are served only in effect and interaction pipelines, and there is
+no category query.
+
+The design-era split below still describes the intent:
 
 ```text
 VariableDef = stored world state
@@ -316,7 +368,8 @@ FeatureDef  = derived model input or diagnostic signal
 RuleSpec    = transition relationship over variables
 ```
 
-Phase 1 currently focuses on variables and token exposure. `FeatureDef` is a recommended future extension.
+`FeatureDef` was never built; an expression variable fills its role. A separate feature
+declaration remains a possible future extension.
 
 ### 4.3 Token exposure
 
@@ -459,56 +512,59 @@ message age belong to the multi-agent world design, after agents-per-world is de
 
 ### 5.3 Social observability and privacy
 
-> ⚠ **Caveat (2026-08-24 audit; re-verified line-by-line 2026-08-25): this section is design
-> intent with no working authoring door today.** The examples below cannot be authored on
-> either required surface — `vfs_profiles.yaml` and `environment.yaml` have **no
-> `readable_by`/`writable_by` fields at all**, and the compiler hardcodes
-> `["agent","engine"]` / `["engine"]` for every variable regardless of declared scope
-> (`universe/compilers/vfs.py:318-320`,
-> `universe/compilers/observation.py:813-815,868-870`). `exposed_to` fails open (omitted *and*
-> explicitly `[]` both rewrite to `["agent"]` —
-> `vfs_profiles_config.py:127-128,238-239,325-326`; the audit's pack census found only 2 of
-> ~49 authored profile variables state exposure explicitly), and the one file that does accept
-> these fields, `variables_reference.yaml`, is invisible to the compiler symbol table (§5.1
-> caveat). Every privacy / hidden-state / social-inference mechanic this section describes is
-> currently **unauthorable while appearing authorable**. Full story:
-> `archive/REVIEW-2026-08-24-vfs-implementation-vs-spec.md` (Headline and Top gaps);
-> tickets `hamlet-1a520475f4`, `hamlet-83a043a9b9`, `hamlet-d97b4d6b4a`, `hamlet-33e520cebd`.
->
-> The same hardcoding pattern hits **`lifetime`**, in opposite directions on the two required
-> surfaces: every `environment.yaml` variable is compiled `lifetime="tick"`
-> (`universe/compilers/observation.py:813,868` — no counter or accumulator authored there can
-> survive a step, `hamlet-4597fd5d04`), and every `vfs_profiles.yaml` profile variable is
-> compiled `lifetime="persistent"` (global) / `"episode"` (agent)
-> (`universe/compilers/vfs.py:105,109` — a global profile variable can never be declared to
-> reset with the episode, `hamlet-0268336cd1`). Neither DTO carries a `lifetime` field. The
-> registry's three-way lifetime mechanics (`tick`/`episode`/`persistent`,
-> `registry.py:595-610`) are correct where they run; the author simply cannot reach them
-> except through `variables_reference.yaml`.
+> **Superseded 2026-10-31.** The 2026-08-24 caveat that stood here said privacy, hidden state
+> and `lifetime` could not be authored: `vfs_profiles.yaml` and `environment.yaml` had no access
+> fields, `exposed_to` failed open, and `variables_reference.yaml` never reached the symbol
+> table. Cut B deleted all three surfaces. Every variable in the one `variables` declaration now
+> declares `readable_by`, `writable_by`, `exposed_to` and `lifetime`. The access vocabulary is
+> closed (§6), and the registry enforces it. What is still design intent is the *role* model
+> this section sketches: readers other than `engine` and `agent` (a doctor role, a perception
+> model, other agents) do not exist. Under S1 a world has one agent, so there is no
+> "other agent" to read anything.
 
 Read access should represent what an actor may know, not merely what code may inspect.
 
-Examples:
+Examples in the shipped shape. The vocabulary can express engine-only ground truth beside an
+agent-visible perception of it. It cannot express role-based readers (a doctor role, a
+perception model) or a signal other agents read:
 
 ```yaml
 - id: "true_health"
-  type: "scalar"
   scope: "agent"
-  readable_by: ["engine", "doctor_role"]
-  writable_by: ["engine", "vtc"]
+  type: "scalar"
+  lifetime: "episode"
+  semantic_type: "custom"
+  initial_value: 1.0
+  readable_by: ["engine"]
+  writable_by: ["engine"]
+  exposed_to: []
 
 - id: "perceived_health"
-  type: "scalar"
   scope: "agent"
-  readable_by: ["agent"]
-  writable_by: ["perception_model", "vtc"]
+  type: "scalar"
+  lifetime: "episode"
+  semantic_type: "custom"
+  initial_value: 1.0
+  readable_by: ["engine", "agent"]
+  writable_by: ["engine"]
+  exposed_to: ["agent"]
+  normalization: { kind: "minmax", min: 0.0, max: 1.0, clip: true }
 
 - id: "public_distress_signal"
-  type: "scalar"
   scope: "agent"
-  readable_by: ["agent", "other_agents", "social_model", "engine"]
-  writable_by: ["engine", "vtc"]
+  type: "scalar"
+  lifetime: "episode"
+  semantic_type: "custom"
+  initial_value: 0.0
+  readable_by: ["engine", "agent"]
+  writable_by: ["engine"]
+  exposed_to: ["agent"]
+  normalization: { kind: "minmax", min: 0.0, max: 1.0, clip: true }
 ```
+
+`perceived_health` is written by the engine, through an action write, an effect or a transition
+rule; there is no "perception model" writer. `public_distress_signal` is visible only to its own
+agent until agents-per-world exists.
 
 This allows divergence between:
 
@@ -654,7 +710,7 @@ from pathlib import Path
 from townlet.universe.compiler import UniverseCompiler
 from townlet.vfs import VariableRegistry
 
-# Compile the experiment-root VFS profile catalog.
+# Compile the pack: its one `variables` declaration lowers to the registry roster.
 compiled = UniverseCompiler().compile(
     Path("configs/default_curriculum"),
     primary_level="L1_full_observability",
@@ -662,8 +718,9 @@ compiled = UniverseCompiler().compile(
 )
 
 # Initialize registry from compiled VFS variables, not by reopening YAML at runtime.
+level = compiled.get_level("L1_full_observability")
 registry = VariableRegistry(
-    variables=compiled.vfs_variables,
+    variables=list(level.vfs_variables),
     num_agents=population_size,
     device=device,  # torch.device("cuda" if cuda_available else "cpu")
 )
@@ -925,19 +982,17 @@ Examples:
 
 Normalisation must be part of the observation schema hash.
 
-### 9.3 Where normalisation lives (2026-08-25 note)
+### 9.3 Where normalisation lives (corrected 2026-10-31)
 
-Only **`ObservationField.normalization`** is applied at runtime — the encoder applies each
-field's declared spec through `ObservationEncoder._apply_declared_normalization`
-(`observation_encoder.py:109+`), which calls `apply_normalization`
-(`observation_builder.py:106-166` — all nine §9.2 kinds implemented and reachable there;
-citation corrected 2026-08-25: the kinds live in the builder, not the encoder).
-`VariableDef.normalization` is a separate object that validates at parse time and contributes
-its min/max range to `variable_schema_hash` (`schema_hashes.py:149`) but is **read by nothing
-at runtime** — declaring it on a `variables_reference.yaml` variable normalises nothing
-(2026-08-24 audit finding, unticketed). Normalisation is a property of how a variable is
-*exposed*, not of the variable; the dead field should eventually be deleted or wired, not
-relied on.
+Normalisation belongs to a variable's exposure. In the `variables` declaration it is required
+exactly when `exposed_to` is non-empty and refused on a hidden variable (`VariableDeclaration`).
+At exposure, `require_exposure_normalization` (`universe/dto/token_spec.py`) admits four bounded
+kinds: `minmax` and `log_scaled` (both with `clip`), `cyclical_sin_cos` and `binary`.
+`CompiledValueNormalizer` (`environment/token_publishers.py`) applies them to token payloads in
+whole-tensor ops. The complete declared normalization (kind and every parameter) enters
+`variable_schema_hash` (`_normalization_payload`, `vfs/schema_hashes.py`). The 2026-08-25 note
+here described the deleted `ObservationField` / `observation_builder.py` path and a dead
+`VariableDef.normalization` on `variables_reference.yaml` variables. Both are gone.
 
 ---
 
@@ -986,33 +1041,37 @@ Key points:
 - The implemented action-write path covers selected-action writes with phase ordering, composition, clamps, and masks.
 - The remaining VTC work is broader than action writes: unified type/shape validation and non-action transition rules still need compiler coverage.
 
-### 10.2 Recommended WriteSpec fields
+### 10.2 WriteSpec fields
 
-Future `WriteSpec` objects should include conflict and provenance metadata:
+Every `WriteSpec` (`townlet.vfs.schema.WriteSpec`, `extra="forbid"`) declares all of the
+fields below; none has a default, so "no condition" and "no clamp" are written as `null`. A
+meter target is spelled `bar.<name>`, and a variable target by its bare id. A write runs only
+for the agent that selected the action, so the action mask is not part of the condition.
+`additive_delta` expressions are deltas, not post-update values:
 
 ```yaml
 writes:
-  - variable_id: "energy"
-    expression: "energy - 0.005"
-    condition: "agent_mask & action_is_move"
+  - variable_id: "bar.energy"
+    expression: "-0.005"
+    condition: null
     composition: "additive_delta"
     clamp: [0.0, 1.0]
     priority: 10
-    phase: "action_costs"
+    phase: "apply_action_costs"
     telemetry_label: "movement_energy_cost"
 ```
 
-Recommended fields:
+Fields:
 
 | Field | Purpose |
 | --- | --- |
-| `variable_id` | Target variable |
+| `variable_id` | Target: a variable's bare id, or `bar.<name>` for a meter |
 | `expression` | Safe DSL expression |
-| `condition` | Optional mask or predicate |
-| `composition` | How to combine with other writes |
-| `phase` | Transition phase where the write occurs |
+| `condition` | Predicate gating the write, or `null` |
+| `composition` | How to combine with other writes (a reference target admits only `overwrite` and `claim_if_free`) |
+| `phase` | Transition phase where the write occurs (one of `DEFAULT_TRANSITION_PHASES`; an action write must be at or before `apply_completion_bonuses`) |
 | `priority` | Ordering within phase where required |
-| `clamp` | Optional post-write bounds |
+| `clamp` | Post-write bounds `[low, high]`, or `null` |
 | `telemetry_label` | Human-readable audit label |
 
 ---
@@ -1207,47 +1266,51 @@ The remaining Phase 2 compiler work should complete:
 
 ### 11.6 Example: compiling an interaction
 
-Input YAML:
+Input YAML, a custom action in the pack's `actions` declaration
+(`townlet.config.actions_config.CustomActionConfig`; `comfort` is an illustrative agent-scope
+variable the pack would declare). The action reads `comfort`; the compiler derives that from
+the expressions, and the meters are written as `bar.energy` and `bar.mood`:
 
 ```yaml
-- id: 5
-  name: "INTERACT_BED"
-  type: "interaction"
-  reads: ["energy", "mood", "interaction_progress"]
-  writes:
-    - variable_id: "energy"
-      expression: "energy + 0.3 * interaction_progress"
-      composition: "overwrite"
-    - variable_id: "mood"
-      expression: "mood + 0.1 * interaction_progress"
-      composition: "overwrite"
+custom_actions:
+  - name: "REST_IN_BED"
+    description: "Recover energy and mood, scaled by comfort"
+    enabled_by_default: true
+    writes:
+      - variable_id: "bar.energy"
+        expression: "0.3 * comfort"
+        condition: null
+        composition: "additive_delta"
+        phase: "apply_action_effects"
+        priority: 0
+        clamp: [0.0, 1.0]
+        telemetry_label: "rest_energy"
+      - variable_id: "bar.mood"
+        expression: "0.1 * comfort"
+        condition: null
+        composition: "additive_delta"
+        phase: "apply_action_effects"
+        priority: 0
+        clamp: [0.0, 1.0]
+        telemetry_label: "rest_mood"
 ```
 
-Compiled tensor operation, conceptually:
+Compiled tensor operation, conceptually (the shipped path is `VTCActionWriteProgram`: one phase
+snapshot, the typed expression AST, then scripted masked composition; the names below are
+illustrative, not the registry API):
 
 ```python
-@torch.jit.script
-def execute_INTERACT_BED(registry: VariableRegistry, agent_mask: Tensor):
-    # Read dependencies
-    energy = registry.get("energy", reader="vtc")
-    mood = registry.get("mood", reader="vtc")
-    progress = registry.get("interaction_progress", reader="vtc")
+def execute_REST_IN_BED(snapshot, chose_action: Tensor):
+    comfort = snapshot["comfort"]          # derived read
+    energy = snapshot["bar.energy"]
+    mood = snapshot["bar.mood"]
 
-    # Compute updates only for agents in mask
-    new_energy = torch.where(
-        agent_mask,
-        energy + 0.3 * progress,
-        energy,
-    )
-    new_mood = torch.where(
-        agent_mask,
-        mood + 0.1 * progress,
-        mood,
-    )
+    # additive_delta, only for agents whose selected action is REST_IN_BED
+    new_energy = torch.where(chose_action, energy + 0.3 * comfort, energy).clamp(0.0, 1.0)
+    new_mood = torch.where(chose_action, mood + 0.1 * comfort, mood).clamp(0.0, 1.0)
 
-    # Write results
-    registry.set("energy", new_energy, writer="vtc")
-    registry.set("mood", new_mood, writer="vtc")
+    # committed together at the end of apply_action_effects
+    return {"bar.energy": new_energy, "bar.mood": new_mood}
 ```
 
 ### 11.7 Phase 2 milestone plan
@@ -1366,61 +1429,72 @@ capacity_remaining
 
 ### 12.3 Expression examples
 
+The first two examples are entries of a pack-scope `transition_rules` declaration
+(`TransitionRulesConfig`, `docs/config-schemas/transition_rules.md`). A rule's reads are
+derived from its condition and expression; `condition`, `clamp` and `effect` are required
+(write `null` for none). The shipped packs declare the same two mechanics in `bars.yaml`
+(`depletion`, `cascades`), which compile to generated VTC programs. A transition rule is the
+general form for state that is not a meter.
+
 Passive depletion:
 
 ```yaml
 - id: "energy_base_depletion"
-  phase: "passive_depletion"
-  reads: ["energy"]
+  phase: "apply_passive_depletion"
+  condition: null
   writes:
-    - variable_id: "energy"
-      expression: "energy - 0.005"
-      composition: "overwrite"
+    - variable_id: "bar.energy"
+      expression: "-0.005"
+      composition: "additive_delta"
+      condition: null
       clamp: [0.0, 1.0]
+      effect: null
 ```
 
 Threshold cascade:
 
 ```yaml
 - id: "low_satiation_hits_energy"
-  phase: "threshold_cascades"
-  reads: ["satiation", "energy"]
-  condition: "satiation < 0.2"
+  phase: "apply_threshold_cascades"
+  condition: "bar.satiation < 0.2"
   writes:
-    - variable_id: "energy"
-      expression: "energy - 0.015 * ((0.2 - satiation) / 0.2)"
-      composition: "overwrite"
+    - variable_id: "bar.energy"
+      expression: "-0.015 * ((0.2 - bar.satiation) / 0.2)"
+      composition: "additive_delta"
+      condition: null
       clamp: [0.0, 1.0]
+      effect: null
 ```
 
-Temporal operating-hour gate:
+Temporal gate. Derived state is an expression variable, not a rule write: a write to a
+variable that carries an `expression` is refused at compile (`UAC-STATIC-WRITE`). As an entry
+in the pack's `variables.declarations`:
 
 ```yaml
-- id: "job_open_window"
-  phase: "compute_action_legality_masks"
-  reads: ["time_of_day"]
-  writes:
-    - variable_id: "job_is_open"
-      expression: "time_in_window(time_of_day, 9, 18)"
-      composition: "overwrite"
+- id: "job_is_open"
+  scope: "global"
+  type: "bool"
+  lifetime: "episode"
+  semantic_type: "custom"
+  initial_value: false
+  expression: "time_in_window(tick, 9, 18)"
+  readable_by: ["engine", "agent"]
+  writable_by: ["engine"]
+  exposed_to: []
 ```
 
-Interaction progress:
+(`time_in_window` takes the hour modulo a 24-tick day. To gate when an affordance can be used,
+the shipped surface is `opening_hours` in `affordances.yaml`, which compiles to the generated
+operating-hours program.)
 
-```yaml
-- id: "advance_interaction_progress"
-  phase: "advance_interaction_progress"
-  reads: ["interaction_progress", "same_affordance", "affordance_is_open", "chosen_interact"]
-  writes:
-    - variable_id: "interaction_progress"
-      expression: "where(same_affordance & affordance_is_open & chosen_interact, interaction_progress + 1, 0)"
-      composition: "overwrite"
-```
+Interaction progress has no authored form. The engine generates its VTC program from each
+affordance's declared interaction (§11.4). The design-era rule shown here before
+(`advance_interaction_progress`, over `same_affordance`, `affordance_is_open` and
+`chosen_interact`) named state that no pack declares. It was removed 2026-10-31.
 
 ### 12.4 One spelling per reference (2026-10-31, VFS round-2 S5)
 
-The 12.3 examples are design-era shapes (`reads:` and bare meter names are not the shipped
-grammar). The shipped rule: every consumer (variable expressions, action writes, transition
+The 12.3 examples use the shipped grammar. The rule: every consumer (variable expressions, action writes, transition
 rules, effects, affordance and item interactions, item spawn predicates) resolves references
 through one resolver, `townlet.vfs.namespace.Namespace`, fed by the compiler's symbol table,
 whose type schema and the runtime contexts share one grammar
@@ -1507,28 +1581,45 @@ capacity-1 affordance resolve deterministically through a real `env.step`).
 
 ### 13.3 Example
 
+One custom action whose writes use three compositions across three phases. `ambulance_cost`
+(a global scalar) and `occupied_by` (an affordance-scope `agent_ref`) are illustrative
+variables the pack would declare. `DOCTOR` is a `default_curriculum` affordance. The claim
+needs `source_affordance`, and the reference target admits only `overwrite` or
+`claim_if_free`. (The design-era version also relocated the agent with a `priority_write` to
+`position`. An agent's position is substrate state, not a registry variable, so a write
+cannot move the agent and that write is gone.)
+
 ```yaml
-writes:
-  - variable_id: "health"
-    expression: "0.25"
-    composition: "additive_delta"
-    phase: "action_effects"
-
-  - variable_id: "position"
-    expression: "hospital_position"
-    composition: "priority_write"
-    priority: 100
-    phase: "emergency_relocation"
-
-  - variable_id: "money"
-    expression: "-ambulance_cost"
-    composition: "additive_delta"
-    phase: "action_costs"
-
-  - variable_id: "affordance_occupancy"
-    expression: "agent_id"
-    composition: "claim_if_free"
-    phase: "resolve_affordance_access_and_occupancy"
+custom_actions:
+  - name: "CALL_AMBULANCE"
+    description: "Pay for emergency care and take the doctor's slot if it is free"
+    enabled_by_default: true
+    source_affordance: "DOCTOR"
+    writes:
+      - variable_id: "occupied_by"
+        expression: "agent_id"
+        condition: null
+        composition: "claim_if_free"
+        phase: "resolve_affordance_access_and_occupancy"
+        priority: 0
+        clamp: null
+        telemetry_label: "ambulance_claim"
+      - variable_id: "bar.money"
+        expression: "-ambulance_cost"
+        condition: null
+        composition: "additive_delta"
+        phase: "apply_action_costs"
+        priority: 0
+        clamp: null
+        telemetry_label: "ambulance_cost"
+      - variable_id: "bar.health"
+        expression: "0.25"
+        condition: null
+        composition: "additive_delta"
+        phase: "apply_action_effects"
+        priority: 0
+        clamp: [0.0, 1.0]
+        telemetry_label: "ambulance_heal"
 ```
 
 ### 13.4 Atomic update semantics
@@ -1589,19 +1680,26 @@ A changes B only if a norm applies
 | transition rule | Any declared per-tick dynamic: an observation changes social state, an action leaves a relationship/norm trace, a rule alters legality/sanction | theft witnessed by neighbour; debt, trust loss; ambulance abuse penalty — one family (`transition_rules`), no `kind` (S8, 2026-10-31) |
 | `communication_event` | Message or symbol update | broadcast token |
 
-### 14.3 RelationshipSpec proposal
+### 14.3 Transition-rule examples
+
+The design-era `RelationshipSpec` proposal (a `rules:` list whose entries carried `kind:` and
+`reads:`) shipped as the `transition_rules` declaration. It has no `kind`, because there is one
+rule family, and no `reads`, because reads are derived. A threshold relationship between two
+meters (this rule reads `bar.health`, writes `bar.mood` with a delta, and runs in the
+threshold-cascade phase):
 
 ```yaml
-rules:
-  - id: "low_social_hits_mood"
-    phase: "threshold_cascades"
-    kind: "threshold_delta"
-    reads: ["social", "mood"]
-    condition: "social < 0.2"
+version: "1.0"
+transition_rules:
+  - id: "low_health_hits_mood"
+    phase: "apply_threshold_cascades"
+    condition: "bar.health < 0.2"
     writes:
-      - variable_id: "mood"
-        expression: "mood - 0.010 * ((0.2 - social) / 0.2)"
-        composition: "overwrite"
+      - variable_id: "bar.mood"
+        effect: null
+        expression: "-0.010 * ((0.2 - bar.health) / 0.2)"
+        composition: "additive_delta"
+        condition: null
         clamp: [0.0, 1.0]
 ```
 
@@ -1644,17 +1742,17 @@ transition_rules:
         clamp: [0.0, 1.0]
 ```
 
-### 14.4 Modulation rules are narrower than these examples (2026-08-25 caveat)
+### 14.4 Modulation rules are narrower than transition rules
 
-⚠ The `RelationshipSpec` examples above show `condition:` freely, but the shipped
-**modulation** family does not support it: a modulation rule carrying any `condition:`, or any
-composition other than `multiplicative_modifier`, **compiles green and raises
-`NotImplementedError` at the first `env.step`**
-(`vtc.py:1165-1168`, `compute_affordance_multiplier` — the scripted-kernel path covers only
-the one composition it was written for). This violates the project's fail-loud-at-compile
-discipline and was flagged as a new finding in the 2026-08-24 audit
-(`archive/REVIEW-2026-08-24-vfs-implementation-vs-spec.md`, "Fail-at-runtime seams"); until it
-is fixed at compile time, treat conditioned modulations as unauthorable.
+Transition rules take `condition:` and any non-claim composition. The **modulation** family
+does not. It is generated from the `modulations` list of the affordances declaration
+(`ModulationParamConfig`: `bar`, `affordances`, `type: linear_multiplier`, `threshold`,
+`min_multiplier`, `extra="forbid"`), and `compile_vtc_modulations_with_phase_graph` always
+emits `condition=None` and `composition="multiplicative_modifier"`. A conditioned or
+differently composed modulation therefore cannot be authored. The `NotImplementedError`
+branches in `compute_affordance_multiplier` (`vtc.py:1300-1303`) are unreachable from a pack.
+(Corrected 2026-10-31. The 2026-08-25 caveat here said such a modulation "compiles green and
+raises at the first `env.step`"; the authoring surface no longer has the fields to reach it.)
 
 ---
 
@@ -1677,21 +1775,26 @@ fitness
 
 VFS allows these to be represented as config-defined variables, but the long-term design should not treat them as the only possible needs.
 
-A need can be modelled as a variable with causal metadata:
+A need can be modelled as an ordinary variable with an abstract name. In the shipped shape:
 
 ```yaml
 - id: "N_042"
-  type: "scalar"
   scope: "agent"
-  range: [0.0, 1.0]
-  initial: 0.0
-  readable_by: ["agent", "engine"]
-  writable_by: ["engine", "vtc"]
-  metadata:
-    tags: ["need", "recurring", "socially_visible", "status_mediated", "mimetic"]
-    growth: "triggered_by_observation"
-    satisfaction_selector: ["displayable", "peer_recognised"]
+  type: "scalar"
+  lifetime: "episode"
+  semantic_type: "custom"
+  initial_value: 0.0
+  readable_by: ["engine", "agent"]
+  writable_by: ["engine"]
+  exposed_to: ["agent"]
+  normalization: { kind: "minmax", min: 0.0, max: 1.0, clip: true }
 ```
+
+Its causal role (proposal only; there is no `metadata` field, and the keys below fail at
+parse) would be tags such as `need`, `recurring`, `socially_visible`, `status_mediated` and
+`mimetic`, a growth trigger such as `triggered_by_observation`, and a satisfaction selector
+such as `displayable` / `peer_recognised`. Today that role is expressed by the rules that write
+the variable (action writes, effects, transition rules), not by declared metadata.
 
 The agent does not need to know that `N_042` means “fashion novelty” or “makeup desire”. It needs to learn:
 
@@ -1740,7 +1843,7 @@ Option 1 is authored as one agent-scoped `vecNf` variable per causal field, with
 represent abstract software-defined needs. (A Python factory for these declarations,
 `vfs/dynamic_needs.py`, had no caller and was deleted in VFS WP6.)
 Option 2 is authored through ordinary exposed profile variables. A `tensor2d` variable such
-as `need_tokens` in `configs/test/token_set_smoke/vfs_profiles.yaml` compiles to
+as `need_tokens` in `configs/test/token_set_smoke/variables.yaml` compiles to
 `variable_element` tokens. `TokenSetQNetwork` consumes the compiled roster and pools the mixed
 typed set, so no dynamic-need-specific factory or parallel token layout is needed.
 
@@ -1852,8 +1955,8 @@ declarative rules at any phase of the closed graph, canonically
 label changed nothing but a telemetry prefix; deleted 2026-10-31, S8) and no
 authored `reads` (derived from the expression and condition ASTs). Rule-level
 conditions and write-level conditions are combined before commit. A write is masked by its target's
-declared scope: an agent target on each active agent's row, a global or
-affordance target whenever any agent is active. There is no pair scope (§5.1),
+declared scope: an agent target on each active agent's row, and a global or
+affordance target in each world while that world's agent is active (S1). There is no pair scope (§5.1),
 so no rule relates two agents. The former write-level `target` role annotation
 (e.g. `observer -> actor`) was removed 2026-08-22 (hamlet-175bff4ed5).
 Agent-scope writes use agent vectors such as `chosen_action` or derived
@@ -2062,7 +2165,7 @@ same weights + money hidden
 
 | Hash | Contents | Purpose |
 | --- | --- | --- |
-| `variable_schema_hash` | Variable definitions, scopes, types, permissions | State ABI identity |
+| `variable_schema_hash` | Variable definitions: scopes, types, shapes, lifetimes, initializers, permissions, exposure and normalization | State ABI identity |
 | `token_type_schema_hash` | Token payload schemas and closed vocabularies | Token-network transfer compatibility |
 | `layout_hash` | Token capacities, bindings and compact layout | Flat-reader checkpoint compatibility |
 | `action_schema_hash` | Action IDs, names, masks, dependencies | Policy/action-space compatibility |
@@ -2070,12 +2173,16 @@ same weights + money hidden
 | `vfs_hash` | Combined VFS schema + observation + action + transition hashes | VFS identity |
 | `run_hash` / `cognitive_hash` extension | Brain configs + world configs + VFS hash | Mind-in-world identity |
 
-One deliberate-or-not boundary worth knowing (2026-08-24 audit, unadjudicated):
-`variable_schema_hash` covers id/type/scope/dims/lifetime/access/normalization range
-(`schema_hashes.py:140-150`) but **not** a variable's `default`/initial value — an author can
-change every initial value in a pack with zero movement in `variable_schema_hash`/`vfs_hash`.
-Whether initial values are part of the ABI is a product call that has not been made; do not
-assume provenance catches default drift.
+Initial values are part of the state ABI (corrected 2026-10-31). `variable_schema_hash`
+hashes every registry variable's `id`, `type`, `scope`, `dims`, `shape`, `lifetime`,
+`semantic_type`, `initial_value`, `initial_value_mode`, `initial_value_params`, access lists and
+complete `normalization` (`_canonical_variable_entry`, `vfs/schema_hashes.py:386-411`). Every
+item-profile variable contributes its `initial_value`, access lists and normalization as well
+(`canonical_variable_schema`, `schema_hashes.py:53-86`). Changing an initial value therefore
+moves `variable_schema_hash` and `vfs_hash`. The expression is identity too, through
+`expression_schema_hash` (`canonical_expression_schema`). The 2026-08-24 audit finding that
+stood here ("not the `default`/initial value", citing `schema_hashes.py:140-150`) described an
+earlier version of the hash.
 
 ### 18.3 Snapshot layout
 
@@ -2089,9 +2196,8 @@ configs/<run_name>/
   experiment.yaml
   items.yaml
   stratum.yaml
-  vfs_profiles.yaml
+  variables.yaml            # the one required variables declaration
   effects.yaml
-  variables_reference.yaml  # optional static variable and observation metadata overlay
   levels/<level_name>/
     curriculum.yaml
     bars.yaml
@@ -2116,9 +2222,8 @@ runs/<run_name>__<timestamp>/
     experiment.yaml
     items.yaml
     stratum.yaml
-    vfs_profiles.yaml
+    variables.yaml
     effects.yaml
-    variables_reference.yaml  # optional static variable/metadata overlay if present in the source pack
     levels/
     transition_rules.yaml
     cognitive_topology.yaml
@@ -2436,7 +2541,9 @@ This keeps social meaning inspectable and teachable.
 
 ### 20.8 Derived features
 
-Do not store every computed quantity as a variable. Use `FeatureDef` for derived observations where possible.
+Do not store every computed quantity as authored state. Declare a derived observation as an
+expression variable (§4.2); its reads are derived and the evaluator recomputes it each tick.
+`FeatureDef` was never built.
 
 Store state when it must persist or be authoritative. Derive features when they are observation conveniences.
 
@@ -2472,10 +2579,10 @@ registry's gated add/remove mode had no authoring reach and was deleted in VFS W
 
 1. **Remaining VTC coverage gaps.** Profile reads, action writes, passive dynamics, cascades,
    temporal gates, interaction progress, rewards, terminal checks, occupancy/contention, and
-   social residue rules now run through VFS/VTC components. Remaining gaps are action-write
-   type/shape validation depth, telemetry side-effect compilation, relational observation
-   exposure, environment-level social-rule wiring, message observation/runtime communication
-   wiring, and dynamic variables.
+   transition rules now run through VFS/VTC components. Remaining gaps are action-write
+   type/shape validation depth, telemetry side-effect compilation, and dynamic variables.
+   Relational exposure and message communication wait on agents-per-world (the `pair` and
+   `message` scopes were deleted, S1, 2026-10-25).
 2. **Manual observation generation — discharged** (struck 2026-08-25, pass 3). This item
    predated the cutover in §17: observation construction is driven entirely by the compiled
    `observation_spec` through `ObservationEncoder._get_observations` (§8.1, §17.2); no
@@ -2489,8 +2596,8 @@ registry's gated add/remove mode had no authoring reach and was deleted in VFS W
    against phase-snapshot shapes only (`vtc.py:504-513`); a mis-shaped candidate now fails
    loudly at the commit boundary rather than at compile (§7.4).
 5. **No relational scopes.** The batch is N independent single-agent worlds (§5.1); `pair`
-   and `message` were deleted in VFS WP15. Social-residue rules compile as VTC programs over
-   agent, global and affordance state.
+   and `message` were deleted in VFS WP15. Transition rules (formerly social residue) compile
+   as VTC programs over agent, global and affordance state.
 6. **No dynamic variables.** Variables are fixed at compile time. The registry's gated
    `dynamic_variable_mode` had no config surface and was deleted in VFS WP6 (2026-10-24).
 7. **Transition rules are authorable but not yet authored.** Rules are declarable in
@@ -2499,10 +2606,10 @@ registry's gated add/remove mode had no authoring reach and was deleted in VFS W
    into the transition schedule, and mutate agent-scope variables
    during `env.step` (proven config-in/behaviour-out). No shipped pack declares rules yet.
    Group, pair and message scopes are deleted (S1, 2026-10-25).
-8. **One VTC family refuses unsupported rule shapes at runtime, not compile time**
-   (2026-08-24 audit): modulation rules with `condition:` or non-`multiplicative_modifier`
-   composition (§14.4). It compiles green and raises `NotImplementedError` at the first
-   `env.step`. (The rule-write claim compositions now fail at parse, §16.3.)
+8. **Modulation has a narrow fixed shape.** The 2026-08-24 audit's runtime seam is no
+   longer reachable: the modulation authoring surface carries no `condition` or composition,
+   and the compiler fixes both (§14.4, corrected 2026-10-31). The rule-write claim
+   compositions fail at parse (§16.3).
 
 ### 21.2 Design risks
 
@@ -2613,7 +2720,8 @@ This would make VFS teachable and debuggable.
 
 ### Code
 
-- `src/townlet/config/vfs_profiles_config.py`
+- `src/townlet/config/variables_config.py`
+- `src/townlet/universe/declarations.py`
 - `src/townlet/config/transition_rules_config.py`
 - `src/townlet/universe/raw_configs_v21.py`
 - `src/townlet/universe/compilers/vfs.py`
@@ -2622,7 +2730,9 @@ This would make VFS teachable and debuggable.
 - `src/townlet/vfs/schema.py`
 - `src/townlet/vfs/semantic_type.py`
 - `src/townlet/vfs/registry.py`
-- `src/townlet/vfs/observation_builder.py`
+- `src/townlet/vfs/namespace.py`
+- `src/townlet/universe/dto/token_spec.py`
+- `src/townlet/environment/token_publishers.py`
 - `src/townlet/vfs/profiles.py`
 - `src/townlet/vfs/evaluator.py`
 - `src/townlet/vfs/vtc.py`
@@ -2637,22 +2747,22 @@ This would make VFS teachable and debuggable.
 ### Tests
 
 - `tests/test_townlet/unit/vfs/`
-- `tests/test_townlet/unit/config/test_vfs_profiles_dto.py`
-- `tests/test_townlet/unit/universe/test_vfs_profile_compilation.py`
+- `tests/test_townlet/unit/config/test_variables_dto.py`
+- `tests/test_townlet/unit/universe/test_canonical_variable_compilation.py`
+- `tests/test_townlet/unit/universe/test_item_profile_compilation.py`
 - `tests/test_townlet/unit/universe/test_evaluation_marks.py`
-- `tests/test_townlet/unit/vfs/test_observation_dimension_regression.py`
 - `tests/test_townlet/integration/test_vfs_runtime_evaluation.py`
 - `tests/test_townlet/integration/test_item_vfs_observations.py`
 
 ### Reference configs
 
-- `configs/default_curriculum/vfs_profiles.yaml`
-- `configs/reference/model_pack/vfs_profiles.yaml`
-- `configs/simple/vfs_profiles.yaml`
-- `configs/aspatial_test/vfs_profiles.yaml`
-- `configs/test/model_config/vfs_profiles.yaml`
-- `configs/test/model_config/variables_reference.yaml` — optional observation metadata example
-- `configs/test/vfs_bar_access/variables_reference.yaml` — optional observation metadata example
+- `configs/default_curriculum/variables.yaml` — includes the authored `day_phase` clock
+- `configs/reference/model_pack/variables.yaml`
+- `configs/simple/variables.yaml`
+- `configs/aspatial_test/variables.yaml`
+- `configs/test/token_set_smoke/variables.yaml` — a `tensor2d` exposed as `variable_element` tokens
+- `configs/test/items_smoke/variables.yaml` — item profiles
+- `configs/static_epistemic_access/variables.yaml` — hidden engine-only state beside exposed state
 
 ---
 
@@ -2690,7 +2800,7 @@ This would make VFS teachable and debuggable.
 
 ### 24.5 Phase 3 success
 
-- Pair, affordance, zone, and group scopes exist.
+- Pair, affordance, zone, and group scopes exist. *(Superseded 2026-10-31: `affordance` exists; `pair`, `zone` and `group` were deleted and return only when agents-per-world is declarable.)*
 - Multi-agent occupancy and contention compile through VTC.
 - Social residue rules can update trust, obligation, reputation, and norm variables.
 - L5 multi-agent worlds can be configured without bespoke environment rewrites.

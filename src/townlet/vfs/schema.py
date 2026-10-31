@@ -241,11 +241,11 @@ class WriteSpec(BaseModel):
     Examples:
         # Simple constant
         WriteSpec(
-            variable_id="energy",
+            variable_id="bar.energy",
             expression="-0.005",
             condition=None,
             composition="additive_delta",
-            phase="action_costs",
+            phase="apply_action_costs",
             priority=10,
             clamp=(0.0, 1.0),
             telemetry_label="movement_energy_cost",
@@ -253,11 +253,11 @@ class WriteSpec(BaseModel):
 
         # Complex expression
         WriteSpec(
-            variable_id="money",
-            expression="money + 10.0",
+            variable_id="bar.money",
+            expression="bar.money + 10.0",
             condition=None,
             composition="overwrite",
-            phase="action_effects",
+            phase="apply_action_effects",
             priority=0,
             clamp=None,
             telemetry_label="wage_credit",

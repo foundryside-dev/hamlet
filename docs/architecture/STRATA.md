@@ -67,16 +67,14 @@ field; its examples would not validate today.
 
 ### 2.1 Scope: one space per pack
 
-`stratum.yaml` is read **only** from the pack root — `RawConfigsV21.from_experiment_dir`'s
-`shared_specs` list (`src/townlet/universe/raw_configs_v21.py:114-119`) resolves it against
-`experiment_dir`, and nothing anywhere resolves a level-scoped path. Every level of a pack
-therefore shares one space: `configs/default_curriculum` is 8×8 for all five of its levels.
-
-Note the *mechanism*, because it differs from the sibling prohibitions. `vfs_profiles.yaml` and
-`effects.yaml` are in preflight's `forbidden_level_files` and a level copy is refused loudly
-(`SCOPING_FORBIDDEN_LEVEL_FILE`). `stratum.yaml` is **not** in that list: a file dropped into a
-level directory is not refused, it is simply never read. The constraint holds by construction
-rather than by a gate. (Earlier drafts marked this TODO-VERIFY; it is now verified.)
+The substrate is the pack-scope `stratum:` declaration. `stratum.yaml` at the pack root is the
+convention, but discovery identifies it by content (`universe/declarations.py`;
+`docs/config-schemas/declarations.md`). `stratum` is a pack-only family (`PACK_FAMILIES`), so a
+`stratum:` declaration found under `levels/<level>/` is refused loudly with `DECLARATION_SCOPE`.
+Every level of a pack therefore shares one space: `configs/default_curriculum` is 8×8 for all
+five of its levels. (Corrected 2026-10-31. Before declaration-store Cut A, a level copy of
+`stratum.yaml` was silently never read, while `vfs_profiles.yaml` and `effects.yaml` were refused
+by a filename list in preflight. Both mechanisms, and `vfs_profiles.yaml` itself, are gone.)
 
 ---
 

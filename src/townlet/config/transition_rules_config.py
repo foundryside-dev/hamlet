@@ -35,7 +35,8 @@ class TransitionRuleWriteConfig(BaseModel):
     transition-rule compiler defines: phase/priority/telemetry_label are derived
     from the owning rule when omitted, and effect labels the write for telemetry.
     Masking follows the target variable's declared scope: an agent target on each
-    active agent's row, a global or affordance target whenever any agent is active.
+    active agent's row, a global or affordance target in each world while that world's
+    agent is active (the batch is independent single-agent worlds, S1).
 
     The compiler proves the expression's and condition's shape against the target
     scope: a global target takes scalars, an agent target scalar or agent-shaped

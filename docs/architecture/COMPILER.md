@@ -34,8 +34,8 @@ Other dated architecture descriptions below are not a current symbol inventory.
   See [the authoring contract](../config-schemas/declarations.md) for required families,
   fragments, source provenance and clock references. Conventional names such as `stratum.yaml`
   remain useful examples; no filename reader or aliases select semantics.
-- **Outputs**: an immutable `CompiledUniverse` carrying canonical DTOs, the observation spec
-  and activity mask, rich metadata, optimization tensors, and the declared provenance hashes.
+- **Outputs**: an immutable `CompiledUniverse` carrying canonical DTOs, each level's compiled
+  `TokenSpec`, rich metadata, optimization tensors, and the declared provenance hashes.
 - **Consumers**: `VectorizedHamletEnv` (runtime), `DemoRunner` / the training pipeline,
   checkpoint utilities, the live-inference server, and the differential oracle harness.
 - **Out of scope**: substrate implementations themselves (`STRATA.md`), and a standalone brain
@@ -59,18 +59,19 @@ metadata → optimization → emit/cache.
 | 2. **Symbol table** | Register meters, variables, actions, affordances, items, effects; fail fast on duplicates | `symbol_table.py` |
 | 3. **Resolve** | Walk every cross-file reference (affordance effects, action costs, training overrides) emitting UAC error codes | `validation/references.py` |
 | 4. **Cross-validate** | Safety limits, semantic checks, spatial feasibility (grid capacity), cascade cycles, temporal rules, substrate/action alignment, capability semantics | `validation/limits.py`, `validation/semantics.py`, `validation/feasibility.py` |
-| 5. **Metadata & observation spec** | Build shared schemas (bars/VFS), the command-pipeline namespace (`vfs/namespace.py`) and the effects catalog, and compile every interaction pipeline; compute the observation spec, activity mask, per-field UUIDs, counts and hashes | `compilers/vfs.py`, `compilers/observation.py`, `compilers/metadata.py`, `compilers/effects.py`, `compilers/actions.py` |
+| 5. **Metadata & token spec** | *Shared* (source stage 6): compile the `variables` declaration into the internal global/agent/item profiles, check item-profile bindings, collect history requirements, build the one command-pipeline namespace (`vfs/namespace.py`) and expression sources, compile the effects catalog, and check every level's affordance and item interaction pipelines. *Per level* (source stage 7): action-space metadata, meter and affordance metadata, item spawn predicates, the registry roster, the compiled `TokenSpec` (exposure, capacity and identity refusals), the VTC transition schedule, and the hashes over them (`token_type_schema_hash`, `layout_hash`, `observation_schema_hash` over the `TokenSpec`, `variable_schema_hash`, `action_schema_hash`, `transition_graph_hash`, `expression_schema_hash`, `vfs_hash`). There is no observation spec, activity mask or per-field UUID (deleted at the token cut) | `compilers/vfs.py`, `compilers/observation.py`, `compilers/metadata.py`, `compilers/effects.py`, `compilers/actions.py`, `universe/dto/token_spec.py`, `vfs/transition_schedule.py` |
 | 6. **Optimization** | Pre-compute tensors in deterministic order — base depletions, cascade/modulation tables, hourly action masks, position maps | `optimization.py`, `compilers/optimization.py` |
-| 7. **Emit / cache** | Construct the frozen `CompiledUniverse`, serialize and cache via MessagePack, expose runtime DTOs | `compiler.py:_stage_7_emit_artifact` |
+| 7. **Emit / cache** | Construct the frozen `CompiledUniverse`, serialize and cache via MessagePack, expose runtime DTOs | `compiler.py:_stage_8_emit_artifact` |
 
-⚠ **The stage numbering in the source does not map one-to-one onto that table.** `compile()`
-runs, in order: Stage 0 scoping preflight, Stage 0 YAML-syntax validation, Stage 1 config load,
-Stage 1b safety limits, Stage 1c semantic cross-validation, Stage 2 symbol table, Stage 3
-reference resolution, Stage 5 `_stage_5_prepare_shared_artifacts`, Stage 6
-`_stage_6_compile_levels` (level compilation *and* optimization), Stage 7
-`_stage_7_emit_artifact`. There is no `_stage_4_cross_validate` method — cross-validation runs
-as 1b/1c over loaded DTOs. The archived guide's stage table names methods that no longer exist;
-read the seven stages as the conceptual contract and `compiler.py:93` for the actual order.
+⚠ **The stage numbering in the source does not map one-to-one onto that table.** The source
+numbering has one authority, `CompilationStage` (`universe/stages.py`): 0 preflight (directory
+check and declaration discovery), 1 parse, 2 safety limits, 3 semantic cross-validation,
+4 symbol table, 5 reference resolution (plus presentation references and static write
+targets), 6 shared schemas and effects (`_stage_6_prepare_shared_artifacts`), 7 levels and
+optimization data (`_stage_7_compile_levels`), 8 emit (`_stage_8_emit_artifact`). There is no
+separate cross-validate method; limits and semantics run as source stages 2 and 3 over the
+loaded DTOs. Read the seven stages above as the conceptual contract and
+`UniverseCompiler.compile` for the actual order. (Corrected 2026-10-31.)
 
 Each stage emits an INFO log marker (`Stage N: …`) from `townlet.universe.compiler`, so pipeline
 order is observable in tests and runtime diagnostics.
@@ -90,8 +91,8 @@ identity checking.
 - **`RawConfigs`** (`raw_configs_v21.py`) — staged DTO bundle built from that store. Existing
   strict config shapes remain the content vocabulary; transport names do not select loaders.
 - **`UniverseSymbolTable`** (`symbol_table.py`) — the central registry for stages 2→4.
-- **`CompiledUniverse`** (`compiled.py`) — frozen dataclass with DTO copies, observation spec,
-  `ObservationActivity`, rich metadata, optimization tensors, and the seventeen declared `*_hash`
+- **`CompiledUniverse`** (`compiled.py`) — frozen dataclass with DTO copies, each level's
+  `token_spec` (`ObservationActivity` and the observation spec were deleted at the token cut), rich metadata, optimization tensors, and the seventeen declared `*_hash`
   fields. Navigation: `all_levels` (a dict field, not a method), `get_level`, `to_level`.
   Instantiation: `create_environment(num_agents=…, level_name=…, device=…)` — all three
   keyword-only and all three required, delegating to `VectorizedHamletEnv.from_universe`.
@@ -99,10 +100,11 @@ identity checking.
   ⚠ The archived guide's `to_runtime()` and `check_checkpoint_compatibility()` **do not exist**
   (zero hits in `src/`, verified 2026-08-24). Checkpoint identity is enforced by
   `assert_checkpoint_identity` in `training/checkpoint_utils.py`, not by a method on the artifact.
-- **`ObservationSpec` / `ObservationField`** — deterministic UUID-backed observation definitions
-  derived from VFS exposures. The field is **`total_dims`**, not `total_dim`.
-- **`ObservationActivity`** (`dto/observation_activity.py`) — `active_mask`, `group_slices`
-  (bars / spatial / affordance / temporal / custom), `active_field_uuids`.
+- **`TokenSpec`** (`dto/token_spec.py`) — the compiled token observation: seven engine token
+  types with fixed payload widths, per-universe capacities and slot bindings. `total_dims` is
+  the flat width, `census` the per-type counts, `row_layout()` the per-row layout. It replaced
+  `ObservationSpec`, `ObservationField` and `ObservationActivity` (deleted at the token cut,
+  DIV-008); there is no activity mask.
 - **`OptimizationData`** — tensors and lookup tables consumed by the runtime.
 
 ---
@@ -239,8 +241,9 @@ env = compiled.create_environment(          # every argument keyword-only and re
     device="cpu",                           # no default device; omitting it raises
 )
 
-compiled.observation_spec.total_dims              # allocated observation width
-sum(compiled.observation_activity.active_mask)    # active width at this level
+spec = compiled.get_level("L1_full_observability").token_spec
+spec.total_dims                             # flat observation width
+spec.census                                 # {token type: count}
 ```
 
 Never copy a dimension number out of a run into a document — ask the artifact

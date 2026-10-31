@@ -12,10 +12,11 @@ current subsystems, states the current pack convention and the decided direction
 routes to the authoritative reference docs. **It does not duplicate schemas.** Where this
 document and a reference doc disagree, the reference doc — and above it, the source — wins.
 
-⚠️ One of those reference docs, `docs/config-schemas/`, was archived to
-`docs/config-schemas/` on 2026-08-24 (commit `c4e8bd58`, a separate same-day recut)
-and is no longer maintained. Paths below are repointed to that archive location because nothing
-has replaced it, but treat its content as possibly stale beyond what each file already flags.
+`docs/config-schemas/` is the live reference tier. The 2026-08-24 recut (commit `c4e8bd58`)
+swept it into the archive; it was restored on 2026-08-26 and is maintained. Trust a file there
+unless it opens with its own staleness banner. Today `affordances.md`, `effects.md`,
+`enabled_actions.md` and `items.md` carry one. (Corrected 2026-10-31: this note used to call the
+whole directory archived and unmaintained.)
 
 ---
 
@@ -26,7 +27,7 @@ The compiled target has three major declarative subsystems:
 | subsystem | question it answers | authored in | authoritative doc |
 | --- | --- | --- | --- |
 | **Strata** | *Where can things be?* — substrate type, topology, boundaries, distance metric, position encoding | `stratum.yaml` | `STRATA.md`; `src/townlet/config/stratum_config.py` |
-| **UAC — Universe as Code** | *What exists, and how does it change?* — variables, observations, items, effects, affordances, actions, transitions, rewards, terminal conditions | everything else in the pack (§3) | this doc as router; `VFS.md`; `docs/config-schemas/` (archived) |
+| **UAC — Universe as Code** | *What exists, and how does it change?* — variables, observations, items, effects, affordances, actions, transitions, rewards, terminal conditions | everything else in the pack (§3) | this doc as router; `VFS.md`; `docs/config-schemas/` |
 | **BAC — Brain as Code** | *How do agents think?* — network architecture, optimizer, loss; and as target state, behaviour contract and think-loop graph | `brain.yaml` | `BAC.md` |
 
 Historically (v2.5) "Universe as Code" meant *strata + world config* as one blob. Strata is now
@@ -38,7 +39,8 @@ hash-carrying `CompiledUniverse`.
 
 **UAC's ABI is VFS.** The Variable & Feature System is the typed state / observation /
 transition contract that everything in UAC compiles down to: bars are variables, observations
-are exposed variables behind an activity mask, effects and affordances read and write variables,
+are typed tokens over exposed state (no activity mask; that framing died at the 2026-08-26
+token cut), effects and affordances read and write variables,
 transitions are VTC programs over variables, rewards (DAC) read variables. There is no second
 ontology underneath. In that precise sense the old standalone "universe spec" is subsumed: UAC
 is the *authoring* layer, VFS is its *type system and runtime*, and this guide is closer to a
@@ -58,9 +60,10 @@ What that buys:
 
 - **Reproducibility** — the artifact pins exactly which world a checkpoint was trained in;
   resume refuses on hash mismatch, including across levels of the same pack.
-- **Transfer** — the allocated observation width and the global action vocabulary are constant
-  across a pack's levels (superset + activity mask), which is what makes cross-level checkpoint
-  transfer real.
+- **Transfer** — rides on the token type schema (`token_type_schema_hash`), which is the
+  same across universes, and on the pack's single global action vocabulary. The observation
+  width (`TokenSpec.total_dims`) is per universe; there is no superset or activity mask
+  (corrected 2026-10-31).
 - **Deployment (target, not built)** — a trained policy is portable to any host that publishes
   the same declared telemetry (variables, bounds, normalization) and accepts the same action
   vocabulary at the same cadence. Fidelity lives *below* the interface. The export path itself
@@ -73,62 +76,74 @@ Never quote observation-dimension literals in docs — ask the compiled artifact
 
 ## 3. Pack anatomy — the current convention
 
-⚠️ **This is the current convention: what the shipped compiler expects today, not a mandate that
-will hold.** PDR-0117 (§4) decided that filenames become authoring convention rather than
-semantics. Until discovery-merge lands, these names are load-bearing and the compiler's
-preflight (`src/townlet/universe/loaders/preflight.py`) enumerates them.
+**Files are transport (declaration-store Cut A and Cut B, 2026-10-01; corrected here
+2026-10-31).** The compiler discovers every `.yaml`/`.yml` document in the pack (subfolders
+included, `.compiled` excluded) and identifies each one by its content, not its filename
+(`townlet.universe.declarations.DeclarationStore`; full rules in
+`docs/config-schemas/declarations.md`). A file's place decides only its scope: anything under
+`levels/<level>/` is level scope, everything else is pack scope. The filenames below are the
+shipped convention, not a manifest. `loaders/preflight.py` checks only that the pack directory
+exists. It no longer lists required or forbidden files.
 
-Pack-level shared files plus per-level overrides — **not** flat `configs/<level>/`:
+Pack-level declarations plus per-level declarations, **not** flat `configs/<level>/`. Shown with
+the conventional filenames that `configs/default_curriculum` uses:
 
 ```
 configs/<pack>/
-├── experiment.yaml         # pack identity / experiment metadata            (required)
-├── stratum.yaml            # Strata: substrate, topology, boundaries        (required, shared)
-├── environment.yaml        # UAC: VFS variable definitions                  (required, shared)
-├── vfs_profiles.yaml       # UAC: global/agent/item profile variables       (required, pack root)
-├── actions.yaml            # UAC: global action vocabulary                  (required, shared)
-├── brain.yaml              # BAC: network / optimizer / loss                (required, shared)
-├── items.yaml              # UAC: item definitions                          (required, pack root)
-├── effects.yaml            # UAC: effect definitions                        (optional, pack root)
-├── action_labels.yaml      # UAC: action terminology preset                 (optional, shared)
-├── variables_reference.yaml  # UAC: optional static overlay (see §6)        (optional, shared)
+├── experiment.yaml         # experiment:  pack identity / metadata              (required)
+├── stratum.yaml            # stratum:     substrate, topology, boundaries       (required)
+├── environment.yaml        # environment: meters, cascade/modulation graph,
+│                           #              affordance registry                   (required)
+├── variables.yaml          # variables:   the one registry-variable roster and
+│                           #              item_profiles                         (required)
+├── actions.yaml            # actions:     global action vocabulary              (required)
+├── brain.yaml              # bare brain:  network / optimizer / loss            (required)
+├── items.yaml              # items:       item catalog                          (optional)
+├── effects.yaml            # bare effect_definitions                            (optional)
+├── transition_rules.yaml   # bare transition_rules                              (optional)
 └── levels/<level>/
-    ├── bars.yaml           # UAC: meters, depletion, terminal conditions
-    ├── affordances.yaml    # UAC: interactable world actions
-    ├── drive.yaml          # UAC: DAC reward specification (REQUIRED per level)
-    ├── training.yaml       # hyperparameters (not part of the world)
-    └── curriculum.yaml     # vision + temporal switches
+    ├── bars.yaml           # bars:        meters, depletion, cascades, terminal bounds
+    ├── affordances.yaml    # affordances: interactable world actions
+    ├── drive.yaml          # drive:       DAC reward specification
+    ├── training.yaml       # training:    hyperparameters (not part of the world)
+    └── curriculum.yaml     # curriculum:  vision + temporal switches
 ```
 
-Two constraints worth stating because they are easy to get wrong:
+Constraints worth stating because they are easy to get wrong:
 
-- **`vfs_profiles.yaml` and `effects.yaml` are pack-root only.** Preflight's
-  `forbidden_level_files` list (`loaders/preflight.py:55`) names exactly those two; either one
-  found in a level directory raises `SCOPING_FORBIDDEN_LEVEL_FILE`. Separately,
-  `required_experiment_files` (`preflight.py:54`) is `["vfs_profiles.yaml", "items.yaml"]` —
-  both must exist at the pack root or preflight raises `SCOPING_MISSING_EXPERIMENT_FILE`. (The
-  later YAML-syntax pass skips a missing `items.yaml`, but scoping preflight runs first, so the
-  file is required in practice.)
-- **`variables_reference.yaml` is optional**, not required. `configs/default_curriculum` has
-  none; `configs/L5_multi_agent` does. The older "all packs MUST include it" claim is false.
+- **Required means a required declaration, not a required file.** The required pack families
+  are `experiment`, `stratum`, `environment`, `actions`, `brain` and `variables`. Every level
+  requires `curriculum`, `bars`, `affordances`, `drive` and `training`
+  (`REQUIRED_PACK` / `REQUIRED_LEVEL` in `universe/declarations.py`). A missing one, a duplicate
+  one (with both `file:line` origins), or an unknown shape is a compile error.
+- **Scope is enforced.** A pack-only family found under `levels/<level>/` (for example
+  `variables`, `stratum`, `effects` or `items`) is refused with `DECLARATION_SCOPE`. The only
+  level-scope optional families are a complete brain override and an item-appearance list.
+- **Variables are declared once.** The single `variables:` declaration replaces the deleted
+  `vfs_profiles.yaml` and `variables_reference.yaml` languages and the old variables in
+  `environment.yaml` (Cut B). Its contract is `docs/config-schemas/variables.md`. An old
+  payload fails at compile. There is no filename reader, alias or translation.
 - There is **no** `configs/global_actions.yaml` and **no** file named `drive_as_code.yaml` in any
   shipped pack. Both paths appear in archived docs; a grep for either returns zero hits and will
   falsely "confirm" whatever you were checking.
 
-Schemas for each surface: `docs/config-schemas/` (archived 2026-08-24; see the
-caveat in §1). Do not restate them here.
+Schemas for each declaration: `docs/config-schemas/`. Do not restate them here.
 
 ---
 
 ## 4. Files are transport; declarations are the unit (PDR-0117)
 
-**Decided — accepted, owner-directed, 2026-08-24. Not yet implemented.** Source:
+**Decided — accepted, owner-directed, 2026-08-24. Implemented 2026-10-01** by
+declaration-store Cut A (content discovery, scope, merge and origins) and Cut B (one canonical
+`variables` declaration); see §3 and `docs/config-schemas/declarations.md`. The text below is
+the decision record. Source:
 `docs/product/decisions/0117-files-are-transport-declarations-are-the-unit.md`.
 
 The 16-filename mandate is hardcoded across roughly nine compiler modules (parse/preflight plus
-error strings). The 2026-08-24 VFS audit showed the sharpest cost: **three separate files declare
+error strings). The 2026-08-24 VFS audit showed the sharpest cost: **three separate files declared
 variables** — `environment.yaml`, `vfs_profiles.yaml`, `variables_reference.yaml` — with
-divergent hardcoded `lifetime` and access semantics. That is a defect class created by the split
+divergent hardcoded `lifetime` and access semantics (resolved by Cut B: one `variables`
+declaration, explicit lifetime and access on every variable). That is a defect class created by the split
 itself. Filenames carry no information the content does not already carry: No-Defaults plus
 `extra="forbid"` make every declaration self-identifying.
 
@@ -163,17 +178,17 @@ The compiler-side implications are noted in `COMPILER.md` §Forward.
 
 | v2.5 chapter said | where it actually lives now | reference |
 | --- | --- | --- |
-| meters/bars, depletion, "physics are data" | VFS variables + VTC programs (`VTCPassiveDepletionProgram`, `VTCBoundsClampProgram`) | `docs/config-schemas/bars.md` (archived), `VFS.md` §11–13 |
+| meters/bars, depletion, "physics are data" | VFS variables + VTC programs (`VTCPassiveDepletionProgram`, `VTCBoundsClampProgram`) | `docs/config-schemas/bars.md`, `VFS.md` §11–13 |
 | `cascades.yaml`, cross-meter dynamics, modulations | VTC (`VTCThresholdCascadeProgram`, `VTCModulationProgram`) | `VFS.md` §14 |
-| terminal conditions, end-of-life | `VTCTerminalConditionProgram`; scoring → DAC | `VFS.md`, `docs/config-schemas/drive_as_code.md` (archived) |
-| affordances, costs, effects, multi-tick | `affordances.yaml` + VTC action writes, occupancy, interaction progress | `docs/config-schemas/affordances.md`, `docs/config-schemas/effects.md` (both archived) |
-| `reward_model`, episodic scoring | **deleted** → DAC (`drive.yaml`, compiled to GPU graphs, `drive_hash`) | `docs/config-schemas/drive_as_code.md` (archived) |
-| observability levels | VFS observation spec: exposure + normalization + activity mask | `VFS.md` §8, `docs/config-schemas/variables.md` (current Cut B contract) |
-| time of day, action masks | `curriculum.yaml` temporal switches + VTC affordance gates | `docs/config-schemas/enabled_actions.md` (archived) |
+| terminal conditions, end-of-life | `VTCTerminalConditionProgram`; scoring → DAC | `VFS.md`, `docs/config-schemas/drive_as_code.md` |
+| affordances, costs, effects, multi-tick | `affordances.yaml` + VTC action writes, occupancy, interaction progress | `docs/config-schemas/affordances.md`, `docs/config-schemas/effects.md` (both carry staleness banners) |
+| `reward_model`, episodic scoring | **deleted** → DAC (`drive.yaml`, compiled to GPU graphs, `drive_hash`) | `docs/config-schemas/drive_as_code.md` |
+| observability levels | compiled `TokenSpec`: declared exposure + normalization; `active_vision: partial` zeroes out-of-range spatial tokens without changing the width | `VFS.md` §8, `docs/config-schemas/variables.md` (current Cut B contract) |
+| time of day, action masks | `curriculum.yaml` temporal switches + VTC affordance gates | `docs/config-schemas/enabled_actions.md` (carries a staleness banner) |
 | grid, positions | **Strata** (promoted out of UAC) | `STRATA.md`; `archive/substrate-system.md` for history |
-| money ≈ $100 at 1.0, clamped | **dead** — the `[0,1]` clamps were removed in WS-1(e); money is a bounded variable like any other | `docs/config-schemas/bars.md` (archived) |
+| money ≈ $100 at 1.0, clamped | **dead** — the `[0,1]` clamps were removed in WS-1(e); money is a bounded variable like any other | `docs/config-schemas/bars.md` |
 | ageing, retirement, Bed/Job/Hospital/Bar set | never shipped; the shipped demonstration pack is `configs/default_curriculum` (14 affordances) | `CLAUDE.md` "State Representation" |
-| expression snippets in YAML | the closed, typed expression language | `docs/config-schemas/expressions.md` (archived) |
+| expression snippets in YAML | the closed, typed expression language | `docs/config-schemas/expressions.md` |
 
 Two v2.5 principles survive unchanged and remain the point: **physics are data; values are
 data.** The no-defaults principle (`extra="forbid"`, no hidden behavioral defaults) and the
@@ -193,8 +208,7 @@ where effective_intrinsic_weight = base_weight × modifier₁ × modifier₂ × 
 ```
 
 Modifier, extrinsic, intrinsic and shaping vocabularies:
-`docs/config-schemas/drive_as_code.md` (archived 2026-08-24; content may be
-stale).
+`docs/config-schemas/drive_as_code.md`.
 
 ---
 
@@ -212,18 +226,27 @@ Summarised only far enough to route:
   compiler-hardcoded on both required surfaces, `exposed_to` fails open (omitted *and* explicitly
   `[]` both rewrite to `["agent"]`), and the observation path bypasses the checked accessor.
   Privacy mechanics are unauthorable today while appearing authorable — one systemic gap wearing
-  about six ticket numbers.
-- **`variables_reference.yaml` variables never reach the compiler symbol table** — the
+  about six ticket numbers. *(Superseded: every variable in the one `variables` declaration now
+  declares `readable_by`, `writable_by` and `exposed_to`; the registry checks them and the
+  `variable_element` publisher reads through `authorize_read`. See `VFS.md` §6.)*
+- **`variables_reference.yaml` variables never reached the compiler symbol table** — the
   pair / affordance / zone / group / message scopes allocate storage that no effect, affordance
-  or drive can reference (`hamlet-33e520cebd`). Five of nine scopes are unreachable declaratively. *(Superseded 2026-10-31: zone, group, pair, message and agent_private are deleted; the scopes are global, agent, item and affordance.)*
+  or drive can reference (`hamlet-33e520cebd`). Five of nine scopes are unreachable declaratively. *(Superseded 2026-10-31: `variables_reference.yaml` is deleted (Cut B) and every declared variable enters the symbol table; zone, group, pair, message and agent_private are deleted; the scopes are global, agent, item and affordance.)*
 - **`lifetime` is hardcoded** on both required surfaces (environment.yaml → always `tick`;
   profiles → `persistent` / `episode`), so no author-declared counters or accumulators exist.
+  *(Superseded: every variable declares `lifetime` (`tick`, `episode` or `persistent`) in the
+  `variables` declaration; see `docs/config-schemas/variables.md`.)*
 - A handful of **compile-green / crash-at-step-1 seams**: VTC modulation `condition:`, three of
   the transition-rule write composition modes, zero-affordance packs, and `num_agents`-shaped global
-  tensors. These violate the project's own fail-loud-at-compile discipline.
+  tensors. These violate the project's own fail-loud-at-compile discipline. *(Partly superseded
+  2026-10-31: the modulation surface in the affordances declaration carries no `condition` and
+  the compiler fixes the composition, so that seam is unreachable from a pack. The two occupancy
+  claims on a transition-rule write fail at parse, and the rest compile and run. See `VFS.md`
+  §14.4 and §16.3.)*
 
 Note that the first three are all instances of the split-variable-surface problem PDR-0117
-names — which is why the audit and PDR-0117 point at the same compiler front end.
+names — which is why the audit and PDR-0117 point at the same compiler front end. Declaration-store
+Cuts A and B (2026-10-01) resolved all three.
 
 **When extending this guide with recipes, only add recipes that compile *and run* against the
 shipped engine.** A recipe that demonstrates an open gap belongs in the audit doc or the tracker,
@@ -251,11 +274,12 @@ natural carrier, so any design here follows the token migration rather than prec
   `archive/vfs-current-implementation.md` (accurate per the 2026-08-24 audit on everything
   checked **except** its access-control and `agent_private` claims — see §6)
 - **Strata**: `STRATA.md`; history in `archive/substrate-system.md`
-- **Brain**: `BAC.md`, `docs/config-schemas/brain.md` (archived 2026-08-24)
-- **Schemas** (one per authoring surface): `docs/config-schemas/` — ⚠ **archived
-  2026-08-24** (commit `c4e8bd58`); nothing has replaced it, so this is still the reference,
-  just no longer maintained — affordances, bars, brain, drive_as_code, effects,
-  enabled_actions, expressions, items, presentation, training, transition_rules, variables
+- **Brain**: `BAC.md`, `docs/config-schemas/brain.md`
+- **Schemas** (one per declaration family): `docs/config-schemas/` — the live reference
+  tier (restored 2026-08-26; `affordances.md`, `effects.md`, `enabled_actions.md` and
+  `items.md` open with staleness banners) — affordances, bars, brain, declarations,
+  drive_as_code, effects, enabled_actions, expressions, items, presentation, training,
+  transition_rules, variables
   (⚠ stale, 2025-11), vfs-profiles
 - **Oracle discipline** (what behaviour is frozen): `docs/oracle/ORACLE.md`,
   `docs/oracle/known-divergences.md`

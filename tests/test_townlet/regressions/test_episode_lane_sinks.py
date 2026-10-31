@@ -278,7 +278,7 @@ def test_runner_publishes_owned_completion_meters_after_live_storage_changes(tmp
     acc = events_for(runner)
     for agent, ending in enumerate((2, 5)):
         expected = ticks[ending - 1]["meters"][agent]
-        assert not torch.equal(expected, runner.env.meters[agent])
+        assert not torch.equal(expected, runner.env.meters[agent].to(expected.device))
         for meter_index, name in enumerate(runner.env.bars_config.meter_names):
             event = acc.Scalars(f"agent_{agent}/Meters/{name.capitalize()}")[0]
             assert event.step == ending

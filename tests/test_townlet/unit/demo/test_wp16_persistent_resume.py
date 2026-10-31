@@ -236,7 +236,7 @@ async def test_serving_a_checkpoint_restores_its_persistent_world(tmp_path: Path
 
     producer = _server(pack, checkpoint_dir)
     env = producer.env
-    wait = torch.full((NUM_AGENTS,), env.action_dim - 1, dtype=torch.long)
+    wait = torch.full((NUM_AGENTS,), env.action_dim - 1, dtype=torch.long, device=env.device)
     for _ in range(3):  # three episodes of two ticks each
         env.reset()
         env.step(wait)

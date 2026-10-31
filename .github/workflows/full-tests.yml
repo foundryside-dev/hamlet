@@ -11,7 +11,7 @@ on:
   # re-enabling it from the branch would only have resumed that stream against the
   # wrong tree. `main` now carries the recovery, so the nightly tests something
   # someone is working on again. Since a725bf66 this job and the per-push Tests job
-  # are the same bare `uv run pytest` — the `slow` marker is gone — and differ only
+  # run the same `uv run pytest` — the `slow` marker is gone — and differ only
   # in trigger.
   schedule:
     - cron: "0 6 * * *"
@@ -46,4 +46,4 @@ jobs:
       # the default `uv run pytest` IS the complete suite. This job differs from
       # tests.yml only in WHEN it runs — nightly against the default branch.
       - name: Run the complete test suite
-        run: uv run pytest
+        run: uv run pytest -n auto --dist worksteal

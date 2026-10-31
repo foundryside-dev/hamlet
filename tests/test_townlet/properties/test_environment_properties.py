@@ -27,7 +27,7 @@ class TestEnvironmentBoundaryProperties:
     @given(
         action_sequence=st.lists(st.integers(min_value=0, max_value=5), min_size=1, max_size=50),
     )
-    @settings(max_examples=50, deadline=None)  # Reduce examples for faster tests, disable deadline for VFS overhead
+    @settings(max_examples=50)  # Reduce examples for faster tests
     def test_agents_never_leave_grid_bounds(self, action_sequence):
         """Property: Agent positions remain inside each substrate axis after any action sequence.
 
@@ -69,7 +69,7 @@ class TestEnvironmentBoundaryProperties:
         num_agents=st.integers(min_value=1, max_value=8),
         num_steps=st.integers(min_value=1, max_value=30),
     )
-    @settings(max_examples=30, deadline=None)  # Disable deadline for VFS overhead
+    @settings(max_examples=30)
     def test_meters_stay_in_valid_range(self, num_agents, num_steps):
         """Property: Meters always in [0.0, 1.0] after any sequence of steps.
 
@@ -107,7 +107,7 @@ class TestEnvironmentBoundaryProperties:
         ),
         num_agents=st.integers(min_value=1, max_value=4),
     )
-    @settings(max_examples=40, deadline=None)  # Disable deadline for VFS overhead
+    @settings(max_examples=40)
     def test_observations_always_match_expected_dimensions(self, config_name, num_agents):
         """Property: Observations always match observation_dim regardless of state.
 

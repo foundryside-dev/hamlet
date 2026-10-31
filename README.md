@@ -440,13 +440,13 @@ uv run pytest
 ```
 
 The ratchet holds the whitelisted no-defaults count to the committed ceiling in
-`.defaults-ratchet` (617 at `6475cc5b`): the linter fails above or below it, so a removed default
+`.defaults-ratchet` (614 since `a2ea8a84`): the linter fails above or below it, so a removed default
 must lower the file in the same change; that the ceiling is never raised is review policy, not a
 mechanical check. Bare pytest deselects only the `perf` wall-clock tests (`-m "not perf"` in
 `pyproject.toml`); no `slow` deselection remains. Some skips do not depend on hardware (one
 deferred test skips unconditionally; others depend on fixture contents or an ffmpeg binary). The
-suite is gated on hosted CPU runners; at `6475cc5b` two tests fail on a CUDA host from
-test-side device placement. The pack smoke test discovers current positive packs, constructs
+suite is gated on hosted CPU runners; the two tests that failed on a CUDA host from
+test-side device placement were fixed by PR #59. The pack smoke test discovers current positive packs, constructs
 two CPU lanes, resets and steps them; this is a finite-output/contract gate, not a training
 qualification.
 
@@ -456,8 +456,8 @@ Four GitHub Actions workflows are configured with Python 3.13 and `uv sync --all
 | --- | --- |
 | Lint | Push to `main`/`project-recovery*`, PR; Ruff, Black, mypy, no-defaults with ratchet |
 | Config Validation | Push to `main`/`project-recovery*`, PR; public compiler CLI fleet |
-| Tests | Push to `main`/`project-recovery*`, PR; config validation then bare pytest |
-| Full Test Suite | Dispatch and nightly `0 6 * * *`; config validation then bare pytest |
+| Tests | Push to `main`/`project-recovery*`, PR; config validation then pytest across all runner CPUs (`-n auto`) |
+| Full Test Suite | Dispatch and nightly `0 6 * * *`; config validation then pytest across all runner CPUs (`-n auto`) |
 
 The compiler-fleet script excludes `aspatial_test`; the pytest pack smoke gate exercises that
 pack separately. The three named negative VFS fixtures are expected compiler refusals.

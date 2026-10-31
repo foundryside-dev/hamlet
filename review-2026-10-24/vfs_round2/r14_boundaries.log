@@ -1,9 +1,0 @@
-
-===== R14a done agent: expressions, rules, publication =====
-step1: dones=[True, False] energy=[0.0, 0.99] age=[1.0, 1.0] e_energy=[0.0, 9.9] e_energy obs row agent0=[1.0, 0.0, 0.0] reward=[0.0, 1.0]
-step2: dones=[True, False] energy=[0.0, 0.98] age=[1.0, 2.0] e_energy=[0.0, 9.8] e_energy obs row agent0=[1.0, 0.0, 0.0] reward=[0.0, 1.0]
-step3: dones=[True, False] energy=[0.0, 0.97] age=[1.0, 3.0] e_energy=[0.0, 9.7] e_energy obs row agent0=[1.0, 0.0, 0.0] reward=[0.0, 1.0]
-
-===== R14b empty declarations roster =====
-compile OK: census={'self': 1, 'meter': 4, 'affordance': 4, 'agent': 0, 'item': 0, 'effect': 0, 'variable_element': 0} total_dims=37 vfs_hash=aff92114a831
-step OK: obs shape=(1, 37) registry ids=['tick']

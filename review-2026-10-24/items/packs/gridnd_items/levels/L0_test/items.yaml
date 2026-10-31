@@ -1,6 +1,0 @@
-items:
-- item_type: rock
-  placement:
-    mode: random
-  spawn_count: 2
-version: '1.0'

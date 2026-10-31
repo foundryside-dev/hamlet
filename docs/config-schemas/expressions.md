@@ -1109,7 +1109,7 @@ Not in the registry today (they fail at type check with `Unknown function`):
 ## See Also
 
 - **VFS Configuration**: `docs/config-schemas/variables.md` - Variable definitions and computed variables
-- **Effects System**: `docs/plans/2025-11-15-phase-5-effects-integration.md` - Effect value expressions
+- **Effects System**: `docs/config-schemas/effects.md` - Effect value expressions
 - **Drive As Code**: `docs/config-schemas/drive_as_code.md` - Reward modifiers, extrinsic and shaping (in production)
 - **Implementation**: `src/townlet/world/expression/` - Parser, evaluator, type checker source code
 - **Tests**: `tests/test_townlet/unit/world/expression/` - Expression system test suite

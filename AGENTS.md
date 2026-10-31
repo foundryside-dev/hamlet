@@ -18,11 +18,10 @@ Core reinforcement-learning code lives in `src/townlet/` (`environment/`, `agent
 
 ## Build, Test, and Development Commands
 
-- `uv sync` — create or update the local virtual environment with dev extras.
-- `uv run pytest` — execute the default suite (skipping `slow`) with coverage enabled.
-- `uv run pytest -m "slow"` — opt into long-running or GPU-tagged scenarios before proposing major changes.
-- `uv run ruff check` / `uv run black --check .` / `uv run mypy src` — mirror the CI lint pipeline.
-- `npm install && npm run dev` from `frontend/` — serve the visualization dashboard when validating inference pipelines.
+- `uv sync --all-extras --locked` — create or update the local virtual environment with the dev and recording extras.
+- `uv run pytest -n auto` — run the complete suite in parallel with coverage; GPU tests skip when CUDA is unavailable and `perf` tests are deselected by default (`pytest -m perf --no-cov` runs them).
+- `uv run ruff check .` / `uv run black --check src tests` / `uv run mypy src/townlet --show-error-codes` / `uv run python scripts/no_defaults_lint.py src/townlet/ --whitelist .defaults-whitelist.txt --ratchet .defaults-ratchet` — mirror the CI lint job.
+- `npm ci && npm run dev` from `frontend/` — serve the visualization dashboard when validating inference pipelines.
 
 ## Coding Style & Naming Conventions
 
@@ -30,7 +29,7 @@ Python code follows Black formatting with a 140-character line limit and 4-space
 
 ## Testing Guidelines
 
-Pytest auto-discovers files named `test_*.py`, classes `Test*`, and functions `test_*`. Maintain ≥70% coverage by extending `tests/test_townlet/` alongside each feature, and place heavyweight scenarios under `slow` or `gpu` markers so they stay opt-in locally. When reproducing bugs, add regression cases under `tests/test_townlet/regressions/` with fixtures in `fixtures/`. Use integration flows when the curriculum hand-off is involved.
+Pytest auto-discovers files named `test_*.py`, classes `Test*`, and functions `test_*`. Maintain ≥70% coverage by extending `tests/test_townlet/` alongside each feature, and mark CUDA-only scenarios with `gpu`. When reproducing bugs, add regression cases under `tests/test_townlet/regressions/` with fixtures in `fixtures/`. Use integration flows when the curriculum hand-off is involved.
 
 ## Commit & Pull Request Guidelines
 
@@ -39,41 +38,3 @@ Commit history uses Conventional Commit semantics (`feat(env): ...`, `fix(action
 ## Security & Configuration Tips
 
 Load secrets via environment variables or `.env` files; never commit credentialized configs or generated databases (`test.db`) and large artifacts in `runs/`. Reuse the provided YAML configs instead of hard-coding paths, and validate new endpoints against `SECURITY.md` guidelines before exposing them in the API layer.
-
-<!-- filigree:instructions:v3.4.0:e2dfc82c -->
-<!-- filigree:last-writer:filigree install -->
-## Filigree Issue Tracker
-
-`filigree` tracks this project's work: `filigree session-context` at session
-start, then `filigree start-next-work --assignee <name>`. Name yourself on
-writes: `filigree --actor <name>` (CLI) or `actor=<name>` (MCP);
-`session-context` also reads `FILIGREE_ACTOR`.
-
-Reference: the **filigree-workflow** skill, `filigree --help`, and the
-`mcp__filigree__*` tool schemas. Prefer MCP tools; fall back to the CLI.
-
-Two rules `--help` will not tell you:
-
-1. Claim atomically: `work_start` / `work_start_next` (MCP) or `start-work` /
-   `start-next-work` (CLI). Never chain a claim with a separate status update;
-   that two-step form races other agents.
-2. On `SCHEMA_MISMATCH` the installed filigree is older than the project
-   database. Surface it to the user; do not retry.
-<!-- /filigree:instructions -->
-
-<!-- loomweave:instructions:v1.5.0:39edbf6d -->
-<!-- loomweave:last-writer:loomweave install -->
-## Loomweave (code structure + SEI identity)
-
-Loomweave pre-extracts this repo into a queryable map — entities, their
-call/reference/import/relation edges, and subsystems — each carrying a Stable
-Entity Identity (SEI). Ask its `mcp__loomweave__*` tools, not grep, for "what
-calls X", "what subclasses X", "where is X defined", "find the thing that
-does Y".
-
-- Never hand-construct an entity id: take it from `entity_find` / `entity_at` /
-  `entity_resolve`, and bind cross-tool records on the `sei`, not the `id`.
-- If `project_status_get` reports stale, re-index before answering.
-
-Full reference: `loomweave-workflow` skill, `loomweave --help`, MCP schemas.
-<!-- /loomweave:instructions -->

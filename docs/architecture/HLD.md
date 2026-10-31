@@ -6,7 +6,7 @@ Status: **Current** (reviewed 2026-08-24) — part of the six-document HLD set (
 This is the top of the architecture tree. It is the reset artifact after the 2026 recovery:
 the prior `docs/architecture/` corpus (~16 top-level documents plus an `hld/` tree, most of it
 design-era 2025-11 carrying false "Approved for Implementation" status lines) was archived
-wholesale to `docs/architecture/archive/`. **The archive is history, not record.** Where this
+wholesale to `internal/docs/architecture-archive/`. **The archive is history, not record.** Where this
 document and an archived one disagree, this one wins; where this document and `README.md`
 disagree, README wins; where either disagrees with `src/townlet/`, the source wins.
 
@@ -246,8 +246,8 @@ Supporting, and authoritative in their lanes:
   rebuild unless the register says otherwise. Never edit anything under `.oracle/`.
 - `README.md` — current, honest status. **Authoritative over any document in this set** on
   what ships.
-- `docs/product/vision.md`, `docs/product/decisions/` — product framing and decision record.
-- `docs/architecture/archive/` — the pre-2026-08-24 corpus. Historical record; internal links
+- `docs/vision.md`, `internal/docs/product/decisions/` — product framing and decision record.
+- `internal/docs/architecture-archive/` — the pre-2026-08-24 corpus. Historical record; internal links
   may dangle. Cite for history, never as evidence that something is implemented.
 
 ---
@@ -282,5 +282,5 @@ Delirium" reward-hacking lesson (no shipped level declares the multiplicative re
 on); the deployment/export path (`hamlet-0cdb8a6d1a`); and PDR-0117 discovery-merge.
 
 **A note on CI.** The gates that hold on `project-recovery*` branches are run locally, by hand —
-no workflow has ever run on `project-recovery` (filigree `hamlet-2100105c9a`). `main` carries the
+no workflow has ever run on `project-recovery`. `main` carries the
 recovery and its nightly is green; between merges `main` trails the branch by design.

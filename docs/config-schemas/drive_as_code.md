@@ -24,8 +24,6 @@ Drive As Code (DAC) is a declarative reward function compiler that extracts all 
 - **First-Time Users**: Read "Overview" → "File Structure" → "Curriculum Examples"
 
 **Related Documents**:
-- `docs/plans/2025-11-12-drive-as-code-implementation.md` - Implementation plan
-- `docs/guides/dac-migration.md` - Migration guide from old reward_strategy
 - `docs/config-schemas/training.md` - Training configuration
 - `docs/config-schemas/bars.md` - Meter definitions
 
@@ -1407,12 +1405,10 @@ extrinsic:
 
 ## Related Documentation
 
-- **Implementation Plan**: `docs/plans/2025-11-12-drive-as-code-implementation.md`
-- **Migration Guide**: `docs/guides/dac-migration.md`
 - **Training Config**: `docs/config-schemas/training.md`
 - **Bar Config**: `docs/config-schemas/bars.md`
 - **VFS Config**: `docs/config-schemas/variables.md`
-- **Compiler**: `docs/architecture/COMPILER.md` (design history: `docs/architecture/archive/COMPILER_ARCHITECTURE.md`)
+- **Compiler**: `docs/architecture/COMPILER.md`
 
 ---
 

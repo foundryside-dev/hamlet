@@ -28,7 +28,7 @@ from townlet.universe.compiler import UniverseCompiler
 BASELINE_SOURCE = "599cad15706ac8824c3f8e38276da6440c4816a3"
 STREAMS = ("obs", "actions", "dones", "rewards")
 ROOT = Path(__file__).resolve().parents[1]
-EVIDENCE = ROOT / "docs/product/evidence/declaration-cut-b"
+EVIDENCE = ROOT / "docs/oracle/evidence/declaration-cut-b"
 _MISSING = object()
 
 

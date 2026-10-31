@@ -150,21 +150,16 @@ tmp/
 tmp_4m_debug/
 tmp_sim_4m/
 
-# Filigree issue tracker
+# Local developer-tool state and MCP configs (may embed tokens); never commit
 .filigree/
-
-# Filigree issue tracker
 .weft/
-# Wardline scan artifacts
 .wardline/
 findings.jsonl
-
-# Filigree server-mode MCP config embeds a literal federation token
+loomweave.yaml
 .mcp.json
 
 # Claude Code agent worktrees (transient; never track)
 .claude/worktrees/
 
-# Product evidence records are versioned even where they are csv/json (M4 baselines, PDR-0141)
-!docs/product/baselines/**
-loomweave.yaml
+# Internal working material: reviews, plans, archived docs, product records. Kept locally, not published.
+internal/

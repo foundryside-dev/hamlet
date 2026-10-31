@@ -2,7 +2,7 @@
 
 `tests/test_townlet/unit/oracle/test_declaration_input_drift.py` pins a sha256 for every
 input file of the static-epistemic-access evidence packs in
-`docs/product/evidence/static-epistemic-access/frozen-live-inputs.json`. Respelling a
+`docs/oracle/evidence/static-epistemic-access/frozen-live-inputs.json`. Respelling a
 shipped pack moves those digests; run this, then review the diff.
 
     uv run python scripts/regen_frozen_live_inputs.py
@@ -18,7 +18,7 @@ sys.path.insert(0, str(ROOT / "tests/test_townlet/unit/oracle"))
 
 import test_declaration_input_drift as drift  # noqa: E402
 
-INVENTORY = ROOT / "docs/product/evidence/static-epistemic-access/frozen-live-inputs.json"
+INVENTORY = ROOT / "docs/oracle/evidence/static-epistemic-access/frozen-live-inputs.json"
 
 
 def main() -> None:

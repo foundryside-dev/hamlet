@@ -145,4 +145,4 @@ priced affordances permanently unaffordable.
 
 - `docs/config-schemas/variables.md` — VFS variables and their normalization specs
 - `docs/config-schemas/drive_as_code.md` — reward configuration (`drive.yaml`)
-- `PDR-0014`, `PDR-0015`, `PDR-0016` in `docs/product/decisions/`
+- `PDR-0014`, `PDR-0015`, `PDR-0016` in `internal/docs/product/decisions/`

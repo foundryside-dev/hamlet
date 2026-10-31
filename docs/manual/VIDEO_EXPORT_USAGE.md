@@ -1,16 +1,12 @@
 # Video Export - Usage Guide
 
-> ⚠️ **Recovered from archive 2026-08-26 — accurate subsystem, stale config paths.**
+> **Partly out of date.** `python -m townlet.recording {export,batch}` works as described. The
+> `live_inference --db/--recordings` flags shown below do not exist. The recording subsystem is
+> expected to be removed once its intent is captured elsewhere.
 >
-> The subsystem this document describes **does ship** (module paths verified against
-> `src/townlet/` on 2026-08-26). It is recovered because it is the only operator
-> documentation for that surface.
->
-> **Known wrong:** every example config path of the form `configs/<name>.yaml` is dead.
-> That flat layout was replaced by config *packs* — pack-root shared files plus
-> `levels/<level>/` overrides, e.g. `configs/default_curriculum/levels/L1_full_observability/`.
-> See `CLAUDE.md` §"Configuration System". Translate paths as you read; do not copy the
-> example invocations verbatim.
+> Checked against `src/townlet/` on 2026-10-31. Example paths of the form `configs/<name>.yaml`
+> predate config packs and are dead: use a pack directory and level, for example
+> `configs/default_curriculum` and `L1_full_observability`.
 
 
 Export recorded episodes to high-quality MP4 videos suitable for YouTube streaming.

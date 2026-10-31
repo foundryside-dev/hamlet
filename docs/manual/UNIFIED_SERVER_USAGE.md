@@ -1,221 +1,112 @@
-# Unified Server Usage Guide
+# Training with the live viewer
 
-> ⚠️ **Recovered from archive 2026-08-26 — accurate subsystem, stale config paths.**
->
-> The subsystem this document describes **does ship** (module paths verified against
-> `src/townlet/` on 2026-08-26). It is recovered because it is the only operator
-> documentation for that surface.
->
-> **Known wrong:** every example config path of the form `configs/<name>.yaml` is dead.
-> That flat layout was replaced by config *packs* — pack-root shared files plus
-> `levels/<level>/` overrides, e.g. `configs/default_curriculum/levels/L1_full_observability/`.
-> See `CLAUDE.md` §"Configuration System". Translate paths as you read; do not copy the
-> example invocations verbatim.
+`scripts/run_demo.py` trains an agent on one level of a config pack and, in the same process,
+serves the latest checkpoint over a WebSocket so the Vue viewer can watch it play. The viewer
+runs separately, so you can restart or edit it without stopping training.
 
+Checked against `scripts/run_demo.py`, `src/townlet/demo/` and `frontend/` on 2026-10-31.
 
-## Overview
+## Quick start
 
-The unified server runs **training + inference** in a single command, while the frontend runs separately for better stability and Vue.js Hot Module Replacement (HMR) support.
-
-## Quick Start
-
-### Terminal 1: Training + Inference Server
+In one terminal, from the repository root:
 
 ```bash
-# Activate environment
-source .venv/bin/activate
-
-# Start training + inference (will run until episodes complete)
-python run_demo.py --config configs/level_1_full_observability.yaml --episodes 10000
-
-# For L3 debugging:
-python run_demo.py --config configs/level_3_temporal.yaml --episodes 10000
+uv run scripts/run_demo.py --config configs/default_curriculum \
+    --level L1_full_observability --episodes 10000 --inference-port 8766
 ```
 
-### Terminal 2: Frontend (once checkpoints exist)
+In a second terminal:
 
 ```bash
-# Start Vue dev server
-cd frontend && npm run dev
-
-# Open browser to http://localhost:5173
+cd frontend
+npm ci        # first time only
+npm run dev
 ```
 
-## Architecture
+Open <http://localhost:5173>. The viewer connects to `ws://localhost:8766/ws`.
 
-```
-run_demo.py (Main Process)
-  ├─> Training Thread
-  │   └─> DemoRunner (saves checkpoints every 100 episodes)
-  │
-  └─> Inference Thread
-      └─> LiveInferenceServer (WebSocket on port 8766)
-          ├─> Watches for new checkpoints
-          ├─> Runs inference at 5 steps/sec
-          └─> Broadcasts state to frontend
+## Options
+
+| Option | Required | Meaning |
+| --- | --- | --- |
+| `--config DIR` | yes | Config pack directory, for example `configs/default_curriculum` |
+| `--level NAME` | yes | Level under `levels/`, for example `L1_full_observability` |
+| `--inference-port PORT` | yes | WebSocket port for the viewer |
+| `--episodes N` | no | Episodes to train; defaults to the level's `training.yaml` `max_episodes` |
+| `--checkpoint-dir DIR` | no | Resume from this checkpoint directory instead of starting a new run |
+| `--force-new-vfs` | no | When the checkpoint's variable layout no longer matches the pack, start a fresh run instead of refusing |
+| `--debug` | no | Debug-level logging |
+
+The viewer's port is fixed at 8766 in `frontend/src/stores/simulation.js`. If you train on another
+port, change it there as well.
+
+## What a run writes
+
+Each run gets its own directory, named by the level's `output_subdir` and a timestamp:
+
+```text
+runs/L1_full_observability/2026-10-31_213045/
+  checkpoints/
+    checkpoint_ep00000.pt
+    checkpoint_ep00000.pt.sha256
+    ...
+  config_snapshot/      # copy of the pack as compiled
+  tensorboard/
+  metrics.db            # SQLite episode metrics
+  training.log
 ```
 
-## Command Line Options
+The runner saves a checkpoint every 100 episodes and once more when training ends. The
+`checkpointing.interval` field in `training.yaml` is validated but not yet read by the runner.
+
+To resume, pass the run's `checkpoints/` directory:
 
 ```bash
-python run_demo.py --help
+uv run scripts/run_demo.py --config configs/default_curriculum \
+    --level L1_full_observability --inference-port 8766 \
+    --checkpoint-dir runs/L1_full_observability/2026-10-31_213045/checkpoints
 ```
 
-**Required:**
+A resume is refused if any part of the pack that the checkpoint was trained on has changed. See
+[Reproducibility](../../README.md#reproducibility).
 
-- `--config PATH` - Training configuration YAML file
-
-**Optional:**
-
-- `--episodes N` - Number of training episodes (default: 10000)
-- `--checkpoint-dir PATH` - Custom checkpoint directory (auto-generated if not provided)
-- `--inference-port PORT` - WebSocket port (default: 8766)
-- `--debug` - Enable debug logging with full tracebacks
-
-## Examples
-
-### Resume from Checkpoint
+## Serving a checkpoint without training
 
 ```bash
-python run_demo.py \
-  --config configs/level_1_full_observability.yaml \
-  --checkpoint-dir runs/L1_full_observability/2025-11-02_123456/checkpoints \
-  --episodes 20000
+uv run python -m townlet.demo.live_inference \
+    runs/L1_full_observability/2026-10-31_213045/checkpoints 8766 0.2 10000 \
+    configs/default_curriculum L1_full_observability
 ```
 
-### Custom Inference Port
-
-```bash
-python run_demo.py \
-  --config configs/level_1_full_observability.yaml \
-  --episodes 5000 \
-  --inference-port 8800
-
-# Frontend will auto-connect to http://localhost:8800
-```
-
-### Short Training Run for Testing
-
-```bash
-python run_demo.py \
-  --config configs/level_1_full_observability.yaml \
-  --episodes 100
-```
-
-## Directory Structure
-
-Training creates organized runs directory:
-
-```
-runs/
-└── L1_full_observability/          # Level name from config
-    └── 2025-11-02_123456/          # Timestamp
-        ├── config.yaml              # Copy of training config
-        ├── checkpoints/             # Model checkpoints
-        │   ├── checkpoint_ep00000.pt
-        │   ├── checkpoint_ep00100.pt
-        │   └── ...
-        ├── tensorboard/             # TensorBoard logs
-        │   └── events.out.tfevents...
-        └── metrics.db               # SQLite episode metrics
-```
+The positional arguments are the checkpoint directory, port, delay between steps in seconds,
+number of episodes to play, pack and level.
 
 ## TensorBoard
 
-View training metrics:
-
 ```bash
-tensorboard --logdir runs/L1_full_observability/2025-11-02_123456/tensorboard
-# Open http://localhost:6006
+uv run tensorboard --logdir runs/L1_full_observability/2026-10-31_213045/tensorboard
 ```
 
-## Graceful Shutdown
+Then open <http://localhost:6006>. See [TENSORBOARD_INTEGRATION.md](TENSORBOARD_INTEGRATION.md).
 
-Press `Ctrl+C` once to trigger graceful shutdown:
+## Stopping
 
-1. Inference server stops immediately
-2. Training finishes current episode
-3. Final checkpoint saved
-4. All threads cleaned up
+Press `Ctrl+C` once. Training stops at the next safe point, saves a final checkpoint and shuts
+the inference server down.
 
-## Benefits of Split Architecture
+## Security
 
-**Why Training + Inference Unified:**
-
-- Single command to start both
-- Training automatically updates checkpoints
-- Inference watches for new checkpoints
-- No port conflicts or coordination issues
-
-**Why Frontend Separate:**
-
-- Vue HMR works without restart
-- Frontend can be restarted independently
-- Easier frontend development workflow
-- No subprocess management complexity
+The inference server listens on all interfaces with no authentication. Run it on a trusted
+network. See [SECURITY.md](../../SECURITY.md).
 
 ## Troubleshooting
 
-**"Port 8766 already in use"**
+**Port already in use.** Another server is still running. Stop it, or choose another port and
+update the viewer to match.
 
-```bash
-# Find and kill existing process
-lsof -ti:8766 | xargs kill -9
+**The viewer shows nothing.** Check that the training terminal logged `Uvicorn running on
+http://0.0.0.0:8766` and that at least one checkpoint has been saved (the first is written at
+episode 0).
 
-# Or use custom port
-python run_demo.py --config ... --inference-port 8800
-```
-
-**"No checkpoints found" in frontend**
-
-```bash
-# Wait for first checkpoint (saved at episode 0)
-# Or point frontend to existing checkpoint directory
-```
-
-**Inference server not connecting**
-
-```bash
-# Check inference server is running
-curl http://localhost:8766/health  # Should return 200 OK
-
-# Check frontend config (frontend/.env or frontend/vite.config.ts)
-# VITE_WS_URL should match inference port
-```
-
-## For L3 Debugging
-
-Level 3 uses temporal mechanics - you'll want to watch:
-
-- Time-of-day cycles (24-tick days)
-- Multi-tick interactions (jobs take 5 ticks to complete)
-- Operating hours (Bar open 6pm-4am, Job 8am-6pm, etc.)
-- Interaction progress bars in visualization
-
-```bash
-# Start L3 training + inference
-python run_demo.py --config configs/level_3_temporal.yaml --episodes 10000
-
-# In another terminal: frontend
-cd frontend && npm run dev
-```
-
-## Implementation Details
-
-**Phase 2 Complete (Current):**
-
-- ✅ Training runs in background thread
-- ✅ Inference runs in separate thread with proper async shutdown
-- ✅ Auto-generated directory structure
-- ✅ Graceful shutdown on Ctrl+C
-- ✅ Training completion detection
-
-**Phase 3 Deferred:**
-
-- ⏳ Frontend subprocess integration (manual start preferred for HMR)
-
-## See Also
-
-- `DEMO_README.md` - Legacy 3-terminal workflow documentation
-- `docs/UNIFIED_SERVER_PLAN.md` - Architecture and design decisions
-- `TRAINING_UI_GUIDE.md` - Frontend visualization guide
+**Resume refused.** The message names the hash that moved. Either revert the pack change or start
+a new run without `--checkpoint-dir`.

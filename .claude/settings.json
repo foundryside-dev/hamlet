@@ -1,42 +1,4 @@
 {
-  "hooks": {
-    "PreToolUse": [
-      {
-        "hooks": [
-          {
-            "command": "/home/john/.local/bin/filigree ensure-dashboard",
-            "timeout": 5000,
-            "type": "command"
-          }
-        ],
-        "matcher": "mcp__filigree__.*"
-      }
-    ],
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "command": "/home/john/.local/bin/filigree session-context",
-            "timeout": 5000,
-            "type": "command"
-          },
-          {
-            "command": "/home/john/.local/bin/filigree ensure-dashboard",
-            "timeout": 5000,
-            "type": "command"
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "command": "loomweave hook session-start --path \"${CLAUDE_PROJECT_DIR}\"",
-            "type": "command"
-          }
-        ]
-      }
-    ]
-  },
   "permissions": {
     "allow": [
       "Bash(gh pr merge:*)",
@@ -49,5 +11,35 @@
       "Bash(gh run view:*)",
       "Bash(gh api repos/foundryside-dev/hamlet/rulesets:*)"
     ]
+  },
+  "extraKnownMarketplaces": {
+    "foundryside-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "tachyon-beep/skillpacks"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "yzmir-deep-rl@foundryside-marketplace": true,
+    "yzmir-pytorch-engineering@foundryside-marketplace": true,
+    "yzmir-training-optimization@foundryside-marketplace": true,
+    "yzmir-neural-architectures@foundryside-marketplace": true,
+    "yzmir-counterfactual-statistics@foundryside-marketplace": true,
+    "yzmir-simulation-foundations@foundryside-marketplace": true,
+    "axiom-python-engineering@foundryside-marketplace": true,
+    "axiom-determinism-and-replay@foundryside-marketplace": true,
+    "axiom-tensor-compiler-engineering@foundryside-marketplace": true,
+    "axiom-contract-engineering@foundryside-marketplace": true,
+    "axiom-system-archaeologist@foundryside-marketplace": true,
+    "axiom-solution-architect@foundryside-marketplace": true,
+    "axiom-planning@foundryside-marketplace": true,
+    "axiom-product-management@foundryside-marketplace": true,
+    "axiom-program-management@foundryside-marketplace": true,
+    "bravos-game-design@foundryside-marketplace": true,
+    "bravos-systems-as-experience@foundryside-marketplace": true,
+    "lyra-ux-designer@foundryside-marketplace": true,
+    "muna-technical-writer@foundryside-marketplace": true,
+    "ordis-quality-engineering@foundryside-marketplace": true
   }
 }

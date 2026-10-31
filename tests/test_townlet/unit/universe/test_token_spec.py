@@ -1,6 +1,6 @@
 """TokenSpec — the compiled token artifact and its pure derivations (unit 3, Task 6).
 
-Spec: docs/superpowers/specs/2026-08-22-token-observation-representation-design.md §§1–2.
+Spec: docs/design/2026-08-22-token-observation-representation-design.md §§1–2.
 Nothing here is wired into the compiler yet (Task 7); every input is a synthetic declaration.
 """
 

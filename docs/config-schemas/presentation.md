@@ -27,7 +27,7 @@ ignored key.
 
 **Reading Strategy**:
 - **Quick**: "Schema" below is the whole surface — three format kinds, two entry types.
-- **Why it is shaped this way**: `docs/product/decisions/0025-*.md` (declared, not deleted;
+- **Why it is shaped this way**: `internal/docs/product/decisions/0025-*.md` (declared, not deleted;
   honest by default) and `0023-*.md` (money units are nominal).
 
 **Related Documents**:

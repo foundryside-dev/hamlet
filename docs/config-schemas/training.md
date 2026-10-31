@@ -416,5 +416,5 @@ training:
   file — the real pack-root file is `stratum.yaml`). Use `docs/architecture/STRATA.md`, the
   `SubstrateConfig` / `StratumConfig` DTOs in `src/townlet/config/stratum_config.py`, and the
   worked examples in `docs/examples/`.
-- **Training System**: `docs/manual/TRAINING_SYSTEM.md`
+- **Running training**: `docs/manual/UNIFIED_SERVER_USAGE.md`
 - **TensorBoard Integration**: `docs/manual/TENSORBOARD_INTEGRATION.md`

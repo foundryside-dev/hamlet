@@ -4,7 +4,7 @@ This directory contains the primary automated tests for the `townlet` package. T
 
 ## Current Snapshot
 
-Measured on 2026-05-16 from `/home/john/hamlet`:
+Measured on 2026-05-16 from the repository root:
 
 | Measure | Current value | Evidence command |
 |---|---:|---|

@@ -1,7 +1,0 @@
-
-===== R3 item-state variable_element ignores the visibility filter =====
-trial0: agent@[4, 4] medkit@[2, 3] manhattan=3 (radius 1) | item token slot3 presence=0.0 | medical.durability[3] row=[1.0, 1.0, 0.0]
-trial1: agent@[1, 1] medkit@[4, 3] manhattan=5 (radius 1) | item token slot3 presence=0.0 | medical.durability[3] row=[1.0, 1.0, 0.0]
-trial2: agent@[1, 4] medkit@[4, 0] manhattan=7 (radius 1) | item token slot3 presence=0.0 | medical.durability[3] row=[1.0, 1.0, 0.0]
-trial3: agent@[1, 2] medkit@[1, 3] manhattan=1 (radius 1) | item token slot3 presence=1.0 | medical.durability[3] row=[1.0, 1.0, 0.0]
-trial4: agent@[3, 3] medkit@[2, 1] manhattan=3 (radius 1) | item token slot3 presence=0.0 | medical.durability[3] row=[1.0, 1.0, 0.0]

@@ -28,6 +28,8 @@ from townlet.oracle.trace_io import RunParams, Trace, load_trace
 from townlet.universe.compiler import UniverseCompiler
 
 STREAMS = ("obs", "actions", "dones", "rewards")
+# Read with `git show <source>:<path>` from the historical source commit, so this is the path
+# as it existed then; the current copies live under docs/oracle/evidence/.
 RECIPE_ORIGIN = "docs/product/evidence/declaration-cut-b"
 _MISSING = object()
 

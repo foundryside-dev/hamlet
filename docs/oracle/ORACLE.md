@@ -2,7 +2,7 @@
 
 **Tag:** `oracle-2026-08-17` → commit `4222a917` (the tip of `main` after PR #35)
 **Moved forward:** 2026-08-17, by the standing product owner under `PDR-0074` (decision
-record: `docs/product/decisions/0074-the-oracle-moves-forward-before-unit-3-because-the-matrix-is-blind-to-it.md`)
+record: `internal/docs/product/decisions/0074-the-oracle-moves-forward-before-unit-3-because-the-matrix-is-blind-to-it.md`)
 **History:** `oracle-2026-08-13` → `0e875d7a` (pinned 2026-08-13, `PDR-0030`; retained as a
 tag and as `.oracle/oracle-2026-08-13` — no longer the harness's default reference)
 **Stream:** WS-7 (`hamlet-e3af412673`)

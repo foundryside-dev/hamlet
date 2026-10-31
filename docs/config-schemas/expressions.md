@@ -24,6 +24,24 @@ The HAMLET Expression Language is a declarative, type-safe scripting language fo
 - **Action writes and transition rules**: each write's `expression` and `condition`
 - **Effects System**: Dynamic effect values (`value: "bar.health + (0.2 * intensity)"`)
 - **Item spawn predicates**: an appearance rule's `when:`
+
+**What each consumer's runtime carries**, which is what decides whether a context-bound
+function (the **Needs** column of the [Function Reference](#function-reference)) is admitted
+there; a call a consumer cannot serve refuses at compile, naming the consumer and the
+expression-variable route:
+
+| consumer | temporal history (`lag`, `delta`, ...) | positions (`distance_to_affordance`, `in_range`, `direction_to_affordance`) | random stream (`uniform`, `normal_dist`) |
+|---|---|---|---|
+| global / agent variable expression | yes | yes (agent-scope variables; a global expression has no agent axis) | yes, one draw per row |
+| action write, transition rule | no | no | yes, one draw per row |
+| effect or interaction pipeline | no | yes | yes, the world's stream |
+| item spawn predicate | no | no | no |
+
+Vector functions that return a scalar or bool (`distance`, `within_radius`, `gather`, ...)
+need nothing from the context and run everywhere a declared vector variable is readable.
+The route around a refusal is always the same: declare the quantity as a global or agent
+expression variable and read it by name (a random or position expression variable is
+stored, so a write reads the value the observation showed, never a fresh draw).
 - **Drive As Code (DAC)**: DAC does not parse expressions; it reads VFS variables, and a VFS
   variable may be an expression variable. Declare the quantity as a global or agent expression
   variable and name it in the drive (`extrinsic.type: vfs_variable` with `variable: x`, or
@@ -376,10 +394,15 @@ dtype, and a scalar-typed result keeps the `[batch]` axis of its per-agent input
 ## Function Reference
 
 <!-- BEGIN GENERATED: expression-functions (scripts/gen_expression_functions_doc.py) -->
-49 functions are registered. A scalar-typed result (`int`, `float`, `bool`) keeps the batch axis of its
+48 functions are registered. A scalar-typed result (`int`, `float`, `bool`) keeps the batch axis of its
 per-agent inputs; a vector-typed result (`vec2f`, `vec3f`, `vecNf`) keeps it in front of the vector axis. No function
 collapses the batch axis. A literal has no batch axis, so a result built only from literals is unbatched:
-`one_hot(2, 3)` is `[3]`, `one_hot(bar.slot, 3)` is `[batch, 3]`.
+`one_hot(2, 3)` is `[3]`, `one_hot(bar.slot, 3)` is `[batch, 3]` — except a random draw, which is one per row of
+its context even with literal arguments. The **Needs** column is the context a call needs; a consumer admits a
+call by it alone (every function whose needs the consumer's runtime does not carry refuses at compile, naming
+the consumer), and the VFS shape proof derives a call's row axis from the registry's shape rule, never from a
+hand-kept list: a position function is one row per agent, a draw is one per row of its context, every other
+function joins its arguments' axes.
 
 ### Math
 
@@ -430,14 +453,14 @@ Boolean combination and masked selection; `gather`/`scatter` index rows of a per
 
 ### Sampling
 
-Random draws take the shape of their first argument; noise fields are deterministic in their inputs.
+`uniform` and `normal_dist` draw once per row of the context they run in, each row from its own world's stream (S1): per world in a global expression or on a global rule target, per agent in an agent expression, an action write or on an agent target (the arguments are numbers). A literal-only call still draws once per row, never once for the batch. They run wherever the runtime carries a world stream: global and agent variable expressions, action writes, transition rules, effect and interaction pipelines; an item spawn predicate carries none and refuses. A random expression variable is stored, never inlined into a write (the write reads the draw the observation showed); see [variables.md](variables.md#random-draws). Noise fields are deterministic in their inputs.
 
 | Function | Returns | What it computes | Needs |
 |---|---|---|---|
-| `normal_dist([mean[, std]])` | float | Gaussian draw; one draw per element of `mean`, a single scalar draw with no arguments. | — |
+| `normal_dist([mean[, std]])` | float | Gaussian draw, one per row of the context, from the world's own stream. | a random stream on the context |
 | `perlin_noise(x[, y[, seed]])` | float | Deterministic 2-D Perlin gradient noise at `(x, y)`. | — |
 | `simplex_noise(x[, y[, seed]])` | float | Alias of `perlin_noise`: the same gradient-noise field, not a simplex lattice. | — |
-| `uniform([low[, high]])` | float | Uniform draw in `[low, high)` (`[0, 1)` with one or no arguments); one draw per element of `low`. | — |
+| `uniform([low[, high]])` | float | Uniform draw in `[low, high)` (`[0, 1)` with one or no arguments), one per row of the context, from the world's own stream. | a random stream on the context |
 
 ### Temporal
 
@@ -446,7 +469,6 @@ History operators (`lag`, `delta`, `moving_average`, `ema`, `rate_of_change`, `r
 | Function | Returns | What it computes | Needs |
 |---|---|---|---|
 | `delta(x)` | int when every argument is int, else float | `x - lag(x, 1)`. | temporal history on the context |
-| `elapsed_ticks([start[, now]])` | int | Ticks since `start` (clamped at 0); `now` defaults to the engine step, and with no arguments the step itself. | the engine step counter on the context |
 | `ema(x, alpha)` | float | `alpha · x + (1 − alpha) · ema` of the previous tick, `alpha` a literal in `(0, 1]`; the episode-start value seeds it. | temporal history on the context |
 | `falling_edge(flag)` | bool | `not flag and lag(flag, 1)`: true on the tick `flag` turns from true to false. | temporal history on the context |
 | `lag(x, n)` | int when every argument is int, else float | The value `x` held `n` ticks ago (`n` a literal, 1 to 256); before `n` ticks of the episode exist, the value `x` held when the episode began. | temporal history on the context |
@@ -459,7 +481,7 @@ History operators (`lag`, `delta`, `moving_average`, `ema`, `rate_of_change`, `r
 
 ### Spatial
 
-Vector variables only (`vec2i`, `vec3i`, `vec2f`, `vec3f`, `vecNi`, `vecNf`); the distance between two scalars is `abs(a - b)`. Both vectors must share a width: `vec2*` against `vec3*` is refused at compile time; a `vecN*` or `tensor2d` width is only known at run time, and a mismatch there raises an error naming the function. Int and float vectors mix freely and are measured in float.
+Vector variables only (`vec2i`, `vec3i`, `vec2f`, `vec3f`, `vecNi`, `vecNf`); the distance between two scalars is `abs(a - b)`. Both vectors must share a width: `vec2*` against `vec3*` is refused at compile time; a `vecN*` or `tensor2d` width is only known at run time, and a mismatch there raises an error naming the function. Int and float vectors mix freely and are measured in float. A scalar- or bool-returning vector function (`distance`, `manhattan_distance`, `within_radius`, `nearest`, `gather`) runs in every context, a variable expression included: its result has its arguments' row axis, and that is how a declared vector variable is read into a scalar or bool expression variable. A vector-returning function (`normalize`, `scatter`, `one_hot`, `direction_to_affordance`) fits no scalar or bool target.
 
 | Function | Returns | What it computes | Needs |
 |---|---|---|---|
@@ -471,7 +493,7 @@ Vector variables only (`vec2i`, `vec3i`, `vec2f`, `vec3f`, `vecNi`, `vecNf`); th
 
 ### Affordance
 
-Read the agent and affordance positions the engine threads into the context.
+Read the agent and affordance positions the engine threads into the context: one value per agent, so in a variable expression they belong to an `agent`-scope variable (a global expression has no agent axis and refuses, naming `scope: agent`). The environment lays out affordances and positions before the instant-0 evaluation at `reset()`, so `distance_to_affordance("EAT")` is live in the first observation. Served in global and agent variable expressions and in effect pipelines; a transition write or rule and a spawn predicate are handed no positions and refuse, naming the expression-variable route (declare the distance as an agent expression variable and read it by name).
 
 | Function | Returns | What it computes | Needs |
 |---|---|---|---|

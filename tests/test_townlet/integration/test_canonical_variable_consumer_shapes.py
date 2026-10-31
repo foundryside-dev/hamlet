@@ -52,6 +52,11 @@ def _declaration(scope: str, variable_type: str, initial: float | bool, expressi
         ("agent", "scalar", "count_where(bar.energy > 0.5, bar.health > 0.5)", 2.0),
         ("agent", "bool", "threshold(0.5, bar.energy, 0.9)", False),
         ("agent", "scalar", "where(bar.energy > 0.5, 1.0, 0.0)", 1.0),
+        # A stacked function joins a literal with a per-agent argument (the runtime broadcasts;
+        # the shape proof derives the join from the registry's shape rule, re-review A3).
+        ("agent", "scalar", "mean(bar.energy, 3.0)", 1.995),
+        ("agent", "scalar", "argmax(bar.energy, 3.0)", 1.0),
+        ("agent", "bool", "all(bar.energy > 0.5, true)", True),
     ],
 )
 def test_expression_functions_produce_declared_state_shape(
@@ -76,9 +81,6 @@ def test_expression_functions_produce_declared_state_shape(
         ("global", "scalar", "mean(bar.energy, bar.health)"),
         ("global", "scalar", "argmin(bar.energy, bar.health)"),
         ("agent", "scalar", "3.0"),
-        ("agent", "scalar", "mean(bar.energy, 3.0)"),
-        ("agent", "scalar", "argmax(bar.energy, 3.0)"),
-        ("agent", "bool", "all(bar.energy > 0.5, true)"),
     ],
 )
 def test_incompatible_function_shapes_refuse_before_execution(tmp_path: Path, scope: str, variable_type: str, expression: str) -> None:

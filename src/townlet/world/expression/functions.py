@@ -20,6 +20,12 @@ Vector widths: ``vec2*`` and ``vec3*`` carry their width in the type, so a pair 
 mismatched widths is refused at type check; ``vecN*`` and ``tensor2d`` do not, so their
 widths are checked when the function runs and a mismatch raises a ``ValueError`` naming
 the function.
+
+Row shape: every spec declares ``shape``, the rule the VFS shape proof
+(``townlet.vfs.profiles.VFSProfileCompiler``) derives a call's leading registry axes by,
+and ``requires``, the context a call needs (history, positions, a random stream). A
+consumer admits a call by ``requires`` alone (``unserved_requirement``), and proves its
+axes by ``shape`` alone; there is no hand-kept list of admitted functions anywhere.
 """
 
 from __future__ import annotations
@@ -57,8 +63,23 @@ FAMILY_ORDER: tuple[str, ...] = (
 )
 
 REQUIRES_HISTORY = "temporal history on the context"
-REQUIRES_STEP = "the engine step counter on the context"
 REQUIRES_POSITIONS = "agent and affordance positions on the context"
+REQUIRES_RANDOM = "a random stream on the context"
+
+SHAPE_POINTWISE = "pointwise"
+"""The result has the join of its arguments' leading axes: a literal joins with anything,
+a per-agent argument makes the result per agent, and two distinct axes refuse. Every
+function that computes from its arguments alone, history operators included (their
+other arguments are literals)."""
+SHAPE_AGENT_ROWS = "agent rows"
+"""One row per agent whatever the arguments: the functions that read the agent positions
+the context carries. In a global expression (no agent axis) such a call refuses."""
+SHAPE_DRAW = "draw"
+"""One independent draw per row: the join of the arguments' axes with the row axis of the
+context the call runs in (per world in a global expression or on a global target, per
+agent in an agent expression, an action write or on an agent target), so a literal-only
+call still draws once per row, never once for the whole batch."""
+SHAPES = frozenset({SHAPE_POINTWISE, SHAPE_AGENT_ROWS, SHAPE_DRAW})
 
 
 @dataclass(frozen=True)
@@ -71,6 +92,7 @@ class FunctionSpec:
     returns: str
     family: str
     requires: tuple[str, ...]
+    shape: str
     min_args: int
     max_args: int | None
     return_type: Callable[[list[str]], str]
@@ -597,22 +619,48 @@ def _eval_normalize(args: list[Any], context: ExecutionContext, arg_nodes: list[
     return vector / norm
 
 
+def _draw(name: str, sampler: Callable[..., torch.Tensor], like: torch.Tensor, context: ExecutionContext) -> torch.Tensor:
+    """One independent draw per row, shaped like ``like`` (``SHAPE_DRAW``).
+
+    A VFS context (a profile expression, an action write, a transition rule) carries one
+    generator per world, ``context.world_rngs``: world ``w``'s draws come from its own
+    stream only, so they depend neither on the batch size nor on any other world (S1),
+    and a literal argument still draws once per row. A command pipeline is bound to one
+    world and carries that world's generator as ``context.rng``; a context bound to no
+    world carries neither and draws from torch's global stream, which only direct engine
+    or test callers build.
+    """
+    if context.world_rngs is not None:
+        rows = len(context.world_rngs)
+        if like.dim() == 0:
+            tail: tuple[int, ...] = ()
+        elif int(like.shape[0]) == rows:
+            tail = tuple(like.shape[1:])
+        else:
+            raise RuntimeError(
+                f"Engine defect: function '{name}' draws one value per world ({rows} worlds) but its argument has "
+                f"shape {tuple(like.shape)}; the compiled shape proof admits no such argument"
+            )
+        return torch.stack([sampler(tail, device=like.device, generator=generator) for generator in context.world_rngs])
+    return sampler(like.shape, device=like.device, generator=context.rng)
+
+
 def _eval_normal_dist(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
     if not args:
-        return torch.randn((), device=context.device, generator=context.rng)
+        return _draw("normal_dist", torch.randn, torch.zeros((), device=context.device), context)
     mean = cast(torch.Tensor, args[0]).to(dtype=torch.float32)
     std = cast(torch.Tensor, args[1]).to(device=mean.device, dtype=torch.float32) if len(args) > 1 else 1.0
-    return torch.randn(mean.shape, device=mean.device, generator=context.rng) * std + mean
+    return _draw("normal_dist", torch.randn, mean, context) * std + mean
 
 
 def _eval_uniform(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
     if not args:
-        return torch.rand((), device=context.device, generator=context.rng)
+        return _draw("uniform", torch.rand, torch.zeros((), device=context.device), context)
     low = cast(torch.Tensor, args[0]).to(dtype=torch.float32)
     if len(args) == 1:
-        return torch.rand(low.shape, device=low.device, generator=context.rng)
+        return _draw("uniform", torch.rand, low, context)
     high = cast(torch.Tensor, args[1]).to(device=low.device, dtype=torch.float32)
-    return torch.rand(low.shape, device=low.device, generator=context.rng) * (high - low) + low
+    return _draw("uniform", torch.rand, low, context) * (high - low) + low
 
 
 def _eval_perlin_noise(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
@@ -654,29 +702,6 @@ def _eval_phase_sin(args: list[Any], context: ExecutionContext, arg_nodes: list[
 
 def _eval_phase_cos(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
     return torch.cos(_phase_radians(args[0], args[1], "phase_cos"))
-
-
-def _validate_elapsed_ticks_args(args: list[str]) -> None:
-    _ensure_arg_count("elapsed_ticks", args, 0, 2)
-    if args:
-        _ensure_all_numeric("elapsed_ticks", args)
-
-
-def _eval_elapsed_ticks(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
-    if not args:
-        if context.step is None:
-            raise RuntimeError("Function 'elapsed_ticks' requires context.step when called without arguments")
-        return torch.tensor(context.step, device=context.device, dtype=torch.long)
-
-    start = args[0]
-    if len(args) == 1:
-        if context.step is None:
-            raise RuntimeError("Function 'elapsed_ticks' requires context.step or an explicit current tick")
-        current = torch.full(start.shape, context.step, device=start.device, dtype=start.dtype)
-    else:
-        current = args[1].to(device=start.device, dtype=start.dtype)
-
-    return torch.clamp(current - start, min=0).to(dtype=torch.long)
 
 
 def _eval_lag(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
@@ -793,6 +818,8 @@ def _register(spec: FunctionSpec) -> None:
         raise ValueError(f"Expression function '{spec.name}' registered twice")
     if spec.family not in FAMILY_ORDER:
         raise ValueError(f"Expression function '{spec.name}' names unknown family {spec.family!r}")
+    if spec.shape not in SHAPES:
+        raise ValueError(f"Expression function '{spec.name}' names unknown shape rule {spec.shape!r}")
     FUNCTION_SPECS[spec.name] = spec
 
 
@@ -815,6 +842,7 @@ def _numeric_spec(
         returns=returns,
         family=family,
         requires=(),
+        shape=SHAPE_POINTWISE,
         min_args=arity,
         max_args=arity,
         return_type=return_type,
@@ -844,6 +872,7 @@ def _variadic_spec(
         returns=returns,
         family=family,
         requires=(),
+        shape=SHAPE_POINTWISE,
         min_args=1,
         max_args=None,
         return_type=return_type,
@@ -1107,6 +1136,7 @@ _register(
         returns="the branch type (numeric branches promote; a reference and an int give the reference)",
         family=FAMILY_LOGIC,
         requires=(),
+        shape=SHAPE_POINTWISE,
         min_args=3,
         max_args=3,
         return_type=_return_where,
@@ -1126,6 +1156,7 @@ _register(
         returns="the numeric type of `value` and `delta` (promoted)",
         family=FAMILY_LOGIC,
         requires=(),
+        shape=SHAPE_POINTWISE,
         min_args=3,
         max_args=3,
         return_type=_return_masked_numeric,
@@ -1145,6 +1176,7 @@ _register(
         returns="the type of `value` (numeric pairs promote)",
         family=FAMILY_LOGIC,
         requires=(),
+        shape=SHAPE_POINTWISE,
         min_args=3,
         max_args=3,
         return_type=_return_masked_numeric,
@@ -1164,6 +1196,7 @@ _register(
         returns="the element type of `values` (int for vec2i/vec3i/vecNi, else float)",
         family=FAMILY_LOGIC,
         requires=(),
+        shape=SHAPE_POINTWISE,
         min_args=2,
         max_args=2,
         return_type=_return_element,
@@ -1183,6 +1216,7 @@ _register(
         returns="the type of `base`",
         family=FAMILY_LOGIC,
         requires=(),
+        shape=SHAPE_POINTWISE,
         min_args=3,
         max_args=3,
         return_type=_return_first,
@@ -1203,6 +1237,7 @@ _register(
         returns="vecNf of width `classes`",
         family=FAMILY_LOGIC,
         requires=(),
+        shape=SHAPE_POINTWISE,
         min_args=2,
         max_args=2,
         return_type=_return_vecnf,
@@ -1220,10 +1255,11 @@ _register(
     FunctionSpec(
         name="normal_dist",
         signature="normal_dist([mean[, std]])",
-        summary="Gaussian draw; one draw per element of `mean`, a single scalar draw with no arguments.",
+        summary="Gaussian draw, one per row of the context, from the world's own stream.",
         returns="float",
         family=FAMILY_SAMPLING,
-        requires=(),
+        requires=(REQUIRES_RANDOM,),
+        shape=SHAPE_DRAW,
         min_args=0,
         max_args=2,
         return_type=_return_float,
@@ -1237,10 +1273,13 @@ _register(
     FunctionSpec(
         name="uniform",
         signature="uniform([low[, high]])",
-        summary="Uniform draw in `[low, high)` (`[0, 1)` with one or no arguments); one draw per element of `low`.",
+        summary=(
+            "Uniform draw in `[low, high)` (`[0, 1)` with one or no arguments), one per row of the context, from the " "world's own stream."
+        ),
         returns="float",
         family=FAMILY_SAMPLING,
-        requires=(),
+        requires=(REQUIRES_RANDOM,),
+        shape=SHAPE_DRAW,
         min_args=0,
         max_args=2,
         return_type=_return_float,
@@ -1258,6 +1297,7 @@ _register(
         returns="float",
         family=FAMILY_SAMPLING,
         requires=(),
+        shape=SHAPE_POINTWISE,
         min_args=1,
         max_args=3,
         return_type=_return_float,
@@ -1275,6 +1315,7 @@ _register(
         returns="float",
         family=FAMILY_SAMPLING,
         requires=(),
+        shape=SHAPE_POINTWISE,
         min_args=1,
         max_args=3,
         return_type=_return_float,
@@ -1324,21 +1365,6 @@ _register(
 )
 _register(
     FunctionSpec(
-        name="elapsed_ticks",
-        signature="elapsed_ticks([start[, now]])",
-        summary="Ticks since `start` (clamped at 0); `now` defaults to the engine step, and with no arguments the step itself.",
-        returns="int",
-        family=FAMILY_TEMPORAL,
-        requires=(REQUIRES_STEP,),
-        min_args=0,
-        max_args=2,
-        return_type=_return_int,
-        validate_args=_validate_elapsed_ticks_args,
-        eval_fn=_eval_elapsed_ticks,
-    )
-)
-_register(
-    FunctionSpec(
         name="lag",
         signature="lag(x, n)",
         summary=(
@@ -1348,6 +1374,7 @@ _register(
         returns=NUMERIC_RETURNS,
         family=FAMILY_TEMPORAL,
         requires=(REQUIRES_HISTORY,),
+        shape=SHAPE_POINTWISE,
         min_args=2,
         max_args=2,
         return_type=_return_numeric,
@@ -1365,6 +1392,7 @@ _register(
         returns=NUMERIC_RETURNS,
         family=FAMILY_TEMPORAL,
         requires=(REQUIRES_HISTORY,),
+        shape=SHAPE_POINTWISE,
         min_args=1,
         max_args=1,
         return_type=_return_numeric,
@@ -1382,6 +1410,7 @@ _register(
         returns="float",
         family=FAMILY_TEMPORAL,
         requires=(REQUIRES_HISTORY,),
+        shape=SHAPE_POINTWISE,
         min_args=2,
         max_args=2,
         return_type=_return_float,
@@ -1401,6 +1430,7 @@ _register(
         returns="float",
         family=FAMILY_TEMPORAL,
         requires=(REQUIRES_HISTORY,),
+        shape=SHAPE_POINTWISE,
         min_args=2,
         max_args=2,
         return_type=_return_float,
@@ -1420,6 +1450,7 @@ _register(
         returns="float",
         family=FAMILY_TEMPORAL,
         requires=(REQUIRES_HISTORY,),
+        shape=SHAPE_POINTWISE,
         min_args=2,
         max_args=2,
         return_type=_return_float,
@@ -1439,6 +1470,7 @@ _register(
         returns="bool",
         family=FAMILY_TEMPORAL,
         requires=(REQUIRES_HISTORY,),
+        shape=SHAPE_POINTWISE,
         min_args=1,
         max_args=1,
         return_type=_return_bool,
@@ -1456,6 +1488,7 @@ _register(
         returns="bool",
         family=FAMILY_TEMPORAL,
         requires=(REQUIRES_HISTORY,),
+        shape=SHAPE_POINTWISE,
         min_args=1,
         max_args=1,
         return_type=_return_bool,
@@ -1475,6 +1508,7 @@ _register(
         returns="float",
         family=FAMILY_SPATIAL,
         requires=(),
+        shape=SHAPE_POINTWISE,
         min_args=2,
         max_args=3,
         return_type=_return_float,
@@ -1496,6 +1530,7 @@ _register(
         returns="float",
         family=FAMILY_SPATIAL,
         requires=(),
+        shape=SHAPE_POINTWISE,
         min_args=2,
         max_args=2,
         return_type=_return_float,
@@ -1516,6 +1551,7 @@ _register(
         returns="bool",
         family=FAMILY_SPATIAL,
         requires=(),
+        shape=SHAPE_POINTWISE,
         min_args=3,
         max_args=4,
         return_type=_return_bool,
@@ -1538,6 +1574,7 @@ _register(
         returns="int",
         family=FAMILY_SPATIAL,
         requires=(),
+        shape=SHAPE_POINTWISE,
         min_args=2,
         max_args=3,
         return_type=_return_int,
@@ -1559,6 +1596,7 @@ _register(
         returns="the float vector type of `v`'s width (vec2f, vec3f or vecNf)",
         family=FAMILY_SPATIAL,
         requires=(),
+        shape=SHAPE_POINTWISE,
         min_args=1,
         max_args=1,
         return_type=_return_float_vector,
@@ -1579,6 +1617,7 @@ _register(
         returns="float",
         family=FAMILY_AFFORDANCE,
         requires=(REQUIRES_POSITIONS,),
+        shape=SHAPE_AGENT_ROWS,
         min_args=1,
         max_args=2,
         return_type=_return_float,
@@ -1598,6 +1637,7 @@ _register(
         returns="bool",
         family=FAMILY_AFFORDANCE,
         requires=(REQUIRES_POSITIONS,),
+        shape=SHAPE_AGENT_ROWS,
         min_args=2,
         max_args=3,
         return_type=_return_bool,
@@ -1618,6 +1658,7 @@ _register(
         returns="vecNf of the substrate's position width",
         family=FAMILY_AFFORDANCE,
         requires=(REQUIRES_POSITIONS,),
+        shape=SHAPE_AGENT_ROWS,
         min_args=1,
         max_args=2,
         return_type=_return_vecnf,
@@ -1643,8 +1684,9 @@ def unserved_requirement(node: ASTNode, carried: frozenset[str]) -> str | None:
     """The first function ``node`` calls whose context requirement ``carried`` lacks, described; None if all are served.
 
     The one predicate every consumer refuses context-bound functions by: a profile
-    expression carries history, step and positions; an effect pipeline carries
-    positions; a transition write and a spawn predicate carry none.
+    expression carries history, positions and a random stream; a transition write or
+    rule carries a random stream; an effect or interaction pipeline carries positions and
+    a random stream; a spawn predicate carries none (``townlet.vfs.namespace``).
     """
     from dataclasses import fields
 

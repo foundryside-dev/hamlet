@@ -58,6 +58,8 @@ class VTCTransitionContext:
     bars_state: Mapping[str, torch.Tensor]
     active_mask: torch.Tensor
     device: torch.device
+    # One generator per world (S1): the streams a sampling call in a write or rule draws from.
+    world_rngs: Sequence[torch.Generator]
     actions: torch.Tensor | None = None
     dones: torch.Tensor | None = None
     depletion_multiplier: float = 1.0
@@ -130,6 +132,7 @@ class VTCTransitionRunner:
             bars_state=bars_state,
             active_mask=context.active_mask,
             device=context.device,
+            world_rngs=context.world_rngs,
         )
         next_vfs, next_bars = _split_vfs_and_bars(updated.values, vfs_state.keys(), bars_state.keys())
         return next_vfs, next_bars, updated.attempted_targets.intersection(vfs_state)
@@ -179,6 +182,7 @@ class VTCTransitionRunner:
             vfs_state=vfs_state,
             active_mask=context.active_mask,
             device=context.device,
+            world_rngs=context.world_rngs,
             bars_state=bars_state,
         )
         # A rule on a meter commits through bars_state, as an action write's does; only

@@ -15,7 +15,7 @@ from townlet.vfs.namespace import AGENT_EXPRESSION, ENGINE_TICK, GLOBAL_EXPRESSI
 from townlet.vfs.schema import NormalizationSpec, VariableScope
 from townlet.world.expression import ASTNode, ExpressionParser, PathAccess, Variable
 from townlet.world.expression.ast_nodes import BinaryOp, Constant, FunctionCall, IfThenElse, UnaryOp
-from townlet.world.expression.functions import TEMPORAL_FUNCTIONS
+from townlet.world.expression.functions import FUNCTION_SPECS, SHAPE_AGENT_ROWS, SHAPE_DRAW, SHAPE_POINTWISE
 from townlet.world.expression.type_checker import TypeChecker, TypeCheckError
 
 __all__ = [
@@ -306,7 +306,7 @@ class VFSProfileCompiler:
         )
         context = AGENT_EXPRESSION if scope == VariableScope.AGENT else GLOBAL_EXPRESSION
         schema = namespace.schema(context)
-        shapes = namespace.shapes(context, payload_for_vectors=True)
+        shapes = namespace.shapes(context)
         compiled_vars = []
 
         # The reverse direction is scope widening: a global expression has no agent axis
@@ -351,112 +351,118 @@ class VFSProfileCompiler:
         compiled = self.compile_variable(var, schema)
         if compiled.ast is not None:
             if var.type not in {"scalar", "bool"}:
-                raise TypeCheckError(f"Variable '{var.id}' expression shape supports scalar and bool outputs only")
+                raise TypeCheckError(
+                    f"Variable '{var.id}' declares type '{var.type}' with an expression, but an expression variable is "
+                    "scalar or bool: a vector or tensor variable takes initial_value / initial_value_mode and is written "
+                    "by action writes, rules or effects. Read a vector through a function that consumes it "
+                    "(distance, within_radius, gather) in a scalar or bool expression variable."
+                )
             try:
                 expression_history(compiled.ast)
             except TypeCheckError as exc:
                 raise TypeCheckError(f"Variable '{var.id}' expression '{var.expression}': {exc}") from exc
-            output_shape = self._shape(compiled.ast, shapes, temporal=True)
             expected_shape = "agent" if var.scope == VariableScope.AGENT else "scalar"
+            try:
+                output_shape = self._shape(compiled.ast, shapes, draw_axis=expected_shape)
+            except TypeCheckError as exc:
+                raise TypeCheckError(f"Variable '{var.id}' expression '{var.expression}': {exc}") from exc
             if output_shape != expected_shape:
-                raise TypeCheckError(
-                    f"Variable '{var.id}' expression shape is {output_shape}, expected {expected_shape} for {var.scope} scope"
-                )
+                raise TypeCheckError(self._scope_shape_refusal(var, output_shape))
         return compiled
+
+    @staticmethod
+    def _scope_shape_refusal(var: VariableDeclaration, output_shape: str) -> str:
+        """Why an expression's row shape does not fit its declared scope, and what to declare instead."""
+        if var.scope == VariableScope.AGENT:
+            return (
+                f"Variable '{var.id}' is agent-scope but its expression '{var.expression}' reads no per-agent state: "
+                f"its shape is {output_shape}, one value per world. Declare '{var.id}' with scope: global, or read "
+                "agent state (an agent variable, a meter 'bar.<m>', a position function) so it varies per agent."
+            )
+        return (
+            f"Variable '{var.id}' is global-scope but its expression '{var.expression}' is {output_shape}-shaped, "
+            f"one value per agent (it reads agent state or calls a position function). Declare '{var.id}' with "
+            "scope: agent, or read global state only."
+        )
 
     @classmethod
     def expression_shape(cls, node: ASTNode, shapes: dict[str, str]) -> str:
-        """Prove the output shape of an expression that keeps no history (a write, a rule).
+        """Prove the output shape of an action write's or transition rule's expression.
 
-        Temporal operators refuse here: only global and agent variable expressions keep
-        the history rings they read (``compile_profile``).
+        A draw there is one per world row (``draw_axis`` ``scalar``), which every target
+        scope admits: per agent on an agent target (S1: one agent per world), spread along
+        the affordance rows of an affordance target.
         """
-        return cls._shape(node, shapes, temporal=False)
+        return cls._shape(node, shapes, draw_axis="scalar")
 
     @classmethod
-    def _shape(cls, node: ASTNode, shapes: dict[str, str], *, temporal: bool) -> str:
-        """Prove the currently supported scalar/batch output shape without runtime sampling.
+    def _shape(cls, node: ASTNode, shapes: dict[str, str], *, draw_axis: str) -> str:
+        """Prove the leading registry axes of an expression's value without evaluating it.
 
-        Batch size remains symbolic: a one-agent execution cannot establish global
-        versus per-agent compatibility. Unqualified shape-changing functions refuse.
+        A shape names the leading registry axes of a value: ``scalar`` (one value per
+        world, no further axis), ``agent`` (one row per agent) or ``affordance`` (one row
+        per affordance). ``scalar`` joins with anything; two distinct axes refuse, because
+        the evaluator aligns trailing dimensions and would combine them by coincidence
+        of extents. Batch size stays symbolic throughout.
 
-        A shape names the leading registry axes of a value: ``scalar`` (no axis),
-        ``agent`` (one row per agent), ``affordance`` (one row per affordance) or
-        ``payload`` (a vector/tensor value, refused). ``scalar`` joins with anything;
-        two distinct axes refuse, because the evaluator aligns trailing dimensions and
-        would combine them by coincidence of extents.
-        A temporal operator (admitted when ``temporal``) is pointwise in time: its result
-        has its first argument's shape, and its other arguments are literals
-        (``vfs.history.expression_history`` proves that before this runs).
+        A call's shape comes from its registry spec (``FunctionSpec.shape``), never from
+        a list kept here: ``SHAPE_POINTWISE`` joins the arguments' axes (a vector
+        argument contributes its scope's axis; the payload is the type checker's);
+        ``SHAPE_AGENT_ROWS`` is one row per agent; ``SHAPE_DRAW`` joins the arguments'
+        axes with ``draw_axis``, the row axis of the context the expression runs in, so
+        a literal-only draw is still one draw per row. Whether a context carries what a
+        call needs (history, positions, a random stream) is ``Namespace.refusals``'s
+        question, answered before this runs.
         """
         if isinstance(node, Constant):
             return "scalar"
         if isinstance(node, Variable):
             if node.name not in shapes:
-                raise TypeCheckError(f"Variable '{node.name}' has no qualified expression shape")
+                raise TypeCheckError(
+                    f"'{node.name}' is no variable, meter or engine name this context reads; declare it in the pack's "
+                    "variables declaration, or spell a meter 'bar.<name>'"
+                )
             return shapes[node.name]
         if isinstance(node, PathAccess):
             path = ".".join(node.segments)
             if path not in shapes:
-                raise TypeCheckError(f"Expression path '{path}' has no qualified variable output shape")
+                raise TypeCheckError(f"'{path}' is no meter or item state this context reads; a meter is 'bar.<name>'")
             return shapes[path]
         if isinstance(node, UnaryOp):
-            return cls._shape(node.operand, shapes, temporal=temporal)
-        if isinstance(node, FunctionCall) and node.function_name in TEMPORAL_FUNCTIONS:
-            if not temporal:
-                raise TypeCheckError(
-                    f"Expression function '{node.function_name}' reads temporal history, which only global and agent "
-                    "variable expressions keep. Declare a variable with that expression and read the variable here."
-                )
-            shape = cls._shape(node.arguments[0], shapes, temporal=temporal)
-            if shape == "payload":
-                raise TypeCheckError(f"Expression function '{node.function_name}' reads scalar or bool history only, not a vector/tensor")
-            return shape
+            return cls._shape(node.operand, shapes, draw_axis=draw_axis)
         if isinstance(node, BinaryOp):
-            operands = [node.left, node.right]
-        elif isinstance(node, IfThenElse):
-            operands = [node.condition, node.true_branch, node.false_branch]
-        elif isinstance(node, FunctionCall):
-            pointwise = {
-                "max",
-                "min",
-                "abs",
-                "clamp",
-                "clamp01",
-                "sigmoid",
-                "tanh",
-                "smoothstep",
-                "threshold",
-                "where",
-                "time_in_window",
-                "phase_sin",
-                "phase_cos",
-                "masked_add",
-                "masked_set",
-                "perlin_noise",
-                "simplex_noise",
-            }
-            stacked = {"mean", "variance", "sum", "product", "min_all", "max_all", "count_where", "argmin", "argmax", "all", "any"}
-            if node.function_name not in pointwise | stacked:
-                raise TypeCheckError(f"Expression function '{node.function_name}' has no qualified variable output shape")
-            operands = list(node.arguments)
-            if node.function_name in stacked:
-                argument_shapes = {cls._shape(argument, shapes, temporal=temporal) for argument in operands}
-                if len(argument_shapes) != 1:
-                    raise TypeCheckError(f"Expression function '{node.function_name}' requires equal argument shapes")
-        else:
-            raise TypeCheckError(f"Expression node '{type(node).__name__}' has no qualified variable output shape")
-        operand_shapes = {cls._shape(operand, shapes, temporal=temporal) for operand in operands}
-        if "payload" in operand_shapes:
-            raise TypeCheckError("Expression shape with vector/tensor payloads is not supported")
-        axes = operand_shapes - {"scalar"}
+            return cls._join([node.left, node.right], shapes, draw_axis, extra=None)
+        if isinstance(node, IfThenElse):
+            return cls._join([node.condition, node.true_branch, node.false_branch], shapes, draw_axis, extra=None)
+        if isinstance(node, FunctionCall):
+            spec = FUNCTION_SPECS.get(node.function_name)
+            if spec is None:
+                raise TypeCheckError(f"'{node.function_name}' is not a registered expression function")
+            if spec.shape == SHAPE_POINTWISE:
+                return cls._join(list(node.arguments), shapes, draw_axis, extra=None)
+            if spec.shape == SHAPE_AGENT_ROWS:
+                return cls._join(list(node.arguments), shapes, draw_axis, extra="agent")
+            assert spec.shape == SHAPE_DRAW, spec
+            return cls._join(list(node.arguments), shapes, draw_axis, extra=draw_axis)
+        raise TypeCheckError(
+            f"a {type(node).__name__} has no row shape in a variable expression, action write or transition rule; "
+            "read one element of a vector with gather(vector, index)"
+        )
+
+    @classmethod
+    def _join(cls, operands: Sequence[ASTNode], shapes: dict[str, str], draw_axis: str, *, extra: str | None) -> str:
+        """The one axis ``operands`` (and ``extra``) share, ``scalar`` joining with anything."""
+        axes = {cls._shape(operand, shapes, draw_axis=draw_axis) for operand in operands}
+        if extra is not None:
+            axes.add(extra)
+        axes.discard("scalar")
         if not axes:
             return "scalar"
         if len(axes) == 1:
             (axis,) = axes
             return axis
         raise TypeCheckError(
-            f"Expression combines values of different shapes {sorted(axes)}; their axes do not align, so the result "
+            f"it combines values of different shapes {sorted(axes)}; their axes do not align, so the result "
             "would depend on coincidences of extent"
         )
 

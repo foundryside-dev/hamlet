@@ -2,15 +2,20 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
+
 import torch
 
 from townlet.vfs.profiles import CompiledGlobalProfile
 from townlet.vfs.storage_dtype import storage_dtype, to_storage_dtype
 from townlet.world.expression.context import ExecutionContext
 from townlet.world.expression.evaluator import Evaluator
+from townlet.world.expression.functions import REQUIRES_HISTORY, REQUIRES_POSITIONS, unserved_requirement
 from townlet.world.expression.history import TemporalHistory
 
 __all__ = ["VFSEvaluator"]
+
+_SERVED_WITHOUT_STREAMS = frozenset({REQUIRES_HISTORY, REQUIRES_POSITIONS})
 
 
 class VFSEvaluator:
@@ -69,9 +74,9 @@ class VFSEvaluator:
         vfs_state: dict[str, torch.Tensor],
         marks: set[str],
         device: torch.device = torch.device("cpu"),
-        step: int | None = None,
         agent_positions: torch.Tensor | None = None,
         affordance_positions: dict[str, torch.Tensor] | None = None,
+        world_rngs: Sequence[torch.Generator] | None = None,
     ) -> dict[str, torch.Tensor]:
         """Evaluate global VFS profile expressions.
 
@@ -81,6 +86,11 @@ class VFSEvaluator:
             vfs_state: Current VFS state (inputs for expressions)
             marks: Variable names to evaluate, plus their in-profile dependencies
             device: PyTorch device
+            agent_positions: ``[worlds, D]`` agent positions, for the position functions
+            affordance_positions: deployed affordance positions by name, likewise
+            world_rngs: one generator per world (S1), the streams a sampling call draws
+                from, one draw per row. None only when no evaluated expression samples:
+                a draw never falls through to torch's global stream.
 
         Returns:
             Dict mapping variable names to evaluated tensors
@@ -104,6 +114,13 @@ class VFSEvaluator:
 
         if self._history is not None and not self._history.seeded:
             raise RuntimeError("Engine defect: a profile with history evaluated outside begin_instant/commit_instant")
+        if world_rngs is None:
+            for var in profile.variables:
+                if var.name in vars_to_eval and var.ast is not None and unserved_requirement(var.ast, _SERVED_WITHOUT_STREAMS) is not None:
+                    raise RuntimeError(
+                        f"Engine defect: expression variable '{var.name}' samples, but the profile was evaluated "
+                        "without the world random streams (world_rngs)"
+                    )
 
         # Build execution context
         context = ExecutionContext(
@@ -114,7 +131,7 @@ class VFSEvaluator:
             agent_positions=agent_positions,
             device=device,
             history=self._history,
-            step=step,
+            world_rngs=world_rngs,
         )
 
         evaluator = Evaluator(context)

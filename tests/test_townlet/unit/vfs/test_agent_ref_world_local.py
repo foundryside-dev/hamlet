@@ -176,6 +176,7 @@ def test_agent_id_and_null_are_the_agent_ref_writes() -> None:
         bars_state={},
         active_mask=torch.ones(3, dtype=torch.bool),
         device=torch.device("cpu"),
+        world_rngs=None,
     ).values
     assert values["buddy"].tolist() == [0, -1, 2]
     compile_vtc_action_writes([_ref_write("-1")], _REF_TARGETS)

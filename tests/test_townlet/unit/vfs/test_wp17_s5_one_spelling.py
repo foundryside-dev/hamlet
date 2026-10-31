@@ -643,7 +643,7 @@ def test_history_operators_are_one_predicate_on_function_specs() -> None:
     assert not hasattr(history, "TEMPORAL_FUNCTIONS")
 
 
-@pytest.mark.parametrize("call", ["lag(a, 1)", "elapsed_ticks()"])
+@pytest.mark.parametrize("call", ["lag(a, 1)", "delta(a)"])
 def test_effects_refuse_context_bound_functions_by_the_same_predicate(call: str) -> None:
     compiler = command_compiler({"a": "float"})
     with pytest.raises(TypeCheckError, match="does not carry"):

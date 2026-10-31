@@ -160,7 +160,7 @@ def test_in_range_evaluates_in_an_effect(tmp_path: Path) -> None:
 # -- probe_d.py Z: temporal history refuses at compile ------------------------------------
 
 
-@pytest.mark.parametrize("expression", ["bar.health - 0.1 * lag(bar.energy, 1)", "bar.health - 0.001 * elapsed_ticks()"])
+@pytest.mark.parametrize("expression", ["bar.health - 0.1 * lag(bar.energy, 1)", "bar.health - 0.001 * delta(bar.energy)"])
 def test_history_functions_refuse_at_compile_in_an_effect(tmp_path: Path, expression: str) -> None:
     pack = _pack(tmp_path, _effect("hist", scope="agent", on_tick=[{"modify": "bar.health", "value": expression}]))
 

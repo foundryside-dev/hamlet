@@ -238,8 +238,41 @@ doc examples shipped as crashes.
 | Step | State at the time of writing |
 |---|---|
 | R1 + R2 committed (`39825727`) | ✅ full suite green |
-| **Verifier of `39825727`** (worktree) | ⏳ running; record goes to `verify_R12/RESULTS.md` (to be copied here) |
-| **R3 expressions** (main tree, uncommitted) | ⏳ running (detail below) |
+| **Verifier of `39825727`** | ✅ done; record in `rereview-2026-10-31/verify_R12/RESULTS.md`. **4 defects, repair pass pending** (below) |
+| **R3 expressions** | ⚠ committed **before its full-suite gate finished**, so a cloud docs session gets the latest code. Lint, mypy and the doc check were clean at commit; confirm the full suite at the next commit |
+
+**R1+R2 verifier defects (repair pass pending, after R3 lands):**
+- **D1, P1: keyword prefixes misparse.** The parser matches `not`, `true` and `false` with
+  `Literal`, not `Keyword` (`world/expression/parser.py:61-62`, plus the unary `not`).
+  - Effect: an id `notable` parses as `not able` and silently reads the wrong value, and
+    `true_count` is accepted and then fails at first use.
+  - Fix: use `Keyword` for those tokens. Don't refuse keyword prefixes in `is_identifier`, since
+    `order` is legal.
+- **D2, P2: placement silently falls back to declared positions.**
+  `vectorized_env.py:1630-1650` switches randomization off and uses declared positions when
+  affordances + `num_agents` exceed capacity. It counts every world's agent on one grid, a
+  pre-S1 assumption.
+  - Effect: off-grid positions are used, and shipped `static_epistemic_access` crashes at
+    `num_agents=61`.
+  - Fix: delete the fallback, and check capacity at compile as affordances + 1 agent per world.
+    R1's randomize-conditional position check is then correct.
+- **D3, P2: a meter rule can leave a meter out of bounds.** A meter rule before
+  `clamp_and_validate` leaves an out-of-bounds meter for the rest of the tick, and cascades
+  read it raw.
+  - Fix: clamp `bar.` rule targets to the meter's declared bounds at commit, as depletion and
+    cascades do.
+- **D4, P2: one substrate refusal is still unlocated.** `interaction_radius` larger than the
+  bounds raises a bare ValueError from `substrate/continuous.py:79` (and `continuousnd.py:99`),
+  via stage 3's `SubstrateFactory.build`.
+  - Fix: move it into the stratum DTO validator.
+- **P3s:**
+  - the stratum DTO says ranks 4–100, but the token spec caps at `MAX_POSITION_RANK=8`;
+  - `DAC-REF-001` and `CLOCK_REFERENCE` locations moved one line up;
+  - `effects_hash` moves when a fragment moves to an earlier-sorting file, and on `1.0` vs `1`;
+  - `checkpoint_utils.py:473-476` docstring counts are stale;
+  - action writes commit before rules within a phase, which is undocumented;
+  - leftover doc nits: `variables.md:370`, `expressions.md:585/785/980`, VFS.md illustrative
+    names.
 | R3 verifier | ⏭ after R3 commits; must include a world-0 differential with random expressions |
 | Repairs for either verifier | ⏭ as needed |
 | **Green call** | ⏭ resume each lens on the final SHA: rerun its own NEW-findings probes (`rereview-2026-10-31/<lens>/probes/`), report which still fail, flag anything new. The compiler lens's full gate is the one gate to rerun |

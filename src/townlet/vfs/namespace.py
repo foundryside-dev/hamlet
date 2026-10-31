@@ -29,7 +29,7 @@ from typing import Any, Protocol
 
 from townlet.vfs.schema import VariableScope
 from townlet.world.expression.ast_nodes import ASTNode, PathAccess, Variable, read_paths
-from townlet.world.expression.functions import REQUIRES_HISTORY, REQUIRES_POSITIONS, REQUIRES_STEP, unserved_requirement
+from townlet.world.expression.functions import REQUIRES_HISTORY, REQUIRES_POSITIONS, REQUIRES_RANDOM, unserved_requirement
 from townlet.world.expression.references import (
     EFFECT_LOCALS,
     ENGINE_AGENT_ID,
@@ -171,7 +171,10 @@ class ReadContext:
         return replace(self, item=item)
 
 
-_EVERY_REQUIREMENT = frozenset({REQUIRES_HISTORY, REQUIRES_STEP, REQUIRES_POSITIONS})
+_EVERY_REQUIREMENT = frozenset({REQUIRES_HISTORY, REQUIRES_POSITIONS, REQUIRES_RANDOM})
+"""What the profile evaluator serves: the history rings, the agent and affordance
+positions (the environment sets both before the instant-0 evaluation at reset, so a
+position read is live from the first observation), and one random stream per world."""
 
 GLOBAL_EXPRESSION = ReadContext(
     label="a global variable expression",
@@ -198,8 +201,10 @@ TRANSITION_WRITE = ReadContext(
     item=None,
     engine={ENGINE_AGENT_ID: "int"},
     locals={},
-    carries=frozenset(),
+    carries=frozenset({REQUIRES_RANDOM}),
 )
+"""The transition phases run with the world streams but keep no history and are handed no
+positions: a position read belongs in an expression variable the write reads by name."""
 SPAWN_PREDICATE = ReadContext(
     label="an item spawn predicate",
     variable_scopes=frozenset({VariableScope.GLOBAL, VariableScope.AGENT}),
@@ -209,6 +214,8 @@ SPAWN_PREDICATE = ReadContext(
     locals={},
     carries=frozenset(),
 )
+"""A spawn predicate's runtime context (``townlet.items.manager.SpawnPredicateReads``) is
+bound to no world stream, so a draw belongs in an expression variable it reads by name."""
 INTERACTION_PIPELINE = ReadContext(
     label="an interaction pipeline",
     variable_scopes=frozenset({VariableScope.GLOBAL, VariableScope.AGENT}),
@@ -216,7 +223,7 @@ INTERACTION_PIPELINE = ReadContext(
     item=None,
     engine={},
     locals={},
-    carries=frozenset({REQUIRES_POSITIONS}),
+    carries=frozenset({REQUIRES_POSITIONS, REQUIRES_RANDOM}),
 )
 """An affordance interaction (no item) or an item interaction (``with_item(ItemBinding.of_profile(...))``)."""
 EFFECT_PIPELINE = ReadContext(
@@ -226,7 +233,7 @@ EFFECT_PIPELINE = ReadContext(
     item=None,
     engine={},
     locals=EFFECT_LOCALS,
-    carries=frozenset({REQUIRES_POSITIONS}),
+    carries=frozenset({REQUIRES_POSITIONS, REQUIRES_RANDOM}),
 )
 """An effect of any scope; an item-scoped effect is ``with_item(ANY_ITEM)``."""
 
@@ -352,19 +359,15 @@ class Namespace:
         """The type checker's schema: spelling -> expression type."""
         return {spelling: symbol.type for spelling, symbol in self.entries(context).items()}
 
-    def shapes(self, context: ReadContext, *, payload_for_vectors: bool) -> dict[str, str]:
+    def shapes(self, context: ReadContext) -> dict[str, str]:
         """The shape proof's map: spelling -> leading axes.
 
-        ``payload_for_vectors`` labels a vector/tensor-typed read ``payload`` (refused by
-        the shape proof) instead of its scope's axes: a variable expression yields
-        scalars and bools only, while a write's type checker proves a vector's width.
+        A vector or tensor read has its scope's axes like any other; its payload is the
+        type checker's to prove (a variable expression yields scalars and bools only, so
+        a vector reaches it through a function that consumes the payload, ``distance``,
+        ``gather``; a write's type checker proves a vector's width).
         """
-        shapes: dict[str, str] = {}
-        for spelling, symbol in self.entries(context).items():
-            shapes[spelling] = symbol.shape
-            if payload_for_vectors and symbol.type not in {"int", "float", "bool"}:
-                shapes[spelling] = "payload"
-        return shapes
+        return {spelling: symbol.shape for spelling, symbol in self.entries(context).items()}
 
     def variable(self, name: str) -> Symbol | None:
         """The registry variable ``name``, whatever context reads it."""
@@ -510,8 +513,9 @@ class ExpressionSource:
 
     ``stored_because`` is None for such a context-free expression. Otherwise it names
     the function that needs evaluation-time context a consumer outside the profile
-    evaluator does not carry (temporal history, the engine step, positions):
-    re-evaluating a history operator would read its buffers a second time, so the
+    evaluator does not carry (temporal history, positions, a random stream):
+    re-evaluating a history operator would read its buffers a second time, and
+    re-evaluating a draw would draw again, a value the observation never showed; so the
     expression is not inlined and a consumer reads the value its last profile evaluation
     stored. A ``tick``-lifetime one has no stored value by then (tick state resets
     before any consumer runs), so reading it refuses at compile.

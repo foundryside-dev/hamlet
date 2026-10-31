@@ -6,7 +6,7 @@ evaluated dtype, and the result must keep the batch axis: ``[3]`` for a scalar-t
 result, ``[3, D]`` for a vector-typed one. A function without a row here fails the
 coverage test, so a new function cannot ship without proving the contract.
 
-The context is the enriched one (temporal history, step counter, positions): what a
+The context is the enriched one (temporal history, positions): what a
 function needs from its context is a separate contract (``FunctionSpec.requires``).
 """
 
@@ -82,7 +82,6 @@ CASES: dict[str, str] = {
     "time_in_window": "time_in_window(bar.i, 1, 3)",
     "phase_sin": "phase_sin(bar.i, 24.0)",
     "phase_cos": "phase_cos(bar.i, 24)",
-    "elapsed_ticks": "elapsed_ticks(started)",
     "lag": "lag(bar.f, 1)",
     "delta": "delta(bar.f)",
     "moving_average": "moving_average(bar.i, 2)",
@@ -161,7 +160,6 @@ def make_context() -> ExecutionContext:
         affordance_positions={"WORK": torch.tensor([2.0, 2.0])},
         agent_positions=POS.clone(),
         history=history,
-        step=7,
     )
 
 

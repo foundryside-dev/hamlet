@@ -1,5 +1,6 @@
 """Execution context for expression evaluation."""
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 import torch
@@ -35,10 +36,14 @@ class ExecutionContext:
     agent_positions: torch.Tensor | None = None
     device: torch.device = torch.device("cpu")
     history: TemporalHistory | None = None
-    step: int | None = None
-    # The random stream sampling functions draw from: a world's own stream in an effect
-    # pipeline (S1, so one world's draws never shift another's); None is torch's global one.
+    # The random streams sampling functions draw from (S1: one world's draws never shift
+    # another's). A VFS context (profile expressions, action writes, transition rules)
+    # carries ``world_rngs``, one generator per batch row, and draws once per row from
+    # each. A command pipeline is bound to one world and carries that world's generator
+    # as ``rng``. Neither set means torch's global stream, which only direct engine or
+    # test callers build.
     rng: torch.Generator | None = None
+    world_rngs: Sequence[torch.Generator] | None = None
 
     def get(self, path: str) -> torch.Tensor:
         """The value ``path`` names; KeyError when it is no spelling this context serves."""

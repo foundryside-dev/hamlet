@@ -519,8 +519,8 @@ def test_agent_expression_reads_globals_by_bare_name_without_a_dependency_edge()
 
 
 def test_agent_expression_over_a_global_alone_is_still_batch_shaped_at_compile():
-    """A global-only agent expression has no agent axis; the shape proof refuses it as before."""
-    with pytest.raises(TypeCheckError, match="expression shape is scalar, expected agent"):
+    """A global-only agent expression has no agent axis; the shape proof refuses it, naming `scope: global`."""
+    with pytest.raises(TypeCheckError, match="is agent-scope but its expression 'day_phase > 0.5' reads no per-agent state.*scope: global"):
         VFSProfileCompiler().compile_profile(
             [_declaration("flag", scope="agent", type="bool", expression="day_phase > 0.5")],
             {"energy": "float"},

@@ -21,14 +21,13 @@ def _eval(func: str, *consts: float | bool) -> torch.Tensor:
     return Evaluator(DummyContext()).evaluate(node)
 
 
-def _eval_expr(expr: str, vfs: dict[str, torch.Tensor], step: int | None) -> torch.Tensor:
+def _eval_expr(expr: str, vfs: dict[str, torch.Tensor]) -> torch.Tensor:
     ast = ExpressionParser().parse(expr)
     context = ExecutionContext(
         bars={},
         vfs=vfs,
         temporal={},
         device=torch.device("cpu"),
-        step=step,
     )
     return Evaluator(context).evaluate(ast)
 
@@ -47,7 +46,7 @@ def test_numeric_functions_produce_float():
 
 
 def test_normalize_and_arg_functions():
-    norm = _eval_expr("normalize(v)", {"v": torch.tensor([[3.0, 4.0], [0.0, 0.0]])}, None)
+    norm = _eval_expr("normalize(v)", {"v": torch.tensor([[3.0, 4.0], [0.0, 0.0]])})
     assert torch.allclose(norm, torch.tensor([[0.6, 0.8], [0.0, 0.0]]))
 
     assert _eval("argmin", 3.0, 1.0, 2.0).item() == 1
@@ -127,7 +126,6 @@ def test_registry_has_vtc_recommended_operator_catalogue():
         "time_in_window",
         "phase_sin",
         "phase_cos",
-        "elapsed_ticks",
     }
     assert expected.issubset(set(FUNCTION_SPECS.keys()))
 
@@ -143,15 +141,15 @@ def test_mask_tensor_operator_catalogue_evaluates_with_parser():
         "updates": torch.tensor([9.0, 8.0]),
     }
 
-    assert torch.allclose(_eval_expr("where(mask, value + 1.0, value - 1.0)", vfs, None), torch.tensor([2.0, 1.0, 4.0]))
-    assert torch.allclose(_eval_expr("masked_add(value, 0.5, mask)", vfs, None), torch.tensor([1.5, 2.0, 3.5]))
-    assert torch.allclose(_eval_expr("masked_set(value, 0.0, mask)", vfs, None), torch.tensor([0.0, 2.0, 0.0]))
-    assert torch.equal(_eval_expr("all(mask, value > 0.0)", vfs, None), torch.tensor([True, False, True]))
-    assert torch.equal(_eval_expr("any(mask, value < 2.0)", vfs, None), torch.tensor([True, False, True]))
-    assert torch.allclose(_eval_expr("gather(rows, idx)", vfs, None), torch.tensor([3.0, 4.0]))
-    assert torch.allclose(_eval_expr("scatter(base, idx, updates)", vfs, None), torch.tensor([[0.0, 0.0, 9.0], [8.0, 0.0, 0.0]]))
+    assert torch.allclose(_eval_expr("where(mask, value + 1.0, value - 1.0)", vfs), torch.tensor([2.0, 1.0, 4.0]))
+    assert torch.allclose(_eval_expr("masked_add(value, 0.5, mask)", vfs), torch.tensor([1.5, 2.0, 3.5]))
+    assert torch.allclose(_eval_expr("masked_set(value, 0.0, mask)", vfs), torch.tensor([0.0, 2.0, 0.0]))
+    assert torch.equal(_eval_expr("all(mask, value > 0.0)", vfs), torch.tensor([True, False, True]))
+    assert torch.equal(_eval_expr("any(mask, value < 2.0)", vfs), torch.tensor([True, False, True]))
+    assert torch.allclose(_eval_expr("gather(rows, idx)", vfs), torch.tensor([3.0, 4.0]))
+    assert torch.allclose(_eval_expr("scatter(base, idx, updates)", vfs), torch.tensor([[0.0, 0.0, 9.0], [8.0, 0.0, 0.0]]))
     assert torch.equal(
-        _eval_expr("one_hot(idx, 3)", vfs, None),
+        _eval_expr("one_hot(idx, 3)", vfs),
         torch.tensor([[0.0, 0.0, 1.0], [1.0, 0.0, 0.0]]),
     )
 
@@ -164,10 +162,10 @@ def test_spatial_operator_catalogue_evaluates_batched_positions():
         "candidates": torch.tensor([[0.0, 1.0], [2.0, 2.0], [10.0, 10.0]]).expand(2, 3, 2).clone(),
     }
 
-    assert torch.allclose(_eval_expr("distance(positions, targets)", vfs, None), torch.tensor([4.0, 5.0]))
-    assert torch.allclose(_eval_expr("manhattan_distance(positions, targets)", vfs, None), torch.tensor([4.0, 7.0]))
-    assert torch.equal(_eval_expr("within_radius(positions, targets, 4.5)", vfs, None), torch.tensor([True, False]))
-    assert torch.equal(_eval_expr("nearest(positions, candidates)", vfs, None), torch.tensor([0, 1]))
+    assert torch.allclose(_eval_expr("distance(positions, targets)", vfs), torch.tensor([4.0, 5.0]))
+    assert torch.allclose(_eval_expr("manhattan_distance(positions, targets)", vfs), torch.tensor([4.0, 7.0]))
+    assert torch.equal(_eval_expr("within_radius(positions, targets, 4.5)", vfs), torch.tensor([True, False]))
+    assert torch.equal(_eval_expr("nearest(positions, candidates)", vfs), torch.tensor([0, 1]))
 
 
 def test_temporal_operator_catalogue_evaluates_windows_and_phases():
@@ -178,12 +176,10 @@ def test_temporal_operator_catalogue_evaluates_windows_and_phases():
         "now": torch.tensor([8, 12]),
     }
 
-    assert torch.equal(_eval_expr("time_in_window(time, 21, 6)", vfs, None), torch.tensor([True, False]))
-    assert torch.equal(_eval_expr("time_in_window(time, 9, 17)", vfs, None), torch.tensor([False, True]))
-    assert torch.allclose(_eval_expr("phase_sin(phase, 24)", vfs, None), torch.tensor([1.0, 0.0]), atol=1e-6)
-    assert torch.allclose(_eval_expr("phase_cos(phase, 24)", vfs, None), torch.tensor([0.0, -1.0]), atol=1e-6)
-    assert torch.equal(_eval_expr("elapsed_ticks(started)", vfs, 9), torch.tensor([4, 0]))
-    assert torch.equal(_eval_expr("elapsed_ticks(started, now)", vfs, None), torch.tensor([3, 2]))
+    assert torch.equal(_eval_expr("time_in_window(time, 21, 6)", vfs), torch.tensor([True, False]))
+    assert torch.equal(_eval_expr("time_in_window(time, 9, 17)", vfs), torch.tensor([False, True]))
+    assert torch.allclose(_eval_expr("phase_sin(phase, 24)", vfs), torch.tensor([1.0, 0.0]), atol=1e-6)
+    assert torch.allclose(_eval_expr("phase_cos(phase, 24)", vfs), torch.tensor([0.0, -1.0]), atol=1e-6)
 
 
 def test_typechecker_accepts_vtc_recommended_operator_signatures():

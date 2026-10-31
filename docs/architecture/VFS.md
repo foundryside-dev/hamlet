@@ -355,11 +355,13 @@ block. Example (compiles as an entry in `default_curriculum`'s roster):
   normalization: { kind: "minmax", min: 0.0, max: 1.0, clip: true }
 ```
 
-The design-era example here was "distance to nearest food". It is not declarable today.
-Spatial functions (`distance_to_affordance`, `in_range`, `nearest`, ...) have no qualified
-variable output shape, so the profile compiler refuses them in a variable expression
-(`VFS-PROFILE-COMPILE`). They are served only in effect and interaction pipelines, and there is
-no category query.
+The design-era example here was "distance to nearest food". It is declarable as an
+`agent`-scope expression variable, `expression: 'distance_to_affordance("EAT")'` (or
+`min(...)` over several affordances), live from the first observation: the profile shape
+proof derives a position function's row axis (one per agent) from the function registry
+(2026-10-31, re-review A3). There is still no category query ("nearest food" names the
+affordances). A transition write or rule is handed no positions and reads the stored
+expression variable instead.
 
 The design-era split below still describes the intent:
 

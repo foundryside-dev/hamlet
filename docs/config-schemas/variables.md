@@ -78,8 +78,15 @@ entry remains a valid schema group for item types with no state variables.
   `false`, `and`), may not take a reserved engine name (`tick`, `agent_id`, `self`, `target`,
   `intensity`, `elapsed_ticks`, `duration_remaining`), and may not equal a meter name; the
   compiler refuses a meter collision at the symbol table with both origins
-  (`SYMBOL_METER_COLLISION`). Vector/tensor expression outputs
-  and functions without a qualified shape refuse. A constant belongs in initialization.
+  (`SYMBOL_METER_COLLISION`). An expression variable is scalar or bool: a vector/tensor
+  expression output refuses, and a declared vector variable is read through a function
+  that consumes it (`distance`, `within_radius`, `gather`). The compiler proves every
+  call's row axis from the function registry (`expressions.md`, Function Reference): a
+  position function (`distance_to_affordance`, `in_range`) is one row per agent and so
+  belongs to an `agent` variable (live from the first observation, since `reset()` lays
+  out affordances and positions before the instant-0 evaluation); a draw (`uniform`,
+  `normal_dist`) is one per row ([random draws](#random-draws)); every other function
+  joins its arguments' axes. A constant belongs in initialization.
 - **Exposure:** an empty list means hidden. Exposed variables require a supported bounded
   `normalization`; normalization on a hidden variable is refused. Exposure does not confer
   new privacy guarantees. **Exposure composes through expressions, and that is the author's
@@ -316,19 +323,61 @@ expression evaluated on the state the write sees, not a stored value: the compil
 substitutes the expression (recursively, through every expression variable it reads)
 into the write's expression and condition. A write gated on `rich: bar.money > 0.1` sees
 `rich` true on the tick an earlier phase raised `money`, whatever `rich`'s lifetime. The
-one exception is an expression that calls a history operator (`lag`, `delta`, ...), which
-needs the history rings only the profile evaluator keeps (an expression variable may not call
-`elapsed_ticks` or a position function at all: the profile compiler refuses them): it is not inlined, and a write reads its stored value, the one
-evaluated at the end of the previous step (or by `reset()`), which the observation the
-action was chosen on showed. A `tick`-lifetime one has no stored value while the
-transition phases run, so a write or rule reading it refuses at compile
-(`VTC-WRITE-TYPE`). A write may not call such a function itself: name the quantity as an
+one exception is an expression that needs evaluation-time context: a history operator
+(`lag`, `delta`, ...), which reads the rings only the profile evaluator keeps; a position
+function (`distance_to_affordance`, `in_range`), which reads the positions only the
+evaluator and the effect pipelines are handed; or a draw (`uniform`, `normal_dist`), which
+re-evaluated would draw again. Such an expression is not inlined, and a write reads its
+stored value, the one evaluated at the end of the previous step (or by `reset()`), which
+the observation the action was chosen on showed. A `tick`-lifetime one has no stored value
+while the transition phases run, so a write or rule reading it refuses at compile
+(`VTC-WRITE-TYPE`). A write may call a draw itself (the transition phases carry the world
+streams) but not a history operator or a position function: name that quantity as an
 expression variable and read it. Hashes: the write keeps its authored text as identity,
 and the expression enters `vfs_hash` through the expression schema hash.
 A variable that carries an `expression` is owned by it: an action write, transition-rule
 write or command-pipeline write (effect, affordance interaction, item hook) that targets it
 would be overwritten by evaluation, so it refuses at compile (`UAC-STATIC-WRITE`) at the
 write's `file:line`, naming the expression variable's declaration `file:line`.
+
+## Random draws
+
+`uniform` and `normal_dist` run in global and agent variable expressions, action writes and
+transition rules (and in effect and interaction pipelines; an item spawn predicate carries
+no stream and refuses, naming the expression-variable route). **One independent draw per
+row of the expression's context**: a global expression draws once per world, an agent
+expression, an action write or a rule once per agent row (one agent per world, S1); the
+arguments are numbers. A literal-only call, `uniform(0.0, 1.0)`, still
+draws once per row, never once for the whole batch, so an agent expression over it is
+per-agent state and compiles as `agent` scope.
+
+Every world draws from its own stream (`townlet.vfs.random_streams`), seeded from the run
+seed, the episode and the world alone: world w's draws are the same whatever the batch
+size and whatever any other world does, and a run is reproducible per seed. These streams
+are separate from the effects engine's (an effect's `sample` never shifts a world's
+expression draws). They are not checkpointed: a resumed run re-derives them from the seed
+and the episode it restarts at, as the effects streams and torch's global stream are.
+
+A random expression variable is stored, never inlined into a write: a rule reading
+`coin: uniform(0.0, 1.0)` sees the draw the observation showed, and `lag(coin, 1)` reads
+its history like any other value. Both lifetimes are declarable; a `tick`-lifetime one has
+no stored value while the transition phases run, so a write reading it refuses at compile
+with `lifetime: episode` named. Per-world weather that re-rolls every K ticks is one
+declaration:
+
+```yaml
+- id: weather
+  scope: global
+  type: scalar
+  lifetime: episode
+  semantic_type: custom
+  initial_value: 0.0
+  expression: "where(tick % 4 == 0, uniform(0.0, 3.0), lag(weather, 1))"
+  readable_by: [engine, agent]
+  writable_by: [engine]
+  exposed_to: [agent]
+  normalization: { kind: minmax, min: 0.0, max: 3.0, clip: true }
+```
 
 ## History operators
 

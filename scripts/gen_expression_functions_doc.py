@@ -31,7 +31,16 @@ FAMILY_NOTES: dict[str, str] = {
     "Math": "Element-wise over numeric scalars.",
     "Statistics": "Reduced across the *arguments*, never across agents: `mean(bar.energy, bar.health)` is each agent's own mean.",
     "Logic and masks": "Boolean combination and masked selection; `gather`/`scatter` index rows of a per-agent value.",
-    "Sampling": "Random draws take the shape of their first argument; noise fields are deterministic in their inputs.",
+    "Sampling": (
+        "`uniform` and `normal_dist` draw once per row of the context they run in, each row from its own world's stream "
+        "(S1): per world in a global expression or on a global rule target, per agent in an agent expression, an action "
+        "write or on an agent target (the arguments are numbers). A literal-only call still draws once per row, "
+        "never once for the batch. They run wherever the runtime carries a world stream: global and agent variable "
+        "expressions, action writes, transition rules, effect and interaction pipelines; an item spawn predicate "
+        "carries none and refuses. A random expression variable is stored, never inlined into a write (the write "
+        "reads the draw the observation showed); see [variables.md](variables.md#random-draws). Noise fields are "
+        "deterministic in their inputs."
+    ),
     "Temporal": (
         "History operators (`lag`, `delta`, `moving_average`, `ema`, `rate_of_change`, `rising_edge`, `falling_edge`) "
         "run only in global and agent variable expressions. Their first argument names a variable, `tick` or "
@@ -43,9 +52,19 @@ FAMILY_NOTES: dict[str, str] = {
         "Vector variables only (`vec2i`, `vec3i`, `vec2f`, `vec3f`, `vecNi`, `vecNf`); the distance between two scalars is `abs(a - b)`. "
         "Both vectors must share a width: `vec2*` against `vec3*` is refused at compile time; a `vecN*` or `tensor2d` width is only "
         "known at run time, and a mismatch there raises an error naming the function. Int and float vectors mix freely and are "
-        "measured in float."
+        "measured in float. A scalar- or bool-returning vector function (`distance`, `manhattan_distance`, `within_radius`, "
+        "`nearest`, `gather`) runs in every context, a variable expression included: its result has its arguments' row axis, "
+        "and that is how a declared vector variable is read into a scalar or bool expression variable. A vector-returning "
+        "function (`normalize`, `scatter`, `one_hot`, `direction_to_affordance`) fits no scalar or bool target."
     ),
-    "Affordance": "Read the agent and affordance positions the engine threads into the context.",
+    "Affordance": (
+        "Read the agent and affordance positions the engine threads into the context: one value per agent, so in a variable "
+        "expression they belong to an `agent`-scope variable (a global expression has no agent axis and refuses, naming "
+        "`scope: agent`). The environment lays out affordances and positions before the instant-0 evaluation at `reset()`, so "
+        '`distance_to_affordance("EAT")` is live in the first observation. Served in global and agent variable expressions '
+        "and in effect pipelines; a transition write or rule and a spawn predicate are handed no positions and refuse, naming "
+        "the expression-variable route (declare the distance as an agent expression variable and read it by name)."
+    ),
 }
 
 
@@ -66,7 +85,12 @@ def render_table(specs: dict[str, FunctionSpec]) -> str:
         f"{len(specs)} functions are registered. A scalar-typed result (`int`, `float`, `bool`) keeps the batch axis of its",
         "per-agent inputs; a vector-typed result (`vec2f`, `vec3f`, `vecNf`) keeps it in front of the vector axis. No function",
         "collapses the batch axis. A literal has no batch axis, so a result built only from literals is unbatched:",
-        "`one_hot(2, 3)` is `[3]`, `one_hot(bar.slot, 3)` is `[batch, 3]`.",
+        "`one_hot(2, 3)` is `[3]`, `one_hot(bar.slot, 3)` is `[batch, 3]` — except a random draw, which is one per row of",
+        "its context even with literal arguments. The **Needs** column is the context a call needs; a consumer admits a",
+        "call by it alone (every function whose needs the consumer's runtime does not carry refuses at compile, naming",
+        "the consumer), and the VFS shape proof derives a call's row axis from the registry's shape rule, never from a",
+        "hand-kept list: a position function is one row per agent, a draw is one per row of its context, every other",
+        "function joins its arguments' axes.",
         "",
     ]
     for family in FAMILY_ORDER:

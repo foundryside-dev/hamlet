@@ -24,6 +24,7 @@ def test_same_value_write_is_still_an_attempt(composition, expression):
         bars_state={},
         active_mask=torch.tensor([True]),
         device=torch.device("cpu"),
+        world_rngs=None,
     )
     assert result.attempted_targets == frozenset({"state"})
     assert torch.equal(result.values["state"], torch.tensor([5.0]))
@@ -42,6 +43,7 @@ def test_unselected_action_write_has_no_intent(action, active, condition):
         bars_state={},
         active_mask=torch.tensor([active]),
         device=torch.device("cpu"),
+        world_rngs=None,
     )
     assert result.attempted_targets == frozenset()
     assert torch.equal(result.values["state"], torch.tensor([5.0]))
@@ -61,6 +63,8 @@ def test_scalar_social_write_respects_active_selection(active, condition, attemp
         {"state": VTCWriteTarget(VariableScope.GLOBAL, "scalar", meter=False, expression=None)},
     )
     # A global holds one row per world (S1): one world here.
-    result = program.apply(vfs_state={"state": torch.tensor([5.0])}, active_mask=torch.tensor([active]), device=torch.device("cpu"))
+    result = program.apply(
+        vfs_state={"state": torch.tensor([5.0])}, active_mask=torch.tensor([active]), device=torch.device("cpu"), world_rngs=None
+    )
     assert result.attempted_targets == (frozenset({"state"}) if attempted else frozenset())
     assert torch.equal(result.values["state"], torch.tensor([5.0]))

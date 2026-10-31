@@ -25,8 +25,8 @@
 > - **❌ `temporal.*`** has no schema entry in a command pipeline and refuses at compile.
 > - **❌ Context-bound functions** — every function whose `requires` names temporal history
 >   (`lag`, `delta`, `moving_average`, `ema`, `rate_of_change`, `rising_edge`,
->   `falling_edge`) or the engine step (`elapsed_ticks()`) — **refuse at compile**, by one
->   predicate on the function registry: only the VFS profile evaluator keeps a history and a step. Declare a variable
+>   `falling_edge`) — **refuse at compile**, by one
+>   predicate on the function registry: only the VFS profile evaluator keeps a history. Declare a variable
 >   with `expression: "lag(bar.energy, 1)"` in the pack-scope variables declaration and read
 >   that variable from the command.
 > - **✅ Position: `distance_to_affordance`, `in_range`, `direction_to_affordance`** evaluate

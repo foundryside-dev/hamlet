@@ -32,7 +32,10 @@ from townlet.vfs.transition_graph import TransitionPhaseGraph
 from townlet.world.expression import ASTNode, ExpressionParser, FunctionCall, IfThenElse, PathAccess, Variable, read_paths
 from townlet.world.expression.context import ExecutionContext
 from townlet.world.expression.evaluator import Evaluator
+from townlet.world.expression.functions import REQUIRES_HISTORY, REQUIRES_POSITIONS, REQUIRES_RANDOM, unserved_requirement
 from townlet.world.expression.type_checker import TypeChecker, TypeCheckError
+
+_EVERY_FUNCTION_REQUIREMENT = frozenset({REQUIRES_HISTORY, REQUIRES_POSITIONS, REQUIRES_RANDOM})
 
 
 class VTCActionWriteSource(Protocol):
@@ -737,6 +740,25 @@ def _clamp_in_dtype(value: torch.Tensor, clamp: tuple[float, float] | None) -> t
     return torch.clamp(value, min=low, max=high).to(dtype=value.dtype)
 
 
+def _require_streams(expressions: Iterable[ASTNode], world_rngs: Sequence[torch.Generator] | None, worlds: int, label: str) -> None:
+    """A program whose expression samples runs with one stream per world, never torch's global one (S1).
+
+    The compiler admits a draw in a write or rule because the transition phases carry a
+    random stream (``TRANSITION_WRITE``); a caller that runs them without one, or with
+    the wrong number of worlds, is an engine defect, refused here rather than drawn from
+    the global generator.
+    """
+    if world_rngs is not None:
+        if len(world_rngs) != worlds:
+            raise RuntimeError(f"Engine defect: {label} ran with {len(world_rngs)} world streams for {worlds} worlds")
+        return
+    served = frozenset(requirement for requirement in _EVERY_FUNCTION_REQUIREMENT if requirement != REQUIRES_RANDOM)
+    for expression in expressions:
+        call = unserved_requirement(expression, served)
+        if call is not None:
+            raise RuntimeError(f"Engine defect: {label} ran without the world random streams, but an expression calls {call}")
+
+
 @dataclass(frozen=True)
 class VTCActionWriteProgram:
     """Executable collection of compiled VTC action writes."""
@@ -751,10 +773,21 @@ class VTCActionWriteProgram:
         bars_state: Mapping[str, torch.Tensor],
         active_mask: torch.Tensor,
         device: torch.device,
+        world_rngs: Sequence[torch.Generator] | None,
     ) -> VTCWriteResult:
-        """Apply compiled VTC writes to a VFS state snapshot using action and active-agent masks."""
+        """Apply compiled VTC writes to a VFS state snapshot using action and active-agent masks.
+
+        ``world_rngs`` is one generator per world (S1), the streams a sampling call draws
+        from, one draw per row; None only when no write samples (``_require_streams``).
+        """
         if actions.shape != active_mask.shape:
             raise ValueError(f"actions shape {tuple(actions.shape)} must match active_mask shape {tuple(active_mask.shape)}")
+        _require_streams(
+            (ast for write in self.writes for ast in (write.expression_ast, write.condition_ast) if ast is not None),
+            world_rngs,
+            actions.shape[0],
+            "VTC action writes",
+        )
 
         # Bar names and variable ids are disjoint: the universe compiler's symbol
         # table refuses the collision (SYMBOL_METER_COLLISION).
@@ -774,6 +807,7 @@ class VTCActionWriteProgram:
                 actions=actions_on_device,
                 active_mask=active_mask_on_device,
                 device=device,
+                world_rngs=world_rngs,
             )
             attempted_targets.update(effect.write.variable_id for effect in phase_effects if bool(effect.write_mask.any()))
             updated = self._commit_phase_effects(phase_snapshot, phase_effects)
@@ -807,6 +841,7 @@ class VTCActionWriteProgram:
         actions: torch.Tensor,
         active_mask: torch.Tensor,
         device: torch.device,
+        world_rngs: Sequence[torch.Generator] | None,
     ) -> tuple[_VTCActionWriteEffect, ...]:
         phase_effects: list[_VTCActionWriteEffect] = []
         context_vfs = dict(phase_snapshot)
@@ -816,6 +851,7 @@ class VTCActionWriteProgram:
             vfs=context_vfs,
             temporal={},
             device=device,
+            world_rngs=world_rngs,
         )
         evaluator = Evaluator(context)
 
@@ -1655,6 +1691,7 @@ class VTCTransitionRuleProgram:
         vfs_state: Mapping[str, torch.Tensor],
         active_mask: torch.Tensor,
         device: torch.device,
+        world_rngs: Sequence[torch.Generator] | None,
         bars_state: Mapping[str, torch.Tensor] | None = None,
     ) -> VTCWriteResult:
         """Apply compiled transition-rule writes using phase snapshots and masked commits.
@@ -1664,9 +1701,18 @@ class VTCTransitionRuleProgram:
         ``VTCActionWriteProgram.apply``, and the result carries every bar and variable.
         The caller splits them (``_split_vfs_and_bars``); meter bounds are enforced by
         ``clamp_and_validate``, the compiler refusing a meter rule scheduled after it.
+
+        ``world_rngs`` is one generator per world (S1), the streams a sampling call draws
+        from, one draw per row; None only when no rule samples (``_require_streams``).
         """
         if active_mask.dim() != 1:
             raise ValueError(f"active_mask must be rank-1, got shape {tuple(active_mask.shape)}")
+        _require_streams(
+            (ast for rule in self.rules for ast in (rule.expression_ast, rule.condition_ast) if ast is not None),
+            world_rngs,
+            active_mask.shape[0],
+            "VTC transition rules",
+        )
 
         bars = {} if bars_state is None else dict(bars_state)
         # Bar names and variable ids are disjoint: the universe compiler's symbol
@@ -1685,6 +1731,7 @@ class VTCTransitionRuleProgram:
                 bar_names=bar_names,
                 active_mask=active,
                 device=device,
+                world_rngs=world_rngs,
             )
             attempted_targets.update(effect.rule.variable_id for effect in phase_effects if bool(effect.write_mask.any()))
             updated = self._commit_phase_effects(phase_snapshot, phase_effects)
@@ -1718,6 +1765,7 @@ class VTCTransitionRuleProgram:
         bar_names: frozenset[str],
         active_mask: torch.Tensor,
         device: torch.device,
+        world_rngs: Sequence[torch.Generator] | None,
     ) -> tuple[_VTCTransitionRuleEffect, ...]:
         phase_effects: list[_VTCTransitionRuleEffect] = []
         context_vfs = {name: value for name, value in phase_snapshot.items() if name not in bar_names}
@@ -1727,6 +1775,7 @@ class VTCTransitionRuleProgram:
             vfs=context_vfs,
             temporal={},
             device=device,
+            world_rngs=world_rngs,
         )
         evaluator = Evaluator(context)
 
@@ -2066,7 +2115,7 @@ def compile_vtc_transition_rules_with_phase_graph(
     namespace = _write_namespace(targets)
     sources = _expression_sources_of(targets)
     checker = TypeChecker(schema=namespace.schema(TRANSITION_WRITE))
-    shapes = namespace.shapes(TRANSITION_WRITE, payload_for_vectors=False)
+    shapes = namespace.shapes(TRANSITION_WRITE)
     compiled_rules: list[CompiledVTCTransitionRule] = []
     refusals: list[VTCWriteRefusal] = []
 
@@ -2510,7 +2559,7 @@ def _compile_vtc_action_writes_with_phase_graph(
     namespace = _write_namespace(targets)
     sources = _expression_sources_of(targets)
     checker = TypeChecker(schema=namespace.schema(TRANSITION_WRITE))
-    shapes = namespace.shapes(TRANSITION_WRITE, payload_for_vectors=False)
+    shapes = namespace.shapes(TRANSITION_WRITE)
     compiled_writes: list[CompiledVTCActionWrite] = []
     refusals: list[VTCWriteRefusal] = []
     admitted = phase_graph.action_phases

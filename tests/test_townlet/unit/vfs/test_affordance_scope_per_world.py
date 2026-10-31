@@ -211,6 +211,7 @@ def test_an_affordance_rule_reading_a_global_reads_its_own_world(expression: str
         vfs_state={"wear": torch.zeros(3, 3), "pressure": pressure},
         active_mask=torch.tensor([True, True, True]),
         device=torch.device("cpu"),
+        world_rngs=None,
     ).values
     expected = pressure if condition is None else (pressure > 0.5).float()
     assert torch.equal(updated["wear"], expected.unsqueeze(1).expand(3, 3))
@@ -245,6 +246,7 @@ def test_a_failed_claim_is_still_an_attempt_and_moves_nothing() -> None:
         bars_state={},
         active_mask=torch.tensor([True, True]),
         device=torch.device("cpu"),
+        world_rngs=None,
     )
     assert result.attempted_targets == frozenset({"occupied_by"})
     assert torch.equal(result.values["occupied_by"], held)

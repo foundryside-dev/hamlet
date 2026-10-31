@@ -36,6 +36,7 @@ from townlet.universe.dto.token_spec import item_capacity
 from townlet.vfs.evaluator import VFSEvaluator
 from townlet.vfs.namespace import CommandSymbols, Namespace, expression_sources
 from townlet.vfs.profiles import CompiledGlobalProfile
+from townlet.vfs.random_streams import WorldRandomStreams
 from townlet.vfs.registry import VariableRegistry
 from townlet.vfs.transition_schedule import VTCTransitionContext, VTCTransitionRunner, VTCTransitionState
 from townlet.vfs.vtc import (
@@ -581,6 +582,9 @@ class VectorizedHamletEnv:
             item_profiles=item_profiles,
         )
 
+        # One random stream per world for the VFS draws (expressions, action writes,
+        # transition rules), separate from the effects engine's streams (S1).
+        self.vfs_random_streams = WorldRandomStreams("vfs")
         self.vfs_evaluator: VFSEvaluator | None = None
         if universe.compiled_vfs_profiles is not None:
             self.vfs_evaluator = VFSEvaluator(history_spec=universe.vfs_history_spec)
@@ -820,6 +824,8 @@ class VectorizedHamletEnv:
         # Reset temporal history so temporal VFS ops don't leak across episodes
         if self.vfs_evaluator is not None:
             self.vfs_evaluator.reset()
+        # Every world's VFS random stream is re-derived for the new episode.
+        self.vfs_random_streams.reset()
 
         if self.item_manager is not None:
             self.item_manager.reset_state()  # and its inventory
@@ -1223,9 +1229,9 @@ class VectorizedHamletEnv:
                     vfs_state=current_vfs_state,
                     marks=marks,
                     device=self.device,
-                    step=self.global_tick,  # HIGH-01: Use global tick instead of agent 0
                     agent_positions=self.positions.to(dtype=torch.float32, device=self.device),
                     affordance_positions={k: v.to(dtype=torch.float32, device=self.device) for k, v in self.affordances.items()},
+                    world_rngs=self.vfs_random_streams.generators(self.num_agents, self.device),
                 )
 
                 self._write_back_profile_expressions(
@@ -1251,9 +1257,9 @@ class VectorizedHamletEnv:
                     vfs_state=current_vfs_state,
                     marks=agent_marks,
                     device=self.device,
-                    step=self.global_tick,
                     agent_positions=self.positions.to(dtype=torch.float32, device=self.device),
                     affordance_positions={k: v.to(dtype=torch.float32, device=self.device) for k, v in self.affordances.items()},
+                    world_rngs=self.vfs_random_streams.generators(self.num_agents, self.device),
                 )
                 self._write_back_profile_expressions(
                     "Agent-profile", "agent_profile", agent_profile, updated_agent_vfs, require_agent_shape=True
@@ -1311,6 +1317,7 @@ class VectorizedHamletEnv:
                 bars_state=self._current_bar_state(),
                 active_mask=active_mask,
                 device=self.device,
+                world_rngs=self.vfs_random_streams.generators(self.num_agents, self.device),
                 dones=dones,
                 depletion_multiplier=depletion_multiplier,
             ),

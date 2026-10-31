@@ -11,7 +11,7 @@ from townlet.environment.action_config import ActionConfig
 from townlet.vfs.schema import VariableScope, WriteSpec
 from townlet.vfs.vtc import VTCWriteTarget, compile_vtc_affordance_occupancy
 
-OCCUPANCY = VTCWriteTarget(VariableScope.AFFORDANCE, "scalar", meter=False)
+OCCUPANCY = VTCWriteTarget(VariableScope.AFFORDANCE, "scalar", meter=False, expression=None)
 
 
 def _write(
@@ -53,7 +53,6 @@ def _affordance_action(
         icon=None,
         source="affordance",
         source_affordance=source_affordance,
-        reads=[],
         writes=writes,
     )
 

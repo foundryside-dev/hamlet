@@ -98,7 +98,7 @@ def validate_static_write_targets(raw: RawConfigsV21, source_map: SourceMap | No
                         code=ErrorCode.EFFECT_SPAWN_TARGET,
                         location=locate(source_map, command_origin),
                     )
-            for path in (node.modify, node.store_in, node.reduce_into):
+            for path in (node.modify, node.store_in):
                 if path is not None:
                     check_path(path, command_origin, item_profile, self_is_item, target_is_item)
             for field in ("then", "else_", "default", "parallel"):
@@ -124,17 +124,17 @@ def validate_static_write_targets(raw: RawConfigsV21, source_map: SourceMap | No
     for action in raw.actions.actions.custom_actions:
         for write_index, write in enumerate(action.writes):
             check_authored(registry.get(write.variable_id), f"actions:{action.name}:writes[{write_index}]")
-    for rule in raw.social_residue_rules:
+    for rule in raw.transition_rules:
         # These are lowered typed declarations, with explicit nulls removed by
         # RawConfigsV21. Validate the required projection instead of reparsing
         # it as an author DTO or inventing missing behavioral fields.
         writes = rule["writes"]
         if not isinstance(writes, tuple | list):
-            raise TypeError("Lowered social rule requires a write sequence")
-        for write_index, social_write in enumerate(writes):
-            if not isinstance(social_write, dict) or not isinstance(social_write["variable_id"], str):
-                raise TypeError("Lowered social write requires an explicit variable_id string")
-            check_authored(registry.get(social_write["variable_id"]), f"transition_rules:{rule['id']}:writes[{write_index}]")
+            raise TypeError("Lowered transition rule requires a write sequence")
+        for write_index, rule_write in enumerate(writes):
+            if not isinstance(rule_write, dict) or not isinstance(rule_write["variable_id"], str):
+                raise TypeError("Lowered transition-rule write requires an explicit variable_id string")
+            check_authored(registry.get(rule_write["variable_id"]), f"transition_rules:{rule['id']}:writes[{write_index}]")
     for level in raw.levels.values():
         for affordance in level.affordances.affordances:
             for stage, pipeline in affordance.interactions.items():

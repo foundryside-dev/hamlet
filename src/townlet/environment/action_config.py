@@ -9,7 +9,7 @@ Action configs are compiled from the parse-time DTOs by the UniverseCompiler.
 
 from typing import Literal
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 # VFS Integration (Phase 1 - TASK-002C)
 from townlet.vfs.schema import WriteSpec
@@ -26,6 +26,9 @@ class ActionConfig(BaseModel):
     CRITICAL: All curriculum levels share same action vocabulary.
     Disabled actions are masked out but still occupy action IDs.
     """
+
+    # A stray key (such as the deleted `reads` dependency list) is a defect, not a no-op.
+    model_config = ConfigDict(extra="forbid")
 
     id: int = Field(ge=0, description="Action ID (assigned by builder)")
     name: str = Field(min_length=1, description="Action name (UP, DOWN, REST, etc.)")
@@ -75,10 +78,6 @@ class ActionConfig(BaseModel):
     )
 
     # VFS Integration (Phase 1 - TASK-002C)
-    reads: list[str] = Field(
-        default_factory=list,
-        description="Variables this action reads for dependency tracking.",
-    )
     writes: list[WriteSpec] = Field(
         default_factory=list,
         description="Variables this action writes with expressions.",

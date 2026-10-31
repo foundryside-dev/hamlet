@@ -221,8 +221,6 @@ class CommandExecutor:
             self._execute_for_each(command, context)
         elif command.type == CommandType.SWITCH:
             self._execute_switch(command, context)
-        elif command.type == CommandType.REDUCE:
-            self._execute_reduce(command, context)
         elif command.type == CommandType.PARALLEL:
             self._execute_parallel(command, context)
         elif command.type == CommandType.DELAY:
@@ -247,8 +245,6 @@ class CommandExecutor:
             path = command.path
         elif command.type == CommandType.SAMPLE:
             path = command.sample_store_path
-        elif command.type == CommandType.REDUCE:
-            path = command.reduce_target
         if path is not None:
             context.authorize_write_path(path)
         if command.type == CommandType.SPAWN_ITEM and command.initial_state:
@@ -712,54 +708,6 @@ class CommandExecutor:
             self._run_branch(body, context, *_restrict(remaining, matches))
             remaining_live, remaining = _restrict(remaining, ~matches)
         self._run_branch(command.default_commands or [], context, remaining_live, remaining)
-
-    def _execute_reduce(self, command: CommandNode, context: ExecutionContext) -> None:
-        """Execute reduce over fixed-size collection."""
-        if command.collection_ast is None or command.reduce_init_ast is None or command.reduce_body_ast is None:
-            raise ValueError("REDUCE command missing compiled ASTs")
-
-        eval_ctx = self._make_eval_context(context, effect=context.effect)
-        evaluator = Evaluator(eval_ctx)
-
-        collection_val = evaluator.evaluate(command.collection_ast)
-        acc = evaluator.evaluate(command.reduce_init_ast)
-
-        # Accept tensor or Python list; enforce fixed-size by cap
-        if isinstance(collection_val, list):
-            elements = collection_val
-        elif isinstance(collection_val, torch.Tensor):
-            elements = collection_val
-        else:
-            raise ValueError("REDUCE collection must evaluate to list or tensor")
-
-        # Cap enforcement
-        from townlet.effects.collections import MAX_COLLECTION_SIZE
-
-        length = len(elements) if isinstance(elements, list) else elements.shape[0]
-        if length > MAX_COLLECTION_SIZE:
-            raise RuntimeError(f"REDUCE collection size {length} exceeds cap {MAX_COLLECTION_SIZE}")
-
-        # Iterate sequentially (fixed-size expectation)
-        acc_device = acc.device
-        for i in range(length):
-            iter_val = elements[i]
-
-            # Bind iterator and accumulator in a child eval context by shallow copy of dicts
-            child_eval_ctx = self._make_eval_context(context, effect=context.effect)
-            # Inject iterator and acc into vfs dict for expression resolution
-            child_eval_ctx.vfs = dict(child_eval_ctx.vfs)
-            if isinstance(iter_val, torch.Tensor):
-                child_eval_ctx.vfs[command.reduce_iterator or "iter"] = iter_val
-            else:
-                # Fall back to tensor on available device, otherwise CPU
-                child_eval_ctx.vfs[command.reduce_iterator or "iter"] = torch.tensor(iter_val, device=acc_device)
-            child_eval_ctx.vfs["acc"] = acc
-            child_evaluator = Evaluator(child_eval_ctx)
-            acc = child_evaluator.evaluate(command.reduce_body_ast)
-
-        # Write back result
-        assert command.reduce_target is not None
-        context.set_path(command.reduce_target, acc)
 
     def _execute_parallel(self, command: CommandNode, context: ExecutionContext) -> None:
         """Execute branches sequentially (logical parallel) with disjoint writes enforced at compile time."""

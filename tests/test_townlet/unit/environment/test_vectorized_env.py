@@ -44,7 +44,7 @@ from townlet.vfs.transition_schedule import (
     VTCTransitionState,
     build_vtc_transition_schedule,
     serialize_vtc_transition_schedule,
-    social_rules_from_transition_payload,
+    transition_rules_from_payload,
 )
 
 DEFAULT_CURRICULUM_LEVELS = (
@@ -96,8 +96,11 @@ def _with_runtime_action_surface(
     transition_schedule = build_vtc_transition_schedule(
         runtime_action_space=runtime_action_space,
         level=patched_level,
-        social_residue_rules=social_rules_from_transition_payload(schedule_payload, field_name="test.transition_schedule"),
+        transition_rules=transition_rules_from_payload(schedule_payload, field_name="test.transition_schedule"),
         vfs_variables=level.vfs_variables,
+        expression_profiles=(
+            () if disable_vfs_profiles else (universe.compiled_vfs_profiles.global_profile, universe.compiled_vfs_profiles.agent_profile)
+        ),
     )
     transition_graph_hash = compute_transition_graph_hash(
         transition_schedule.phase_graph,
@@ -108,7 +111,7 @@ def _with_runtime_action_surface(
         threshold_cascade_program=transition_schedule.threshold_cascade_program,
         modulation_program=transition_schedule.modulation_program,
         passive_depletion_program=transition_schedule.passive_depletion_program,
-        social_residue_program=transition_schedule.social_residue_program,
+        transition_rule_program=transition_schedule.transition_rule_program,
         bounds_clamp_program=transition_schedule.bounds_clamp_program,
     )
     profiles = None if disable_vfs_profiles else universe.compiled_vfs_profiles

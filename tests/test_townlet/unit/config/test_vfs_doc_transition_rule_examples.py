@@ -1,8 +1,8 @@
-"""docs/architecture/VFS.md social-residue examples must compile as written.
+"""docs/architecture/VFS.md transition-rule examples must compile as written.
 
 Every fenced yaml block in VFS.md whose top-level mapping carries a
-``social_residue`` key is treated as a complete transition_rules.yaml document
-and must pass the DTO gate and the VTC social-residue compiler. This keeps the
+``transition_rules`` key is treated as a complete transition-rules declaration
+and must pass the DTO gate and the VTC transition-rule compiler. This keeps the
 doc the shipped grammar instead of a decaying proposal.
 """
 
@@ -12,14 +12,14 @@ from pathlib import Path
 import yaml
 
 from townlet.config.transition_rules_config import TransitionRulesConfig
-from townlet.vfs import VTCWriteTarget, compile_vtc_social_residue_rules
+from townlet.vfs import VTCWriteTarget, compile_vtc_transition_rules
 from townlet.vfs.schema import VariableScope
 
 VFS_DOC = Path("docs/architecture/VFS.md")
 
 
 def _target(scope: VariableScope, var_type: str = "scalar", *, meter: bool = False) -> VTCWriteTarget:
-    return VTCWriteTarget(scope, var_type, meter=meter)
+    return VTCWriteTarget(scope, var_type, meter=meter, expression=None)
 
 
 #: Declared scope and type of every state the examples write or read: the agent-scope
@@ -38,7 +38,7 @@ DOC_TARGET_SCOPES = {
 }
 
 
-def _social_residue_blocks() -> list[str]:
+def _transition_rule_blocks() -> list[str]:
     text = VFS_DOC.read_text()
     blocks = re.findall(r"```yaml\n(.*?)```", text, flags=re.DOTALL)
     matching = []
@@ -47,19 +47,33 @@ def _social_residue_blocks() -> list[str]:
             data = yaml.safe_load(block)
         except yaml.YAMLError:
             continue
-        if isinstance(data, dict) and "social_residue" in data:
+        if isinstance(data, dict) and "transition_rules" in data:
             matching.append(block)
     return matching
 
 
-def test_doc_social_residue_examples_compile_as_written() -> None:
-    blocks = _social_residue_blocks()
+def test_doc_transition_rule_examples_compile_as_written() -> None:
+    blocks = _transition_rule_blocks()
     assert len(blocks) >= 3, (
-        f"Expected the VFS.md §14.3/§16.4 social-residue examples as complete "
-        f"transition_rules.yaml documents; found {len(blocks)} yaml block(s) "
-        f"with a top-level social_residue key"
+        f"Expected the VFS.md §14.3/§16.4 transition-rule examples as complete "
+        f"transition-rules declarations; found {len(blocks)} yaml block(s) "
+        f"with a top-level transition_rules key"
     )
     for block in blocks:
         config = TransitionRulesConfig(**yaml.safe_load(block))
-        program = compile_vtc_social_residue_rules(config.social_residue_sources(), DOC_TARGET_SCOPES)
+        program = compile_vtc_transition_rules(config.rule_sources(), DOC_TARGET_SCOPES)
         assert len(program.rules) >= 1
+        for rule in program.rules:
+            # Derived reads are real declared state, never the authored illustrative list.
+            assert set(rule.reads) <= set(DOC_TARGET_SCOPES)
+
+
+def test_doc_carries_no_old_family_examples() -> None:
+    """A ``social_residue:`` document in the doc would be the deleted grammar."""
+    text = VFS_DOC.read_text()
+    for block in re.findall(r"```yaml\n(.*?)```", text, flags=re.DOTALL):
+        try:
+            data = yaml.safe_load(block)
+        except yaml.YAMLError:
+            continue
+        assert not (isinstance(data, dict) and "social_residue" in data), block

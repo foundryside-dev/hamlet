@@ -25,7 +25,6 @@ class CommandType(enum.Enum):
     IF = "if"
     FOR_EACH = "for_each"
     SWITCH = "switch"
-    REDUCE = "reduce"
     PARALLEL = "parallel"
     DELAY = "delay"
 
@@ -87,15 +86,6 @@ class CommandNode:
     cases: list[tuple[str, list[CommandNode]]] | None = None
     case_asts: list[tuple[Any, list[CommandNode]]] | None = None
     default_commands: list[CommandNode] | None = None
-
-    # reduce command fields
-    reduce_expr: str | None = None  # collection expression
-    reduce_iterator: str | None = None
-    reduce_init_expr: str | None = None
-    reduce_init_ast: Any | None = None
-    reduce_body_expr: str | None = None  # accumulator update expr (uses acc + iterator)
-    reduce_body_ast: Any | None = None
-    reduce_target: str | None = None
 
     # parallel command fields
     parallel_commands: list[CommandNode] | None = None

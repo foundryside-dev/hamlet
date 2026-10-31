@@ -22,7 +22,7 @@ def _profile(expr: str, name: str = "var") -> CompiledGlobalProfile:
 
 def test_perlin_seed_determinism():
     profile = _profile("perlin_noise(bar.x, bar.y, 42)", name="noise")
-    evaluator = VFSEvaluator()
+    evaluator = VFSEvaluator(history_spec=None)
     bars = {"x": torch.tensor([0.1, 0.5]), "y": torch.tensor([0.2, 0.6])}
     out1 = evaluator.evaluate_global_profile(
         profile,
@@ -47,7 +47,7 @@ def test_perlin_seed_determinism():
 
 def test_perlin_smoothness_neighbors_close():
     profile = _profile("perlin_noise(bar.x, bar.y, 0)", name="noise")
-    evaluator = VFSEvaluator()
+    evaluator = VFSEvaluator(history_spec=None)
     base = torch.tensor([0.0, 0.0])
     delta = torch.tensor([0.05, 0.05])
     bars_a = {"x": base[:1], "y": base[:1]}
@@ -76,7 +76,7 @@ def test_perlin_smoothness_neighbors_close():
 def test_simplex_aliases_perlin():
     perlin_profile = _profile("perlin_noise(bar.x, bar.y, 7)", name="p")
     simplex_profile = _profile("simplex_noise(bar.x, bar.y, 7)", name="s")
-    evaluator = VFSEvaluator()
+    evaluator = VFSEvaluator(history_spec=None)
     bars = {"x": torch.tensor([0.3]), "y": torch.tensor([0.9])}
     p = evaluator.evaluate_global_profile(
         perlin_profile,

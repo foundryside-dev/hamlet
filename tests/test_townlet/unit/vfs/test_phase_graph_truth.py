@@ -88,9 +88,7 @@ def _residue_rule_pack(tmp_path: Path, phase: str, *, variable_id: str = "public
     pack = _pack(tmp_path, f"residue_{phase}")
     rule = {
         "id": "inc",
-        "kind": "institutional_rule",
         "phase": phase,
-        "reads": [variable_id],
         "condition": None,
         "writes": [
             {
@@ -103,7 +101,7 @@ def _residue_rule_pack(tmp_path: Path, phase: str, *, variable_id: str = "public
             }
         ],
     }
-    (pack / "transition_rules.yaml").write_text(yaml.safe_dump({"version": "1.0", "social_residue": [rule]}, sort_keys=False))
+    (pack / "transition_rules.yaml").write_text(yaml.safe_dump({"version": "1.0", "transition_rules": [rule]}, sort_keys=False))
     return pack
 
 
@@ -177,7 +175,7 @@ def test_transition_graph_hash_carries_no_reward_program(tmp_path: Path) -> None
         threshold_cascade_program=schedule.threshold_cascade_program,
         modulation_program=schedule.modulation_program,
         passive_depletion_program=schedule.passive_depletion_program,
-        social_residue_program=schedule.social_residue_program,
+        transition_rule_program=schedule.transition_rule_program,
         bounds_clamp_program=schedule.bounds_clamp_program,
     )
     assert payload["phase_graph"]["phases"] == list(DEFAULT_TRANSITION_PHASES)
@@ -192,7 +190,7 @@ def test_transition_graph_hash_carries_no_reward_program(tmp_path: Path) -> None
         threshold_cascade_program=schedule.threshold_cascade_program,
         modulation_program=schedule.modulation_program,
         passive_depletion_program=schedule.passive_depletion_program,
-        social_residue_program=schedule.social_residue_program,
+        transition_rule_program=schedule.transition_rule_program,
         bounds_clamp_program=schedule.bounds_clamp_program,
     )
 

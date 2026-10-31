@@ -406,20 +406,20 @@ Random draws take the shape of their first argument; noise fields are determinis
 
 ### Temporal
 
-History operators read the temporal history the VFS evaluator maintains; `time_in_window` measures a 24-tick day.
+History operators (`lag`, `delta`, `moving_average`, `ema`, `rate_of_change`, `rising_edge`, `falling_edge`) run only in global and agent variable expressions. Their first argument names a variable, `tick` or `bar.<meter>`; window, depth and alpha are literals. Each reads the history of committed values, one per tick, which is episode-scoped and seeded with the value the argument held when the episode began. See [variables.md](variables.md#history-operators). `time_in_window` measures a 24-tick day.
 
 | Function | Returns | What it computes | Needs |
 |---|---|---|---|
-| `delta(x)` | int when every argument is int, else float | `x - lag(x, 1)`, 0 on the first tick. | temporal history on the context |
+| `delta(x)` | int when every argument is int, else float | `x - lag(x, 1)`. | temporal history on the context |
 | `elapsed_ticks([start[, now]])` | int | Ticks since `start` (clamped at 0); `now` defaults to the engine step, and with no arguments the step itself. | the engine step counter on the context |
-| `ema(x, alpha)` | float | Exponential moving average of `x` with smoothing `alpha` in `(0, 1]`. | temporal history on the context |
-| `falling_edge(flag)` | bool | True on the tick `flag` turns from true to false. | temporal history on the context |
-| `lag(x, n)` | int when every argument is int, else float | The value `x` held `n` ticks ago (0 before the history is that deep). | temporal history on the context |
-| `moving_average(x, window)` | float | Mean of `x` over the last `window` ticks including this one. | temporal history on the context |
+| `ema(x, alpha)` | float | `alpha · x + (1 − alpha) · ema` of the previous tick, `alpha` a literal in `(0, 1]`; the episode-start value seeds it. | temporal history on the context |
+| `falling_edge(flag)` | bool | `not flag and lag(flag, 1)`: true on the tick `flag` turns from true to false. | temporal history on the context |
+| `lag(x, n)` | int when every argument is int, else float | The value `x` held `n` ticks ago (`n` a literal, 1 to 256); before `n` ticks of the episode exist, the value `x` held when the episode began. | temporal history on the context |
+| `moving_average(x, window)` | float | Mean of `x, lag(x, 1), …, lag(x, window - 1)` (`window` a literal, 1 to 256). | temporal history on the context |
 | `phase_cos(time, period)` | float | `cos(2π · time / period)`. | — |
 | `phase_sin(time, period)` | float | `sin(2π · time / period)`. | — |
-| `rate_of_change(x, window)` | float | `(x - lag(x, window)) / window`. | temporal history on the context |
-| `rising_edge(flag)` | bool | True on the tick `flag` turns from false to true. | temporal history on the context |
+| `rate_of_change(x, window)` | float | `(x - lag(x, window)) / window` (`window` a literal, 1 to 256). | temporal history on the context |
+| `rising_edge(flag)` | bool | `flag and not lag(flag, 1)`: true on the tick `flag` turns from false to true. | temporal history on the context |
 | `time_in_window(time, start, end)` | bool | True when `time` modulo a 24-tick day lies in `[start, end)`, wrapping past midnight. | — |
 
 ### Spatial

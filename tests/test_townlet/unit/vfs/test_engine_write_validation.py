@@ -113,13 +113,11 @@ def _advance_writes(pack: Path, *writes: dict[str, Any]) -> None:
 def _transition_rule(pack: Path, write: dict[str, Any]) -> None:
     rule = {
         "id": "typed",
-        "kind": "institutional_rule",
         "phase": "apply_social_residue_effects",
-        "reads": [write["variable_id"]],
         "condition": None,
         "writes": [{**write, "effect": None}],
     }
-    (pack / "transition_rules.yaml").write_text(yaml.safe_dump({"version": "1.0", "social_residue": [rule]}, sort_keys=False))
+    (pack / "transition_rules.yaml").write_text(yaml.safe_dump({"version": "1.0", "transition_rules": [rule]}, sort_keys=False))
 
 
 def _variable(**fields: Any) -> VariableDef:

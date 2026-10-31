@@ -14,6 +14,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F  # noqa: N812
 
+from tests.test_townlet.helpers.token_widths import fixed_width_for
 from townlet.agent.network_factory import NetworkFactory
 from townlet.agent.token_input import TokenInputAssembler
 from townlet.config.brain_config import (
@@ -47,7 +48,6 @@ from townlet.training.state import RewardTensor
 from townlet.universe.compiled import CompiledUniverse
 from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.dto.token_spec import (
-    DESCRIPTOR_BLOCK_WIDTH,
     EFFECT_STATIC_FEATURES,
     PAYLOAD_SCHEMAS,
     TOKEN_TRANSPORT_VERSION,
@@ -73,16 +73,15 @@ class _SubstrateCase:
     level_name: str
     position_rank: int
     compact_width: int
-    #: Fixed width excluding the variable_element descriptor blocks, which derive from the
-    #: declaration vocabularies (pinned once, by test_token_spec's DESCRIPTOR_BLOCK_WIDTH).
-    fixed_width_without_descriptors: int
+    #: The fixed width is not pinned here: it derives from the census and the per-type payload
+    #: schemas (tests/test_townlet/helpers/token_widths.py), pinned once in test_token_emission.
     deployed_affordances: int
 
 
 SUBSTRATE_CASES = (
-    _SubstrateCase("grid2d", Path("configs/default_curriculum"), "L1_full_observability", 2, 118, 4103, 14),
-    _SubstrateCase("grid3d", Path("configs/differential/div003_cubic_partial"), "L2_partial_observability", 3, 152, 4103, 14),
-    _SubstrateCase("aspatial", Path("configs/aspatial_test"), "L0", 0, 19, 394, 1),
+    _SubstrateCase("grid2d", Path("configs/default_curriculum"), "L1_full_observability", 2, 118, 14),
+    _SubstrateCase("grid3d", Path("configs/differential/div003_cubic_partial"), "L2_partial_observability", 3, 152, 14),
+    _SubstrateCase("aspatial", Path("configs/aspatial_test"), "L0", 0, 19, 1),
 )
 
 
@@ -218,7 +217,7 @@ def test_substrate_matrix(
 
     assert spec.position_rank == case.position_rank
     assert spec.total_dims == env.observation_dim == case.compact_width
-    assert spec.fixed_total_dims == case.fixed_width_without_descriptors + spec.census["variable_element"] * DESCRIPTOR_BLOCK_WIDTH
+    assert spec.fixed_total_dims == fixed_width_for(spec.census)
     assert observations.shape == next_observations.shape == (2, case.compact_width)
     assert observations.dtype is next_observations.dtype is torch.float32
     assert rewards.shape == dones.shape == (2,)

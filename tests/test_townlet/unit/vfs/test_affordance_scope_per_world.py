@@ -30,14 +30,14 @@ from tests.test_townlet.unit.vfs.test_vtc_affordance_occupancy import _affordanc
 from townlet.determinism import seed_all
 from townlet.effects.context import ExecutionContext
 from townlet.universe.compiler import UniverseCompiler
-from townlet.vfs import compile_vtc_social_residue_rules
+from townlet.vfs import compile_vtc_transition_rules
 from townlet.vfs.registry import VariableRegistry
 from townlet.vfs.schema import VariableDef, VariableScope
 from townlet.vfs.vtc import (
     VTCWriteRefusalError,
     VTCWriteTarget,
     compile_vtc_affordance_occupancy,
-    compile_vtc_social_residue_rules_with_phase_graph,
+    compile_vtc_transition_rules_with_phase_graph,
 )
 
 WITNESS = Path(__file__).resolve().parents[4] / "configs" / "static_epistemic_access"
@@ -102,9 +102,7 @@ def universe(tmp_path_factory: pytest.TempPathFactory):
     # affordance state) and by one where its world's bed is claimed.
     rule = {
         "id": "wear_from_pressure",
-        "kind": "social_residue",
         "phase": "apply_social_residue_effects",
-        "reads": ["wear", "pressure", "occupied_by"],
         "condition": None,
         "writes": [
             {
@@ -117,7 +115,7 @@ def universe(tmp_path_factory: pytest.TempPathFactory):
             }
         ],
     }
-    (pack / "transition_rules.yaml").write_text(yaml.safe_dump({"version": "1.0", "social_residue": [rule]}, sort_keys=False))
+    (pack / "transition_rules.yaml").write_text(yaml.safe_dump({"version": "1.0", "transition_rules": [rule]}, sort_keys=False))
     return UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)
 
 
@@ -188,9 +186,9 @@ def test_a_done_worlds_affordance_state_is_frozen(universe) -> None:
 # --- the transition-rule compile and runtime ------------------------------------------------
 
 _RULE_TARGETS = {
-    "pressure": VTCWriteTarget(VariableScope.GLOBAL, "scalar", meter=False),
-    "wear": VTCWriteTarget(VariableScope.AFFORDANCE, "scalar", meter=False),
-    "energy": VTCWriteTarget(VariableScope.AGENT, "scalar", meter=True),
+    "pressure": VTCWriteTarget(VariableScope.GLOBAL, "scalar", meter=False, expression=None),
+    "wear": VTCWriteTarget(VariableScope.AFFORDANCE, "scalar", meter=False, expression=None),
+    "energy": VTCWriteTarget(VariableScope.AGENT, "scalar", meter=True, expression=None),
 }
 
 
@@ -198,8 +196,6 @@ def _wear_rule(expression: str, condition: str | None = None, target: str = "wea
     return {
         "id": "wear_from_pressure",
         "phase": "apply_social_residue_effects",
-        "kind": "social_residue",
-        "reads": [target, "pressure"],
         "condition": condition,
         "writes": [{"variable_id": target, "expression": expression, "composition": "additive_delta"}],
     }
@@ -209,7 +205,7 @@ def _wear_rule(expression: str, condition: str | None = None, target: str = "wea
 def test_an_affordance_rule_reading_a_global_reads_its_own_world(expression: str, condition: str | None) -> None:
     """Three worlds and three affordances: a global aligned by its trailing axis would pass
     by coincidence of extents and give each affordance another world's pressure."""
-    program = compile_vtc_social_residue_rules([_wear_rule(expression, condition)], _RULE_TARGETS)
+    program = compile_vtc_transition_rules([_wear_rule(expression, condition)], _RULE_TARGETS)
     pressure = torch.tensor([0.0, 1.0, 2.0])
     updated = program.apply(
         vfs_state={"wear": torch.zeros(3, 3), "pressure": pressure},
@@ -226,7 +222,7 @@ def test_an_affordance_rule_reading_an_agent_value_still_refuses() -> None:
     from townlet.vfs.transition_graph import TransitionPhaseGraph
 
     with pytest.raises(VTCWriteRefusalError, match="agent-shaped"):
-        compile_vtc_social_residue_rules_with_phase_graph([_wear_rule("bar.energy")], _RULE_TARGETS, TransitionPhaseGraph.default())
+        compile_vtc_transition_rules_with_phase_graph([_wear_rule("bar.energy")], _RULE_TARGETS, TransitionPhaseGraph.default())
 
 
 # --- occupancy claims ------------------------------------------------------------------------
@@ -240,7 +236,7 @@ def test_a_failed_claim_is_still_an_attempt_and_moves_nothing() -> None:
         writes=[_write(variable_id="occupied_by", expression="agent_id", composition="claim_if_free")],
     )
     program = compile_vtc_affordance_occupancy(
-        [sleep], {"occupied_by": VTCWriteTarget(VariableScope.AFFORDANCE, "scalar", meter=False)}, affordance_ids=["bed"]
+        [sleep], {"occupied_by": VTCWriteTarget(VariableScope.AFFORDANCE, "scalar", meter=False, expression=None)}, affordance_ids=["bed"]
     )
     held = torch.tensor([[0.0], [1.0]])
     result = program.apply(

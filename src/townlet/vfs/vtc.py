@@ -3,20 +3,21 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping, Sequence
-from dataclasses import dataclass, field, replace
+from dataclasses import dataclass, field, fields, replace
 from typing import Any, ClassVar, Protocol, cast
 
 import torch
 
 from townlet.config.interaction_type import INTERACTION_TYPES, PROGRESS_INTERACTION_TYPES
 from townlet.vfs import vtc_kernels
-from townlet.vfs.profiles import VFSProfileCompiler
+from townlet.vfs.profiles import CompiledGlobalProfile, VFSProfileCompiler
 from townlet.vfs.schema import VariableDef, VariableScope, WriteSpec
 from townlet.vfs.storage_dtype import BATCH_ROW_REFERENCE_TYPES, admitted_write_result_types, to_storage_dtype
 from townlet.vfs.transition_graph import TransitionPhaseGraph
-from townlet.world.expression import ASTNode, ExpressionParser, read_paths
+from townlet.world.expression import ASTNode, ExpressionParser, FunctionCall, IfThenElse, PathAccess, Variable, read_paths
 from townlet.world.expression.context import ExecutionContext
 from townlet.world.expression.evaluator import Evaluator
+from townlet.world.expression.functions import FUNCTION_SPECS
 from townlet.world.expression.type_checker import TypeChecker, TypeCheckError
 
 
@@ -117,20 +118,14 @@ class VTCTerminalConditionSource(Protocol):
     def bounds(self) -> Any: ...
 
 
-class VTCSocialResidueSource(Protocol):
-    """Minimal social rule shape needed by the VTC social-residue compiler."""
+class VTCTransitionRuleSource(Protocol):
+    """Minimal rule shape needed by the VTC transition-rule compiler."""
 
     @property
     def id(self) -> str: ...
 
     @property
     def phase(self) -> str: ...
-
-    @property
-    def kind(self) -> str: ...
-
-    @property
-    def reads(self) -> Sequence[str]: ...
 
     @property
     def condition(self) -> str | None: ...
@@ -330,11 +325,10 @@ class CompiledVTCTerminalCondition:
 
 
 @dataclass(frozen=True)
-class CompiledVTCSocialResidueRule:
-    """A parsed VTC rule for visibility, social-residue, and institutional effects."""
+class CompiledVTCTransitionRule:
+    """A parsed VTC transition rule: one condition-gated write to a VFS variable."""
 
     rule_id: str
-    kind: str
     effect: str | None
     variable_id: str
     expression: str
@@ -346,8 +340,14 @@ class CompiledVTCSocialResidueRule:
     priority: int
     clamp: tuple[float, float] | None
     telemetry_label: str
-    reads: tuple[str, ...]
     target_scope: VariableScope
+    reads: tuple[str, ...] = field(metadata={"derived": True})
+    """The ids of the variables (and meter bars) the expression and condition read, sorted.
+
+    Derived from the two ASTs at compile time, never authored (VFS round-2 S8): every
+    spelling the write namespace admits (``x``, ``vfs.x``, ``self.vfs.x``,
+    ``target.vfs.x``, ``bar.x``, ``self.bar.x``, ``target.bar.x``) resolves to its
+    target id. The ASTs are already identity, so this is not hashed."""
     world_columns: frozenset[str] = field(metadata={"derived": True})
     """Globals a rule targeting affordance state reads as its world's column (S1).
 
@@ -368,10 +368,10 @@ class _VTCActionWriteEffect:
 
 
 @dataclass(frozen=True)
-class _VTCSocialResidueEffect:
+class _VTCTransitionRuleEffect:
     """Computed social-rule candidate for one atomic VTC phase commit."""
 
-    rule: CompiledVTCSocialResidueRule
+    rule: CompiledVTCTransitionRule
     expression_value: torch.Tensor
     write_mask: torch.Tensor
 
@@ -423,13 +423,177 @@ class VTCWriteTarget:
     scope: VariableScope
     type: str
     meter: bool
+    expression: VTCExpressionSource | None
+    """The variable's compiled expression as a write reads it; None for storage (VFS round-2 S4)."""
 
 
-def vtc_write_targets(vfs_variables: Iterable[VariableDef], meter_names: Iterable[str]) -> dict[str, VTCWriteTarget]:
-    """Every state a VTC write expression may read or write, by bare name."""
-    targets = {variable.id: VTCWriteTarget(VariableScope(variable.scope), variable.type, meter=False) for variable in vfs_variables}
-    targets.update({name: VTCWriteTarget(VariableScope.AGENT, "scalar", meter=True) for name in meter_names})
+@dataclass(frozen=True)
+class VTCExpressionSource:
+    """An expression variable as a transition write or rule reads it (VFS round-2 S4).
+
+    An expression variable is a name for a function of state. A write that reads one
+    reads that function evaluated on the state the write sees, not the value the last
+    profile evaluation stored: ``ast`` (the expression with every inlinable expression
+    variable it reads substituted, recursively) is substituted into the write's
+    expression and condition at compile, so the write needs no evaluation order.
+
+    ``stored_because`` is None for such a context-free expression. Otherwise it names
+    the function that needs evaluation-time context a transition phase does not carry
+    (temporal history, the engine step, positions): re-evaluating a history operator
+    mid-tick would read its buffers a second time, so the expression is not inlined
+    and a write reads the value its last profile evaluation stored, which is the value
+    the observation the action was chosen on showed. A ``tick``-lifetime one has no
+    stored value by then (tick state resets before the action phases), so reading it
+    from a write refuses at compile.
+    """
+
+    ast: ASTNode
+    lifetime: str
+    stored_because: str | None
+
+
+def vtc_expression_sources(profiles: Sequence[CompiledGlobalProfile | None]) -> dict[str, VTCExpressionSource]:
+    """Every compiled global/agent expression variable as a write reads it, by id.
+
+    ``profiles`` come in evaluation order (global, then agent), each profile's
+    variables topologically sorted, so every expression variable an expression reads is
+    resolved before the expression itself; cycles were refused by the profile compiler.
+    """
+    sources: dict[str, VTCExpressionSource] = {}
+    for profile in profiles:
+        if profile is None:
+            continue
+        for variable in profile.variables:
+            if variable.ast is None:
+                continue
+            context_call = _context_bound_call(variable.ast)
+            if context_call is not None:
+                sources[variable.name] = VTCExpressionSource(variable.ast, variable.lifetime, context_call)
+                continue
+            inlined = {name: source.ast for name, source in sources.items() if source.stored_because is None}
+            sources[variable.name] = VTCExpressionSource(_substitute_reads(variable.ast, inlined), variable.lifetime, None)
+    return sources
+
+
+def vtc_write_targets(
+    vfs_variables: Iterable[VariableDef],
+    meter_names: Iterable[str],
+    expression_profiles: Sequence[CompiledGlobalProfile | None],
+) -> dict[str, VTCWriteTarget]:
+    """Every state a VTC write expression may read or write, by bare name, with its expression if it has one."""
+    expressions = vtc_expression_sources(expression_profiles)
+    targets = {
+        variable.id: VTCWriteTarget(
+            VariableScope(variable.scope), variable.type, meter=False, expression=expressions.pop(variable.id, None)
+        )
+        for variable in vfs_variables
+    }
+    if expressions:
+        raise ValueError(f"Compiled expression variable(s) {sorted(expressions)} have no runtime VFS variable")
+    targets.update({name: VTCWriteTarget(VariableScope.AGENT, "scalar", meter=True, expression=None) for name in meter_names})
     return targets
+
+
+def _context_bound_call(ast: ASTNode) -> str | None:
+    """The first function ``ast`` calls that needs evaluation-time context, described; None if it is context-free."""
+    found: list[str] = []
+
+    def visit(value: Any) -> None:
+        if found:
+            return
+        if isinstance(value, FunctionCall):
+            spec = FUNCTION_SPECS.get(value.function_name)
+            if spec is not None and spec.requires:
+                found.append(f"'{value.function_name}', which needs {' and '.join(spec.requires)}")
+                return
+        if isinstance(value, ASTNode):
+            for ast_field in fields(value):
+                visit(getattr(value, ast_field.name))
+        elif isinstance(value, list | tuple):
+            for item in value:
+                visit(item)
+
+    visit(ast)
+    return found[0] if found else None
+
+
+def _substitute_reads(node: ASTNode, replacements: Mapping[str, ASTNode]) -> ASTNode:
+    """``node`` with every read (``Variable`` or ``PathAccess``) named in ``replacements`` replaced by its AST."""
+    if isinstance(node, Variable) and node.name in replacements:
+        return replacements[node.name]
+    if isinstance(node, PathAccess) and ".".join(node.segments) in replacements:
+        return replacements[".".join(node.segments)]
+
+    def substitute(value: Any) -> Any:
+        if isinstance(value, ASTNode):
+            return _substitute_reads(value, replacements)
+        if isinstance(value, list):
+            return [substitute(item) for item in value]
+        if isinstance(value, tuple):
+            return tuple(substitute(item) for item in value)
+        return value
+
+    changes = {}
+    for ast_field in fields(node):
+        value = getattr(node, ast_field.name)
+        substituted = substitute(value)
+        if substituted != value:
+            changes[ast_field.name] = substituted
+    return replace(node, **changes) if changes else node
+
+
+def _inline_expression_reads(
+    targets: Mapping[str, VTCWriteTarget],
+    *,
+    expression_ast: ASTNode,
+    expression: str,
+    condition_ast: ASTNode | None,
+    condition: str | None,
+    prefix: str,
+) -> tuple[ASTNode, ASTNode | None] | str:
+    """A write's expression and condition with every expression variable they read inlined (VFS round-2 S4).
+
+    Returns the substituted ASTs, or why the write refuses: it calls a function that
+    needs context a transition phase does not carry, or it reads (directly or through
+    an inlined expression) a context-bound ``tick``-lifetime expression variable,
+    which has no stored value while the transition phases run.
+    """
+    replacements: dict[str, ASTNode] = {}
+    stored: dict[str, tuple[str, VTCExpressionSource]] = {}
+    for name, target in targets.items():
+        if target.expression is None:
+            continue
+        for spelling in _target_spellings(name, target):
+            if target.expression.stored_because is None:
+                replacements[spelling] = target.expression.ast
+            else:
+                stored[spelling] = (name, target.expression)
+    checks = [("expression", expression_ast, expression)]
+    if condition_ast is not None:
+        assert condition is not None
+        checks.append(("condition", condition_ast, condition))
+    inlined: list[ASTNode] = []
+    for kind, ast, text in checks:
+        context_call = _context_bound_call(ast)
+        if context_call is not None:
+            return (
+                f"{prefix} {kind} '{text}' calls {context_call}, which a transition write does not carry. "
+                "Declare the quantity as an expression variable and read it by name."
+            )
+        substituted = _substitute_reads(ast, replacements)
+        for path in sorted(read_paths(substituted)):
+            if path not in stored:
+                continue
+            name, source = stored[path]
+            if source.lifetime == "tick":
+                return (
+                    f"{prefix} {kind} '{text}' reads tick-lifetime expression variable '{name}', whose expression calls "
+                    f"{source.stored_because}, so it is not inlined and a write reads its stored value. Tick-lifetime state "
+                    "resets before the action phases, so a write would only ever see its declared literal. "
+                    f"Declare '{name}' with lifetime episode."
+                )
+        inlined.append(substituted)
+    return inlined[0], (inlined[1] if condition_ast is not None else None)
 
 
 _SCOPE_SHAPES: dict[VariableScope, str] = {
@@ -526,13 +690,23 @@ def _write_type_refusal(
             f"(admits {', '.join(sorted(admitted))}). Storage writes never coerce dtype; author an expression of the declared type."
         )
     if target_type in BATCH_ROW_REFERENCE_TYPES and not read_paths(expression_ast):
-        constant = Evaluator(ExecutionContext(bars={}, vfs={}, affordances={}, temporal={})).evaluate(expression_ast)
-        if int(constant) != -1:
+        constant = _constant_value(expression_ast)
+        if constant != -1:
             return (
-                f"{prefix} assigns the constant {int(constant)} to {target_type} '{target_id}'. A constant is the same "
+                f"{prefix} assigns the constant {constant} to {target_type} '{target_id}'. A constant is the same "
                 "batch row in every world, and the batch is independent worlds (S1), so in every other world it names "
                 "another world's entity. Write -1 (null), or a reference this world holds (agent_id for its agent)."
             )
+    if target_type in BATCH_ROW_REFERENCE_TYPES and not _world_local_reference(expression_ast, target_type, checker.schema):
+        own = ""
+        if target_type == "agent_ref":
+            own = "agent_id (the acting agent), "
+        return (
+            f"{prefix} assigns '{expression}' to {target_type} '{target_id}', which is not provably an entity of the "
+            "writing world. The batch is independent worlds (S1), so a reference holds a row of its own world or null; "
+            f"a reference write is -1 (null), {own}a {target_type} read of this world's state, or where(...) / "
+            "if-then-else choosing between those. Arithmetic on a reference is refused: it can name any row."
+        )
     if condition_ast is None:
         return None
     try:
@@ -542,6 +716,38 @@ def _write_type_refusal(
     if condition_type != "bool":
         return f"{prefix} condition '{condition}' is {condition_type}, not bool."
     return None
+
+
+def _constant_value(ast: ASTNode) -> int:
+    """The integer a read-free expression evaluates to."""
+    return int(Evaluator(ExecutionContext(bars={}, vfs={}, affordances={}, temporal={})).evaluate(ast))
+
+
+def _world_local_reference(ast: ASTNode, target_type: str, schema: Mapping[str, str]) -> bool:
+    """Whether ``ast`` provably names an entity of the writing world, or null, for a ``target_type`` reference.
+
+    A syntactic rule, since the type system cannot prove row membership: null (a
+    read-free expression equal to -1), ``agent_id`` for an ``agent_ref`` (the acting
+    agent's own row, its world under S1), a read of a ``target_type`` reference (the
+    registry refuses any stored reference outside its row's world), or ``where`` /
+    if-then-else whose two value branches are themselves such. Anything else, such as
+    ``agent_id * 0``, can name another world's row and is refused.
+    """
+    if not read_paths(ast):
+        return _constant_value(ast) == -1
+    if isinstance(ast, Variable | PathAccess):
+        if isinstance(ast, Variable):
+            path = ast.name
+        else:
+            path = ".".join(ast.segments)
+        return (target_type == "agent_ref" and path == "agent_id") or schema.get(path) == target_type
+    if isinstance(ast, IfThenElse):
+        branches = [ast.true_branch, ast.false_branch]
+    elif isinstance(ast, FunctionCall) and ast.function_name == "where" and len(ast.arguments) == 3:
+        branches = list(ast.arguments[1:])
+    else:
+        return False
+    return all(_world_local_reference(branch, target_type, schema) for branch in branches)
 
 
 class VTCWriteRefusalError(ValueError):
@@ -1482,10 +1688,10 @@ class VTCTerminalConditionProgram:
 
 
 @dataclass(frozen=True)
-class VTCSocialResidueProgram:
-    """Executable collection of compiled VTC social-residue rules."""
+class VTCTransitionRuleProgram:
+    """Executable collection of compiled VTC transition rules."""
 
-    rules: tuple[CompiledVTCSocialResidueRule, ...]
+    rules: tuple[CompiledVTCTransitionRule, ...]
 
     def apply(
         self,
@@ -1520,10 +1726,10 @@ class VTCSocialResidueProgram:
         return VTCWriteResult(updated, frozenset(attempted_targets))
 
     @staticmethod
-    def _iter_phase_groups(rules: Sequence[CompiledVTCSocialResidueRule]) -> list[tuple[CompiledVTCSocialResidueRule, ...]]:
-        phase_groups: list[tuple[CompiledVTCSocialResidueRule, ...]] = []
+    def _iter_phase_groups(rules: Sequence[CompiledVTCTransitionRule]) -> list[tuple[CompiledVTCTransitionRule, ...]]:
+        phase_groups: list[tuple[CompiledVTCTransitionRule, ...]] = []
         current_phase: str | None = None
-        current_group: list[CompiledVTCSocialResidueRule] = []
+        current_group: list[CompiledVTCTransitionRule] = []
 
         for rule in rules:
             if current_phase is None:
@@ -1541,13 +1747,13 @@ class VTCSocialResidueProgram:
     def _compute_phase_effects(
         self,
         *,
-        phase_rules: Sequence[CompiledVTCSocialResidueRule],
+        phase_rules: Sequence[CompiledVTCTransitionRule],
         phase_snapshot: Mapping[str, torch.Tensor],
         bars_state: Mapping[str, torch.Tensor],
         active_mask: torch.Tensor,
         device: torch.device,
-    ) -> tuple[_VTCSocialResidueEffect, ...]:
-        phase_effects: list[_VTCSocialResidueEffect] = []
+    ) -> tuple[_VTCTransitionRuleEffect, ...]:
+        phase_effects: list[_VTCTransitionRuleEffect] = []
         context_vfs = dict(phase_snapshot)
         context_vfs.setdefault("agent_id", torch.arange(active_mask.shape[0], device=device))
         context = ExecutionContext(
@@ -1562,7 +1768,7 @@ class VTCSocialResidueProgram:
 
         for rule in phase_rules:
             if rule.variable_id not in phase_snapshot:
-                raise KeyError(f"VTC social residue targets unknown VFS variable '{rule.variable_id}'")
+                raise KeyError(f"VTC transition rule targets unknown VFS variable '{rule.variable_id}'")
 
             target_snapshot = phase_snapshot[rule.variable_id]
             rule_evaluator = evaluator
@@ -1571,7 +1777,7 @@ class VTCSocialResidueProgram:
             condition_mask = self._build_write_mask(rule, target_snapshot, active_mask, rule_evaluator)
             expression_value = self._evaluate_tensor(rule_evaluator, rule.expression_ast, "expression", rule)
             phase_effects.append(
-                _VTCSocialResidueEffect(
+                _VTCTransitionRuleEffect(
                     rule=rule,
                     expression_value=self._coerce_expression_tensor(expression_value, target_snapshot, rule, active_mask),
                     write_mask=condition_mask,
@@ -1582,7 +1788,7 @@ class VTCSocialResidueProgram:
 
     @staticmethod
     def _world_column_view(
-        context_vfs: Mapping[str, torch.Tensor], rule: CompiledVTCSocialResidueRule, target: torch.Tensor
+        context_vfs: Mapping[str, torch.Tensor], rule: CompiledVTCTransitionRule, target: torch.Tensor
     ) -> dict[str, torch.Tensor]:
         """The snapshot with each of `rule.world_columns` given a singleton affordance axis.
 
@@ -1603,7 +1809,7 @@ class VTCSocialResidueProgram:
     def _commit_phase_effects(
         self,
         phase_snapshot: Mapping[str, torch.Tensor],
-        phase_effects: Sequence[_VTCSocialResidueEffect],
+        phase_effects: Sequence[_VTCTransitionRuleEffect],
     ) -> dict[str, torch.Tensor]:
         phase_values = dict(phase_snapshot)
         priority_state: dict[str, torch.Tensor] = {}
@@ -1623,7 +1829,7 @@ class VTCSocialResidueProgram:
     def _apply_composed_write(
         self,
         *,
-        rule: CompiledVTCSocialResidueRule,
+        rule: CompiledVTCTransitionRule,
         phase_value: torch.Tensor,
         expression_value: torch.Tensor,
         write_mask: torch.Tensor,
@@ -1638,7 +1844,7 @@ class VTCSocialResidueProgram:
 
     @staticmethod
     def _compose_candidate(
-        rule: CompiledVTCSocialResidueRule,
+        rule: CompiledVTCTransitionRule,
         phase_value: torch.Tensor,
         expression_value: torch.Tensor,
     ) -> torch.Tensor:
@@ -1654,15 +1860,15 @@ class VTCSocialResidueProgram:
             return torch.minimum(phase_value, expression)
         if rule.composition == "max":
             return torch.maximum(phase_value, expression)
-        raise AssertionError(f"VTC social residue composition '{rule.composition}' is outside RULE_WRITE_COMPOSITIONS")
+        raise AssertionError(f"VTC transition rule composition '{rule.composition}' is outside RULE_WRITE_COMPOSITIONS")
 
     @staticmethod
-    def _apply_optional_clamp(rule: CompiledVTCSocialResidueRule, value: torch.Tensor) -> torch.Tensor:
+    def _apply_optional_clamp(rule: CompiledVTCTransitionRule, value: torch.Tensor) -> torch.Tensor:
         return _clamp_in_dtype(value, rule.clamp)
 
     def _apply_priority_write(
         self,
-        rule: CompiledVTCSocialResidueRule,
+        rule: CompiledVTCTransitionRule,
         phase_value: torch.Tensor,
         candidate: torch.Tensor,
         write_mask: torch.Tensor,
@@ -1679,7 +1885,7 @@ class VTCSocialResidueProgram:
 
     def _build_write_mask(
         self,
-        rule: CompiledVTCSocialResidueRule,
+        rule: CompiledVTCTransitionRule,
         target: torch.Tensor,
         active_mask: torch.Tensor,
         evaluator: Evaluator,
@@ -1697,21 +1903,21 @@ class VTCSocialResidueProgram:
         evaluator: Evaluator,
         ast: ASTNode,
         kind: str,
-        rule: CompiledVTCSocialResidueRule,
+        rule: CompiledVTCTransitionRule,
     ) -> torch.Tensor:
         value: Any = evaluator.evaluate(ast)
         if not isinstance(value, torch.Tensor):
-            raise TypeError(f"VTC social residue {rule.telemetry_label} {kind} resolved to non-tensor value")
+            raise TypeError(f"VTC transition rule {rule.telemetry_label} {kind} resolved to non-tensor value")
         return value
 
     @staticmethod
     def _coerce_expression_tensor(
         value: torch.Tensor,
         target: torch.Tensor,
-        rule: CompiledVTCSocialResidueRule,
+        rule: CompiledVTCTransitionRule,
         active_mask: torch.Tensor,
     ) -> torch.Tensor:
-        return VTCSocialResidueProgram._coerce_tensor_to_target(
+        return VTCTransitionRuleProgram._coerce_tensor_to_target(
             value,
             target,
             rule,
@@ -1724,10 +1930,10 @@ class VTCSocialResidueProgram:
     def _coerce_mask_to_target(
         value: torch.Tensor,
         target: torch.Tensor,
-        rule: CompiledVTCSocialResidueRule,
+        rule: CompiledVTCTransitionRule,
         active_mask: torch.Tensor,
     ) -> torch.Tensor:
-        return VTCSocialResidueProgram._coerce_tensor_to_target(
+        return VTCTransitionRuleProgram._coerce_tensor_to_target(
             value,
             target,
             rule,
@@ -1740,13 +1946,13 @@ class VTCSocialResidueProgram:
     def _coerce_tensor_to_target(
         value: torch.Tensor,
         target: torch.Tensor,
-        rule: CompiledVTCSocialResidueRule,
+        rule: CompiledVTCTransitionRule,
         active_mask: torch.Tensor,
         *,
         label: str,
         dtype: torch.dtype,
     ) -> torch.Tensor:
-        value_on_device = to_storage_dtype(value, dtype, f"{label} for VTC social residue '{rule.telemetry_label}'").to(
+        value_on_device = to_storage_dtype(value, dtype, f"{label} for VTC transition rule '{rule.telemetry_label}'").to(
             device=target.device
         )
         if value_on_device.dim() == 0:
@@ -1759,7 +1965,7 @@ class VTCSocialResidueProgram:
         # further axes (affordance rows, or a vector or tensor row), spread along them.
         num_agents = active_mask.shape[0]
         if rule.target_scope in BATCH_AXIS_SCOPES and 1 <= value_on_device.dim() <= target.dim() and value_on_device.shape[0] == num_agents:
-            VTCSocialResidueProgram._assert_target_shape(rule, target, num_agents)
+            VTCTransitionRuleProgram._assert_target_shape(rule, target, num_agents)
             padded = value_on_device.reshape(*value_on_device.shape, *([1] * (target.dim() - value_on_device.dim())))
             try:
                 return padded.expand_as(target)
@@ -1767,13 +1973,13 @@ class VTCSocialResidueProgram:
                 pass
 
         raise ValueError(
-            f"{label} for VTC social residue '{rule.telemetry_label}' produced shape {tuple(value.shape)} for "
+            f"{label} for VTC transition rule '{rule.telemetry_label}' produced shape {tuple(value.shape)} for "
             f"{rule.target_scope.value}-scope target shape {tuple(target.shape)}; the compiled shape proof admits none such"
         )
 
     @staticmethod
     def _active_mask_for_target(
-        rule: CompiledVTCSocialResidueRule,
+        rule: CompiledVTCTransitionRule,
         target: torch.Tensor,
         active_mask: torch.Tensor,
     ) -> torch.Tensor:
@@ -1783,17 +1989,17 @@ class VTCSocialResidueProgram:
         # an agent row, or a world's global or affordance rows (S1), each advancing while
         # its own agent is active.
         assert rule.target_scope in BATCH_AXIS_SCOPES, rule
-        VTCSocialResidueProgram._assert_target_shape(rule, target, num_agents)
+        VTCTransitionRuleProgram._assert_target_shape(rule, target, num_agents)
         agent_mask = active
         while agent_mask.dim() < target.dim():
             agent_mask = agent_mask.unsqueeze(-1)
         return agent_mask.expand_as(target)
 
     @staticmethod
-    def _assert_target_shape(rule: CompiledVTCSocialResidueRule, target: torch.Tensor, num_agents: int) -> None:
+    def _assert_target_shape(rule: CompiledVTCTransitionRule, target: torch.Tensor, num_agents: int) -> None:
         """The declared scope fixes the leading axis; storage that disagrees is a registry defect."""
         assert target.dim() >= 1 and int(target.shape[0]) == num_agents, (
-            f"VTC social residue '{rule.telemetry_label}' targets {rule.target_scope.value}-scope "
+            f"VTC transition rule '{rule.telemetry_label}' targets {rule.target_scope.value}-scope "
             f"'{rule.variable_id}' with storage shape {tuple(target.shape)}; expected a leading batch axis of {num_agents}"
         )
 
@@ -1856,8 +2062,6 @@ class VTCRewardProgram:
                 )
 
 
-_SOCIAL_RESIDUE_RULE_KINDS = frozenset({"visibility_effect", "social_residue", "institutional_rule"})
-
 #: Transition-rule write compositions. The occupancy claims (``claim_if_free``,
 #: ``capacity_claim``) are action-write only: a rule has no claimant and no source affordance.
 RULE_WRITE_COMPOSITIONS: tuple[str, ...] = (
@@ -1872,19 +2076,19 @@ RULE_WRITE_COMPOSITIONS: tuple[str, ...] = (
 )
 
 
-def compile_vtc_social_residue_rules(
-    rules: Sequence[VTCSocialResidueSource | Mapping[str, Any]],
+def compile_vtc_transition_rules(
+    rules: Sequence[VTCTransitionRuleSource | Mapping[str, Any]],
     targets: Mapping[str, VTCWriteTarget],
-) -> VTCSocialResidueProgram:
-    """Compile relationship/social-state rules into VTC social-residue writes."""
-    return compile_vtc_social_residue_rules_with_phase_graph(rules, targets, TransitionPhaseGraph.default())
+) -> VTCTransitionRuleProgram:
+    """Compile declarative transition rules into VTC writes."""
+    return compile_vtc_transition_rules_with_phase_graph(rules, targets, TransitionPhaseGraph.default())
 
 
-def compile_vtc_social_residue_rules_with_phase_graph(
-    rules: Sequence[VTCSocialResidueSource | Mapping[str, Any]],
+def compile_vtc_transition_rules_with_phase_graph(
+    rules: Sequence[VTCTransitionRuleSource | Mapping[str, Any]],
     targets: Mapping[str, VTCWriteTarget],
     phase_graph: TransitionPhaseGraph,
-) -> VTCSocialResidueProgram:
+) -> VTCTransitionRuleProgram:
     """Compile relationship/social-state rules using an explicit transition phase graph.
 
     ``targets`` names every state a rule may read or write with its declared scope and
@@ -1895,13 +2099,13 @@ def compile_vtc_social_residue_rules_with_phase_graph(
     schema, shapes = _write_expression_namespace(targets)
     global_ids = frozenset(name for name, target in targets.items() if target.scope == VariableScope.GLOBAL)
     checker = TypeChecker(schema=schema)
-    compiled_rules: list[CompiledVTCSocialResidueRule] = []
+    compiled_rules: list[CompiledVTCTransitionRule] = []
     refusals: list[VTCWriteRefusal] = []
 
     for rule_index, raw_rule in enumerate(rules):
-        rule = _coerce_social_residue_rule(raw_rule, rule_index)
+        rule = _coerce_transition_rule(raw_rule, rule_index)
         for write_index, raw_write in enumerate(rule["writes"]):
-            write = _coerce_social_residue_write(raw_write, rule, write_index)
+            write = _coerce_transition_rule_write(raw_write, rule, write_index)
             if write["phase"] not in phase_graph.ordered_phases:
                 refusals.append(
                     VTCWriteRefusal(
@@ -1948,6 +2152,19 @@ def compile_vtc_social_residue_rules_with_phase_graph(
             if type_refusal is not None:
                 refusals.append(VTCWriteRefusal(origin_key=f"transition_rules:{rule['rule_id']}", kind="type", message=type_refusal))
                 continue
+            # From here on the ASTs are the inlined ones: what the rule evaluates (S4).
+            inlined = _inline_expression_reads(
+                targets,
+                expression_ast=expression_ast,
+                expression=write["expression"],
+                condition_ast=condition_ast,
+                condition=condition,
+                prefix=f"Transition rule '{rule['rule_id']}' write '{write['telemetry_label']}'",
+            )
+            if isinstance(inlined, str):
+                refusals.append(VTCWriteRefusal(origin_key=f"transition_rules:{rule['rule_id']}", kind="type", message=inlined))
+                continue
+            expression_ast, condition_ast = inlined
             admitted_shapes = _RULE_ADMITTED_SHAPES[target.scope]
             shape_refusal = _write_shape_refusal(
                 expression_ast=expression_ast,
@@ -1965,9 +2182,8 @@ def compile_vtc_social_residue_rules_with_phase_graph(
                 refusals.append(VTCWriteRefusal(origin_key=f"transition_rules:{rule['rule_id']}", kind="type", message=shape_refusal))
                 continue
             compiled_rules.append(
-                CompiledVTCSocialResidueRule(
+                CompiledVTCTransitionRule(
                     rule_id=rule["rule_id"],
-                    kind=rule["kind"],
                     effect=write["effect"],
                     variable_id=write["variable_id"],
                     expression=write["expression"],
@@ -1979,15 +2195,15 @@ def compile_vtc_social_residue_rules_with_phase_graph(
                     priority=write["priority"],
                     clamp=write["clamp"],
                     telemetry_label=write["telemetry_label"],
-                    reads=rule["reads"],
                     target_scope=target.scope,
+                    reads=_rule_reads(targets, expression_ast, condition_ast),
                     world_columns=_world_columns(target.scope, global_ids, expression_ast, condition_ast),
                 )
             )
 
     if refusals:
         raise VTCWriteRefusalError(tuple(refusals))
-    return VTCSocialResidueProgram(
+    return VTCTransitionRuleProgram(
         rules=tuple(
             sorted(
                 compiled_rules,
@@ -1997,54 +2213,54 @@ def compile_vtc_social_residue_rules_with_phase_graph(
     )
 
 
-def _coerce_social_residue_rule(rule: VTCSocialResidueSource | Mapping[str, Any], rule_index: int) -> dict[str, Any]:
-    rule_id = str(_config_field(rule, "id", _config_field(rule, "rule_id", ""))).strip()
-    if not rule_id:
-        raise ValueError("VTC social residue rule requires non-empty id")
+#: Rule fields the compiler used to accept and now refuses: ``reads`` is derived from
+#: the ASTs and ``kind`` was a label with no behaviour (VFS round-2 S8). The authored
+#: DTO refuses them as unknown keys; this catches a mapping source that bypasses it.
+_DELETED_RULE_FIELDS = ("reads", "kind")
 
-    kind = str(_config_field(rule, "kind", "")).strip()
-    if kind not in _SOCIAL_RESIDUE_RULE_KINDS:
-        allowed = ", ".join(sorted(_SOCIAL_RESIDUE_RULE_KINDS))
-        raise ValueError(f"Unsupported VTC social residue kind '{kind}' for rule '{rule_id}'; expected one of: {allowed}")
+
+def _coerce_transition_rule(rule: VTCTransitionRuleSource | Mapping[str, Any], rule_index: int) -> dict[str, Any]:
+    rule_id = str(_config_field(rule, "id", "")).strip()
+    if not rule_id:
+        raise ValueError("VTC transition rule requires non-empty id")
+
+    for deleted in _DELETED_RULE_FIELDS:
+        if _config_field(rule, deleted, None) is not None:
+            raise ValueError(
+                f"VTC transition rule '{rule_id}' declares '{deleted}', which no longer exists: "
+                "a rule's reads are derived from its expression and condition, and a rule has no kind"
+            )
 
     phase = _config_field(rule, "phase", None)
     if phase is None or not str(phase).strip():
-        raise ValueError(f"VTC social residue rule '{rule_id}' requires explicit phase")
-
-    raw_reads = _config_field(rule, "reads", None)
-    if raw_reads is None:
-        raise ValueError(f"VTC social residue rule '{rule_id}' requires explicit reads")
-    reads = _dedupe([str(read) for read in _iter_config_items(raw_reads)])
+        raise ValueError(f"VTC transition rule '{rule_id}' requires explicit phase")
 
     raw_condition = _config_field(rule, "condition", None)
     condition = None if raw_condition is None else str(raw_condition).strip()
     if condition == "":
-        raise ValueError(f"VTC social residue rule '{rule_id}' condition must be non-empty when provided")
+        raise ValueError(f"VTC transition rule '{rule_id}' condition must be non-empty when provided")
 
     raw_writes = _config_field(rule, "writes", None)
     writes = _iter_config_items(raw_writes)
     if not writes:
-        raise ValueError(f"VTC social residue rule '{rule_id}' requires at least one write")
+        raise ValueError(f"VTC transition rule '{rule_id}' requires at least one write")
 
     raw_priority = _config_field(rule, "priority", None)
     priority = rule_index if raw_priority is None else int(raw_priority)
     if priority < 0:
-        raise ValueError(f"VTC social residue rule '{rule_id}' priority must be non-negative")
+        raise ValueError(f"VTC transition rule '{rule_id}' priority must be non-negative")
 
     return {
         "rule_id": rule_id,
-        "kind": kind,
         "phase": str(phase),
-        "reads": reads,
         "condition": condition,
         "writes": writes,
         "priority": priority,
     }
 
 
-def _coerce_social_residue_write(raw_write: Mapping[str, Any] | WriteSpec, rule: Mapping[str, Any], write_index: int) -> dict[str, Any]:
+def _coerce_transition_rule_write(raw_write: Mapping[str, Any] | WriteSpec, rule: Mapping[str, Any], write_index: int) -> dict[str, Any]:
     rule_id = str(rule["rule_id"])
-    kind = str(rule["kind"])
     condition: str | None
     composition: str
     effect: str | None
@@ -2069,31 +2285,31 @@ def _coerce_social_residue_write(raw_write: Mapping[str, Any] | WriteSpec, rule:
         raw_priority = raw_write.get("priority")
         priority = int(rule["priority"]) + write_index if raw_priority is None else int(raw_priority)
         clamp = _coerce_optional_clamp(raw_write.get("clamp"))
-        telemetry_label = str(raw_write.get("telemetry_label") or _social_residue_telemetry_label(rule_id, kind, raw_write)).strip()
+        telemetry_label = str(raw_write.get("telemetry_label") or _transition_rule_telemetry_label(rule_id, raw_write)).strip()
         effect_raw = raw_write.get("effect")
         effect = None if effect_raw is None else str(effect_raw).strip()
     else:
-        raise TypeError(f"VTC social residue rule '{rule_id}' write entry must be a WriteSpec or mapping")
+        raise TypeError(f"VTC transition rule '{rule_id}' write entry must be a WriteSpec or mapping")
 
     if not variable_id:
-        raise ValueError(f"VTC social residue rule '{rule_id}' write requires variable_id")
+        raise ValueError(f"VTC transition rule '{rule_id}' write requires variable_id")
     if not expression:
-        raise ValueError(f"VTC social residue rule '{rule_id}' write to '{variable_id}' requires expression")
+        raise ValueError(f"VTC transition rule '{rule_id}' write to '{variable_id}' requires expression")
     if condition == "":
-        raise ValueError(f"VTC social residue rule '{rule_id}' write to '{variable_id}' condition must be non-empty when provided")
+        raise ValueError(f"VTC transition rule '{rule_id}' write to '{variable_id}' condition must be non-empty when provided")
     if composition not in RULE_WRITE_COMPOSITIONS:
         raise ValueError(
-            f"VTC social residue rule '{rule_id}' write to '{variable_id}' composition '{composition}' is not one of "
+            f"VTC transition rule '{rule_id}' write to '{variable_id}' composition '{composition}' is not one of "
             f"{', '.join(RULE_WRITE_COMPOSITIONS)}"
         )
     if not phase:
-        raise ValueError(f"VTC social residue rule '{rule_id}' write to '{variable_id}' requires phase")
+        raise ValueError(f"VTC transition rule '{rule_id}' write to '{variable_id}' requires phase")
     if priority < 0:
-        raise ValueError(f"VTC social residue rule '{rule_id}' write to '{variable_id}' priority must be non-negative")
+        raise ValueError(f"VTC transition rule '{rule_id}' write to '{variable_id}' priority must be non-negative")
     if not telemetry_label:
-        raise ValueError(f"VTC social residue rule '{rule_id}' write to '{variable_id}' requires telemetry_label")
+        raise ValueError(f"VTC transition rule '{rule_id}' write to '{variable_id}' requires telemetry_label")
     if effect == "":
-        raise ValueError(f"VTC social residue rule '{rule_id}' write to '{variable_id}' effect must be non-empty when provided")
+        raise ValueError(f"VTC transition rule '{rule_id}' write to '{variable_id}' effect must be non-empty when provided")
 
     return {
         "variable_id": variable_id,
@@ -2113,19 +2329,20 @@ def _coerce_optional_clamp(raw_clamp: Any) -> tuple[float, float] | None:
         return None
     clamp_values = list(raw_clamp)
     if len(clamp_values) != 2:
-        raise ValueError("VTC social residue clamp must contain exactly two values")
+        raise ValueError("VTC transition rule clamp must contain exactly two values")
     low = float(clamp_values[0])
     high = float(clamp_values[1])
     if low > high:
-        raise ValueError("VTC social residue clamp lower bound must be <= upper bound")
+        raise ValueError("VTC transition rule clamp lower bound must be <= upper bound")
     return (low, high)
 
 
-def _social_residue_telemetry_label(rule_id: str, kind: str, write: Mapping[str, Any]) -> str:
+def _transition_rule_telemetry_label(rule_id: str, write: Mapping[str, Any]) -> str:
+    """``rule_id:effect``, or ``rule_id:variable_id`` for an unlabelled write. The id names the rule."""
     effect = write.get("effect")
     variable_id = write.get("variable_id", "unknown")
     suffix = effect if effect is not None else variable_id
-    return f"{kind}:{rule_id}:{suffix}"
+    return f"{rule_id}:{suffix}"
 
 
 def _combined_condition(rule_condition: str | None, write_condition: str | None) -> str | None:
@@ -2198,6 +2415,25 @@ _AGENT_ROW_SHAPES = frozenset({"scalar", "agent"})
 
 An action write lands per acting agent, so its value is one per agent (or a
 scalar): an agent row or an occupancy claimant's payload."""
+
+
+def _target_spellings(name: str, target: VTCWriteTarget) -> tuple[str, ...]:
+    """Every spelling of ``name`` the write namespace admits (``_write_expression_namespace`` enumerates the same set)."""
+    keys = [name, f"vfs.{name}", f"self.vfs.{name}", f"target.vfs.{name}"]
+    if target.meter:
+        keys += [f"bar.{name}", f"self.bar.{name}", f"target.bar.{name}"]
+    return tuple(keys)
+
+
+def _rule_reads(targets: Mapping[str, VTCWriteTarget], *asts: ASTNode | None) -> tuple[str, ...]:
+    """The ids of every target the ASTs read, sorted: a rule's reads are derived, never authored (S8).
+
+    Runs after the type check, so every path the ASTs read is either a target
+    spelling or the context's own ``agent_id``, which is no variable.
+    """
+    spellings = {spelling: name for name, target in targets.items() for spelling in _target_spellings(name, target)}
+    paths = frozenset().union(*(read_paths(ast) for ast in asts if ast is not None))
+    return tuple(sorted({spellings[path] for path in paths if path in spellings}))
 
 
 def _world_columns(target_scope: VariableScope, global_ids: frozenset[str], *asts: ASTNode | None) -> frozenset[str]:
@@ -2320,6 +2556,19 @@ def _compile_vtc_action_writes_with_phase_graph(
             if type_refusal is not None:
                 refusals.append(VTCWriteRefusal(origin_key=origin_key, kind="type", message=type_refusal))
                 continue
+            # From here on the ASTs are the inlined ones: what the write evaluates (S4).
+            inlined = _inline_expression_reads(
+                targets,
+                expression_ast=expression_ast,
+                expression=write.expression,
+                condition_ast=condition_ast,
+                condition=write.condition,
+                prefix=f"Action '{action.name}' write '{write.telemetry_label}'",
+            )
+            if isinstance(inlined, str):
+                refusals.append(VTCWriteRefusal(origin_key=origin_key, kind="type", message=inlined))
+                continue
+            expression_ast, condition_ast = inlined
             # A shape refusal is the second half of the type proof (payload, then axes),
             # so it reports under the same kind.
             shape_refusal = _write_shape_refusal(
@@ -3054,16 +3303,6 @@ def _iter_config_items(value: Any) -> list[Any]:
     if value is None:
         return []
     return list(value)
-
-
-def _dedupe(values: Sequence[str]) -> tuple[str, ...]:
-    seen: set[str] = set()
-    deduped: list[str] = []
-    for value in values:
-        if value not in seen:
-            deduped.append(value)
-            seen.add(value)
-    return tuple(deduped)
 
 
 def _rule_slug(name: str) -> str:

@@ -128,7 +128,7 @@ def test_evaluator_feeds_global_outputs_to_the_agent_profile_in_order():
     assert marks == {"global": {"clock"}, "agent": {"is_night"}}
     assert profiles.global_profile is not None and profiles.agent_profile is not None
 
-    evaluator = VFSEvaluator()
+    evaluator = VFSEvaluator(history_spec=None)
     bars = {"energy": torch.tensor([1.0, 1.0])}
     for tick, expected in ((0.0, False), (1.0, True)):
         state = {"tick": torch.tensor(tick), "clock": torch.tensor(-1.0), "is_night": torch.tensor([False, False])}

@@ -89,7 +89,7 @@ class RawConfigsV21:
     # never hashed.
     presentation: PresentationConfig | None = None
     action_label_overrides: dict[int, str] | None = None
-    social_residue_rules: tuple[dict[str, object], ...] = ()
+    transition_rules: tuple[dict[str, object], ...] = ()
 
     def __post_init__(self) -> None:
         """Validate local DTO construction invariants."""
@@ -183,7 +183,7 @@ class RawConfigsV21:
             effects=effects,
             presentation=presentation,
             action_label_overrides=action_label_overrides,
-            social_residue_rules=transition_rules.social_residue_sources() if transition_rules is not None else (),
+            transition_rules=transition_rules.rule_sources() if transition_rules is not None else (),
             levels=levels,
             experiment_dir=store.experiment_dir,
             source_map=store.source_map,

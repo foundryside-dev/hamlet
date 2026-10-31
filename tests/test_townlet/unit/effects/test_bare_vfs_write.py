@@ -206,21 +206,12 @@ def test_parallel_conflict_sees_bare_and_target_spellings_as_one_write() -> None
         CommandCompiler(SCHEMA, agent_target=True).compile_command(node)
 
 
-def test_sample_and_reduce_targets_resolve_too() -> None:
+def test_sample_store_target_resolves_too() -> None:
     sample = CommandNode(
         type=CommandType.SAMPLE, sample_store_path="vfs.mood", sample_distribution="uniform", sample_params={"min": 0.0, "max": 1.0}
     )
-    reduce = CommandNode(
-        type=CommandType.REDUCE,
-        reduce_expr="bar.col",
-        reduce_iterator="x",
-        reduce_init_expr="0.0",
-        reduce_body_expr="acc + x",
-        reduce_target="vfs.mood",
-    )
-    compiler = CommandCompiler({**SCHEMA, "bar.col": "tensor"}, agent_target=True)
+    compiler = CommandCompiler(SCHEMA, agent_target=True)
     assert compiler.compile_command(sample).sample_store_path == "target.vfs.mood"
-    assert compiler.compile_command(reduce).reduce_target == "target.vfs.mood"
 
 
 # -- runtime backstop: a bare agent write reaching the context unresolved -----------------

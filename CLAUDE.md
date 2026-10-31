@@ -236,9 +236,9 @@ observable effects, and deployed affordances only where tokens carry no position
 
 - **Transfer is a property of the type schema, not of the width.**
   `token_type_schema_hash` — the transfer contract — is **identical across a 2-D grid, a 3-D
-  cubic grid and an aspatial universe** (measured 2026-10-31: `f0f3f356e25411b3` on
+  cubic grid and an aspatial universe** (measured 2026-10-31: `de093a6e9f59924e` on
   `default_curriculum`, `differential/div003_cubic_partial`, `aspatial_test` and all three
-  `token_transfer_*` packs, whose `total_dims` range 162–1132). That is what
+  `token_transfer_*` packs, whose `total_dims` range 19–152). That is what
   `MAX_POSITION_RANK` padding buys, and why rank-adaptive padding is not a free width saving.
   `layout_hash` — the flat-net contract — moves per universe, as it must.
 - **POMDP does not shrink or reshape the tensor**: same `TokenSpec`, same width, same

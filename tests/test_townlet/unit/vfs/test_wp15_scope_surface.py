@@ -28,11 +28,11 @@ import torch
 import yaml
 from pydantic import ValidationError
 
-from townlet.config.transition_rules_config import SocialResidueWriteConfig
+from townlet.config.transition_rules_config import TransitionRuleWriteConfig
 from townlet.config.variables_config import VariableDeclaration
 from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.errors import CompilationError
-from townlet.vfs import compile_vtc_social_residue_rules
+from townlet.vfs import compile_vtc_transition_rules
 from townlet.vfs.registry import VariableRegistry
 from townlet.vfs.schema import VariableDef, VariableScope, WriteSpec
 from townlet.vfs.vtc import RULE_WRITE_COMPOSITIONS, VTCWriteTarget
@@ -125,7 +125,7 @@ def test_append_event_composition_refuses_at_parse() -> None:
             telemetry_label="append",
         )
     with pytest.raises(ValidationError, match="composition"):
-        SocialResidueWriteConfig(
+        TransitionRuleWriteConfig(
             variable_id="state",
             expression="1.0",
             composition="append_event",  # type: ignore[arg-type]
@@ -143,23 +143,21 @@ def test_occupancy_claim_compositions_are_action_write_only(composition: str) ->
     the DTO refuses them at parse and the compiler's raw path refuses them too.
     """
     with pytest.raises(ValidationError, match="composition"):
-        SocialResidueWriteConfig(
+        TransitionRuleWriteConfig(
             variable_id="state", expression="1.0", composition=composition, condition=None, clamp=None, effect=None  # type: ignore[arg-type]
         )
     rule = {
         "id": "claim",
-        "kind": "social_residue",
         "phase": "apply_social_residue_effects",
-        "reads": ["state"],
         "condition": None,
         "writes": [{"variable_id": "state", "expression": "1.0", "composition": composition}],
     }
     with pytest.raises(ValueError, match=f"composition '{composition}' is not one of"):
-        compile_vtc_social_residue_rules([rule], {"state": VTCWriteTarget(VariableScope.AGENT, "scalar", meter=False)})
+        compile_vtc_transition_rules([rule], {"state": VTCWriteTarget(VariableScope.AGENT, "scalar", meter=False, expression=None)})
 
 
 def test_rule_composition_vocabulary_has_one_definition() -> None:
-    literal = get_args(SocialResidueWriteConfig.model_fields["composition"].annotation)
+    literal = get_args(TransitionRuleWriteConfig.model_fields["composition"].annotation)
     assert literal == RULE_WRITE_COMPOSITIONS
 
 
@@ -201,18 +199,21 @@ def test_l5_declares_no_deleted_or_unwritten_relational_state() -> None:
     variables = {variable.id: variable for variable in universe.get_level(L5_LEVEL).vfs_variables}
     assert "trust" not in variables
     assert "occupied_by" not in variables
-    assert "time_since_last_sleep" not in variables
+    # The unwired literal is gone; WP14 re-added it as a live expression (test_wp14_history.py).
+    agent_expressions = {variable.name: variable.expression for variable in universe.compiled_vfs_profiles.agent_profile.variables}
+    assert agent_expressions["time_since_last_sleep"] is not None
     assert {VariableScope(variable.scope) for variable in variables.values()} <= {VariableScope.GLOBAL, VariableScope.AGENT}
 
 
 def test_l5_compiles_with_no_constant_exposed_variable() -> None:
     """r16: two exposed tick-lifetime variables were written by nothing, so their tokens were
     constant zero. Every exposed variable now tracks state: deficit_energy rises as energy
-    drains below its 0.5 target, and is observed with full-range normalization."""
+    drains below its 0.5 target, and is observed with full-range normalization;
+    time_since_last_sleep (WP14) counts the ticks since energy last rose."""
     universe = UniverseCompiler().compile(L5, primary_level=L5_LEVEL, use_cache=False)
     level = universe.get_level(L5_LEVEL)
     exposed = [variable for variable in level.vfs_variables if "agent" in variable.exposed_to]
-    assert [variable.id for variable in exposed] == ["deficit_energy"]
+    assert [variable.id for variable in exposed] == ["deficit_energy", "time_since_last_sleep"]
     assert level.token_spec.census["variable_element"] == len(exposed)
 
     env = universe.create_environment(num_agents=2, level_name=L5_LEVEL, device="cpu")

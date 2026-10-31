@@ -23,7 +23,7 @@ from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.universe.compiled import CompiledUniverse
 from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.errors import CompilationError
-from townlet.vfs import compile_vtc_action_writes, compile_vtc_social_residue_rules
+from townlet.vfs import compile_vtc_action_writes, compile_vtc_transition_rules
 from townlet.vfs.schema import VariableScope
 from townlet.vfs.vtc import VTCWriteRefusalError, VTCWriteTarget
 
@@ -79,7 +79,7 @@ def _pack(
 
         _edit_yaml(pack / "actions.yaml", edit_actions)
     if rules is not None:
-        (pack / "transition_rules.yaml").write_text(yaml.safe_dump({"version": "1.0", "social_residue": rules}, sort_keys=False))
+        (pack / "transition_rules.yaml").write_text(yaml.safe_dump({"version": "1.0", "transition_rules": rules}, sort_keys=False))
     return pack
 
 
@@ -103,9 +103,7 @@ def _action_write(variable_id: str, expression: str, *, condition: str | None = 
 def _rule(rule_id: str, variable_id: str, expression: str, *, condition: str | None = None) -> dict[str, Any]:
     return {
         "id": rule_id,
-        "kind": "social_residue",
         "phase": "apply_social_residue_effects",
-        "reads": [variable_id],
         "condition": condition,
         "writes": [
             {
@@ -203,7 +201,7 @@ def test_rule_with_an_agent_condition_on_a_global_target_refuses_at_compile(tmp_
 
 
 def _target(scope: VariableScope, var_type: str = "scalar", *, meter: bool = False) -> VTCWriteTarget:
-    return VTCWriteTarget(scope, var_type, meter=meter)
+    return VTCWriteTarget(scope, var_type, meter=meter, expression=None)
 
 
 TARGETS = {
@@ -232,7 +230,7 @@ def _unit_rule(variable_id: str, expression: str, condition: str | None = None) 
     ],
 )
 def test_rule_shapes_the_runtime_handles_compile(variable_id: str, expression: str) -> None:
-    program = compile_vtc_social_residue_rules([_unit_rule(variable_id, expression)], TARGETS)
+    program = compile_vtc_transition_rules([_unit_rule(variable_id, expression)], TARGETS)
     assert len(program.rules) == 1
 
 
@@ -247,7 +245,7 @@ def test_rule_shapes_the_runtime_handles_compile(variable_id: str, expression: s
 )
 def test_rule_shapes_that_would_fail_or_broadcast_by_coincidence_refuse(variable_id: str, expression: str) -> None:
     with pytest.raises(VTCWriteRefusalError) as excinfo:
-        compile_vtc_social_residue_rules([_unit_rule(variable_id, expression)], TARGETS)
+        compile_vtc_transition_rules([_unit_rule(variable_id, expression)], TARGETS)
     (refusal,) = excinfo.value.refusals
     assert refusal.kind == "type"
 
@@ -255,7 +253,7 @@ def test_rule_shapes_that_would_fail_or_broadcast_by_coincidence_refuse(variable
 def test_mixing_affordance_and_agent_axes_refuses_even_inside_an_expression() -> None:
     """(N_agents,) + (N_affordances,) would combine by coincidence of extent."""
     with pytest.raises(VTCWriteRefusalError, match="different shapes"):
-        compile_vtc_social_residue_rules([_unit_rule("public", "wear + bar.energy")], TARGETS)
+        compile_vtc_transition_rules([_unit_rule("public", "wear + bar.energy")], TARGETS)
 
 
 class _Action:

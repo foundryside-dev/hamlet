@@ -12,11 +12,11 @@ from pathlib import Path
 import msgpack
 import pytest
 
+from tests.test_townlet.helpers.token_widths import fixed_width_for
 from townlet.universe.compiled import COMPILED_SCHEMA_VERSION, CompiledUniverse
 from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.compilers.observation import ObservationCompiler
 from townlet.universe.dto.token_spec import (
-    DESCRIPTOR_BLOCK_WIDTH,
     METER_SIGNATURE_FEATURES,
     PAYLOAD_SCHEMAS,
     TOKEN_TYPE_ROSTER,
@@ -72,8 +72,10 @@ class TestL1TokenEmission:
         # Compact dynamic transport excludes immutable context and rank padding.
         assert _selected(l1_universe).token_spec.census["variable_element"] == 1
         assert _selected(l1_universe).token_spec.total_dims == 118
-        # One variable_element slot; its descriptor block derives from the vocabularies.
-        assert _selected(l1_universe).token_spec.fixed_total_dims == 4103 + DESCRIPTOR_BLOCK_WIDTH
+        # The fixed width derives from the census pinned above and the per-type payload
+        # schemas; this is the ONE literal pin of the shipped width, so vocabulary drift is loud.
+        spec = _selected(l1_universe).token_spec
+        assert spec.fixed_total_dims == fixed_width_for(spec.census) == 3993
 
     def test_all_roster_types_present_in_engine_order(self, l1_universe):
         assert tuple(t.type_name for t in _selected(l1_universe).token_spec.types) == TOKEN_TYPE_ROSTER

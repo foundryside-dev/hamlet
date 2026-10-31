@@ -62,7 +62,7 @@ from townlet.vfs.transition_schedule import (
     VTCTransitionSchedule,
     build_vtc_transition_schedule,
     serialize_vtc_transition_schedule,
-    social_rules_from_transition_payload,
+    transition_rules_from_payload,
 )
 
 # 1.15: the bars block became N per-meter observation fields with per-meter normalization
@@ -148,7 +148,14 @@ from townlet.vfs.transition_schedule import (
 # 1.37: the for_each `radius` field is deleted with the `nearby_agents` collection (S1: no
 # other agent shares an agent's world). Serialized command nodes lose the key; a 1.36
 # artifact carries it and is refused as stale.
-COMPILED_SCHEMA_VERSION = "1.37"
+# 1.38: two dead features leave the artifact. The effects `reduce` command is deleted (no
+# declared path is typed `list` or `tensor`, so it never compiled from a pack): serialized
+# command nodes lose the five `reduce_*` keys. The affordance identity loses its spawn-target
+# lanes (`spawn_target_target` / `spawn_target_index_zero`): a constant spawn target refuses
+# at compile, so `target` was the only value and the lanes carried nothing beyond the
+# `spawn_effect_*` write source. The affordance payload width and the token type schema
+# hash move; a 1.37 artifact of an unchanged pack would serve both stale, so it is refused.
+COMPILED_SCHEMA_VERSION = "1.38"
 
 REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "compiled_schema_version",
@@ -461,6 +468,17 @@ class CompiledUniverse:
         for field_name in REQUIRED_COMPILED_UNIVERSE_FIELDS:
             _required_field(payload, field_name)
 
+        # The profiles deserialize before the levels: each level's transition schedule
+        # inlines the expression variables its writes and rules read (VFS round-2 S4).
+        raw_vfs_profiles = _required_field(payload, "compiled_vfs_profiles")
+        compiled_vfs_profiles: CompiledVFSProfiles | None
+        expression_profiles: tuple[CompiledGlobalProfile | None, ...]
+        if raw_vfs_profiles is None:
+            compiled_vfs_profiles = None
+            expression_profiles = ()
+        else:
+            compiled_vfs_profiles = _deserialize_vfs_profiles(raw_vfs_profiles)
+            expression_profiles = (compiled_vfs_profiles.global_profile, compiled_vfs_profiles.agent_profile)
         all_levels: dict[str, CompiledUniverse.LevelMetadata] = {}
         raw_levels = _required_mapping(payload, "all_levels")
         for name, meta in raw_levels.items():
@@ -490,11 +508,12 @@ class CompiledUniverse:
                     bars=level_bars,
                     affordances=level_affordances,
                 ),
-                social_residue_rules=social_rules_from_transition_payload(
+                transition_rules=transition_rules_from_payload(
                     level_transition_payload,
                     field_name=f"all_levels.{name}.transition_schedule",
                 ),
                 vfs_variables=level_vfs_variables,
+                expression_profiles=expression_profiles,
             )
             all_levels[name] = CompiledUniverse.LevelMetadata(
                 level_name=_required_field(meta, f"{level_field}.level_name"),
@@ -558,11 +577,7 @@ class CompiledUniverse:
                 if _required_field(payload, "presentation") is not None
                 else None
             ),
-            compiled_vfs_profiles=(
-                _deserialize_vfs_profiles(_required_field(payload, "compiled_vfs_profiles"))
-                if _required_field(payload, "compiled_vfs_profiles") is not None
-                else None
-            ),
+            compiled_vfs_profiles=compiled_vfs_profiles,
             compiled_effect_catalog=(
                 _deserialize_effect_catalog(_required_field(payload, "compiled_effect_catalog"))
                 if _required_field(payload, "compiled_effect_catalog") is not None
@@ -1366,11 +1381,6 @@ def _serialize_command_node(command: CommandNode) -> dict[str, Any]:
             {"when": when_expr, "commands": _serialize_command_pipeline(case_commands)} for when_expr, case_commands in command.cases or []
         ],
         "default_commands": _serialize_command_pipeline(command.default_commands or []),
-        "reduce_expr": command.reduce_expr,
-        "reduce_iterator": command.reduce_iterator,
-        "reduce_init_expr": command.reduce_init_expr,
-        "reduce_body_expr": command.reduce_body_expr,
-        "reduce_target": command.reduce_target,
         "parallel_commands": _serialize_command_pipeline(command.parallel_commands or []),
         "delay_ticks_expr": command.delay_ticks_expr,
         "delay_commands": _serialize_command_pipeline(command.delay_commands or []),
@@ -1431,11 +1441,6 @@ def _deserialize_command_node(payload: dict[str, Any], *, field_name: str) -> Co
         switch_expr=required("switch_expr"),
         cases=cases,
         default_commands=command_list("default_commands"),
-        reduce_expr=required("reduce_expr"),
-        reduce_iterator=required("reduce_iterator"),
-        reduce_init_expr=required("reduce_init_expr"),
-        reduce_body_expr=required("reduce_body_expr"),
-        reduce_target=required("reduce_target"),
         parallel_commands=command_list("parallel_commands"),
         delay_ticks_expr=required("delay_ticks_expr"),
         delay_commands=command_list("delay_commands"),
@@ -1471,13 +1476,6 @@ def _hydrate_command_asts(command: CommandNode, parser: Any) -> None:
     if command.switch_expr is not None:
         command.switch_ast = parser.parse(command.switch_expr)
         command.case_asts = [(parser.parse(when_expr), case_commands) for when_expr, case_commands in command.cases or []]
-
-    if command.reduce_expr is not None:
-        command.collection_ast = parser.parse(command.reduce_expr)
-    if command.reduce_init_expr is not None:
-        command.reduce_init_ast = parser.parse(command.reduce_init_expr)
-    if command.reduce_body_expr is not None:
-        command.reduce_body_ast = parser.parse(command.reduce_body_expr)
 
     if command.delay_ticks_expr is not None:
         command.delay_ticks_ast = parser.parse(command.delay_ticks_expr)

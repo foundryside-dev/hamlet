@@ -50,8 +50,11 @@ def _setup(policy: str) -> tuple[EffectManager, VariableRegistry, dict[str, torc
         on_despawn=[],
         on_interrupt=[],
     )
+    # item: 3 — one item carries two stacked `charging` plus the `child` these cascades
+    # spawn; the budget is enforced at admission, and a refused child would never reach
+    # the sealed write whose denial these tests exercise.
     manager = EffectManager(
-        catalog=EffectCatalog(effects={effect.id: effect}, max_active_effects={"global": 0, "agent": 0, "item": 2, "affordance": 0}),
+        catalog=EffectCatalog(effects={effect.id: effect}, max_active_effects={"global": 0, "agent": 0, "item": 3, "affordance": 0}),
         command_executor=CommandExecutor(),
     )
     return manager, registry, {"energy": torch.full((2,), 3.0)}

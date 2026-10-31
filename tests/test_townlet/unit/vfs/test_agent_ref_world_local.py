@@ -151,7 +151,7 @@ def test_a_null_reference_initial_value_compiles(tmp_path: Path, initial: int | 
     assert env.vfs_registry.get("buddy", reader="engine").tolist() == [-1, -1, -1]
 
 
-_REF_TARGETS = {"buddy": VTCWriteTarget(VariableScope.AGENT, "agent_ref", meter=False)}
+_REF_TARGETS = {"buddy": VTCWriteTarget(VariableScope.AGENT, "agent_ref", meter=False, expression=None)}
 
 
 def _ref_write(expression: str):

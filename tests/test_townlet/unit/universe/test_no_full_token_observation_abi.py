@@ -11,6 +11,7 @@ from typing import Any
 import pytest
 import torch
 
+from tests.test_townlet.helpers.token_widths import fixed_width_for
 from townlet.agent.network_factory import NetworkFactory
 from townlet.config.brain_config import FeedforwardConfig, SetAggregatorConfig, TokenSetConfig
 from townlet.curriculum.static import StaticCurriculum
@@ -20,7 +21,6 @@ from townlet.population.vectorized import VectorizedPopulation
 from townlet.training.replay_buffer import ReplayBuffer
 from townlet.training.state import RewardTensor
 from townlet.universe.compiler import UniverseCompiler
-from townlet.universe.dto.token_spec import DESCRIPTOR_BLOCK_WIDTH
 
 PACK = Path("configs/default_curriculum")
 LEVEL = "L1_full_observability"
@@ -89,9 +89,9 @@ def test_vertical_runtime_has_no_whole_fixed_observation_surface_or_allocation(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     initial = UniverseCompiler().compile(PACK, primary_level=LEVEL, use_cache=False)
-    fixed_width = initial.get_level(LEVEL).token_spec.fixed_total_dims
-    # One variable_element slot; its descriptor block derives from the declaration vocabularies.
-    assert fixed_width == 4103 + DESCRIPTOR_BLOCK_WIDTH
+    spec = initial.get_level(LEVEL).token_spec
+    fixed_width = spec.fixed_total_dims
+    assert fixed_width == fixed_width_for(spec.census)
 
     for name in ("zeros", "full", "zeros_like"):
         allocator = getattr(torch, name)

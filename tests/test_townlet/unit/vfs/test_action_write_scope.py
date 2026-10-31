@@ -192,9 +192,7 @@ def _residue_pack(tmp_path: Path, phase: str) -> Path:
     pack = _pack(tmp_path, f"residue_{phase}")
     rule = {
         "id": "inc",
-        "kind": "institutional_rule",
         "phase": phase,
-        "reads": ["public_state"],
         "condition": None,
         "writes": [
             {
@@ -207,7 +205,7 @@ def _residue_pack(tmp_path: Path, phase: str) -> Path:
             }
         ],
     }
-    (pack / "transition_rules.yaml").write_text(yaml.safe_dump({"version": "1.0", "social_residue": [rule]}, sort_keys=False))
+    (pack / "transition_rules.yaml").write_text(yaml.safe_dump({"version": "1.0", "transition_rules": [rule]}, sort_keys=False))
     return pack
 
 

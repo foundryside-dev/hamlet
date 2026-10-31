@@ -37,7 +37,7 @@ def _empty_schedule_with_bounds(program: "vtc.VTCBoundsClampProgram") -> VTCTran
         passive_depletion_program=vtc.VTCPassiveDepletionProgram(rules=()),
         modulation_program=vtc.VTCModulationProgram(rules=()),
         threshold_cascade_program=vtc.VTCThresholdCascadeProgram(rules=()),
-        social_residue_program=vtc.VTCSocialResidueProgram(rules=()),
+        transition_rule_program=vtc.VTCTransitionRuleProgram(rules=()),
         bounds_clamp_program=program,
     )
 

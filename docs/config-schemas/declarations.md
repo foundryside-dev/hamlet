@@ -34,7 +34,7 @@ does not permit omitted required fields or extra keys.
 | Pack | Variables | `variables:` mapping with explicit declarations and evaluator settings | Yes |
 | Pack | Item catalog | `items:` mapping containing `item_types` | No |
 | Pack | Effects | Bare configuration identified by `effect_definitions` | No |
-| Pack | Transition rules | Bare configuration identified by `social_residue` | No |
+| Pack | Transition rules | Bare configuration identified by `transition_rules` | No |
 | Pack | Action labels | Bare configuration identified by `custom` | No |
 | Pack | Observer presentation | Bare `version` with `meters` and `affordances` mappings | No |
 | Level | Curriculum | `curriculum:` mapping | Yes |

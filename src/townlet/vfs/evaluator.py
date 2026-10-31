@@ -20,61 +20,49 @@ class VFSEvaluator:
 
     Only the marked expressions and their in-profile dependencies are evaluated; statics
     are storage and always read their current runtime value from ``vfs_state``.
+
+    One instant of evaluation is ``begin_instant`` → each profile's
+    ``evaluate_global_profile`` (global first, then agent) → ``commit_instant``. The
+    history every temporal operator reads is committed only at the end, so within an
+    instant every ``lag`` read sees the previous instants, whichever profile reads it.
     """
 
-    def __init__(self, history_spec: dict[str, int] | None = None):
+    def __init__(self, history_spec: dict[str, int] | None):
         """Initialize VFS evaluator.
 
         Args:
-            history_spec: Temporal history buffer lengths keyed by ``bar.*`` / ``vfs.*``
+            history_spec: The compiled history ring depth per key (``bar.*`` / ``vfs.*``), or
+                None when no expression reads history
         """
-        self.history_spec = history_spec or {}
+        self.history_spec = dict(history_spec) if history_spec else {}
         self._history: TemporalHistory | None = TemporalHistory(self.history_spec, torch.device("cpu")) if self.history_spec else None
-        self._last_history_step: int | None = None
 
     def _prepare_history(self, device: torch.device) -> None:
-        if self._history is None:
-            return
-        if self._history.device != device:
+        if self._history is not None and self._history.device != device:
             self._history.to(device)
 
-    def _push_history(
-        self,
-        bars: dict[str, torch.Tensor],
-        vfs_values: dict[str, torch.Tensor],
-        device: torch.device,
-        step: int | None,
-    ) -> None:
+    def begin_instant(self, bars: dict[str, torch.Tensor], vfs_state: dict[str, torch.Tensor], device: torch.device) -> None:
+        """Open one instant. The episode's first instant seeds every history ring from the
+        pre-evaluation state: each key's episode-start value (``world/expression/history.py``)."""
         if self._history is None:
             return
-
-        if step is not None and self._last_history_step == step:
-            return
-        if step is None:
-            step = -1 if self._last_history_step is None else self._last_history_step + 1
-
         self._prepare_history(device)
+        if not self._history.seeded:
+            self._history.seed(bars, vfs_state)
 
-        for key in self.history_spec:
-            if key.startswith("bar."):
-                bar_name = key.split(".", 1)[1]
-                value = bars.get(bar_name)
-            elif key.startswith("vfs."):
-                var_name = key.split(".", 1)[1]
-                value = vfs_values.get(var_name)
-            else:
-                value = None
+    def commit_instant(self, bars: dict[str, torch.Tensor], vfs_state: dict[str, torch.Tensor], live: torch.Tensor) -> None:
+        """Close one instant: record every history key's committed value in the live worlds.
 
-            if value is not None:
-                self._history.push(key, value)
-
-        self._last_history_step = step
+        ``vfs_state`` is the registry after every profile's write-back. A world outside
+        ``live`` (its agent is done) keeps its history frozen.
+        """
+        if self._history is not None:
+            self._history.commit(bars, vfs_state, live)
 
     def reset(self) -> None:
-        """Reset temporal history between episodes."""
+        """Start a new episode: drop all history; the next ``begin_instant`` re-seeds it."""
         if self._history is not None:
             self._history.reset()
-        self._last_history_step = None
 
     def evaluate_global_profile(
         self,
@@ -123,12 +111,10 @@ class VFSEvaluator:
         for marked in marks:
             add_with_deps(marked, vars_to_eval)
 
-        # Temporal history requires variables to be evaluated even if unmarked
-        history_vfs_vars = {key.split(".", 1)[1] for key in self.history_spec if key.startswith("vfs.")}
-        vars_to_eval.update(history_vfs_vars)
+        if self._history is not None and not self._history.seeded:
+            raise RuntimeError("Engine defect: a profile with history evaluated outside begin_instant/commit_instant")
 
         # Build execution context
-        self._prepare_history(device)
         context = ExecutionContext(
             bars=bars,
             vfs=vfs_state.copy(),  # Copy so we can update during evaluation
@@ -156,8 +142,8 @@ class VFSEvaluator:
                 continue
 
             # Static (no expression): storage, not computation. It reaches vars_to_eval
-            # through the dependency chase of a marked expression or through the
-            # history_spec union above (derive_evaluation_marks never marks a static).
+            # through the dependency chase of a marked expression (derive_evaluation_marks
+            # never marks a static).
             # context.vfs already carries its CURRENT runtime value from vfs_state; the
             # declared initial value is reported in `result` only and never fed to a
             # dependent expression (hamlet-df3a96bbac).
@@ -177,8 +163,5 @@ class VFSEvaluator:
             # Store result and update context so later variables can reference this one
             result[var.name] = value
             context.vfs[var.name] = value
-
-        # Push history after evaluating current step
-        self._push_history(bars=bars, vfs_values=context.vfs, device=device, step=step)
 
         return result

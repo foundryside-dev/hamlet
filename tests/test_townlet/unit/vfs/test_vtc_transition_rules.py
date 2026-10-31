@@ -1,15 +1,15 @@
-"""Tests for VTC social residue rule compilation and execution."""
+"""Tests for VTC transition-rule compilation and execution."""
 
 import pytest
 import torch
 
-from townlet.vfs import compile_vtc_social_residue_rules
+from townlet.vfs import compile_vtc_transition_rules
 from townlet.vfs.schema import VariableScope
-from townlet.vfs.vtc import VTCSocialResidueProgram, VTCWriteRefusalError, VTCWriteTarget
+from townlet.vfs.vtc import VTCTransitionRuleProgram, VTCWriteRefusalError, VTCWriteTarget
 
 
 def _target(scope: VariableScope, var_type: str = "scalar") -> VTCWriteTarget:
-    return VTCWriteTarget(scope, var_type, meter=False)
+    return VTCWriteTarget(scope, var_type, meter=False, expression=None)
 
 
 #: Declared scope and type of every state these rules write or read.
@@ -22,18 +22,16 @@ TARGET_SCOPES = {
 }
 
 
-def _compile(rules: list[dict]) -> VTCSocialResidueProgram:
-    return compile_vtc_social_residue_rules(rules, TARGET_SCOPES)
+def _compile(rules: list[dict]) -> VTCTransitionRuleProgram:
+    return compile_vtc_transition_rules(rules, TARGET_SCOPES)
 
 
-def test_vtc_social_residue_compiles_visibility_social_and_institutional_kinds() -> None:
+def test_vtc_transition_rules_compile_agent_affordance_and_conditional_writes() -> None:
     program = _compile(
         [
             {
                 "id": "seen_stealing_damages_reputation",
                 "phase": "apply_social_residue_effects",
-                "kind": "visibility_effect",
-                "reads": ["chosen_action", "was_observed", "public_reputation"],
                 "condition": "was_observed and chosen_action == 7",
                 "writes": [
                     {
@@ -48,8 +46,6 @@ def test_vtc_social_residue_compiles_visibility_social_and_institutional_kinds()
             {
                 "id": "working_wears_affordances",
                 "phase": "apply_social_residue_effects",
-                "kind": "social_residue",
-                "reads": ["wear"],
                 "condition": None,
                 "writes": [
                     {
@@ -65,8 +61,6 @@ def test_vtc_social_residue_compiles_visibility_social_and_institutional_kinds()
             {
                 "id": "ambulance_abuse_social_penalty",
                 "phase": "apply_social_residue_effects",
-                "kind": "institutional_rule",
-                "reads": ["chosen_action", "public_reputation"],
                 "condition": "chosen_action == 9",
                 "writes": [
                     {
@@ -81,10 +75,11 @@ def test_vtc_social_residue_compiles_visibility_social_and_institutional_kinds()
         ]
     )
 
-    assert [rule.kind for rule in program.rules] == ["visibility_effect", "social_residue", "institutional_rule"]
     assert [rule.effect for rule in program.rules] == ["seen_delta", "wear_delta", "reputation_delta"]
     assert {rule.phase for rule in program.rules} == {"apply_social_residue_effects"}
-    assert program.rules[0].reads == ("chosen_action", "was_observed", "public_reputation")
+    # Derived from the condition AST (the expression is a literal), sorted.
+    assert program.rules[0].reads == ("chosen_action", "was_observed")
+    assert program.rules[1].reads == ()
 
 
 def test_vtc_social_and_institutional_residue_updates_agent_variables() -> None:
@@ -93,8 +88,6 @@ def test_vtc_social_and_institutional_residue_updates_agent_variables() -> None:
             {
                 "id": "observed_help_raises_reputation",
                 "phase": "apply_social_residue_effects",
-                "kind": "social_residue",
-                "reads": ["chosen_action", "was_observed", "public_reputation"],
                 "condition": "chosen_action == 4",
                 "writes": [
                     {
@@ -110,8 +103,6 @@ def test_vtc_social_and_institutional_residue_updates_agent_variables() -> None:
             {
                 "id": "ambulance_abuse_social_penalty",
                 "phase": "apply_social_residue_effects",
-                "kind": "institutional_rule",
-                "reads": ["chosen_action", "public_reputation"],
                 "condition": "chosen_action == 9",
                 "writes": [
                     {
@@ -143,8 +134,6 @@ def _rule(variable_id: str, *, expression: str = "1.0", composition: str = "addi
     return {
         "id": f"bump_{variable_id}",
         "phase": "apply_social_residue_effects",
-        "kind": "social_residue",
-        "reads": [variable_id],
         "condition": None,
         "writes": [{"variable_id": variable_id, "expression": expression, "composition": composition}],
     }

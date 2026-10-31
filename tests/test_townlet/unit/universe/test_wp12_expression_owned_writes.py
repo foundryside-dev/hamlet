@@ -84,9 +84,7 @@ def test_transition_rule_write_to_an_expression_variable_refuses_at_compile(tmp_
     pack = _pack(tmp_path)
     rule = {
         "id": "boost",
-        "kind": "social_residue",
         "phase": "apply_social_residue_effects",
-        "reads": [OWNED],
         "condition": None,
         "writes": [
             {
@@ -99,7 +97,7 @@ def test_transition_rule_write_to_an_expression_variable_refuses_at_compile(tmp_
             }
         ],
     }
-    (pack / "transition_rules.yaml").write_text(yaml.safe_dump({"version": "1.0", "social_residue": [rule]}, sort_keys=False))
+    (pack / "transition_rules.yaml").write_text(yaml.safe_dump({"version": "1.0", "transition_rules": [rule]}, sort_keys=False))
     _assert_cites_both_origins(_refusal(pack), pack, "transition_rules.yaml")
 
 

@@ -301,20 +301,15 @@ def _scalar_float(arg: torch.Tensor, name: str) -> float:
     return float(arg.item())
 
 
-def _temporal_key(arg_node: ASTNode) -> str:
-    from townlet.world.expression.ast_nodes import PathAccess, Variable
-
-    if isinstance(arg_node, PathAccess):
-        return ".".join(arg_node.segments)
-    if isinstance(arg_node, Variable):
-        return f"vfs.{arg_node.name}"
-    raise ValueError("Temporal operators require a variable or path argument as the first parameter")
-
-
 def _history_key(name: str, arg_nodes: list[ASTNode]) -> str:
+    from townlet.world.expression.history import history_key
+
     if not arg_nodes:
-        raise ValueError(f"Function '{name}' requires at least one argument")
-    return _temporal_key(arg_nodes[0])
+        raise ValueError(f"Function '{name}' needs the named value whose history it reads")
+    key = history_key(arg_nodes[0])
+    if key is None:
+        raise ValueError(f"Function '{name}' reads the history of a named value: its first argument must be a variable or path")
+    return key
 
 
 def _get_history(context: ExecutionContext) -> TemporalHistory:
@@ -656,40 +651,43 @@ def _eval_elapsed_ticks(args: list[Any], context: ExecutionContext, arg_nodes: l
 
 
 def _eval_lag(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
-    return _get_history(context).lag(_history_key("lag", arg_nodes), _scalar_int(args[1], "lag"), torch.zeros_like(args[0]))
+    return _get_history(context).lag(_history_key("lag", arg_nodes), _scalar_int(args[1], "lag"))
 
 
 def _eval_delta(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
     current = cast(torch.Tensor, args[0])
-    key = _history_key("delta", arg_nodes)
-    history = _get_history(context)
-    lagged = history.lag(key, 1, torch.zeros_like(current))
-    valid = history.has_history(key, 1)
-    if valid is None:
-        return torch.zeros_like(current)
-    return torch.where(_broadcast_bool_mask(valid, current), current - lagged, torch.zeros_like(current))
+    return current - _get_history(context).lag(_history_key("delta", arg_nodes), 1).to(current.dtype)
 
 
 def _eval_moving_average(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
     current = cast(torch.Tensor, args[0]).to(dtype=torch.float32)
-    return _get_history(context).moving_average(_history_key("moving_average", arg_nodes), _scalar_int(args[1], "moving_average"), current)
+    key = _history_key("moving_average", arg_nodes)
+    window = _scalar_int(args[1], "moving_average")
+    history = _get_history(context)
+    total = current
+    for offset in range(1, window):
+        total = total + history.lag(key, offset).to(torch.float32)
+    return total / float(window)
 
 
 def _eval_ema(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
-    current = cast(torch.Tensor, args[0]).to(dtype=torch.float32)
-    return _get_history(context).ema(_history_key("ema", arg_nodes), _scalar_float(args[1], "ema"), current)
+    return _get_history(context).ema(_history_key("ema", arg_nodes), _scalar_float(args[1], "ema"), cast(torch.Tensor, args[0]))
 
 
 def _eval_rate_of_change(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
-    return _get_history(context).rate_of_change(_history_key("rate_of_change", arg_nodes), _scalar_int(args[1], "rate_of_change"), args[0])
+    window = _scalar_int(args[1], "rate_of_change")
+    lagged = _get_history(context).lag(_history_key("rate_of_change", arg_nodes), window)
+    return (cast(torch.Tensor, args[0]).to(torch.float32) - lagged.to(torch.float32)) / float(window)
 
 
 def _eval_rising_edge(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
-    return _get_history(context).edge(_history_key("rising_edge", arg_nodes), args[0], rising=True)
+    previous = _get_history(context).lag(_history_key("rising_edge", arg_nodes), 1).to(torch.bool)
+    return torch.logical_and(cast(torch.Tensor, args[0]), torch.logical_not(previous))
 
 
 def _eval_falling_edge(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
-    return _get_history(context).edge(_history_key("falling_edge", arg_nodes), args[0], rising=False)
+    previous = _get_history(context).lag(_history_key("falling_edge", arg_nodes), 1).to(torch.bool)
+    return torch.logical_and(torch.logical_not(cast(torch.Tensor, args[0])), previous)
 
 
 def _eval_distance(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
@@ -1314,7 +1312,10 @@ _register(
     FunctionSpec(
         name="lag",
         signature="lag(x, n)",
-        summary="The value `x` held `n` ticks ago (0 before the history is that deep).",
+        summary=(
+            "The value `x` held `n` ticks ago (`n` a literal, 1 to 256); before `n` ticks of the episode exist, "
+            "the value `x` held when the episode began."
+        ),
         returns=NUMERIC_RETURNS,
         family=FAMILY_TEMPORAL,
         requires=(REQUIRES_HISTORY,),
@@ -1331,7 +1332,7 @@ _register(
     FunctionSpec(
         name="delta",
         signature="delta(x)",
-        summary="`x - lag(x, 1)`, 0 on the first tick.",
+        summary="`x - lag(x, 1)`.",
         returns=NUMERIC_RETURNS,
         family=FAMILY_TEMPORAL,
         requires=(REQUIRES_HISTORY,),
@@ -1348,7 +1349,7 @@ _register(
     FunctionSpec(
         name="moving_average",
         signature="moving_average(x, window)",
-        summary="Mean of `x` over the last `window` ticks including this one.",
+        summary="Mean of `x, lag(x, 1), …, lag(x, window - 1)` (`window` a literal, 1 to 256).",
         returns="float",
         family=FAMILY_TEMPORAL,
         requires=(REQUIRES_HISTORY,),
@@ -1367,7 +1368,7 @@ _register(
     FunctionSpec(
         name="ema",
         signature="ema(x, alpha)",
-        summary="Exponential moving average of `x` with smoothing `alpha` in `(0, 1]`.",
+        summary="`alpha · x + (1 − alpha) · ema` of the previous tick, `alpha` a literal in `(0, 1]`; the episode-start value seeds it.",
         returns="float",
         family=FAMILY_TEMPORAL,
         requires=(REQUIRES_HISTORY,),
@@ -1386,7 +1387,7 @@ _register(
     FunctionSpec(
         name="rate_of_change",
         signature="rate_of_change(x, window)",
-        summary="`(x - lag(x, window)) / window`.",
+        summary="`(x - lag(x, window)) / window` (`window` a literal, 1 to 256).",
         returns="float",
         family=FAMILY_TEMPORAL,
         requires=(REQUIRES_HISTORY,),
@@ -1405,7 +1406,7 @@ _register(
     FunctionSpec(
         name="rising_edge",
         signature="rising_edge(flag)",
-        summary="True on the tick `flag` turns from false to true.",
+        summary="`flag and not lag(flag, 1)`: true on the tick `flag` turns from false to true.",
         returns="bool",
         family=FAMILY_TEMPORAL,
         requires=(REQUIRES_HISTORY,),
@@ -1422,7 +1423,7 @@ _register(
     FunctionSpec(
         name="falling_edge",
         signature="falling_edge(flag)",
-        summary="True on the tick `flag` turns from true to false.",
+        summary="`not flag and lag(flag, 1)`: true on the tick `flag` turns from true to false.",
         returns="bool",
         family=FAMILY_TEMPORAL,
         requires=(REQUIRES_HISTORY,),

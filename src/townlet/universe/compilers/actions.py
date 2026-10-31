@@ -213,7 +213,6 @@ class ActionCompiler:
                 description=action.description or None,
                 icon=None,
                 source_affordance=action.source_affordance,
-                reads=(),
                 writes=action.writes,
             )
             for action in sorted(action_metadata.actions, key=lambda entry: entry.id)

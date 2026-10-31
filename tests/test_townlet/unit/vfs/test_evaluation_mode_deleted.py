@@ -23,12 +23,10 @@ LEVEL = "L0_simple"
 
 _INCREMENT_GCOUNT = {
     "version": "1.0",
-    "social_residue": [
+    "transition_rules": [
         {
             "id": "inc",
-            "kind": "institutional_rule",
             "phase": "apply_social_residue_effects",
-            "reads": ["gcount"],
             "condition": None,
             "writes": [
                 {

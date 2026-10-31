@@ -8,6 +8,7 @@ from typing import Any
 
 import torch
 
+from townlet.vfs.profiles import CompiledGlobalProfile
 from townlet.vfs.schema import VariableDef
 from townlet.vfs.transition_graph import TransitionPhaseGraph
 from townlet.vfs.vtc import (
@@ -17,18 +18,18 @@ from townlet.vfs.vtc import (
     VTCInteractionProgressProgram,
     VTCModulationProgram,
     VTCPassiveDepletionProgram,
-    VTCSocialResidueProgram,
     VTCTerminalConditionProgram,
     VTCThresholdCascadeProgram,
+    VTCTransitionRuleProgram,
     compile_vtc_affordance_gates_with_phase_graph,
     compile_vtc_affordance_occupancy_with_phase_graph,
     compile_vtc_bounds_clamps_with_phase_graph,
     compile_vtc_interaction_progress_with_phase_graph,
     compile_vtc_modulations_with_phase_graph,
     compile_vtc_passive_depletions_with_phase_graph,
-    compile_vtc_social_residue_rules_with_phase_graph,
     compile_vtc_terminal_conditions_with_phase_graph,
     compile_vtc_threshold_cascades_with_phase_graph,
+    compile_vtc_transition_rules_with_phase_graph,
     vtc_write_targets,
 )
 
@@ -45,7 +46,7 @@ class VTCTransitionSchedule:
     passive_depletion_program: VTCPassiveDepletionProgram
     modulation_program: VTCModulationProgram
     threshold_cascade_program: VTCThresholdCascadeProgram
-    social_residue_program: VTCSocialResidueProgram
+    transition_rule_program: VTCTransitionRuleProgram
     bounds_clamp_program: VTCBoundsClampProgram
 
 
@@ -171,10 +172,10 @@ class VTCTransitionRunner:
         vfs_state: dict[str, torch.Tensor],
         bars_state: dict[str, torch.Tensor],
     ) -> tuple[dict[str, torch.Tensor], frozenset[str]]:
-        rules = tuple(rule for rule in self.schedule.social_residue_program.rules if rule.phase == phase)
+        rules = tuple(rule for rule in self.schedule.transition_rule_program.rules if rule.phase == phase)
         if not rules:
             return vfs_state, frozenset()
-        result = VTCSocialResidueProgram(rules).apply(
+        result = VTCTransitionRuleProgram(rules).apply(
             vfs_state=vfs_state,
             active_mask=context.active_mask,
             device=context.device,
@@ -220,10 +221,16 @@ def build_vtc_transition_schedule(
     *,
     runtime_action_space: Any,
     level: Any,
-    social_residue_rules: Sequence[Mapping[str, Any]],
+    transition_rules: Sequence[Mapping[str, Any]],
     vfs_variables: Sequence[VariableDef],
+    expression_profiles: Sequence[CompiledGlobalProfile | None],
 ) -> VTCTransitionSchedule:
-    """Compile all VTC rule families into one runtime transition schedule."""
+    """Compile all VTC rule families into one runtime transition schedule.
+
+    ``expression_profiles`` are the compiled global and agent profiles, in evaluation
+    order: writes and rules that read an expression variable inline its expression
+    (VFS round-2 S4), on the fresh-compile and the cache-load path alike.
+    """
     phase_graph = TransitionPhaseGraph.default()
     # The occupancy-aware compiler is a superset of the plain action-writes
     # compiler: actions without a source_affordance compile identically, and
@@ -231,7 +238,7 @@ def build_vtc_transition_schedule(
     # row. The id order below is the registry's affordance-scope row order
     # (build_affordance_metadata enumerates the same sequence).
     affordance_ids = tuple(aff.name for aff in level.affordances.affordances)
-    targets = vtc_write_targets(vfs_variables, (meter.name for meter in level.bars.meters))
+    targets = vtc_write_targets(vfs_variables, (meter.name for meter in level.bars.meters), expression_profiles)
     action_writes = compile_vtc_affordance_occupancy_with_phase_graph(
         runtime_action_space.actions,
         targets,
@@ -244,7 +251,7 @@ def build_vtc_transition_schedule(
     passive_depletions = compile_vtc_passive_depletions_with_phase_graph(level.bars.meters, phase_graph)
     modulations = compile_vtc_modulations_with_phase_graph(level.affordances.modulations, phase_graph)
     threshold_cascades = compile_vtc_threshold_cascades_with_phase_graph(level.bars.cascades, level.bars.meters, phase_graph)
-    social_program = compile_vtc_social_residue_rules_with_phase_graph(social_residue_rules, targets, phase_graph)
+    rule_program = compile_vtc_transition_rules_with_phase_graph(transition_rules, targets, phase_graph)
     bounds_clamps = compile_vtc_bounds_clamps_with_phase_graph(level.bars.meters, phase_graph)
     return VTCTransitionSchedule(
         phase_graph=phase_graph,
@@ -255,7 +262,7 @@ def build_vtc_transition_schedule(
         passive_depletion_program=passive_depletions,
         modulation_program=modulations,
         threshold_cascade_program=threshold_cascades,
-        social_residue_program=social_program,
+        transition_rule_program=rule_program,
         bounds_clamp_program=bounds_clamps,
     )
 
@@ -264,7 +271,7 @@ def serialize_vtc_transition_schedule(schedule: VTCTransitionSchedule) -> dict[s
     """Serialize the persisted transition runtime payload."""
     return {
         "phase_graph": list(schedule.phase_graph.ordered_phases),
-        "social_residue_rules": [_social_rule_to_source(rule) for rule in schedule.social_residue_program.rules],
+        "transition_rules": [_transition_rule_to_source(rule) for rule in schedule.transition_rule_program.rules],
         # Only experiment-level rule families need source round-tripping here today.
         # The other programs are rebuilt from their existing compiled-universe inputs;
         # these counts are diagnostic metadata, not the load-bearing program payload.
@@ -276,19 +283,19 @@ def serialize_vtc_transition_schedule(schedule: VTCTransitionSchedule) -> dict[s
             "passive_depletions": len(schedule.passive_depletion_program.rules),
             "modulations": len(schedule.modulation_program.rules),
             "threshold_cascades": len(schedule.threshold_cascade_program.rules),
-            "social_residue": len(schedule.social_residue_program.rules),
+            "transition_rules": len(schedule.transition_rule_program.rules),
             "bounds_clamps": len(schedule.bounds_clamp_program.rules),
         },
     }
 
 
-def social_rules_from_transition_payload(payload: Mapping[str, Any], *, field_name: str) -> tuple[Mapping[str, Any], ...]:
-    """Return persisted social-state rules from a serialized transition schedule."""
+def transition_rules_from_payload(payload: Mapping[str, Any], *, field_name: str) -> tuple[Mapping[str, Any], ...]:
+    """Return persisted transition rules from a serialized transition schedule."""
     if "phase_graph" not in payload:
         raise ValueError(f"Compiled universe cache field '{field_name}.phase_graph' is required; recompile the config pack.")
-    if "social_residue_rules" not in payload:
-        raise ValueError(f"Compiled universe cache field '{field_name}.social_residue_rules' is required; recompile the config pack.")
-    return tuple(_ensure_mapping(rule, f"{field_name}.social_residue_rules") for rule in payload["social_residue_rules"])
+    if "transition_rules" not in payload:
+        raise ValueError(f"Compiled universe cache field '{field_name}.transition_rules' is required; recompile the config pack.")
+    return tuple(_ensure_mapping(rule, f"{field_name}.transition_rules") for rule in payload["transition_rules"])
 
 
 def _split_vfs_and_bars(
@@ -310,12 +317,10 @@ def _split_vfs_and_bars(
     return vfs_state, bars_state
 
 
-def _social_rule_to_source(rule: Any) -> dict[str, Any]:
+def _transition_rule_to_source(rule: Any) -> dict[str, Any]:
     return {
         "id": rule.rule_id,
         "phase": rule.phase,
-        "kind": rule.kind,
-        "reads": list(rule.reads),
         "condition": rule.condition,
         "priority": rule.priority,
         "writes": [

@@ -163,24 +163,6 @@ def test_compiler_switch_rejects_type_mismatch_case():
         compiler.compile_command(node)
 
 
-def test_compiler_reduce_rejected_for_now():
-    """Reduce command compiles when collection is fixed-size tensor path."""
-    node = CommandNode(
-        type=CommandType.REDUCE,
-        reduce_expr="bar.col",
-        reduce_iterator="i",
-        reduce_init_expr="0",
-        reduce_body_expr="acc + i",
-        reduce_target="target.bar.energy",
-    )
-
-    schema = {"target.bar.energy": "int", "bar.col": "tensor"}
-    compiler = CommandCompiler(schema, agent_target=True)
-
-    compiled = compiler.compile_command(node)
-    assert compiled.collection_ast is not None
-
-
 def test_compiler_for_each_rejects_nested_for_each():
     """Compiler rejects nested for_each commands."""
     inner = CommandNode(type=CommandType.FOR_EACH, collection="all_agents", body=[])

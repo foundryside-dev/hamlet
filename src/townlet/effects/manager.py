@@ -22,6 +22,7 @@ from townlet.numeric import require_float32
 __all__ = [
     "ActiveEffect",
     "EffectManager",
+    "SpawnRefusal",
 ]
 
 
@@ -74,6 +75,25 @@ class ActiveEffect:
 
 
 @dataclass(frozen=True)
+class SpawnRefusal:
+    """One spawn the manager did not admit: its scope entity was at the declared budget.
+
+    `max_active_effects.<scope>` is the number of effect instances one scope entity (a
+    world's agent, an item row, a world's affordance, the world itself) may carry at once.
+    A spawn that would add an instance beyond it is not admitted, in that world only; the
+    refusal is recorded here instead of overflowing the effect token block at publish.
+    """
+
+    world: int
+    effect_id: str
+    scope: EffectScope
+    key: Any
+    budget: int
+    live: int
+    step: int
+
+
+@dataclass(frozen=True)
 class _Spatial:
     """The spatial state one spawn or tick hands every lifecycle context it builds."""
 
@@ -116,6 +136,8 @@ class EffectManager:
         # the run seed (`torch.initial_seed()`), the world and the episode; made on first use.
         self._episode = 0
         self.world_rngs: dict[int, torch.Generator] = {}
+        # Spawns refused at the declared per-entity budget this episode (telemetry).
+        self.spawn_refusals: list[SpawnRefusal] = []
 
         # Scoped storage. Every effect lives in one world (S1); a store's key carries it:
         # an agent row and an item-arena row each belong to exactly one world, and the
@@ -139,7 +161,7 @@ class EffectManager:
         affordance_positions: dict[str, torch.Tensor] | None = None,
         substrate: SpatialSubstrate | None = None,
         world: int | None = None,
-    ) -> ActiveEffect:
+    ) -> ActiveEffect | None:
         """Spawn new effect instance, handling reapply policies.
 
         Every effect lives in exactly one world (S1: the batch is independent
@@ -164,14 +186,29 @@ class EffectManager:
             world: The world the spawning event happened in
 
         Returns:
-            ActiveEffect instance
+            The live ActiveEffect (new, renewed, merged or replacing), or None when the
+            spawn was not admitted: the scope entity already carries
+            `max_active_effects.<scope>` instances and this spawn would add one (a new
+            effect, or a `stack` reapplication). The refusal is appended to
+            `spawn_refusals`; no other world is affected.
         """
         effect_def = self.catalog.effects[effect_id]
         scope = EffectScope(effect_def.scope)
         world = self.effect_world(scope, target_entity_id, world=world, vfs_registry=vfs_registry)
-        existing = self._find_existing(effect_id, self._scope_key(scope, target_entity_id, world), scope)
+        key = self._scope_key(scope, target_entity_id, world)
+        existing = self._find_existing(effect_id, key, scope)
         pipelines = []
         if existing is None or effect_def.reapply_policy == "stack":
+            # `renew` and `merge` add no instance; `replace` removes one and adds one.
+            # Only this path grows the entity's instance count, so only it is budgeted.
+            store = self._store(scope)
+            live = len(store[key]) if key in store else 0
+            budget = self.scope_budget(scope)
+            if live >= budget:
+                self.spawn_refusals.append(
+                    SpawnRefusal(world=world, effect_id=effect_id, scope=scope, key=key, budget=budget, live=live, step=current_step)
+                )
+                return None
             pipelines.append(effect_def.on_spawn)
         elif effect_def.reapply_policy in {"merge", "replace"}:
             pipelines.append(effect_def.on_interrupt)
@@ -261,6 +298,12 @@ class EffectManager:
                 f"from world {world}: worlds are independent, an event writes only its own world"
             )
         return entity_world
+
+    def scope_budget(self, scope: EffectScope) -> int:
+        """`max_active_effects.<scope>`: instances one scope entity may carry at once."""
+        budget = self.catalog.max_active_effects
+        assert budget is not None, "an EffectCatalog with effects declares max_active_effects"
+        return int(budget[scope.value])
 
     @staticmethod
     def _scope_key(scope: EffectScope, target_entity_id: int, world: int) -> Any:
@@ -541,6 +584,7 @@ class EffectManager:
         self._admission_transaction_active = False
         self._episode += 1
         self.world_rngs.clear()
+        self.spawn_refusals.clear()
 
     def tick(
         self,

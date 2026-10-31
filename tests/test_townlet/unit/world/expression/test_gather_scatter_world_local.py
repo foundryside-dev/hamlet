@@ -41,19 +41,6 @@ def test_indexing_a_scalar_value_is_refused_at_compile(expression: str) -> None:
         _modify("target.bar.energy", expression)
 
 
-def test_reduce_over_a_bare_bar_is_refused_at_compile() -> None:
-    node = CommandNode(
-        type=CommandType.REDUCE,
-        reduce_expr="bar.energy",
-        reduce_iterator="x",
-        reduce_init_expr="0.0",
-        reduce_body_expr="acc + x",
-        reduce_target="target.bar.energy",
-    )
-    with pytest.raises(TypeCheckError, match="collection must be fixed-size"):
-        CommandCompiler(SCHEMA, agent_target=True).compile_command(node)
-
-
 def _registry(inv: torch.Tensor) -> VariableRegistry:
     variables = [
         VariableDef(

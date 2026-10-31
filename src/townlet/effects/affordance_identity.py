@@ -27,7 +27,6 @@ AFFORDANCE_WRITE_SOURCES = (
     "spawn_effect_on_interrupt",
 )
 AFFORDANCE_WRITE_TARGETS = ("target", "self", "all")
-SPAWN_EFFECT_TARGETS = ("target", "index_zero")
 
 AffordanceLifecycleStage = Literal["on_start", "per_tick", "on_completion", "on_early_exit", "on_failure"]
 AffordanceWriteSource = Literal[
@@ -40,7 +39,6 @@ AffordanceWriteSource = Literal[
     "spawn_effect_on_interrupt",
 ]
 AffordanceWriteTarget = Literal["target", "self", "all"]
-SpawnEffectTarget = Literal["target", "index_zero"]
 
 
 class AffordanceIdentityError(ValueError):
@@ -57,9 +55,13 @@ class AffordanceIdentityError(ValueError):
 
 @dataclass(frozen=True)
 class SpawnedEffectIdentity:
-    """Executable spawn/effect identity retained on every flattened meter write."""
+    """Executable spawn/effect identity retained on every flattened meter write.
 
-    target: SpawnEffectTarget
+    The spawn target is not a field: an affordance's spawn_effect can only name
+    ``target`` (``_spawn_target`` refuses everything else), so it carries no
+    information beyond the ``spawn_effect_*`` write source.
+    """
+
     intensity: float
     duration: int
     scope: str
@@ -67,8 +69,6 @@ class SpawnedEffectIdentity:
     observable: bool
 
     def __post_init__(self) -> None:
-        if self.target not in SPAWN_EFFECT_TARGETS:
-            raise ValueError(f"Spawned effect target must be one of {SPAWN_EFFECT_TARGETS}, got {self.target!r}")
         object.__setattr__(
             self,
             "intensity",
@@ -282,11 +282,6 @@ def _meter_writes(
             if meter_target is not None:
                 meter_name, target = meter_target
                 yield AffordanceMeterWrite(meter_name, -1, None, stage, source, target, spawned_effect)
-        elif command.type == CommandType.REDUCE:
-            meter_target = _meter_target(command.reduce_target, affordance_name, stage)
-            if meter_target is not None:
-                meter_name, target = meter_target
-                yield AffordanceMeterWrite(meter_name, -1, None, stage, source, target, spawned_effect)
         elif command.type != CommandType.SPAWN_ITEM:
             raise AssertionError(f"Unhandled affordance command type in static identity extraction: {command.type}")
 
@@ -344,8 +339,8 @@ def _spawned_effect_writes(
         )
 
     effect = effect_catalog.effects[effect_id]
+    _require_spawn_target(command, affordance_name=affordance_name, stage=stage)
     spawn_identity = SpawnedEffectIdentity(
-        target=_spawn_target(command, affordance_name=affordance_name, stage=stage),
         intensity=_spawn_intensity(command, affordance_name=affordance_name, stage=stage),
         duration=effect.duration,
         scope=effect.scope,
@@ -367,11 +362,15 @@ def _spawned_effect_writes(
         )
 
 
-def _spawn_target(command: CommandNode, *, affordance_name: str, stage: str) -> SpawnEffectTarget:
+def _require_spawn_target(command: CommandNode, *, affordance_name: str, stage: str) -> None:
+    """An affordance's spawn_effect targets the interacting agent and nothing else.
+
+    ``self`` has no entity in an affordance context, and a row expression is not
+    representable in the fixed-width identity (a constant row is refused earlier,
+    as [EFFECT-SPAWN-TARGET]).
+    """
     if command.target == "target":
-        return "target"
-    if command.target == 0:
-        return "index_zero"
+        return
     rendered: str | int | None
     if command.target is None:
         rendered = command.target_expr
@@ -380,7 +379,7 @@ def _spawn_target(command: CommandNode, *, affordance_name: str, stage: str) -> 
     raise AffordanceIdentityError(
         affordance_name,
         f"Affordance {affordance_name!r} stage {stage!r}: spawn_effect target {rendered!r} "
-        "cannot execute from an affordance context or be represented exactly; use 'target' or explicit index 0",
+        "cannot execute from an affordance context or be represented exactly; use 'target'",
     )
 
 
@@ -485,7 +484,6 @@ __all__ = [
     "AFFORDANCE_WRITE_SOURCES",
     "AFFORDANCE_WRITE_TARGETS",
     "EFFECT_LIFECYCLE_STAGES",
-    "SPAWN_EFFECT_TARGETS",
     "AffordanceIdentityError",
     "AffordanceMeterWrite",
     "SpawnedEffectIdentity",

@@ -3,7 +3,11 @@
 > ⚠️ **Restored to the live tree 2026-08-26 — one required field is missing and one whole vocabulary is absent.**
 >
 > **⚠️ `max_active_effects` is conditionally REQUIRED whenever effects are declared, and this
-> 1700-line document mentions it zero times.** Omit it and the pack is refused.
+> 1700-line document mentions it zero times.** Omit it and the pack is refused. Its value per
+> scope is the number of instances one scope entity (a world's agent, an item row, a world's
+> affordance, the world itself) may carry at once; a spawn that would add one beyond it is not
+> admitted in that world and is recorded in the step's `info["effect_spawn_refusals"]`. Other
+> worlds are untouched; the publisher never sees an overflow.
 >
 > **⚠️ The `for_each` collection vocabulary is missing, and described as "future" while it
 > ships.** Measured occurrence counts in this file: `all_agents` **0**, `switch` **1** (the semantics section below),

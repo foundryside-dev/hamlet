@@ -24,6 +24,7 @@ from townlet.universe.token_hashes import (
     compute_token_layout_hash,
     compute_token_type_schema_hash,
 )
+from townlet.vfs.history import collect_history_requirements
 from townlet.vfs.profiles import CircularDependencyError
 from townlet.vfs.schema_hashes import (
     compute_action_schema_hash,
@@ -334,9 +335,9 @@ class UniverseCompiler:
         compiled_vfs_profiles = self._vfs_compiler.compile_profiles(raw.variables, bar_schema)
         self._vfs_compiler.validate_item_profile_bindings(raw.items, compiled_vfs_profiles)
 
-        from townlet.vfs.history import collect_history_requirements
-
-        vfs_history_spec = collect_history_requirements(compiled_vfs_profiles.global_profile if compiled_vfs_profiles else None)
+        # Every history ring either profile reads, at its deepest lag (WP14). The profile
+        # compile above has already refused any temporal call the runtime cannot serve.
+        vfs_history_spec = collect_history_requirements(compiled_vfs_profiles.global_profile, compiled_vfs_profiles.agent_profile)
 
         effects_schema = self._effects_compiler.build_schema(
             bar_names=tuple(meter.name for meter in primary_level_config.bars.meters),
@@ -445,8 +446,9 @@ class UniverseCompiler:
                 transition_schedule = build_vtc_transition_schedule(
                     runtime_action_space=runtime_action_space,
                     level=level,
-                    social_residue_rules=raw.social_residue_rules,
+                    transition_rules=raw.transition_rules,
                     vfs_variables=vfs_variables,
+                    expression_profiles=(compiled_vfs_profiles.global_profile, compiled_vfs_profiles.agent_profile),
                 )
             except VTCWriteRefusalError as exc:
                 raise CompilationError(
@@ -469,7 +471,7 @@ class UniverseCompiler:
                 threshold_cascade_program=transition_schedule.threshold_cascade_program,
                 modulation_program=transition_schedule.modulation_program,
                 passive_depletion_program=transition_schedule.passive_depletion_program,
-                social_residue_program=transition_schedule.social_residue_program,
+                transition_rule_program=transition_schedule.transition_rule_program,
                 bounds_clamp_program=transition_schedule.bounds_clamp_program,
             )
             expression_schema_hash = compute_expression_schema_hash(

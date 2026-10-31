@@ -61,7 +61,9 @@ entry remains a valid schema group for item types with no state variables.
   draw. `shape`, `initial_value`, `initial_value_mode` and `initial_value_params` all
   enter `variable_schema_hash`.
 - **Expression:** optional for global/agent variables; it must have an explicit initial
-  value. Dependencies are resolved and ordered before execution. Scalar expressions use
+  value, which is also the history seed a `lag` of it reads before the episode has history
+  ([history operators](#history-operators)). Dependencies are resolved and ordered before
+  execution; a cycle refuses unless a `lag` read closes it. Scalar expressions use
   the expression DSL's numeric types; they do not promise integer registry storage.
   The compiler proves output shape: global scalar/bool expressions produce a scalar,
   agent scalar/bool expressions produce an agent batch. An agent expression may read
@@ -126,8 +128,12 @@ observation publisher. Persistent save and restore carry every world's rows.
 scope, in the item arena and on restore, and a violation is an engine defect. A constant
 reference is every world's value, so it is refused at compile: a reference `initial_value`
 other than null/-1 (at the declaration's `file:line`) and a constant write expression other
-than -1 (`VTC-WRITE-TYPE`). Under S1 an `agent_ref` is a nullable self-pointer (bind it with
-`agent_id`); its traversal `x.ref.bar.y` reads the world's own agent.
+than -1 (`VTC-WRITE-TYPE`). A transition write into a reference must be provably world-local,
+by a syntactic rule: -1, `agent_id` (into an `agent_ref` only), a read of a reference of the
+target's type, or `where(...)` / if-then-else choosing between those. Anything else, such as
+`agent_id * 0`, can name another world's row and refuses at compile (`VTC-WRITE-TYPE`).
+Under S1 an `agent_ref` is a nullable self-pointer (bind it with `agent_id`); its traversal
+`x.ref.bar.y` reads the world's own agent.
 
 `gather(values, index)` and `scatter(base, index, update)` index the element axis of a
 vector or `tensor1d` inside one world's value; a scalar argument (a meter, a scalar
@@ -198,7 +204,7 @@ operations to a consumer. Command expressions must satisfy that consumer's type 
 ## Transition phases and evaluation order
 
 Action writes (`actions.custom_actions[].writes`) and transition rules
-(`transition_rules.social_residue[]`) name a `phase`. The phase graph is closed and is
+(`transition_rules[]`) name a `phase`. The phase graph is closed and is
 exactly the schedule `step()` executes, in this order:
 
 1. `ingest_actions`, `advance_global_time`, `compute_action_legality_masks`,
@@ -246,13 +252,84 @@ observation all see k+1, as does the hour that gates the next action's opening h
 `reset()` runs the same tail at instant 0, evaluating expressions before the initial item
 spawn and the first observation, so no expression ever shows its declared literal or a
 previous episode's value. An expression derived from `tick` is therefore `episode`
-lifetime, like `tick` itself. The converse is one tick behind: an action write or
-transition rule that reads an expression variable sees the value evaluated for the instant
-its action is taken in, at the end of the previous step (or by `reset()`).
+lifetime, like `tick` itself.
+
+An action write or transition rule that reads an expression variable reads the
+expression evaluated on the state the write sees, not a stored value: the compiler
+substitutes the expression (recursively, through every expression variable it reads)
+into the write's expression and condition. A write gated on `rich: bar.money > 0.1` sees
+`rich` true on the tick an earlier phase raised `money`, whatever `rich`'s lifetime. The
+one exception is an expression that calls a function needing evaluation context a
+transition does not carry (a history operator such as `lag`, `elapsed_ticks`, or a
+position function): it is not inlined, and a write reads its stored value, the one
+evaluated at the end of the previous step (or by `reset()`), which the observation the
+action was chosen on showed. A `tick`-lifetime one has no stored value while the
+transition phases run, so a write or rule reading it refuses at compile
+(`VTC-WRITE-TYPE`). A write may not call such a function itself: name the quantity as an
+expression variable and read it. Hashes: the write keeps its authored text as identity,
+and the expression enters `vfs_hash` through the expression schema hash.
 A variable that carries an `expression` is owned by it: an action write, transition-rule
 write or command-pipeline write (effect, affordance interaction, item hook) that targets it
 would be overwritten by evaluation, so it refuses at compile (`UAC-STATIC-WRITE`) at the
 write's `file:line`, naming the expression variable's declaration `file:line`.
+
+## History operators
+
+`lag`, `delta`, `moving_average`, `ema`, `rate_of_change`, `rising_edge` and
+`falling_edge` read the past of a value. They run in global and agent variable expressions
+only: an action write, a transition rule, an effect or a spawn predicate keeps no history,
+so name the quantity as an expression variable and read that. Writes, rules and effects
+refuse a history operator at compile; a spawn predicate that calls one is not yet refused
+at compile and fails at its first evaluation.
+
+- **What they read.** The first argument names a value: a variable (`lag(public_state, 1)`),
+  the clock `tick`, or a meter (`delta(bar.energy)`). A computed argument
+  (`rising_edge(tick > 1.0)`) has no history and refuses at compile; declare the predicate
+  as its own (bool) variable and apply the operator to it. Depths and windows are integer
+  literals in 1..256 and `ema`'s alpha a literal in `(0, 1]`; anything else refuses at
+  compile (`VFS-PROFILE-COMPILE`). The result has the argument's shape and type rules, so a
+  global expression still cannot read an agent variable, even through `lag`.
+- **One sample per instant.** After every expression of an instant has evaluated (reset's
+  instant 0, then once per step), the engine records the committed value of each value
+  some operator reads. `lag(x, n)` at instant t is x at instant t − n. Every other operator
+  is defined through it: `delta(x) = x − lag(x, 1)`,
+  `rate_of_change(x, w) = (x − lag(x, w)) / w`, `moving_average(x, w)` the mean of
+  `x, lag(x, 1), …, lag(x, w − 1)`, `rising_edge(f) = f and not lag(f, 1)`,
+  `falling_edge(f) = not f and lag(f, 1)`, and `ema(x, a) = a·x + (1 − a)·ema` of the
+  previous instant.
+- **Before the history exists.** History starts at each episode with every slot holding the
+  value the argument had when the episode began, before instant 0 evaluated: a meter's
+  initial value, a static variable's initial value, an expression variable's declared
+  `initial_value` (not its first evaluation), and the clock's 0. So `lag(x, n)` before n
+  instants exist is that value, `delta(bar.energy)` is 0 at instant 0, and the running
+  `ema` starts from it. Never an undocumented zero.
+- **Self-reference.** A `lag` read is not a dependency edge: it reads the recorded past,
+  which no evaluation order of this instant can change. So a variable may read itself, or
+  close a cycle, through `lag` and through nothing else; a self-reference or cycle through
+  any other read (including `delta`, `ema`, `moving_average`, `rate_of_change` and the
+  edges, which also read the current value) refuses as a circular dependency. A
+  "time since" mechanic is one declaration, and its `initial_value` seeds the count:
+
+  ```yaml
+  - id: time_since_last_sleep          # configs/L5_multi_agent
+    scope: agent
+    lifetime: episode
+    initial_value: -1.0                # lag at instant 0 is -1.0, so the first tick reads 0
+    expression: where(delta(bar.energy) > 0.0, 0.0, lag(time_since_last_sleep, 1) + 1.0)
+  ```
+- **Lifetime and reset.** History is episode-scoped for every lifetime: `reset()` discards it
+  and instant 0 starts it again from the episode-start values. A `persistent` variable's
+  episode-start value is the value it carried across the reset, so `lag(p, 1)` at an
+  episode's instant 0 is exactly the previous episode's last value (an accumulator
+  `p: lag(p, 1) + 1.0` continues), while every deeper lag of `p` reads that same carried
+  value until the episode has that much history; the previous episode is not history.
+- **Resume.** Checkpoints are written between episodes and resume starts with `reset()`, so
+  the persistent snapshot alone reproduces history exactly; history is not checkpointed.
+- **Done worlds.** A world whose agent is done is frozen: its history does not advance (its
+  expressions keep evaluating, over that frozen history).
+- **Identity.** The compiled artifact carries `vfs_history_spec`, the history depth of every
+  value read; it is derived from the expressions, whose canonical form (operator, literal
+  depths, windows and alphas) is part of `vfs_hash`, so changing a `lag` depth refuses resume.
 
 ## Resolution, access and artifacts
 

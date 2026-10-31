@@ -66,12 +66,10 @@ def _author_pack(destination: Path, *, season_initial: float = 0.0) -> Path:
     variables_path.write_text(yaml.safe_dump(payload, sort_keys=False))
     rules = {
         "version": "1.0",
-        "social_residue": [
+        "transition_rules": [
             {
                 "id": "advance_world",
                 "phase": "apply_social_residue_effects",
-                "kind": "social_residue",
-                "reads": ["season", "standing", EPISODE, "energy"],
                 "condition": None,
                 "writes": [
                     _advance("season", "1.0"),

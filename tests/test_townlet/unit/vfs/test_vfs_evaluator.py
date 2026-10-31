@@ -48,7 +48,7 @@ def test_vfs_evaluator_evaluates_expressions_in_topo_order():
     vfs_state = {"a": torch.tensor([5])}  # Initial value for "a"
 
     # Exercise: Evaluate profile
-    evaluator = VFSEvaluator()
+    evaluator = VFSEvaluator(history_spec=None)
     result = evaluator.evaluate_global_profile(
         profile=profile,
         bars=bars,
@@ -98,7 +98,7 @@ def test_vfs_evaluator_mark_and_sweep_evaluates_marks_only_when_independent():
     )
 
     # Exercise: Evaluate with mark-and-sweep (only "observed")
-    evaluator = VFSEvaluator()
+    evaluator = VFSEvaluator(history_spec=None)
     result = evaluator.evaluate_global_profile(
         profile=profile,
         bars={},
@@ -149,7 +149,7 @@ def test_vfs_evaluator_mark_and_sweep_recomputes_dependencies():
     bars = {"energy": torch.tensor(3.0)}
     vfs_state = {"a": torch.tensor(100.0)}  # Stale value should be ignored
 
-    evaluator = VFSEvaluator()
+    evaluator = VFSEvaluator(history_spec=None)
     result = evaluator.evaluate_global_profile(
         profile=profile,
         bars=bars,
@@ -181,7 +181,7 @@ def test_vfs_evaluator_mark_and_sweep_rejects_unknown_marks():
         dependencies={"observed": tuple()},
     )
 
-    evaluator = VFSEvaluator()
+    evaluator = VFSEvaluator(history_spec=None)
 
     with pytest.raises(KeyError, match="typo"):
         evaluator.evaluate_global_profile(
@@ -231,7 +231,7 @@ def test_vfs_evaluator_handles_reference_path_access():
     bars = {}
     vfs_state = {"ref_target": torch.tensor(4.0)}  # current runtime value; the declared literal is 3.0
 
-    evaluator = VFSEvaluator()
+    evaluator = VFSEvaluator(history_spec=None)
     result = evaluator.evaluate_global_profile(
         profile=profile,
         bars=bars,
@@ -288,7 +288,7 @@ def test_vfs_evaluator_handles_nested_reference_paths():
         dependencies={"a": tuple(), "b": ("a",), "c": ("b",)},
     )
 
-    evaluator = VFSEvaluator()
+    evaluator = VFSEvaluator(history_spec=None)
     result = evaluator.evaluate_global_profile(
         profile=profile,
         bars={},
@@ -324,7 +324,7 @@ def test_vfs_evaluator_threads_affordance_and_temporal_context():
         dependencies={"can_use_bank_late": tuple()},
     )
 
-    evaluator = VFSEvaluator()
+    evaluator = VFSEvaluator(history_spec=None)
     result = evaluator.evaluate_global_profile(
         profile=profile,
         bars={},

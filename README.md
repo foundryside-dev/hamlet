@@ -270,7 +270,7 @@ uv run python -m townlet.universe inspect configs/default_curriculum \
 `--primary-level` is required for compile/validate and directory inspection. Compilation builds
 all world levels, with one cache artifact per selected primary level:
 `<pack>/.compiled/universe-<level>.msgpack`. The top-level effective brain is primary-level scoped.
-The current compiled artifact schema is **1.36**; older versions and missing policies refuse.
+The current compiled artifact schema is **1.38**; older versions and missing policies refuse.
 This is separate from authored declaration versions and checkpoint format **6**.
 
 Train using the pack root:

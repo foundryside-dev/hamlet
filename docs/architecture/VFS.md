@@ -29,7 +29,7 @@ pass 1 (re-verified against `src/townlet/` at HEAD after token-obs unit 3 / Task
 unknown ids, relational-scope exposure refuses at compile, affordance extents joined the preflight; archived-doc path sweep after
 the 2026-08-24 docs recut; 22 August 2026: §14.3, §16.3, §16.4, §17 Phase 3+, §20.7, §21.1: social-residue authoring surface
 shipped as `transition_rules.yaml` with a no-defaults DTO, examples corrected to the shipped grammar and pinned by
-`tests/test_townlet/unit/config/test_vfs_doc_social_residue_examples.py`, hamlet-84cf93a1b9; §14.3, §16.3, §16.4: write-level
+`tests/test_townlet/unit/config/test_vfs_doc_transition_rule_examples.py` (renamed at the 2026-10-31 S8 re-cut: family `transition_rules`, `reads`/`kind` deleted), hamlet-84cf93a1b9; §14.3, §16.3, §16.4: write-level
 `target` removed, hamlet-175bff4ed5; 21 August 2026 source audit against `src/townlet/`: status header, §4.3, §5.1, §6.3, §7.4,
 §8.1, §8.4, §11.1, §11.4, §13.2, §16.3, §17, §19, §21.1, §23, §24.2; 16 August 2026: §4.1, §4.3, §8.4 semantic-type vocabulary,
 `PDR-0047` / `PDR-0066`; body otherwise 15 May 2026)
@@ -945,7 +945,7 @@ relied on.
 
 ### 10.1 Current use
 
-Action definitions declare dependencies and may carry compiled VTC write rules. The current write path parses `WriteSpec.expression` and optional `condition` into ASTs, orders writes by the transition phase graph, and applies masked tensor updates for selected active agents during `env.step`.
+Action definitions may carry compiled VTC write rules. The write path parses `WriteSpec.expression` and optional `condition` into ASTs, orders writes by the transition phase graph, and applies masked tensor updates for selected active agents during `env.step`. There is no authored dependency list: `ActionConfig.reads` was deleted 2026-10-31 (VFS round-2 S8) — nothing consumed it, the compiler always emitted an empty tuple, and what an action reads is what its write expressions name.
 
 ```python
 from townlet.environment.action_config import ActionConfig
@@ -966,7 +966,6 @@ action = ActionConfig(
     source_affordance=None,
 
     # VFS Integration (Phase 1)
-    reads=["position", "energy"],
     writes=[
         WriteSpec(
             variable_id="position",
@@ -975,10 +974,7 @@ action = ActionConfig(
     ],
 )
 
-# Validation: Ensure all read/write variables exist in registry
-for var_id in action.reads:
-    assert var_id in registry.variables, f"Variable {var_id} not found in registry"
-
+# Validation: Ensure all written variables exist in registry
 for write_spec in action.writes:
     assert write_spec.variable_id in registry.variables, \
         f"Variable {write_spec.variable_id} not found in registry"
@@ -986,7 +982,7 @@ for write_spec in action.writes:
 
 Key points:
 
-- Action dependencies remain useful for static analysis and schema hashing.
+- The write expressions are the dependency record; the compiler type-checks every name they read.
 - The implemented action-write path covers selected-action writes with phase ordering, composition, clamps, and masks.
 - The remaining VTC work is broader than action writes: unified type/shape validation and non-action transition rules still need compiler coverage.
 
@@ -1583,10 +1579,8 @@ A changes B only if a norm applies
 | `completion_bonus` | Reward after sustained progress | work shift bonus |
 | `terminal_condition` | Ends run or marks state | health <= 0 |
 | `reward_component` | Adds reward term | retirement score |
-| `visibility_effect` | Observation changes social state | theft witnessed by neighbour |
-| `social_residue` | Action leaves relationship/norm effect | debt, trust loss, reputation gain |
+| transition rule | Any declared per-tick dynamic: an observation changes social state, an action leaves a relationship/norm trace, a rule alters legality/sanction | theft witnessed by neighbour; debt, trust loss; ambulance abuse penalty — one family (`transition_rules`), no `kind` (S8, 2026-10-31) |
 | `communication_event` | Message or symbol update | broadcast token |
-| `institutional_rule` | Rule alters legality/sanction | ambulance abuse penalty |
 
 ### 14.3 RelationshipSpec proposal
 
@@ -1604,18 +1598,17 @@ rules:
         clamp: [0.0, 1.0]
 ```
 
-Social residue example, in the shipped `transition_rules.yaml` grammar
-(pack root; schema `townlet.config.transition_rules_config.TransitionRulesConfig`,
+Transition-rule example, in the shipped `transition_rules` grammar
+(pack scope; schema `townlet.config.transition_rules_config.TransitionRulesConfig`,
 `extra="forbid"` — `condition`, `clamp`, `effect` are required-nullable
-per the No-Defaults Principle; a write is masked by its target's declared scope):
+per the No-Defaults Principle; a write is masked by its target's declared scope;
+the rule's reads are derived from its ASTs, and it has no `kind` — S8, 2026-10-31):
 
 ```yaml
 version: "1.0"
-social_residue:
+transition_rules:
   - id: "seen_stealing_damages_reputation"
     phase: "apply_social_residue_effects"
-    kind: "visibility_effect"
-    reads: ["chosen_action", "was_observed", "public_reputation"]
     condition: "was_observed and chosen_action == STEAL"
     writes:
       - variable_id: "public_reputation"
@@ -1626,15 +1619,13 @@ social_residue:
         clamp: [0.0, 1.0]
 ```
 
-Institutional rule example:
+A rule gated on meters (the condition reads `health` and `mood` as bars):
 
 ```yaml
 version: "1.0"
-social_residue:
+transition_rules:
   - id: "ambulance_abuse_social_penalty"
     phase: "apply_social_residue_effects"
-    kind: "institutional_rule"
-    reads: ["chosen_action", "health", "mood", "public_reputation"]
     condition: "chosen_action == CALL_AMBULANCE and health >= 0.7 and mood >= 0.8"
     writes:
       - variable_id: "public_reputation"
@@ -1845,12 +1836,14 @@ This relational set is design history: the `pair`, `message` and `group` scopes 
 their extents were deleted (owner ruling S1, 2026-10-25: the batch is N independent
 single-agent worlds). It returns only when agents-per-world becomes declarable.
 
-### 16.3 Social residue effect types
+### 16.3 Transition rules and effect labels
 
-The VTC social-residue compiler accepts `visibility_effect`, `social_residue`,
-and `institutional_rule` relationship rules in the canonical
-`apply_social_residue_effects` phase. Rule-level conditions and write-level
-conditions are combined before commit. A write is masked by its target's
+The VTC transition-rule compiler (`compile_vtc_transition_rules`) accepts
+declarative rules at any phase of the closed graph, canonically
+`apply_social_residue_effects`. A rule has no `kind` (the former three-valued
+label changed nothing but a telemetry prefix; deleted 2026-10-31, S8) and no
+authored `reads` (derived from the expression and condition ASTs). Rule-level
+conditions and write-level conditions are combined before commit. A write is masked by its target's
 declared scope: an agent target on each active agent's row, a global or
 affordance target whenever any agent is active. There is no pair scope (§5.1),
 so no rule relates two agents. The former write-level `target` role annotation
@@ -1859,13 +1852,14 @@ Agent-scope writes use agent vectors such as `chosen_action` or derived
 visibility vectors such as `was_observed`. As with other VTC writes,
 `additive_delta` expressions are deltas, not post-update values.
 
-The authoring surface is a pack-root `transition_rules.yaml` with a
-`social_residue:` list, validated at load by the no-defaults DTO
-`townlet.config.transition_rules_config.TransitionRulesConfig`
-(`extra="forbid"`: a stray or typo'd key fails at parse; `condition`, `clamp`,
-`effect`, and `scope` must be set explicitly, `null` included) and compiled by
-the universe compiler through `compile_vtc_social_residue_rules` into the
-transition schedule. The compiler and the `apply_social_residue_effects` phase
+The authoring surface is the pack-scope `transition_rules` declaration (a
+document whose root carries a `transition_rules:` list), validated at load by
+the no-defaults DTO `townlet.config.transition_rules_config.TransitionRulesConfig`
+(`extra="forbid"`: a stray or typo'd key fails at parse — `reads`, `kind` and the
+old `social_residue:` family key included; `condition`, `clamp` and `effect` must
+be set explicitly, `null` included) and compiled by the universe compiler through
+`compile_vtc_transition_rules` into the transition schedule. Telemetry labels a
+write `id:effect` (or `id:variable_id`). The compiler and the `apply_social_residue_effects` phase
 are wired into `env.step`'s executed phase range;
 `tests/test_townlet/integration/test_vtc_transition_schedule_runtime.py`
 proves a declared rule mutates an agent-scope variable during `env.step`. No
@@ -1896,11 +1890,9 @@ no source affordance); a rule naming one fails at parse. The former compile-gree
 
 ```yaml
 version: "1.0"
-social_residue:
+transition_rules:
   - id: "observed_help_raises_reputation"
     phase: "apply_social_residue_effects"
-    kind: "social_residue"
-    reads: ["chosen_action", "was_observed", "public_reputation"]
     condition: "chosen_action == HELP"
     writes:
       - variable_id: "public_reputation"
@@ -2219,7 +2211,7 @@ Multi-agent tests:
 ```bash
 uv run pytest tests/test_townlet/unit/vfs/test_wp15_scope_surface.py -v
 uv run pytest tests/test_townlet/unit/vfs/test_vtc_affordance_occupancy.py -v
-uv run pytest tests/test_townlet/unit/vfs/test_vtc_social_residue.py -v
+uv run pytest tests/test_townlet/unit/vfs/test_vtc_transition_rules.py -v
 uv run pytest tests/test_townlet/integration/test_l5_multi_agent_config.py -v
 ```
 
@@ -2419,11 +2411,9 @@ Prefer explicit rules (`transition_rules.yaml`):
 
 ```yaml
 version: "1.0"
-social_residue:
+transition_rules:
   - id: "public_help_increases_reputation"
     phase: "apply_social_residue_effects"
-    kind: "social_residue"
-    reads: ["was_observed", "public_reputation"]
     condition: "was_observed"
     writes:
       - variable_id: "public_reputation"
@@ -2495,15 +2485,16 @@ registry's gated add/remove mode had no authoring reach and was deleted in VFS W
    agent, global and affordance state.
 6. **No dynamic variables.** Variables are fixed at compile time. The registry's gated
    `dynamic_variable_mode` had no config surface and was deleted in VFS WP6 (2026-10-24).
-7. **Relationship rules are authorable but not yet authored.** Social rule kinds are
-   declarable in a pack-root `transition_rules.yaml` (no-defaults DTO, 2026-08-22,
-   hamlet-84cf93a1b9), compile into the transition schedule, and mutate agent-scope variables
+7. **Transition rules are authorable but not yet authored.** Rules are declarable in
+   the pack-scope `transition_rules` declaration (no-defaults DTO, 2026-08-22,
+   hamlet-84cf93a1b9; family renamed and `reads`/`kind` deleted 2026-10-31, S8), compile
+   into the transition schedule, and mutate agent-scope variables
    during `env.step` (proven config-in/behaviour-out). No shipped pack declares rules yet.
    Group, pair and message scopes are deleted (S1, 2026-10-25).
 8. **One VTC family refuses unsupported rule shapes at runtime, not compile time**
    (2026-08-24 audit): modulation rules with `condition:` or non-`multiplicative_modifier`
    composition (§14.4). It compiles green and raises `NotImplementedError` at the first
-   `env.step`. (The social-residue claim compositions now fail at parse, §16.3.)
+   `env.step`. (The rule-write claim compositions now fail at parse, §16.3.)
 
 ### 21.2 Design risks
 

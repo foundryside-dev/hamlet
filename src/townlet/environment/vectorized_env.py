@@ -547,7 +547,6 @@ class VectorizedHamletEnv:
                 icon=action.icon,
                 source=action.source,
                 source_affordance=action.source_affordance,
-                reads=list(action.reads),
                 writes=cast(Any, [dict(write) for write in action.writes]),
             )
             for action in runtime_action_space.actions
@@ -1091,6 +1090,9 @@ class VectorizedHamletEnv:
         prev_dones = self.dones.clone()
         active_on_entry = ~prev_dones
         self.vfs_registry.reset_tick_scoped()
+        refusals_before = 0
+        if self.effect_manager is not None:
+            refusals_before = len(self.effect_manager.spawn_refusals)
         # 1. Execute actions and track successful interactions
         successful_interactions = self._action_executor._execute_actions(actions)
         self._run_vtc_transition_phases(
@@ -1139,7 +1141,7 @@ class VectorizedHamletEnv:
         self._publish_engine_tick()
 
         # 3.7. Evaluate VFS expressions over the committed state at the new instant: after
-        # every transition phase that writes VFS variables (action writes, social residue)
+        # every transition phase that writes VFS variables (action writes, transition rules)
         # and after clamp_and_validate, so expressions never lag a transition write or
         # the clock.
         self._evaluate_vfs_profiles()
@@ -1199,6 +1201,8 @@ class VectorizedHamletEnv:
             "successful_interactions": successful_interactions,  # {agent_idx: affordance_name}
             "reward_components": self._last_reward_components,  # DAC breakdown
             "intrinsic_weight": self.intrinsic_weights,  # Effective modifier weight
+            # Effect spawns this step refused at `max_active_effects`, each naming its world.
+            "effect_spawn_refusals": () if self.effect_manager is None else tuple(self.effect_manager.spawn_refusals[refusals_before:]),
         }
 
         return observations, rewards, self.dones, info
@@ -1212,6 +1216,9 @@ class VectorizedHamletEnv:
             # Get current VFS state from registry
             # HIGH-02: Use proper VFS API instead of direct _storage access
             current_vfs_state = self._current_vfs_state()
+            # One instant of history: seeded at the episode's first instant from this
+            # pre-evaluation state, committed after both profiles (WP14).
+            self.vfs_evaluator.begin_instant(bars_dict_vfs, current_vfs_state, self.device)
 
             # Evaluate global profile
             global_profile = self.universe.compiled_vfs_profiles.global_profile
@@ -1269,6 +1276,10 @@ class VectorizedHamletEnv:
                 self._write_back_profile_expressions(
                     "Agent-profile", "agent_profile", agent_profile, updated_agent_vfs, require_agent_shape=True
                 )
+
+            # A world whose agent is done is frozen: its history does not advance. At the
+            # step's evaluation `dones` is still the entry mask (terminals run after it).
+            self.vfs_evaluator.commit_instant(bars_dict_vfs, self._current_vfs_state(), live=~self.dones)
 
     def _execute_actions(self, actions: torch.Tensor) -> dict:
         """Execute movement, interaction, and wait actions."""

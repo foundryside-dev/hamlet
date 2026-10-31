@@ -42,7 +42,6 @@ def _raw():
         {"switch": "0", "cases": [{"when": "1", "do": [{"modify": "vfs.secret", "value": "3"}]}], "default": []},
         {"for_each": "all_agents", "as": "agent", "do": [{"modify": "target.vfs.secret", "value": "3"}]},
         {"sample": "uniform", "params": {"min": "0", "max": "1"}, "store_in": "vfs.secret"},
-        {"reduce": "all_agents", "reduce_as": "agent", "reduce_init": "0", "reduce_body": "acc + 1", "reduce_into": "vfs.secret"},
     ],
 )
 def test_all_effect_command_write_forms_are_checked(command):
@@ -103,12 +102,10 @@ def test_conditional_action_and_social_writes_are_checked():
         validate_static_write_targets(
             replace(
                 raw,
-                social_residue_rules=(
+                transition_rules=(
                     {
                         "id": "bad",
-                        "kind": "social_residue",
                         "phase": "apply_social_residue_effects",
-                        "reads": ["secret"],
                         "condition": "false",
                         "writes": [
                             {

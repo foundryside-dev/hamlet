@@ -32,7 +32,13 @@ FAMILY_NOTES: dict[str, str] = {
     "Statistics": "Reduced across the *arguments*, never across agents: `mean(bar.energy, bar.health)` is each agent's own mean.",
     "Logic and masks": "Boolean combination and masked selection; `gather`/`scatter` index rows of a per-agent value.",
     "Sampling": "Random draws take the shape of their first argument; noise fields are deterministic in their inputs.",
-    "Temporal": "History operators read the temporal history the VFS evaluator maintains; `time_in_window` measures a 24-tick day.",
+    "Temporal": (
+        "History operators (`lag`, `delta`, `moving_average`, `ema`, `rate_of_change`, `rising_edge`, `falling_edge`) "
+        "run only in global and agent variable expressions. Their first argument names a variable, `tick` or "
+        "`bar.<meter>`; window, depth and alpha are literals. Each reads the history of committed values, one per "
+        "tick, which is episode-scoped and seeded with the value the argument held when the episode began. See "
+        "[variables.md](variables.md#history-operators). `time_in_window` measures a 24-tick day."
+    ),
     "Spatial": (
         "Vector variables only (`vec2i`, `vec3i`, `vec2f`, `vec3f`, `vecNi`, `vecNf`); the distance between two scalars is `abs(a - b)`. "
         "Both vectors must share a width: `vec2*` against `vec3*` is refused at compile time; a `vecN*` or `tensor2d` width is only "

@@ -18,8 +18,9 @@ effect_definitions:
     on_interrupt: []
 
 # Per-scope budget of concurrently active effects (token-obs spec S2, required because
-# effects are declared). Values: one active instance per declared effect per scope
-# entity; a `stack`-policy effect exceeding its scope budget raises loudly at publish.
+# effects are declared). Values: instances one scope entity may carry at once; a spawn
+# beyond it (here, a second `stack` of ate_food on one agent) is refused in that world and
+# recorded in the step's `effect_spawn_refusals`.
 max_active_effects:
   global: 0
   agent: 1

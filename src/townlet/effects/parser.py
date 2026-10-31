@@ -107,16 +107,6 @@ class CommandParser:
                 default_commands=default_cmds,
             )
 
-        elif config.reduce is not None:
-            return CommandNode(
-                type=CommandType.REDUCE,
-                reduce_expr=config.reduce,
-                reduce_iterator=config.reduce_as,
-                reduce_init_expr=config.reduce_init,
-                reduce_body_expr=config.reduce_body,
-                reduce_target=config.reduce_into,
-            )
-
         elif config.parallel is not None:
             return CommandNode(
                 type=CommandType.PARALLEL,

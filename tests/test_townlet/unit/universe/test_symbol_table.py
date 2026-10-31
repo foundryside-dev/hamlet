@@ -80,7 +80,6 @@ def test_duplicate_action_registration_raises():
         icon=None,
         source="custom",
         source_affordance=None,
-        reads=[],
         writes=[],
     )
 

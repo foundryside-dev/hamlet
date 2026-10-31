@@ -74,7 +74,7 @@ def _pack(tmp_path: Path, *, declarations: list[dict] = (), rules: list[dict] | 
     _write(drive_path, drive)
 
     if rules is not None:
-        _write(pack / "transition_rules.yaml", {"version": "1.0", "social_residue": rules})
+        _write(pack / "transition_rules.yaml", {"version": "1.0", "transition_rules": rules})
     return pack
 
 
@@ -159,8 +159,6 @@ def test_a_global_rule_advances_each_world_independently(tmp_path: Path) -> None
     rule = {
         "id": "afterglow",
         "phase": "apply_social_residue_effects",
-        "kind": "social_residue",
-        "reads": ["visits", "afterglow"],
         "condition": "visits > 0.0",
         "writes": [
             {

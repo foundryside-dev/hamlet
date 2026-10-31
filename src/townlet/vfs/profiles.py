@@ -9,9 +9,11 @@ import networkx as nx  # type: ignore[import-untyped]
 
 from townlet.config.variables_config import VariableDeclaration
 from townlet.vfs.access_policy import validate_static_access
+from townlet.vfs.history import expression_history, same_instant_refs, walk
 from townlet.vfs.schema import NormalizationSpec, VariableScope
 from townlet.world.expression import ASTNode, ExpressionParser, PathAccess, Variable
 from townlet.world.expression.ast_nodes import BinaryOp, Constant, FunctionCall, IfThenElse, UnaryOp
+from townlet.world.expression.history import TEMPORAL_FUNCTIONS
 from townlet.world.expression.type_checker import TypeChecker, TypeCheckError
 
 __all__ = [
@@ -100,83 +102,34 @@ class VFSProfileCompiler:
         self.parser = ExpressionParser()
 
     def build_dependency_graph(self, variables: Sequence[VariableDeclaration]) -> nx.DiGraph:
-        """Build dependency graph for variables.
+        """Build the same-instant dependency graph of one profile (edges dependency -> dependent).
 
-        Args:
-            variables: List of variable configs
-
-        Returns:
-            Directed graph with edges from dependency -> dependent
+        An edge is a read of another in-profile variable's value at the current instant.
+        A ``lag(x, n)`` read is not one: it reads ``x``'s history ring, committed after
+        every variable evaluates (``vfs.history.same_instant_refs``). So a self-reference
+        or a cycle closed only through ``lag`` sorts, and any other cycle refuses.
+        Ambient engine names are inputs, never edges.
         """
         graph: nx.DiGraph = nx.DiGraph()
-
-        # Add all variables as nodes
-        for var in variables:
-            graph.add_node(var.id)
-
-        # Add edges for expression dependencies
-        # Pre-compute variable names as a set for O(1) lookup instead of O(n)
+        graph.add_nodes_from(var.id for var in variables)
         variable_names = {v.id for v in variables}
-
         for var in variables:
-            if var.expression is not None:
-                # Extract variable references from expression
-                deps = self._extract_variable_refs(var.expression) - AMBIENT_ENGINE_NAMES.keys()
-                for dep in deps:
-                    # Only add edge if dependency is in same profile
-                    if dep in variable_names:
-                        graph.add_edge(dep, var.id)
-
+            if var.expression is None:
+                continue
+            for dep in same_instant_refs(self.parser.parse(var.expression)) - AMBIENT_ENGINE_NAMES.keys():
+                if dep in variable_names:
+                    graph.add_edge(dep, var.id)
         return graph
 
     def _extract_variable_refs(self, expression: str) -> set[str]:
-        """Extract variable references by parsing AST (robust, not regex).
-
-        Uses Phase 1 parser to build AST, then traverses to find Variable nodes.
-        This is 100% accurate - no false matches from string literals or partial matches.
-
-        Args:
-            expression: Expression string (e.g., "a + b * c")
-
-        Returns:
-            Set of variable names referenced
-        """
-        # Parse expression to AST (reuse Phase 1 parser!)
-        ast = self.parser.parse(expression)
-
-        # Traverse AST to collect Variable nodes
-        refs = set()
-
-        def visit(node: ASTNode) -> None:
-            """Recursively visit AST nodes to find Variables and PathAccess."""
+        """Every name an expression reads, at any instant (``lag`` reads included): bare
+        names and the root of each path (a reference variable it dereferences)."""
+        refs: set[str] = set()
+        for node in walk(self.parser.parse(expression)):
             if isinstance(node, Variable):
                 refs.add(node.name)
             elif isinstance(node, PathAccess):
-                # Extract root namespace (e.g., "bar" from "bar.energy")
                 refs.add(node.segments[0])
-
-            # Visit children (handles BinaryOp, UnaryOp, FunctionCall, etc.)
-            if hasattr(node, "left"):
-                visit(node.left)
-            if hasattr(node, "right"):
-                visit(node.right)
-            if hasattr(node, "operand"):
-                visit(node.operand)
-            if hasattr(node, "arguments"):
-                for arg in node.arguments:
-                    visit(arg)
-            if hasattr(node, "condition"):
-                visit(node.condition)
-            if hasattr(node, "true_branch"):
-                visit(node.true_branch)
-            if hasattr(node, "false_branch"):
-                visit(node.false_branch)
-            if hasattr(node, "base"):
-                visit(node.base)
-            if hasattr(node, "index"):
-                visit(node.index)
-
-        visit(ast)
         return refs
 
     def topological_sort(self, variables: Sequence[VariableDeclaration]) -> list[VariableDeclaration]:
@@ -207,7 +160,10 @@ class VFSProfileCompiler:
             # Find a cycle for error message
             cycles = list(nx.simple_cycles(graph))
             cycle_str = " -> ".join(cycles[0] + [cycles[0][0]])
-            raise CircularDependencyError(f"Circular dependency detected in cycle: {cycle_str}")
+            raise CircularDependencyError(
+                f"Circular dependency detected in cycle: {cycle_str}. Each variable in it reads another's value at the "
+                "same instant; only a lag(x, n) read (the value n ticks ago) may close a cycle or a self-reference."
+            )
 
         # Map names back to variable configs
         name_to_var = {v.id: v for v in variables}
@@ -359,6 +315,17 @@ class VFSProfileCompiler:
         else:
             widening_ids = {agent_var.id for agent_var in cross_scope}
 
+        # Every profile variable enters the namespace up front with its declared type and
+        # scope shape. A same-instant read is still ordered by the sort above (its
+        # dependency precedes it); a lag read may name a variable later in the order, or
+        # the variable itself, because it reads the committed history, not this instant.
+        for var in sorted_vars:
+            schema[var.id] = "float" if var.type == "scalar" else var.type
+            if var.type not in {"scalar", "bool"}:
+                shapes[var.id] = "payload"
+            else:
+                shapes[var.id] = "agent" if var.scope == VariableScope.AGENT else "scalar"
+
         for var in sorted_vars:
             if var.expression is not None and widening_ids:
                 widened = sorted(self._extract_variable_refs(var.expression) & widening_ids)
@@ -372,7 +339,11 @@ class VFSProfileCompiler:
             if compiled.ast is not None:
                 if var.type not in {"scalar", "bool"}:
                     raise TypeCheckError(f"Variable '{var.id}' expression shape supports scalar and bool outputs only")
-                output_shape = self.expression_shape(compiled.ast, shapes)
+                try:
+                    expression_history(compiled.ast)
+                except TypeCheckError as exc:
+                    raise TypeCheckError(f"Variable '{var.id}' expression '{var.expression}': {exc}") from exc
+                output_shape = self._shape(compiled.ast, shapes, temporal=True)
                 expected_shape = "agent" if var.scope == VariableScope.AGENT else "scalar"
                 if output_shape != expected_shape:
                     raise TypeCheckError(
@@ -380,17 +351,19 @@ class VFSProfileCompiler:
                     )
             compiled_vars.append(compiled)
 
-            # Add this variable to schema for subsequent variables
-            schema[var.id] = "float" if var.type == "scalar" else var.type
-            if var.type not in {"scalar", "bool"}:
-                shapes[var.id] = "payload"
-            else:
-                shapes[var.id] = "agent" if var.scope == VariableScope.AGENT else "scalar"
-
         return CompiledGlobalProfile(variables=compiled_vars, dependencies=dependencies)
 
     @classmethod
     def expression_shape(cls, node: ASTNode, shapes: dict[str, str]) -> str:
+        """Prove the output shape of an expression that keeps no history (a write, a rule).
+
+        Temporal operators refuse here: only global and agent variable expressions keep
+        the history rings they read (``compile_profile``).
+        """
+        return cls._shape(node, shapes, temporal=False)
+
+    @classmethod
+    def _shape(cls, node: ASTNode, shapes: dict[str, str], *, temporal: bool) -> str:
         """Prove the currently supported scalar/batch output shape without runtime sampling.
 
         Batch size remains symbolic: a one-agent execution cannot establish global
@@ -401,6 +374,9 @@ class VFSProfileCompiler:
         ``payload`` (a vector/tensor value, refused). ``scalar`` joins with anything;
         two distinct axes refuse, because the evaluator aligns trailing dimensions and
         would combine them by coincidence of extents.
+        A temporal operator (admitted when ``temporal``) is pointwise in time: its result
+        has its first argument's shape, and its other arguments are literals
+        (``vfs.history.expression_history`` proves that before this runs).
         """
         if isinstance(node, Constant):
             return "scalar"
@@ -414,7 +390,17 @@ class VFSProfileCompiler:
                 raise TypeCheckError(f"Expression path '{path}' has no qualified variable output shape")
             return shapes[path]
         if isinstance(node, UnaryOp):
-            return cls.expression_shape(node.operand, shapes)
+            return cls._shape(node.operand, shapes, temporal=temporal)
+        if isinstance(node, FunctionCall) and node.function_name in TEMPORAL_FUNCTIONS:
+            if not temporal:
+                raise TypeCheckError(
+                    f"Expression function '{node.function_name}' reads temporal history, which only global and agent "
+                    "variable expressions keep. Declare a variable with that expression and read the variable here."
+                )
+            shape = cls._shape(node.arguments[0], shapes, temporal=temporal)
+            if shape == "payload":
+                raise TypeCheckError(f"Expression function '{node.function_name}' reads scalar or bool history only, not a vector/tensor")
+            return shape
         if isinstance(node, BinaryOp):
             operands = [node.left, node.right]
         elif isinstance(node, IfThenElse):
@@ -444,12 +430,12 @@ class VFSProfileCompiler:
                 raise TypeCheckError(f"Expression function '{node.function_name}' has no qualified variable output shape")
             operands = list(node.arguments)
             if node.function_name in stacked:
-                argument_shapes = {cls.expression_shape(argument, shapes) for argument in operands}
+                argument_shapes = {cls._shape(argument, shapes, temporal=temporal) for argument in operands}
                 if len(argument_shapes) != 1:
                     raise TypeCheckError(f"Expression function '{node.function_name}' requires equal argument shapes")
         else:
             raise TypeCheckError(f"Expression node '{type(node).__name__}' has no qualified variable output shape")
-        operand_shapes = {cls.expression_shape(operand, shapes) for operand in operands}
+        operand_shapes = {cls._shape(operand, shapes, temporal=temporal) for operand in operands}
         if "payload" in operand_shapes:
             raise TypeCheckError("Expression shape with vector/tensor payloads is not supported")
         axes = operand_shapes - {"scalar"}

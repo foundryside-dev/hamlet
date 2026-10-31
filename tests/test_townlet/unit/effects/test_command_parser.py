@@ -166,27 +166,6 @@ def test_parser_switch_command():
     assert len(node.default_commands) == 1
 
 
-def test_parser_reduce_command():
-    """Parser converts reduce CommandConfig to CommandNode."""
-    config = CommandConfig(
-        reduce="nearby_agents",
-        reduce_as="agent",
-        reduce_init="0",
-        reduce_body="acc + agent.bar.energy",
-        reduce_into="temp.total_energy",
-    )
-
-    parser = CommandParser()
-    node = parser.parse_command(config)
-
-    assert node.type == CommandType.REDUCE
-    assert node.reduce_expr == "nearby_agents"
-    assert node.reduce_iterator == "agent"
-    assert node.reduce_init_expr == "0"
-    assert node.reduce_body_expr == "acc + agent.bar.energy"
-    assert node.reduce_target == "temp.total_energy"
-
-
 def test_parser_parallel_command():
     """Parser converts parallel CommandConfig to CommandNode."""
     config = CommandConfig.model_validate(

@@ -33,7 +33,7 @@ from townlet.vfs.vtc import (
 )
 from townlet.world.expression import ExpressionParser
 
-ENERGY_SCOPES = {"energy": VTCWriteTarget(VariableScope.AGENT, "scalar", meter=False)}
+ENERGY_SCOPES = {"energy": VTCWriteTarget(VariableScope.AGENT, "scalar", meter=False, expression=None)}
 
 
 def _ast(expression: str) -> dict:
@@ -173,7 +173,7 @@ def test_compiler_surfaces_observation_schema_hash(tmp_path: Path) -> None:
 
 
 def test_canonical_action_schema_uses_action_abi_fields() -> None:
-    """Action hashes should use IDs, names, masks, movement shape, reads, and writes."""
+    """Action hashes should use IDs, names, masks, movement shape, and writes."""
     action = RuntimeAction(
         id=2,
         name="REST",
@@ -187,7 +187,6 @@ def test_canonical_action_schema_uses_action_abi_fields() -> None:
         description="Descriptions are not part of the action ABI hash",
         icon=None,
         source_affordance=None,
-        reads=("mood", "energy"),
         writes=(
             {
                 "variable_id": "energy",
@@ -214,7 +213,6 @@ def test_canonical_action_schema_uses_action_abi_fields() -> None:
             "delta": None,
             "teleport_to": None,
             "source_affordance": None,
-            "reads": ["energy", "mood"],
             "writes": [
                 {
                     "variable_id": "energy",
@@ -239,23 +237,20 @@ def test_action_schema_hash_sorts_by_action_id() -> None:
     assert compute_action_schema_hash((wait, rest)) == compute_action_schema_hash((rest, wait))
 
 
-def test_action_schema_hash_changes_when_mask_or_reads_or_writes_change() -> None:
-    """Enabled masks and declared dependencies are policy/action-space ABI fields."""
-    base = RuntimeAction(id=0, name="REST", type="passive", enabled=True, source="custom", reads=("energy",))
-    disabled = RuntimeAction(id=0, name="REST", type="passive", enabled=False, source="custom", reads=("energy",))
-    changed_reads = RuntimeAction(id=0, name="REST", type="passive", enabled=True, source="custom", reads=("mood",))
+def test_action_schema_hash_changes_when_mask_or_writes_change() -> None:
+    """Enabled masks and declared writes are policy/action-space ABI fields."""
+    base = RuntimeAction(id=0, name="REST", type="passive", enabled=True, source="custom")
+    disabled = RuntimeAction(id=0, name="REST", type="passive", enabled=False, source="custom")
     changed_writes = RuntimeAction(
         id=0,
         name="REST",
         type="passive",
         enabled=True,
         source="custom",
-        reads=("energy",),
         writes=({"variable_id": "energy", "expression": "energy + 0.2", "condition": None},),
     )
 
     assert compute_action_schema_hash((base,)) != compute_action_schema_hash((disabled,))
-    assert compute_action_schema_hash((base,)) != compute_action_schema_hash((changed_reads,))
     assert compute_action_schema_hash((base,)) != compute_action_schema_hash((changed_writes,))
 
 
@@ -288,7 +283,6 @@ def test_transition_graph_hash_binds_phases_and_compiled_rule_fields() -> None:
             icon=None,
             source="custom",
             source_affordance=None,
-            reads=["energy"],
             writes=[
                 {
                     "variable_id": "energy",
@@ -523,21 +517,18 @@ def test_transition_graph_hash_binds_terminal_condition_rules() -> None:
     )
 
 
-def test_transition_graph_hash_binds_social_residue_rules() -> None:
-    """Transition hashes should bind compiled social-residue semantics."""
-    assert hasattr(vtc, "compile_vtc_social_residue_rules_with_phase_graph"), "VTC social-residue compiler is required"
+def test_transition_graph_hash_binds_transition_rules() -> None:
+    """Transition hashes bind a compiled transition rule's declared fields and ASTs; derived reads are not identity."""
 
     phase_graph = TransitionPhaseGraph.default()
     action_program = compile_vtc_action_writes_with_phase_graph([], {}, phase_graph)
 
-    def social_program(*, delta: float) -> vtc.VTCSocialResidueProgram:
-        return vtc.compile_vtc_social_residue_rules_with_phase_graph(
+    def social_program(*, delta: float) -> vtc.VTCTransitionRuleProgram:
+        return vtc.compile_vtc_transition_rules_with_phase_graph(
             [
                 {
                     "id": "seen_stealing_damages_reputation",
                     "phase": "apply_social_residue_effects",
-                    "kind": "visibility_effect",
-                    "reads": ["chosen_action", "was_observed", "reputation"],
                     "condition": "was_observed and chosen_action == 7",
                     "writes": [
                         {
@@ -551,9 +542,9 @@ def test_transition_graph_hash_binds_social_residue_rules() -> None:
                 }
             ],
             {
-                "reputation": VTCWriteTarget(VariableScope.AGENT, "scalar", meter=False),
-                "chosen_action": VTCWriteTarget(VariableScope.AGENT, "scalar", meter=False),
-                "was_observed": VTCWriteTarget(VariableScope.AGENT, "bool", meter=False),
+                "reputation": VTCWriteTarget(VariableScope.AGENT, "scalar", meter=False, expression=None),
+                "chosen_action": VTCWriteTarget(VariableScope.AGENT, "scalar", meter=False, expression=None),
+                "was_observed": VTCWriteTarget(VariableScope.AGENT, "bool", meter=False, expression=None),
             },
             phase_graph,
         )
@@ -563,11 +554,10 @@ def test_transition_graph_hash_binds_social_residue_rules() -> None:
     assert canonical_transition_graph_schema(
         phase_graph,
         action_program,
-        social_residue_program=program,
+        transition_rule_program=program,
     )["rules"] == [
         {
             "rule_id": "seen_stealing_damages_reputation",
-            "kind": "visibility_effect",
             "effect": "reputation_delta",
             "variable_id": "reputation",
             "expression": _ast("-0.15"),
@@ -576,17 +566,16 @@ def test_transition_graph_hash_binds_social_residue_rules() -> None:
             "phase": "apply_social_residue_effects",
             "priority": 0,
             "clamp": [0.0, 1.0],
-            "telemetry_label": "visibility_effect:seen_stealing_damages_reputation:reputation_delta",
-            "reads": ["chosen_action", "was_observed", "reputation"],
+            "telemetry_label": "seen_stealing_damages_reputation:reputation_delta",
             "target_scope": "agent",
         }
     ]
 
-    baseline = compute_transition_graph_hash(phase_graph, action_program, social_residue_program=program)
+    baseline = compute_transition_graph_hash(phase_graph, action_program, transition_rule_program=program)
     assert baseline != compute_transition_graph_hash(
         phase_graph,
         action_program,
-        social_residue_program=social_program(delta=-0.25),
+        transition_rule_program=social_program(delta=-0.25),
     )
 
 
@@ -632,7 +621,9 @@ def test_compiler_surfaces_vfs_hash(tmp_path: Path) -> None:
         phase_graph,
         compile_vtc_action_writes_with_phase_graph(
             level.runtime_action_space.actions,
-            vtc_write_targets(level.vfs_variables, (meter.name for meter in level.bars.meters)),
+            vtc_write_targets(
+                level.vfs_variables, (meter.name for meter in level.bars.meters), (profiles.global_profile, profiles.agent_profile)
+            ),
             phase_graph,
         ),
         affordance_gate_program=vtc.compile_vtc_affordance_gates_with_phase_graph(

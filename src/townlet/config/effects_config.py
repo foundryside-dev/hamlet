@@ -88,7 +88,6 @@ _COMMAND_KINDS: dict[str, tuple[frozenset[str], frozenset[str]]] = {
     # `as` is accepted and not yet bound (effects remediation WP7 decides bind or delete).
     "for_each": (frozenset({"for_each", "do"}), frozenset({"as"})),
     "switch": (frozenset({"switch", "cases", "default"}), frozenset()),
-    "reduce": (frozenset({"reduce", "reduce_as", "reduce_init", "reduce_body", "reduce_into"}), frozenset()),
     "parallel": (frozenset({"parallel"}), frozenset()),
     "delay": (frozenset({"delay", "do"}), frozenset()),
     "sample": (frozenset({"sample", "params", "store_in"}), frozenset()),
@@ -106,7 +105,6 @@ class CommandConfig(BaseModel):
     - if/then/else: Conditional execution (per-agent mask)
     - for_each/do (+ as): Iterate over collection
     - switch/cases/default: Multi-branch dispatch
-    - reduce/reduce_as/reduce_init/reduce_body/reduce_into: Fixed-size reduction
     - parallel: Disjoint branch execution
     - delay/do: Schedule commands after N ticks
     - sample/params/store_in: Draw from distribution
@@ -147,13 +145,6 @@ class CommandConfig(BaseModel):
     switch: str | None = None  # Expression evaluated once
     cases: list[dict[str, Any]] = []  # List of {when: expr, do: [...]} mappings
     default: list[CommandConfig] = []  # Default branch commands
-
-    # reduce command: Fixed-size reduction into accumulator
-    reduce: str | None = None  # collection expression
-    reduce_as: str | None = None  # iterator name
-    reduce_init: str | None = None  # accumulator init expr
-    reduce_body: str | None = None  # accumulator update expr (uses acc + iterator)
-    reduce_into: str | None = None  # target path to store result
 
     # parallel command: disjoint branch execution
     parallel: list[CommandConfig] | None = None
@@ -297,10 +288,14 @@ class EffectsConfig(BaseModel):
     version: Literal["1.0"] = Field(..., description="Config schema version")
     effect_definitions: list[EffectDefinitionConfig] = Field(..., description="Catalog of reusable effect definitions")
     # Per-scope budget of concurrently active effects (token-obs spec §2 capacity table;
-    # hamlet-88578e629e). REQUIRED (No-Defaults) whenever any effect is declared —
-    # `effect` token capacity is Σ scope budget × scope denominator — and forbidden when
-    # the catalog is empty (a declaration that reaches nothing). Exceeding a scope's
-    # budget at runtime raises at publish time (overflow is loud, never truncated).
+    # hamlet-88578e629e): the instances ONE scope entity (a world's agent, an item row, a
+    # world's affordance, the world itself) may carry at once. REQUIRED (No-Defaults)
+    # whenever any effect is declared — `effect` token capacity is Σ scope budget × scope
+    # denominator — and forbidden when the catalog is empty (a declaration that reaches
+    # nothing). A spawn that would add an instance beyond the budget is not admitted, in
+    # that world only, and is recorded in `EffectManager.spawn_refusals` (step `info`
+    # `effect_spawn_refusals`); the publisher's overflow refusal is a backstop, never the
+    # enforcement.
     max_active_effects: dict[str, int] | None = Field(
         default=None,
         description="Per-EffectScope budget of concurrently active effects, e.g. {global: 0, agent: 4, item: 0, affordance: 0}",

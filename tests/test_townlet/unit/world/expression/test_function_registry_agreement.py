@@ -150,9 +150,10 @@ def make_context() -> ExecutionContext:
         "started": torch.tensor([3, 7, 9]),
     }
     history = TemporalHistory({"bar.f": 4, "bar.b": 4, "bar.i": 4}, torch.device("cpu"))
-    history.push("bar.f", torch.zeros(BATCH))
-    history.push("bar.b", torch.zeros(BATCH, dtype=torch.bool))
-    history.push("bar.i", torch.zeros(BATCH, dtype=torch.long))
+    history.seed(
+        {"f": torch.zeros(BATCH), "b": torch.zeros(BATCH, dtype=torch.bool), "i": torch.zeros(BATCH, dtype=torch.long)},
+        {},
+    )
     return ExecutionContext(
         bars=bars,
         vfs=vfs,

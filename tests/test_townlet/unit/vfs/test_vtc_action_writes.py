@@ -66,14 +66,13 @@ def _action(*, action_id: int, name: str, writes: list[WriteSpec]) -> ActionConf
         icon=None,
         source="custom",
         source_affordance=None,
-        reads=[],
         writes=writes,
     )
 
 
 def _agent_scopes(action: ActionConfig) -> dict[str, VTCWriteTarget]:
     """Every target in these kernel tests is per-agent float storage."""
-    return {write.variable_id: VTCWriteTarget(VariableScope.AGENT, "scalar", meter=False) for write in action.writes}
+    return {write.variable_id: VTCWriteTarget(VariableScope.AGENT, "scalar", meter=False, expression=None) for write in action.writes}
 
 
 def test_vtc_action_writes_applies_write_only_to_selected_active_agents() -> None:
@@ -145,7 +144,7 @@ def test_vtc_action_writes_can_target_meter_bars() -> None:
         ],
     )
 
-    program = compile_vtc_action_writes([action], {"energy": VTCWriteTarget(VariableScope.AGENT, "scalar", meter=True)})
+    program = compile_vtc_action_writes([action], {"energy": VTCWriteTarget(VariableScope.AGENT, "scalar", meter=True, expression=None)})
     updated = program.apply(
         actions=torch.tensor([11, 0]),
         vfs_state={},

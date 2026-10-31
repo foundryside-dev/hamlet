@@ -25,3 +25,27 @@ variables:
       max: 0.5
       clip: true
     description: How far energy sits below the 0.5 target (0.0 = at or above target)
+  # A "time since" mechanic in one declaration (WP14): the expression reads its own
+  # value one tick ago through lag, which reads history, not this tick, so it is no
+  # cycle. The event is "energy rose this tick", and in this pack only SLEEP raises
+  # energy (+0.8; recovery.natural is 0 and every other affordance costs energy). A
+  # sleep at full energy changes nothing and so does not count. initial_value -1.0 is
+  # the history seed: before a tick of history exists lag returns the episode-start
+  # value, so the first tick of every episode reads -1 + 1 = 0.
+  - id: time_since_last_sleep
+    readable_by: [engine, agent]
+    writable_by: [engine]
+    scope: agent
+    type: scalar
+    lifetime: episode
+    semantic_type: custom
+    exposed_to:
+    - agent
+    initial_value: -1.0
+    expression: where(delta(bar.energy) > 0.0, 0.0, lag(time_since_last_sleep, 1) + 1.0)
+    normalization:
+      kind: minmax
+      min: 0.0
+      max: 1200.0
+      clip: true
+    description: Ticks since energy last rose (a SLEEP), or since the episode began

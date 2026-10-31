@@ -377,57 +377,6 @@ class CommandCompiler:
             for cmd in node.default_commands or []:
                 self._compile_command(cmd, binding)
 
-        elif node.type == CommandType.REDUCE:
-            from townlet.world.expression.type_checker import TypeCheckError
-
-            if (
-                node.reduce_expr is None
-                or node.reduce_iterator is None
-                or node.reduce_init_expr is None
-                or node.reduce_body_expr is None
-                or node.reduce_target is None
-            ):
-                raise TypeCheckError("REDUCE command requires collection, iterator, init, body, and target")
-
-            # Parse expressions
-            coll_ast = self._parse(node.reduce_expr, binding)
-            init_ast = self._parse(node.reduce_init_expr, binding)
-            body_ast = self._parse(node.reduce_body_expr, binding)
-
-            # Type check collection -> must be iterable of known-size tensors/lists (policy: reject unknown/ragged)
-            coll_type = type_checker.check(coll_ast)
-            if coll_type not in {"list", "tensor"}:
-                raise TypeCheckError("REDUCE collection must be fixed-size list or tensor under vectorized constraints")
-
-            # Type check init and infer accumulator type
-            acc_type = type_checker.check(init_ast)
-
-            # Extend schema with iterator and accumulator symbols for body checking
-            iter_name = node.reduce_iterator
-            # Temporarily augment schema
-            original_schema = dict(type_checker.schema)
-            type_checker.schema[iter_name] = acc_type  # assume numeric iterator compatible with accumulator
-            type_checker.schema["acc"] = acc_type
-            body_type = type_checker.check(body_ast)
-            # Restore schema
-            type_checker.schema = original_schema
-
-            if body_type != acc_type:
-                raise TypeCheckError(f"REDUCE body must return accumulator type {acc_type}, got {body_type}")
-
-            # Validate target path exists and matches accumulator type
-            node.reduce_target = self._resolve_write_path(node.reduce_target, binding, "REDUCE into")
-            if node.reduce_target not in schema:
-                raise TypeCheckError(f"Path '{node.reduce_target}' not found in schema")
-            target_type = schema[node.reduce_target]
-            if target_type != acc_type:
-                raise TypeCheckError(f"REDUCE target type mismatch: expected {target_type}, got {acc_type}")
-
-            # Store compiled ASTs
-            node.collection_ast = coll_ast
-            node.reduce_init_ast = init_ast
-            node.reduce_body_ast = body_ast
-
         elif node.type == CommandType.PARALLEL:
             from townlet.world.expression.type_checker import TypeCheckError
 
@@ -435,14 +384,12 @@ class CommandCompiler:
             if not branches:
                 raise TypeCheckError("PARALLEL command requires at least one branch")
 
-            # Collect target paths written by branches to detect conflicts (modify/reduce targets only for now).
+            # Collect target paths written by branches to detect conflicts (modify targets only for now).
             # Bare agent paths are compared in their resolved form so `vfs.x` and `target.vfs.x` collide.
             def collect_writes(cmd: CommandNode) -> set[str]:
                 writes: set[str] = set()
                 if cmd.type == CommandType.MODIFY and cmd.path:
                     writes.add(self._canonical_write_path(cmd.path))
-                if cmd.type == CommandType.REDUCE and cmd.reduce_target:
-                    writes.add(self._canonical_write_path(cmd.reduce_target))
                 # Recurse into nested blocks
                 for seq in (
                     cmd.then_commands or [],

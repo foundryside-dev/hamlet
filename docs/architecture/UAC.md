@@ -219,7 +219,7 @@ Summarised only far enough to route:
 - **`lifetime` is hardcoded** on both required surfaces (environment.yaml → always `tick`;
   profiles → `persistent` / `episode`), so no author-declared counters or accumulators exist.
 - A handful of **compile-green / crash-at-step-1 seams**: VTC modulation `condition:`, three of
-  eleven social-residue composition modes, zero-affordance packs, and `num_agents`-shaped global
+  the transition-rule write composition modes, zero-affordance packs, and `num_agents`-shaped global
   tensors. These violate the project's own fail-loud-at-compile discipline.
 
 Note that the first three are all instances of the split-variable-surface problem PDR-0117

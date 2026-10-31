@@ -12,6 +12,7 @@ from typing import get_args
 
 import pytest
 
+from tests.test_townlet.helpers.token_widths import fixed_width_for
 from townlet.config.effects_config import EffectScope, ReapplyPolicy
 from townlet.config.interaction_type import InteractionType
 from townlet.effects.affordance_identity import AffordanceMeterWrite
@@ -733,7 +734,7 @@ class TestTokenSpecArtifact:
             compact.get_type(t.type_name).capacity * compact.get_type(t.type_name).compact_row_width for t in spec.types
         )
         assert spec.total_dims == 1 * 5 + 8 * 3 + 14 * 5 + 2 * 8 == 115
-        assert spec.fixed_total_dims == sum(t.capacity * t.fixed_row_width for t in spec.types) == 4090
+        assert spec.fixed_total_dims == sum(t.capacity * t.fixed_row_width for t in spec.types) == fixed_width_for(spec.census)
 
     def test_width_names_are_explicit_and_compact_layout_is_per_type(self):
         spec = self._spec()

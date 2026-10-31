@@ -225,7 +225,7 @@ class DeclarationStore:
         signatures = {
             "brain": {"architecture", "optimizer"},
             "effects": {"effect_definitions"},
-            "transition_rules": {"social_residue"},
+            "transition_rules": {"transition_rules"},
             "action_labels": {"custom"},
         }
         matches = [family for family, fields in signatures.items() if fields <= set(document)]
@@ -413,7 +413,7 @@ class DeclarationStore:
             "declarations",
             "variables",
             "item_profiles",
-            "social_residue",
+            "transition_rules",
         } and all(cls._entry_id(entry) is not None for entry in [*left, *right])
 
     def _record_sources(self, declaration: Declaration) -> None:

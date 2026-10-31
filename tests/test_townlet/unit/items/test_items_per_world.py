@@ -317,8 +317,19 @@ def test_an_item_effect_in_world_0_never_touches_world_1(tmp_path: Path) -> None
 # --------------------------------------------------------------------------- carried items in the observation
 
 
+def _free_cell(env, world: int, preferred: tuple[int, int]) -> tuple[int, int]:
+    """Level-start items land on random cells and a pickup takes whichever item is at the
+    agent's cell first, so the test item goes on a cell no level-start item occupies."""
+    grid = env.item_manager.substrate
+    cells = [preferred] + [(x, y) for x in range(grid.width) for y in range(grid.height)]
+    return next(cell for cell in cells if env.item_manager.items_at(world, torch.tensor(cell)) == [])
+
+
 def _carry(env, item_type: str, world: int, position: tuple[int, int]):
+    position = _free_cell(env, world, position)
     item = env.item_manager.spawn_item(world, item_type, position, current_tick=0)
+    assert item is not None
+    assert env.item_manager.items_at(world, torch.tensor(position)) == [item]
     assert item is not None
     env.positions[world] = torch.tensor(position, dtype=env.positions.dtype)
     assert env.item_handler.handle_get_action(agent_idx=world, agent_position=env.positions[world], current_tick=0, meters=env.meters)
@@ -342,10 +353,10 @@ def test_a_carried_exclusive_item_has_a_token_and_a_state_row_at_its_holder() ->
     assert row[pos0 : pos0 + 2] == pytest.approx([3 / 4, 2 / 4])  # the holder's cell on the 5x5 grid
     state = _element_row(env, obs, f"medical.durability[{slot}]", world=0)
     assert state[0] == 1.0
-    # World 1 owns no item at that slot unless it spawned one there itself.
+    # The medkit is world 0's alone: world 1's row at that slot is present exactly when
+    # world 1 spawned its own item there.
     world1_rows = {item.vfs_index - env.items_per_world for item in env.item_manager.items_in_world(1)}
-    if slot not in world1_rows:
-        assert _row_of(env, obs, "item", slot, world=1)[0] == 0.0
+    assert _row_of(env, obs, "item", slot, world=1)[0] == (1.0 if slot in world1_rows else 0.0)
 
 
 def test_a_shared_carried_item_reports_its_holders_position() -> None:

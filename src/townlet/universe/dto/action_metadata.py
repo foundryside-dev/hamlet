@@ -63,13 +63,11 @@ class RuntimeAction:
     description: str | None = None
     icon: str | None = None
     source_affordance: str | None = None
-    reads: tuple[str, ...] = field(default_factory=tuple)
     writes: tuple[Mapping[str, Any], ...] = field(default_factory=tuple)
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "costs", MappingProxyType(dict(self.costs)))
         object.__setattr__(self, "effects", MappingProxyType(dict(self.effects)))
-        object.__setattr__(self, "reads", tuple(self.reads))
         object.__setattr__(self, "writes", tuple(dict(write) for write in self.writes))
         if self.delta is not None:
             object.__setattr__(self, "delta", tuple(self.delta))

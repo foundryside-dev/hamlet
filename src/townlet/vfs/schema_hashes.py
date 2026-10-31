@@ -110,6 +110,15 @@ def canonical_expression_schema(
     ``profile.variables``: that list is one linear extension of the dependency DAG, and
     two declaration orders of independent variables yield different extensions of the
     same program. Any linear extension evaluates to the same values.
+
+    That holds with history too (WP14). A ``lag(x, n)`` read is deliberately not a
+    dependency (a self-reference through ``lag`` is legal) because it reads ``x``'s
+    history ring, which the engine commits only after every expression of the instant has
+    evaluated, so no evaluation order can change what it sees. Every other read, including
+    the current value inside ``delta``/``ema``/``moving_average``/``rate_of_change``/edges,
+    is an edge. The history requirements (keys, ``lag`` depths, windows, ``ema`` alphas)
+    are literals of the canonical AST, so they move this hash with the expression; the
+    compiled ``vfs_history_spec`` is derived from exactly these ASTs.
     """
     entries: list[dict[str, Any]] = []
     for scope, profile in (("global", global_profile), ("agent", agent_profile)):
@@ -296,7 +305,7 @@ def canonical_transition_graph_schema(
     threshold_cascade_program: Any | None = None,
     modulation_program: Any | None = None,
     passive_depletion_program: Any | None = None,
-    social_residue_program: Any | None = None,
+    transition_rule_program: Any | None = None,
     bounds_clamp_program: Any | None = None,
 ) -> dict[str, Any]:
     """Return the transition-graph payload used for world-physics provenance."""
@@ -314,8 +323,8 @@ def canonical_transition_graph_schema(
         rules.extend(_canonical_transition_rule(rule) for rule in modulation_program.rules)
     if threshold_cascade_program is not None:
         rules.extend(_canonical_transition_rule(rule) for rule in threshold_cascade_program.rules)
-    if social_residue_program is not None:
-        rules.extend(_canonical_transition_rule(rule) for rule in social_residue_program.rules)
+    if transition_rule_program is not None:
+        rules.extend(_canonical_transition_rule(rule) for rule in transition_rule_program.rules)
     if bounds_clamp_program is not None:
         rules.extend(_canonical_transition_rule(rule) for rule in bounds_clamp_program.rules)
     return {
@@ -334,7 +343,7 @@ def compute_transition_graph_hash(
     threshold_cascade_program: Any | None = None,
     modulation_program: Any | None = None,
     passive_depletion_program: Any | None = None,
-    social_residue_program: Any | None = None,
+    transition_rule_program: Any | None = None,
     bounds_clamp_program: Any | None = None,
 ) -> str:
     """Return the SHA-256 digest of the compiled transition graph and rules."""
@@ -348,7 +357,7 @@ def compute_transition_graph_hash(
             threshold_cascade_program=threshold_cascade_program,
             modulation_program=modulation_program,
             passive_depletion_program=passive_depletion_program,
-            social_residue_program=social_residue_program,
+            transition_rule_program=transition_rule_program,
             bounds_clamp_program=bounds_clamp_program,
         )
     )
@@ -414,7 +423,6 @@ def _canonical_action_entry(action: Any) -> dict[str, Any]:
         "delta": list(action.delta) if action.delta is not None else None,
         "teleport_to": list(action.teleport_to) if action.teleport_to is not None else None,
         "source_affordance": action.source_affordance,
-        "reads": sorted(action.reads),
         "writes": [_canonical_write(write) for write in action.writes],
     }
 

@@ -39,7 +39,6 @@ from townlet.effects.affordance_identity import (
     AFFORDANCE_LIFECYCLE_STAGES,
     AFFORDANCE_WRITE_SOURCES,
     AFFORDANCE_WRITE_TARGETS,
-    SPAWN_EFFECT_TARGETS,
     AffordanceIdentityError,
     AffordanceMeterWrite,
     extract_affordance_meter_writes,
@@ -390,8 +389,7 @@ def _effect_summary_features() -> tuple[str, ...]:
 AFFORDANCE_DURATION_FEATURES: Final[tuple[str, ...]] = ("duration_applicable", "duration_ticks")
 OPENING_HOURS_FEATURES: Final[tuple[str, ...]] = tuple(f"open_hour_{hour}" for hour in range(24))
 SPAWN_EFFECT_IDENTITY_FEATURES: Final[tuple[str, ...]] = (
-    tuple(f"spawn_target_{target}" for target in SPAWN_EFFECT_TARGETS)
-    + ("spawn_intensity", "spawn_duration")
+    ("spawn_intensity", "spawn_duration")
     + tuple(f"spawn_scope_{scope}" for scope in EFFECT_SCOPE_VOCABULARY)
     + tuple(f"spawn_reapply_{policy}" for policy in REAPPLY_POLICY_VOCABULARY)
     + ("spawn_observable",)
@@ -1453,7 +1451,6 @@ def effect_summary(deltas: Sequence[AffordanceMeterWrite], meters: Mapping[str, 
             spawned = write.spawned_effect
             if spawned is not None:
                 spawn_identity = (
-                    *_one_hot(SPAWN_EFFECT_TARGETS, spawned.target),
                     saturate_signed(spawned.intensity),
                     saturate(math.log1p(spawned.duration)),
                     *_one_hot(EFFECT_SCOPE_VOCABULARY, spawned.scope),

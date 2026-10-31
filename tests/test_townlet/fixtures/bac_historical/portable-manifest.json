@@ -1,0 +1,835 @@
+{
+  "schema_version": 1,
+  "purpose": "Historical native BAC fixture evidence; new archival policy acceptance remains owed",
+  "source_sha": "4aa5363b5de54d9a112977c32c2975f37627197f",
+  "source_module": "/tmp/hamlet-bac-4aa5363b/src/townlet/__init__.py",
+  "command_prefix": "OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= PYTHONPATH=/tmp/hamlet-bac-4aa5363b/src:/tmp/bac-B09 /workspace/hamlet/.venv/bin/python",
+  "owned_script": "verify_capture_owned.py",
+  "owned_script_sha256": "b433d0165e016991ebb71c905ddff8424ec60fa3c2677b396c278a91b2feca27",
+  "canonical_artifacts": [
+    {
+      "label": "uniform",
+      "artifact": "uniform.pt",
+      "config": "uniform-pack",
+      "sha256": "44a77c9e6edf183eaa5cb5761bad4999f0947175d51e8b308b7c2d3fcaf99d6d",
+      "bytes": 1340853,
+      "inventory": "uniform-inventory.json",
+      "source_sha": "4aa5363b5de54d9a112977c32c2975f37627197f",
+      "source_module": "/tmp/hamlet-bac-4aa5363b/src/townlet/__init__.py",
+      "demo_version": 9,
+      "population_version": 6,
+      "replay_version": 4,
+      "replay_kind": "standard",
+      "outer_keys": [
+        "version",
+        "episode",
+        "timestamp",
+        "substrate_metadata",
+        "population_state",
+        "curriculum_state",
+        "affordance_layout",
+        "vfs_persistent_state",
+        "vfs_random_state",
+        "agent_ids",
+        "epsilon",
+        "completed_live_agent_steps",
+        "training_config",
+        "config_dir",
+        "primary_level",
+        "action_dim",
+        "meter_count",
+        "observation_schema_hash",
+        "drive_hash",
+        "curriculum_hash",
+        "bars_hash",
+        "affordances_hash",
+        "training_hash",
+        "items_appearance_hash",
+        "brain_hash",
+        "pack_brain_hash",
+        "vfs_hash",
+        "token_type_schema_hash",
+        "layout_hash",
+        "experiment_hash",
+        "stratum_hash",
+        "environment_hash",
+        "actions_hash",
+        "items_hash",
+        "variables_hash",
+        "effects_hash"
+      ],
+      "population_keys": [
+        "version",
+        "q_network",
+        "optimizer",
+        "scheduler",
+        "total_steps",
+        "exploration_state",
+        "universe_metadata",
+        "target_network",
+        "training_step_counter",
+        "replay_buffer"
+      ],
+      "buffer_keys": [
+        "replay_kind",
+        "format_version",
+        "capacity",
+        "size",
+        "position",
+        "observations",
+        "actions",
+        "rewards",
+        "rewards_extrinsic",
+        "rewards_intrinsic",
+        "rewards_shaping",
+        "next_observations",
+        "dones"
+      ],
+      "count_key": "size",
+      "retained_transitions": 4,
+      "episode": 2,
+      "completed_live_agent_steps": 4,
+      "total_steps": 4,
+      "training_step_counter": 3,
+      "optimizer_step_min": 3,
+      "optimizer_step_max": 3,
+      "reward_tensor_inventory": [
+        {
+          "key": "rewards",
+          "rows": 4,
+          "sha256": "7fc4d22038223e82dcd2a0f74ad62ffdc3d232e93350a0603120b69fadf5a8f5"
+        },
+        {
+          "key": "rewards_extrinsic",
+          "rows": 4,
+          "sha256": "d15793f5a4f145d1bd0c946f9a9e89ddd59d8a3ef70711de718d06e4d40bc206"
+        },
+        {
+          "key": "rewards_intrinsic",
+          "rows": 4,
+          "sha256": "8557d2d8966889e4c64c1971074d7d640883b7212200f9326a2194aa6a013de0"
+        },
+        {
+          "key": "rewards_shaping",
+          "rows": 4,
+          "sha256": "b3f2237dc1dda90a5c2ed251cc648db7e3ec7769542724c902e4e6a74dcf2bb3"
+        }
+      ],
+      "eligible_full_sequence_rows": 4,
+      "restored_population_exact": true,
+      "restored_replay_exact": true,
+      "old_strict_validators_passed": true,
+      "resume_learning_steps": 0,
+      "verification_result": "uniform-verified.json",
+      "config_files": {
+        "uniform-pack/.compiled/universe-L0_0_minimal.msgpack": "917e5374e83227dcbfb4c626da4e5c74a9cab29dd7cdb9651b7d2c93c6019107",
+        "uniform-pack/.compiled/universe-L0_5_dual_resource.msgpack": "db47d84e209f544bb53d179bc84c6cf5bebcc693866666f267c78a975bc0102f",
+        "uniform-pack/.compiled/universe-L1_full_observability.msgpack": "6d406c01abe0c518382c4ada644d11ee2b0eb242df84eb429087b776837ee49f",
+        "uniform-pack/.compiled/universe-L2_partial_observability.msgpack": "c848f3ba599b6cf1d2e151c5aaf9faf926d57778871ccccf1777876d8b64fd03",
+        "uniform-pack/.compiled/universe-L3_temporal_mechanics.msgpack": "769c44a9fe7562e80ecb6d8d1fd187e4271470f70a3ca1a4e76b2a109c4aecf8",
+        "uniform-pack/actions.yaml": "5f94d0b8c4b2d10beffd479b43e1d21a95d5601d46dcd034931e73f0e0cd45be",
+        "uniform-pack/brain.yaml": "12e429c20ed5a58cdae8b2120de11eae63ab54387b88b7863bbc9b5c899ed301",
+        "uniform-pack/effects.yaml": "dba0d3dec16ffe31f7e4ecbef0de7f0297d06aa5f4afd05fe4e2f9d1c555c688",
+        "uniform-pack/environment.yaml": "47713f31364ed06448495bb7f03c8458b270795663b45ece62f4828efb5d600b",
+        "uniform-pack/experiment.yaml": "d0e0d0116cbc4d0231907712dc4c63965f9864668c129d67924a89b6853dfef3",
+        "uniform-pack/items.yaml": "074f34266cf8a9c60d0760e2fa8ba6c6d73d85d3ea19c45699b504abc053c3d5",
+        "uniform-pack/levels/L0_0_minimal/affordances.yaml": "d937ef40e4fa92ec89539386b9249944203ca82ba883892ef05695afc8f4e07c",
+        "uniform-pack/levels/L0_0_minimal/bars.yaml": "c55c7736c0c6ae948cdb8d597a1ea13c8087f19a04b91e341ff8c4a5d10cdc57",
+        "uniform-pack/levels/L0_0_minimal/curriculum.yaml": "e24d6f042e667615359ff43b8c6e2c84982695bfcd6c8ed5795f48a2eb3201e8",
+        "uniform-pack/levels/L0_0_minimal/drive.yaml": "1dfaca1e050a33fc1776b065481ce77f77789ea9b450a35ee3cf86171bb048e8",
+        "uniform-pack/levels/L0_0_minimal/training.yaml": "804809b1390e2cd5c5504bdd909577c9cd6d739f1c48ad9e555179cf2c1d8c32",
+        "uniform-pack/levels/L0_5_dual_resource/affordances.yaml": "d937ef40e4fa92ec89539386b9249944203ca82ba883892ef05695afc8f4e07c",
+        "uniform-pack/levels/L0_5_dual_resource/bars.yaml": "c55c7736c0c6ae948cdb8d597a1ea13c8087f19a04b91e341ff8c4a5d10cdc57",
+        "uniform-pack/levels/L0_5_dual_resource/curriculum.yaml": "4fe63e0ff053cb2e6aebcfc7b8518e104c0809ec9394e16df2b5d546d41591d3",
+        "uniform-pack/levels/L0_5_dual_resource/drive.yaml": "1dfaca1e050a33fc1776b065481ce77f77789ea9b450a35ee3cf86171bb048e8",
+        "uniform-pack/levels/L0_5_dual_resource/training.yaml": "06d00ea1a3e712512f80897cb78efce52e5a4b3549af59050313ef7c7e764cf8",
+        "uniform-pack/levels/L1_full_observability/affordances.yaml": "d937ef40e4fa92ec89539386b9249944203ca82ba883892ef05695afc8f4e07c",
+        "uniform-pack/levels/L1_full_observability/bars.yaml": "c55c7736c0c6ae948cdb8d597a1ea13c8087f19a04b91e341ff8c4a5d10cdc57",
+        "uniform-pack/levels/L1_full_observability/curriculum.yaml": "fc41e113e7ca1d9a588a608a431fb6a6bb0cc02f422faad927201a6164b72243",
+        "uniform-pack/levels/L1_full_observability/drive.yaml": "1dfaca1e050a33fc1776b065481ce77f77789ea9b450a35ee3cf86171bb048e8",
+        "uniform-pack/levels/L1_full_observability/training.yaml": "bb8afe4a4922e1c00571fc89b70a67495260823e8c2110665303d884b7eb9ef7",
+        "uniform-pack/levels/L2_partial_observability/affordances.yaml": "d937ef40e4fa92ec89539386b9249944203ca82ba883892ef05695afc8f4e07c",
+        "uniform-pack/levels/L2_partial_observability/bars.yaml": "c55c7736c0c6ae948cdb8d597a1ea13c8087f19a04b91e341ff8c4a5d10cdc57",
+        "uniform-pack/levels/L2_partial_observability/curriculum.yaml": "219785448971fea947685c45b5044904096bb102b331b99496ad7b7e44cfc795",
+        "uniform-pack/levels/L2_partial_observability/drive.yaml": "1dfaca1e050a33fc1776b065481ce77f77789ea9b450a35ee3cf86171bb048e8",
+        "uniform-pack/levels/L2_partial_observability/training.yaml": "01d9ce77e8114a7bbf618af44a2f877cd09eb3a54c87779a0ae0c1ad6f0cb1da",
+        "uniform-pack/levels/L3_temporal_mechanics/affordances.yaml": "d937ef40e4fa92ec89539386b9249944203ca82ba883892ef05695afc8f4e07c",
+        "uniform-pack/levels/L3_temporal_mechanics/bars.yaml": "c55c7736c0c6ae948cdb8d597a1ea13c8087f19a04b91e341ff8c4a5d10cdc57",
+        "uniform-pack/levels/L3_temporal_mechanics/curriculum.yaml": "51bc9217952ee8df8e90ea368d6a14093604f504234fdad65e56f3a7999d649f",
+        "uniform-pack/levels/L3_temporal_mechanics/drive.yaml": "1dfaca1e050a33fc1776b065481ce77f77789ea9b450a35ee3cf86171bb048e8",
+        "uniform-pack/levels/L3_temporal_mechanics/training.yaml": "fbaa4a9952f6553e4b9fee794c13c52ed1d5129f40106e1d0fbc7e6d137fda5b",
+        "uniform-pack/stratum.yaml": "740d99ed47564a8e8825cae83c1c03601715dc7d1ea70dbb458162bed165a545",
+        "uniform-pack/variables.yaml": "ffb6c3d39e421df9304e997e90470479490641b99b49e88a033094f29b11dac2"
+      }
+    },
+    {
+      "label": "per",
+      "artifact": "per.pt",
+      "config": "per-pack",
+      "sha256": "8b4102b02e9a6d94e31095b67a5b1bb8e57641f60f3c3658fa2cb2f313f33c30",
+      "bytes": 1341237,
+      "inventory": "per-inventory.json",
+      "source_sha": "4aa5363b5de54d9a112977c32c2975f37627197f",
+      "source_module": "/tmp/hamlet-bac-4aa5363b/src/townlet/__init__.py",
+      "demo_version": 9,
+      "population_version": 6,
+      "replay_version": 4,
+      "replay_kind": "prioritized",
+      "outer_keys": [
+        "version",
+        "episode",
+        "timestamp",
+        "substrate_metadata",
+        "population_state",
+        "curriculum_state",
+        "affordance_layout",
+        "vfs_persistent_state",
+        "vfs_random_state",
+        "agent_ids",
+        "epsilon",
+        "completed_live_agent_steps",
+        "training_config",
+        "config_dir",
+        "primary_level",
+        "action_dim",
+        "meter_count",
+        "observation_schema_hash",
+        "drive_hash",
+        "curriculum_hash",
+        "bars_hash",
+        "affordances_hash",
+        "training_hash",
+        "items_appearance_hash",
+        "brain_hash",
+        "pack_brain_hash",
+        "vfs_hash",
+        "token_type_schema_hash",
+        "layout_hash",
+        "experiment_hash",
+        "stratum_hash",
+        "environment_hash",
+        "actions_hash",
+        "items_hash",
+        "variables_hash",
+        "effects_hash"
+      ],
+      "population_keys": [
+        "version",
+        "q_network",
+        "optimizer",
+        "scheduler",
+        "total_steps",
+        "exploration_state",
+        "universe_metadata",
+        "target_network",
+        "training_step_counter",
+        "replay_buffer"
+      ],
+      "buffer_keys": [
+        "replay_kind",
+        "format_version",
+        "capacity",
+        "alpha",
+        "beta",
+        "beta_initial",
+        "beta_annealing",
+        "observations",
+        "actions",
+        "rewards",
+        "rewards_extrinsic",
+        "rewards_intrinsic",
+        "rewards_shaping",
+        "next_observations",
+        "dones",
+        "priorities",
+        "max_priority",
+        "position",
+        "size_current"
+      ],
+      "count_key": "size_current",
+      "retained_transitions": 4,
+      "episode": 2,
+      "completed_live_agent_steps": 4,
+      "total_steps": 4,
+      "training_step_counter": 3,
+      "optimizer_step_min": 3,
+      "optimizer_step_max": 3,
+      "reward_tensor_inventory": [
+        {
+          "key": "rewards",
+          "rows": 4,
+          "sha256": "2378be1f1de3296ec0d6148c1d41653beac0f44629c5f93c99ff99fad44af15c"
+        },
+        {
+          "key": "rewards_extrinsic",
+          "rows": 4,
+          "sha256": "d15793f5a4f145d1bd0c946f9a9e89ddd59d8a3ef70711de718d06e4d40bc206"
+        },
+        {
+          "key": "rewards_intrinsic",
+          "rows": 4,
+          "sha256": "7c7a8c782e9ccbd161861773709b80366400b285bd95d5360580df3de197df82"
+        },
+        {
+          "key": "rewards_shaping",
+          "rows": 4,
+          "sha256": "8ff759ffa3337c409f34cfa72736b2eb0e3d2a69e4bc4f352cea48a2c1ec28f2"
+        }
+      ],
+      "eligible_full_sequence_rows": 4,
+      "restored_population_exact": true,
+      "restored_replay_exact": true,
+      "old_strict_validators_passed": true,
+      "resume_learning_steps": 0,
+      "verification_result": "per-verified.json",
+      "config_files": {
+        "per-pack/.compiled/universe-L0_0_minimal.msgpack": "917e5374e83227dcbfb4c626da4e5c74a9cab29dd7cdb9651b7d2c93c6019107",
+        "per-pack/.compiled/universe-L0_5_dual_resource.msgpack": "db47d84e209f544bb53d179bc84c6cf5bebcc693866666f267c78a975bc0102f",
+        "per-pack/.compiled/universe-L1_full_observability.msgpack": "3c8f924385252f3b4ff97a85c9d91f7a6d9ef1c1a6afc9328cde1e17768488c5",
+        "per-pack/.compiled/universe-L2_partial_observability.msgpack": "c848f3ba599b6cf1d2e151c5aaf9faf926d57778871ccccf1777876d8b64fd03",
+        "per-pack/.compiled/universe-L3_temporal_mechanics.msgpack": "769c44a9fe7562e80ecb6d8d1fd187e4271470f70a3ca1a4e76b2a109c4aecf8",
+        "per-pack/actions.yaml": "5f94d0b8c4b2d10beffd479b43e1d21a95d5601d46dcd034931e73f0e0cd45be",
+        "per-pack/brain.yaml": "1386d14b17511cdf24847cdd4e8a999b0234a150f90d71f5fc35e945312e639d",
+        "per-pack/effects.yaml": "dba0d3dec16ffe31f7e4ecbef0de7f0297d06aa5f4afd05fe4e2f9d1c555c688",
+        "per-pack/environment.yaml": "47713f31364ed06448495bb7f03c8458b270795663b45ece62f4828efb5d600b",
+        "per-pack/experiment.yaml": "d0e0d0116cbc4d0231907712dc4c63965f9864668c129d67924a89b6853dfef3",
+        "per-pack/items.yaml": "074f34266cf8a9c60d0760e2fa8ba6c6d73d85d3ea19c45699b504abc053c3d5",
+        "per-pack/levels/L0_0_minimal/affordances.yaml": "d937ef40e4fa92ec89539386b9249944203ca82ba883892ef05695afc8f4e07c",
+        "per-pack/levels/L0_0_minimal/bars.yaml": "c55c7736c0c6ae948cdb8d597a1ea13c8087f19a04b91e341ff8c4a5d10cdc57",
+        "per-pack/levels/L0_0_minimal/curriculum.yaml": "e24d6f042e667615359ff43b8c6e2c84982695bfcd6c8ed5795f48a2eb3201e8",
+        "per-pack/levels/L0_0_minimal/drive.yaml": "1dfaca1e050a33fc1776b065481ce77f77789ea9b450a35ee3cf86171bb048e8",
+        "per-pack/levels/L0_0_minimal/training.yaml": "804809b1390e2cd5c5504bdd909577c9cd6d739f1c48ad9e555179cf2c1d8c32",
+        "per-pack/levels/L0_5_dual_resource/affordances.yaml": "d937ef40e4fa92ec89539386b9249944203ca82ba883892ef05695afc8f4e07c",
+        "per-pack/levels/L0_5_dual_resource/bars.yaml": "c55c7736c0c6ae948cdb8d597a1ea13c8087f19a04b91e341ff8c4a5d10cdc57",
+        "per-pack/levels/L0_5_dual_resource/curriculum.yaml": "4fe63e0ff053cb2e6aebcfc7b8518e104c0809ec9394e16df2b5d546d41591d3",
+        "per-pack/levels/L0_5_dual_resource/drive.yaml": "1dfaca1e050a33fc1776b065481ce77f77789ea9b450a35ee3cf86171bb048e8",
+        "per-pack/levels/L0_5_dual_resource/training.yaml": "06d00ea1a3e712512f80897cb78efce52e5a4b3549af59050313ef7c7e764cf8",
+        "per-pack/levels/L1_full_observability/affordances.yaml": "d937ef40e4fa92ec89539386b9249944203ca82ba883892ef05695afc8f4e07c",
+        "per-pack/levels/L1_full_observability/bars.yaml": "c55c7736c0c6ae948cdb8d597a1ea13c8087f19a04b91e341ff8c4a5d10cdc57",
+        "per-pack/levels/L1_full_observability/curriculum.yaml": "fc41e113e7ca1d9a588a608a431fb6a6bb0cc02f422faad927201a6164b72243",
+        "per-pack/levels/L1_full_observability/drive.yaml": "1dfaca1e050a33fc1776b065481ce77f77789ea9b450a35ee3cf86171bb048e8",
+        "per-pack/levels/L1_full_observability/training.yaml": "bb8afe4a4922e1c00571fc89b70a67495260823e8c2110665303d884b7eb9ef7",
+        "per-pack/levels/L2_partial_observability/affordances.yaml": "d937ef40e4fa92ec89539386b9249944203ca82ba883892ef05695afc8f4e07c",
+        "per-pack/levels/L2_partial_observability/bars.yaml": "c55c7736c0c6ae948cdb8d597a1ea13c8087f19a04b91e341ff8c4a5d10cdc57",
+        "per-pack/levels/L2_partial_observability/curriculum.yaml": "219785448971fea947685c45b5044904096bb102b331b99496ad7b7e44cfc795",
+        "per-pack/levels/L2_partial_observability/drive.yaml": "1dfaca1e050a33fc1776b065481ce77f77789ea9b450a35ee3cf86171bb048e8",
+        "per-pack/levels/L2_partial_observability/training.yaml": "01d9ce77e8114a7bbf618af44a2f877cd09eb3a54c87779a0ae0c1ad6f0cb1da",
+        "per-pack/levels/L3_temporal_mechanics/affordances.yaml": "d937ef40e4fa92ec89539386b9249944203ca82ba883892ef05695afc8f4e07c",
+        "per-pack/levels/L3_temporal_mechanics/bars.yaml": "c55c7736c0c6ae948cdb8d597a1ea13c8087f19a04b91e341ff8c4a5d10cdc57",
+        "per-pack/levels/L3_temporal_mechanics/curriculum.yaml": "51bc9217952ee8df8e90ea368d6a14093604f504234fdad65e56f3a7999d649f",
+        "per-pack/levels/L3_temporal_mechanics/drive.yaml": "1dfaca1e050a33fc1776b065481ce77f77789ea9b450a35ee3cf86171bb048e8",
+        "per-pack/levels/L3_temporal_mechanics/training.yaml": "fbaa4a9952f6553e4b9fee794c13c52ed1d5129f40106e1d0fbc7e6d137fda5b",
+        "per-pack/stratum.yaml": "740d99ed47564a8e8825cae83c1c03601715dc7d1ea70dbb458162bed165a545",
+        "per-pack/variables.yaml": "ffb6c3d39e421df9304e997e90470479490641b99b49e88a033094f29b11dac2"
+      }
+    },
+    {
+      "label": "sequence-trained",
+      "artifact": "sequence-trained.pt",
+      "config": "sequence-trained-pack",
+      "sha256": "f5ca18d9e4f8c8f9398d585fc2a7861d23883ca9a8ae7175c964e2e97e16ced6",
+      "bytes": 1463292,
+      "inventory": "sequence-trained-inventory.json",
+      "source_sha": "4aa5363b5de54d9a112977c32c2975f37627197f",
+      "source_module": "/tmp/hamlet-bac-4aa5363b/src/townlet/__init__.py",
+      "demo_version": 9,
+      "population_version": 6,
+      "replay_version": 5,
+      "replay_kind": "sequential",
+      "outer_keys": [
+        "version",
+        "episode",
+        "timestamp",
+        "substrate_metadata",
+        "population_state",
+        "curriculum_state",
+        "affordance_layout",
+        "vfs_persistent_state",
+        "vfs_random_state",
+        "agent_ids",
+        "epsilon",
+        "completed_live_agent_steps",
+        "training_config",
+        "config_dir",
+        "primary_level",
+        "action_dim",
+        "meter_count",
+        "observation_schema_hash",
+        "drive_hash",
+        "curriculum_hash",
+        "bars_hash",
+        "affordances_hash",
+        "training_hash",
+        "items_appearance_hash",
+        "brain_hash",
+        "pack_brain_hash",
+        "vfs_hash",
+        "token_type_schema_hash",
+        "layout_hash",
+        "experiment_hash",
+        "stratum_hash",
+        "environment_hash",
+        "actions_hash",
+        "items_hash",
+        "variables_hash",
+        "effects_hash"
+      ],
+      "population_keys": [
+        "version",
+        "q_network",
+        "optimizer",
+        "scheduler",
+        "total_steps",
+        "exploration_state",
+        "universe_metadata",
+        "target_network",
+        "training_step_counter",
+        "replay_buffer"
+      ],
+      "buffer_keys": [
+        "replay_kind",
+        "format_version",
+        "capacity",
+        "num_transitions",
+        "episodes"
+      ],
+      "count_key": "num_transitions",
+      "retained_transitions": 34,
+      "episode": 18,
+      "completed_live_agent_steps": 34,
+      "total_steps": 34,
+      "training_step_counter": 2,
+      "optimizer_step_min": 2,
+      "optimizer_step_max": 2,
+      "reward_tensor_inventory": [
+        {
+          "key": "rewards",
+          "rows": 2,
+          "sha256": "bdc700a134f638fa3a6fc28177914279c974d3b37eeae3c098d8729de12a7248"
+        },
+        {
+          "key": "rewards_extrinsic",
+          "rows": 2,
+          "sha256": "c952cc167f78b11711f65a97c28d7de30f565a5526d404111e0f4643999b25cf"
+        },
+        {
+          "key": "rewards_intrinsic",
+          "rows": 2,
+          "sha256": "23b3cc1b17dcfc17fe841aa76f008b8007d3c46673ed329392a391247b341dca"
+        },
+        {
+          "key": "rewards_shaping",
+          "rows": 2,
+          "sha256": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc"
+        },
+        {
+          "key": "rewards",
+          "rows": 2,
+          "sha256": "31378aca481576a844ecd8987047f84c487e0460700a6a62ef890933fe55a56b"
+        },
+        {
+          "key": "rewards_extrinsic",
+          "rows": 2,
+          "sha256": "57da1735e8a615d0236aa27f0e61122416ff6f9b34e927a0a06389885d8f6d79"
+        },
+        {
+          "key": "rewards_intrinsic",
+          "rows": 2,
+          "sha256": "2daa83015cc19277cd07568620abf392015b35ca656bc8c1b9885e48245d59ae"
+        },
+        {
+          "key": "rewards_shaping",
+          "rows": 2,
+          "sha256": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc"
+        },
+        {
+          "key": "rewards",
+          "rows": 2,
+          "sha256": "55da9a47f897ac4920158840924b1ac0172b3f0184ace5d5221a66270d925d55"
+        },
+        {
+          "key": "rewards_extrinsic",
+          "rows": 2,
+          "sha256": "9d316ff449e472befb08e8559b36e7673db202009259640fde4d217019a9ec77"
+        },
+        {
+          "key": "rewards_intrinsic",
+          "rows": 2,
+          "sha256": "6081e611280daee06595729cd249a32cac0ca68fb5eee7fb7c8af669b32fe602"
+        },
+        {
+          "key": "rewards_shaping",
+          "rows": 2,
+          "sha256": "8c77f2359ed5a8cfa0a0c0e8a93aa1a4c7c41514168742c9a58da2923d350b9c"
+        },
+        {
+          "key": "rewards",
+          "rows": 2,
+          "sha256": "7d82daae49227ba4859221993ec82c498257048323110ed3ad16c48483c225ec"
+        },
+        {
+          "key": "rewards_extrinsic",
+          "rows": 2,
+          "sha256": "9ad8d095ad3c111acc9f2ee7fdb2fd55faa2dcb5855385d9962e25327c448d04"
+        },
+        {
+          "key": "rewards_intrinsic",
+          "rows": 2,
+          "sha256": "f83610c0f4f8a33c7714135668f68d75815c259d5711d1fda3a2b4a2e2943f8c"
+        },
+        {
+          "key": "rewards_shaping",
+          "rows": 2,
+          "sha256": "003dd67150006717724f6ad6939577926debb2d5eacbfbf40f78883212bff795"
+        },
+        {
+          "key": "rewards",
+          "rows": 2,
+          "sha256": "5b90ad9a2e899bf08aafb4a7f1c6c117d5f48f246bb28e070fe07527851545cb"
+        },
+        {
+          "key": "rewards_extrinsic",
+          "rows": 2,
+          "sha256": "9ad8d095ad3c111acc9f2ee7fdb2fd55faa2dcb5855385d9962e25327c448d04"
+        },
+        {
+          "key": "rewards_intrinsic",
+          "rows": 2,
+          "sha256": "06b11373bc0eb527a99df0bd2d59bef48a4fd32475c485a4f7d50b4fbfdf7f57"
+        },
+        {
+          "key": "rewards_shaping",
+          "rows": 2,
+          "sha256": "878927c92fcc391187aaee60cf259f23bb993b0558517909ee98cc1c9ab0e1ea"
+        },
+        {
+          "key": "rewards",
+          "rows": 2,
+          "sha256": "16cb81020c53aa2141f776dee5eb997d5fb0fd6b7c2570c70e561426ed8f1808"
+        },
+        {
+          "key": "rewards_extrinsic",
+          "rows": 2,
+          "sha256": "9ad8d095ad3c111acc9f2ee7fdb2fd55faa2dcb5855385d9962e25327c448d04"
+        },
+        {
+          "key": "rewards_intrinsic",
+          "rows": 2,
+          "sha256": "8e33af5843466299153d3c6d5eb0198d5a845dfce8cdd6609dde1cb0d0094ecd"
+        },
+        {
+          "key": "rewards_shaping",
+          "rows": 2,
+          "sha256": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc"
+        },
+        {
+          "key": "rewards",
+          "rows": 2,
+          "sha256": "41d8057db39e3019f2fa2a1cce88da41e7d2bdd88bdc86b055469f45d42cd23d"
+        },
+        {
+          "key": "rewards_extrinsic",
+          "rows": 2,
+          "sha256": "9ad8d095ad3c111acc9f2ee7fdb2fd55faa2dcb5855385d9962e25327c448d04"
+        },
+        {
+          "key": "rewards_intrinsic",
+          "rows": 2,
+          "sha256": "a698efccfce3f8ed8e7619509e069ae065e6243d67211968711aa76b4a8485e2"
+        },
+        {
+          "key": "rewards_shaping",
+          "rows": 2,
+          "sha256": "1e7bb4b704baa8319083bb64d04e27990d78db4ddc5fe5d489a4a4267ea83450"
+        },
+        {
+          "key": "rewards",
+          "rows": 2,
+          "sha256": "ac748c80f54c3bc854010e32ad7e8cd8f05cdc292a48d3fbc8f8a7dcc99251be"
+        },
+        {
+          "key": "rewards_extrinsic",
+          "rows": 2,
+          "sha256": "9ad8d095ad3c111acc9f2ee7fdb2fd55faa2dcb5855385d9962e25327c448d04"
+        },
+        {
+          "key": "rewards_intrinsic",
+          "rows": 2,
+          "sha256": "8cedf223a7305f1d5bb3053ce56f865b7e694de775dfab23e156ad8bd2e95246"
+        },
+        {
+          "key": "rewards_shaping",
+          "rows": 2,
+          "sha256": "878927c92fcc391187aaee60cf259f23bb993b0558517909ee98cc1c9ab0e1ea"
+        },
+        {
+          "key": "rewards",
+          "rows": 2,
+          "sha256": "dee79319a4abf1263aeeb15798c28d190113637bbbd5d2ed184b68b102652d78"
+        },
+        {
+          "key": "rewards_extrinsic",
+          "rows": 2,
+          "sha256": "9ad8d095ad3c111acc9f2ee7fdb2fd55faa2dcb5855385d9962e25327c448d04"
+        },
+        {
+          "key": "rewards_intrinsic",
+          "rows": 2,
+          "sha256": "ac2623f20b95461b9845c6aca16f2c4519f13710379b3e18a9a94c7deb757907"
+        },
+        {
+          "key": "rewards_shaping",
+          "rows": 2,
+          "sha256": "4db295f1af39ac217cf3a467ec329191a5d8d5b834e13035a13f2386904c2d22"
+        },
+        {
+          "key": "rewards",
+          "rows": 2,
+          "sha256": "44aa98a04efa98eada7c9175462922c832dbe23201847fe4d9baca3d479f36cc"
+        },
+        {
+          "key": "rewards_extrinsic",
+          "rows": 2,
+          "sha256": "9ad8d095ad3c111acc9f2ee7fdb2fd55faa2dcb5855385d9962e25327c448d04"
+        },
+        {
+          "key": "rewards_intrinsic",
+          "rows": 2,
+          "sha256": "68b53673ef30e9316b1f2acc4e0b0e4e414308c974968b779151fa852c9f66ea"
+        },
+        {
+          "key": "rewards_shaping",
+          "rows": 2,
+          "sha256": "4db295f1af39ac217cf3a467ec329191a5d8d5b834e13035a13f2386904c2d22"
+        },
+        {
+          "key": "rewards",
+          "rows": 2,
+          "sha256": "ffb6c676b3e9a1387490d276f955b5f730e64f74afff85347c59dec3f6ecfe40"
+        },
+        {
+          "key": "rewards_extrinsic",
+          "rows": 2,
+          "sha256": "9ad8d095ad3c111acc9f2ee7fdb2fd55faa2dcb5855385d9962e25327c448d04"
+        },
+        {
+          "key": "rewards_intrinsic",
+          "rows": 2,
+          "sha256": "89e9f929afc561d299a81412625ba53171a078c956322f5cc346a1c156d13987"
+        },
+        {
+          "key": "rewards_shaping",
+          "rows": 2,
+          "sha256": "3a1c651b9982f298c626dff90326541726e3d09065acb84c6e618ae1878971c9"
+        },
+        {
+          "key": "rewards",
+          "rows": 2,
+          "sha256": "a4489616619cfb9211e1118693fad0bc213a3134c82b6efef4b52c674ecfb319"
+        },
+        {
+          "key": "rewards_extrinsic",
+          "rows": 2,
+          "sha256": "9ad8d095ad3c111acc9f2ee7fdb2fd55faa2dcb5855385d9962e25327c448d04"
+        },
+        {
+          "key": "rewards_intrinsic",
+          "rows": 2,
+          "sha256": "673a81553065d41d8fd341680102f6b6171ce5ba48b23ad4ab92f224c2c67231"
+        },
+        {
+          "key": "rewards_shaping",
+          "rows": 2,
+          "sha256": "003dd67150006717724f6ad6939577926debb2d5eacbfbf40f78883212bff795"
+        },
+        {
+          "key": "rewards",
+          "rows": 2,
+          "sha256": "c339e9de8bb6aade0f93583b142ccabc7d9ebdac82a4162f37c757d862cffa5f"
+        },
+        {
+          "key": "rewards_extrinsic",
+          "rows": 2,
+          "sha256": "8f3ad57e13363492bdcca667511d7e00779e34684d8cbc40e584faae40db1f09"
+        },
+        {
+          "key": "rewards_intrinsic",
+          "rows": 2,
+          "sha256": "60cb42f4f5dd05bbeac9a7044a5ba4eb38760cc8f611aa971238230378fda137"
+        },
+        {
+          "key": "rewards_shaping",
+          "rows": 2,
+          "sha256": "8c77f2359ed5a8cfa0a0c0e8a93aa1a4c7c41514168742c9a58da2923d350b9c"
+        },
+        {
+          "key": "rewards",
+          "rows": 2,
+          "sha256": "fc855aff109eb53027a25e688c76fe9048ed1933e64fb208a41a5954dbdc14a3"
+        },
+        {
+          "key": "rewards_extrinsic",
+          "rows": 2,
+          "sha256": "9ad8d095ad3c111acc9f2ee7fdb2fd55faa2dcb5855385d9962e25327c448d04"
+        },
+        {
+          "key": "rewards_intrinsic",
+          "rows": 2,
+          "sha256": "33aeb7a25a4391b94dbc1e9be11bf6d4621ef430a1cf0494456fc67532fd8710"
+        },
+        {
+          "key": "rewards_shaping",
+          "rows": 2,
+          "sha256": "1e7bb4b704baa8319083bb64d04e27990d78db4ddc5fe5d489a4a4267ea83450"
+        },
+        {
+          "key": "rewards",
+          "rows": 2,
+          "sha256": "c6ff7c99feed7ec45b14e9f4d91a6442a61be95efb1fc067489b40971204ef01"
+        },
+        {
+          "key": "rewards_extrinsic",
+          "rows": 2,
+          "sha256": "9ad8d095ad3c111acc9f2ee7fdb2fd55faa2dcb5855385d9962e25327c448d04"
+        },
+        {
+          "key": "rewards_intrinsic",
+          "rows": 2,
+          "sha256": "01f4736f441a8ff962b74eb91042dc82496a89ebac8d68a5e53c6ead54ebcbaf"
+        },
+        {
+          "key": "rewards_shaping",
+          "rows": 2,
+          "sha256": "1e7bb4b704baa8319083bb64d04e27990d78db4ddc5fe5d489a4a4267ea83450"
+        },
+        {
+          "key": "rewards",
+          "rows": 2,
+          "sha256": "f2d62d394c66d15ae0969a21903f3933cad68d7af3c612b1a28662085b1a7628"
+        },
+        {
+          "key": "rewards_extrinsic",
+          "rows": 2,
+          "sha256": "9ad8d095ad3c111acc9f2ee7fdb2fd55faa2dcb5855385d9962e25327c448d04"
+        },
+        {
+          "key": "rewards_intrinsic",
+          "rows": 2,
+          "sha256": "4161e65b8c3a4c645ef29d779b3477df699dffaa3c310bdd180f00a91d5c7b2a"
+        },
+        {
+          "key": "rewards_shaping",
+          "rows": 2,
+          "sha256": "df7148701f3524f809c864a3e12eb392cf9c5a973d2b9dfee3b8b80cf23654df"
+        },
+        {
+          "key": "rewards",
+          "rows": 2,
+          "sha256": "0cfeaa27639059c63541361b69c9f4bb6e25c28676ea586220a2c4feb9bdd630"
+        },
+        {
+          "key": "rewards_extrinsic",
+          "rows": 2,
+          "sha256": "8f3ad57e13363492bdcca667511d7e00779e34684d8cbc40e584faae40db1f09"
+        },
+        {
+          "key": "rewards_intrinsic",
+          "rows": 2,
+          "sha256": "9d6f49fb355fceacad75e14735eae2b45af5617f52be1acc2fbd2e8de8e79371"
+        },
+        {
+          "key": "rewards_shaping",
+          "rows": 2,
+          "sha256": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc"
+        }
+      ],
+      "eligible_full_sequence_rows": 34,
+      "restored_population_exact": true,
+      "restored_replay_exact": true,
+      "old_strict_validators_passed": true,
+      "resume_learning_steps": 0,
+      "verification_result": "sequence-trained-verified.json",
+      "config_files": {
+        "sequence-trained-pack/.compiled/universe-L0_0_minimal.msgpack": "917e5374e83227dcbfb4c626da4e5c74a9cab29dd7cdb9651b7d2c93c6019107",
+        "sequence-trained-pack/.compiled/universe-L0_5_dual_resource.msgpack": "db47d84e209f544bb53d179bc84c6cf5bebcc693866666f267c78a975bc0102f",
+        "sequence-trained-pack/.compiled/universe-L1_full_observability.msgpack": "f3f788e93a4094a1c68e40301752bc573e209e90598e90671a5ee4616b9e6fcd",
+        "sequence-trained-pack/.compiled/universe-L2_partial_observability.msgpack": "c848f3ba599b6cf1d2e151c5aaf9faf926d57778871ccccf1777876d8b64fd03",
+        "sequence-trained-pack/.compiled/universe-L3_temporal_mechanics.msgpack": "769c44a9fe7562e80ecb6d8d1fd187e4271470f70a3ca1a4e76b2a109c4aecf8",
+        "sequence-trained-pack/actions.yaml": "5f94d0b8c4b2d10beffd479b43e1d21a95d5601d46dcd034931e73f0e0cd45be",
+        "sequence-trained-pack/brain.yaml": "e2dc1ad6b12fed2d6cb9384d0ae3880076f2533e60bce33d191a6d1ab97a6c18",
+        "sequence-trained-pack/effects.yaml": "dba0d3dec16ffe31f7e4ecbef0de7f0297d06aa5f4afd05fe4e2f9d1c555c688",
+        "sequence-trained-pack/environment.yaml": "47713f31364ed06448495bb7f03c8458b270795663b45ece62f4828efb5d600b",
+        "sequence-trained-pack/experiment.yaml": "d0e0d0116cbc4d0231907712dc4c63965f9864668c129d67924a89b6853dfef3",
+        "sequence-trained-pack/items.yaml": "074f34266cf8a9c60d0760e2fa8ba6c6d73d85d3ea19c45699b504abc053c3d5",
+        "sequence-trained-pack/levels/L0_0_minimal/affordances.yaml": "d937ef40e4fa92ec89539386b9249944203ca82ba883892ef05695afc8f4e07c",
+        "sequence-trained-pack/levels/L0_0_minimal/bars.yaml": "c55c7736c0c6ae948cdb8d597a1ea13c8087f19a04b91e341ff8c4a5d10cdc57",
+        "sequence-trained-pack/levels/L0_0_minimal/curriculum.yaml": "e24d6f042e667615359ff43b8c6e2c84982695bfcd6c8ed5795f48a2eb3201e8",
+        "sequence-trained-pack/levels/L0_0_minimal/drive.yaml": "1dfaca1e050a33fc1776b065481ce77f77789ea9b450a35ee3cf86171bb048e8",
+        "sequence-trained-pack/levels/L0_0_minimal/training.yaml": "804809b1390e2cd5c5504bdd909577c9cd6d739f1c48ad9e555179cf2c1d8c32",
+        "sequence-trained-pack/levels/L0_5_dual_resource/affordances.yaml": "d937ef40e4fa92ec89539386b9249944203ca82ba883892ef05695afc8f4e07c",
+        "sequence-trained-pack/levels/L0_5_dual_resource/bars.yaml": "c55c7736c0c6ae948cdb8d597a1ea13c8087f19a04b91e341ff8c4a5d10cdc57",
+        "sequence-trained-pack/levels/L0_5_dual_resource/curriculum.yaml": "4fe63e0ff053cb2e6aebcfc7b8518e104c0809ec9394e16df2b5d546d41591d3",
+        "sequence-trained-pack/levels/L0_5_dual_resource/drive.yaml": "1dfaca1e050a33fc1776b065481ce77f77789ea9b450a35ee3cf86171bb048e8",
+        "sequence-trained-pack/levels/L0_5_dual_resource/training.yaml": "06d00ea1a3e712512f80897cb78efce52e5a4b3549af59050313ef7c7e764cf8",
+        "sequence-trained-pack/levels/L1_full_observability/affordances.yaml": "d937ef40e4fa92ec89539386b9249944203ca82ba883892ef05695afc8f4e07c",
+        "sequence-trained-pack/levels/L1_full_observability/bars.yaml": "c55c7736c0c6ae948cdb8d597a1ea13c8087f19a04b91e341ff8c4a5d10cdc57",
+        "sequence-trained-pack/levels/L1_full_observability/curriculum.yaml": "fc41e113e7ca1d9a588a608a431fb6a6bb0cc02f422faad927201a6164b72243",
+        "sequence-trained-pack/levels/L1_full_observability/drive.yaml": "1dfaca1e050a33fc1776b065481ce77f77789ea9b450a35ee3cf86171bb048e8",
+        "sequence-trained-pack/levels/L1_full_observability/training.yaml": "213038cac8d6db01b70f482c29668932d0998234b9241cc7600fd0663bfe7b4a",
+        "sequence-trained-pack/levels/L2_partial_observability/affordances.yaml": "d937ef40e4fa92ec89539386b9249944203ca82ba883892ef05695afc8f4e07c",
+        "sequence-trained-pack/levels/L2_partial_observability/bars.yaml": "c55c7736c0c6ae948cdb8d597a1ea13c8087f19a04b91e341ff8c4a5d10cdc57",
+        "sequence-trained-pack/levels/L2_partial_observability/curriculum.yaml": "219785448971fea947685c45b5044904096bb102b331b99496ad7b7e44cfc795",
+        "sequence-trained-pack/levels/L2_partial_observability/drive.yaml": "1dfaca1e050a33fc1776b065481ce77f77789ea9b450a35ee3cf86171bb048e8",
+        "sequence-trained-pack/levels/L2_partial_observability/training.yaml": "01d9ce77e8114a7bbf618af44a2f877cd09eb3a54c87779a0ae0c1ad6f0cb1da",
+        "sequence-trained-pack/levels/L3_temporal_mechanics/affordances.yaml": "d937ef40e4fa92ec89539386b9249944203ca82ba883892ef05695afc8f4e07c",
+        "sequence-trained-pack/levels/L3_temporal_mechanics/bars.yaml": "c55c7736c0c6ae948cdb8d597a1ea13c8087f19a04b91e341ff8c4a5d10cdc57",
+        "sequence-trained-pack/levels/L3_temporal_mechanics/curriculum.yaml": "51bc9217952ee8df8e90ea368d6a14093604f504234fdad65e56f3a7999d649f",
+        "sequence-trained-pack/levels/L3_temporal_mechanics/drive.yaml": "1dfaca1e050a33fc1776b065481ce77f77789ea9b450a35ee3cf86171bb048e8",
+        "sequence-trained-pack/levels/L3_temporal_mechanics/training.yaml": "fbaa4a9952f6553e4b9fee794c13c52ed1d5129f40106e1d0fbc7e6d137fda5b",
+        "sequence-trained-pack/stratum.yaml": "740d99ed47564a8e8825cae83c1c03601715dc7d1ea70dbb458162bed165a545",
+        "sequence-trained-pack/variables.yaml": "ffb6c3d39e421df9304e997e90470479490641b99b49e88a033094f29b11dac2"
+      },
+      "capture_arguments": {
+        "max_steps": 2,
+        "batch_size": 2,
+        "min_size": 2,
+        "family": "recurrent",
+        "capacity": 64,
+        "initial_max_episodes": 16,
+        "resume_max_episodes": 18,
+        "initial_checkpoint_sha256": "33918c884a55ff2167dc901dccd8956ae9b425aad5dca08c973e62150e5e40fc",
+        "initial_checkpoint_path": "/tmp/bac-B09/historical_trained_sequence_eb3a4ebd2c854ca9b3a5eb0af7883d71_run/checkpoints/checkpoint_ep00016.pt"
+      },
+      "producer_native_path": "/tmp/bac-B09/historical_trained_sequence_1b25bd10624e4143adbd6b2a23f45c3a_run/checkpoints/checkpoint_ep00018.pt",
+      "producer_native_sha256": "f5ca18d9e4f8c8f9398d585fc2a7861d23883ca9a8ae7175c964e2e97e16ced6"
+    }
+  ],
+  "optional_original_sequence": {
+    "label": "sequence",
+    "source_sha": "4aa5363b5de54d9a112977c32c2975f37627197f",
+    "source_module": "/tmp/hamlet-bac-4aa5363b/src/townlet/__init__.py",
+    "artifact": "sequence.pt",
+    "sha256": "0d8fe654605f7601d9202d3dd1b51ed02e4e20202352caaf9cf74216be247f71",
+    "bytes": 1350565,
+    "demo_version": 9,
+    "population_version": 6,
+    "replay_version": 5,
+    "replay_kind": "sequential",
+    "retained_transitions": 4,
+    "total_steps": 4,
+    "inventory": "sequence-inventory.json",
+    "config": "sequence-pack"
+  },
+  "limits": [
+    "Trusted local pickle; explicit unsafe loading after SHA256 verification",
+    "No successor mask invention; no claim of complete RNG continuation",
+    "Pinned old strict validators and resumes only; no new OptionA policy implementation or acceptance"
+  ],
+  "commands": [
+    "verify_capture_owned.py capture",
+    "verify_capture_owned.py verify --label uniform",
+    "verify_capture_owned.py verify --label per",
+    "verify_capture_owned.py verify --label sequence-trained",
+    "verify_capture_owned.py finalize"
+  ]
+}

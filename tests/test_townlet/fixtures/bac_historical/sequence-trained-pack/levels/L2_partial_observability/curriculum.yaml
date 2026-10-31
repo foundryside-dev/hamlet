@@ -1,0 +1,12 @@
+curriculum:
+  version: "1.0"
+
+  # L2: Partial observability (POMDP)
+  # 8×8 grid, full vocabulary (8 bars, 14 affordances)
+  # Nearby tokens are selected by the declared visibility radius.
+  # Recurrent token brains can retain information across steps.
+
+  active_vision: partial      # Radius-filtered token visibility (POMDP)
+  vision_range: 0.5           # Normalized visibility radius
+  active_temporal: false
+  day_length: null

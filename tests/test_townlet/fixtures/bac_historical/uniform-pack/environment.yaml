@@ -1,0 +1,102 @@
+environment:
+  version: "1.0"
+
+  meters:
+    - name: energy
+      description: "Physical energy for movement and actions"
+      range_type:
+        kind: minmax
+        clip: true
+
+    - name: health
+      description: "Physical health, death at 0"
+      range_type:
+        kind: minmax
+        clip: true
+
+    - name: satiation
+      description: "Hunger level, affects health cascade"
+      range_type:
+        kind: minmax
+        clip: true
+
+    - name: hygiene
+      description: "Cleanliness, affects mood and social"
+      range_type:
+        kind: minmax
+        clip: true
+
+    - name: money
+      description: "Economic resource for purchasing"
+      range_type:
+        kind: minmax
+        clip: true
+
+    - name: fitness
+      description: "Physical conditioning from exercise"
+      range_type:
+        kind: minmax
+        clip: true
+
+    - name: mood
+      description: "Mental state, affects energy cascade"
+      range_type:
+        kind: minmax
+        clip: true
+
+    - name: social
+      description: "Social connection level"
+      range_type:
+        kind: minmax
+        clip: true
+
+  cascade_graph:
+    - source: satiation
+      target: health
+      description: "Low hunger damages health over time"
+
+    - source: satiation
+      target: energy
+      description: "Low hunger drains energy"
+
+    - source: mood
+      target: energy
+      description: "Low mood reduces energy recovery"
+
+    - source: hygiene
+      target: mood
+      description: "Poor hygiene damages mood"
+
+    - source: hygiene
+      target: social
+      description: "Poor hygiene damages social connection"
+
+  modulation_graph:
+    - bar: energy
+      affordances: [WORK]
+      description: "Low energy reduces work effectiveness"
+
+    - bar: mood
+      affordances: [SOCIALIZE, WORK]
+      description: "Low mood reduces social and work quality"
+
+  affordances:
+    - name: EAT
+    - name: SLEEP
+    - name: SHOWER
+    - name: EXERCISE
+    - name: WORK
+    - name: SOCIALIZE
+    - name: MEDITATE
+    - name: DRINK_WATER
+    - name: BRUSH_TEETH
+    - name: LAUNDRY
+    - name: COOK
+    - name: CLEAN_HOUSE
+    - name: ENTERTAINMENT
+    - name: DOCTOR
+
+  # No custom variables. deficit_energy / deficit_satiation /
+  # time_since_last_eat / time_since_last_sleep were declared here with no
+  # runtime writer — agents observed frozen zeros (hamlet-dc8f887cd5).
+  # A variable belongs here only once the authoring surface can drive it.

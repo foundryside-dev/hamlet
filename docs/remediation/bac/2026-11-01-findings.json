@@ -1,0 +1,620 @@
+{
+  "defects": [
+    {
+      "id": "D01",
+      "priority": "P1",
+      "title": "Bellman targets optimize unavailable successor actions",
+      "slice": "B03",
+      "reported_id": "B03-D1",
+      "contracts": [
+        "BAC-C05",
+        "BAC-C06"
+      ],
+      "observation": "Eight real-update cases produce target 51 instead of legal target 3, with a wrong-direction gradient; terminal controls hold.",
+      "evidence": "executed authored compiler\u2192environment\u2192replay\u2192learner",
+      "known": false,
+      "classification": "existing-contract defect"
+    },
+    {
+      "id": "D02",
+      "priority": "P1",
+      "title": "Recurrent readiness admits a batch with no sampleable sequence",
+      "slice": "B03",
+      "reported_id": "B03-D2",
+      "contracts": [
+        "BAC-C06",
+        "BAC-C07"
+      ],
+      "observation": "Sixteen legitimate length-2 episodes with sequence length 3 cause the next real learner step to raise ValueError.",
+      "evidence": "executed authored repeated episodes",
+      "known": false,
+      "classification": "existing-contract defect"
+    },
+    {
+      "id": "D03",
+      "priority": "P1",
+      "title": "Periodic restart skips the episode-end epsilon decay",
+      "slice": "B09",
+      "reported_id": "B09-D01",
+      "contracts": [
+        "BAC-C10",
+        "BAC-C07",
+        "BAC-C08"
+      ],
+      "observation": "Actual restarted episode uses epsilon 0.8 instead of uninterrupted 0.4, including batched action-selection state.",
+      "evidence": "executed real save/load and next episode",
+      "known": false,
+      "classification": "existing-contract defect"
+    },
+    {
+      "id": "D04",
+      "priority": "P1",
+      "title": "Both checkpoint loaders select older weights at the six-digit boundary",
+      "slice": "B09",
+      "reported_id": "B09-D02",
+      "contracts": [
+        "BAC-C10",
+        "BAC-C12",
+        "BAC-C13"
+      ],
+      "observation": "Runner and live inference load episode 99999 instead of 100000 and restore observably older weights.",
+      "evidence": "executed real files, digests and both loaders",
+      "known": false,
+      "classification": "existing-contract defect"
+    },
+    {
+      "id": "D05",
+      "priority": "P1",
+      "title": "Ordinary recorder shutdown can discard accepted output",
+      "slice": "B10",
+      "reported_id": "B10-D1",
+      "contracts": [
+        "BAC-C13"
+      ],
+      "observation": "10/10 direct real-recorder immediate shutdowns lose selected recordings with queued work left; waiting control and naturally timed authored-runner control pass.",
+      "evidence": "executed scheduling-sensitive real recorder; known/open",
+      "known": true,
+      "classification": "existing-contract defect"
+    },
+    {
+      "id": "D06",
+      "priority": "P2",
+      "title": "Negative network widths compile and crash construction",
+      "slice": "B01",
+      "reported_id": "B01-D1",
+      "contracts": [
+        "BAC-C02",
+        "BAC-C01"
+      ],
+      "observation": "Copied authored packs compile; selected feedforward/dueling negative geometry then raises a negative-dimension RuntimeError.",
+      "evidence": "executed compile and real factories",
+      "known": false,
+      "classification": "existing-contract defect"
+    },
+    {
+      "id": "D07",
+      "priority": "P2",
+      "title": "Invalid zero-momentum Nesterov combination compiles",
+      "slice": "B01",
+      "reported_id": "B01-D2",
+      "contracts": [
+        "BAC-C02",
+        "BAC-C01"
+      ],
+      "observation": "Compiled configuration reaches SGD construction and raises the Nesterov/momentum ValueError.",
+      "evidence": "executed compile and real optimizer factory",
+      "known": false,
+      "classification": "existing-contract defect"
+    },
+    {
+      "id": "D08",
+      "priority": "P2",
+      "title": "Nonfinite learning rate compiles and corrupts a finite parameter",
+      "slice": "B01",
+      "reported_id": "B01-D4",
+      "contracts": [
+        "BAC-C02"
+      ],
+      "observation": "An infinite training override compiles; applying the real effective-config helper and one finite optimizer gradient changes parameter 1 to -Infinity.",
+      "evidence": "executed compile, override, factory and optimizer; no full run claim",
+      "known": false,
+      "classification": "existing-contract defect"
+    },
+    {
+      "id": "D09",
+      "priority": "P2",
+      "title": "Authored replay warmup is ignored",
+      "slice": "B03",
+      "reported_id": "B03-D3",
+      "contracts": [
+        "BAC-C06",
+        "BAC-C02",
+        "BAC-C07"
+      ],
+      "observation": "min_size 1000 permits a real update after two admitted transitions; ordinary runner corroborates updates after transitions 1 and 2.",
+      "evidence": "executed population and runner; B09-X01 deduplicated",
+      "known": false,
+      "classification": "existing-contract defect"
+    },
+    {
+      "id": "D10",
+      "priority": "P2",
+      "title": "PER sampling and importance weights describe different distributions",
+      "slice": "B04",
+      "reported_id": "B04-D01",
+      "contracts": [
+        "BAC-C06"
+      ],
+      "observation": "Without-replacement full-buffer sampling plus independent-draw weights produces Huber gradient -0.444444388 where the uniform full-buffer gradient is 0.",
+      "evidence": "executed deterministic replay and autograd proof",
+      "known": false,
+      "classification": "existing-contract defect"
+    },
+    {
+      "id": "D11",
+      "priority": "P2",
+      "title": "Masked actions receive positive exploration sampling weight",
+      "slice": "B05",
+      "reported_id": "D05-01",
+      "contracts": [
+        "BAC-C05",
+        "BAC-C08"
+      ],
+      "observation": "The real sampler receives about 1e-8 weight for a disabled action. This proves the zero-mass invariant violation; no illegal native draw was seen in 100M narrow trials.",
+      "evidence": "observed sampler weights and mathematical proof; not an observed illegal-action incident",
+      "known": false,
+      "classification": "existing-contract defect"
+    },
+    {
+      "id": "D12",
+      "priority": "P2",
+      "title": "Curriculum completion routing destroys the metrics needed for progression",
+      "slice": "B06",
+      "reported_id": "B06-D01",
+      "contracts": [
+        "BAC-C09",
+        "BAC-C07"
+      ],
+      "observation": "Actual factory/environment completion sequence counts one dwell step per episode, reports zero decision survival after reset, and prevents advancement.",
+      "evidence": "executed components with source-confirmed production event routing",
+      "known": false,
+      "classification": "existing-contract defect"
+    },
+    {
+      "id": "D13",
+      "priority": "P2",
+      "title": "Curriculum survival telemetry uses a fixed horizon of 100",
+      "slice": "B06",
+      "reported_id": "B06-D02",
+      "contracts": [
+        "BAC-C09",
+        "BAC-C13"
+      ],
+      "observation": "A complete 10-of-10 episode reports survival fraction 0.1 rather than 1.0.",
+      "evidence": "executed declared-horizon probe",
+      "known": false,
+      "classification": "existing-contract defect"
+    },
+    {
+      "id": "D14",
+      "priority": "P2",
+      "title": "Singleton curriculum difficulty band is violated",
+      "slice": "B06",
+      "reported_id": "B06-D03",
+      "contracts": [
+        "BAC-C09",
+        "BAC-C02"
+      ],
+      "observation": "Accepted min=max=0.6 produces difficulty 0.0 instead of 0.6.",
+      "evidence": "executed validated configuration and real curriculum",
+      "known": false,
+      "classification": "existing-contract defect"
+    },
+    {
+      "id": "D15",
+      "priority": "P2",
+      "title": "Lane-zero curriculum depletion is applied to all worlds",
+      "slice": "B06",
+      "reported_id": "B06-D04",
+      "contracts": [
+        "BAC-C09",
+        "BAC-C05"
+      ],
+      "observation": "Valid restored stages [1,5] yield multipliers [.2,1], but replaying production forwarding through the real environment yields energies [.98,.98] instead of [.98,.9].",
+      "evidence": "executed curriculum/environment boundary plus source proof; full population witness not claimed",
+      "known": false,
+      "classification": "existing-contract defect"
+    },
+    {
+      "id": "D16",
+      "priority": "P2",
+      "title": "Compiler lowering erases authored sidecars before strict validation",
+      "slice": "B07",
+      "reported_id": "B07-D1",
+      "contracts": [
+        "BAC-C02",
+        "BAC-C03",
+        "BAC-C13"
+      ],
+      "observation": "Nested training.recording/run_metadata, including malformed input, silently become None and leave training_hash unchanged; top-level controls are validated and retained.",
+      "evidence": "executed compiler and positive/negative placement controls",
+      "known": false,
+      "classification": "existing-contract defect"
+    },
+    {
+      "id": "D17",
+      "priority": "P2",
+      "title": "Incomplete shared-type transfer is falsely reported as clean",
+      "slice": "B08",
+      "reported_id": "B08-D1",
+      "contracts": [
+        "BAC-C11"
+      ],
+      "observation": "Removing only meter.bias transfers meter.weight but leaves fresh random bias while is_clean=True, in token-set and recurrent utilities.",
+      "evidence": "executed malformed utility-input transfer; no normal-producer claim",
+      "known": false,
+      "classification": "existing-contract defect"
+    },
+    {
+      "id": "D18",
+      "priority": "P2",
+      "title": "Served inference leaves dropout in training mode",
+      "slice": "B09",
+      "reported_id": "B09-D03",
+      "contracts": [
+        "BAC-C12",
+        "BAC-C01"
+      ],
+      "observation": "At identical observations and epsilon zero, feedforward/dueling served actions and Q-values vary; .eval() on the same loaded network stabilizes them.",
+      "evidence": "executed real training/checkpoint/live reconstruction and mode control",
+      "known": false,
+      "classification": "existing-contract defect"
+    },
+    {
+      "id": "D19",
+      "priority": "P2",
+      "title": "Authored periodic checkpoint interval is ignored",
+      "slice": "B09",
+      "reported_id": "B09-D04",
+      "contracts": [
+        "BAC-C02",
+        "BAC-C07",
+        "BAC-C10"
+      ],
+      "observation": "An authored interval of 5000 creates a periodic checkpoint at episode 100; final-save behavior is separate.",
+      "evidence": "executed ordinary runner at the boundary",
+      "known": false,
+      "classification": "existing-contract defect"
+    },
+    {
+      "id": "D20",
+      "priority": "P2",
+      "title": "Supported declaration transport fails at CLI/runner consumers",
+      "slice": "B12",
+      "reported_id": "B12-D01",
+      "contracts": [
+        "BAC-C03"
+      ],
+      "observation": "Renamed/nested experiment/training and valid multi-document declarations compile, then documented launch paths fail filename or single-document preflights.",
+      "evidence": "executed compiler, real CLI and runner; coordinator/B09 witnesses deduplicated",
+      "known": false,
+      "classification": "existing-contract defect"
+    },
+    {
+      "id": "D21",
+      "priority": "P2",
+      "title": "Recurrent PER compiles but ordinary runtime construction refuses it",
+      "slice": "B01",
+      "reported_id": "B01-G3",
+      "contracts": [
+        "BAC-C01",
+        "BAC-C02",
+        "BAC-C06"
+      ],
+      "observation": "Coordinator independently compiled an authored recurrent+PER pack, then ordinary DemoRunner.run raised NotImplementedError before rollout.",
+      "evidence": "executed coordinator compile\u2192ordinary runner; promoted from prior boundary gap",
+      "known": false,
+      "classification": "existing-contract defect"
+    }
+  ],
+  "gaps": [
+    {
+      "id": "G01",
+      "priority": "P2",
+      "title": "Mean pooling cannot preserve descriptor/value association",
+      "slice": "B02",
+      "reported_ids": [
+        "B02-G1"
+      ],
+      "contracts": [
+        "BAC-C04"
+      ],
+      "classification": "revised-design gap",
+      "observation": "Linear\u2192mean is faithful to the old literal recipe but algebraically aliases reassigned live values. Extend the representation while preserving existing options; narrowing/removing mean requires approval."
+    },
+    {
+      "id": "G02",
+      "priority": "P2",
+      "title": "Accepted recurrent geometry can make learning permanently impossible",
+      "slice": "B03",
+      "reported_ids": [
+        "B03-G1",
+        "B04-G02",
+        "B01-G4"
+      ],
+      "contracts": [
+        "BAC-C06",
+        "BAC-C02"
+      ],
+      "classification": "revised-design/readiness gap",
+      "observation": "Capacity 1 with sequence 8 is accepted; capacity 15 retains at most seven length-2 episodes against the hidden 16-episode gate. Define retained-transition warmup/sampleability and extend support; any capability restriction must be surfaced."
+    },
+    {
+      "id": "G03",
+      "priority": "P2",
+      "title": "Predictor service accumulates complete minibatches without bound",
+      "slice": "B05",
+      "reported_ids": [
+        "G05-02",
+        "C05-01"
+      ],
+      "contracts": [
+        "BAC-C08",
+        "BAC-C07"
+      ],
+      "classification": "revised-design gap",
+      "observation": "512 admitted eligible observations with batch size 128 produce one update and 384 pending rows, then 768. Revised FIFO service requires four updates and only an incomplete tail, or an explicit additional pacing/retention option."
+    },
+    {
+      "id": "G04",
+      "priority": "P2",
+      "title": "Fresh-episode restart omits the pending RND predictor tail",
+      "slice": "B05",
+      "reported_ids": [
+        "G05-01"
+      ],
+      "contracts": [
+        "BAC-C08",
+        "BAC-C10"
+      ],
+      "classification": "revised-design gap",
+      "observation": "Saving after two of three observations loses the pending two; after the same third observation, uninterrupted/resumed optimizer counts and predictors differ. Revised continuation inventory now includes that tail."
+    },
+    {
+      "id": "G05",
+      "priority": "P2",
+      "title": "Accepted curriculum adaptation rate has no defined operational consumer",
+      "slice": "B06",
+      "reported_ids": [
+        "B06-G02"
+      ],
+      "contracts": [
+        "BAC-C09",
+        "BAC-C02"
+      ],
+      "classification": "design/semantics gap",
+      "observation": "The rate is stored but unused and its clock is unspecified. Define and implement its behavior; removal or consolidation needs approval."
+    },
+    {
+      "id": "G06",
+      "priority": "P2",
+      "title": "Gamma-zero support differs between brain and training declarations",
+      "slice": "B01",
+      "reported_ids": [
+        "B01-G2"
+      ],
+      "contracts": [
+        "BAC-C02",
+        "BAC-C01"
+      ],
+      "classification": "clarified-design gap",
+      "observation": "Astra selects gamma [0,1], including the valid myopic experiment. Brain accepts zero while required overriding training schema rejects it."
+    },
+    {
+      "id": "G07",
+      "priority": "P2",
+      "title": "Viewer reset and evaluation configuration do not yet meet a declared run view",
+      "slice": "B09",
+      "reported_ids": [
+        "B09-G02"
+      ],
+      "contracts": [
+        "BAC-C12",
+        "BAC-C10"
+      ],
+      "classification": "revised-design/qualification gap",
+      "observation": "Live execution resets twice (VFS episode 0\u21921\u21922) and hardcodes cap 500. Define named evaluation/viewer settings and one-reset semantics; shared training/serving isolation remains unqualified."
+    },
+    {
+      "id": "G08",
+      "priority": "P2",
+      "title": "Inactive/preset options and effective identity require explicit semantics",
+      "slice": "B01",
+      "reported_ids": [
+        "B01-D3"
+      ],
+      "contracts": [
+        "BAC-C02",
+        "BAC-C10"
+      ],
+      "classification": "reclassified design gap",
+      "observation": "Accepted nonselected architecture/optimizer/schedule values change the full brain hash without changing the selected network. Preset retention can be legitimate; hash movement alone is not a correctness defect. Preserve options and distinguish authored versus effective semantics rather than automatically rejecting them."
+    },
+    {
+      "id": "G09",
+      "priority": "P2",
+      "title": "Higher-level token transfer preconditions are not fully qualified",
+      "slice": "B08",
+      "reported_ids": [
+        "B08-O1",
+        "B08-O2"
+      ],
+      "contracts": [
+        "BAC-C11",
+        "BAC-C02"
+      ],
+      "classification": "revised boundary qualification",
+      "observation": "Schema-aware artifact transfer and fresh-target learner/replay/optimizer/clock enforcement need joint acceptance. This is not an ordinary stale-cache or normal-producer regression proved by B08."
+    }
+  ],
+  "deferred": [
+    {
+      "id": "K01",
+      "title": "Exact stochastic or mid-episode continuation",
+      "reports": [
+        "B04-G01",
+        "B09-G01"
+      ],
+      "contracts": [
+        "BAC-C10"
+      ],
+      "disposition": "Known deferred guarantee; RNG/replay-order inventory remains incomplete. Do not count as a new failure of the weaker fresh-episode promise."
+    },
+    {
+      "id": "K02",
+      "title": "Generic authored stages and effective meter/reward-mode switching",
+      "reports": [
+        "B06-G01"
+      ],
+      "contracts": [
+        "BAC-C09"
+      ],
+      "disposition": "Known missing capability; current stage labels are not applied mechanics. Extensions are permitted; removing or consolidating exposed options needs approval."
+    },
+    {
+      "id": "K03",
+      "title": "Historical evaluator and unused direct loaders",
+      "reports": [
+        "B12-G01",
+        "B12-G02"
+      ],
+      "contracts": [
+        "BAC-C03",
+        "BAC-C12"
+      ],
+      "disposition": "Historical FF-only evaluator lacks recurrent hidden-state handling; unused direct loaders keep fixed filenames. Preserve, extend, or seek approval before removing."
+    },
+    {
+      "id": "K04",
+      "title": "Richer recording selection",
+      "reports": [
+        "B10-G1"
+      ],
+      "contracts": [
+        "BAC-C13",
+        "BAC-C02"
+      ],
+      "disposition": "Current periodic selection is the bounded supported scope. Richer criteria are a known capability gap, not a newly required engine expansion. Accepted inert options still need truthful handling."
+    },
+    {
+      "id": "K05",
+      "title": "Final checkpoint next-episode index",
+      "reports": [
+        "B09-K01"
+      ],
+      "contracts": [
+        "BAC-C10",
+        "BAC-C07"
+      ],
+      "disposition": "Known reproduced P3: final checkpoint after episode 101 stores 102 and loader adds one. Separate from new periodic epsilon defect."
+    },
+    {
+      "id": "K06",
+      "title": "Cognitive topology, named modules and execution graphs",
+      "reports": [
+        "architecture"
+      ],
+      "contracts": [
+        "BAC-C01"
+      ],
+      "disposition": "Unbuilt design targets, not regressions. The design is extensible; these features may be added when useful and are not prohibited by this review."
+    }
+  ],
+  "drift": [
+    {
+      "title": "LR scheduler unit",
+      "reports": [
+        "B01-G1",
+        "B03"
+      ],
+      "contracts": [
+        "BAC-C07"
+      ],
+      "resolution": "Updated design chooses successful optimizer updates. Current runtime is correct for this choice; older episode-based examples are superseded documentation, not an unresolved scheduler bug."
+    },
+    {
+      "title": "Episode-5000 fixed-layout mutation",
+      "reports": [
+        "architecture:A2",
+        "B09"
+      ],
+      "contracts": [
+        "BAC-C12"
+      ],
+      "resolution": "Refuted in the actual fixed Grid2D pack; preserve the passing control. Misleading generalization logging is drift, not a proved layout mutation."
+    },
+    {
+      "title": "Intrinsic enabled toggles",
+      "reports": [
+        "B01",
+        "architecture"
+      ],
+      "contracts": [
+        "BAC-C02",
+        "BAC-C08"
+      ],
+      "resolution": "Refuted premise: intrinsic.enabled and intrinsic.annealing.enabled do not exist and refuse as extras. Zero initial weight is a valid zero-contribution setting."
+    },
+    {
+      "title": "Primary base brain versus effective brain",
+      "reports": [
+        "B07",
+        "B09"
+      ],
+      "contracts": [
+        "BAC-C02"
+      ],
+      "resolution": "Storing the selected base plus training overrides is valid. All five overrides, full level replacement, transport and cache controls passed; no raw-base mismatch defect is counted."
+    },
+    {
+      "title": "Modified-cache tamper hypothesis",
+      "reports": [
+        "B08"
+      ],
+      "contracts": [
+        "BAC-C02",
+        "BAC-C11"
+      ],
+      "resolution": "No ordinary stale authored-cache failure reproduced. Trust-boundary observation is not promoted to a production defect or a security finding."
+    }
+  ],
+  "baseline": "BAC-2026-11-01-r2",
+  "commit": "4aa5363b5de54d9a112977c32c2975f37627197f",
+  "review_only": true,
+  "approval_policy": "Extensions/features/options/complexity are permitted. Removal, degradation, restriction or capability consolidation requires user approval. Consolidation of defect lists is already authorized.",
+  "validation": {
+    "root_unit_baseline": "670 passed, 5 skipped; exit 0",
+    "independent_coordinator_reruns": [
+      "authored learner target matrix: exit 0",
+      "checkpoint numeric-order/load and double-reset witness: exit 0",
+      "recurrent PER compile succeeds then ordinary runner NotImplementedError",
+      "transport-only training rename compiles then runner FileNotFoundError"
+    ],
+    "limits": "CPU only; no full-suite or learning-convergence claim; overlapping reviewer test counts are not added."
+  },
+  "candidates": [
+    {
+      "id": "C01",
+      "priority": "P2 candidate",
+      "slice": "B04",
+      "reported_id": "B04-C01",
+      "contracts": [
+        "BAC-C06",
+        "BAC-C02"
+      ],
+      "claim": "Finite float32 PER priorities [3e38,3e38] overflow during normalization and make sampling fail.",
+      "evidence": "Buffer-level execution reproduced; strict replay restore accepts the stored finite priorities.",
+      "limitation": "Ordinary authored production-learner reachability was not established; not included in the 21 confirmed existing-contract defect groups."
+    }
+  ]
+}

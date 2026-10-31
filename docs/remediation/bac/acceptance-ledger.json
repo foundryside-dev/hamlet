@@ -1,0 +1,3791 @@
+{
+  "schema_version": 1,
+  "baseline_sha": "4aa5363b5de54d9a112977c32c2975f37627197f",
+  "design": "BAC-2026-11-01-r2 plus explicit additive plan decisions",
+  "approved_plan_sha256": "2dde2d80d3d14c510878c26af1f99c42217be12d3cb3a554647bc68646feedc1",
+  "phase": "implementation and independent verification",
+  "completion_bar": "zero unresolved P1/P2 and zero unapproved in-scope capability gaps; all agreed finite evidence, fresh final spec/design/code review, required gates and source-verified docs",
+  "requirements": [
+    {
+      "id": "D01",
+      "classification": "defect",
+      "title": "Bellman targets optimize unavailable successor actions",
+      "in_scope": true,
+      "acceptance_scope": "Legal target/gradient for every optimizer row; approved A archives old maskless history, starts fresh qualified replay and preserves query/export, with no historical P1 exception",
+      "tasks": [
+        "T03a",
+        "T08",
+        "T09",
+        "T10",
+        "T11",
+        "T12",
+        "T13",
+        "T14",
+        "T15",
+        "T25",
+        "T26",
+        "T37",
+        "T38"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_authored_interval_and_empty_run",
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_periodic_epsilon_matches_uninterrupted",
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_periodic_final_next_episode_agree",
+        "tests/test_townlet/regressions/bac/test_historical_dispatch.py::test_approved_import_preserves_archive_and_seeds_empty_replay",
+        "tests/test_townlet/regressions/bac/test_historical_dispatch.py::test_archive_failure_is_atomic",
+        "tests/test_townlet/regressions/bac/test_historical_dispatch.py::test_old_identity_recipe_ignores_only_new_absent_fields",
+        "tests/test_townlet/regressions/bac/test_joint_learning.py::test_joint_family_replay_matrix",
+        "tests/test_townlet/regressions/bac/test_joint_restart_serving.py::test_joint_restart_transfer_serving",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_archived_rows_cannot_drive_learning",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_authored_target_matrix_and_direction",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_ready_skip_preserves_update_clocks",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_terminal_and_truncation_controls",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_actual_sampler_ordered_law",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_full_buffer_huber_gradient_zero",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_independent_estimator_exact_expectation",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_large_finite_priorities",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_ordered_estimator_exact_expectation",
+        "tests/test_townlet/regressions/bac/test_per_history.py::test_per_mask_priority_alignment_and_restore",
+        "tests/test_townlet/regressions/bac/test_population_restore.py::test_population_restores_tail_and_historical_masks",
+        "tests/test_townlet/regressions/bac/test_population_restore.py::test_seven_eligible_rows_once",
+        "tests/test_townlet/regressions/bac/test_recurrent_per.py::test_recurrent_per_window_objective",
+        "tests/test_townlet/regressions/bac/test_recurrent_per.py::test_recurrent_priority_restore_and_eviction",
+        "tests/test_townlet/regressions/bac/test_sequence_history.py::test_capacity15_has_viable_two_step_windows",
+        "tests/test_townlet/regressions/bac/test_sequence_history.py::test_capacity1_adaptive_retains_one_real_row",
+        "tests/test_townlet/regressions/bac/test_sequence_history.py::test_sixteen_short_episodes_do_not_crash",
+        "tests/test_townlet/regressions/bac/test_successor_producer.py::test_mask_belongs_to_returned_successor",
+        "tests/test_townlet/regressions/bac/test_transition_contract.py::test_double_uses_online_legal_choice",
+        "tests/test_townlet/regressions/bac/test_transition_contract.py::test_nonterminal_empty_mask_refuses",
+        "tests/test_townlet/regressions/bac/test_transition_contract.py::test_terminal_empty_mask_is_finite",
+        "tests/test_townlet/regressions/bac/test_uniform_history.py::test_uniform_mask_wrap_sample_restore_atomic"
+      ],
+      "command": [
+        {
+          "task": "T03a",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_historical_dispatch.py -q"
+        },
+        {
+          "task": "T08",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_transition_contract.py -q"
+        },
+        {
+          "task": "T09",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_successor_producer.py -q"
+        },
+        {
+          "task": "T10",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_uniform_history.py -q"
+        },
+        {
+          "task": "T11",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_per_history.py -q"
+        },
+        {
+          "task": "T12",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_sequence_history.py -q"
+        },
+        {
+          "task": "T13",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_per_estimator.py -q"
+        },
+        {
+          "task": "T14",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_recurrent_per.py -q"
+        },
+        {
+          "task": "T15",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_learner_legality.py -q"
+        },
+        {
+          "task": "T25",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_population_restore.py -q"
+        },
+        {
+          "task": "T26",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_checkpoint_boundary.py -q"
+        },
+        {
+          "task": "T37",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_learning.py -q"
+        },
+        {
+          "task": "T38",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_restart_serving.py -q"
+        }
+      ],
+      "expected_assertion": "Legal target/gradient for every optimizer row; approved A archives old maskless history, starts fresh qualified replay and preserves query/export, with no historical P1 exception",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "P1",
+      "approval_reference": "BAC-HISTORY-A-2026-11-01",
+      "package_evidence": []
+    },
+    {
+      "id": "D02",
+      "classification": "defect",
+      "title": "Recurrent readiness admits a batch with no sampleable sequence",
+      "in_scope": true,
+      "acceptance_scope": "Real sampleability/no-update; additive short-window support",
+      "tasks": [
+        "T12",
+        "T15",
+        "T16",
+        "T37"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_joint_learning.py::test_joint_family_replay_matrix",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_archived_rows_cannot_drive_learning",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_authored_target_matrix_and_direction",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_ready_skip_preserves_update_clocks",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_terminal_and_truncation_controls",
+        "tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_recurrent_per",
+        "tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_warmup1000",
+        "tests/test_townlet/regressions/bac/test_sequence_history.py::test_capacity15_has_viable_two_step_windows",
+        "tests/test_townlet/regressions/bac/test_sequence_history.py::test_capacity1_adaptive_retains_one_real_row",
+        "tests/test_townlet/regressions/bac/test_sequence_history.py::test_sixteen_short_episodes_do_not_crash"
+      ],
+      "command": [
+        {
+          "task": "T12",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_sequence_history.py -q"
+        },
+        {
+          "task": "T15",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_learner_legality.py -q"
+        },
+        {
+          "task": "T16",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_runner_readiness.py -q"
+        },
+        {
+          "task": "T37",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_learning.py -q"
+        }
+      ],
+      "expected_assertion": "Real sampleability/no-update; additive short-window support",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "P1",
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "D03",
+      "classification": "defect",
+      "title": "Periodic restart skips the episode-end epsilon decay",
+      "in_scope": true,
+      "acceptance_scope": "One committed epsilon/next-episode boundary",
+      "tasks": [
+        "T24",
+        "T25",
+        "T26",
+        "T38"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_authored_interval_and_empty_run",
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_periodic_epsilon_matches_uninterrupted",
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_periodic_final_next_episode_agree",
+        "tests/test_townlet/regressions/bac/test_checkpoint_contract.py::test_mode_and_boundary_validate_before_mutation",
+        "tests/test_townlet/regressions/bac/test_checkpoint_contract.py::test_numeric_latest_within_run",
+        "tests/test_townlet/regressions/bac/test_joint_restart_serving.py::test_joint_restart_transfer_serving",
+        "tests/test_townlet/regressions/bac/test_population_restore.py::test_population_restores_tail_and_historical_masks",
+        "tests/test_townlet/regressions/bac/test_population_restore.py::test_seven_eligible_rows_once"
+      ],
+      "command": [
+        {
+          "task": "T24",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_checkpoint_contract.py -q"
+        },
+        {
+          "task": "T25",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_population_restore.py -q"
+        },
+        {
+          "task": "T26",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_checkpoint_boundary.py -q"
+        },
+        {
+          "task": "T38",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_restart_serving.py -q"
+        }
+      ],
+      "expected_assertion": "One committed epsilon/next-episode boundary",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "P1",
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "D04",
+      "classification": "defect",
+      "title": "Both checkpoint loaders select older weights at the six-digit boundary",
+      "in_scope": true,
+      "acceptance_scope": "Common numeric selected-run latest; assert actual newer weights",
+      "tasks": [
+        "T24",
+        "T26",
+        "T27",
+        "T38"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_authored_interval_and_empty_run",
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_periodic_epsilon_matches_uninterrupted",
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_periodic_final_next_episode_agree",
+        "tests/test_townlet/regressions/bac/test_checkpoint_contract.py::test_mode_and_boundary_validate_before_mutation",
+        "tests/test_townlet/regressions/bac/test_checkpoint_contract.py::test_numeric_latest_within_run",
+        "tests/test_townlet/regressions/bac/test_joint_restart_serving.py::test_joint_restart_transfer_serving",
+        "tests/test_townlet/regressions/bac/test_serving_modes.py::test_greedy_dropout_is_deterministic",
+        "tests/test_townlet/regressions/bac/test_serving_modes.py::test_live_numeric_latest_and_single_reset",
+        "tests/test_townlet/regressions/bac/test_serving_modes.py::test_mc_dropout_is_explicit"
+      ],
+      "command": [
+        {
+          "task": "T24",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_checkpoint_contract.py -q"
+        },
+        {
+          "task": "T26",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_checkpoint_boundary.py -q"
+        },
+        {
+          "task": "T27",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_serving_modes.py -q"
+        },
+        {
+          "task": "T38",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_restart_serving.py -q"
+        }
+      ],
+      "expected_assertion": "Common numeric selected-run latest; assert actual newer weights",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "P1",
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "D05",
+      "classification": "defect",
+      "title": "Ordinary recorder shutdown can discard accepted output",
+      "in_scope": true,
+      "acceptance_scope": "Accepted-work fence, durable drain and explicit failure",
+      "tasks": [
+        "T33",
+        "T34",
+        "T39"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_joint_outputs.py::test_joint_owned_output_pipeline",
+        "tests/test_townlet/regressions/bac/test_recording_cleanup.py::test_runner_cleanup_persists_or_reports_failure",
+        "tests/test_townlet/regressions/bac/test_recording_drain.py::test_immediate_shutdown_drains_selected_episode",
+        "tests/test_townlet/regressions/bac/test_recording_drain.py::test_shutdown_fences_concurrent_acceptance",
+        "tests/test_townlet/regressions/bac/test_recording_drain.py::test_writer_failure_propagates"
+      ],
+      "command": [
+        {
+          "task": "T33",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_recording_drain.py -q"
+        },
+        {
+          "task": "T34",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_recording_cleanup.py -q"
+        },
+        {
+          "task": "T39",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_outputs.py -q"
+        }
+      ],
+      "expected_assertion": "Accepted-work fence, durable drain and explicit failure",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "P1",
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "D06",
+      "classification": "defect",
+      "title": "Negative network widths compile and crash construction",
+      "in_scope": true,
+      "acceptance_scope": "Located negative-geometry diagnostic; working zero preserved",
+      "tasks": [
+        "T01",
+        "T02",
+        "T03"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_effective_run.py::test_effective_cache_roundtrip",
+        "tests/test_townlet/regressions/bac/test_effective_run.py::test_five_overrides_have_one_runtime_view",
+        "tests/test_townlet/regressions/bac/test_effective_run.py::test_preset_edit_changes_authored_not_execution",
+        "tests/test_townlet/regressions/bac/test_numerics.py::test_infinite_override_refused",
+        "tests/test_townlet/regressions/bac/test_numerics.py::test_negative_width_is_located",
+        "tests/test_townlet/regressions/bac/test_numerics.py::test_nesterov_requires_positive_momentum",
+        "tests/test_townlet/regressions/bac/test_numerics.py::test_zero_gamma_and_constant_policy_work",
+        "tests/test_townlet/regressions/bac/test_options.py::test_all_modes_round_trip",
+        "tests/test_townlet/regressions/bac/test_options.py::test_old_options_remain_accepted",
+        "tests/test_townlet/regressions/bac/test_options.py::test_unqualified_options_are_retained"
+      ],
+      "command": [
+        {
+          "task": "T01",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_numerics.py -q"
+        },
+        {
+          "task": "T02",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_options.py -q"
+        },
+        {
+          "task": "T03",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_effective_run.py -q"
+        }
+      ],
+      "expected_assertion": "Located negative-geometry diagnostic; working zero preserved",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "P2",
+      "approval_reference": null,
+      "package_evidence": [
+        {
+          "task": "T01",
+          "source_commit": "bd683e4f9c14840822a0c32213df4a403e62e18c",
+          "candidate_tree": "aa24cd3fbdd49a252c8437b18cc1c0ad2402b7a6",
+          "status": "implemented; independently approved; full standing gate passed",
+          "focused_result": "104 passed",
+          "independent_result": "104 passed plus 175 typed-float refusals and 30 zero-width update controls",
+          "full_repository_result": "5599 passed, 15 skipped, 15 warnings; 1145.26s; 3 xdist workers plus concurrent independent checks",
+          "other_gates": [
+            "Ruff",
+            "Black",
+            "mypy",
+            "no-defaults ratchet614",
+            "compiler CLI fleet",
+            "expression documentation check"
+          ],
+          "reports": [
+            "package-reviews/T01-implementation.md",
+            "package-reviews/T01-independent-review.md"
+          ],
+          "final_acceptance": "owed at final candidate; dependent T02/T03/G06 runtime evidence still required"
+        }
+      ]
+    },
+    {
+      "id": "D07",
+      "classification": "defect",
+      "title": "Invalid zero-momentum Nesterov combination compiles",
+      "in_scope": true,
+      "acceptance_scope": "Located invalid Nesterov/momentum diagnostic",
+      "tasks": [
+        "T01",
+        "T02",
+        "T03"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_effective_run.py::test_effective_cache_roundtrip",
+        "tests/test_townlet/regressions/bac/test_effective_run.py::test_five_overrides_have_one_runtime_view",
+        "tests/test_townlet/regressions/bac/test_effective_run.py::test_preset_edit_changes_authored_not_execution",
+        "tests/test_townlet/regressions/bac/test_numerics.py::test_infinite_override_refused",
+        "tests/test_townlet/regressions/bac/test_numerics.py::test_negative_width_is_located",
+        "tests/test_townlet/regressions/bac/test_numerics.py::test_nesterov_requires_positive_momentum",
+        "tests/test_townlet/regressions/bac/test_numerics.py::test_zero_gamma_and_constant_policy_work",
+        "tests/test_townlet/regressions/bac/test_options.py::test_all_modes_round_trip",
+        "tests/test_townlet/regressions/bac/test_options.py::test_old_options_remain_accepted",
+        "tests/test_townlet/regressions/bac/test_options.py::test_unqualified_options_are_retained"
+      ],
+      "command": [
+        {
+          "task": "T01",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_numerics.py -q"
+        },
+        {
+          "task": "T02",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_options.py -q"
+        },
+        {
+          "task": "T03",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_effective_run.py -q"
+        }
+      ],
+      "expected_assertion": "Located invalid Nesterov/momentum diagnostic",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "P2",
+      "approval_reference": null,
+      "package_evidence": [
+        {
+          "task": "T01",
+          "source_commit": "bd683e4f9c14840822a0c32213df4a403e62e18c",
+          "candidate_tree": "aa24cd3fbdd49a252c8437b18cc1c0ad2402b7a6",
+          "status": "implemented; independently approved; full standing gate passed",
+          "focused_result": "104 passed",
+          "independent_result": "104 passed plus 175 typed-float refusals and 30 zero-width update controls",
+          "full_repository_result": "5599 passed, 15 skipped, 15 warnings; 1145.26s; 3 xdist workers plus concurrent independent checks",
+          "other_gates": [
+            "Ruff",
+            "Black",
+            "mypy",
+            "no-defaults ratchet614",
+            "compiler CLI fleet",
+            "expression documentation check"
+          ],
+          "reports": [
+            "package-reviews/T01-implementation.md",
+            "package-reviews/T01-independent-review.md"
+          ],
+          "final_acceptance": "owed at final candidate; dependent T02/T03/G06 runtime evidence still required"
+        }
+      ]
+    },
+    {
+      "id": "D08",
+      "classification": "defect",
+      "title": "Nonfinite learning rate compiles and corrupts a finite parameter",
+      "in_scope": true,
+      "acceptance_scope": "Finite authored learning rate and effective optimizer controls",
+      "tasks": [
+        "T01",
+        "T02",
+        "T03"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_effective_run.py::test_effective_cache_roundtrip",
+        "tests/test_townlet/regressions/bac/test_effective_run.py::test_five_overrides_have_one_runtime_view",
+        "tests/test_townlet/regressions/bac/test_effective_run.py::test_preset_edit_changes_authored_not_execution",
+        "tests/test_townlet/regressions/bac/test_numerics.py::test_infinite_override_refused",
+        "tests/test_townlet/regressions/bac/test_numerics.py::test_negative_width_is_located",
+        "tests/test_townlet/regressions/bac/test_numerics.py::test_nesterov_requires_positive_momentum",
+        "tests/test_townlet/regressions/bac/test_numerics.py::test_zero_gamma_and_constant_policy_work",
+        "tests/test_townlet/regressions/bac/test_options.py::test_all_modes_round_trip",
+        "tests/test_townlet/regressions/bac/test_options.py::test_old_options_remain_accepted",
+        "tests/test_townlet/regressions/bac/test_options.py::test_unqualified_options_are_retained"
+      ],
+      "command": [
+        {
+          "task": "T01",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_numerics.py -q"
+        },
+        {
+          "task": "T02",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_options.py -q"
+        },
+        {
+          "task": "T03",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_effective_run.py -q"
+        }
+      ],
+      "expected_assertion": "Finite authored learning rate and effective optimizer controls",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "P2",
+      "approval_reference": null,
+      "package_evidence": [
+        {
+          "task": "T01",
+          "source_commit": "bd683e4f9c14840822a0c32213df4a403e62e18c",
+          "candidate_tree": "aa24cd3fbdd49a252c8437b18cc1c0ad2402b7a6",
+          "status": "implemented; independently approved; full standing gate passed",
+          "focused_result": "104 passed",
+          "independent_result": "104 passed plus 175 typed-float refusals and 30 zero-width update controls",
+          "full_repository_result": "5599 passed, 15 skipped, 15 warnings; 1145.26s; 3 xdist workers plus concurrent independent checks",
+          "other_gates": [
+            "Ruff",
+            "Black",
+            "mypy",
+            "no-defaults ratchet614",
+            "compiler CLI fleet",
+            "expression documentation check"
+          ],
+          "reports": [
+            "package-reviews/T01-implementation.md",
+            "package-reviews/T01-independent-review.md"
+          ],
+          "final_acceptance": "owed at final candidate; dependent T02/T03/G06 runtime evidence still required"
+        }
+      ]
+    },
+    {
+      "id": "D09",
+      "classification": "defect",
+      "title": "Authored replay warmup is ignored",
+      "in_scope": true,
+      "acceptance_scope": "Authored retained-transition warmup plus sampleability and clocks",
+      "tasks": [
+        "T10",
+        "T11",
+        "T12",
+        "T13",
+        "T14",
+        "T15",
+        "T16",
+        "T37"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_joint_learning.py::test_joint_family_replay_matrix",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_archived_rows_cannot_drive_learning",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_authored_target_matrix_and_direction",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_ready_skip_preserves_update_clocks",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_terminal_and_truncation_controls",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_actual_sampler_ordered_law",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_full_buffer_huber_gradient_zero",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_independent_estimator_exact_expectation",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_large_finite_priorities",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_ordered_estimator_exact_expectation",
+        "tests/test_townlet/regressions/bac/test_per_history.py::test_per_mask_priority_alignment_and_restore",
+        "tests/test_townlet/regressions/bac/test_recurrent_per.py::test_recurrent_per_window_objective",
+        "tests/test_townlet/regressions/bac/test_recurrent_per.py::test_recurrent_priority_restore_and_eviction",
+        "tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_recurrent_per",
+        "tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_warmup1000",
+        "tests/test_townlet/regressions/bac/test_sequence_history.py::test_capacity15_has_viable_two_step_windows",
+        "tests/test_townlet/regressions/bac/test_sequence_history.py::test_capacity1_adaptive_retains_one_real_row",
+        "tests/test_townlet/regressions/bac/test_sequence_history.py::test_sixteen_short_episodes_do_not_crash",
+        "tests/test_townlet/regressions/bac/test_uniform_history.py::test_uniform_mask_wrap_sample_restore_atomic"
+      ],
+      "command": [
+        {
+          "task": "T10",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_uniform_history.py -q"
+        },
+        {
+          "task": "T11",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_per_history.py -q"
+        },
+        {
+          "task": "T12",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_sequence_history.py -q"
+        },
+        {
+          "task": "T13",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_per_estimator.py -q"
+        },
+        {
+          "task": "T14",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_recurrent_per.py -q"
+        },
+        {
+          "task": "T15",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_learner_legality.py -q"
+        },
+        {
+          "task": "T16",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_runner_readiness.py -q"
+        },
+        {
+          "task": "T37",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_learning.py -q"
+        }
+      ],
+      "expected_assertion": "Authored retained-transition warmup plus sampleability and clocks",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "P2",
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "D10",
+      "classification": "defect",
+      "title": "PER sampling and importance weights describe different distributions",
+      "in_scope": true,
+      "acceptance_scope": "Retained successive sampler with correct conditional estimator; independent option",
+      "tasks": [
+        "T13",
+        "T14",
+        "T15",
+        "T37"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_joint_learning.py::test_joint_family_replay_matrix",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_archived_rows_cannot_drive_learning",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_authored_target_matrix_and_direction",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_ready_skip_preserves_update_clocks",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_terminal_and_truncation_controls",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_actual_sampler_ordered_law",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_full_buffer_huber_gradient_zero",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_independent_estimator_exact_expectation",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_large_finite_priorities",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_ordered_estimator_exact_expectation",
+        "tests/test_townlet/regressions/bac/test_recurrent_per.py::test_recurrent_per_window_objective",
+        "tests/test_townlet/regressions/bac/test_recurrent_per.py::test_recurrent_priority_restore_and_eviction"
+      ],
+      "command": [
+        {
+          "task": "T13",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_per_estimator.py -q"
+        },
+        {
+          "task": "T14",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_recurrent_per.py -q"
+        },
+        {
+          "task": "T15",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_learner_legality.py -q"
+        },
+        {
+          "task": "T37",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_learning.py -q"
+        }
+      ],
+      "expected_assertion": "Retained successive sampler with correct conditional estimator; independent option",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "P2",
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "D11",
+      "classification": "defect",
+      "title": "Masked actions receive positive exploration sampling weight",
+      "in_scope": true,
+      "acceptance_scope": "Exact-zero illegal probability; no native-illegal-draw claim",
+      "tasks": [
+        "T08",
+        "T37"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_joint_learning.py::test_joint_family_replay_matrix",
+        "tests/test_townlet/regressions/bac/test_transition_contract.py::test_double_uses_online_legal_choice",
+        "tests/test_townlet/regressions/bac/test_transition_contract.py::test_nonterminal_empty_mask_refuses",
+        "tests/test_townlet/regressions/bac/test_transition_contract.py::test_terminal_empty_mask_is_finite"
+      ],
+      "command": [
+        {
+          "task": "T08",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_transition_contract.py -q"
+        },
+        {
+          "task": "T37",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_learning.py -q"
+        }
+      ],
+      "expected_assertion": "Exact-zero illegal probability; no native-illegal-draw claim",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "P2",
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "D12",
+      "classification": "defect",
+      "title": "Curriculum completion routing destroys the metrics needed for progression",
+      "in_scope": true,
+      "acceptance_scope": "Owned completed metrics and eligible-transition dwell",
+      "tasks": [
+        "T19",
+        "T20",
+        "T21",
+        "T22",
+        "T23",
+        "T35",
+        "T37"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_dwell_counts_ten_transitions",
+        "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_full_survival_survives_reset",
+        "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_rate_has_declared_effect",
+        "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_singleton_band",
+        "tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_factory_routes_curriculum_modes",
+        "tests/test_townlet/regressions/bac/test_curriculum_routing.py::test_full_population_stages1_5",
+        "tests/test_townlet/regressions/bac/test_curriculum_routing.py::test_runner_completion_advances_curriculum",
+        "tests/test_townlet/regressions/bac/test_joint_learning.py::test_joint_family_replay_matrix",
+        "tests/test_townlet/regressions/bac/test_outcome_clocks.py::test_lengths2_5_owned_events_and_clock_units",
+        "tests/test_townlet/regressions/bac/test_per_world_dynamics.py::test_vector_depletion_matches_independent_scalars",
+        "tests/test_townlet/regressions/bac/test_sink_units.py::test_owned_sink_reconciliation"
+      ],
+      "command": [
+        {
+          "task": "T19",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_outcome_clocks.py -q"
+        },
+        {
+          "task": "T20",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_curriculum_events.py -q"
+        },
+        {
+          "task": "T21",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_curriculum_factory.py -q"
+        },
+        {
+          "task": "T22",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_per_world_dynamics.py -q"
+        },
+        {
+          "task": "T23",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_curriculum_routing.py -q"
+        },
+        {
+          "task": "T35",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_sink_units.py -q"
+        },
+        {
+          "task": "T37",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_learning.py -q"
+        }
+      ],
+      "expected_assertion": "Owned completed metrics and eligible-transition dwell",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "P2",
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "D13",
+      "classification": "defect",
+      "title": "Curriculum survival telemetry uses a fixed horizon of 100",
+      "in_scope": true,
+      "acceptance_scope": "Actual planned-horizon survival fraction",
+      "tasks": [
+        "T19",
+        "T20",
+        "T21",
+        "T22",
+        "T23",
+        "T35",
+        "T37"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_dwell_counts_ten_transitions",
+        "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_full_survival_survives_reset",
+        "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_rate_has_declared_effect",
+        "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_singleton_band",
+        "tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_factory_routes_curriculum_modes",
+        "tests/test_townlet/regressions/bac/test_curriculum_routing.py::test_full_population_stages1_5",
+        "tests/test_townlet/regressions/bac/test_curriculum_routing.py::test_runner_completion_advances_curriculum",
+        "tests/test_townlet/regressions/bac/test_joint_learning.py::test_joint_family_replay_matrix",
+        "tests/test_townlet/regressions/bac/test_outcome_clocks.py::test_lengths2_5_owned_events_and_clock_units",
+        "tests/test_townlet/regressions/bac/test_per_world_dynamics.py::test_vector_depletion_matches_independent_scalars",
+        "tests/test_townlet/regressions/bac/test_sink_units.py::test_owned_sink_reconciliation"
+      ],
+      "command": [
+        {
+          "task": "T19",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_outcome_clocks.py -q"
+        },
+        {
+          "task": "T20",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_curriculum_events.py -q"
+        },
+        {
+          "task": "T21",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_curriculum_factory.py -q"
+        },
+        {
+          "task": "T22",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_per_world_dynamics.py -q"
+        },
+        {
+          "task": "T23",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_curriculum_routing.py -q"
+        },
+        {
+          "task": "T35",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_sink_units.py -q"
+        },
+        {
+          "task": "T37",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_learning.py -q"
+        }
+      ],
+      "expected_assertion": "Actual planned-horizon survival fraction",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "P2",
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "D14",
+      "classification": "defect",
+      "title": "Singleton curriculum difficulty band is violated",
+      "in_scope": true,
+      "acceptance_scope": "Singleton difficulty band remains exactly .6",
+      "tasks": [
+        "T20",
+        "T21",
+        "T22",
+        "T23",
+        "T37"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_dwell_counts_ten_transitions",
+        "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_full_survival_survives_reset",
+        "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_rate_has_declared_effect",
+        "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_singleton_band",
+        "tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_factory_routes_curriculum_modes",
+        "tests/test_townlet/regressions/bac/test_curriculum_routing.py::test_full_population_stages1_5",
+        "tests/test_townlet/regressions/bac/test_curriculum_routing.py::test_runner_completion_advances_curriculum",
+        "tests/test_townlet/regressions/bac/test_joint_learning.py::test_joint_family_replay_matrix",
+        "tests/test_townlet/regressions/bac/test_per_world_dynamics.py::test_vector_depletion_matches_independent_scalars"
+      ],
+      "command": [
+        {
+          "task": "T20",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_curriculum_events.py -q"
+        },
+        {
+          "task": "T21",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_curriculum_factory.py -q"
+        },
+        {
+          "task": "T22",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_per_world_dynamics.py -q"
+        },
+        {
+          "task": "T23",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_curriculum_routing.py -q"
+        },
+        {
+          "task": "T37",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_learning.py -q"
+        }
+      ],
+      "expected_assertion": "Singleton difficulty band remains exactly .6",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "P2",
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "D15",
+      "classification": "defect",
+      "title": "Lane-zero curriculum depletion is applied to all worlds",
+      "in_scope": true,
+      "acceptance_scope": "New actual full-population per-world proof",
+      "tasks": [
+        "T22",
+        "T23",
+        "T37"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_curriculum_routing.py::test_full_population_stages1_5",
+        "tests/test_townlet/regressions/bac/test_curriculum_routing.py::test_runner_completion_advances_curriculum",
+        "tests/test_townlet/regressions/bac/test_joint_learning.py::test_joint_family_replay_matrix",
+        "tests/test_townlet/regressions/bac/test_per_world_dynamics.py::test_vector_depletion_matches_independent_scalars"
+      ],
+      "command": [
+        {
+          "task": "T22",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_per_world_dynamics.py -q"
+        },
+        {
+          "task": "T23",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_curriculum_routing.py -q"
+        },
+        {
+          "task": "T37",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_learning.py -q"
+        }
+      ],
+      "expected_assertion": "New actual full-population per-world proof",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "P2",
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "D16",
+      "classification": "defect",
+      "title": "Compiler lowering erases authored sidecars before strict validation",
+      "in_scope": true,
+      "acceptance_scope": "Validate every sidecar placement, no erasure",
+      "tasks": [
+        "T04",
+        "T33",
+        "T38"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_joint_restart_serving.py::test_joint_restart_transfer_serving",
+        "tests/test_townlet/regressions/bac/test_recording_drain.py::test_immediate_shutdown_drains_selected_episode",
+        "tests/test_townlet/regressions/bac/test_recording_drain.py::test_shutdown_fences_concurrent_acceptance",
+        "tests/test_townlet/regressions/bac/test_recording_drain.py::test_writer_failure_propagates",
+        "tests/test_townlet/regressions/bac/test_sidecars.py::test_conflict_names_both_origins",
+        "tests/test_townlet/regressions/bac/test_sidecars.py::test_malformed_shadowed_sidecar_refuses",
+        "tests/test_townlet/regressions/bac/test_sidecars.py::test_nested_sidecars_survive"
+      ],
+      "command": [
+        {
+          "task": "T04",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_sidecars.py -q"
+        },
+        {
+          "task": "T33",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_recording_drain.py -q"
+        },
+        {
+          "task": "T38",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_restart_serving.py -q"
+        }
+      ],
+      "expected_assertion": "Validate every sidecar placement, no erasure",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "P2",
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "D17",
+      "classification": "defect",
+      "title": "Incomplete shared-type transfer is falsely reported as clean",
+      "in_scope": true,
+      "acceptance_scope": "Truthful partial report and atomic strict option",
+      "tasks": [
+        "T28",
+        "T30",
+        "T38"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_artifact_transfer.py::test_fresh_target_transfer_has_no_history",
+        "tests/test_townlet/regressions/bac/test_artifact_transfer.py::test_live_state_policy_is_explicit",
+        "tests/test_townlet/regressions/bac/test_artifact_transfer.py::test_same_shape_schema_mismatch_refuses",
+        "tests/test_townlet/regressions/bac/test_joint_restart_serving.py::test_joint_restart_transfer_serving",
+        "tests/test_townlet/regressions/bac/test_partial_transfer.py::test_missing_meter_bias_is_partial_not_clean",
+        "tests/test_townlet/regressions/bac/test_partial_transfer.py::test_strict_partial_refuses_atomically"
+      ],
+      "command": [
+        {
+          "task": "T28",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_partial_transfer.py -q"
+        },
+        {
+          "task": "T30",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_artifact_transfer.py -q"
+        },
+        {
+          "task": "T38",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_restart_serving.py -q"
+        }
+      ],
+      "expected_assertion": "Truthful partial report and atomic strict option",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "P2",
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "D18",
+      "classification": "defect",
+      "title": "Served inference leaves dropout in training mode",
+      "in_scope": true,
+      "acceptance_scope": "Explicit train/eval/MC modes with isolated serving",
+      "tasks": [
+        "T15",
+        "T27",
+        "T31",
+        "T32",
+        "T38"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_evaluation_entry.py::test_current_evaluator_all_families",
+        "tests/test_townlet/regressions/bac/test_evaluation_entry.py::test_historical_ff_evaluator_retained",
+        "tests/test_townlet/regressions/bac/test_joint_restart_serving.py::test_joint_restart_transfer_serving",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_archived_rows_cannot_drive_learning",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_authored_target_matrix_and_direction",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_ready_skip_preserves_update_clocks",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_terminal_and_truncation_controls",
+        "tests/test_townlet/regressions/bac/test_serving_isolation.py::test_training_serving_interleaving_isolated",
+        "tests/test_townlet/regressions/bac/test_serving_modes.py::test_greedy_dropout_is_deterministic",
+        "tests/test_townlet/regressions/bac/test_serving_modes.py::test_live_numeric_latest_and_single_reset",
+        "tests/test_townlet/regressions/bac/test_serving_modes.py::test_mc_dropout_is_explicit"
+      ],
+      "command": [
+        {
+          "task": "T15",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_learner_legality.py -q"
+        },
+        {
+          "task": "T27",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_serving_modes.py -q"
+        },
+        {
+          "task": "T31",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_serving_isolation.py -q"
+        },
+        {
+          "task": "T32",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_evaluation_entry.py -q"
+        },
+        {
+          "task": "T38",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_restart_serving.py -q"
+        }
+      ],
+      "expected_assertion": "Explicit train/eval/MC modes with isolated serving",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "P2",
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "D19",
+      "classification": "defect",
+      "title": "Authored periodic checkpoint interval is ignored",
+      "in_scope": true,
+      "acceptance_scope": "Authored completed-batch cadence, separate initial/final policy",
+      "tasks": [
+        "T02",
+        "T24",
+        "T25",
+        "T26",
+        "T36",
+        "T38"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_authored_interval_and_empty_run",
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_periodic_epsilon_matches_uninterrupted",
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_periodic_final_next_episode_agree",
+        "tests/test_townlet/regressions/bac/test_checkpoint_contract.py::test_mode_and_boundary_validate_before_mutation",
+        "tests/test_townlet/regressions/bac/test_checkpoint_contract.py::test_numeric_latest_within_run",
+        "tests/test_townlet/regressions/bac/test_effective_telemetry.py::test_effective_hparams_and_interventions",
+        "tests/test_townlet/regressions/bac/test_joint_restart_serving.py::test_joint_restart_transfer_serving",
+        "tests/test_townlet/regressions/bac/test_options.py::test_all_modes_round_trip",
+        "tests/test_townlet/regressions/bac/test_options.py::test_old_options_remain_accepted",
+        "tests/test_townlet/regressions/bac/test_options.py::test_unqualified_options_are_retained",
+        "tests/test_townlet/regressions/bac/test_population_restore.py::test_population_restores_tail_and_historical_masks",
+        "tests/test_townlet/regressions/bac/test_population_restore.py::test_seven_eligible_rows_once"
+      ],
+      "command": [
+        {
+          "task": "T02",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_options.py -q"
+        },
+        {
+          "task": "T24",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_checkpoint_contract.py -q"
+        },
+        {
+          "task": "T25",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_population_restore.py -q"
+        },
+        {
+          "task": "T26",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_checkpoint_boundary.py -q"
+        },
+        {
+          "task": "T36",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_effective_telemetry.py -q"
+        },
+        {
+          "task": "T38",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_restart_serving.py -q"
+        }
+      ],
+      "expected_assertion": "Authored completed-batch cadence, separate initial/final policy",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "P2",
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "D20",
+      "classification": "defect",
+      "title": "Supported declaration transport fails at CLI/runner consumers",
+      "in_scope": true,
+      "acceptance_scope": "Canonical content transport through public consumers",
+      "tasks": [
+        "T05",
+        "T06",
+        "T07",
+        "T32",
+        "T38"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_discovery.py::test_pack_level_and_multidoc_resolution",
+        "tests/test_townlet/regressions/bac/test_evaluation_entry.py::test_current_evaluator_all_families",
+        "tests/test_townlet/regressions/bac/test_evaluation_entry.py::test_historical_ff_evaluator_retained",
+        "tests/test_townlet/regressions/bac/test_joint_restart_serving.py::test_joint_restart_transfer_serving",
+        "tests/test_townlet/regressions/bac/test_launch_transport.py::test_real_cli_and_runner_accept_transport_changes",
+        "tests/test_townlet/regressions/bac/test_public_loaders.py::test_public_loaders_accept_relocation_and_period_of"
+      ],
+      "command": [
+        {
+          "task": "T05",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_discovery.py -q"
+        },
+        {
+          "task": "T06",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_launch_transport.py -q"
+        },
+        {
+          "task": "T07",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_public_loaders.py -q"
+        },
+        {
+          "task": "T32",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_evaluation_entry.py -q"
+        },
+        {
+          "task": "T38",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_restart_serving.py -q"
+        }
+      ],
+      "expected_assertion": "Canonical content transport through public consumers",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "P2",
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "D21",
+      "classification": "defect",
+      "title": "Recurrent PER compiles but ordinary runtime construction refuses it",
+      "in_scope": true,
+      "acceptance_scope": "Additive operational recurrent PER; no authoring closure",
+      "tasks": [
+        "T14",
+        "T15",
+        "T16",
+        "T37",
+        "T38"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_joint_learning.py::test_joint_family_replay_matrix",
+        "tests/test_townlet/regressions/bac/test_joint_restart_serving.py::test_joint_restart_transfer_serving",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_archived_rows_cannot_drive_learning",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_authored_target_matrix_and_direction",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_ready_skip_preserves_update_clocks",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_terminal_and_truncation_controls",
+        "tests/test_townlet/regressions/bac/test_recurrent_per.py::test_recurrent_per_window_objective",
+        "tests/test_townlet/regressions/bac/test_recurrent_per.py::test_recurrent_priority_restore_and_eviction",
+        "tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_recurrent_per",
+        "tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_warmup1000"
+      ],
+      "command": [
+        {
+          "task": "T14",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_recurrent_per.py -q"
+        },
+        {
+          "task": "T15",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_learner_legality.py -q"
+        },
+        {
+          "task": "T16",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_runner_readiness.py -q"
+        },
+        {
+          "task": "T37",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_learning.py -q"
+        },
+        {
+          "task": "T38",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_restart_serving.py -q"
+        }
+      ],
+      "expected_assertion": "Additive operational recurrent PER; no authoring closure",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "P2",
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "G01",
+      "classification": "gap",
+      "title": "Mean pooling cannot preserve descriptor/value association",
+      "in_scope": true,
+      "acceptance_scope": "Interaction mean mode/proof, existing linear/attention retained",
+      "tasks": [
+        "T02",
+        "T17",
+        "T30",
+        "T37",
+        "T40"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_artifact_transfer.py::test_fresh_target_transfer_has_no_history",
+        "tests/test_townlet/regressions/bac/test_artifact_transfer.py::test_live_state_policy_is_explicit",
+        "tests/test_townlet/regressions/bac/test_artifact_transfer.py::test_same_shape_schema_mismatch_refuses",
+        "tests/test_townlet/regressions/bac/test_joint_learning.py::test_joint_family_replay_matrix",
+        "tests/test_townlet/regressions/bac/test_learning_comparison.py",
+        "tests/test_townlet/regressions/bac/test_options.py::test_all_modes_round_trip",
+        "tests/test_townlet/regressions/bac/test_options.py::test_old_options_remain_accepted",
+        "tests/test_townlet/regressions/bac/test_options.py::test_unqualified_options_are_retained",
+        "tests/test_townlet/regressions/bac/test_token_binding.py::test_linear_mean_is_preserved",
+        "tests/test_townlet/regressions/bac/test_token_binding.py::test_mean_can_bind_descriptor_value",
+        "tests/test_townlet/regressions/bac/test_token_binding.py::test_semantic_permutation_absence_and_memory"
+      ],
+      "command": [
+        {
+          "task": "T02",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_options.py -q"
+        },
+        {
+          "task": "T17",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_token_binding.py -q"
+        },
+        {
+          "task": "T30",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_artifact_transfer.py -q"
+        },
+        {
+          "task": "T37",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_learning.py -q"
+        },
+        {
+          "task": "T40",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_learning_comparison.py -q"
+        }
+      ],
+      "expected_assertion": "Interaction mean mode/proof, existing linear/attention retained",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "P2",
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "G02",
+      "classification": "gap",
+      "title": "Accepted recurrent geometry can make learning permanently impossible",
+      "in_scope": true,
+      "acceptance_scope": "Retained-transition capacity/warmup, real prefixes, honest fixed-window impossibility",
+      "tasks": [
+        "T12",
+        "T14",
+        "T15",
+        "T16",
+        "T37"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_joint_learning.py::test_joint_family_replay_matrix",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_archived_rows_cannot_drive_learning",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_authored_target_matrix_and_direction",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_ready_skip_preserves_update_clocks",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_terminal_and_truncation_controls",
+        "tests/test_townlet/regressions/bac/test_recurrent_per.py::test_recurrent_per_window_objective",
+        "tests/test_townlet/regressions/bac/test_recurrent_per.py::test_recurrent_priority_restore_and_eviction",
+        "tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_recurrent_per",
+        "tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_warmup1000",
+        "tests/test_townlet/regressions/bac/test_sequence_history.py::test_capacity15_has_viable_two_step_windows",
+        "tests/test_townlet/regressions/bac/test_sequence_history.py::test_capacity1_adaptive_retains_one_real_row",
+        "tests/test_townlet/regressions/bac/test_sequence_history.py::test_sixteen_short_episodes_do_not_crash"
+      ],
+      "command": [
+        {
+          "task": "T12",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_sequence_history.py -q"
+        },
+        {
+          "task": "T14",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_recurrent_per.py -q"
+        },
+        {
+          "task": "T15",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_learner_legality.py -q"
+        },
+        {
+          "task": "T16",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_runner_readiness.py -q"
+        },
+        {
+          "task": "T37",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_learning.py -q"
+        }
+      ],
+      "expected_assertion": "Retained-transition capacity/warmup, real prefixes, honest fixed-window impossibility",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "P2",
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "G03",
+      "classification": "gap",
+      "title": "Predictor service accumulates complete minibatches without bound",
+      "in_scope": true,
+      "acceptance_scope": "Occupancy/paced bounded service and explicit counters",
+      "tasks": [
+        "T18",
+        "T25",
+        "T37"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_joint_learning.py::test_joint_family_replay_matrix",
+        "tests/test_townlet/regressions/bac/test_population_restore.py::test_population_restores_tail_and_historical_masks",
+        "tests/test_townlet/regressions/bac/test_population_restore.py::test_seven_eligible_rows_once",
+        "tests/test_townlet/regressions/bac/test_rnd_service.py::test_occupancy512_consumes_four_batches",
+        "tests/test_townlet/regressions/bac/test_rnd_service.py::test_paced_retention_is_bounded",
+        "tests/test_townlet/regressions/bac/test_rnd_service.py::test_two_of_three_tail_resume"
+      ],
+      "command": [
+        {
+          "task": "T18",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_rnd_service.py -q"
+        },
+        {
+          "task": "T25",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_population_restore.py -q"
+        },
+        {
+          "task": "T37",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_learning.py -q"
+        }
+      ],
+      "expected_assertion": "Occupancy/paced bounded service and explicit counters",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "P2",
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "G04",
+      "classification": "gap",
+      "title": "Fresh-episode restart omits the pending RND predictor tail",
+      "in_scope": true,
+      "acceptance_scope": "Pending predictor tail continuation and atomic restore",
+      "tasks": [
+        "T18",
+        "T25",
+        "T26",
+        "T38"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_authored_interval_and_empty_run",
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_periodic_epsilon_matches_uninterrupted",
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_periodic_final_next_episode_agree",
+        "tests/test_townlet/regressions/bac/test_joint_restart_serving.py::test_joint_restart_transfer_serving",
+        "tests/test_townlet/regressions/bac/test_population_restore.py::test_population_restores_tail_and_historical_masks",
+        "tests/test_townlet/regressions/bac/test_population_restore.py::test_seven_eligible_rows_once",
+        "tests/test_townlet/regressions/bac/test_rnd_service.py::test_occupancy512_consumes_four_batches",
+        "tests/test_townlet/regressions/bac/test_rnd_service.py::test_paced_retention_is_bounded",
+        "tests/test_townlet/regressions/bac/test_rnd_service.py::test_two_of_three_tail_resume"
+      ],
+      "command": [
+        {
+          "task": "T18",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_rnd_service.py -q"
+        },
+        {
+          "task": "T25",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_population_restore.py -q"
+        },
+        {
+          "task": "T26",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_checkpoint_boundary.py -q"
+        },
+        {
+          "task": "T38",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_restart_serving.py -q"
+        }
+      ],
+      "expected_assertion": "Pending predictor tail continuation and atomic restore",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "P2",
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "G05",
+      "classification": "gap",
+      "title": "Accepted curriculum adaptation rate has no defined operational consumer",
+      "in_scope": true,
+      "acceptance_scope": "Defined adaptation units/effect plus preserved stage-band role",
+      "tasks": [
+        "T20",
+        "T21",
+        "T22",
+        "T23",
+        "T36"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_dwell_counts_ten_transitions",
+        "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_full_survival_survives_reset",
+        "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_rate_has_declared_effect",
+        "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_singleton_band",
+        "tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_factory_routes_curriculum_modes",
+        "tests/test_townlet/regressions/bac/test_curriculum_routing.py::test_full_population_stages1_5",
+        "tests/test_townlet/regressions/bac/test_curriculum_routing.py::test_runner_completion_advances_curriculum",
+        "tests/test_townlet/regressions/bac/test_effective_telemetry.py::test_effective_hparams_and_interventions",
+        "tests/test_townlet/regressions/bac/test_per_world_dynamics.py::test_vector_depletion_matches_independent_scalars"
+      ],
+      "command": [
+        {
+          "task": "T20",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_curriculum_events.py -q"
+        },
+        {
+          "task": "T21",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_curriculum_factory.py -q"
+        },
+        {
+          "task": "T22",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_per_world_dynamics.py -q"
+        },
+        {
+          "task": "T23",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_curriculum_routing.py -q"
+        },
+        {
+          "task": "T36",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_effective_telemetry.py -q"
+        }
+      ],
+      "expected_assertion": "Defined adaptation units/effect plus preserved stage-band role",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "P2",
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "G06",
+      "classification": "gap",
+      "title": "Gamma-zero support differs between brain and training declarations",
+      "in_scope": true,
+      "acceptance_scope": "Gamma0 adopted consistently",
+      "tasks": [
+        "T01",
+        "T02",
+        "T03",
+        "T16",
+        "T37"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_effective_run.py::test_effective_cache_roundtrip",
+        "tests/test_townlet/regressions/bac/test_effective_run.py::test_five_overrides_have_one_runtime_view",
+        "tests/test_townlet/regressions/bac/test_effective_run.py::test_preset_edit_changes_authored_not_execution",
+        "tests/test_townlet/regressions/bac/test_joint_learning.py::test_joint_family_replay_matrix",
+        "tests/test_townlet/regressions/bac/test_numerics.py::test_infinite_override_refused",
+        "tests/test_townlet/regressions/bac/test_numerics.py::test_negative_width_is_located",
+        "tests/test_townlet/regressions/bac/test_numerics.py::test_nesterov_requires_positive_momentum",
+        "tests/test_townlet/regressions/bac/test_numerics.py::test_zero_gamma_and_constant_policy_work",
+        "tests/test_townlet/regressions/bac/test_options.py::test_all_modes_round_trip",
+        "tests/test_townlet/regressions/bac/test_options.py::test_old_options_remain_accepted",
+        "tests/test_townlet/regressions/bac/test_options.py::test_unqualified_options_are_retained",
+        "tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_recurrent_per",
+        "tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_warmup1000"
+      ],
+      "command": [
+        {
+          "task": "T01",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_numerics.py -q"
+        },
+        {
+          "task": "T02",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_options.py -q"
+        },
+        {
+          "task": "T03",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_effective_run.py -q"
+        },
+        {
+          "task": "T16",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_runner_readiness.py -q"
+        },
+        {
+          "task": "T37",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_learning.py -q"
+        }
+      ],
+      "expected_assertion": "Gamma0 adopted consistently",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "P2",
+      "approval_reference": null,
+      "package_evidence": [
+        {
+          "task": "T01",
+          "source_commit": "bd683e4f9c14840822a0c32213df4a403e62e18c",
+          "candidate_tree": "aa24cd3fbdd49a252c8437b18cc1c0ad2402b7a6",
+          "status": "implemented; independently approved; full standing gate passed",
+          "focused_result": "104 passed",
+          "independent_result": "104 passed plus 175 typed-float refusals and 30 zero-width update controls",
+          "full_repository_result": "5599 passed, 15 skipped, 15 warnings; 1145.26s; 3 xdist workers plus concurrent independent checks",
+          "other_gates": [
+            "Ruff",
+            "Black",
+            "mypy",
+            "no-defaults ratchet614",
+            "compiler CLI fleet",
+            "expression documentation check"
+          ],
+          "reports": [
+            "package-reviews/T01-implementation.md",
+            "package-reviews/T01-independent-review.md"
+          ],
+          "final_acceptance": "owed at final candidate; dependent T02/T03/G06 runtime evidence still required"
+        }
+      ]
+    },
+    {
+      "id": "G07",
+      "classification": "gap",
+      "title": "Viewer reset and evaluation configuration do not yet meet a declared run view",
+      "in_scope": true,
+      "acceptance_scope": "Declared run view, one reset, interleaving qualification",
+      "tasks": [
+        "T27",
+        "T31",
+        "T32",
+        "T38"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_evaluation_entry.py::test_current_evaluator_all_families",
+        "tests/test_townlet/regressions/bac/test_evaluation_entry.py::test_historical_ff_evaluator_retained",
+        "tests/test_townlet/regressions/bac/test_joint_restart_serving.py::test_joint_restart_transfer_serving",
+        "tests/test_townlet/regressions/bac/test_serving_isolation.py::test_training_serving_interleaving_isolated",
+        "tests/test_townlet/regressions/bac/test_serving_modes.py::test_greedy_dropout_is_deterministic",
+        "tests/test_townlet/regressions/bac/test_serving_modes.py::test_live_numeric_latest_and_single_reset",
+        "tests/test_townlet/regressions/bac/test_serving_modes.py::test_mc_dropout_is_explicit"
+      ],
+      "command": [
+        {
+          "task": "T27",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_serving_modes.py -q"
+        },
+        {
+          "task": "T31",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_serving_isolation.py -q"
+        },
+        {
+          "task": "T32",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_evaluation_entry.py -q"
+        },
+        {
+          "task": "T38",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_restart_serving.py -q"
+        }
+      ],
+      "expected_assertion": "Declared run view, one reset, interleaving qualification",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "P2",
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "G08",
+      "classification": "gap",
+      "title": "Inactive/preset options and effective identity require explicit semantics",
+      "in_scope": true,
+      "acceptance_scope": "Preset retention, authored/effective identity and roles",
+      "tasks": [
+        "T02",
+        "T03",
+        "T29",
+        "T36"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_artifact_coherence.py::test_legitimate_preset_identity_roundtrip",
+        "tests/test_townlet/regressions/bac/test_artifact_coherence.py::test_modified_payload_identity_is_diagnosed",
+        "tests/test_townlet/regressions/bac/test_effective_run.py::test_effective_cache_roundtrip",
+        "tests/test_townlet/regressions/bac/test_effective_run.py::test_five_overrides_have_one_runtime_view",
+        "tests/test_townlet/regressions/bac/test_effective_run.py::test_preset_edit_changes_authored_not_execution",
+        "tests/test_townlet/regressions/bac/test_effective_telemetry.py::test_effective_hparams_and_interventions",
+        "tests/test_townlet/regressions/bac/test_options.py::test_all_modes_round_trip",
+        "tests/test_townlet/regressions/bac/test_options.py::test_old_options_remain_accepted",
+        "tests/test_townlet/regressions/bac/test_options.py::test_unqualified_options_are_retained"
+      ],
+      "command": [
+        {
+          "task": "T02",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_options.py -q"
+        },
+        {
+          "task": "T03",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_effective_run.py -q"
+        },
+        {
+          "task": "T29",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_artifact_coherence.py -q"
+        },
+        {
+          "task": "T36",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_effective_telemetry.py -q"
+        }
+      ],
+      "expected_assertion": "Preset retention, authored/effective identity and roles",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "P2",
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "G09",
+      "classification": "gap",
+      "title": "Higher-level token transfer preconditions are not fully qualified",
+      "in_scope": true,
+      "acceptance_scope": "Schema-aware artifact coherence/transfer/state policy qualification",
+      "tasks": [
+        "T24",
+        "T28",
+        "T29",
+        "T30",
+        "T38"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_artifact_coherence.py::test_legitimate_preset_identity_roundtrip",
+        "tests/test_townlet/regressions/bac/test_artifact_coherence.py::test_modified_payload_identity_is_diagnosed",
+        "tests/test_townlet/regressions/bac/test_artifact_transfer.py::test_fresh_target_transfer_has_no_history",
+        "tests/test_townlet/regressions/bac/test_artifact_transfer.py::test_live_state_policy_is_explicit",
+        "tests/test_townlet/regressions/bac/test_artifact_transfer.py::test_same_shape_schema_mismatch_refuses",
+        "tests/test_townlet/regressions/bac/test_checkpoint_contract.py::test_mode_and_boundary_validate_before_mutation",
+        "tests/test_townlet/regressions/bac/test_checkpoint_contract.py::test_numeric_latest_within_run",
+        "tests/test_townlet/regressions/bac/test_joint_restart_serving.py::test_joint_restart_transfer_serving",
+        "tests/test_townlet/regressions/bac/test_partial_transfer.py::test_missing_meter_bias_is_partial_not_clean",
+        "tests/test_townlet/regressions/bac/test_partial_transfer.py::test_strict_partial_refuses_atomically"
+      ],
+      "command": [
+        {
+          "task": "T24",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_checkpoint_contract.py -q"
+        },
+        {
+          "task": "T28",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_partial_transfer.py -q"
+        },
+        {
+          "task": "T29",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_artifact_coherence.py -q"
+        },
+        {
+          "task": "T30",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_artifact_transfer.py -q"
+        },
+        {
+          "task": "T38",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_restart_serving.py -q"
+        }
+      ],
+      "expected_assertion": "Schema-aware artifact coherence/transfer/state policy qualification",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "P2",
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "X01",
+      "classification": "new material C08 defect",
+      "title": "Authored intrinsic selector and runtime scale do not control canonical reward",
+      "in_scope": true,
+      "acceptance_scope": "Actual none/zero reward becomes0; all five current providers/scales repaired; approved archived old rewards remain unchanged evidence and are never reinterpreted or sampled",
+      "tasks": [
+        "T18a",
+        "T18b",
+        "T18c",
+        "T18d",
+        "T18e",
+        "T18f",
+        "T25",
+        "T37",
+        "T38"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_count_provider.py::test_count_capacity_and_restore",
+        "tests/test_townlet/regressions/bac/test_count_provider.py::test_count_novelty_and_no_stat_query",
+        "tests/test_townlet/regressions/bac/test_exploration_factory.py::test_factory_constructs_selected_provider",
+        "tests/test_townlet/regressions/bac/test_exploration_factory.py::test_provider_state_kind_and_scale",
+        "tests/test_townlet/regressions/bac/test_exploration_policy.py::test_drive_selects_five_strategies",
+        "tests/test_townlet/regressions/bac/test_exploration_policy.py::test_training_drive_override_roles",
+        "tests/test_townlet/regressions/bac/test_exploration_routing.py::test_authored_runner_strategy_reward_contrasts",
+        "tests/test_townlet/regressions/bac/test_exploration_routing.py::test_epsilon_and_adaptive_completion_once",
+        "tests/test_townlet/regressions/bac/test_icm_provider.py::test_icm_objective_gradients_and_tail",
+        "tests/test_townlet/regressions/bac/test_icm_provider.py::test_icm_uses_action_and_successor",
+        "tests/test_townlet/regressions/bac/test_intrinsic_composition.py::test_provider_phase_and_transition_identity",
+        "tests/test_townlet/regressions/bac/test_intrinsic_composition.py::test_real_composer_applies_runtime_scale_once",
+        "tests/test_townlet/regressions/bac/test_joint_learning.py::test_joint_family_replay_matrix",
+        "tests/test_townlet/regressions/bac/test_joint_restart_serving.py::test_joint_restart_transfer_serving",
+        "tests/test_townlet/regressions/bac/test_population_restore.py::test_population_restores_tail_and_historical_masks",
+        "tests/test_townlet/regressions/bac/test_population_restore.py::test_seven_eligible_rows_once"
+      ],
+      "command": [
+        {
+          "task": "T18a",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_exploration_policy.py -q"
+        },
+        {
+          "task": "T18b",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_count_provider.py -q"
+        },
+        {
+          "task": "T18c",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_icm_provider.py -q"
+        },
+        {
+          "task": "T18d",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_exploration_factory.py -q"
+        },
+        {
+          "task": "T18e",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_intrinsic_composition.py -q"
+        },
+        {
+          "task": "T18f",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_exploration_routing.py -q"
+        },
+        {
+          "task": "T25",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_population_restore.py -q"
+        },
+        {
+          "task": "T37",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_learning.py -q"
+        },
+        {
+          "task": "T38",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_restart_serving.py -q"
+        }
+      ],
+      "expected_assertion": "Actual none/zero reward becomes0; all five current providers/scales repaired; approved archived old rewards remain unchanged evidence and are never reinterpreted or sampled",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "P2",
+      "approval_reference": "BAC-HISTORY-A-2026-11-01",
+      "package_evidence": []
+    },
+    {
+      "id": "BAC-C01",
+      "classification": "adopted design contract",
+      "title": "BAC-C01",
+      "in_scope": true,
+      "acceptance_scope": "Full adopted contract and joint interfaces; package tests alone do not establish closure",
+      "tasks": [
+        "T01",
+        "T02",
+        "T03",
+        "T14",
+        "T15",
+        "T16",
+        "T17",
+        "T27",
+        "T28",
+        "T29",
+        "T30",
+        "T31",
+        "T32",
+        "T37",
+        "T38",
+        "T39",
+        "T40"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_artifact_coherence.py::test_legitimate_preset_identity_roundtrip",
+        "tests/test_townlet/regressions/bac/test_artifact_coherence.py::test_modified_payload_identity_is_diagnosed",
+        "tests/test_townlet/regressions/bac/test_artifact_transfer.py::test_fresh_target_transfer_has_no_history",
+        "tests/test_townlet/regressions/bac/test_artifact_transfer.py::test_live_state_policy_is_explicit",
+        "tests/test_townlet/regressions/bac/test_artifact_transfer.py::test_same_shape_schema_mismatch_refuses",
+        "tests/test_townlet/regressions/bac/test_effective_run.py::test_effective_cache_roundtrip",
+        "tests/test_townlet/regressions/bac/test_effective_run.py::test_five_overrides_have_one_runtime_view",
+        "tests/test_townlet/regressions/bac/test_effective_run.py::test_preset_edit_changes_authored_not_execution",
+        "tests/test_townlet/regressions/bac/test_evaluation_entry.py::test_current_evaluator_all_families",
+        "tests/test_townlet/regressions/bac/test_evaluation_entry.py::test_historical_ff_evaluator_retained",
+        "tests/test_townlet/regressions/bac/test_joint_learning.py::test_joint_family_replay_matrix",
+        "tests/test_townlet/regressions/bac/test_joint_outputs.py::test_joint_owned_output_pipeline",
+        "tests/test_townlet/regressions/bac/test_joint_restart_serving.py::test_joint_restart_transfer_serving",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_archived_rows_cannot_drive_learning",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_authored_target_matrix_and_direction",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_ready_skip_preserves_update_clocks",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_terminal_and_truncation_controls",
+        "tests/test_townlet/regressions/bac/test_learning_comparison.py",
+        "tests/test_townlet/regressions/bac/test_numerics.py::test_infinite_override_refused",
+        "tests/test_townlet/regressions/bac/test_numerics.py::test_negative_width_is_located",
+        "tests/test_townlet/regressions/bac/test_numerics.py::test_nesterov_requires_positive_momentum",
+        "tests/test_townlet/regressions/bac/test_numerics.py::test_zero_gamma_and_constant_policy_work",
+        "tests/test_townlet/regressions/bac/test_options.py::test_all_modes_round_trip",
+        "tests/test_townlet/regressions/bac/test_options.py::test_old_options_remain_accepted",
+        "tests/test_townlet/regressions/bac/test_options.py::test_unqualified_options_are_retained",
+        "tests/test_townlet/regressions/bac/test_partial_transfer.py::test_missing_meter_bias_is_partial_not_clean",
+        "tests/test_townlet/regressions/bac/test_partial_transfer.py::test_strict_partial_refuses_atomically",
+        "tests/test_townlet/regressions/bac/test_recurrent_per.py::test_recurrent_per_window_objective",
+        "tests/test_townlet/regressions/bac/test_recurrent_per.py::test_recurrent_priority_restore_and_eviction",
+        "tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_recurrent_per",
+        "tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_warmup1000",
+        "tests/test_townlet/regressions/bac/test_serving_isolation.py::test_training_serving_interleaving_isolated",
+        "tests/test_townlet/regressions/bac/test_serving_modes.py::test_greedy_dropout_is_deterministic",
+        "tests/test_townlet/regressions/bac/test_serving_modes.py::test_live_numeric_latest_and_single_reset",
+        "tests/test_townlet/regressions/bac/test_serving_modes.py::test_mc_dropout_is_explicit",
+        "tests/test_townlet/regressions/bac/test_token_binding.py::test_linear_mean_is_preserved",
+        "tests/test_townlet/regressions/bac/test_token_binding.py::test_mean_can_bind_descriptor_value",
+        "tests/test_townlet/regressions/bac/test_token_binding.py::test_semantic_permutation_absence_and_memory"
+      ],
+      "command": [
+        {
+          "task": "T01",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_numerics.py -q"
+        },
+        {
+          "task": "T02",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_options.py -q"
+        },
+        {
+          "task": "T03",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_effective_run.py -q"
+        },
+        {
+          "task": "T14",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_recurrent_per.py -q"
+        },
+        {
+          "task": "T15",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_learner_legality.py -q"
+        },
+        {
+          "task": "T16",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_runner_readiness.py -q"
+        },
+        {
+          "task": "T17",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_token_binding.py -q"
+        },
+        {
+          "task": "T27",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_serving_modes.py -q"
+        },
+        {
+          "task": "T28",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_partial_transfer.py -q"
+        },
+        {
+          "task": "T29",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_artifact_coherence.py -q"
+        },
+        {
+          "task": "T30",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_artifact_transfer.py -q"
+        },
+        {
+          "task": "T31",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_serving_isolation.py -q"
+        },
+        {
+          "task": "T32",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_evaluation_entry.py -q"
+        },
+        {
+          "task": "T37",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_learning.py -q"
+        },
+        {
+          "task": "T38",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_restart_serving.py -q"
+        },
+        {
+          "task": "T39",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_outputs.py -q"
+        },
+        {
+          "task": "T40",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_learning_comparison.py -q"
+        }
+      ],
+      "expected_assertion": "Full adopted contract and joint interfaces; package tests alone do not establish closure",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "acceptance owed",
+      "approval_reference": null,
+      "package_evidence": [
+        {
+          "task": "T01",
+          "source_commit": "bd683e4f9c14840822a0c32213df4a403e62e18c",
+          "candidate_tree": "aa24cd3fbdd49a252c8437b18cc1c0ad2402b7a6",
+          "status": "implemented; independently approved; full standing gate passed",
+          "focused_result": "104 passed",
+          "independent_result": "104 passed plus 175 typed-float refusals and 30 zero-width update controls",
+          "full_repository_result": "5599 passed, 15 skipped, 15 warnings; 1145.26s; 3 xdist workers plus concurrent independent checks",
+          "other_gates": [
+            "Ruff",
+            "Black",
+            "mypy",
+            "no-defaults ratchet614",
+            "compiler CLI fleet",
+            "expression documentation check"
+          ],
+          "reports": [
+            "package-reviews/T01-implementation.md",
+            "package-reviews/T01-independent-review.md"
+          ],
+          "final_acceptance": "owed at final candidate; dependent T02/T03/G06 runtime evidence still required"
+        }
+      ]
+    },
+    {
+      "id": "BAC-C02",
+      "classification": "adopted design contract",
+      "title": "BAC-C02",
+      "in_scope": true,
+      "acceptance_scope": "Full adopted contract and joint interfaces; package tests alone do not establish closure",
+      "tasks": [
+        "T01",
+        "T02",
+        "T03",
+        "T04",
+        "T05",
+        "T06",
+        "T07",
+        "T10",
+        "T11",
+        "T12",
+        "T13",
+        "T14",
+        "T15",
+        "T16",
+        "T17",
+        "T18",
+        "T18a",
+        "T18b",
+        "T18c",
+        "T18d",
+        "T18e",
+        "T18f",
+        "T20",
+        "T21",
+        "T22",
+        "T23",
+        "T24",
+        "T25",
+        "T26",
+        "T28",
+        "T29",
+        "T30",
+        "T33",
+        "T36",
+        "T37",
+        "T38"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_artifact_coherence.py::test_legitimate_preset_identity_roundtrip",
+        "tests/test_townlet/regressions/bac/test_artifact_coherence.py::test_modified_payload_identity_is_diagnosed",
+        "tests/test_townlet/regressions/bac/test_artifact_transfer.py::test_fresh_target_transfer_has_no_history",
+        "tests/test_townlet/regressions/bac/test_artifact_transfer.py::test_live_state_policy_is_explicit",
+        "tests/test_townlet/regressions/bac/test_artifact_transfer.py::test_same_shape_schema_mismatch_refuses",
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_authored_interval_and_empty_run",
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_periodic_epsilon_matches_uninterrupted",
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_periodic_final_next_episode_agree",
+        "tests/test_townlet/regressions/bac/test_checkpoint_contract.py::test_mode_and_boundary_validate_before_mutation",
+        "tests/test_townlet/regressions/bac/test_checkpoint_contract.py::test_numeric_latest_within_run",
+        "tests/test_townlet/regressions/bac/test_count_provider.py::test_count_capacity_and_restore",
+        "tests/test_townlet/regressions/bac/test_count_provider.py::test_count_novelty_and_no_stat_query",
+        "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_dwell_counts_ten_transitions",
+        "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_full_survival_survives_reset",
+        "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_rate_has_declared_effect",
+        "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_singleton_band",
+        "tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_factory_routes_curriculum_modes",
+        "tests/test_townlet/regressions/bac/test_curriculum_routing.py::test_full_population_stages1_5",
+        "tests/test_townlet/regressions/bac/test_curriculum_routing.py::test_runner_completion_advances_curriculum",
+        "tests/test_townlet/regressions/bac/test_discovery.py::test_pack_level_and_multidoc_resolution",
+        "tests/test_townlet/regressions/bac/test_effective_run.py::test_effective_cache_roundtrip",
+        "tests/test_townlet/regressions/bac/test_effective_run.py::test_five_overrides_have_one_runtime_view",
+        "tests/test_townlet/regressions/bac/test_effective_run.py::test_preset_edit_changes_authored_not_execution",
+        "tests/test_townlet/regressions/bac/test_effective_telemetry.py::test_effective_hparams_and_interventions",
+        "tests/test_townlet/regressions/bac/test_exploration_factory.py::test_factory_constructs_selected_provider",
+        "tests/test_townlet/regressions/bac/test_exploration_factory.py::test_provider_state_kind_and_scale",
+        "tests/test_townlet/regressions/bac/test_exploration_policy.py::test_drive_selects_five_strategies",
+        "tests/test_townlet/regressions/bac/test_exploration_policy.py::test_training_drive_override_roles",
+        "tests/test_townlet/regressions/bac/test_exploration_routing.py::test_authored_runner_strategy_reward_contrasts",
+        "tests/test_townlet/regressions/bac/test_exploration_routing.py::test_epsilon_and_adaptive_completion_once",
+        "tests/test_townlet/regressions/bac/test_icm_provider.py::test_icm_objective_gradients_and_tail",
+        "tests/test_townlet/regressions/bac/test_icm_provider.py::test_icm_uses_action_and_successor",
+        "tests/test_townlet/regressions/bac/test_intrinsic_composition.py::test_provider_phase_and_transition_identity",
+        "tests/test_townlet/regressions/bac/test_intrinsic_composition.py::test_real_composer_applies_runtime_scale_once",
+        "tests/test_townlet/regressions/bac/test_joint_learning.py::test_joint_family_replay_matrix",
+        "tests/test_townlet/regressions/bac/test_joint_restart_serving.py::test_joint_restart_transfer_serving",
+        "tests/test_townlet/regressions/bac/test_launch_transport.py::test_real_cli_and_runner_accept_transport_changes",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_archived_rows_cannot_drive_learning",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_authored_target_matrix_and_direction",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_ready_skip_preserves_update_clocks",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_terminal_and_truncation_controls",
+        "tests/test_townlet/regressions/bac/test_numerics.py::test_infinite_override_refused",
+        "tests/test_townlet/regressions/bac/test_numerics.py::test_negative_width_is_located",
+        "tests/test_townlet/regressions/bac/test_numerics.py::test_nesterov_requires_positive_momentum",
+        "tests/test_townlet/regressions/bac/test_numerics.py::test_zero_gamma_and_constant_policy_work",
+        "tests/test_townlet/regressions/bac/test_options.py::test_all_modes_round_trip",
+        "tests/test_townlet/regressions/bac/test_options.py::test_old_options_remain_accepted",
+        "tests/test_townlet/regressions/bac/test_options.py::test_unqualified_options_are_retained",
+        "tests/test_townlet/regressions/bac/test_partial_transfer.py::test_missing_meter_bias_is_partial_not_clean",
+        "tests/test_townlet/regressions/bac/test_partial_transfer.py::test_strict_partial_refuses_atomically",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_actual_sampler_ordered_law",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_full_buffer_huber_gradient_zero",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_independent_estimator_exact_expectation",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_large_finite_priorities",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_ordered_estimator_exact_expectation",
+        "tests/test_townlet/regressions/bac/test_per_history.py::test_per_mask_priority_alignment_and_restore",
+        "tests/test_townlet/regressions/bac/test_per_world_dynamics.py::test_vector_depletion_matches_independent_scalars",
+        "tests/test_townlet/regressions/bac/test_population_restore.py::test_population_restores_tail_and_historical_masks",
+        "tests/test_townlet/regressions/bac/test_population_restore.py::test_seven_eligible_rows_once",
+        "tests/test_townlet/regressions/bac/test_public_loaders.py::test_public_loaders_accept_relocation_and_period_of",
+        "tests/test_townlet/regressions/bac/test_recording_drain.py::test_immediate_shutdown_drains_selected_episode",
+        "tests/test_townlet/regressions/bac/test_recording_drain.py::test_shutdown_fences_concurrent_acceptance",
+        "tests/test_townlet/regressions/bac/test_recording_drain.py::test_writer_failure_propagates",
+        "tests/test_townlet/regressions/bac/test_recurrent_per.py::test_recurrent_per_window_objective",
+        "tests/test_townlet/regressions/bac/test_recurrent_per.py::test_recurrent_priority_restore_and_eviction",
+        "tests/test_townlet/regressions/bac/test_rnd_service.py::test_occupancy512_consumes_four_batches",
+        "tests/test_townlet/regressions/bac/test_rnd_service.py::test_paced_retention_is_bounded",
+        "tests/test_townlet/regressions/bac/test_rnd_service.py::test_two_of_three_tail_resume",
+        "tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_recurrent_per",
+        "tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_warmup1000",
+        "tests/test_townlet/regressions/bac/test_sequence_history.py::test_capacity15_has_viable_two_step_windows",
+        "tests/test_townlet/regressions/bac/test_sequence_history.py::test_capacity1_adaptive_retains_one_real_row",
+        "tests/test_townlet/regressions/bac/test_sequence_history.py::test_sixteen_short_episodes_do_not_crash",
+        "tests/test_townlet/regressions/bac/test_sidecars.py::test_conflict_names_both_origins",
+        "tests/test_townlet/regressions/bac/test_sidecars.py::test_malformed_shadowed_sidecar_refuses",
+        "tests/test_townlet/regressions/bac/test_sidecars.py::test_nested_sidecars_survive",
+        "tests/test_townlet/regressions/bac/test_token_binding.py::test_linear_mean_is_preserved",
+        "tests/test_townlet/regressions/bac/test_token_binding.py::test_mean_can_bind_descriptor_value",
+        "tests/test_townlet/regressions/bac/test_token_binding.py::test_semantic_permutation_absence_and_memory",
+        "tests/test_townlet/regressions/bac/test_uniform_history.py::test_uniform_mask_wrap_sample_restore_atomic"
+      ],
+      "command": [
+        {
+          "task": "T01",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_numerics.py -q"
+        },
+        {
+          "task": "T02",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_options.py -q"
+        },
+        {
+          "task": "T03",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_effective_run.py -q"
+        },
+        {
+          "task": "T04",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_sidecars.py -q"
+        },
+        {
+          "task": "T05",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_discovery.py -q"
+        },
+        {
+          "task": "T06",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_launch_transport.py -q"
+        },
+        {
+          "task": "T07",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_public_loaders.py -q"
+        },
+        {
+          "task": "T10",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_uniform_history.py -q"
+        },
+        {
+          "task": "T11",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_per_history.py -q"
+        },
+        {
+          "task": "T12",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_sequence_history.py -q"
+        },
+        {
+          "task": "T13",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_per_estimator.py -q"
+        },
+        {
+          "task": "T14",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_recurrent_per.py -q"
+        },
+        {
+          "task": "T15",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_learner_legality.py -q"
+        },
+        {
+          "task": "T16",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_runner_readiness.py -q"
+        },
+        {
+          "task": "T17",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_token_binding.py -q"
+        },
+        {
+          "task": "T18",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_rnd_service.py -q"
+        },
+        {
+          "task": "T18a",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_exploration_policy.py -q"
+        },
+        {
+          "task": "T18b",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_count_provider.py -q"
+        },
+        {
+          "task": "T18c",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_icm_provider.py -q"
+        },
+        {
+          "task": "T18d",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_exploration_factory.py -q"
+        },
+        {
+          "task": "T18e",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_intrinsic_composition.py -q"
+        },
+        {
+          "task": "T18f",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_exploration_routing.py -q"
+        },
+        {
+          "task": "T20",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_curriculum_events.py -q"
+        },
+        {
+          "task": "T21",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_curriculum_factory.py -q"
+        },
+        {
+          "task": "T22",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_per_world_dynamics.py -q"
+        },
+        {
+          "task": "T23",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_curriculum_routing.py -q"
+        },
+        {
+          "task": "T24",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_checkpoint_contract.py -q"
+        },
+        {
+          "task": "T25",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_population_restore.py -q"
+        },
+        {
+          "task": "T26",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_checkpoint_boundary.py -q"
+        },
+        {
+          "task": "T28",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_partial_transfer.py -q"
+        },
+        {
+          "task": "T29",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_artifact_coherence.py -q"
+        },
+        {
+          "task": "T30",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_artifact_transfer.py -q"
+        },
+        {
+          "task": "T33",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_recording_drain.py -q"
+        },
+        {
+          "task": "T36",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_effective_telemetry.py -q"
+        },
+        {
+          "task": "T37",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_learning.py -q"
+        },
+        {
+          "task": "T38",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_restart_serving.py -q"
+        }
+      ],
+      "expected_assertion": "Full adopted contract and joint interfaces; package tests alone do not establish closure",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "acceptance owed",
+      "approval_reference": null,
+      "package_evidence": [
+        {
+          "task": "T01",
+          "source_commit": "bd683e4f9c14840822a0c32213df4a403e62e18c",
+          "candidate_tree": "aa24cd3fbdd49a252c8437b18cc1c0ad2402b7a6",
+          "status": "implemented; independently approved; full standing gate passed",
+          "focused_result": "104 passed",
+          "independent_result": "104 passed plus 175 typed-float refusals and 30 zero-width update controls",
+          "full_repository_result": "5599 passed, 15 skipped, 15 warnings; 1145.26s; 3 xdist workers plus concurrent independent checks",
+          "other_gates": [
+            "Ruff",
+            "Black",
+            "mypy",
+            "no-defaults ratchet614",
+            "compiler CLI fleet",
+            "expression documentation check"
+          ],
+          "reports": [
+            "package-reviews/T01-implementation.md",
+            "package-reviews/T01-independent-review.md"
+          ],
+          "final_acceptance": "owed at final candidate; dependent T02/T03/G06 runtime evidence still required"
+        }
+      ]
+    },
+    {
+      "id": "BAC-C03",
+      "classification": "adopted design contract",
+      "title": "BAC-C03",
+      "in_scope": true,
+      "acceptance_scope": "Full adopted contract and joint interfaces; package tests alone do not establish closure",
+      "tasks": [
+        "T04",
+        "T05",
+        "T06",
+        "T07",
+        "T27",
+        "T32",
+        "T33",
+        "T38"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_discovery.py::test_pack_level_and_multidoc_resolution",
+        "tests/test_townlet/regressions/bac/test_evaluation_entry.py::test_current_evaluator_all_families",
+        "tests/test_townlet/regressions/bac/test_evaluation_entry.py::test_historical_ff_evaluator_retained",
+        "tests/test_townlet/regressions/bac/test_joint_restart_serving.py::test_joint_restart_transfer_serving",
+        "tests/test_townlet/regressions/bac/test_launch_transport.py::test_real_cli_and_runner_accept_transport_changes",
+        "tests/test_townlet/regressions/bac/test_public_loaders.py::test_public_loaders_accept_relocation_and_period_of",
+        "tests/test_townlet/regressions/bac/test_recording_drain.py::test_immediate_shutdown_drains_selected_episode",
+        "tests/test_townlet/regressions/bac/test_recording_drain.py::test_shutdown_fences_concurrent_acceptance",
+        "tests/test_townlet/regressions/bac/test_recording_drain.py::test_writer_failure_propagates",
+        "tests/test_townlet/regressions/bac/test_serving_modes.py::test_greedy_dropout_is_deterministic",
+        "tests/test_townlet/regressions/bac/test_serving_modes.py::test_live_numeric_latest_and_single_reset",
+        "tests/test_townlet/regressions/bac/test_serving_modes.py::test_mc_dropout_is_explicit",
+        "tests/test_townlet/regressions/bac/test_sidecars.py::test_conflict_names_both_origins",
+        "tests/test_townlet/regressions/bac/test_sidecars.py::test_malformed_shadowed_sidecar_refuses",
+        "tests/test_townlet/regressions/bac/test_sidecars.py::test_nested_sidecars_survive"
+      ],
+      "command": [
+        {
+          "task": "T04",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_sidecars.py -q"
+        },
+        {
+          "task": "T05",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_discovery.py -q"
+        },
+        {
+          "task": "T06",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_launch_transport.py -q"
+        },
+        {
+          "task": "T07",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_public_loaders.py -q"
+        },
+        {
+          "task": "T27",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_serving_modes.py -q"
+        },
+        {
+          "task": "T32",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_evaluation_entry.py -q"
+        },
+        {
+          "task": "T33",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_recording_drain.py -q"
+        },
+        {
+          "task": "T38",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_restart_serving.py -q"
+        }
+      ],
+      "expected_assertion": "Full adopted contract and joint interfaces; package tests alone do not establish closure",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "acceptance owed",
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "BAC-C04",
+      "classification": "adopted design contract",
+      "title": "BAC-C04",
+      "in_scope": true,
+      "acceptance_scope": "Full adopted contract and joint interfaces; package tests alone do not establish closure",
+      "tasks": [
+        "T02",
+        "T17",
+        "T28",
+        "T29",
+        "T30",
+        "T37",
+        "T40"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_artifact_coherence.py::test_legitimate_preset_identity_roundtrip",
+        "tests/test_townlet/regressions/bac/test_artifact_coherence.py::test_modified_payload_identity_is_diagnosed",
+        "tests/test_townlet/regressions/bac/test_artifact_transfer.py::test_fresh_target_transfer_has_no_history",
+        "tests/test_townlet/regressions/bac/test_artifact_transfer.py::test_live_state_policy_is_explicit",
+        "tests/test_townlet/regressions/bac/test_artifact_transfer.py::test_same_shape_schema_mismatch_refuses",
+        "tests/test_townlet/regressions/bac/test_joint_learning.py::test_joint_family_replay_matrix",
+        "tests/test_townlet/regressions/bac/test_learning_comparison.py",
+        "tests/test_townlet/regressions/bac/test_options.py::test_all_modes_round_trip",
+        "tests/test_townlet/regressions/bac/test_options.py::test_old_options_remain_accepted",
+        "tests/test_townlet/regressions/bac/test_options.py::test_unqualified_options_are_retained",
+        "tests/test_townlet/regressions/bac/test_partial_transfer.py::test_missing_meter_bias_is_partial_not_clean",
+        "tests/test_townlet/regressions/bac/test_partial_transfer.py::test_strict_partial_refuses_atomically",
+        "tests/test_townlet/regressions/bac/test_token_binding.py::test_linear_mean_is_preserved",
+        "tests/test_townlet/regressions/bac/test_token_binding.py::test_mean_can_bind_descriptor_value",
+        "tests/test_townlet/regressions/bac/test_token_binding.py::test_semantic_permutation_absence_and_memory"
+      ],
+      "command": [
+        {
+          "task": "T02",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_options.py -q"
+        },
+        {
+          "task": "T17",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_token_binding.py -q"
+        },
+        {
+          "task": "T28",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_partial_transfer.py -q"
+        },
+        {
+          "task": "T29",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_artifact_coherence.py -q"
+        },
+        {
+          "task": "T30",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_artifact_transfer.py -q"
+        },
+        {
+          "task": "T37",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_learning.py -q"
+        },
+        {
+          "task": "T40",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_learning_comparison.py -q"
+        }
+      ],
+      "expected_assertion": "Full adopted contract and joint interfaces; package tests alone do not establish closure",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "acceptance owed",
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "BAC-C05",
+      "classification": "adopted design contract",
+      "title": "BAC-C05",
+      "in_scope": true,
+      "acceptance_scope": "Full adopted contract and joint interfaces; package tests alone do not establish closure",
+      "tasks": [
+        "T03a",
+        "T08",
+        "T08a",
+        "T09",
+        "T10",
+        "T11",
+        "T12",
+        "T13",
+        "T14",
+        "T15",
+        "T22",
+        "T23",
+        "T25",
+        "T26",
+        "T37",
+        "T38"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_action_probabilities.py::test_disabled_mass_exact_zero",
+        "tests/test_townlet/regressions/bac/test_action_probabilities.py::test_live_empty_mask_diagnoses",
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_authored_interval_and_empty_run",
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_periodic_epsilon_matches_uninterrupted",
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_periodic_final_next_episode_agree",
+        "tests/test_townlet/regressions/bac/test_curriculum_routing.py::test_full_population_stages1_5",
+        "tests/test_townlet/regressions/bac/test_curriculum_routing.py::test_runner_completion_advances_curriculum",
+        "tests/test_townlet/regressions/bac/test_historical_dispatch.py::test_approved_import_preserves_archive_and_seeds_empty_replay",
+        "tests/test_townlet/regressions/bac/test_historical_dispatch.py::test_archive_failure_is_atomic",
+        "tests/test_townlet/regressions/bac/test_historical_dispatch.py::test_old_identity_recipe_ignores_only_new_absent_fields",
+        "tests/test_townlet/regressions/bac/test_joint_learning.py::test_joint_family_replay_matrix",
+        "tests/test_townlet/regressions/bac/test_joint_restart_serving.py::test_joint_restart_transfer_serving",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_archived_rows_cannot_drive_learning",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_authored_target_matrix_and_direction",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_ready_skip_preserves_update_clocks",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_terminal_and_truncation_controls",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_actual_sampler_ordered_law",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_full_buffer_huber_gradient_zero",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_independent_estimator_exact_expectation",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_large_finite_priorities",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_ordered_estimator_exact_expectation",
+        "tests/test_townlet/regressions/bac/test_per_history.py::test_per_mask_priority_alignment_and_restore",
+        "tests/test_townlet/regressions/bac/test_per_world_dynamics.py::test_vector_depletion_matches_independent_scalars",
+        "tests/test_townlet/regressions/bac/test_population_restore.py::test_population_restores_tail_and_historical_masks",
+        "tests/test_townlet/regressions/bac/test_population_restore.py::test_seven_eligible_rows_once",
+        "tests/test_townlet/regressions/bac/test_recurrent_per.py::test_recurrent_per_window_objective",
+        "tests/test_townlet/regressions/bac/test_recurrent_per.py::test_recurrent_priority_restore_and_eviction",
+        "tests/test_townlet/regressions/bac/test_sequence_history.py::test_capacity15_has_viable_two_step_windows",
+        "tests/test_townlet/regressions/bac/test_sequence_history.py::test_capacity1_adaptive_retains_one_real_row",
+        "tests/test_townlet/regressions/bac/test_sequence_history.py::test_sixteen_short_episodes_do_not_crash",
+        "tests/test_townlet/regressions/bac/test_successor_producer.py::test_mask_belongs_to_returned_successor",
+        "tests/test_townlet/regressions/bac/test_transition_contract.py::test_double_uses_online_legal_choice",
+        "tests/test_townlet/regressions/bac/test_transition_contract.py::test_nonterminal_empty_mask_refuses",
+        "tests/test_townlet/regressions/bac/test_transition_contract.py::test_terminal_empty_mask_is_finite",
+        "tests/test_townlet/regressions/bac/test_uniform_history.py::test_uniform_mask_wrap_sample_restore_atomic"
+      ],
+      "command": [
+        {
+          "task": "T03a",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_historical_dispatch.py -q"
+        },
+        {
+          "task": "T08",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_transition_contract.py -q"
+        },
+        {
+          "task": "T08a",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_action_probabilities.py -q"
+        },
+        {
+          "task": "T09",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_successor_producer.py -q"
+        },
+        {
+          "task": "T10",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_uniform_history.py -q"
+        },
+        {
+          "task": "T11",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_per_history.py -q"
+        },
+        {
+          "task": "T12",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_sequence_history.py -q"
+        },
+        {
+          "task": "T13",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_per_estimator.py -q"
+        },
+        {
+          "task": "T14",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_recurrent_per.py -q"
+        },
+        {
+          "task": "T15",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_learner_legality.py -q"
+        },
+        {
+          "task": "T22",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_per_world_dynamics.py -q"
+        },
+        {
+          "task": "T23",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_curriculum_routing.py -q"
+        },
+        {
+          "task": "T25",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_population_restore.py -q"
+        },
+        {
+          "task": "T26",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_checkpoint_boundary.py -q"
+        },
+        {
+          "task": "T37",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_learning.py -q"
+        },
+        {
+          "task": "T38",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_restart_serving.py -q"
+        }
+      ],
+      "expected_assertion": "Full adopted contract and joint interfaces; package tests alone do not establish closure",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "acceptance owed",
+      "approval_reference": "BAC-HISTORY-A-2026-11-01",
+      "package_evidence": []
+    },
+    {
+      "id": "BAC-C06",
+      "classification": "adopted design contract",
+      "title": "BAC-C06",
+      "in_scope": true,
+      "acceptance_scope": "Full adopted contract and joint interfaces; package tests alone do not establish closure",
+      "tasks": [
+        "T03a",
+        "T08",
+        "T09",
+        "T10",
+        "T11",
+        "T12",
+        "T13",
+        "T14",
+        "T15",
+        "T16",
+        "T25",
+        "T26",
+        "T37",
+        "T38"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_authored_interval_and_empty_run",
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_periodic_epsilon_matches_uninterrupted",
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_periodic_final_next_episode_agree",
+        "tests/test_townlet/regressions/bac/test_historical_dispatch.py::test_approved_import_preserves_archive_and_seeds_empty_replay",
+        "tests/test_townlet/regressions/bac/test_historical_dispatch.py::test_archive_failure_is_atomic",
+        "tests/test_townlet/regressions/bac/test_historical_dispatch.py::test_old_identity_recipe_ignores_only_new_absent_fields",
+        "tests/test_townlet/regressions/bac/test_joint_learning.py::test_joint_family_replay_matrix",
+        "tests/test_townlet/regressions/bac/test_joint_restart_serving.py::test_joint_restart_transfer_serving",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_archived_rows_cannot_drive_learning",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_authored_target_matrix_and_direction",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_ready_skip_preserves_update_clocks",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_terminal_and_truncation_controls",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_actual_sampler_ordered_law",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_full_buffer_huber_gradient_zero",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_independent_estimator_exact_expectation",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_large_finite_priorities",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_ordered_estimator_exact_expectation",
+        "tests/test_townlet/regressions/bac/test_per_history.py::test_per_mask_priority_alignment_and_restore",
+        "tests/test_townlet/regressions/bac/test_population_restore.py::test_population_restores_tail_and_historical_masks",
+        "tests/test_townlet/regressions/bac/test_population_restore.py::test_seven_eligible_rows_once",
+        "tests/test_townlet/regressions/bac/test_recurrent_per.py::test_recurrent_per_window_objective",
+        "tests/test_townlet/regressions/bac/test_recurrent_per.py::test_recurrent_priority_restore_and_eviction",
+        "tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_recurrent_per",
+        "tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_warmup1000",
+        "tests/test_townlet/regressions/bac/test_sequence_history.py::test_capacity15_has_viable_two_step_windows",
+        "tests/test_townlet/regressions/bac/test_sequence_history.py::test_capacity1_adaptive_retains_one_real_row",
+        "tests/test_townlet/regressions/bac/test_sequence_history.py::test_sixteen_short_episodes_do_not_crash",
+        "tests/test_townlet/regressions/bac/test_successor_producer.py::test_mask_belongs_to_returned_successor",
+        "tests/test_townlet/regressions/bac/test_transition_contract.py::test_double_uses_online_legal_choice",
+        "tests/test_townlet/regressions/bac/test_transition_contract.py::test_nonterminal_empty_mask_refuses",
+        "tests/test_townlet/regressions/bac/test_transition_contract.py::test_terminal_empty_mask_is_finite",
+        "tests/test_townlet/regressions/bac/test_uniform_history.py::test_uniform_mask_wrap_sample_restore_atomic"
+      ],
+      "command": [
+        {
+          "task": "T03a",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_historical_dispatch.py -q"
+        },
+        {
+          "task": "T08",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_transition_contract.py -q"
+        },
+        {
+          "task": "T09",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_successor_producer.py -q"
+        },
+        {
+          "task": "T10",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_uniform_history.py -q"
+        },
+        {
+          "task": "T11",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_per_history.py -q"
+        },
+        {
+          "task": "T12",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_sequence_history.py -q"
+        },
+        {
+          "task": "T13",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_per_estimator.py -q"
+        },
+        {
+          "task": "T14",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_recurrent_per.py -q"
+        },
+        {
+          "task": "T15",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_learner_legality.py -q"
+        },
+        {
+          "task": "T16",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_runner_readiness.py -q"
+        },
+        {
+          "task": "T25",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_population_restore.py -q"
+        },
+        {
+          "task": "T26",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_checkpoint_boundary.py -q"
+        },
+        {
+          "task": "T37",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_learning.py -q"
+        },
+        {
+          "task": "T38",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_restart_serving.py -q"
+        }
+      ],
+      "expected_assertion": "Full adopted contract and joint interfaces; package tests alone do not establish closure",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "acceptance owed",
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "BAC-C07",
+      "classification": "adopted design contract",
+      "title": "BAC-C07",
+      "in_scope": true,
+      "acceptance_scope": "Full adopted contract and joint interfaces; package tests alone do not establish closure",
+      "tasks": [
+        "T02",
+        "T10",
+        "T11",
+        "T12",
+        "T13",
+        "T14",
+        "T15",
+        "T16",
+        "T18",
+        "T19",
+        "T20",
+        "T21",
+        "T22",
+        "T23",
+        "T24",
+        "T25",
+        "T26",
+        "T35",
+        "T36",
+        "T37",
+        "T38",
+        "T39"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_authored_interval_and_empty_run",
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_periodic_epsilon_matches_uninterrupted",
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_periodic_final_next_episode_agree",
+        "tests/test_townlet/regressions/bac/test_checkpoint_contract.py::test_mode_and_boundary_validate_before_mutation",
+        "tests/test_townlet/regressions/bac/test_checkpoint_contract.py::test_numeric_latest_within_run",
+        "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_dwell_counts_ten_transitions",
+        "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_full_survival_survives_reset",
+        "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_rate_has_declared_effect",
+        "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_singleton_band",
+        "tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_factory_routes_curriculum_modes",
+        "tests/test_townlet/regressions/bac/test_curriculum_routing.py::test_full_population_stages1_5",
+        "tests/test_townlet/regressions/bac/test_curriculum_routing.py::test_runner_completion_advances_curriculum",
+        "tests/test_townlet/regressions/bac/test_effective_telemetry.py::test_effective_hparams_and_interventions",
+        "tests/test_townlet/regressions/bac/test_joint_learning.py::test_joint_family_replay_matrix",
+        "tests/test_townlet/regressions/bac/test_joint_outputs.py::test_joint_owned_output_pipeline",
+        "tests/test_townlet/regressions/bac/test_joint_restart_serving.py::test_joint_restart_transfer_serving",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_archived_rows_cannot_drive_learning",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_authored_target_matrix_and_direction",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_ready_skip_preserves_update_clocks",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_terminal_and_truncation_controls",
+        "tests/test_townlet/regressions/bac/test_options.py::test_all_modes_round_trip",
+        "tests/test_townlet/regressions/bac/test_options.py::test_old_options_remain_accepted",
+        "tests/test_townlet/regressions/bac/test_options.py::test_unqualified_options_are_retained",
+        "tests/test_townlet/regressions/bac/test_outcome_clocks.py::test_lengths2_5_owned_events_and_clock_units",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_actual_sampler_ordered_law",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_full_buffer_huber_gradient_zero",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_independent_estimator_exact_expectation",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_large_finite_priorities",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_ordered_estimator_exact_expectation",
+        "tests/test_townlet/regressions/bac/test_per_history.py::test_per_mask_priority_alignment_and_restore",
+        "tests/test_townlet/regressions/bac/test_per_world_dynamics.py::test_vector_depletion_matches_independent_scalars",
+        "tests/test_townlet/regressions/bac/test_population_restore.py::test_population_restores_tail_and_historical_masks",
+        "tests/test_townlet/regressions/bac/test_population_restore.py::test_seven_eligible_rows_once",
+        "tests/test_townlet/regressions/bac/test_recurrent_per.py::test_recurrent_per_window_objective",
+        "tests/test_townlet/regressions/bac/test_recurrent_per.py::test_recurrent_priority_restore_and_eviction",
+        "tests/test_townlet/regressions/bac/test_rnd_service.py::test_occupancy512_consumes_four_batches",
+        "tests/test_townlet/regressions/bac/test_rnd_service.py::test_paced_retention_is_bounded",
+        "tests/test_townlet/regressions/bac/test_rnd_service.py::test_two_of_three_tail_resume",
+        "tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_recurrent_per",
+        "tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_warmup1000",
+        "tests/test_townlet/regressions/bac/test_sequence_history.py::test_capacity15_has_viable_two_step_windows",
+        "tests/test_townlet/regressions/bac/test_sequence_history.py::test_capacity1_adaptive_retains_one_real_row",
+        "tests/test_townlet/regressions/bac/test_sequence_history.py::test_sixteen_short_episodes_do_not_crash",
+        "tests/test_townlet/regressions/bac/test_sink_units.py::test_owned_sink_reconciliation",
+        "tests/test_townlet/regressions/bac/test_uniform_history.py::test_uniform_mask_wrap_sample_restore_atomic"
+      ],
+      "command": [
+        {
+          "task": "T02",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_options.py -q"
+        },
+        {
+          "task": "T10",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_uniform_history.py -q"
+        },
+        {
+          "task": "T11",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_per_history.py -q"
+        },
+        {
+          "task": "T12",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_sequence_history.py -q"
+        },
+        {
+          "task": "T13",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_per_estimator.py -q"
+        },
+        {
+          "task": "T14",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_recurrent_per.py -q"
+        },
+        {
+          "task": "T15",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_learner_legality.py -q"
+        },
+        {
+          "task": "T16",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_runner_readiness.py -q"
+        },
+        {
+          "task": "T18",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_rnd_service.py -q"
+        },
+        {
+          "task": "T19",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_outcome_clocks.py -q"
+        },
+        {
+          "task": "T20",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_curriculum_events.py -q"
+        },
+        {
+          "task": "T21",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_curriculum_factory.py -q"
+        },
+        {
+          "task": "T22",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_per_world_dynamics.py -q"
+        },
+        {
+          "task": "T23",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_curriculum_routing.py -q"
+        },
+        {
+          "task": "T24",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_checkpoint_contract.py -q"
+        },
+        {
+          "task": "T25",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_population_restore.py -q"
+        },
+        {
+          "task": "T26",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_checkpoint_boundary.py -q"
+        },
+        {
+          "task": "T35",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_sink_units.py -q"
+        },
+        {
+          "task": "T36",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_effective_telemetry.py -q"
+        },
+        {
+          "task": "T37",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_learning.py -q"
+        },
+        {
+          "task": "T38",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_restart_serving.py -q"
+        },
+        {
+          "task": "T39",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_outputs.py -q"
+        }
+      ],
+      "expected_assertion": "Full adopted contract and joint interfaces; package tests alone do not establish closure",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "acceptance owed",
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "BAC-C08",
+      "classification": "adopted design contract",
+      "title": "BAC-C08",
+      "in_scope": true,
+      "acceptance_scope": "Full adopted contract and joint interfaces; package tests alone do not establish closure",
+      "tasks": [
+        "T08",
+        "T08a",
+        "T18",
+        "T18a",
+        "T18b",
+        "T18c",
+        "T18d",
+        "T18e",
+        "T18f",
+        "T19",
+        "T24",
+        "T25",
+        "T26",
+        "T35",
+        "T36",
+        "T37",
+        "T38"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_action_probabilities.py::test_disabled_mass_exact_zero",
+        "tests/test_townlet/regressions/bac/test_action_probabilities.py::test_live_empty_mask_diagnoses",
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_authored_interval_and_empty_run",
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_periodic_epsilon_matches_uninterrupted",
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_periodic_final_next_episode_agree",
+        "tests/test_townlet/regressions/bac/test_checkpoint_contract.py::test_mode_and_boundary_validate_before_mutation",
+        "tests/test_townlet/regressions/bac/test_checkpoint_contract.py::test_numeric_latest_within_run",
+        "tests/test_townlet/regressions/bac/test_count_provider.py::test_count_capacity_and_restore",
+        "tests/test_townlet/regressions/bac/test_count_provider.py::test_count_novelty_and_no_stat_query",
+        "tests/test_townlet/regressions/bac/test_effective_telemetry.py::test_effective_hparams_and_interventions",
+        "tests/test_townlet/regressions/bac/test_exploration_factory.py::test_factory_constructs_selected_provider",
+        "tests/test_townlet/regressions/bac/test_exploration_factory.py::test_provider_state_kind_and_scale",
+        "tests/test_townlet/regressions/bac/test_exploration_policy.py::test_drive_selects_five_strategies",
+        "tests/test_townlet/regressions/bac/test_exploration_policy.py::test_training_drive_override_roles",
+        "tests/test_townlet/regressions/bac/test_exploration_routing.py::test_authored_runner_strategy_reward_contrasts",
+        "tests/test_townlet/regressions/bac/test_exploration_routing.py::test_epsilon_and_adaptive_completion_once",
+        "tests/test_townlet/regressions/bac/test_icm_provider.py::test_icm_objective_gradients_and_tail",
+        "tests/test_townlet/regressions/bac/test_icm_provider.py::test_icm_uses_action_and_successor",
+        "tests/test_townlet/regressions/bac/test_intrinsic_composition.py::test_provider_phase_and_transition_identity",
+        "tests/test_townlet/regressions/bac/test_intrinsic_composition.py::test_real_composer_applies_runtime_scale_once",
+        "tests/test_townlet/regressions/bac/test_joint_learning.py::test_joint_family_replay_matrix",
+        "tests/test_townlet/regressions/bac/test_joint_restart_serving.py::test_joint_restart_transfer_serving",
+        "tests/test_townlet/regressions/bac/test_outcome_clocks.py::test_lengths2_5_owned_events_and_clock_units",
+        "tests/test_townlet/regressions/bac/test_population_restore.py::test_population_restores_tail_and_historical_masks",
+        "tests/test_townlet/regressions/bac/test_population_restore.py::test_seven_eligible_rows_once",
+        "tests/test_townlet/regressions/bac/test_rnd_service.py::test_occupancy512_consumes_four_batches",
+        "tests/test_townlet/regressions/bac/test_rnd_service.py::test_paced_retention_is_bounded",
+        "tests/test_townlet/regressions/bac/test_rnd_service.py::test_two_of_three_tail_resume",
+        "tests/test_townlet/regressions/bac/test_sink_units.py::test_owned_sink_reconciliation",
+        "tests/test_townlet/regressions/bac/test_transition_contract.py::test_double_uses_online_legal_choice",
+        "tests/test_townlet/regressions/bac/test_transition_contract.py::test_nonterminal_empty_mask_refuses",
+        "tests/test_townlet/regressions/bac/test_transition_contract.py::test_terminal_empty_mask_is_finite"
+      ],
+      "command": [
+        {
+          "task": "T08",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_transition_contract.py -q"
+        },
+        {
+          "task": "T08a",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_action_probabilities.py -q"
+        },
+        {
+          "task": "T18",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_rnd_service.py -q"
+        },
+        {
+          "task": "T18a",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_exploration_policy.py -q"
+        },
+        {
+          "task": "T18b",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_count_provider.py -q"
+        },
+        {
+          "task": "T18c",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_icm_provider.py -q"
+        },
+        {
+          "task": "T18d",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_exploration_factory.py -q"
+        },
+        {
+          "task": "T18e",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_intrinsic_composition.py -q"
+        },
+        {
+          "task": "T18f",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_exploration_routing.py -q"
+        },
+        {
+          "task": "T19",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_outcome_clocks.py -q"
+        },
+        {
+          "task": "T24",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_checkpoint_contract.py -q"
+        },
+        {
+          "task": "T25",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_population_restore.py -q"
+        },
+        {
+          "task": "T26",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_checkpoint_boundary.py -q"
+        },
+        {
+          "task": "T35",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_sink_units.py -q"
+        },
+        {
+          "task": "T36",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_effective_telemetry.py -q"
+        },
+        {
+          "task": "T37",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_learning.py -q"
+        },
+        {
+          "task": "T38",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_restart_serving.py -q"
+        }
+      ],
+      "expected_assertion": "Full adopted contract and joint interfaces; package tests alone do not establish closure",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "acceptance owed",
+      "approval_reference": "BAC-HISTORY-A-2026-11-01",
+      "package_evidence": []
+    },
+    {
+      "id": "BAC-C09",
+      "classification": "adopted design contract",
+      "title": "BAC-C09",
+      "in_scope": true,
+      "acceptance_scope": "Full adopted contract and joint interfaces; package tests alone do not establish closure",
+      "tasks": [
+        "T19",
+        "T20",
+        "T21",
+        "T22",
+        "T23",
+        "T35",
+        "T36",
+        "T37"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_dwell_counts_ten_transitions",
+        "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_full_survival_survives_reset",
+        "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_rate_has_declared_effect",
+        "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_singleton_band",
+        "tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_factory_routes_curriculum_modes",
+        "tests/test_townlet/regressions/bac/test_curriculum_routing.py::test_full_population_stages1_5",
+        "tests/test_townlet/regressions/bac/test_curriculum_routing.py::test_runner_completion_advances_curriculum",
+        "tests/test_townlet/regressions/bac/test_effective_telemetry.py::test_effective_hparams_and_interventions",
+        "tests/test_townlet/regressions/bac/test_joint_learning.py::test_joint_family_replay_matrix",
+        "tests/test_townlet/regressions/bac/test_outcome_clocks.py::test_lengths2_5_owned_events_and_clock_units",
+        "tests/test_townlet/regressions/bac/test_per_world_dynamics.py::test_vector_depletion_matches_independent_scalars",
+        "tests/test_townlet/regressions/bac/test_sink_units.py::test_owned_sink_reconciliation"
+      ],
+      "command": [
+        {
+          "task": "T19",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_outcome_clocks.py -q"
+        },
+        {
+          "task": "T20",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_curriculum_events.py -q"
+        },
+        {
+          "task": "T21",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_curriculum_factory.py -q"
+        },
+        {
+          "task": "T22",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_per_world_dynamics.py -q"
+        },
+        {
+          "task": "T23",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_curriculum_routing.py -q"
+        },
+        {
+          "task": "T35",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_sink_units.py -q"
+        },
+        {
+          "task": "T36",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_effective_telemetry.py -q"
+        },
+        {
+          "task": "T37",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_learning.py -q"
+        }
+      ],
+      "expected_assertion": "Full adopted contract and joint interfaces; package tests alone do not establish closure",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "acceptance owed",
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "BAC-C10",
+      "classification": "adopted design contract",
+      "title": "BAC-C10",
+      "in_scope": true,
+      "acceptance_scope": "Full adopted contract and joint interfaces; package tests alone do not establish closure",
+      "tasks": [
+        "T02",
+        "T03",
+        "T18",
+        "T24",
+        "T25",
+        "T26",
+        "T27",
+        "T28",
+        "T29",
+        "T30",
+        "T31",
+        "T32",
+        "T36",
+        "T38"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_artifact_coherence.py::test_legitimate_preset_identity_roundtrip",
+        "tests/test_townlet/regressions/bac/test_artifact_coherence.py::test_modified_payload_identity_is_diagnosed",
+        "tests/test_townlet/regressions/bac/test_artifact_transfer.py::test_fresh_target_transfer_has_no_history",
+        "tests/test_townlet/regressions/bac/test_artifact_transfer.py::test_live_state_policy_is_explicit",
+        "tests/test_townlet/regressions/bac/test_artifact_transfer.py::test_same_shape_schema_mismatch_refuses",
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_authored_interval_and_empty_run",
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_periodic_epsilon_matches_uninterrupted",
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_periodic_final_next_episode_agree",
+        "tests/test_townlet/regressions/bac/test_checkpoint_contract.py::test_mode_and_boundary_validate_before_mutation",
+        "tests/test_townlet/regressions/bac/test_checkpoint_contract.py::test_numeric_latest_within_run",
+        "tests/test_townlet/regressions/bac/test_effective_run.py::test_effective_cache_roundtrip",
+        "tests/test_townlet/regressions/bac/test_effective_run.py::test_five_overrides_have_one_runtime_view",
+        "tests/test_townlet/regressions/bac/test_effective_run.py::test_preset_edit_changes_authored_not_execution",
+        "tests/test_townlet/regressions/bac/test_effective_telemetry.py::test_effective_hparams_and_interventions",
+        "tests/test_townlet/regressions/bac/test_evaluation_entry.py::test_current_evaluator_all_families",
+        "tests/test_townlet/regressions/bac/test_evaluation_entry.py::test_historical_ff_evaluator_retained",
+        "tests/test_townlet/regressions/bac/test_joint_restart_serving.py::test_joint_restart_transfer_serving",
+        "tests/test_townlet/regressions/bac/test_options.py::test_all_modes_round_trip",
+        "tests/test_townlet/regressions/bac/test_options.py::test_old_options_remain_accepted",
+        "tests/test_townlet/regressions/bac/test_options.py::test_unqualified_options_are_retained",
+        "tests/test_townlet/regressions/bac/test_partial_transfer.py::test_missing_meter_bias_is_partial_not_clean",
+        "tests/test_townlet/regressions/bac/test_partial_transfer.py::test_strict_partial_refuses_atomically",
+        "tests/test_townlet/regressions/bac/test_population_restore.py::test_population_restores_tail_and_historical_masks",
+        "tests/test_townlet/regressions/bac/test_population_restore.py::test_seven_eligible_rows_once",
+        "tests/test_townlet/regressions/bac/test_rnd_service.py::test_occupancy512_consumes_four_batches",
+        "tests/test_townlet/regressions/bac/test_rnd_service.py::test_paced_retention_is_bounded",
+        "tests/test_townlet/regressions/bac/test_rnd_service.py::test_two_of_three_tail_resume",
+        "tests/test_townlet/regressions/bac/test_serving_isolation.py::test_training_serving_interleaving_isolated",
+        "tests/test_townlet/regressions/bac/test_serving_modes.py::test_greedy_dropout_is_deterministic",
+        "tests/test_townlet/regressions/bac/test_serving_modes.py::test_live_numeric_latest_and_single_reset",
+        "tests/test_townlet/regressions/bac/test_serving_modes.py::test_mc_dropout_is_explicit"
+      ],
+      "command": [
+        {
+          "task": "T02",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_options.py -q"
+        },
+        {
+          "task": "T03",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_effective_run.py -q"
+        },
+        {
+          "task": "T18",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_rnd_service.py -q"
+        },
+        {
+          "task": "T24",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_checkpoint_contract.py -q"
+        },
+        {
+          "task": "T25",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_population_restore.py -q"
+        },
+        {
+          "task": "T26",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_checkpoint_boundary.py -q"
+        },
+        {
+          "task": "T27",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_serving_modes.py -q"
+        },
+        {
+          "task": "T28",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_partial_transfer.py -q"
+        },
+        {
+          "task": "T29",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_artifact_coherence.py -q"
+        },
+        {
+          "task": "T30",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_artifact_transfer.py -q"
+        },
+        {
+          "task": "T31",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_serving_isolation.py -q"
+        },
+        {
+          "task": "T32",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_evaluation_entry.py -q"
+        },
+        {
+          "task": "T36",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_effective_telemetry.py -q"
+        },
+        {
+          "task": "T38",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_restart_serving.py -q"
+        }
+      ],
+      "expected_assertion": "Full adopted contract and joint interfaces; package tests alone do not establish closure",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "acceptance owed",
+      "approval_reference": "BAC-HISTORY-A-2026-11-01",
+      "package_evidence": []
+    },
+    {
+      "id": "BAC-C11",
+      "classification": "adopted design contract",
+      "title": "BAC-C11",
+      "in_scope": true,
+      "acceptance_scope": "Full adopted contract and joint interfaces; package tests alone do not establish closure",
+      "tasks": [
+        "T24",
+        "T28",
+        "T29",
+        "T30",
+        "T38"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_artifact_coherence.py::test_legitimate_preset_identity_roundtrip",
+        "tests/test_townlet/regressions/bac/test_artifact_coherence.py::test_modified_payload_identity_is_diagnosed",
+        "tests/test_townlet/regressions/bac/test_artifact_transfer.py::test_fresh_target_transfer_has_no_history",
+        "tests/test_townlet/regressions/bac/test_artifact_transfer.py::test_live_state_policy_is_explicit",
+        "tests/test_townlet/regressions/bac/test_artifact_transfer.py::test_same_shape_schema_mismatch_refuses",
+        "tests/test_townlet/regressions/bac/test_checkpoint_contract.py::test_mode_and_boundary_validate_before_mutation",
+        "tests/test_townlet/regressions/bac/test_checkpoint_contract.py::test_numeric_latest_within_run",
+        "tests/test_townlet/regressions/bac/test_joint_restart_serving.py::test_joint_restart_transfer_serving",
+        "tests/test_townlet/regressions/bac/test_partial_transfer.py::test_missing_meter_bias_is_partial_not_clean",
+        "tests/test_townlet/regressions/bac/test_partial_transfer.py::test_strict_partial_refuses_atomically"
+      ],
+      "command": [
+        {
+          "task": "T24",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_checkpoint_contract.py -q"
+        },
+        {
+          "task": "T28",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_partial_transfer.py -q"
+        },
+        {
+          "task": "T29",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_artifact_coherence.py -q"
+        },
+        {
+          "task": "T30",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_artifact_transfer.py -q"
+        },
+        {
+          "task": "T38",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_restart_serving.py -q"
+        }
+      ],
+      "expected_assertion": "Full adopted contract and joint interfaces; package tests alone do not establish closure",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "acceptance owed",
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "BAC-C12",
+      "classification": "adopted design contract",
+      "title": "BAC-C12",
+      "in_scope": true,
+      "acceptance_scope": "Full adopted contract and joint interfaces; package tests alone do not establish closure",
+      "tasks": [
+        "T15",
+        "T24",
+        "T26",
+        "T27",
+        "T31",
+        "T32",
+        "T36",
+        "T38",
+        "T40"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_authored_interval_and_empty_run",
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_periodic_epsilon_matches_uninterrupted",
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_periodic_final_next_episode_agree",
+        "tests/test_townlet/regressions/bac/test_checkpoint_contract.py::test_mode_and_boundary_validate_before_mutation",
+        "tests/test_townlet/regressions/bac/test_checkpoint_contract.py::test_numeric_latest_within_run",
+        "tests/test_townlet/regressions/bac/test_effective_telemetry.py::test_effective_hparams_and_interventions",
+        "tests/test_townlet/regressions/bac/test_evaluation_entry.py::test_current_evaluator_all_families",
+        "tests/test_townlet/regressions/bac/test_evaluation_entry.py::test_historical_ff_evaluator_retained",
+        "tests/test_townlet/regressions/bac/test_joint_restart_serving.py::test_joint_restart_transfer_serving",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_archived_rows_cannot_drive_learning",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_authored_target_matrix_and_direction",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_ready_skip_preserves_update_clocks",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_terminal_and_truncation_controls",
+        "tests/test_townlet/regressions/bac/test_learning_comparison.py",
+        "tests/test_townlet/regressions/bac/test_serving_isolation.py::test_training_serving_interleaving_isolated",
+        "tests/test_townlet/regressions/bac/test_serving_modes.py::test_greedy_dropout_is_deterministic",
+        "tests/test_townlet/regressions/bac/test_serving_modes.py::test_live_numeric_latest_and_single_reset",
+        "tests/test_townlet/regressions/bac/test_serving_modes.py::test_mc_dropout_is_explicit"
+      ],
+      "command": [
+        {
+          "task": "T15",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_learner_legality.py -q"
+        },
+        {
+          "task": "T24",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_checkpoint_contract.py -q"
+        },
+        {
+          "task": "T26",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_checkpoint_boundary.py -q"
+        },
+        {
+          "task": "T27",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_serving_modes.py -q"
+        },
+        {
+          "task": "T31",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_serving_isolation.py -q"
+        },
+        {
+          "task": "T32",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_evaluation_entry.py -q"
+        },
+        {
+          "task": "T36",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_effective_telemetry.py -q"
+        },
+        {
+          "task": "T38",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_restart_serving.py -q"
+        },
+        {
+          "task": "T40",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_learning_comparison.py -q"
+        }
+      ],
+      "expected_assertion": "Full adopted contract and joint interfaces; package tests alone do not establish closure",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "acceptance owed",
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "BAC-C13",
+      "classification": "adopted design contract",
+      "title": "BAC-C13",
+      "in_scope": true,
+      "acceptance_scope": "Full adopted contract and joint interfaces; package tests alone do not establish closure",
+      "tasks": [
+        "T04",
+        "T19",
+        "T20",
+        "T21",
+        "T22",
+        "T23",
+        "T24",
+        "T26",
+        "T27",
+        "T33",
+        "T34",
+        "T35",
+        "T36",
+        "T37",
+        "T38",
+        "T39"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_authored_interval_and_empty_run",
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_periodic_epsilon_matches_uninterrupted",
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_periodic_final_next_episode_agree",
+        "tests/test_townlet/regressions/bac/test_checkpoint_contract.py::test_mode_and_boundary_validate_before_mutation",
+        "tests/test_townlet/regressions/bac/test_checkpoint_contract.py::test_numeric_latest_within_run",
+        "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_dwell_counts_ten_transitions",
+        "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_full_survival_survives_reset",
+        "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_rate_has_declared_effect",
+        "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_singleton_band",
+        "tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_factory_routes_curriculum_modes",
+        "tests/test_townlet/regressions/bac/test_curriculum_routing.py::test_full_population_stages1_5",
+        "tests/test_townlet/regressions/bac/test_curriculum_routing.py::test_runner_completion_advances_curriculum",
+        "tests/test_townlet/regressions/bac/test_effective_telemetry.py::test_effective_hparams_and_interventions",
+        "tests/test_townlet/regressions/bac/test_joint_learning.py::test_joint_family_replay_matrix",
+        "tests/test_townlet/regressions/bac/test_joint_outputs.py::test_joint_owned_output_pipeline",
+        "tests/test_townlet/regressions/bac/test_joint_restart_serving.py::test_joint_restart_transfer_serving",
+        "tests/test_townlet/regressions/bac/test_outcome_clocks.py::test_lengths2_5_owned_events_and_clock_units",
+        "tests/test_townlet/regressions/bac/test_per_world_dynamics.py::test_vector_depletion_matches_independent_scalars",
+        "tests/test_townlet/regressions/bac/test_recording_cleanup.py::test_runner_cleanup_persists_or_reports_failure",
+        "tests/test_townlet/regressions/bac/test_recording_drain.py::test_immediate_shutdown_drains_selected_episode",
+        "tests/test_townlet/regressions/bac/test_recording_drain.py::test_shutdown_fences_concurrent_acceptance",
+        "tests/test_townlet/regressions/bac/test_recording_drain.py::test_writer_failure_propagates",
+        "tests/test_townlet/regressions/bac/test_serving_modes.py::test_greedy_dropout_is_deterministic",
+        "tests/test_townlet/regressions/bac/test_serving_modes.py::test_live_numeric_latest_and_single_reset",
+        "tests/test_townlet/regressions/bac/test_serving_modes.py::test_mc_dropout_is_explicit",
+        "tests/test_townlet/regressions/bac/test_sidecars.py::test_conflict_names_both_origins",
+        "tests/test_townlet/regressions/bac/test_sidecars.py::test_malformed_shadowed_sidecar_refuses",
+        "tests/test_townlet/regressions/bac/test_sidecars.py::test_nested_sidecars_survive",
+        "tests/test_townlet/regressions/bac/test_sink_units.py::test_owned_sink_reconciliation"
+      ],
+      "command": [
+        {
+          "task": "T04",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_sidecars.py -q"
+        },
+        {
+          "task": "T19",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_outcome_clocks.py -q"
+        },
+        {
+          "task": "T20",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_curriculum_events.py -q"
+        },
+        {
+          "task": "T21",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_curriculum_factory.py -q"
+        },
+        {
+          "task": "T22",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_per_world_dynamics.py -q"
+        },
+        {
+          "task": "T23",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_curriculum_routing.py -q"
+        },
+        {
+          "task": "T24",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_checkpoint_contract.py -q"
+        },
+        {
+          "task": "T26",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_checkpoint_boundary.py -q"
+        },
+        {
+          "task": "T27",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_serving_modes.py -q"
+        },
+        {
+          "task": "T33",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_recording_drain.py -q"
+        },
+        {
+          "task": "T34",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_recording_cleanup.py -q"
+        },
+        {
+          "task": "T35",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_sink_units.py -q"
+        },
+        {
+          "task": "T36",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_effective_telemetry.py -q"
+        },
+        {
+          "task": "T37",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_learning.py -q"
+        },
+        {
+          "task": "T38",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_restart_serving.py -q"
+        },
+        {
+          "task": "T39",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_outputs.py -q"
+        }
+      ],
+      "expected_assertion": "Full adopted contract and joint interfaces; package tests alone do not establish closure",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "acceptance owed",
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "K01",
+      "classification": "known qualified/deferred scope",
+      "title": "Exact stochastic or mid-episode continuation",
+      "in_scope": true,
+      "acceptance_scope": "Known deferred guarantee; RNG/replay-order inventory remains incomplete. Do not count as a new failure of the weaker fresh-episode promise.",
+      "tasks": [
+        "T03a",
+        "T24"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_checkpoint_contract.py::test_mode_and_boundary_validate_before_mutation",
+        "tests/test_townlet/regressions/bac/test_checkpoint_contract.py::test_numeric_latest_within_run",
+        "tests/test_townlet/regressions/bac/test_historical_dispatch.py::test_approved_import_preserves_archive_and_seeds_empty_replay",
+        "tests/test_townlet/regressions/bac/test_historical_dispatch.py::test_archive_failure_is_atomic",
+        "tests/test_townlet/regressions/bac/test_historical_dispatch.py::test_old_identity_recipe_ignores_only_new_absent_fields"
+      ],
+      "command": [
+        {
+          "task": "T03a",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_historical_dispatch.py -q"
+        },
+        {
+          "task": "T24",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_checkpoint_contract.py -q"
+        }
+      ],
+      "expected_assertion": "Known deferred guarantee; RNG/replay-order inventory remains incomplete. Do not count as a new failure of the weaker fresh-episode promise.",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": null,
+      "approval_reference": "BAC-HISTORY-A-2026-11-01",
+      "package_evidence": []
+    },
+    {
+      "id": "K02",
+      "classification": "known qualified/deferred scope",
+      "title": "Generic authored stages and effective meter/reward-mode switching",
+      "in_scope": true,
+      "acceptance_scope": "Known missing capability; current stage labels are not applied mechanics. Extensions are permitted; removing or consolidating exposed options needs approval.",
+      "tasks": [
+        "T02",
+        "T03",
+        "T21",
+        "T36"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_factory_routes_curriculum_modes",
+        "tests/test_townlet/regressions/bac/test_effective_run.py::test_effective_cache_roundtrip",
+        "tests/test_townlet/regressions/bac/test_effective_run.py::test_five_overrides_have_one_runtime_view",
+        "tests/test_townlet/regressions/bac/test_effective_run.py::test_preset_edit_changes_authored_not_execution",
+        "tests/test_townlet/regressions/bac/test_effective_telemetry.py::test_effective_hparams_and_interventions",
+        "tests/test_townlet/regressions/bac/test_options.py::test_all_modes_round_trip",
+        "tests/test_townlet/regressions/bac/test_options.py::test_old_options_remain_accepted",
+        "tests/test_townlet/regressions/bac/test_options.py::test_unqualified_options_are_retained"
+      ],
+      "command": [
+        {
+          "task": "T02",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_options.py -q"
+        },
+        {
+          "task": "T03",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_effective_run.py -q"
+        },
+        {
+          "task": "T21",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_curriculum_factory.py -q"
+        },
+        {
+          "task": "T36",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_effective_telemetry.py -q"
+        }
+      ],
+      "expected_assertion": "Known missing capability; current stage labels are not applied mechanics. Extensions are permitted; removing or consolidating exposed options needs approval.",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": null,
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "K03",
+      "classification": "known qualified/deferred scope",
+      "title": "Historical evaluator and unused direct loaders",
+      "in_scope": true,
+      "acceptance_scope": "Historical FF-only evaluator lacks recurrent hidden-state handling; unused direct loaders keep fixed filenames. Preserve, extend, or seek approval before removing.",
+      "tasks": [
+        "T07",
+        "T32"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_evaluation_entry.py::test_current_evaluator_all_families",
+        "tests/test_townlet/regressions/bac/test_evaluation_entry.py::test_historical_ff_evaluator_retained",
+        "tests/test_townlet/regressions/bac/test_public_loaders.py::test_public_loaders_accept_relocation_and_period_of"
+      ],
+      "command": [
+        {
+          "task": "T07",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_public_loaders.py -q"
+        },
+        {
+          "task": "T32",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_evaluation_entry.py -q"
+        }
+      ],
+      "expected_assertion": "Historical FF-only evaluator lacks recurrent hidden-state handling; unused direct loaders keep fixed filenames. Preserve, extend, or seek approval before removing.",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": null,
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "K04",
+      "classification": "known qualified/deferred scope",
+      "title": "Richer recording selection",
+      "in_scope": true,
+      "acceptance_scope": "Current periodic selection is the bounded supported scope. Richer criteria are a known capability gap, not a newly required engine expansion. Accepted inert options still need truthful handling.",
+      "tasks": [
+        "T02",
+        "T03",
+        "T33",
+        "T36"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_effective_run.py::test_effective_cache_roundtrip",
+        "tests/test_townlet/regressions/bac/test_effective_run.py::test_five_overrides_have_one_runtime_view",
+        "tests/test_townlet/regressions/bac/test_effective_run.py::test_preset_edit_changes_authored_not_execution",
+        "tests/test_townlet/regressions/bac/test_effective_telemetry.py::test_effective_hparams_and_interventions",
+        "tests/test_townlet/regressions/bac/test_options.py::test_all_modes_round_trip",
+        "tests/test_townlet/regressions/bac/test_options.py::test_old_options_remain_accepted",
+        "tests/test_townlet/regressions/bac/test_options.py::test_unqualified_options_are_retained",
+        "tests/test_townlet/regressions/bac/test_recording_drain.py::test_immediate_shutdown_drains_selected_episode",
+        "tests/test_townlet/regressions/bac/test_recording_drain.py::test_shutdown_fences_concurrent_acceptance",
+        "tests/test_townlet/regressions/bac/test_recording_drain.py::test_writer_failure_propagates"
+      ],
+      "command": [
+        {
+          "task": "T02",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_options.py -q"
+        },
+        {
+          "task": "T03",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_effective_run.py -q"
+        },
+        {
+          "task": "T33",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_recording_drain.py -q"
+        },
+        {
+          "task": "T36",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_effective_telemetry.py -q"
+        }
+      ],
+      "expected_assertion": "Current periodic selection is the bounded supported scope. Richer criteria are a known capability gap, not a newly required engine expansion. Accepted inert options still need truthful handling.",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": null,
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "K05",
+      "classification": "known qualified/deferred scope",
+      "title": "Final checkpoint next-episode index",
+      "in_scope": true,
+      "acceptance_scope": "Known reproduced P3: final checkpoint after episode 101 stores 102 and loader adds one. Separate from new periodic epsilon defect.",
+      "tasks": [
+        "T24",
+        "T26",
+        "T38"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_authored_interval_and_empty_run",
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_periodic_epsilon_matches_uninterrupted",
+        "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py::test_periodic_final_next_episode_agree",
+        "tests/test_townlet/regressions/bac/test_checkpoint_contract.py::test_mode_and_boundary_validate_before_mutation",
+        "tests/test_townlet/regressions/bac/test_checkpoint_contract.py::test_numeric_latest_within_run",
+        "tests/test_townlet/regressions/bac/test_joint_restart_serving.py::test_joint_restart_transfer_serving"
+      ],
+      "command": [
+        {
+          "task": "T24",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_checkpoint_contract.py -q"
+        },
+        {
+          "task": "T26",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_checkpoint_boundary.py -q"
+        },
+        {
+          "task": "T38",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_restart_serving.py -q"
+        }
+      ],
+      "expected_assertion": "Known reproduced P3: final checkpoint after episode 101 stores 102 and loader adds one. Separate from new periodic epsilon defect.",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": null,
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "K06",
+      "classification": "known qualified/deferred scope",
+      "title": "Cognitive topology, named modules and execution graphs",
+      "in_scope": true,
+      "acceptance_scope": "Unbuilt design targets, not regressions. The design is extensible; these features may be added when useful and are not prohibited by this review.",
+      "tasks": [
+        "FINAL-DOCUMENTATION"
+      ],
+      "test_nodes": [],
+      "command": [],
+      "expected_assertion": "Unbuilt design targets, not regressions. The design is extensible; these features may be added when useful and are not prohibited by this review.",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": null,
+      "approval_reference": null,
+      "package_evidence": []
+    },
+    {
+      "id": "CANDIDATE-B04-C01",
+      "classification": "API robustness repair plus qualified reachability candidate",
+      "title": "Finite float32 PER priorities [3e38,3e38] overflow during normalization and make sampling fail.",
+      "in_scope": true,
+      "acceptance_scope": "Ordinary authored production-learner reachability was not established; not included in the 21 confirmed existing-contract defect groups. API robustness repair and explicit reachability disposition remain required.",
+      "tasks": [
+        "T13",
+        "T37"
+      ],
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_joint_learning.py::test_joint_family_replay_matrix",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_actual_sampler_ordered_law",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_full_buffer_huber_gradient_zero",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_independent_estimator_exact_expectation",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_large_finite_priorities",
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_ordered_estimator_exact_expectation"
+      ],
+      "command": [
+        {
+          "task": "T13",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_per_estimator.py -q"
+        },
+        {
+          "task": "T37",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_learning.py -q"
+        }
+      ],
+      "expected_assertion": "Numerical API repair and separate reachability qualification; not retroactively one of D01\u2013D21",
+      "candidate_sha": null,
+      "evidence_paths": [],
+      "disposition": "PLANNED; executable current-candidate acceptance owed",
+      "remaining_severity": "P2 candidate; ordinary production reachability not established",
+      "approval_reference": null,
+      "package_evidence": [],
+      "historical_id": "C01"
+    }
+  ],
+  "approved_decisions": [
+    {
+      "id": "BAC-HISTORY-A-2026-11-01",
+      "approver": "John (explicit user reply)",
+      "choice": "A: preserve artifacts/history for inspection/export; fresh qualified replay for pre-capture histories",
+      "scope": "demo9/population6/uniform4/PER4/sequence5 maskless historical learning only",
+      "does_not_authorize": [
+        "data deletion",
+        "unrelated scope reduction",
+        "removal of current captured-mask full resume"
+      ]
+    }
+  ],
+  "user_decisions_pending": [],
+  "refuted_or_reconciled": [
+    {
+      "title": "LR scheduler unit",
+      "reports": [
+        "B01-G1",
+        "B03"
+      ],
+      "contracts": [
+        "BAC-C07"
+      ],
+      "resolution": "Updated design chooses successful optimizer updates. Current runtime is correct for this choice; older episode-based examples are superseded documentation, not an unresolved scheduler bug."
+    },
+    {
+      "title": "Episode-5000 fixed-layout mutation",
+      "reports": [
+        "architecture:A2",
+        "B09"
+      ],
+      "contracts": [
+        "BAC-C12"
+      ],
+      "resolution": "Refuted in the actual fixed Grid2D pack; preserve the passing control. Misleading generalization logging is drift, not a proved layout mutation."
+    },
+    {
+      "title": "Intrinsic enabled toggles",
+      "reports": [
+        "B01",
+        "architecture"
+      ],
+      "contracts": [
+        "BAC-C02",
+        "BAC-C08"
+      ],
+      "resolution": "Refuted premise: intrinsic.enabled and intrinsic.annealing.enabled do not exist and refuse as extras. Zero initial weight is a valid zero-contribution setting."
+    },
+    {
+      "title": "Primary base brain versus effective brain",
+      "reports": [
+        "B07",
+        "B09"
+      ],
+      "contracts": [
+        "BAC-C02"
+      ],
+      "resolution": "Storing the selected base plus training overrides is valid. All five overrides, full level replacement, transport and cache controls passed; no raw-base mismatch defect is counted."
+    },
+    {
+      "title": "Modified-cache tamper hypothesis",
+      "reports": [
+        "B08"
+      ],
+      "contracts": [
+        "BAC-C02",
+        "BAC-C11"
+      ],
+      "resolution": "No ordinary stale authored-cache failure reproduced. Trust-boundary observation is not promoted to a production defect or a security finding."
+    }
+  ],
+  "optional_p3": [],
+  "final_candidate_sha": null,
+  "final_gates": [],
+  "fresh_final_reviews": [],
+  "note": "Planned test nodes are traceability targets. Only recorded current-source execution and independent review can close a row. Earlier package observations never substitute for final acceptance.",
+  "packages": [
+    {
+      "task": "T01",
+      "source_commit": "bd683e4f9c14840822a0c32213df4a403e62e18c",
+      "candidate_tree": "aa24cd3fbdd49a252c8437b18cc1c0ad2402b7a6",
+      "status": "implemented; independently approved; full standing gate passed",
+      "focused_result": "104 passed",
+      "independent_result": "104 passed plus 175 typed-float refusals and 30 zero-width update controls",
+      "full_repository_result": "5599 passed, 15 skipped, 15 warnings; 1145.26s; 3 xdist workers plus concurrent independent checks",
+      "other_gates": [
+        "Ruff",
+        "Black",
+        "mypy",
+        "no-defaults ratchet614",
+        "compiler CLI fleet",
+        "expression documentation check"
+      ],
+      "reports": [
+        "package-reviews/T01-implementation.md",
+        "package-reviews/T01-independent-review.md"
+      ],
+      "final_acceptance": "owed at final candidate; dependent T02/T03/G06 runtime evidence still required"
+    }
+  ],
+  "evidence_note": "T01 precommit full gate verified the exact committed tree and source hashes in every pytest process. Historical fixture checks qualify data at the original source only; new archive policy acceptance remains owed."
+}

@@ -1,0 +1,262 @@
+{
+  "commit": "4aa5363b5de54d9a112977c32c2975f37627197f",
+  "checkout": "/tmp/hamlet-bac-4aa5363b",
+  "limits": {
+    "implementation_files": 5,
+    "implementation_lines": 5000
+  },
+  "slices": [
+    {
+      "id": "B01",
+      "name": "Brain authoring and construction",
+      "files": [
+        "src/townlet/config/brain_config.py",
+        "src/townlet/config/training_v2_config.py",
+        "src/townlet/agent/network_factory.py",
+        "src/townlet/agent/optimizer_factory.py",
+        "src/townlet/agent/loss_factory.py"
+      ],
+      "focus": "Declared architecture, optimizer, loss, replay/Q-learning and training overrides: every accepted field must change behavior or refuse; required/extra fields; invalid combinations; actual optimizer/loss/schedule behavior.",
+      "line_counts": {
+        "src/townlet/config/brain_config.py": 561,
+        "src/townlet/config/training_v2_config.py": 440,
+        "src/townlet/agent/network_factory.py": 171,
+        "src/townlet/agent/optimizer_factory.py": 162,
+        "src/townlet/agent/loss_factory.py": 42
+      },
+      "total_lines": 1376,
+      "file_count": 5
+    },
+    {
+      "id": "B02",
+      "name": "Networks and token observation ABI",
+      "files": [
+        "src/townlet/agent/networks.py",
+        "src/townlet/agent/token_input.py",
+        "src/townlet/agent/token_diagnostics.py",
+        "src/townlet/universe/dto/token_spec.py",
+        "src/townlet/universe/token_hashes.py"
+      ],
+      "focus": "Flat, dueling, token-set and recurrent networks; compiled token ABI, masks/empty sets, mean/attention aggregation, hidden state shape, static context, permutation/visibility and transfer identity.",
+      "line_counts": {
+        "src/townlet/agent/networks.py": 474,
+        "src/townlet/agent/token_input.py": 116,
+        "src/townlet/agent/token_diagnostics.py": 180,
+        "src/townlet/universe/dto/token_spec.py": 2093,
+        "src/townlet/universe/token_hashes.py": 131
+      },
+      "total_lines": 2994,
+      "file_count": 5
+    },
+    {
+      "id": "B03",
+      "name": "Learner and lane lifecycle",
+      "files": [
+        "src/townlet/population/vectorized.py",
+        "src/townlet/population/base.py",
+        "src/townlet/population/runtime_registry.py",
+        "src/townlet/training/state.py",
+        "src/townlet/training/episode.py"
+      ],
+      "focus": "Real Q updates, vanilla/Double DQN, successor action legality, recurrent targets/burn-in/padding/hidden state, learning clocks, target sync, clipping, eligible lanes, completion exactly once, checkpoint state. PRIORITY: Astra sees action selection masked but Bellman targets unmasked at population lines894-917,999-1000: run disabled-successor-action high-Q witness for feedforward/recurrent and both DQN variants. No claim without runtime proof or fully explicit source-derived proof.",
+      "line_counts": {
+        "src/townlet/population/vectorized.py": 1847,
+        "src/townlet/population/base.py": 69,
+        "src/townlet/population/runtime_registry.py": 134,
+        "src/townlet/training/state.py": 261,
+        "src/townlet/training/episode.py": 20
+      },
+      "total_lines": 2331,
+      "file_count": 5
+    },
+    {
+      "id": "B04",
+      "name": "Replay and sequence storage",
+      "files": [
+        "src/townlet/training/replay_buffer.py",
+        "src/townlet/training/prioritized_replay_buffer.py",
+        "src/townlet/training/sequential_replay_buffer.py",
+        "src/townlet/training/episode_accounting.py",
+        "src/townlet/numeric.py"
+      ],
+      "focus": "Uniform/PER sampling, alpha/beta/importance weights/priorities, zero/NaN/invalid refusals, terminal vs truncation, recurrent sequences/padding/episode separation, restore validation/atomicity/RNG. Coordinate with B03 on missing next-action legality mask in replay and targets.",
+      "line_counts": {
+        "src/townlet/training/replay_buffer.py": 651,
+        "src/townlet/training/prioritized_replay_buffer.py": 758,
+        "src/townlet/training/sequential_replay_buffer.py": 543,
+        "src/townlet/training/episode_accounting.py": 75,
+        "src/townlet/numeric.py": 33
+      },
+      "total_lines": 2060,
+      "file_count": 5
+    },
+    {
+      "id": "B05",
+      "name": "Exploration and intrinsic reward",
+      "files": [
+        "src/townlet/exploration/action_selection.py",
+        "src/townlet/exploration/base.py",
+        "src/townlet/exploration/epsilon_greedy.py",
+        "src/townlet/exploration/rnd.py",
+        "src/townlet/exploration/adaptive_intrinsic.py"
+      ],
+      "focus": "Action legality, all-invalid mask and epsilon edges; RND predictor/normalization eligible samples, intrinsic scale, annealing gates/clocks, episode events, determinism/resume; accepted knobs with actual consumers. Inspect algorithm correctness, not claims of convergence.",
+      "line_counts": {
+        "src/townlet/exploration/action_selection.py": 93,
+        "src/townlet/exploration/base.py": 118,
+        "src/townlet/exploration/epsilon_greedy.py": 118,
+        "src/townlet/exploration/rnd.py": 302,
+        "src/townlet/exploration/adaptive_intrinsic.py": 226
+      },
+      "total_lines": 857,
+      "file_count": 5
+    },
+    {
+      "id": "B06",
+      "name": "Curriculum and progression",
+      "files": [
+        "src/townlet/curriculum/base.py",
+        "src/townlet/curriculum/factory.py",
+        "src/townlet/curriculum/static.py",
+        "src/townlet/curriculum/adversarial.py",
+        "src/townlet/config/curriculum_config.py"
+      ],
+      "focus": "Authored curriculum/thresholds, declared stages, progression/regression/progress windows, per-lane completion events vs batch updates, static vs adversarial behavior, checkpoint coverage, no survival-world special cases.",
+      "line_counts": {
+        "src/townlet/curriculum/base.py": 86,
+        "src/townlet/curriculum/factory.py": 70,
+        "src/townlet/curriculum/static.py": 143,
+        "src/townlet/curriculum/adversarial.py": 565,
+        "src/townlet/config/curriculum_config.py": 81
+      },
+      "total_lines": 945,
+      "file_count": 5
+    },
+    {
+      "id": "B07",
+      "name": "Brain compilation and effective configuration",
+      "files": [
+        "src/townlet/universe/compiler.py",
+        "src/townlet/universe/raw_configs_v21.py",
+        "src/townlet/universe/declarations.py",
+        "src/townlet/universe/compilers/metadata.py",
+        "src/townlet/universe/validation/semantics.py"
+      ],
+      "focus": "Content-based brain/training discovery, full level overrides, five effective brain overrides, provenance/location of refusal, compiled vs runtime semantics; current brain and training contracts across all four network families. Restrict compiler review to BaC-facing logic; VFS was already reviewed.",
+      "line_counts": {
+        "src/townlet/universe/compiler.py": 965,
+        "src/townlet/universe/raw_configs_v21.py": 190,
+        "src/townlet/universe/declarations.py": 626,
+        "src/townlet/universe/compilers/metadata.py": 165,
+        "src/townlet/universe/validation/semantics.py": 842
+      },
+      "total_lines": 2788,
+      "file_count": 5
+    },
+    {
+      "id": "B08",
+      "name": "Artifacts, checkpoint identity and transfer",
+      "files": [
+        "src/townlet/universe/compiled.py",
+        "src/townlet/training/checkpoint_utils.py",
+        "src/townlet/universe/token_hashes.py",
+        "src/townlet/universe/pipeline.py",
+        "src/townlet/config/base.py"
+      ],
+      "focus": "Effective brain identity/lineage, artifact and cache round-trip, checkpoint strict validation, same-universe identity vs explicit cross-universe token transfer, token/schema vs flat/layout checks, atomic load/refusal. Source state owners B03/B09 share seam; request their evidence.",
+      "line_counts": {
+        "src/townlet/universe/compiled.py": 1566,
+        "src/townlet/training/checkpoint_utils.py": 777,
+        "src/townlet/universe/token_hashes.py": 131,
+        "src/townlet/universe/pipeline.py": 29,
+        "src/townlet/config/base.py": 91
+      },
+      "total_lines": 2594,
+      "file_count": 5
+    },
+    {
+      "id": "B09",
+      "name": "Training runner and live inference",
+      "files": [
+        "src/townlet/demo/runner.py",
+        "src/townlet/demo/live_inference.py",
+        "src/townlet/demo/unified_server.py",
+        "src/townlet/determinism.py",
+        "src/townlet/training/episode.py"
+      ],
+      "focus": "Authored configuration actually used by production runner, four-family train/inference parity, budgets/caps/resume state/RNG, checkpoint lifecycle, effective brain reconstruction. PRIORITY Astra sees unconditional episode5000 generalization randomization runner543-565 and always-AdaptiveIntrinsicExploration runner423-441: reproduce declared-vs-effective mismatch cheaply without a 5000-episode run.",
+      "line_counts": {
+        "src/townlet/demo/runner.py": 998,
+        "src/townlet/demo/live_inference.py": 1249,
+        "src/townlet/demo/unified_server.py": 540,
+        "src/townlet/determinism.py": 29,
+        "src/townlet/training/episode.py": 20
+      },
+      "total_lines": 2836,
+      "file_count": 5
+    },
+    {
+      "id": "B10",
+      "name": "Training outcomes and persisted telemetry",
+      "files": [
+        "src/townlet/demo/database.py",
+        "src/townlet/training/tensorboard_logger.py",
+        "src/townlet/recording/recorder.py",
+        "src/townlet/population/runtime_registry.py",
+        "src/townlet/training/episode_accounting.py"
+      ],
+      "focus": "Truthful persisted steps/transitions/survival/reward/completion, per-lane vs vector units, checkpoint step/curve linkage, recorder transitions after death, no duplicated completion/curriculum updates, consumers distinguish completed/interrupted/failed.",
+      "line_counts": {
+        "src/townlet/demo/database.py": 639,
+        "src/townlet/training/tensorboard_logger.py": 486,
+        "src/townlet/recording/recorder.py": 321,
+        "src/townlet/population/runtime_registry.py": 134,
+        "src/townlet/training/episode_accounting.py": 75
+      },
+      "total_lines": 1655,
+      "file_count": 5
+    },
+    {
+      "id": "B11",
+      "name": "Environment-to-learner boundary",
+      "files": [
+        "src/townlet/environment/vectorized_env.py",
+        "src/townlet/environment/action_mask_builder.py",
+        "src/townlet/training/state.py",
+        "src/townlet/training/episode_accounting.py",
+        "src/townlet/training/episode.py"
+      ],
+      "focus": "Only BaC boundary, not a new VFS audit: reset/step observation alignment, eligibility on entry and terminal successor, action legality, termination vs truncation, agent/world independence and reset/resume ownership. Minimal authored lifecycle witness [2,5] ->7 transitions; send mismatches to B03/B04/B09.",
+      "line_counts": {
+        "src/townlet/environment/vectorized_env.py": 1702,
+        "src/townlet/environment/action_mask_builder.py": 206,
+        "src/townlet/training/state.py": 261,
+        "src/townlet/training/episode_accounting.py": 75,
+        "src/townlet/training/episode.py": 20
+      },
+      "total_lines": 2264,
+      "file_count": 5
+    },
+    {
+      "id": "B12",
+      "name": "Launchers, baseline evaluation and configuration loaders",
+      "files": [
+        "scripts/run_demo.py",
+        "scripts/l2_baseline.py",
+        "src/townlet/config/exploration.py",
+        "src/townlet/config/curriculum.py",
+        "src/townlet/demo/runner.py"
+      ],
+      "focus": "CLI-to-runner semantics, train/eval toggles and declared choices, baseline comparability, direct YAML readers vs declaration content discovery, flags/knobs ignored or late crashes, runnable authored workflow. Historical baseline script is not automatically current authority.",
+      "line_counts": {
+        "scripts/run_demo.py": 242,
+        "scripts/l2_baseline.py": 279,
+        "src/townlet/config/exploration.py": 23,
+        "src/townlet/config/curriculum.py": 13,
+        "src/townlet/demo/runner.py": 998
+      },
+      "total_lines": 1555,
+      "file_count": 5
+    }
+  ]
+}

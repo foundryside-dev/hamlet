@@ -1,0 +1,1943 @@
+{
+  "$": {
+    "kind": "mapping",
+    "keys": [
+      "version",
+      "episode",
+      "timestamp",
+      "substrate_metadata",
+      "population_state",
+      "curriculum_state",
+      "affordance_layout",
+      "vfs_persistent_state",
+      "vfs_random_state",
+      "agent_ids",
+      "epsilon",
+      "completed_live_agent_steps",
+      "training_config",
+      "config_dir",
+      "primary_level",
+      "action_dim",
+      "meter_count",
+      "observation_schema_hash",
+      "drive_hash",
+      "curriculum_hash",
+      "bars_hash",
+      "affordances_hash",
+      "training_hash",
+      "items_appearance_hash",
+      "brain_hash",
+      "pack_brain_hash",
+      "vfs_hash",
+      "token_type_schema_hash",
+      "layout_hash",
+      "experiment_hash",
+      "stratum_hash",
+      "environment_hash",
+      "actions_hash",
+      "items_hash",
+      "variables_hash",
+      "effects_hash"
+    ]
+  },
+  "$.version": {
+    "kind": "int",
+    "value": 9
+  },
+  "$.episode": {
+    "kind": "int",
+    "value": 2
+  },
+  "$.timestamp": {
+    "kind": "float",
+    "value": 1793490124.394793
+  },
+  "$.substrate_metadata": {
+    "kind": "mapping",
+    "keys": [
+      "position_dim",
+      "substrate_type"
+    ]
+  },
+  "$.substrate_metadata.position_dim": {
+    "kind": "int",
+    "value": 2
+  },
+  "$.substrate_metadata.substrate_type": {
+    "kind": "str",
+    "value": "Grid2DSubstrate"
+  },
+  "$.population_state": {
+    "kind": "mapping",
+    "keys": [
+      "version",
+      "q_network",
+      "optimizer",
+      "scheduler",
+      "total_steps",
+      "exploration_state",
+      "universe_metadata",
+      "target_network",
+      "training_step_counter",
+      "replay_buffer"
+    ]
+  },
+  "$.population_state.version": {
+    "kind": "int",
+    "value": 6
+  },
+  "$.population_state.q_network": {
+    "kind": "mapping",
+    "keys": [
+      "0.weight",
+      "0.bias",
+      "2.weight",
+      "2.bias"
+    ]
+  },
+  "$.population_state.q_network.0.weight": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      16,
+      118
+    ],
+    "sha256": "326aafc0f90ea50450fd0149bca85eb52bfa4b7f291e3c84cc1d06a87e4d95b1"
+  },
+  "$.population_state.q_network.0.bias": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      16
+    ],
+    "sha256": "4bc4000bde3c22b883489c49b971367126cfe05b2e0851b671b485635ec5e934"
+  },
+  "$.population_state.q_network.2.weight": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      15,
+      16
+    ],
+    "sha256": "afb6acf5aa9831fc60ebf1f03cdad0fd04852f0a9d52c9ed2d0660da3d460718"
+  },
+  "$.population_state.q_network.2.bias": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      15
+    ],
+    "sha256": "e08f43f9e8e1df541d52b29404c693a1f4a5e73bbb983b3bc06c3dbb2f77f82e"
+  },
+  "$.population_state.optimizer": {
+    "kind": "mapping",
+    "keys": [
+      "state",
+      "param_groups"
+    ]
+  },
+  "$.population_state.optimizer.state": {
+    "kind": "mapping",
+    "keys": [
+      "0",
+      "1",
+      "2",
+      "3"
+    ]
+  },
+  "$.population_state.optimizer.state.0": {
+    "kind": "mapping",
+    "keys": [
+      "step",
+      "exp_avg",
+      "exp_avg_sq"
+    ]
+  },
+  "$.population_state.optimizer.state.0.step": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [],
+    "sha256": "ea2845900b5856c9bf354b1aa9761b5aa6888e5ed61738fe9579ca42bc0f6054"
+  },
+  "$.population_state.optimizer.state.0.exp_avg": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      16,
+      118
+    ],
+    "sha256": "7afa5d179746e05cad91f1902da54036147a9c2e48ee3bfd5f5b263f1b84035f"
+  },
+  "$.population_state.optimizer.state.0.exp_avg_sq": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      16,
+      118
+    ],
+    "sha256": "8de07e480bf6c0d7e69dc5375503a74b8bd1ad98115b88597fc579ec1db1f9ec"
+  },
+  "$.population_state.optimizer.state.1": {
+    "kind": "mapping",
+    "keys": [
+      "step",
+      "exp_avg",
+      "exp_avg_sq"
+    ]
+  },
+  "$.population_state.optimizer.state.1.step": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [],
+    "sha256": "ea2845900b5856c9bf354b1aa9761b5aa6888e5ed61738fe9579ca42bc0f6054"
+  },
+  "$.population_state.optimizer.state.1.exp_avg": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      16
+    ],
+    "sha256": "cae737aa553cad724068547bf3728fe25440950805d86e0b1a3aec761c6562aa"
+  },
+  "$.population_state.optimizer.state.1.exp_avg_sq": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      16
+    ],
+    "sha256": "95acf0d9fb8b212f078d3e24bf7cd0b06a634cf0b85eb15de5889979c628459c"
+  },
+  "$.population_state.optimizer.state.2": {
+    "kind": "mapping",
+    "keys": [
+      "step",
+      "exp_avg",
+      "exp_avg_sq"
+    ]
+  },
+  "$.population_state.optimizer.state.2.step": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [],
+    "sha256": "ea2845900b5856c9bf354b1aa9761b5aa6888e5ed61738fe9579ca42bc0f6054"
+  },
+  "$.population_state.optimizer.state.2.exp_avg": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      15,
+      16
+    ],
+    "sha256": "b011643c02510ea3719010c5242160044afedc7bc4b9faead7b3c7048c7b414a"
+  },
+  "$.population_state.optimizer.state.2.exp_avg_sq": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      15,
+      16
+    ],
+    "sha256": "80af722db109d863348e903ad268fa22a9086fefd8abd75d78896694dbb0a472"
+  },
+  "$.population_state.optimizer.state.3": {
+    "kind": "mapping",
+    "keys": [
+      "step",
+      "exp_avg",
+      "exp_avg_sq"
+    ]
+  },
+  "$.population_state.optimizer.state.3.step": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [],
+    "sha256": "ea2845900b5856c9bf354b1aa9761b5aa6888e5ed61738fe9579ca42bc0f6054"
+  },
+  "$.population_state.optimizer.state.3.exp_avg": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      15
+    ],
+    "sha256": "2d7b412fd3e8c4f22f7f978aa94da110d105b3d84ba4c879c09c82e0e3d2687e"
+  },
+  "$.population_state.optimizer.state.3.exp_avg_sq": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      15
+    ],
+    "sha256": "d315175e993750ca8d278db02c411491d386d223f9e06603292b2d7d24e87912"
+  },
+  "$.population_state.optimizer.param_groups": {
+    "kind": "list",
+    "length": 1
+  },
+  "$.population_state.optimizer.param_groups[0]": {
+    "kind": "mapping",
+    "keys": [
+      "lr",
+      "betas",
+      "eps",
+      "weight_decay",
+      "amsgrad",
+      "maximize",
+      "foreach",
+      "capturable",
+      "differentiable",
+      "fused",
+      "decoupled_weight_decay",
+      "params"
+    ]
+  },
+  "$.population_state.optimizer.param_groups[0].lr": {
+    "kind": "float",
+    "value": 0.0001
+  },
+  "$.population_state.optimizer.param_groups[0].betas": {
+    "kind": "tuple",
+    "length": 2
+  },
+  "$.population_state.optimizer.param_groups[0].betas[0]": {
+    "kind": "float",
+    "value": 0.9
+  },
+  "$.population_state.optimizer.param_groups[0].betas[1]": {
+    "kind": "float",
+    "value": 0.999
+  },
+  "$.population_state.optimizer.param_groups[0].eps": {
+    "kind": "float",
+    "value": 1e-08
+  },
+  "$.population_state.optimizer.param_groups[0].weight_decay": {
+    "kind": "float",
+    "value": 0.0
+  },
+  "$.population_state.optimizer.param_groups[0].amsgrad": {
+    "kind": "bool",
+    "value": false
+  },
+  "$.population_state.optimizer.param_groups[0].maximize": {
+    "kind": "bool",
+    "value": false
+  },
+  "$.population_state.optimizer.param_groups[0].foreach": {
+    "kind": "NoneType",
+    "value": null
+  },
+  "$.population_state.optimizer.param_groups[0].capturable": {
+    "kind": "bool",
+    "value": false
+  },
+  "$.population_state.optimizer.param_groups[0].differentiable": {
+    "kind": "bool",
+    "value": false
+  },
+  "$.population_state.optimizer.param_groups[0].fused": {
+    "kind": "NoneType",
+    "value": null
+  },
+  "$.population_state.optimizer.param_groups[0].decoupled_weight_decay": {
+    "kind": "bool",
+    "value": false
+  },
+  "$.population_state.optimizer.param_groups[0].params": {
+    "kind": "list",
+    "length": 4
+  },
+  "$.population_state.optimizer.param_groups[0].params[0]": {
+    "kind": "int",
+    "value": 0
+  },
+  "$.population_state.optimizer.param_groups[0].params[1]": {
+    "kind": "int",
+    "value": 1
+  },
+  "$.population_state.optimizer.param_groups[0].params[2]": {
+    "kind": "int",
+    "value": 2
+  },
+  "$.population_state.optimizer.param_groups[0].params[3]": {
+    "kind": "int",
+    "value": 3
+  },
+  "$.population_state.scheduler": {
+    "kind": "NoneType",
+    "value": null
+  },
+  "$.population_state.total_steps": {
+    "kind": "int",
+    "value": 4
+  },
+  "$.population_state.exploration_state": {
+    "kind": "mapping",
+    "keys": [
+      "rnd_state",
+      "current_intrinsic_weight",
+      "min_intrinsic_weight",
+      "variance_threshold",
+      "min_survival_fraction",
+      "max_episode_length",
+      "survival_window",
+      "decay_rate",
+      "survival_history"
+    ]
+  },
+  "$.population_state.exploration_state.rnd_state": {
+    "kind": "mapping",
+    "keys": [
+      "fixed_network",
+      "predictor_network",
+      "optimizer",
+      "epsilon",
+      "epsilon_min",
+      "epsilon_decay",
+      "obs_dim",
+      "embed_dim",
+      "reward_rms_mean",
+      "reward_rms_var",
+      "reward_rms_count"
+    ]
+  },
+  "$.population_state.exploration_state.rnd_state.fixed_network": {
+    "kind": "mapping",
+    "keys": [
+      "net.0.weight",
+      "net.0.bias",
+      "net.2.weight",
+      "net.2.bias",
+      "net.4.weight",
+      "net.4.bias"
+    ]
+  },
+  "$.population_state.exploration_state.rnd_state.fixed_network.net.0.weight": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      256,
+      118
+    ],
+    "sha256": "de5a593409610da53b42b155e365d411a7d48c1c22c9df3a6ed698ddc9db2b21"
+  },
+  "$.population_state.exploration_state.rnd_state.fixed_network.net.0.bias": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      256
+    ],
+    "sha256": "6936011006c6032f946e52517e8301fc7c787d7079ed36e7a0f2b019a914a6af"
+  },
+  "$.population_state.exploration_state.rnd_state.fixed_network.net.2.weight": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      128,
+      256
+    ],
+    "sha256": "c3da48d10235873915fde097add0e22fc21d2efa770aab1caaeacee078512025"
+  },
+  "$.population_state.exploration_state.rnd_state.fixed_network.net.2.bias": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      128
+    ],
+    "sha256": "451777e20bd15aaf70994bbaba43af4dd0164cc9ebd2ed1bceb78b6b3dbec85c"
+  },
+  "$.population_state.exploration_state.rnd_state.fixed_network.net.4.weight": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      128,
+      128
+    ],
+    "sha256": "13665a5895b94fd9345c785dfa2f3a579b91c2564f6b65d044da835179c928b1"
+  },
+  "$.population_state.exploration_state.rnd_state.fixed_network.net.4.bias": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      128
+    ],
+    "sha256": "ead5f12c374cd6dbb06d7ae643cc7e0eae1698218a457501af141253c91eda1d"
+  },
+  "$.population_state.exploration_state.rnd_state.predictor_network": {
+    "kind": "mapping",
+    "keys": [
+      "net.0.weight",
+      "net.0.bias",
+      "net.2.weight",
+      "net.2.bias",
+      "net.4.weight",
+      "net.4.bias"
+    ]
+  },
+  "$.population_state.exploration_state.rnd_state.predictor_network.net.0.weight": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      256,
+      118
+    ],
+    "sha256": "ddd534e023812d95c04fda67c79ddd610c656caf0b55c8fa6d35d15d4785c743"
+  },
+  "$.population_state.exploration_state.rnd_state.predictor_network.net.0.bias": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      256
+    ],
+    "sha256": "063ad4d03120ac7087fdb9230f186d47932e625b6caa6b4c961a1ec7bcb5eec5"
+  },
+  "$.population_state.exploration_state.rnd_state.predictor_network.net.2.weight": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      128,
+      256
+    ],
+    "sha256": "5e93e6806bad7a84ecb345bc795406e09cefe1b10a2e8808fbfc4c223492d02e"
+  },
+  "$.population_state.exploration_state.rnd_state.predictor_network.net.2.bias": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      128
+    ],
+    "sha256": "6d27e6394516d144f7e9d1c59188cc40bd5ae64e20d3e0224bcd3b736f280606"
+  },
+  "$.population_state.exploration_state.rnd_state.predictor_network.net.4.weight": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      128,
+      128
+    ],
+    "sha256": "87b89696456084b78a59b499e52c82f137b060724480cf241077a391a867c32d"
+  },
+  "$.population_state.exploration_state.rnd_state.predictor_network.net.4.bias": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      128
+    ],
+    "sha256": "8584a610f43a74471c3d36378f0d1f8c6253f096ef1e346358246e1e3ef925e7"
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer": {
+    "kind": "mapping",
+    "keys": [
+      "state",
+      "param_groups"
+    ]
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.state": {
+    "kind": "mapping",
+    "keys": [
+      "0",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5"
+    ]
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.state.0": {
+    "kind": "mapping",
+    "keys": [
+      "step",
+      "exp_avg",
+      "exp_avg_sq"
+    ]
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.state.0.step": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [],
+    "sha256": "d88c86f15bbea365d658ad95a81d45367c465f7af6f7264fb077f01747ddc77d"
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.state.0.exp_avg": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      256,
+      118
+    ],
+    "sha256": "2370ce126eb6b1c1c7a599416d78540b7b79ff04e1c259d93d7061ba569a4efe"
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.state.0.exp_avg_sq": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      256,
+      118
+    ],
+    "sha256": "9eb5624d13df8c703403b9f6f634a5290b0f9ca7776b2525ca549e715d5c92ac"
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.state.1": {
+    "kind": "mapping",
+    "keys": [
+      "step",
+      "exp_avg",
+      "exp_avg_sq"
+    ]
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.state.1.step": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [],
+    "sha256": "d88c86f15bbea365d658ad95a81d45367c465f7af6f7264fb077f01747ddc77d"
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.state.1.exp_avg": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      256
+    ],
+    "sha256": "1e939171a7114d2962ac77018fec9441d32f8005c8c5ac41c7f5bbcfe30981d8"
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.state.1.exp_avg_sq": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      256
+    ],
+    "sha256": "33f2ff3d162eb3418ca44a5eb160a1218911dfb5b0f9b2268d843bc827530af4"
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.state.2": {
+    "kind": "mapping",
+    "keys": [
+      "step",
+      "exp_avg",
+      "exp_avg_sq"
+    ]
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.state.2.step": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [],
+    "sha256": "d88c86f15bbea365d658ad95a81d45367c465f7af6f7264fb077f01747ddc77d"
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.state.2.exp_avg": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      128,
+      256
+    ],
+    "sha256": "fe3e80f1c1871ad774c2808bf897a54a231b42dae0806bf5e2a70ac09a3ab822"
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.state.2.exp_avg_sq": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      128,
+      256
+    ],
+    "sha256": "43fab56e598dbaa9cf8cf3f3c4d217914abeb06955a3a4e3580bf8dd42d953b1"
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.state.3": {
+    "kind": "mapping",
+    "keys": [
+      "step",
+      "exp_avg",
+      "exp_avg_sq"
+    ]
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.state.3.step": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [],
+    "sha256": "d88c86f15bbea365d658ad95a81d45367c465f7af6f7264fb077f01747ddc77d"
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.state.3.exp_avg": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      128
+    ],
+    "sha256": "8496dc3c073778ac344478b730fe6a665ce969931d80b700246acbe05e73ff79"
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.state.3.exp_avg_sq": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      128
+    ],
+    "sha256": "3aed77d6433a03ce948287ecafe4be0d89cc96ba5c83b5e8403bd1e411b17246"
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.state.4": {
+    "kind": "mapping",
+    "keys": [
+      "step",
+      "exp_avg",
+      "exp_avg_sq"
+    ]
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.state.4.step": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [],
+    "sha256": "d88c86f15bbea365d658ad95a81d45367c465f7af6f7264fb077f01747ddc77d"
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.state.4.exp_avg": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      128,
+      128
+    ],
+    "sha256": "0b621bc5a79402790773d1c40eaa587642d2dc66e7b4c12966733957e451f28d"
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.state.4.exp_avg_sq": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      128,
+      128
+    ],
+    "sha256": "7447bdf3aa9dd5175e255bf6ff8c30115b735acae5066928fd45c403f1f92270"
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.state.5": {
+    "kind": "mapping",
+    "keys": [
+      "step",
+      "exp_avg",
+      "exp_avg_sq"
+    ]
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.state.5.step": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [],
+    "sha256": "d88c86f15bbea365d658ad95a81d45367c465f7af6f7264fb077f01747ddc77d"
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.state.5.exp_avg": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      128
+    ],
+    "sha256": "0508e7c4c6a060f768c35df1f362ac8c98cd62c3a0726915992f9bbc8ab2327f"
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.state.5.exp_avg_sq": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      128
+    ],
+    "sha256": "b07c0b55d043ded669793c97453c7633547cb1f2afeb4d865385f8626f1f797e"
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.param_groups": {
+    "kind": "list",
+    "length": 1
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.param_groups[0]": {
+    "kind": "mapping",
+    "keys": [
+      "lr",
+      "betas",
+      "eps",
+      "weight_decay",
+      "amsgrad",
+      "maximize",
+      "foreach",
+      "capturable",
+      "differentiable",
+      "fused",
+      "decoupled_weight_decay",
+      "params"
+    ]
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.param_groups[0].lr": {
+    "kind": "float",
+    "value": 0.0001
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.param_groups[0].betas": {
+    "kind": "tuple",
+    "length": 2
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.param_groups[0].betas[0]": {
+    "kind": "float",
+    "value": 0.9
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.param_groups[0].betas[1]": {
+    "kind": "float",
+    "value": 0.999
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.param_groups[0].eps": {
+    "kind": "float",
+    "value": 1e-08
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.param_groups[0].weight_decay": {
+    "kind": "int",
+    "value": 0
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.param_groups[0].amsgrad": {
+    "kind": "bool",
+    "value": false
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.param_groups[0].maximize": {
+    "kind": "bool",
+    "value": false
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.param_groups[0].foreach": {
+    "kind": "NoneType",
+    "value": null
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.param_groups[0].capturable": {
+    "kind": "bool",
+    "value": false
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.param_groups[0].differentiable": {
+    "kind": "bool",
+    "value": false
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.param_groups[0].fused": {
+    "kind": "NoneType",
+    "value": null
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.param_groups[0].decoupled_weight_decay": {
+    "kind": "bool",
+    "value": false
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.param_groups[0].params": {
+    "kind": "list",
+    "length": 6
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.param_groups[0].params[0]": {
+    "kind": "int",
+    "value": 0
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.param_groups[0].params[1]": {
+    "kind": "int",
+    "value": 1
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.param_groups[0].params[2]": {
+    "kind": "int",
+    "value": 2
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.param_groups[0].params[3]": {
+    "kind": "int",
+    "value": 3
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.param_groups[0].params[4]": {
+    "kind": "int",
+    "value": 4
+  },
+  "$.population_state.exploration_state.rnd_state.optimizer.param_groups[0].params[5]": {
+    "kind": "int",
+    "value": 5
+  },
+  "$.population_state.exploration_state.rnd_state.epsilon": {
+    "kind": "float",
+    "value": 0.2
+  },
+  "$.population_state.exploration_state.rnd_state.epsilon_min": {
+    "kind": "float",
+    "value": 0.0
+  },
+  "$.population_state.exploration_state.rnd_state.epsilon_decay": {
+    "kind": "float",
+    "value": 0.5
+  },
+  "$.population_state.exploration_state.rnd_state.obs_dim": {
+    "kind": "int",
+    "value": 118
+  },
+  "$.population_state.exploration_state.rnd_state.embed_dim": {
+    "kind": "int",
+    "value": 128
+  },
+  "$.population_state.exploration_state.rnd_state.reward_rms_mean": {
+    "kind": "float32",
+    "value": "0.012643669"
+  },
+  "$.population_state.exploration_state.rnd_state.reward_rms_var": {
+    "kind": "float32",
+    "value": "2.524342e-05"
+  },
+  "$.population_state.exploration_state.rnd_state.reward_rms_count": {
+    "kind": "float",
+    "value": 4.0001
+  },
+  "$.population_state.exploration_state.current_intrinsic_weight": {
+    "kind": "float",
+    "value": 0.0
+  },
+  "$.population_state.exploration_state.min_intrinsic_weight": {
+    "kind": "float",
+    "value": 0.0
+  },
+  "$.population_state.exploration_state.variance_threshold": {
+    "kind": "float",
+    "value": 100.0
+  },
+  "$.population_state.exploration_state.min_survival_fraction": {
+    "kind": "float",
+    "value": 0.4
+  },
+  "$.population_state.exploration_state.max_episode_length": {
+    "kind": "int",
+    "value": 2
+  },
+  "$.population_state.exploration_state.survival_window": {
+    "kind": "int",
+    "value": 100
+  },
+  "$.population_state.exploration_state.decay_rate": {
+    "kind": "float",
+    "value": 0.995
+  },
+  "$.population_state.exploration_state.survival_history": {
+    "kind": "list",
+    "length": 2
+  },
+  "$.population_state.exploration_state.survival_history[0]": {
+    "kind": "int",
+    "value": 2
+  },
+  "$.population_state.exploration_state.survival_history[1]": {
+    "kind": "int",
+    "value": 2
+  },
+  "$.population_state.universe_metadata": {
+    "kind": "mapping",
+    "keys": [
+      "meter_count",
+      "meter_names",
+      "version",
+      "obs_dim",
+      "observation_schema_hash",
+      "action_dim"
+    ]
+  },
+  "$.population_state.universe_metadata.meter_count": {
+    "kind": "int",
+    "value": 8
+  },
+  "$.population_state.universe_metadata.meter_names": {
+    "kind": "tuple",
+    "length": 8
+  },
+  "$.population_state.universe_metadata.meter_names[0]": {
+    "kind": "str",
+    "value": "energy"
+  },
+  "$.population_state.universe_metadata.meter_names[1]": {
+    "kind": "str",
+    "value": "health"
+  },
+  "$.population_state.universe_metadata.meter_names[2]": {
+    "kind": "str",
+    "value": "satiation"
+  },
+  "$.population_state.universe_metadata.meter_names[3]": {
+    "kind": "str",
+    "value": "hygiene"
+  },
+  "$.population_state.universe_metadata.meter_names[4]": {
+    "kind": "str",
+    "value": "money"
+  },
+  "$.population_state.universe_metadata.meter_names[5]": {
+    "kind": "str",
+    "value": "fitness"
+  },
+  "$.population_state.universe_metadata.meter_names[6]": {
+    "kind": "str",
+    "value": "mood"
+  },
+  "$.population_state.universe_metadata.meter_names[7]": {
+    "kind": "str",
+    "value": "social"
+  },
+  "$.population_state.universe_metadata.version": {
+    "kind": "str",
+    "value": "1.0"
+  },
+  "$.population_state.universe_metadata.obs_dim": {
+    "kind": "int",
+    "value": 118
+  },
+  "$.population_state.universe_metadata.observation_schema_hash": {
+    "kind": "str",
+    "value": "8c819e02eb51f8b079bceddc3bdc1dff2107ae42795bf2c006e7539c1ddf94af"
+  },
+  "$.population_state.universe_metadata.action_dim": {
+    "kind": "int",
+    "value": 15
+  },
+  "$.population_state.target_network": {
+    "kind": "mapping",
+    "keys": [
+      "0.weight",
+      "0.bias",
+      "2.weight",
+      "2.bias"
+    ]
+  },
+  "$.population_state.target_network.0.weight": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      16,
+      118
+    ],
+    "sha256": "7ff97d54d223dcdc29d6e9d97fcea03daa69b00e12ab1fc670f893d5b30ac1e5"
+  },
+  "$.population_state.target_network.0.bias": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      16
+    ],
+    "sha256": "3d1dbd2a1b2d1915f96496007702c6dcc9733d5db58805ae3c09c0ce27211080"
+  },
+  "$.population_state.target_network.2.weight": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      15,
+      16
+    ],
+    "sha256": "f2aceb41d118073d83db4d98539ebcf68f6baf7ea7f60add614c80746e026d33"
+  },
+  "$.population_state.target_network.2.bias": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      15
+    ],
+    "sha256": "31296d96a49392462531a5adc5f44a2f33d2c60fad529c3b6b869a44ce6b7572"
+  },
+  "$.population_state.training_step_counter": {
+    "kind": "int",
+    "value": 3
+  },
+  "$.population_state.replay_buffer": {
+    "kind": "mapping",
+    "keys": [
+      "replay_kind",
+      "format_version",
+      "capacity",
+      "alpha",
+      "beta",
+      "beta_initial",
+      "beta_annealing",
+      "observations",
+      "actions",
+      "rewards",
+      "rewards_extrinsic",
+      "rewards_intrinsic",
+      "rewards_shaping",
+      "next_observations",
+      "dones",
+      "priorities",
+      "max_priority",
+      "position",
+      "size_current"
+    ]
+  },
+  "$.population_state.replay_buffer.replay_kind": {
+    "kind": "str",
+    "value": "prioritized"
+  },
+  "$.population_state.replay_buffer.format_version": {
+    "kind": "int",
+    "value": 4
+  },
+  "$.population_state.replay_buffer.capacity": {
+    "kind": "int",
+    "value": 8
+  },
+  "$.population_state.replay_buffer.alpha": {
+    "kind": "float",
+    "value": 0.6
+  },
+  "$.population_state.replay_buffer.beta": {
+    "kind": "float",
+    "value": 1.0
+  },
+  "$.population_state.replay_buffer.beta_initial": {
+    "kind": "float",
+    "value": 0.4
+  },
+  "$.population_state.replay_buffer.beta_annealing": {
+    "kind": "bool",
+    "value": true
+  },
+  "$.population_state.replay_buffer.observations": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      4,
+      118
+    ],
+    "sha256": "8ceb39cd58312bf32353ffd7bf4b0230076b966dddabadde0e01f79501954a73"
+  },
+  "$.population_state.replay_buffer.actions": {
+    "kind": "tensor",
+    "dtype": "torch.int64",
+    "shape": [
+      4
+    ],
+    "sha256": "794b206f0f4498f22b0df8df7c6ea1e505a989555852e057e17b1cea4fbc7fe7"
+  },
+  "$.population_state.replay_buffer.rewards": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      4
+    ],
+    "sha256": "2378be1f1de3296ec0d6148c1d41653beac0f44629c5f93c99ff99fad44af15c"
+  },
+  "$.population_state.replay_buffer.rewards_extrinsic": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      4
+    ],
+    "sha256": "d15793f5a4f145d1bd0c946f9a9e89ddd59d8a3ef70711de718d06e4d40bc206"
+  },
+  "$.population_state.replay_buffer.rewards_intrinsic": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      4
+    ],
+    "sha256": "7c7a8c782e9ccbd161861773709b80366400b285bd95d5360580df3de197df82"
+  },
+  "$.population_state.replay_buffer.rewards_shaping": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      4
+    ],
+    "sha256": "8ff759ffa3337c409f34cfa72736b2eb0e3d2a69e4bc4f352cea48a2c1ec28f2"
+  },
+  "$.population_state.replay_buffer.next_observations": {
+    "kind": "tensor",
+    "dtype": "torch.float32",
+    "shape": [
+      4,
+      118
+    ],
+    "sha256": "378248ffe91111a92b844ec6b2f70055c613d617aaf611af55e2b15053e5fc8f"
+  },
+  "$.population_state.replay_buffer.dones": {
+    "kind": "tensor",
+    "dtype": "torch.bool",
+    "shape": [
+      4
+    ],
+    "sha256": "76cc5805dab9b4eacefdb477f498020fd82bccdbc9c6a2d9ce10586ac85512b4"
+  },
+  "$.population_state.replay_buffer.priorities": {
+    "kind": "ndarray",
+    "dtype": "float32",
+    "shape": [
+      8
+    ],
+    "sha256": "660cdbc4a6360c1e66504b38f4d342131878748dc87a4aeef87a9419faac3e76"
+  },
+  "$.population_state.replay_buffer.max_priority": {
+    "kind": "float",
+    "value": 1.8040237426757812
+  },
+  "$.population_state.replay_buffer.position": {
+    "kind": "int",
+    "value": 4
+  },
+  "$.population_state.replay_buffer.size_current": {
+    "kind": "int",
+    "value": 4
+  },
+  "$.curriculum_state": {
+    "kind": "mapping",
+    "keys": [
+      "difficulty_level",
+      "reward_mode",
+      "active_meters",
+      "depletion_multiplier"
+    ]
+  },
+  "$.curriculum_state.difficulty_level": {
+    "kind": "float",
+    "value": 0.5
+  },
+  "$.curriculum_state.reward_mode": {
+    "kind": "str",
+    "value": "shaped"
+  },
+  "$.curriculum_state.active_meters": {
+    "kind": "list",
+    "length": 6
+  },
+  "$.curriculum_state.active_meters[0]": {
+    "kind": "str",
+    "value": "energy"
+  },
+  "$.curriculum_state.active_meters[1]": {
+    "kind": "str",
+    "value": "hygiene"
+  },
+  "$.curriculum_state.active_meters[2]": {
+    "kind": "str",
+    "value": "satiation"
+  },
+  "$.curriculum_state.active_meters[3]": {
+    "kind": "str",
+    "value": "money"
+  },
+  "$.curriculum_state.active_meters[4]": {
+    "kind": "str",
+    "value": "mood"
+  },
+  "$.curriculum_state.active_meters[5]": {
+    "kind": "str",
+    "value": "social"
+  },
+  "$.curriculum_state.depletion_multiplier": {
+    "kind": "float",
+    "value": 1.0
+  },
+  "$.affordance_layout": {
+    "kind": "mapping",
+    "keys": [
+      "positions",
+      "ordering",
+      "position_dim"
+    ]
+  },
+  "$.affordance_layout.positions": {
+    "kind": "mapping",
+    "keys": [
+      "EAT",
+      "SLEEP",
+      "WORK",
+      "SHOWER",
+      "EXERCISE",
+      "SOCIALIZE",
+      "MEDITATE",
+      "DRINK_WATER",
+      "BRUSH_TEETH",
+      "LAUNDRY",
+      "COOK",
+      "CLEAN_HOUSE",
+      "ENTERTAINMENT",
+      "DOCTOR"
+    ]
+  },
+  "$.affordance_layout.positions.EAT": {
+    "kind": "list",
+    "length": 2
+  },
+  "$.affordance_layout.positions.EAT[0]": {
+    "kind": "int",
+    "value": 2
+  },
+  "$.affordance_layout.positions.EAT[1]": {
+    "kind": "int",
+    "value": 2
+  },
+  "$.affordance_layout.positions.SLEEP": {
+    "kind": "list",
+    "length": 2
+  },
+  "$.affordance_layout.positions.SLEEP[0]": {
+    "kind": "int",
+    "value": 0
+  },
+  "$.affordance_layout.positions.SLEEP[1]": {
+    "kind": "int",
+    "value": 0
+  },
+  "$.affordance_layout.positions.WORK": {
+    "kind": "list",
+    "length": 2
+  },
+  "$.affordance_layout.positions.WORK[0]": {
+    "kind": "int",
+    "value": 4
+  },
+  "$.affordance_layout.positions.WORK[1]": {
+    "kind": "int",
+    "value": 4
+  },
+  "$.affordance_layout.positions.SHOWER": {
+    "kind": "list",
+    "length": 2
+  },
+  "$.affordance_layout.positions.SHOWER[0]": {
+    "kind": "int",
+    "value": 1
+  },
+  "$.affordance_layout.positions.SHOWER[1]": {
+    "kind": "int",
+    "value": 1
+  },
+  "$.affordance_layout.positions.EXERCISE": {
+    "kind": "list",
+    "length": 2
+  },
+  "$.affordance_layout.positions.EXERCISE[0]": {
+    "kind": "int",
+    "value": 6
+  },
+  "$.affordance_layout.positions.EXERCISE[1]": {
+    "kind": "int",
+    "value": 6
+  },
+  "$.affordance_layout.positions.SOCIALIZE": {
+    "kind": "list",
+    "length": 2
+  },
+  "$.affordance_layout.positions.SOCIALIZE[0]": {
+    "kind": "int",
+    "value": 3
+  },
+  "$.affordance_layout.positions.SOCIALIZE[1]": {
+    "kind": "int",
+    "value": 3
+  },
+  "$.affordance_layout.positions.MEDITATE": {
+    "kind": "list",
+    "length": 2
+  },
+  "$.affordance_layout.positions.MEDITATE[0]": {
+    "kind": "int",
+    "value": 2
+  },
+  "$.affordance_layout.positions.MEDITATE[1]": {
+    "kind": "int",
+    "value": 6
+  },
+  "$.affordance_layout.positions.DRINK_WATER": {
+    "kind": "list",
+    "length": 2
+  },
+  "$.affordance_layout.positions.DRINK_WATER[0]": {
+    "kind": "int",
+    "value": 2
+  },
+  "$.affordance_layout.positions.DRINK_WATER[1]": {
+    "kind": "int",
+    "value": 2
+  },
+  "$.affordance_layout.positions.BRUSH_TEETH": {
+    "kind": "list",
+    "length": 2
+  },
+  "$.affordance_layout.positions.BRUSH_TEETH[0]": {
+    "kind": "int",
+    "value": 1
+  },
+  "$.affordance_layout.positions.BRUSH_TEETH[1]": {
+    "kind": "int",
+    "value": 1
+  },
+  "$.affordance_layout.positions.LAUNDRY": {
+    "kind": "list",
+    "length": 2
+  },
+  "$.affordance_layout.positions.LAUNDRY[0]": {
+    "kind": "int",
+    "value": 5
+  },
+  "$.affordance_layout.positions.LAUNDRY[1]": {
+    "kind": "int",
+    "value": 1
+  },
+  "$.affordance_layout.positions.COOK": {
+    "kind": "list",
+    "length": 2
+  },
+  "$.affordance_layout.positions.COOK[0]": {
+    "kind": "int",
+    "value": 2
+  },
+  "$.affordance_layout.positions.COOK[1]": {
+    "kind": "int",
+    "value": 2
+  },
+  "$.affordance_layout.positions.CLEAN_HOUSE": {
+    "kind": "list",
+    "length": 2
+  },
+  "$.affordance_layout.positions.CLEAN_HOUSE[0]": {
+    "kind": "int",
+    "value": 4
+  },
+  "$.affordance_layout.positions.CLEAN_HOUSE[1]": {
+    "kind": "int",
+    "value": 2
+  },
+  "$.affordance_layout.positions.ENTERTAINMENT": {
+    "kind": "list",
+    "length": 2
+  },
+  "$.affordance_layout.positions.ENTERTAINMENT[0]": {
+    "kind": "int",
+    "value": 6
+  },
+  "$.affordance_layout.positions.ENTERTAINMENT[1]": {
+    "kind": "int",
+    "value": 2
+  },
+  "$.affordance_layout.positions.DOCTOR": {
+    "kind": "list",
+    "length": 2
+  },
+  "$.affordance_layout.positions.DOCTOR[0]": {
+    "kind": "int",
+    "value": 7
+  },
+  "$.affordance_layout.positions.DOCTOR[1]": {
+    "kind": "int",
+    "value": 4
+  },
+  "$.affordance_layout.ordering": {
+    "kind": "list",
+    "length": 14
+  },
+  "$.affordance_layout.ordering[0]": {
+    "kind": "str",
+    "value": "EAT"
+  },
+  "$.affordance_layout.ordering[1]": {
+    "kind": "str",
+    "value": "SLEEP"
+  },
+  "$.affordance_layout.ordering[2]": {
+    "kind": "str",
+    "value": "WORK"
+  },
+  "$.affordance_layout.ordering[3]": {
+    "kind": "str",
+    "value": "SHOWER"
+  },
+  "$.affordance_layout.ordering[4]": {
+    "kind": "str",
+    "value": "EXERCISE"
+  },
+  "$.affordance_layout.ordering[5]": {
+    "kind": "str",
+    "value": "SOCIALIZE"
+  },
+  "$.affordance_layout.ordering[6]": {
+    "kind": "str",
+    "value": "MEDITATE"
+  },
+  "$.affordance_layout.ordering[7]": {
+    "kind": "str",
+    "value": "DRINK_WATER"
+  },
+  "$.affordance_layout.ordering[8]": {
+    "kind": "str",
+    "value": "BRUSH_TEETH"
+  },
+  "$.affordance_layout.ordering[9]": {
+    "kind": "str",
+    "value": "LAUNDRY"
+  },
+  "$.affordance_layout.ordering[10]": {
+    "kind": "str",
+    "value": "COOK"
+  },
+  "$.affordance_layout.ordering[11]": {
+    "kind": "str",
+    "value": "CLEAN_HOUSE"
+  },
+  "$.affordance_layout.ordering[12]": {
+    "kind": "str",
+    "value": "ENTERTAINMENT"
+  },
+  "$.affordance_layout.ordering[13]": {
+    "kind": "str",
+    "value": "DOCTOR"
+  },
+  "$.affordance_layout.position_dim": {
+    "kind": "int",
+    "value": 2
+  },
+  "$.vfs_persistent_state": {
+    "kind": "mapping",
+    "keys": []
+  },
+  "$.vfs_random_state": {
+    "kind": "mapping",
+    "keys": [
+      "seed",
+      "episode"
+    ]
+  },
+  "$.vfs_random_state.seed": {
+    "kind": "int",
+    "value": 42
+  },
+  "$.vfs_random_state.episode": {
+    "kind": "int",
+    "value": 2
+  },
+  "$.agent_ids": {
+    "kind": "list",
+    "length": 1
+  },
+  "$.agent_ids[0]": {
+    "kind": "str",
+    "value": "agent_0"
+  },
+  "$.epsilon": {
+    "kind": "float",
+    "value": 0.2
+  },
+  "$.completed_live_agent_steps": {
+    "kind": "int",
+    "value": 4
+  },
+  "$.training_config": {
+    "kind": "mapping",
+    "keys": [
+      "version",
+      "seed",
+      "population",
+      "enabled_affordances",
+      "randomize_affordances",
+      "enabled_actions",
+      "q_learning",
+      "replay_buffer",
+      "exploration",
+      "intrinsic",
+      "training_loop",
+      "curriculum",
+      "run_metadata",
+      "recording"
+    ]
+  },
+  "$.training_config.version": {
+    "kind": "str",
+    "value": "1.0"
+  },
+  "$.training_config.seed": {
+    "kind": "int",
+    "value": 42
+  },
+  "$.training_config.population": {
+    "kind": "mapping",
+    "keys": [
+      "size"
+    ]
+  },
+  "$.training_config.population.size": {
+    "kind": "int",
+    "value": 1
+  },
+  "$.training_config.enabled_affordances": {
+    "kind": "list",
+    "length": 14
+  },
+  "$.training_config.enabled_affordances[0]": {
+    "kind": "str",
+    "value": "EAT"
+  },
+  "$.training_config.enabled_affordances[1]": {
+    "kind": "str",
+    "value": "SLEEP"
+  },
+  "$.training_config.enabled_affordances[2]": {
+    "kind": "str",
+    "value": "SHOWER"
+  },
+  "$.training_config.enabled_affordances[3]": {
+    "kind": "str",
+    "value": "EXERCISE"
+  },
+  "$.training_config.enabled_affordances[4]": {
+    "kind": "str",
+    "value": "WORK"
+  },
+  "$.training_config.enabled_affordances[5]": {
+    "kind": "str",
+    "value": "SOCIALIZE"
+  },
+  "$.training_config.enabled_affordances[6]": {
+    "kind": "str",
+    "value": "MEDITATE"
+  },
+  "$.training_config.enabled_affordances[7]": {
+    "kind": "str",
+    "value": "DRINK_WATER"
+  },
+  "$.training_config.enabled_affordances[8]": {
+    "kind": "str",
+    "value": "BRUSH_TEETH"
+  },
+  "$.training_config.enabled_affordances[9]": {
+    "kind": "str",
+    "value": "LAUNDRY"
+  },
+  "$.training_config.enabled_affordances[10]": {
+    "kind": "str",
+    "value": "COOK"
+  },
+  "$.training_config.enabled_affordances[11]": {
+    "kind": "str",
+    "value": "CLEAN_HOUSE"
+  },
+  "$.training_config.enabled_affordances[12]": {
+    "kind": "str",
+    "value": "ENTERTAINMENT"
+  },
+  "$.training_config.enabled_affordances[13]": {
+    "kind": "str",
+    "value": "DOCTOR"
+  },
+  "$.training_config.randomize_affordances": {
+    "kind": "bool",
+    "value": false
+  },
+  "$.training_config.enabled_actions": {
+    "kind": "mapping",
+    "keys": [
+      "custom"
+    ]
+  },
+  "$.training_config.enabled_actions.custom": {
+    "kind": "list",
+    "length": 2
+  },
+  "$.training_config.enabled_actions.custom[0]": {
+    "kind": "str",
+    "value": "REST"
+  },
+  "$.training_config.enabled_actions.custom[1]": {
+    "kind": "str",
+    "value": "MEDITATE"
+  },
+  "$.training_config.q_learning": {
+    "kind": "mapping",
+    "keys": [
+      "use_double_dqn",
+      "gamma",
+      "learning_rate",
+      "target_update_frequency"
+    ]
+  },
+  "$.training_config.q_learning.use_double_dqn": {
+    "kind": "bool",
+    "value": true
+  },
+  "$.training_config.q_learning.gamma": {
+    "kind": "float",
+    "value": 0.99
+  },
+  "$.training_config.q_learning.learning_rate": {
+    "kind": "float",
+    "value": 0.0001
+  },
+  "$.training_config.q_learning.target_update_frequency": {
+    "kind": "int",
+    "value": 1000
+  },
+  "$.training_config.replay_buffer": {
+    "kind": "mapping",
+    "keys": [
+      "capacity",
+      "batch_size",
+      "min_size"
+    ]
+  },
+  "$.training_config.replay_buffer.capacity": {
+    "kind": "int",
+    "value": 8
+  },
+  "$.training_config.replay_buffer.batch_size": {
+    "kind": "int",
+    "value": 2
+  },
+  "$.training_config.replay_buffer.min_size": {
+    "kind": "int",
+    "value": 8
+  },
+  "$.training_config.exploration": {
+    "kind": "mapping",
+    "keys": [
+      "epsilon_start",
+      "epsilon_end",
+      "epsilon_decay"
+    ]
+  },
+  "$.training_config.exploration.epsilon_start": {
+    "kind": "float",
+    "value": 0.8
+  },
+  "$.training_config.exploration.epsilon_end": {
+    "kind": "float",
+    "value": 0.0
+  },
+  "$.training_config.exploration.epsilon_decay": {
+    "kind": "float",
+    "value": 0.5
+  },
+  "$.training_config.intrinsic": {
+    "kind": "mapping",
+    "keys": [
+      "rnd",
+      "annealing",
+      "initial_weight",
+      "min_survival_fraction",
+      "survival_window"
+    ]
+  },
+  "$.training_config.intrinsic.rnd": {
+    "kind": "mapping",
+    "keys": [
+      "feature_dim",
+      "learning_rate"
+    ]
+  },
+  "$.training_config.intrinsic.rnd.feature_dim": {
+    "kind": "int",
+    "value": 128
+  },
+  "$.training_config.intrinsic.rnd.learning_rate": {
+    "kind": "float",
+    "value": 0.0001
+  },
+  "$.training_config.intrinsic.annealing": {
+    "kind": "mapping",
+    "keys": [
+      "threshold",
+      "decay_rate",
+      "min_weight"
+    ]
+  },
+  "$.training_config.intrinsic.annealing.threshold": {
+    "kind": "float",
+    "value": 100.0
+  },
+  "$.training_config.intrinsic.annealing.decay_rate": {
+    "kind": "float",
+    "value": 0.995
+  },
+  "$.training_config.intrinsic.annealing.min_weight": {
+    "kind": "float",
+    "value": 0.0
+  },
+  "$.training_config.intrinsic.initial_weight": {
+    "kind": "float",
+    "value": 0.0
+  },
+  "$.training_config.intrinsic.min_survival_fraction": {
+    "kind": "float",
+    "value": 0.4
+  },
+  "$.training_config.intrinsic.survival_window": {
+    "kind": "int",
+    "value": 100
+  },
+  "$.training_config.training_loop": {
+    "kind": "mapping",
+    "keys": [
+      "max_episodes",
+      "max_steps_per_episode",
+      "checkpointing",
+      "train_frequency",
+      "sequence_length",
+      "max_grad_norm"
+    ]
+  },
+  "$.training_config.training_loop.max_episodes": {
+    "kind": "int",
+    "value": 2
+  },
+  "$.training_config.training_loop.max_steps_per_episode": {
+    "kind": "int",
+    "value": 2
+  },
+  "$.training_config.training_loop.checkpointing": {
+    "kind": "mapping",
+    "keys": [
+      "interval"
+    ]
+  },
+  "$.training_config.training_loop.checkpointing.interval": {
+    "kind": "int",
+    "value": 5000
+  },
+  "$.training_config.training_loop.train_frequency": {
+    "kind": "int",
+    "value": 1
+  },
+  "$.training_config.training_loop.sequence_length": {
+    "kind": "int",
+    "value": 2
+  },
+  "$.training_config.training_loop.max_grad_norm": {
+    "kind": "float",
+    "value": 10.0
+  },
+  "$.training_config.curriculum": {
+    "kind": "mapping",
+    "keys": [
+      "strategy",
+      "adversarial"
+    ]
+  },
+  "$.training_config.curriculum.strategy": {
+    "kind": "str",
+    "value": "static"
+  },
+  "$.training_config.curriculum.adversarial": {
+    "kind": "mapping",
+    "keys": [
+      "difficulty_metric",
+      "adaptation_rate",
+      "min_difficulty",
+      "max_difficulty",
+      "survival_advance_threshold",
+      "survival_retreat_threshold",
+      "entropy_gate",
+      "min_steps_at_stage"
+    ]
+  },
+  "$.training_config.curriculum.adversarial.difficulty_metric": {
+    "kind": "str",
+    "value": "survival_rate"
+  },
+  "$.training_config.curriculum.adversarial.adaptation_rate": {
+    "kind": "float",
+    "value": 0.1
+  },
+  "$.training_config.curriculum.adversarial.min_difficulty": {
+    "kind": "float",
+    "value": 0.2
+  },
+  "$.training_config.curriculum.adversarial.max_difficulty": {
+    "kind": "float",
+    "value": 1.0
+  },
+  "$.training_config.curriculum.adversarial.survival_advance_threshold": {
+    "kind": "float",
+    "value": 0.7
+  },
+  "$.training_config.curriculum.adversarial.survival_retreat_threshold": {
+    "kind": "float",
+    "value": 0.3
+  },
+  "$.training_config.curriculum.adversarial.entropy_gate": {
+    "kind": "float",
+    "value": 0.5
+  },
+  "$.training_config.curriculum.adversarial.min_steps_at_stage": {
+    "kind": "int",
+    "value": 1000
+  },
+  "$.training_config.run_metadata": {
+    "kind": "mapping",
+    "keys": [
+      "output_subdir"
+    ]
+  },
+  "$.training_config.run_metadata.output_subdir": {
+    "kind": "str",
+    "value": "L1_full_observability"
+  },
+  "$.training_config.recording": {
+    "kind": "NoneType",
+    "value": null
+  },
+  "$.config_dir": {
+    "kind": "str",
+    "value": "/tmp/bac-B09/pinned_history_capture_20261101_per/pack"
+  },
+  "$.primary_level": {
+    "kind": "str",
+    "value": "L1_full_observability"
+  },
+  "$.action_dim": {
+    "kind": "int",
+    "value": 15
+  },
+  "$.meter_count": {
+    "kind": "int",
+    "value": 8
+  },
+  "$.observation_schema_hash": {
+    "kind": "str",
+    "value": "8c819e02eb51f8b079bceddc3bdc1dff2107ae42795bf2c006e7539c1ddf94af"
+  },
+  "$.drive_hash": {
+    "kind": "str",
+    "value": "b02aa064b2a03720944acbe44aab8e55b6d123d968b55fedfe6a53a1ccf853b6"
+  },
+  "$.curriculum_hash": {
+    "kind": "str",
+    "value": "273adb8ecd2a1e3640cd2922a68d3eab85e4d0caa84259f5ededbfa23a00685c"
+  },
+  "$.bars_hash": {
+    "kind": "str",
+    "value": "fce5fc6f2131c152516bd13d2106e540ab57d0b955f21fd7d71a00404eafb3cf"
+  },
+  "$.affordances_hash": {
+    "kind": "str",
+    "value": "d6abb07e159068b7dfdc9f9b81c5e5de65bed01e8dcf82c6cee889658c3dc0e8"
+  },
+  "$.training_hash": {
+    "kind": "str",
+    "value": "94c7616953ecc051e7c0638806dfb9df278ca03ecfdee3f0811daa4589402566"
+  },
+  "$.items_appearance_hash": {
+    "kind": "NoneType",
+    "value": null
+  },
+  "$.brain_hash": {
+    "kind": "str",
+    "value": "5ad8c27f51c43907ff9d97b74dbb1c2f3d95243fb235a40e56ed6e5d7918ef69"
+  },
+  "$.pack_brain_hash": {
+    "kind": "str",
+    "value": "5ad8c27f51c43907ff9d97b74dbb1c2f3d95243fb235a40e56ed6e5d7918ef69"
+  },
+  "$.vfs_hash": {
+    "kind": "str",
+    "value": "2f22458123f36ec162e6cbe960d91de0b9744bb2363978aad7207a96d365eac5"
+  },
+  "$.token_type_schema_hash": {
+    "kind": "str",
+    "value": "de093a6e9f59924ee54c01c150a9c4e7781a06d57f4c603380dcf3ab2062b022"
+  },
+  "$.layout_hash": {
+    "kind": "str",
+    "value": "73b4f0737c49968989902be09f8fa9370e535f596cbfafaeabed6ab7a7f34cbd"
+  },
+  "$.experiment_hash": {
+    "kind": "str",
+    "value": "e2ecead99dbb3159dbd4edbc474f8b516ee88c200a1b56525b50b4c314fc48ab"
+  },
+  "$.stratum_hash": {
+    "kind": "str",
+    "value": "bcbf09eb619adbe99423ece90163587b733825e68f75ac9184e84c8668cd6336"
+  },
+  "$.environment_hash": {
+    "kind": "str",
+    "value": "5bb7cc822bf579c98feee559a54ea2c86cea9c37980d544f82afb4fbd3dab696"
+  },
+  "$.actions_hash": {
+    "kind": "str",
+    "value": "bef1093ab1575bdd63dbba18492bc9706213f4785e3f8858182748432e56ac98"
+  },
+  "$.items_hash": {
+    "kind": "str",
+    "value": "4b61e968daf202644cdbdf3136c4e67111e1420050bb42d2ab20544429058cef"
+  },
+  "$.variables_hash": {
+    "kind": "str",
+    "value": "29a92cb4bcffe59f7237945a92b3cba3e78718a2ea7bbe6ad41af7d703e98c88"
+  },
+  "$.effects_hash": {
+    "kind": "str",
+    "value": "131bf498310ef1fb7871b9e7d80558f4133fd3e177e9a684d4c587cc70e1f1d5"
+  }
+}

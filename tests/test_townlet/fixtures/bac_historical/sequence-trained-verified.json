@@ -1,0 +1,427 @@
+{
+  "label": "sequence-trained",
+  "artifact": "sequence-trained.pt",
+  "config": "sequence-trained-pack",
+  "sha256": "f5ca18d9e4f8c8f9398d585fc2a7861d23883ca9a8ae7175c964e2e97e16ced6",
+  "bytes": 1463292,
+  "inventory": "sequence-trained-inventory.json",
+  "source_sha": "4aa5363b5de54d9a112977c32c2975f37627197f",
+  "source_module": "/tmp/hamlet-bac-4aa5363b/src/townlet/__init__.py",
+  "verification_scratch": "/workspace/bac-review-2026-11-01/qualification/historical-producers/resume-sequence-trained-63dd5b2ee3e6472fb3c47559ae6e7a91",
+  "demo_version": 9,
+  "population_version": 6,
+  "replay_version": 5,
+  "replay_kind": "sequential",
+  "outer_keys": [
+    "version",
+    "episode",
+    "timestamp",
+    "substrate_metadata",
+    "population_state",
+    "curriculum_state",
+    "affordance_layout",
+    "vfs_persistent_state",
+    "vfs_random_state",
+    "agent_ids",
+    "epsilon",
+    "completed_live_agent_steps",
+    "training_config",
+    "config_dir",
+    "primary_level",
+    "action_dim",
+    "meter_count",
+    "observation_schema_hash",
+    "drive_hash",
+    "curriculum_hash",
+    "bars_hash",
+    "affordances_hash",
+    "training_hash",
+    "items_appearance_hash",
+    "brain_hash",
+    "pack_brain_hash",
+    "vfs_hash",
+    "token_type_schema_hash",
+    "layout_hash",
+    "experiment_hash",
+    "stratum_hash",
+    "environment_hash",
+    "actions_hash",
+    "items_hash",
+    "variables_hash",
+    "effects_hash"
+  ],
+  "population_keys": [
+    "version",
+    "q_network",
+    "optimizer",
+    "scheduler",
+    "total_steps",
+    "exploration_state",
+    "universe_metadata",
+    "target_network",
+    "training_step_counter",
+    "replay_buffer"
+  ],
+  "buffer_keys": [
+    "replay_kind",
+    "format_version",
+    "capacity",
+    "num_transitions",
+    "episodes"
+  ],
+  "count_key": "num_transitions",
+  "retained_transitions": 34,
+  "episode": 18,
+  "completed_live_agent_steps": 34,
+  "total_steps": 34,
+  "training_step_counter": 2,
+  "optimizer_step_min": 2,
+  "optimizer_step_max": 2,
+  "reward_tensor_inventory": [
+    {
+      "key": "rewards",
+      "rows": 2,
+      "sha256": "bdc700a134f638fa3a6fc28177914279c974d3b37eeae3c098d8729de12a7248"
+    },
+    {
+      "key": "rewards_extrinsic",
+      "rows": 2,
+      "sha256": "c952cc167f78b11711f65a97c28d7de30f565a5526d404111e0f4643999b25cf"
+    },
+    {
+      "key": "rewards_intrinsic",
+      "rows": 2,
+      "sha256": "23b3cc1b17dcfc17fe841aa76f008b8007d3c46673ed329392a391247b341dca"
+    },
+    {
+      "key": "rewards_shaping",
+      "rows": 2,
+      "sha256": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc"
+    },
+    {
+      "key": "rewards",
+      "rows": 2,
+      "sha256": "31378aca481576a844ecd8987047f84c487e0460700a6a62ef890933fe55a56b"
+    },
+    {
+      "key": "rewards_extrinsic",
+      "rows": 2,
+      "sha256": "57da1735e8a615d0236aa27f0e61122416ff6f9b34e927a0a06389885d8f6d79"
+    },
+    {
+      "key": "rewards_intrinsic",
+      "rows": 2,
+      "sha256": "2daa83015cc19277cd07568620abf392015b35ca656bc8c1b9885e48245d59ae"
+    },
+    {
+      "key": "rewards_shaping",
+      "rows": 2,
+      "sha256": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc"
+    },
+    {
+      "key": "rewards",
+      "rows": 2,
+      "sha256": "55da9a47f897ac4920158840924b1ac0172b3f0184ace5d5221a66270d925d55"
+    },
+    {
+      "key": "rewards_extrinsic",
+      "rows": 2,
+      "sha256": "9d316ff449e472befb08e8559b36e7673db202009259640fde4d217019a9ec77"
+    },
+    {
+      "key": "rewards_intrinsic",
+      "rows": 2,
+      "sha256": "6081e611280daee06595729cd249a32cac0ca68fb5eee7fb7c8af669b32fe602"
+    },
+    {
+      "key": "rewards_shaping",
+      "rows": 2,
+      "sha256": "8c77f2359ed5a8cfa0a0c0e8a93aa1a4c7c41514168742c9a58da2923d350b9c"
+    },
+    {
+      "key": "rewards",
+      "rows": 2,
+      "sha256": "7d82daae49227ba4859221993ec82c498257048323110ed3ad16c48483c225ec"
+    },
+    {
+      "key": "rewards_extrinsic",
+      "rows": 2,
+      "sha256": "9ad8d095ad3c111acc9f2ee7fdb2fd55faa2dcb5855385d9962e25327c448d04"
+    },
+    {
+      "key": "rewards_intrinsic",
+      "rows": 2,
+      "sha256": "f83610c0f4f8a33c7714135668f68d75815c259d5711d1fda3a2b4a2e2943f8c"
+    },
+    {
+      "key": "rewards_shaping",
+      "rows": 2,
+      "sha256": "003dd67150006717724f6ad6939577926debb2d5eacbfbf40f78883212bff795"
+    },
+    {
+      "key": "rewards",
+      "rows": 2,
+      "sha256": "5b90ad9a2e899bf08aafb4a7f1c6c117d5f48f246bb28e070fe07527851545cb"
+    },
+    {
+      "key": "rewards_extrinsic",
+      "rows": 2,
+      "sha256": "9ad8d095ad3c111acc9f2ee7fdb2fd55faa2dcb5855385d9962e25327c448d04"
+    },
+    {
+      "key": "rewards_intrinsic",
+      "rows": 2,
+      "sha256": "06b11373bc0eb527a99df0bd2d59bef48a4fd32475c485a4f7d50b4fbfdf7f57"
+    },
+    {
+      "key": "rewards_shaping",
+      "rows": 2,
+      "sha256": "878927c92fcc391187aaee60cf259f23bb993b0558517909ee98cc1c9ab0e1ea"
+    },
+    {
+      "key": "rewards",
+      "rows": 2,
+      "sha256": "16cb81020c53aa2141f776dee5eb997d5fb0fd6b7c2570c70e561426ed8f1808"
+    },
+    {
+      "key": "rewards_extrinsic",
+      "rows": 2,
+      "sha256": "9ad8d095ad3c111acc9f2ee7fdb2fd55faa2dcb5855385d9962e25327c448d04"
+    },
+    {
+      "key": "rewards_intrinsic",
+      "rows": 2,
+      "sha256": "8e33af5843466299153d3c6d5eb0198d5a845dfce8cdd6609dde1cb0d0094ecd"
+    },
+    {
+      "key": "rewards_shaping",
+      "rows": 2,
+      "sha256": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc"
+    },
+    {
+      "key": "rewards",
+      "rows": 2,
+      "sha256": "41d8057db39e3019f2fa2a1cce88da41e7d2bdd88bdc86b055469f45d42cd23d"
+    },
+    {
+      "key": "rewards_extrinsic",
+      "rows": 2,
+      "sha256": "9ad8d095ad3c111acc9f2ee7fdb2fd55faa2dcb5855385d9962e25327c448d04"
+    },
+    {
+      "key": "rewards_intrinsic",
+      "rows": 2,
+      "sha256": "a698efccfce3f8ed8e7619509e069ae065e6243d67211968711aa76b4a8485e2"
+    },
+    {
+      "key": "rewards_shaping",
+      "rows": 2,
+      "sha256": "1e7bb4b704baa8319083bb64d04e27990d78db4ddc5fe5d489a4a4267ea83450"
+    },
+    {
+      "key": "rewards",
+      "rows": 2,
+      "sha256": "ac748c80f54c3bc854010e32ad7e8cd8f05cdc292a48d3fbc8f8a7dcc99251be"
+    },
+    {
+      "key": "rewards_extrinsic",
+      "rows": 2,
+      "sha256": "9ad8d095ad3c111acc9f2ee7fdb2fd55faa2dcb5855385d9962e25327c448d04"
+    },
+    {
+      "key": "rewards_intrinsic",
+      "rows": 2,
+      "sha256": "8cedf223a7305f1d5bb3053ce56f865b7e694de775dfab23e156ad8bd2e95246"
+    },
+    {
+      "key": "rewards_shaping",
+      "rows": 2,
+      "sha256": "878927c92fcc391187aaee60cf259f23bb993b0558517909ee98cc1c9ab0e1ea"
+    },
+    {
+      "key": "rewards",
+      "rows": 2,
+      "sha256": "dee79319a4abf1263aeeb15798c28d190113637bbbd5d2ed184b68b102652d78"
+    },
+    {
+      "key": "rewards_extrinsic",
+      "rows": 2,
+      "sha256": "9ad8d095ad3c111acc9f2ee7fdb2fd55faa2dcb5855385d9962e25327c448d04"
+    },
+    {
+      "key": "rewards_intrinsic",
+      "rows": 2,
+      "sha256": "ac2623f20b95461b9845c6aca16f2c4519f13710379b3e18a9a94c7deb757907"
+    },
+    {
+      "key": "rewards_shaping",
+      "rows": 2,
+      "sha256": "4db295f1af39ac217cf3a467ec329191a5d8d5b834e13035a13f2386904c2d22"
+    },
+    {
+      "key": "rewards",
+      "rows": 2,
+      "sha256": "44aa98a04efa98eada7c9175462922c832dbe23201847fe4d9baca3d479f36cc"
+    },
+    {
+      "key": "rewards_extrinsic",
+      "rows": 2,
+      "sha256": "9ad8d095ad3c111acc9f2ee7fdb2fd55faa2dcb5855385d9962e25327c448d04"
+    },
+    {
+      "key": "rewards_intrinsic",
+      "rows": 2,
+      "sha256": "68b53673ef30e9316b1f2acc4e0b0e4e414308c974968b779151fa852c9f66ea"
+    },
+    {
+      "key": "rewards_shaping",
+      "rows": 2,
+      "sha256": "4db295f1af39ac217cf3a467ec329191a5d8d5b834e13035a13f2386904c2d22"
+    },
+    {
+      "key": "rewards",
+      "rows": 2,
+      "sha256": "ffb6c676b3e9a1387490d276f955b5f730e64f74afff85347c59dec3f6ecfe40"
+    },
+    {
+      "key": "rewards_extrinsic",
+      "rows": 2,
+      "sha256": "9ad8d095ad3c111acc9f2ee7fdb2fd55faa2dcb5855385d9962e25327c448d04"
+    },
+    {
+      "key": "rewards_intrinsic",
+      "rows": 2,
+      "sha256": "89e9f929afc561d299a81412625ba53171a078c956322f5cc346a1c156d13987"
+    },
+    {
+      "key": "rewards_shaping",
+      "rows": 2,
+      "sha256": "3a1c651b9982f298c626dff90326541726e3d09065acb84c6e618ae1878971c9"
+    },
+    {
+      "key": "rewards",
+      "rows": 2,
+      "sha256": "a4489616619cfb9211e1118693fad0bc213a3134c82b6efef4b52c674ecfb319"
+    },
+    {
+      "key": "rewards_extrinsic",
+      "rows": 2,
+      "sha256": "9ad8d095ad3c111acc9f2ee7fdb2fd55faa2dcb5855385d9962e25327c448d04"
+    },
+    {
+      "key": "rewards_intrinsic",
+      "rows": 2,
+      "sha256": "673a81553065d41d8fd341680102f6b6171ce5ba48b23ad4ab92f224c2c67231"
+    },
+    {
+      "key": "rewards_shaping",
+      "rows": 2,
+      "sha256": "003dd67150006717724f6ad6939577926debb2d5eacbfbf40f78883212bff795"
+    },
+    {
+      "key": "rewards",
+      "rows": 2,
+      "sha256": "c339e9de8bb6aade0f93583b142ccabc7d9ebdac82a4162f37c757d862cffa5f"
+    },
+    {
+      "key": "rewards_extrinsic",
+      "rows": 2,
+      "sha256": "8f3ad57e13363492bdcca667511d7e00779e34684d8cbc40e584faae40db1f09"
+    },
+    {
+      "key": "rewards_intrinsic",
+      "rows": 2,
+      "sha256": "60cb42f4f5dd05bbeac9a7044a5ba4eb38760cc8f611aa971238230378fda137"
+    },
+    {
+      "key": "rewards_shaping",
+      "rows": 2,
+      "sha256": "8c77f2359ed5a8cfa0a0c0e8a93aa1a4c7c41514168742c9a58da2923d350b9c"
+    },
+    {
+      "key": "rewards",
+      "rows": 2,
+      "sha256": "fc855aff109eb53027a25e688c76fe9048ed1933e64fb208a41a5954dbdc14a3"
+    },
+    {
+      "key": "rewards_extrinsic",
+      "rows": 2,
+      "sha256": "9ad8d095ad3c111acc9f2ee7fdb2fd55faa2dcb5855385d9962e25327c448d04"
+    },
+    {
+      "key": "rewards_intrinsic",
+      "rows": 2,
+      "sha256": "33aeb7a25a4391b94dbc1e9be11bf6d4621ef430a1cf0494456fc67532fd8710"
+    },
+    {
+      "key": "rewards_shaping",
+      "rows": 2,
+      "sha256": "1e7bb4b704baa8319083bb64d04e27990d78db4ddc5fe5d489a4a4267ea83450"
+    },
+    {
+      "key": "rewards",
+      "rows": 2,
+      "sha256": "c6ff7c99feed7ec45b14e9f4d91a6442a61be95efb1fc067489b40971204ef01"
+    },
+    {
+      "key": "rewards_extrinsic",
+      "rows": 2,
+      "sha256": "9ad8d095ad3c111acc9f2ee7fdb2fd55faa2dcb5855385d9962e25327c448d04"
+    },
+    {
+      "key": "rewards_intrinsic",
+      "rows": 2,
+      "sha256": "01f4736f441a8ff962b74eb91042dc82496a89ebac8d68a5e53c6ead54ebcbaf"
+    },
+    {
+      "key": "rewards_shaping",
+      "rows": 2,
+      "sha256": "1e7bb4b704baa8319083bb64d04e27990d78db4ddc5fe5d489a4a4267ea83450"
+    },
+    {
+      "key": "rewards",
+      "rows": 2,
+      "sha256": "f2d62d394c66d15ae0969a21903f3933cad68d7af3c612b1a28662085b1a7628"
+    },
+    {
+      "key": "rewards_extrinsic",
+      "rows": 2,
+      "sha256": "9ad8d095ad3c111acc9f2ee7fdb2fd55faa2dcb5855385d9962e25327c448d04"
+    },
+    {
+      "key": "rewards_intrinsic",
+      "rows": 2,
+      "sha256": "4161e65b8c3a4c645ef29d779b3477df699dffaa3c310bdd180f00a91d5c7b2a"
+    },
+    {
+      "key": "rewards_shaping",
+      "rows": 2,
+      "sha256": "df7148701f3524f809c864a3e12eb392cf9c5a973d2b9dfee3b8b80cf23654df"
+    },
+    {
+      "key": "rewards",
+      "rows": 2,
+      "sha256": "0cfeaa27639059c63541361b69c9f4bb6e25c28676ea586220a2c4feb9bdd630"
+    },
+    {
+      "key": "rewards_extrinsic",
+      "rows": 2,
+      "sha256": "8f3ad57e13363492bdcca667511d7e00779e34684d8cbc40e584faae40db1f09"
+    },
+    {
+      "key": "rewards_intrinsic",
+      "rows": 2,
+      "sha256": "9d6f49fb355fceacad75e14735eae2b45af5617f52be1acc2fbd2e8de8e79371"
+    },
+    {
+      "key": "rewards_shaping",
+      "rows": 2,
+      "sha256": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc"
+    }
+  ],
+  "eligible_full_sequence_rows": 34,
+  "restored_population_exact": true,
+  "restored_replay_exact": true,
+  "old_strict_validators_passed": true,
+  "resume_learning_steps": 0
+}

@@ -1,0 +1,2 @@
+# Preserve the exact authored bytes captured from the original producer packs.
+*-pack/stratum.yaml whitespace=-blank-at-eof

@@ -1,0 +1,31 @@
+version: '1.0'
+description: Brain config for default_curriculum (migrated from agent.yaml)
+architecture:
+  type: recurrent
+  recurrent:
+    token_embed_dim: 8
+    aggregator:
+      type: mean
+    q_head_hidden_dim: 16
+    lstm:
+      hidden_size: 8
+      num_layers: 1
+      dropout: 0.0
+optimizer:
+  type: adam
+  learning_rate: 0.0001
+  weight_decay: 0.0
+  schedule:
+    type: constant
+  adam_beta1: 0.9
+  adam_beta2: 0.999
+  adam_eps: 1.0e-08
+loss:
+  type: smooth_l1
+q_learning:
+  gamma: 0.99
+  target_update_frequency: 1000
+  use_double_dqn: true
+replay:
+  capacity: 64
+  prioritized: false

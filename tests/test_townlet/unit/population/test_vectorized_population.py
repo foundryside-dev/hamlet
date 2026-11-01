@@ -1046,9 +1046,11 @@ class TestPopulationCheckpointSchema:
             brain_config=brain_config,
         )
         checkpoint = population.get_checkpoint_state()
-        checkpoint["version"] = 6
-        checkpoint["replay_buffer"]["format_version"] = 4
-        checkpoint["replay_buffer"]["replay_kind"] = "standard"
+        assert checkpoint["version"] == 6
+        replay_state = checkpoint["replay_buffer"]
+        assert replay_state["format_version"] == 5
+        assert replay_state["replay_kind"] == "prioritized"
+        replay_state["replay_kind"] = "standard"
         before = _population_runtime_snapshot(population)
 
         with pytest.raises(ValueError, match="replay_kind"):

@@ -476,6 +476,7 @@ def test_replay_matrix(replay_kind: ReplayKind, l1_runtime: tuple[TokenSpec, int
         assert sample["mask"].dtype is torch.bool
     else:
         assert replay_kind == "prioritized"
+    if replay_kind == "prioritized":
         assert sample["weights"].dtype is torch.float32
         assert sample["indices"].dtype == np.dtype(np.int64)
     state = replay.serialize()
@@ -493,6 +494,12 @@ def test_replay_matrix(replay_kind: ReplayKind, l1_runtime: tuple[TokenSpec, int
         previous["format_version"] = 4
         before_input = copy.deepcopy(previous)
         with pytest.raises(ValueError, match="Replay checkpoint key set mismatch"):
+            restored.load_from_serialized(previous)
+    elif replay_kind == "prioritized":
+        # PER5 keys with a PER4 tag are a mixed schema, not an honest historical artifact.
+        assert state["format_version"] == 5
+        assert previous["format_version"] == 4
+        with pytest.raises(ValueError, match="PER checkpoint key set mismatch"):
             restored.load_from_serialized(previous)
     else:
         with pytest.raises(ValueError, match=rf"exact current format_version is {current_version}"):
@@ -543,6 +550,85 @@ def test_replay_matrix(replay_kind: ReplayKind, l1_runtime: tuple[TokenSpec, int
         unsupported["format_version"] = 3
         before_unsupported = copy.deepcopy(unsupported)
         with pytest.raises(ValueError, match="Cannot load replay buffer checkpoint with format_version"):
+            restored.load_from_serialized(unsupported)
+        _assert_exact_state(before_unsupported, unsupported)
+        _assert_exact_state(before_live, restored.serialize())
+    elif replay_kind == "prioritized":
+        # Independent historical PER4 wire shape, including annealed beta and physical priorities.
+        legacy_priorities = np.zeros(16, dtype=np.float32)
+        legacy_priorities[:8] = np.array([0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0], dtype=np.float32)
+        legacy = {
+            "replay_kind": "prioritized",
+            "format_version": 4,
+            "capacity": 16,
+            "alpha": 0.6,
+            "beta": 1.0,
+            "beta_initial": 0.4,
+            "beta_annealing": True,
+            "observations": observations.clone(),
+            "actions": actions.clone(),
+            "rewards": rewards.total.clone(),
+            "rewards_extrinsic": rewards.extrinsic.clone(),
+            "rewards_intrinsic": rewards.intrinsic.clone(),
+            "rewards_shaping": rewards.shaping.clone(),
+            "next_observations": next_observations.clone(),
+            "dones": dones.clone(),
+            "priorities": legacy_priorities,
+            "max_priority": 4.0,
+            "position": 8,
+            "size_current": 8,
+        }
+        before_legacy = copy.deepcopy(legacy)
+        restored.validate_serialized(legacy, expected_obs_dim=spec.total_dims)
+        _assert_exact_state(before_legacy, legacy)
+        _assert_exact_state(before_live, restored.serialize())
+        with pytest.raises(HistoricalLegalityUnavailable, match="missing historical successor masks"):
+            restored.load_for_mode(legacy, requested_mode="recorded_full_resume")
+        _assert_exact_state(before_legacy, legacy)
+        _assert_exact_state(before_live, restored.serialize())
+
+        archived = PrioritizedReplayBuffer(capacity=16, alpha=0.6, beta=0.4, beta_annealing=True, device=CPU)
+        archived.load_from_serialized(legacy)
+        assert archived.retained_transitions == len(archived) == archived.size_current == archived.position == 0
+        assert np.array_equal(archived.priorities, np.zeros(16, dtype=np.float32))
+        assert archived.max_priority == 1.0
+        assert archived.beta_initial == 0.4
+        assert archived.beta == 1.0
+        archives = archived.historical_archives
+        assert len(archives) == 1
+        archive = archives[0]
+        assert archive.source_formats == {"scope": "standalone_replay", "replay": 4, "replay_kind": "prioritized"}
+        assert archive.archived_row_count == 8
+        _assert_exact_state(before_legacy, archive.original_state)
+        archived_rows = archive.query_rows(offset=0, limit=8)
+        for field in (
+            "observations",
+            "actions",
+            "rewards",
+            "rewards_extrinsic",
+            "rewards_intrinsic",
+            "rewards_shaping",
+            "next_observations",
+            "dones",
+        ):
+            _assert_exact_state(before_legacy[field], archived_rows[field])
+        assert torch.equal(archived_rows["priorities"], torch.from_numpy(legacy_priorities[:8]))
+        with pytest.raises(ValueError, match="Buffer size"):
+            archived.sample(batch_size=1)
+        _assert_exact_state(before_legacy, legacy)
+
+        archived_state = archived.serialize()
+        assert archived_state["format_version"] == 5
+        before_archived_state = copy.deepcopy(archived_state)
+        archive_restored = PrioritizedReplayBuffer(capacity=16, alpha=0.6, beta=0.4, beta_annealing=True, device=CPU)
+        archive_restored.load_from_serialized(archived_state)
+        _assert_exact_state(before_archived_state, archived_state)
+        _assert_exact_state(before_archived_state, archive_restored.serialize())
+
+        unsupported = copy.deepcopy(legacy)
+        unsupported["format_version"] = 3
+        before_unsupported = copy.deepcopy(unsupported)
+        with pytest.raises(ValueError, match="Cannot load PER checkpoint with format_version 3"):
             restored.load_from_serialized(unsupported)
         _assert_exact_state(before_unsupported, unsupported)
         _assert_exact_state(before_live, restored.serialize())

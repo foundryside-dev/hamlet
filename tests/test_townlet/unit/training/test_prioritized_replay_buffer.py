@@ -3,6 +3,8 @@
 CRIT-07: Updated to use RewardTensor DTO.
 """
 
+import copy
+
 import numpy as np
 import pytest
 import torch
@@ -14,6 +16,50 @@ from townlet.training.state import RewardTensor
 def _make_reward_tensor(rewards: torch.Tensor) -> RewardTensor:
     """Helper to create RewardTensor from reward values."""
     return RewardTensor.from_dac(total=rewards)
+
+
+def _assert_state_equal(left, right):
+    """Compare complete restore state, including owned embedded archives."""
+    assert type(left) is type(right)
+    if isinstance(left, torch.Tensor):
+        assert left.dtype == right.dtype and torch.equal(left, right)
+    elif isinstance(left, np.ndarray):
+        assert left.dtype == right.dtype and np.array_equal(left, right)
+    elif isinstance(left, dict):
+        assert left.keys() == right.keys()
+        for key in left:
+            _assert_state_equal(left[key], right[key])
+    elif isinstance(left, (list, tuple)):
+        assert len(left) == len(right)
+        for one, two in zip(left, right, strict=True):
+            _assert_state_equal(one, two)
+    else:
+        assert left == right
+
+
+def _exact_per4_state():
+    """Historical wire fixture, independent of the current serializer/key set."""
+    return {
+        "replay_kind": "prioritized",
+        "format_version": 4,
+        "capacity": 10,
+        "alpha": 0.6,
+        "beta": 1.0,
+        "beta_initial": 0.4,
+        "beta_annealing": True,
+        "observations": torch.tensor([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]),
+        "actions": torch.tensor([0, 1], dtype=torch.int64),
+        "rewards": torch.tensor([1.0, 2.0]),
+        "rewards_extrinsic": torch.tensor([0.5, 1.0]),
+        "rewards_intrinsic": torch.tensor([0.3, 0.6]),
+        "rewards_shaping": torch.tensor([0.2, 0.4]),
+        "next_observations": torch.tensor([[2.0, 3.0, 4.0], [5.0, 6.0, 7.0]]),
+        "dones": torch.tensor([False, True]),
+        "priorities": np.array([2.0, 3.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=np.float32),
+        "max_priority": 3.0,
+        "position": 2,
+        "size_current": 2,
+    }
 
 
 def test_prioritized_replay_buffer_push():
@@ -221,15 +267,15 @@ def test_prioritized_replay_buffer_serialize():
     rewards = _make_reward_tensor(torch.tensor([float(i) for i in range(10)]))
     next_obs = torch.randn(10, 5)
     dones = torch.zeros(10, dtype=torch.bool)
-    buffer.push(obs, actions, rewards, next_obs, dones)
+    buffer.push_recorded(obs, actions, rewards, next_obs, dones, torch.ones((10, 3), dtype=torch.bool))
 
-    # Serialize
+    # Serialize a current captured artifact, independently of historical PER4.
     state = buffer.serialize()
 
     # Verify beta_initial is in serialized state
     assert "beta_initial" in state
     assert state["beta_initial"] == 0.5
-    assert state["format_version"] == 4
+    assert state["format_version"] == 5
 
     # Create new buffer and restore
     new_buffer = PrioritizedReplayBuffer(
@@ -249,6 +295,7 @@ def test_prioritized_replay_buffer_serialize():
     assert new_buffer.capacity == 50
     assert new_buffer.position == buffer.position
     assert new_buffer.max_priority == buffer.max_priority
+    _assert_state_equal(new_buffer.serialize(), state)
 
 
 def test_prioritized_replay_buffer_device_placement():
@@ -362,8 +409,8 @@ def test_prioritized_replay_buffer_sample_size_guard():
     assert batch["observations"].shape == (5, 10)
 
 
-def test_prioritized_replay_buffer_previous_format_rejected():
-    """load_from_serialized rejects the immediately previous artifact."""
+def test_prioritized_replay_buffer_unsupported_format3_rejected():
+    """Unsupported format3 stays refused alongside approved format4 archives."""
     buffer = PrioritizedReplayBuffer(
         capacity=50,
         alpha=0.6,
@@ -390,7 +437,7 @@ def test_prioritized_replay_buffer_previous_format_rejected():
         "size_current": 0,
     }
 
-    with pytest.raises(ValueError, match="exact current format_version is 4"):
+    with pytest.raises(ValueError, match="supported format_version values are 4 and 5"):
         buffer.load_from_serialized(previous_state)
 
 
@@ -403,8 +450,8 @@ def test_prioritized_replay_buffer_future_format_rejected():
         device=torch.device("cpu"),
     )
 
-    with pytest.raises(ValueError, match="exact current format_version is 4"):
-        buffer.load_from_serialized({"format_version": 5})
+    with pytest.raises(ValueError, match="supported format_version values are 4 and 5"):
+        buffer.load_from_serialized({"format_version": 6})
 
 
 class TestCompactPrioritizedReplayCheckpointABI:
@@ -441,7 +488,7 @@ class TestCompactPrioritizedReplayCheckpointABI:
     def test_serialized_state_has_exact_current_version_kind_and_keys(self):
         state = self._buffer().serialize()
 
-        assert state["format_version"] == 4
+        assert state["format_version"] == 5
         assert state["replay_kind"] == "prioritized"
         assert set(state) == {
             "replay_kind",
@@ -463,16 +510,29 @@ class TestCompactPrioritizedReplayCheckpointABI:
             "max_priority",
             "position",
             "size_current",
+            "action_dim",
+            "legality_mode",
+            "historical_archives",
+            "next_action_masks",
+            "legality_recorded",
+            "rewards_extrinsic_present",
+            "rewards_intrinsic_present",
+            "rewards_shaping_present",
         }
 
-    @pytest.mark.parametrize("invalid_version", (4.0, True))
+    @pytest.mark.parametrize("invalid_version", (5.0, True))
     def test_format_version_requires_an_exact_integer(self, invalid_version: object):
         buffer = self._buffer(capacity=10)
         state = buffer.serialize()
         state["format_version"] = invalid_version
+        before = buffer.serialize()
+        frozen = copy.deepcopy(state)
 
-        with pytest.raises(ValueError, match="exact current format_version is 4"):
+        with pytest.raises(ValueError, match="supported format_version values are 4 and 5"):
             buffer.load_from_serialized(state)
+
+        _assert_state_equal(buffer.serialize(), before)
+        _assert_state_equal(state, frozen)
 
     def test_structural_validation_does_not_materialize_restore_storage(self, monkeypatch):
         buffer = self._buffer(capacity=10)
@@ -498,13 +558,71 @@ class TestCompactPrioritizedReplayCheckpointABI:
 
         assert prepare_calls == 0
 
+    def test_exact_old4_validation_is_pure_with_genuinely_annealed_beta(self, monkeypatch):
+        buffer = self._buffer()
+        buffer.anneal_beta(total_steps=10, current_step=10)
+        assert buffer.beta_initial == 0.4 and buffer.beta == 1.0
+        state = _exact_per4_state()
+        frozen = copy.deepcopy(state)
+        before = buffer.serialize()
+        torch_rng = torch.get_rng_state().clone()
+        numpy_rng = np.random.get_state()
+
+        def forbid_materialization(*args, **kwargs):
+            raise AssertionError("pure historical validation must not prepare restore storage")
+
+        monkeypatch.setattr(buffer, "_prepare_serialized", forbid_materialization)
+        monkeypatch.setattr(buffer, "_materialize_serialized", forbid_materialization)
+        buffer.validate_serialized(state, expected_obs_dim=3)
+
+        _assert_state_equal(buffer.serialize(), before)
+        _assert_state_equal(state, frozen)
+        assert torch.equal(torch.get_rng_state(), torch_rng)
+        _assert_state_equal(np.random.get_state(), numpy_rng)
+
+    @pytest.mark.parametrize("invalid_version", (4.0, True))
+    def test_exact_old4_version_requires_an_integer_without_mutation(self, invalid_version):
+        buffer = self._buffer()
+        state = _exact_per4_state()
+        buffer.validate_serialized(state, expected_obs_dim=3)
+        state["format_version"] = invalid_version
+        before = buffer.serialize()
+        frozen = copy.deepcopy(state)
+
+        with pytest.raises(ValueError, match="supported format_version values are 4 and 5"):
+            buffer.validate_serialized(state, expected_obs_dim=3)
+
+        _assert_state_equal(buffer.serialize(), before)
+        _assert_state_equal(state, frozen)
+
+    def test_current_captured_roundtrip_keeps_initial_and_annealed_beta(self):
+        source = self._buffer()
+        observations = torch.tensor([[1.0, 2.0, 3.0]])
+        source.push_recorded(
+            observations,
+            torch.tensor([0]),
+            _make_reward_tensor(torch.tensor([1.0])),
+            observations + 1,
+            torch.tensor([False]),
+            torch.tensor([[False, True, False]]),
+        )
+        source.anneal_beta(total_steps=10, current_step=10)
+        state = source.serialize()
+        assert state["beta_initial"] == 0.4 and state["beta"] == 1.0
+        restored = self._buffer()
+        restored.load_from_serialized(state)
+
+        assert restored.beta_initial == 0.4 and restored.beta == 1.0
+        assert len(restored) == 1 and restored.historical_archives == ()
+        _assert_state_equal(restored.serialize(), state)
+
     def test_loader_refuses_non_mapping_payload(self):
         replay = self._buffer(capacity=4)
 
         with pytest.raises(ValueError, match="payload must be a mapping"):
             replay.load_from_serialized(None)
 
-    def test_immediately_previous_version_refuses_without_mutation(self):
+    def test_unsupported_format3_refuses_without_mutation(self):
         buffer = self._buffer()
         observations = torch.ones((1, 3), dtype=torch.float32)
         buffer.push(
@@ -518,18 +636,10 @@ class TestCompactPrioritizedReplayCheckpointABI:
         previous = dict(before)
         previous["format_version"] = 3
 
-        with pytest.raises(ValueError, match=r"format_version 3.*format_version is 4"):
+        with pytest.raises(ValueError, match=r"format_version 3.*supported format_version values are 4 and 5"):
             buffer.load_from_serialized(previous)
 
-        after = buffer.serialize()
-        assert before.keys() == after.keys()
-        for key in before:
-            if isinstance(before[key], torch.Tensor):
-                assert torch.equal(before[key], after[key])
-            elif isinstance(before[key], np.ndarray):
-                assert np.array_equal(before[key], after[key])
-            else:
-                assert before[key] == after[key]
+        _assert_state_equal(before, buffer.serialize())
 
     @pytest.mark.parametrize(
         ("mutation", "message"),
@@ -816,11 +926,11 @@ class TestPrioritizedReplayBufferStatsAPI:
         rewards = _make_reward_tensor(torch.ones(5))
         next_obs = torch.randn(5, 5)
         dones = torch.zeros(5, dtype=torch.bool)
-        buffer.push(obs, actions, rewards, next_obs, dones)
+        buffer.push_recorded(obs, actions, rewards, next_obs, dones, torch.ones((5, 6), dtype=torch.bool))
 
         stats = buffer.stats()
 
-        # Calculate expected memory (tensors preallocated + NumPy priorities)
+        # Independently account for capacity10, obs_dim5, declared action_dim6.
         # observations: 10*5 floats, actions: 10 longs, rewards: 10 floats (total),
         # rewards_extrinsic: 10 floats, rewards_intrinsic: 10 floats, rewards_shaping: 10 floats,
         # next_observations: 10*5 floats, dones: 10 bools, priorities: 10 float32
@@ -834,6 +944,9 @@ class TestPrioritizedReplayBufferStatsAPI:
             + 10 * 5 * 4  # next_observations (float32)
             + 10 * 1  # dones (bool)
             + 10 * 4  # priorities (numpy float32)
+            + 10 * 6 * 1  # successor action masks (bool)
+            + 10 * 1  # recorded legality (bool)
+            + 3 * 10 * 1  # extrinsic/intrinsic/shaping presence (bool)
         )
 
         assert stats["memory_bytes"] == expected_bytes

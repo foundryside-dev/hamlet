@@ -1,9 +1,9 @@
-"""Tests for PrioritizedReplayBuffer reward component storage (format_version 4).
+"""Tests for current PER5 reward components and unsupported artifact refusal.
 
 Task 5 from docs/plans/2025-11-28-reward-tensor-wiring-implementation.md:
 - Component storage and retrieval
-- Serialization format_version 4
-- Rejection of non-current format versions
+- Current captured format_version 5 serialization
+- Rejection of unsupported versions; exact4 retains approved archival access
 """
 
 import numpy as np
@@ -99,6 +99,9 @@ class TestRewardComponentStorage:
         assert buffer.rewards_extrinsic[0].item() == 0.0
         assert buffer.rewards_intrinsic[0].item() == 0.0
         assert buffer.rewards_shaping[0].item() == 0.0
+        state = buffer.serialize()
+        for component in ("extrinsic", "intrinsic", "shaping"):
+            assert not state[f"rewards_{component}_present"].any()
 
     def test_wraparound_preserves_components(self):
         """Component storage should work correctly with PER wraparound."""
@@ -135,12 +138,38 @@ class TestRewardComponentStorage:
         assert buffer.rewards_intrinsic[3].item() == pytest.approx(3.0 * 0.3)
         assert buffer.rewards_shaping[3].item() == pytest.approx(3.0 * 0.2)
 
+    def test_omitted_components_overwrite_recorded_values_with_false_presence(self):
+        buffer = PrioritizedReplayBuffer(1, 0.6, 0.4, False, CPU)
+        observations = torch.tensor([[1.0]])
+        actions = torch.tensor([0])
+        dones = torch.tensor([False])
+        masks = torch.tensor([[True, False]])
+        components = RewardTensor.from_dac(
+            total=torch.tensor([1.0]),
+            extrinsic=torch.tensor([0.5]),
+            intrinsic=torch.tensor([0.3]),
+            shaping=torch.tensor([0.2]),
+        )
+        buffer.push_recorded(observations, actions, components, observations + 1, dones, masks)
+        recorded = buffer.serialize()
+        for component in ("extrinsic", "intrinsic", "shaping"):
+            assert recorded[f"rewards_{component}_present"].tolist() == [True]
 
-class TestSerializationFormatVersion4:
-    """Test PER serialization with format_version 4."""
+        absent = RewardTensor.from_dac(total=torch.tensor([9.0]))
+        buffer.push_recorded(observations + 2, actions, absent, observations + 3, dones, masks)
+        state = buffer.serialize()
+        assert state["rewards"].tolist() == [9.0]
+        for component in ("extrinsic", "intrinsic", "shaping"):
+            assert getattr(buffer, f"rewards_{component}")[0].item() == 0.0
+            assert state[f"rewards_{component}"] is None
+            assert state[f"rewards_{component}_present"].tolist() == [False]
 
-    def test_serialize_empty_buffer_has_version_3(self):
-        """Empty PER buffer should serialize with format_version 4."""
+
+class TestSerializationFormatVersion5:
+    """Test current PER serialization without reactivating archived history."""
+
+    def test_serialize_empty_buffer_has_version_5(self):
+        """Empty current PER buffer retains null unallocated components."""
         buffer = PrioritizedReplayBuffer(
             capacity=10,
             alpha=0.6,
@@ -150,11 +179,15 @@ class TestSerializationFormatVersion4:
         )
         state = buffer.serialize()
 
-        assert state["format_version"] == 4
+        assert state["format_version"] == 5
         assert state["size_current"] == 0
         assert state["rewards_extrinsic"] is None
         assert state["rewards_intrinsic"] is None
         assert state["rewards_shaping"] is None
+        assert state["action_dim"] is None and state["historical_archives"] == []
+        assert state["next_action_masks"] is None and state["legality_recorded"] is None
+        for component in ("extrinsic", "intrinsic", "shaping"):
+            assert state[f"rewards_{component}_present"] is None
 
     def test_serialize_with_components(self):
         """PER serialization should include all component tensors."""
@@ -178,11 +211,11 @@ class TestSerializationFormatVersion4:
             )
             next_obs = torch.tensor([[float(i + 1)]])
             dones = torch.tensor([i == 4])
-            buffer.push(obs, actions, reward_tensor, next_obs, dones)
+            buffer.push_recorded(obs, actions, reward_tensor, next_obs, dones, torch.ones((1, 5), dtype=torch.bool))
 
         state = buffer.serialize()
 
-        assert state["format_version"] == 4
+        assert state["format_version"] == 5
         assert state["size_current"] == 5
         assert state["rewards_extrinsic"] is not None
         assert state["rewards_intrinsic"] is not None
@@ -190,6 +223,11 @@ class TestSerializationFormatVersion4:
         assert state["rewards_extrinsic"].shape == (5,)
         assert state["rewards_intrinsic"].shape == (5,)
         assert state["rewards_shaping"].shape == (5,)
+        assert state["action_dim"] == 5
+        assert state["next_action_masks"].tolist() == [[True] * 5] * 5
+        assert state["legality_recorded"].all()
+        for component in ("extrinsic", "intrinsic", "shaping"):
+            assert state[f"rewards_{component}_present"].tolist() == [True] * 5
 
         # Verify component values
         for i in range(5):
@@ -219,7 +257,7 @@ class TestSerializationFormatVersion4:
             )
             next_obs = torch.tensor([[float(i + 1), float((i + 1) * 2)]])
             dones = torch.tensor([i == 4])
-            buffer1.push(obs, actions, reward_tensor, next_obs, dones)
+            buffer1.push_recorded(obs, actions, reward_tensor, next_obs, dones, torch.ones((1, 4), dtype=torch.bool))
 
         state = buffer1.serialize()
 
@@ -234,6 +272,13 @@ class TestSerializationFormatVersion4:
         buffer2.load_from_serialized(state)
 
         assert buffer2.size_current == 5
+        restored = buffer2.serialize()
+        assert restored["format_version"] == 5 and restored["action_dim"] == 4
+        assert restored["historical_archives"] == []
+        assert torch.equal(restored["next_action_masks"], state["next_action_masks"])
+        assert torch.equal(restored["legality_recorded"], state["legality_recorded"])
+        for component in ("extrinsic", "intrinsic", "shaping"):
+            assert torch.equal(restored[f"rewards_{component}_present"], state[f"rewards_{component}_present"])
         # Verify components match
         for i in range(5):
             assert buffer2.rewards_extrinsic[i].item() == pytest.approx(i * 0.5)
@@ -242,7 +287,7 @@ class TestSerializationFormatVersion4:
 
 
 class TestLegacyFormatRejection:
-    """Test that non-current format versions are rejected by PER."""
+    """Unsupported artifacts are refused; this does not reject valid PER4 archives."""
 
     def test_load_format_version_2_raises_error(self):
         """Loading format_version 2 should raise ValueError."""
@@ -272,7 +317,7 @@ class TestLegacyFormatRejection:
             "size_current": 5,
         }
 
-        with pytest.raises(ValueError, match="exact current format_version is 4"):
+        with pytest.raises(ValueError, match="supported format_version values are 4 and 5"):
             buffer.load_from_serialized(old_format)
 
     def test_load_format_version_1_raises_error(self):
@@ -304,7 +349,7 @@ class TestLegacyFormatRejection:
             "size_current": 5,
         }
 
-        with pytest.raises(ValueError, match="exact current format_version is 4"):
+        with pytest.raises(ValueError, match="supported format_version values are 4 and 5"):
             buffer.load_from_serialized(legacy_format)
 
     def test_load_missing_format_version_raises_error(self):
@@ -318,7 +363,7 @@ class TestLegacyFormatRejection:
         )
 
         old_format = {
-            # No format_version field (defaults to 1)
+            # Missing format_version is invalid, without an inferred default.
             "capacity": 10,
             "alpha": 0.6,
             "beta": 0.4,
@@ -335,7 +380,7 @@ class TestLegacyFormatRejection:
             "size_current": 5,
         }
 
-        with pytest.raises(ValueError, match="exact current format_version is 4"):
+        with pytest.raises(ValueError, match="supported format_version values are 4 and 5"):
             buffer.load_from_serialized(old_format)
 
 
@@ -363,17 +408,22 @@ class TestClearAndStatsWithComponents:
         )
         next_obs = torch.randn(2, 5)
         dones = torch.tensor([False, True])
-        buffer.push(obs, actions, reward_tensor, next_obs, dones)
+        buffer.push_recorded(obs, actions, reward_tensor, next_obs, dones, torch.ones((2, 3), dtype=torch.bool))
 
         assert buffer.rewards_extrinsic is not None
         assert buffer.rewards_intrinsic is not None
         assert buffer.rewards_shaping is not None
+        assert buffer.next_action_masks is not None
+        assert buffer.legality_recorded is not None
 
         buffer.clear()
 
         assert buffer.rewards_extrinsic is None
         assert buffer.rewards_intrinsic is None
         assert buffer.rewards_shaping is None
+        assert buffer.next_action_masks is None and buffer.legality_recorded is None
+        for component in ("extrinsic", "intrinsic", "shaping"):
+            assert getattr(buffer, f"rewards_{component}_present") is None
 
     def test_stats_includes_component_memory(self):
         """stats() should include memory for component tensors."""
@@ -399,11 +449,11 @@ class TestClearAndStatsWithComponents:
         )
         next_obs = torch.randn(5, 5)
         dones = torch.rand(5) > 0.5
-        buffer.push(obs, actions, reward_tensor, next_obs, dones)
+        buffer.push_recorded(obs, actions, reward_tensor, next_obs, dones, torch.ones((5, 6), dtype=torch.bool))
 
         stats = buffer.stats()
 
-        # Calculate expected memory (all tensors preallocated to capacity)
+        # Capacity10, obs_dim5, declared action_dim6: no inferred vocabulary.
         expected_bytes = (
             10 * 5 * 4  # observations (float32)
             + 10 * 8  # actions (int64)
@@ -414,6 +464,9 @@ class TestClearAndStatsWithComponents:
             + 10 * 5 * 4  # next_observations (float32)
             + 10 * 1  # dones (bool)
             + 10 * 4  # priorities (numpy float32)
+            + 10 * 6 * 1  # successor action masks (bool)
+            + 10 * 1  # recorded legality (bool)
+            + 3 * 10 * 1  # extrinsic/intrinsic/shaping presence (bool)
         )
 
         assert stats["memory_bytes"] == expected_bytes

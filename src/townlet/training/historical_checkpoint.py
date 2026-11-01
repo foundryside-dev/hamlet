@@ -212,8 +212,8 @@ def _validate_archive_state(state: Mapping, formats: Mapping) -> int:
         for index, episode in enumerate(state["episodes"]):
             episode = _mapping(episode, f"archive.episodes[{index}]")
             length = _validate_rows(episode, f"archive.episodes[{index}]")
-            if length < 1 or episode["dones"][:-1].any():
-                raise ValueError("archive episode boundaries contain empty episodes or interior terminals")
+            if length < 1:
+                raise ValueError("archive episode boundaries contain empty episodes")
             if width is not None and width != episode["observations"].shape[1]:
                 raise ValueError("archive episode observation widths differ")
             width, total = episode["observations"].shape[1], total + length

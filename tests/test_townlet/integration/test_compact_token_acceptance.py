@@ -17,6 +17,7 @@ import torch.nn.functional as F  # noqa: N812
 from tests.test_townlet.helpers.token_widths import fixed_width_for
 from townlet.agent.network_factory import NetworkFactory
 from townlet.agent.token_input import TokenInputAssembler
+from townlet.config.bac_options import ReplayOptions
 from townlet.config.brain_config import (
     DuelingConfig,
     DuelingStreamConfig,
@@ -40,6 +41,7 @@ from townlet.training.prioritized_replay_buffer import (
     PrioritizedReplayBuffer,
 )
 from townlet.training.replay_buffer import REPLAY_BUFFER_FORMAT_VERSION, HistoricalLegalityUnavailable, ReplayBuffer
+from townlet.training.replay_contract import ReplayRequest
 from townlet.training.sequential_replay_buffer import (
     SEQUENTIAL_REPLAY_BUFFER_FORMAT_VERSION,
     SequentialReplayBuffer,
@@ -429,9 +431,26 @@ def _assert_exact_state(expected: Any, actual: Any) -> None:
         assert actual == expected
 
 
+def _qualified_sequence(action_dim: int) -> SequentialReplayBuffer:
+    return SequentialReplayBuffer.for_replay(
+        16,
+        CPU,
+        options=ReplayOptions(
+            sampling_mode="successive_without_replacement",
+            uniform_sequence_adapter="legacy_episode_length_with_replacement",
+            sequence_mode="fixed_full",
+            retention_mode="whole_episode",
+            sequence_objective="window_mean",
+            priority_reduction="max_abs",
+        ),
+        action_dim=action_dim,
+        legality_mode="unconstrained",  # Explicit invariant for newly authored synthetic rows only.
+    )
+
+
 @pytest.mark.parametrize("replay_kind", ["standard", "prioritized", "sequential"])
 def test_replay_matrix(replay_kind: ReplayKind, l1_runtime: tuple[TokenSpec, int, torch.Tensor]) -> None:
-    spec, _, _ = l1_runtime
+    spec, action_dim, _ = l1_runtime
     observations, actions, rewards, next_observations, dones = _transition_batch(spec.total_dims)
     if replay_kind == "standard":
         replay: Any = ReplayBuffer(capacity=16, device=CPU)
@@ -446,22 +465,55 @@ def test_replay_matrix(replay_kind: ReplayKind, l1_runtime: tuple[TokenSpec, int
         current_version = PRIORITIZED_REPLAY_BUFFER_FORMAT_VERSION
         restored = PrioritizedReplayBuffer(capacity=16, alpha=0.6, beta=0.4, beta_annealing=True, device=CPU)
     elif replay_kind == "sequential":
-        replay = SequentialReplayBuffer(capacity=16, device=CPU)
-        replay.store_episode(
-            {
-                "observations": observations,
-                "actions": actions,
-                "rewards": rewards.total,
-                "rewards_extrinsic": rewards.extrinsic,
-                "rewards_intrinsic": rewards.intrinsic,
-                "rewards_shaping": rewards.shaping,
-                "next_observations": next_observations,
-                "dones": dones,
-            }
+        episode = {
+            "observations": observations,
+            "actions": actions,
+            "rewards": rewards.total,
+            "rewards_extrinsic": rewards.extrinsic,
+            "rewards_intrinsic": rewards.intrinsic,
+            "rewards_shaping": rewards.shaping,
+            "next_observations": next_observations,
+            "dones": dones,
+        }
+        legacy_transport = SequentialReplayBuffer(capacity=16, device=CPU)
+        legacy_transport.store_episode(episode)
+        sample = legacy_transport.sample_sequences(batch_size=2, seq_len=4)
+        assert legacy_transport.serialize()["format_version"] == 5
+        replay = _qualified_sequence(action_dim)
+        replay.store_episode(episode)
+        request = ReplayRequest(
+            batch_size=2,
+            sequence_length=4,
+            min_transitions=1,
+            sampling_mode="successive_without_replacement",
+            sequence_mode="fixed_full",
+            sequence_objective="window_mean",
         )
-        sample = replay.sample_sequences(batch_size=2, seq_len=4)
+        qualified = replay.sample_batch(request)
+        assert qualified.observations.shape == qualified.next_observations.shape == (2, 4, spec.total_dims)
+        assert qualified.observations.dtype is qualified.next_observations.dtype is torch.float32
+        assert qualified.actions.dtype is torch.int64 and qualified.dones.dtype is torch.bool
+        assert qualified.rewards.dtype is torch.float32
+        assert torch.equal(qualified.lengths, torch.full((2,), 4, dtype=torch.int64))
+        assert qualified.loss_mask.dtype is torch.bool and qualified.loss_mask.all()
+        assert qualified.legality_recorded.dtype is torch.bool and qualified.legality_recorded.all()
+        assert qualified.next_action_masks.shape == (2, 4, action_dim)
+        assert qualified.next_action_masks.dtype is torch.bool and qualified.next_action_masks.all()
+        assert qualified.sampling.mode == "legacy_episode_length_with_replacement"
+        assert qualified.sampling.objective_unit == "window" and qualified.sampling.weight_rule == "uniform"
+        assert qualified.sampling.population_size == 5
+        assert np.array_equal(qualified.sampling.conditional_draw_probabilities, np.full(2, 1 / 5, dtype=np.float64))
+        assert torch.equal(qualified.weights, torch.ones(2, dtype=torch.float64))
+        for row, endpoint in enumerate(qualified.unit_ids.tolist()):
+            assert 3 <= endpoint < 8
+            selection = slice(endpoint - 3, endpoint + 1)
+            for name, values in episode.items():
+                _assert_exact_state(values[selection], getattr(qualified, name)[row])
+            for name in ("rewards_extrinsic", "rewards_intrinsic", "rewards_shaping"):
+                presence = getattr(qualified, f"{name}_present")
+                assert presence.dtype is torch.bool and presence.all()
         current_version = SEQUENTIAL_REPLAY_BUFFER_FORMAT_VERSION
-        restored = SequentialReplayBuffer(capacity=16, device=CPU)
+        restored = _qualified_sequence(action_dim)
     else:
         assert_never(replay_kind)
 
@@ -481,6 +533,26 @@ def test_replay_matrix(replay_kind: ReplayKind, l1_runtime: tuple[TokenSpec, int
         assert sample["indices"].dtype == np.dtype(np.int64)
     state = replay.serialize()
     assert state["format_version"] == current_version
+    if replay_kind == "sequential":
+        assert state["action_dim"] == action_dim and state["legality_mode"] == "unconstrained"
+        assert state["num_transitions"] == 8 and state["next_episode_id"] == 1 and state["next_transition_id"] == 8
+        assert state["historical_archives"] == []
+        assert state["replay_options"] == {
+            "sampling_mode": "successive_without_replacement",
+            "uniform_sequence_adapter": "legacy_episode_length_with_replacement",
+            "sequence_mode": "fixed_full",
+            "retention_mode": "whole_episode",
+            "sequence_objective": "window_mean",
+            "priority_reduction": "max_abs",
+        }
+        assert len(state["episodes"]) == 1
+        record = state["episodes"][0]
+        assert record["episode_id"] == record["start_offset"] == 0 and record["original_length"] == 8
+        _assert_exact_state(torch.arange(8, dtype=torch.int64), record["transition_ids"])
+        _assert_exact_state(torch.ones((8, action_dim), dtype=torch.bool), record["next_action_masks"])
+        _assert_exact_state(torch.ones(8, dtype=torch.bool), record["legality_recorded"])
+        for name, values in episode.items():
+            _assert_exact_state(values, record[name])
     restored.load_from_serialized(state)
     restored_state = restored.serialize()
     _assert_exact_state(state, restored_state)
@@ -502,7 +574,9 @@ def test_replay_matrix(replay_kind: ReplayKind, l1_runtime: tuple[TokenSpec, int
         with pytest.raises(ValueError, match="PER checkpoint key set mismatch"):
             restored.load_from_serialized(previous)
     else:
-        with pytest.raises(ValueError, match=rf"exact current format_version is {current_version}"):
+        # Captured6 with an old5 tag is mixed schema, never an honest old artifact.
+        assert state["format_version"] == 6 and previous["format_version"] == 5
+        with pytest.raises(ValueError, match="Sequential checkpoint key set mismatch"):
             restored.load_from_serialized(previous)
     _assert_exact_state(before_input, previous)
     _assert_exact_state(before_live, restored.serialize())
@@ -632,6 +706,81 @@ def test_replay_matrix(replay_kind: ReplayKind, l1_runtime: tuple[TokenSpec, int
             restored.load_from_serialized(unsupported)
         _assert_exact_state(before_unsupported, unsupported)
         _assert_exact_state(before_live, restored.serialize())
+
+    elif replay_kind == "sequential":
+        # Independent exact old5 wire shape: never relabel captured6 rows/history.
+        legacy = {
+            "replay_kind": "sequential",
+            "format_version": 5,
+            "capacity": 16,
+            "num_transitions": 8,
+            "episodes": [
+                {
+                    "observations": observations.clone(),
+                    "actions": actions.clone(),
+                    "rewards": rewards.total.clone(),
+                    "rewards_extrinsic": rewards.extrinsic.clone(),
+                    "rewards_intrinsic": rewards.intrinsic.clone(),
+                    "rewards_shaping": rewards.shaping.clone(),
+                    "next_observations": next_observations.clone(),
+                    "dones": dones.clone(),
+                }
+            ],
+        }
+        before_legacy = copy.deepcopy(legacy)
+        restored.validate_serialized(legacy, expected_obs_dim=spec.total_dims)
+        _assert_exact_state(before_legacy, legacy)
+        _assert_exact_state(before_live, restored.serialize())
+        with pytest.raises(HistoricalLegalityUnavailable, match="missing historical successor masks"):
+            restored.load_for_mode(legacy, requested_mode="recorded_full_resume")
+        _assert_exact_state(before_legacy, legacy)
+        _assert_exact_state(before_live, restored.serialize())
+
+        archived = _qualified_sequence(action_dim)
+        archived.load_from_serialized(legacy)
+        assert archived.retained_transitions == archived.num_transitions == len(archived) == 0
+        assert archived.readiness(request).reason == "warmup"
+        with pytest.raises(ValueError, match="buffer is empty"):
+            archived.sample_sequences(batch_size=1, seq_len=1)
+        with pytest.raises(ValueError, match="warmup"):
+            archived.sample_batch(request)
+        archives = archived.historical_archives
+        assert len(archives) == 1
+        archive = archives[0]
+        assert archive.source_formats == {"scope": "standalone_replay", "replay": 5, "replay_kind": "sequential"}
+        assert archive.archived_row_count == 8
+        _assert_exact_state(before_legacy, archive.original_state)
+        rows = archive.query_rows(offset=0, limit=8)
+        for field, values in legacy["episodes"][0].items():
+            _assert_exact_state(values, rows[field])
+        for field in ("rewards_extrinsic", "rewards_intrinsic", "rewards_shaping"):
+            assert rows[f"{field}_present"].all()
+        assert torch.equal(rows["episode_ids"], torch.zeros(8, dtype=torch.int64))
+        _assert_exact_state(before_legacy, legacy)
+
+        archived_state = archived.serialize()
+        assert archived_state["format_version"] == 6
+        archive_restored = _qualified_sequence(action_dim)
+        archive_restored.load_from_serialized(archived_state)
+        _assert_exact_state(archived_state, archive_restored.serialize())
+        # Fresh qualified data stays active while the old artifact stays archive-only.
+        archive_restored.store_episode(episode)
+        combined = archive_restored.serialize()
+        assert combined["num_transitions"] == 8
+        assert combined["next_episode_id"] == 1 and combined["next_transition_id"] == 8
+        _assert_exact_state(archived_state["historical_archives"], combined["historical_archives"])
+        combined_restored = _qualified_sequence(action_dim)
+        combined_restored.load_for_mode(combined, requested_mode="recorded_full_resume")
+        _assert_exact_state(combined, combined_restored.serialize())
+
+        for unsupported_version in (4, 7):
+            unsupported = copy.deepcopy(legacy)
+            unsupported["format_version"] = unsupported_version
+            before_unsupported = copy.deepcopy(unsupported)
+            with pytest.raises(ValueError, match="supported format_version values are 5 and 6"):
+                restored.load_from_serialized(unsupported)
+            _assert_exact_state(before_unsupported, unsupported)
+            _assert_exact_state(before_live, restored.serialize())
 
 
 def _effect_spec() -> TokenSpec:

@@ -156,6 +156,29 @@ def test_current_checkpoint_closes_pending_lanes_once_and_resumes_fresh_episode(
         assert not {"episode_completed", "episode_completions", "current_obs", "rollout_hidden", "current_episodes"}.intersection(
             learned_state
         )
+        source_checkpoint = next(runner.checkpoint_dir.glob("checkpoint_ep*.pt"))
+        source_checkpoint_bytes = source_checkpoint.read_bytes()
+        if mode == "recurrent":
+            assert isinstance(population.replay_buffer, SequentialReplayBuffer)
+            assert population.replay_buffer.action_dim is None and population.replay_buffer.replay_options is None
+            source_replay = learned_state["replay_buffer"]
+            assert set(source_replay) == {"replay_kind", "format_version", "capacity", "num_transitions", "episodes"}
+            assert source_replay["replay_kind"] == "sequential"
+            assert type(source_replay["format_version"]) is int and source_replay["format_version"] == 5
+            assert source_replay["num_transitions"] == 2
+            assert [len(episode["actions"]) for episode in source_replay["episodes"]] == [1, 1]
+            for episode in source_replay["episodes"]:
+                assert set(episode) == {
+                    "observations",
+                    "actions",
+                    "rewards",
+                    "dones",
+                    "next_observations",
+                    "rewards_extrinsic",
+                    "rewards_intrinsic",
+                    "rewards_shaping",
+                }
+                assert not episode["dones"].any()  # Checkpoint truncation retains its real successor.
 
     env = compile_authored_environment(tmp_path / "pack", num_agents=2)
     exploration = AdaptiveIntrinsicExploration(obs_dim=env.observation_dim, rnd_training_batch_size=128, device=env.device)
@@ -189,19 +212,85 @@ def test_current_checkpoint_closes_pending_lanes_once_and_resumes_fresh_episode(
         resumed.exploration = exploration
         assert resumed.load_checkpoint() == 0
         restored.reset()  # This is the runner's existing fresh-episode resume policy.
-        _assert_recursive_state_equal(learned_state, restored.get_checkpoint_state())
+        restored_state = deepcopy(restored.get_checkpoint_state())
+        if mode == "recurrent":
+            # Approved old5 history stays inspectable while active replay restarts fresh.
+            assert restored_state.keys() == learned_state.keys()
+            _assert_recursive_state_equal(
+                {key: value for key, value in learned_state.items() if key != "replay_buffer"},
+                {key: value for key, value in restored_state.items() if key != "replay_buffer"},
+            )
+        else:
+            _assert_recursive_state_equal(learned_state, restored_state)
         assert restored.episode_completions == [None, None]
         assert restored.episode_step_counts.tolist() == [0, 0]
         assert env.step_counts.tolist() == [0, 0]
         assert not env.dones.any()
         if isinstance(restored.replay_buffer, SequentialReplayBuffer):
-            assert restored.replay_buffer.num_transitions == 2
-            assert all(not episode["dones"].any() for episode in restored.replay_buffer.episodes)
+            assert mode == "recurrent"
+            replay = restored.replay_buffer
+            assert replay.num_transitions == replay.legacy_transport_transitions == replay.retained_transitions == 0
+            assert len(replay) == 0 and not replay.episodes
+            assert replay.action_dim is None and replay.replay_options is None and replay.legality_mode == "legacy"
+            inspection = restored_state["replay_buffer"]
+            assert set(inspection) == {"inspection_kind", "inspection_version", "legacy_transport", "historical_archives"}
+            assert inspection["inspection_kind"] == "sequential_replay_inspection"
+            assert type(inspection["inspection_version"]) is int and inspection["inspection_version"] == 1
+            _assert_recursive_state_equal(
+                {
+                    "replay_kind": "sequential",
+                    "format_version": 5,
+                    "capacity": source_replay["capacity"],
+                    "num_transitions": 0,
+                    "episodes": [],
+                },
+                inspection["legacy_transport"],
+            )
+            assert len(inspection["historical_archives"]) == len(replay.historical_archives) == 1
+            record = inspection["historical_archives"][0]
+            archive = replay.historical_archives[0]
+            assert set(record) == {
+                "source_formats",
+                "original_state",
+                "source_digest",
+                "archived_row_count",
+                "reward_semantics",
+                "approval_reference",
+            }
+            assert (
+                record["source_formats"]
+                == archive.source_formats
+                == {
+                    "scope": "standalone_replay",
+                    "replay": 5,
+                    "replay_kind": "sequential",
+                }
+            )
+            assert record["archived_row_count"] == archive.archived_row_count == 2
+            assert record["reward_semantics"] == archive.reward_semantics == "historical_recorded_pre_fix"
+            assert record["approval_reference"] == archive.approval_reference == "BAC-HISTORY-A-2026-11-01"
+            assert record["source_digest"] == archive.source_digest
+            assert archive.source_digest.startswith("state-sha256:v1:") and len(archive.source_digest) == 80
+            _assert_recursive_state_equal(source_replay, record["original_state"])
+            _assert_recursive_state_equal(source_replay, archive.original_state)
+            rows = archive.query_rows(offset=0, limit=2)
+            for field in ("observations", "actions", "rewards", "dones", "next_observations"):
+                _assert_recursive_state_equal(torch.cat([episode[field] for episode in source_replay["episodes"]]), rows[field])
+            assert rows["episode_ids"].tolist() == [0, 1]
+            exported = archive.export(tmp_path / "archived-sequential.pt")
+            assert exported.source_digest == archive.source_digest and exported.row_count == 2
+            _assert_recursive_state_equal(source_replay, torch.load(exported.destination, weights_only=False))
+            with pytest.raises(ValueError, match="buffer is empty"):
+                replay.sample_sequences(batch_size=1, seq_len=1)
             assert all(not episode["observations"] for episode in restored.current_episodes)
             assert all(not tensor.any() for tensor in restored.rollout_hidden)
         else:
+            assert mode == "standard"
             assert len(restored.replay_buffer) == 2
             assert not restored.replay_buffer.dones[:2].any()
+        _assert_recursive_state_equal(restored_state, restored.get_checkpoint_state())
+        assert source_checkpoint.read_bytes() == source_checkpoint_bytes
+        _assert_recursive_state_equal(learned_state, population.get_checkpoint_state())
 
 
 @pytest.fixture

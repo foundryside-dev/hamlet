@@ -5,10 +5,49 @@ CRIT-07: Updated to use single 'rewards' field (DAC-composed totals).
 
 from __future__ import annotations
 
+import copy
+
 import pytest
 import torch
 
+from townlet.config.bac_options import ReplayOptions
+from townlet.training.replay_contract import HistoricalLegalityUnavailable
 from townlet.training.sequential_replay_buffer import SequentialReplayBuffer
+
+
+def qualified_buffer(capacity: int) -> SequentialReplayBuffer:
+    # Newly authored synthetic rows explicitly declare an unconstrained vocabulary.
+    return SequentialReplayBuffer.for_replay(
+        capacity,
+        torch.device("cpu"),
+        options=ReplayOptions(
+            sampling_mode="successive_without_replacement",
+            uniform_sequence_adapter="legacy_episode_length_with_replacement",
+            sequence_mode="fixed_full",
+            retention_mode="whole_episode",
+            sequence_objective="window_mean",
+            priority_reduction="max_abs",
+        ),
+        action_dim=8,
+        legality_mode="unconstrained",
+    )
+
+
+def assert_exact_state(expected, actual):
+    assert type(actual) is type(expected)
+    if isinstance(expected, torch.Tensor):
+        assert expected.dtype == actual.dtype and expected.shape == actual.shape and expected.device == actual.device
+        assert torch.equal(expected, actual)
+    elif isinstance(expected, dict):
+        assert expected.keys() == actual.keys()
+        for key in expected:
+            assert_exact_state(expected[key], actual[key])
+    elif isinstance(expected, (list, tuple)):
+        assert len(expected) == len(actual)
+        for left, right in zip(expected, actual, strict=True):
+            assert_exact_state(left, right)
+    else:
+        assert expected == actual
 
 
 def make_episode(length: int, *, reward_value: float = 1.0) -> dict[str, torch.Tensor]:
@@ -78,15 +117,17 @@ class TestSequentialReplayBuffer:
             buffer.sample_sequences(batch_size=1, seq_len=5)
 
     def test_serialize_and_restore(self):
-        """CRIT-07: Test serialization with single rewards field."""
-        buffer = SequentialReplayBuffer(capacity=10, device=torch.device("cpu"))
+        """Current qualified replay retains active rows and single rewards."""
+        buffer = qualified_buffer(10)
         buffer.store_episode(make_episode(4))
 
         state = buffer.serialize()
 
-        restored = SequentialReplayBuffer(capacity=10, device=torch.device("cpu"))
+        restored = qualified_buffer(10)
         restored.load_from_serialized(state)
 
+        assert state["format_version"] == 6
+        assert_exact_state(state, restored.serialize())
         assert len(restored) == 1
         batch = restored.sample_sequences(batch_size=1, seq_len=2)
         assert batch["observations"].shape == (1, 2, 2)
@@ -233,7 +274,7 @@ class TestSequentialReplayBufferRewardComponents:
         assert len(serialized["episodes"]) == 0
 
     def test_non_current_format_rejection(self):
-        """Every non-current format version raises ValueError."""
+        """Unsupported4 and incomplete supported6 remain distinct refusals."""
         buffer = SequentialReplayBuffer(capacity=100, device=torch.device("cpu"))
 
         previous_format = {
@@ -243,15 +284,18 @@ class TestSequentialReplayBufferRewardComponents:
             "capacity": 100,
         }
 
-        with pytest.raises(ValueError, match="exact current format_version is 5"):  # type: ignore[name-defined]
+        with pytest.raises(ValueError, match="supported format_version values are 5 and 6"):
             buffer.load_from_serialized(previous_format)
 
-        with pytest.raises(ValueError, match="exact current format_version is 5"):  # type: ignore[name-defined]
+        with pytest.raises(ValueError, match="replay_kind"):
             buffer.load_from_serialized({"format_version": 6})
+
+        with pytest.raises(ValueError, match="supported format_version values are 5 and 6"):
+            buffer.load_from_serialized({"format_version": 7})
 
     def test_round_trip_with_components(self):
         """Serialize and restore preserves component data."""
-        buffer = SequentialReplayBuffer(capacity=100, device=torch.device("cpu"))
+        buffer = qualified_buffer(100)
 
         # Add episode with components
         episode = make_episode(5, reward_value=1.0)
@@ -263,9 +307,11 @@ class TestSequentialReplayBufferRewardComponents:
         serialized = buffer.serialize()
 
         # Restore to new buffer
-        restored = SequentialReplayBuffer(capacity=100, device=torch.device("cpu"))
+        restored = qualified_buffer(100)
         restored.load_from_serialized(serialized)
 
+        assert serialized["format_version"] == 6
+        assert_exact_state(serialized, restored.serialize())
         assert len(restored) == 1
         restored_episode = restored.episodes[0]
         assert torch.allclose(restored_episode["rewards_extrinsic"], torch.full((5,), 0.5))
@@ -307,20 +353,89 @@ class TestCompactSequentialReplayCheckpointABI:
         assert buffer.episodes[0]["observations"].dtype is torch.float32
         assert buffer.episodes[0]["next_observations"].dtype is torch.float32
 
-    def test_serialized_state_has_exact_current_version_kind_and_keys(self):
+    def test_serialized_legacy_transport_has_exact_version_kind_and_keys(self):
         state = SequentialReplayBuffer(capacity=10, device=torch.device("cpu")).serialize()
 
         assert state["format_version"] == 5
         assert state["replay_kind"] == "sequential"
         assert set(state) == {"replay_kind", "format_version", "capacity", "num_transitions", "episodes"}
 
-    @pytest.mark.parametrize("invalid_version", (5.0, True))
+    def test_serialized_current_state_has_exact_version_kind_and_keys(self):
+        state = qualified_buffer(10).serialize()
+        assert state["format_version"] == 6
+        assert state["replay_kind"] == "sequential"
+        assert set(state) == {
+            "replay_kind",
+            "format_version",
+            "capacity",
+            "num_transitions",
+            "episodes",
+            "action_dim",
+            "legality_mode",
+            "replay_options",
+            "next_episode_id",
+            "next_transition_id",
+            "historical_archives",
+        }
+        assert state["action_dim"] == 8 and state["legality_mode"] == "unconstrained"
+        assert state["num_transitions"] == state["next_episode_id"] == state["next_transition_id"] == 0
+
+    def test_legacy_post_terminal_archive_and_inspection_roundtrip(self):
+        source = SequentialReplayBuffer(capacity=10, device=torch.device("cpu"))
+        episode = make_episode(3)
+        episode["dones"] = torch.tensor([False, True, False])
+        episode["rewards_extrinsic"] = torch.tensor([0.25, 0.5, 0.75])
+        source.store_episode(episode)
+        sample = source.sample_sequences(batch_size=1, seq_len=3)
+        assert torch.equal(sample["mask"], torch.tensor([[True, True, False]]))
+        assert torch.equal(sample["next_observations"][0], episode["next_observations"])
+        legacy = source.serialize()
+        before = copy.deepcopy(legacy)
+        source.validate_serialized(legacy, expected_obs_dim=2)
+        assert_exact_state(before, legacy)
+        assert_exact_state(before, source.serialize())
+        with pytest.raises(HistoricalLegalityUnavailable, match="missing historical successor masks"):
+            source.load_for_mode(legacy, requested_mode="recorded_full_resume")
+        assert_exact_state(before, source.serialize())
+
+        inspected = SequentialReplayBuffer(capacity=10, device=torch.device("cpu"))
+        inspected.load_from_serialized(legacy)
+        assert inspected.num_transitions == inspected.retained_transitions == len(inspected) == 0
+        archive = inspected.historical_archives[0]
+        assert archive.archived_row_count == 3
+        assert_exact_state(before, archive.original_state)
+        rows = archive.query_rows(offset=0, limit=3)
+        for name, value in episode.items():
+            assert_exact_state(value, rows[name])
+        assert rows["rewards_extrinsic_present"].all()
+        assert not rows["rewards_intrinsic_present"].any()
+        with pytest.raises(ValueError, match="buffer is empty"):
+            inspected.sample_sequences(batch_size=1, seq_len=1)
+
+        # New legacy transport remains distinct from the imported archive after resave.
+        new_episode = make_episode(3, reward_value=7.0)
+        inspected.store_episode(new_episode)
+        envelope = inspected.serialize()
+        assert set(envelope) == {"inspection_kind", "inspection_version", "legacy_transport", "historical_archives"}
+        assert envelope["inspection_kind"] == "sequential_replay_inspection"
+        assert type(envelope["inspection_version"]) is int and envelope["inspection_version"] == 1
+        assert envelope["legacy_transport"]["format_version"] == 5
+        restored = SequentialReplayBuffer(capacity=10, device=torch.device("cpu"))
+        restored.load_from_serialized(envelope)
+        assert_exact_state(envelope, restored.serialize())
+        assert restored.retained_transitions == 0 and restored.legacy_transport_transitions == 3
+        assert restored.historical_archives[0].source_digest == archive.source_digest
+        assert_exact_state(before, restored.historical_archives[0].original_state)
+        assert torch.equal(restored.sample_sequences(1, 3)["rewards"][0], new_episode["rewards"])
+        assert_exact_state(before, legacy)
+
+    @pytest.mark.parametrize("invalid_version", (5.0, 6.0, True))
     def test_format_version_requires_an_exact_integer(self, invalid_version: object):
         buffer = SequentialReplayBuffer(capacity=10, device=torch.device("cpu"))
         state = buffer.serialize()
         state["format_version"] = invalid_version
 
-        with pytest.raises(ValueError, match="exact current format_version is 5"):
+        with pytest.raises(ValueError, match="supported format_version values are 5 and 6"):
             buffer.load_from_serialized(state)
 
     def test_structural_validation_does_not_materialize_episode_tensors(self, monkeypatch):
@@ -346,16 +461,18 @@ class TestCompactSequentialReplayCheckpointABI:
         with pytest.raises(ValueError, match="payload must be a mapping"):
             replay.load_from_serialized(None)
 
-    def test_immediately_previous_version_refuses_without_mutation(self):
+    def test_unsupported_version4_refuses_without_mutation(self):
         buffer = SequentialReplayBuffer(capacity=10, device=torch.device("cpu"))
         buffer.store_episode(make_episode(3))
         before = buffer.serialize()
         previous = dict(before)
         previous["format_version"] = 4
 
-        with pytest.raises(ValueError, match=r"format_version 4.*format_version is 5"):
+        previous_input = copy.deepcopy(previous)
+        with pytest.raises(ValueError, match=r"format_version 4.*supported format_version values are 5 and 6"):
             buffer.load_from_serialized(previous)
 
+        assert_exact_state(previous_input, previous)
         after = buffer.serialize()
         assert before.keys() == after.keys()
         assert before["num_transitions"] == after["num_transitions"]
@@ -377,12 +494,19 @@ class TestCompactSequentialReplayCheckpointABI:
             pytest.param(lambda state: state.__setitem__("capacity", 11), "capacity", id="capacity"),
         ),
     )
-    def test_current_state_refuses_wrong_kind_keys_or_capacity(self, mutation, message):
-        state = SequentialReplayBuffer(capacity=10, device=torch.device("cpu")).serialize()
+    @pytest.mark.parametrize("qualified", [False, True], ids=["legacy5", "current6"])
+    def test_current_state_refuses_wrong_kind_keys_or_capacity(self, mutation, message, qualified):
+        target = qualified_buffer(10) if qualified else SequentialReplayBuffer(capacity=10, device=torch.device("cpu"))
+        target.store_episode(make_episode(3))
+        before = target.serialize()
+        state = copy.deepcopy(before)
         mutation(state)
+        input_before = copy.deepcopy(state)
 
         with pytest.raises(ValueError, match=message):
-            SequentialReplayBuffer(capacity=10, device=torch.device("cpu")).load_from_serialized(state)
+            target.load_from_serialized(state)
+        assert_exact_state(input_before, state)
+        assert_exact_state(before, target.serialize())
 
     @pytest.mark.parametrize(
         ("field", "replacement", "message"),
@@ -393,14 +517,19 @@ class TestCompactSequentialReplayCheckpointABI:
             pytest.param("next_observations", lambda tensor: tensor[:, :-1], "next_observations.*shape", id="next-shape"),
         ),
     )
-    def test_current_state_refuses_invalid_episode_tensor_contract(self, field, replacement, message):
-        source = SequentialReplayBuffer(capacity=10, device=torch.device("cpu"))
+    @pytest.mark.parametrize("qualified", [False, True], ids=["legacy5", "current6"])
+    def test_current_state_refuses_invalid_episode_tensor_contract(self, field, replacement, message, qualified):
+        source = qualified_buffer(10) if qualified else SequentialReplayBuffer(capacity=10, device=torch.device("cpu"))
         source.store_episode(make_episode(3))
+        before = source.serialize()
         state = source.serialize()
         state["episodes"][0][field] = replacement(state["episodes"][0][field])
+        input_before = copy.deepcopy(state)
 
         with pytest.raises(ValueError, match=message):
-            SequentialReplayBuffer(capacity=10, device=torch.device("cpu")).load_from_serialized(state)
+            source.load_from_serialized(state)
+        assert_exact_state(input_before, state)
+        assert_exact_state(before, source.serialize())
 
 
 class TestSequentialReplayBufferStatsAPI:

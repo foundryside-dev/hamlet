@@ -3,7 +3,7 @@
   "baseline_sha": "4aa5363b5de54d9a112977c32c2975f37627197f",
   "design": "BAC-2026-11-01-r2 plus explicit additive plan decisions",
   "approved_plan_sha256": "2dde2d80d3d14c510878c26af1f99c42217be12d3cb3a554647bc68646feedc1",
-  "phase": "Twelve packages qualified through a97e0af3; wave04 regression authoring and reviewed P2/P8 interface additions active; all final BAC acceptance remains owed",
+  "phase": "17of66 finite source packages qualified/released;49later packets and all final BAC acceptance remain OPEN",
   "completion_bar": "zero unresolved P1/P2 and zero unapproved in-scope capability gaps; all agreed finite evidence, fresh final spec/design/code review, required gates and source-verified docs",
   "requirements": [
     {
@@ -137,6 +137,20 @@
           ],
           "final_acceptance": "Scoped repair/interface qualified; later runtime owners and final common-source acceptance remain owed",
           "qualification_limit": "Only final logical release HEAD has the exact fully qualified sum tree; prefix heads were not separately full-qualified"
+        },
+        {
+          "task": "T10",
+          "source_commit": "10440b9ebc9a395f69d7747c377d068144e0f36d",
+          "qualified_release_commit": "322e67a3a01770e7c78b4052cb22e999726c8f62",
+          "qualified_sum_tree": "eada2071e845a03f1bf4e34c7e9b3cfc21c505d6",
+          "status": "scoped package qualified/released, complete requirement/final acceptance still owed",
+          "full_repository_result": "6103PASS15SKIP15warnings;1331.23stest/1338.53wall;four workers;37 source/15 review/5 process identities verified",
+          "reports": [
+            "package-reviews/T10-implementation.md",
+            "evidence/wave04-qualification.json"
+          ],
+          "final_acceptance": "Later cross-subsystem/runtime owners and final common-source design/source/learning/E2E/coverage/slow/hardware/CI remain required OPEN",
+          "qualification_limit": "Only final common release HEAD has exact fully qualified sum tree; prefix heads not independently full-qualified"
         }
       ],
       "evidence": [
@@ -340,7 +354,22 @@
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "P1",
       "approval_reference": null,
-      "package_evidence": []
+      "package_evidence": [
+        {
+          "task": "T33",
+          "source_commit": "322e67a3a01770e7c78b4052cb22e999726c8f62",
+          "qualified_release_commit": "322e67a3a01770e7c78b4052cb22e999726c8f62",
+          "qualified_sum_tree": "eada2071e845a03f1bf4e34c7e9b3cfc21c505d6",
+          "status": "scoped package qualified/released, complete requirement/final acceptance still owed",
+          "full_repository_result": "6103PASS15SKIP15warnings;1331.23stest/1338.53wall;four workers;37 source/15 review/5 process identities verified",
+          "reports": [
+            "package-reviews/T33-implementation.md",
+            "evidence/wave04-qualification.json"
+          ],
+          "final_acceptance": "Later cross-subsystem/runtime owners and final common-source design/source/learning/E2E/coverage/slow/hardware/CI remain required OPEN",
+          "qualification_limit": "Only final common release HEAD has exact fully qualified sum tree; prefix heads not independently full-qualified"
+        }
+      ]
     },
     {
       "id": "D06",
@@ -776,7 +805,22 @@
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "P2",
       "approval_reference": null,
-      "package_evidence": []
+      "package_evidence": [
+        {
+          "task": "T10",
+          "source_commit": "10440b9ebc9a395f69d7747c377d068144e0f36d",
+          "qualified_release_commit": "322e67a3a01770e7c78b4052cb22e999726c8f62",
+          "qualified_sum_tree": "eada2071e845a03f1bf4e34c7e9b3cfc21c505d6",
+          "status": "scoped package qualified/released, complete requirement/final acceptance still owed",
+          "full_repository_result": "6103PASS15SKIP15warnings;1331.23stest/1338.53wall;four workers;37 source/15 review/5 process identities verified",
+          "reports": [
+            "package-reviews/T10-implementation.md",
+            "evidence/wave04-qualification.json"
+          ],
+          "final_acceptance": "Later cross-subsystem/runtime owners and final common-source design/source/learning/E2E/coverage/slow/hardware/CI remain required OPEN",
+          "qualification_limit": "Only final common release HEAD has exact fully qualified sum tree; prefix heads not independently full-qualified"
+        }
+      ]
     },
     {
       "id": "D10",
@@ -1164,6 +1208,20 @@
           ],
           "final_acceptance": "Scoped repair/interface qualified; later runtime owners and final common-source acceptance remain owed",
           "qualification_limit": "Only final logical release HEAD has the exact fully qualified sum tree; prefix heads were not separately full-qualified"
+        },
+        {
+          "task": "T33",
+          "source_commit": "322e67a3a01770e7c78b4052cb22e999726c8f62",
+          "qualified_release_commit": "322e67a3a01770e7c78b4052cb22e999726c8f62",
+          "qualified_sum_tree": "eada2071e845a03f1bf4e34c7e9b3cfc21c505d6",
+          "status": "scoped package qualified/released, complete requirement/final acceptance still owed",
+          "full_repository_result": "6103PASS15SKIP15warnings;1331.23stest/1338.53wall;four workers;37 source/15 review/5 process identities verified",
+          "reports": [
+            "package-reviews/T33-implementation.md",
+            "evidence/wave04-qualification.json"
+          ],
+          "final_acceptance": "Later cross-subsystem/runtime owners and final common-source design/source/learning/E2E/coverage/slow/hardware/CI remain required OPEN",
+          "qualification_limit": "Only final common release HEAD has exact fully qualified sum tree; prefix heads not independently full-qualified"
         }
       ]
     },
@@ -1399,7 +1457,22 @@
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "P2",
       "approval_reference": null,
-      "package_evidence": []
+      "package_evidence": [
+        {
+          "task": "T05",
+          "source_commit": "42aeeb57e552d2caed0f7aac9559228f691321ab",
+          "qualified_release_commit": "322e67a3a01770e7c78b4052cb22e999726c8f62",
+          "qualified_sum_tree": "eada2071e845a03f1bf4e34c7e9b3cfc21c505d6",
+          "status": "scoped package qualified/released, complete requirement/final acceptance still owed",
+          "full_repository_result": "6103PASS15SKIP15warnings;1331.23stest/1338.53wall;four workers;37 source/15 review/5 process identities verified",
+          "reports": [
+            "package-reviews/T05-implementation.md",
+            "evidence/wave04-qualification.json"
+          ],
+          "final_acceptance": "Later cross-subsystem/runtime owners and final common-source design/source/learning/E2E/coverage/slow/hardware/CI remain required OPEN",
+          "qualification_limit": "Only final common release HEAD has exact fully qualified sum tree; prefix heads not independently full-qualified"
+        }
+      ]
     },
     {
       "id": "D21",
@@ -2163,7 +2236,36 @@
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "P2",
       "approval_reference": "BAC-HISTORY-A-2026-11-01",
-      "package_evidence": [],
+      "package_evidence": [
+        {
+          "task": "T18b",
+          "source_commit": "701dbe52d6cc4dd930d18e556eb8541ede9108bc",
+          "qualified_release_commit": "322e67a3a01770e7c78b4052cb22e999726c8f62",
+          "qualified_sum_tree": "eada2071e845a03f1bf4e34c7e9b3cfc21c505d6",
+          "status": "scoped package qualified/released, complete requirement/final acceptance still owed",
+          "full_repository_result": "6103PASS15SKIP15warnings;1331.23stest/1338.53wall;four workers;37 source/15 review/5 process identities verified",
+          "reports": [
+            "package-reviews/T18b-implementation.md",
+            "evidence/wave04-qualification.json"
+          ],
+          "final_acceptance": "Later cross-subsystem/runtime owners and final common-source design/source/learning/E2E/coverage/slow/hardware/CI remain required OPEN",
+          "qualification_limit": "Only final common release HEAD has exact fully qualified sum tree; prefix heads not independently full-qualified"
+        },
+        {
+          "task": "T18c",
+          "source_commit": "9426e3dd0b3be7af132848a615775552fa8ad14e",
+          "qualified_release_commit": "322e67a3a01770e7c78b4052cb22e999726c8f62",
+          "qualified_sum_tree": "eada2071e845a03f1bf4e34c7e9b3cfc21c505d6",
+          "status": "scoped package qualified/released, complete requirement/final acceptance still owed",
+          "full_repository_result": "6103PASS15SKIP15warnings;1331.23stest/1338.53wall;four workers;37 source/15 review/5 process identities verified",
+          "reports": [
+            "package-reviews/T18c-implementation.md",
+            "evidence/wave04-qualification.json"
+          ],
+          "final_acceptance": "Later cross-subsystem/runtime owners and final common-source design/source/learning/E2E/coverage/slow/hardware/CI remain required OPEN",
+          "qualification_limit": "Only final common release HEAD has exact fully qualified sum tree; prefix heads not independently full-qualified"
+        }
+      ],
       "evidence": [
         {
           "task": "T18a",
@@ -2754,6 +2856,76 @@
           ],
           "final_acceptance": "Scoped repair/interface qualified; later runtime owners and final common-source acceptance remain owed",
           "qualification_limit": "Only final logical release HEAD has the exact fully qualified sum tree; prefix heads were not separately full-qualified"
+        },
+        {
+          "task": "T05",
+          "source_commit": "42aeeb57e552d2caed0f7aac9559228f691321ab",
+          "qualified_release_commit": "322e67a3a01770e7c78b4052cb22e999726c8f62",
+          "qualified_sum_tree": "eada2071e845a03f1bf4e34c7e9b3cfc21c505d6",
+          "status": "scoped package qualified/released, complete requirement/final acceptance still owed",
+          "full_repository_result": "6103PASS15SKIP15warnings;1331.23stest/1338.53wall;four workers;37 source/15 review/5 process identities verified",
+          "reports": [
+            "package-reviews/T05-implementation.md",
+            "evidence/wave04-qualification.json"
+          ],
+          "final_acceptance": "Later cross-subsystem/runtime owners and final common-source design/source/learning/E2E/coverage/slow/hardware/CI remain required OPEN",
+          "qualification_limit": "Only final common release HEAD has exact fully qualified sum tree; prefix heads not independently full-qualified"
+        },
+        {
+          "task": "T10",
+          "source_commit": "10440b9ebc9a395f69d7747c377d068144e0f36d",
+          "qualified_release_commit": "322e67a3a01770e7c78b4052cb22e999726c8f62",
+          "qualified_sum_tree": "eada2071e845a03f1bf4e34c7e9b3cfc21c505d6",
+          "status": "scoped package qualified/released, complete requirement/final acceptance still owed",
+          "full_repository_result": "6103PASS15SKIP15warnings;1331.23stest/1338.53wall;four workers;37 source/15 review/5 process identities verified",
+          "reports": [
+            "package-reviews/T10-implementation.md",
+            "evidence/wave04-qualification.json"
+          ],
+          "final_acceptance": "Later cross-subsystem/runtime owners and final common-source design/source/learning/E2E/coverage/slow/hardware/CI remain required OPEN",
+          "qualification_limit": "Only final common release HEAD has exact fully qualified sum tree; prefix heads not independently full-qualified"
+        },
+        {
+          "task": "T18b",
+          "source_commit": "701dbe52d6cc4dd930d18e556eb8541ede9108bc",
+          "qualified_release_commit": "322e67a3a01770e7c78b4052cb22e999726c8f62",
+          "qualified_sum_tree": "eada2071e845a03f1bf4e34c7e9b3cfc21c505d6",
+          "status": "scoped package qualified/released, complete requirement/final acceptance still owed",
+          "full_repository_result": "6103PASS15SKIP15warnings;1331.23stest/1338.53wall;four workers;37 source/15 review/5 process identities verified",
+          "reports": [
+            "package-reviews/T18b-implementation.md",
+            "evidence/wave04-qualification.json"
+          ],
+          "final_acceptance": "Later cross-subsystem/runtime owners and final common-source design/source/learning/E2E/coverage/slow/hardware/CI remain required OPEN",
+          "qualification_limit": "Only final common release HEAD has exact fully qualified sum tree; prefix heads not independently full-qualified"
+        },
+        {
+          "task": "T18c",
+          "source_commit": "9426e3dd0b3be7af132848a615775552fa8ad14e",
+          "qualified_release_commit": "322e67a3a01770e7c78b4052cb22e999726c8f62",
+          "qualified_sum_tree": "eada2071e845a03f1bf4e34c7e9b3cfc21c505d6",
+          "status": "scoped package qualified/released, complete requirement/final acceptance still owed",
+          "full_repository_result": "6103PASS15SKIP15warnings;1331.23stest/1338.53wall;four workers;37 source/15 review/5 process identities verified",
+          "reports": [
+            "package-reviews/T18c-implementation.md",
+            "evidence/wave04-qualification.json"
+          ],
+          "final_acceptance": "Later cross-subsystem/runtime owners and final common-source design/source/learning/E2E/coverage/slow/hardware/CI remain required OPEN",
+          "qualification_limit": "Only final common release HEAD has exact fully qualified sum tree; prefix heads not independently full-qualified"
+        },
+        {
+          "task": "T33",
+          "source_commit": "322e67a3a01770e7c78b4052cb22e999726c8f62",
+          "qualified_release_commit": "322e67a3a01770e7c78b4052cb22e999726c8f62",
+          "qualified_sum_tree": "eada2071e845a03f1bf4e34c7e9b3cfc21c505d6",
+          "status": "scoped package qualified/released, complete requirement/final acceptance still owed",
+          "full_repository_result": "6103PASS15SKIP15warnings;1331.23stest/1338.53wall;four workers;37 source/15 review/5 process identities verified",
+          "reports": [
+            "package-reviews/T33-implementation.md",
+            "evidence/wave04-qualification.json"
+          ],
+          "final_acceptance": "Later cross-subsystem/runtime owners and final common-source design/source/learning/E2E/coverage/slow/hardware/CI remain required OPEN",
+          "qualification_limit": "Only final common release HEAD has exact fully qualified sum tree; prefix heads not independently full-qualified"
         }
       ],
       "evidence": [
@@ -2864,6 +3036,34 @@
           ],
           "final_acceptance": "Scoped repair/interface qualified; later runtime owners and final common-source acceptance remain owed",
           "qualification_limit": "Only final logical release HEAD has the exact fully qualified sum tree; prefix heads were not separately full-qualified"
+        },
+        {
+          "task": "T05",
+          "source_commit": "42aeeb57e552d2caed0f7aac9559228f691321ab",
+          "qualified_release_commit": "322e67a3a01770e7c78b4052cb22e999726c8f62",
+          "qualified_sum_tree": "eada2071e845a03f1bf4e34c7e9b3cfc21c505d6",
+          "status": "scoped package qualified/released, complete requirement/final acceptance still owed",
+          "full_repository_result": "6103PASS15SKIP15warnings;1331.23stest/1338.53wall;four workers;37 source/15 review/5 process identities verified",
+          "reports": [
+            "package-reviews/T05-implementation.md",
+            "evidence/wave04-qualification.json"
+          ],
+          "final_acceptance": "Later cross-subsystem/runtime owners and final common-source design/source/learning/E2E/coverage/slow/hardware/CI remain required OPEN",
+          "qualification_limit": "Only final common release HEAD has exact fully qualified sum tree; prefix heads not independently full-qualified"
+        },
+        {
+          "task": "T33",
+          "source_commit": "322e67a3a01770e7c78b4052cb22e999726c8f62",
+          "qualified_release_commit": "322e67a3a01770e7c78b4052cb22e999726c8f62",
+          "qualified_sum_tree": "eada2071e845a03f1bf4e34c7e9b3cfc21c505d6",
+          "status": "scoped package qualified/released, complete requirement/final acceptance still owed",
+          "full_repository_result": "6103PASS15SKIP15warnings;1331.23stest/1338.53wall;four workers;37 source/15 review/5 process identities verified",
+          "reports": [
+            "package-reviews/T33-implementation.md",
+            "evidence/wave04-qualification.json"
+          ],
+          "final_acceptance": "Later cross-subsystem/runtime owners and final common-source design/source/learning/E2E/coverage/slow/hardware/CI remain required OPEN",
+          "qualification_limit": "Only final common release HEAD has exact fully qualified sum tree; prefix heads not independently full-qualified"
         }
       ]
     },
@@ -3112,6 +3312,20 @@
           ],
           "final_acceptance": "Scoped repair/interface qualified; later runtime owners and final common-source acceptance remain owed",
           "qualification_limit": "Only final logical release HEAD has the exact fully qualified sum tree; prefix heads were not separately full-qualified"
+        },
+        {
+          "task": "T10",
+          "source_commit": "10440b9ebc9a395f69d7747c377d068144e0f36d",
+          "qualified_release_commit": "322e67a3a01770e7c78b4052cb22e999726c8f62",
+          "qualified_sum_tree": "eada2071e845a03f1bf4e34c7e9b3cfc21c505d6",
+          "status": "scoped package qualified/released, complete requirement/final acceptance still owed",
+          "full_repository_result": "6103PASS15SKIP15warnings;1331.23stest/1338.53wall;four workers;37 source/15 review/5 process identities verified",
+          "reports": [
+            "package-reviews/T10-implementation.md",
+            "evidence/wave04-qualification.json"
+          ],
+          "final_acceptance": "Later cross-subsystem/runtime owners and final common-source design/source/learning/E2E/coverage/slow/hardware/CI remain required OPEN",
+          "qualification_limit": "Only final common release HEAD has exact fully qualified sum tree; prefix heads not independently full-qualified"
         }
       ],
       "evidence": [
@@ -3275,6 +3489,20 @@
           ],
           "final_acceptance": "Scoped repair/interface qualified; later runtime owners and final common-source acceptance remain owed",
           "qualification_limit": "Only final logical release HEAD has the exact fully qualified sum tree; prefix heads were not separately full-qualified"
+        },
+        {
+          "task": "T10",
+          "source_commit": "10440b9ebc9a395f69d7747c377d068144e0f36d",
+          "qualified_release_commit": "322e67a3a01770e7c78b4052cb22e999726c8f62",
+          "qualified_sum_tree": "eada2071e845a03f1bf4e34c7e9b3cfc21c505d6",
+          "status": "scoped package qualified/released, complete requirement/final acceptance still owed",
+          "full_repository_result": "6103PASS15SKIP15warnings;1331.23stest/1338.53wall;four workers;37 source/15 review/5 process identities verified",
+          "reports": [
+            "package-reviews/T10-implementation.md",
+            "evidence/wave04-qualification.json"
+          ],
+          "final_acceptance": "Later cross-subsystem/runtime owners and final common-source design/source/learning/E2E/coverage/slow/hardware/CI remain required OPEN",
+          "qualification_limit": "Only final common release HEAD has exact fully qualified sum tree; prefix heads not independently full-qualified"
         }
       ],
       "evidence": [
@@ -3489,6 +3717,20 @@
             "package-reviews/T02-independent-review.md"
           ],
           "final_acceptance": "T02 schema/transport only; runtime wiring and final common-source acceptance remain owed"
+        },
+        {
+          "task": "T10",
+          "source_commit": "10440b9ebc9a395f69d7747c377d068144e0f36d",
+          "qualified_release_commit": "322e67a3a01770e7c78b4052cb22e999726c8f62",
+          "qualified_sum_tree": "eada2071e845a03f1bf4e34c7e9b3cfc21c505d6",
+          "status": "scoped package qualified/released, complete requirement/final acceptance still owed",
+          "full_repository_result": "6103PASS15SKIP15warnings;1331.23stest/1338.53wall;four workers;37 source/15 review/5 process identities verified",
+          "reports": [
+            "package-reviews/T10-implementation.md",
+            "evidence/wave04-qualification.json"
+          ],
+          "final_acceptance": "Later cross-subsystem/runtime owners and final common-source design/source/learning/E2E/coverage/slow/hardware/CI remain required OPEN",
+          "qualification_limit": "Only final common release HEAD has exact fully qualified sum tree; prefix heads not independently full-qualified"
         }
       ],
       "evidence": [
@@ -3636,7 +3878,36 @@
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "acceptance owed",
       "approval_reference": "BAC-HISTORY-A-2026-11-01",
-      "package_evidence": [],
+      "package_evidence": [
+        {
+          "task": "T18b",
+          "source_commit": "701dbe52d6cc4dd930d18e556eb8541ede9108bc",
+          "qualified_release_commit": "322e67a3a01770e7c78b4052cb22e999726c8f62",
+          "qualified_sum_tree": "eada2071e845a03f1bf4e34c7e9b3cfc21c505d6",
+          "status": "scoped package qualified/released, complete requirement/final acceptance still owed",
+          "full_repository_result": "6103PASS15SKIP15warnings;1331.23stest/1338.53wall;four workers;37 source/15 review/5 process identities verified",
+          "reports": [
+            "package-reviews/T18b-implementation.md",
+            "evidence/wave04-qualification.json"
+          ],
+          "final_acceptance": "Later cross-subsystem/runtime owners and final common-source design/source/learning/E2E/coverage/slow/hardware/CI remain required OPEN",
+          "qualification_limit": "Only final common release HEAD has exact fully qualified sum tree; prefix heads not independently full-qualified"
+        },
+        {
+          "task": "T18c",
+          "source_commit": "9426e3dd0b3be7af132848a615775552fa8ad14e",
+          "qualified_release_commit": "322e67a3a01770e7c78b4052cb22e999726c8f62",
+          "qualified_sum_tree": "eada2071e845a03f1bf4e34c7e9b3cfc21c505d6",
+          "status": "scoped package qualified/released, complete requirement/final acceptance still owed",
+          "full_repository_result": "6103PASS15SKIP15warnings;1331.23stest/1338.53wall;four workers;37 source/15 review/5 process identities verified",
+          "reports": [
+            "package-reviews/T18c-implementation.md",
+            "evidence/wave04-qualification.json"
+          ],
+          "final_acceptance": "Later cross-subsystem/runtime owners and final common-source design/source/learning/E2E/coverage/slow/hardware/CI remain required OPEN",
+          "qualification_limit": "Only final common release HEAD has exact fully qualified sum tree; prefix heads not independently full-qualified"
+        }
+      ],
       "evidence": [
         {
           "task": "T08",
@@ -4201,6 +4472,20 @@
           ],
           "final_acceptance": "Scoped repair/interface qualified; later runtime owners and final common-source acceptance remain owed",
           "qualification_limit": "Only final logical release HEAD has the exact fully qualified sum tree; prefix heads were not separately full-qualified"
+        },
+        {
+          "task": "T33",
+          "source_commit": "322e67a3a01770e7c78b4052cb22e999726c8f62",
+          "qualified_release_commit": "322e67a3a01770e7c78b4052cb22e999726c8f62",
+          "qualified_sum_tree": "eada2071e845a03f1bf4e34c7e9b3cfc21c505d6",
+          "status": "scoped package qualified/released, complete requirement/final acceptance still owed",
+          "full_repository_result": "6103PASS15SKIP15warnings;1331.23stest/1338.53wall;four workers;37 source/15 review/5 process identities verified",
+          "reports": [
+            "package-reviews/T33-implementation.md",
+            "evidence/wave04-qualification.json"
+          ],
+          "final_acceptance": "Later cross-subsystem/runtime owners and final common-source design/source/learning/E2E/coverage/slow/hardware/CI remain required OPEN",
+          "qualification_limit": "Only final common release HEAD has exact fully qualified sum tree; prefix heads not independently full-qualified"
         }
       ]
     },
@@ -4484,6 +4769,20 @@
             "evidence/T03-qualification.json"
           ],
           "final_acceptance": "Scoped P1 primitive/transport qualified; full final same-source requirement refresh and runtime consumers remain owed"
+        },
+        {
+          "task": "T33",
+          "source_commit": "322e67a3a01770e7c78b4052cb22e999726c8f62",
+          "qualified_release_commit": "322e67a3a01770e7c78b4052cb22e999726c8f62",
+          "qualified_sum_tree": "eada2071e845a03f1bf4e34c7e9b3cfc21c505d6",
+          "status": "scoped package qualified/released, complete requirement/final acceptance still owed",
+          "full_repository_result": "6103PASS15SKIP15warnings;1331.23stest/1338.53wall;four workers;37 source/15 review/5 process identities verified",
+          "reports": [
+            "package-reviews/T33-implementation.md",
+            "evidence/wave04-qualification.json"
+          ],
+          "final_acceptance": "Later cross-subsystem/runtime owners and final common-source design/source/learning/E2E/coverage/slow/hardware/CI remain required OPEN",
+          "qualification_limit": "Only final common release HEAD has exact fully qualified sum tree; prefix heads not independently full-qualified"
         }
       ]
     },
@@ -5043,6 +5342,76 @@
       ],
       "final_acceptance": "Scoped repair/interface qualified; later runtime owners and final common-source acceptance remain owed",
       "qualification_limit": "Only final logical release HEAD has the exact fully qualified sum tree; prefix heads were not separately full-qualified"
+    },
+    {
+      "task": "T05",
+      "source_commit": "42aeeb57e552d2caed0f7aac9559228f691321ab",
+      "qualified_release_commit": "322e67a3a01770e7c78b4052cb22e999726c8f62",
+      "qualified_sum_tree": "eada2071e845a03f1bf4e34c7e9b3cfc21c505d6",
+      "status": "scoped package qualified/released, complete requirement/final acceptance still owed",
+      "full_repository_result": "6103PASS15SKIP15warnings;1331.23stest/1338.53wall;four workers;37 source/15 review/5 process identities verified",
+      "reports": [
+        "package-reviews/T05-implementation.md",
+        "evidence/wave04-qualification.json"
+      ],
+      "final_acceptance": "Later cross-subsystem/runtime owners and final common-source design/source/learning/E2E/coverage/slow/hardware/CI remain required OPEN",
+      "qualification_limit": "Only final common release HEAD has exact fully qualified sum tree; prefix heads not independently full-qualified"
+    },
+    {
+      "task": "T10",
+      "source_commit": "10440b9ebc9a395f69d7747c377d068144e0f36d",
+      "qualified_release_commit": "322e67a3a01770e7c78b4052cb22e999726c8f62",
+      "qualified_sum_tree": "eada2071e845a03f1bf4e34c7e9b3cfc21c505d6",
+      "status": "scoped package qualified/released, complete requirement/final acceptance still owed",
+      "full_repository_result": "6103PASS15SKIP15warnings;1331.23stest/1338.53wall;four workers;37 source/15 review/5 process identities verified",
+      "reports": [
+        "package-reviews/T10-implementation.md",
+        "evidence/wave04-qualification.json"
+      ],
+      "final_acceptance": "Later cross-subsystem/runtime owners and final common-source design/source/learning/E2E/coverage/slow/hardware/CI remain required OPEN",
+      "qualification_limit": "Only final common release HEAD has exact fully qualified sum tree; prefix heads not independently full-qualified"
+    },
+    {
+      "task": "T18b",
+      "source_commit": "701dbe52d6cc4dd930d18e556eb8541ede9108bc",
+      "qualified_release_commit": "322e67a3a01770e7c78b4052cb22e999726c8f62",
+      "qualified_sum_tree": "eada2071e845a03f1bf4e34c7e9b3cfc21c505d6",
+      "status": "scoped package qualified/released, complete requirement/final acceptance still owed",
+      "full_repository_result": "6103PASS15SKIP15warnings;1331.23stest/1338.53wall;four workers;37 source/15 review/5 process identities verified",
+      "reports": [
+        "package-reviews/T18b-implementation.md",
+        "evidence/wave04-qualification.json"
+      ],
+      "final_acceptance": "Later cross-subsystem/runtime owners and final common-source design/source/learning/E2E/coverage/slow/hardware/CI remain required OPEN",
+      "qualification_limit": "Only final common release HEAD has exact fully qualified sum tree; prefix heads not independently full-qualified"
+    },
+    {
+      "task": "T18c",
+      "source_commit": "9426e3dd0b3be7af132848a615775552fa8ad14e",
+      "qualified_release_commit": "322e67a3a01770e7c78b4052cb22e999726c8f62",
+      "qualified_sum_tree": "eada2071e845a03f1bf4e34c7e9b3cfc21c505d6",
+      "status": "scoped package qualified/released, complete requirement/final acceptance still owed",
+      "full_repository_result": "6103PASS15SKIP15warnings;1331.23stest/1338.53wall;four workers;37 source/15 review/5 process identities verified",
+      "reports": [
+        "package-reviews/T18c-implementation.md",
+        "evidence/wave04-qualification.json"
+      ],
+      "final_acceptance": "Later cross-subsystem/runtime owners and final common-source design/source/learning/E2E/coverage/slow/hardware/CI remain required OPEN",
+      "qualification_limit": "Only final common release HEAD has exact fully qualified sum tree; prefix heads not independently full-qualified"
+    },
+    {
+      "task": "T33",
+      "source_commit": "322e67a3a01770e7c78b4052cb22e999726c8f62",
+      "qualified_release_commit": "322e67a3a01770e7c78b4052cb22e999726c8f62",
+      "qualified_sum_tree": "eada2071e845a03f1bf4e34c7e9b3cfc21c505d6",
+      "status": "scoped package qualified/released, complete requirement/final acceptance still owed",
+      "full_repository_result": "6103PASS15SKIP15warnings;1331.23stest/1338.53wall;four workers;37 source/15 review/5 process identities verified",
+      "reports": [
+        "package-reviews/T33-implementation.md",
+        "evidence/wave04-qualification.json"
+      ],
+      "final_acceptance": "Later cross-subsystem/runtime owners and final common-source design/source/learning/E2E/coverage/slow/hardware/CI remain required OPEN",
+      "qualification_limit": "Only final common release HEAD has exact fully qualified sum tree; prefix heads not independently full-qualified"
     }
   ],
   "evidence_note": "T01 precommit full gate verified the exact committed tree and source hashes in every pytest process. Historical fixture checks qualify data at the original source only; new archive policy acceptance remains owed.",
@@ -5115,5 +5484,19 @@
     "status": "exact artifact technicalPASS; implementation pending T10/T33, no capability reduction or new task",
     "standalone_archive": "closed honest replay-only source domain; native checkpoint strictness unchanged",
     "recording_index": "distinct owned strict index; canonical metricDBv1 preserved; whole family lifecycle and honest tickets required"
+  },
+  "wave04_required_native_handoff": {
+    "path": "NATIVE-CURRENT-HANDOFF.md",
+    "status": "REQUIRED OPEN",
+    "owners": [
+      "T24",
+      "T25"
+    ],
+    "scope": "Complete offside current validators, explicit native outer archive union/accounting, inference/full-resume/late-failure atomicity; not waived by buffer/storage qualification"
+  },
+  "wave04_effective_recording_overlay": {
+    "path": "P8-LEGACY-GENERATIONS-CLARIFICATION.md",
+    "review": "plan-reviews/P8-legacy-generations.md",
+    "status": "implemented and scoped-qualified; companion2/canonical metric1; preserve baseline legacy republish/latest/capacity while keeping immutable generations and explicit failure custody"
   }
 }

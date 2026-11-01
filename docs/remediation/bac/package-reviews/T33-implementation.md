@@ -1,0 +1,13 @@
+# T33 implementation receipt
+
+Adds bounded accepted-item fences, ordered shutdown/drain and immutable qualified receipts. Selected publication owns strict companion index schema2 and immutable artifact paths; canonical metric DBv1 remains owner-ruled. Default legacy same-episode republication keeps an independently copied latest filename/SQL view plus immutable generations. Legacy full queues retain logged/no-throw outcomes with honest counters and no false acceptance. Scoped bindings remain strict. Persistent POSIX process locking plus reentrant root ownership, ancestry fsync, SQL readbacks and structured custody preserve confirmed versus uncertain outcomes.
+
+56 recording regressions,23 unit owners,144 other owners including all10 real ordinary-runner shutdown scenarios passed. Fresh exact-source parent/child adversarial probe and maintenance reviews PASS. Original-source republish/capacity witness and repaired four material RED controls retained. The common final-tree full suite passed6103 tests,15 skipped. The complete artifact pipeline passed11 cases and the broad lane/recording consumer cohort passed299, including real file/SQL/TensorBoard/replay/live and corruption controls.
+
+Source change: `322e67a3a01770e7c78b4052cb22e999726c8f62`. Qualified common release: `322e67a3a01770e7c78b4052cb22e999726c8f62`, tested tree `eada2071e845a03f1bf4e34c7e9b3cfc21c505d6`. The full suite passed **6103 tests,15 skipped,15 warnings** in1331.23s (1338.53s wall). Both earlier failed runs and causal fixture repairs remain recorded in [the qualification receipt](../evidence/wave04-qualification.json). Prefix commit heads were not separately full-qualified.
+
+No cross-file atomic-commit promise: partial publication fails explicitly with artifact/alias/canonical/index custody. Companion schema1 was unlanded/unqualified WIP and is refused unchanged. Runner/sink/final C13 integration T34/T35/T39 and whole-BAC acceptance remain OPEN.
+
+All six standing guards passed on repaired r11; source hashes and exact tree/import/fixture checks accompany the final qualification receipt. Source/test owners and reviewers stayed within at most five whole source files/5000 source lines, including counted probes. Existing14 worktrees preserved; no project branch/worktree/source copy created by this wave.
+
+Historical approval A and strict per-world approval B remain in force. No scope reduction, new publication/merge authority, whole-BAC completion, GPU pass or final acceptance is claimed. Later finite packets,22 fresh final source/design lenses plus synthesis, finite learning/E2E, coverage/slow/applicable hardware/source-verified docs and exact-tip remote CI remain owed.

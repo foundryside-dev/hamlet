@@ -666,6 +666,17 @@ class UniverseCompiler:
             effects_hash=effects_hash,
             all_levels=all_levels,
         )
+        selected = universe_metadata.primary_level
+        compiled._derive_effective_run(
+            {
+                "brain": (
+                    f"level:{selected}:brain (complete replacement)" if raw.levels[selected].brain is not None else "pack:brain (inherited)"
+                ),
+                "training": f"level:{selected}:training",
+                "drive": f"level:{selected}:drive.intrinsic",
+                "capture_origin": "current authored compilation",
+            }
+        )
 
         if use_cache:
             # A failed cache write fails the compile. The user asked for an artifact;

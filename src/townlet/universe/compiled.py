@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from copy import deepcopy
 from dataclasses import dataclass, fields, is_dataclass, replace
+from dataclasses import field as dataclass_field
 from pathlib import Path
 from typing import Any
 
@@ -17,6 +18,7 @@ from townlet.config.bars_v2_config import BarsV2Config
 from townlet.config.brain_config import BrainConfig
 from townlet.config.curriculum_config import CurriculumConfig
 from townlet.config.drive_as_code import DriveAsCodeConfig
+from townlet.config.effective_run import EffectiveRunConfig, resolve_effective_run
 from townlet.config.environment_config import EnvironmentConfig
 from townlet.config.experiment_config import ExperimentConfig
 from townlet.config.items_config import ItemsAppearanceConfig, ItemsCatalogConfig
@@ -166,9 +168,11 @@ from townlet.world.expression.references import ENTITY_NAMES
 # `effects_hash` (canonical content of the `effects` declaration, None without one) and each
 # level's `items_appearance_hash` (canonical spawn rules, None without a declaration). Both
 # are required on load; a 1.39 artifact lacks them and is refused as stale.
-COMPILED_SCHEMA_VERSION = "1.40"
+# 1.41 adds a validated current effective view. Known 1.40 payloads contain the
+# complete selected base/training/drive inputs and derive that view on access.
+COMPILED_SCHEMA_VERSION = "1.41"
 
-REQUIRED_COMPILED_UNIVERSE_FIELDS = (
+REQUIRED_COMPILED_UNIVERSE_FIELDS: tuple[str, ...] = (
     "compiled_schema_version",
     "metadata",
     "experiment",
@@ -195,6 +199,8 @@ REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "all_levels",
 )
 """Every top-level key ``to_dict`` writes. A payload with a key outside this set is a foreign or stale artifact."""
+V1_40_COMPILED_UNIVERSE_FIELDS = REQUIRED_COMPILED_UNIVERSE_FIELDS
+REQUIRED_COMPILED_UNIVERSE_FIELDS += ("effective_run",)
 
 COMPILED_LEVEL_FIELDS = (
     "level_name",
@@ -309,6 +315,20 @@ class CompiledUniverse:
     # (`townlet.vfs.schema_hashes.compute_effects_hash`); None when the pack declares none.
     effects_hash: str | None = None
 
+    effective_run: EffectiveRunConfig = dataclass_field(init=False)
+
+    @property
+    def authored_brain_hash(self) -> str:
+        return self.effective_run.authored_brain_hash
+
+    @property
+    def authored_identity(self) -> str:
+        return self.effective_run.authored_identity
+
+    @property
+    def execution_hash(self) -> str:
+        return self.effective_run.execution_hash
+
     @property
     def brain_forked(self) -> bool:
         """True when the compiled level's effective brain diverges from the pack baseline."""
@@ -359,6 +379,21 @@ class CompiledUniverse:
             raise ValueError("all_levels must be a non-empty dict of LevelMetadata")
         if self.metadata.primary_level not in self.all_levels:
             raise ValueError(f"primary_level {self.metadata.primary_level!r} is absent from all_levels")
+        self._derive_effective_run({"capture_origin": "current compiled configuration"})
+
+    def _derive_effective_run(self, origins: Mapping[str, str]) -> None:
+        level = self.get_level(self.metadata.primary_level)
+        object.__setattr__(
+            self,
+            "effective_run",
+            resolve_effective_run(
+                self.brain,
+                level.training,
+                primary_level=self.metadata.primary_level,
+                origins=origins,
+                drive_intrinsic=level.drive.intrinsic,
+            ),
+        )
 
     @property
     def available_levels(self) -> list[str]:
@@ -408,7 +443,7 @@ class CompiledUniverse:
 
     def clone(self) -> CompiledUniverse:
         """Clone the compiled universe."""
-        return CompiledUniverse(
+        cloned = CompiledUniverse(
             metadata=deepcopy(self.metadata),
             experiment=deepcopy(self.experiment),
             stratum=deepcopy(self.stratum),
@@ -433,6 +468,8 @@ class CompiledUniverse:
             items_hash=self.items_hash,
             effects_hash=self.effects_hash,
         )
+        object.__setattr__(cloned, "effective_run", EffectiveRunConfig.from_dict(self.effective_run.to_dict()))
+        return cloned
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to a serialization-friendly dictionary."""
@@ -444,6 +481,7 @@ class CompiledUniverse:
             "environment": self.environment.model_dump(),
             "actions": self.actions.model_dump(),
             "brain": self.brain.model_dump(),
+            "effective_run": self.effective_run.to_dict(),
             "items_catalog": self.items_catalog.model_dump() if self.items_catalog is not None else None,
             "presentation": self.presentation.model_dump() if self.presentation is not None else None,
             "compiled_vfs_profiles": (
@@ -514,8 +552,11 @@ class CompiledUniverse:
     def from_dict(cls, payload: Mapping[str, Any]) -> CompiledUniverse:
         """Create CompiledUniverse from a dictionary produced by to_dict/save_to_cache."""
         _validate_compiled_schema_version(payload, source="dictionary")
-        _refuse_unknown_fields(payload, REQUIRED_COMPILED_UNIVERSE_FIELDS, field_name="compiled universe")
-        for field_name in REQUIRED_COMPILED_UNIVERSE_FIELDS:
+        known_fields = REQUIRED_COMPILED_UNIVERSE_FIELDS
+        if payload["compiled_schema_version"] == "1.40":
+            known_fields = V1_40_COMPILED_UNIVERSE_FIELDS
+        _refuse_unknown_fields(payload, known_fields, field_name="compiled universe")
+        for field_name in known_fields:
             _required_field(payload, field_name)
 
         # The profiles deserialize before the levels: each level's transition schedule
@@ -655,6 +696,14 @@ class CompiledUniverse:
             all_levels=all_levels,
         )
         _validate_compiled_token_coherence(compiled)
+        if payload["compiled_schema_version"] == "1.40":
+            compiled._derive_effective_run(
+                {"capture_origin": "current derivation from known compiled schema 1.40; not historically captured"}
+            )
+        else:
+            run = EffectiveRunConfig.from_dict(_required_mapping(payload, "effective_run"))
+            compiled._derive_effective_run(run.origins)
+            compiled.effective_run.validate_payload(run.to_dict())
         return compiled
 
     def save_to_cache(self, path: Path) -> None:
@@ -784,7 +833,7 @@ def _required_mapping(payload: Mapping[str, Any], field_name: str) -> Mapping[st
 
 def _validate_compiled_schema_version(payload: Mapping[str, Any], *, source: str) -> None:
     schema_version = _required_field(payload, "compiled_schema_version")
-    if schema_version != COMPILED_SCHEMA_VERSION:
+    if schema_version not in ("1.40", COMPILED_SCHEMA_VERSION):
         raise ValueError(
             f"Compiled universe schema mismatch for {source}: "
             f"found '{schema_version}', expected '{COMPILED_SCHEMA_VERSION}'. "

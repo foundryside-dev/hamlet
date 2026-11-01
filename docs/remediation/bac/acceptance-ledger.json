@@ -3,7 +3,7 @@
   "baseline_sha": "4aa5363b5de54d9a112977c32c2975f37627197f",
   "design": "BAC-2026-11-01-r2 plus explicit additive plan decisions",
   "approved_plan_sha256": "2dde2d80d3d14c510878c26af1f99c42217be12d3cb3a554647bc68646feedc1",
-  "phase": "implementation and independent verification",
+  "phase": "T01/T02 accepted packages; strict per-world curiosity amendment planning and independent replay work next",
   "completion_bar": "zero unresolved P1/P2 and zero unapproved in-scope capability gaps; all agreed finite evidence, fresh final spec/design/code review, required gates and source-verified docs",
   "requirements": [
     {
@@ -373,6 +373,29 @@
             "package-reviews/T01-independent-review.md"
           ],
           "final_acceptance": "owed at final candidate; dependent T02/T03/G06 runtime evidence still required"
+        },
+        {
+          "task": "T02",
+          "source_commit": "58c6395ff10393454cf0ee051fcd6e08a62730a3",
+          "candidate_tree": "94de8d44e8c1f3c7da48f4ffe986440946058c06",
+          "status": "implemented; fresh independent repaired-candidate review approved; full standing gate passed",
+          "focused_result": "35 passed; repaired recurrent module5 passed;104 owner/T01 passed",
+          "independent_result": "144 passed; fresh encoder/aggregator compile/dict/msgpack/rename contrasts passed",
+          "full_repository_result": "5654 passed,15 skipped,15 warnings;1394.50s;3xdistworkers plus independent verification",
+          "other_gates": [
+            "Ruff",
+            "Black657files",
+            "mypy181sourcefiles",
+            "no-defaults ratchet614",
+            "compiler CLI fleet",
+            "expression documentation check",
+            "token-type schema prefix53levels; zero violations/refusals"
+          ],
+          "reports": [
+            "package-reviews/T02-implementation.md",
+            "package-reviews/T02-independent-review.md"
+          ],
+          "final_acceptance": "T02 schema/transport only; runtime wiring and final common-source acceptance remain owed"
         }
       ]
     },
@@ -441,6 +464,29 @@
             "package-reviews/T01-independent-review.md"
           ],
           "final_acceptance": "owed at final candidate; dependent T02/T03/G06 runtime evidence still required"
+        },
+        {
+          "task": "T02",
+          "source_commit": "58c6395ff10393454cf0ee051fcd6e08a62730a3",
+          "candidate_tree": "94de8d44e8c1f3c7da48f4ffe986440946058c06",
+          "status": "implemented; fresh independent repaired-candidate review approved; full standing gate passed",
+          "focused_result": "35 passed; repaired recurrent module5 passed;104 owner/T01 passed",
+          "independent_result": "144 passed; fresh encoder/aggregator compile/dict/msgpack/rename contrasts passed",
+          "full_repository_result": "5654 passed,15 skipped,15 warnings;1394.50s;3xdistworkers plus independent verification",
+          "other_gates": [
+            "Ruff",
+            "Black657files",
+            "mypy181sourcefiles",
+            "no-defaults ratchet614",
+            "compiler CLI fleet",
+            "expression documentation check",
+            "token-type schema prefix53levels; zero violations/refusals"
+          ],
+          "reports": [
+            "package-reviews/T02-implementation.md",
+            "package-reviews/T02-independent-review.md"
+          ],
+          "final_acceptance": "T02 schema/transport only; runtime wiring and final common-source acceptance remain owed"
         }
       ]
     },
@@ -509,6 +555,29 @@
             "package-reviews/T01-independent-review.md"
           ],
           "final_acceptance": "owed at final candidate; dependent T02/T03/G06 runtime evidence still required"
+        },
+        {
+          "task": "T02",
+          "source_commit": "58c6395ff10393454cf0ee051fcd6e08a62730a3",
+          "candidate_tree": "94de8d44e8c1f3c7da48f4ffe986440946058c06",
+          "status": "implemented; fresh independent repaired-candidate review approved; full standing gate passed",
+          "focused_result": "35 passed; repaired recurrent module5 passed;104 owner/T01 passed",
+          "independent_result": "144 passed; fresh encoder/aggregator compile/dict/msgpack/rename contrasts passed",
+          "full_repository_result": "5654 passed,15 skipped,15 warnings;1394.50s;3xdistworkers plus independent verification",
+          "other_gates": [
+            "Ruff",
+            "Black657files",
+            "mypy181sourcefiles",
+            "no-defaults ratchet614",
+            "compiler CLI fleet",
+            "expression documentation check",
+            "token-type schema prefix53levels; zero violations/refusals"
+          ],
+          "reports": [
+            "package-reviews/T02-implementation.md",
+            "package-reviews/T02-independent-review.md"
+          ],
+          "final_acceptance": "T02 schema/transport only; runtime wiring and final common-source acceptance remain owed"
         }
       ]
     },
@@ -1101,7 +1170,31 @@
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "P2",
       "approval_reference": null,
-      "package_evidence": []
+      "package_evidence": [
+        {
+          "task": "T02",
+          "source_commit": "58c6395ff10393454cf0ee051fcd6e08a62730a3",
+          "candidate_tree": "94de8d44e8c1f3c7da48f4ffe986440946058c06",
+          "status": "implemented; fresh independent repaired-candidate review approved; full standing gate passed",
+          "focused_result": "35 passed; repaired recurrent module5 passed;104 owner/T01 passed",
+          "independent_result": "144 passed; fresh encoder/aggregator compile/dict/msgpack/rename contrasts passed",
+          "full_repository_result": "5654 passed,15 skipped,15 warnings;1394.50s;3xdistworkers plus independent verification",
+          "other_gates": [
+            "Ruff",
+            "Black657files",
+            "mypy181sourcefiles",
+            "no-defaults ratchet614",
+            "compiler CLI fleet",
+            "expression documentation check",
+            "token-type schema prefix53levels; zero violations/refusals"
+          ],
+          "reports": [
+            "package-reviews/T02-implementation.md",
+            "package-reviews/T02-independent-review.md"
+          ],
+          "final_acceptance": "T02 schema/transport only; runtime wiring and final common-source acceptance remain owed"
+        }
+      ]
     },
     {
       "id": "D20",
@@ -1263,7 +1356,31 @@
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "P2",
       "approval_reference": null,
-      "package_evidence": []
+      "package_evidence": [
+        {
+          "task": "T02",
+          "source_commit": "58c6395ff10393454cf0ee051fcd6e08a62730a3",
+          "candidate_tree": "94de8d44e8c1f3c7da48f4ffe986440946058c06",
+          "status": "implemented; fresh independent repaired-candidate review approved; full standing gate passed",
+          "focused_result": "35 passed; repaired recurrent module5 passed;104 owner/T01 passed",
+          "independent_result": "144 passed; fresh encoder/aggregator compile/dict/msgpack/rename contrasts passed",
+          "full_repository_result": "5654 passed,15 skipped,15 warnings;1394.50s;3xdistworkers plus independent verification",
+          "other_gates": [
+            "Ruff",
+            "Black657files",
+            "mypy181sourcefiles",
+            "no-defaults ratchet614",
+            "compiler CLI fleet",
+            "expression documentation check",
+            "token-type schema prefix53levels; zero violations/refusals"
+          ],
+          "reports": [
+            "package-reviews/T02-implementation.md",
+            "package-reviews/T02-independent-review.md"
+          ],
+          "final_acceptance": "T02 schema/transport only; runtime wiring and final common-source acceptance remain owed"
+        }
+      ]
     },
     {
       "id": "G02",
@@ -1544,6 +1661,29 @@
             "package-reviews/T01-independent-review.md"
           ],
           "final_acceptance": "owed at final candidate; dependent T02/T03/G06 runtime evidence still required"
+        },
+        {
+          "task": "T02",
+          "source_commit": "58c6395ff10393454cf0ee051fcd6e08a62730a3",
+          "candidate_tree": "94de8d44e8c1f3c7da48f4ffe986440946058c06",
+          "status": "implemented; fresh independent repaired-candidate review approved; full standing gate passed",
+          "focused_result": "35 passed; repaired recurrent module5 passed;104 owner/T01 passed",
+          "independent_result": "144 passed; fresh encoder/aggregator compile/dict/msgpack/rename contrasts passed",
+          "full_repository_result": "5654 passed,15 skipped,15 warnings;1394.50s;3xdistworkers plus independent verification",
+          "other_gates": [
+            "Ruff",
+            "Black657files",
+            "mypy181sourcefiles",
+            "no-defaults ratchet614",
+            "compiler CLI fleet",
+            "expression documentation check",
+            "token-type schema prefix53levels; zero violations/refusals"
+          ],
+          "reports": [
+            "package-reviews/T02-implementation.md",
+            "package-reviews/T02-independent-review.md"
+          ],
+          "final_acceptance": "T02 schema/transport only; runtime wiring and final common-source acceptance remain owed"
         }
       ]
     },
@@ -1641,7 +1781,31 @@
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "P2",
       "approval_reference": null,
-      "package_evidence": []
+      "package_evidence": [
+        {
+          "task": "T02",
+          "source_commit": "58c6395ff10393454cf0ee051fcd6e08a62730a3",
+          "candidate_tree": "94de8d44e8c1f3c7da48f4ffe986440946058c06",
+          "status": "implemented; fresh independent repaired-candidate review approved; full standing gate passed",
+          "focused_result": "35 passed; repaired recurrent module5 passed;104 owner/T01 passed",
+          "independent_result": "144 passed; fresh encoder/aggregator compile/dict/msgpack/rename contrasts passed",
+          "full_repository_result": "5654 passed,15 skipped,15 warnings;1394.50s;3xdistworkers plus independent verification",
+          "other_gates": [
+            "Ruff",
+            "Black657files",
+            "mypy181sourcefiles",
+            "no-defaults ratchet614",
+            "compiler CLI fleet",
+            "expression documentation check",
+            "token-type schema prefix53levels; zero violations/refusals"
+          ],
+          "reports": [
+            "package-reviews/T02-implementation.md",
+            "package-reviews/T02-independent-review.md"
+          ],
+          "final_acceptance": "T02 schema/transport only; runtime wiring and final common-source acceptance remain owed"
+        }
+      ]
     },
     {
       "id": "G09",
@@ -1942,6 +2106,29 @@
             "package-reviews/T01-independent-review.md"
           ],
           "final_acceptance": "owed at final candidate; dependent T02/T03/G06 runtime evidence still required"
+        },
+        {
+          "task": "T02",
+          "source_commit": "58c6395ff10393454cf0ee051fcd6e08a62730a3",
+          "candidate_tree": "94de8d44e8c1f3c7da48f4ffe986440946058c06",
+          "status": "implemented; fresh independent repaired-candidate review approved; full standing gate passed",
+          "focused_result": "35 passed; repaired recurrent module5 passed;104 owner/T01 passed",
+          "independent_result": "144 passed; fresh encoder/aggregator compile/dict/msgpack/rename contrasts passed",
+          "full_repository_result": "5654 passed,15 skipped,15 warnings;1394.50s;3xdistworkers plus independent verification",
+          "other_gates": [
+            "Ruff",
+            "Black657files",
+            "mypy181sourcefiles",
+            "no-defaults ratchet614",
+            "compiler CLI fleet",
+            "expression documentation check",
+            "token-type schema prefix53levels; zero violations/refusals"
+          ],
+          "reports": [
+            "package-reviews/T02-implementation.md",
+            "package-reviews/T02-independent-review.md"
+          ],
+          "final_acceptance": "T02 schema/transport only; runtime wiring and final common-source acceptance remain owed"
         }
       ]
     },
@@ -2245,6 +2432,29 @@
             "package-reviews/T01-independent-review.md"
           ],
           "final_acceptance": "owed at final candidate; dependent T02/T03/G06 runtime evidence still required"
+        },
+        {
+          "task": "T02",
+          "source_commit": "58c6395ff10393454cf0ee051fcd6e08a62730a3",
+          "candidate_tree": "94de8d44e8c1f3c7da48f4ffe986440946058c06",
+          "status": "implemented; fresh independent repaired-candidate review approved; full standing gate passed",
+          "focused_result": "35 passed; repaired recurrent module5 passed;104 owner/T01 passed",
+          "independent_result": "144 passed; fresh encoder/aggregator compile/dict/msgpack/rename contrasts passed",
+          "full_repository_result": "5654 passed,15 skipped,15 warnings;1394.50s;3xdistworkers plus independent verification",
+          "other_gates": [
+            "Ruff",
+            "Black657files",
+            "mypy181sourcefiles",
+            "no-defaults ratchet614",
+            "compiler CLI fleet",
+            "expression documentation check",
+            "token-type schema prefix53levels; zero violations/refusals"
+          ],
+          "reports": [
+            "package-reviews/T02-implementation.md",
+            "package-reviews/T02-independent-review.md"
+          ],
+          "final_acceptance": "T02 schema/transport only; runtime wiring and final common-source acceptance remain owed"
         }
       ]
     },
@@ -2391,7 +2601,31 @@
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "acceptance owed",
       "approval_reference": null,
-      "package_evidence": []
+      "package_evidence": [
+        {
+          "task": "T02",
+          "source_commit": "58c6395ff10393454cf0ee051fcd6e08a62730a3",
+          "candidate_tree": "94de8d44e8c1f3c7da48f4ffe986440946058c06",
+          "status": "implemented; fresh independent repaired-candidate review approved; full standing gate passed",
+          "focused_result": "35 passed; repaired recurrent module5 passed;104 owner/T01 passed",
+          "independent_result": "144 passed; fresh encoder/aggregator compile/dict/msgpack/rename contrasts passed",
+          "full_repository_result": "5654 passed,15 skipped,15 warnings;1394.50s;3xdistworkers plus independent verification",
+          "other_gates": [
+            "Ruff",
+            "Black657files",
+            "mypy181sourcefiles",
+            "no-defaults ratchet614",
+            "compiler CLI fleet",
+            "expression documentation check",
+            "token-type schema prefix53levels; zero violations/refusals"
+          ],
+          "reports": [
+            "package-reviews/T02-implementation.md",
+            "package-reviews/T02-independent-review.md"
+          ],
+          "final_acceptance": "T02 schema/transport only; runtime wiring and final common-source acceptance remain owed"
+        }
+      ]
     },
     {
       "id": "BAC-C05",
@@ -2823,7 +3057,31 @@
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "acceptance owed",
       "approval_reference": null,
-      "package_evidence": []
+      "package_evidence": [
+        {
+          "task": "T02",
+          "source_commit": "58c6395ff10393454cf0ee051fcd6e08a62730a3",
+          "candidate_tree": "94de8d44e8c1f3c7da48f4ffe986440946058c06",
+          "status": "implemented; fresh independent repaired-candidate review approved; full standing gate passed",
+          "focused_result": "35 passed; repaired recurrent module5 passed;104 owner/T01 passed",
+          "independent_result": "144 passed; fresh encoder/aggregator compile/dict/msgpack/rename contrasts passed",
+          "full_repository_result": "5654 passed,15 skipped,15 warnings;1394.50s;3xdistworkers plus independent verification",
+          "other_gates": [
+            "Ruff",
+            "Black657files",
+            "mypy181sourcefiles",
+            "no-defaults ratchet614",
+            "compiler CLI fleet",
+            "expression documentation check",
+            "token-type schema prefix53levels; zero violations/refusals"
+          ],
+          "reports": [
+            "package-reviews/T02-implementation.md",
+            "package-reviews/T02-independent-review.md"
+          ],
+          "final_acceptance": "T02 schema/transport only; runtime wiring and final common-source acceptance remain owed"
+        }
+      ]
     },
     {
       "id": "BAC-C08",
@@ -3153,7 +3411,31 @@
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "acceptance owed",
       "approval_reference": "BAC-HISTORY-A-2026-11-01",
-      "package_evidence": []
+      "package_evidence": [
+        {
+          "task": "T02",
+          "source_commit": "58c6395ff10393454cf0ee051fcd6e08a62730a3",
+          "candidate_tree": "94de8d44e8c1f3c7da48f4ffe986440946058c06",
+          "status": "implemented; fresh independent repaired-candidate review approved; full standing gate passed",
+          "focused_result": "35 passed; repaired recurrent module5 passed;104 owner/T01 passed",
+          "independent_result": "144 passed; fresh encoder/aggregator compile/dict/msgpack/rename contrasts passed",
+          "full_repository_result": "5654 passed,15 skipped,15 warnings;1394.50s;3xdistworkers plus independent verification",
+          "other_gates": [
+            "Ruff",
+            "Black657files",
+            "mypy181sourcefiles",
+            "no-defaults ratchet614",
+            "compiler CLI fleet",
+            "expression documentation check",
+            "token-type schema prefix53levels; zero violations/refusals"
+          ],
+          "reports": [
+            "package-reviews/T02-implementation.md",
+            "package-reviews/T02-independent-review.md"
+          ],
+          "final_acceptance": "T02 schema/transport only; runtime wiring and final common-source acceptance remain owed"
+        }
+      ]
     },
     {
       "id": "BAC-C11",
@@ -3503,7 +3785,31 @@
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": null,
       "approval_reference": null,
-      "package_evidence": []
+      "package_evidence": [
+        {
+          "task": "T02",
+          "source_commit": "58c6395ff10393454cf0ee051fcd6e08a62730a3",
+          "candidate_tree": "94de8d44e8c1f3c7da48f4ffe986440946058c06",
+          "status": "implemented; fresh independent repaired-candidate review approved; full standing gate passed",
+          "focused_result": "35 passed; repaired recurrent module5 passed;104 owner/T01 passed",
+          "independent_result": "144 passed; fresh encoder/aggregator compile/dict/msgpack/rename contrasts passed",
+          "full_repository_result": "5654 passed,15 skipped,15 warnings;1394.50s;3xdistworkers plus independent verification",
+          "other_gates": [
+            "Ruff",
+            "Black657files",
+            "mypy181sourcefiles",
+            "no-defaults ratchet614",
+            "compiler CLI fleet",
+            "expression documentation check",
+            "token-type schema prefix53levels; zero violations/refusals"
+          ],
+          "reports": [
+            "package-reviews/T02-implementation.md",
+            "package-reviews/T02-independent-review.md"
+          ],
+          "final_acceptance": "T02 schema/transport only; runtime wiring and final common-source acceptance remain owed"
+        }
+      ]
     },
     {
       "id": "K03",
@@ -3586,7 +3892,31 @@
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": null,
       "approval_reference": null,
-      "package_evidence": []
+      "package_evidence": [
+        {
+          "task": "T02",
+          "source_commit": "58c6395ff10393454cf0ee051fcd6e08a62730a3",
+          "candidate_tree": "94de8d44e8c1f3c7da48f4ffe986440946058c06",
+          "status": "implemented; fresh independent repaired-candidate review approved; full standing gate passed",
+          "focused_result": "35 passed; repaired recurrent module5 passed;104 owner/T01 passed",
+          "independent_result": "144 passed; fresh encoder/aggregator compile/dict/msgpack/rename contrasts passed",
+          "full_repository_result": "5654 passed,15 skipped,15 warnings;1394.50s;3xdistworkers plus independent verification",
+          "other_gates": [
+            "Ruff",
+            "Black657files",
+            "mypy181sourcefiles",
+            "no-defaults ratchet614",
+            "compiler CLI fleet",
+            "expression documentation check",
+            "token-type schema prefix53levels; zero violations/refusals"
+          ],
+          "reports": [
+            "package-reviews/T02-implementation.md",
+            "package-reviews/T02-independent-review.md"
+          ],
+          "final_acceptance": "T02 schema/transport only; runtime wiring and final common-source acceptance remain owed"
+        }
+      ]
     },
     {
       "id": "K05",
@@ -3684,6 +4014,26 @@
       "approval_reference": null,
       "package_evidence": [],
       "historical_id": "C01"
+    },
+    {
+      "id": "X02",
+      "classification": "confirmed shared-normalization reward coupling; adopted strict-curiosity capability gap",
+      "title": "Strict per-world curiosity remains independent across its own training updates",
+      "in_scope": true,
+      "acceptance_scope": "Owner-selected B: add strict per-world curiosity while retaining shared alternative; compare intrinsic/total rewards through evolving private curiosity under identical local initialization/action/mechanics/experience traces. Shared Q policy remains shared, not independent trained replicates.",
+      "tasks": [],
+      "test_nodes": [],
+      "command": [],
+      "expected_assertion": "Per-world mutable curiosity state, gradients/optimizer/queues/RNG/local service/normalization/counts/LRU/annealing cannot be changed by other worlds; multi-step real-update/reset/resume and shared-mode controls required. Exact packets/nodes await the finite B addendum.",
+      "candidate_sha": null,
+      "evidence_paths": [
+        "evidence/shared-novelty-original.json",
+        "SHARED-NOVELTY-ISOLATION-DECISION.md"
+      ],
+      "disposition": "PLANNED; B approved, implementation and independent acceptance owed",
+      "remaining_severity": "P2 adopted capability/qualification gap",
+      "approval_reference": "BAC-S1-PER-WORLD-B-2026-11-01",
+      "package_evidence": []
     }
   ],
   "approved_decisions": [
@@ -3710,6 +4060,21 @@
         "weaker final acceptance",
         "new access or spending",
         "broader publication authority"
+      ]
+    },
+    {
+      "id": "BAC-S1-PER-WORLD-B-2026-11-01",
+      "approver": "John (explicit user answer)",
+      "choice": "B \u2014 add strict per-world curiosity",
+      "reviewed_proposal_sha256": "cb23ae28696259123b2b16b27e0f29b8d6740900b51bad56f387765c6877e701",
+      "question_reference": "call_b2b0e27039af4602b5a1c19bb3a3fc5c",
+      "record": "SHARED-NOVELTY-ISOLATION-DECISION.md",
+      "does_not_authorize": [
+        "Option A scope qualification",
+        "removing shared curiosity",
+        "implicit default substitution",
+        "claiming independent complete training replicas",
+        "frozen shared predictor as strict-mode proof"
       ]
     }
   ],
@@ -3809,6 +4174,29 @@
         "package-reviews/T01-independent-review.md"
       ],
       "final_acceptance": "owed at final candidate; dependent T02/T03/G06 runtime evidence still required"
+    },
+    {
+      "task": "T02",
+      "source_commit": "58c6395ff10393454cf0ee051fcd6e08a62730a3",
+      "candidate_tree": "94de8d44e8c1f3c7da48f4ffe986440946058c06",
+      "status": "implemented; fresh independent repaired-candidate review approved; full standing gate passed",
+      "focused_result": "35 passed; repaired recurrent module5 passed;104 owner/T01 passed",
+      "independent_result": "144 passed; fresh encoder/aggregator compile/dict/msgpack/rename contrasts passed",
+      "full_repository_result": "5654 passed,15 skipped,15 warnings;1394.50s;3xdistworkers plus independent verification",
+      "other_gates": [
+        "Ruff",
+        "Black657files",
+        "mypy181sourcefiles",
+        "no-defaults ratchet614",
+        "compiler CLI fleet",
+        "expression documentation check",
+        "token-type schema prefix53levels; zero violations/refusals"
+      ],
+      "reports": [
+        "package-reviews/T02-implementation.md",
+        "package-reviews/T02-independent-review.md"
+      ],
+      "final_acceptance": "T02 schema/transport only; runtime wiring and final common-source acceptance remain owed"
     }
   ],
   "evidence_note": "T01 precommit full gate verified the exact committed tree and source hashes in every pytest process. Historical fixture checks qualify data at the original source only; new archive policy acceptance remains owed.",
@@ -3829,7 +4217,11 @@
       "result": "1 failed,2861 passed,9 skipped; deliberately interrupted failed full gate after549.24s, exit2",
       "log": "/workspace/bac-review-2026-11-01/qualification/T02-full-tests.log",
       "repair": "exact five-field assertion; red1failure and module green5; full replacement gate and fresh bounded review still owed",
-      "status": "repair verification pending"
+      "status": "closed: exact approved optional field added, fresh review and complete replacement gate passed",
+      "repair_commit": "58c6395ff10393454cf0ee051fcd6e08a62730a3",
+      "replacement_tree": "94de8d44e8c1f3c7da48f4ffe986440946058c06",
+      "replacement_result": "5654 passed,15 skipped,15 warnings;1394.50s;3xdistworkers plus independent verification",
+      "repair_review": "package-reviews/T02-independent-review.md"
     }
   ]
 }

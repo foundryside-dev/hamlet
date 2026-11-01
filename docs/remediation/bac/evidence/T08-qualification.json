@@ -1,0 +1,53 @@
+{
+  "task": "T08",
+  "commit": "050a1a70e979aa03724219b81e848093820f044f",
+  "candidate_tree": "00d385ce621b7818e5354b161c22082ba42f985f",
+  "source_file_count": 3,
+  "source_lines": 586,
+  "owner_tests": {
+    "passed": 353,
+    "skipped": 5,
+    "collected": 358,
+    "seconds": 269.16,
+    "log_sha256": "a95399153a57327cfcfb63ff425569565c20ef4b0d7c6d4b5b01ec5a6e7c235a"
+  },
+  "review": {
+    "model": "Astra high",
+    "spec": "PASS",
+    "quality": "PASS",
+    "findings": [],
+    "independent_probe": "30 numerical cases, gradient direction, terminal poison, scalar/multidim shapes, DTO history/ownership"
+  },
+  "standing_checks": {
+    "ruff": {
+      "exit_code": 0,
+      "log_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    "black": {
+      "exit_code": 0,
+      "log_sha256": "fdb5f823c4ab4bdf0d1049cbea1ec617ed41c1177b18797f207a3aa2ac48a27d"
+    },
+    "mypy": {
+      "exit_code": 0,
+      "log_sha256": "8963360228223674b6d3031e8767f3f463af40c91b4397925dced978602d3091"
+    },
+    "no-defaults": {
+      "exit_code": 0,
+      "log_sha256": "4f21d212d5ad667d6cb6a1b390c75697fa28acc45afc3fff3f55a410776b329c"
+    },
+    "compiler-cli": {
+      "exit_code": 0,
+      "log_sha256": "020413e4c56c36ef6cb165a97ffa35dec05d04b0b20962ddbdbb5d03f955a2db"
+    },
+    "expression-doc": {
+      "exit_code": 0,
+      "log_sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf"
+    }
+  },
+  "full_suite": {
+    "status": "deferred_under_BAC-CADENCE-A-2026-11-01",
+    "reason": "Only new unused modules plus their new regression; no existing runtime/config/identity/serialization contract changed",
+    "next_gate": "G1 or earlier trigger"
+  },
+  "scope_limit": "Primitive contract only; production legal learning, historical archive/storage and end-to-end acceptance remain open."
+}

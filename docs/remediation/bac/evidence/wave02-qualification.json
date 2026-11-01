@@ -1,0 +1,284 @@
+{
+  "status": "qualified_package_wave; finalwholeBACacceptance remains owed",
+  "base_commit": "050a1a70e979aa03724219b81e848093820f044f",
+  "candidate_tree": "3d1d21cff5abdf60b630f97da0cdb09bf8ccd036",
+  "scope": "Five bounded packages, not whole-BAC/final qualification",
+  "source_files": {
+    "src/townlet/exploration/action_selection.py": "2a2ddfbd9aaf01afa14b0d1907fa1f3c8823f253dcdc8d16a8ff4054bf3768b8",
+    "tests/test_townlet/regressions/bac/test_action_probabilities.py": "e5e5813fdb3a9da2fba4eaea2ca5d1815dc6aa08507a6cd78bd746aab7c57241",
+    "tests/test_townlet/unit/exploration/test_epsilon_greedy_selection.py": "a777035e3356a145c15d2c6140f13cb5a943bfc30db35292ca5f4c743011c636",
+    "src/townlet/training/q_targets.py": "39485fe2447dc4065bd7b806775c93c0e66b51827b088605fba98505b100491f",
+    "src/townlet/environment/vectorized_env.py": "849cacc1b94e13109d3ba5391b1d30668a89db308a3e228f3476a0f5457b595d",
+    "tests/test_townlet/regressions/bac/test_successor_producer.py": "c88043817f6996f02a1a7cb732e96b1afdc1a70c548b7b956c7da125eb605670",
+    "src/townlet/environment/action_mask_builder.py": "5d02f08f94c68bbd63b4491a5ed00a432a3fbadbec6b9a02572d544bfbcb7174",
+    "src/townlet/training/replay_contract.py": "3eaa725bd6d592b7524dd249125877eb91a1f707d4dfd12fbfb59b5b6cc6356c",
+    "src/townlet/environment/action_executor.py": "c0f1c2ee2396e35e192d11d81d79f5a25f1112d3ef8143adbff367011dbbe980",
+    "tests/test_townlet/regressions/bac/test_inactive_action_execution.py": "851986aa7f17350c8c769b939a400207ac718c97acfaf23ed0e657e3f41bab67",
+    "src/townlet/exploration/rnd.py": "3a774dfb042cdbf20b66555c41f75c2d537b6ff49472395877dfcf5595e26e72",
+    "src/townlet/population/vectorized.py": "38d8c969a8acfc5f49a3c5c7e532f6f10b34844af12ca37e8696123511e47d3b",
+    "tests/test_townlet/regressions/bac/test_rnd_service.py": "ecd2db6e72de5fba9453a6fff217d68113f6ff138c3c7a6cc9b5548e9e340c74",
+    "src/townlet/config/bac_options.py": "1de08a7cc36c49772254d8b9dc2d8adf3cac76533eecba5c36568745bc48c8f1",
+    "src/townlet/config/exploration_policy.py": "496b988555bc0f23f1a6e335386102acbc1450df1d064d87cfd616a0d953299a",
+    "tests/test_townlet/regressions/bac/test_exploration_policy.py": "77ed751bb431c5203b6c38354b3f6f6e583d4c4a699df5d94d9bd89fd35eafc2",
+    "src/townlet/config/drive_as_code.py": "870e44fbc55f4bc7a221e7272cebea893ff95bfe37f23c6e4e01c4e80595150c",
+    "src/townlet/config/training_v2_config.py": "d103aafbfe4e7fd4e957b71fd0651c6b6d8bebb98de4581d9d53e2356907ca68"
+  },
+  "packet_scopes": {
+    "T08a-wave02": {
+      "source_files": {
+        "src/townlet/exploration/action_selection.py": "2a2ddfbd9aaf01afa14b0d1907fa1f3c8823f253dcdc8d16a8ff4054bf3768b8",
+        "tests/test_townlet/regressions/bac/test_action_probabilities.py": "e5e5813fdb3a9da2fba4eaea2ca5d1815dc6aa08507a6cd78bd746aab7c57241",
+        "tests/test_townlet/unit/exploration/test_epsilon_greedy_selection.py": "a777035e3356a145c15d2c6140f13cb5a943bfc30db35292ca5f4c743011c636",
+        "src/townlet/training/q_targets.py": "39485fe2447dc4065bd7b806775c93c0e66b51827b088605fba98505b100491f"
+      },
+      "source_read_lines": 438,
+      "modified": [
+        "src/townlet/exploration/action_selection.py",
+        "tests/test_townlet/regressions/bac/test_action_probabilities.py",
+        "tests/test_townlet/unit/exploration/test_epsilon_greedy_selection.py"
+      ]
+    },
+    "T09-wave02": {
+      "source_files": {
+        "src/townlet/environment/vectorized_env.py": "849cacc1b94e13109d3ba5391b1d30668a89db308a3e228f3476a0f5457b595d",
+        "tests/test_townlet/regressions/bac/test_successor_producer.py": "c88043817f6996f02a1a7cb732e96b1afdc1a70c548b7b956c7da125eb605670",
+        "src/townlet/environment/action_mask_builder.py": "5d02f08f94c68bbd63b4491a5ed00a432a3fbadbec6b9a02572d544bfbcb7174",
+        "src/townlet/training/replay_contract.py": "3eaa725bd6d592b7524dd249125877eb91a1f707d4dfd12fbfb59b5b6cc6356c"
+      },
+      "source_read_lines": 2354,
+      "modified": [
+        "src/townlet/environment/vectorized_env.py",
+        "tests/test_townlet/regressions/bac/test_successor_producer.py"
+      ]
+    },
+    "T09a-wave02": {
+      "source_files": {
+        "src/townlet/environment/action_executor.py": "c0f1c2ee2396e35e192d11d81d79f5a25f1112d3ef8143adbff367011dbbe980",
+        "tests/test_townlet/regressions/bac/test_inactive_action_execution.py": "851986aa7f17350c8c769b939a400207ac718c97acfaf23ed0e657e3f41bab67",
+        "src/townlet/environment/vectorized_env.py": "849cacc1b94e13109d3ba5391b1d30668a89db308a3e228f3476a0f5457b595d",
+        "tests/test_townlet/regressions/bac/test_successor_producer.py": "c88043817f6996f02a1a7cb732e96b1afdc1a70c548b7b956c7da125eb605670"
+      },
+      "source_read_lines": 2469,
+      "modified": [
+        "src/townlet/environment/action_executor.py",
+        "tests/test_townlet/regressions/bac/test_inactive_action_execution.py"
+      ]
+    },
+    "T18-wave02": {
+      "source_files": {
+        "src/townlet/exploration/rnd.py": "3a774dfb042cdbf20b66555c41f75c2d537b6ff49472395877dfcf5595e26e72",
+        "src/townlet/population/vectorized.py": "38d8c969a8acfc5f49a3c5c7e532f6f10b34844af12ca37e8696123511e47d3b",
+        "tests/test_townlet/regressions/bac/test_rnd_service.py": "ecd2db6e72de5fba9453a6fff217d68113f6ff138c3c7a6cc9b5548e9e340c74",
+        "src/townlet/config/bac_options.py": "1de08a7cc36c49772254d8b9dc2d8adf3cac76533eecba5c36568745bc48c8f1"
+      },
+      "source_read_lines": 3180,
+      "modified": [
+        "src/townlet/exploration/rnd.py",
+        "src/townlet/population/vectorized.py",
+        "tests/test_townlet/regressions/bac/test_rnd_service.py"
+      ]
+    },
+    "T18a-r1": {
+      "source_files": {
+        "src/townlet/config/exploration_policy.py": "496b988555bc0f23f1a6e335386102acbc1450df1d064d87cfd616a0d953299a",
+        "tests/test_townlet/regressions/bac/test_exploration_policy.py": "77ed751bb431c5203b6c38354b3f6f6e583d4c4a699df5d94d9bd89fd35eafc2",
+        "src/townlet/config/drive_as_code.py": "870e44fbc55f4bc7a221e7272cebea893ff95bfe37f23c6e4e01c4e80595150c",
+        "src/townlet/config/training_v2_config.py": "d103aafbfe4e7fd4e957b71fd0651c6b6d8bebb98de4581d9d53e2356907ca68",
+        "src/townlet/config/bac_options.py": "1de08a7cc36c49772254d8b9dc2d8adf3cac76533eecba5c36568745bc48c8f1"
+      },
+      "source_read_lines": 2391,
+      "modified": [
+        "src/townlet/config/exploration_policy.py",
+        "tests/test_townlet/regressions/bac/test_exploration_policy.py"
+      ]
+    }
+  },
+  "review_hashes": {
+    "T08a-implementation.md": "aa35f4f1c925a738de0c5aba73924fc0ec5dab55fda2f6f87d944db06fac59cf",
+    "T09-implementation.md": "254ca2213b7b3d97fe481dfad7fee8c49d8990628dbbe1c6a0318856408ee5b0",
+    "T09a-implementation.md": "a030d3559399d3ff22a7ac997cfafd351fe47bca72fe5f0e0f5b6a9e4a6baec2",
+    "T18-implementation.md": "29aa98fb1aa997c05a3b9be17c4c6c3ef1967945fe85b79c0da9be4076f513a4",
+    "T18a-implementation.md": "67cfe51e8793f6dd2c62aa8c810e8d977af077cbf07b8b8348e3647a27aed0f3",
+    "T08a-independent-review.md": "5e0da29d92e797cd1928d40c374ddf34538bbb584815e7c72bffd8fb3629cfea",
+    "T09-independent-review.md": "b7e091086b50527d341fdf6e3d0da3072b94e20b3e1d970ac7a6aec46a2d1099",
+    "T09a-independent-review.md": "8e05343e6e6a7ebaeb7566d04f0e07dbb0e3fd5ea651029aa440e12e958d6408",
+    "T18-independent-review.md": "185b513b6d8c0f24c22d469ff45b5cbd701ec7788271cdda7a9d495676ccddab",
+    "T18a-independent-review.md": "79f6e13b9838b0e456f4033c47218c07ebb48bbf4ebe7c0f31618029ba98f875",
+    "T18-initial-independent-review.md": "7e8ba75f688ac05b9cb34a42bea5e5d341d0df2c61117d2054a8530dfc5ee58e",
+    "T18-repair-review.md": "e752255c6104999cfe299a92eee2a32fe92e14ecd586fa5bd68718be51103280",
+    "T18a-initial-independent-review.md": "1fcbcd9ad57bb48736dca92adbca3f312275fb17731009f638b3a9d8db89940e",
+    "T08a-repair-review.md": "52b214de421fbf9fe6901469295ee055605f58997e34dc93a8f5dae8212c262e"
+  },
+  "review_clearance": {
+    "candidate_tree": "3d1d21cff5abdf60b630f97da0cdb09bf8ccd036",
+    "base_commit": "050a1a70e979aa03724219b81e848093820f044f",
+    "scope": "Five bounded other-model reviews complete; whole-BAC/final qualification not claimed",
+    "reviews": {
+      "task-T08a-wave02-review.md": {
+        "sha256": "5e0da29d92e797cd1928d40c374ddf34538bbb584815e7c72bffd8fb3629cfea",
+        "candidate_tree": "3d1d21cff5abdf60b630f97da0cdb09bf8ccd036"
+      },
+      "task-T09-wave02-review.md": {
+        "sha256": "b7e091086b50527d341fdf6e3d0da3072b94e20b3e1d970ac7a6aec46a2d1099",
+        "candidate_tree": "3d1d21cff5abdf60b630f97da0cdb09bf8ccd036"
+      },
+      "task-T09a-review.md": {
+        "sha256": "8e05343e6e6a7ebaeb7566d04f0e07dbb0e3fd5ea651029aa440e12e958d6408",
+        "candidate_tree": "3d1d21cff5abdf60b630f97da0cdb09bf8ccd036"
+      },
+      "task-T18-wave02-review.md": {
+        "sha256": "185b513b6d8c0f24c22d469ff45b5cbd701ec7788271cdda7a9d495676ccddab",
+        "candidate_tree": "3d1d21cff5abdf60b630f97da0cdb09bf8ccd036"
+      },
+      "task-T18a-r1-review.md": {
+        "sha256": "79f6e13b9838b0e456f4033c47218c07ebb48bbf4ebe7c0f31618029ba98f875",
+        "candidate_tree": "3d1d21cff5abdf60b630f97da0cdb09bf8ccd036"
+      }
+    }
+  },
+  "preflight": {
+    "collection": {
+      "name": "collection",
+      "exit_code": 0,
+      "seconds": 12.992496728897095,
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave02-collection.log",
+      "sha256": "be7225c86846ef7e849719188fc34c28084c56419aff8c864728b2add7cc5c71",
+      "candidate_tree": "3d1d21cff5abdf60b630f97da0cdb09bf8ccd036"
+    },
+    "owner-tests": {
+      "name": "owner-tests",
+      "exit_code": 0,
+      "seconds": 63.28943204879761,
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave02-owner-tests.log",
+      "sha256": "b226fb90db695434dc8333e39418926e82a9114aacc1b8be28c188215a5e3cde",
+      "candidate_tree": "3d1d21cff5abdf60b630f97da0cdb09bf8ccd036"
+    },
+    "ruff": {
+      "name": "ruff",
+      "exit_code": 0,
+      "seconds": 0.269167423248291,
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave02-ruff.log",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "candidate_tree": "3d1d21cff5abdf60b630f97da0cdb09bf8ccd036"
+    },
+    "black": {
+      "name": "black",
+      "exit_code": 0,
+      "seconds": 48.99056267738342,
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave02-black.log",
+      "sha256": "34db476a8afe3d39a26c43c76b5f79cb61b50c71dc0dc5d0d414c88a2bc27353",
+      "candidate_tree": "3d1d21cff5abdf60b630f97da0cdb09bf8ccd036"
+    },
+    "mypy": {
+      "name": "mypy",
+      "exit_code": 0,
+      "seconds": 43.73593854904175,
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave02-mypy.log",
+      "sha256": "e10ba8352a2cdb7b9914f70608cc1e7826edf2ef85b195d8da07fb8bc5ca7d41",
+      "candidate_tree": "3d1d21cff5abdf60b630f97da0cdb09bf8ccd036"
+    },
+    "no-defaults": {
+      "name": "no-defaults",
+      "exit_code": 0,
+      "seconds": 0.6590526103973389,
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave02-no-defaults.log",
+      "sha256": "9782f3f412641d3d0ebe81081a8e8f116da74e8249cd06eed7b69a6d7053f44e",
+      "candidate_tree": "3d1d21cff5abdf60b630f97da0cdb09bf8ccd036"
+    },
+    "compiler-cli": {
+      "name": "compiler-cli",
+      "exit_code": 0,
+      "seconds": 130.54262852668762,
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave02-compiler-cli.log",
+      "sha256": "487a23a7bbf9fc6ad53351f7481b797817cf7c521531226c336658fb84ce2194",
+      "candidate_tree": "3d1d21cff5abdf60b630f97da0cdb09bf8ccd036"
+    },
+    "expression-doc": {
+      "name": "expression-doc",
+      "exit_code": 0,
+      "seconds": 2.0449490547180176,
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave02-expression-doc.log",
+      "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf",
+      "candidate_tree": "3d1d21cff5abdf60b630f97da0cdb09bf8ccd036"
+    }
+  },
+  "final_source_commit": "ac8f0f9c3c38cd77f533accc5c9259fe4abfc252",
+  "final_source_tree": "3d1d21cff5abdf60b630f97da0cdb09bf8ccd036",
+  "commits": [
+    {
+      "task": "T08a",
+      "commit": "2dd65867232a63cfb21403983de85bae130058ab",
+      "paths": [
+        "src/townlet/exploration/action_selection.py",
+        "tests/test_townlet/regressions/bac/test_action_probabilities.py",
+        "tests/test_townlet/unit/exploration/test_epsilon_greedy_selection.py"
+      ],
+      "intermediate_full_qualification": "Only finalsumtree is full-qualified; individual prefix heads not separately full-qualified"
+    },
+    {
+      "task": "T09",
+      "commit": "ac078cb95981534ea686807dee8c6b478b6ccc74",
+      "paths": [
+        "src/townlet/environment/vectorized_env.py",
+        "tests/test_townlet/regressions/bac/test_successor_producer.py"
+      ],
+      "intermediate_full_qualification": "Only finalsumtree is full-qualified; individual prefix heads not separately full-qualified"
+    },
+    {
+      "task": "T09a",
+      "commit": "5d507e4bdfd7efc4739004dcf4c691480f7180c0",
+      "paths": [
+        "src/townlet/environment/action_executor.py",
+        "tests/test_townlet/regressions/bac/test_inactive_action_execution.py"
+      ],
+      "intermediate_full_qualification": "Only finalsumtree is full-qualified; individual prefix heads not separately full-qualified"
+    },
+    {
+      "task": "T18",
+      "commit": "424e57015bac9448dc0fa5780269c649a6cac22f",
+      "paths": [
+        "src/townlet/exploration/rnd.py",
+        "src/townlet/population/vectorized.py",
+        "tests/test_townlet/regressions/bac/test_rnd_service.py"
+      ],
+      "intermediate_full_qualification": "Only finalsumtree is full-qualified; individual prefix heads not separately full-qualified"
+    },
+    {
+      "task": "T18a",
+      "commit": "ac8f0f9c3c38cd77f533accc5c9259fe4abfc252",
+      "paths": [
+        "src/townlet/config/exploration_policy.py",
+        "tests/test_townlet/regressions/bac/test_exploration_policy.py"
+      ],
+      "intermediate_full_qualification": "Only finalsumtree is full-qualified; individual prefix heads not separately full-qualified"
+    }
+  ],
+  "full_result": {
+    "name": "full-tests",
+    "exit_code": 0,
+    "seconds": 1090.2500422000885,
+    "log": "/workspace/bac-review-2026-11-01/qualification/wave02-full-tests.log",
+    "sha256": "9cbd71a68215bcd3232250e8a5d4cd006e20d94c6e0b5bfb90f86b9b8cb15ef6",
+    "candidate_tree": "3d1d21cff5abdf60b630f97da0cdb09bf8ccd036",
+    "base_commit": "050a1a70e979aa03724219b81e848093820f044f",
+    "command": [
+      "/workspace/hamlet/.venv/bin/python",
+      "-m",
+      "pytest",
+      "tests",
+      "-q",
+      "--maxfail=1",
+      "--no-cov",
+      "-p",
+      "no:cacheprovider",
+      "-p",
+      "bac_source_identity",
+      "-n",
+      "4",
+      "--dist",
+      "worksteal",
+      "--basetemp=/tmp/bac-full-wave02-3d1d21cff5"
+    ]
+  },
+  "hardware_note": "CPU qualification only;15 skipped retained; CUDA unavailable locally; final coverage/slow/applicablehardware and commonFINAL_SHA qualification remain owed"
+}

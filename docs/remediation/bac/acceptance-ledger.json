@@ -3,7 +3,7 @@
   "baseline_sha": "4aa5363b5de54d9a112977c32c2975f37627197f",
   "design": "BAC-2026-11-01-r2 plus explicit additive plan decisions",
   "approved_plan_sha256": "2dde2d80d3d14c510878c26af1f99c42217be12d3cb3a554647bc68646feedc1",
-  "phase": "T01/T02 accepted packages; strict per-world curiosity amendment planning and independent replay work next",
+  "phase": "T01/T02/T08 and five wave02 packages accepted; T03 effective config/identity implementation active; all later final acceptance remains owed",
   "completion_bar": "zero unresolved P1/P2 and zero unapproved in-scope capability gaps; all agreed finite evidence, fresh final spec/design/code review, required gates and source-verified docs",
   "requirements": [
     {
@@ -119,7 +119,22 @@
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "P1",
       "approval_reference": "BAC-HISTORY-A-2026-11-01",
-      "package_evidence": []
+      "package_evidence": [],
+      "evidence": [
+        {
+          "task": "T08",
+          "status": "scoped_package_pass_not_requirement_closure",
+          "receipt": "evidence/T08-qualification.json",
+          "source_commit": "050a1a70e979aa03724219b81e848093820f044f"
+        },
+        {
+          "task": "T09",
+          "status": "qualified_scoped_package_not_whole_requirement_closure",
+          "source_commit": "ac078cb95981534ea686807dee8c6b478b6ccc74",
+          "qualified_release_commit": "ac8f0f9c3c38cd77f533accc5c9259fe4abfc252",
+          "receipt": "evidence/wave02-qualification.json"
+        }
+      ]
     },
     {
       "id": "D02",
@@ -720,7 +735,8 @@
       "acceptance_scope": "Exact-zero illegal probability; no native-illegal-draw claim",
       "tasks": [
         "T08",
-        "T37"
+        "T37",
+        "T08a"
       ],
       "test_nodes": [
         "tests/test_townlet/regressions/bac/test_joint_learning.py::test_joint_family_replay_matrix",
@@ -744,7 +760,23 @@
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "P2",
       "approval_reference": null,
-      "package_evidence": []
+      "package_evidence": [],
+      "evidence": [
+        {
+          "task": "T08",
+          "status": "scoped_package_pass_not_requirement_closure",
+          "receipt": "evidence/T08-qualification.json",
+          "source_commit": "050a1a70e979aa03724219b81e848093820f044f"
+        },
+        {
+          "task": "T08a",
+          "status": "qualified_scoped_package_not_whole_requirement_closure",
+          "source_commit": "2dd65867232a63cfb21403983de85bae130058ab",
+          "qualified_release_commit": "ac8f0f9c3c38cd77f533accc5c9259fe4abfc252",
+          "receipt": "evidence/wave02-qualification.json"
+        }
+      ],
+      "repair_status": "Exactzero illegal samplingmass repaired atqualifiedwave02; strict productioneligibility integration and final refresh stillowed"
     },
     {
       "id": "D12",
@@ -1478,7 +1510,16 @@
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "P2",
       "approval_reference": null,
-      "package_evidence": []
+      "package_evidence": [],
+      "evidence": [
+        {
+          "task": "T18",
+          "status": "qualified_scoped_package_not_whole_requirement_closure",
+          "source_commit": "424e57015bac9448dc0fa5780269c649a6cac22f",
+          "qualified_release_commit": "ac8f0f9c3c38cd77f533accc5c9259fe4abfc252",
+          "receipt": "evidence/wave02-qualification.json"
+        }
+      ]
     },
     {
       "id": "G04",
@@ -1527,7 +1568,16 @@
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "P2",
       "approval_reference": null,
-      "package_evidence": []
+      "package_evidence": [],
+      "evidence": [
+        {
+          "task": "T18",
+          "status": "qualified_scoped_package_not_whole_requirement_closure",
+          "source_commit": "424e57015bac9448dc0fa5780269c649a6cac22f",
+          "qualified_release_commit": "ac8f0f9c3c38cd77f533accc5c9259fe4abfc252",
+          "receipt": "evidence/wave02-qualification.json"
+        }
+      ]
     },
     {
       "id": "G05",
@@ -1941,7 +1991,16 @@
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "P2",
       "approval_reference": "BAC-HISTORY-A-2026-11-01",
-      "package_evidence": []
+      "package_evidence": [],
+      "evidence": [
+        {
+          "task": "T18a",
+          "status": "qualified_scoped_package_not_whole_requirement_closure",
+          "source_commit": "ac8f0f9c3c38cd77f533accc5c9259fe4abfc252",
+          "qualified_release_commit": "ac8f0f9c3c38cd77f533accc5c9259fe4abfc252",
+          "receipt": "evidence/wave02-qualification.json"
+        }
+      ]
     },
     {
       "id": "BAC-C01",
@@ -2456,6 +2515,22 @@
           ],
           "final_acceptance": "T02 schema/transport only; runtime wiring and final common-source acceptance remain owed"
         }
+      ],
+      "evidence": [
+        {
+          "task": "T18",
+          "status": "qualified_scoped_package_not_whole_requirement_closure",
+          "source_commit": "424e57015bac9448dc0fa5780269c649a6cac22f",
+          "qualified_release_commit": "ac8f0f9c3c38cd77f533accc5c9259fe4abfc252",
+          "receipt": "evidence/wave02-qualification.json"
+        },
+        {
+          "task": "T18a",
+          "status": "qualified_scoped_package_not_whole_requirement_closure",
+          "source_commit": "ac8f0f9c3c38cd77f533accc5c9259fe4abfc252",
+          "qualified_release_commit": "ac8f0f9c3c38cd77f533accc5c9259fe4abfc252",
+          "receipt": "evidence/wave02-qualification.json"
+        }
       ]
     },
     {
@@ -2760,7 +2835,29 @@
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "acceptance owed",
       "approval_reference": "BAC-HISTORY-A-2026-11-01",
-      "package_evidence": []
+      "package_evidence": [],
+      "evidence": [
+        {
+          "task": "T08",
+          "status": "scoped_package_pass_not_requirement_closure",
+          "receipt": "evidence/T08-qualification.json",
+          "source_commit": "050a1a70e979aa03724219b81e848093820f044f"
+        },
+        {
+          "task": "T08a",
+          "status": "qualified_scoped_package_not_whole_requirement_closure",
+          "source_commit": "2dd65867232a63cfb21403983de85bae130058ab",
+          "qualified_release_commit": "ac8f0f9c3c38cd77f533accc5c9259fe4abfc252",
+          "receipt": "evidence/wave02-qualification.json"
+        },
+        {
+          "task": "T09",
+          "status": "qualified_scoped_package_not_whole_requirement_closure",
+          "source_commit": "ac078cb95981534ea686807dee8c6b478b6ccc74",
+          "qualified_release_commit": "ac8f0f9c3c38cd77f533accc5c9259fe4abfc252",
+          "receipt": "evidence/wave02-qualification.json"
+        }
+      ]
     },
     {
       "id": "BAC-C06",
@@ -2882,7 +2979,22 @@
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "acceptance owed",
       "approval_reference": null,
-      "package_evidence": []
+      "package_evidence": [],
+      "evidence": [
+        {
+          "task": "T08",
+          "status": "scoped_package_pass_not_requirement_closure",
+          "receipt": "evidence/T08-qualification.json",
+          "source_commit": "050a1a70e979aa03724219b81e848093820f044f"
+        },
+        {
+          "task": "T09",
+          "status": "qualified_scoped_package_not_whole_requirement_closure",
+          "source_commit": "ac078cb95981534ea686807dee8c6b478b6ccc74",
+          "qualified_release_commit": "ac8f0f9c3c38cd77f533accc5c9259fe4abfc252",
+          "receipt": "evidence/wave02-qualification.json"
+        }
+      ]
     },
     {
       "id": "BAC-C07",
@@ -3081,6 +3193,15 @@
           ],
           "final_acceptance": "T02 schema/transport only; runtime wiring and final common-source acceptance remain owed"
         }
+      ],
+      "evidence": [
+        {
+          "task": "T18",
+          "status": "qualified_scoped_package_not_whole_requirement_closure",
+          "source_commit": "424e57015bac9448dc0fa5780269c649a6cac22f",
+          "qualified_release_commit": "ac8f0f9c3c38cd77f533accc5c9259fe4abfc252",
+          "receipt": "evidence/wave02-qualification.json"
+        }
       ]
     },
     {
@@ -3218,7 +3339,36 @@
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "acceptance owed",
       "approval_reference": "BAC-HISTORY-A-2026-11-01",
-      "package_evidence": []
+      "package_evidence": [],
+      "evidence": [
+        {
+          "task": "T08",
+          "status": "scoped_package_pass_not_requirement_closure",
+          "receipt": "evidence/T08-qualification.json",
+          "source_commit": "050a1a70e979aa03724219b81e848093820f044f"
+        },
+        {
+          "task": "T08a",
+          "status": "qualified_scoped_package_not_whole_requirement_closure",
+          "source_commit": "2dd65867232a63cfb21403983de85bae130058ab",
+          "qualified_release_commit": "ac8f0f9c3c38cd77f533accc5c9259fe4abfc252",
+          "receipt": "evidence/wave02-qualification.json"
+        },
+        {
+          "task": "T18",
+          "status": "qualified_scoped_package_not_whole_requirement_closure",
+          "source_commit": "424e57015bac9448dc0fa5780269c649a6cac22f",
+          "qualified_release_commit": "ac8f0f9c3c38cd77f533accc5c9259fe4abfc252",
+          "receipt": "evidence/wave02-qualification.json"
+        },
+        {
+          "task": "T18a",
+          "status": "qualified_scoped_package_not_whole_requirement_closure",
+          "source_commit": "ac8f0f9c3c38cd77f533accc5c9259fe4abfc252",
+          "qualified_release_commit": "ac8f0f9c3c38cd77f533accc5c9259fe4abfc252",
+          "receipt": "evidence/wave02-qualification.json"
+        }
+      ]
     },
     {
       "id": "BAC-C09",
@@ -3434,6 +3584,15 @@
             "package-reviews/T02-independent-review.md"
           ],
           "final_acceptance": "T02 schema/transport only; runtime wiring and final common-source acceptance remain owed"
+        }
+      ],
+      "evidence": [
+        {
+          "task": "T18",
+          "status": "qualified_scoped_package_not_whole_requirement_closure",
+          "source_commit": "424e57015bac9448dc0fa5780269c649a6cac22f",
+          "qualified_release_commit": "ac8f0f9c3c38cd77f533accc5c9259fe4abfc252",
+          "receipt": "evidence/wave02-qualification.json"
         }
       ]
     },
@@ -4034,6 +4193,59 @@
       "remaining_severity": "P2 adopted capability/qualification gap",
       "approval_reference": "BAC-S1-PER-WORLD-B-2026-11-01",
       "package_evidence": []
+    },
+    {
+      "id": "X03",
+      "classification": "confirmed_current_state_defect",
+      "title": "Completed lanes can still execute physical item/movement action slots",
+      "in_scope": true,
+      "contracts": [
+        "BAC-C06",
+        "BAC-C09"
+      ],
+      "acceptance_scope": "Completed-row action slots are transport: no physical inventory/position/meter/velocity mutation, while eligible terminal-causing actions and live siblings execute correctly; retain existing INTERACT intent/tracking semantics",
+      "tasks": [
+        "T09a",
+        "T15",
+        "T37",
+        "PW12",
+        "PW16"
+      ],
+      "test_nodes": [],
+      "command": [
+        {
+          "task": "T09a",
+          "command": ".venv/bin/python -m pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_inactive_action_execution.py -q"
+        }
+      ],
+      "expected_assertion": "Real authored GET/WAIT completion then inactive DROP preserves inventory; movement/USE/custom applicable controls and live/terminal controls preserve canonical successor masks and once-only completion",
+      "status": "repair_closed_at_wave02; finalcommonSHArefreshowed",
+      "evidence": [
+        {
+          "type": "independent_adversarial_current_state_red",
+          "review": "package-reviews/T09-initial-independent-review.md",
+          "candidate_tree": "6881a7488a110adbd94c689b67b5241fb094d10e",
+          "result": "85existing/producerpassed; ownprobe3passed2failed; candidate and base ENV same authored inactive DROP [0]->[-1]; no hidden xfail/skip",
+          "limit": "Full original dependency tree was not reverted; exact base ENV ran against candidate dependencies; actual population emission of DROP not claimed"
+        },
+        {
+          "task": "T09a",
+          "status": "qualified_scoped_package_not_whole_requirement_closure",
+          "source_commit": "5d507e4bdfd7efc4739004dcf4c691480f7180c0",
+          "qualified_release_commit": "ac8f0f9c3c38cd77f533accc5c9259fe4abfc252",
+          "receipt": "evidence/wave02-qualification.json"
+        }
+      ],
+      "disposition": "Required C06/C09 repair; not optional P3, not introduced by successor-mask addition",
+      "decision_needed": false,
+      "closure_evidence": {
+        "source_commit": "5d507e4bdfd7efc4739004dcf4c691480f7180c0",
+        "qualified_release_commit": "ac8f0f9c3c38cd77f533accc5c9259fe4abfc252",
+        "review": "package-reviews/T09a-independent-review.md",
+        "receipt": "evidence/wave02-qualification.json",
+        "final_source_refresh": "owed"
+      },
+      "repair_status": "Authoredcompleted-laneDROP/movement/USE/custom/velocity controls and live/terminal/INTERACT controls pass independent actualsource +fullgate"
     }
   ],
   "approved_decisions": [
@@ -4197,6 +4409,150 @@
         "package-reviews/T02-independent-review.md"
       ],
       "final_acceptance": "T02 schema/transport only; runtime wiring and final common-source acceptance remain owed"
+    },
+    {
+      "task": "T08",
+      "source_commit": "050a1a70e979aa03724219b81e848093820f044f",
+      "candidate_tree": "00d385ce621b7818e5354b161c22082ba42f985f",
+      "status": "implemented; independent spec/quality review approved; owner suite and six standing checks passed",
+      "focused_result": "28 passed",
+      "independent_result": "30 numerical oracle cases plus gradient/ownership/history adversarial controls",
+      "owner_result": "353 passed,5 skipped (358 collected),269.16s, fixed snapshot",
+      "full_repository_result": "Deferred under approved cadence: only new unused contract modules/test; next G1 or earlier trigger",
+      "other_gates": [
+        "ruff",
+        "black",
+        "mypy",
+        "no-defaults",
+        "compiler-cli",
+        "expression-doc"
+      ],
+      "reports": [
+        "package-reviews/T08-implementation.md",
+        "package-reviews/T08-independent-review.md",
+        "evidence/T08-qualification.json"
+      ],
+      "final_acceptance": "Primitive DTO/legal-target contract only; runtime storage/admission/actual learner matrix and final common-source acceptance remain owed"
+    },
+    {
+      "task": "T08a",
+      "source_commit": "2dd65867232a63cfb21403983de85bae130058ab",
+      "qualified_release_commit": "ac8f0f9c3c38cd77f533accc5c9259fe4abfc252",
+      "qualified_sum_tree": "3d1d21cff5abdf60b630f97da0cdb09bf8ccd036",
+      "status": "implemented; fresh other-model scoped spec/quality PASS; owner+sixinvariants+fullsumtreegatepassed",
+      "focused_owner_independent_result": "11 focused;85 independent focused+B05",
+      "full_repository_result": "5848 passed,15 skipped,15 warnings;1086.06s;4xdistworkers; all5 processidentities+18sourcehashesverified",
+      "other_gates": [
+        "Ruff",
+        "Black",
+        "mypy",
+        "no-defaults ratchet614",
+        "compiler CLI fleet",
+        "expression documentation check"
+      ],
+      "reports": [
+        "package-reviews/T08a-implementation.md",
+        "package-reviews/T08a-independent-review.md",
+        "evidence/wave02-qualification.json"
+      ],
+      "final_acceptance": "Exact-zero illegal sampler mass and required-eligibility strictAPI; legacy deadtransport preserved; production eligible caller wiring remains T15/T18d/T27",
+      "qualification_limit": "Only final logical sourceHEAD has gated sumtree; intermediateprefixheads not separately full-qualified; finalcommonSHArefreshstillrequired"
+    },
+    {
+      "task": "T09",
+      "source_commit": "ac078cb95981534ea686807dee8c6b478b6ccc74",
+      "qualified_release_commit": "ac8f0f9c3c38cd77f533accc5c9259fe4abfc252",
+      "qualified_sum_tree": "3d1d21cff5abdf60b630f97da0cdb09bf8ccd036",
+      "status": "implemented; fresh other-model scoped spec/quality PASS; owner+sixinvariants+fullsumtreegatepassed",
+      "focused_owner_independent_result": "5 authored;80 existingowner;5 independent actualwaveprobes",
+      "full_repository_result": "5848 passed,15 skipped,15 warnings;1086.06s;4xdistworkers; all5 processidentities+18sourcehashesverified",
+      "other_gates": [
+        "Ruff",
+        "Black",
+        "mypy",
+        "no-defaults ratchet614",
+        "compiler CLI fleet",
+        "expression documentation check"
+      ],
+      "reports": [
+        "package-reviews/T09-implementation.md",
+        "package-reviews/T09-independent-review.md",
+        "evidence/wave02-qualification.json"
+      ],
+      "final_acceptance": "Owned successor masks at committed observation/status; production replay storage/learner admission remains owed",
+      "qualification_limit": "Only final logical sourceHEAD has gated sumtree; intermediateprefixheads not separately full-qualified; finalcommonSHArefreshstillrequired"
+    },
+    {
+      "task": "T09a",
+      "source_commit": "5d507e4bdfd7efc4739004dcf4c691480f7180c0",
+      "qualified_release_commit": "ac8f0f9c3c38cd77f533accc5c9259fe4abfc252",
+      "qualified_sum_tree": "3d1d21cff5abdf60b630f97da0cdb09bf8ccd036",
+      "status": "implemented; fresh other-model scoped spec/quality PASS; owner+sixinvariants+fullsumtreegatepassed",
+      "focused_owner_independent_result": "22 new;313 owning;independent4-case actualwaveprobe",
+      "full_repository_result": "5848 passed,15 skipped,15 warnings;1086.06s;4xdistworkers; all5 processidentities+18sourcehashesverified",
+      "other_gates": [
+        "Ruff",
+        "Black",
+        "mypy",
+        "no-defaults ratchet614",
+        "compiler CLI fleet",
+        "expression documentation check"
+      ],
+      "reports": [
+        "package-reviews/T09a-implementation.md",
+        "package-reviews/T09a-independent-review.md",
+        "evidence/wave02-qualification.json"
+      ],
+      "final_acceptance": "X03 completed-row physical action mutation repaired; frozen physical action branches and preserved INTERACTintent; full named worldstate inventory still PW12",
+      "qualification_limit": "Only final logical sourceHEAD has gated sumtree; intermediateprefixheads not separately full-qualified; finalcommonSHArefreshstillrequired"
+    },
+    {
+      "task": "T18",
+      "source_commit": "424e57015bac9448dc0fa5780269c649a6cac22f",
+      "qualified_release_commit": "ac8f0f9c3c38cd77f533accc5c9259fe4abfc252",
+      "qualified_sum_tree": "3d1d21cff5abdf60b630f97da0cdb09bf8ccd036",
+      "status": "implemented; fresh other-model scoped spec/quality PASS; owner+sixinvariants+fullsumtreegatepassed",
+      "focused_owner_independent_result": "43 focused;74 B05;117 independent before actualwave refresh; actualrunner validtail/corrupt-refusal probe",
+      "full_repository_result": "5848 passed,15 skipped,15 warnings;1086.06s;4xdistworkers; all5 processidentities+18sourcehashesverified",
+      "other_gates": [
+        "Ruff",
+        "Black",
+        "mypy",
+        "no-defaults ratchet614",
+        "compiler CLI fleet",
+        "expression documentation check"
+      ],
+      "reports": [
+        "package-reviews/T18-implementation.md",
+        "package-reviews/T18-independent-review.md",
+        "evidence/wave02-qualification.json"
+      ],
+      "final_acceptance": "Reusable bounded RND service and native current tail restore; runtime bounded-service construction/routing and privatebank remain owed",
+      "qualification_limit": "Only final logical sourceHEAD has gated sumtree; intermediateprefixheads not separately full-qualified; finalcommonSHArefreshstillrequired"
+    },
+    {
+      "task": "T18a",
+      "source_commit": "ac8f0f9c3c38cd77f533accc5c9259fe4abfc252",
+      "qualified_release_commit": "ac8f0f9c3c38cd77f533accc5c9259fe4abfc252",
+      "qualified_sum_tree": "3d1d21cff5abdf60b630f97da0cdb09bf8ccd036",
+      "status": "implemented; fresh other-model scoped spec/quality PASS; owner+sixinvariants+fullsumtreegatepassed",
+      "focused_owner_independent_result": "85 focused;62 owner;147 independent actualwave",
+      "full_repository_result": "5848 passed,15 skipped,15 warnings;1086.06s;4xdistworkers; all5 processidentities+18sourcehashesverified",
+      "other_gates": [
+        "Ruff",
+        "Black",
+        "mypy",
+        "no-defaults ratchet614",
+        "compiler CLI fleet",
+        "expression documentation check"
+      ],
+      "reports": [
+        "package-reviews/T18a-implementation.md",
+        "package-reviews/T18a-independent-review.md",
+        "evidence/wave02-qualification.json"
+      ],
+      "final_acceptance": "Portable five-choice policy resolution/provenance; provider factories/production selectors/rewards and effective view still owed",
+      "qualification_limit": "Only final logical sourceHEAD has gated sumtree; intermediateprefixheads not separately full-qualified; finalcommonSHArefreshstillrequired"
     }
   ],
   "evidence_note": "T01 precommit full gate verified the exact committed tree and source hashes in every pytest process. Historical fixture checks qualify data at the original source only; new archive policy acceptance remains owed.",
@@ -4223,5 +4579,31 @@
       "replacement_result": "5654 passed,15 skipped,15 warnings;1394.50s;3xdistworkers plus independent verification",
       "repair_review": "package-reviews/T02-independent-review.md"
     }
-  ]
+  ],
+  "per_world_addendum": {
+    "status": "technically_approved; owner_selected_B; implementation/evidence_owed",
+    "owner_reference": "BAC-S1-PER-WORLD-B-2026-11-01",
+    "document": "PER-WORLD-CURIOSITY-ADDENDUM.md",
+    "sha256": "3b82ecc340b936cd5672f248b85508f75136ab76cb994ac54723673989906871",
+    "approved_packets": "plan-reviews/per-world-packets-approved.json",
+    "packets_sha256": "2d5547c9a1805ca33cba5f5e0e6fa9a729d711562250721d5848e0c8b8b481a9",
+    "technical_review": "plan-reviews/per-world-round-02.md",
+    "new_packets": 16,
+    "total_packets": 64,
+    "final_lenses": 21,
+    "default": "shared preserved",
+    "strict_guarantee": "per-world curiosity mutable state/params/optimizers/RNG/local service/clocks independent under controlled per-world inputs across actual updates; Q learner can remain shared",
+    "closure": "X02 stays open through production integration, adversarial real-update/cross-world and final source review"
+  },
+  "X03_execution_addendum": {
+    "status": "technically_approved; implementation independently reviewed; full qualification pending",
+    "document": "X03-EXECUTION-ADDENDUM.md",
+    "sha256": "8a024fff8eb8094baee7aaeedf2ed4e6b1cab5bbbbf3afd0e1b316e5741d08c6",
+    "packets": "plan-reviews/X03-packets-approved.json",
+    "packets_sha256": "f807fb345153be2a716bc593abc09bc3e649c95bcf259bf3943f040f651d9b57",
+    "technical_review": "plan-reviews/X03-round-02.md",
+    "total_packets": 66,
+    "final_lenses": 22,
+    "reason": "One new C06/C09 required defect repair plus one consumer-first checkpoint staging split to honor real source growth and5/5000reviewbounds; no delivery removed"
+  }
 }

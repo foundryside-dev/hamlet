@@ -1,0 +1,18 @@
+# T08a r1 scoped re-review
+
+Verdict: **PASS; guard finding addressed.** No blocking spec or code-quality finding within this package. Root must still pass all standing and full-wave gates before any dependency release.
+
+Reviewed fixed joint-wave snapshot `/tmp/bac-verify-wave01-6881a7488a`, base `050a1a70e979aa03724219b81e848093820f044f`, selected tree `6881a7488a110adbd94c689b67b5241fb094d10e`. Read the r1 manifest, review package and fix patch. The only T08a change since the retained initial review is the AS line115 ternary converted to ordinary explicit if/else. Both branches produce exactly the same values as before: None for explicit unmasked mode, or masks indexed by actual eligibility. Delegation, validation, returned transport actions and RNG behavior remain unchanged. No suppression, whitelist or ratchet alteration was introduced.
+
+Source budget: same four package files, now 438 lines (AS120/QT80/new regression90/existing test148), plus the same 100-line own probe as fifth source, total 538. Only AS was reopened for this narrow fix; no RND/ENV/POP or other implementation/helper/test source was inspected. Owner suites were executed without opening their contents. Only ignored review artifacts were edited; no source/index/Git mutation.
+
+Updated the existing independent probe to target the r1 manifest and snapshot and to compare the package-scoped staged patch rather than the entire joint-wave patch. It verifies all four hashes, file bytes against the selected tree, base HEAD, exact package patch, actual imported townlet/AS paths, and one Torch thread. These checks passed before and after the behavioral probe, then passed again after the suites/guard. Existing probe controls all passed on this actual wave: native sampler exact-zero disabled weights, mixed live/inactive rows, seed-controlled compact/direct RNG equivalence in masked and explicit unmasked modes, all-inactive no RNG consumption, live-empty early diagnosis even at epsilon0, malformed eligibility, retained direct legacy calls and terminal/inactive zero bootstrap contribution.
+
+Executed with installed `/workspace/hamlet/.venv/bin/python`, cwd fixed snapshot and `OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= PYTHONPATH=/tmp/bac-verify-wave01-6881a7488a/src`:
+
+- `python /workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/task-T08a-review-probe.py`: PASS before and after verification.
+- `python -m pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_action_probabilities.py tests/test_townlet/unit/exploration/test_epsilon_greedy_selection.py tests/test_townlet/unit/exploration/test_exploration_strategies.py tests/test_townlet/unit/exploration/test_rnd_normalization.py tests/test_townlet/unit/exploration/test_rnd_stats_update_timing.py -q`: **85 passed in 3.25s**, including 11 focused and 74 owner cases. This independently verifies those owner suites on the joint immutable wave instead of relying on mutable-worker evidence.
+- `python scripts/no_defaults_lint.py src/townlet/ --whitelist .defaults-whitelist.txt --ratchet .defaults-ratchet`: exit0, **No defaults detected. Clean. 614 whitelisted violations, at the ceiling.**
+- `git diff --cached --exit-code 050a1a70e979aa03724219b81e848093820f044f -- .defaults-whitelist.txt .defaults-ratchet` and unstaged equivalent: exit0, no output; guard inputs unchanged.
+
+The initial review remains the broader T08a spec/quality assessment; this r1 review closes its subsequently discovered standing-guard blocker without weakening the gate. Actual producer membership wiring remains owed by T15/T18d. This review neither audits the other joint-wave packages nor replaces root's all-standing/full-wave gate; no broad full suite was run here.

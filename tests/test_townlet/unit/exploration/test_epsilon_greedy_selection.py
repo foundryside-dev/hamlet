@@ -13,7 +13,7 @@ Critical Behaviors:
 
 import torch
 
-from townlet.exploration.action_selection import epsilon_greedy_action_selection
+from townlet.exploration.action_selection import epsilon_greedy_action_selection, epsilon_greedy_action_selection_eligible
 
 
 class TestEpsilonGreedyActionSelection:
@@ -42,6 +42,10 @@ class TestEpsilonGreedyActionSelection:
 
         # Act
         actions = epsilon_greedy_action_selection(q_values, epsilons, action_masks)
+        eligible_actions = epsilon_greedy_action_selection_eligible(
+            q_values, epsilons, action_masks, eligible=torch.tensor([True, False, True])
+        )
+        assert torch.equal(actions, eligible_actions)
 
         # Assert
         # Agent 0: epsilon=0.0, should select greedy (argmax with masking)

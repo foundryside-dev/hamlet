@@ -16,6 +16,10 @@ def epsilon_greedy_action_selection(
     """
     Select actions using epsilon-greedy strategy with action masking.
 
+    Legacy transport adapter: empty mask rows retain unmasked greedy output.
+    This API has no producer eligibility and cannot diagnose live-empty rows.
+    Producers with eligibility must use epsilon_greedy_action_selection_eligible.
+
     This is a shared utility used by multiple exploration strategies:
     - EpsilonGreedyExploration
     - RNDExploration
@@ -63,23 +67,14 @@ def epsilon_greedy_action_selection(
 
     # Random actions (sample only from valid actions)
     if action_masks is not None:
-        # Vectorized sampling from valid actions using multinomial
-        # Convert bool mask to probability distribution (1 for valid, 0 for invalid)
-        probs = action_masks.float()
-
-        # Add small epsilon to avoid division by zero (defensive)
-        probs = probs + 1e-8
-
-        # Normalize to create valid probability distribution
-        probs = probs / probs.sum(dim=1, keepdim=True)
-
-        # Vectorized sampling (10-100× faster than Python loop)
-        random_actions = torch.multinomial(probs, num_samples=1).squeeze(1)
-
-        # For rows with all invalid actions, fall back to greedy action (BUG-23)
-        # (all_invalid was computed earlier when detecting invalid rows)
-        assert all_invalid is not None  # Type guard: all_invalid is Tensor when action_masks is not None
-        random_actions = torch.where(all_invalid, greedy_actions, random_actions)
+        # Empty legacy rows are transport only, never part of the sampler.
+        assert all_invalid is not None
+        valid_rows = ~all_invalid
+        random_actions = greedy_actions.clone()
+        if valid_rows.any():
+            probs = action_masks[valid_rows].float()
+            probs = probs / probs.sum(dim=1, keepdim=True)
+            random_actions[valid_rows] = torch.multinomial(probs, num_samples=1).squeeze(1)
     else:
         # No masking: sample uniformly from all actions
         random_actions = torch.randint(0, num_actions, (batch_size,), device=device)
@@ -90,4 +85,36 @@ def epsilon_greedy_action_selection(
     # Select based on mask
     actions = torch.where(explore_mask, random_actions, greedy_actions)
 
+    return actions
+
+
+def epsilon_greedy_action_selection_eligible(
+    q_values: torch.Tensor,
+    epsilons: torch.Tensor,
+    action_masks: torch.Tensor | None,
+    *,
+    eligible: torch.Tensor,
+) -> torch.Tensor:
+    """Select only producer-declared eligible rows, rejecting live-empty legality.
+
+    ``eligible`` is actual active membership, never inferred from mask contents.
+    Inactive rows return unmasked greedy indices solely for transport and consume
+    no random draws. Explicit ``action_masks=None`` permits all actions.
+    """
+    if not isinstance(eligible, torch.Tensor) or eligible.dtype != torch.bool:
+        raise ValueError("eligible must be a bool tensor")
+    if eligible.shape != q_values.shape[:1] or eligible.device != q_values.device:
+        raise ValueError("eligible shape/device must match q_values rows")
+    if action_masks is not None:
+        if action_masks.dtype != torch.bool or action_masks.shape != q_values.shape or action_masks.device != q_values.device:
+            raise ValueError("action_masks must be bool with q_values shape/device")
+        if (eligible & ~action_masks.any(dim=1)).any():
+            raise ValueError("eligible rows have no legal actions")
+    actions = q_values.argmax(dim=1)
+    if eligible.any():
+        if action_masks is None:
+            masks = None
+        else:
+            masks = action_masks[eligible]
+        actions[eligible] = epsilon_greedy_action_selection(q_values[eligible], epsilons[eligible], masks)
     return actions

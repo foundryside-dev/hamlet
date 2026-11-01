@@ -1,0 +1,245 @@
+{
+  "schema_version": 1,
+  "kind": "authentic_captured_sequential6_test_transport",
+  "geometry": {
+    "action_dim": 12,
+    "capacity": 3,
+    "device": "cpu",
+    "observation_dim": 118
+  },
+  "artifacts": {
+    "sequence6-captured-with-sequence5-archive.pt": {
+      "archive_source_digest": "state-sha256:v1:dd86526bcc0b461d40c37cc84e2ffe77d850d6fce471140ecafe5a146412ad03",
+      "archived_rows": 34,
+      "component_presence": {
+        "rewards_extrinsic": [
+          true,
+          false,
+          false
+        ],
+        "rewards_intrinsic": [
+          false,
+          true,
+          true
+        ],
+        "rewards_shaping": [
+          true,
+          false,
+          false
+        ]
+      },
+      "dones": [
+        false,
+        false,
+        true
+      ],
+      "episode_ids": [
+        0,
+        1
+      ],
+      "format_version": 6,
+      "original_lengths": [
+        4,
+        2
+      ],
+      "retained_transitions": 3,
+      "sha256": "0a40c2dbba0d64f804f91f1a5600994385777a660d4a40c851e7aa3111fa239b",
+      "start_offsets": [
+        3,
+        0
+      ],
+      "successor_masks": [
+        [
+          false,
+          false,
+          false,
+          true,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        [
+          false,
+          true,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        [
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        ]
+      ],
+      "transition_ids": [
+        [
+          3
+        ],
+        [
+          4,
+          5
+        ]
+      ]
+    },
+    "sequence6-captured.pt": {
+      "archive_source_digest": null,
+      "archived_rows": 0,
+      "component_presence": {
+        "rewards_extrinsic": [
+          true,
+          false,
+          false
+        ],
+        "rewards_intrinsic": [
+          false,
+          true,
+          true
+        ],
+        "rewards_shaping": [
+          true,
+          false,
+          false
+        ]
+      },
+      "dones": [
+        false,
+        false,
+        true
+      ],
+      "episode_ids": [
+        0,
+        1
+      ],
+      "format_version": 6,
+      "original_lengths": [
+        4,
+        2
+      ],
+      "retained_transitions": 3,
+      "sha256": "02e19371fc3131db51a9569fc6d5175de5a11416e2d6cea075d441ebd8bc8434",
+      "start_offsets": [
+        3,
+        0
+      ],
+      "successor_masks": [
+        [
+          false,
+          false,
+          false,
+          true,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        [
+          false,
+          true,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        [
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        ]
+      ],
+      "transition_ids": [
+        [
+          3
+        ],
+        [
+          4,
+          5
+        ]
+      ]
+    }
+  },
+  "source_artifact": {
+    "archive_digest": "state-sha256:v1:dd86526bcc0b461d40c37cc84e2ffe77d850d6fce471140ecafe5a146412ad03",
+    "archive_domain": {
+      "replay": 5,
+      "replay_kind": "sequential",
+      "scope": "standalone_replay"
+    },
+    "native_versions": [
+      9,
+      6
+    ],
+    "path": "tests/test_townlet/fixtures/bac_historical/sequence-trained.pt",
+    "replay_version": 5,
+    "sha256": "f5ca18d9e4f8c8f9398d585fc2a7861d23883ca9a8ae7175c964e2e97e16ced6"
+  },
+  "row_semantics": "Synthetic transport: first episode externally ended with done=False; second ends [False,True]. Only new captured rows have declared masks; no historical mask reconstruction or natural trajectory claim.",
+  "checks": "PASS: exact6 keys/rows/masks/components/IDs/options/archives, public full restore, ownership, artifact and source custody",
+  "producer": {
+    "head": "495360d68c167b741d8ed5016c0921f995aac1f4",
+    "candidate_tree": "279e9b7ebc978e6b1f4977953b91fd251ebbf233",
+    "qualified_source_commit": "495360d68c167b741d8ed5016c0921f995aac1f4",
+    "qualified_source_tree": "f88f7cb3e3d0203ab199a2d898e3b0f8370d7e48",
+    "identical_qualified_sequence_producer_commit": "07ce97550cf2f9dae67cb56d1d8014218c39d523",
+    "sb_sha256": "14196e7109120682476736e927076ca2dcd9926cdda206cac1ab4641189e3ea5",
+    "qualification_note": "Captured on the staged documentation tree279e9b7e with qualified executable bytes; HEAD and tree identities retain their distinct meanings."
+  },
+  "capture": {
+    "manifest_sha256": "fad6db2b72b20bbaeb1804d70e5d09f4e924d99955cf4a7289583b867f03059d",
+    "helper_sha256": "f7356007f5ad9841ba8e63381e32e7a52c4d0bdeb0209b78e10c2c4d0bb8fa67",
+    "execution_json_sha256": "befbe17ee68bf3bdc3e1f4b551c9c108fc4f0bbea3a0cf5a926f0ae9bca43628",
+    "runtime": {
+      "cuda_visible_devices": "",
+      "sb_path": "/workspace/hamlet/src/townlet/training/sequential_replay_buffer.py",
+      "thread_environment": {
+        "MKL_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "torch": "2.11.0+cu130",
+      "torch_interop_threads": 1,
+      "torch_path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/torch/__init__.py",
+      "torch_threads": 1,
+      "townlet_path": "/workspace/hamlet/src/townlet/__init__.py"
+    }
+  }
+}

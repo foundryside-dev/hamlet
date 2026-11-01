@@ -579,10 +579,15 @@ def test_replay_matrix(replay_kind: ReplayKind, l1_runtime: tuple[TokenSpec, int
             _assert_exact_state(before_input, previous)
             _assert_exact_state(before_live, restored.serialize())
     else:
-        # Captured6 with an old5 tag is mixed schema, never an honest old artifact.
+        # Captured6 with an old5 or prioritized7 tag is mixed schema, never a genuine artifact of either version.
         assert state["format_version"] == 6 and previous["format_version"] == 5
-        with pytest.raises(ValueError, match="Sequential checkpoint key set mismatch"):
-            restored.load_from_serialized(previous)
+        for mixed_version in (5, 7):
+            previous["format_version"] = mixed_version
+            before_input = copy.deepcopy(previous)
+            with pytest.raises(ValueError, match="Sequential checkpoint key set mismatch"):
+                restored.load_from_serialized(previous)
+            _assert_exact_state(before_input, previous)
+            _assert_exact_state(before_live, restored.serialize())
     _assert_exact_state(before_input, previous)
     _assert_exact_state(before_live, restored.serialize())
 
@@ -778,11 +783,20 @@ def test_replay_matrix(replay_kind: ReplayKind, l1_runtime: tuple[TokenSpec, int
         combined_restored.load_for_mode(combined, requested_mode="recorded_full_resume")
         _assert_exact_state(combined, combined_restored.serialize())
 
-        for unsupported_version in (4, 7):
+        # Old5 keys retagged7 still fail the key-set contract; supported7 never supplies missing priority state.
+        mixed_legacy = copy.deepcopy(legacy)
+        mixed_legacy["format_version"] = 7
+        before_mixed_legacy = copy.deepcopy(mixed_legacy)
+        with pytest.raises(ValueError, match="Sequential checkpoint key set mismatch"):
+            restored.load_from_serialized(mixed_legacy)
+        _assert_exact_state(before_mixed_legacy, mixed_legacy)
+        _assert_exact_state(before_live, restored.serialize())
+
+        for unsupported_version in (4, 8):
             unsupported = copy.deepcopy(legacy)
             unsupported["format_version"] = unsupported_version
             before_unsupported = copy.deepcopy(unsupported)
-            with pytest.raises(ValueError, match="supported format_version values are 5 and 6"):
+            with pytest.raises(ValueError, match="supported format_version values are 5, 6 and 7"):
                 restored.load_from_serialized(unsupported)
             _assert_exact_state(before_unsupported, unsupported)
             _assert_exact_state(before_live, restored.serialize())

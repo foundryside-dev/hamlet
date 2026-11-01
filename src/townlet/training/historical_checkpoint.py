@@ -38,7 +38,7 @@ _MODES = ("auto", "recorded_full_resume", "archived_history_fresh_episode", "inf
 _ROWS = ("observations", "actions", "rewards", "next_observations", "dones")
 _COMPONENTS = ("rewards_extrinsic", "rewards_intrinsic", "rewards_shaping")
 _KINDS = {"standard": 4, "prioritized": 4, "sequential": 5}
-_CURRENT_REPLAY_VERSIONS = {"standard": (5,), "prioritized": (5, 6), "sequential": (6,)}
+_CURRENT_REPLAY_VERSIONS = {"standard": (5,), "prioritized": (5, 6), "sequential": (6, 7)}
 _STATE_PREFIX = "state-sha256:v1:"
 
 

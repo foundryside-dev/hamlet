@@ -274,7 +274,7 @@ class TestSequentialReplayBufferRewardComponents:
         assert len(serialized["episodes"]) == 0
 
     def test_non_current_format_rejection(self):
-        """Unsupported4 and incomplete supported6 remain distinct refusals."""
+        """Unsupported4/8 and incomplete supported6/7 remain distinct refusals."""
         buffer = SequentialReplayBuffer(capacity=100, device=torch.device("cpu"))
 
         previous_format = {
@@ -284,14 +284,17 @@ class TestSequentialReplayBufferRewardComponents:
             "capacity": 100,
         }
 
-        with pytest.raises(ValueError, match="supported format_version values are 5 and 6"):
+        with pytest.raises(ValueError, match="supported format_version values are 5, 6 and 7"):
             buffer.load_from_serialized(previous_format)
 
         with pytest.raises(ValueError, match="replay_kind"):
             buffer.load_from_serialized({"format_version": 6})
 
-        with pytest.raises(ValueError, match="supported format_version values are 5 and 6"):
+        with pytest.raises(ValueError, match="replay_kind"):
             buffer.load_from_serialized({"format_version": 7})
+
+        with pytest.raises(ValueError, match="supported format_version values are 5, 6 and 7"):
+            buffer.load_from_serialized({"format_version": 8})
 
     def test_round_trip_with_components(self):
         """Serialize and restore preserves component data."""
@@ -429,13 +432,13 @@ class TestCompactSequentialReplayCheckpointABI:
         assert torch.equal(restored.sample_sequences(1, 3)["rewards"][0], new_episode["rewards"])
         assert_exact_state(before, legacy)
 
-    @pytest.mark.parametrize("invalid_version", (5.0, 6.0, True))
+    @pytest.mark.parametrize("invalid_version", (5.0, 6.0, 7.0, True))
     def test_format_version_requires_an_exact_integer(self, invalid_version: object):
         buffer = SequentialReplayBuffer(capacity=10, device=torch.device("cpu"))
         state = buffer.serialize()
         state["format_version"] = invalid_version
 
-        with pytest.raises(ValueError, match="supported format_version values are 5 and 6"):
+        with pytest.raises(ValueError, match="supported format_version values are 5, 6 and 7"):
             buffer.load_from_serialized(state)
 
     def test_structural_validation_does_not_materialize_episode_tensors(self, monkeypatch):
@@ -469,7 +472,7 @@ class TestCompactSequentialReplayCheckpointABI:
         previous["format_version"] = 4
 
         previous_input = copy.deepcopy(previous)
-        with pytest.raises(ValueError, match=r"format_version 4.*supported format_version values are 5 and 6"):
+        with pytest.raises(ValueError, match=r"format_version 4.*supported format_version values are 5, 6 and 7"):
             buffer.load_from_serialized(previous)
 
         assert_exact_state(previous_input, previous)
@@ -492,6 +495,7 @@ class TestCompactSequentialReplayCheckpointABI:
             pytest.param(lambda state: state.__setitem__("unknown", 1), "key set", id="unknown-key"),
             pytest.param(lambda state: state.pop("episodes"), "key set", id="missing-key"),
             pytest.param(lambda state: state.__setitem__("capacity", 11), "capacity", id="capacity"),
+            pytest.param(lambda state: state.__setitem__("format_version", 7), "key set", id="mixed-prioritized7"),
         ),
     )
     @pytest.mark.parametrize("qualified", [False, True], ids=["legacy5", "current6"])

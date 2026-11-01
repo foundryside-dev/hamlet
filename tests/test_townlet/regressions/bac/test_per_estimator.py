@@ -976,8 +976,12 @@ def test_hc_historical_per4_domain_and_standard_sequence_policy_versions_stay_di
     assert policy.active_retained_transitions == 0 and policy.archived_row_count == 4
     with pytest.raises(_pb().HistoricalLegalityUnavailable):
         history.resolve_historical_access(payload, requested_mode="recorded_full_resume")
-    for kind, current in (("standard", 5), ("sequential", 6)):
-        for version in (current, current + 1):
+    for kind, supported, refused in (
+        ("standard", (5,), (6, 7)),
+        ("sequential", (6, 7), (5, 8, 6.0, 7.0, True, "7")),
+        ("unknown", (), (7,)),
+    ):
+        for version in (*supported, *refused):
             kwargs = dict(
                 source_formats={"demo": 10, "population": 7, "replay": version, "replay_kind": kind},
                 requested_mode="auto",
@@ -989,8 +993,8 @@ def test_hc_historical_per4_domain_and_standard_sequence_policy_versions_stay_di
                 guarantees=(),
                 legacy_identity_recipe="current-captured",
             )
-            if version == current:
-                assert history.HistoricalAccessPolicy(**kwargs).source_formats["replay"] == current
+            if type(version) is int and version in supported:
+                assert history.HistoricalAccessPolicy(**kwargs).source_formats["replay"] == version
             else:
                 with pytest.raises(ValueError):
                     history.HistoricalAccessPolicy(**kwargs)

@@ -14,10 +14,11 @@ transitions to maintain temporal structure for recurrent networks.
 
 from __future__ import annotations
 
+import math
 import random
 from collections import deque  # MED-02: Use deque for O(1) popleft
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any
 
 import numpy as np
@@ -25,6 +26,7 @@ import torch
 
 from townlet.config.bac_options import ReplayOptions
 from townlet.training import historical_checkpoint as history
+from townlet.training import per_sampling
 from townlet.training.replay_contract import (
     HistoricalLegalityUnavailable,
     ReplayBatch,
@@ -74,6 +76,44 @@ _CURRENT_EPISODE_KEYS = SEQUENTIAL_EPISODE_KEYS | {
     "transition_ids",
 }
 _MAX_ID = 2**63 - 1
+SEQUENTIAL_PRIORITIZED_REPLAY_BUFFER_FORMAT_VERSION = 7
+_PRIORITY_EPSILON = 1e-6
+_INITIAL_PRIORITY = 1.0
+_RNG_FAMILIES = {name: getattr(np.random, name) for name in ("PCG64", "PCG64DXSM", "MT19937", "Philox", "SFC64")}
+_PRIORITY_KEYS = frozenset(
+    "priority_state_version alpha beta_initial beta beta_annealing beta_vector_tick_horizon current_vector_tick origin "
+    "sampling_mode objective_unit weight_rule weight_normalization unit_identity_rule new_unit_priority_rule initial_priority "
+    "priority_epsilon max_priority next_unit_id initialization rng domains".split()
+)
+
+
+@dataclass(frozen=True)
+class _PriorityConfig:
+    alpha: float
+    beta_initial: float
+    beta_annealing: bool
+    beta_vector_tick_horizon: int
+    origin: str
+
+
+@dataclass(frozen=True)
+class _PriorityDomain:
+    sequence_length: int
+    window_keys: tuple[tuple[int, int, int], ...]
+    unit_ids: tuple[int, ...]
+    priorities: np.ndarray
+
+
+@dataclass(frozen=True)
+class _PriorityState:
+    config: _PriorityConfig
+    beta: float
+    current_vector_tick: int
+    rng: np.random.Generator
+    max_priority: float
+    next_unit_id: int
+    domains: tuple[_PriorityDomain, ...]
+    initialization: Mapping[str, Any]
 
 
 @dataclass(frozen=True, slots=True)
@@ -113,6 +153,7 @@ class _SequentialRestoreCandidate:
 class _ValidatedSequentialState:
     num_transitions: int
     episodes: tuple[Episode, ...]
+    capacity: int
 
 
 @dataclass(frozen=True)
@@ -133,6 +174,7 @@ class _ValidatedCapturedState(_ValidatedSequentialState):
     next_episode_id: int
     next_transition_id: int
     archives: tuple[history.HistoricalReplayArchive, ...]
+    priority: _PriorityState | None
 
 
 @dataclass(frozen=True)
@@ -146,6 +188,7 @@ class _PreparedSequenceState(_SequentialRestoreCandidate):
     next_episode_id: int
     next_transition_id: int
     archives: tuple[history.HistoricalReplayArchive, ...]
+    priority: _PriorityState | None
 
 
 class SequentialReplayBuffer:
@@ -190,6 +233,7 @@ class SequentialReplayBuffer:
         self.replay_options: ReplayOptions | None = None
         self.next_episode_id = self.next_transition_id = 0
         self._historical_archives: tuple[history.HistoricalReplayArchive, ...] = ()
+        self._priority: _PriorityState | None = None
 
     def __len__(self) -> int:
         """Return number of episodes stored."""
@@ -201,8 +245,11 @@ class SequentialReplayBuffer:
         Clears the episode deque and resets transition count to 0.
         Buffer can be reused after clearing.
         """
-        self.episodes = deque()  # MED-02: Reset to empty deque
+        empty: deque[Episode] = deque()
+        priority = self._empty_priority()
+        self.episodes = empty
         self.num_transitions = 0
+        self._priority = priority
 
     def stats(self) -> dict[str, Any]:
         """Return buffer statistics for introspection.
@@ -457,7 +504,7 @@ class SequentialReplayBuffer:
         return batch
 
     def serialize(self) -> dict[str, Any]:
-        """Own exact5 inspection, archive-bearing inspection, or qualified6 state."""
+        """Own exact5/inspection transport or qualified uniform6/prioritized7 state."""
         if self._configured:
             return self._serialize_current()
         transport = self._serialize_legacy_transport()
@@ -633,9 +680,11 @@ class SequentialReplayBuffer:
                 f"Sequential checkpoint num_transitions is {num_transitions}; episode lengths total {observed_transitions}. "
                 "Regenerate the checkpoint."
             )
-        return _ValidatedLegacyState(num_transitions, tuple(validated_episodes), history._clone(state))
+        return _ValidatedLegacyState(num_transitions, tuple(validated_episodes), capacity, history._clone(state))
 
     def _materialize_serialized(self, state: _ValidatedSequentialState) -> _SequentialRestoreCandidate:
+        if not isinstance(state, _ValidatedSequentialState) or state.capacity != self.capacity:
+            raise ValueError("Sequential materialization requires validated state with matching target capacity")
         if isinstance(state, _ValidatedLegacyState):
             archive = history.archive_standalone_replay(state.original_state)
             return self._empty_prepared(self._merge_archives((archive,), expected_obs_dim=None))
@@ -659,9 +708,11 @@ class SequentialReplayBuffer:
                 self.next_episode_id,
                 self.next_transition_id,
                 archives,
+                None,
             )
         if not isinstance(state, _ValidatedCapturedState):
             raise ValueError("Sequential materialization requires validated replay state")
+        self._check_captured_compatibility(state.action_dim, state.legality_mode, state.replay_options, state.priority)
         episodes: deque[Episode] = deque()
         for episode in state.episodes:
             episodes.append(self._own_fragment(episode, device=self.device))
@@ -669,6 +720,10 @@ class SequentialReplayBuffer:
         if episodes:
             width = episodes[0]["observations"].shape[1]
         archives = self._merge_archives(state.archives, expected_obs_dim=width)
+        priority = self._restore_priority(state.priority)
+        if priority is not None:
+            for domain in priority.domains:
+                self._support(priority, domain, state.replay_options)
         return _PreparedSequenceState(
             state.num_transitions,
             episodes,
@@ -681,6 +736,7 @@ class SequentialReplayBuffer:
             state.next_episode_id,
             state.next_transition_id,
             archives,
+            priority,
         )
 
     def _prepare_serialized(
@@ -693,7 +749,7 @@ class SequentialReplayBuffer:
         return self._materialize_serialized(validated)
 
     def validate_serialized(self, state: Mapping[str, Any], *, expected_obs_dim: int | None) -> _ValidatedSequentialState:
-        """Pure structural inspection of exact old5/current6; no materialization or installation."""
+        """Own exact5/inspection/current6/7 structure without drawing or installation."""
         return self._validate_serialized(state, expected_obs_dim=expected_obs_dim)
 
     def materialize_validated(self, state: _ValidatedSequentialState) -> _SequentialRestoreCandidate:
@@ -715,6 +771,10 @@ class SequentialReplayBuffer:
             or candidate.replay_options != self.replay_options
         ):
             raise ValueError("prepared replay cannot downgrade or replace the target's configured geometry/options")
+        if self._configured and (self._priority is None) != (candidate.priority is None):
+            raise ValueError("prepared replay cannot replace uniform/prioritized identity; prepare against the intended target")
+        if self._priority is not None and candidate.priority is not None and self._priority.config != candidate.priority.config:
+            raise ValueError("prepared replay priority configuration/origin differs from target")
         for archive in self._historical_archives:
             if not any(item.source_digest == archive.source_digest for item in candidate.archives):
                 raise ValueError("prepared replay cannot discard retained target history; prepare again against the current target")
@@ -724,6 +784,7 @@ class SequentialReplayBuffer:
         self.replay_options = candidate.replay_options
         self.next_episode_id, self.next_transition_id = candidate.next_episode_id, candidate.next_transition_id
         self._historical_archives = candidate.archives
+        self._priority = candidate.priority
 
     def load_from_serialized(self, state: Mapping[str, Any]) -> None:
         """Restore only after the complete exact-current artifact validates."""
@@ -732,7 +793,7 @@ class SequentialReplayBuffer:
     @staticmethod
     def _resolved_options(value: object) -> ReplayOptions:
         if isinstance(value, ReplayOptions):
-            result = value.model_copy(deep=True)
+            result = ReplayOptions.model_validate(value.model_dump())
         elif isinstance(value, Mapping):
             if set(value) != set(ReplayOptions.model_fields):
                 raise ValueError("replay_options must contain every resolved replay field exactly")
@@ -758,6 +819,273 @@ class SequentialReplayBuffer:
         result._configured, result.action_dim, result.legality_mode = True, action_dim, legality_mode
         result.replay_options = policy
         return result
+
+    @staticmethod
+    def _unit_interval(value: object, field: str) -> float:
+        if isinstance(value, bool) or not isinstance(value, (int, float, np.integer, np.floating)):
+            raise ValueError(f"priority {field} must be a finite number in [0,1]")
+        try:
+            result = float(value)
+        except OverflowError as error:
+            raise ValueError(f"priority {field} must be a finite number in [0,1]") from error
+        if not math.isfinite(result) or not 0 <= result <= 1:
+            raise ValueError(f"priority {field} must be a finite number in [0,1]")
+        return result
+
+    @classmethod
+    def _priority_int(cls, value: object, field: str, *, minimum: int) -> int:
+        if type(value) is not int:
+            raise ValueError(f"priority {field} requires an exact integer")
+        return cls._require_int(value, field, minimum=minimum, maximum=_MAX_ID)
+
+    @staticmethod
+    def _effective_beta(config: _PriorityConfig, tick: int) -> float:
+        if not config.beta_annealing:
+            return config.beta_initial
+        return config.beta_initial + (1.0 - config.beta_initial) * min(tick / config.beta_vector_tick_horizon, 1.0)
+
+    @classmethod
+    def _encode_rng_value(cls, value: Any) -> Any:
+        if isinstance(value, np.ndarray):
+            if value.dtype not in (np.dtype("uint32"), np.dtype("uint64")):
+                raise ValueError("portable RNG codec requires uint32/uint64 arrays")
+            return {"ndarray_dtype": value.dtype.name, "shape": list(value.shape), "values": value.reshape(-1).tolist()}
+        if isinstance(value, Mapping):
+            if any(type(key) is not str for key in value):
+                raise ValueError("portable RNG codec requires string mapping keys")
+            return {key: cls._encode_rng_value(item) for key, item in value.items()}
+        if type(value) is str:
+            return value
+        if type(value) is int or isinstance(value, np.unsignedinteger):
+            return int(value)
+        raise ValueError("portable RNG codec contains an unsupported state value")
+
+    @classmethod
+    def _decode_rng_value(cls, value: Any) -> Any:
+        if isinstance(value, Mapping):
+            if any(type(key) is not str for key in value):
+                raise ValueError("portable RNG state requires string keys")
+            if set(value) & {"ndarray_dtype", "shape", "values"}:
+                if set(value) != {"ndarray_dtype", "shape", "values"}:
+                    raise ValueError("portable RNG array record key set mismatch")
+                dtype, shape, values = value["ndarray_dtype"], value["shape"], value["values"]
+                if type(dtype) is not str or dtype not in ("uint32", "uint64"):
+                    raise ValueError("portable RNG array dtype must be uint32/uint64")
+                if not isinstance(shape, list) or any(type(size) is not int or size < 0 for size in shape):
+                    raise ValueError("portable RNG array shape requires nonnegative exact integers")
+                maximum = 2 ** (32 if dtype == "uint32" else 64) - 1
+                if not isinstance(values, list) or math.prod(shape) != len(values):
+                    raise ValueError("portable RNG array shape and values disagree")
+                if any(type(item) is not int or not 0 <= item <= maximum for item in values):
+                    raise ValueError("portable RNG array values are outside their unsigned range")
+                try:
+                    return np.asarray(values, dtype=dtype).reshape(shape)
+                except (ValueError, OverflowError) as error:
+                    raise ValueError("portable RNG array shape is not representable") from error
+            return {key: cls._decode_rng_value(item) for key, item in value.items()}
+        if type(value) in (int, str):
+            return value
+        raise ValueError("portable RNG state requires integer/string leaves or exact array records")
+
+    @classmethod
+    def _encode_rng(cls, rng: np.random.Generator) -> dict[str, Any]:
+        if not isinstance(rng, np.random.Generator) or type(rng.bit_generator) not in _RNG_FAMILIES.values():
+            raise ValueError("priority RNG requires an explicit Generator with a supported portable codec family")
+        return {"bit_generator": type(rng.bit_generator).__name__, "state": cls._encode_rng_value(rng.bit_generator.state)}
+
+    @classmethod
+    def _decode_rng(cls, payload: object) -> np.random.Generator:
+        if not isinstance(payload, Mapping) or set(payload) != {"bit_generator", "state"}:
+            raise ValueError("portable RNG codec requires exact bit_generator/state keys")
+        family = payload["bit_generator"]
+        if type(family) is not str or family not in _RNG_FAMILIES:
+            raise ValueError("portable RNG codec has an unsupported bit_generator family")
+        decoded = cls._decode_rng_value(payload["state"])
+        if not isinstance(decoded, dict) or decoded.get("bit_generator") != family:
+            raise ValueError("portable RNG codec family and complete state disagree")
+        # Zero is scratch construction only. Every public state component is
+        # replaced and checked before this object can draw or become active.
+        generator = _RNG_FAMILIES[family](0)
+        cls._rng_layout(decoded, generator.state)
+        if family in ("PCG64", "PCG64DXSM"):
+            state = decoded["state"]
+            if not 0 <= state["state"] < 2**128 or not 0 <= state["inc"] < 2**128:
+                raise ValueError("portable RNG PCG state/inc are outside their canonical 128-bit ranges")
+        if "has_uint32" in decoded and (decoded["has_uint32"] not in (0, 1) or not 0 <= decoded["uinteger"] < 2**32):
+            raise ValueError("portable RNG cached uint32 fields are outside their canonical ranges")
+        if family == "MT19937" and not 0 <= decoded["state"]["pos"] <= 624:
+            raise ValueError("portable RNG MT19937 position is outside [0,624]")
+        if family == "Philox" and not 0 <= decoded["buffer_pos"] <= 4:
+            raise ValueError("portable RNG Philox buffer_pos is outside [0,4]")
+        try:
+            generator.state = decoded
+        except (TypeError, ValueError, KeyError, IndexError, OverflowError) as error:
+            raise ValueError("portable RNG codec state is invalid for its selected family") from error
+        result = np.random.Generator(generator)
+        if cls._encode_rng(result) != payload:
+            raise ValueError("portable RNG codec state failed exact canonical roundtrip")
+        return result
+
+    @classmethod
+    def _rng_layout(cls, value: Any, template: Any) -> None:
+        """Check the chosen public family's complete key/shape/type schema."""
+        if isinstance(template, Mapping):
+            if not isinstance(value, Mapping) or set(value) != set(template):
+                raise ValueError("portable RNG state key set differs from its concrete family")
+            for key in template:
+                cls._rng_layout(value[key], template[key])
+        elif isinstance(template, np.ndarray):
+            if not isinstance(value, np.ndarray) or value.dtype != template.dtype or value.shape != template.shape:
+                raise ValueError("portable RNG state array shape/dtype differs from its concrete family")
+        elif type(template) is str:
+            if type(value) is not str or value != template:
+                raise ValueError("portable RNG state family marker is contradictory")
+        elif type(value) is not int or value < 0:
+            raise ValueError("portable RNG scalar state requires nonnegative exact integers")
+
+    @classmethod
+    def _clone_rng(cls, rng: np.random.Generator) -> np.random.Generator:
+        return cls._decode_rng(cls._encode_rng(rng))
+
+    @classmethod
+    def for_prioritized_replay(
+        cls,
+        capacity: int,
+        device: torch.device,
+        *,
+        options: ReplayOptions,
+        action_dim: int,
+        legality_mode: str,
+        alpha: float,
+        beta: float,
+        beta_annealing: bool,
+        beta_vector_tick_horizon: int,
+        current_vector_tick: int,
+        rng: np.random.Generator,
+        origin: str,
+    ) -> SequentialReplayBuffer:
+        """Construct explicitly configured PER without selecting a seed or clock."""
+        result = cls.for_replay(capacity, device, options=options, action_dim=action_dim, legality_mode=legality_mode)
+        alpha_value, beta_value = cls._unit_interval(alpha, "alpha"), cls._unit_interval(beta, "beta_initial")
+        if type(beta_annealing) is not bool:
+            raise ValueError("priority beta_annealing requires an exact bool")
+        horizon = cls._priority_int(beta_vector_tick_horizon, "beta_vector_tick_horizon", minimum=1)
+        tick = cls._priority_int(current_vector_tick, "current_vector_tick", minimum=0)
+        if type(origin) is not str or not origin.strip():
+            raise ValueError("priority origin requires a nonempty exact string")
+        config = _PriorityConfig(alpha_value, beta_value, beta_annealing, horizon, origin)
+        owned_rng = cls._clone_rng(rng)
+        result._priority = _PriorityState(
+            config, cls._effective_beta(config, tick), tick, owned_rng, _INITIAL_PRIORITY, 0, (), {"kind": "explicit_factory"}
+        )
+        return result
+
+    def set_vector_tick(self, vector_tick: int) -> None:
+        """Advance the absolute PER clock independently of optimizer opportunities."""
+        state = self._priority
+        if state is None:
+            raise ValueError("set_vector_tick requires explicitly prioritized sequence replay")
+        tick = self._priority_int(vector_tick, "current_vector_tick", minimum=0)
+        if tick < state.current_vector_tick:
+            raise ValueError("priority vector tick cannot rewind; restore a recorded checkpoint explicitly")
+        updated = replace(state, current_vector_tick=tick, beta=self._effective_beta(state.config, tick))
+        self._priority = updated
+
+    @staticmethod
+    def _windows(episodes: Any, length: int, sequence_mode: str) -> list[tuple[Episode, int, int]]:
+        windows = []
+        for episode in episodes:
+            for endpoint in range(len(episode["actions"])):
+                if sequence_mode == "fixed_full" and endpoint + 1 < length:
+                    continue
+                windows.append((episode, max(0, endpoint + 1 - length), endpoint + 1))
+        return windows
+
+    @staticmethod
+    def _window_key(window: tuple[Episode, int, int]) -> tuple[int, int, int]:
+        episode, start, end = window
+        return episode["episode_id"], int(episode["transition_ids"][start]), int(episode["transition_ids"][end - 1])
+
+    @staticmethod
+    def _owned_domain(length: int, keys: tuple[tuple[int, int, int], ...], ids: tuple[int, ...], priorities: np.ndarray) -> _PriorityDomain:
+        owned = priorities.copy()
+        owned.setflags(write=False)
+        return _PriorityDomain(length, keys, ids, owned)
+
+    def _support(self, state: _PriorityState, domain: _PriorityDomain, policy: ReplayOptions) -> None:
+        if domain.priorities.size:
+            assert policy.sampling_mode is not None
+            per_sampling.sample_units(
+                domain.priorities,
+                alpha=state.config.alpha,
+                beta=0.0,
+                batch_size=1,
+                mode=policy.sampling_mode,
+                rng=self._clone_rng(state.rng),
+            )
+
+    def _refresh_priority(self, state: _PriorityState, episodes: Any, lengths: tuple[int, ...], policy: ReplayOptions) -> _PriorityState:
+        previous = {domain.sequence_length: domain for domain in state.domains}
+        counter, domains = state.next_unit_id, []
+        for length in sorted(set(previous) | set(lengths)):
+            old = previous.get(length)
+            retained = {}
+            if old is not None:
+                retained = dict(zip(old.window_keys, zip(old.unit_ids, old.priorities, strict=True), strict=True))
+            assert policy.sequence_mode is not None
+            keys = tuple(self._window_key(window) for window in self._windows(episodes, length, policy.sequence_mode))
+            ids, priorities = [], []
+            for key in keys:
+                if key in retained:
+                    handle, priority = retained[key]
+                else:
+                    if counter >= _MAX_ID:
+                        raise ValueError("priority stable unit identity range exhausted before admission")
+                    handle, priority = counter, state.max_priority
+                    counter += 1
+                ids.append(handle)
+                priorities.append(priority)
+            if old is not None and keys == old.window_keys:
+                domain = old
+            else:
+                domain = self._owned_domain(length, keys, tuple(ids), np.asarray(priorities, dtype=np.float64))
+                self._support(state, domain, policy)
+            domains.append(domain)
+        return replace(state, domains=tuple(domains), next_unit_id=counter)
+
+    def _empty_priority(self) -> _PriorityState | None:
+        if self._priority is None:
+            return None
+        domains = tuple(self._owned_domain(item.sequence_length, (), (), np.empty(0, dtype=np.float64)) for item in self._priority.domains)
+        return replace(self._priority, domains=domains, rng=self._clone_rng(self._priority.rng))
+
+    def _check_captured_compatibility(
+        self, action_dim: int, legality_mode: str, policy: ReplayOptions, priority: _PriorityState | None
+    ) -> None:
+        if self._configured and (action_dim != self.action_dim or legality_mode != self.legality_mode or policy != self.replay_options):
+            raise ValueError("Sequential checkpoint action/legality/replay_options differ from configured storage")
+        if priority is not None and self._configured and self._priority is None:
+            raise ValueError(
+                "prioritized format7 requires prioritized or unconfigured adopting storage; uniform target cannot discard priority"
+            )
+        if priority is not None and self._priority is not None and priority.config != self._priority.config:
+            raise ValueError("priority immutable configuration/origin differs from configured target")
+
+    def _restore_priority(self, recorded: _PriorityState | None) -> _PriorityState | None:
+        if recorded is not None:
+            domains = tuple(
+                self._owned_domain(item.sequence_length, item.window_keys, item.unit_ids, item.priorities) for item in recorded.domains
+            )
+            return replace(recorded, domains=domains, rng=self._clone_rng(recorded.rng), initialization=dict(recorded.initialization))
+        if self._priority is None:
+            return None
+        return replace(
+            self._priority,
+            rng=self._clone_rng(self._priority.rng),
+            max_priority=_INITIAL_PRIORITY,
+            domains=(),
+            initialization={"kind": "captured6_active_adapter", "source_replay_kind": "sequential", "source_format_version": 6},
+        )
 
     @property
     def retained_transitions(self) -> int:
@@ -893,9 +1221,13 @@ class SequentialReplayBuffer:
                 tail["start_offset"] = first["start_offset"] + excess
                 retained[0] = tail
                 total -= excess
+        priority = self._priority
+        if priority is not None:
+            priority = self._refresh_priority(priority, retained, (), policy)
+        next_episode, next_transition = self.next_episode_id + 1, self.next_transition_id + count
         self.episodes, self.num_transitions = retained, total
-        self.next_episode_id += 1
-        self.next_transition_id += count
+        self.next_episode_id, self.next_transition_id = next_episode, next_transition
+        self._priority = priority
 
     def _check_request(self, request: ReplayRequest) -> ReplayOptions:
         policy, _ = self._configuration()
@@ -931,6 +1263,8 @@ class SequentialReplayBuffer:
             return ReplayReadiness(False, self.retained_transitions, population, "warmup")
         if not population:
             return ReplayReadiness(False, self.retained_transitions, 0, "window_unavailable")
+        if self._priority is not None and request.sampling_mode == per_sampling.SUCCESSIVE and request.batch_size > population:
+            return ReplayReadiness(False, self.retained_transitions, population, "batch_unavailable")
         return ReplayReadiness(True, self.retained_transitions, population, "ready")
 
     def sample_batch(self, request: ReplayRequest) -> SequentialReplayBatch:
@@ -939,7 +1273,9 @@ class SequentialReplayBuffer:
             raise ValueError(
                 f"sequence replay unavailable: {ready.reason}; retained={ready.retained_transitions}, sampleable={ready.sampleable_units}"
             )
-        policy, action_dim = self._configuration()
+        if self._priority is not None:
+            return self._sample_prioritized(request)
+        policy, _ = self._configuration()
         valid, population = self._sampleable(request)
         lengths = [len(episode["actions"]) for episode in valid]
         total = sum(lengths)
@@ -974,8 +1310,51 @@ class SequentialReplayBuffer:
             proposals[index] = probability
             if nonuniform:
                 weights[index] = 1.0 / (population * probability)
+        ids = np.asarray([int(episode["transition_ids"][end - 1]) for episode, _, end in selected], dtype=np.int64)
+        rule = "uniform"
+        if nonuniform:
+            rule = "inverse_population_proposal"
+        objective = "window"
+        if request.sequence_objective == "anchor_transition":
+            objective = "anchor_transition"
+        assert policy.uniform_sequence_adapter is not None
+        receipt = SamplingReceipt(ids, weights, population, proposals, policy.uniform_sequence_adapter, objective, rule)
+        return self._pack_selected(request, selected, receipt, ids)
+
+    def _sample_prioritized(self, request: ReplayRequest) -> SequentialReplayBatch:
+        state = self._priority
+        assert state is not None
+        policy, _ = self._configuration()
+        staged = self._refresh_priority(state, self.episodes, (request.sequence_length,), policy)
+        domain = next(item for item in staged.domains if item.sequence_length == request.sequence_length)
+        rng = self._clone_rng(staged.rng)
+        receipt = per_sampling.sample_units(
+            domain.priorities,
+            alpha=staged.config.alpha,
+            beta=staged.beta,
+            batch_size=request.batch_size,
+            mode=request.sampling_mode,
+            rng=rng,
+        )
+        objective = "window"
+        if request.sequence_objective == "anchor_transition":
+            objective = "anchor_transition"
+        receipt = replace(receipt, objective_unit=objective)
+        windows = self._windows(self.episodes, request.sequence_length, request.sequence_mode)
+        selected = [windows[int(index)] for index in receipt.indices]
+        ids = np.asarray([domain.unit_ids[int(index)] for index in receipt.indices], dtype=np.int64)
+        batch = self._pack_selected(request, selected, receipt, ids)
+        committed = replace(staged, rng=rng)
+        self._priority = committed
+        return batch
+
+    def _pack_selected(
+        self, request: ReplayRequest, selected: list[tuple[Episode, int, int]], receipt: SamplingReceipt, ids: np.ndarray
+    ) -> SequentialReplayBatch:
+        """Construct complete owned transport before a prioritized sample commits."""
+        _, action_dim = self._configuration()
         batch, length = request.batch_size, request.sequence_length
-        width = valid[0]["observations"].shape[1]
+        width = selected[0][0]["observations"].shape[1]
         tensors: dict[str, Any] = {}
         for name in _REQUIRED_EPISODE_KEYS:
             shape: tuple[int, ...] = (batch, length)
@@ -996,11 +1375,9 @@ class SequentialReplayBuffer:
                 tensors[name] = torch.zeros((batch, length), dtype=torch.float32, device=self.device)
             tensors[f"{name}_present"] = torch.zeros((batch, length), dtype=torch.bool, device=self.device)
         real_lengths = torch.empty(batch, dtype=torch.int64, device=self.device)
-        ids = np.empty(batch, dtype=np.int64)
         for index, (episode, start, end) in enumerate(selected):
             size = end - start
             real_lengths[index] = size
-            ids[index] = int(episode["transition_ids"][end - 1])
             for name in (*_REQUIRED_EPISODE_KEYS, "next_action_masks", "legality_recorded"):
                 tensors[name][index, :size].copy_(episode[name][start:end])
             if request.sequence_objective == "window_mean":
@@ -1011,25 +1388,208 @@ class SequentialReplayBuffer:
                 if episode[name] is not None:
                     tensors[name][index, :size].copy_(episode[name][start:end])
                     tensors[f"{name}_present"][index, :size].fill_(True)
-        rule = "uniform"
-        if nonuniform:
-            rule = "inverse_population_proposal"
-        objective = "window"
-        if request.sequence_objective == "anchor_transition":
-            objective = "anchor_transition"
-        assert policy.uniform_sequence_adapter is not None
-        receipt = SamplingReceipt(ids, weights, population, proposals, policy.uniform_sequence_adapter, objective, rule)
         return SequentialReplayBatch(
             **tensors,
             lengths=real_lengths,
             unit_ids=torch.from_numpy(ids.copy()).to(self.device),
-            weights=torch.from_numpy(weights.copy()).to(self.device),
+            weights=torch.from_numpy(receipt.weights.copy()).to(self.device),
             sampling=receipt,
         )
 
+    def update_priorities(self, unit_ids: torch.Tensor, td_errors: torch.Tensor, *, loss_mask: torch.Tensor) -> None:
+        """Reduce selected real context errors and atomically replace affected domains."""
+        state = self._priority
+        if state is None:
+            raise ValueError("update_priorities requires explicitly prioritized sequence replay")
+        if not isinstance(unit_ids, torch.Tensor) or unit_ids.dtype != torch.int64 or unit_ids.ndim != 1 or not unit_ids.numel():
+            raise ValueError("priority unit_ids must be nonempty int64[B]")
+        if (
+            not isinstance(td_errors, torch.Tensor)
+            or not td_errors.dtype.is_floating_point
+            or td_errors.ndim != 2
+            or td_errors.shape[0] != unit_ids.numel()
+            or td_errors.shape[1] < 1
+        ):
+            raise ValueError("priority td_errors must be real floating[B,W] with W>0")
+        if (
+            not isinstance(loss_mask, torch.Tensor)
+            or loss_mask.dtype != torch.bool
+            or loss_mask.shape != td_errors.shape
+            or loss_mask.device != td_errors.device
+        ):
+            raise ValueError("priority loss_mask must be bool[B,W] on the TD error device")
+        policy, _ = self._configuration()
+        lookup: dict[int, tuple[int, int]] = {}
+        assert policy.sequence_mode is not None
+        for domain in state.domains:
+            windows = self._windows(self.episodes, domain.sequence_length, policy.sequence_mode)
+            for handle, window in zip(domain.unit_ids, windows, strict=True):
+                lookup[handle] = (domain.sequence_length, window[2] - window[1])
+        handles = unit_ids.detach().cpu().tolist()
+        errors = td_errors.detach().to(device="cpu", dtype=torch.float64).numpy()
+        masks = loss_mask.detach().cpu().numpy()
+        reduced: dict[int, float] = {}
+        for row, handle in enumerate(handles):
+            if handle not in lookup:
+                raise ValueError(f"priority unit ID {handle} is unknown or retired")
+            _, size = lookup[handle]
+            if size > errors.shape[1]:
+                raise ValueError(f"priority TD width does not cover real context for unit {handle}")
+            expected = np.zeros(errors.shape[1], dtype=np.bool_)
+            if policy.sequence_objective == "anchor_transition":
+                expected[size - 1] = True
+            else:
+                expected[:size] = True
+            if not np.array_equal(masks[row], expected):
+                raise ValueError(f"priority loss_mask differs from the canonical real objective for unit {handle}")
+            values = np.abs(errors[row, expected])
+            if not np.isfinite(values).all():
+                raise ValueError(f"priority selected TD errors must be finite for unit {handle}")
+            magnitude = float(values.max())
+            if policy.sequence_objective != "anchor_transition" and policy.priority_reduction == "mean_abs" and magnitude > 0:
+                magnitude *= float((values / magnitude).mean(dtype=np.float64))
+            priority = magnitude + _PRIORITY_EPSILON
+            if not math.isfinite(priority) or priority < _PRIORITY_EPSILON:
+                raise ValueError(f"priority reduction is not finite representable for unit {handle}")
+            if handle in reduced:
+                reduced[handle] = max(reduced[handle], priority)
+            else:
+                reduced[handle] = priority
+        domains = []
+        for domain in state.domains:
+            if any(handle in reduced for handle in domain.unit_ids):
+                priorities = domain.priorities.copy()
+                for index, handle in enumerate(domain.unit_ids):
+                    if handle in reduced:
+                        priorities[index] = reduced[handle]
+                domain = self._owned_domain(domain.sequence_length, domain.window_keys, domain.unit_ids, priorities)
+                self._support(state, domain, policy)
+            domains.append(domain)
+        maximum = max(state.max_priority, max(reduced.values()))
+        committed = replace(state, domains=tuple(domains), max_priority=maximum)
+        self._priority = committed
+
+    def _priority_payload(self, state: _PriorityState, policy: ReplayOptions) -> dict[str, Any]:
+        config = state.config
+        assert policy.sampling_mode is not None
+        return {
+            "priority_state_version": 1,
+            "alpha": config.alpha,
+            "beta_initial": config.beta_initial,
+            "beta": state.beta,
+            "beta_annealing": config.beta_annealing,
+            "beta_vector_tick_horizon": config.beta_vector_tick_horizon,
+            "current_vector_tick": state.current_vector_tick,
+            "origin": config.origin,
+            "sampling_mode": policy.sampling_mode,
+            "objective_unit": "anchor_transition" if policy.sequence_objective == "anchor_transition" else "window",
+            "weight_rule": per_sampling.WEIGHT_RULES[policy.sampling_mode],
+            "weight_normalization": "none",
+            "unit_identity_rule": "context_endpoints_per_length_v1",
+            "new_unit_priority_rule": "recorded_running_max_v1",
+            "initial_priority": _INITIAL_PRIORITY,
+            "priority_epsilon": _PRIORITY_EPSILON,
+            "max_priority": state.max_priority,
+            "next_unit_id": state.next_unit_id,
+            "initialization": dict(state.initialization),
+            "rng": self._encode_rng(state.rng),
+            "domains": [
+                {
+                    "sequence_length": item.sequence_length,
+                    "window_keys": torch.tensor(item.window_keys, dtype=torch.int64, device="cpu").reshape(-1, 3),
+                    "unit_ids": torch.tensor(item.unit_ids, dtype=torch.int64, device="cpu"),
+                    "priorities": torch.tensor(item.priorities.copy(), dtype=torch.float64, device="cpu"),
+                }
+                for item in state.domains
+            ],
+        }
+
+    @staticmethod
+    def _priority_float(value: object, field: str, *, minimum: float, maximum: float) -> float:
+        if type(value) is not float or not math.isfinite(value) or not minimum <= value <= maximum:
+            raise ValueError(f"priority {field} requires a finite Python float in [{minimum},{maximum}]")
+        return value
+
+    def _validate_priority(self, payload: object, episodes: tuple[Episode, ...], policy: ReplayOptions) -> _PriorityState:
+        if not isinstance(payload, Mapping) or set(payload) != _PRIORITY_KEYS:
+            raise ValueError("Sequential priority_state key set mismatch")
+        if type(payload["priority_state_version"]) is not int or payload["priority_state_version"] != 1:
+            raise ValueError("priority_state_version must be exact integer1")
+        floats = {name: self._priority_float(payload[name], name, minimum=0.0, maximum=1.0) for name in ("alpha", "beta_initial", "beta")}
+        flag, origin = payload["beta_annealing"], payload["origin"]
+        if type(flag) is not bool or type(origin) is not str or not origin.strip():
+            raise ValueError("priority beta_annealing/origin require exact bool and nonempty string")
+        horizon = self._priority_int(payload["beta_vector_tick_horizon"], "beta_vector_tick_horizon", minimum=1)
+        tick = self._priority_int(payload["current_vector_tick"], "current_vector_tick", minimum=0)
+        config = _PriorityConfig(floats["alpha"], floats["beta_initial"], flag, horizon, origin)
+        if floats["beta"] != self._effective_beta(config, tick):
+            raise ValueError("priority beta disagrees with the recorded vector tick formula")
+        assert policy.sampling_mode is not None
+        declarations = {
+            "sampling_mode": policy.sampling_mode,
+            "objective_unit": "anchor_transition" if policy.sequence_objective == "anchor_transition" else "window",
+            "weight_rule": per_sampling.WEIGHT_RULES[policy.sampling_mode],
+            "weight_normalization": "none",
+            "unit_identity_rule": "context_endpoints_per_length_v1",
+            "new_unit_priority_rule": "recorded_running_max_v1",
+            "initial_priority": _INITIAL_PRIORITY,
+            "priority_epsilon": _PRIORITY_EPSILON,
+        }
+        if any(type(payload[name]) is not type(value) or payload[name] != value for name, value in declarations.items()):
+            raise ValueError("priority receipt/algorithm declarations contradict resolved replay options or version1")
+        maximum = self._priority_float(payload["max_priority"], "max_priority", minimum=_INITIAL_PRIORITY, maximum=float("inf"))
+        next_id = self._priority_int(payload["next_unit_id"], "next_unit_id", minimum=0)
+        initialization = payload["initialization"]
+        if not isinstance(initialization, Mapping):
+            raise ValueError("priority initialization must be an exact provenance mapping")
+        if any(type(key) is not str for key in initialization) or type(initialization.get("kind")) is not str:
+            raise ValueError("priority initialization requires exact string keys/kind")
+        if dict(initialization) != {"kind": "explicit_factory"}:
+            expected = {"kind": "captured6_active_adapter", "source_replay_kind": "sequential", "source_format_version": 6}
+            if (
+                dict(initialization) != expected
+                or type(initialization.get("source_format_version")) is not int
+                or type(initialization.get("source_replay_kind")) is not str
+            ):
+                raise ValueError("priority initialization provenance is unsupported")
+        rng = self._decode_rng(payload["rng"])
+        records = payload["domains"]
+        if not isinstance(records, list):
+            raise ValueError("priority domains must be a list sorted by sequence_length")
+        domains = []
+        known: set[int] = set()
+        last_length = 0
+        assert policy.sequence_mode is not None
+        for record in records:
+            if not isinstance(record, Mapping) or set(record) != {"sequence_length", "window_keys", "unit_ids", "priorities"}:
+                raise ValueError("priority domain key set mismatch")
+            length = record["sequence_length"]
+            if type(length) is not int or length <= last_length:
+                raise ValueError("priority sequence lengths must be positive unique ordered exact integers")
+            windows = self._windows(episodes, length, policy.sequence_mode)
+            keys = tuple(self._window_key(window) for window in windows)
+            size = len(keys)
+            key_tensor = self._require_tensor(record, "window_keys", dtype=torch.int64, shape=(size, 3))
+            ids = self._require_tensor(record, "unit_ids", dtype=torch.int64, shape=(size,))
+            priorities = self._require_tensor(record, "priorities", dtype=torch.float64, shape=(size,))
+            if any(item.device != torch.device("cpu") for item in (key_tensor, ids, priorities)):
+                raise ValueError("priority domain tensors must be owned CPU transport")
+            actual_keys = tuple(tuple(row) for row in key_tensor.tolist())
+            if actual_keys != keys:
+                raise ValueError("priority domain window_keys do not equal the complete canonical context population")
+            handles = tuple(ids.tolist())
+            if any(handle < 0 or handle >= next_id or handle in known for handle in handles) or len(set(handles)) != size:
+                raise ValueError("priority domain unit_ids must be globally unique active handles below next_unit_id")
+            if bool(((priorities < _PRIORITY_EPSILON) | (priorities > maximum)).any()):
+                raise ValueError("priority domain priorities must respect epsilon and recorded running maximum")
+            known.update(handles)
+            domains.append(self._owned_domain(length, keys, handles, priorities.detach().numpy()))
+            last_length = length
+        return _PriorityState(config, floats["beta"], tick, rng, maximum, next_id, tuple(domains), dict(initialization))
+
     def _serialize_current(self) -> dict[str, Any]:
         policy, action_dim = self._configuration()
-        return {
+        result = {
             "replay_kind": SEQUENTIAL_REPLAY_BUFFER_KIND,
             "format_version": SEQUENTIAL_REPLAY_BUFFER_FORMAT_VERSION,
             "capacity": self.capacity,
@@ -1042,6 +1602,10 @@ class SequentialReplayBuffer:
             "episodes": [self._own_fragment(episode, device=torch.device("cpu")) for episode in self.episodes],
             "historical_archives": [history._record(archive) for archive in self._historical_archives],
         }
+        if self._priority is not None:
+            result["format_version"] = SEQUENTIAL_PRIORITIZED_REPLAY_BUFFER_FORMAT_VERSION
+            result["priority_state"] = self._priority_payload(self._priority, policy)
+        return result
 
     def _own_archive(self, archive: history.HistoricalReplayArchive, *, expected_obs_dim: int | None) -> history.HistoricalReplayArchive:
         if not isinstance(archive, history.HistoricalReplayArchive):
@@ -1101,6 +1665,7 @@ class SequentialReplayBuffer:
             self.next_episode_id,
             self.next_transition_id,
             archives,
+            self._empty_priority(),
         )
 
     def prepare_archived_import(
@@ -1119,16 +1684,23 @@ class SequentialReplayBuffer:
         if set(state) & _INSPECTION_MARKERS:
             return self._validate_inspection(state, expected_obs_dim=expected_obs_dim)
         version = state.get("format_version")
-        if type(version) is not int or version not in (_LEGACY_VERSION, SEQUENTIAL_REPLAY_BUFFER_FORMAT_VERSION):
+        if type(version) is not int or version not in (
+            _LEGACY_VERSION,
+            SEQUENTIAL_REPLAY_BUFFER_FORMAT_VERSION,
+            SEQUENTIAL_PRIORITIZED_REPLAY_BUFFER_FORMAT_VERSION,
+        ):
             raise ValueError(
-                f"Cannot load sequential checkpoint with format_version {version!r}; supported format_version values are 5 and 6"
+                f"Cannot load sequential checkpoint with format_version {version!r}; supported format_version values are 5, 6 and 7"
             )
         if version == _LEGACY_VERSION:
             return self._validate_legacy_serialized(state, expected_obs_dim=expected_obs_dim)
         if state.get("replay_kind") != SEQUENTIAL_REPLAY_BUFFER_KIND:
             raise ValueError("Sequential checkpoint replay_kind must be sequential")
-        if set(state) != SEQUENTIAL_REPLAY_BUFFER_STATE_KEYS:
-            raise ValueError("Sequential checkpoint key set mismatch for captured format6")
+        expected_keys = SEQUENTIAL_REPLAY_BUFFER_STATE_KEYS
+        if version == SEQUENTIAL_PRIORITIZED_REPLAY_BUFFER_FORMAT_VERSION:
+            expected_keys = expected_keys | {"priority_state"}
+        if set(state) != expected_keys:
+            raise ValueError(f"Sequential checkpoint key set mismatch for captured format{version}")
         integer_fields = ("capacity", "num_transitions", "action_dim", "next_episode_id", "next_transition_id")
         if any(type(state[name]) is not int for name in integer_fields):
             raise ValueError("Sequential captured counts, geometry and identity counters require exact integers")
@@ -1194,7 +1766,13 @@ class SequentialReplayBuffer:
         archives = tuple(
             self._own_archive(history._archive_from_state(record), expected_obs_dim=width) for record in state["historical_archives"]
         )
-        return _ValidatedCapturedState(count, tuple(episodes), action_dim, mode, policy, next_episode, next_transition, archives)
+        priority = None
+        if version == SEQUENTIAL_PRIORITIZED_REPLAY_BUFFER_FORMAT_VERSION:
+            priority = self._validate_priority(state["priority_state"], tuple(episodes), policy)
+        self._check_captured_compatibility(action_dim, mode, policy, priority)
+        return _ValidatedCapturedState(
+            count, tuple(episodes), capacity, action_dim, mode, policy, next_episode, next_transition, archives, priority
+        )
 
     def _validate_inspection(self, state: Mapping[str, Any], *, expected_obs_dim: int | None) -> _ValidatedInspectionState:
         if set(state) != _INSPECTION_KEYS:
@@ -1216,7 +1794,7 @@ class SequentialReplayBuffer:
         incoming = tuple(history._archive_from_state(record) for record in state["historical_archives"])
         archives = self._merge_archives(incoming, expected_obs_dim=width)
         episodes = tuple(self._own_fragment(episode, device=episode["observations"].device) for episode in legacy.episodes)
-        return _ValidatedInspectionState(legacy.num_transitions, episodes, archives)
+        return _ValidatedInspectionState(legacy.num_transitions, episodes, legacy.capacity, archives)
 
     def prepare_for_mode(
         self, state: Mapping[str, Any], *, expected_obs_dim: int | None, requested_mode: history.AccessMode
@@ -1229,7 +1807,7 @@ class SequentialReplayBuffer:
         if isinstance(validated, _ValidatedInspectionState) and requested_mode == "recorded_full_resume":
             raise HistoricalLegalityUnavailable("unqualified inspection transport has no captured replay identity for recorded_full_resume")
         if isinstance(validated, _ValidatedCapturedState) and requested_mode == "archived_history_fresh_episode":
-            raise ValueError("current captured6 cannot discard qualified rows/history through archival reset")
+            raise ValueError("current captured replay cannot discard qualified rows/history through archival reset")
         return self._materialize_serialized(validated)
 
     def load_for_mode(self, state: Mapping[str, Any], *, requested_mode: history.AccessMode) -> None:

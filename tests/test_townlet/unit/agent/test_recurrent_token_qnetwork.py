@@ -21,7 +21,7 @@ def _config(*, aggregator: str = "mean", num_heads: int | None = None) -> Recurr
 
 
 def test_recurrent_schema_is_only_the_token_native_contract() -> None:
-    assert set(RecurrentConfig.model_fields) == {"token_embed_dim", "aggregator", "lstm", "q_head_hidden_dim"}
+    assert set(RecurrentConfig.model_fields) == {"token_embed_dim", "aggregator", "lstm", "q_head_hidden_dim", "token_encoder"}
 
 
 def test_single_layer_lstm_rejects_inert_dropout() -> None:

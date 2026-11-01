@@ -12,6 +12,7 @@ from typing import Annotated, Literal
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
+from townlet.config.bac_options import TokenEncoderOptions, resolve_token_encoder  # noqa: F401 - public configuration API
 from townlet.config.training_v2_config import TrainingV2Config
 
 
@@ -143,6 +144,7 @@ class TokenSetConfig(BaseModel):
 
     model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
+    token_encoder: Annotated[TokenEncoderOptions | None, Field(description="Encoder declaration; omission resolves to linear")] = None
     token_embed_dim: int = Field(gt=0, description="Embedding width every token type projects into")
     q_head_hidden_dim: int = Field(gt=0, description="Hidden size for the final Q-value head")
     aggregator: SetAggregatorConfig = Field(description="Declared token-set aggregation (no default)")
@@ -167,6 +169,7 @@ class RecurrentConfig(BaseModel):
 
     model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
+    token_encoder: Annotated[TokenEncoderOptions | None, Field(description="Encoder declaration; omission resolves to linear")] = None
     token_embed_dim: int = Field(gt=0, description="Embedding width every token type projects into")
     aggregator: SetAggregatorConfig = Field(description="Declared token-set aggregation (no default)")
     lstm: LSTMConfig = Field(description="LSTM temporal memory configuration")

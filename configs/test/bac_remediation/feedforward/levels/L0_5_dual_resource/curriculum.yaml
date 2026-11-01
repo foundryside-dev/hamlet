@@ -1,0 +1,11 @@
+curriculum:
+  version: "1.0"
+
+  # L0_5: Dual resource management
+  # 7×7 grid, 2 bars (energy, health), 4 affordances
+  # Focus: Learn cascade effects (energy depletion → health drain)
+
+  active_vision: global
+  vision_range: 0.5
+  active_temporal: false
+  day_length: null

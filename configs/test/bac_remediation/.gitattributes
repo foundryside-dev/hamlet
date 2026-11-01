@@ -1,0 +1,2 @@
+# Keep unchanged canonical stratum documents byte-for-byte in copied test packs.
+*/stratum.yaml whitespace=-blank-at-eof

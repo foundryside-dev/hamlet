@@ -1,0 +1,27 @@
+replay:
+  sampling_mode: successive_without_replacement
+  uniform_sequence_adapter: legacy_episode_length_with_replacement
+  sequence_mode: fixed_full
+  retention_mode: whole_episode
+  sequence_objective: window_mean
+  priority_reduction: max_abs
+rnd:
+  service_mode: paced_fifo
+  max_updates_per_tick: 1
+  max_pending_rows: 64
+  overflow_policy: service_before_admit
+curriculum:
+  commit_mode: completion
+  difficulty_mode: stage_band
+serving:
+  policy_mode: greedy_eval
+checkpoint:
+  save_initial: false
+  save_final: true
+provider_parameter_source: training
+evaluation:
+  seed: 42
+  episode_cap: 500
+  epsilon: 0.0
+  curriculum_state_policy: fresh
+  reward_metric: extrinsic

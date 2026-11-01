@@ -3697,6 +3697,20 @@
         "unrelated scope reduction",
         "removal of current captured-mask full resume"
       ]
+    },
+    {
+      "id": "BAC-CADENCE-A-2026-11-01",
+      "approver": "John (explicit user reply)",
+      "scope": "Exact reviewed execution addendum; bounded full-pytest cadence exception only",
+      "addendum_sha256": "2b73403fcd9d139e46009c2f49add6dbe6f99310ce37018ffcf839230845d370",
+      "question_reference": "call_5dc18c01d6bd4780aca18c819555a704",
+      "decision_record": "CADENCE-DECISION.md",
+      "does_not_authorize": [
+        "capability reduction",
+        "weaker final acceptance",
+        "new access or spending",
+        "broader publication authority"
+      ]
     }
   ],
   "user_decisions_pending": [],
@@ -3758,7 +3772,17 @@
       "resolution": "No ordinary stale authored-cache failure reproduced. Trust-boundary observation is not promoted to a production defect or a security finding."
     }
   ],
-  "optional_p3": [],
+  "optional_p3": [
+    {
+      "id": "P3-T02-01",
+      "classification": "permanent regression assertion gap; current behavior independently proved",
+      "location": "tests/test_townlet/regressions/bac/test_options.py:90",
+      "description": "Add explicit compiled-brain encoder equality assertions alongside training-option dict/cache/rename assertions. Independent public-boundary encoder probe currently passes for both token families.",
+      "source_tree": "25cdec4e82cfdeb64a715320313316c90e700747",
+      "review": "package-reviews/T02-initial-independent.md",
+      "disposition": "nonblocking optional P3; retained separately from material acceptance; T03 existing cache proof may cover naturally"
+    }
+  ],
   "final_candidate_sha": null,
   "final_gates": [],
   "fresh_final_reviews": [],
@@ -3787,5 +3811,25 @@
       "final_acceptance": "owed at final candidate; dependent T02/T03/G06 runtime evidence still required"
     }
   ],
-  "evidence_note": "T01 precommit full gate verified the exact committed tree and source hashes in every pytest process. Historical fixture checks qualify data at the original source only; new archive policy acceptance remains owed."
+  "evidence_note": "T01 precommit full gate verified the exact committed tree and source hashes in every pytest process. Historical fixture checks qualify data at the original source only; new archive policy acceptance remains owed.",
+  "execution_addendum": {
+    "sha256": "2b73403fcd9d139e46009c2f49add6dbe6f99310ce37018ffcf839230845d370",
+    "technical_review": "plan-reviews/execution-addendum-approved.md",
+    "cadence_exception_reference": "BAC-CADENCE-A-2026-11-01",
+    "cadence_active": true,
+    "T08a_expanded_context_active": true
+  },
+  "qualification_failures": [
+    {
+      "id": "Q-T02-01",
+      "candidate_tree": "25cdec4e82cfdeb64a715320313316c90e700747",
+      "classification": "obsolete exact-schema test expectation; release gate failed",
+      "node": "tests/test_townlet/unit/agent/test_recurrent_token_qnetwork.py::test_recurrent_schema_is_only_the_token_native_contract",
+      "cause": "Exact four-field set excludes the approved optional token_encoder field. No production defect inferred.",
+      "result": "1 failed,2861 passed,9 skipped; deliberately interrupted failed full gate after549.24s, exit2",
+      "log": "/workspace/bac-review-2026-11-01/qualification/T02-full-tests.log",
+      "repair": "exact five-field assertion; red1failure and module green5; full replacement gate and fresh bounded review still owed",
+      "status": "repair verification pending"
+    }
+  ]
 }

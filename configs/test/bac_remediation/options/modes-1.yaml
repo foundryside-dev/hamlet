@@ -1,0 +1,39 @@
+replay:
+  sampling_mode: independent_with_replacement
+  uniform_sequence_adapter: uniform_windows_with_replacement
+  sequence_mode: adaptive_prefix
+  retention_mode: transition_tail
+  sequence_objective: anchor_transition
+  priority_reduction: mean_abs
+rnd:
+  service_mode: occupancy_fifo
+  max_updates_per_tick: 2
+  max_pending_rows: 128
+  overflow_policy: drop_oldest
+curriculum:
+  commit_mode: legacy_step
+  difficulty_mode: rate_limited
+serving:
+  policy_mode: mc_dropout
+checkpoint:
+  save_initial: true
+  save_final: false
+provider_parameter_source: drive
+evaluation:
+  seed: 7
+  episode_cap: 25
+  epsilon: 0.1
+  curriculum_state_policy: retain_compatible
+  reward_metric: total
+providers:
+  count_based:
+    quantization_width: 0.25
+    max_entries: 256
+  icm:
+    feature_dim: 16
+    hidden_dim: 32
+    learning_rate: 0.001
+    inverse_weight: 0.7
+    forward_weight: 0.3
+    training_batch_size: 16
+    max_pending_transitions: 64

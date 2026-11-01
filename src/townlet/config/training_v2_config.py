@@ -23,11 +23,12 @@ Structure:
 """
 
 from pathlib import Path
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
+from townlet.config.bac_options import BaCOptions
 from townlet.config.base import format_validation_error
 
 __all__ = [
@@ -345,6 +346,8 @@ class TrainingV2Config(BaseModel):
     """
 
     model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
+
+    bac_options: Annotated[BaCOptions | None, Field(description="Additive BAC policies; omissions resolve via bac-options-v1")] = None
 
     version: Literal["1.0"] = Field(description="Config version")
     seed: int = Field(

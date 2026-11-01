@@ -3,7 +3,7 @@
   "baseline_sha": "4aa5363b5de54d9a112977c32c2975f37627197f",
   "design": "BAC-2026-11-01-r2 plus explicit additive plan decisions",
   "approved_plan_sha256": "2dde2d80d3d14c510878c26af1f99c42217be12d3cb3a554647bc68646feedc1",
-  "phase": "20 of 66 finite source packages qualified/released; 46 later packets and all final BAC acceptance remain OPEN",
+  "phase": "22 of 66 finite source packages qualified/released; 44 later packets and all final BAC acceptance remain OPEN",
   "completion_bar": "zero unresolved P1/P2 and zero unapproved in-scope capability gaps; all agreed finite evidence, fresh final spec/design/code review, required gates and source-verified docs",
   "requirements": [
     {
@@ -160,6 +160,15 @@
           "receipt": "package-reviews/T11-implementation.md",
           "qualification": "evidence/wave05-qualification.json",
           "disposition": "Scoped package evidence; remaining owners and final common-source acceptance stay OPEN."
+        },
+        {
+          "task": "T12",
+          "source_commit": "07ce97550cf2f9dae67cb56d1d8014218c39d523",
+          "qualified_release_commit": "07ce97550cf2f9dae67cb56d1d8014218c39d523",
+          "qualified_sum_tree": "42bf1b690f523ed2bb8bf47d12f53d00ea6cb93c",
+          "receipt": "package-reviews/T12-implementation.md",
+          "qualification": "evidence/wave06-qualification.json",
+          "disposition": "Scoped evidence only; remaining owners and final common-source acceptance OPEN"
         }
       ],
       "evidence": [
@@ -226,7 +235,17 @@
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "P1",
       "approval_reference": null,
-      "package_evidence": []
+      "package_evidence": [
+        {
+          "task": "T12",
+          "source_commit": "07ce97550cf2f9dae67cb56d1d8014218c39d523",
+          "qualified_release_commit": "07ce97550cf2f9dae67cb56d1d8014218c39d523",
+          "qualified_sum_tree": "42bf1b690f523ed2bb8bf47d12f53d00ea6cb93c",
+          "receipt": "package-reviews/T12-implementation.md",
+          "qualification": "evidence/wave06-qualification.json",
+          "disposition": "Scoped evidence only; remaining owners and final common-source acceptance OPEN"
+        }
+      ]
     },
     {
       "id": "D03",
@@ -837,6 +856,15 @@
           "receipt": "package-reviews/T11-implementation.md",
           "qualification": "evidence/wave05-qualification.json",
           "disposition": "Scoped package evidence; remaining owners and final common-source acceptance stay OPEN."
+        },
+        {
+          "task": "T12",
+          "source_commit": "07ce97550cf2f9dae67cb56d1d8014218c39d523",
+          "qualified_release_commit": "07ce97550cf2f9dae67cb56d1d8014218c39d523",
+          "qualified_sum_tree": "42bf1b690f523ed2bb8bf47d12f53d00ea6cb93c",
+          "receipt": "package-reviews/T12-implementation.md",
+          "qualification": "evidence/wave06-qualification.json",
+          "disposition": "Scoped evidence only; remaining owners and final common-source acceptance OPEN"
         }
       ]
     },
@@ -1498,6 +1526,15 @@
           "receipt": "package-reviews/T06-implementation.md",
           "qualification": "evidence/wave05-qualification.json",
           "disposition": "Scoped package evidence; remaining owners and final common-source acceptance stay OPEN."
+        },
+        {
+          "task": "T07",
+          "source_commit": "f18c5f01c096f5a6b2b58a2f8fe97ebd380369a2",
+          "qualified_release_commit": "07ce97550cf2f9dae67cb56d1d8014218c39d523",
+          "qualified_sum_tree": "42bf1b690f523ed2bb8bf47d12f53d00ea6cb93c",
+          "receipt": "package-reviews/T07-implementation.md",
+          "qualification": "evidence/wave06-qualification.json",
+          "disposition": "Scoped evidence only; remaining owners and final common-source acceptance OPEN"
         }
       ]
     },
@@ -1691,7 +1728,17 @@
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "P2",
       "approval_reference": null,
-      "package_evidence": []
+      "package_evidence": [
+        {
+          "task": "T12",
+          "source_commit": "07ce97550cf2f9dae67cb56d1d8014218c39d523",
+          "qualified_release_commit": "07ce97550cf2f9dae67cb56d1d8014218c39d523",
+          "qualified_sum_tree": "42bf1b690f523ed2bb8bf47d12f53d00ea6cb93c",
+          "receipt": "package-reviews/T12-implementation.md",
+          "qualification": "evidence/wave06-qualification.json",
+          "disposition": "Scoped evidence only; remaining owners and final common-source acceptance OPEN"
+        }
+      ]
     },
     {
       "id": "G03",
@@ -2971,6 +3018,24 @@
           "receipt": "package-reviews/T11-implementation.md",
           "qualification": "evidence/wave05-qualification.json",
           "disposition": "Scoped package evidence; remaining owners and final common-source acceptance stay OPEN."
+        },
+        {
+          "task": "T07",
+          "source_commit": "f18c5f01c096f5a6b2b58a2f8fe97ebd380369a2",
+          "qualified_release_commit": "07ce97550cf2f9dae67cb56d1d8014218c39d523",
+          "qualified_sum_tree": "42bf1b690f523ed2bb8bf47d12f53d00ea6cb93c",
+          "receipt": "package-reviews/T07-implementation.md",
+          "qualification": "evidence/wave06-qualification.json",
+          "disposition": "Scoped evidence only; remaining owners and final common-source acceptance OPEN"
+        },
+        {
+          "task": "T12",
+          "source_commit": "07ce97550cf2f9dae67cb56d1d8014218c39d523",
+          "qualified_release_commit": "07ce97550cf2f9dae67cb56d1d8014218c39d523",
+          "qualified_sum_tree": "42bf1b690f523ed2bb8bf47d12f53d00ea6cb93c",
+          "receipt": "package-reviews/T12-implementation.md",
+          "qualification": "evidence/wave06-qualification.json",
+          "disposition": "Scoped evidence only; remaining owners and final common-source acceptance OPEN"
         }
       ],
       "evidence": [
@@ -3118,6 +3183,15 @@
           "receipt": "package-reviews/T06-implementation.md",
           "qualification": "evidence/wave05-qualification.json",
           "disposition": "Scoped package evidence; remaining owners and final common-source acceptance stay OPEN."
+        },
+        {
+          "task": "T07",
+          "source_commit": "f18c5f01c096f5a6b2b58a2f8fe97ebd380369a2",
+          "qualified_release_commit": "07ce97550cf2f9dae67cb56d1d8014218c39d523",
+          "qualified_sum_tree": "42bf1b690f523ed2bb8bf47d12f53d00ea6cb93c",
+          "receipt": "package-reviews/T07-implementation.md",
+          "qualification": "evidence/wave06-qualification.json",
+          "disposition": "Scoped evidence only; remaining owners and final common-source acceptance OPEN"
         }
       ]
     },
@@ -3389,6 +3463,15 @@
           "receipt": "package-reviews/T11-implementation.md",
           "qualification": "evidence/wave05-qualification.json",
           "disposition": "Scoped package evidence; remaining owners and final common-source acceptance stay OPEN."
+        },
+        {
+          "task": "T12",
+          "source_commit": "07ce97550cf2f9dae67cb56d1d8014218c39d523",
+          "qualified_release_commit": "07ce97550cf2f9dae67cb56d1d8014218c39d523",
+          "qualified_sum_tree": "42bf1b690f523ed2bb8bf47d12f53d00ea6cb93c",
+          "receipt": "package-reviews/T12-implementation.md",
+          "qualification": "evidence/wave06-qualification.json",
+          "disposition": "Scoped evidence only; remaining owners and final common-source acceptance OPEN"
         }
       ],
       "evidence": [
@@ -3575,6 +3658,15 @@
           "receipt": "package-reviews/T11-implementation.md",
           "qualification": "evidence/wave05-qualification.json",
           "disposition": "Scoped package evidence; remaining owners and final common-source acceptance stay OPEN."
+        },
+        {
+          "task": "T12",
+          "source_commit": "07ce97550cf2f9dae67cb56d1d8014218c39d523",
+          "qualified_release_commit": "07ce97550cf2f9dae67cb56d1d8014218c39d523",
+          "qualified_sum_tree": "42bf1b690f523ed2bb8bf47d12f53d00ea6cb93c",
+          "receipt": "package-reviews/T12-implementation.md",
+          "qualification": "evidence/wave06-qualification.json",
+          "disposition": "Scoped evidence only; remaining owners and final common-source acceptance OPEN"
         }
       ],
       "evidence": [
@@ -3812,6 +3904,15 @@
           "receipt": "package-reviews/T11-implementation.md",
           "qualification": "evidence/wave05-qualification.json",
           "disposition": "Scoped package evidence; remaining owners and final common-source acceptance stay OPEN."
+        },
+        {
+          "task": "T12",
+          "source_commit": "07ce97550cf2f9dae67cb56d1d8014218c39d523",
+          "qualified_release_commit": "07ce97550cf2f9dae67cb56d1d8014218c39d523",
+          "qualified_sum_tree": "42bf1b690f523ed2bb8bf47d12f53d00ea6cb93c",
+          "receipt": "package-reviews/T12-implementation.md",
+          "qualification": "evidence/wave06-qualification.json",
+          "disposition": "Scoped evidence only; remaining owners and final common-source acceptance OPEN"
         }
       ],
       "evidence": [
@@ -4752,7 +4853,17 @@
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": null,
       "approval_reference": null,
-      "package_evidence": []
+      "package_evidence": [
+        {
+          "task": "T07",
+          "source_commit": "f18c5f01c096f5a6b2b58a2f8fe97ebd380369a2",
+          "qualified_release_commit": "07ce97550cf2f9dae67cb56d1d8014218c39d523",
+          "qualified_sum_tree": "42bf1b690f523ed2bb8bf47d12f53d00ea6cb93c",
+          "receipt": "package-reviews/T07-implementation.md",
+          "qualification": "evidence/wave06-qualification.json",
+          "disposition": "Scoped evidence only; remaining owners and final common-source acceptance OPEN"
+        }
+      ]
     },
     {
       "id": "K04",
@@ -5538,6 +5649,38 @@
       ],
       "final_acceptance": "PW04 real target/predictor construction hooks, complete backend semantic validators and local clocks; PW03 and later actual bank/runtime integration; T24/T25 native admission; X02 strict-B closure remain REQUIRED OPEN. A participating RNG lock does not exclude unrelated global users. No GPU or cross-device qualification is claimed.",
       "qualification_limit": "Only the final coherent source head has the exact qualified sum tree; prefix heads were not separately full-qualified"
+    },
+    {
+      "task": "T07",
+      "source_commit": "f18c5f01c096f5a6b2b58a2f8fe97ebd380369a2",
+      "qualified_release_commit": "07ce97550cf2f9dae67cb56d1d8014218c39d523",
+      "qualified_sum_tree": "42bf1b690f523ed2bb8bf47d12f53d00ea6cb93c",
+      "status": "Scoped package qualified/released; complete requirement and final acceptance still owed",
+      "full_repository_result": "6407 passed,16 skipped,15 warnings;4workers;1829.68s wall; source/review/process/config/artifact/worktree postflight PASS",
+      "reports": [
+        "package-reviews/T07-implementation.md",
+        "package-reviews/T07-independent-review.md",
+        "package-reviews/T07-common-binding.md",
+        "evidence/wave06-qualification.json"
+      ],
+      "final_acceptance": "T32 actual live/evaluator hosting and readiness, T34 lifecycle/cleanup, T36 serialized provenance, integrated native contracts and final common-source acceptance remain REQUIRED OPEN.",
+      "qualification_limit": "Only final coherent source head has exact qualified sum tree; prefix heads not separately full-qualified"
+    },
+    {
+      "task": "T12",
+      "source_commit": "07ce97550cf2f9dae67cb56d1d8014218c39d523",
+      "qualified_release_commit": "07ce97550cf2f9dae67cb56d1d8014218c39d523",
+      "qualified_sum_tree": "42bf1b690f523ed2bb8bf47d12f53d00ea6cb93c",
+      "status": "Scoped package qualified/released; complete requirement and final acceptance still owed",
+      "full_repository_result": "6407 passed,16 skipped,15 warnings;4workers;1829.68s wall; source/review/process/config/artifact/worktree postflight PASS",
+      "reports": [
+        "package-reviews/T12-implementation.md",
+        "package-reviews/T12-independent-review.md",
+        "package-reviews/T12-common-binding.md",
+        "evidence/wave06-qualification.json"
+      ],
+      "final_acceptance": "T14 recurrent PER, T15 actual qualified learner collection/readiness/unroll/bootstrap/objectives, T24/T25 complete native admission/outer archive registry/accounting/resource-RNG preparation/failure atomicity and evolved optimizer continuation remain REQUIRED OPEN. The native proof covers positive inspection transport, not complete C07 or corrected recurrent learning. Native consumers must discriminate the four-key envelope before ordinary replay tags and preserve new raw transport separately from validated HC archive accounting.",
+      "qualification_limit": "Only final coherent source head has exact qualified sum tree; prefix heads not separately full-qualified"
     }
   ],
   "evidence_note": "Each package records its actual immutable source/evidence. Wave05 qualified sum-tree postflight verified 53 source hashes, three final Astra reviews, five process identities, preserved configuration/native artifacts and the worktree registry. Storage archive proofs do not close required native historical dispatch, captured learning/readiness or final common-source acceptance.",
@@ -5663,6 +5806,19 @@
     "qualified_packages": 20,
     "remaining_packages": 46,
     "capability_reductions": "None beyond the existing explicit approved historical policy A. Server helpers, shared alternative and current captured resume are preserved.",
+    "final_acceptance": "OPEN"
+  },
+  "wave06_qualified_scope": {
+    "tasks": [
+      "T07",
+      "T12"
+    ],
+    "source_head": "07ce97550cf2f9dae67cb56d1d8014218c39d523",
+    "tree": "42bf1b690f523ed2bb8bf47d12f53d00ea6cb93c",
+    "receipt": "evidence/wave06-qualification.json",
+    "qualified_packages": 22,
+    "remaining_packages": 44,
+    "capability_reductions": "None beyond existing approved historyA; public standalone loaders, raw dictionary transport and captured current resume preserved",
     "final_acceptance": "OPEN"
   }
 }

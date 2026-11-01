@@ -1,0 +1,1350 @@
+{
+  "schema_version": 1,
+  "tasks": [
+    "T07",
+    "T12"
+  ],
+  "release": {
+    "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+    "qualified_source_commit": "07ce97550cf2f9dae67cb56d1d8014218c39d523",
+    "qualified_sum_tree": "42bf1b690f523ed2bb8bf47d12f53d00ea6cb93c",
+    "logical_commits": [
+      {
+        "task": "T07",
+        "sha": "f18c5f01c096f5a6b2b58a2f8fe97ebd380369a2",
+        "paths": [
+          "src/townlet/universe/declarations.py",
+          "src/townlet/config/resolved_launch.py",
+          "src/townlet/config/exploration.py",
+          "src/townlet/config/curriculum.py",
+          "tests/test_townlet/regressions/bac/test_public_loaders.py"
+        ]
+      },
+      {
+        "task": "T12",
+        "sha": "07ce97550cf2f9dae67cb56d1d8014218c39d523",
+        "paths": [
+          "src/townlet/training/sequential_replay_buffer.py",
+          "src/townlet/training/historical_checkpoint.py",
+          "tests/test_townlet/regressions/bac/test_sequence_history.py",
+          "tests/test_townlet/unit/training/test_sequential_replay_buffer.py",
+          "tests/test_townlet/integration/test_compact_token_acceptance.py",
+          "tests/test_townlet/regressions/bac/test_sequence_inspection_native.py",
+          "tests/test_townlet/integration/test_checkpointing.py"
+        ]
+      }
+    ],
+    "qualification": "All six guards and four-worker full repository suite PASS; final tree exactly equals tested candidate. Prefix heads not separately full-qualified.",
+    "documentation": "Source-verified portable documentation checkpoint still owed.",
+    "publication": "No push/PR/merge or checkout creation."
+  },
+  "postflight": {
+    "candidate_tree": "42bf1b690f523ed2bb8bf47d12f53d00ea6cb93c",
+    "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+    "full_exit_code": 0,
+    "counts": {
+      "passed": 6407,
+      "skipped": 16,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 15
+    },
+    "seconds": 1829.6802487373352,
+    "all73_source_hashes_verified": true,
+    "all7_review_artifact_hashes_verified": true,
+    "all5_process_identities_verified": true,
+    "all573_config_digests_verified": true,
+    "all7_native_manifest_artifacts_verified": true,
+    "worktree_count": 14,
+    "entire_worktree_registry_unchanged": true,
+    "working_tree_equals_index": true,
+    "harness_sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d",
+    "release": "Qualification postflight PASS; logical-source-commit final-tree equality and source-verified documentation checkpoint still owed."
+  },
+  "source_files": {
+    "tests/test_townlet/regressions/test_episode_recording_shutdown.py": "9874eed75d1b7491a5a8ef5fca1af7430b61aaff52037b8948b84e2636b67fa2",
+    "tests/test_townlet/regressions/bac/test_uniform_history.py": "a0ee835fc7a862216bddcddcac647ffff954f59f1842be5f8f4c77656fe899fd",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py": "5e671b5693eb3741424b1fadb098eca6ea3d5f51599dddc1513c1f2292847848",
+    "src/townlet/training/replay_buffer.py": "d6fd0517488cfde5291c33ce03f67923c407af932794fb8a902b10e1d137f1c8",
+    "tests/test_townlet/integration/test_recording_substrate.py": "806f4f11e1a00b8dc058b643531ff78cdcea5b84c9e027fbac5993d655fcea9c",
+    "src/townlet/exploration/world_curiosity_state.py": "8b242ef58af2840c069db3d599606ba4760eea675e6be5bf00d8eb89c23b5b82",
+    "tests/test_townlet/regressions/bac/test_per_history.py": "e7198f32dda97a489f99d2fa59d96d3be838fad029dc181cb9a7d4c9d4faf531",
+    "tests/test_townlet/integration/test_reward_component_flow.py": "e56dc0e57e5cc9013b88bda67f661937d9d51df872d21b0163edd05f2c2618ce",
+    "tests/test_townlet/regressions/test_episode_lane_artifact_pipeline.py": "1bd025f4fd8c1a18f25235ed94718e68826a8c301386906d8a09ccd85710cc1f",
+    "tests/test_townlet/regressions/bac/test_launch_transport.py": "1bceb21245ebeff9ba6bc93d10603f669d964d2dbbfebdcfed56fbf8f3910d91",
+    "src/townlet/universe/compiler.py": "521a72dd6d0a155c89a216fa038828cc8054520714a58cc0e0420c2da9d09e92",
+    "src/townlet/recording/recorder.py": "8fca0b033bdc74f9e8146006c029b8bce6228b067f89b72109e1a886f4a32825",
+    "tests/test_townlet/unit/recording/test_recorder.py": "11d2391ec0bd7c7e105f8e8d45ce81d5771c4d87961dfee696e432ac3b15576b",
+    "src/townlet/population/vectorized.py": "38d8c969a8acfc5f49a3c5c7e532f6f10b34844af12ca37e8696123511e47d3b",
+    "tests/test_townlet/unit/training/test_replay_buffers.py": "61b688ea5fa7ef31d023b76b9ea3e48cc57e27787a19bee21eacd10071d647d9",
+    "tests/test_townlet/unit/training/test_prioritized_replay_buffer_components.py": "e8062470d79e9994ba52f7801a835ead6c4488144c704cd75c15c03883857c33",
+    "src/townlet/exploration/count_based.py": "163cb33f06799a75c887ff7beb58e4897875c94a4780ab722d019f714b33e9c1",
+    "src/townlet/training/episode.py": "d9f93e2b0551f04ac882ffc7e4a775d34352626af3e868679c00a962f52c00a7",
+    "tests/test_townlet/regressions/bac/test_recording_drain.py": "90b876583bcc6bf047cfd7f424dac889a86103b5109bef29c38bcce838e18912",
+    "src/townlet/demo/database.py": "7335e9798d15e14721e5278cb4e7402eea7f7da2344187c56f8bc8e42b93902e",
+    "src/townlet/recording/receipts.py": "f4f90c3ae1584965cbfc7ad84170fb3b0413ba5599a9eeb3d0d447f48b6fd647",
+    "tests/test_townlet/regressions/bac/test_count_provider.py": "0de2db0e0d2de868d803b97e8e8f0e277b365178dfddacaaa5825de65c5fed94",
+    "src/townlet/exploration/icm.py": "8004aec68d19c962df0cf6785b00af32c8553a3746fee95be39009555f9d44b8",
+    "scripts/run_demo.py": "0029a2d758ed45907be30c6e8a21003798ddaef99dad392acc2c8a0ce3abd43a",
+    "tests/test_townlet/unit/population/test_vectorized_population.py": "ec1b81b952a62fd90ac63fffdcf47b0147197511313e492fdc1b9669323de6b3",
+    "src/townlet/training/replay_contract.py": "3eaa725bd6d592b7524dd249125877eb91a1f707d4dfd12fbfb59b5b6cc6356c",
+    "src/townlet/training/sequential_replay_buffer.py": "14196e7109120682476736e927076ca2dcd9926cdda206cac1ab4641189e3ea5",
+    "src/townlet/training/prioritized_replay_buffer.py": "47b0070b5e519c6703d87861da07d8971b6e466f2c3f04c7417fc58db3038c2f",
+    "tests/test_townlet/unit/training/test_prioritized_replay_buffer.py": "e115f56feb1c716ffaba0751795f6b1b224c9815172f2931c2bdcc979cc8d4ec",
+    "src/townlet/config/resolved_launch.py": "67b5b38d729ef45a87bdcc1c2a834e8fc9d290708d9b2ee8f78dfe5093f840f4",
+    "tests/test_townlet/properties/test_replay_buffer_properties.py": "5678e826ce7fcb0574deb23441cc54b9e355b3c7adc446595269e2d7ae628a17",
+    "tests/test_townlet/integration/test_recording_recorder.py": "517341fb44d5edb7cdc85dc4bb6b4f8840de7ce741695d594b766038f8d6e962",
+    "tests/test_townlet/regressions/bac/test_discovery.py": "eb73ca825614ba593549135253caab0b723cc07b53bf91ac3e2801fd9e73e500",
+    "src/townlet/config/exploration_policy.py": "af8843ec1a270cfa49ec44b7ac5615d33db0d4d16b2d169d161bb4a1cd402c8c",
+    "tests/test_townlet/integration/test_compact_token_acceptance.py": "468b8b574044fd73b5ff1e3e153d3f326e2abbdb0a63d01a3f95e49a930c90b0",
+    "src/townlet/recording/data_structures.py": "b8b2a5b2c202e8fc28ee907b645391cfb32f7d1a5530f528fa8ae6e076171158",
+    "src/townlet/universe/compiled.py": "494f9676c236349f12c875c82dde821a85a3bf5077cae15654c78e8ac1630710",
+    "tests/test_townlet/regressions/fixtures/episode_lanes.py": "b22601ae6cac1c78fe86f3e23b717c831905df9c39850daa24b406ae4e6f5c33",
+    "src/townlet/exploration/adaptive_intrinsic.py": "80ecb26fb33626cc9efd271422c69cdae495412f5db94a505eb59628b58b6cd9",
+    "tests/test_townlet/unit/training/test_replay_buffer_components.py": "639e83cdf9a050a97edb0417aba1a89b507e329b2bfe2e4a438ce71ea8e3b6ce",
+    "src/townlet/training/historical_checkpoint.py": "013fe456f867bc9b5e28ab95ee9b07e5b0fa155653abfd07de3a35159c969761",
+    "src/townlet/config/bac_options.py": "10dc3ef7dc288d954147046c95bc8362df2162f3829986be26b2724e86dd4916",
+    "src/townlet/demo/unified_server.py": "626634171c744ecac9ac825f5db5727e3407031efd6c8fe0dcac5a1058e2a02c",
+    "src/townlet/demo/runner.py": "94842641bdce645fdd90d188d5bbdf6e09e7f4c071d15756202e173acd47c15d",
+    "src/townlet/exploration/rnd.py": "3a774dfb042cdbf20b66555c41f75c2d537b6ff49472395877dfcf5595e26e72",
+    "src/townlet/exploration/epsilon_greedy.py": "f9100a2f7f6a053a06d420d850a979d1c1e4a528461727c2a1405da5daeec059",
+    "tests/test_townlet/regressions/test_episode_lane_sinks.py": "7e4aa29416b3fcfd01470ba143d3eec43172d66cff9aa4120ef6e28b245dcd8a",
+    "tests/test_townlet/regressions/bac/test_icm_provider.py": "3759cd590ca7f6c348294ac6d58341cb7f7101cf25bfca7bfdeaea4ecdd645f8",
+    ".defaults-ratchet": "d2ca079a77bf4e5064e527d64a99d7897fd505e980c359b839bf6b882ea83ab0",
+    "src/townlet/universe/errors.py": "af30223624658d5d9cad3f56232353433f72a340d1fdb4caec69b581f91c2a53",
+    "tests/test_townlet/unit/demo/test_unified_server_unit.py": "0e4e90f087d69772ba25438871f4b4c19618a1076d73546246f6ae4a63eaaa28",
+    "src/townlet/universe/declarations.py": "a06b1fe8f3d16046935ded0fac95cf3312bb3f76bb937a757fb5f9ee598d84bd",
+    "src/townlet/config/training_v2_config.py": "d103aafbfe4e7fd4e957b71fd0651c6b6d8bebb98de4581d9d53e2356907ca68",
+    "docs/remediation/bac/package-reviews/T06-independent-review.md": "25ca43e41e64945f75381aaaa74600986d92e7e3f75f3f8f8346c9d638d344e3",
+    "docs/remediation/bac/package-reviews/T06-preservation-finding.md": "b83c42525b09f70994b3ec13332343413719011599bad42eeb7096b9b64b7022",
+    "docs/remediation/bac/package-reviews/T06-transport-initial-review.md": "554c8008e97d4d9bdf0bd5bac0d97227537655ad445bd1bdf017e2233b62bcbb",
+    "docs/remediation/bac/package-reviews/T11-independent-review.md": "cf88d21b87a53dcced008cdc8a4482b410fb28f3b22ad6fd2ce62c8202602b8e",
+    "docs/remediation/bac/package-reviews/PW02-independent-review.md": "03299c0fdaeace1a51ef23fdadc7947bf5685d02957db4975b2d159ed08b3c7a",
+    "docs/remediation/bac/package-reviews/PW02-key-ownership-finding.md": "64e3a27ba5bee32521702628524bc1670f01d0714ad22adeaca1d121c56222a3",
+    "docs/remediation/bac/package-reviews/T06-implementation.md": "be1e6a853e9fcfdb75aa77f6ab58a658e782ba49d99aef2de7afd28e659de121",
+    "docs/remediation/bac/package-reviews/T11-implementation.md": "9c79533e65adc501fe3714d7cc29d1a56b8ccf7676afd17744f8f2c98ff2483c",
+    "docs/remediation/bac/package-reviews/PW02-implementation.md": "d043a9769b81a2d95a3c85155b253c3090a2dc4f75d29c3bdf69e12f537e9216",
+    "docs/remediation/bac/evidence/wave05-qualification.json": "33b6fb7c10007587ef9e4bbb629238f50833a4d47cc7c15f06cbffb9650ed3d5",
+    "docs/remediation/bac/acceptance-ledger.json": "44e54c98a47734c108b46c0f96fab62757b91036a1f4003dab9ab3c9d6b49651",
+    "docs/remediation/bac/STATUS.md": "2da296b1bcb7ce0bc6cfaacc0388e5d6a7bde1f52d3f2b1dfc0db1a9d9086be4",
+    "src/townlet/config/exploration.py": "b5292e6d193ab224e76f727b63d9e078fdac0ca706ae0ee7f58e7f723302951d",
+    "src/townlet/config/curriculum.py": "a65e3a3b4d02182f96e56d0ad3fd93c72b7e9921b64b5f9c272456250d620227",
+    "tests/test_townlet/regressions/bac/test_public_loaders.py": "74789aa9ec679e3b9db3547600bc7e7e7c76a321f607605b4048a63b282c556d",
+    "tests/test_townlet/regressions/bac/test_sequence_history.py": "5b4626bc9557bbd86a5b25dad5e2cbf2b7ae49d211c2b6d125bdbd1c2386a7dc",
+    "tests/test_townlet/unit/training/test_sequential_replay_buffer.py": "0dd0af9fe4853ba650f66879d299d50e62a42ccc6c0a569369d814076ce6c621",
+    "tests/test_townlet/unit/population/test_recurrent_training.py": "e288d03c24b98e6bd4aff86c617a933dfba0ac233821967d5db00dc301ff7e01",
+    "tests/test_townlet/regressions/bac/test_sequence_inspection_native.py": "017cd03d37065359096123660f9d61af4744d66df0054ae544d57c703bdcf6d3",
+    "tests/test_townlet/integration/test_checkpointing.py": "c7044acb8e7f247511c80e8ab792a14040fff7eb646ee99f27bc96ab262cdf34"
+  },
+  "source_inventories": {
+    "T07": [
+      {
+        "path": "src/townlet/universe/declarations.py",
+        "lines": 842,
+        "sha256": "a06b1fe8f3d16046935ded0fac95cf3312bb3f76bb937a757fb5f9ee598d84bd"
+      },
+      {
+        "path": "src/townlet/config/resolved_launch.py",
+        "lines": 164,
+        "sha256": "67b5b38d729ef45a87bdcc1c2a834e8fc9d290708d9b2ee8f78dfe5093f840f4"
+      },
+      {
+        "path": "src/townlet/config/exploration.py",
+        "lines": 28,
+        "sha256": "b5292e6d193ab224e76f727b63d9e078fdac0ca706ae0ee7f58e7f723302951d"
+      },
+      {
+        "path": "src/townlet/config/curriculum.py",
+        "lines": 20,
+        "sha256": "a65e3a3b4d02182f96e56d0ad3fd93c72b7e9921b64b5f9c272456250d620227"
+      },
+      {
+        "path": "tests/test_townlet/regressions/bac/test_public_loaders.py",
+        "lines": 519,
+        "sha256": "74789aa9ec679e3b9db3547600bc7e7e7c76a321f607605b4048a63b282c556d"
+      }
+    ],
+    "T12": [
+      {
+        "path": "src/townlet/training/sequential_replay_buffer.py",
+        "lines": 1237,
+        "sha256": "14196e7109120682476736e927076ca2dcd9926cdda206cac1ab4641189e3ea5"
+      },
+      {
+        "path": "src/townlet/training/replay_contract.py",
+        "lines": 222,
+        "sha256": "3eaa725bd6d592b7524dd249125877eb91a1f707d4dfd12fbfb59b5b6cc6356c"
+      },
+      {
+        "path": "src/townlet/config/bac_options.py",
+        "lines": 294,
+        "sha256": "10dc3ef7dc288d954147046c95bc8362df2162f3829986be26b2724e86dd4916"
+      },
+      {
+        "path": "src/townlet/training/historical_checkpoint.py",
+        "lines": 666,
+        "sha256": "013fe456f867bc9b5e28ab95ee9b07e5b0fa155653abfd07de3a35159c969761"
+      },
+      {
+        "path": "tests/test_townlet/regressions/bac/test_sequence_history.py",
+        "lines": 819,
+        "sha256": "5b4626bc9557bbd86a5b25dad5e2cbf2b7ae49d211c2b6d125bdbd1c2386a7dc"
+      }
+    ],
+    "T12-native-proof": [
+      {
+        "path": "src/townlet/population/vectorized.py",
+        "lines": 1854,
+        "sha256": "38d8c969a8acfc5f49a3c5c7e532f6f10b34844af12ca37e8696123511e47d3b"
+      },
+      {
+        "path": "src/townlet/training/sequential_replay_buffer.py",
+        "lines": 1237,
+        "sha256": "14196e7109120682476736e927076ca2dcd9926cdda206cac1ab4641189e3ea5"
+      },
+      {
+        "path": "src/townlet/training/historical_checkpoint.py",
+        "lines": 666,
+        "sha256": "013fe456f867bc9b5e28ab95ee9b07e5b0fa155653abfd07de3a35159c969761"
+      },
+      {
+        "path": "tests/test_townlet/unit/population/test_recurrent_training.py",
+        "lines": 564,
+        "sha256": "e288d03c24b98e6bd4aff86c617a933dfba0ac233821967d5db00dc301ff7e01"
+      },
+      {
+        "path": "tests/test_townlet/regressions/bac/test_sequence_inspection_native.py",
+        "lines": 222,
+        "sha256": "017cd03d37065359096123660f9d61af4744d66df0054ae544d57c703bdcf6d3"
+      }
+    ],
+    "T12-checkpoint-owner": [
+      {
+        "path": "tests/test_townlet/integration/test_checkpointing.py",
+        "lines": 1665,
+        "sha256": "c7044acb8e7f247511c80e8ab792a14040fff7eb646ee99f27bc96ab262cdf34"
+      },
+      {
+        "path": "src/townlet/training/sequential_replay_buffer.py",
+        "lines": 1237,
+        "sha256": "14196e7109120682476736e927076ca2dcd9926cdda206cac1ab4641189e3ea5"
+      },
+      {
+        "path": "src/townlet/training/historical_checkpoint.py",
+        "lines": 666,
+        "sha256": "013fe456f867bc9b5e28ab95ee9b07e5b0fa155653abfd07de3a35159c969761"
+      },
+      {
+        "path": "src/townlet/demo/runner.py",
+        "lines": 1001,
+        "sha256": "94842641bdce645fdd90d188d5bbdf6e09e7f4c071d15756202e173acd47c15d"
+      },
+      {
+        "path": "tests/test_townlet/regressions/test_episode_lane_population.py",
+        "lines": 406,
+        "sha256": "74b7245dd73b64c9aad409050c98aaa72887420e9020dfe325512efc13ddb3c1"
+      }
+    ]
+  },
+  "reviews": {
+    "T07-astra-review-r4.md": {
+      "original_sha256": "7e011d71deaf29724662cf7d1b3df43d0a99d89912f76dfc758fc72c20113629",
+      "published_path": "package-reviews/T07-independent-review.md",
+      "published_sha256": "79387e41a3b6501c1a87e8f80262cb6d8a30c92be296cf1f8590282ce8594d4b"
+    },
+    "T07-r5-common-binding.md": {
+      "original_sha256": "19b22d58f1573916aad8afed9788388ff515d7a83f5acd4c23154d52be3e72e8",
+      "published_path": "package-reviews/T07-common-binding.md",
+      "published_sha256": "f38edfc29dd0e02f289a27f48c5cf6206d1846f121270b3e7fd8635087248612"
+    },
+    "T07-astra-review-r0.md": {
+      "original_sha256": "28a823b2e9a280db56da5aee20715d995ca5303ed7ae2a2f8c407701e2f58d24",
+      "published_path": "package-reviews/T07-scope-finding.md",
+      "published_sha256": "9ed00d59b257bb7e1535bf98479a7e518a0bef5574ab4a6b83aa322aa73c620f"
+    },
+    "T07-astra-review-r2.md": {
+      "original_sha256": "1db9c66c4bcd5255f7b8d0553bb655d767c441f38d545d91cbd63b3a51989532",
+      "published_path": "package-reviews/T07-clock-finding.md",
+      "published_sha256": "3d52b56dc1ebc10dde222dc0dae9e25772d5820153fd7ead7572205f47a4e084"
+    },
+    "T12-astra-review-r3.md": {
+      "original_sha256": "b41bc1fb30ea55da73015df98360c5fce376441d4783d85934f3a9ac7df51834",
+      "published_path": "package-reviews/T12-independent-review.md",
+      "published_sha256": "808dcfc041826b88aa1b13a679aed8b49ee23e3cac55bfa7f18365e31e6cda01"
+    },
+    "T12-r5-common-binding.md": {
+      "original_sha256": "6655a5ab1580b065d0fee3a11e4bb4ef41822da3311b58011b75da710070c766",
+      "published_path": "package-reviews/T12-common-binding.md",
+      "published_sha256": "6b097398da6daa9339bd9c83712c378967e48f43f508a58cdf8697d985d86145"
+    },
+    "T12-astra-review-r1.md": {
+      "original_sha256": "e45f1220d990972624f64bd9ab0d8e2b4542ffa83aab58e9ec2df5231f2b2b19",
+      "published_path": "package-reviews/T12-inspection-finding.md",
+      "published_sha256": "1b54e50fc4ba507e4bdc5f886c27ee787fbaae579f8fc1c3b2f82d69536f2f57"
+    },
+    "T12-native-proof-independent-review-r5.md": {
+      "original_sha256": "5ad420e531fc83592d746e2591e7280236cb0770ecbeeea32a1467535a36453f",
+      "published_path": "package-reviews/T12-native-proof-review.md",
+      "published_sha256": "8a6f093b5698626eb15acc5f79c357f9aebf19d0c20ab21bdca4728caebe0178"
+    },
+    "T12-archive-transport-review-r0.md": {
+      "original_sha256": "66ec0e8808283ec8e5b361e26b505f77d83e23716c72132dfaac9f089045a2df",
+      "published_path": "package-reviews/T12-inspection-design-review.md",
+      "published_sha256": "f29b568531ad2493cca472c22936b285619fc0242cbeca641be5ba4b7a6a2721"
+    },
+    "T12-checkpoint-owner-independent-review-r6.md": {
+      "original_sha256": "3a4c6bed97a992122cdf8727d4cdf0c172f043305af4faeed07f7c8649454bec",
+      "published_path": "package-reviews/T12-checkpoint-owner-review.md",
+      "published_sha256": "78ace59d9d4140c451ade0f0e63392e267b462c8b8840ac1b44966824e39bb5c"
+    },
+    "wave06/r6-common-source-binding.md": {
+      "original_sha256": "bbcc72d85672651e7086ae4fd6189497b5c0b50f0cab8fd659d6338020562894",
+      "published_path": "evidence/wave06-source-binding.md",
+      "published_sha256": "aa1803ad05ce03aa41f9f4f79517311dc7638e5505494540a242dac2e7f8bd05"
+    }
+  },
+  "qualified_commands_and_retained_failures": {
+    "wave06-red-r0": {
+      "legacy-unit-positives-result.json": {
+        "name": "legacy-unit-positives",
+        "exit_code": 0,
+        "seconds": 9.004712343215942,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/unit/training/test_sequential_replay_buffer.py",
+          "tests/test_townlet/unit/config/test_exploration_config_dto.py",
+          "tests/test_townlet/unit/config/test_curriculum_config_dto.py",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity"
+        ],
+        "log": "qualification/wave06-red-r0/legacy-unit-positives.log",
+        "sha256": "c5484217bb6bbfce8bd778d6a0a9592e1550870972073dc985f976f4eabc332f",
+        "candidate_tree": "fe73cb4709b1f8e49725f0d0391e9ecb4581c87f",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "ea6274a74fb1d8cda5ee6209fd409baaf571c6a489c9987a35d14426813d4c45"
+      },
+      "T12-result.json": {
+        "name": "T12",
+        "exit_code": 1,
+        "seconds": 7.565584659576416,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_sequence_history.py",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity"
+        ],
+        "log": "qualification/wave06-red-r0/T12.log",
+        "sha256": "50f4f999144e675702bda0cd32c54b534eeaa0c3ebc344a41289dee0b9cb567e",
+        "candidate_tree": "fe73cb4709b1f8e49725f0d0391e9ecb4581c87f",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "ea6274a74fb1d8cda5ee6209fd409baaf571c6a489c9987a35d14426813d4c45"
+      },
+      "T07-result.json": {
+        "name": "T07",
+        "exit_code": 1,
+        "seconds": 37.26411962509155,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_public_loaders.py",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity",
+          "-n",
+          "2",
+          "--dist",
+          "worksteal",
+          "--basetemp=/tmp/bac-wave06-T07-red-r0"
+        ],
+        "log": "qualification/wave06-red-r0/T07.log",
+        "sha256": "6f01c8a2e6cdfcd9e04bfec91d9f78c2e076477604c2412adf806e45d1c439fa",
+        "candidate_tree": "fe73cb4709b1f8e49725f0d0391e9ecb4581c87f",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "ea6274a74fb1d8cda5ee6209fd409baaf571c6a489c9987a35d14426813d4c45"
+      }
+    },
+    "wave06-green-r1-quick": {
+      "mypy-result.json": {
+        "name": "mypy",
+        "exit_code": 0,
+        "seconds": 2.3191046714782715,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "mypy",
+          "src/townlet"
+        ],
+        "log": "qualification/wave06-green-r1-quick/mypy.log",
+        "sha256": "1d6c482fd58bf46764c5069bfcd20eca339228827bf25704dfd009fdf4a55c1b",
+        "candidate_tree": "37451f06a3a0d60ab8c6ecb4b33b8f6e9aa8f1a0",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "e0a29decc1c75222dcf7e11216268378a950af81539d2834a8ae0d69fff4932d"
+      },
+      "T07-scope-red-result.json": {
+        "name": "T07-scope-red",
+        "exit_code": 1,
+        "seconds": 17.252532958984375,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_public_loaders.py",
+          "-k",
+          "unselected_level_corruption or identifiable_training_sidecar_error",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity",
+          "-n",
+          "2",
+          "--dist",
+          "worksteal",
+          "--basetemp=/tmp/bac-wave06-T07-scope-red-r1"
+        ],
+        "log": "qualification/wave06-green-r1-quick/T07-scope-red.log",
+        "sha256": "85a74b87c75e3c7d4e4dac971237eb4462504c71229914c10cd5697df139880d",
+        "candidate_tree": "37451f06a3a0d60ab8c6ecb4b33b8f6e9aa8f1a0",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "e0a29decc1c75222dcf7e11216268378a950af81539d2834a8ae0d69fff4932d"
+      },
+      "ruff-result.json": {
+        "name": "ruff",
+        "exit_code": 0,
+        "seconds": 0.11112427711486816,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "ruff",
+          "check",
+          "."
+        ],
+        "log": "qualification/wave06-green-r1-quick/ruff.log",
+        "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+        "candidate_tree": "37451f06a3a0d60ab8c6ecb4b33b8f6e9aa8f1a0",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "e0a29decc1c75222dcf7e11216268378a950af81539d2834a8ae0d69fff4932d"
+      },
+      "expression-doc-result.json": {
+        "name": "expression-doc",
+        "exit_code": 0,
+        "seconds": 2.448099136352539,
+        "command": [
+          ".venv/bin/python",
+          "scripts/gen_expression_functions_doc.py",
+          "--check"
+        ],
+        "log": "qualification/wave06-green-r1-quick/expression-doc.log",
+        "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf",
+        "candidate_tree": "37451f06a3a0d60ab8c6ecb4b33b8f6e9aa8f1a0",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "e0a29decc1c75222dcf7e11216268378a950af81539d2834a8ae0d69fff4932d"
+      },
+      "T12-result.json": {
+        "name": "T12",
+        "exit_code": 0,
+        "seconds": 10.458937406539917,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_sequence_history.py",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity"
+        ],
+        "log": "qualification/wave06-green-r1-quick/T12.log",
+        "sha256": "929f3ad01998e07f75d812a725602c4292db49e6e9a9c4044dbad7118d68cb60",
+        "candidate_tree": "37451f06a3a0d60ab8c6ecb4b33b8f6e9aa8f1a0",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "e0a29decc1c75222dcf7e11216268378a950af81539d2834a8ae0d69fff4932d"
+      },
+      "T07-base-green-result.json": {
+        "name": "T07-base-green",
+        "exit_code": 0,
+        "seconds": 36.26065993309021,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_public_loaders.py",
+          "-k",
+          "not (unselected_level_corruption or identifiable_training_sidecar_error)",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity"
+        ],
+        "log": "qualification/wave06-green-r1-quick/T07-base-green.log",
+        "sha256": "ca885f18b329c60f433591b199c26c4d0d4447839dc2a23300cfd28760dc3352",
+        "candidate_tree": "37451f06a3a0d60ab8c6ecb4b33b8f6e9aa8f1a0",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "e0a29decc1c75222dcf7e11216268378a950af81539d2834a8ae0d69fff4932d"
+      },
+      "black-result.json": {
+        "name": "black",
+        "exit_code": 0,
+        "seconds": 51.9818000793457,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "black",
+          "--check",
+          "src",
+          "tests",
+          "scripts",
+          "--workers",
+          "1"
+        ],
+        "log": "qualification/wave06-green-r1-quick/black.log",
+        "sha256": "776e520fffec39e1a700daa087d1f0755fcf36951709f5133586b2843ad69f1b",
+        "candidate_tree": "37451f06a3a0d60ab8c6ecb4b33b8f6e9aa8f1a0",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "e0a29decc1c75222dcf7e11216268378a950af81539d2834a8ae0d69fff4932d"
+      },
+      "no-defaults-result.json": {
+        "name": "no-defaults",
+        "exit_code": 1,
+        "seconds": 1.0685975551605225,
+        "command": [
+          ".venv/bin/python",
+          "scripts/no_defaults_lint.py",
+          "src/townlet/",
+          "--whitelist",
+          ".defaults-whitelist.txt",
+          "--ratchet",
+          ".defaults-ratchet",
+          "--quiet"
+        ],
+        "log": "qualification/wave06-green-r1-quick/no-defaults.log",
+        "sha256": "f0b5945298122c26ad722fdb939bb3621e47e3322eaa28becdfde0611c442de7",
+        "candidate_tree": "37451f06a3a0d60ab8c6ecb4b33b8f6e9aa8f1a0",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "e0a29decc1c75222dcf7e11216268378a950af81539d2834a8ae0d69fff4932d"
+      }
+    },
+    "wave06-green-r2-quick": {
+      "mypy-result.json": {
+        "name": "mypy",
+        "exit_code": 0,
+        "seconds": 2.2362442016601562,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "mypy",
+          "src/townlet"
+        ],
+        "log": "qualification/wave06-green-r2-quick/mypy.log",
+        "sha256": "1d6c482fd58bf46764c5069bfcd20eca339228827bf25704dfd009fdf4a55c1b",
+        "candidate_tree": "c1707d1102887e596d588be2c6d98e61405b9f4f",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "840ca08416190c82d2b78f0c618e89eccce406a8d18c4ffac4c88cc46883d840"
+      },
+      "T12-base-green-result.json": {
+        "name": "T12-base-green",
+        "exit_code": 0,
+        "seconds": 7.6614089012146,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_sequence_history.py",
+          "-k",
+          "not legacy_import_second_save_relocation",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity"
+        ],
+        "log": "qualification/wave06-green-r2-quick/T12-base-green.log",
+        "sha256": "0ed0efdc5bd59d20f89e1a1b0076a6aeb1e526cafbb4fe66ccd5d70462fc055a",
+        "candidate_tree": "c1707d1102887e596d588be2c6d98e61405b9f4f",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "840ca08416190c82d2b78f0c618e89eccce406a8d18c4ffac4c88cc46883d840"
+      },
+      "ruff-result.json": {
+        "name": "ruff",
+        "exit_code": 0,
+        "seconds": 0.13464784622192383,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "ruff",
+          "check",
+          "."
+        ],
+        "log": "qualification/wave06-green-r2-quick/ruff.log",
+        "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+        "candidate_tree": "c1707d1102887e596d588be2c6d98e61405b9f4f",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "840ca08416190c82d2b78f0c618e89eccce406a8d18c4ffac4c88cc46883d840"
+      },
+      "expression-doc-result.json": {
+        "name": "expression-doc",
+        "exit_code": 0,
+        "seconds": 3.8132822513580322,
+        "command": [
+          ".venv/bin/python",
+          "scripts/gen_expression_functions_doc.py",
+          "--check"
+        ],
+        "log": "qualification/wave06-green-r2-quick/expression-doc.log",
+        "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf",
+        "candidate_tree": "c1707d1102887e596d588be2c6d98e61405b9f4f",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "840ca08416190c82d2b78f0c618e89eccce406a8d18c4ffac4c88cc46883d840"
+      },
+      "black-result.json": {
+        "name": "black",
+        "exit_code": 0,
+        "seconds": 45.7434868812561,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "black",
+          "--check",
+          "src",
+          "tests",
+          "scripts",
+          "--workers",
+          "1"
+        ],
+        "log": "qualification/wave06-green-r2-quick/black.log",
+        "sha256": "776e520fffec39e1a700daa087d1f0755fcf36951709f5133586b2843ad69f1b",
+        "candidate_tree": "c1707d1102887e596d588be2c6d98e61405b9f4f",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "840ca08416190c82d2b78f0c618e89eccce406a8d18c4ffac4c88cc46883d840"
+      },
+      "T07-result.json": {
+        "name": "T07",
+        "exit_code": 0,
+        "seconds": 29.300334453582764,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_public_loaders.py",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity",
+          "-n",
+          "2",
+          "--dist",
+          "worksteal",
+          "--basetemp=/tmp/bac-wave06-T07-green-r2"
+        ],
+        "log": "qualification/wave06-green-r2-quick/T07.log",
+        "sha256": "22b43a1642e6cee9ef61f80178d5c71d558f5b96d1fc385c8386367549792278",
+        "candidate_tree": "c1707d1102887e596d588be2c6d98e61405b9f4f",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "840ca08416190c82d2b78f0c618e89eccce406a8d18c4ffac4c88cc46883d840"
+      },
+      "T12-relocation-red-result.json": {
+        "name": "T12-relocation-red",
+        "exit_code": 1,
+        "seconds": 5.193567276000977,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_sequence_history.py",
+          "-k",
+          "legacy_import_second_save_relocation",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity"
+        ],
+        "log": "qualification/wave06-green-r2-quick/T12-relocation-red.log",
+        "sha256": "dcac7b92c1db18ca4b9011fa4eeee461d32898c585604241531f9044dd3a9228",
+        "candidate_tree": "c1707d1102887e596d588be2c6d98e61405b9f4f",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "840ca08416190c82d2b78f0c618e89eccce406a8d18c4ffac4c88cc46883d840"
+      },
+      "no-defaults-result.json": {
+        "name": "no-defaults",
+        "exit_code": 0,
+        "seconds": 1.240760326385498,
+        "command": [
+          ".venv/bin/python",
+          "scripts/no_defaults_lint.py",
+          "src/townlet/",
+          "--whitelist",
+          ".defaults-whitelist.txt",
+          "--ratchet",
+          ".defaults-ratchet",
+          "--quiet"
+        ],
+        "log": "qualification/wave06-green-r2-quick/no-defaults.log",
+        "sha256": "f136366b4fe15ec060788a0fefc2da3eafa5c27f9edf44b01f7c7a4f9037e48d",
+        "candidate_tree": "c1707d1102887e596d588be2c6d98e61405b9f4f",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "840ca08416190c82d2b78f0c618e89eccce406a8d18c4ffac4c88cc46883d840"
+      }
+    },
+    "wave06-green-r3-quick": {
+      "mypy-result.json": {
+        "name": "mypy",
+        "exit_code": 0,
+        "seconds": 2.3929595947265625,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "mypy",
+          "src/townlet"
+        ],
+        "log": "qualification/wave06-green-r3-quick/mypy.log",
+        "sha256": "1d6c482fd58bf46764c5069bfcd20eca339228827bf25704dfd009fdf4a55c1b",
+        "candidate_tree": "3b5f87a47cf75bb76c208127cb039b05c2fd1ccb",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "2c7efa0d466689181b0c821b70ed79aa3143b99b6b9eaeb37d41648e000d9e48"
+      },
+      "T07-numeric-scope-red-result.json": {
+        "name": "T07-numeric-scope-red",
+        "exit_code": 1,
+        "seconds": 15.17526888847351,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_public_loaders.py",
+          "-k",
+          "direct_numeric_curriculum or direct_period_of_keeps",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity",
+          "-n",
+          "2",
+          "--dist",
+          "worksteal",
+          "--basetemp=/tmp/bac-wave06-T07-numeric-red-r3"
+        ],
+        "log": "qualification/wave06-green-r3-quick/T07-numeric-scope-red.log",
+        "sha256": "c6fa144a4597f5fd05d1c7a1b26c417dc72b3e26e9a53c10e3e13548bf46a0a6",
+        "candidate_tree": "3b5f87a47cf75bb76c208127cb039b05c2fd1ccb",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "2c7efa0d466689181b0c821b70ed79aa3143b99b6b9eaeb37d41648e000d9e48"
+      },
+      "ruff-result.json": {
+        "name": "ruff",
+        "exit_code": 0,
+        "seconds": 0.09561038017272949,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "ruff",
+          "check",
+          "."
+        ],
+        "log": "qualification/wave06-green-r3-quick/ruff.log",
+        "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+        "candidate_tree": "3b5f87a47cf75bb76c208127cb039b05c2fd1ccb",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "2c7efa0d466689181b0c821b70ed79aa3143b99b6b9eaeb37d41648e000d9e48"
+      },
+      "expression-doc-result.json": {
+        "name": "expression-doc",
+        "exit_code": 0,
+        "seconds": 2.3714282512664795,
+        "command": [
+          ".venv/bin/python",
+          "scripts/gen_expression_functions_doc.py",
+          "--check"
+        ],
+        "log": "qualification/wave06-green-r3-quick/expression-doc.log",
+        "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf",
+        "candidate_tree": "3b5f87a47cf75bb76c208127cb039b05c2fd1ccb",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "2c7efa0d466689181b0c821b70ed79aa3143b99b6b9eaeb37d41648e000d9e48"
+      },
+      "T12-result.json": {
+        "name": "T12",
+        "exit_code": 0,
+        "seconds": 12.270721197128296,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_sequence_history.py",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity"
+        ],
+        "log": "qualification/wave06-green-r3-quick/T12.log",
+        "sha256": "70e03201d0c26cf44610240910b58a05d20807d007eea10859362dd21c5c0c78",
+        "candidate_tree": "3b5f87a47cf75bb76c208127cb039b05c2fd1ccb",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "2c7efa0d466689181b0c821b70ed79aa3143b99b6b9eaeb37d41648e000d9e48"
+      },
+      "T07-base-green-result.json": {
+        "name": "T07-base-green",
+        "exit_code": 0,
+        "seconds": 31.06255578994751,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_public_loaders.py",
+          "-k",
+          "not (direct_numeric_curriculum or direct_period_of_keeps)",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity"
+        ],
+        "log": "qualification/wave06-green-r3-quick/T07-base-green.log",
+        "sha256": "4b78c85c958f0707460a81438812770120f458a444ae172a8676d11568528639",
+        "candidate_tree": "3b5f87a47cf75bb76c208127cb039b05c2fd1ccb",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "2c7efa0d466689181b0c821b70ed79aa3143b99b6b9eaeb37d41648e000d9e48"
+      },
+      "black-result.json": {
+        "name": "black",
+        "exit_code": 0,
+        "seconds": 49.34695649147034,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "black",
+          "--check",
+          "src",
+          "tests",
+          "scripts",
+          "--workers",
+          "1"
+        ],
+        "log": "qualification/wave06-green-r3-quick/black.log",
+        "sha256": "776e520fffec39e1a700daa087d1f0755fcf36951709f5133586b2843ad69f1b",
+        "candidate_tree": "3b5f87a47cf75bb76c208127cb039b05c2fd1ccb",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "2c7efa0d466689181b0c821b70ed79aa3143b99b6b9eaeb37d41648e000d9e48"
+      },
+      "no-defaults-result.json": {
+        "name": "no-defaults",
+        "exit_code": 0,
+        "seconds": 1.6517555713653564,
+        "command": [
+          ".venv/bin/python",
+          "scripts/no_defaults_lint.py",
+          "src/townlet/",
+          "--whitelist",
+          ".defaults-whitelist.txt",
+          "--ratchet",
+          ".defaults-ratchet",
+          "--quiet"
+        ],
+        "log": "qualification/wave06-green-r3-quick/no-defaults.log",
+        "sha256": "f136366b4fe15ec060788a0fefc2da3eafa5c27f9edf44b01f7c7a4f9037e48d",
+        "candidate_tree": "3b5f87a47cf75bb76c208127cb039b05c2fd1ccb",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "2c7efa0d466689181b0c821b70ed79aa3143b99b6b9eaeb37d41648e000d9e48"
+      }
+    },
+    "wave06-green-r4": {
+      "mypy-result.json": {
+        "name": "mypy",
+        "exit_code": 0,
+        "seconds": 2.275761842727661,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "mypy",
+          "src/townlet"
+        ],
+        "log": "qualification/wave06-green-r4/mypy.log",
+        "sha256": "1d6c482fd58bf46764c5069bfcd20eca339228827bf25704dfd009fdf4a55c1b",
+        "candidate_tree": "46f5fbe8fc493b4afe47085618e76f4dc703145d",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "dc2212e8e73a50872e273f494cd4f96b7e1ce5f67480009714c68fd11654dced"
+      },
+      "ruff-result.json": {
+        "name": "ruff",
+        "exit_code": 0,
+        "seconds": 0.12887334823608398,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "ruff",
+          "check",
+          "."
+        ],
+        "log": "qualification/wave06-green-r4/ruff.log",
+        "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+        "candidate_tree": "46f5fbe8fc493b4afe47085618e76f4dc703145d",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "dc2212e8e73a50872e273f494cd4f96b7e1ce5f67480009714c68fd11654dced"
+      },
+      "current-consumers-result.json": {
+        "name": "current-consumers",
+        "exit_code": 0,
+        "seconds": 72.36733961105347,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/integration/test_compact_token_acceptance.py",
+          "tests/test_townlet/unit/population/test_recurrent_training.py",
+          "tests/test_townlet/unit/config/test_exploration_config_dto.py",
+          "tests/test_townlet/unit/config/test_curriculum_config_dto.py",
+          "-q",
+          "--maxfail=1",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity"
+        ],
+        "log": "qualification/wave06-green-r4/current-consumers.log",
+        "sha256": "dc586d387485904cbb2ae5c88f7df282405195d366afeef62daba72ef4b42a6e",
+        "candidate_tree": "46f5fbe8fc493b4afe47085618e76f4dc703145d",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "dc2212e8e73a50872e273f494cd4f96b7e1ce5f67480009714c68fd11654dced"
+      },
+      "T12-unit-result.json": {
+        "name": "T12-unit",
+        "exit_code": 0,
+        "seconds": 8.77567720413208,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_sequence_history.py",
+          "tests/test_townlet/unit/training/test_sequential_replay_buffer.py",
+          "-q",
+          "--maxfail=1",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity"
+        ],
+        "log": "qualification/wave06-green-r4/T12-unit.log",
+        "sha256": "ac9ae33c29ecd4c154bdb26ca7afe746a34456f8d39774364da4106b526caed7",
+        "candidate_tree": "46f5fbe8fc493b4afe47085618e76f4dc703145d",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "dc2212e8e73a50872e273f494cd4f96b7e1ce5f67480009714c68fd11654dced"
+      },
+      "expression-doc-result.json": {
+        "name": "expression-doc",
+        "exit_code": 0,
+        "seconds": 2.2292299270629883,
+        "command": [
+          ".venv/bin/python",
+          "scripts/gen_expression_functions_doc.py",
+          "--check"
+        ],
+        "log": "qualification/wave06-green-r4/expression-doc.log",
+        "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf",
+        "candidate_tree": "46f5fbe8fc493b4afe47085618e76f4dc703145d",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "dc2212e8e73a50872e273f494cd4f96b7e1ce5f67480009714c68fd11654dced"
+      },
+      "black-result.json": {
+        "name": "black",
+        "exit_code": 0,
+        "seconds": 49.00443196296692,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "black",
+          "--check",
+          "src",
+          "tests",
+          "scripts",
+          "--workers",
+          "1"
+        ],
+        "log": "qualification/wave06-green-r4/black.log",
+        "sha256": "776e520fffec39e1a700daa087d1f0755fcf36951709f5133586b2843ad69f1b",
+        "candidate_tree": "46f5fbe8fc493b4afe47085618e76f4dc703145d",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "dc2212e8e73a50872e273f494cd4f96b7e1ce5f67480009714c68fd11654dced"
+      },
+      "T07-result.json": {
+        "name": "T07",
+        "exit_code": 0,
+        "seconds": 36.096440076828,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_public_loaders.py",
+          "-q",
+          "--maxfail=1",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity",
+          "-n",
+          "2",
+          "--dist",
+          "worksteal",
+          "--basetemp=/tmp/bac-wave06-T07-green-r4"
+        ],
+        "log": "qualification/wave06-green-r4/T07.log",
+        "sha256": "03e5aab5ac87ce597060e73e720715dc17bab97e6c07de2fe36fbb2878bbd4d9",
+        "candidate_tree": "46f5fbe8fc493b4afe47085618e76f4dc703145d",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "dc2212e8e73a50872e273f494cd4f96b7e1ce5f67480009714c68fd11654dced"
+      },
+      "no-defaults-result.json": {
+        "name": "no-defaults",
+        "exit_code": 0,
+        "seconds": 0.8322029113769531,
+        "command": [
+          ".venv/bin/python",
+          "scripts/no_defaults_lint.py",
+          "src/townlet/",
+          "--whitelist",
+          ".defaults-whitelist.txt",
+          "--ratchet",
+          ".defaults-ratchet",
+          "--quiet"
+        ],
+        "log": "qualification/wave06-green-r4/no-defaults.log",
+        "sha256": "f136366b4fe15ec060788a0fefc2da3eafa5c27f9edf44b01f7c7a4f9037e48d",
+        "candidate_tree": "46f5fbe8fc493b4afe47085618e76f4dc703145d",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "dc2212e8e73a50872e273f494cd4f96b7e1ce5f67480009714c68fd11654dced"
+      }
+    },
+    "wave06-native-proof-r5": {
+      "compiler-cli-result.json": {
+        "name": "compiler-cli",
+        "exit_code": 0,
+        "seconds": 162.48429656028748,
+        "command": [
+          ".venv/bin/python",
+          "scripts/validate_compiler_cli.py"
+        ],
+        "log": "qualification/wave06-native-proof-r5/compiler-cli.log",
+        "sha256": "efdba4e18661f59b1a519eb056ee10a6d1caa710e110ec07212ac424496dc3dc",
+        "candidate_tree": "e9d41bceb2d4a817b4f085a90ad123778858318e",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "df446a914fd60ab0dd06f6108b4dcb6f72cffaec5085f515bcfa9e64d183c4cf"
+      },
+      "ruff-result.json": {
+        "name": "ruff",
+        "exit_code": 0,
+        "seconds": 0.16446852684020996,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "ruff",
+          "check",
+          "."
+        ],
+        "log": "qualification/wave06-native-proof-r5/ruff.log",
+        "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+        "candidate_tree": "e9d41bceb2d4a817b4f085a90ad123778858318e",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "df446a914fd60ab0dd06f6108b4dcb6f72cffaec5085f515bcfa9e64d183c4cf"
+      },
+      "native-proof-result.json": {
+        "name": "native-proof",
+        "exit_code": 0,
+        "seconds": 16.20855736732483,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_sequence_inspection_native.py",
+          "-q",
+          "--maxfail=1",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity"
+        ],
+        "log": "qualification/wave06-native-proof-r5/native-proof.log",
+        "sha256": "689d3d93f92560e3b9512fb456d391a1f611d01ea907967330fd69f5e42c1105",
+        "candidate_tree": "e9d41bceb2d4a817b4f085a90ad123778858318e",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "df446a914fd60ab0dd06f6108b4dcb6f72cffaec5085f515bcfa9e64d183c4cf"
+      },
+      "black-result.json": {
+        "name": "black",
+        "exit_code": 0,
+        "seconds": 64.11484909057617,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "black",
+          "--check",
+          "src",
+          "tests",
+          "scripts",
+          "--workers",
+          "1"
+        ],
+        "log": "qualification/wave06-native-proof-r5/black.log",
+        "sha256": "947e889692ae4d04cb97c4bdb07838b4d993cb599bf865e36ecdc5f0a003a75b",
+        "candidate_tree": "e9d41bceb2d4a817b4f085a90ad123778858318e",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "df446a914fd60ab0dd06f6108b4dcb6f72cffaec5085f515bcfa9e64d183c4cf"
+      }
+    },
+    "wave06-full-r5": {
+      "full-result.json": {
+        "name": "full",
+        "exit_code": 2,
+        "seconds": 1062.140774011612,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests",
+          "-q",
+          "--maxfail=1",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity",
+          "-n",
+          "4",
+          "--dist",
+          "worksteal",
+          "--basetemp=/tmp/bac-wave06-full-r5"
+        ],
+        "log": "qualification/wave06-full-r5/full.log",
+        "sha256": "33f92e3e06e7839e694dc7b87f4dc33c509bdbdb53b6a0bdba75b4c0334265e9",
+        "candidate_tree": "e9d41bceb2d4a817b4f085a90ad123778858318e",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "df446a914fd60ab0dd06f6108b4dcb6f72cffaec5085f515bcfa9e64d183c4cf"
+      }
+    },
+    "wave06-owners-r6": {
+      "mypy-result.json": {
+        "name": "mypy",
+        "exit_code": 0,
+        "seconds": 0.9845523834228516,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "mypy",
+          "src/townlet"
+        ],
+        "log": "qualification/wave06-owners-r6/mypy.log",
+        "sha256": "1d6c482fd58bf46764c5069bfcd20eca339228827bf25704dfd009fdf4a55c1b",
+        "candidate_tree": "42bf1b690f523ed2bb8bf47d12f53d00ea6cb93c",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "2a15cf64550b3f134e0da978d76c23f5ff47c99313599dc490279a1cfa7cfdee"
+      },
+      "checkpoint-recurrent-owners-result.json": {
+        "name": "checkpoint-recurrent-owners",
+        "exit_code": 0,
+        "seconds": 218.6802670955658,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/integration/test_checkpointing.py",
+          "tests/test_townlet/integration/test_checkpoint_substrate.py",
+          "tests/test_townlet/integration/test_recurrent_bootstrap_runtime.py",
+          "tests/test_townlet/integration/test_recurrent_bptt_runtime.py",
+          "tests/test_townlet/integration/test_episode_execution.py",
+          "tests/test_townlet/integration/test_training_loop.py",
+          "tests/test_townlet/regressions/test_episode_lane_learning.py",
+          "tests/test_townlet/regressions/test_episode_lane_population.py",
+          "tests/test_townlet/unit/training/test_checkpoint_utils.py",
+          "tests/test_townlet/unit/demo/test_wp16_persistent_resume.py",
+          "-q",
+          "--maxfail=1",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity",
+          "-n",
+          "3",
+          "--dist",
+          "worksteal",
+          "--basetemp=/tmp/bac-wave06-owners-r6"
+        ],
+        "log": "qualification/wave06-owners-r6/checkpoint-recurrent-owners.log",
+        "sha256": "6824f9d20187a786f04c8d3e7801b3b22863b9992c58c44f2cc7b5f221c916ec",
+        "candidate_tree": "42bf1b690f523ed2bb8bf47d12f53d00ea6cb93c",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "2a15cf64550b3f134e0da978d76c23f5ff47c99313599dc490279a1cfa7cfdee"
+      },
+      "compiler-cli-result.json": {
+        "name": "compiler-cli",
+        "exit_code": 0,
+        "seconds": 175.6615550518036,
+        "command": [
+          ".venv/bin/python",
+          "scripts/validate_compiler_cli.py"
+        ],
+        "log": "qualification/wave06-owners-r6/compiler-cli.log",
+        "sha256": "22f75d91033ca269263dc41620142a901363ef6bec252418a59e5dfcc9de5953",
+        "candidate_tree": "42bf1b690f523ed2bb8bf47d12f53d00ea6cb93c",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "2a15cf64550b3f134e0da978d76c23f5ff47c99313599dc490279a1cfa7cfdee"
+      },
+      "ruff-result.json": {
+        "name": "ruff",
+        "exit_code": 0,
+        "seconds": 0.05673670768737793,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "ruff",
+          "check",
+          "."
+        ],
+        "log": "qualification/wave06-owners-r6/ruff.log",
+        "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+        "candidate_tree": "42bf1b690f523ed2bb8bf47d12f53d00ea6cb93c",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "2a15cf64550b3f134e0da978d76c23f5ff47c99313599dc490279a1cfa7cfdee"
+      },
+      "expression-doc-result.json": {
+        "name": "expression-doc",
+        "exit_code": 0,
+        "seconds": 3.6208343505859375,
+        "command": [
+          ".venv/bin/python",
+          "scripts/gen_expression_functions_doc.py",
+          "--check"
+        ],
+        "log": "qualification/wave06-owners-r6/expression-doc.log",
+        "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf",
+        "candidate_tree": "42bf1b690f523ed2bb8bf47d12f53d00ea6cb93c",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "2a15cf64550b3f134e0da978d76c23f5ff47c99313599dc490279a1cfa7cfdee"
+      },
+      "black-result.json": {
+        "name": "black",
+        "exit_code": 0,
+        "seconds": 90.98005247116089,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "black",
+          "--check",
+          "src",
+          "tests",
+          "scripts",
+          "--workers",
+          "1"
+        ],
+        "log": "qualification/wave06-owners-r6/black.log",
+        "sha256": "947e889692ae4d04cb97c4bdb07838b4d993cb599bf865e36ecdc5f0a003a75b",
+        "candidate_tree": "42bf1b690f523ed2bb8bf47d12f53d00ea6cb93c",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "2a15cf64550b3f134e0da978d76c23f5ff47c99313599dc490279a1cfa7cfdee"
+      },
+      "no-defaults-result.json": {
+        "name": "no-defaults",
+        "exit_code": 0,
+        "seconds": 1.780797004699707,
+        "command": [
+          ".venv/bin/python",
+          "scripts/no_defaults_lint.py",
+          "src/townlet/",
+          "--whitelist",
+          ".defaults-whitelist.txt",
+          "--ratchet",
+          ".defaults-ratchet",
+          "--quiet"
+        ],
+        "log": "qualification/wave06-owners-r6/no-defaults.log",
+        "sha256": "f136366b4fe15ec060788a0fefc2da3eafa5c27f9edf44b01f7c7a4f9037e48d",
+        "candidate_tree": "42bf1b690f523ed2bb8bf47d12f53d00ea6cb93c",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "2a15cf64550b3f134e0da978d76c23f5ff47c99313599dc490279a1cfa7cfdee"
+      }
+    },
+    "wave06-full-r6": {
+      "full-result.json": {
+        "name": "full",
+        "exit_code": 0,
+        "seconds": 1829.6802487373352,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests",
+          "-q",
+          "--maxfail=1",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity",
+          "-n",
+          "4",
+          "--dist",
+          "worksteal",
+          "--basetemp=/tmp/bac-wave06-full-r6"
+        ],
+        "log": "qualification/wave06-full-r6/full.log",
+        "sha256": "55e525a40bca399b0e0f91ab8db2c68dfab5aa528de0820af4b1578482d87b9f",
+        "candidate_tree": "42bf1b690f523ed2bb8bf47d12f53d00ea6cb93c",
+        "base_commit": "44e9d494eb94da1450b3e7a1832acea23dbbdb8e",
+        "manifest_sha256": "2a15cf64550b3f134e0da978d76c23f5ff47c99313599dc490279a1cfa7cfdee"
+      }
+    }
+  },
+  "material_repair_history": [
+    "T07 full-root selection/family admission unnecessarily rejected valid direct/local sections with unrelated invalid siblings or training sidecars. Selection/family scope now precedes unrelated admission.",
+    "T07 numeric-only duration resolution unnecessarily parsed malformed ancestor root YAML. Actual dependency admission remains strict; optional external numeric evidence is incremental without hiding recognized authoritative failures.",
+    "T12 legacy inspection lost its original archives on second save and could relabel new raw rows. Exact reviewed four-key transport preserves history and new raw inspection rows separately.",
+    "The first full gate failed a genuine recurrent maskless5 checkpoint equality expectation. The test preserves strict all-key learned/clocks equality and explicitly proves approvedA archive/fresh0, exact history query/export/successors/boundaries and unchanged original artifact bytes. The affected checkpoint/recurrent selection passed125 cases, with one conditional skip, before replacement full.",
+    "Existing sequence and compact owner fixtures now distinguish genuine old5 archive/fresh0, mixed corrupted schemas, and qualified captured6; no permissive production weakening."
+  ],
+  "remaining": {
+    "T07": "T32 actual live/evaluator hosting and readiness, T34 lifecycle/cleanup, T36 serialized provenance, integrated native contracts and final common-source acceptance remain REQUIRED OPEN.",
+    "T12": "T14 recurrent PER, T15 actual qualified learner collection/readiness/unroll/bootstrap/objectives, T24/T25 complete native admission/outer archive registry/accounting/resource-RNG preparation/failure atomicity and evolved optimizer continuation remain REQUIRED OPEN. The native proof covers positive inspection transport, not complete C07 or corrected recurrent learning. Native consumers must discriminate the four-key envelope before ordinary replay tags and preserve new raw transport separately from validated HC archive accounting."
+  },
+  "native_proof_limits": "Positive actual population6 checkpoint transport and two generations relocation/resave; natural initial optimizer/scheduler and authored total_steps17 are not evolved learning proof, byte-for-byte file provenance, complete native validation or all-failure atomicity.",
+  "normal_reproduction": [
+    "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_public_loaders.py tests/test_townlet/regressions/bac/test_sequence_history.py tests/test_townlet/regressions/bac/test_sequence_inspection_native.py -q",
+    "CUDA_VISIBLE_DEVICES= uv run pytest tests -q --no-cov -p no:cacheprovider -n 4 --dist worksteal"
+  ],
+  "whole_BAC_final_acceptance": "OPEN;22 of 66 packages qualified,44 later packages plus 53 requirements/22 final lenses+synthesis/finite learning cohort/coverage>=70/slow/applicable hardware/exact-tip CI remain.",
+  "hardware": "CPU only;CUDA unavailable;skips disclosed,not passing hardware qualification.",
+  "publication": "Local source/documentation only; no PR/push/merge or branch/worktree creation.",
+  "hash_scope": "All73 guarded hashes describe qualified source commit 07ce97550cf2f9dae67cb56d1d8014218c39d523 and tree 42bf1b690f523ed2bb8bf47d12f53d00ea6cb93c. The subsequent documentation-only checkpoint changes status/ledger/review rendering; implementation source stays identical. Verify old documentation guards at that source commit, not against later documentation content.",
+  "documentation_cadence": "Documentation-only checkpoint retains all six guards. Repeat full suite is deferred under approved cadence because runtime/test/config sources remain byte-identical to qualified tree; final common-candidate full/coverage/slow/hardware/CI remain required."
+}

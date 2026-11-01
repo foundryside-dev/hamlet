@@ -3,7 +3,7 @@
   "baseline_sha": "4aa5363b5de54d9a112977c32c2975f37627197f",
   "design": "BAC-2026-11-01-r2 plus explicit additive plan decisions",
   "approved_plan_sha256": "2dde2d80d3d14c510878c26af1f99c42217be12d3cb3a554647bc68646feedc1",
-  "phase": "T01/T02/T08 and five wave02 packages accepted; T03 effective config/identity implementation active; all later final acceptance remains owed",
+  "phase": "Nine packages accepted including T03; T03a/T04/PW01 regression authoring active; all final acceptance remains owed",
   "completion_bar": "zero unresolved P1/P2 and zero unapproved in-scope capability gaps; all agreed finite evidence, fresh final spec/design/code review, required gates and source-verified docs",
   "requirements": [
     {
@@ -411,6 +411,31 @@
             "package-reviews/T02-independent-review.md"
           ],
           "final_acceptance": "T02 schema/transport only; runtime wiring and final common-source acceptance remain owed"
+        },
+        {
+          "task": "T03",
+          "source_commit": "1c99510967c132fce04548564f4cb317e2ecddaf",
+          "candidate_tree": "d3c1f4993efb73717826f6d4e1bf9e3cf0cd28d0",
+          "status": "implemented; fresh other-model source and separate schema-repair reviews PASS; all six guards and exact-tree full suite passed",
+          "focused_owner_result": "170 passed;17 new+153 owner; schema-repair module124 passed",
+          "independent_result": "Fresh Astra high spec/quality PASS;26 projection contrasts, four seeded network factories,12 public chains and three native historical cache resave/reload paths; no unresolved scoped P1/P2/P3",
+          "full_repository_result": "5865 passed,15 skipped,15 warnings;1004.52s test/1008.72s wall;four xdist workers;five process identities and six guarded source digests verified",
+          "other_gates": [
+            "Ruff",
+            "Black",
+            "mypy",
+            "no-defaults ratchet614",
+            "compiler CLI fleet",
+            "expression documentation check"
+          ],
+          "reports": [
+            "package-reviews/T03-implementation.md",
+            "package-reviews/T03-independent-review.md",
+            "package-reviews/T03-gate-repair-implementation.md",
+            "package-reviews/T03-gate-repair-independent-review.md",
+            "evidence/T03-qualification.json"
+          ],
+          "final_acceptance": "Scoped P1 primitive/transport qualified; full final same-source requirement refresh and runtime consumers remain owed"
         }
       ]
     },
@@ -502,6 +527,31 @@
             "package-reviews/T02-independent-review.md"
           ],
           "final_acceptance": "T02 schema/transport only; runtime wiring and final common-source acceptance remain owed"
+        },
+        {
+          "task": "T03",
+          "source_commit": "1c99510967c132fce04548564f4cb317e2ecddaf",
+          "candidate_tree": "d3c1f4993efb73717826f6d4e1bf9e3cf0cd28d0",
+          "status": "implemented; fresh other-model source and separate schema-repair reviews PASS; all six guards and exact-tree full suite passed",
+          "focused_owner_result": "170 passed;17 new+153 owner; schema-repair module124 passed",
+          "independent_result": "Fresh Astra high spec/quality PASS;26 projection contrasts, four seeded network factories,12 public chains and three native historical cache resave/reload paths; no unresolved scoped P1/P2/P3",
+          "full_repository_result": "5865 passed,15 skipped,15 warnings;1004.52s test/1008.72s wall;four xdist workers;five process identities and six guarded source digests verified",
+          "other_gates": [
+            "Ruff",
+            "Black",
+            "mypy",
+            "no-defaults ratchet614",
+            "compiler CLI fleet",
+            "expression documentation check"
+          ],
+          "reports": [
+            "package-reviews/T03-implementation.md",
+            "package-reviews/T03-independent-review.md",
+            "package-reviews/T03-gate-repair-implementation.md",
+            "package-reviews/T03-gate-repair-independent-review.md",
+            "evidence/T03-qualification.json"
+          ],
+          "final_acceptance": "Scoped P1 primitive/transport qualified; full final same-source requirement refresh and runtime consumers remain owed"
         }
       ]
     },
@@ -593,6 +643,31 @@
             "package-reviews/T02-independent-review.md"
           ],
           "final_acceptance": "T02 schema/transport only; runtime wiring and final common-source acceptance remain owed"
+        },
+        {
+          "task": "T03",
+          "source_commit": "1c99510967c132fce04548564f4cb317e2ecddaf",
+          "candidate_tree": "d3c1f4993efb73717826f6d4e1bf9e3cf0cd28d0",
+          "status": "implemented; fresh other-model source and separate schema-repair reviews PASS; all six guards and exact-tree full suite passed",
+          "focused_owner_result": "170 passed;17 new+153 owner; schema-repair module124 passed",
+          "independent_result": "Fresh Astra high spec/quality PASS;26 projection contrasts, four seeded network factories,12 public chains and three native historical cache resave/reload paths; no unresolved scoped P1/P2/P3",
+          "full_repository_result": "5865 passed,15 skipped,15 warnings;1004.52s test/1008.72s wall;four xdist workers;five process identities and six guarded source digests verified",
+          "other_gates": [
+            "Ruff",
+            "Black",
+            "mypy",
+            "no-defaults ratchet614",
+            "compiler CLI fleet",
+            "expression documentation check"
+          ],
+          "reports": [
+            "package-reviews/T03-implementation.md",
+            "package-reviews/T03-independent-review.md",
+            "package-reviews/T03-gate-repair-implementation.md",
+            "package-reviews/T03-gate-repair-independent-review.md",
+            "evidence/T03-qualification.json"
+          ],
+          "final_acceptance": "Scoped P1 primitive/transport qualified; full final same-source requirement refresh and runtime consumers remain owed"
         }
       ]
     },
@@ -1734,6 +1809,31 @@
             "package-reviews/T02-independent-review.md"
           ],
           "final_acceptance": "T02 schema/transport only; runtime wiring and final common-source acceptance remain owed"
+        },
+        {
+          "task": "T03",
+          "source_commit": "1c99510967c132fce04548564f4cb317e2ecddaf",
+          "candidate_tree": "d3c1f4993efb73717826f6d4e1bf9e3cf0cd28d0",
+          "status": "implemented; fresh other-model source and separate schema-repair reviews PASS; all six guards and exact-tree full suite passed",
+          "focused_owner_result": "170 passed;17 new+153 owner; schema-repair module124 passed",
+          "independent_result": "Fresh Astra high spec/quality PASS;26 projection contrasts, four seeded network factories,12 public chains and three native historical cache resave/reload paths; no unresolved scoped P1/P2/P3",
+          "full_repository_result": "5865 passed,15 skipped,15 warnings;1004.52s test/1008.72s wall;four xdist workers;five process identities and six guarded source digests verified",
+          "other_gates": [
+            "Ruff",
+            "Black",
+            "mypy",
+            "no-defaults ratchet614",
+            "compiler CLI fleet",
+            "expression documentation check"
+          ],
+          "reports": [
+            "package-reviews/T03-implementation.md",
+            "package-reviews/T03-independent-review.md",
+            "package-reviews/T03-gate-repair-implementation.md",
+            "package-reviews/T03-gate-repair-independent-review.md",
+            "evidence/T03-qualification.json"
+          ],
+          "final_acceptance": "Scoped P1 primitive/transport qualified; full final same-source requirement refresh and runtime consumers remain owed"
         }
       ]
     },
@@ -1854,6 +1954,31 @@
             "package-reviews/T02-independent-review.md"
           ],
           "final_acceptance": "T02 schema/transport only; runtime wiring and final common-source acceptance remain owed"
+        },
+        {
+          "task": "T03",
+          "source_commit": "1c99510967c132fce04548564f4cb317e2ecddaf",
+          "candidate_tree": "d3c1f4993efb73717826f6d4e1bf9e3cf0cd28d0",
+          "status": "implemented; fresh other-model source and separate schema-repair reviews PASS; all six guards and exact-tree full suite passed",
+          "focused_owner_result": "170 passed;17 new+153 owner; schema-repair module124 passed",
+          "independent_result": "Fresh Astra high spec/quality PASS;26 projection contrasts, four seeded network factories,12 public chains and three native historical cache resave/reload paths; no unresolved scoped P1/P2/P3",
+          "full_repository_result": "5865 passed,15 skipped,15 warnings;1004.52s test/1008.72s wall;four xdist workers;five process identities and six guarded source digests verified",
+          "other_gates": [
+            "Ruff",
+            "Black",
+            "mypy",
+            "no-defaults ratchet614",
+            "compiler CLI fleet",
+            "expression documentation check"
+          ],
+          "reports": [
+            "package-reviews/T03-implementation.md",
+            "package-reviews/T03-independent-review.md",
+            "package-reviews/T03-gate-repair-implementation.md",
+            "package-reviews/T03-gate-repair-independent-review.md",
+            "evidence/T03-qualification.json"
+          ],
+          "final_acceptance": "Scoped P1 primitive/transport qualified; full final same-source requirement refresh and runtime consumers remain owed"
         }
       ]
     },
@@ -2188,6 +2313,31 @@
             "package-reviews/T02-independent-review.md"
           ],
           "final_acceptance": "T02 schema/transport only; runtime wiring and final common-source acceptance remain owed"
+        },
+        {
+          "task": "T03",
+          "source_commit": "1c99510967c132fce04548564f4cb317e2ecddaf",
+          "candidate_tree": "d3c1f4993efb73717826f6d4e1bf9e3cf0cd28d0",
+          "status": "implemented; fresh other-model source and separate schema-repair reviews PASS; all six guards and exact-tree full suite passed",
+          "focused_owner_result": "170 passed;17 new+153 owner; schema-repair module124 passed",
+          "independent_result": "Fresh Astra high spec/quality PASS;26 projection contrasts, four seeded network factories,12 public chains and three native historical cache resave/reload paths; no unresolved scoped P1/P2/P3",
+          "full_repository_result": "5865 passed,15 skipped,15 warnings;1004.52s test/1008.72s wall;four xdist workers;five process identities and six guarded source digests verified",
+          "other_gates": [
+            "Ruff",
+            "Black",
+            "mypy",
+            "no-defaults ratchet614",
+            "compiler CLI fleet",
+            "expression documentation check"
+          ],
+          "reports": [
+            "package-reviews/T03-implementation.md",
+            "package-reviews/T03-independent-review.md",
+            "package-reviews/T03-gate-repair-implementation.md",
+            "package-reviews/T03-gate-repair-independent-review.md",
+            "evidence/T03-qualification.json"
+          ],
+          "final_acceptance": "Scoped P1 primitive/transport qualified; full final same-source requirement refresh and runtime consumers remain owed"
         }
       ]
     },
@@ -2514,6 +2664,31 @@
             "package-reviews/T02-independent-review.md"
           ],
           "final_acceptance": "T02 schema/transport only; runtime wiring and final common-source acceptance remain owed"
+        },
+        {
+          "task": "T03",
+          "source_commit": "1c99510967c132fce04548564f4cb317e2ecddaf",
+          "candidate_tree": "d3c1f4993efb73717826f6d4e1bf9e3cf0cd28d0",
+          "status": "implemented; fresh other-model source and separate schema-repair reviews PASS; all six guards and exact-tree full suite passed",
+          "focused_owner_result": "170 passed;17 new+153 owner; schema-repair module124 passed",
+          "independent_result": "Fresh Astra high spec/quality PASS;26 projection contrasts, four seeded network factories,12 public chains and three native historical cache resave/reload paths; no unresolved scoped P1/P2/P3",
+          "full_repository_result": "5865 passed,15 skipped,15 warnings;1004.52s test/1008.72s wall;four xdist workers;five process identities and six guarded source digests verified",
+          "other_gates": [
+            "Ruff",
+            "Black",
+            "mypy",
+            "no-defaults ratchet614",
+            "compiler CLI fleet",
+            "expression documentation check"
+          ],
+          "reports": [
+            "package-reviews/T03-implementation.md",
+            "package-reviews/T03-independent-review.md",
+            "package-reviews/T03-gate-repair-implementation.md",
+            "package-reviews/T03-gate-repair-independent-review.md",
+            "evidence/T03-qualification.json"
+          ],
+          "final_acceptance": "Scoped P1 primitive/transport qualified; full final same-source requirement refresh and runtime consumers remain owed"
         }
       ],
       "evidence": [
@@ -3584,6 +3759,31 @@
             "package-reviews/T02-independent-review.md"
           ],
           "final_acceptance": "T02 schema/transport only; runtime wiring and final common-source acceptance remain owed"
+        },
+        {
+          "task": "T03",
+          "source_commit": "1c99510967c132fce04548564f4cb317e2ecddaf",
+          "candidate_tree": "d3c1f4993efb73717826f6d4e1bf9e3cf0cd28d0",
+          "status": "implemented; fresh other-model source and separate schema-repair reviews PASS; all six guards and exact-tree full suite passed",
+          "focused_owner_result": "170 passed;17 new+153 owner; schema-repair module124 passed",
+          "independent_result": "Fresh Astra high spec/quality PASS;26 projection contrasts, four seeded network factories,12 public chains and three native historical cache resave/reload paths; no unresolved scoped P1/P2/P3",
+          "full_repository_result": "5865 passed,15 skipped,15 warnings;1004.52s test/1008.72s wall;four xdist workers;five process identities and six guarded source digests verified",
+          "other_gates": [
+            "Ruff",
+            "Black",
+            "mypy",
+            "no-defaults ratchet614",
+            "compiler CLI fleet",
+            "expression documentation check"
+          ],
+          "reports": [
+            "package-reviews/T03-implementation.md",
+            "package-reviews/T03-independent-review.md",
+            "package-reviews/T03-gate-repair-implementation.md",
+            "package-reviews/T03-gate-repair-independent-review.md",
+            "evidence/T03-qualification.json"
+          ],
+          "final_acceptance": "Scoped P1 primitive/transport qualified; full final same-source requirement refresh and runtime consumers remain owed"
         }
       ],
       "evidence": [
@@ -3967,6 +4167,31 @@
             "package-reviews/T02-independent-review.md"
           ],
           "final_acceptance": "T02 schema/transport only; runtime wiring and final common-source acceptance remain owed"
+        },
+        {
+          "task": "T03",
+          "source_commit": "1c99510967c132fce04548564f4cb317e2ecddaf",
+          "candidate_tree": "d3c1f4993efb73717826f6d4e1bf9e3cf0cd28d0",
+          "status": "implemented; fresh other-model source and separate schema-repair reviews PASS; all six guards and exact-tree full suite passed",
+          "focused_owner_result": "170 passed;17 new+153 owner; schema-repair module124 passed",
+          "independent_result": "Fresh Astra high spec/quality PASS;26 projection contrasts, four seeded network factories,12 public chains and three native historical cache resave/reload paths; no unresolved scoped P1/P2/P3",
+          "full_repository_result": "5865 passed,15 skipped,15 warnings;1004.52s test/1008.72s wall;four xdist workers;five process identities and six guarded source digests verified",
+          "other_gates": [
+            "Ruff",
+            "Black",
+            "mypy",
+            "no-defaults ratchet614",
+            "compiler CLI fleet",
+            "expression documentation check"
+          ],
+          "reports": [
+            "package-reviews/T03-implementation.md",
+            "package-reviews/T03-independent-review.md",
+            "package-reviews/T03-gate-repair-implementation.md",
+            "package-reviews/T03-gate-repair-independent-review.md",
+            "evidence/T03-qualification.json"
+          ],
+          "final_acceptance": "Scoped P1 primitive/transport qualified; full final same-source requirement refresh and runtime consumers remain owed"
         }
       ]
     },
@@ -4074,6 +4299,31 @@
             "package-reviews/T02-independent-review.md"
           ],
           "final_acceptance": "T02 schema/transport only; runtime wiring and final common-source acceptance remain owed"
+        },
+        {
+          "task": "T03",
+          "source_commit": "1c99510967c132fce04548564f4cb317e2ecddaf",
+          "candidate_tree": "d3c1f4993efb73717826f6d4e1bf9e3cf0cd28d0",
+          "status": "implemented; fresh other-model source and separate schema-repair reviews PASS; all six guards and exact-tree full suite passed",
+          "focused_owner_result": "170 passed;17 new+153 owner; schema-repair module124 passed",
+          "independent_result": "Fresh Astra high spec/quality PASS;26 projection contrasts, four seeded network factories,12 public chains and three native historical cache resave/reload paths; no unresolved scoped P1/P2/P3",
+          "full_repository_result": "5865 passed,15 skipped,15 warnings;1004.52s test/1008.72s wall;four xdist workers;five process identities and six guarded source digests verified",
+          "other_gates": [
+            "Ruff",
+            "Black",
+            "mypy",
+            "no-defaults ratchet614",
+            "compiler CLI fleet",
+            "expression documentation check"
+          ],
+          "reports": [
+            "package-reviews/T03-implementation.md",
+            "package-reviews/T03-independent-review.md",
+            "package-reviews/T03-gate-repair-implementation.md",
+            "package-reviews/T03-gate-repair-independent-review.md",
+            "evidence/T03-qualification.json"
+          ],
+          "final_acceptance": "Scoped P1 primitive/transport qualified; full final same-source requirement refresh and runtime consumers remain owed"
         }
       ]
     },
@@ -4553,6 +4803,31 @@
       ],
       "final_acceptance": "Portable five-choice policy resolution/provenance; provider factories/production selectors/rewards and effective view still owed",
       "qualification_limit": "Only final logical sourceHEAD has gated sumtree; intermediateprefixheads not separately full-qualified; finalcommonSHArefreshstillrequired"
+    },
+    {
+      "task": "T03",
+      "source_commit": "1c99510967c132fce04548564f4cb317e2ecddaf",
+      "candidate_tree": "d3c1f4993efb73717826f6d4e1bf9e3cf0cd28d0",
+      "status": "implemented; fresh other-model source and separate schema-repair reviews PASS; all six guards and exact-tree full suite passed",
+      "focused_owner_result": "170 passed;17 new+153 owner; schema-repair module124 passed",
+      "independent_result": "Fresh Astra high spec/quality PASS;26 projection contrasts, four seeded network factories,12 public chains and three native historical cache resave/reload paths; no unresolved scoped P1/P2/P3",
+      "full_repository_result": "5865 passed,15 skipped,15 warnings;1004.52s test/1008.72s wall;four xdist workers;five process identities and six guarded source digests verified",
+      "other_gates": [
+        "Ruff",
+        "Black",
+        "mypy",
+        "no-defaults ratchet614",
+        "compiler CLI fleet",
+        "expression documentation check"
+      ],
+      "reports": [
+        "package-reviews/T03-implementation.md",
+        "package-reviews/T03-independent-review.md",
+        "package-reviews/T03-gate-repair-implementation.md",
+        "package-reviews/T03-gate-repair-independent-review.md",
+        "evidence/T03-qualification.json"
+      ],
+      "final_acceptance": "Scoped P1 primitive/transport qualified; full final same-source requirement refresh and runtime consumers remain owed"
     }
   ],
   "evidence_note": "T01 precommit full gate verified the exact committed tree and source hashes in every pytest process. Historical fixture checks qualify data at the original source only; new archive policy acceptance remains owed.",
@@ -4578,6 +4853,14 @@
       "replacement_tree": "94de8d44e8c1f3c7da48f4ffe986440946058c06",
       "replacement_result": "5654 passed,15 skipped,15 warnings;1394.50s;3xdistworkers plus independent verification",
       "repair_review": "package-reviews/T02-independent-review.md"
+    },
+    {
+      "task": "T03",
+      "candidate_tree": "4175e78397be42fcdf0f126c5f5b85cd6ee1fe0d",
+      "result": "1 failed,5510 passed,15 skipped;exit2 maxfail1",
+      "cause": "Stale exact schema-version test literal1.40 after approved1.41 bump",
+      "repair": "Separate one-line repair plus fresh Astra medium review; full exact-tree rerun5865 passed",
+      "evidence": "evidence/T03-qualification.json"
     }
   ],
   "per_world_addendum": {

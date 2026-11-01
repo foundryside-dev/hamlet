@@ -1,0 +1,211 @@
+{
+  "schema_version": 1,
+  "task": "T03",
+  "source_commit": "1c99510967c132fce04548564f4cb317e2ecddaf",
+  "candidate_tree": "d3c1f4993efb73717826f6d4e1bf9e3cf0cd28d0",
+  "scope": "P1 effective configuration, identities, owned selected-provider resolution, current1.41 cache and explicit known1.40 access. Runtime consumers and historical checkpoint policy remain later packages.",
+  "source_manifest": {
+    "base_commit": "049e305df42392373a52c9eb76552abbd74a5b2b",
+    "candidate_tree": "d3c1f4993efb73717826f6d4e1bf9e3cf0cd28d0",
+    "snapshot": "/workspace/hamlet",
+    "source_files": {
+      "src/townlet/config/effective_run.py": "30c888a79e739f45a6ea6333afc7d10498e212a3eeca628e89f218d1daa64af8",
+      "src/townlet/universe/compiler.py": "521a72dd6d0a155c89a216fa038828cc8054520714a58cc0e0420c2da9d09e92",
+      "src/townlet/universe/compiled.py": "494f9676c236349f12c875c82dde821a85a3bf5077cae15654c78e8ac1630710",
+      "tests/test_townlet/regressions/bac/test_effective_run.py": "4529f9074600233081014073a32aa737da10e31e5a148fe91745faf38595eda8",
+      "src/townlet/config/exploration_policy.py": "496b988555bc0f23f1a6e335386102acbc1450df1d064d87cfd616a0d953299a",
+      "tests/test_townlet/unit/universe/test_compiled_artifact_required_fields.py": "cd99a009b217cade1e9896fa4b0e926dadb6b4657ac41c05fd6f89760f963730"
+    },
+    "source_read_lines": 3906,
+    "brief_sha256": "f0fef7540fec3a8e09ce2d7afd0b5091f124730fab10d7b2eef8af3e0c03f391",
+    "plan_sha256": "2dde2d80d3d14c510878c26af1f99c42217be12d3cb3a554647bc68646feedc1",
+    "full_gate_reason": "Existing compiled/cache schema and effective identity/precedence meaning changes; full suite required before dependency release",
+    "scope": "P1 effective configuration/identity and known1.40 loader preservation; runtimeconsumers and historicalcheckpointarchive remain laterpackages",
+    "status": "Originalcode independently approved, causal exactschema testpin repaired; fresh repairreview+requalification pending",
+    "original_scoped_source_files": {
+      "src/townlet/config/effective_run.py": "30c888a79e739f45a6ea6333afc7d10498e212a3eeca628e89f218d1daa64af8",
+      "src/townlet/universe/compiler.py": "521a72dd6d0a155c89a216fa038828cc8054520714a58cc0e0420c2da9d09e92",
+      "src/townlet/universe/compiled.py": "494f9676c236349f12c875c82dde821a85a3bf5077cae15654c78e8ac1630710",
+      "tests/test_townlet/regressions/bac/test_effective_run.py": "4529f9074600233081014073a32aa737da10e31e5a148fe91745faf38595eda8",
+      "src/townlet/config/exploration_policy.py": "496b988555bc0f23f1a6e335386102acbc1450df1d064d87cfd616a0d953299a"
+    },
+    "original_scoped_source_lines": 3906,
+    "source_read_lines_note": "Global byte guard has6files; no individual reviewer may inspect>5. Originalcode reviewer5/3906, repairreview2/1901 separately.",
+    "checkout_mode": "Existing integration checkout held at fixed staged source; no new branch/worktree/copy"
+  },
+  "review_clearance": {
+    "candidate_tree": "d3c1f4993efb73717826f6d4e1bf9e3cf0cd28d0",
+    "base_commit": "049e305df42392373a52c9eb76552abbd74a5b2b",
+    "original_code_review": {
+      "path": "task-T03-review.md",
+      "sha256": "8db624d6127cb8325d1d1a81760acdb78983467bdbe04061f6e67f549ad2d34e",
+      "own_source_files": {
+        "src/townlet/config/effective_run.py": "30c888a79e739f45a6ea6333afc7d10498e212a3eeca628e89f218d1daa64af8",
+        "src/townlet/universe/compiler.py": "521a72dd6d0a155c89a216fa038828cc8054520714a58cc0e0420c2da9d09e92",
+        "src/townlet/universe/compiled.py": "494f9676c236349f12c875c82dde821a85a3bf5077cae15654c78e8ac1630710",
+        "tests/test_townlet/regressions/bac/test_effective_run.py": "4529f9074600233081014073a32aa737da10e31e5a148fe91745faf38595eda8",
+        "src/townlet/config/exploration_policy.py": "496b988555bc0f23f1a6e335386102acbc1450df1d064d87cfd616a0d953299a"
+      },
+      "spec": "PASS",
+      "quality": "PASS",
+      "note": "All5 reviewedcodebytes unchanged from4175; extraexacttestpin reviewed separately"
+    },
+    "gate_test_review": {
+      "path": "task-T03-gate-repair-review.md",
+      "sha256": "60433c1fce7db2f25289e84bf25530fa17cfa5e5d97e346ea10a8f6eff687d99",
+      "spec": "PASS",
+      "quality": "PASS",
+      "inventory": "2files1900"
+    },
+    "checkout_mode": "existing /workspace/hamlet frozen; no new checkout/branch/source copy"
+  },
+  "focused_owner_result": "170 passed,228.81s;17 new +153 B07/B08 owners; fixed five source bytes",
+  "independent_result": "Fresh Astra high spec/quality PASS;26 projection contrasts, four seeded network factories,12 public chains and three native historical cache resave/reload paths; no unresolved scoped P1/P2/P3",
+  "gate_repair_result": "One exact schema assertion1.40->1.41; RED then1 passed, full module124 passed9.32s; separate fresh Astra medium PASS",
+  "failed_gate": {
+    "name": "full-tests",
+    "exit_code": 2,
+    "seconds": 2019.166669368744,
+    "log": "/workspace/bac-review-2026-11-01/qualification/T03-full-tests.log",
+    "sha256": "d70436c64ee728c23556e1876d2ecf10bafd566ff502ae32dcda0a864f4335e4",
+    "candidate_tree": "4175e78397be42fcdf0f126c5f5b85cd6ee1fe0d",
+    "base_commit": "049e305df42392373a52c9eb76552abbd74a5b2b",
+    "command": [
+      "/workspace/hamlet/.venv/bin/python",
+      "-m",
+      "pytest",
+      "tests",
+      "-q",
+      "--maxfail=1",
+      "--no-cov",
+      "-p",
+      "no:cacheprovider",
+      "-p",
+      "bac_source_identity",
+      "-n",
+      "4",
+      "--dist",
+      "worksteal",
+      "--basetemp=/tmp/bac-full-T03-4175e78397"
+    ]
+  },
+  "failed_gate_reason": "Stale test_scope_surface_cut_bumps_exact_artifact_schema literal, not counted green; original fixed source retained.",
+  "results": [
+    {
+      "name": "black",
+      "exit_code": 0,
+      "seconds": 38.88044047355652,
+      "log": "/workspace/bac-review-2026-11-01/qualification/T03-main-r1-black.log",
+      "sha256": "d6f5db831d0d374ae5f23dfcae304f7361cb48e0e73690c00e539003b3337f30",
+      "candidate_tree": "d3c1f4993efb73717826f6d4e1bf9e3cf0cd28d0"
+    },
+    {
+      "name": "collection",
+      "exit_code": 0,
+      "seconds": 6.5474793910980225,
+      "log": "/workspace/bac-review-2026-11-01/qualification/T03-main-r1-collection.log",
+      "sha256": "32a5435815f92b2085ead7f67589afc584aa6fbe14672c4c71c2993c7b6987c7",
+      "candidate_tree": "d3c1f4993efb73717826f6d4e1bf9e3cf0cd28d0"
+    },
+    {
+      "name": "compiler-cli",
+      "exit_code": 0,
+      "seconds": 144.9252154827118,
+      "log": "/workspace/bac-review-2026-11-01/qualification/T03-main-r1-compiler-cli.log",
+      "sha256": "cc47589238030747594bed70f5a3964697be168f9766342de12db6a1f6e91e83",
+      "candidate_tree": "d3c1f4993efb73717826f6d4e1bf9e3cf0cd28d0"
+    },
+    {
+      "name": "expression-doc",
+      "exit_code": 0,
+      "seconds": 3.1381657123565674,
+      "log": "/workspace/bac-review-2026-11-01/qualification/T03-main-r1-expression-doc.log",
+      "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf",
+      "candidate_tree": "d3c1f4993efb73717826f6d4e1bf9e3cf0cd28d0"
+    },
+    {
+      "name": "full-tests",
+      "exit_code": 0,
+      "seconds": 1008.7244236469269,
+      "log": "/workspace/bac-review-2026-11-01/qualification/T03-main-r1-full-tests.log",
+      "sha256": "57dc090d4e9a78e20b52fa08b61c9ffc77c93de1f26fe5dff42870015d7e3e9b",
+      "candidate_tree": "d3c1f4993efb73717826f6d4e1bf9e3cf0cd28d0",
+      "base_commit": "049e305df42392373a52c9eb76552abbd74a5b2b",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "pytest",
+        "tests",
+        "-q",
+        "--maxfail=1",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-n",
+        "4",
+        "--dist",
+        "worksteal",
+        "--basetemp=/tmp/bac-full-T03-main-r1-d3c1f4993e"
+      ]
+    },
+    {
+      "name": "mypy",
+      "exit_code": 0,
+      "seconds": 6.804705858230591,
+      "log": "/workspace/bac-review-2026-11-01/qualification/T03-main-r1-mypy.log",
+      "sha256": "bfd5a123cbe21bdff64eba2f6db8c02b5842605596c5237511f49f5b213dbc3c",
+      "candidate_tree": "d3c1f4993efb73717826f6d4e1bf9e3cf0cd28d0"
+    },
+    {
+      "name": "no-defaults",
+      "exit_code": 0,
+      "seconds": 1.104445219039917,
+      "log": "/workspace/bac-review-2026-11-01/qualification/T03-main-r1-no-defaults.log",
+      "sha256": "6f69ecbd8c6b0b529b3f45b5692128369778cd2b942a1ee097349004aae573ae",
+      "candidate_tree": "d3c1f4993efb73717826f6d4e1bf9e3cf0cd28d0"
+    },
+    {
+      "name": "ruff",
+      "exit_code": 0,
+      "seconds": 0.04289650917053223,
+      "log": "/workspace/bac-review-2026-11-01/qualification/T03-main-r1-ruff.log",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "candidate_tree": "d3c1f4993efb73717826f6d4e1bf9e3cf0cd28d0"
+    },
+    {
+      "name": "snapshot-smoke",
+      "exit_code": 0,
+      "seconds": 15.630378723144531,
+      "log": "/workspace/bac-review-2026-11-01/qualification/T03-main-r1-snapshot-smoke.log",
+      "sha256": "fd022ae773787e49c01af287469cdec0e94c60d5895ec4becb7255bab70603c2",
+      "candidate_tree": "d3c1f4993efb73717826f6d4e1bf9e3cf0cd28d0"
+    }
+  ],
+  "final_postflight": {
+    "candidate_tree": "d3c1f4993efb73717826f6d4e1bf9e3cf0cd28d0",
+    "base_commit": "049e305df42392373a52c9eb76552abbd74a5b2b",
+    "all_six_source_hashes_verified": true,
+    "all_five_process_identities_verified": true,
+    "native_fixture_postflight": {
+      "manifest_sha256": "d1582c8a3b84eff4dca06c7fdf17e12c7b1adfcbf65f8c7b1c1979f1f87bbfe1",
+      "config_files_verified": 114,
+      "native_artifacts_verified": 3
+    },
+    "review_digests_verified": true,
+    "working_tree_matches_index": true,
+    "worktrees": 14,
+    "full_result": "5865 passed, 15 skipped, 15 warnings in 1004.52s",
+    "full_wall_seconds": 1008.7244236469269,
+    "all_preflight_and_six_guards_exit_zero": true
+  },
+  "full_suite_status": "PASS",
+  "full_suite_reason": "Compiled/cache schema, identity and serialization changes trigger full suite before dependent release. Exact final committed tree equals qualified source.",
+  "unrun_checks": [
+    "Final common-source acceptance/design reviews/E2E/learning qualification",
+    "Final coverage/slow/applicable hardware/remote CI; local CUDA unavailable"
+  ],
+  "next_full_gate": "Next consumed configuration/identity/cache boundary change or mandatory G1/B1, whichever earlier",
+  "source_inventory_note": "Global guard6 files; original reviewer5/3906 plus counted inline probes, separate schema-repair reviewer2/1900. No individual reviewer exceeded five files/5000 lines."
+}

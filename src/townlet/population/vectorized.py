@@ -1488,7 +1488,10 @@ class VectorizedPopulation(PopulationManager):
 
     @classmethod
     def _validate_rnd_exploration_state(cls, state: object, current: RNDExploration, label: str) -> None:
-        rnd_state = cls._require_exact_mapping(label, state, RND_EXPLORATION_STATE_KEYS)
+        expected_keys = RND_EXPLORATION_STATE_KEYS
+        if isinstance(state, Mapping) and "predictor_service" in state:
+            expected_keys = expected_keys | {"predictor_service"}
+        rnd_state = cls._require_exact_mapping(label, state, expected_keys)
         obs_dim = cls._require_nonnegative_int(f"{label}.obs_dim", rnd_state["obs_dim"])
         embed_dim = cls._require_nonnegative_int(f"{label}.embed_dim", rnd_state["embed_dim"])
         if obs_dim != current.obs_dim:
@@ -1515,6 +1518,10 @@ class VectorizedPopulation(PopulationManager):
         reward_count = cls._require_finite_real(f"{label}.reward_rms_count", rnd_state["reward_rms_count"])
         if reward_var < 0.0 or reward_count <= 0.0:
             raise ValueError(f"Population checkpoint {label} reward RMS variance/count must be non-negative/positive.")
+        # RND owns strict tail/configuration/clock validation. Validate before any
+        # population fields are applied; exact historical available-state remains
+        # recognized by the provider without inventing missing historical tails.
+        current.validate_state(dict(rnd_state))
 
     def _validate_exploration_checkpoint_state(self, incoming_state: object) -> None:
         if isinstance(self.exploration, EpsilonGreedyExploration):

@@ -35,20 +35,27 @@ class ActionExecutor:
         """Execute movement, interaction, and wait actions."""
         env = self._env
         custom_action_start_id = env.action_space.substrate_action_count
+        # step() calls us before evaluating this transition's terminal conditions.
+        # Capture entry eligibility: a live terminal-causing action executes once;
+        # an already-completed row's action slot is transport only. Keep the actual
+        # action vector intact for the separately active-masked VTC action phases.
+        active_on_entry = torch.logical_not(env.dones)
 
         old_positions = env.positions.clone()
 
         substrate_mask = actions < custom_action_start_id
-        if substrate_mask.any():
-            movement_deltas = env._movement_deltas[actions[substrate_mask]]
-            env.positions[substrate_mask] = env.substrate.apply_movement(env.positions[substrate_mask], movement_deltas)
+        active_substrate_mask = substrate_mask & active_on_entry
+        if active_substrate_mask.any():
+            movement_deltas = env._movement_deltas[actions[active_substrate_mask]]
+            env.positions[active_substrate_mask] = env.substrate.apply_movement(env.positions[active_substrate_mask], movement_deltas)
 
-        env._velocity = (env.positions - old_positions).float()
+        # Velocity is observable world state too, including on the final live step.
+        env._velocity = torch.where(active_on_entry.unsqueeze(-1), (env.positions - old_positions).float(), env._velocity)
 
         movement_actions = env._movement_deltas.ne(0).any(dim=1)
         movement_mask = torch.zeros(env.num_agents, dtype=torch.bool, device=env.device)
-        if substrate_mask.any():
-            movement_mask[substrate_mask] = movement_actions[actions[substrate_mask]]
+        if active_substrate_mask.any():
+            movement_mask[active_substrate_mask] = movement_actions[actions[active_substrate_mask]]
         if movement_mask.any():
             movement_costs = torch.zeros(env.meter_count, device=env.device)
             for bar in env.bars_config.meters:
@@ -68,7 +75,7 @@ class ActionExecutor:
 
             if get_action is not None:
                 get_action_id = get_action.id
-                get_mask = actions == get_action_id
+                get_mask = (actions == get_action_id) & active_on_entry
                 if get_mask.any():
                     for agent_idx in torch.where(get_mask)[0]:
                         env.item_handler.handle_get_action(
@@ -88,7 +95,7 @@ class ActionExecutor:
 
                     if use_action is not None:
                         use_action_id = use_action.id
-                        use_mask = actions == use_action_id
+                        use_mask = (actions == use_action_id) & active_on_entry
                         if use_mask.any():
                             for agent_idx in torch.where(use_mask)[0]:
                                 env.item_handler.handle_use_slot_action(
@@ -107,7 +114,7 @@ class ActionExecutor:
 
                     if drop_action is not None:
                         drop_action_id = drop_action.id
-                        drop_mask = actions == drop_action_id
+                        drop_mask = (actions == drop_action_id) & active_on_entry
                         if drop_mask.any():
                             for agent_idx in torch.where(drop_mask)[0]:
                                 env.item_handler.handle_drop_slot_action(
@@ -122,7 +129,7 @@ class ActionExecutor:
                     action_id = env.action_space.get_action_by_name(action_name).id
                 except ValueError:
                     continue
-                action_mask = actions == action_id
+                action_mask = (actions == action_id) & active_on_entry
                 if action_mask.any():
                     for agent_idx in torch.where(action_mask)[0]:
                         env.item_handler.handle_custom_action(
@@ -142,9 +149,10 @@ class ActionExecutor:
             # the block's trigger condition, so tracking side-effects fire on the
             # same ticks as before; the *dones-filtered* mask gates the debit and
             # the interaction itself. Collapsing them changes which ticks call
-            # _update_affordance_tracking.
+            # _update_affordance_tracking. Thus substrate_mask intentionally stays
+            # intent-only here; active_substrate_mask admits physical movement.
             interact_intent = (actions == interact_action_idx) & substrate_mask
-            interact_mask = interact_intent & torch.logical_not(env.dones)
+            interact_mask = interact_intent & active_on_entry
             if interact_intent.any():
                 interaction_costs = torch.zeros(env.meter_count, device=env.device)
                 for bar in env.bars_config.meters:

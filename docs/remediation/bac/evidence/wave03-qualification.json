@@ -1,0 +1,519 @@
+{
+  "schema_version": 1,
+  "tasks": [
+    "T03a",
+    "T04",
+    "PW01"
+  ],
+  "release": {
+    "source_head": "a97e0af3392ac8ddfdab4574ecb1b8d2af8f810d",
+    "source_tree": "d2b46a1bd74eb187ecbe7c1cdd5e9723d351e5c4",
+    "base_commit": "1f9d831a8fe76ab00e06774ef6888985f6c2aec2",
+    "logical_commits": [
+      {
+        "task": "T03a",
+        "commit": "908667bd8efe7d8a42ac3cdb2489dd5341a632ab",
+        "paths": [
+          "src/townlet/training/historical_checkpoint.py",
+          "tests/test_townlet/regressions/bac/test_historical_dispatch.py"
+        ]
+      },
+      {
+        "task": "T04",
+        "commit": "1ef6d9df97465f28932023b9d5e5ebff67c8179a",
+        "paths": [
+          "src/townlet/universe/declarations.py",
+          "tests/test_townlet/regressions/bac/test_sidecars.py"
+        ]
+      },
+      {
+        "task": "PW01",
+        "commit": "a97e0af3392ac8ddfdab4574ecb1b8d2af8f810d",
+        "paths": [
+          "src/townlet/config/bac_options.py",
+          "src/townlet/config/effective_run.py",
+          "src/townlet/config/exploration_policy.py",
+          "src/townlet/exploration/world_curiosity_state.py",
+          "tests/test_townlet/regressions/bac/test_pw_scope_contract.py",
+          "configs/test/bac_remediation/options/curiosity-shared.yaml",
+          "configs/test/bac_remediation/options/curiosity-per-world.yaml",
+          "tests/test_townlet/fixtures/bac_curiosity_pre_scope/manifest.json",
+          "tests/test_townlet/fixtures/bac_curiosity_pre_scope/scope-omitted.msgpack",
+          "tests/test_townlet/fixtures/bac_curiosity_pre_scope/options-authored.msgpack"
+        ]
+      }
+    ],
+    "full_result": "5906 passed,15 skipped,15 warnings in1267.37s",
+    "full_wall_seconds": 1271.756056547165,
+    "all_dependent_interfaces_released": true,
+    "prefix_heads_individually_full_qualified": false,
+    "final_HEAD_tree_equals_qualified_tree": true,
+    "publication": "local only; no push,PR or merge",
+    "remaining": "All later finite BAC packages/final acceptance still owed"
+  },
+  "candidate_manifest": {
+    "base_commit": "1f9d831a8fe76ab00e06774ef6888985f6c2aec2",
+    "candidate_tree": "d2b46a1bd74eb187ecbe7c1cdd5e9723d351e5c4",
+    "snapshot": "/workspace/hamlet",
+    "source_files": {
+      "src/townlet/config/bac_options.py": "10dc3ef7dc288d954147046c95bc8362df2162f3829986be26b2724e86dd4916",
+      "src/townlet/config/brain_config.py": "6c041ed40de507dfed81dc4b3a58cbb728d446228f6fd831ee115348aa559079",
+      "src/townlet/config/effective_run.py": "9ff2c4e8cc538160abe7188c7a2192b3ee740464d1b0681790e569685d49882c",
+      "src/townlet/config/exploration_policy.py": "af8843ec1a270cfa49ec44b7ac5615d33db0d4d16b2d169d161bb4a1cd402c8c",
+      "src/townlet/exploration/world_curiosity_state.py": "295314b7f891cdbf33646a73df6a57c39d9fd407d61675ee6fee80bd9053d9ae",
+      "src/townlet/training/checkpoint_utils.py": "591040896a3e83df23912b2167e6d885abd0b949debfd754ddd23193da9937df",
+      "src/townlet/training/historical_checkpoint.py": "4df70b6bec0201ce5b2117a0b95ae06052b71933447f4c4f80603161cb444a54",
+      "src/townlet/training/replay_contract.py": "3eaa725bd6d592b7524dd249125877eb91a1f707d4dfd12fbfb59b5b6cc6356c",
+      "src/townlet/universe/compiler.py": "521a72dd6d0a155c89a216fa038828cc8054520714a58cc0e0420c2da9d09e92",
+      "src/townlet/universe/declarations.py": "983336171a2e49d4e91f86dbbc03f10d9e7bde58a86ab5e8a49cb51dc18f5a6c",
+      "tests/test_townlet/regressions/bac/test_historical_dispatch.py": "7cd2aacc90e26bf97fbe3da4b599ccba77f8dce6caac5ae94e682c714c3f287e",
+      "tests/test_townlet/regressions/bac/test_pw_scope_contract.py": "d467ede1f0d2a841f62d51c70812f10b2dc6cb2ada28fa288ca32f14bcd8e150",
+      "tests/test_townlet/regressions/bac/test_sidecars.py": "dbe04abfaa9e97aecc75dcc5d102fd7740f22f471461e0d2bb6c77f15e449e15"
+    },
+    "phase": "Final repaired source plus explicit bool wrapper on float-hex equality for mypy; all writers stationary; refreshed independent reviews and sixguards/fullgate required",
+    "tasks": [
+      "T03a",
+      "T04",
+      "PW01"
+    ],
+    "inventories": {
+      "T03a": {
+        "files": 5,
+        "actual_lines": 2608
+      },
+      "T04": {
+        "files": 3,
+        "actual_lines": 1951
+      },
+      "PW01": {
+        "files": 5,
+        "actual_lines": 1911
+      }
+    },
+    "worktree_count": 14,
+    "integration_type_fix": "One-line bool(top.hex()==nested.hex()) preserves supported normalized float comparison and makes declared bool return explicit; no ignore or semantic weakening."
+  },
+  "review_clearance": {
+    "candidate_tree": "d2b46a1bd74eb187ecbe7c1cdd5e9723d351e5c4",
+    "base_commit": "1f9d831a8fe76ab00e06774ef6888985f6c2aec2",
+    "source_manifest_sha256": "d5a622f5dc1053e312df68ff912e64f7163b04bf6ea23b73011999795a93ed43",
+    "reviews": [
+      {
+        "task": "T03a",
+        "review": "wave03/T03a-independent-review-r4.md",
+        "sha256": "54b9ac122d76a192740ceb7aeaa424adea69878f84062fa428310edea0f8ec89",
+        "spec": "PASS",
+        "quality": "PASS"
+      },
+      {
+        "task": "T04",
+        "review": "wave03/T04-independent-review-r4.md",
+        "sha256": "08a8765e45565b9f8d71e8b255d0ba05100515e25b4b4f3c271aae982666d0f9",
+        "spec": "PASS",
+        "quality": "PASS"
+      },
+      {
+        "task": "PW01",
+        "review": "wave03/PW01-independent-review-r4.md",
+        "sha256": "8ee1561096fa23541e4849f6b1c549a59cf02a0ce5efb0afe2e6f6bdce20ab57",
+        "spec": "PASS",
+        "quality": "PASS"
+      }
+    ],
+    "status": "Three scoped fresh other-model source/spec/runtime reviews PASS; six guards/full gate still root-owned and pending",
+    "all_scope_files_unchanged_since_reviews": true
+  },
+  "full_result": {
+    "name": "full-tests",
+    "exit_code": 0,
+    "seconds": 1271.756056547165,
+    "command": [
+      "/workspace/hamlet/.venv/bin/python",
+      "-m",
+      "pytest",
+      "tests",
+      "-q",
+      "--maxfail=1",
+      "--no-cov",
+      "-p",
+      "no:cacheprovider",
+      "-p",
+      "bac_source_identity",
+      "-n",
+      "4",
+      "--dist",
+      "worksteal",
+      "--basetemp=/tmp/bac-full-wave03-r4-d2b46a1bd7"
+    ],
+    "log": "/workspace/bac-review-2026-11-01/qualification/wave03-final-r4/full-tests.log",
+    "sha256": "e868b896a6a4cee05693e264a03bcbaf32b2b82e38044aaf4aa83f1edfc9535c",
+    "candidate_tree": "d2b46a1bd74eb187ecbe7c1cdd5e9723d351e5c4",
+    "base_commit": "1f9d831a8fe76ab00e06774ef6888985f6c2aec2",
+    "manifest_sha256": "d5a622f5dc1053e312df68ff912e64f7163b04bf6ea23b73011999795a93ed43"
+  },
+  "final_postflight": {
+    "candidate_tree": "d2b46a1bd74eb187ecbe7c1cdd5e9723d351e5c4",
+    "base_commit": "1f9d831a8fe76ab00e06774ef6888985f6c2aec2",
+    "full_exit_code": 0,
+    "full_result": "5906 passed,15 skipped,15 warnings in1267.37s",
+    "full_wall_seconds": 1271.756056547165,
+    "all13_source_hashes_verified": true,
+    "all_five_process_identities_verified": true,
+    "three_review_hashes_verified": true,
+    "all_six_guards_and_preflight_exit_zero": true,
+    "legacy_config_digests_verified": 114,
+    "historical_artifacts_verified": 3,
+    "prescope_cache_artifacts_verified": 2,
+    "worktree_count": 14,
+    "working_tree_matches_index": true
+  },
+  "final_gates": [
+    {
+      "name": "T04-focused",
+      "exit_code": 0,
+      "seconds": 78.04548382759094,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_sidecars.py",
+        "-q",
+        "--maxfail=1",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave03-final-r4/T04-focused.log",
+      "sha256": "c8df1df2b4fc6cfb468ab8b47d8ba609bac13d67d451af874ea073cee83c0733",
+      "candidate_tree": "d2b46a1bd74eb187ecbe7c1cdd5e9723d351e5c4",
+      "base_commit": "1f9d831a8fe76ab00e06774ef6888985f6c2aec2",
+      "manifest_sha256": "d5a622f5dc1053e312df68ff912e64f7163b04bf6ea23b73011999795a93ed43"
+    },
+    {
+      "name": "black",
+      "exit_code": 0,
+      "seconds": 42.0561637878418,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "black",
+        "--check",
+        "src",
+        "tests",
+        "scripts",
+        "--workers",
+        "1"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave03-final-r4/black.log",
+      "sha256": "a2d91d4afcb83a35dface16eadfc30e61b00b00e4f73ff8b66c020b88d5043b5",
+      "candidate_tree": "d2b46a1bd74eb187ecbe7c1cdd5e9723d351e5c4",
+      "base_commit": "1f9d831a8fe76ab00e06774ef6888985f6c2aec2",
+      "manifest_sha256": "d5a622f5dc1053e312df68ff912e64f7163b04bf6ea23b73011999795a93ed43"
+    },
+    {
+      "name": "collection",
+      "exit_code": 0,
+      "seconds": 7.91678524017334,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "pytest",
+        "tests",
+        "--collect-only",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave03-final-r4/collection.log",
+      "sha256": "e22d1b1165e3312fd59c8759b75f482b35e4323a3a0f6eef109708b50a139b15",
+      "candidate_tree": "d2b46a1bd74eb187ecbe7c1cdd5e9723d351e5c4",
+      "base_commit": "1f9d831a8fe76ab00e06774ef6888985f6c2aec2",
+      "manifest_sha256": "d5a622f5dc1053e312df68ff912e64f7163b04bf6ea23b73011999795a93ed43"
+    },
+    {
+      "name": "compiler-cli",
+      "exit_code": 0,
+      "seconds": 173.3448805809021,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "scripts/validate_compiler_cli.py"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave03-final-r4/compiler-cli.log",
+      "sha256": "fa2de18f5c4addaf48c26dd211e872f6c2e43decb82c3b4dbbb6bf854bfc4bf8",
+      "candidate_tree": "d2b46a1bd74eb187ecbe7c1cdd5e9723d351e5c4",
+      "base_commit": "1f9d831a8fe76ab00e06774ef6888985f6c2aec2",
+      "manifest_sha256": "d5a622f5dc1053e312df68ff912e64f7163b04bf6ea23b73011999795a93ed43"
+    },
+    {
+      "name": "expression-doc",
+      "exit_code": 0,
+      "seconds": 2.0835161209106445,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "scripts/gen_expression_functions_doc.py",
+        "--check"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave03-final-r4/expression-doc.log",
+      "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf",
+      "candidate_tree": "d2b46a1bd74eb187ecbe7c1cdd5e9723d351e5c4",
+      "base_commit": "1f9d831a8fe76ab00e06774ef6888985f6c2aec2",
+      "manifest_sha256": "d5a622f5dc1053e312df68ff912e64f7163b04bf6ea23b73011999795a93ed43"
+    },
+    {
+      "name": "full-tests",
+      "exit_code": 0,
+      "seconds": 1271.756056547165,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "pytest",
+        "tests",
+        "-q",
+        "--maxfail=1",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-n",
+        "4",
+        "--dist",
+        "worksteal",
+        "--basetemp=/tmp/bac-full-wave03-r4-d2b46a1bd7"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave03-final-r4/full-tests.log",
+      "sha256": "e868b896a6a4cee05693e264a03bcbaf32b2b82e38044aaf4aa83f1edfc9535c",
+      "candidate_tree": "d2b46a1bd74eb187ecbe7c1cdd5e9723d351e5c4",
+      "base_commit": "1f9d831a8fe76ab00e06774ef6888985f6c2aec2",
+      "manifest_sha256": "d5a622f5dc1053e312df68ff912e64f7163b04bf6ea23b73011999795a93ed43"
+    },
+    {
+      "name": "mypy",
+      "exit_code": 0,
+      "seconds": 1.4233789443969727,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "mypy",
+        "src/townlet"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave03-final-r4/mypy.log",
+      "sha256": "2ddd13e2e7123aa2e25247f1030639c780ddcee10ec12636f2d73997876e82d9",
+      "candidate_tree": "d2b46a1bd74eb187ecbe7c1cdd5e9723d351e5c4",
+      "base_commit": "1f9d831a8fe76ab00e06774ef6888985f6c2aec2",
+      "manifest_sha256": "d5a622f5dc1053e312df68ff912e64f7163b04bf6ea23b73011999795a93ed43"
+    },
+    {
+      "name": "no-defaults",
+      "exit_code": 0,
+      "seconds": 1.1734709739685059,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "scripts/no_defaults_lint.py",
+        "src/townlet/",
+        "--whitelist",
+        ".defaults-whitelist.txt",
+        "--ratchet",
+        ".defaults-ratchet",
+        "--quiet"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave03-final-r4/no-defaults.log",
+      "sha256": "1c806b732ca913055eb12ac99360fe77a04a39edb34381fd082dc3a0f7945f0f",
+      "candidate_tree": "d2b46a1bd74eb187ecbe7c1cdd5e9723d351e5c4",
+      "base_commit": "1f9d831a8fe76ab00e06774ef6888985f6c2aec2",
+      "manifest_sha256": "d5a622f5dc1053e312df68ff912e64f7163b04bf6ea23b73011999795a93ed43"
+    },
+    {
+      "name": "ruff",
+      "exit_code": 0,
+      "seconds": 0.07888126373291016,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "ruff",
+        "check",
+        "."
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave03-final-r4/ruff.log",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "candidate_tree": "d2b46a1bd74eb187ecbe7c1cdd5e9723d351e5c4",
+      "base_commit": "1f9d831a8fe76ab00e06774ef6888985f6c2aec2",
+      "manifest_sha256": "d5a622f5dc1053e312df68ff912e64f7163b04bf6ea23b73011999795a93ed43"
+    },
+    {
+      "name": "snapshot-smoke",
+      "exit_code": 0,
+      "seconds": 33.853925704956055,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_effective_run.py::test_effective_cache_roundtrip",
+        "tests/test_townlet/regressions/bac/test_options.py::test_old_options_remain_accepted",
+        "tests/test_townlet/regressions/bac/test_historical_dispatch.py::test_approved_import_preserves_archive_and_seeds_empty_replay[per]",
+        "-q",
+        "--maxfail=1",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave03-final-r4/snapshot-smoke.log",
+      "sha256": "9a1fb2c39f31053626936a0c528486448c217c38b9b2b9dfbe5354bbc17f2b24",
+      "candidate_tree": "d2b46a1bd74eb187ecbe7c1cdd5e9723d351e5c4",
+      "base_commit": "1f9d831a8fe76ab00e06774ef6888985f6c2aec2",
+      "manifest_sha256": "d5a622f5dc1053e312df68ff912e64f7163b04bf6ea23b73011999795a93ed43"
+    }
+  ],
+  "owner_evidence": [
+    {
+      "name": "T04-B07",
+      "exit_code": 0,
+      "seconds": 203.68035626411438,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_sidecars.py",
+        "tests/test_townlet/unit/universe/test_brain_level_override.py",
+        "tests/test_townlet/unit/universe/test_compiler_declaration_origins.py",
+        "tests/test_townlet/unit/universe/test_declaration_input_shapes.py",
+        "tests/test_townlet/unit/universe/test_declaration_store.py",
+        "-q",
+        "--maxfail=1",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave03-final-r3/T04-B07.log",
+      "sha256": "06e53b911dcd3de3ddb6f11674ca1f51aa17b045a1be34931145d8b023b1bf5c",
+      "candidate_tree": "7b52d4a7fed36ca3805ea7aab1ca55245a57fc49",
+      "base_commit": "1f9d831a8fe76ab00e06774ef6888985f6c2aec2",
+      "manifest_sha256": "94d7b70ce4c29d8d04ec6056646d26568a9d56c596c9d19764520fc548e34a51"
+    },
+    {
+      "name": "B08",
+      "exit_code": 0,
+      "seconds": 116.61890387535095,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_townlet/unit/training/test_token_checkpoint_gates.py",
+        "tests/test_townlet/unit/training/test_brain_lineage_legibility.py",
+        "tests/test_townlet/unit/universe/test_compiled_universe_serialization.py",
+        "tests/test_townlet/unit/universe/test_compiled_token_coherence.py",
+        "tests/test_townlet/integration/test_token_transfer_contract.py",
+        "-q",
+        "--maxfail=1",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave03-final-r3/B08.log",
+      "sha256": "f8b27f0080ceb7f56a9955ca3243a175cfe92cfd8297fc3e119b643d0ab9c8f6",
+      "candidate_tree": "7b52d4a7fed36ca3805ea7aab1ca55245a57fc49",
+      "base_commit": "1f9d831a8fe76ab00e06774ef6888985f6c2aec2",
+      "manifest_sha256": "94d7b70ce4c29d8d04ec6056646d26568a9d56c596c9d19764520fc548e34a51"
+    },
+    {
+      "name": "config-consumers",
+      "exit_code": 0,
+      "seconds": 263.5263924598694,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_options.py",
+        "tests/test_townlet/regressions/bac/test_effective_run.py",
+        "tests/test_townlet/regressions/bac/test_exploration_policy.py",
+        "-q",
+        "--maxfail=1",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave03-final-r3/config-consumers.log",
+      "sha256": "2d022834ed29af34e07338370284cad87003c5dd568aa6d14e21b06d7aef251f",
+      "candidate_tree": "7b52d4a7fed36ca3805ea7aab1ca55245a57fc49",
+      "base_commit": "1f9d831a8fe76ab00e06774ef6888985f6c2aec2",
+      "manifest_sha256": "94d7b70ce4c29d8d04ec6056646d26568a9d56c596c9d19764520fc548e34a51"
+    }
+  ],
+  "earlier_scoped_evidence": [
+    {
+      "name": "T03a",
+      "exit_code": 0,
+      "seconds": 29.528029441833496,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_historical_dispatch.py",
+        "-q",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave03-check-r2/T03a.log",
+      "sha256": "8eb0e89b1c82c14eb5af3b0ad8a35de427bee675c6eb6c8824559965a30831a3",
+      "candidate_tree": "d1c785bcc0c486cbbe92f958c8dbf22d80c69438",
+      "base_commit": "1f9d831a8fe76ab00e06774ef6888985f6c2aec2",
+      "manifest_sha256": "562eeef35d040328b1b6bb495f90049ebbeb98b578adacb3f891898a4a43c3e3"
+    },
+    {
+      "name": "PW01",
+      "exit_code": 0,
+      "seconds": 37.87795805931091,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_pw_scope_contract.py",
+        "-q",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave03-check-r2/PW01.log",
+      "sha256": "f8db18cbe27c1627a3d0382e52e6a243d89261414bc5935928a1486451dcd1fc",
+      "candidate_tree": "d1c785bcc0c486cbbe92f958c8dbf22d80c69438",
+      "base_commit": "1f9d831a8fe76ab00e06774ef6888985f6c2aec2",
+      "manifest_sha256": "562eeef35d040328b1b6bb495f90049ebbeb98b578adacb3f891898a4a43c3e3"
+    }
+  ],
+  "qualification_history": {
+    "initial_r0": "HC11pass/4PERfail on beta-vs-beta_initial scratch constructor;13HCtyping errors/27default violations. Not counted green.",
+    "per_prerequisite_r1": "Corrected actual PER validator setup then positivePASS; permanent query and duplicate-conflict tests RED before production repair.",
+    "r2": "HC16/PW2PASS; four typed-Any sidecar conflicts RED, then fixed.",
+    "r3": "Owner48+137+128PASS; one Any return type remained in float-hex comparison. Root wrapped it explicitly in bool without changing supported comparison semantics.",
+    "r4": "All scoped independent source/spec/runtime reviews, six guards, collection/smoke, T04focused23 and mandatory fullPASS on exact final source tree."
+  },
+  "source_identity_note": "Full ran with recorded base1f9d831a and immutable staged tree d2b46a1b. Three logical commits ended at a97e0af3 with exactly that tested tree; intermediate prefixes were not separately full-qualified.",
+  "scope_limits": [
+    "T03a is archive/access primitive; actual buffer/runner historical import/new warmup and current-format full resume integration remain later owners.",
+    "PW01 is declaration/identity/seed primitive; actual private bank/RNG/optimizer update independence remains required later.",
+    "No entire finding/contract closes from a package count; final common-source reviews, E2E and finite qualification remain required."
+  ],
+  "unrun_checks": [
+    "Final22source/designlenses+synthesis and finitelearning/current-source end-to-end qualification",
+    "Finalcoverage/slow/applicablehardware/remoteCI; localCUDAunavailable"
+  ],
+  "next_gate": "All approved earlier-trigger and G1/B1 requirements remain; T10 consumed replay ABI/historical compatibility requires full before dependent release."
+}

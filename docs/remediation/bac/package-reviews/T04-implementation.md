@@ -1,0 +1,65 @@
+# T04 work report
+
+## Phase 1 — tests ready
+
+- Source inventory: `declarations.py` (626 lines), read-only `compiler.py` (976 lines), owned `test_sidecars.py` (163 lines); 3 whole source files, 1765 lines. No other implementation/test/helper source inspected. Native YAML DATA and specification documents were consulted; no executable probes were written or run.
+- Added 16 parameterized regression cases in `tests/test_townlet/regressions/bac/test_sidecars.py`. All behavior runs through public authored compilation with cache disabled. Tests copy YAML DATA from the accepted feedforward fixture and retain one complete level; no source trees or repositories are copied.
+- Coverage: recording and run_metadata separately/together at both accepted placements; mixed placements; selected training DTO values and changed training identity; identical canonical identity after placement relocation; public DTO and MessagePack round trips; malformed shadowed mapping refusal at the actual extra-key location in both directions; differing duplicates naming both differing leaf locations; equal duplicates retaining mapping and leaf origins.
+- Existing canonical source lookup keys remain expected. Nested origins use distinct additive precise `levels/<level>/training:training.<sidecar>[.<field>]` keys, as authorized by root's public-contract clarification.
+- Planned causal RED: current `_consume` overwrites nested sidecars with top-level values or None before typed validation, so nested values/identity and mixed placement cases should fail, malformed nested duplicates should escape refusal, differing duplicates should silently win, and equal duplicates should lose nested provenance.
+- No pytest/import probes, production changes, staging, commits, branch/worktree creation, or subdelegation. Waiting for root to freeze/stage the common test image and authorize RED.
+
+## Limits
+
+T04 evidence does not establish whole BAC closure or final repository acceptance. Root completed shared-image RED and authorized implementation; GREEN, B07 checks, integration checks and fresh other-model review remain pending.
+
+## Phase 2 — implementation ready, source stationary
+
+- Root authorized implementation after the coherent RED run: `T04.log` reports **14 intended failures, 2 passing controls**. Top-level controls retained values initially and then exposed the same nested-loss defect on relocation. Root supplied log: `/workspace/bac-review-2026-11-01/qualification/wave03-red/T04.log`.
+- Changed only `src/townlet/universe/declarations.py`: both supplied sidecar values undergo their existing strict DTO validation before lowering; explicit nullable optional values retain their existing contract; semantic conflicts refuse with top and nested differing-field origins. Canonical consumer fields preserve the selected value's own source marks. Both precise authored origin paths are retained before lowering, including equal duplicates.
+- The original 16-case regression file is unchanged. No assertion was weakened, feature removed, or runtime API changed. No other task's source was inspected or changed.
+- Compile-free scoped verification: `.venv/bin/black --check src/townlet/universe/declarations.py tests/test_townlet/regressions/bac/test_sidecars.py` and equivalent `.venv/bin/ruff check` both passed. Black formatting was applied only to the owned implementation file before the passing check.
+- Current whole-source inventory: owned `declarations.py` **695** lines; read-only `compiler.py` **976** lines; owned `test_sidecars.py` **163** lines; **3 files / 1834 lines**, zero executable probes. All remain below the 5-file/5000-line task limit and individual source ceilings.
+- SHA-256 `declarations.py`: `e2258ca225ef3ede13518718a1a456c1773e4d3118c5df688cd7ce8e72fa407f`.
+- SHA-256 read-only `compiler.py`: `521a72dd6d0a155c89a216fa038828cc8054520714a58cc0e0420c2da9d09e92`.
+- SHA-256 `test_sidecars.py`: `7ded45feec744f52683eafd0287ec25440fcdc5f1241d9efd7415f609e965f69`.
+- No pytest/runtime source imports/probes or broad checks were executed by this owner. No staging/commits/branches/worktrees/source copies/subdelegation occurred. Source is stationary pending root's coherent image freeze.
+- Remaining gaps: GREEN, B07 declaration-origin/store checks, full integration and fresh other-model review. Implementation-ready is not a passing or final-acceptance claim; whole BAC closure is outside this package.
+
+## Repair phase A — tests ready, production unchanged
+
+- Root reported **16 passed in 57.40s** for the first implementation in `/workspace/bac-review-2026-11-01/qualification/wave03-green-r0/T04.log`. Fresh Astra review found two uncovered defects; that narrow GREEN did not establish complete duplicate handling.
+- Added `test_missing_criteria_key_is_not_equal_to_explicit_null[top]` and `[nested]`. Each compiles the isolated `criteria: {leaf: null}` and `criteria: {}` variants through the full authored public path, asserts literal DTO values and distinct training hashes, then requires a combined declaration conflict naming the explicit leaf and missing-key container origins. Intended RED: silent success because recursive `.get` conflates absent and null.
+- Added `test_mixed_nested_criteria_keys_refuse_with_located_diagnostic`. It uses public declaration discovery to require a domain refusal with both actual integer-key locations. Intended RED: raw `TypeError` from sorting mixed integer/string keys. This is a lowering-diagnostic contract, not preservation of a working full mixed-key configuration: the downstream recording provider already refuses nonstring dictionary keys. No support expansion is claimed.
+- Scoped Black and Ruff on the owned test both pass. No pytest/runtime source imports/probes ran; the independent probe helper was not inspected. Production `declarations.py` remains unchanged at SHA-256 `e2258ca225ef3ede13518718a1a456c1773e4d3118c5df688cd7ce8e72fa407f`.
+- Regression file: **210 lines / 19 cases**, SHA-256 `1d40c3122dd8928c1d4c31e2d62b34a9187428ccb402bb136e10b75d992758ca`. Complete source inventory remains **3 files / 1881 lines**: DS 695, UC 976, owned test 210. No other implementation/test/helper source was read.
+- Both source and tests are stationary, waiting for root's common repair RED before production repair. The recursive key-presence fix, mixed-key diagnostics, and three known no-default violations remain pending; no whitelist or ratchet waiver is proposed.
+
+## Repair phase B — implementation ready, source stationary
+
+- Root confirmed all three new cases were causally RED on test image `3c8d473b82f9badb1c94d34d319e849c3c28afcf` / base `1f9d831a`: both missing/null cases compiled without refusing, and mixed keys raised raw `TypeError`. Root receipts live under `/workspace/bac-review-2026-11-01/qualification/wave03-repair-red-r1/T04*`.
+- Repaired only owned DS conflict lowering. Recursion explicitly distinguishes present keys from absent keys instead of calling `.get`; heterogeneous keys traverse deterministically by type name and textual value. Diagnostic paths preserve integer/string key types while locating against the original marked mappings, avoiding lookup-key flattening during origin selection. Missing keys use their nearest authored container, so explicit-null leaf versus absent-container refusals identify both actual locations.
+- Independent strict validation still runs before duplicate comparison, typed semantic equivalence and every accepted placement remain intact, and explicit null is carried from the supplied value rather than synthesized. Existing canonical and precise nested source-map registrations are retained.
+- Removed the three reported no-default patterns: the nullable ternary now explicitly preserves an authored null; both chained conflict-origin defaults are replaced by marked-origin traversal. No whitelist, ratchet, or policy changes were made. Root's guard run remains required to verify this statically.
+- Scoped Black and Ruff both pass on DS and the owned test. No runtime imports, pytest, broad checks, probe execution, source copies, staging, commits, branches/worktrees, or delegation occurred. No extra source/helper was inspected; the owned 19-case regression is unchanged.
+- Final whole-source inventory: `declarations.py` **708** lines; read-only `compiler.py` **976**; `test_sidecars.py` **210**; **3 files / 1894 lines**, zero executable probes. All individual ceilings and total limits hold.
+- Final SHA-256 DS: `90db7b23f90efe83a8f28f0ff91d30d756f7664823a2c88334856c2b109ad584`; UC: `521a72dd6d0a155c89a216fa038828cc8054520714a58cc0e0420c2da9d09e92`; test: `1d40c3122dd8928c1d4c31e2d62b34a9187428ccb402bb136e10b75d992758ca`.
+- Source is stationary for root's coherent repair GREEN, owner/B07 checks, actual-source independent review, six guards and full integration gate. Mixed-key coverage still proves a lowering-domain diagnostic only: the isolated mixed-key full configuration remains refused downstream by the recording provider. No broader support, final approval or whole BAC closure is claimed.
+
+## Additional typed-value review hypothesis — tests ready
+
+- Added four permanent full-authored-compile cases under `test_criteria_typed_values_with_distinct_training_identity_conflict`: `[bool-int]`, `[int-float]`, `[nested-list-bool-int]`, and `[signed-zero]`. They compile the top and nested placements separately, assert exact DTO types and literal values (including nested list leaf types and floating-point sign), and require distinct training hashes before testing combined duplicate refusal at both authored `leaf` locations.
+- Intended causal RED: Python `==` treats these distinct typed Any values as equal and bypasses conflict diagnostics. Production is deliberately unchanged at DS SHA-256 `90db7b23f90efe83a8f28f0ff91d30d756f7664823a2c88334856c2b109ad584` until root runs the frozen negative control.
+- The change adds only owned tests and one local test assertion helper; no extra source/helper/probe file was inspected. Scoped Black and Ruff both pass. No runtime imports, pytest, or broader execution occurred.
+- Current owned regression: **251 lines / 23 cases**, SHA-256 `dbe04abfaa9e97aecc75dcc5d102fd7740f22f471461e0d2bb6c77f15e449e15`. Complete source inventory: DS **708**, read-only UC **976**, owned test **251** = **3 files / 1935 lines**. Source and tests are stationary for root's shared RED.
+- This targets free-form typed Any criteria values and their existing identity contract. Existing typed-field normalization controls (boolean coercion, stripped output subdirectory, omitted optional None) must remain semantically equivalent; no new support or removal decision is proposed.
+
+## Typed-value implementation — ready and stationary
+
+- Root ran the four new cases on frozen image `d1c785bcc0c486cbbe92f958c8dbf22d80c69438`. All completed the isolated exact-type and distinct-hash controls, then failed at the intended no-refusal assertion: **4 failed, 19 deselected, 28.52s**, `/workspace/bac-review-2026-11-01/qualification/wave03-check-r2/T04-typed-RED.log`. Root also reported the preceding image's five basic guards passing, including 187 mypy files and the no-default baseline of 614; these do not substitute for guards on this final edit.
+- DS now recursively compares normalized values by concrete type, dictionary content independent of insertion order, and ordered list/tuple content. Floats use their explicit stable hexadecimal representation, preserving sign and distinguishing signed zero. Pydantic normalization still precedes comparison, so typed booleans, stripped metadata and default-equivalent optional fields compare in their existing normalized form.
+- Existing missing-key membership handling, deterministic mixed-key traversal, marked-source origin selection and independent validation remain unchanged. This production edit adds no defaults, schema/profile/native changes, whitelist or ratchet changes, and does not reduce scope.
+- Scoped Black and Ruff both pass on owned DS and the regression file. No runtime imports, pytest, broader checks, or extra helper/source inspection were performed. Root retains the runtime GREEN, B07/owner, fresh specification/runtime review, guards and full-integration gates.
+- Final whole-source inventory: DS **724** lines (under 750), read-only UC **976**, owned test **251** (under 350): **3 files / 1951 lines**, zero executable probes. The permanent regression file still contains **23 cases** and is unchanged by this production repair.
+- Final SHA-256 DS: `4ace739e9dc690b495f9895ac9ef89691ce114e50677612cd75eee53b1a32f41`; UC: `521a72dd6d0a155c89a216fa038828cc8054520714a58cc0e0420c2da9d09e92`; test: `dbe04abfaa9e97aecc75dcc5d102fd7740f22f471461e0d2bb6c77f15e449e15`.
+- Source is stationary. Remaining qualification is explicit above; no passing-final-image, whole BAC closure, or final repository acceptance claim is made. The mixed-key regression continues to cover a lowering diagnostic for content already refused downstream by the recording provider.

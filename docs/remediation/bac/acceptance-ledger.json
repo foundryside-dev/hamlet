@@ -3,7 +3,7 @@
   "baseline_sha": "4aa5363b5de54d9a112977c32c2975f37627197f",
   "design": "BAC-2026-11-01-r2 plus explicit additive plan decisions",
   "approved_plan_sha256": "2dde2d80d3d14c510878c26af1f99c42217be12d3cb3a554647bc68646feedc1",
-  "phase": "Nine packages accepted including T03; T03a/T04/PW01 regression authoring active; all final acceptance remains owed",
+  "phase": "Twelve packages qualified through a97e0af3; wave04 regression authoring and reviewed P2/P8 interface additions active; all final BAC acceptance remains owed",
   "completion_bar": "zero unresolved P1/P2 and zero unapproved in-scope capability gaps; all agreed finite evidence, fresh final spec/design/code review, required gates and source-verified docs",
   "requirements": [
     {
@@ -119,7 +119,26 @@
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "P1",
       "approval_reference": "BAC-HISTORY-A-2026-11-01",
-      "package_evidence": [],
+      "package_evidence": [
+        {
+          "task": "T03a",
+          "source_commit": "908667bd8efe7d8a42ac3cdb2489dd5341a632ab",
+          "qualified_release_commit": "a97e0af3392ac8ddfdab4574ecb1b8d2af8f810d",
+          "qualified_sum_tree": "d2b46a1bd74eb187ecbe7c1cdd5e9723d351e5c4",
+          "status": "implemented; fresh independent spec/quality/runtime PASS; six standing guards and exact final-tree full suite passed",
+          "focused_owner_result": "16 owned cases passed; all three native old callbacks plus exact query/export/codec",
+          "independent_result": "133-line final independent probe, all source/digest/ownership/current-shaped/failure controls PASS",
+          "full_repository_result": "5906 passed,15 skipped,15 warnings;1267.37s test/1271.76s wall;four workers;all five process identities and13 source hashes verified",
+          "reports": [
+            "package-reviews/T03a-implementation.md",
+            "package-reviews/T03a-initial-independent-review.md",
+            "package-reviews/T03a-independent-review.md",
+            "evidence/wave03-qualification.json"
+          ],
+          "final_acceptance": "Scoped repair/interface qualified; later runtime owners and final common-source acceptance remain owed",
+          "qualification_limit": "Only final logical release HEAD has the exact fully qualified sum tree; prefix heads were not separately full-qualified"
+        }
+      ],
       "evidence": [
         {
           "task": "T08",
@@ -363,8 +382,8 @@
       "expected_assertion": "Located negative-geometry diagnostic; working zero preserved",
       "candidate_sha": null,
       "evidence_paths": [],
-      "disposition": "PLANNED; executable current-candidate acceptance owed",
-      "remaining_severity": "P2",
+      "disposition": "REPAIRED_AND_SCOPED_QUALIFIED; final common-source review and acceptance refresh owed",
+      "remaining_severity": null,
       "approval_reference": null,
       "package_evidence": [
         {
@@ -437,7 +456,10 @@
           ],
           "final_acceptance": "Scoped P1 primitive/transport qualified; full final same-source requirement refresh and runtime consumers remain owed"
         }
-      ]
+      ],
+      "original_severity": "P2",
+      "acceptance_status": "open: final same-source verification still required",
+      "repair_status": "closed at qualified T01/T02/T03 source; no current counterexample known"
     },
     {
       "id": "D07",
@@ -479,8 +501,8 @@
       "expected_assertion": "Located invalid Nesterov/momentum diagnostic",
       "candidate_sha": null,
       "evidence_paths": [],
-      "disposition": "PLANNED; executable current-candidate acceptance owed",
-      "remaining_severity": "P2",
+      "disposition": "REPAIRED_AND_SCOPED_QUALIFIED; final common-source review and acceptance refresh owed",
+      "remaining_severity": null,
       "approval_reference": null,
       "package_evidence": [
         {
@@ -553,7 +575,10 @@
           ],
           "final_acceptance": "Scoped P1 primitive/transport qualified; full final same-source requirement refresh and runtime consumers remain owed"
         }
-      ]
+      ],
+      "original_severity": "P2",
+      "acceptance_status": "open: final same-source verification still required",
+      "repair_status": "closed at qualified T01/T02/T03 source; no current counterexample known"
     },
     {
       "id": "D08",
@@ -595,8 +620,8 @@
       "expected_assertion": "Finite authored learning rate and effective optimizer controls",
       "candidate_sha": null,
       "evidence_paths": [],
-      "disposition": "PLANNED; executable current-candidate acceptance owed",
-      "remaining_severity": "P2",
+      "disposition": "REPAIRED_AND_SCOPED_QUALIFIED; final common-source review and acceptance refresh owed",
+      "remaining_severity": null,
       "approval_reference": null,
       "package_evidence": [
         {
@@ -669,7 +694,10 @@
           ],
           "final_acceptance": "Scoped P1 primitive/transport qualified; full final same-source requirement refresh and runtime consumers remain owed"
         }
-      ]
+      ],
+      "original_severity": "P2",
+      "acceptance_status": "open: final same-source verification still required",
+      "repair_status": "closed at qualified T01/T02/T03 source; no current counterexample known"
     },
     {
       "id": "D09",
@@ -1118,7 +1146,26 @@
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "P2",
       "approval_reference": null,
-      "package_evidence": []
+      "package_evidence": [
+        {
+          "task": "T04",
+          "source_commit": "1ef6d9df97465f28932023b9d5e5ebff67c8179a",
+          "qualified_release_commit": "a97e0af3392ac8ddfdab4574ecb1b8d2af8f810d",
+          "qualified_sum_tree": "d2b46a1bd74eb187ecbe7c1cdd5e9723d351e5c4",
+          "status": "implemented; fresh independent spec/quality/runtime PASS; six standing guards and exact final-tree full suite passed",
+          "focused_owner_result": "23 final owned cases passed;48 declaration/sidecar owners before explicit bool wrapper",
+          "independent_result": "140-line independent final probe passed all original/default/origin/cache and repaired presence/key/type conflict controls",
+          "full_repository_result": "5906 passed,15 skipped,15 warnings;1267.37s test/1271.76s wall;four workers;all five process identities and13 source hashes verified",
+          "reports": [
+            "package-reviews/T04-implementation.md",
+            "package-reviews/T04-initial-independent-review.md",
+            "package-reviews/T04-independent-review.md",
+            "evidence/wave03-qualification.json"
+          ],
+          "final_acceptance": "Scoped repair/interface qualified; later runtime owners and final common-source acceptance remain owed",
+          "qualification_limit": "Only final logical release HEAD has the exact fully qualified sum tree; prefix heads were not separately full-qualified"
+        }
+      ]
     },
     {
       "id": "D17",
@@ -2689,6 +2736,24 @@
             "evidence/T03-qualification.json"
           ],
           "final_acceptance": "Scoped P1 primitive/transport qualified; full final same-source requirement refresh and runtime consumers remain owed"
+        },
+        {
+          "task": "T04",
+          "source_commit": "1ef6d9df97465f28932023b9d5e5ebff67c8179a",
+          "qualified_release_commit": "a97e0af3392ac8ddfdab4574ecb1b8d2af8f810d",
+          "qualified_sum_tree": "d2b46a1bd74eb187ecbe7c1cdd5e9723d351e5c4",
+          "status": "implemented; fresh independent spec/quality/runtime PASS; six standing guards and exact final-tree full suite passed",
+          "focused_owner_result": "23 final owned cases passed;48 declaration/sidecar owners before explicit bool wrapper",
+          "independent_result": "140-line independent final probe passed all original/default/origin/cache and repaired presence/key/type conflict controls",
+          "full_repository_result": "5906 passed,15 skipped,15 warnings;1267.37s test/1271.76s wall;four workers;all five process identities and13 source hashes verified",
+          "reports": [
+            "package-reviews/T04-implementation.md",
+            "package-reviews/T04-initial-independent-review.md",
+            "package-reviews/T04-independent-review.md",
+            "evidence/wave03-qualification.json"
+          ],
+          "final_acceptance": "Scoped repair/interface qualified; later runtime owners and final common-source acceptance remain owed",
+          "qualification_limit": "Only final logical release HEAD has the exact fully qualified sum tree; prefix heads were not separately full-qualified"
         }
       ],
       "evidence": [
@@ -2781,7 +2846,26 @@
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "acceptance owed",
       "approval_reference": null,
-      "package_evidence": []
+      "package_evidence": [
+        {
+          "task": "T04",
+          "source_commit": "1ef6d9df97465f28932023b9d5e5ebff67c8179a",
+          "qualified_release_commit": "a97e0af3392ac8ddfdab4574ecb1b8d2af8f810d",
+          "qualified_sum_tree": "d2b46a1bd74eb187ecbe7c1cdd5e9723d351e5c4",
+          "status": "implemented; fresh independent spec/quality/runtime PASS; six standing guards and exact final-tree full suite passed",
+          "focused_owner_result": "23 final owned cases passed;48 declaration/sidecar owners before explicit bool wrapper",
+          "independent_result": "140-line independent final probe passed all original/default/origin/cache and repaired presence/key/type conflict controls",
+          "full_repository_result": "5906 passed,15 skipped,15 warnings;1267.37s test/1271.76s wall;four workers;all five process identities and13 source hashes verified",
+          "reports": [
+            "package-reviews/T04-implementation.md",
+            "package-reviews/T04-initial-independent-review.md",
+            "package-reviews/T04-independent-review.md",
+            "evidence/wave03-qualification.json"
+          ],
+          "final_acceptance": "Scoped repair/interface qualified; later runtime owners and final common-source acceptance remain owed",
+          "qualification_limit": "Only final logical release HEAD has the exact fully qualified sum tree; prefix heads were not separately full-qualified"
+        }
+      ]
     },
     {
       "id": "BAC-C04",
@@ -3010,7 +3094,26 @@
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "acceptance owed",
       "approval_reference": "BAC-HISTORY-A-2026-11-01",
-      "package_evidence": [],
+      "package_evidence": [
+        {
+          "task": "T03a",
+          "source_commit": "908667bd8efe7d8a42ac3cdb2489dd5341a632ab",
+          "qualified_release_commit": "a97e0af3392ac8ddfdab4574ecb1b8d2af8f810d",
+          "qualified_sum_tree": "d2b46a1bd74eb187ecbe7c1cdd5e9723d351e5c4",
+          "status": "implemented; fresh independent spec/quality/runtime PASS; six standing guards and exact final-tree full suite passed",
+          "focused_owner_result": "16 owned cases passed; all three native old callbacks plus exact query/export/codec",
+          "independent_result": "133-line final independent probe, all source/digest/ownership/current-shaped/failure controls PASS",
+          "full_repository_result": "5906 passed,15 skipped,15 warnings;1267.37s test/1271.76s wall;four workers;all five process identities and13 source hashes verified",
+          "reports": [
+            "package-reviews/T03a-implementation.md",
+            "package-reviews/T03a-initial-independent-review.md",
+            "package-reviews/T03a-independent-review.md",
+            "evidence/wave03-qualification.json"
+          ],
+          "final_acceptance": "Scoped repair/interface qualified; later runtime owners and final common-source acceptance remain owed",
+          "qualification_limit": "Only final logical release HEAD has the exact fully qualified sum tree; prefix heads were not separately full-qualified"
+        }
+      ],
       "evidence": [
         {
           "task": "T08",
@@ -3154,7 +3257,26 @@
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "acceptance owed",
       "approval_reference": null,
-      "package_evidence": [],
+      "package_evidence": [
+        {
+          "task": "T03a",
+          "source_commit": "908667bd8efe7d8a42ac3cdb2489dd5341a632ab",
+          "qualified_release_commit": "a97e0af3392ac8ddfdab4574ecb1b8d2af8f810d",
+          "qualified_sum_tree": "d2b46a1bd74eb187ecbe7c1cdd5e9723d351e5c4",
+          "status": "implemented; fresh independent spec/quality/runtime PASS; six standing guards and exact final-tree full suite passed",
+          "focused_owner_result": "16 owned cases passed; all three native old callbacks plus exact query/export/codec",
+          "independent_result": "133-line final independent probe, all source/digest/ownership/current-shaped/failure controls PASS",
+          "full_repository_result": "5906 passed,15 skipped,15 warnings;1267.37s test/1271.76s wall;four workers;all five process identities and13 source hashes verified",
+          "reports": [
+            "package-reviews/T03a-implementation.md",
+            "package-reviews/T03a-initial-independent-review.md",
+            "package-reviews/T03a-independent-review.md",
+            "evidence/wave03-qualification.json"
+          ],
+          "final_acceptance": "Scoped repair/interface qualified; later runtime owners and final common-source acceptance remain owed",
+          "qualification_limit": "Only final logical release HEAD has the exact fully qualified sum tree; prefix heads were not separately full-qualified"
+        }
+      ],
       "evidence": [
         {
           "task": "T08",
@@ -4061,7 +4183,26 @@
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "acceptance owed",
       "approval_reference": null,
-      "package_evidence": []
+      "package_evidence": [
+        {
+          "task": "T04",
+          "source_commit": "1ef6d9df97465f28932023b9d5e5ebff67c8179a",
+          "qualified_release_commit": "a97e0af3392ac8ddfdab4574ecb1b8d2af8f810d",
+          "qualified_sum_tree": "d2b46a1bd74eb187ecbe7c1cdd5e9723d351e5c4",
+          "status": "implemented; fresh independent spec/quality/runtime PASS; six standing guards and exact final-tree full suite passed",
+          "focused_owner_result": "23 final owned cases passed;48 declaration/sidecar owners before explicit bool wrapper",
+          "independent_result": "140-line independent final probe passed all original/default/origin/cache and repaired presence/key/type conflict controls",
+          "full_repository_result": "5906 passed,15 skipped,15 warnings;1267.37s test/1271.76s wall;four workers;all five process identities and13 source hashes verified",
+          "reports": [
+            "package-reviews/T04-implementation.md",
+            "package-reviews/T04-initial-independent-review.md",
+            "package-reviews/T04-independent-review.md",
+            "evidence/wave03-qualification.json"
+          ],
+          "final_acceptance": "Scoped repair/interface qualified; later runtime owners and final common-source acceptance remain owed",
+          "qualification_limit": "Only final logical release HEAD has the exact fully qualified sum tree; prefix heads were not separately full-qualified"
+        }
+      ]
     },
     {
       "id": "K01",
@@ -4096,7 +4237,26 @@
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": null,
       "approval_reference": "BAC-HISTORY-A-2026-11-01",
-      "package_evidence": []
+      "package_evidence": [
+        {
+          "task": "T03a",
+          "source_commit": "908667bd8efe7d8a42ac3cdb2489dd5341a632ab",
+          "qualified_release_commit": "a97e0af3392ac8ddfdab4574ecb1b8d2af8f810d",
+          "qualified_sum_tree": "d2b46a1bd74eb187ecbe7c1cdd5e9723d351e5c4",
+          "status": "implemented; fresh independent spec/quality/runtime PASS; six standing guards and exact final-tree full suite passed",
+          "focused_owner_result": "16 owned cases passed; all three native old callbacks plus exact query/export/codec",
+          "independent_result": "133-line final independent probe, all source/digest/ownership/current-shaped/failure controls PASS",
+          "full_repository_result": "5906 passed,15 skipped,15 warnings;1267.37s test/1271.76s wall;four workers;all five process identities and13 source hashes verified",
+          "reports": [
+            "package-reviews/T03a-implementation.md",
+            "package-reviews/T03a-initial-independent-review.md",
+            "package-reviews/T03a-independent-review.md",
+            "evidence/wave03-qualification.json"
+          ],
+          "final_acceptance": "Scoped repair/interface qualified; later runtime owners and final common-source acceptance remain owed",
+          "qualification_limit": "Only final logical release HEAD has the exact fully qualified sum tree; prefix heads were not separately full-qualified"
+        }
+      ]
     },
     {
       "id": "K02",
@@ -4828,6 +4988,61 @@
         "evidence/T03-qualification.json"
       ],
       "final_acceptance": "Scoped P1 primitive/transport qualified; full final same-source requirement refresh and runtime consumers remain owed"
+    },
+    {
+      "task": "T03a",
+      "source_commit": "908667bd8efe7d8a42ac3cdb2489dd5341a632ab",
+      "qualified_release_commit": "a97e0af3392ac8ddfdab4574ecb1b8d2af8f810d",
+      "qualified_sum_tree": "d2b46a1bd74eb187ecbe7c1cdd5e9723d351e5c4",
+      "status": "implemented; fresh independent spec/quality/runtime PASS; six standing guards and exact final-tree full suite passed",
+      "focused_owner_result": "16 owned cases passed; all three native old callbacks plus exact query/export/codec",
+      "independent_result": "133-line final independent probe, all source/digest/ownership/current-shaped/failure controls PASS",
+      "full_repository_result": "5906 passed,15 skipped,15 warnings;1267.37s test/1271.76s wall;four workers;all five process identities and13 source hashes verified",
+      "reports": [
+        "package-reviews/T03a-implementation.md",
+        "package-reviews/T03a-initial-independent-review.md",
+        "package-reviews/T03a-independent-review.md",
+        "evidence/wave03-qualification.json"
+      ],
+      "final_acceptance": "Scoped repair/interface qualified; later runtime owners and final common-source acceptance remain owed",
+      "qualification_limit": "Only final logical release HEAD has the exact fully qualified sum tree; prefix heads were not separately full-qualified"
+    },
+    {
+      "task": "T04",
+      "source_commit": "1ef6d9df97465f28932023b9d5e5ebff67c8179a",
+      "qualified_release_commit": "a97e0af3392ac8ddfdab4574ecb1b8d2af8f810d",
+      "qualified_sum_tree": "d2b46a1bd74eb187ecbe7c1cdd5e9723d351e5c4",
+      "status": "implemented; fresh independent spec/quality/runtime PASS; six standing guards and exact final-tree full suite passed",
+      "focused_owner_result": "23 final owned cases passed;48 declaration/sidecar owners before explicit bool wrapper",
+      "independent_result": "140-line independent final probe passed all original/default/origin/cache and repaired presence/key/type conflict controls",
+      "full_repository_result": "5906 passed,15 skipped,15 warnings;1267.37s test/1271.76s wall;four workers;all five process identities and13 source hashes verified",
+      "reports": [
+        "package-reviews/T04-implementation.md",
+        "package-reviews/T04-initial-independent-review.md",
+        "package-reviews/T04-independent-review.md",
+        "evidence/wave03-qualification.json"
+      ],
+      "final_acceptance": "Scoped repair/interface qualified; later runtime owners and final common-source acceptance remain owed",
+      "qualification_limit": "Only final logical release HEAD has the exact fully qualified sum tree; prefix heads were not separately full-qualified"
+    },
+    {
+      "task": "PW01",
+      "source_commit": "a97e0af3392ac8ddfdab4574ecb1b8d2af8f810d",
+      "qualified_release_commit": "a97e0af3392ac8ddfdab4574ecb1b8d2af8f810d",
+      "qualified_sum_tree": "d2b46a1bd74eb187ecbe7c1cdd5e9723d351e5c4",
+      "status": "implemented; fresh independent spec/quality/runtime PASS; six standing guards and exact final-tree full suite passed",
+      "focused_owner_result": "2 owned nodes passed33.03s;137 config consumers passed",
+      "independent_result": "110-line final independent probe passed171 rejection controls and all five-provider/drive/local-capacity/native/seed cases",
+      "full_repository_result": "5906 passed,15 skipped,15 warnings;1267.37s test/1271.76s wall;four workers;all five process identities and13 source hashes verified",
+      "reports": [
+        "package-reviews/PW01-implementation.md",
+        "package-reviews/PW01-lint-repair.md",
+        "package-reviews/PW01-initial-independent-review.md",
+        "package-reviews/PW01-independent-review.md",
+        "evidence/wave03-qualification.json"
+      ],
+      "final_acceptance": "Scoped repair/interface qualified; later runtime owners and final common-source acceptance remain owed",
+      "qualification_limit": "Only final logical release HEAD has the exact fully qualified sum tree; prefix heads were not separately full-qualified"
     }
   ],
   "evidence_note": "T01 precommit full gate verified the exact committed tree and source hashes in every pytest process. Historical fixture checks qualify data at the original source only; new archive policy acceptance remains owed.",
@@ -4888,5 +5103,17 @@
     "total_packets": 66,
     "final_lenses": 22,
     "reason": "One new C06/C09 required defect repair plus one consumer-first checkpoint staging split to honor real source growth and5/5000reviewbounds; no delivery removed"
+  },
+  "scoped_repairs_closed_final_acceptance_owed": [
+    "D06",
+    "D07",
+    "D08"
+  ],
+  "P2_P8_interface_clarification": {
+    "sha256": "548523c1c23c9901cf461ef33bc8ed74a705c43977772acf6817d1f1caed06b1",
+    "review": "plan-reviews/p2-p8-interface-clarification.md",
+    "status": "exact artifact technicalPASS; implementation pending T10/T33, no capability reduction or new task",
+    "standalone_archive": "closed honest replay-only source domain; native checkpoint strictness unchanged",
+    "recording_index": "distinct owned strict index; canonical metricDBv1 preserved; whole family lifecycle and honest tickets required"
   }
 }

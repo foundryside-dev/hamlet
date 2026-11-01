@@ -4,8 +4,8 @@ Verifies the complete data flow:
 1. DACEngine returns components
 2. Components flow through env info dict
 3. Components stored in replay buffer
-4. Checkpoint format_version is 4
-5. Immediately previous format rejection
+4. Current checkpoint format_version is 5
+5. Unsupported pre-archive format rejection
 """
 
 from __future__ import annotations
@@ -100,9 +100,12 @@ class TestRewardComponentFlow:
         assert buffer.rewards_intrinsic[0].item() == pytest.approx(0.3), "Intrinsic value mismatch"
         assert buffer.rewards_shaping[0].item() == pytest.approx(0.2), "Shaping value mismatch"
         assert buffer.rewards[0].item() == pytest.approx(1.0), "Total reward mismatch"
+        assert buffer.rewards_extrinsic_present[0].item() is True
+        assert buffer.rewards_intrinsic_present[0].item() is True
+        assert buffer.rewards_shaping_present[0].item() is True
 
-    def test_checkpoint_format_version_4(self, cpu_device):
-        """Serialized buffer has format_version 4 with component fields."""
+    def test_checkpoint_format_version_5(self, cpu_device):
+        """Current format5 preserves composed totals, components and their presence."""
         buffer = ReplayBuffer(capacity=100, device=cpu_device)
 
         reward_tensor = RewardTensor.from_dac(
@@ -124,7 +127,7 @@ class TestRewardComponentFlow:
 
         # Verify format_version
         assert "format_version" in serialized, "Serialized buffer should have format_version"
-        assert serialized["format_version"] == 4, "format_version should be 4"
+        assert serialized["format_version"] == 5, "Current format_version should be 5"
 
         # Verify component fields exist
         assert "rewards_extrinsic" in serialized, "Serialized buffer should have rewards_extrinsic"
@@ -135,12 +138,19 @@ class TestRewardComponentFlow:
         assert serialized["rewards_extrinsic"] is not None
         assert serialized["rewards_intrinsic"] is not None
         assert serialized["rewards_shaping"] is not None
+        assert serialized["rewards"][0].item() == pytest.approx(1.0)
+        assert serialized["rewards_extrinsic"][0].item() == pytest.approx(0.5)
+        assert serialized["rewards_intrinsic"][0].item() == pytest.approx(0.3)
+        assert serialized["rewards_shaping"][0].item() == pytest.approx(0.2)
+        assert serialized["rewards_extrinsic_present"].tolist() == [True]
+        assert serialized["rewards_intrinsic_present"].tolist() == [True]
+        assert serialized["rewards_shaping_present"].tolist() == [True]
 
-    def test_load_rejects_old_format(self, cpu_device):
-        """Loading the immediately previous format raises ValueError."""
+    def test_load_rejects_unsupported_format(self, cpu_device):
+        """Format3 remains unsupported; supported format4 is archival history."""
         buffer = ReplayBuffer(capacity=100, device=cpu_device)
 
-        # Create an immediately previous-format checkpoint.
+        # This unsupported format predates the supported pre-capture format4.
         old_format = {
             "format_version": 3,
             "size": 0,
@@ -153,8 +163,8 @@ class TestRewardComponentFlow:
             "dones": None,
         }
 
-        # The version gate must refuse the previous artifact before reading its shape.
-        with pytest.raises(ValueError, match="exact current format_version is 4"):
+        # The version gate must refuse this artifact before reading its shape.
+        with pytest.raises(ValueError, match="Cannot load replay buffer checkpoint with format_version 3"):
             buffer.load_from_serialized(old_format)
 
     def test_buffer_handles_missing_components(self, cpu_device):
@@ -177,10 +187,23 @@ class TestRewardComponentFlow:
         assert buffer.rewards_intrinsic is not None, "Buffer should initialize intrinsic tensor"
         assert buffer.rewards_shaping is not None, "Buffer should initialize shaping tensor"
 
-        # Components should be zero when not provided
+        # Missing components use zero storage placeholders with false presence.
         assert buffer.rewards_extrinsic[0].item() == 0.0, "Missing extrinsic should be zero"
         assert buffer.rewards_intrinsic[0].item() == 0.0, "Missing intrinsic should be zero"
         assert buffer.rewards_shaping[0].item() == 0.0, "Missing shaping should be zero"
+        assert buffer.rewards[0].item() == pytest.approx(1.0)
+        serialized = buffer.serialize()
+        assert serialized["format_version"] == 5
+        for component in ("extrinsic", "intrinsic", "shaping"):
+            assert serialized[f"rewards_{component}"] is None
+            assert serialized[f"rewards_{component}_present"].tolist() == [False]
+        restored = ReplayBuffer(capacity=100, device=cpu_device)
+        restored.load_from_serialized(serialized)
+        assert restored.size == 1
+        assert restored.rewards[0].item() == pytest.approx(1.0)
+        for component in ("extrinsic", "intrinsic", "shaping"):
+            assert getattr(restored, f"rewards_{component}")[0].item() == 0.0
+            assert getattr(restored, f"rewards_{component}_present")[0].item() is False
 
     def test_intrinsic_raw_in_components(self, compile_universe, test_config_pack_path, cpu_device):
         """DACEngine returns intrinsic_raw in components for TensorBoard logging."""
@@ -258,10 +281,14 @@ class TestRewardComponentFlow:
         assert buffer.rewards_extrinsic is not None
         assert buffer.rewards_intrinsic is not None
         assert buffer.rewards_shaping is not None
+        assert torch.allclose(buffer.rewards[:2], rewards)
+        for component in ("extrinsic", "intrinsic", "shaping"):
+            assert torch.allclose(getattr(buffer, f"rewards_{component}")[:2], components[component])
+            assert getattr(buffer, f"rewards_{component}_present")[:2].all()
 
         # Serialize and verify format
         serialized = buffer.serialize()
-        assert serialized["format_version"] == 4
+        assert serialized["format_version"] == 5
         assert "rewards_extrinsic" in serialized
         assert "rewards_intrinsic" in serialized
         assert "rewards_shaping" in serialized
@@ -272,6 +299,9 @@ class TestRewardComponentFlow:
 
         # Verify components were preserved
         assert new_buffer.size == 2
+        assert torch.allclose(new_buffer.rewards[:2], buffer.rewards[:2])
         assert torch.allclose(new_buffer.rewards_extrinsic[:2], buffer.rewards_extrinsic[:2])
         assert torch.allclose(new_buffer.rewards_intrinsic[:2], buffer.rewards_intrinsic[:2])
         assert torch.allclose(new_buffer.rewards_shaping[:2], buffer.rewards_shaping[:2])
+        for component in ("extrinsic", "intrinsic", "shaping"):
+            assert torch.equal(getattr(new_buffer, f"rewards_{component}_present")[:2], getattr(buffer, f"rewards_{component}_present")[:2])

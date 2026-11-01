@@ -13,6 +13,8 @@ Coverage:
 CRIT-07: Updated to use RewardTensor DTO for explicit reward composition semantics.
 """
 
+import re
+
 import pytest
 import torch
 
@@ -554,7 +556,7 @@ class TestReplayBufferStatsAPI:
 
         # Calculate expected memory (all tensors preallocated to capacity)
         # observations: 10*5 floats, actions: 10 longs, etc.
-        # Version 3: rewards (total) + components (extrinsic, intrinsic, shaping)
+        # Current storage includes total rewards, optional components and explicit presence/legality flags.
         expected_bytes = (
             10 * 5 * 4  # observations (float32)
             + 10 * 8  # actions (int64)
@@ -564,6 +566,8 @@ class TestReplayBufferStatsAPI:
             + 10 * 4  # rewards_shaping (float32)
             + 10 * 5 * 4  # next_observations (float32)
             + 10 * 1  # dones (bool)
+            + 10 * 1  # legality_recorded (bool)
+            + 10 * 3 * 1  # component presence (bool)
         )
 
         assert stats["memory_bytes"] == expected_bytes
@@ -652,8 +656,16 @@ class TestReplayBufferSerialization:
         assert state["size"] == 5
         assert state["position"] == 5
         assert state["capacity"] == 10
-        assert state["format_version"] == 4
+        assert state["format_version"] == 5
         assert state["observations"].shape == (5, 1)
+        assert state["action_dim"] is None
+        assert state["legality_mode"] == "unconstrained"
+        assert state["historical_archives"] == []
+        assert state["next_action_masks"] is None
+        assert torch.equal(state["legality_recorded"], torch.zeros(5, dtype=torch.bool))
+        for component in ("rewards_extrinsic", "rewards_intrinsic", "rewards_shaping"):
+            assert state[component] is None
+            assert torch.equal(state[f"{component}_present"], torch.zeros(5, dtype=torch.bool))
 
         # Check temporal order (should be 0, 1, 2, 3, 4)
         for i in range(5):
@@ -717,8 +729,15 @@ class TestReplayBufferSerialization:
 
         assert state["size"] == 0
         assert state["position"] == 0
-        assert state["format_version"] == 4
+        assert state["format_version"] == 5
         assert state["observations"] is None
+        assert state["action_dim"] is None
+        assert state["legality_mode"] == "unconstrained"
+        assert state["historical_archives"] == []
+        assert state["next_action_masks"] is None
+        assert state["legality_recorded"] is None
+        for component in ("rewards_extrinsic", "rewards_intrinsic", "rewards_shaping"):
+            assert state[f"{component}_present"] is None
 
     def test_load_from_serialized_empty(self):
         """Loading empty serialized state should work."""
@@ -736,8 +755,8 @@ class TestReplayBufferSerialization:
         assert buffer.size == 0
         assert buffer.position == 0
 
-    def test_load_previous_format_rejected(self):
-        """load_from_serialized rejects the immediately previous artifact."""
+    def test_load_format_version_3_rejected(self):
+        """load_from_serialized rejects the unsupported format-3 artifact."""
         buffer = ReplayBuffer(capacity=10, device=CPU)
 
         previous_state = {
@@ -753,7 +772,7 @@ class TestReplayBufferSerialization:
             "dones": torch.rand(5) > 0.5,
         }
 
-        with pytest.raises(ValueError, match="exact current format_version is 4"):
+        with pytest.raises(ValueError, match=r"^Cannot load replay buffer checkpoint with format_version 3$"):
             buffer.load_from_serialized(previous_state)
 
 
@@ -784,7 +803,7 @@ class TestCompactReplayCheckpointABI:
     def test_serialized_state_has_exact_current_version_kind_and_keys(self):
         state = ReplayBuffer(capacity=10, device=CPU).serialize()
 
-        assert state["format_version"] == 4
+        assert state["format_version"] == 5
         assert state["replay_kind"] == "standard"
         assert set(state) == {
             "replay_kind",
@@ -800,15 +819,24 @@ class TestCompactReplayCheckpointABI:
             "rewards_shaping",
             "next_observations",
             "dones",
+            "action_dim",
+            "legality_mode",
+            "historical_archives",
+            "next_action_masks",
+            "legality_recorded",
+            "rewards_extrinsic_present",
+            "rewards_intrinsic_present",
+            "rewards_shaping_present",
         }
 
-    @pytest.mark.parametrize("invalid_version", (4.0, True))
+    @pytest.mark.parametrize("invalid_version", (5.0, True))
     def test_format_version_requires_an_exact_integer(self, invalid_version: object):
         buffer = ReplayBuffer(capacity=10, device=CPU)
         state = buffer.serialize()
         state["format_version"] = invalid_version
 
-        with pytest.raises(ValueError, match="exact current format_version is 4"):
+        message = re.escape(f"Cannot load replay buffer checkpoint with format_version {invalid_version!r}")
+        with pytest.raises(ValueError, match=f"^{message}$"):
             buffer.load_from_serialized(state)
 
     def test_structural_validation_does_not_materialize_restore_storage(self, monkeypatch):
@@ -841,7 +869,7 @@ class TestCompactReplayCheckpointABI:
         with pytest.raises(ValueError, match="payload must be a mapping"):
             replay.load_from_serialized(None)
 
-    def test_immediately_previous_version_refuses_without_mutation(self):
+    def test_unsupported_format_version_3_refuses_without_mutation(self):
         buffer = ReplayBuffer(capacity=10, device=CPU)
         observations = torch.ones((1, 3), dtype=torch.float32)
         buffer.push(
@@ -855,7 +883,7 @@ class TestCompactReplayCheckpointABI:
         previous = dict(before)
         previous["format_version"] = 3
 
-        with pytest.raises(ValueError, match=r"format_version 3.*format_version is 4"):
+        with pytest.raises(ValueError, match=r"^Cannot load replay buffer checkpoint with format_version 3$"):
             buffer.load_from_serialized(previous)
 
         after = buffer.serialize()

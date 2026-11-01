@@ -296,6 +296,16 @@ class TestReplayBufferSerializationProperties:
 
         # Serialize
         state = buffer.serialize()
+        assert state["format_version"] == 5
+        assert state["action_dim"] is None
+        assert state["legality_mode"] == "unconstrained"
+        assert state["next_action_masks"] is None
+        assert state["historical_archives"] == []
+        assert torch.equal(state["legality_recorded"], torch.zeros(num_to_push, dtype=torch.bool))
+        assert torch.equal(state["rewards_extrinsic_present"], torch.ones(num_to_push, dtype=torch.bool))
+        assert torch.equal(state["rewards_intrinsic_present"], torch.ones(num_to_push, dtype=torch.bool))
+        assert torch.equal(state["rewards_shaping_present"], torch.zeros(num_to_push, dtype=torch.bool))
+        assert state["rewards_shaping"] is None
 
         # Create new buffer and deserialize
         new_buffer = ReplayBuffer(capacity=capacity, device=torch.device("cpu"))
@@ -312,3 +322,15 @@ class TestReplayBufferSerializationProperties:
             assert torch.allclose(new_buffer.observations[: new_buffer.size], buffer.observations[: buffer.size])
             assert torch.equal(new_buffer.actions[: new_buffer.size], buffer.actions[: buffer.size])
             assert torch.allclose(new_buffer.rewards[: new_buffer.size], buffer.rewards[: buffer.size])
+            assert torch.allclose(new_buffer.next_observations[: new_buffer.size], buffer.next_observations[: buffer.size])
+            assert torch.equal(new_buffer.dones[: new_buffer.size], buffer.dones[: buffer.size])
+            assert torch.equal(new_buffer.legality_recorded[: new_buffer.size], buffer.legality_recorded[: buffer.size])
+            assert new_buffer.action_dim is None
+            assert new_buffer.legality_mode == "unconstrained"
+            assert new_buffer.next_action_masks is None
+            assert new_buffer.historical_archives == ()
+            for component in ("rewards_extrinsic", "rewards_intrinsic", "rewards_shaping"):
+                assert torch.equal(getattr(new_buffer, component)[: new_buffer.size], getattr(buffer, component)[: buffer.size])
+                assert torch.equal(
+                    getattr(new_buffer, f"{component}_present")[: new_buffer.size], getattr(buffer, f"{component}_present")[: buffer.size]
+                )

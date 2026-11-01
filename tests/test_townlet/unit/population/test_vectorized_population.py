@@ -997,10 +997,10 @@ class TestPopulationCheckpointSchema:
             minimal_brain_config,
         )
         checkpoint = population.get_checkpoint_state()
-        checkpoint["version"] = 6
+        assert checkpoint["version"] == 6
         replay_state = checkpoint["replay_buffer"]
-        replay_state["format_version"] = 4
-        replay_state["replay_kind"] = "standard"
+        assert replay_state["format_version"] == 5
+        assert replay_state["replay_kind"] == "standard"
         expected_message = ""
         if invalid_case == "replay-kind":
             replay_state["replay_kind"] = "prioritized"

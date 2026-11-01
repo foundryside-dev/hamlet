@@ -1,9 +1,9 @@
-"""Tests for ReplayBuffer reward component storage (format_version 4).
+"""Tests for ReplayBuffer reward component storage (format_version 5).
 
 Task 4 from docs/plans/2025-11-28-reward-tensor-wiring-implementation.md:
 - Component storage and retrieval
-- Serialization format_version 4
-- Rejection of non-current format versions
+- Serialization format_version 5 with explicit component presence
+- Rejection of unsupported format versions
 """
 
 import pytest
@@ -48,6 +48,9 @@ class TestRewardComponentStorage:
         assert buffer.rewards_extrinsic[0].item() == pytest.approx(0.5)
         assert buffer.rewards_intrinsic[0].item() == pytest.approx(0.3)
         assert buffer.rewards_shaping[0].item() == pytest.approx(0.2)
+        assert buffer.rewards_extrinsic_present[0].item() is True
+        assert buffer.rewards_intrinsic_present[0].item() is True
+        assert buffer.rewards_shaping_present[0].item() is True
 
     def test_push_batch_with_components(self, buffer):
         """Buffer should handle batch push with components."""
@@ -92,6 +95,9 @@ class TestRewardComponentStorage:
         assert buffer.rewards_extrinsic[0].item() == 0.0
         assert buffer.rewards_intrinsic[0].item() == 0.0
         assert buffer.rewards_shaping[0].item() == 0.0
+        assert buffer.rewards_extrinsic_present[0].item() is False
+        assert buffer.rewards_intrinsic_present[0].item() is False
+        assert buffer.rewards_shaping_present[0].item() is False
 
     def test_wraparound_preserves_components(self):
         """Component storage should work correctly with wraparound."""
@@ -123,19 +129,27 @@ class TestRewardComponentStorage:
         assert buffer.rewards_shaping[0].item() == pytest.approx(5.0 * 0.2)
 
 
-class TestSerializationFormatVersion4:
-    """Test serialization with format_version 4."""
+class TestSerializationFormatVersion5:
+    """Test current serialization with format_version 5."""
 
-    def test_serialize_empty_buffer_has_version_3(self):
-        """Empty buffer should serialize with format_version 4."""
+    def test_serialize_empty_buffer_has_version_5(self):
+        """Empty buffer should serialize with format_version 5."""
         buffer = ReplayBuffer(capacity=10, device=CPU)
         state = buffer.serialize()
 
-        assert state["format_version"] == 4
+        assert state["format_version"] == 5
         assert state["size"] == 0
         assert state["rewards_extrinsic"] is None
         assert state["rewards_intrinsic"] is None
         assert state["rewards_shaping"] is None
+        assert state["rewards_extrinsic_present"] is None
+        assert state["rewards_intrinsic_present"] is None
+        assert state["rewards_shaping_present"] is None
+        assert state["action_dim"] is None
+        assert state["legality_mode"] == "unconstrained"
+        assert state["next_action_masks"] is None
+        assert state["legality_recorded"] is None
+        assert state["historical_archives"] == []
 
     def test_serialize_with_components(self):
         """Serialization should include all component tensors."""
@@ -157,7 +171,7 @@ class TestSerializationFormatVersion4:
 
         state = buffer.serialize()
 
-        assert state["format_version"] == 4
+        assert state["format_version"] == 5
         assert state["size"] == 5
         assert state["rewards_extrinsic"] is not None
         assert state["rewards_intrinsic"] is not None
@@ -165,6 +179,13 @@ class TestSerializationFormatVersion4:
         assert state["rewards_extrinsic"].shape == (5,)
         assert state["rewards_intrinsic"].shape == (5,)
         assert state["rewards_shaping"].shape == (5,)
+        for component in ("rewards_extrinsic", "rewards_intrinsic", "rewards_shaping"):
+            assert torch.equal(state[f"{component}_present"], torch.ones(5, dtype=torch.bool))
+        assert state["action_dim"] is None
+        assert state["legality_mode"] == "unconstrained"
+        assert state["next_action_masks"] is None
+        assert torch.equal(state["legality_recorded"], torch.zeros(5, dtype=torch.bool))
+        assert state["historical_archives"] == []
 
         # Verify component values
         for i in range(5):
@@ -224,6 +245,9 @@ class TestSerializationFormatVersion4:
         buffer2.load_from_serialized(state)
 
         assert buffer2.size == 5
+        assert buffer2.historical_archives == ()
+        for component in ("rewards_extrinsic", "rewards_intrinsic", "rewards_shaping"):
+            assert torch.equal(getattr(buffer2, f"{component}_present")[:5], state[f"{component}_present"])
         # Verify components match
         for i in range(5):
             assert buffer2.rewards_extrinsic[i].item() == pytest.approx(i * 0.5)
@@ -231,8 +255,8 @@ class TestSerializationFormatVersion4:
             assert buffer2.rewards_shaping[i].item() == pytest.approx(i * 0.2)
 
 
-class TestLegacyFormatRejection:
-    """Test that non-current format versions are rejected."""
+class TestUnsupportedFormatRejection:
+    """Test that unsupported versions are rejected; valid historical format 4 has a separate archive path."""
 
     def test_load_format_version_2_raises_error(self):
         """Loading format_version 2 should raise ValueError."""
@@ -250,7 +274,7 @@ class TestLegacyFormatRejection:
             "dones": torch.rand(5) > 0.5,
         }
 
-        with pytest.raises(ValueError, match="exact current format_version is 4"):
+        with pytest.raises(ValueError, match=r"^Cannot load replay buffer checkpoint with format_version 2$"):
             buffer.load_from_serialized(old_format)
 
     def test_load_format_version_1_raises_error(self):
@@ -270,7 +294,7 @@ class TestLegacyFormatRejection:
             "dones": torch.rand(5) > 0.5,
         }
 
-        with pytest.raises(ValueError, match="exact current format_version is 4"):
+        with pytest.raises(ValueError, match=r"^Cannot load replay buffer checkpoint with format_version 1$"):
             buffer.load_from_serialized(legacy_format)
 
     def test_load_missing_format_version_raises_error(self):
@@ -278,7 +302,7 @@ class TestLegacyFormatRejection:
         buffer = ReplayBuffer(capacity=10, device=CPU)
 
         old_format = {
-            # No format_version field (defaults to 1)
+            # No format_version field
             "size": 5,
             "position": 5,
             "capacity": 10,
@@ -289,14 +313,14 @@ class TestLegacyFormatRejection:
             "dones": torch.rand(5) > 0.5,
         }
 
-        with pytest.raises(ValueError, match="exact current format_version is 4"):
+        with pytest.raises(ValueError, match=r"^Cannot load replay buffer checkpoint with format_version None$"):
             buffer.load_from_serialized(old_format)
 
     def test_load_unknown_future_format_version_raises_error(self):
         buffer = ReplayBuffer(capacity=10, device=CPU)
 
-        with pytest.raises(ValueError, match="exact current format_version is 4"):
-            buffer.load_from_serialized({"format_version": 5})
+        with pytest.raises(ValueError, match=r"^Cannot load replay buffer checkpoint with format_version 6$"):
+            buffer.load_from_serialized({"format_version": 6})
 
 
 class TestClearAndStatsWithComponents:
@@ -328,6 +352,9 @@ class TestClearAndStatsWithComponents:
         assert buffer.rewards_extrinsic is None
         assert buffer.rewards_intrinsic is None
         assert buffer.rewards_shaping is None
+        assert buffer.rewards_extrinsic_present is None
+        assert buffer.rewards_intrinsic_present is None
+        assert buffer.rewards_shaping_present is None
 
     def test_stats_includes_component_memory(self):
         """stats() should include memory for component tensors."""
@@ -361,6 +388,8 @@ class TestClearAndStatsWithComponents:
             + 10 * 4  # rewards_shaping (float32)
             + 10 * 5 * 4  # next_observations (float32)
             + 10 * 1  # dones (bool)
+            + 10 * 1  # legality_recorded (bool)
+            + 10 * 3 * 1  # component presence (bool)
         )
 
         assert stats["memory_bytes"] == expected_bytes

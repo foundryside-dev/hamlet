@@ -39,7 +39,7 @@ from townlet.training.prioritized_replay_buffer import (
     PRIORITIZED_REPLAY_BUFFER_FORMAT_VERSION,
     PrioritizedReplayBuffer,
 )
-from townlet.training.replay_buffer import REPLAY_BUFFER_FORMAT_VERSION, ReplayBuffer
+from townlet.training.replay_buffer import REPLAY_BUFFER_FORMAT_VERSION, HistoricalLegalityUnavailable, ReplayBuffer
 from townlet.training.sequential_replay_buffer import (
     SEQUENTIAL_REPLAY_BUFFER_FORMAT_VERSION,
     SequentialReplayBuffer,
@@ -486,8 +486,66 @@ def test_replay_matrix(replay_kind: ReplayKind, l1_runtime: tuple[TokenSpec, int
 
     previous = copy.deepcopy(state)
     previous["format_version"] = current_version - 1
-    with pytest.raises(ValueError, match=rf"exact current format_version is {current_version}"):
-        restored.load_from_serialized(previous)
+    before_input = copy.deepcopy(previous)
+    before_live = copy.deepcopy(restored.serialize())
+    if replay_kind == "standard":
+        # Current keys with an old tag are a mixed schema, not a genuine v4 artifact.
+        previous["format_version"] = 4
+        before_input = copy.deepcopy(previous)
+        with pytest.raises(ValueError, match="Replay checkpoint key set mismatch"):
+            restored.load_from_serialized(previous)
+    else:
+        with pytest.raises(ValueError, match=rf"exact current format_version is {current_version}"):
+            restored.load_from_serialized(previous)
+    _assert_exact_state(before_input, previous)
+    _assert_exact_state(before_live, restored.serialize())
+
+    if replay_kind == "standard":
+        # Authored historical shape: no current legality/presence/archive fields.
+        legacy = {
+            "replay_kind": "standard",
+            "format_version": 4,
+            "capacity": 16,
+            "size": 8,
+            "position": 8,
+            "observations": observations.clone(),
+            "actions": actions.clone(),
+            "rewards": rewards.total.clone(),
+            "rewards_extrinsic": rewards.extrinsic.clone(),
+            "rewards_intrinsic": rewards.intrinsic.clone(),
+            "rewards_shaping": rewards.shaping.clone(),
+            "next_observations": next_observations.clone(),
+            "dones": dones.clone(),
+        }
+        before_legacy = copy.deepcopy(legacy)
+        restored.validate_serialized(legacy, expected_obs_dim=spec.total_dims)
+        _assert_exact_state(before_legacy, legacy)
+        _assert_exact_state(before_live, restored.serialize())
+        with pytest.raises(HistoricalLegalityUnavailable, match="missing historical successor masks"):
+            restored.load_for_mode(legacy, requested_mode="recorded_full_resume")
+        _assert_exact_state(before_legacy, legacy)
+        _assert_exact_state(before_live, restored.serialize())
+
+        archived = ReplayBuffer(capacity=16, device=CPU)
+        archived.load_from_serialized(legacy)
+        assert archived.retained_transitions == len(archived) == archived.position == 0
+        assert len(archived.historical_archives) == 1
+        with pytest.raises(ValueError, match="Buffer size"):
+            archived.sample(batch_size=1)
+        _assert_exact_state(before_legacy, legacy)
+        archived_state = archived.serialize()
+        assert archived_state["format_version"] == current_version
+        archive_restored = ReplayBuffer(capacity=16, device=CPU)
+        archive_restored.load_from_serialized(archived_state)
+        _assert_exact_state(archived_state, archive_restored.serialize())
+
+        unsupported = copy.deepcopy(legacy)
+        unsupported["format_version"] = 3
+        before_unsupported = copy.deepcopy(unsupported)
+        with pytest.raises(ValueError, match="Cannot load replay buffer checkpoint with format_version"):
+            restored.load_from_serialized(unsupported)
+        _assert_exact_state(before_unsupported, unsupported)
+        _assert_exact_state(before_live, restored.serialize())
 
 
 def _effect_spec() -> TokenSpec:

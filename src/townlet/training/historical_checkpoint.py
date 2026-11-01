@@ -184,11 +184,21 @@ def _validate_rows(rows: Mapping, location: str) -> int:
 
 
 def _validate_archive_state(state: Mapping, formats: Mapping) -> int:
-    _keys(formats, ("demo", "population", "replay", "replay_kind"), "archive.source_formats")
+    standalone = set(formats) == {"scope", "replay", "replay_kind"}
+    version_keys: tuple[str, ...]
+    if standalone:
+        if type(formats["scope"]) is not str or formats["scope"] != "standalone_replay":
+            raise ValueError("archive standalone source scope is unsupported")
+    else:
+        _keys(formats, ("demo", "population", "replay", "replay_kind"), "archive.source_formats")
     kind = formats.get("replay_kind")
-    if type(kind) is not str or kind not in _KINDS or any(type(formats[key]) is not int for key in ("demo", "population", "replay")):
+    if standalone:
+        version_keys = ("replay",)
+    else:
+        version_keys = ("demo", "population", "replay")
+    if type(kind) is not str or kind not in _KINDS or any(type(formats[key]) is not int for key in version_keys):
         raise ValueError("archive source format domain is invalid")
-    if (formats["demo"], formats["population"], formats["replay"]) != (9, 6, _KINDS[kind]):
+    if formats["replay"] != _KINDS[kind] or (not standalone and (formats["demo"], formats["population"]) != (9, 6)):
         raise ValueError("archive source formats must be exact pre-capture 9/6/4,4,5")
     if state.get("replay_kind") != kind or type(state.get("format_version")) is not int or state["format_version"] != _KINDS[kind]:
         raise ValueError("archive state replay format differs from declared source format")
@@ -216,10 +226,14 @@ def _validate_archive_state(state: Mapping, formats: Mapping) -> int:
         else:
             extra = ("alpha", "beta", "beta_initial", "beta_annealing", "priorities", "max_priority", "position", "size_current")
         _keys(state, (*base, *_ROWS, *_COMPONENTS, *extra), "archive.replay")
-        if _validate_rows({key: state[key] for key in (*_ROWS, *_COMPONENTS)}, "archive.replay") != count:
+        empty_unallocated = count == 0 and all(state[key] is None for key in (*_ROWS, *_COMPONENTS))
+        if not empty_unallocated and _validate_rows({key: state[key] for key in (*_ROWS, *_COMPONENTS)}, "archive.replay") != count:
             raise ValueError("archive replay row shape differs from retained count")
-        if _integer(state["position"], "archive.replay.position", 0) >= state["capacity"]:
+        position = _integer(state["position"], "archive.replay.position", 0)
+        if position >= state["capacity"]:
             raise ValueError("archive replay position exceeds capacity")
+        if kind == "standard" and position != count % state["capacity"]:
+            raise ValueError("archive standard replay position differs from chronological retained rows")
         if kind == "prioritized":
             priorities = state["priorities"]
             if not isinstance(priorities, np.ndarray) or priorities.dtype != np.float32 or priorities.shape != (state["capacity"],):
@@ -313,6 +327,8 @@ class HistoricalReplayArchive(_Owned):
             ]
             result["episode_ids"] = torch.cat(ids)[selection].clone()
             return result
+        if state["observations"] is None:
+            return {}
         result = {key: _tensor(state[key], key)[selection].clone() for key in _ROWS}
         for key in _COMPONENTS:
             if state[key] is None:
@@ -356,6 +372,14 @@ class HistoricalReplayArchive(_Owned):
             raise
         finally:
             temporary.unlink(missing_ok=True)
+
+
+def archive_standalone_replay(state: Mapping[str, object]) -> HistoricalReplayArchive:
+    """Archive a known pre-capture replay without claiming container provenance."""
+    owned = _clone(_mapping(state, "standalone replay"))
+    formats = {"scope": "standalone_replay", "replay": owned.get("format_version"), "replay_kind": owned.get("replay_kind")}
+    count = _validate_archive_state(owned, formats)
+    return HistoricalReplayArchive(formats, owned, _state_digest(owned, formats), count, REWARD_SEMANTICS, APPROVAL_REFERENCE)
 
 
 @dataclass(frozen=True, slots=True)
@@ -448,6 +472,37 @@ def _embedded_archives(payload: Mapping) -> tuple[HistoricalReplayArchive, ...]:
     return tuple(_archive_from_state(record) for record in records)
 
 
+def _validate_empty_current_uniform(replay: Mapping) -> None:
+    """Admit only the unallocated empty representation emitted by uniform5."""
+    tensor_fields = (*_ROWS, *_COMPONENTS, "next_action_masks", "legality_recorded", *(f"{name}_present" for name in _COMPONENTS))
+    _keys(
+        replay,
+        (
+            "replay_kind",
+            "format_version",
+            "capacity",
+            "size",
+            "position",
+            "action_dim",
+            "legality_mode",
+            "historical_archives",
+            *tensor_fields,
+        ),
+        "empty current uniform replay",
+    )
+    if _integer(replay["position"], "replay.position", 0) != 0:
+        raise ValueError("empty current uniform replay position must be zero")
+    if replay["action_dim"] is not None or type(replay["legality_mode"]) is not str or replay["legality_mode"] != "unconstrained":
+        raise ValueError("empty current uniform replay cannot claim captured action metadata")
+    if any(replay[name] is not None for name in tensor_fields):
+        raise ValueError("empty current uniform replay tensor fields must be null")
+    if not isinstance(replay["historical_archives"], list):
+        raise ValueError("empty current uniform replay historical_archives must be a list")
+    for archive in _embedded_archives(replay):
+        if archive.source_formats["replay_kind"] != "standard":
+            raise ValueError("uniform replay contains an incompatible historical archive kind")
+
+
 def resolve_historical_access(payload: Mapping[str, object], *, requested_mode: AccessMode) -> HistoricalAccessPolicy:
     if requested_mode not in _MODES:
         raise ValueError("requested_mode is unsupported")
@@ -469,7 +524,11 @@ def resolve_historical_access(payload: Mapping[str, object], *, requested_mode: 
     else:
         if requested_mode == "archived_history_fresh_episode":
             raise ValueError("current captured replay requires recorded_full_resume or inference")
-        if formats["replay_kind"] == "sequential":
+        episodes: tuple[Mapping, ...]
+        if formats["replay_kind"] == "standard" and count == 0:
+            _validate_empty_current_uniform(replay)
+            episodes = ()
+        elif formats["replay_kind"] == "sequential":
             episodes = _mapping_sequence(replay.get("episodes"), "replay.episodes")
         else:
             episodes = (replay,)
@@ -480,6 +539,11 @@ def resolve_historical_access(payload: Mapping[str, object], *, requested_mode: 
                 raise HistoricalLegalityUnavailable(f"replay.rows[{index}] contains unrecorded successor legality")
             if not isinstance(masks, Tensor) or masks.ndim != 2 or not isinstance(dones, Tensor) or recorded.shape != dones.shape:
                 raise ValueError(f"replay.rows[{index}] successor mask/recorded shapes are invalid")
+            if formats["replay_kind"] == "standard":
+                if dones.shape != (count,):
+                    raise ValueError("current uniform replay row count differs from its retained count")
+                if _integer(rows.get("position"), "replay.position", 0) != count % replay["capacity"]:
+                    raise ValueError("current uniform replay position differs from chronological retained rows")
             validate_successor_masks(masks, dones, action_dim=_integer(payload.get("action_dim"), "action_dim", 1))
         archived = sum(archive.archived_row_count for archive in _embedded_archives(payload))
         active = count

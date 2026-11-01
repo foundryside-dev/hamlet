@@ -3,7 +3,7 @@
   "baseline_sha": "4aa5363b5de54d9a112977c32c2975f37627197f",
   "design": "BAC-2026-11-01-r2 plus explicit additive plan decisions",
   "approved_plan_sha256": "2dde2d80d3d14c510878c26af1f99c42217be12d3cb3a554647bc68646feedc1",
-  "phase": "17of66 finite source packages qualified/released;49later packets and all final BAC acceptance remain OPEN",
+  "phase": "20 of 66 finite source packages qualified/released; 46 later packets and all final BAC acceptance remain OPEN",
   "completion_bar": "zero unresolved P1/P2 and zero unapproved in-scope capability gaps; all agreed finite evidence, fresh final spec/design/code review, required gates and source-verified docs",
   "requirements": [
     {
@@ -151,6 +151,15 @@
           ],
           "final_acceptance": "Later cross-subsystem/runtime owners and final common-source design/source/learning/E2E/coverage/slow/hardware/CI remain required OPEN",
           "qualification_limit": "Only final common release HEAD has exact fully qualified sum tree; prefix heads not independently full-qualified"
+        },
+        {
+          "task": "T11",
+          "source_commit": "05130a3394cf66051f843559d486a0a6377d3333",
+          "qualified_release_commit": "eb73173496a7955b30a6fea4b65ccae8cc615b87",
+          "qualified_sum_tree": "1a1ca88cab7cc5bfe97e0922534d23e733d17e2d",
+          "receipt": "package-reviews/T11-implementation.md",
+          "qualification": "evidence/wave05-qualification.json",
+          "disposition": "Scoped package evidence; remaining owners and final common-source acceptance stay OPEN."
         }
       ],
       "evidence": [
@@ -819,6 +828,15 @@
           ],
           "final_acceptance": "Later cross-subsystem/runtime owners and final common-source design/source/learning/E2E/coverage/slow/hardware/CI remain required OPEN",
           "qualification_limit": "Only final common release HEAD has exact fully qualified sum tree; prefix heads not independently full-qualified"
+        },
+        {
+          "task": "T11",
+          "source_commit": "05130a3394cf66051f843559d486a0a6377d3333",
+          "qualified_release_commit": "eb73173496a7955b30a6fea4b65ccae8cc615b87",
+          "qualified_sum_tree": "1a1ca88cab7cc5bfe97e0922534d23e733d17e2d",
+          "receipt": "package-reviews/T11-implementation.md",
+          "qualification": "evidence/wave05-qualification.json",
+          "disposition": "Scoped package evidence; remaining owners and final common-source acceptance stay OPEN."
         }
       ]
     },
@@ -1471,6 +1489,15 @@
           ],
           "final_acceptance": "Later cross-subsystem/runtime owners and final common-source design/source/learning/E2E/coverage/slow/hardware/CI remain required OPEN",
           "qualification_limit": "Only final common release HEAD has exact fully qualified sum tree; prefix heads not independently full-qualified"
+        },
+        {
+          "task": "T06",
+          "source_commit": "f53fe451a481b784ff81b66debb67b71394cd7ae",
+          "qualified_release_commit": "eb73173496a7955b30a6fea4b65ccae8cc615b87",
+          "qualified_sum_tree": "1a1ca88cab7cc5bfe97e0922534d23e733d17e2d",
+          "receipt": "package-reviews/T06-implementation.md",
+          "qualification": "evidence/wave05-qualification.json",
+          "disposition": "Scoped package evidence; remaining owners and final common-source acceptance stay OPEN."
         }
       ]
     },
@@ -2926,6 +2953,24 @@
           ],
           "final_acceptance": "Later cross-subsystem/runtime owners and final common-source design/source/learning/E2E/coverage/slow/hardware/CI remain required OPEN",
           "qualification_limit": "Only final common release HEAD has exact fully qualified sum tree; prefix heads not independently full-qualified"
+        },
+        {
+          "task": "T06",
+          "source_commit": "f53fe451a481b784ff81b66debb67b71394cd7ae",
+          "qualified_release_commit": "eb73173496a7955b30a6fea4b65ccae8cc615b87",
+          "qualified_sum_tree": "1a1ca88cab7cc5bfe97e0922534d23e733d17e2d",
+          "receipt": "package-reviews/T06-implementation.md",
+          "qualification": "evidence/wave05-qualification.json",
+          "disposition": "Scoped package evidence; remaining owners and final common-source acceptance stay OPEN."
+        },
+        {
+          "task": "T11",
+          "source_commit": "05130a3394cf66051f843559d486a0a6377d3333",
+          "qualified_release_commit": "eb73173496a7955b30a6fea4b65ccae8cc615b87",
+          "qualified_sum_tree": "1a1ca88cab7cc5bfe97e0922534d23e733d17e2d",
+          "receipt": "package-reviews/T11-implementation.md",
+          "qualification": "evidence/wave05-qualification.json",
+          "disposition": "Scoped package evidence; remaining owners and final common-source acceptance stay OPEN."
         }
       ],
       "evidence": [
@@ -3064,6 +3109,15 @@
           ],
           "final_acceptance": "Later cross-subsystem/runtime owners and final common-source design/source/learning/E2E/coverage/slow/hardware/CI remain required OPEN",
           "qualification_limit": "Only final common release HEAD has exact fully qualified sum tree; prefix heads not independently full-qualified"
+        },
+        {
+          "task": "T06",
+          "source_commit": "f53fe451a481b784ff81b66debb67b71394cd7ae",
+          "qualified_release_commit": "eb73173496a7955b30a6fea4b65ccae8cc615b87",
+          "qualified_sum_tree": "1a1ca88cab7cc5bfe97e0922534d23e733d17e2d",
+          "receipt": "package-reviews/T06-implementation.md",
+          "qualification": "evidence/wave05-qualification.json",
+          "disposition": "Scoped package evidence; remaining owners and final common-source acceptance stay OPEN."
         }
       ]
     },
@@ -3326,6 +3380,15 @@
           ],
           "final_acceptance": "Later cross-subsystem/runtime owners and final common-source design/source/learning/E2E/coverage/slow/hardware/CI remain required OPEN",
           "qualification_limit": "Only final common release HEAD has exact fully qualified sum tree; prefix heads not independently full-qualified"
+        },
+        {
+          "task": "T11",
+          "source_commit": "05130a3394cf66051f843559d486a0a6377d3333",
+          "qualified_release_commit": "eb73173496a7955b30a6fea4b65ccae8cc615b87",
+          "qualified_sum_tree": "1a1ca88cab7cc5bfe97e0922534d23e733d17e2d",
+          "receipt": "package-reviews/T11-implementation.md",
+          "qualification": "evidence/wave05-qualification.json",
+          "disposition": "Scoped package evidence; remaining owners and final common-source acceptance stay OPEN."
         }
       ],
       "evidence": [
@@ -3503,6 +3566,15 @@
           ],
           "final_acceptance": "Later cross-subsystem/runtime owners and final common-source design/source/learning/E2E/coverage/slow/hardware/CI remain required OPEN",
           "qualification_limit": "Only final common release HEAD has exact fully qualified sum tree; prefix heads not independently full-qualified"
+        },
+        {
+          "task": "T11",
+          "source_commit": "05130a3394cf66051f843559d486a0a6377d3333",
+          "qualified_release_commit": "eb73173496a7955b30a6fea4b65ccae8cc615b87",
+          "qualified_sum_tree": "1a1ca88cab7cc5bfe97e0922534d23e733d17e2d",
+          "receipt": "package-reviews/T11-implementation.md",
+          "qualification": "evidence/wave05-qualification.json",
+          "disposition": "Scoped package evidence; remaining owners and final common-source acceptance stay OPEN."
         }
       ],
       "evidence": [
@@ -3731,6 +3803,15 @@
           ],
           "final_acceptance": "Later cross-subsystem/runtime owners and final common-source design/source/learning/E2E/coverage/slow/hardware/CI remain required OPEN",
           "qualification_limit": "Only final common release HEAD has exact fully qualified sum tree; prefix heads not independently full-qualified"
+        },
+        {
+          "task": "T11",
+          "source_commit": "05130a3394cf66051f843559d486a0a6377d3333",
+          "qualified_release_commit": "eb73173496a7955b30a6fea4b65ccae8cc615b87",
+          "qualified_sum_tree": "1a1ca88cab7cc5bfe97e0922534d23e733d17e2d",
+          "receipt": "package-reviews/T11-implementation.md",
+          "qualification": "evidence/wave05-qualification.json",
+          "disposition": "Scoped package evidence; remaining owners and final common-source acceptance stay OPEN."
         }
       ],
       "evidence": [
@@ -5412,9 +5493,54 @@
       ],
       "final_acceptance": "Later cross-subsystem/runtime owners and final common-source design/source/learning/E2E/coverage/slow/hardware/CI remain required OPEN",
       "qualification_limit": "Only final common release HEAD has exact fully qualified sum tree; prefix heads not independently full-qualified"
+    },
+    {
+      "task": "T06",
+      "source_commit": "f53fe451a481b784ff81b66debb67b71394cd7ae",
+      "qualified_release_commit": "eb73173496a7955b30a6fea4b65ccae8cc615b87",
+      "qualified_sum_tree": "1a1ca88cab7cc5bfe97e0922534d23e733d17e2d",
+      "status": "scoped package qualified/released; complete requirement and final acceptance still owed",
+      "full_repository_result": "6213PASS16SKIP15warnings;1975.74test/1982.01wall;fourworkers;53source/3Astrareview/5process/573configs/7protectedartifacts/14worktreesverified",
+      "reports": [
+        "package-reviews/T06-implementation.md",
+        "package-reviews/T06-independent-review.md",
+        "evidence/wave05-qualification.json"
+      ],
+      "final_acceptance": "T07 canonical standalone loaders, T32 actual live/evaluator hosting/readiness, T36 serialized truthful provenance and T24/T25/T34 native/lifecycle contracts remain REQUIRED OPEN.",
+      "qualification_limit": "Only the final coherent source head has the exact qualified sum tree; prefix heads were not separately full-qualified"
+    },
+    {
+      "task": "T11",
+      "source_commit": "05130a3394cf66051f843559d486a0a6377d3333",
+      "qualified_release_commit": "eb73173496a7955b30a6fea4b65ccae8cc615b87",
+      "qualified_sum_tree": "1a1ca88cab7cc5bfe97e0922534d23e733d17e2d",
+      "status": "scoped package qualified/released; complete requirement and final acceptance still owed",
+      "full_repository_result": "6213PASS16SKIP15warnings;1975.74test/1982.01wall;fourworkers;53source/3Astrareview/5process/573configs/7protectedartifacts/14worktreesverified",
+      "reports": [
+        "package-reviews/T11-implementation.md",
+        "package-reviews/T11-independent-review.md",
+        "evidence/wave05-qualification.json"
+      ],
+      "final_acceptance": "T13 corrected sampling mathematics, finite/atomic priority updates and persisted stable IDs remain REQUIRED OPEN. Current receipts honestly identify legacy weights/physical slots. Later schema changes must preserve captured PER5 through an explicit current adapter, never classify it as old maskless PER4. T24/T25 complete offside native validators, archive preparation/outer registry/accounting and atomic native install remain REQUIRED OPEN.",
+      "qualification_limit": "Only the final coherent source head has the exact qualified sum tree; prefix heads were not separately full-qualified"
+    },
+    {
+      "task": "PW02",
+      "source_commit": "eb73173496a7955b30a6fea4b65ccae8cc615b87",
+      "qualified_release_commit": "eb73173496a7955b30a6fea4b65ccae8cc615b87",
+      "qualified_sum_tree": "1a1ca88cab7cc5bfe97e0922534d23e733d17e2d",
+      "status": "scoped package qualified/released; complete requirement and final acceptance still owed",
+      "full_repository_result": "6213PASS16SKIP15warnings;1975.74test/1982.01wall;fourworkers;53source/3Astrareview/5process/573configs/7protectedartifacts/14worktreesverified",
+      "reports": [
+        "package-reviews/PW02-implementation.md",
+        "package-reviews/PW02-independent-review.md",
+        "evidence/wave05-qualification.json"
+      ],
+      "final_acceptance": "PW04 real target/predictor construction hooks, complete backend semantic validators and local clocks; PW03 and later actual bank/runtime integration; T24/T25 native admission; X02 strict-B closure remain REQUIRED OPEN. A participating RNG lock does not exclude unrelated global users. No GPU or cross-device qualification is claimed.",
+      "qualification_limit": "Only the final coherent source head has the exact qualified sum tree; prefix heads were not separately full-qualified"
     }
   ],
-  "evidence_note": "T01 precommit full gate verified the exact committed tree and source hashes in every pytest process. Historical fixture checks qualify data at the original source only; new archive policy acceptance remains owed.",
+  "evidence_note": "Each package records its actual immutable source/evidence. Wave05 qualified sum-tree postflight verified 53 source hashes, three final Astra reviews, five process identities, preserved configuration/native artifacts and the worktree registry. Storage archive proofs do not close required native historical dispatch, captured learning/readiness or final common-source acceptance.",
   "execution_addendum": {
     "sha256": "2b73403fcd9d139e46009c2f49add6dbe6f99310ce37018ffcf839230845d370",
     "technical_review": "plan-reviews/execution-addendum-approved.md",
@@ -5445,6 +5571,32 @@
       "cause": "Stale exact schema-version test literal1.40 after approved1.41 bump",
       "repair": "Separate one-line repair plus fresh Astra medium review; full exact-tree rerun5865 passed",
       "evidence": "evidence/T03-qualification.json"
+    },
+    {
+      "id": "Q-W05-T06-PRESERVATION",
+      "classification": "confirmed introduced P2, repaired before release",
+      "cause": "Eager complete server construction removed established training-only pre-start helper operations. Original unit fixtures were retained unchanged.",
+      "causal_evidence": "Twelve new preservation/negative controls failed at constructor admission; all three unchanged unit fixtures errored.",
+      "repair": "Preserved explicit unresolved conventional helper state, narrow structured missing-family adapter, strict complete admission before startup effects.",
+      "status": "closed at finite package boundary; fresh Astra review and complete replacement gate passed",
+      "receipt": "evidence/wave05-qualification.json"
+    },
+    {
+      "id": "Q-W05-PW02-OWNERSHIP",
+      "classification": "three confirmed primitive P2s, repaired before release",
+      "cause": "Object-array referents were shallow; canonical/raw mapping types falsely rejected healthy restore; Adam Parameter mapping keys aliased live learned parameters.",
+      "causal_evidence": "Plain/structured object-array mutation witnesses, actual healthy-restore refusal, six real-provider native/tuple Adam key ownership failures.",
+      "repair": "Deep object-array ownership, canonical readback before strict leaves, recursively owned mapping keys and values; genuine optimizer continuation controls retained.",
+      "status": "closed at finite primitive boundary; fresh Astra review and full gate passed; actual private bank integration remains required OPEN",
+      "receipt": "evidence/wave05-qualification.json"
+    },
+    {
+      "id": "Q-W05-HARNESS",
+      "classification": "qualification prerequisite failure, not an application assertion failure",
+      "cause": "Four source-identity startup checks contended on git write-tree index metadata locking. Full R5 exited3 before tests.",
+      "repair": "Serialized only the metadata operation; four-worker21PASS/five-identity smoke preceded same-source full R6.",
+      "status": "closed; 6213PASS16SKIP replacement full gate and source/artifact/worktree postflight passed",
+      "receipt": "evidence/wave05-qualification.json"
     }
   ],
   "per_world_addendum": {
@@ -5498,5 +5650,19 @@
     "path": "P8-LEGACY-GENERATIONS-CLARIFICATION.md",
     "review": "plan-reviews/P8-legacy-generations.md",
     "status": "implemented and scoped-qualified; companion2/canonical metric1; preserve baseline legacy republish/latest/capacity while keeping immutable generations and explicit failure custody"
+  },
+  "wave05_qualified_scope": {
+    "tasks": [
+      "T06",
+      "T11",
+      "PW02"
+    ],
+    "source_head": "eb73173496a7955b30a6fea4b65ccae8cc615b87",
+    "tree": "1a1ca88cab7cc5bfe97e0922534d23e733d17e2d",
+    "receipt": "evidence/wave05-qualification.json",
+    "qualified_packages": 20,
+    "remaining_packages": 46,
+    "capability_reductions": "None beyond the existing explicit approved historical policy A. Server helpers, shared alternative and current captured resume are preserved.",
+    "final_acceptance": "OPEN"
   }
 }

@@ -1,0 +1,3570 @@
+{
+  "schema_version": 1,
+  "purpose": "Genuine pre-curiosity-scope compiled1.41 DATA, produced from qualified T03 before PW01 changes; old shared compatibility must remain. No source checkout was created.",
+  "source_module": "/workspace/hamlet/src/townlet/__init__.py",
+  "producer_sha": "1c99510967c132fce04548564f4cb317e2ecddaf",
+  "producer_tree": "d3c1f4993efb73717826f6d4e1bf9e3cf0cd28d0",
+  "artifacts": [
+    {
+      "label": "scope-omitted",
+      "artifact": "scope-omitted.msgpack",
+      "sha256": "89e60038cdc532ce812634fbe06620ec5bf45b3e8639e44e444eddb2d745333a",
+      "bytes": 189159,
+      "producer_sha": "1c99510967c132fce04548564f4cb317e2ecddaf",
+      "producer_tree": "d3c1f4993efb73717826f6d4e1bf9e3cf0cd28d0",
+      "schema_version": "1.41",
+      "brain_hash": "a979a51c0d72d412cae554ec1cda4f2a609fbdae5d1819e28cf73bd19d1f1482",
+      "pack_brain_hash": "a979a51c0d72d412cae554ec1cda4f2a609fbdae5d1819e28cf73bd19d1f1482",
+      "training_hash": "66d6f517cd4e13720ff62fb78880ba641578d3479294ac895b5eb496a238c174",
+      "execution_hash": "5ac833bee185ed771b52e4a707b81a4d740b1ec573d330e3a45bbd9e81f07330",
+      "effective_run": {
+        "base_brain": {
+          "version": "1.0",
+          "description": "token-set smoke pack — the live token_set exerciser over the compiled TokenSpec (token-obs unit 3, hamlet-fa6bb6da4a)",
+          "architecture": {
+            "type": "token_set",
+            "feedforward": null,
+            "recurrent": null,
+            "dueling": null,
+            "token_set": {
+              "token_encoder": null,
+              "token_embed_dim": 16,
+              "q_head_hidden_dim": 64,
+              "aggregator": {
+                "type": "mean",
+                "num_heads": null
+              }
+            }
+          },
+          "optimizer": {
+            "type": "adam",
+            "learning_rate": 0.0001,
+            "adam_beta1": 0.9,
+            "adam_beta2": 0.999,
+            "adam_eps": 1e-08,
+            "sgd_momentum": null,
+            "sgd_nesterov": null,
+            "rmsprop_alpha": null,
+            "rmsprop_eps": null,
+            "weight_decay": 0.0,
+            "schedule": {
+              "type": "constant",
+              "step_size": null,
+              "gamma": null,
+              "t_max": null,
+              "eta_min": null
+            }
+          },
+          "loss": {
+            "type": "smooth_l1",
+            "huber_delta": null
+          },
+          "q_learning": {
+            "gamma": 0.99,
+            "target_update_frequency": 1000,
+            "use_double_dqn": true
+          },
+          "replay": {
+            "capacity": 100000,
+            "prioritized": false,
+            "priority_alpha": null,
+            "priority_beta": null,
+            "priority_beta_annealing": null
+          }
+        },
+        "effective_brain": {
+          "version": "1.0",
+          "description": "token-set smoke pack — the live token_set exerciser over the compiled TokenSpec (token-obs unit 3, hamlet-fa6bb6da4a)",
+          "architecture": {
+            "type": "token_set",
+            "feedforward": null,
+            "recurrent": null,
+            "dueling": null,
+            "token_set": {
+              "token_encoder": null,
+              "token_embed_dim": 16,
+              "q_head_hidden_dim": 64,
+              "aggregator": {
+                "type": "mean",
+                "num_heads": null
+              }
+            }
+          },
+          "optimizer": {
+            "type": "adam",
+            "learning_rate": 0.0001,
+            "adam_beta1": 0.9,
+            "adam_beta2": 0.999,
+            "adam_eps": 1e-08,
+            "sgd_momentum": null,
+            "sgd_nesterov": null,
+            "rmsprop_alpha": null,
+            "rmsprop_eps": null,
+            "weight_decay": 0.0,
+            "schedule": {
+              "type": "constant",
+              "step_size": null,
+              "gamma": null,
+              "t_max": null,
+              "eta_min": null
+            }
+          },
+          "loss": {
+            "type": "smooth_l1",
+            "huber_delta": null
+          },
+          "q_learning": {
+            "gamma": 0.99,
+            "target_update_frequency": 500,
+            "use_double_dqn": false
+          },
+          "replay": {
+            "capacity": 100000,
+            "prioritized": false,
+            "priority_alpha": null,
+            "priority_beta": null,
+            "priority_beta_annealing": null
+          }
+        },
+        "training": {
+          "bac_options": null,
+          "version": "1.0",
+          "seed": 42,
+          "population": {
+            "size": 8
+          },
+          "enabled_affordances": [
+            "EAT",
+            "SLEEP",
+            "SHOWER",
+            "EXERCISE",
+            "WORK",
+            "SOCIALIZE",
+            "MEDITATE",
+            "DRINK_WATER",
+            "BRUSH_TEETH",
+            "LAUNDRY",
+            "COOK",
+            "CLEAN_HOUSE",
+            "ENTERTAINMENT",
+            "DOCTOR"
+          ],
+          "randomize_affordances": true,
+          "enabled_actions": {
+            "custom": [
+              "REST"
+            ]
+          },
+          "q_learning": {
+            "use_double_dqn": false,
+            "gamma": 0.99,
+            "learning_rate": 0.0001,
+            "target_update_frequency": 500
+          },
+          "replay_buffer": {
+            "capacity": 100000,
+            "batch_size": 32,
+            "min_size": 1000
+          },
+          "exploration": {
+            "epsilon_start": 1.0,
+            "epsilon_end": 0.01,
+            "epsilon_decay": 0.995
+          },
+          "intrinsic": {
+            "rnd": {
+              "feature_dim": 128,
+              "learning_rate": 0.0001
+            },
+            "annealing": {
+              "threshold": 100.0,
+              "decay_rate": 0.995,
+              "min_weight": 0.001
+            },
+            "initial_weight": 1.0,
+            "min_survival_fraction": 0.4,
+            "survival_window": 100
+          },
+          "training_loop": {
+            "max_episodes": 10000,
+            "max_steps_per_episode": 1000,
+            "checkpointing": {
+              "interval": 1000
+            },
+            "train_frequency": 4,
+            "sequence_length": 8,
+            "max_grad_norm": 10.0
+          },
+          "curriculum": {
+            "strategy": "static",
+            "adversarial": {
+              "difficulty_metric": "survival_rate",
+              "adaptation_rate": 0.1,
+              "min_difficulty": 0.2,
+              "max_difficulty": 1.0,
+              "survival_advance_threshold": 0.7,
+              "survival_retreat_threshold": 0.3,
+              "entropy_gate": 0.5,
+              "min_steps_at_stage": 100
+            }
+          },
+          "run_metadata": null,
+          "recording": null
+        },
+        "authored_options": {
+          "replay": null,
+          "rnd": null,
+          "curriculum": null,
+          "serving": null,
+          "checkpoint": null,
+          "providers": null,
+          "provider_parameter_source": null,
+          "evaluation": null
+        },
+        "options": {
+          "replay": {
+            "sampling_mode": "successive_without_replacement",
+            "uniform_sequence_adapter": "legacy_episode_length_with_replacement",
+            "sequence_mode": "fixed_full",
+            "retention_mode": "whole_episode",
+            "sequence_objective": "window_mean",
+            "priority_reduction": "max_abs"
+          },
+          "rnd": {
+            "service_mode": "paced_fifo",
+            "max_updates_per_tick": 1,
+            "max_pending_rows": 32,
+            "overflow_policy": "service_before_admit"
+          },
+          "curriculum": {
+            "commit_mode": "completion",
+            "difficulty_mode": "stage_band"
+          },
+          "serving": {
+            "policy_mode": "greedy_eval"
+          },
+          "checkpoint": {
+            "save_initial": false,
+            "save_final": true
+          },
+          "providers": {
+            "count_based": {
+              "quantization_width": 0.0625,
+              "max_entries": 100000
+            },
+            "icm": {
+              "feature_dim": 128,
+              "hidden_dim": 256,
+              "learning_rate": 0.0001,
+              "inverse_weight": 0.8,
+              "forward_weight": 0.2,
+              "training_batch_size": 32,
+              "max_pending_transitions": 32
+            }
+          },
+          "provider_parameter_source": "training",
+          "evaluation": {
+            "seed": 42,
+            "episode_cap": 1000,
+            "epsilon": 0.01,
+            "curriculum_state_policy": "fresh",
+            "reward_metric": "extrinsic"
+          }
+        },
+        "exploration": {
+          "strategy": "adaptive_rnd",
+          "epsilon_start": 1.0,
+          "epsilon_end": 0.01,
+          "epsilon_decay": 0.995,
+          "rnd_feature_dim": 128,
+          "rnd_learning_rate": 0.0001,
+          "predictor_batch_size": 32,
+          "initial_intrinsic_weight": 1.0,
+          "min_intrinsic_weight": 0.001,
+          "variance_threshold": 100.0,
+          "min_survival_fraction": 0.4,
+          "max_episode_length": 1000,
+          "survival_window": 100,
+          "decay_rate": 0.995,
+          "drive_base_weight": 0.1,
+          "modifier_names": [
+            "energy_crisis"
+          ],
+          "provider_parameters": {
+            "feature_dim": 128,
+            "learning_rate": 0.0001,
+            "predictor_batch_size": 32,
+            "decay_rate": 0.995,
+            "min_survival_fraction": 0.4,
+            "max_episode_length": 1000,
+            "survival_window": 100,
+            "min_intrinsic_weight": 0.001,
+            "variance_threshold": 100.0
+          },
+          "reward_observation_phase": "successor_postphysics",
+          "predictor_observation_phase": "eligible_predecessor",
+          "predictor_input_kind": "observation",
+          "field_roles": {
+            "drive.intrinsic.rnd_config": {
+              "status": "inactive_preset",
+              "origin": "drive.intrinsic.rnd_config",
+              "reason": "retained authored preset; no selected consumer"
+            },
+            "drive.intrinsic.adaptive_config": {
+              "status": "inactive_preset",
+              "origin": "drive.intrinsic.adaptive_config",
+              "reason": "retained authored preset; no selected consumer"
+            },
+            "drive.intrinsic.adaptive_config.enabled": {
+              "status": "inactive_preset",
+              "origin": "drive.intrinsic.adaptive_config.enabled",
+              "reason": "retained authored preset; no selected consumer"
+            },
+            "drive.intrinsic.adaptive_config.threshold": {
+              "status": "inactive_preset",
+              "origin": "drive.intrinsic.adaptive_config.threshold",
+              "reason": "retained authored preset; no selected consumer"
+            },
+            "drive.intrinsic.adaptive_config.decay_rate": {
+              "status": "inactive_preset",
+              "origin": "drive.intrinsic.adaptive_config.decay_rate",
+              "reason": "retained authored preset; no selected consumer"
+            },
+            "drive.intrinsic.adaptive_config.min_weight": {
+              "status": "inactive_preset",
+              "origin": "drive.intrinsic.adaptive_config.min_weight",
+              "reason": "retained authored preset; no selected consumer"
+            },
+            "drive.intrinsic.count_config": {
+              "status": "inactive_preset",
+              "origin": "drive.intrinsic.count_config",
+              "reason": "retained authored preset; no selected consumer"
+            },
+            "drive.intrinsic.icm_config": {
+              "status": "inactive_preset",
+              "origin": "drive.intrinsic.icm_config",
+              "reason": "retained authored preset; no selected consumer"
+            },
+            "bac_options": {
+              "status": "inactive_preset",
+              "origin": "bac_options",
+              "reason": "retained authored preset; no selected consumer"
+            },
+            "strategy": {
+              "status": "active",
+              "origin": "drive.intrinsic.strategy",
+              "reason": "resolved exploration ownership"
+            },
+            "drive.intrinsic.strategy": {
+              "status": "active",
+              "origin": "drive.intrinsic.strategy",
+              "reason": "selected authored value"
+            },
+            "drive_base_weight": {
+              "status": "active",
+              "origin": "drive.intrinsic.base_weight",
+              "reason": "resolved exploration ownership"
+            },
+            "drive.intrinsic.base_weight": {
+              "status": "active",
+              "origin": "drive.intrinsic.base_weight",
+              "reason": "selected authored value"
+            },
+            "modifier_names": {
+              "status": "active",
+              "origin": "drive.intrinsic.apply_modifiers",
+              "reason": "resolved exploration ownership"
+            },
+            "drive.intrinsic.apply_modifiers": {
+              "status": "active",
+              "origin": "drive.intrinsic.apply_modifiers",
+              "reason": "selected authored value"
+            },
+            "rnd_feature_dim": {
+              "status": "active",
+              "origin": "training.intrinsic.rnd.feature_dim",
+              "reason": "resolved exploration ownership"
+            },
+            "training.intrinsic.rnd.feature_dim": {
+              "status": "active",
+              "origin": "training.intrinsic.rnd.feature_dim",
+              "reason": "selected authored value"
+            },
+            "rnd_learning_rate": {
+              "status": "active",
+              "origin": "training.intrinsic.rnd.learning_rate",
+              "reason": "resolved exploration ownership"
+            },
+            "training.intrinsic.rnd.learning_rate": {
+              "status": "active",
+              "origin": "training.intrinsic.rnd.learning_rate",
+              "reason": "selected authored value"
+            },
+            "predictor_batch_size": {
+              "status": "active",
+              "origin": "training.replay_buffer.batch_size",
+              "reason": "resolved exploration ownership"
+            },
+            "training.replay_buffer.batch_size": {
+              "status": "active",
+              "origin": "training.replay_buffer.batch_size",
+              "reason": "selected authored value"
+            },
+            "initial_intrinsic_weight": {
+              "status": "active",
+              "origin": "training.intrinsic.initial_weight",
+              "reason": "resolved exploration ownership"
+            },
+            "training.intrinsic.initial_weight": {
+              "status": "active",
+              "origin": "training.intrinsic.initial_weight",
+              "reason": "selected authored value"
+            },
+            "min_intrinsic_weight": {
+              "status": "active",
+              "origin": "training.intrinsic.annealing.min_weight",
+              "reason": "resolved exploration ownership"
+            },
+            "training.intrinsic.annealing.min_weight": {
+              "status": "active",
+              "origin": "training.intrinsic.annealing.min_weight",
+              "reason": "selected authored value"
+            },
+            "variance_threshold": {
+              "status": "active",
+              "origin": "training.intrinsic.annealing.threshold",
+              "reason": "resolved exploration ownership"
+            },
+            "training.intrinsic.annealing.threshold": {
+              "status": "active",
+              "origin": "training.intrinsic.annealing.threshold",
+              "reason": "selected authored value"
+            },
+            "min_survival_fraction": {
+              "status": "active",
+              "origin": "training.intrinsic.min_survival_fraction",
+              "reason": "resolved exploration ownership"
+            },
+            "training.intrinsic.min_survival_fraction": {
+              "status": "active",
+              "origin": "training.intrinsic.min_survival_fraction",
+              "reason": "selected authored value"
+            },
+            "survival_window": {
+              "status": "active",
+              "origin": "training.intrinsic.survival_window",
+              "reason": "resolved exploration ownership"
+            },
+            "training.intrinsic.survival_window": {
+              "status": "active",
+              "origin": "training.intrinsic.survival_window",
+              "reason": "selected authored value"
+            },
+            "max_episode_length": {
+              "status": "active",
+              "origin": "training.training_loop.max_steps_per_episode",
+              "reason": "resolved exploration ownership"
+            },
+            "training.training_loop.max_steps_per_episode": {
+              "status": "active",
+              "origin": "training.training_loop.max_steps_per_episode",
+              "reason": "selected authored value"
+            },
+            "decay_rate": {
+              "status": "active",
+              "origin": "training.intrinsic.annealing.decay_rate",
+              "reason": "resolved exploration ownership"
+            },
+            "training.intrinsic.annealing.decay_rate": {
+              "status": "active",
+              "origin": "training.intrinsic.annealing.decay_rate",
+              "reason": "selected authored value"
+            },
+            "epsilon_start": {
+              "status": "active",
+              "origin": "training.exploration.epsilon_start",
+              "reason": "resolved exploration ownership"
+            },
+            "training.exploration.epsilon_start": {
+              "status": "active",
+              "origin": "training.exploration.epsilon_start",
+              "reason": "selected authored value"
+            },
+            "epsilon_end": {
+              "status": "active",
+              "origin": "training.exploration.epsilon_end",
+              "reason": "resolved exploration ownership"
+            },
+            "training.exploration.epsilon_end": {
+              "status": "active",
+              "origin": "training.exploration.epsilon_end",
+              "reason": "selected authored value"
+            },
+            "epsilon_decay": {
+              "status": "active",
+              "origin": "training.exploration.epsilon_decay",
+              "reason": "resolved exploration ownership"
+            },
+            "training.exploration.epsilon_decay": {
+              "status": "active",
+              "origin": "training.exploration.epsilon_decay",
+              "reason": "selected authored value"
+            },
+            "provider_parameters.feature_dim": {
+              "status": "active",
+              "origin": "training.intrinsic.rnd.feature_dim",
+              "reason": "resolved exploration ownership"
+            },
+            "provider_parameters.learning_rate": {
+              "status": "active",
+              "origin": "training.intrinsic.rnd.learning_rate",
+              "reason": "resolved exploration ownership"
+            },
+            "provider_parameters.predictor_batch_size": {
+              "status": "active",
+              "origin": "training.replay_buffer.batch_size",
+              "reason": "resolved exploration ownership"
+            },
+            "provider_parameters.decay_rate": {
+              "status": "active",
+              "origin": "training.intrinsic.annealing.decay_rate",
+              "reason": "resolved exploration ownership"
+            },
+            "provider_parameters.min_survival_fraction": {
+              "status": "active",
+              "origin": "training.intrinsic.min_survival_fraction",
+              "reason": "resolved exploration ownership"
+            },
+            "provider_parameters.max_episode_length": {
+              "status": "active",
+              "origin": "training.training_loop.max_steps_per_episode",
+              "reason": "resolved exploration ownership"
+            },
+            "provider_parameters.survival_window": {
+              "status": "active",
+              "origin": "training.intrinsic.survival_window",
+              "reason": "resolved exploration ownership"
+            },
+            "provider_parameters.min_intrinsic_weight": {
+              "status": "active",
+              "origin": "training.intrinsic.annealing.min_weight",
+              "reason": "resolved exploration ownership"
+            },
+            "provider_parameters.variance_threshold": {
+              "status": "active",
+              "origin": "training.intrinsic.annealing.threshold",
+              "reason": "resolved exploration ownership"
+            },
+            "service_mode": {
+              "status": "derived",
+              "origin": "bac-options-v1",
+              "reason": "versioned old-document semantic resolution"
+            },
+            "bac_options.rnd.service_mode": {
+              "status": "active",
+              "origin": "bac-options-v1",
+              "reason": "versioned old-document semantic resolution"
+            },
+            "max_updates_per_tick": {
+              "status": "derived",
+              "origin": "bac-options-v1",
+              "reason": "versioned old-document semantic resolution"
+            },
+            "bac_options.rnd.max_updates_per_tick": {
+              "status": "active",
+              "origin": "bac-options-v1",
+              "reason": "versioned old-document semantic resolution"
+            },
+            "max_pending_rows": {
+              "status": "derived",
+              "origin": "bac-options-v1",
+              "reason": "max(2 * training.population.size, resolved predictor_batch_size); bounded-service upgrade"
+            },
+            "bac_options.rnd.max_pending_rows": {
+              "status": "active",
+              "origin": "bac-options-v1",
+              "reason": "max(2 * training.population.size, resolved predictor_batch_size); bounded-service upgrade"
+            },
+            "overflow_policy": {
+              "status": "derived",
+              "origin": "bac-options-v1",
+              "reason": "versioned old-document semantic resolution"
+            },
+            "bac_options.rnd.overflow_policy": {
+              "status": "active",
+              "origin": "bac-options-v1",
+              "reason": "versioned old-document semantic resolution"
+            },
+            "provider_parameters": {
+              "status": "active",
+              "origin": "exploration-policy-v1",
+              "reason": "selected provider schema/observation phase"
+            },
+            "reward_observation_phase": {
+              "status": "active",
+              "origin": "exploration-policy-v1",
+              "reason": "selected provider schema/observation phase"
+            },
+            "predictor_observation_phase": {
+              "status": "active",
+              "origin": "exploration-policy-v1",
+              "reason": "selected provider schema/observation phase"
+            },
+            "predictor_input_kind": {
+              "status": "active",
+              "origin": "exploration-policy-v1",
+              "reason": "selected provider schema/observation phase"
+            },
+            "provider_parameter_source": {
+              "status": "active",
+              "origin": "bac_options.provider_parameter_source",
+              "reason": "training unless explicitly drive"
+            },
+            "bac_options.provider_parameter_source": {
+              "status": "active",
+              "origin": "bac-options-v1",
+              "reason": "explicit or versioned source ownership"
+            }
+          },
+          "service_mode": "paced_fifo",
+          "max_updates_per_tick": 1,
+          "max_pending_rows": 32,
+          "overflow_policy": "service_before_admit",
+          "provider_parameter_source": "training",
+          "raw_provider_parameters": {
+            "rnd_config": null,
+            "adaptive_config": {
+              "enabled": true,
+              "threshold": 100.0,
+              "decay_rate": 0.995,
+              "min_weight": 0.01
+            },
+            "count_config": null,
+            "icm_config": null
+          },
+          "authored_parameters": {
+            "drive_intrinsic": {
+              "strategy": "adaptive_rnd",
+              "base_weight": 0.1,
+              "apply_modifiers": [
+                "energy_crisis"
+              ],
+              "rnd_config": null,
+              "icm_config": null,
+              "count_config": null,
+              "adaptive_config": {
+                "enabled": true,
+                "threshold": 100.0,
+                "decay_rate": 0.995,
+                "min_weight": 0.01
+              }
+            },
+            "training": {
+              "bac_options": null,
+              "version": "1.0",
+              "seed": 42,
+              "population": {
+                "size": 8
+              },
+              "enabled_affordances": [
+                "EAT",
+                "SLEEP",
+                "SHOWER",
+                "EXERCISE",
+                "WORK",
+                "SOCIALIZE",
+                "MEDITATE",
+                "DRINK_WATER",
+                "BRUSH_TEETH",
+                "LAUNDRY",
+                "COOK",
+                "CLEAN_HOUSE",
+                "ENTERTAINMENT",
+                "DOCTOR"
+              ],
+              "randomize_affordances": true,
+              "enabled_actions": {
+                "custom": [
+                  "REST"
+                ]
+              },
+              "q_learning": {
+                "use_double_dqn": false,
+                "gamma": 0.99,
+                "learning_rate": 0.0001,
+                "target_update_frequency": 500
+              },
+              "replay_buffer": {
+                "capacity": 100000,
+                "batch_size": 32,
+                "min_size": 1000
+              },
+              "exploration": {
+                "epsilon_start": 1.0,
+                "epsilon_end": 0.01,
+                "epsilon_decay": 0.995
+              },
+              "intrinsic": {
+                "rnd": {
+                  "feature_dim": 128,
+                  "learning_rate": 0.0001
+                },
+                "annealing": {
+                  "threshold": 100.0,
+                  "decay_rate": 0.995,
+                  "min_weight": 0.001
+                },
+                "initial_weight": 1.0,
+                "min_survival_fraction": 0.4,
+                "survival_window": 100
+              },
+              "training_loop": {
+                "max_episodes": 10000,
+                "max_steps_per_episode": 1000,
+                "checkpointing": {
+                  "interval": 1000
+                },
+                "train_frequency": 4,
+                "sequence_length": 8,
+                "max_grad_norm": 10.0
+              },
+              "curriculum": {
+                "strategy": "static",
+                "adversarial": {
+                  "difficulty_metric": "survival_rate",
+                  "adaptation_rate": 0.1,
+                  "min_difficulty": 0.2,
+                  "max_difficulty": 1.0,
+                  "survival_advance_threshold": 0.7,
+                  "survival_retreat_threshold": 0.3,
+                  "entropy_gate": 0.5,
+                  "min_steps_at_stage": 100
+                }
+              },
+              "run_metadata": null,
+              "recording": null
+            },
+            "bac_options": {}
+          },
+          "parameter_units": {
+            "epsilon_start": "probability",
+            "epsilon_end": "probability",
+            "epsilon_decay": "factor/committed_batch_episode",
+            "rnd_feature_dim": "features",
+            "rnd_learning_rate": "optimizer_learning_rate",
+            "predictor_batch_size": "eligible_rows",
+            "initial_intrinsic_weight": "runtime_intrinsic_scale",
+            "min_intrinsic_weight": "runtime_intrinsic_scale",
+            "variance_threshold": "survival_variance",
+            "min_survival_fraction": "fraction/planned_horizon",
+            "max_episode_length": "lane_steps",
+            "survival_window": "committed_lane_outcomes",
+            "decay_rate": "factor/qualified_outcome",
+            "drive_base_weight": "DAC_multiplier",
+            "modifier_names": "DAC_named_modifiers",
+            "max_pending_rows": "eligible_rows",
+            "max_updates_per_tick": "predictor_minibatches/vector_tick",
+            "provider_parameters": "selected_provider_units",
+            "quantization_width": "observation_units/bin",
+            "max_entries": "LRU_keys",
+            "feature_dim": "features",
+            "hidden_dim": "units",
+            "learning_rate": "optimizer_learning_rate",
+            "inverse_weight": "loss_multiplier",
+            "forward_weight": "loss_multiplier",
+            "training_batch_size": "eligible_transitions",
+            "max_pending_transitions": "eligible_transitions"
+          }
+        },
+        "primary_level": "L0_test",
+        "field_roles": {
+          "brain.version": {
+            "status": "unqualified",
+            "origin": "pack:brain (inherited)",
+            "reason": "selected executable brain field"
+          },
+          "brain.description": {
+            "status": "unqualified",
+            "origin": "pack:brain (inherited)",
+            "reason": "selected executable brain field"
+          },
+          "brain.architecture.type": {
+            "status": "active",
+            "origin": "pack:brain (inherited)",
+            "reason": "selected executable brain field"
+          },
+          "brain.architecture.feedforward": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "retained nonselected preset"
+          },
+          "brain.architecture.recurrent": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "retained nonselected preset"
+          },
+          "brain.architecture.dueling": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "retained nonselected preset"
+          },
+          "brain.architecture.token_set.token_encoder": {
+            "status": "derived",
+            "origin": "bac-options-v1",
+            "reason": "selected token encoder"
+          },
+          "brain.architecture.token_set.token_embed_dim": {
+            "status": "active",
+            "origin": "pack:brain (inherited)",
+            "reason": "selected executable brain field"
+          },
+          "brain.architecture.token_set.q_head_hidden_dim": {
+            "status": "active",
+            "origin": "pack:brain (inherited)",
+            "reason": "selected executable brain field"
+          },
+          "brain.architecture.token_set.aggregator.type": {
+            "status": "active",
+            "origin": "pack:brain (inherited)",
+            "reason": "selected executable brain field"
+          },
+          "brain.architecture.token_set.aggregator.num_heads": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "retained nonselected preset"
+          },
+          "brain.optimizer.type": {
+            "status": "active",
+            "origin": "pack:brain (inherited)",
+            "reason": "selected executable brain field"
+          },
+          "brain.optimizer.learning_rate": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "base overridden by training.q_learning.learning_rate"
+          },
+          "effective_brain.optimizer.learning_rate": {
+            "status": "derived",
+            "origin": "training.q_learning.learning_rate",
+            "reason": "five-field training override"
+          },
+          "brain.optimizer.adam_beta1": {
+            "status": "active",
+            "origin": "pack:brain (inherited)",
+            "reason": "selected executable brain field"
+          },
+          "brain.optimizer.adam_beta2": {
+            "status": "active",
+            "origin": "pack:brain (inherited)",
+            "reason": "selected executable brain field"
+          },
+          "brain.optimizer.adam_eps": {
+            "status": "active",
+            "origin": "pack:brain (inherited)",
+            "reason": "selected executable brain field"
+          },
+          "brain.optimizer.sgd_momentum": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "retained nonselected preset"
+          },
+          "brain.optimizer.sgd_nesterov": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "retained nonselected preset"
+          },
+          "brain.optimizer.rmsprop_alpha": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "retained nonselected preset"
+          },
+          "brain.optimizer.rmsprop_eps": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "retained nonselected preset"
+          },
+          "brain.optimizer.weight_decay": {
+            "status": "active",
+            "origin": "pack:brain (inherited)",
+            "reason": "selected executable brain field"
+          },
+          "brain.optimizer.schedule.type": {
+            "status": "active",
+            "origin": "pack:brain (inherited)",
+            "reason": "selected executable brain field"
+          },
+          "brain.optimizer.schedule.step_size": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "retained nonselected preset"
+          },
+          "brain.optimizer.schedule.gamma": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "retained nonselected preset"
+          },
+          "brain.optimizer.schedule.t_max": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "retained nonselected preset"
+          },
+          "brain.optimizer.schedule.eta_min": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "retained nonselected preset"
+          },
+          "brain.loss.type": {
+            "status": "active",
+            "origin": "pack:brain (inherited)",
+            "reason": "selected executable brain field"
+          },
+          "brain.loss.huber_delta": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "retained nonselected preset"
+          },
+          "brain.q_learning.gamma": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "base overridden by training.q_learning.gamma"
+          },
+          "effective_brain.q_learning.gamma": {
+            "status": "derived",
+            "origin": "training.q_learning.gamma",
+            "reason": "five-field training override"
+          },
+          "brain.q_learning.target_update_frequency": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "base overridden by training.q_learning.target_update_frequency"
+          },
+          "effective_brain.q_learning.target_update_frequency": {
+            "status": "derived",
+            "origin": "training.q_learning.target_update_frequency",
+            "reason": "five-field training override"
+          },
+          "brain.q_learning.use_double_dqn": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "base overridden by training.q_learning.use_double_dqn"
+          },
+          "effective_brain.q_learning.use_double_dqn": {
+            "status": "derived",
+            "origin": "training.q_learning.use_double_dqn",
+            "reason": "five-field training override"
+          },
+          "brain.replay.capacity": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "base overridden by training.replay_buffer.capacity"
+          },
+          "effective_brain.replay.capacity": {
+            "status": "derived",
+            "origin": "training.replay_buffer.capacity",
+            "reason": "five-field training override"
+          },
+          "brain.replay.prioritized": {
+            "status": "active",
+            "origin": "pack:brain (inherited)",
+            "reason": "selected executable brain field"
+          },
+          "brain.replay.priority_alpha": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "retained nonselected preset"
+          },
+          "brain.replay.priority_beta": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "retained nonselected preset"
+          },
+          "brain.replay.priority_beta_annealing": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "retained nonselected preset"
+          },
+          "training.version": {
+            "status": "unqualified",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.seed": {
+            "status": "active",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.population.size": {
+            "status": "active",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.enabled_affordances": {
+            "status": "active",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.randomize_affordances": {
+            "status": "active",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.enabled_actions.custom": {
+            "status": "active",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.q_learning.use_double_dqn": {
+            "status": "active",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.q_learning.gamma": {
+            "status": "active",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.q_learning.learning_rate": {
+            "status": "active",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.q_learning.target_update_frequency": {
+            "status": "active",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.replay_buffer.capacity": {
+            "status": "active",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.replay_buffer.batch_size": {
+            "status": "active",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.replay_buffer.min_size": {
+            "status": "active",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.training_loop.max_episodes": {
+            "status": "active",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.training_loop.max_steps_per_episode": {
+            "status": "active",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.training_loop.checkpointing.interval": {
+            "status": "active",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.training_loop.train_frequency": {
+            "status": "active",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.training_loop.sequence_length": {
+            "status": "inactive_preset",
+            "origin": "level:L0_test:training",
+            "reason": "retained nonselected preset"
+          },
+          "training.training_loop.max_grad_norm": {
+            "status": "active",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.curriculum.strategy": {
+            "status": "active",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.curriculum.adversarial.difficulty_metric": {
+            "status": "inactive_preset",
+            "origin": "level:L0_test:training",
+            "reason": "retained nonselected preset"
+          },
+          "training.curriculum.adversarial.adaptation_rate": {
+            "status": "inactive_preset",
+            "origin": "level:L0_test:training",
+            "reason": "retained nonselected preset"
+          },
+          "training.curriculum.adversarial.min_difficulty": {
+            "status": "inactive_preset",
+            "origin": "level:L0_test:training",
+            "reason": "retained nonselected preset"
+          },
+          "training.curriculum.adversarial.max_difficulty": {
+            "status": "inactive_preset",
+            "origin": "level:L0_test:training",
+            "reason": "retained nonselected preset"
+          },
+          "training.curriculum.adversarial.survival_advance_threshold": {
+            "status": "inactive_preset",
+            "origin": "level:L0_test:training",
+            "reason": "retained nonselected preset"
+          },
+          "training.curriculum.adversarial.survival_retreat_threshold": {
+            "status": "inactive_preset",
+            "origin": "level:L0_test:training",
+            "reason": "retained nonselected preset"
+          },
+          "training.curriculum.adversarial.entropy_gate": {
+            "status": "inactive_preset",
+            "origin": "level:L0_test:training",
+            "reason": "retained nonselected preset"
+          },
+          "training.curriculum.adversarial.min_steps_at_stage": {
+            "status": "inactive_preset",
+            "origin": "level:L0_test:training",
+            "reason": "retained nonselected preset"
+          },
+          "training.run_metadata": {
+            "status": "unqualified",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.recording": {
+            "status": "unqualified",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "bac_options.replay.sampling_mode": {
+            "status": "inactive_preset",
+            "origin": "bac-options-v1",
+            "reason": "versioned old-document semantic resolution"
+          },
+          "bac_options.replay.uniform_sequence_adapter": {
+            "status": "inactive_preset",
+            "origin": "bac-options-v1",
+            "reason": "versioned old-document semantic resolution"
+          },
+          "bac_options.replay.sequence_mode": {
+            "status": "inactive_preset",
+            "origin": "bac-options-v1",
+            "reason": "versioned old-document semantic resolution"
+          },
+          "bac_options.replay.retention_mode": {
+            "status": "inactive_preset",
+            "origin": "bac-options-v1",
+            "reason": "versioned old-document semantic resolution"
+          },
+          "bac_options.replay.sequence_objective": {
+            "status": "inactive_preset",
+            "origin": "bac-options-v1",
+            "reason": "versioned old-document semantic resolution"
+          },
+          "bac_options.replay.priority_reduction": {
+            "status": "inactive_preset",
+            "origin": "bac-options-v1",
+            "reason": "versioned old-document semantic resolution"
+          },
+          "bac_options.curriculum.commit_mode": {
+            "status": "inactive_preset",
+            "origin": "bac-options-v1",
+            "reason": "versioned old-document semantic resolution"
+          },
+          "bac_options.curriculum.difficulty_mode": {
+            "status": "inactive_preset",
+            "origin": "bac-options-v1",
+            "reason": "versioned old-document semantic resolution"
+          },
+          "bac_options.serving.policy_mode": {
+            "status": "derived",
+            "origin": "bac-options-v1",
+            "reason": "versioned old-document semantic resolution"
+          },
+          "bac_options.checkpoint.save_initial": {
+            "status": "derived",
+            "origin": "bac-options-v1",
+            "reason": "versioned old-document semantic resolution"
+          },
+          "bac_options.checkpoint.save_final": {
+            "status": "derived",
+            "origin": "bac-options-v1",
+            "reason": "versioned old-document semantic resolution"
+          },
+          "bac_options.evaluation.seed": {
+            "status": "derived",
+            "origin": "bac-options-v1",
+            "reason": "training.seed"
+          },
+          "bac_options.evaluation.episode_cap": {
+            "status": "derived",
+            "origin": "bac-options-v1",
+            "reason": "training.training_loop.max_steps_per_episode"
+          },
+          "bac_options.evaluation.epsilon": {
+            "status": "derived",
+            "origin": "bac-options-v1",
+            "reason": "training.exploration.epsilon_end"
+          },
+          "bac_options.evaluation.curriculum_state_policy": {
+            "status": "derived",
+            "origin": "bac-options-v1",
+            "reason": "versioned old-document semantic resolution"
+          },
+          "bac_options.evaluation.reward_metric": {
+            "status": "derived",
+            "origin": "bac-options-v1",
+            "reason": "versioned old-document semantic resolution"
+          },
+          "drive.intrinsic.rnd_config": {
+            "status": "inactive_preset",
+            "origin": "drive.intrinsic.rnd_config",
+            "reason": "retained authored preset; no selected consumer"
+          },
+          "drive.intrinsic.adaptive_config": {
+            "status": "inactive_preset",
+            "origin": "drive.intrinsic.adaptive_config",
+            "reason": "retained authored preset; no selected consumer"
+          },
+          "drive.intrinsic.adaptive_config.enabled": {
+            "status": "inactive_preset",
+            "origin": "drive.intrinsic.adaptive_config.enabled",
+            "reason": "retained authored preset; no selected consumer"
+          },
+          "drive.intrinsic.adaptive_config.threshold": {
+            "status": "inactive_preset",
+            "origin": "drive.intrinsic.adaptive_config.threshold",
+            "reason": "retained authored preset; no selected consumer"
+          },
+          "drive.intrinsic.adaptive_config.decay_rate": {
+            "status": "inactive_preset",
+            "origin": "drive.intrinsic.adaptive_config.decay_rate",
+            "reason": "retained authored preset; no selected consumer"
+          },
+          "drive.intrinsic.adaptive_config.min_weight": {
+            "status": "inactive_preset",
+            "origin": "drive.intrinsic.adaptive_config.min_weight",
+            "reason": "retained authored preset; no selected consumer"
+          },
+          "drive.intrinsic.count_config": {
+            "status": "inactive_preset",
+            "origin": "drive.intrinsic.count_config",
+            "reason": "retained authored preset; no selected consumer"
+          },
+          "drive.intrinsic.icm_config": {
+            "status": "inactive_preset",
+            "origin": "drive.intrinsic.icm_config",
+            "reason": "retained authored preset; no selected consumer"
+          },
+          "exploration.bac_options": {
+            "status": "inactive_preset",
+            "origin": "bac_options",
+            "reason": "retained authored preset; no selected consumer"
+          },
+          "exploration.strategy": {
+            "status": "active",
+            "origin": "drive.intrinsic.strategy",
+            "reason": "resolved exploration ownership"
+          },
+          "drive.intrinsic.strategy": {
+            "status": "active",
+            "origin": "drive.intrinsic.strategy",
+            "reason": "selected authored value"
+          },
+          "exploration.drive_base_weight": {
+            "status": "active",
+            "origin": "drive.intrinsic.base_weight",
+            "reason": "resolved exploration ownership"
+          },
+          "drive.intrinsic.base_weight": {
+            "status": "active",
+            "origin": "drive.intrinsic.base_weight",
+            "reason": "selected authored value"
+          },
+          "exploration.modifier_names": {
+            "status": "active",
+            "origin": "drive.intrinsic.apply_modifiers",
+            "reason": "resolved exploration ownership"
+          },
+          "drive.intrinsic.apply_modifiers": {
+            "status": "active",
+            "origin": "drive.intrinsic.apply_modifiers",
+            "reason": "selected authored value"
+          },
+          "exploration.rnd_feature_dim": {
+            "status": "active",
+            "origin": "training.intrinsic.rnd.feature_dim",
+            "reason": "resolved exploration ownership"
+          },
+          "training.intrinsic.rnd.feature_dim": {
+            "status": "active",
+            "origin": "training.intrinsic.rnd.feature_dim",
+            "reason": "selected authored value"
+          },
+          "exploration.rnd_learning_rate": {
+            "status": "active",
+            "origin": "training.intrinsic.rnd.learning_rate",
+            "reason": "resolved exploration ownership"
+          },
+          "training.intrinsic.rnd.learning_rate": {
+            "status": "active",
+            "origin": "training.intrinsic.rnd.learning_rate",
+            "reason": "selected authored value"
+          },
+          "exploration.predictor_batch_size": {
+            "status": "active",
+            "origin": "training.replay_buffer.batch_size",
+            "reason": "resolved exploration ownership"
+          },
+          "exploration.initial_intrinsic_weight": {
+            "status": "active",
+            "origin": "training.intrinsic.initial_weight",
+            "reason": "resolved exploration ownership"
+          },
+          "training.intrinsic.initial_weight": {
+            "status": "active",
+            "origin": "training.intrinsic.initial_weight",
+            "reason": "selected authored value"
+          },
+          "exploration.min_intrinsic_weight": {
+            "status": "active",
+            "origin": "training.intrinsic.annealing.min_weight",
+            "reason": "resolved exploration ownership"
+          },
+          "training.intrinsic.annealing.min_weight": {
+            "status": "active",
+            "origin": "training.intrinsic.annealing.min_weight",
+            "reason": "selected authored value"
+          },
+          "exploration.variance_threshold": {
+            "status": "active",
+            "origin": "training.intrinsic.annealing.threshold",
+            "reason": "resolved exploration ownership"
+          },
+          "training.intrinsic.annealing.threshold": {
+            "status": "active",
+            "origin": "training.intrinsic.annealing.threshold",
+            "reason": "selected authored value"
+          },
+          "exploration.min_survival_fraction": {
+            "status": "active",
+            "origin": "training.intrinsic.min_survival_fraction",
+            "reason": "resolved exploration ownership"
+          },
+          "training.intrinsic.min_survival_fraction": {
+            "status": "active",
+            "origin": "training.intrinsic.min_survival_fraction",
+            "reason": "selected authored value"
+          },
+          "exploration.survival_window": {
+            "status": "active",
+            "origin": "training.intrinsic.survival_window",
+            "reason": "resolved exploration ownership"
+          },
+          "training.intrinsic.survival_window": {
+            "status": "active",
+            "origin": "training.intrinsic.survival_window",
+            "reason": "selected authored value"
+          },
+          "exploration.max_episode_length": {
+            "status": "active",
+            "origin": "training.training_loop.max_steps_per_episode",
+            "reason": "resolved exploration ownership"
+          },
+          "exploration.decay_rate": {
+            "status": "active",
+            "origin": "training.intrinsic.annealing.decay_rate",
+            "reason": "resolved exploration ownership"
+          },
+          "training.intrinsic.annealing.decay_rate": {
+            "status": "active",
+            "origin": "training.intrinsic.annealing.decay_rate",
+            "reason": "selected authored value"
+          },
+          "exploration.epsilon_start": {
+            "status": "active",
+            "origin": "training.exploration.epsilon_start",
+            "reason": "resolved exploration ownership"
+          },
+          "training.exploration.epsilon_start": {
+            "status": "active",
+            "origin": "training.exploration.epsilon_start",
+            "reason": "selected authored value"
+          },
+          "exploration.epsilon_end": {
+            "status": "active",
+            "origin": "training.exploration.epsilon_end",
+            "reason": "resolved exploration ownership"
+          },
+          "training.exploration.epsilon_end": {
+            "status": "active",
+            "origin": "training.exploration.epsilon_end",
+            "reason": "selected authored value"
+          },
+          "exploration.epsilon_decay": {
+            "status": "active",
+            "origin": "training.exploration.epsilon_decay",
+            "reason": "resolved exploration ownership"
+          },
+          "training.exploration.epsilon_decay": {
+            "status": "active",
+            "origin": "training.exploration.epsilon_decay",
+            "reason": "selected authored value"
+          },
+          "exploration.provider_parameters.feature_dim": {
+            "status": "active",
+            "origin": "training.intrinsic.rnd.feature_dim",
+            "reason": "resolved exploration ownership"
+          },
+          "exploration.provider_parameters.learning_rate": {
+            "status": "active",
+            "origin": "training.intrinsic.rnd.learning_rate",
+            "reason": "resolved exploration ownership"
+          },
+          "exploration.provider_parameters.predictor_batch_size": {
+            "status": "active",
+            "origin": "training.replay_buffer.batch_size",
+            "reason": "resolved exploration ownership"
+          },
+          "exploration.provider_parameters.decay_rate": {
+            "status": "active",
+            "origin": "training.intrinsic.annealing.decay_rate",
+            "reason": "resolved exploration ownership"
+          },
+          "exploration.provider_parameters.min_survival_fraction": {
+            "status": "active",
+            "origin": "training.intrinsic.min_survival_fraction",
+            "reason": "resolved exploration ownership"
+          },
+          "exploration.provider_parameters.max_episode_length": {
+            "status": "active",
+            "origin": "training.training_loop.max_steps_per_episode",
+            "reason": "resolved exploration ownership"
+          },
+          "exploration.provider_parameters.survival_window": {
+            "status": "active",
+            "origin": "training.intrinsic.survival_window",
+            "reason": "resolved exploration ownership"
+          },
+          "exploration.provider_parameters.min_intrinsic_weight": {
+            "status": "active",
+            "origin": "training.intrinsic.annealing.min_weight",
+            "reason": "resolved exploration ownership"
+          },
+          "exploration.provider_parameters.variance_threshold": {
+            "status": "active",
+            "origin": "training.intrinsic.annealing.threshold",
+            "reason": "resolved exploration ownership"
+          },
+          "exploration.service_mode": {
+            "status": "derived",
+            "origin": "bac-options-v1",
+            "reason": "versioned old-document semantic resolution"
+          },
+          "bac_options.rnd.service_mode": {
+            "status": "active",
+            "origin": "bac-options-v1",
+            "reason": "versioned old-document semantic resolution"
+          },
+          "exploration.max_updates_per_tick": {
+            "status": "derived",
+            "origin": "bac-options-v1",
+            "reason": "versioned old-document semantic resolution"
+          },
+          "bac_options.rnd.max_updates_per_tick": {
+            "status": "active",
+            "origin": "bac-options-v1",
+            "reason": "versioned old-document semantic resolution"
+          },
+          "exploration.max_pending_rows": {
+            "status": "derived",
+            "origin": "bac-options-v1",
+            "reason": "max(2 * training.population.size, resolved predictor_batch_size); bounded-service upgrade"
+          },
+          "bac_options.rnd.max_pending_rows": {
+            "status": "active",
+            "origin": "bac-options-v1",
+            "reason": "max(2 * training.population.size, resolved predictor_batch_size); bounded-service upgrade"
+          },
+          "exploration.overflow_policy": {
+            "status": "derived",
+            "origin": "bac-options-v1",
+            "reason": "versioned old-document semantic resolution"
+          },
+          "bac_options.rnd.overflow_policy": {
+            "status": "active",
+            "origin": "bac-options-v1",
+            "reason": "versioned old-document semantic resolution"
+          },
+          "exploration.provider_parameters": {
+            "status": "active",
+            "origin": "exploration-policy-v1",
+            "reason": "selected provider schema/observation phase"
+          },
+          "exploration.reward_observation_phase": {
+            "status": "active",
+            "origin": "exploration-policy-v1",
+            "reason": "selected provider schema/observation phase"
+          },
+          "exploration.predictor_observation_phase": {
+            "status": "active",
+            "origin": "exploration-policy-v1",
+            "reason": "selected provider schema/observation phase"
+          },
+          "exploration.predictor_input_kind": {
+            "status": "active",
+            "origin": "exploration-policy-v1",
+            "reason": "selected provider schema/observation phase"
+          },
+          "exploration.provider_parameter_source": {
+            "status": "active",
+            "origin": "bac_options.provider_parameter_source",
+            "reason": "training unless explicitly drive"
+          },
+          "bac_options.provider_parameter_source": {
+            "status": "active",
+            "origin": "bac-options-v1",
+            "reason": "explicit or versioned source ownership"
+          },
+          "bac_options.providers.count_based.quantization_width": {
+            "status": "inactive_preset",
+            "origin": "bac_options.providers.count_based.quantization_width",
+            "reason": "retained nonselected provider preset"
+          },
+          "bac_options.providers.count_based.max_entries": {
+            "status": "inactive_preset",
+            "origin": "bac_options.providers.count_based.max_entries",
+            "reason": "retained nonselected provider preset"
+          },
+          "bac_options.providers.icm.feature_dim": {
+            "status": "inactive_preset",
+            "origin": "bac_options.providers.icm.feature_dim",
+            "reason": "retained nonselected provider preset"
+          },
+          "bac_options.providers.icm.hidden_dim": {
+            "status": "inactive_preset",
+            "origin": "bac_options.providers.icm.hidden_dim",
+            "reason": "retained nonselected provider preset"
+          },
+          "bac_options.providers.icm.learning_rate": {
+            "status": "inactive_preset",
+            "origin": "bac_options.providers.icm.learning_rate",
+            "reason": "retained nonselected provider preset"
+          },
+          "bac_options.providers.icm.inverse_weight": {
+            "status": "inactive_preset",
+            "origin": "bac_options.providers.icm.inverse_weight",
+            "reason": "retained nonselected provider preset"
+          },
+          "bac_options.providers.icm.forward_weight": {
+            "status": "inactive_preset",
+            "origin": "bac_options.providers.icm.forward_weight",
+            "reason": "retained nonselected provider preset"
+          },
+          "bac_options.providers.icm.training_batch_size": {
+            "status": "inactive_preset",
+            "origin": "bac_options.providers.icm.training_batch_size",
+            "reason": "retained nonselected provider preset"
+          },
+          "bac_options.providers.icm.max_pending_transitions": {
+            "status": "inactive_preset",
+            "origin": "bac_options.providers.icm.max_pending_transitions",
+            "reason": "retained nonselected provider preset"
+          }
+        },
+        "authored_brain_hash": "7b29b57b8318e11001ae00fbb01559cd69b0d7a807878d771048386944fc9f5f",
+        "authored_identity": "654d41dec95b8b8a53a9957184021919106029422cc34eac3a41716927d8226e",
+        "execution_hash": "5ac833bee185ed771b52e4a707b81a4d740b1ec573d330e3a45bbd9e81f07330",
+        "training_hash": "66d6f517cd4e13720ff62fb78880ba641578d3479294ac895b5eb496a238c174",
+        "derivations": {
+          "replay.sampling_mode": "versioned old-document semantic resolution",
+          "replay.uniform_sequence_adapter": "versioned old-document semantic resolution",
+          "replay.sequence_mode": "versioned old-document semantic resolution",
+          "replay.retention_mode": "versioned old-document semantic resolution",
+          "replay.sequence_objective": "versioned old-document semantic resolution",
+          "replay.priority_reduction": "versioned old-document semantic resolution",
+          "curriculum.commit_mode": "versioned old-document semantic resolution",
+          "curriculum.difficulty_mode": "versioned old-document semantic resolution",
+          "serving.policy_mode": "versioned old-document semantic resolution",
+          "checkpoint.save_initial": "versioned old-document semantic resolution",
+          "checkpoint.save_final": "versioned old-document semantic resolution",
+          "provider_parameter_source": "versioned old-document semantic resolution",
+          "providers.count_based.quantization_width": "versioned old-document semantic resolution",
+          "providers.count_based.max_entries": "training.replay_buffer.capacity",
+          "providers.icm.feature_dim": "training.intrinsic.rnd.feature_dim",
+          "providers.icm.hidden_dim": "2 * resolved providers.icm.feature_dim",
+          "providers.icm.learning_rate": "training.intrinsic.rnd.learning_rate",
+          "providers.icm.inverse_weight": "versioned old-document semantic resolution",
+          "providers.icm.forward_weight": "versioned old-document semantic resolution",
+          "providers.icm.training_batch_size": "training.replay_buffer.batch_size",
+          "providers.icm.max_pending_transitions": "max(2 * training.population.size, resolved providers.icm.training_batch_size)",
+          "evaluation.seed": "training.seed",
+          "evaluation.episode_cap": "training.training_loop.max_steps_per_episode",
+          "evaluation.epsilon": "training.exploration.epsilon_end",
+          "evaluation.curriculum_state_policy": "versioned old-document semantic resolution",
+          "evaluation.reward_metric": "versioned old-document semantic resolution",
+          "capture_origin": "current authored compilation",
+          "exploration.service_mode": "versioned old-document semantic resolution",
+          "exploration.max_updates_per_tick": "versioned old-document semantic resolution",
+          "exploration.max_pending_rows": "max(2 * training.population.size, resolved predictor_batch_size); bounded-service upgrade",
+          "exploration.overflow_policy": "versioned old-document semantic resolution",
+          "rnd.service_mode": "versioned old-document semantic resolution",
+          "rnd.max_updates_per_tick": "versioned old-document semantic resolution",
+          "rnd.max_pending_rows": "max(2 * training.population.size, resolved predictor_batch_size); bounded-service upgrade",
+          "rnd.overflow_policy": "versioned old-document semantic resolution"
+        },
+        "origins": {
+          "brain": "pack:brain (inherited)",
+          "training": "level:L0_test:training",
+          "drive": "level:L0_test:drive.intrinsic",
+          "capture_origin": "current authored compilation"
+        }
+      },
+      "authored_training": {
+        "training": {
+          "version": "1.0",
+          "seed": 42,
+          "population": {
+            "size": 8
+          },
+          "enabled_affordances": [
+            "EAT",
+            "SLEEP",
+            "SHOWER",
+            "EXERCISE",
+            "WORK",
+            "SOCIALIZE",
+            "MEDITATE",
+            "DRINK_WATER",
+            "BRUSH_TEETH",
+            "LAUNDRY",
+            "COOK",
+            "CLEAN_HOUSE",
+            "ENTERTAINMENT",
+            "DOCTOR"
+          ],
+          "randomize_affordances": true,
+          "enabled_actions": {
+            "custom": [
+              "REST"
+            ]
+          },
+          "q_learning": {
+            "use_double_dqn": false,
+            "gamma": 0.99,
+            "learning_rate": 0.0001,
+            "target_update_frequency": 500
+          },
+          "replay_buffer": {
+            "capacity": 100000,
+            "batch_size": 32,
+            "min_size": 1000
+          },
+          "exploration": {
+            "epsilon_start": 1.0,
+            "epsilon_end": 0.01,
+            "epsilon_decay": 0.995
+          },
+          "intrinsic": {
+            "rnd": {
+              "feature_dim": 128,
+              "learning_rate": 0.0001
+            },
+            "annealing": {
+              "threshold": 100.0,
+              "decay_rate": 0.995,
+              "min_weight": 0.001
+            },
+            "initial_weight": 1.0,
+            "min_survival_fraction": 0.4,
+            "survival_window": 100
+          },
+          "training_loop": {
+            "max_episodes": 10000,
+            "max_steps_per_episode": 1000,
+            "train_frequency": 4,
+            "sequence_length": 8,
+            "max_grad_norm": 10.0,
+            "checkpointing": {
+              "interval": 1000
+            }
+          },
+          "curriculum": {
+            "strategy": "static",
+            "adversarial": {
+              "difficulty_metric": "survival_rate",
+              "adaptation_rate": 0.1,
+              "min_difficulty": 0.2,
+              "max_difficulty": 1.0,
+              "survival_advance_threshold": 0.7,
+              "survival_retreat_threshold": 0.3,
+              "entropy_gate": 0.5,
+              "min_steps_at_stage": 100
+            }
+          }
+        }
+      },
+      "producer_config_sha256": {
+        "actions.yaml": "7363114f30b2794659da1ec49aef65b5800c0addf5be659997c5e103d4180653",
+        "brain.yaml": "9629e1b27c3bb8931cec870a53ae760760e2cdf90158cb5862ce1a3ad5928979",
+        "effects.yaml": "2b9f559e318f638d2d96a8c5d5efd45a8bd9f22b739b6625053e0c2d8e737fa9",
+        "environment.yaml": "7c9d3d95b02cbb4198c9f7450a4bd88bda3e759f0ebbaec5a3c9fa5bc9abcfaf",
+        "experiment.yaml": "9ad9a5d0aa0b4dff49cccb154e0a3758beb8f32f77d6e432b58c4d7ac6600c1b",
+        "items.yaml": "5121217232857b0e3551f484dcaa32a82d0e104e3e74a3316ac8183b9beb818e",
+        "levels/L0_test/affordances.yaml": "70fb72d3ca1663682c35f6c447af53d9ea00020dc157a39e3a449ea4cb70f488",
+        "levels/L0_test/bars.yaml": "c050412a304078501fe2f1ff2da41cf5bdee632aa1ef500948c04b90a9d8814b",
+        "levels/L0_test/curriculum.yaml": "3cc1e1583939f8d1fd4b6be265250ec174fea6ceb24712150892b7d64599b987",
+        "levels/L0_test/drive.yaml": "b4ec89fb5e214e40e7f6c8c1f9d60301dc6bac92062ccad89fa20cf6b445f937",
+        "levels/L0_test/training.yaml": "613e1e2cae003e379f8f19ee8bf1b19e62e737460877aebef539f41a32e7c073",
+        "levels/L1_attention/affordances.yaml": "70fb72d3ca1663682c35f6c447af53d9ea00020dc157a39e3a449ea4cb70f488",
+        "levels/L1_attention/bars.yaml": "c050412a304078501fe2f1ff2da41cf5bdee632aa1ef500948c04b90a9d8814b",
+        "levels/L1_attention/brain.yaml": "60e014d4d9883c4acb098d9695863417527a09f2f79c98a9271e0b5798173c3e",
+        "levels/L1_attention/curriculum.yaml": "3cc1e1583939f8d1fd4b6be265250ec174fea6ceb24712150892b7d64599b987",
+        "levels/L1_attention/drive.yaml": "b4ec89fb5e214e40e7f6c8c1f9d60301dc6bac92062ccad89fa20cf6b445f937",
+        "levels/L1_attention/training.yaml": "613e1e2cae003e379f8f19ee8bf1b19e62e737460877aebef539f41a32e7c073",
+        "stratum.yaml": "d78508ca7d6b3a72966a766829e75e9deefff9300f21bfd4e801a7769dcb26d2",
+        "variables.yaml": "c28cfabdad385064388e3bbfbc4f24b2826629896194b1302985d384ca22b3eb"
+      },
+      "data_only_temporary_pack": "/tmp/bac-prescope-YAML-9v3c03bs/pack"
+    },
+    {
+      "label": "options-authored",
+      "artifact": "options-authored.msgpack",
+      "sha256": "46e155bb01b376e206847dd70da4c1de6c316a4c23eace1e06a2cae5b6b2e315",
+      "bytes": 191437,
+      "producer_sha": "1c99510967c132fce04548564f4cb317e2ecddaf",
+      "producer_tree": "d3c1f4993efb73717826f6d4e1bf9e3cf0cd28d0",
+      "schema_version": "1.41",
+      "brain_hash": "a979a51c0d72d412cae554ec1cda4f2a609fbdae5d1819e28cf73bd19d1f1482",
+      "pack_brain_hash": "a979a51c0d72d412cae554ec1cda4f2a609fbdae5d1819e28cf73bd19d1f1482",
+      "training_hash": "e9d2663c86dead58d964d0112f1e3193f2fe5773f4d156f6eb86d1df7236be42",
+      "execution_hash": "444e8a17c447c387e6a71d4520b5a171d2dba0a53bc60e0716fd9c57b97be80d",
+      "effective_run": {
+        "base_brain": {
+          "version": "1.0",
+          "description": "token-set smoke pack — the live token_set exerciser over the compiled TokenSpec (token-obs unit 3, hamlet-fa6bb6da4a)",
+          "architecture": {
+            "type": "token_set",
+            "feedforward": null,
+            "recurrent": null,
+            "dueling": null,
+            "token_set": {
+              "token_encoder": null,
+              "token_embed_dim": 16,
+              "q_head_hidden_dim": 64,
+              "aggregator": {
+                "type": "mean",
+                "num_heads": null
+              }
+            }
+          },
+          "optimizer": {
+            "type": "adam",
+            "learning_rate": 0.0001,
+            "adam_beta1": 0.9,
+            "adam_beta2": 0.999,
+            "adam_eps": 1e-08,
+            "sgd_momentum": null,
+            "sgd_nesterov": null,
+            "rmsprop_alpha": null,
+            "rmsprop_eps": null,
+            "weight_decay": 0.0,
+            "schedule": {
+              "type": "constant",
+              "step_size": null,
+              "gamma": null,
+              "t_max": null,
+              "eta_min": null
+            }
+          },
+          "loss": {
+            "type": "smooth_l1",
+            "huber_delta": null
+          },
+          "q_learning": {
+            "gamma": 0.99,
+            "target_update_frequency": 1000,
+            "use_double_dqn": true
+          },
+          "replay": {
+            "capacity": 100000,
+            "prioritized": false,
+            "priority_alpha": null,
+            "priority_beta": null,
+            "priority_beta_annealing": null
+          }
+        },
+        "effective_brain": {
+          "version": "1.0",
+          "description": "token-set smoke pack — the live token_set exerciser over the compiled TokenSpec (token-obs unit 3, hamlet-fa6bb6da4a)",
+          "architecture": {
+            "type": "token_set",
+            "feedforward": null,
+            "recurrent": null,
+            "dueling": null,
+            "token_set": {
+              "token_encoder": null,
+              "token_embed_dim": 16,
+              "q_head_hidden_dim": 64,
+              "aggregator": {
+                "type": "mean",
+                "num_heads": null
+              }
+            }
+          },
+          "optimizer": {
+            "type": "adam",
+            "learning_rate": 0.0001,
+            "adam_beta1": 0.9,
+            "adam_beta2": 0.999,
+            "adam_eps": 1e-08,
+            "sgd_momentum": null,
+            "sgd_nesterov": null,
+            "rmsprop_alpha": null,
+            "rmsprop_eps": null,
+            "weight_decay": 0.0,
+            "schedule": {
+              "type": "constant",
+              "step_size": null,
+              "gamma": null,
+              "t_max": null,
+              "eta_min": null
+            }
+          },
+          "loss": {
+            "type": "smooth_l1",
+            "huber_delta": null
+          },
+          "q_learning": {
+            "gamma": 0.99,
+            "target_update_frequency": 500,
+            "use_double_dqn": false
+          },
+          "replay": {
+            "capacity": 100000,
+            "prioritized": false,
+            "priority_alpha": null,
+            "priority_beta": null,
+            "priority_beta_annealing": null
+          }
+        },
+        "training": {
+          "bac_options": {
+            "replay": {
+              "sampling_mode": "independent_with_replacement",
+              "uniform_sequence_adapter": null,
+              "sequence_mode": null,
+              "retention_mode": null,
+              "sequence_objective": null,
+              "priority_reduction": null
+            },
+            "rnd": null,
+            "curriculum": null,
+            "serving": {
+              "policy_mode": "mc_dropout"
+            },
+            "checkpoint": {
+              "save_initial": true,
+              "save_final": true
+            },
+            "providers": null,
+            "provider_parameter_source": null,
+            "evaluation": null
+          },
+          "version": "1.0",
+          "seed": 42,
+          "population": {
+            "size": 8
+          },
+          "enabled_affordances": [
+            "EAT",
+            "SLEEP",
+            "SHOWER",
+            "EXERCISE",
+            "WORK",
+            "SOCIALIZE",
+            "MEDITATE",
+            "DRINK_WATER",
+            "BRUSH_TEETH",
+            "LAUNDRY",
+            "COOK",
+            "CLEAN_HOUSE",
+            "ENTERTAINMENT",
+            "DOCTOR"
+          ],
+          "randomize_affordances": true,
+          "enabled_actions": {
+            "custom": [
+              "REST"
+            ]
+          },
+          "q_learning": {
+            "use_double_dqn": false,
+            "gamma": 0.99,
+            "learning_rate": 0.0001,
+            "target_update_frequency": 500
+          },
+          "replay_buffer": {
+            "capacity": 100000,
+            "batch_size": 32,
+            "min_size": 1000
+          },
+          "exploration": {
+            "epsilon_start": 1.0,
+            "epsilon_end": 0.01,
+            "epsilon_decay": 0.995
+          },
+          "intrinsic": {
+            "rnd": {
+              "feature_dim": 128,
+              "learning_rate": 0.0001
+            },
+            "annealing": {
+              "threshold": 100.0,
+              "decay_rate": 0.995,
+              "min_weight": 0.001
+            },
+            "initial_weight": 1.0,
+            "min_survival_fraction": 0.4,
+            "survival_window": 100
+          },
+          "training_loop": {
+            "max_episodes": 10000,
+            "max_steps_per_episode": 1000,
+            "checkpointing": {
+              "interval": 1000
+            },
+            "train_frequency": 4,
+            "sequence_length": 8,
+            "max_grad_norm": 10.0
+          },
+          "curriculum": {
+            "strategy": "static",
+            "adversarial": {
+              "difficulty_metric": "survival_rate",
+              "adaptation_rate": 0.1,
+              "min_difficulty": 0.2,
+              "max_difficulty": 1.0,
+              "survival_advance_threshold": 0.7,
+              "survival_retreat_threshold": 0.3,
+              "entropy_gate": 0.5,
+              "min_steps_at_stage": 100
+            }
+          },
+          "run_metadata": null,
+          "recording": null
+        },
+        "authored_options": {
+          "replay": {
+            "sampling_mode": "independent_with_replacement",
+            "uniform_sequence_adapter": null,
+            "sequence_mode": null,
+            "retention_mode": null,
+            "sequence_objective": null,
+            "priority_reduction": null
+          },
+          "rnd": null,
+          "curriculum": null,
+          "serving": {
+            "policy_mode": "mc_dropout"
+          },
+          "checkpoint": {
+            "save_initial": true,
+            "save_final": true
+          },
+          "providers": null,
+          "provider_parameter_source": null,
+          "evaluation": null
+        },
+        "options": {
+          "replay": {
+            "sampling_mode": "independent_with_replacement",
+            "uniform_sequence_adapter": "legacy_episode_length_with_replacement",
+            "sequence_mode": "fixed_full",
+            "retention_mode": "whole_episode",
+            "sequence_objective": "window_mean",
+            "priority_reduction": "max_abs"
+          },
+          "rnd": {
+            "service_mode": "paced_fifo",
+            "max_updates_per_tick": 1,
+            "max_pending_rows": 32,
+            "overflow_policy": "service_before_admit"
+          },
+          "curriculum": {
+            "commit_mode": "completion",
+            "difficulty_mode": "stage_band"
+          },
+          "serving": {
+            "policy_mode": "mc_dropout"
+          },
+          "checkpoint": {
+            "save_initial": true,
+            "save_final": true
+          },
+          "providers": {
+            "count_based": {
+              "quantization_width": 0.0625,
+              "max_entries": 100000
+            },
+            "icm": {
+              "feature_dim": 128,
+              "hidden_dim": 256,
+              "learning_rate": 0.0001,
+              "inverse_weight": 0.8,
+              "forward_weight": 0.2,
+              "training_batch_size": 32,
+              "max_pending_transitions": 32
+            }
+          },
+          "provider_parameter_source": "training",
+          "evaluation": {
+            "seed": 42,
+            "episode_cap": 1000,
+            "epsilon": 0.01,
+            "curriculum_state_policy": "fresh",
+            "reward_metric": "extrinsic"
+          }
+        },
+        "exploration": {
+          "strategy": "adaptive_rnd",
+          "epsilon_start": 1.0,
+          "epsilon_end": 0.01,
+          "epsilon_decay": 0.995,
+          "rnd_feature_dim": 128,
+          "rnd_learning_rate": 0.0001,
+          "predictor_batch_size": 32,
+          "initial_intrinsic_weight": 1.0,
+          "min_intrinsic_weight": 0.001,
+          "variance_threshold": 100.0,
+          "min_survival_fraction": 0.4,
+          "max_episode_length": 1000,
+          "survival_window": 100,
+          "decay_rate": 0.995,
+          "drive_base_weight": 0.1,
+          "modifier_names": [
+            "energy_crisis"
+          ],
+          "provider_parameters": {
+            "feature_dim": 128,
+            "learning_rate": 0.0001,
+            "predictor_batch_size": 32,
+            "decay_rate": 0.995,
+            "min_survival_fraction": 0.4,
+            "max_episode_length": 1000,
+            "survival_window": 100,
+            "min_intrinsic_weight": 0.001,
+            "variance_threshold": 100.0
+          },
+          "reward_observation_phase": "successor_postphysics",
+          "predictor_observation_phase": "eligible_predecessor",
+          "predictor_input_kind": "observation",
+          "field_roles": {
+            "drive.intrinsic.rnd_config": {
+              "status": "inactive_preset",
+              "origin": "drive.intrinsic.rnd_config",
+              "reason": "retained authored preset; no selected consumer"
+            },
+            "drive.intrinsic.adaptive_config": {
+              "status": "inactive_preset",
+              "origin": "drive.intrinsic.adaptive_config",
+              "reason": "retained authored preset; no selected consumer"
+            },
+            "drive.intrinsic.adaptive_config.enabled": {
+              "status": "inactive_preset",
+              "origin": "drive.intrinsic.adaptive_config.enabled",
+              "reason": "retained authored preset; no selected consumer"
+            },
+            "drive.intrinsic.adaptive_config.threshold": {
+              "status": "inactive_preset",
+              "origin": "drive.intrinsic.adaptive_config.threshold",
+              "reason": "retained authored preset; no selected consumer"
+            },
+            "drive.intrinsic.adaptive_config.decay_rate": {
+              "status": "inactive_preset",
+              "origin": "drive.intrinsic.adaptive_config.decay_rate",
+              "reason": "retained authored preset; no selected consumer"
+            },
+            "drive.intrinsic.adaptive_config.min_weight": {
+              "status": "inactive_preset",
+              "origin": "drive.intrinsic.adaptive_config.min_weight",
+              "reason": "retained authored preset; no selected consumer"
+            },
+            "drive.intrinsic.count_config": {
+              "status": "inactive_preset",
+              "origin": "drive.intrinsic.count_config",
+              "reason": "retained authored preset; no selected consumer"
+            },
+            "drive.intrinsic.icm_config": {
+              "status": "inactive_preset",
+              "origin": "drive.intrinsic.icm_config",
+              "reason": "retained authored preset; no selected consumer"
+            },
+            "bac_options": {
+              "status": "inactive_preset",
+              "origin": "bac_options",
+              "reason": "retained authored preset; no selected consumer"
+            },
+            "bac_options.replay": {
+              "status": "inactive_preset",
+              "origin": "bac_options.replay",
+              "reason": "retained authored preset; no selected consumer"
+            },
+            "bac_options.replay.sampling_mode": {
+              "status": "inactive_preset",
+              "origin": "bac_options.replay.sampling_mode",
+              "reason": "retained authored preset; no selected consumer"
+            },
+            "bac_options.serving": {
+              "status": "inactive_preset",
+              "origin": "bac_options.serving",
+              "reason": "retained authored preset; no selected consumer"
+            },
+            "bac_options.serving.policy_mode": {
+              "status": "inactive_preset",
+              "origin": "bac_options.serving.policy_mode",
+              "reason": "retained authored preset; no selected consumer"
+            },
+            "bac_options.checkpoint": {
+              "status": "inactive_preset",
+              "origin": "bac_options.checkpoint",
+              "reason": "retained authored preset; no selected consumer"
+            },
+            "bac_options.checkpoint.save_initial": {
+              "status": "inactive_preset",
+              "origin": "bac_options.checkpoint.save_initial",
+              "reason": "retained authored preset; no selected consumer"
+            },
+            "bac_options.checkpoint.save_final": {
+              "status": "inactive_preset",
+              "origin": "bac_options.checkpoint.save_final",
+              "reason": "retained authored preset; no selected consumer"
+            },
+            "strategy": {
+              "status": "active",
+              "origin": "drive.intrinsic.strategy",
+              "reason": "resolved exploration ownership"
+            },
+            "drive.intrinsic.strategy": {
+              "status": "active",
+              "origin": "drive.intrinsic.strategy",
+              "reason": "selected authored value"
+            },
+            "drive_base_weight": {
+              "status": "active",
+              "origin": "drive.intrinsic.base_weight",
+              "reason": "resolved exploration ownership"
+            },
+            "drive.intrinsic.base_weight": {
+              "status": "active",
+              "origin": "drive.intrinsic.base_weight",
+              "reason": "selected authored value"
+            },
+            "modifier_names": {
+              "status": "active",
+              "origin": "drive.intrinsic.apply_modifiers",
+              "reason": "resolved exploration ownership"
+            },
+            "drive.intrinsic.apply_modifiers": {
+              "status": "active",
+              "origin": "drive.intrinsic.apply_modifiers",
+              "reason": "selected authored value"
+            },
+            "rnd_feature_dim": {
+              "status": "active",
+              "origin": "training.intrinsic.rnd.feature_dim",
+              "reason": "resolved exploration ownership"
+            },
+            "training.intrinsic.rnd.feature_dim": {
+              "status": "active",
+              "origin": "training.intrinsic.rnd.feature_dim",
+              "reason": "selected authored value"
+            },
+            "rnd_learning_rate": {
+              "status": "active",
+              "origin": "training.intrinsic.rnd.learning_rate",
+              "reason": "resolved exploration ownership"
+            },
+            "training.intrinsic.rnd.learning_rate": {
+              "status": "active",
+              "origin": "training.intrinsic.rnd.learning_rate",
+              "reason": "selected authored value"
+            },
+            "predictor_batch_size": {
+              "status": "active",
+              "origin": "training.replay_buffer.batch_size",
+              "reason": "resolved exploration ownership"
+            },
+            "training.replay_buffer.batch_size": {
+              "status": "active",
+              "origin": "training.replay_buffer.batch_size",
+              "reason": "selected authored value"
+            },
+            "initial_intrinsic_weight": {
+              "status": "active",
+              "origin": "training.intrinsic.initial_weight",
+              "reason": "resolved exploration ownership"
+            },
+            "training.intrinsic.initial_weight": {
+              "status": "active",
+              "origin": "training.intrinsic.initial_weight",
+              "reason": "selected authored value"
+            },
+            "min_intrinsic_weight": {
+              "status": "active",
+              "origin": "training.intrinsic.annealing.min_weight",
+              "reason": "resolved exploration ownership"
+            },
+            "training.intrinsic.annealing.min_weight": {
+              "status": "active",
+              "origin": "training.intrinsic.annealing.min_weight",
+              "reason": "selected authored value"
+            },
+            "variance_threshold": {
+              "status": "active",
+              "origin": "training.intrinsic.annealing.threshold",
+              "reason": "resolved exploration ownership"
+            },
+            "training.intrinsic.annealing.threshold": {
+              "status": "active",
+              "origin": "training.intrinsic.annealing.threshold",
+              "reason": "selected authored value"
+            },
+            "min_survival_fraction": {
+              "status": "active",
+              "origin": "training.intrinsic.min_survival_fraction",
+              "reason": "resolved exploration ownership"
+            },
+            "training.intrinsic.min_survival_fraction": {
+              "status": "active",
+              "origin": "training.intrinsic.min_survival_fraction",
+              "reason": "selected authored value"
+            },
+            "survival_window": {
+              "status": "active",
+              "origin": "training.intrinsic.survival_window",
+              "reason": "resolved exploration ownership"
+            },
+            "training.intrinsic.survival_window": {
+              "status": "active",
+              "origin": "training.intrinsic.survival_window",
+              "reason": "selected authored value"
+            },
+            "max_episode_length": {
+              "status": "active",
+              "origin": "training.training_loop.max_steps_per_episode",
+              "reason": "resolved exploration ownership"
+            },
+            "training.training_loop.max_steps_per_episode": {
+              "status": "active",
+              "origin": "training.training_loop.max_steps_per_episode",
+              "reason": "selected authored value"
+            },
+            "decay_rate": {
+              "status": "active",
+              "origin": "training.intrinsic.annealing.decay_rate",
+              "reason": "resolved exploration ownership"
+            },
+            "training.intrinsic.annealing.decay_rate": {
+              "status": "active",
+              "origin": "training.intrinsic.annealing.decay_rate",
+              "reason": "selected authored value"
+            },
+            "epsilon_start": {
+              "status": "active",
+              "origin": "training.exploration.epsilon_start",
+              "reason": "resolved exploration ownership"
+            },
+            "training.exploration.epsilon_start": {
+              "status": "active",
+              "origin": "training.exploration.epsilon_start",
+              "reason": "selected authored value"
+            },
+            "epsilon_end": {
+              "status": "active",
+              "origin": "training.exploration.epsilon_end",
+              "reason": "resolved exploration ownership"
+            },
+            "training.exploration.epsilon_end": {
+              "status": "active",
+              "origin": "training.exploration.epsilon_end",
+              "reason": "selected authored value"
+            },
+            "epsilon_decay": {
+              "status": "active",
+              "origin": "training.exploration.epsilon_decay",
+              "reason": "resolved exploration ownership"
+            },
+            "training.exploration.epsilon_decay": {
+              "status": "active",
+              "origin": "training.exploration.epsilon_decay",
+              "reason": "selected authored value"
+            },
+            "provider_parameters.feature_dim": {
+              "status": "active",
+              "origin": "training.intrinsic.rnd.feature_dim",
+              "reason": "resolved exploration ownership"
+            },
+            "provider_parameters.learning_rate": {
+              "status": "active",
+              "origin": "training.intrinsic.rnd.learning_rate",
+              "reason": "resolved exploration ownership"
+            },
+            "provider_parameters.predictor_batch_size": {
+              "status": "active",
+              "origin": "training.replay_buffer.batch_size",
+              "reason": "resolved exploration ownership"
+            },
+            "provider_parameters.decay_rate": {
+              "status": "active",
+              "origin": "training.intrinsic.annealing.decay_rate",
+              "reason": "resolved exploration ownership"
+            },
+            "provider_parameters.min_survival_fraction": {
+              "status": "active",
+              "origin": "training.intrinsic.min_survival_fraction",
+              "reason": "resolved exploration ownership"
+            },
+            "provider_parameters.max_episode_length": {
+              "status": "active",
+              "origin": "training.training_loop.max_steps_per_episode",
+              "reason": "resolved exploration ownership"
+            },
+            "provider_parameters.survival_window": {
+              "status": "active",
+              "origin": "training.intrinsic.survival_window",
+              "reason": "resolved exploration ownership"
+            },
+            "provider_parameters.min_intrinsic_weight": {
+              "status": "active",
+              "origin": "training.intrinsic.annealing.min_weight",
+              "reason": "resolved exploration ownership"
+            },
+            "provider_parameters.variance_threshold": {
+              "status": "active",
+              "origin": "training.intrinsic.annealing.threshold",
+              "reason": "resolved exploration ownership"
+            },
+            "service_mode": {
+              "status": "derived",
+              "origin": "bac-options-v1",
+              "reason": "versioned old-document semantic resolution"
+            },
+            "bac_options.rnd.service_mode": {
+              "status": "active",
+              "origin": "bac-options-v1",
+              "reason": "versioned old-document semantic resolution"
+            },
+            "max_updates_per_tick": {
+              "status": "derived",
+              "origin": "bac-options-v1",
+              "reason": "versioned old-document semantic resolution"
+            },
+            "bac_options.rnd.max_updates_per_tick": {
+              "status": "active",
+              "origin": "bac-options-v1",
+              "reason": "versioned old-document semantic resolution"
+            },
+            "max_pending_rows": {
+              "status": "derived",
+              "origin": "bac-options-v1",
+              "reason": "max(2 * training.population.size, resolved predictor_batch_size); bounded-service upgrade"
+            },
+            "bac_options.rnd.max_pending_rows": {
+              "status": "active",
+              "origin": "bac-options-v1",
+              "reason": "max(2 * training.population.size, resolved predictor_batch_size); bounded-service upgrade"
+            },
+            "overflow_policy": {
+              "status": "derived",
+              "origin": "bac-options-v1",
+              "reason": "versioned old-document semantic resolution"
+            },
+            "bac_options.rnd.overflow_policy": {
+              "status": "active",
+              "origin": "bac-options-v1",
+              "reason": "versioned old-document semantic resolution"
+            },
+            "provider_parameters": {
+              "status": "active",
+              "origin": "exploration-policy-v1",
+              "reason": "selected provider schema/observation phase"
+            },
+            "reward_observation_phase": {
+              "status": "active",
+              "origin": "exploration-policy-v1",
+              "reason": "selected provider schema/observation phase"
+            },
+            "predictor_observation_phase": {
+              "status": "active",
+              "origin": "exploration-policy-v1",
+              "reason": "selected provider schema/observation phase"
+            },
+            "predictor_input_kind": {
+              "status": "active",
+              "origin": "exploration-policy-v1",
+              "reason": "selected provider schema/observation phase"
+            },
+            "provider_parameter_source": {
+              "status": "active",
+              "origin": "bac_options.provider_parameter_source",
+              "reason": "training unless explicitly drive"
+            },
+            "bac_options.provider_parameter_source": {
+              "status": "active",
+              "origin": "bac-options-v1",
+              "reason": "explicit or versioned source ownership"
+            }
+          },
+          "service_mode": "paced_fifo",
+          "max_updates_per_tick": 1,
+          "max_pending_rows": 32,
+          "overflow_policy": "service_before_admit",
+          "provider_parameter_source": "training",
+          "raw_provider_parameters": {
+            "rnd_config": null,
+            "adaptive_config": {
+              "enabled": true,
+              "threshold": 100.0,
+              "decay_rate": 0.995,
+              "min_weight": 0.01
+            },
+            "count_config": null,
+            "icm_config": null
+          },
+          "authored_parameters": {
+            "drive_intrinsic": {
+              "strategy": "adaptive_rnd",
+              "base_weight": 0.1,
+              "apply_modifiers": [
+                "energy_crisis"
+              ],
+              "rnd_config": null,
+              "icm_config": null,
+              "count_config": null,
+              "adaptive_config": {
+                "enabled": true,
+                "threshold": 100.0,
+                "decay_rate": 0.995,
+                "min_weight": 0.01
+              }
+            },
+            "training": {
+              "bac_options": {
+                "replay": {
+                  "sampling_mode": "independent_with_replacement",
+                  "uniform_sequence_adapter": null,
+                  "sequence_mode": null,
+                  "retention_mode": null,
+                  "sequence_objective": null,
+                  "priority_reduction": null
+                },
+                "rnd": null,
+                "curriculum": null,
+                "serving": {
+                  "policy_mode": "mc_dropout"
+                },
+                "checkpoint": {
+                  "save_initial": true,
+                  "save_final": true
+                },
+                "providers": null,
+                "provider_parameter_source": null,
+                "evaluation": null
+              },
+              "version": "1.0",
+              "seed": 42,
+              "population": {
+                "size": 8
+              },
+              "enabled_affordances": [
+                "EAT",
+                "SLEEP",
+                "SHOWER",
+                "EXERCISE",
+                "WORK",
+                "SOCIALIZE",
+                "MEDITATE",
+                "DRINK_WATER",
+                "BRUSH_TEETH",
+                "LAUNDRY",
+                "COOK",
+                "CLEAN_HOUSE",
+                "ENTERTAINMENT",
+                "DOCTOR"
+              ],
+              "randomize_affordances": true,
+              "enabled_actions": {
+                "custom": [
+                  "REST"
+                ]
+              },
+              "q_learning": {
+                "use_double_dqn": false,
+                "gamma": 0.99,
+                "learning_rate": 0.0001,
+                "target_update_frequency": 500
+              },
+              "replay_buffer": {
+                "capacity": 100000,
+                "batch_size": 32,
+                "min_size": 1000
+              },
+              "exploration": {
+                "epsilon_start": 1.0,
+                "epsilon_end": 0.01,
+                "epsilon_decay": 0.995
+              },
+              "intrinsic": {
+                "rnd": {
+                  "feature_dim": 128,
+                  "learning_rate": 0.0001
+                },
+                "annealing": {
+                  "threshold": 100.0,
+                  "decay_rate": 0.995,
+                  "min_weight": 0.001
+                },
+                "initial_weight": 1.0,
+                "min_survival_fraction": 0.4,
+                "survival_window": 100
+              },
+              "training_loop": {
+                "max_episodes": 10000,
+                "max_steps_per_episode": 1000,
+                "checkpointing": {
+                  "interval": 1000
+                },
+                "train_frequency": 4,
+                "sequence_length": 8,
+                "max_grad_norm": 10.0
+              },
+              "curriculum": {
+                "strategy": "static",
+                "adversarial": {
+                  "difficulty_metric": "survival_rate",
+                  "adaptation_rate": 0.1,
+                  "min_difficulty": 0.2,
+                  "max_difficulty": 1.0,
+                  "survival_advance_threshold": 0.7,
+                  "survival_retreat_threshold": 0.3,
+                  "entropy_gate": 0.5,
+                  "min_steps_at_stage": 100
+                }
+              },
+              "run_metadata": null,
+              "recording": null
+            },
+            "bac_options": {
+              "replay": {
+                "sampling_mode": "independent_with_replacement"
+              },
+              "serving": {
+                "policy_mode": "mc_dropout"
+              },
+              "checkpoint": {
+                "save_initial": true,
+                "save_final": true
+              }
+            }
+          },
+          "parameter_units": {
+            "epsilon_start": "probability",
+            "epsilon_end": "probability",
+            "epsilon_decay": "factor/committed_batch_episode",
+            "rnd_feature_dim": "features",
+            "rnd_learning_rate": "optimizer_learning_rate",
+            "predictor_batch_size": "eligible_rows",
+            "initial_intrinsic_weight": "runtime_intrinsic_scale",
+            "min_intrinsic_weight": "runtime_intrinsic_scale",
+            "variance_threshold": "survival_variance",
+            "min_survival_fraction": "fraction/planned_horizon",
+            "max_episode_length": "lane_steps",
+            "survival_window": "committed_lane_outcomes",
+            "decay_rate": "factor/qualified_outcome",
+            "drive_base_weight": "DAC_multiplier",
+            "modifier_names": "DAC_named_modifiers",
+            "max_pending_rows": "eligible_rows",
+            "max_updates_per_tick": "predictor_minibatches/vector_tick",
+            "provider_parameters": "selected_provider_units",
+            "quantization_width": "observation_units/bin",
+            "max_entries": "LRU_keys",
+            "feature_dim": "features",
+            "hidden_dim": "units",
+            "learning_rate": "optimizer_learning_rate",
+            "inverse_weight": "loss_multiplier",
+            "forward_weight": "loss_multiplier",
+            "training_batch_size": "eligible_transitions",
+            "max_pending_transitions": "eligible_transitions"
+          }
+        },
+        "primary_level": "L0_test",
+        "field_roles": {
+          "brain.version": {
+            "status": "unqualified",
+            "origin": "pack:brain (inherited)",
+            "reason": "selected executable brain field"
+          },
+          "brain.description": {
+            "status": "unqualified",
+            "origin": "pack:brain (inherited)",
+            "reason": "selected executable brain field"
+          },
+          "brain.architecture.type": {
+            "status": "active",
+            "origin": "pack:brain (inherited)",
+            "reason": "selected executable brain field"
+          },
+          "brain.architecture.feedforward": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "retained nonselected preset"
+          },
+          "brain.architecture.recurrent": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "retained nonselected preset"
+          },
+          "brain.architecture.dueling": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "retained nonselected preset"
+          },
+          "brain.architecture.token_set.token_encoder": {
+            "status": "derived",
+            "origin": "bac-options-v1",
+            "reason": "selected token encoder"
+          },
+          "brain.architecture.token_set.token_embed_dim": {
+            "status": "active",
+            "origin": "pack:brain (inherited)",
+            "reason": "selected executable brain field"
+          },
+          "brain.architecture.token_set.q_head_hidden_dim": {
+            "status": "active",
+            "origin": "pack:brain (inherited)",
+            "reason": "selected executable brain field"
+          },
+          "brain.architecture.token_set.aggregator.type": {
+            "status": "active",
+            "origin": "pack:brain (inherited)",
+            "reason": "selected executable brain field"
+          },
+          "brain.architecture.token_set.aggregator.num_heads": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "retained nonselected preset"
+          },
+          "brain.optimizer.type": {
+            "status": "active",
+            "origin": "pack:brain (inherited)",
+            "reason": "selected executable brain field"
+          },
+          "brain.optimizer.learning_rate": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "base overridden by training.q_learning.learning_rate"
+          },
+          "effective_brain.optimizer.learning_rate": {
+            "status": "derived",
+            "origin": "training.q_learning.learning_rate",
+            "reason": "five-field training override"
+          },
+          "brain.optimizer.adam_beta1": {
+            "status": "active",
+            "origin": "pack:brain (inherited)",
+            "reason": "selected executable brain field"
+          },
+          "brain.optimizer.adam_beta2": {
+            "status": "active",
+            "origin": "pack:brain (inherited)",
+            "reason": "selected executable brain field"
+          },
+          "brain.optimizer.adam_eps": {
+            "status": "active",
+            "origin": "pack:brain (inherited)",
+            "reason": "selected executable brain field"
+          },
+          "brain.optimizer.sgd_momentum": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "retained nonselected preset"
+          },
+          "brain.optimizer.sgd_nesterov": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "retained nonselected preset"
+          },
+          "brain.optimizer.rmsprop_alpha": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "retained nonselected preset"
+          },
+          "brain.optimizer.rmsprop_eps": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "retained nonselected preset"
+          },
+          "brain.optimizer.weight_decay": {
+            "status": "active",
+            "origin": "pack:brain (inherited)",
+            "reason": "selected executable brain field"
+          },
+          "brain.optimizer.schedule.type": {
+            "status": "active",
+            "origin": "pack:brain (inherited)",
+            "reason": "selected executable brain field"
+          },
+          "brain.optimizer.schedule.step_size": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "retained nonselected preset"
+          },
+          "brain.optimizer.schedule.gamma": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "retained nonselected preset"
+          },
+          "brain.optimizer.schedule.t_max": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "retained nonselected preset"
+          },
+          "brain.optimizer.schedule.eta_min": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "retained nonselected preset"
+          },
+          "brain.loss.type": {
+            "status": "active",
+            "origin": "pack:brain (inherited)",
+            "reason": "selected executable brain field"
+          },
+          "brain.loss.huber_delta": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "retained nonselected preset"
+          },
+          "brain.q_learning.gamma": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "base overridden by training.q_learning.gamma"
+          },
+          "effective_brain.q_learning.gamma": {
+            "status": "derived",
+            "origin": "training.q_learning.gamma",
+            "reason": "five-field training override"
+          },
+          "brain.q_learning.target_update_frequency": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "base overridden by training.q_learning.target_update_frequency"
+          },
+          "effective_brain.q_learning.target_update_frequency": {
+            "status": "derived",
+            "origin": "training.q_learning.target_update_frequency",
+            "reason": "five-field training override"
+          },
+          "brain.q_learning.use_double_dqn": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "base overridden by training.q_learning.use_double_dqn"
+          },
+          "effective_brain.q_learning.use_double_dqn": {
+            "status": "derived",
+            "origin": "training.q_learning.use_double_dqn",
+            "reason": "five-field training override"
+          },
+          "brain.replay.capacity": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "base overridden by training.replay_buffer.capacity"
+          },
+          "effective_brain.replay.capacity": {
+            "status": "derived",
+            "origin": "training.replay_buffer.capacity",
+            "reason": "five-field training override"
+          },
+          "brain.replay.prioritized": {
+            "status": "active",
+            "origin": "pack:brain (inherited)",
+            "reason": "selected executable brain field"
+          },
+          "brain.replay.priority_alpha": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "retained nonselected preset"
+          },
+          "brain.replay.priority_beta": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "retained nonselected preset"
+          },
+          "brain.replay.priority_beta_annealing": {
+            "status": "inactive_preset",
+            "origin": "pack:brain (inherited)",
+            "reason": "retained nonselected preset"
+          },
+          "training.version": {
+            "status": "unqualified",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.seed": {
+            "status": "active",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.population.size": {
+            "status": "active",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.enabled_affordances": {
+            "status": "active",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.randomize_affordances": {
+            "status": "active",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.enabled_actions.custom": {
+            "status": "active",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.q_learning.use_double_dqn": {
+            "status": "active",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.q_learning.gamma": {
+            "status": "active",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.q_learning.learning_rate": {
+            "status": "active",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.q_learning.target_update_frequency": {
+            "status": "active",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.replay_buffer.capacity": {
+            "status": "active",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.replay_buffer.batch_size": {
+            "status": "active",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.replay_buffer.min_size": {
+            "status": "active",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.training_loop.max_episodes": {
+            "status": "active",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.training_loop.max_steps_per_episode": {
+            "status": "active",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.training_loop.checkpointing.interval": {
+            "status": "active",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.training_loop.train_frequency": {
+            "status": "active",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.training_loop.sequence_length": {
+            "status": "inactive_preset",
+            "origin": "level:L0_test:training",
+            "reason": "retained nonselected preset"
+          },
+          "training.training_loop.max_grad_norm": {
+            "status": "active",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.curriculum.strategy": {
+            "status": "active",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.curriculum.adversarial.difficulty_metric": {
+            "status": "inactive_preset",
+            "origin": "level:L0_test:training",
+            "reason": "retained nonselected preset"
+          },
+          "training.curriculum.adversarial.adaptation_rate": {
+            "status": "inactive_preset",
+            "origin": "level:L0_test:training",
+            "reason": "retained nonselected preset"
+          },
+          "training.curriculum.adversarial.min_difficulty": {
+            "status": "inactive_preset",
+            "origin": "level:L0_test:training",
+            "reason": "retained nonselected preset"
+          },
+          "training.curriculum.adversarial.max_difficulty": {
+            "status": "inactive_preset",
+            "origin": "level:L0_test:training",
+            "reason": "retained nonselected preset"
+          },
+          "training.curriculum.adversarial.survival_advance_threshold": {
+            "status": "inactive_preset",
+            "origin": "level:L0_test:training",
+            "reason": "retained nonselected preset"
+          },
+          "training.curriculum.adversarial.survival_retreat_threshold": {
+            "status": "inactive_preset",
+            "origin": "level:L0_test:training",
+            "reason": "retained nonselected preset"
+          },
+          "training.curriculum.adversarial.entropy_gate": {
+            "status": "inactive_preset",
+            "origin": "level:L0_test:training",
+            "reason": "retained nonselected preset"
+          },
+          "training.curriculum.adversarial.min_steps_at_stage": {
+            "status": "inactive_preset",
+            "origin": "level:L0_test:training",
+            "reason": "retained nonselected preset"
+          },
+          "training.run_metadata": {
+            "status": "unqualified",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "training.recording": {
+            "status": "unqualified",
+            "origin": "level:L0_test:training",
+            "reason": "selected training consumer"
+          },
+          "bac_options.replay.sampling_mode": {
+            "status": "inactive_preset",
+            "origin": "bac_options.replay.sampling_mode",
+            "reason": "retained authored preset; no selected consumer"
+          },
+          "bac_options.replay.uniform_sequence_adapter": {
+            "status": "inactive_preset",
+            "origin": "bac-options-v1",
+            "reason": "versioned old-document semantic resolution"
+          },
+          "bac_options.replay.sequence_mode": {
+            "status": "inactive_preset",
+            "origin": "bac-options-v1",
+            "reason": "versioned old-document semantic resolution"
+          },
+          "bac_options.replay.retention_mode": {
+            "status": "inactive_preset",
+            "origin": "bac-options-v1",
+            "reason": "versioned old-document semantic resolution"
+          },
+          "bac_options.replay.sequence_objective": {
+            "status": "inactive_preset",
+            "origin": "bac-options-v1",
+            "reason": "versioned old-document semantic resolution"
+          },
+          "bac_options.replay.priority_reduction": {
+            "status": "inactive_preset",
+            "origin": "bac-options-v1",
+            "reason": "versioned old-document semantic resolution"
+          },
+          "bac_options.curriculum.commit_mode": {
+            "status": "inactive_preset",
+            "origin": "bac-options-v1",
+            "reason": "versioned old-document semantic resolution"
+          },
+          "bac_options.curriculum.difficulty_mode": {
+            "status": "inactive_preset",
+            "origin": "bac-options-v1",
+            "reason": "versioned old-document semantic resolution"
+          },
+          "bac_options.serving.policy_mode": {
+            "status": "active",
+            "origin": "bac_options.serving.policy_mode",
+            "reason": "selected option"
+          },
+          "bac_options.checkpoint.save_initial": {
+            "status": "active",
+            "origin": "bac_options.checkpoint.save_initial",
+            "reason": "selected option"
+          },
+          "bac_options.checkpoint.save_final": {
+            "status": "active",
+            "origin": "bac_options.checkpoint.save_final",
+            "reason": "selected option"
+          },
+          "bac_options.evaluation.seed": {
+            "status": "derived",
+            "origin": "bac-options-v1",
+            "reason": "training.seed"
+          },
+          "bac_options.evaluation.episode_cap": {
+            "status": "derived",
+            "origin": "bac-options-v1",
+            "reason": "training.training_loop.max_steps_per_episode"
+          },
+          "bac_options.evaluation.epsilon": {
+            "status": "derived",
+            "origin": "bac-options-v1",
+            "reason": "training.exploration.epsilon_end"
+          },
+          "bac_options.evaluation.curriculum_state_policy": {
+            "status": "derived",
+            "origin": "bac-options-v1",
+            "reason": "versioned old-document semantic resolution"
+          },
+          "bac_options.evaluation.reward_metric": {
+            "status": "derived",
+            "origin": "bac-options-v1",
+            "reason": "versioned old-document semantic resolution"
+          },
+          "drive.intrinsic.rnd_config": {
+            "status": "inactive_preset",
+            "origin": "drive.intrinsic.rnd_config",
+            "reason": "retained authored preset; no selected consumer"
+          },
+          "drive.intrinsic.adaptive_config": {
+            "status": "inactive_preset",
+            "origin": "drive.intrinsic.adaptive_config",
+            "reason": "retained authored preset; no selected consumer"
+          },
+          "drive.intrinsic.adaptive_config.enabled": {
+            "status": "inactive_preset",
+            "origin": "drive.intrinsic.adaptive_config.enabled",
+            "reason": "retained authored preset; no selected consumer"
+          },
+          "drive.intrinsic.adaptive_config.threshold": {
+            "status": "inactive_preset",
+            "origin": "drive.intrinsic.adaptive_config.threshold",
+            "reason": "retained authored preset; no selected consumer"
+          },
+          "drive.intrinsic.adaptive_config.decay_rate": {
+            "status": "inactive_preset",
+            "origin": "drive.intrinsic.adaptive_config.decay_rate",
+            "reason": "retained authored preset; no selected consumer"
+          },
+          "drive.intrinsic.adaptive_config.min_weight": {
+            "status": "inactive_preset",
+            "origin": "drive.intrinsic.adaptive_config.min_weight",
+            "reason": "retained authored preset; no selected consumer"
+          },
+          "drive.intrinsic.count_config": {
+            "status": "inactive_preset",
+            "origin": "drive.intrinsic.count_config",
+            "reason": "retained authored preset; no selected consumer"
+          },
+          "drive.intrinsic.icm_config": {
+            "status": "inactive_preset",
+            "origin": "drive.intrinsic.icm_config",
+            "reason": "retained authored preset; no selected consumer"
+          },
+          "exploration.bac_options": {
+            "status": "inactive_preset",
+            "origin": "bac_options",
+            "reason": "retained authored preset; no selected consumer"
+          },
+          "bac_options.replay": {
+            "status": "inactive_preset",
+            "origin": "bac_options.replay",
+            "reason": "retained authored preset; no selected consumer"
+          },
+          "bac_options.serving": {
+            "status": "inactive_preset",
+            "origin": "bac_options.serving",
+            "reason": "retained authored preset; no selected consumer"
+          },
+          "bac_options.checkpoint": {
+            "status": "inactive_preset",
+            "origin": "bac_options.checkpoint",
+            "reason": "retained authored preset; no selected consumer"
+          },
+          "exploration.strategy": {
+            "status": "active",
+            "origin": "drive.intrinsic.strategy",
+            "reason": "resolved exploration ownership"
+          },
+          "drive.intrinsic.strategy": {
+            "status": "active",
+            "origin": "drive.intrinsic.strategy",
+            "reason": "selected authored value"
+          },
+          "exploration.drive_base_weight": {
+            "status": "active",
+            "origin": "drive.intrinsic.base_weight",
+            "reason": "resolved exploration ownership"
+          },
+          "drive.intrinsic.base_weight": {
+            "status": "active",
+            "origin": "drive.intrinsic.base_weight",
+            "reason": "selected authored value"
+          },
+          "exploration.modifier_names": {
+            "status": "active",
+            "origin": "drive.intrinsic.apply_modifiers",
+            "reason": "resolved exploration ownership"
+          },
+          "drive.intrinsic.apply_modifiers": {
+            "status": "active",
+            "origin": "drive.intrinsic.apply_modifiers",
+            "reason": "selected authored value"
+          },
+          "exploration.rnd_feature_dim": {
+            "status": "active",
+            "origin": "training.intrinsic.rnd.feature_dim",
+            "reason": "resolved exploration ownership"
+          },
+          "training.intrinsic.rnd.feature_dim": {
+            "status": "active",
+            "origin": "training.intrinsic.rnd.feature_dim",
+            "reason": "selected authored value"
+          },
+          "exploration.rnd_learning_rate": {
+            "status": "active",
+            "origin": "training.intrinsic.rnd.learning_rate",
+            "reason": "resolved exploration ownership"
+          },
+          "training.intrinsic.rnd.learning_rate": {
+            "status": "active",
+            "origin": "training.intrinsic.rnd.learning_rate",
+            "reason": "selected authored value"
+          },
+          "exploration.predictor_batch_size": {
+            "status": "active",
+            "origin": "training.replay_buffer.batch_size",
+            "reason": "resolved exploration ownership"
+          },
+          "exploration.initial_intrinsic_weight": {
+            "status": "active",
+            "origin": "training.intrinsic.initial_weight",
+            "reason": "resolved exploration ownership"
+          },
+          "training.intrinsic.initial_weight": {
+            "status": "active",
+            "origin": "training.intrinsic.initial_weight",
+            "reason": "selected authored value"
+          },
+          "exploration.min_intrinsic_weight": {
+            "status": "active",
+            "origin": "training.intrinsic.annealing.min_weight",
+            "reason": "resolved exploration ownership"
+          },
+          "training.intrinsic.annealing.min_weight": {
+            "status": "active",
+            "origin": "training.intrinsic.annealing.min_weight",
+            "reason": "selected authored value"
+          },
+          "exploration.variance_threshold": {
+            "status": "active",
+            "origin": "training.intrinsic.annealing.threshold",
+            "reason": "resolved exploration ownership"
+          },
+          "training.intrinsic.annealing.threshold": {
+            "status": "active",
+            "origin": "training.intrinsic.annealing.threshold",
+            "reason": "selected authored value"
+          },
+          "exploration.min_survival_fraction": {
+            "status": "active",
+            "origin": "training.intrinsic.min_survival_fraction",
+            "reason": "resolved exploration ownership"
+          },
+          "training.intrinsic.min_survival_fraction": {
+            "status": "active",
+            "origin": "training.intrinsic.min_survival_fraction",
+            "reason": "selected authored value"
+          },
+          "exploration.survival_window": {
+            "status": "active",
+            "origin": "training.intrinsic.survival_window",
+            "reason": "resolved exploration ownership"
+          },
+          "training.intrinsic.survival_window": {
+            "status": "active",
+            "origin": "training.intrinsic.survival_window",
+            "reason": "selected authored value"
+          },
+          "exploration.max_episode_length": {
+            "status": "active",
+            "origin": "training.training_loop.max_steps_per_episode",
+            "reason": "resolved exploration ownership"
+          },
+          "exploration.decay_rate": {
+            "status": "active",
+            "origin": "training.intrinsic.annealing.decay_rate",
+            "reason": "resolved exploration ownership"
+          },
+          "training.intrinsic.annealing.decay_rate": {
+            "status": "active",
+            "origin": "training.intrinsic.annealing.decay_rate",
+            "reason": "selected authored value"
+          },
+          "exploration.epsilon_start": {
+            "status": "active",
+            "origin": "training.exploration.epsilon_start",
+            "reason": "resolved exploration ownership"
+          },
+          "training.exploration.epsilon_start": {
+            "status": "active",
+            "origin": "training.exploration.epsilon_start",
+            "reason": "selected authored value"
+          },
+          "exploration.epsilon_end": {
+            "status": "active",
+            "origin": "training.exploration.epsilon_end",
+            "reason": "resolved exploration ownership"
+          },
+          "training.exploration.epsilon_end": {
+            "status": "active",
+            "origin": "training.exploration.epsilon_end",
+            "reason": "selected authored value"
+          },
+          "exploration.epsilon_decay": {
+            "status": "active",
+            "origin": "training.exploration.epsilon_decay",
+            "reason": "resolved exploration ownership"
+          },
+          "training.exploration.epsilon_decay": {
+            "status": "active",
+            "origin": "training.exploration.epsilon_decay",
+            "reason": "selected authored value"
+          },
+          "exploration.provider_parameters.feature_dim": {
+            "status": "active",
+            "origin": "training.intrinsic.rnd.feature_dim",
+            "reason": "resolved exploration ownership"
+          },
+          "exploration.provider_parameters.learning_rate": {
+            "status": "active",
+            "origin": "training.intrinsic.rnd.learning_rate",
+            "reason": "resolved exploration ownership"
+          },
+          "exploration.provider_parameters.predictor_batch_size": {
+            "status": "active",
+            "origin": "training.replay_buffer.batch_size",
+            "reason": "resolved exploration ownership"
+          },
+          "exploration.provider_parameters.decay_rate": {
+            "status": "active",
+            "origin": "training.intrinsic.annealing.decay_rate",
+            "reason": "resolved exploration ownership"
+          },
+          "exploration.provider_parameters.min_survival_fraction": {
+            "status": "active",
+            "origin": "training.intrinsic.min_survival_fraction",
+            "reason": "resolved exploration ownership"
+          },
+          "exploration.provider_parameters.max_episode_length": {
+            "status": "active",
+            "origin": "training.training_loop.max_steps_per_episode",
+            "reason": "resolved exploration ownership"
+          },
+          "exploration.provider_parameters.survival_window": {
+            "status": "active",
+            "origin": "training.intrinsic.survival_window",
+            "reason": "resolved exploration ownership"
+          },
+          "exploration.provider_parameters.min_intrinsic_weight": {
+            "status": "active",
+            "origin": "training.intrinsic.annealing.min_weight",
+            "reason": "resolved exploration ownership"
+          },
+          "exploration.provider_parameters.variance_threshold": {
+            "status": "active",
+            "origin": "training.intrinsic.annealing.threshold",
+            "reason": "resolved exploration ownership"
+          },
+          "exploration.service_mode": {
+            "status": "derived",
+            "origin": "bac-options-v1",
+            "reason": "versioned old-document semantic resolution"
+          },
+          "bac_options.rnd.service_mode": {
+            "status": "active",
+            "origin": "bac-options-v1",
+            "reason": "versioned old-document semantic resolution"
+          },
+          "exploration.max_updates_per_tick": {
+            "status": "derived",
+            "origin": "bac-options-v1",
+            "reason": "versioned old-document semantic resolution"
+          },
+          "bac_options.rnd.max_updates_per_tick": {
+            "status": "active",
+            "origin": "bac-options-v1",
+            "reason": "versioned old-document semantic resolution"
+          },
+          "exploration.max_pending_rows": {
+            "status": "derived",
+            "origin": "bac-options-v1",
+            "reason": "max(2 * training.population.size, resolved predictor_batch_size); bounded-service upgrade"
+          },
+          "bac_options.rnd.max_pending_rows": {
+            "status": "active",
+            "origin": "bac-options-v1",
+            "reason": "max(2 * training.population.size, resolved predictor_batch_size); bounded-service upgrade"
+          },
+          "exploration.overflow_policy": {
+            "status": "derived",
+            "origin": "bac-options-v1",
+            "reason": "versioned old-document semantic resolution"
+          },
+          "bac_options.rnd.overflow_policy": {
+            "status": "active",
+            "origin": "bac-options-v1",
+            "reason": "versioned old-document semantic resolution"
+          },
+          "exploration.provider_parameters": {
+            "status": "active",
+            "origin": "exploration-policy-v1",
+            "reason": "selected provider schema/observation phase"
+          },
+          "exploration.reward_observation_phase": {
+            "status": "active",
+            "origin": "exploration-policy-v1",
+            "reason": "selected provider schema/observation phase"
+          },
+          "exploration.predictor_observation_phase": {
+            "status": "active",
+            "origin": "exploration-policy-v1",
+            "reason": "selected provider schema/observation phase"
+          },
+          "exploration.predictor_input_kind": {
+            "status": "active",
+            "origin": "exploration-policy-v1",
+            "reason": "selected provider schema/observation phase"
+          },
+          "exploration.provider_parameter_source": {
+            "status": "active",
+            "origin": "bac_options.provider_parameter_source",
+            "reason": "training unless explicitly drive"
+          },
+          "bac_options.provider_parameter_source": {
+            "status": "active",
+            "origin": "bac-options-v1",
+            "reason": "explicit or versioned source ownership"
+          },
+          "bac_options.providers.count_based.quantization_width": {
+            "status": "inactive_preset",
+            "origin": "bac_options.providers.count_based.quantization_width",
+            "reason": "retained nonselected provider preset"
+          },
+          "bac_options.providers.count_based.max_entries": {
+            "status": "inactive_preset",
+            "origin": "bac_options.providers.count_based.max_entries",
+            "reason": "retained nonselected provider preset"
+          },
+          "bac_options.providers.icm.feature_dim": {
+            "status": "inactive_preset",
+            "origin": "bac_options.providers.icm.feature_dim",
+            "reason": "retained nonselected provider preset"
+          },
+          "bac_options.providers.icm.hidden_dim": {
+            "status": "inactive_preset",
+            "origin": "bac_options.providers.icm.hidden_dim",
+            "reason": "retained nonselected provider preset"
+          },
+          "bac_options.providers.icm.learning_rate": {
+            "status": "inactive_preset",
+            "origin": "bac_options.providers.icm.learning_rate",
+            "reason": "retained nonselected provider preset"
+          },
+          "bac_options.providers.icm.inverse_weight": {
+            "status": "inactive_preset",
+            "origin": "bac_options.providers.icm.inverse_weight",
+            "reason": "retained nonselected provider preset"
+          },
+          "bac_options.providers.icm.forward_weight": {
+            "status": "inactive_preset",
+            "origin": "bac_options.providers.icm.forward_weight",
+            "reason": "retained nonselected provider preset"
+          },
+          "bac_options.providers.icm.training_batch_size": {
+            "status": "inactive_preset",
+            "origin": "bac_options.providers.icm.training_batch_size",
+            "reason": "retained nonselected provider preset"
+          },
+          "bac_options.providers.icm.max_pending_transitions": {
+            "status": "inactive_preset",
+            "origin": "bac_options.providers.icm.max_pending_transitions",
+            "reason": "retained nonselected provider preset"
+          }
+        },
+        "authored_brain_hash": "7b29b57b8318e11001ae00fbb01559cd69b0d7a807878d771048386944fc9f5f",
+        "authored_identity": "ff47d684dcb9cce7444799d1cbc16aca2e81f60fee59319685999e6bafd3f1ef",
+        "execution_hash": "444e8a17c447c387e6a71d4520b5a171d2dba0a53bc60e0716fd9c57b97be80d",
+        "training_hash": "e9d2663c86dead58d964d0112f1e3193f2fe5773f4d156f6eb86d1df7236be42",
+        "derivations": {
+          "replay.uniform_sequence_adapter": "versioned old-document semantic resolution",
+          "replay.sequence_mode": "versioned old-document semantic resolution",
+          "replay.retention_mode": "versioned old-document semantic resolution",
+          "replay.sequence_objective": "versioned old-document semantic resolution",
+          "replay.priority_reduction": "versioned old-document semantic resolution",
+          "curriculum.commit_mode": "versioned old-document semantic resolution",
+          "curriculum.difficulty_mode": "versioned old-document semantic resolution",
+          "provider_parameter_source": "versioned old-document semantic resolution",
+          "providers.count_based.quantization_width": "versioned old-document semantic resolution",
+          "providers.count_based.max_entries": "training.replay_buffer.capacity",
+          "providers.icm.feature_dim": "training.intrinsic.rnd.feature_dim",
+          "providers.icm.hidden_dim": "2 * resolved providers.icm.feature_dim",
+          "providers.icm.learning_rate": "training.intrinsic.rnd.learning_rate",
+          "providers.icm.inverse_weight": "versioned old-document semantic resolution",
+          "providers.icm.forward_weight": "versioned old-document semantic resolution",
+          "providers.icm.training_batch_size": "training.replay_buffer.batch_size",
+          "providers.icm.max_pending_transitions": "max(2 * training.population.size, resolved providers.icm.training_batch_size)",
+          "evaluation.seed": "training.seed",
+          "evaluation.episode_cap": "training.training_loop.max_steps_per_episode",
+          "evaluation.epsilon": "training.exploration.epsilon_end",
+          "evaluation.curriculum_state_policy": "versioned old-document semantic resolution",
+          "evaluation.reward_metric": "versioned old-document semantic resolution",
+          "capture_origin": "current authored compilation",
+          "exploration.service_mode": "versioned old-document semantic resolution",
+          "exploration.max_updates_per_tick": "versioned old-document semantic resolution",
+          "exploration.max_pending_rows": "max(2 * training.population.size, resolved predictor_batch_size); bounded-service upgrade",
+          "exploration.overflow_policy": "versioned old-document semantic resolution",
+          "rnd.service_mode": "versioned old-document semantic resolution",
+          "rnd.max_updates_per_tick": "versioned old-document semantic resolution",
+          "rnd.max_pending_rows": "max(2 * training.population.size, resolved predictor_batch_size); bounded-service upgrade",
+          "rnd.overflow_policy": "versioned old-document semantic resolution"
+        },
+        "origins": {
+          "brain": "pack:brain (inherited)",
+          "training": "level:L0_test:training",
+          "drive": "level:L0_test:drive.intrinsic",
+          "capture_origin": "current authored compilation"
+        }
+      },
+      "authored_training": {
+        "training": {
+          "version": "1.0",
+          "seed": 42,
+          "population": {
+            "size": 8
+          },
+          "enabled_affordances": [
+            "EAT",
+            "SLEEP",
+            "SHOWER",
+            "EXERCISE",
+            "WORK",
+            "SOCIALIZE",
+            "MEDITATE",
+            "DRINK_WATER",
+            "BRUSH_TEETH",
+            "LAUNDRY",
+            "COOK",
+            "CLEAN_HOUSE",
+            "ENTERTAINMENT",
+            "DOCTOR"
+          ],
+          "randomize_affordances": true,
+          "enabled_actions": {
+            "custom": [
+              "REST"
+            ]
+          },
+          "q_learning": {
+            "use_double_dqn": false,
+            "gamma": 0.99,
+            "learning_rate": 0.0001,
+            "target_update_frequency": 500
+          },
+          "replay_buffer": {
+            "capacity": 100000,
+            "batch_size": 32,
+            "min_size": 1000
+          },
+          "exploration": {
+            "epsilon_start": 1.0,
+            "epsilon_end": 0.01,
+            "epsilon_decay": 0.995
+          },
+          "intrinsic": {
+            "rnd": {
+              "feature_dim": 128,
+              "learning_rate": 0.0001
+            },
+            "annealing": {
+              "threshold": 100.0,
+              "decay_rate": 0.995,
+              "min_weight": 0.001
+            },
+            "initial_weight": 1.0,
+            "min_survival_fraction": 0.4,
+            "survival_window": 100
+          },
+          "training_loop": {
+            "max_episodes": 10000,
+            "max_steps_per_episode": 1000,
+            "train_frequency": 4,
+            "sequence_length": 8,
+            "max_grad_norm": 10.0,
+            "checkpointing": {
+              "interval": 1000
+            }
+          },
+          "curriculum": {
+            "strategy": "static",
+            "adversarial": {
+              "difficulty_metric": "survival_rate",
+              "adaptation_rate": 0.1,
+              "min_difficulty": 0.2,
+              "max_difficulty": 1.0,
+              "survival_advance_threshold": 0.7,
+              "survival_retreat_threshold": 0.3,
+              "entropy_gate": 0.5,
+              "min_steps_at_stage": 100
+            }
+          },
+          "bac_options": {
+            "serving": {
+              "policy_mode": "mc_dropout"
+            },
+            "replay": {
+              "sampling_mode": "independent_with_replacement"
+            },
+            "checkpoint": {
+              "save_initial": true,
+              "save_final": true
+            }
+          }
+        }
+      },
+      "producer_config_sha256": {
+        "actions.yaml": "7363114f30b2794659da1ec49aef65b5800c0addf5be659997c5e103d4180653",
+        "brain.yaml": "9629e1b27c3bb8931cec870a53ae760760e2cdf90158cb5862ce1a3ad5928979",
+        "effects.yaml": "2b9f559e318f638d2d96a8c5d5efd45a8bd9f22b739b6625053e0c2d8e737fa9",
+        "environment.yaml": "7c9d3d95b02cbb4198c9f7450a4bd88bda3e759f0ebbaec5a3c9fa5bc9abcfaf",
+        "experiment.yaml": "9ad9a5d0aa0b4dff49cccb154e0a3758beb8f32f77d6e432b58c4d7ac6600c1b",
+        "items.yaml": "5121217232857b0e3551f484dcaa32a82d0e104e3e74a3316ac8183b9beb818e",
+        "levels/L0_test/affordances.yaml": "70fb72d3ca1663682c35f6c447af53d9ea00020dc157a39e3a449ea4cb70f488",
+        "levels/L0_test/bars.yaml": "c050412a304078501fe2f1ff2da41cf5bdee632aa1ef500948c04b90a9d8814b",
+        "levels/L0_test/curriculum.yaml": "3cc1e1583939f8d1fd4b6be265250ec174fea6ceb24712150892b7d64599b987",
+        "levels/L0_test/drive.yaml": "b4ec89fb5e214e40e7f6c8c1f9d60301dc6bac92062ccad89fa20cf6b445f937",
+        "levels/L0_test/training.yaml": "d6133656de71a57496bf87254c2c3020d44d63ba71973f754592a142bea722e7",
+        "levels/L1_attention/affordances.yaml": "70fb72d3ca1663682c35f6c447af53d9ea00020dc157a39e3a449ea4cb70f488",
+        "levels/L1_attention/bars.yaml": "c050412a304078501fe2f1ff2da41cf5bdee632aa1ef500948c04b90a9d8814b",
+        "levels/L1_attention/brain.yaml": "60e014d4d9883c4acb098d9695863417527a09f2f79c98a9271e0b5798173c3e",
+        "levels/L1_attention/curriculum.yaml": "3cc1e1583939f8d1fd4b6be265250ec174fea6ceb24712150892b7d64599b987",
+        "levels/L1_attention/drive.yaml": "b4ec89fb5e214e40e7f6c8c1f9d60301dc6bac92062ccad89fa20cf6b445f937",
+        "levels/L1_attention/training.yaml": "613e1e2cae003e379f8f19ee8bf1b19e62e737460877aebef539f41a32e7c073",
+        "stratum.yaml": "d78508ca7d6b3a72966a766829e75e9deefff9300f21bfd4e801a7769dcb26d2",
+        "variables.yaml": "c28cfabdad385064388e3bbfbc4f24b2826629896194b1302985d384ca22b3eb"
+      },
+      "data_only_temporary_pack": "/tmp/bac-prescope-YAML-d1gxwg2p/pack"
+    }
+  ]
+}

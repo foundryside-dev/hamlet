@@ -12,7 +12,7 @@ from typing import Any, Literal
 from townlet.config.bac_options import BaCOptions, resolve_bac_options
 from townlet.config.brain_config import BrainConfig, apply_training_overrides, compute_brain_hash
 from townlet.config.drive_as_code import IntrinsicStrategyConfig
-from townlet.config.exploration_policy import ResolvedExplorationPolicy, resolve_exploration_policy
+from townlet.config.exploration_policy import SCOPE_FIELDS, ResolvedExplorationPolicy, is_legacy_policy_payload, resolve_exploration_policy
 from townlet.config.training_v2_config import TrainingV2Config
 
 
@@ -107,8 +107,35 @@ class EffectiveRunConfig:
         # Inactive raw presets may contain NaN. Distinct unpacked NaN objects
         # compare unequal; canonical numeric encoding still differs from strings
         # and null. Active numeric validity is checked independently by the DTOs/RP.
-        if _hash(self.to_dict()) != _hash(dict(payload)):
-            raise ValueError("effective_run: serialized fields, roles or execution_hash disagree with resolved authoring")
+        if _hash(self.to_dict()) == _hash(dict(payload)):
+            return
+        old_fields = set(
+            "base_brain effective_brain training authored_options options exploration primary_level field_roles "
+            "authored_brain_hash authored_identity execution_hash training_hash derivations origins".split()
+        )
+        policy = payload.get("exploration")
+        options = payload.get("options")
+        if (
+            set(payload) == old_fields
+            and isinstance(policy, Mapping)
+            and is_legacy_policy_payload(policy)
+            and isinstance(options, Mapping)
+            and "curiosity_scope" not in options
+            and self.exploration.curiosity_scope == "shared"
+            and self.exploration.scope_origin == "bac-options-v1"
+        ):
+            legacy = self.to_dict()
+            legacy["options"].pop("curiosity_scope")
+            legacy["exploration"] = self.exploration.legacy_shared_payload()
+            for name in SCOPE_FIELDS:
+                legacy["field_roles"].pop(f"exploration.{name}", None)
+                legacy["derivations"].pop(f"exploration.{name}", None)
+            for name in ("scope", "seed_policy"):
+                legacy["field_roles"].pop(f"bac_options.curiosity_scope.{name}", None)
+                legacy["derivations"].pop(f"curiosity_scope.{name}", None)
+            if _hash(legacy) == _hash(dict(payload)):
+                return
+        raise ValueError("effective_run: serialized fields, roles or execution_hash disagree with resolved authoring")
 
     @classmethod
     def from_dict(cls, payload: Mapping[str, Any]) -> EffectiveRunConfig:
@@ -148,7 +175,7 @@ def resolve_effective_run(
     if training.bac_options is not None:
         authored = training.bac_options
     exploration = resolve_exploration_policy(drive_intrinsic, training, authored)
-    defaults = resolve_bac_options(BaCOptions(), training=training)
+    defaults = resolve_bac_options(BaCOptions(curiosity_scope=authored.curiosity_scope), training=training)
     materialized = defaults.options.model_dump()
     _overlay(materialized, authored.model_dump(exclude_none=True))
     icm = materialized["providers"]["icm"]
@@ -158,7 +185,11 @@ def resolve_effective_run(
     if "hidden_dim" not in declared_icm:
         icm["hidden_dim"] = 2 * icm["feature_dim"]
     if "max_pending_transitions" not in declared_icm:
-        icm["max_pending_transitions"] = max(2 * training.population.size, icm["training_batch_size"])
+        if exploration.curiosity_scope == "per_world":
+            cardinality = 1
+        else:
+            cardinality = training.population.size
+        icm["max_pending_transitions"] = max(2 * cardinality, icm["training_batch_size"])
     service = ("service_mode", "max_updates_per_tick", "max_pending_rows", "overflow_policy")
     materialized["rnd"].update({key: getattr(exploration, key) for key in service})
     materialized["provider_parameter_source"] = exploration.provider_parameter_source
@@ -274,6 +305,8 @@ def resolve_effective_run(
         if explicit:
             origin = path
         record(path, value, enabled, "selected option" if explicit else provenance.reason, origin=origin, qualified=True)
+        if relative.startswith("curiosity_scope.") and exploration.curiosity_scope == "shared":
+            active.pop(path, None)  # Published ownership metadata preserves the supported shared hash recipe.
         if enabled and not explicit:
             roles[path] = FieldRole("derived", provenance.origin, provenance.reason)
     for path, role in exploration.field_roles.items():

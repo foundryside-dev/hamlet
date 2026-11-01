@@ -1,0 +1,4 @@
+# Strict ownership derives each private stream from the exact world ID.
+curiosity_scope:
+  scope: per_world
+  seed_policy: world_id_derived_v1

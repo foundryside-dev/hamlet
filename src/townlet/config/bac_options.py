@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Annotated, Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, SerializerFunctionWrapHandler, model_serializer, model_validator
 
 if TYPE_CHECKING:
     from townlet.config.training_v2_config import TrainingV2Config
@@ -108,6 +108,33 @@ class EvaluationOptions(OptionModel):
     reward_metric: Literal["extrinsic", "intrinsic", "shaping", "total"] | None = None
 
 
+class CuriosityScopeOptions(OptionModel):
+    """Ownership declaration; seed omission is resolved by the versioned table."""
+
+    scope: Literal["shared", "per_world"]
+    seed_policy: Literal["legacy_shared_v1", "world_id_derived_v1"] | None = None
+
+    @model_validator(mode="after")
+    def validate_seed_policy(self) -> CuriosityScopeOptions:
+        if self.scope == "shared":
+            expected = "legacy_shared_v1"
+        else:
+            expected = "world_id_derived_v1"
+        if self.seed_policy is not None and self.seed_policy != expected:
+            raise ValueError("curiosity_scope.seed_policy disagrees with scope")
+        return self
+
+
+def resolve_curiosity_scope(options: CuriosityScopeOptions | None) -> tuple[CuriosityScopeOptions, str]:
+    """Missing scope is explicitly shared, including known old cache payloads."""
+    if options is None:
+        return CuriosityScopeOptions(scope="shared", seed_policy="legacy_shared_v1"), "bac-options-v1"
+    seed_policy: Literal["legacy_shared_v1", "world_id_derived_v1"] = "legacy_shared_v1"
+    if options.scope == "per_world":
+        seed_policy = "world_id_derived_v1"
+    return CuriosityScopeOptions(scope=options.scope, seed_policy=seed_policy), "authored"
+
+
 class BaCOptions(OptionModel):
     """Authored partial options or fully resolved values; omission is preserved."""
 
@@ -119,6 +146,15 @@ class BaCOptions(OptionModel):
     providers: ProviderOptions | None = None
     provider_parameter_source: Literal["training", "drive"] | None = None
     evaluation: EvaluationOptions | None = None
+    curiosity_scope: CuriosityScopeOptions | None = None
+
+    @model_serializer(mode="wrap")
+    def portable_options(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        """Preserve the exact pre-scope nested authoring/hash for omitted scope."""
+        result: dict[str, Any] = handler(self)
+        if self.curiosity_scope is None:
+            result.pop("curiosity_scope", None)
+        return result
 
 
 class OptionProvenance(OptionModel):
@@ -136,11 +172,20 @@ class ResolvedBaCOptions(OptionModel):
 def resolve_bac_options(options: BaCOptions | None, *, training: TrainingV2Config) -> ResolvedBaCOptions:
     """Resolve only option omissions; drive precedence/field roles belong to T18a.
 
-    N counts parallel lanes, batch counts predictor rows. All values and their
-    origins are serializable. No geometry or existing identity is redefined.
+    Shared capacity uses parallel N; private capacity uses local cardinality1.
+    All values and origins are serializable; shared numerics stay unchanged.
     """
     batch = training.replay_buffer.batch_size
-    pending = max(2 * training.population.size, batch)
+    if options is None:
+        declaration = None
+    else:
+        declaration = options.curiosity_scope
+    scope, _ = resolve_curiosity_scope(declaration)
+    if scope.scope == "per_world":
+        cardinality = 1
+    else:
+        cardinality = training.population.size
+    pending = max(2 * cardinality, batch)
     # This is the single versioned resolution table, not defaults in consumers.
     table: dict[str, Any] = {
         "replay": {
@@ -161,6 +206,7 @@ def resolve_bac_options(options: BaCOptions | None, *, training: TrainingV2Confi
         "serving": {"policy_mode": "greedy_eval"},
         "checkpoint": {"save_initial": False, "save_final": True},
         "provider_parameter_source": "training",
+        "curiosity_scope": scope.model_dump(),
         "providers": {
             "count_based": {"quantization_width": 1 / 16, "max_entries": training.replay_buffer.capacity},
             "icm": {
@@ -191,7 +237,7 @@ def resolve_bac_options(options: BaCOptions | None, *, training: TrainingV2Confi
     if "feature_dim" in icm_overrides:
         icm["hidden_dim"] = 2 * icm_overrides["feature_dim"]
     if "training_batch_size" in icm_overrides:
-        icm["max_pending_transitions"] = max(2 * training.population.size, icm_overrides["training_batch_size"])
+        icm["max_pending_transitions"] = max(2 * cardinality, icm_overrides["training_batch_size"])
     reasons = {
         "rnd.max_pending_rows": "max(2 * training.population.size, training.replay_buffer.batch_size); bounded-service upgrade",
         "providers.count_based.max_entries": "training.replay_buffer.capacity",
@@ -203,7 +249,12 @@ def resolve_bac_options(options: BaCOptions | None, *, training: TrainingV2Confi
         "evaluation.seed": "training.seed",
         "evaluation.episode_cap": "training.training_loop.max_steps_per_episode",
         "evaluation.epsilon": "training.exploration.epsilon_end",
+        "curiosity_scope.scope": "omitted scope retains shared population ownership",
+        "curiosity_scope.seed_policy": "versioned seed semantics for the selected ownership scope",
     }
+    if scope.scope == "per_world":
+        reasons["rnd.max_pending_rows"] = "max(2 * local world cardinality1, training.replay_buffer.batch_size)"
+        reasons["providers.icm.max_pending_transitions"] = "max(2 * local world cardinality1, resolved providers.icm.training_batch_size)"
     provenance: list[OptionProvenance] = []
 
     def merge(base: dict[str, Any], overrides: dict[str, Any], prefix: str) -> None:

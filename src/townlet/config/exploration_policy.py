@@ -17,12 +17,63 @@ from typing import Any, Literal
 import torch
 from torch import Tensor
 
-from townlet.config.bac_options import BaCOptions, resolve_bac_options
+from townlet.config.bac_options import BaCOptions, CuriosityScopeOptions, resolve_bac_options, resolve_curiosity_scope
 from townlet.config.drive_as_code import IntrinsicStrategyConfig
 from townlet.config.training_v2_config import TrainingV2Config
 
 Strategy = Literal["none", "rnd", "adaptive_rnd", "count_based", "icm"]
 STRATEGIES = ("none", "rnd", "adaptive_rnd", "count_based", "icm")
+SCOPE_FIELDS = frozenset(("curiosity_scope", "seed_policy", "service_clock_unit", "scope_origin", "scope_guarantee"))
+SCOPE_UNITS = {
+    "curiosity_scope": "ownership_scope",
+    "seed_policy": "seed_derivation_version",
+    "service_clock_unit": "service_opportunity_unit",
+    "scope_origin": "declaration_origin",
+    "scope_guarantee": "ownership_guarantee",
+}
+# Exact supported pre-scope policy field set, not a generic missing-tag fallback.
+LEGACY_POLICY_FIELDS = frozenset(
+    "strategy epsilon_start epsilon_end epsilon_decay rnd_feature_dim rnd_learning_rate predictor_batch_size "
+    "initial_intrinsic_weight min_intrinsic_weight variance_threshold min_survival_fraction max_episode_length survival_window "
+    "decay_rate drive_base_weight modifier_names provider_parameters reward_observation_phase predictor_observation_phase "
+    "predictor_input_kind field_roles service_mode max_updates_per_tick max_pending_rows overflow_policy "
+    "provider_parameter_source raw_provider_parameters authored_parameters parameter_units".split()
+)
+
+
+def _scope_values(options: CuriosityScopeOptions | None) -> dict[str, str]:
+    selected, origin = resolve_curiosity_scope(options)
+    return {
+        "curiosity_scope": selected.scope,
+        "seed_policy": str(selected.seed_policy),
+        "service_clock_unit": "world_eligible_admission" if selected.scope == "per_world" else "vector_tick",
+        "scope_origin": origin,
+        "scope_guarantee": "world_id_owned_state" if selected.scope == "per_world" else "shared_population_state",
+    }
+
+
+def is_legacy_policy_payload(payload: Mapping[str, Any]) -> bool:
+    """Recognize only complete old authoring without any new scope markers."""
+    if set(payload) != LEGACY_POLICY_FIELDS:
+        return False
+    authored = payload["authored_parameters"]
+    if not isinstance(authored, Mapping):
+        return False
+    if "training" in authored:
+        training = authored["training"]
+    else:
+        training = {}
+    if not isinstance(training, Mapping):
+        return False
+    for options in (authored.get("bac_options"), training.get("bac_options")):
+        if isinstance(options, Mapping) and "curiosity_scope" in options:
+            return False
+    for metadata in ("field_roles", "parameter_units"):
+        if not isinstance(payload[metadata], Mapping):
+            return False
+        if any(key in SCOPE_FIELDS or str(key).startswith("bac_options.curiosity_scope") for key in payload[metadata]):
+            return False
+    return True
 
 
 def _freeze(value: Any) -> Any:
@@ -93,6 +144,7 @@ def _active_policy_fields(strategy: Strategy) -> set[str]:
         "predictor_observation_phase",
         "predictor_input_kind",
     }
+    active.update(SCOPE_FIELDS)
     if strategy != "none":
         active.update(("initial_intrinsic_weight", "drive_base_weight", "modifier_names"))
     if strategy in ("rnd", "adaptive_rnd"):
@@ -145,12 +197,36 @@ class ResolvedExplorationPolicy:
     raw_provider_parameters: Mapping[str, Any]
     authored_parameters: Mapping[str, Any]
     parameter_units: Mapping[str, str]
+    curiosity_scope: Literal["shared", "per_world"]
+    seed_policy: Literal["legacy_shared_v1", "world_id_derived_v1"]
+    service_clock_unit: Literal["vector_tick", "world_eligible_admission"]
+    scope_origin: Literal["authored", "bac-options-v1"]
+    scope_guarantee: Literal["shared_population_state", "world_id_owned_state"]
 
     def __post_init__(self) -> None:
         if self.strategy not in STRATEGIES:
             raise ValueError("invalid exploration strategy")
         for name in ("provider_parameters", "raw_provider_parameters", "authored_parameters", "field_roles", "parameter_units"):
             object.__setattr__(self, name, _freeze(getattr(self, name)))
+        authored_options = self.authored_parameters.get("bac_options")
+        if not isinstance(authored_options, Mapping):
+            raise ValueError("authored_parameters.bac_options requires captured authoring")
+        declaration = None
+        if "curiosity_scope" in authored_options:
+            if not isinstance(authored_options["curiosity_scope"], Mapping):
+                raise ValueError("authored curiosity_scope must be a complete declaration")
+            declaration = CuriosityScopeOptions.model_validate(dict(authored_options["curiosity_scope"]))
+        expected_scope = _scope_values(declaration)
+        for name, expected in expected_scope.items():
+            if getattr(self, name) != expected:
+                raise ValueError(f"{name}: disagrees with authored curiosity ownership")
+            if self.parameter_units.get(name) != SCOPE_UNITS[name]:
+                raise ValueError(f"parameter_units.{name}: invalid ownership unit")
+        expected_update_unit = "predictor_minibatches/vector_tick"
+        if self.curiosity_scope == "per_world":
+            expected_update_unit = "predictor_minibatches/world_eligible_admission"
+        if self.parameter_units.get("max_updates_per_tick") != expected_update_unit:
+            raise ValueError("parameter_units.max_updates_per_tick: disagrees with service clock")
         object.__setattr__(self, "modifier_names", tuple(self.modifier_names))
         for name in ("epsilon_start", "epsilon_end", "epsilon_decay", "initial_intrinsic_weight", "drive_base_weight"):
             _number(getattr(self, name), name, False, 0.0)
@@ -227,6 +303,8 @@ class ResolvedExplorationPolicy:
         """Canonical SHA256 of active values; provenance/presets are excluded."""
         payload = {"schema": "exploration-policy-v1"}
         for name in _active_policy_fields(self.strategy):
+            if self.curiosity_scope == "shared" and name in SCOPE_FIELDS:
+                continue  # Supported shared execution retains the exact old recipe.
             payload[name] = _portable(getattr(self, name))
         return _identity(payload)
 
@@ -244,8 +322,29 @@ class ResolvedExplorationPolicy:
     @classmethod
     def from_dict(cls, payload: Mapping[str, Any]) -> ResolvedExplorationPolicy:
         values = dict(payload)
-        values["field_roles"] = {key: FieldRole(**value) for key, value in payload["field_roles"].items()}
+        if is_legacy_policy_payload(payload):
+            values.update(_scope_values(None))
+            values["parameter_units"] = {**payload["parameter_units"], **SCOPE_UNITS}
+            values["field_roles"] = dict(payload["field_roles"])
+            for name in SCOPE_FIELDS:
+                values["field_roles"][name] = {"status": "derived", "origin": "bac-options-v1", "reason": "known pre-scope shared policy"}
+        elif set(payload) != LEGACY_POLICY_FIELDS | SCOPE_FIELDS:
+            raise ValueError("exploration policy requires a complete current or known pre-scope field set")
+        values["field_roles"] = {key: FieldRole(**value) for key, value in values["field_roles"].items()}
         return cls(**values)
+
+    def legacy_shared_payload(self) -> dict[str, Any]:
+        """Exact old projection used only to validate a known old effective view."""
+        if self.curiosity_scope != "shared" or self.scope_origin != "bac-options-v1":
+            raise ValueError("only implicitly shared policies have a pre-scope projection")
+        payload = self.to_dict()
+        for name in SCOPE_FIELDS:
+            payload.pop(name)
+            payload["field_roles"].pop(name, None)
+            payload["parameter_units"].pop(name)
+        for name in ("bac_options.curiosity_scope", "bac_options.curiosity_scope.scope", "bac_options.curiosity_scope.seed_policy"):
+            payload["field_roles"].pop(name, None)
+        return payload
 
 
 @dataclass(frozen=True, init=False)
@@ -366,7 +465,7 @@ def resolve_exploration_policy(
     # OP validates its standalone training-owned interpretation. Here selected
     # raw/typed provider batches must participate before relational checks.
     # Consume OP's versioned omission table, then apply authored values below.
-    resolved = resolve_bac_options(BaCOptions(), training=training)
+    resolved = resolve_bac_options(BaCOptions(curiosity_scope=options.curiosity_scope), training=training)
     selected_options = resolved.options
     source = selected_options.provider_parameter_source
     if options.provider_parameter_source is not None:
@@ -394,6 +493,7 @@ def resolve_exploration_policy(
     preset_leaves(authored_options, "bac_options")
     values: dict[str, Any] = {
         "strategy": strategy,
+        **_scope_values(options.curiosity_scope),
         **training.exploration.model_dump(),
         "rnd_feature_dim": training.intrinsic.rnd.feature_dim,
         "rnd_learning_rate": training.intrinsic.rnd.learning_rate,
@@ -408,6 +508,10 @@ def resolve_exploration_policy(
         "drive_base_weight": drive.base_weight,
         "modifier_names": tuple(drive.apply_modifiers),
     }
+    if values["curiosity_scope"] == "per_world":
+        cardinality = 1
+    else:
+        cardinality = training.population.size
     origins = {
         "strategy": "drive.intrinsic.strategy",
         "drive_base_weight": "drive.intrinsic.base_weight",
@@ -533,7 +637,7 @@ def resolve_exploration_policy(
                 "inverse_weight": 0.8,
                 "forward_weight": 0.2,
                 "training_batch_size": training.replay_buffer.batch_size,
-                "max_pending_transitions": max(2 * training.population.size, training.replay_buffer.batch_size),
+                "max_pending_transitions": max(2 * cardinality, training.replay_buffer.batch_size),
             }
         typed: dict[str, Any] = {}
         if options.providers is not None:
@@ -559,8 +663,10 @@ def resolve_exploration_policy(
                 parameters[key] = 2 * parameters["feature_dim"]
                 reason = "2 * resolved provider_parameters.feature_dim"
             if key == "max_pending_transitions":
-                parameters[key] = max(2 * training.population.size, parameters["training_batch_size"])
+                parameters[key] = max(2 * cardinality, parameters["training_batch_size"])
                 reason = "max(2 * training.population.size, resolved provider_parameters.training_batch_size)"
+                if values["curiosity_scope"] == "per_world":
+                    reason = "max(2 * local world cardinality1, resolved provider_parameters.training_batch_size)"
             if key in typed:
                 parameters[key] = typed[key]
                 origin = f"bac_options.providers.{option_name}.{key}"
@@ -584,7 +690,7 @@ def resolve_exploration_policy(
         authored_service = options.rnd.model_dump(exclude_none=True)
         service.update(authored_service)
     if "rnd" not in authored_options or "max_pending_rows" not in authored_options["rnd"]:
-        service["max_pending_rows"] = max(2 * training.population.size, values["predictor_batch_size"])
+        service["max_pending_rows"] = max(2 * cardinality, values["predictor_batch_size"])
     if strategy == "icm":
         service["max_pending_rows"] = parameters["max_pending_transitions"]
     for key, value in service.items():
@@ -596,6 +702,8 @@ def resolve_exploration_policy(
             origin, reason = f"bac_options.rnd.{key}", "explicit option"
         if key == "max_pending_rows" and not explicit:
             reason = "max(2 * training.population.size, resolved predictor_batch_size); bounded-service upgrade"
+            if values["curiosity_scope"] == "per_world":
+                reason = "max(2 * local world cardinality1, resolved predictor_batch_size)"
         if key == "max_pending_rows" and strategy == "icm":
             origin, reason = "provider_parameters.max_pending_transitions", "ICM transition queue capacity"
         role(key, active, origin, reason)
@@ -607,6 +715,10 @@ def resolve_exploration_policy(
         role(key, True, "exploration-policy-v1", "selected provider schema/observation phase")
     role("provider_parameter_source", is_rnd, "bac_options.provider_parameter_source", "training unless explicitly drive")
     role("bac_options.provider_parameter_source", is_rnd, "bac-options-v1", "explicit or versioned source ownership")
+    for name in SCOPE_FIELDS:
+        role(name, True, values["scope_origin"], "resolved curiosity ownership contract")
+    for name in ("scope", "seed_policy"):
+        role(f"bac_options.curiosity_scope.{name}", True, values["scope_origin"], "selected curiosity ownership contract")
     units = {
         "epsilon_start": "probability",
         "epsilon_end": "probability",
@@ -635,7 +747,10 @@ def resolve_exploration_policy(
         "forward_weight": "loss_multiplier",
         "training_batch_size": "eligible_transitions",
         "max_pending_transitions": "eligible_transitions",
+        **SCOPE_UNITS,
     }
+    if values["curiosity_scope"] == "per_world":
+        units["max_updates_per_tick"] = "predictor_minibatches/world_eligible_admission"
     input_kind: Literal["observation", "transition"] = "observation"
     if strategy == "icm":
         input_kind = "transition"

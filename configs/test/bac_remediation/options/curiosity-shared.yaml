@@ -1,0 +1,4 @@
+# Explicit shared ownership preserves the existing population-wide semantics.
+curiosity_scope:
+  scope: shared
+  seed_policy: legacy_shared_v1

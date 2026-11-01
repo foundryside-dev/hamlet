@@ -1083,7 +1083,8 @@ class VectorizedHamletEnv:
             observations: [num_agents, observation_dim]
             rewards: [num_agents]
             dones: [num_agents] bool
-            info: dict with metadata
+            info: dict with metadata and owned bool [num_agents, action_dim]
+                successor_action_masks for this same committed observation/status
         """
         prev_dones = self.dones.clone()
         active_on_entry = ~prev_dones
@@ -1189,8 +1190,19 @@ class VectorizedHamletEnv:
         self.time_of_day = self._clock_hour()
 
         observations = self._get_observations()
+        # Build only after all successor state, retirement and the next action's hour
+        # have committed. Completed rows may be empty; a live row must be selectable.
+        successor_action_masks = self.get_action_masks().clone()
+        live_empty = ~self.dones & ~successor_action_masks.any(dim=1)
+        if live_empty.any():
+            agent_ids = torch.nonzero(live_empty, as_tuple=False).flatten().tolist()
+            raise ValueError(
+                "nonterminal successor has no legal action: "
+                f"pack={self.config_pack_path}, level={self.level_name}, tick={self.global_tick}, agents={agent_ids}"
+            )
 
         info = {
+            "successor_action_masks": successor_action_masks,
             "active_on_entry": active_on_entry.clone(),
             "newly_terminal": newly_terminal.clone(),
             "newly_retired": newly_retired.clone(),

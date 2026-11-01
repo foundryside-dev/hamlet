@@ -38,7 +38,14 @@ _MODES = ("auto", "recorded_full_resume", "archived_history_fresh_episode", "inf
 _ROWS = ("observations", "actions", "rewards", "next_observations", "dones")
 _COMPONENTS = ("rewards_extrinsic", "rewards_intrinsic", "rewards_shaping")
 _KINDS = {"standard": 4, "prioritized": 4, "sequential": 5}
+_CURRENT_REPLAY_VERSIONS = {"standard": (5,), "prioritized": (5, 6), "sequential": (6,)}
 _STATE_PREFIX = "state-sha256:v1:"
+
+
+def _supported_formats(demo: int, population: int, replay: int, kind: str) -> bool:
+    return (demo, population, replay) == (9, 6, _KINDS[kind]) or (
+        (demo, population) == (10, 7) and replay in _CURRENT_REPLAY_VERSIONS[kind]
+    )
 
 
 def _clone(value):
@@ -134,9 +141,15 @@ def _formats(payload: Mapping[str, object]) -> tuple[dict, Mapping, Mapping]:
     replay = _mapping(population.get("replay_buffer"), "population_state.replay_buffer")
     kind = replay.get("replay_kind")
     version, population_version, replay_version = payload.get("version"), population.get("version"), replay.get("format_version")
-    if type(kind) is not str or kind not in _KINDS or any(type(item) is not int for item in (version, population_version, replay_version)):
+    if (
+        type(kind) is not str
+        or kind not in _KINDS
+        or type(version) is not int
+        or type(population_version) is not int
+        or type(replay_version) is not int
+    ):
         raise ValueError("unsupported checkpoint/population/replay format or replay_kind")
-    if (version, population_version, replay_version) not in ((9, 6, _KINDS[kind]), (10, 7, _KINDS[kind] + 1)):
+    if not _supported_formats(version, population_version, replay_version, kind):
         raise ValueError(f"unsupported checkpoint/population/replay versions: {version}/{population_version}/{replay_version}")
     return {"demo": version, "population": population_version, "replay": replay_version, "replay_kind": kind}, population, replay
 
@@ -402,11 +415,7 @@ class HistoricalAccessPolicy(_Owned):
         if type(kind) is not str or kind not in _KINDS or any(type(formats[key]) is not int for key in ("demo", "population", "replay")):
             raise ValueError("policy source formats are invalid")
         legacy = formats["demo"] == 9
-        if legacy:
-            expected = (9, 6, _KINDS[kind])
-        else:
-            expected = (10, 7, _KINDS[kind] + 1)
-        if tuple(formats[key] for key in ("demo", "population", "replay")) != expected:
+        if not _supported_formats(formats["demo"], formats["population"], formats["replay"], kind):
             raise ValueError("policy source format versions are unsupported")
         if self.requested_mode not in _MODES or self.effective_mode not in _MODES[1:]:
             raise ValueError("historical policy requested/effective mode is invalid")

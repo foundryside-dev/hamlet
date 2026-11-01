@@ -568,11 +568,16 @@ def test_replay_matrix(replay_kind: ReplayKind, l1_runtime: tuple[TokenSpec, int
         with pytest.raises(ValueError, match="Replay checkpoint key set mismatch"):
             restored.load_from_serialized(previous)
     elif replay_kind == "prioritized":
-        # PER5 keys with a PER4 tag are a mixed schema, not an honest historical artifact.
-        assert state["format_version"] == 5
-        assert previous["format_version"] == 4
-        with pytest.raises(ValueError, match="PER checkpoint key set mismatch"):
-            restored.load_from_serialized(previous)
+        # PER6 keys with old5 or old4 tags are mixed schemas, not captured history.
+        assert state["format_version"] == 6
+        assert previous["format_version"] == 5
+        for old_version in (5, 4):
+            previous["format_version"] = old_version
+            before_input = copy.deepcopy(previous)
+            with pytest.raises(ValueError, match="PER checkpoint key set mismatch"):
+                restored.load_from_serialized(previous)
+            _assert_exact_state(before_input, previous)
+            _assert_exact_state(before_live, restored.serialize())
     else:
         # Captured6 with an old5 tag is mixed schema, never an honest old artifact.
         assert state["format_version"] == 6 and previous["format_version"] == 5
@@ -692,7 +697,7 @@ def test_replay_matrix(replay_kind: ReplayKind, l1_runtime: tuple[TokenSpec, int
         _assert_exact_state(before_legacy, legacy)
 
         archived_state = archived.serialize()
-        assert archived_state["format_version"] == 5
+        assert archived_state["format_version"] == 6
         before_archived_state = copy.deepcopy(archived_state)
         archive_restored = PrioritizedReplayBuffer(capacity=16, alpha=0.6, beta=0.4, beta_annealing=True, device=CPU)
         archive_restored.load_from_serialized(archived_state)

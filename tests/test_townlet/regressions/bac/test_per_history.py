@@ -129,7 +129,7 @@ def test_per_mask_priority_alignment_and_restore(monkeypatch):
     owner.update_priorities(np.array([0, 1, 2]), torch.tensor([2.0, 4.0, 8.0]))
     push(owner, [3, 4], True)
     state = owner.serialize()
-    assert state["format_version"] == 5 and state["position"] == 2
+    assert state["format_version"] == 6 and state["position"] == 2
     assert state["observations"][:, 0].tolist() == [3.0, 4.0, 2.0]
     restored = buffer()
     restored.load_from_serialized(state)
@@ -138,7 +138,7 @@ def test_per_mask_priority_alignment_and_restore(monkeypatch):
     for current in (owner, restored):
         batch = api(current, "sample_batch")(request(3, 3))
         assert batch.sampling.indices.tolist() == [2, 0, 1]
-        assert batch.unit_ids.tolist() == [2, 0, 1]
+        assert batch.unit_ids.tolist() == [2, 3, 4]
         assert_batch(batch, [2, 3, 4])
         equal(batch.rewards_extrinsic, batch.rewards)
     batch.next_action_masks.fill_(True)

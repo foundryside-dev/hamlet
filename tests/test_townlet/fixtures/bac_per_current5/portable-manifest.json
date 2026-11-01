@@ -1,0 +1,152 @@
+{
+  "schema_version": 1,
+  "fixture_kind": "Authentic captured PER5, before T13 PER6 schema evolution",
+  "qualified_producer_commit": "07ce97550cf2f9dae67cb56d1d8014218c39d523",
+  "producer_candidate_tree": "42bf1b690f523ed2bb8bf47d12f53d00ea6cb93c",
+  "producer_files": {
+    "src/townlet/training/prioritized_replay_buffer.py": "47b0070b5e519c6703d87861da07d8971b6e466f2c3f04c7417fc58db3038c2f",
+    "src/townlet/config/bac_options.py": "10dc3ef7dc288d954147046c95bc8362df2162f3829986be26b2724e86dd4916",
+    "src/townlet/training/historical_checkpoint.py": "013fe456f867bc9b5e28ab95ee9b07e5b0fa155653abfd07de3a35159c969761"
+  },
+  "original_capture_manifest_sha256": "4344a9d269dd3ebb84e5518843c14fe5da99ac547adcd801d61b47b21f3a3536",
+  "capture_helper_sha256": "ba8bc0d6e8cd7e4c36b0d4b1df285e122abd566a80e1438ef695145e6ff317e1",
+  "historical_source": {
+    "path": "tests/test_townlet/fixtures/bac_historical/per.pt",
+    "sha256": "8b4102b02e9a6d94e31095b67a5b1bb8e57641f60f3c3658fa2cb2f313f33c30",
+    "payload_path": [
+      "population_state",
+      "replay_buffer"
+    ],
+    "archive_digest": "state-sha256:v1:e0f91ae6452cd46c4f027dae390a54daad271cf6ac53a95d2f7cf8f8cd1db5f3"
+  },
+  "procedure": [
+    "deserialize protected genuine PER4 into matching public owner; assert archive/fresh0",
+    "install retained public archive on new capacity3 owner; second owner has no archive",
+    "push_recorded rows0,1,2; finite priority update; push_recorded rows3,4 to wrap",
+    "finite asymmetric priorities; anneal_beta(10,5); exact current serialize",
+    "pure validation; fresh compatible restore; save/load; caller mutation ownership",
+    "compare all active fields across both variants; verify protected original purity"
+  ],
+  "files": {
+    "per5-captured.pt": {
+      "sha256": "9a85394d9f36cd5660fe7a6c6944d600ce18e44410b63f5beb50203fd379b296",
+      "bytes": 5422,
+      "keys": [
+        "action_dim",
+        "actions",
+        "alpha",
+        "beta",
+        "beta_annealing",
+        "beta_initial",
+        "capacity",
+        "dones",
+        "format_version",
+        "historical_archives",
+        "legality_mode",
+        "legality_recorded",
+        "max_priority",
+        "next_action_masks",
+        "next_observations",
+        "observations",
+        "position",
+        "priorities",
+        "replay_kind",
+        "rewards",
+        "rewards_extrinsic",
+        "rewards_extrinsic_present",
+        "rewards_intrinsic",
+        "rewards_intrinsic_present",
+        "rewards_shaping",
+        "rewards_shaping_present",
+        "size_current"
+      ],
+      "row_shape": [
+        3,
+        2
+      ],
+      "mask_shape": [
+        3,
+        3
+      ],
+      "physical_rows": [
+        3,
+        4,
+        2
+      ],
+      "position": 2,
+      "retained_transitions": 3,
+      "beta_initial": 0.4,
+      "beta": 0.7,
+      "priorities": [
+        3.0000009536743164,
+        5.000000953674316,
+        7.000000953674316
+      ],
+      "max_priority": 8.000000953674316,
+      "archive_count": 0
+    },
+    "per5-captured-with-per4-archive.pt": {
+      "sha256": "029558d19fdae42f14e61432af8353c1c078db554a7e3b39519d39b50dadfe60",
+      "bytes": 12588,
+      "keys": [
+        "action_dim",
+        "actions",
+        "alpha",
+        "beta",
+        "beta_annealing",
+        "beta_initial",
+        "capacity",
+        "dones",
+        "format_version",
+        "historical_archives",
+        "legality_mode",
+        "legality_recorded",
+        "max_priority",
+        "next_action_masks",
+        "next_observations",
+        "observations",
+        "position",
+        "priorities",
+        "replay_kind",
+        "rewards",
+        "rewards_extrinsic",
+        "rewards_extrinsic_present",
+        "rewards_intrinsic",
+        "rewards_intrinsic_present",
+        "rewards_shaping",
+        "rewards_shaping_present",
+        "size_current"
+      ],
+      "row_shape": [
+        3,
+        2
+      ],
+      "mask_shape": [
+        3,
+        3
+      ],
+      "physical_rows": [
+        3,
+        4,
+        2
+      ],
+      "position": 2,
+      "retained_transitions": 3,
+      "beta_initial": 0.4,
+      "beta": 0.7,
+      "priorities": [
+        3.0000009536743164,
+        5.000000953674316,
+        7.000000953674316
+      ],
+      "max_priority": 8.000000953674316,
+      "archive_count": 1
+    }
+  },
+  "limits": [
+    "no authored-world/optimizer execution",
+    "no C01 reachability",
+    "no future PER6 adapter proof",
+    "no full/postflight/CI qualification"
+  ]
+}

@@ -275,7 +275,7 @@ def test_prioritized_replay_buffer_serialize():
     # Verify beta_initial is in serialized state
     assert "beta_initial" in state
     assert state["beta_initial"] == 0.5
-    assert state["format_version"] == 5
+    assert state["format_version"] == 6
 
     # Create new buffer and restore
     new_buffer = PrioritizedReplayBuffer(
@@ -437,7 +437,7 @@ def test_prioritized_replay_buffer_unsupported_format3_rejected():
         "size_current": 0,
     }
 
-    with pytest.raises(ValueError, match="supported format_version values are 4 and 5"):
+    with pytest.raises(ValueError, match="supported format_version values are 4, 5 and 6"):
         buffer.load_from_serialized(previous_state)
 
 
@@ -450,8 +450,8 @@ def test_prioritized_replay_buffer_future_format_rejected():
         device=torch.device("cpu"),
     )
 
-    with pytest.raises(ValueError, match="supported format_version values are 4 and 5"):
-        buffer.load_from_serialized({"format_version": 6})
+    with pytest.raises(ValueError, match="format_version 7; supported format_version values are 4, 5 and 6"):
+        buffer.load_from_serialized({"format_version": 7})
 
 
 class TestCompactPrioritizedReplayCheckpointABI:
@@ -485,10 +485,28 @@ class TestCompactPrioritizedReplayCheckpointABI:
         assert sum(tensor.numel() * tensor.element_size() for tensor in pair) == 92_000_000
         assert sum(tensor.untyped_storage().nbytes() for tensor in pair) == 92_000_000
 
-    def test_serialized_state_has_exact_current_version_kind_and_keys(self):
-        state = self._buffer().serialize()
+    @pytest.mark.parametrize(
+        ("batch_sizes", "expected_ids", "expected_next_id"),
+        (
+            pytest.param((), [-1] * 10, 0, id="empty"),
+            pytest.param((3,), [0, 1, 2] + [-1] * 7, 3, id="partial"),
+            pytest.param((3, 9), [10, 11, 2, 3, 4, 5, 6, 7, 8, 9], 12, id="wrapped"),
+        ),
+    )
+    def test_serialized_state_has_exact_current_version_kind_and_keys(self, batch_sizes, expected_ids, expected_next_id):
+        buffer = self._buffer()
+        for batch_size in batch_sizes:
+            observations = torch.zeros((batch_size, 3), dtype=torch.float32)
+            buffer.push(
+                observations,
+                torch.zeros(batch_size, dtype=torch.int64),
+                _make_reward_tensor(torch.zeros(batch_size, dtype=torch.float32)),
+                observations.clone(),
+                torch.zeros(batch_size, dtype=torch.bool),
+            )
+        state = buffer.serialize()
 
-        assert state["format_version"] == 5
+        assert type(state["format_version"]) is int and state["format_version"] == 6
         assert state["replay_kind"] == "prioritized"
         assert set(state) == {
             "replay_kind",
@@ -518,9 +536,34 @@ class TestCompactPrioritizedReplayCheckpointABI:
             "rewards_extrinsic_present",
             "rewards_intrinsic_present",
             "rewards_shaping_present",
+            "unit_ids",
+            "next_unit_id",
+            "sampling_mode",
+            "sampling_origin",
+            "sampling_objective_unit",
+            "sampling_weight_rule",
+            "sampling_rng",
         }
+        for name, expected in (
+            ("sampling_mode", "successive_without_replacement"),
+            ("sampling_origin", "legacy-constructor"),
+            ("sampling_objective_unit", "transition"),
+            ("sampling_weight_rule", "successive_conditional_residual_v1"),
+        ):
+            assert type(state[name]) is str and state[name] == expected
+        assert type(state["sampling_rng"]) is dict
+        assert state["sampling_rng"] == {"ownership": "numpy_global_legacy", "bit_generator": None, "state": None}
+        unit_ids = state["unit_ids"]
+        assert isinstance(unit_ids, np.ndarray)
+        assert unit_ids.dtype == np.int64 and unit_ids.shape == (10,)
+        assert unit_ids.tolist() == expected_ids
+        assert type(state["next_unit_id"]) is int and state["next_unit_id"] == expected_next_id
+        live_ids = unit_ids[: state["size_current"]]
+        assert np.all(live_ids >= 0) and np.all(live_ids < state["next_unit_id"])
+        assert len(np.unique(live_ids)) == state["size_current"]
+        assert np.all(unit_ids[state["size_current"] :] == -1)
 
-    @pytest.mark.parametrize("invalid_version", (5.0, True))
+    @pytest.mark.parametrize("invalid_version", (5.0, 6.0, True))
     def test_format_version_requires_an_exact_integer(self, invalid_version: object):
         buffer = self._buffer(capacity=10)
         state = buffer.serialize()
@@ -528,7 +571,7 @@ class TestCompactPrioritizedReplayCheckpointABI:
         before = buffer.serialize()
         frozen = copy.deepcopy(state)
 
-        with pytest.raises(ValueError, match="supported format_version values are 4 and 5"):
+        with pytest.raises(ValueError, match="supported format_version values are 4, 5 and 6"):
             buffer.load_from_serialized(state)
 
         _assert_state_equal(buffer.serialize(), before)
@@ -589,7 +632,7 @@ class TestCompactPrioritizedReplayCheckpointABI:
         before = buffer.serialize()
         frozen = copy.deepcopy(state)
 
-        with pytest.raises(ValueError, match="supported format_version values are 4 and 5"):
+        with pytest.raises(ValueError, match="supported format_version values are 4, 5 and 6"):
             buffer.validate_serialized(state, expected_obs_dim=3)
 
         _assert_state_equal(buffer.serialize(), before)
@@ -636,7 +679,7 @@ class TestCompactPrioritizedReplayCheckpointABI:
         previous = dict(before)
         previous["format_version"] = 3
 
-        with pytest.raises(ValueError, match=r"format_version 3.*supported format_version values are 4 and 5"):
+        with pytest.raises(ValueError, match=r"format_version 3.*supported format_version values are 4, 5 and 6"):
             buffer.load_from_serialized(previous)
 
         _assert_state_equal(before, buffer.serialize())

@@ -1048,7 +1048,7 @@ class TestPopulationCheckpointSchema:
         checkpoint = population.get_checkpoint_state()
         assert checkpoint["version"] == 6
         replay_state = checkpoint["replay_buffer"]
-        assert replay_state["format_version"] == 5
+        assert replay_state["format_version"] == 6
         assert replay_state["replay_kind"] == "prioritized"
         replay_state["replay_kind"] = "standard"
         before = _population_runtime_snapshot(population)

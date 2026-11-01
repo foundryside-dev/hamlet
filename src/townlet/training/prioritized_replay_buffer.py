@@ -1,12 +1,14 @@
-"""Prioritized replay with owned successor legality and isolated old history.
+"""Prioritized replay with matching estimators, stable handles and owned history.
 
-The legacy sampler law/weights are preserved; qualified receipts name that law
-honestly. Estimator correction and overwrite-stable sampler handles belong to
-T13. Historical maskless artifacts never supply active rows or priorities.
+Legacy sample/update addresses immediate physical slots on the external NumPy
+stream. Qualified batches use persisted sampler configuration and monotonic
+IDs scoped to this buffer/checkpoint history. Exact captured5 adapts to6 without
+losing active legality; maskless4 remains isolated archival history.
 """
 
 from __future__ import annotations
 
+import copy
 import math
 from collections.abc import Mapping
 from dataclasses import dataclass
@@ -16,6 +18,7 @@ import numpy as np
 import torch
 
 from townlet.training import historical_checkpoint as history
+from townlet.training import per_sampling
 from townlet.training.replay_contract import (
     HistoricalLegalityUnavailable,
     ReplayBatch,
@@ -28,7 +31,7 @@ from townlet.training.replay_contract import (
 if TYPE_CHECKING:
     from townlet.training.state import RewardTensor
 
-PRIORITIZED_REPLAY_BUFFER_FORMAT_VERSION = 5
+PRIORITIZED_REPLAY_BUFFER_FORMAT_VERSION = 6
 PRIORITIZED_REPLAY_BUFFER_KIND = "prioritized"
 _COMPONENTS = ("rewards_extrinsic", "rewards_intrinsic", "rewards_shaping")
 _PRESENCE_FIELDS = tuple(f"{name}_present" for name in _COMPONENTS)
@@ -50,7 +53,7 @@ _LEGACY_STATE_KEYS = frozenset(
         *_PER_TENSOR_FIELDS,
     }
 )
-PRIORITIZED_REPLAY_BUFFER_STATE_KEYS = _LEGACY_STATE_KEYS | {
+_CAPTURED_STATE_KEYS = _LEGACY_STATE_KEYS | {
     "action_dim",
     "legality_mode",
     "historical_archives",
@@ -58,6 +61,32 @@ PRIORITIZED_REPLAY_BUFFER_STATE_KEYS = _LEGACY_STATE_KEYS | {
     "legality_recorded",
     *_PRESENCE_FIELDS,
 }
+PRIORITIZED_REPLAY_BUFFER_STATE_KEYS = _CAPTURED_STATE_KEYS | {
+    "unit_ids",
+    "next_unit_id",
+    "sampling_mode",
+    "sampling_origin",
+    "sampling_objective_unit",
+    "sampling_weight_rule",
+    "sampling_rng",
+}
+_MAX_UNIT_COUNTER = 2**63 - 1
+_BIT_GENERATORS: dict[str, type[np.random.BitGenerator]] = {
+    "PCG64": np.random.PCG64,
+    "PCG64DXSM": np.random.PCG64DXSM,
+    "MT19937": np.random.MT19937,
+    "Philox": np.random.Philox,
+    "SFC64": np.random.SFC64,
+}
+
+
+@dataclass(frozen=True)
+class _SamplerConfiguration:
+    mode: str
+    origin: str
+    objective_unit: str
+    weight_rule: str
+    rng: np.random.Generator | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -115,6 +144,9 @@ class _ValidatedPrioritizedState(_PrioritizedRows):
     legality_mode: str
     archives: tuple[history.HistoricalReplayArchive, ...]
     legacy_state: Mapping[str, Any] | None
+    unit_ids: np.ndarray
+    next_unit_id: int
+    sampler: _SamplerConfiguration
 
 
 @dataclass(frozen=True)
@@ -127,6 +159,9 @@ class _PrioritizedRestoreCandidate(_PrioritizedRows):
     action_dim: int | None
     legality_mode: str
     archives: tuple[history.HistoricalReplayArchive, ...]
+    unit_ids: np.ndarray
+    next_unit_id: int
+    sampler: _SamplerConfiguration
 
 
 class PrioritizedReplayBuffer:
@@ -154,6 +189,145 @@ class PrioritizedReplayBuffer:
         self.priorities = np.zeros(capacity, dtype=np.float32)
         self.max_priority = 1.0
         self.position = self.size_current = 0
+        self.unit_ids = np.full(capacity, -1, dtype=np.int64)
+        self.next_unit_id = 0
+        self._id_to_slot: dict[int, int] = {}
+        self._sampler = self._external_sampler("legacy-constructor")
+
+    @staticmethod
+    def _external_sampler(origin: str) -> _SamplerConfiguration:
+        mode = per_sampling.SUCCESSIVE
+        return _SamplerConfiguration(mode, origin, "transition", per_sampling.WEIGHT_RULES[mode], None)
+
+    def configure_sampling(self, *, sampling_mode: str, rng: np.random.Generator, origin: str) -> None:
+        """Own an explicit configured Generator without advancing the caller's RNG."""
+        if not isinstance(rng, np.random.Generator):
+            raise ValueError("PER configure_sampling requires an explicit numpy.random.Generator")
+        state = {
+            "sampling_mode": sampling_mode,
+            "sampling_origin": origin,
+            "sampling_objective_unit": "transition",
+            "sampling_weight_rule": per_sampling.WEIGHT_RULES.get(sampling_mode) if isinstance(sampling_mode, str) else None,
+            "sampling_rng": {
+                "ownership": "owned_numpy_generator",
+                "bit_generator": type(rng.bit_generator).__name__,
+                "state": copy.deepcopy(rng.bit_generator.state),
+            },
+        }
+        sampler = self._validate_sampler(state)
+        self._sampler = sampler
+
+    @staticmethod
+    def _closed_mapping(value: object, keys: tuple[str, ...], field: str) -> Mapping[str, Any]:
+        if not isinstance(value, Mapping) or set(value) != set(keys):
+            raise ValueError(f"PER {field} has an invalid closed key set")
+        return value
+
+    @classmethod
+    def _restore_generator(cls, kind: str, raw: object) -> np.random.Generator:
+        """Validate known engine state, then install it on an off-side engine."""
+        if type(kind) is not str or kind not in _BIT_GENERATORS:
+            raise ValueError("PER sampling_rng bit_generator kind is unsupported")
+        keys: tuple[str, ...]
+        if kind == "MT19937":
+            keys = ("bit_generator", "state")
+        elif kind == "Philox":
+            keys = ("bit_generator", "state", "buffer", "buffer_pos", "has_uint32", "uinteger")
+        else:
+            keys = ("bit_generator", "state", "has_uint32", "uinteger")
+        state = cls._closed_mapping(raw, keys, "sampling_rng.state")
+        if type(state["bit_generator"]) is not str or state["bit_generator"] != kind:
+            raise ValueError("PER sampling_rng engine kind disagrees with its state")
+
+        def array(value: object, dtype: np.dtype, shape: tuple[int, ...], field: str) -> None:
+            if not isinstance(value, np.ndarray) or value.dtype != dtype or value.shape != shape:
+                raise ValueError(f"PER sampling_rng {field} dtype/shape is invalid")
+
+        if kind in ("PCG64", "PCG64DXSM"):
+            nested = cls._closed_mapping(state["state"], ("state", "inc"), "sampling_rng.state.state")
+            cls._require_int(nested["state"], "sampling_rng.state.state.state", minimum=0, maximum=2**128 - 1)
+            increment = cls._require_int(nested["inc"], "sampling_rng.state.state.inc", minimum=1, maximum=2**128 - 1)
+            if increment % 2 != 1:
+                raise ValueError("PER sampling_rng PCG increment must be odd")
+        elif kind == "MT19937":
+            nested = cls._closed_mapping(state["state"], ("key", "pos"), "sampling_rng.state.state")
+            array(nested["key"], np.dtype(np.uint32), (624,), "MT19937 key")
+            if not np.any(nested["key"]):
+                raise ValueError("PER sampling_rng MT19937 key cannot be all zero")
+            cls._require_int(nested["pos"], "sampling_rng.state.state.pos", minimum=0, maximum=624)
+        elif kind == "Philox":
+            nested = cls._closed_mapping(state["state"], ("counter", "key"), "sampling_rng.state.state")
+            array(nested["counter"], np.dtype(np.uint64), (4,), "Philox counter")
+            array(nested["key"], np.dtype(np.uint64), (2,), "Philox key")
+            array(state["buffer"], np.dtype(np.uint64), (4,), "Philox buffer")
+            cls._require_int(state["buffer_pos"], "sampling_rng.state.buffer_pos", minimum=0, maximum=4)
+        else:
+            nested = cls._closed_mapping(state["state"], ("state",), "sampling_rng.state.state")
+            array(nested["state"], np.dtype(np.uint64), (4,), "SFC64 state")
+        if kind != "MT19937":
+            cls._require_int(state["has_uint32"], "sampling_rng.state.has_uint32", minimum=0, maximum=1)
+            cls._require_int(state["uinteger"], "sampling_rng.state.uinteger", minimum=0, maximum=2**32 - 1)
+        # Zero is an explicit restore-only placeholder, immediately replaced by
+        # the complete validated saved state. No draw uses this placeholder.
+        engine = _BIT_GENERATORS[kind](0)
+        try:
+            engine.state = copy.deepcopy(dict(state))
+        except (ValueError, TypeError, OverflowError) as error:
+            raise ValueError(f"PER sampling_rng {kind} state is invalid") from error
+        return np.random.Generator(engine)
+
+    @classmethod
+    def _validate_sampler(cls, state: Mapping[str, Any]) -> _SamplerConfiguration:
+        mode, origin = state["sampling_mode"], state["sampling_origin"]
+        if type(mode) is not str or mode not in per_sampling.WEIGHT_RULES:
+            raise ValueError("PER sampling_mode is unsupported")
+        if type(origin) is not str or origin not in ("authored", "bac-options-v1", "legacy-constructor", "captured5-physical-slot-adapter"):
+            raise ValueError("PER sampling_origin is unsupported")
+        if type(state["sampling_objective_unit"]) is not str or state["sampling_objective_unit"] != "transition":
+            raise ValueError("PER sampling_objective_unit must be transition")
+        if type(state["sampling_weight_rule"]) is not str or state["sampling_weight_rule"] != per_sampling.WEIGHT_RULES[mode]:
+            raise ValueError("PER sampling_weight_rule contradicts sampling_mode")
+        descriptor = cls._closed_mapping(state["sampling_rng"], ("ownership", "bit_generator", "state"), "sampling_rng")
+        ownership = descriptor["ownership"]
+        if type(ownership) is not str:
+            raise ValueError("PER sampling_rng ownership must be a string")
+        if ownership == "numpy_global_legacy":
+            if (
+                mode != per_sampling.SUCCESSIVE
+                or origin not in ("legacy-constructor", "captured5-physical-slot-adapter")
+                or descriptor["bit_generator"] is not None
+                or descriptor["state"] is not None
+            ):
+                raise ValueError("PER external-global sampler ownership/configuration contradicts its metadata")
+            rng = None
+        elif ownership == "owned_numpy_generator":
+            if origin not in ("authored", "bac-options-v1"):
+                raise ValueError("PER owned Generator requires authored or bac-options-v1 origin")
+            rng = cls._restore_generator(descriptor["bit_generator"], descriptor["state"])
+        else:
+            raise ValueError("PER sampling_rng ownership is unsupported")
+        return _SamplerConfiguration(mode, origin, "transition", per_sampling.WEIGHT_RULES[mode], rng)
+
+    @staticmethod
+    def _sampler_metadata(sampler: _SamplerConfiguration) -> dict[str, Any]:
+        descriptor: dict[str, Any] = {"ownership": "numpy_global_legacy", "bit_generator": None, "state": None}
+        if sampler.rng is not None:
+            descriptor = {
+                "ownership": "owned_numpy_generator",
+                "bit_generator": type(sampler.rng.bit_generator).__name__,
+                "state": copy.deepcopy(sampler.rng.bit_generator.state),
+            }
+        return {
+            "sampling_mode": sampler.mode,
+            "sampling_origin": sampler.origin,
+            "sampling_objective_unit": sampler.objective_unit,
+            "sampling_weight_rule": sampler.weight_rule,
+            "sampling_rng": descriptor,
+        }
+
+    @classmethod
+    def _clone_sampler(cls, sampler: _SamplerConfiguration) -> _SamplerConfiguration:
+        return cls._validate_sampler(cls._sampler_metadata(sampler))
 
     @property
     def retained_transitions(self) -> int:
@@ -280,6 +454,17 @@ class PrioritizedReplayBuffer:
         self.next_action_masks, self.legality_recorded = masks, recorded
         self.action_dim, self.legality_mode = action_dim, "recorded"
 
+    @staticmethod
+    def _insertion_priority(maximum: float) -> np.float32:
+        """Validate the actual storage conversion, without changing saved metadata."""
+        if not math.isfinite(maximum) or maximum <= 0:
+            raise ValueError("PER max_priority must be finite and positive for insertion")
+        with np.errstate(over="ignore", under="ignore", invalid="ignore"):
+            priority = np.float32(maximum)
+        if not np.isfinite(priority) or priority <= 0:
+            raise ValueError("PER max_priority must convert to a positive finite float32 insertion priority")
+        return priority
+
     def _push(self, observations, actions, rewards, next_observations, dones, masks) -> None:
         batch_size = self._validate_push(observations, actions, rewards, next_observations, dones)
         action_dim = self.action_dim
@@ -294,6 +479,9 @@ class PrioritizedReplayBuffer:
                 raise ValueError("existing unconstrained actions exceed the supplied action vocabulary")
         if not batch_size:
             return
+        if self.next_unit_id > _MAX_UNIT_COUNTER - batch_size:
+            raise OverflowError("PER unit ID counter exhausted before insertion")
+        insertion_priority = self._insertion_priority(self.max_priority)
         values = {
             "observations": observations,
             "actions": actions,
@@ -315,41 +503,64 @@ class PrioritizedReplayBuffer:
         for name, value in moved.items():
             if storage[name] is None:
                 storage[name] = torch.zeros((self.capacity, *value.shape[1:]), dtype=value.dtype, device=self.device)
+        physical = (np.arange(batch_size, dtype=np.int64) + self.position) % self.capacity
+        indices = torch.from_numpy(physical.copy()).to(self.device)
+        priorities, unit_ids = self.priorities.copy(), self.unit_ids.copy()
+        priorities[physical] = insertion_priority
+        unit_ids[physical] = np.arange(self.next_unit_id, self.next_unit_id + batch_size, dtype=np.int64)
+        size = min(self.size_current + batch_size, self.capacity)
+        # A valid Python maximum may round upward when stored. Preserve it at
+        # restore, then cover all actual committed priorities after insertion.
+        maximum = max(self.max_priority, float(priorities[:size].max()))
+        reverse = self._id_to_slot.copy()
+        for slot in physical:
+            previous = int(self.unit_ids[slot])
+            if previous >= 0:
+                reverse.pop(previous)
+            reverse[int(unit_ids[slot])] = int(slot)
         if action_dim is not None and self.action_dim is None and self.size_current:
             storage["next_action_masks"][: self.size_current].fill_(True)
             storage["legality_recorded"][: self.size_current].fill_(True)
-        indices = (torch.arange(batch_size, device=self.device) + self.position) % self.capacity
         for name, value in moved.items():
             storage[name][indices] = value
         for name, value in storage.items():
             setattr(self, name, value)
-        self.priorities[indices.cpu().numpy()] = self.max_priority
+        self.priorities, self.unit_ids, self._id_to_slot = priorities, unit_ids, reverse
+        self.max_priority = maximum
+        self.next_unit_id += batch_size
         self.position = (self.position + batch_size) % self.capacity
-        self.size_current = min(self.size_current + batch_size, self.capacity)
+        self.size_current = size
         self.action_dim = action_dim
         if action_dim is None:
             self.legality_mode = "unconstrained"
         else:
             self.legality_mode = "recorded"
 
-    def _draw(self, batch_size: int):
-        if batch_size <= 0:
-            raise ValueError(f"batch_size must be positive, got {batch_size}")
-        if batch_size > self.capacity:
-            raise ValueError(f"batch_size ({batch_size}) exceeds buffer capacity ({self.capacity})")
-        if self.size_current < batch_size:
-            raise ValueError(f"Buffer size ({self.size_current}) < batch_size ({batch_size})")
-        priorities = self.priorities[: self.size_current]
-        probs = priorities**self.alpha
-        probs /= probs.sum()
-        indices = np.random.choice(self.size_current, batch_size, p=probs, replace=False)
-        weights = (self.size_current * probs[indices]) ** (-self.beta)
-        weights /= weights.max()
-        return indices, weights, probs
+    def _draw(self, batch_size: int) -> SamplingReceipt:
+        return per_sampling.sample_legacy_units(
+            self.priorities[: self.size_current].astype(np.float64), alpha=self.alpha, beta=self.beta, batch_size=batch_size
+        )
 
     def sample(self, batch_size: int) -> dict:
-        """Keep the original successive draw and batch-max-normalized legacy weights."""
-        indices, weights, _ = self._draw(batch_size)
+        """Global NumPy successive sampling with physical indices and float32 weights."""
+        if (
+            not isinstance(batch_size, (bool, np.bool_))
+            and isinstance(batch_size, (int, np.integer))
+            and batch_size > 0
+            and self.size_current < batch_size
+        ):
+            raise ValueError(f"Buffer size ({self.size_current}) < batch_size ({batch_size})")
+        receipt = per_sampling.sample_legacy_float32_units(
+            self.priorities[: self.size_current].astype(np.float64), alpha=self.alpha, beta=self.beta, batch_size=batch_size
+        )
+        indices = receipt.indices.copy()
+        # Retain the existing dictionary dtype without silently overflowing a
+        # mathematically valid float64 correction at this narrower boundary.
+        with np.errstate(over="ignore", under="ignore"):
+            weights = receipt.weights.astype(np.float32)
+        if not np.isfinite(weights).all() or np.any(weights <= 0):
+            position = int(np.flatnonzero(~np.isfinite(weights) | (weights <= 0))[0])
+            raise ValueError(f"PER legacy sample weight at physical index {indices[position]} is not positive finite representable float32")
         selected = torch.tensor(indices, dtype=torch.long, device=self.device)
         result = {name: getattr(self, name)[selected] for name in ("observations", "actions", "rewards", "next_observations", "dones")}
         result.update(weights=torch.tensor(weights, dtype=torch.float32, device=self.device), indices=indices)
@@ -359,15 +570,15 @@ class PrioritizedReplayBuffer:
             result["legality_recorded"] = self.legality_recorded[selected]
         return result
 
-    @staticmethod
-    def _check_request(request: ReplayRequest) -> None:
+    def _check_request(self, request: ReplayRequest) -> None:
         if not isinstance(request, ReplayRequest) or (
-            request.sampling_mode,
             request.sequence_mode,
             request.sequence_objective,
             request.sequence_length,
-        ) != ("successive_without_replacement", "feedforward", "transition", 1):
-            raise ValueError("prioritized replay supports flat successive_without_replacement transitions")
+        ) != ("feedforward", "transition", 1):
+            raise ValueError("prioritized replay supports flat transition requests")
+        if request.sampling_mode != self._sampler.mode:
+            raise ValueError("PER request sampling_mode differs from configured mode; use configure_sampling explicitly")
 
     def readiness(self, request: ReplayRequest) -> ReplayReadiness:
         self._check_request(request)
@@ -380,7 +591,7 @@ class PrioritizedReplayBuffer:
             sampleable = 0
         if self.size_current < request.min_transitions:
             return ReplayReadiness(False, self.size_current, sampleable, "warmup")
-        if sampleable < request.batch_size:
+        if not sampleable or (request.sampling_mode == per_sampling.SUCCESSIVE and sampleable < request.batch_size):
             return ReplayReadiness(False, self.size_current, sampleable, "batch_unavailable")
         return ReplayReadiness(True, self.size_current, sampleable, "ready")
 
@@ -391,23 +602,18 @@ class PrioritizedReplayBuffer:
                 f"prioritized replay unavailable: {ready.reason}; "
                 f"retained={ready.retained_transitions}, sampleable={ready.sampleable_units}"
             )
-        indices, old_weights, probs = self._draw(request.batch_size)
-        weights = old_weights.astype(np.float64)
-        # NumPy chooses ordered residual proposals. Report those, not initial marginals.
-        remaining = probs.astype(np.float64)
-        conditional = np.empty(request.batch_size, dtype=np.float64)
-        for position, index in enumerate(indices):
-            conditional[position] = remaining[index] / remaining.sum()
-            remaining[index] = 0
-        receipt = SamplingReceipt(
-            indices.astype(np.int64),
-            weights,
-            self.size_current,
-            conditional,
-            request.sampling_mode,
-            "transition",
-            "legacy_initial_probability_batch_max_normalized",
-        )
+        if self._sampler.rng is None:
+            receipt = self._draw(request.batch_size)
+        else:
+            receipt = per_sampling.sample_units(
+                self.priorities[: self.size_current].astype(np.float64),
+                alpha=self.alpha,
+                beta=self.beta,
+                batch_size=request.batch_size,
+                mode=self._sampler.mode,
+                rng=self._sampler.rng,
+            )
+        indices, weights = receipt.indices, receipt.weights
         selected = torch.tensor(indices, dtype=torch.int64, device=self.device)
         components: dict[str, Any] = {}
         for name in _COMPONENTS:
@@ -424,17 +630,67 @@ class PrioritizedReplayBuffer:
             },
             loss_mask=torch.ones(request.batch_size, dtype=torch.bool, device=self.device),
             lengths=torch.ones(request.batch_size, dtype=torch.int64, device=self.device),
-            unit_ids=selected,
+            unit_ids=torch.from_numpy(self.unit_ids[indices].copy()).to(self.device),
             weights=torch.from_numpy(weights.copy()).to(self.device),
             sampling=receipt,
             **components,
         )
 
     def update_priorities(self, indices: np.ndarray, td_errors: torch.Tensor) -> None:
-        td_errors_np = td_errors.detach().cpu().numpy()
-        for idx, td_error in zip(indices, td_errors_np):
-            self.priorities[idx] = abs(td_error) + 1e-6
-        self.max_priority = max(self.max_priority, float(self.priorities[: self.size_current].max()))
+        """Update immediate physical slots; durable callers use stable unit IDs."""
+        priorities, maximum = self._prepare_priority_update(indices, td_errors, stable=False)
+        self.priorities, self.max_priority = priorities, maximum
+
+    def update_unit_priorities(self, unit_ids: np.ndarray, td_errors: torch.Tensor) -> None:
+        """Reject retired IDs rather than updating a new occupant of their slot."""
+        priorities, maximum = self._prepare_priority_update(unit_ids, td_errors, stable=True)
+        self.priorities, self.max_priority = priorities, maximum
+
+    def _prepare_priority_update(self, indices: np.ndarray, td_errors: torch.Tensor, *, stable: bool) -> tuple[np.ndarray, float]:
+        if stable:
+            field = "unit_ids"
+        else:
+            field = "indices"
+        if not isinstance(indices, np.ndarray) or indices.ndim != 1 or indices.dtype.kind not in "iu":
+            raise ValueError(f"PER {field} must be a one-dimensional integer array")
+        if stable and indices.dtype != np.int64:
+            raise ValueError("PER unit_ids must have dtype int64")
+        if not isinstance(td_errors, torch.Tensor) or td_errors.ndim != 1 or td_errors.shape != indices.shape or td_errors.is_complex():
+            raise ValueError(f"PER td_errors shape/length must match {field} and contain real values")
+        values = td_errors.detach().to(device="cpu", dtype=torch.float64).numpy()
+        if not np.isfinite(values).all():
+            position = int(np.flatnonzero(~np.isfinite(values))[0])
+            raise ValueError(f"PER td_errors at {field}[{position}]={indices[position]} is not finite")
+        slots = []
+        for position, raw in enumerate(indices):
+            index = int(raw)
+            if stable:
+                if index not in self._id_to_slot:
+                    raise ValueError(f"PER stale or unknown unit ID {index} at unit_ids[{position}]")
+                slots.append(self._id_to_slot[index])
+            else:
+                if not 0 <= index < self.size_current:
+                    raise ValueError(f"PER indices[{position}]={index} is outside the active physical slots")
+                slots.append(index)
+        with np.errstate(over="ignore", invalid="ignore"):
+            candidates = (np.abs(values) + 1e-6).astype(np.float32)
+        invalid = np.flatnonzero(~np.isfinite(candidates) | (candidates <= 0))
+        if invalid.size:
+            position = int(invalid[0])
+            raise ValueError(f"PER priority at {field}[{position}]={indices[position]} is not positive finite representable float32")
+        reduced: dict[int, float] = {}
+        for slot, priority in zip(slots, candidates, strict=True):
+            if slot in reduced:
+                reduced[slot] = max(reduced[slot], float(priority))
+            else:
+                reduced[slot] = float(priority)
+        priorities = self.priorities.copy()
+        for slot, priority in reduced.items():
+            priorities[slot] = priority
+        maximum = self.max_priority
+        if reduced:
+            maximum = max(maximum, max(reduced.values()))
+        return priorities, maximum
 
     def anneal_beta(self, total_steps: int, current_step: int) -> None:
         if self.beta_annealing:
@@ -451,11 +707,14 @@ class PrioritizedReplayBuffer:
 
     def clear(self) -> None:
         """Clear active storage, keeping archives and the current annealed beta."""
+        priorities = np.zeros(self.capacity, dtype=np.float32)
+        unit_ids = np.full(self.capacity, -1, dtype=np.int64)
+        reverse: dict[int, int] = {}
         self.size_current = self.position = 0
         for name in _STORAGE_FIELDS:
             setattr(self, name, None)
         self.action_dim, self.legality_mode = None, "unconstrained"
-        self.priorities = np.zeros(self.capacity, dtype=np.float32)
+        self.priorities, self.unit_ids, self._id_to_slot = priorities, unit_ids, reverse
         self.max_priority = 1.0
 
     def stats(self) -> dict[str, Any]:
@@ -489,6 +748,9 @@ class PrioritizedReplayBuffer:
             "action_dim": None if empty else self.action_dim,
             "legality_mode": "unconstrained" if empty else self.legality_mode,
             "historical_archives": [history._record(archive) for archive in self._historical_archives],
+            "unit_ids": self.unit_ids.copy(),
+            "next_unit_id": self.next_unit_id,
+            **self._sampler_metadata(self._sampler),
         }
         for name in _STORAGE_FIELDS:
             value = getattr(self, name)
@@ -534,15 +796,30 @@ class PrioritizedReplayBuffer:
             raise ValueError(f"PER checkpoint {field} must contain only finite values. Regenerate the checkpoint.")
         return value.detach().clone()
 
+    @classmethod
+    def _validate_identity(cls, state: Mapping[str, Any], capacity: int, size: int) -> tuple[np.ndarray, int]:
+        unit_ids = state["unit_ids"]
+        if not isinstance(unit_ids, np.ndarray) or unit_ids.dtype != np.int64 or unit_ids.shape != (capacity,):
+            raise ValueError("PER unit_ids must be a capacity-length int64 array")
+        counter = cls._require_int(state["next_unit_id"], "next_unit_id", minimum=0, maximum=_MAX_UNIT_COUNTER)
+        live = unit_ids[:size]
+        if np.any(live < 0) or np.any(live >= counter) or len(np.unique(live)) != size:
+            raise ValueError("PER live unit_ids must be unique nonnegative IDs strictly below next_unit_id")
+        if np.any(unit_ids[size:] != -1):
+            raise ValueError("PER inactive unit_ids must use -1")
+        return unit_ids.copy(), counter
+
     def _validate_serialized(self, state: Mapping[str, Any], *, expected_obs_dim: int | None) -> _ValidatedPrioritizedState:
         if not isinstance(state, Mapping):
             raise ValueError(f"Prioritized replay checkpoint payload must be a mapping; got {type(state).__name__}.")
         version = state.get("format_version")
-        if type(version) is not int or version not in (4, PRIORITIZED_REPLAY_BUFFER_FORMAT_VERSION):
-            raise ValueError(f"Cannot load PER checkpoint with format_version {version!r}; supported format_version values are 4 and 5.")
+        if type(version) is not int or version not in (4, 5, PRIORITIZED_REPLAY_BUFFER_FORMAT_VERSION):
+            raise ValueError(f"Cannot load PER checkpoint with format_version {version!r}; supported format_version values are 4, 5 and 6.")
         legacy = version == 4
         if legacy:
             expected_keys = _LEGACY_STATE_KEYS
+        elif version == 5:
+            expected_keys = _CAPTURED_STATE_KEYS
         else:
             expected_keys = PRIORITIZED_REPLAY_BUFFER_STATE_KEYS
         if state.get("replay_kind") != PRIORITIZED_REPLAY_BUFFER_KIND:
@@ -598,6 +875,8 @@ class PrioritizedReplayBuffer:
         maximum = self._require_float(state["max_priority"], "max_priority", minimum=0.0, maximum=float("inf"))
         if maximum <= 0:
             raise ValueError("PER checkpoint max_priority must be positive. Regenerate the checkpoint.")
+        if not legacy:
+            self._insertion_priority(maximum)
         if size and maximum < float(priorities[:size].max()):
             raise ValueError("PER checkpoint max_priority is below an active priority. Regenerate the checkpoint.")
         geometry: int | None = None
@@ -691,6 +970,20 @@ class PrioritizedReplayBuffer:
                     tensors["next_action_masks"] = masks
                 elif state["next_action_masks"] is not None or bool(recorded.any()):
                     raise ValueError("Unconstrained PER cannot claim recorded masks or partial capture")
+        if version == 6:
+            unit_ids, counter = self._validate_identity(state, capacity, size)
+            sampler = self._validate_sampler(state)
+        else:
+            unit_ids = np.full(capacity, -1, dtype=np.int64)
+            if legacy:
+                # This import starts fresh active replay under the current
+                # configured owner, without reissuing the target's retired IDs.
+                counter, sampler = self.next_unit_id, self._clone_sampler(self._sampler)
+            else:
+                # Captured5 has legality but predates handles/private RNG. Its
+                # explicit history boundary deterministically names live slots.
+                unit_ids[:size] = np.arange(size, dtype=np.int64)
+                counter, sampler = size, self._external_sampler("captured5-physical-slot-adapter")
         return _ValidatedPrioritizedState(
             **tensors,
             beta=beta,
@@ -703,6 +996,9 @@ class PrioritizedReplayBuffer:
             legality_mode=mode,
             archives=archives,
             legacy_state=history._clone(state) if legacy else None,
+            unit_ids=unit_ids,
+            next_unit_id=counter,
+            sampler=sampler,
         )
 
     def _materialize_serialized(self, state: _ValidatedPrioritizedState) -> _PrioritizedRestoreCandidate:
@@ -720,6 +1016,9 @@ class PrioritizedReplayBuffer:
                 action_dim=None,
                 legality_mode="unconstrained",
                 archives=self._merge_archives((archive,)),
+                unit_ids=state.unit_ids.copy(),
+                next_unit_id=state.next_unit_id,
+                sampler=self._clone_sampler(state.sampler),
             )
         storage: dict[str, torch.Tensor | None] = {}
         for name in _STORAGE_FIELDS:
@@ -743,6 +1042,9 @@ class PrioritizedReplayBuffer:
             action_dim=state.action_dim,
             legality_mode=state.legality_mode,
             archives=self._merge_archives(state.archives),
+            unit_ids=state.unit_ids.copy(),
+            next_unit_id=state.next_unit_id,
+            sampler=self._clone_sampler(state.sampler),
         )
 
     def _prepare_serialized(self, state: Mapping[str, Any], *, expected_obs_dim: int | None) -> _PrioritizedRestoreCandidate:
@@ -762,11 +1064,18 @@ class PrioritizedReplayBuffer:
         if not isinstance(candidate, _PrioritizedRestoreCandidate):
             raise ValueError("PER installation requires a prepared restore candidate")
         archives = self._merge_archives(candidate.archives)
-        for name in _STORAGE_FIELDS:
-            setattr(self, name, getattr(candidate, name))
-        self.beta, self.priorities, self.max_priority = candidate.beta, candidate.priorities, candidate.max_priority
+        # Clone every fallible owned resource before assigning any live field.
+        storage = {name: None if (value := getattr(candidate, name)) is None else value.detach().clone() for name in _STORAGE_FIELDS}
+        priorities, unit_ids = candidate.priorities.copy(), candidate.unit_ids.copy()
+        reverse = {int(unit): slot for slot, unit in enumerate(unit_ids[: candidate.size_current])}
+        sampler = self._clone_sampler(candidate.sampler)
+        for name, value in storage.items():
+            setattr(self, name, value)
+        self.beta, self.priorities, self.max_priority = candidate.beta, priorities, candidate.max_priority
         self.position, self.size_current = candidate.position, candidate.size_current
         self.action_dim, self.legality_mode = candidate.action_dim, candidate.legality_mode
+        self.unit_ids, self.next_unit_id, self._id_to_slot = unit_ids, candidate.next_unit_id, reverse
+        self._sampler = sampler
         self._historical_archives = archives
 
     def load_for_mode(self, state: Mapping[str, Any], *, requested_mode: history.AccessMode) -> None:

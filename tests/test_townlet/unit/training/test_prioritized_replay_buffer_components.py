@@ -1,8 +1,8 @@
-"""Tests for current PER5 reward components and unsupported artifact refusal.
+"""Tests for current PER6 reward components and unsupported artifact refusal.
 
 Task 5 from docs/plans/2025-11-28-reward-tensor-wiring-implementation.md:
 - Component storage and retrieval
-- Current captured format_version 5 serialization
+- Current captured format_version 6 serialization
 - Rejection of unsupported versions; exact4 retains approved archival access
 """
 
@@ -165,10 +165,10 @@ class TestRewardComponentStorage:
             assert state[f"rewards_{component}_present"].tolist() == [False]
 
 
-class TestSerializationFormatVersion5:
+class TestSerializationFormatVersion6:
     """Test current PER serialization without reactivating archived history."""
 
-    def test_serialize_empty_buffer_has_version_5(self):
+    def test_serialize_empty_buffer_has_version_6(self):
         """Empty current PER buffer retains null unallocated components."""
         buffer = PrioritizedReplayBuffer(
             capacity=10,
@@ -179,7 +179,7 @@ class TestSerializationFormatVersion5:
         )
         state = buffer.serialize()
 
-        assert state["format_version"] == 5
+        assert state["format_version"] == 6
         assert state["size_current"] == 0
         assert state["rewards_extrinsic"] is None
         assert state["rewards_intrinsic"] is None
@@ -215,7 +215,7 @@ class TestSerializationFormatVersion5:
 
         state = buffer.serialize()
 
-        assert state["format_version"] == 5
+        assert state["format_version"] == 6
         assert state["size_current"] == 5
         assert state["rewards_extrinsic"] is not None
         assert state["rewards_intrinsic"] is not None
@@ -273,7 +273,7 @@ class TestSerializationFormatVersion5:
 
         assert buffer2.size_current == 5
         restored = buffer2.serialize()
-        assert restored["format_version"] == 5 and restored["action_dim"] == 4
+        assert restored["format_version"] == 6 and restored["action_dim"] == 4
         assert restored["historical_archives"] == []
         assert torch.equal(restored["next_action_masks"], state["next_action_masks"])
         assert torch.equal(restored["legality_recorded"], state["legality_recorded"])
@@ -317,7 +317,7 @@ class TestLegacyFormatRejection:
             "size_current": 5,
         }
 
-        with pytest.raises(ValueError, match="supported format_version values are 4 and 5"):
+        with pytest.raises(ValueError, match="supported format_version values are 4, 5 and 6"):
             buffer.load_from_serialized(old_format)
 
     def test_load_format_version_1_raises_error(self):
@@ -349,7 +349,7 @@ class TestLegacyFormatRejection:
             "size_current": 5,
         }
 
-        with pytest.raises(ValueError, match="supported format_version values are 4 and 5"):
+        with pytest.raises(ValueError, match="supported format_version values are 4, 5 and 6"):
             buffer.load_from_serialized(legacy_format)
 
     def test_load_missing_format_version_raises_error(self):
@@ -380,7 +380,7 @@ class TestLegacyFormatRejection:
             "size_current": 5,
         }
 
-        with pytest.raises(ValueError, match="supported format_version values are 4 and 5"):
+        with pytest.raises(ValueError, match="supported format_version values are 4, 5 and 6"):
             buffer.load_from_serialized(old_format)
 
 

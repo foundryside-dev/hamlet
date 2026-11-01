@@ -1,0 +1,55 @@
+{
+  "kind": "root-adopted additive acceptance for confirmed existing P1",
+  "original_published_requirements": 53,
+  "effective_requirements": 54,
+  "finite_tasks": 66,
+  "final_lenses": 22,
+  "plan_byte_frozen": true,
+  "owner_authority": "User permits additions/features/complexity; no removal/degradation/consolidation or new access/spending proposed",
+  "requirement": {
+    "id": "X04",
+    "classification": "confirmed_existing_authored_telemetry_defect",
+    "severity": "P1 under STATUS authored wrong-behavior bar; telemetry scoped",
+    "title": "Finite mean absolute TD residual overflows during float32 reduction",
+    "in_scope": true,
+    "contracts": [
+      "BAC-C13"
+    ],
+    "acceptance_scope": "Preserve public unweighted TD-mean semantics; finite representable mathematical means remain finite, without clipping/zeroing/omitting/rejecting admitted reward inputs. Flat uniform/PER and recurrent valid-row controls; loss/gradient/priority objectives unchanged.",
+    "tasks": [
+      "T15",
+      "T35"
+    ],
+    "producer_owner": "T15",
+    "sink_owner": "T35 consumes verified producer receipt; no sink masking workaround",
+    "test_nodes": [
+      "tests/test_townlet/regressions/bac/test_learner_legality.py::test_large_finite_td_mean_is_truthful (planned bounded test in existing owner file)"
+    ],
+    "evidence": [
+      {
+        "type": "actual_admitted_public_learner",
+        "candidate_tree": "2cfb5360ae46aa67fc2506743b469f257696c324",
+        "source": "src/townlet/population/vectorized.py:1029",
+        "source_sha256": "38d8c969a8acfc5f49a3c5c7e532f6f10b34844af12ca37e8696123511e47d3b",
+        "actual_each_TD": 1.9999999360571385e+38,
+        "actual_true_mean": 1.9999999360571385e+38,
+        "reported_td_error": "inf",
+        "control": "Highalpha0 completes2realupdates with finite loss/parameters/Adam; highalpha1 firstupdate same metric before distinct samplerfailure",
+        "logs": [
+          "qualification/wave07-red-r1-narrow/native-alpha0-control.log",
+          "qualification/wave07-red-r1-narrow/native-alpha1-causal.log"
+        ]
+      },
+      {
+        "type": "independent_Astra_medium_scoped_source_spec_triage",
+        "path": "wave07-preparation/MEAN-TD-TRIAGE.md",
+        "sha256": "d4562d2cb241dff87e921e0a0c9540cb54832785a6dbf36c6ef8f1ee8fae8b76",
+        "scope": "5wholefiles/3247lines; actualsource/logs independently read, no reviewer runtime"
+      }
+    ],
+    "status": "OPEN, required producer fix before T15 release/G2, final common-source refresh owed",
+    "disposition": "Additive finite acceptance on existing T15 and T35; not optional P3, not sampler failure, not optimizer divergence, not introduced by T13",
+    "decision_needed": false,
+    "limits": "No downstream crash or recurrent authored incident established. Same recurrent expression risk is covered by bounded producer regression."
+  }
+}

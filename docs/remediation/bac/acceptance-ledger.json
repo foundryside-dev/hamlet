@@ -3,7 +3,7 @@
   "baseline_sha": "4aa5363b5de54d9a112977c32c2975f37627197f",
   "design": "BAC-2026-11-01-r2 plus explicit additive plan decisions",
   "approved_plan_sha256": "2dde2d80d3d14c510878c26af1f99c42217be12d3cb3a554647bc68646feedc1",
-  "phase": "22 of 66 finite source packages qualified/released; 44 later packets and all final BAC acceptance remain OPEN",
+  "phase": "23 of 66 finite source packages qualified/released; 43 remaining packages and all final BAC acceptance OPEN",
   "completion_bar": "zero unresolved P1/P2 and zero unapproved in-scope capability gaps; all agreed finite evidence, fresh final spec/design/code review, required gates and source-verified docs",
   "requirements": [
     {
@@ -169,6 +169,15 @@
           "receipt": "package-reviews/T12-implementation.md",
           "qualification": "evidence/wave06-qualification.json",
           "disposition": "Scoped evidence only; remaining owners and final common-source acceptance OPEN"
+        },
+        {
+          "task": "T13",
+          "source_commit": "495360d68c167b741d8ed5016c0921f995aac1f4",
+          "qualified_release_commit": "495360d68c167b741d8ed5016c0921f995aac1f4",
+          "qualified_sum_tree": "f88f7cb3e3d0203ab199a2d898e3b0f8370d7e48",
+          "receipt": "package-reviews/T13-implementation.md",
+          "qualification": "evidence/wave07-qualification.json",
+          "disposition": "Scoped T13 evidence; remaining owners and final common-source acceptance OPEN"
         }
       ],
       "evidence": [
@@ -865,6 +874,15 @@
           "receipt": "package-reviews/T12-implementation.md",
           "qualification": "evidence/wave06-qualification.json",
           "disposition": "Scoped evidence only; remaining owners and final common-source acceptance OPEN"
+        },
+        {
+          "task": "T13",
+          "source_commit": "495360d68c167b741d8ed5016c0921f995aac1f4",
+          "qualified_release_commit": "495360d68c167b741d8ed5016c0921f995aac1f4",
+          "qualified_sum_tree": "f88f7cb3e3d0203ab199a2d898e3b0f8370d7e48",
+          "receipt": "package-reviews/T13-implementation.md",
+          "qualification": "evidence/wave07-qualification.json",
+          "disposition": "Scoped T13 evidence; remaining owners and final common-source acceptance OPEN"
         }
       ]
     },
@@ -918,7 +936,17 @@
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "P2",
       "approval_reference": null,
-      "package_evidence": []
+      "package_evidence": [
+        {
+          "task": "T13",
+          "source_commit": "495360d68c167b741d8ed5016c0921f995aac1f4",
+          "qualified_release_commit": "495360d68c167b741d8ed5016c0921f995aac1f4",
+          "qualified_sum_tree": "f88f7cb3e3d0203ab199a2d898e3b0f8370d7e48",
+          "receipt": "package-reviews/T13-implementation.md",
+          "qualification": "evidence/wave07-qualification.json",
+          "disposition": "Scoped T13 evidence; remaining owners and final common-source acceptance OPEN"
+        }
+      ]
     },
     {
       "id": "D11",
@@ -3036,6 +3064,15 @@
           "receipt": "package-reviews/T12-implementation.md",
           "qualification": "evidence/wave06-qualification.json",
           "disposition": "Scoped evidence only; remaining owners and final common-source acceptance OPEN"
+        },
+        {
+          "task": "T13",
+          "source_commit": "495360d68c167b741d8ed5016c0921f995aac1f4",
+          "qualified_release_commit": "495360d68c167b741d8ed5016c0921f995aac1f4",
+          "qualified_sum_tree": "f88f7cb3e3d0203ab199a2d898e3b0f8370d7e48",
+          "receipt": "package-reviews/T13-implementation.md",
+          "qualification": "evidence/wave07-qualification.json",
+          "disposition": "Scoped T13 evidence; remaining owners and final common-source acceptance OPEN"
         }
       ],
       "evidence": [
@@ -3472,6 +3509,15 @@
           "receipt": "package-reviews/T12-implementation.md",
           "qualification": "evidence/wave06-qualification.json",
           "disposition": "Scoped evidence only; remaining owners and final common-source acceptance OPEN"
+        },
+        {
+          "task": "T13",
+          "source_commit": "495360d68c167b741d8ed5016c0921f995aac1f4",
+          "qualified_release_commit": "495360d68c167b741d8ed5016c0921f995aac1f4",
+          "qualified_sum_tree": "f88f7cb3e3d0203ab199a2d898e3b0f8370d7e48",
+          "receipt": "package-reviews/T13-implementation.md",
+          "qualification": "evidence/wave07-qualification.json",
+          "disposition": "Scoped T13 evidence; remaining owners and final common-source acceptance OPEN"
         }
       ],
       "evidence": [
@@ -3667,6 +3713,15 @@
           "receipt": "package-reviews/T12-implementation.md",
           "qualification": "evidence/wave06-qualification.json",
           "disposition": "Scoped evidence only; remaining owners and final common-source acceptance OPEN"
+        },
+        {
+          "task": "T13",
+          "source_commit": "495360d68c167b741d8ed5016c0921f995aac1f4",
+          "qualified_release_commit": "495360d68c167b741d8ed5016c0921f995aac1f4",
+          "qualified_sum_tree": "f88f7cb3e3d0203ab199a2d898e3b0f8370d7e48",
+          "receipt": "package-reviews/T13-implementation.md",
+          "qualification": "evidence/wave07-qualification.json",
+          "disposition": "Scoped T13 evidence; remaining owners and final common-source acceptance OPEN"
         }
       ],
       "evidence": [
@@ -3913,6 +3968,15 @@
           "receipt": "package-reviews/T12-implementation.md",
           "qualification": "evidence/wave06-qualification.json",
           "disposition": "Scoped evidence only; remaining owners and final common-source acceptance OPEN"
+        },
+        {
+          "task": "T13",
+          "source_commit": "495360d68c167b741d8ed5016c0921f995aac1f4",
+          "qualified_release_commit": "495360d68c167b741d8ed5016c0921f995aac1f4",
+          "qualified_sum_tree": "f88f7cb3e3d0203ab199a2d898e3b0f8370d7e48",
+          "receipt": "package-reviews/T13-implementation.md",
+          "qualification": "evidence/wave07-qualification.json",
+          "disposition": "Scoped T13 evidence; remaining owners and final common-source acceptance OPEN"
         }
       ],
       "evidence": [
@@ -5040,10 +5104,10 @@
     },
     {
       "id": "CANDIDATE-B04-C01",
-      "classification": "API robustness repair plus qualified reachability candidate",
+      "classification": "confirmed_authored_native_numerical_sampling_crash",
       "title": "Finite float32 PER priorities [3e38,3e38] overflow during normalization and make sampling fail.",
       "in_scope": true,
-      "acceptance_scope": "Ordinary authored production-learner reachability was not established; not included in the 21 confirmed existing-contract defect groups. API robustness repair and explicit reachability disposition remain required.",
+      "acceptance_scope": "New public admitted gamma0/capacity2/batch2/reward2e38/alpha1 proof reaches the second ordinary sampler after one real finite Adam update. Fixed source completes two updates; modest and alpha0 controls retained. Historical API-only assessment is not retroactively changed.",
       "tasks": [
         "T13",
         "T37"
@@ -5054,7 +5118,8 @@
         "tests/test_townlet/regressions/bac/test_per_estimator.py::test_full_buffer_huber_gradient_zero",
         "tests/test_townlet/regressions/bac/test_per_estimator.py::test_independent_estimator_exact_expectation",
         "tests/test_townlet/regressions/bac/test_per_estimator.py::test_large_finite_priorities",
-        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_ordered_estimator_exact_expectation"
+        "tests/test_townlet/regressions/bac/test_per_estimator.py::test_ordered_estimator_exact_expectation",
+        "tests/test_townlet/regressions/bac/test_per_native_learner.py::test_public_learner_two_finite_priority_updates"
       ],
       "command": [
         {
@@ -5064,16 +5129,41 @@
         {
           "task": "T37",
           "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_joint_learning.py -q"
+        },
+        {
+          "task": "T13",
+          "command": "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_per_native_learner.py -s -q"
         }
       ],
-      "expected_assertion": "Numerical API repair and separate reachability qualification; not retroactively one of D01\u2013D21",
+      "expected_assertion": "Original bounded public alpha1 run causally fails at second ordinary sample; fixed source completes2 actual updates with finite loss/parameters/Adam and no private priority injection. X04 Inf telemetry remains separately required OPEN.",
       "candidate_sha": null,
-      "evidence_paths": [],
-      "disposition": "PLANNED; executable current-candidate acceptance owed",
-      "remaining_severity": "P2 candidate; ordinary production reachability not established",
+      "evidence_paths": [
+        "package-reviews/T13-authored-reachability.md",
+        "package-reviews/T13-native-proof-review.md",
+        "evidence/wave07-qualification.json"
+      ],
+      "disposition": "New authored reachability confirmed and scoped repaired-source proof qualified; T37/final acceptance OPEN",
+      "remaining_severity": "Scoped T13 repair closed; final common-source/joint acceptance owed",
       "approval_reference": null,
-      "package_evidence": [],
-      "historical_id": "C01"
+      "package_evidence": [
+        {
+          "task": "T13",
+          "source_commit": "495360d68c167b741d8ed5016c0921f995aac1f4",
+          "qualified_release_commit": "495360d68c167b741d8ed5016c0921f995aac1f4",
+          "qualified_sum_tree": "f88f7cb3e3d0203ab199a2d898e3b0f8370d7e48",
+          "receipt": "package-reviews/T13-implementation.md",
+          "qualification": "evidence/wave07-qualification.json",
+          "disposition": "Scoped T13 evidence; remaining owners and final common-source acceptance OPEN"
+        }
+      ],
+      "historical_id": "C01",
+      "historical_assessment": {
+        "classification": "API robustness repair plus qualified reachability candidate",
+        "acceptance_scope": "Ordinary authored production-learner reachability was not established; not included in the 21 confirmed existing-contract defect groups. API robustness repair and explicit reachability disposition remain required.",
+        "expected_assertion": "Numerical API repair and separate reachability qualification; not retroactively one of D01\u2013D21",
+        "remaining_severity": "P2 candidate; ordinary production reachability not established",
+        "note": "Original-source API-only evidence remains historical; current classification is promoted only by new bounded public-pack execution."
+      }
     },
     {
       "id": "X02",
@@ -5147,6 +5237,56 @@
         "final_source_refresh": "owed"
       },
       "repair_status": "Authoredcompleted-laneDROP/movement/USE/custom/velocity controls and live/terminal/INTERACT controls pass independent actualsource +fullgate"
+    },
+    {
+      "id": "X04",
+      "classification": "confirmed_existing_authored_telemetry_defect",
+      "severity": "P1 under STATUS authored wrong-behavior bar; telemetry scoped",
+      "title": "Finite mean absolute TD residual overflows during float32 reduction",
+      "in_scope": true,
+      "contracts": [
+        "BAC-C13"
+      ],
+      "acceptance_scope": "Preserve public unweighted TD-mean semantics; finite representable mathematical means remain finite, without clipping/zeroing/omitting/rejecting admitted reward inputs. Flat uniform/PER and recurrent valid-row controls; loss/gradient/priority objectives unchanged.",
+      "tasks": [
+        "T15",
+        "T35"
+      ],
+      "producer_owner": "T15",
+      "sink_owner": "T35 consumes verified producer receipt; no sink masking workaround",
+      "test_nodes": [
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_large_finite_td_mean_is_truthful (planned bounded test in existing owner file)"
+      ],
+      "evidence": [
+        {
+          "type": "actual_admitted_public_learner",
+          "candidate_tree": "2cfb5360ae46aa67fc2506743b469f257696c324",
+          "source": "src/townlet/population/vectorized.py:1029",
+          "source_sha256": "38d8c969a8acfc5f49a3c5c7e532f6f10b34844af12ca37e8696123511e47d3b",
+          "actual_each_TD": 1.9999999360571385e+38,
+          "actual_true_mean": 1.9999999360571385e+38,
+          "reported_td_error": "inf",
+          "control": "Highalpha0 completes2realupdates with finite loss/parameters/Adam; highalpha1 firstupdate same metric before distinct samplerfailure",
+          "logs": [
+            "qualification/wave07-red-r1-narrow/native-alpha0-control.log",
+            "qualification/wave07-red-r1-narrow/native-alpha1-causal.log"
+          ]
+        },
+        {
+          "type": "independent_Astra_medium_scoped_source_spec_triage",
+          "path": "wave07-preparation/MEAN-TD-TRIAGE.md",
+          "sha256": "d4562d2cb241dff87e921e0a0c9540cb54832785a6dbf36c6ef8f1ee8fae8b76",
+          "scope": "5wholefiles/3247lines; actualsource/logs independently read, no reviewer runtime"
+        }
+      ],
+      "status": "OPEN, required producer fix before T15 release/G2, final common-source refresh owed",
+      "disposition": "Additive finite acceptance on existing T15 and T35; not optional P3, not sampler failure, not optimizer divergence, not introduced by T13",
+      "decision_needed": false,
+      "limits": "No downstream crash or recurrent authored incident established. Same recurrent expression risk is covered by bounded producer regression.",
+      "evidence_paths": [
+        "package-reviews/X04-mean-TD-triage.md",
+        "evidence/X04-acceptance-overlay.json"
+      ]
     }
   ],
   "approved_decisions": [
@@ -5259,6 +5399,30 @@
       "source_tree": "25cdec4e82cfdeb64a715320313316c90e700747",
       "review": "package-reviews/T02-initial-independent.md",
       "disposition": "nonblocking optional P3; retained separately from material acceptance; T03 existing cache proof may cover naturally"
+    },
+    {
+      "id": "P3-T13-01",
+      "classification": "optional distinct numerical regression control",
+      "description": "Dedicated PS64 final-weight-overflow refusal control; current implementation and support controls reviewed without a production defect.",
+      "review": "package-reviews/T13-independent-review.md",
+      "source_tree": "f88f7cb3e3d0203ab199a2d898e3b0f8370d7e48",
+      "disposition": "Nonblocking optional P3, explicitly outside material closure; recorded without expanding the remediation programme"
+    },
+    {
+      "id": "P3-T13-02",
+      "classification": "optional test warning cleanup",
+      "description": "Use a writable test-side index copy when Torch indexes with the immutable qualified sampling receipt; source receipt ownership stays unchanged.",
+      "review": "package-reviews/T13-independent-review.md",
+      "source_tree": "f88f7cb3e3d0203ab199a2d898e3b0f8370d7e48",
+      "disposition": "Nonblocking optional P3, explicitly outside material closure; recorded without expanding the remediation programme"
+    },
+    {
+      "id": "P3-T13-03",
+      "classification": "optional diagnostic label clarity",
+      "description": "Name the native test probability field explicitly first-draw/post-update oracle probability; current source and evidence already state its limited meaning.",
+      "review": "package-reviews/T13-native-proof-review.md",
+      "source_tree": "f88f7cb3e3d0203ab199a2d898e3b0f8370d7e48",
+      "disposition": "Nonblocking optional P3, explicitly outside material closure; recorded without expanding the remediation programme"
     }
   ],
   "final_candidate_sha": null,
@@ -5681,6 +5845,23 @@
       ],
       "final_acceptance": "T14 recurrent PER, T15 actual qualified learner collection/readiness/unroll/bootstrap/objectives, T24/T25 complete native admission/outer archive registry/accounting/resource-RNG preparation/failure atomicity and evolved optimizer continuation remain REQUIRED OPEN. The native proof covers positive inspection transport, not complete C07 or corrected recurrent learning. Native consumers must discriminate the four-key envelope before ordinary replay tags and preserve new raw transport separately from validated HC archive accounting.",
       "qualification_limit": "Only final coherent source head has exact qualified sum tree; prefix heads not separately full-qualified"
+    },
+    {
+      "task": "T13",
+      "source_commit": "495360d68c167b741d8ed5016c0921f995aac1f4",
+      "qualified_release_commit": "495360d68c167b741d8ed5016c0921f995aac1f4",
+      "qualified_sum_tree": "f88f7cb3e3d0203ab199a2d898e3b0f8370d7e48",
+      "status": "Scoped package qualified/released; complete requirement and final acceptance still owed",
+      "full_repository_result": "6559 passed,16 skipped,16 warnings;4workers;1742.77s wall; full exact-source postflight PASS",
+      "reports": [
+        "package-reviews/T13-implementation.md",
+        "package-reviews/T13-independent-review.md",
+        "package-reviews/T13-owner-review.md",
+        "package-reviews/T13-consumer-review.md",
+        "package-reviews/T13-native-proof-review.md",
+        "evidence/wave07-qualification.json"
+      ],
+      "final_acceptance": "T14 recurrent prioritized units, T15/T16 actual qualified learner/legal-action/objective integration, required X04 finite unweighted mean-TD telemetry before T15/G2, T24/T25 complete native admission/resume/atomicity/reproducibility, T37 joint learning and final common-source acceptance remain OPEN. CPU only; CUDA unavailable. No learning-quality, recurrent, replacement-native, strict-world-isolation or complete nativeC07 closure follows from the bounded gamma0 two-update proof."
     }
   ],
   "evidence_note": "Each package records its actual immutable source/evidence. Wave05 qualified sum-tree postflight verified 53 source hashes, three final Astra reviews, five process identities, preserved configuration/native artifacts and the worktree registry. Storage archive proofs do not close required native historical dispatch, captured learning/readiness or final common-source acceptance.",
@@ -5819,6 +6000,20 @@
     "qualified_packages": 22,
     "remaining_packages": 44,
     "capability_reductions": "None beyond existing approved historyA; public standalone loaders, raw dictionary transport and captured current resume preserved",
+    "final_acceptance": "OPEN"
+  },
+  "wave07_qualified_scope": {
+    "tasks": [
+      "T13"
+    ],
+    "source_head": "495360d68c167b741d8ed5016c0921f995aac1f4",
+    "tree": "f88f7cb3e3d0203ab199a2d898e3b0f8370d7e48",
+    "receipt": "evidence/wave07-qualification.json",
+    "qualified_packages": 23,
+    "remaining_packages": 43,
+    "effective_requirements": 54,
+    "new_required_defect": "X04 producerT15/sinkT35 OPEN",
+    "C01": "New bounded authored reachability confirmed; historical original evidence retained",
     "final_acceptance": "OPEN"
   }
 }

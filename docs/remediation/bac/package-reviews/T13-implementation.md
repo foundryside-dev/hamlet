@@ -1,0 +1,23 @@
+# T13: qualified prioritized sampling and stable handles
+
+Qualified source `495360d68c167b741d8ed5016c0921f995aac1f4`, tree `f88f7cb3e3d0203ab199a2d898e3b0f8370d7e48`.
+
+The shared float64 sampler preserves successive weighted without-replacement order with the exact conditional residual estimator, and adds explicit independent replacement sampling. Receipts retain actual conditional proposals and detached positive objective weights without batch-maximum normalization. Support and representability are checked before RNG draw; large finite priorities normalize safely. Legacy dictionary sampling preserves global NumPy selection, physical writable indices, float32 weights and its count-bearing insufficient-buffer diagnostic.
+
+Qualified flat PER adds explicit sampling mode/owned Generator/provenance and stable monotonically assigned unit handles. Whole-request priority updates are atomic; repeated handles reduce deterministically and stale overwritten/cleared handles cannot alias new rows. Exact PER6 state persists IDs, modes, objective/rule and honest RNG ownership. The strict adapter for authentic captured PER5 preserves active rows, masks, priorities, beta, ring geometry, components and archives; it does not clear qualified history merely because IDs were absent. Maskless PER4 retains approved archive/query/export/fresh-active behavior. Prospective float32 insertion validation and maximum-cache coherence prevent accepted state from producing unreloadable successors. Both native access gateways admit captured PER5 and PER6 through the shared supported-format predicate.
+
+## Verification
+
+The core146, authored native3, history/HC/unit170 (one conditional skip), and native checkpoint consumer118-case selections passed on the final candidate; consult exact logs/counts in the qualification receipt for conditional skips. The authored public pack controls complete two real Adam updates each at modest reward/alpha1 and reward2e38/alpha0 or alpha1. Original admitted alpha1 failed its second ordinary sample after one finite update; fixed code completes both. No private TD/priority injection supplies reachability. Genuine captured PER5 fixture bytes and old maskless artifacts remain protected.
+
+Independent review caused separate causal regressions for pre-RNG float32 transport refusal, writable legacy indices, malformed maximum admission, underflow and rounded maximum roundtrips. Repairs retained positive min-subnormal/max-float32/current5/history4 controls. Native consumer maintenance preserves all mixed-schema/wrong-kind/input/live purity checks. The subsequent original empty-buffer diagnostic failure was repaired in the producer; its test remained intact. Failed attempts are retained and are not counted as passing qualification.
+
+The exact four-worker repository gate passed **6559 tests, 16 skipped**, with 16 warnings, in 1742.77s wall. All six standing guards passed. Postflight verified 95 source/document/DATA hashes, 9 review artifacts, five exact process identities, 573 config digests, ten protected fixture/manifest artifacts and the unchanged 14-worktree registry. Source commit `495360d68c167b741d8ed5016c0921f995aac1f4` has the exact tested tree `f88f7cb3e3d0203ab199a2d898e3b0f8370d7e48`.
+
+Fresh bounded [core](T13-independent-review.md), [owner](T13-owner-review.md), [consumer](T13-consumer-review.md) and [authored-proof](T13-native-proof-review.md) reviews found no unresolved P1/P2 in their declared T13 scope. [Original findings](T13-initial-findings.md), [maximum findings](T13-max-findings.md), [common binding](../evidence/wave07-source-binding.md), [authored reachability](T13-authored-reachability.md) and [qualification evidence](../evidence/wave07-qualification.json) preserve source identities and limits.
+
+## Required remaining acceptance
+
+T14 recurrent prioritized units, T15/T16 actual qualified learner/legal-action/objective integration, required X04 finite unweighted mean-TD telemetry before T15/G2, T24/T25 complete native admission/resume/atomicity/reproducibility, T37 joint learning and final common-source acceptance remain OPEN. CPU only; CUDA unavailable. No learning-quality, recurrent, replacement-native, strict-world-isolation or complete nativeC07 closure follows from the bounded gamma0 two-update proof.
+
+X04 is an independently confirmed existing telemetry P1, separately [triaged](X04-mean-TD-triage.md) and required under [the finite acceptance overlay](../evidence/X04-acceptance-overlay.json). Finite loss, parameters and Adam updates do not make the current Inf metric acceptable. This package does not close whole-BAC acceptance.

@@ -234,9 +234,7 @@ class DeclarationStore:
                 consumed.add(family)
                 continue
             if family == "training":
-                payload = self._copy_mapping(payload)
-                payload["run_metadata"] = document.get("run_metadata")
-                payload["recording"] = document.get("recording")
+                payload = self._normalize_training(document, payload, path, scope)
                 consumed.update(set(document) & {"run_metadata", "recording"})
             self._add(Declaration(family, scope, payload, path, document.key_lines[family]))
             consumed.add(family)
@@ -249,6 +247,106 @@ class DeclarationStore:
                 code=ErrorCode.DECLARATION_UNKNOWN,
                 location=f"{path}:{document.key_lines[first_key]}",
             )
+
+    def _normalize_training(self, document: MarkedMapping, payload: MarkedMapping, path: Path, scope: str | None) -> MarkedMapping:
+        """Validate both authored placements before selecting canonical sidecar fields."""
+        from townlet.config.training_v2_config import RecordingConfig, RunMetadataConfig
+
+        authored = self._copy_mapping(document)
+        for key in set(authored) - {"training", "recording", "run_metadata"}:
+            authored.pop(key)
+        declaration = Declaration("training", scope, authored, path, document.key_lines["training"])
+        # Retain precise training.<sidecar> origins before canonical lowering. The
+        # normal declaration source walk later records the chosen consumer fields.
+        self._record_sources(declaration)
+        normalized = self._copy_mapping(payload)
+        for sidecar, model in (("recording", RecordingConfig), ("run_metadata", RunMetadataConfig)):
+            validated: dict[str, BaseModel | None] = {}
+            for prefix, owner in (("", document), ("training.", payload)):
+                if sidecar not in owner:
+                    continue
+                value = owner[sidecar]
+                try:
+                    if value is None:
+                        validated[prefix] = value  # Preserve explicitly authored null for these optional fields.
+                    else:
+                        validated[prefix] = model.model_validate(value)
+                except ValidationError as exc:
+                    for issue in exc.errors(include_url=False):
+                        field = sidecar + "".join(f"[{segment}]" if isinstance(segment, int) else f".{segment}" for segment in issue["loc"])
+                        self.errors.add(
+                            f"Invalid training sidecar ({prefix}{field}): {issue['msg']}",
+                            code=ErrorCode.LOAD_ERROR if scope is None else ErrorCode.LEVEL_LOAD_ERROR,
+                            location=(
+                                self.source_map.lookup(f"{declaration.key}:{prefix}{field}")
+                                or self.source_map.lookup(f"{declaration.key}:{prefix}{sidecar}")
+                                or declaration.origin
+                            ),
+                        )
+            if "" in validated and "training." in validated:
+                top = validated[""]
+                nested = validated["training."]
+                self._refuse_sidecar_conflicts(
+                    top.model_dump() if top is not None else None,
+                    nested.model_dump() if nested is not None else None,
+                    declaration,
+                    (sidecar,),
+                )
+            if "" in validated:
+                normalized[sidecar] = document[sidecar]
+                normalized.key_lines[sidecar] = document.key_lines[sidecar]
+                normalized.key_paths[sidecar] = document.key_paths[sidecar]
+        return normalized
+
+    def _same_sidecar_value(self, top: Any, nested: Any) -> bool:
+        """Compare normalized DTO values without Python's cross-type numeric equality."""
+        if type(top) is not type(nested):
+            return False
+        if isinstance(top, dict):
+            if top.keys() != nested.keys():
+                return False
+            return all(self._same_sidecar_value(value, nested[key]) for key, value in top.items())
+        if isinstance(top, (list, tuple)):
+            return len(top) == len(nested) and all(self._same_sidecar_value(left, right) for left, right in zip(top, nested, strict=True))
+        if isinstance(top, float):
+            return bool(top.hex() == nested.hex())
+        if top == nested:
+            return True
+        return False
+
+    def _refuse_sidecar_conflicts(self, top: Any, nested: Any, declaration: Declaration, segments: tuple[str | int, ...]) -> None:
+        if self._same_sidecar_value(top, nested):
+            return
+        if isinstance(top, dict) and isinstance(nested, dict):
+            for field in sorted(top.keys() | nested.keys(), key=lambda key: (type(key).__name__, str(key))):
+                child_segments = (*segments, field)
+                if field in top and field in nested:
+                    self._refuse_sidecar_conflicts(top[field], nested[field], declaration, child_segments)
+                else:
+                    self._sidecar_conflict(declaration, child_segments)
+            return
+        self._sidecar_conflict(declaration, segments)
+
+    def _sidecar_origin(self, owner: Any, segments: tuple[str | int, ...], declaration: Declaration) -> str:
+        """Locate a present key or the nearest authored container when it is absent."""
+        origin = declaration.origin
+        for segment in segments:
+            if not isinstance(owner, MarkedMapping) or segment not in owner:
+                break
+            path, line = self._key_origin(owner, segment, declaration)
+            origin = f"{path}:{line}"
+            owner = owner[segment]
+        return origin
+
+    def _sidecar_conflict(self, declaration: Declaration, segments: tuple[str | int, ...]) -> None:
+        field = ".".join(str(segment) for segment in segments)
+        top_origin = self._sidecar_origin(declaration.payload, segments, declaration)
+        nested_origin = self._sidecar_origin(declaration.payload["training"], segments, declaration)
+        self.errors.add(
+            f"Conflicting training sidecar '{field}'; top-level declared at {top_origin}",
+            code=ErrorCode.DECLARATION_COLLISION,
+            location=nested_origin,
+        )
 
     @staticmethod
     def _bare_family(document: MarkedMapping) -> str | None:

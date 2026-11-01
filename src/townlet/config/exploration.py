@@ -1,4 +1,4 @@
-"""Exploration configuration loader for v2.1 training.yaml."""
+"""Public exploration DTO loading from discovered v2.1 training declarations."""
 
 from pathlib import Path
 
@@ -8,16 +8,21 @@ __all__ = ["ExplorationConfig", "load_exploration_config"]
 
 
 def load_exploration_config(config_dir: Path) -> ExplorationConfig:
-    """Load exploration config from training.yaml (v2.1)."""
+    """Load the local target, a direct level or the sole level in a pack.
+
+    A local wrapped training section needs only its exploration DTO fields.
+    Packs without a local target must select an unambiguous level.
+    """
     from pydantic import ValidationError
 
-    from townlet.config.base import format_validation_error, load_yaml_section
+    from townlet.config.base import format_validation_error
+    from townlet.config.resolved_launch import resolve_config_section
 
-    training = load_yaml_section(Path(config_dir), "training.yaml", "training")
-    exploration_block = training.get("exploration")
+    section = resolve_config_section(Path(config_dir), family="training")
+    exploration_block = section.payload.get("exploration")
     if exploration_block is None:
-        raise ValueError("Missing exploration section under training.yaml:training")
+        raise ValueError(f"Missing exploration section under {section.origin}:training")
     try:
         return ExplorationConfig(**exploration_block)
     except ValidationError as exc:
-        raise ValueError(format_validation_error(exc, "exploration section (training.yaml)")) from exc
+        raise ValueError(format_validation_error(exc, f"exploration section ({section.origin})")) from exc

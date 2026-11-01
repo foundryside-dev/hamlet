@@ -32,6 +32,7 @@ PACK_FAMILIES = frozenset(
     }
 )
 LEVEL_FAMILIES = frozenset({"curriculum", "bars", "affordances", "drive", "training", "brain", "items_appearance"})
+SECTION_FAMILIES = frozenset({"training", "curriculum"})
 REQUIRED_PACK = ("experiment", "stratum", "environment", "actions", "brain", "variables")
 REQUIRED_LEVEL = ("curriculum", "bars", "affordances", "drive", "training")
 WRAPPED = frozenset(
@@ -118,6 +119,10 @@ class DeclarationStore:
 
     def __init__(self, experiment_dir: Path) -> None:
         self.experiment_dir = experiment_dir
+        self._section_inventory = False
+        self._section_family: str | None = None
+        self._section_scope: str | None = None
+        self._section_dependency_inventory = False
         self.declarations: dict[tuple[str | None, str], Declaration] = {}
         self.source_map = SourceMap()
         levels_dir = experiment_dir / "levels"
@@ -137,7 +142,105 @@ class DeclarationStore:
                 location=f"{store.experiment_dir}:1",
             )
             store.errors.check_and_raise()
+        cls._discover_documents(store)
+        store._require_families()
+        store.errors.check_and_raise()
+        return store
+
+    @classmethod
+    def discover_sections(cls, experiment_dir: Path, *, family: str, scope: str | None) -> DeclarationStore:
+        """Inventory target sections without claiming complete runtime admission.
+
+        Only the selected scope and identifiable requested family are admitted.
+        Parsing and transport rules apply before family classification. External
+        clock authority is collected separately after the selected payload exists.
+        """
+        if family not in SECTION_FAMILIES:
+            raise ValueError(f"Unsupported public config section: {family}")
+        store = cls(Path(experiment_dir).resolve())
+        store._section_inventory = True
+        store._section_family = family
+        store._section_scope = scope
+        cls._discover_documents(store)
+        store.errors.check_and_raise()
+        return store
+
+    def _includes_section_path(self, path: Path) -> bool:
+        if not self._section_inventory:
+            return True
+        relative = path.relative_to(self.experiment_dir)
+        if self._section_dependency_inventory:
+            return relative.parts[0] != "levels"
+        if relative.parts[0] == "levels":
+            if self._section_scope is None:
+                return False
+            if len(relative.parts) == 1:
+                return True
+            return relative.parts[1] == self._section_scope
+        if self._section_scope is None:
+            return True
+        return False
+
+    def _includes_section_family(self, family: str, scope: str | None) -> bool:
+        if not self._section_inventory:
+            return True
+        if self._section_dependency_inventory:
+            return family == "variables" and scope is None
+        if family == self._section_family and scope == self._section_scope:
+            return True
+        return self._section_family == "curriculum" and family == "variables" and scope is None
+
+    def collect_clock_dependencies(self, *, required: bool) -> None:
+        """Collect external clock authority with an explicit dependency boundary.
+
+        References require strict ancestor discovery. A numeric direct curriculum
+        observes safe recognizable variables without requiring unrelated malformed
+        ancestor documents to be classified. Recognized authorities remain strict.
+        """
+        assert self._section_inventory and self._section_family == "curriculum"
+        if self._section_scope is None:
+            return  # Pack-local transports already belong to the strict selected scope.
+        if required:
+            self._section_dependency_inventory = True
+            try:
+                self._discover_documents(self)
+            finally:
+                self._section_dependency_inventory = False
+        else:
+            for path in config_documents(self.experiment_dir):
+                relative = path.relative_to(self.experiment_dir)
+                if relative.parts[0] == "levels" or not path.resolve().is_relative_to(self.experiment_dir):
+                    continue
+                if any(
+                    parent.is_symlink()
+                    for parent in path.parents
+                    if parent != self.experiment_dir and parent.is_relative_to(self.experiment_dir)
+                ):
+                    continue
+                self._observe_clock_documents(path)
+        self.errors.check_and_raise()
+
+    def _observe_clock_documents(self, path: Path) -> None:
+        """Retain safely parsed external variable evidence before a later parse error."""
+        documents = yaml.load_all(path.read_text(encoding="utf-8"), Loader=DeclarationLoader)
+        while True:
+            try:
+                document = next(documents)
+            except StopIteration:
+                return
+            except (yaml.YAMLError, ValueError):
+                # This optional external document cannot be classified safely. Any
+                # earlier recognized authority is retained, and other files continue.
+                return
+            if isinstance(document, MarkedMapping) and "variables" in document:
+                self._bind_paths(document, path)
+                self._consume(document, path, None)
+
+    @staticmethod
+    def _discover_documents(store: DeclarationStore) -> None:
         for path in store.experiment_dir.rglob("*"):
+            if not store._includes_section_path(path):
+                continue
             if is_hidden(store.experiment_dir, path):
                 continue
             # One spelling for transport: a `.YAML`/`.YML` file would otherwise be ignored by
@@ -163,6 +266,8 @@ class DeclarationStore:
                     store.errors.add("Declaration transport is a broken symlink", code=ErrorCode.DECLARATION_SCOPE, location=f"{path}:1")
         store.errors.check_and_raise()
         for path in config_documents(store.experiment_dir):
+            if not store._includes_section_path(path):
+                continue
             if not path.resolve().is_relative_to(store.experiment_dir):
                 store.errors.add("Declaration transport resolves outside the pack", code=ErrorCode.DECLARATION_SCOPE, location=f"{path}:1")
                 continue
@@ -194,9 +299,6 @@ class DeclarationStore:
             for document in documents:
                 store._bind_paths(document, path)
                 store._consume(document, path, scope)
-        store._require_families()
-        store.errors.check_and_raise()
-        return store
 
     @staticmethod
     def _bind_paths(value: Any, path: Path) -> None:
@@ -222,10 +324,16 @@ class DeclarationStore:
             return
         bare = self._bare_family(document)
         if bare is not None:
-            self._add(Declaration(bare, scope, document, path, line))
+            if self._includes_section_family(bare, scope):
+                self._add(Declaration(bare, scope, document, path, line))
             return
         consumed: set[str] = set()
         for family in sorted(set(document) & WRAPPED):
+            if not self._includes_section_family(family, scope):
+                consumed.add(family)
+                if family == "training":
+                    consumed.update(set(document) & {"run_metadata", "recording"})
+                continue
             payload = document[family]
             if not isinstance(payload, MarkedMapping):
                 self.errors.add(
@@ -366,6 +474,8 @@ class DeclarationStore:
     def _add(self, declaration: Declaration) -> None:
         if declaration.scope is None:
             allowed = PACK_FAMILIES
+            if self._section_inventory:
+                allowed = PACK_FAMILIES | SECTION_FAMILIES
         else:
             allowed = LEVEL_FAMILIES
         if declaration.family not in allowed:
@@ -634,35 +744,41 @@ class DeclarationStore:
             return None
 
     def resolve_clock_references(self) -> None:
-        profiles = self.declarations.get((None, "variables"))
-        if profiles is None:
+        """Lower clocks for the existing full-pack level inventory."""
+        if (None, "variables") not in self.declarations:
             return
+        self.resolve_clock_references_for(self.level_names)
+
+    def resolve_clock_references_for(self, scopes: tuple[str | None, ...]) -> None:
+        """Use the same clock authority for explicitly selected section scopes."""
+        profiles = self.declarations.get((None, "variables"))
         from townlet.config.variables_config import VariableDeclaration, VariablesConfig
         from townlet.vfs.schema import VariableScope
 
-        profile_config = self.parse("variables", None, VariablesConfig, False)
-        if profile_config is None:
-            self.errors.check_and_raise()
-            return
         clocks: dict[str, VariableDeclaration] = {}
         global_variables: dict[str, VariableDeclaration] = {}
         authored_periods: dict[str, Any] = {}
-        for variable, raw_variable in zip(profile_config.declarations, profiles.payload["declarations"], strict=True):
-            if variable.scope != VariableScope.GLOBAL:
-                continue
-            identifier = variable.id
-            global_variables[identifier] = variable
-            if variable.expression is None or variable.normalization is None:
-                continue
-            if (
-                variable.semantic_type == "temporal"
-                and variable.expression.strip() == "tick"
-                and variable.normalization.kind == "cyclical_sin_cos"
-            ):
-                clocks[identifier] = variable
-                authored_periods[identifier] = raw_variable["normalization"]["period"]
-        for level in self.level_names:
-            declaration = self.declarations.get((level, "curriculum"))
+        if profiles is not None:
+            profile_config = self.parse("variables", None, VariablesConfig, False)
+            if profile_config is None:
+                self.errors.check_and_raise()
+                return
+            for variable, raw_variable in zip(profile_config.declarations, profiles.payload["declarations"], strict=True):
+                if variable.scope != VariableScope.GLOBAL:
+                    continue
+                identifier = variable.id
+                global_variables[identifier] = variable
+                if variable.expression is None or variable.normalization is None:
+                    continue
+                if (
+                    variable.semantic_type == "temporal"
+                    and variable.expression.strip() == "tick"
+                    and variable.normalization.kind == "cyclical_sin_cos"
+                ):
+                    clocks[identifier] = variable
+                    authored_periods[identifier] = raw_variable["normalization"]["period"]
+        for scope in scopes:
+            declaration = self.declarations.get((scope, "curriculum"))
             if declaration is None:
                 continue
             day_length = declaration.payload.get("day_length")
@@ -695,6 +811,7 @@ class DeclarationStore:
                     continue
                 assert clock_variable.normalization is not None
                 assert isinstance(clock_reference, str)
+                assert profiles is not None
                 period = authored_periods[clock_reference]
                 if (
                     clock_variable.type != "scalar"
@@ -715,6 +832,7 @@ class DeclarationStore:
                     continue
                 declaration.payload["day_length"] = int(period)
             elif day_length is not None and clocks:
+                assert profiles is not None
                 targets = [self.source_map.lookup(variable_location_key(None, identity)) or profiles.origin for identity in clocks]
                 self.errors.add(
                     f"Duplicated clock period: use day_length.period_of to link its authority; clock declaration(s): {', '.join(targets)}",

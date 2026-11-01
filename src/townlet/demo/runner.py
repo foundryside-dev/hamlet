@@ -7,10 +7,12 @@ import signal
 import time
 from collections import defaultdict
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any
 
 import torch
 
+from townlet.config.resolved_launch import resolve_launch
 from townlet.curriculum.factory import build_curriculum
 from townlet.demo.database import DemoDatabase
 from townlet.determinism import seed_all
@@ -31,7 +33,6 @@ from townlet.training.episode import RunnerCompletionReason
 from townlet.training.state import BatchedAgentState
 from townlet.training.tensorboard_logger import TensorBoardLogger
 from townlet.universe.compiled import CompiledUniverse
-from townlet.universe.compiler import UniverseCompiler
 
 logger = logging.getLogger(__name__)
 
@@ -97,24 +98,30 @@ class DemoRunner:
         """Initialize demo runner.
 
         Args:
-            config_dir: Experiment root directory containing v2.1 configs
-                (experiment.yaml, stratum.yaml, environment.yaml, actions.yaml, brain.yaml, levels/*)
-            level_name: Which curriculum level to run (e.g., "L0_0_minimal"). Required.
+            config_dir: Authored experiment root or direct levels/<name> directory.
+            level_name: Explicit curriculum selection; may be inferred only when unambiguous.
             db_path: Path to SQLite database
             checkpoint_dir: Directory for checkpoint files
-            max_episodes: Maximum number of episodes to run (if None, reads from level training.yaml)
+            max_episodes: Explicit runtime limit; omission uses selected effective training.
             force_new_vfs: Start a fresh run branch instead of resuming an incompatible VFS checkpoint.
             max_environment_steps: Optional summed-live-agent transition budget.
                 A vector step is taken only when every currently live lane fits.
         """
-        self.config_dir = Path(config_dir)
-        # Resolve training config path:
-        # - v2.1 packs: levels/<level_name>/training.yaml (mandatory)
-        if level_name is None:
-            raise ValueError("level_name is required; training configuration is owned by a level in the v2.1 config pack.")
-        self.training_config_path = self.config_dir / "levels" / level_name / "training.yaml"
-        if not self.training_config_path.exists():
-            raise FileNotFoundError(f"Training config not found: {self.training_config_path}")
+        # Resolve and validate before allocating runtime files/logger resources.
+        self.resolved_launch = resolve_launch(Path(config_dir), level_name=level_name)
+        self.config_dir = self.resolved_launch.root
+        self.level_name = self.resolved_launch.level_name
+        self.compiled: CompiledUniverse = self.resolved_launch.compiled
+        self.effective_run = self.resolved_launch.effective
+        self.training_config_origin = self.resolved_launch.declaration_origins[f"levels/{self.level_name}/training"]
+        source_path, separator, source_line = self.training_config_origin.rpartition(":")
+        if not separator or not source_line.isdecimal() or int(source_line) < 1 or not Path(source_path).is_absolute():
+            raise ValueError("Resolved training origin must contain an absolute declaration path and authored line")
+        self.training_config_path = Path(source_path)
+        overrides = {}
+        if max_episodes is not None:
+            overrides["max_episodes"] = max_episodes
+        self.launch_overrides = MappingProxyType(overrides)
         self.db_path = Path(db_path)
         self.checkpoint_dir = Path(checkpoint_dir)
         self.force_new_vfs = force_new_vfs
@@ -149,11 +156,7 @@ class DemoRunner:
             flush_every=10,
         )
 
-        # v2.1: Compile hierarchical configs (multi-level aware)
-        compiler = UniverseCompiler()
-        self.compiled: CompiledUniverse = compiler.compile(self.config_dir, primary_level=level_name)
-
-        self.level_name = level_name
+        # Reuse the selected compilation; do not reread a transport-specific file.
         level_config = self.compiled.get_level(self.level_name)
         self.experiment_config = self.compiled.experiment
         self.stratum_config = self.compiled.stratum
@@ -171,7 +174,7 @@ class DemoRunner:
         if max_episodes is not None:
             self.max_episodes = max_episodes
         else:
-            self.max_episodes = self.training_config.training_loop.max_episodes
+            self.max_episodes = self.effective_run.training.training_loop.max_episodes
 
         self.current_episode = 0
 

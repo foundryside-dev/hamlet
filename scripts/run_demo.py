@@ -20,7 +20,7 @@ from pathlib import Path
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-from townlet.config.training_v2_config import load_training_v2_config
+from townlet.config.resolved_launch import resolve_launch
 from townlet.demo.unified_server import UnifiedServer
 
 # Configure logging
@@ -112,51 +112,23 @@ def main():
         logging.getLogger().setLevel(logging.DEBUG)
         logger.debug("Debug logging enabled")
 
-    # Determine experiment root and per-level training config path.
-    # Accept both experiment-root and direct level paths for convenience.
-    raw_path = Path(args.config)
-    if not raw_path.is_dir():
-        logger.error(f"Config path '{raw_path}' is not a directory")
+    # The compiler owns declaration transport and located selection diagnostics.
+    try:
+        resolved = resolve_launch(Path(args.config), level_name=args.level)
+    except Exception as error:
+        logger.error("Failed to resolve launch: %s", error)
+        if args.debug:
+            logger.exception("Full traceback:")
         sys.exit(1)
 
-    level_name = args.level
-
-    # Heuristic: if user passed a level directory (…/levels/<level_name>), normalize to experiment root.
-    if raw_path.parent.name == "levels" and (raw_path.parent.parent / "experiment.yaml").exists():
-        experiment_root = raw_path.parent.parent
-        logger.info(
-            "Interpreting --config=%s as level directory; using experiment root %s and level '%s'",
-            raw_path,
-            experiment_root,
-            level_name,
-        )
-    else:
-        experiment_root = raw_path
-
-    if not (experiment_root / "experiment.yaml").exists():
-        logger.error(
-            "Experiment root '%s' does not contain experiment.yaml. "
-            "Pass the v2.1 experiment directory (e.g., configs/default_curriculum).",
-            experiment_root,
-        )
-        sys.exit(1)
-
-    config_dir = experiment_root
-    config_file = experiment_root / "levels" / level_name / "training.yaml"
-    if not config_file.exists():
-        logger.error(f"Training config not found for level '{level_name}': {config_file}")
-        sys.exit(1)
-
-    # Read total_episodes from config if not provided via CLI
+    config_dir = resolved.root
+    level_name = resolved.level_name
+    training_origin = resolved.declaration_origins[f"levels/{level_name}/training"]
+    authored_episodes = resolved.effective.training.training_loop.max_episodes
+    # Preserve the explicit runtime request without changing the authored DTO.
     total_episodes = args.episodes
     if total_episodes is None:
-        try:
-            training_cfg = load_training_v2_config(config_file.parent)
-            total_episodes = training_cfg.training_loop.max_episodes
-            logger.debug(f"Read max_episodes={total_episodes} from training.training_loop.max_episodes")
-        except Exception as e:
-            logger.error(f"Failed to read max_episodes from config (v2.1 schema required): {e}")
-            sys.exit(1)
+        total_episodes = authored_episodes
 
     # Print startup banner
     logger.info("=" * 60)
@@ -164,7 +136,8 @@ def main():
     logger.info("=" * 60)
     logger.info(f"Experiment Root: {config_dir}")
     logger.info(f"Level: {level_name}")
-    logger.info(f"Training Config: {config_file}")
+    logger.info("Training Config: %s", training_origin)
+    logger.info("Authored Episodes: %s", authored_episodes)
     if args.episodes is not None:
         logger.info(f"Episodes: {total_episodes} (from --episodes flag)")
     else:

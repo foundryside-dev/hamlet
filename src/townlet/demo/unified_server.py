@@ -19,12 +19,17 @@ import threading
 import time
 from datetime import datetime
 from pathlib import Path
+from types import MappingProxyType
 
+from townlet.config.resolved_launch import ResolvedLaunch, resolve_launch
 from townlet.config.training_v2_config import TrainingV2Config, load_training_v2_config
 
 # Import DemoRunner at module level to avoid Python 3.13 atexit threading issues
 # (importing TensorBoard/TensorFlow in background threads triggers atexit registration errors)
 from townlet.demo.runner import DemoRunner
+from townlet.universe.error_codes import ErrorCode
+from townlet.universe.errors import CompilationError, CompilationMessage
+from townlet.universe.stages import CompilationStage
 
 logger = logging.getLogger(__name__)
 
@@ -54,23 +59,44 @@ class UnifiedServer:
         Initialize unified server.
 
         Args:
-            config_dir: Experiment root directory containing v2.1 configs
-                (experiment.yaml, stratum.yaml, environment.yaml, actions.yaml, brain.yaml, levels/*)
+            config_dir: Authored experiment root or direct levels/<name> directory.
             total_episodes: Total number of episodes to train
             checkpoint_dir: Directory for checkpoints (auto-generated if None)
             inference_port: Port for inference WebSocket server
             force_new_vfs: Start a fresh run branch instead of resuming an incompatible VFS checkpoint.
         """
-        self.config_dir = Path(config_dir)
-        self.training_config_path = self.config_dir / "levels" / level_name / "training.yaml"
+        entry = Path(config_dir).resolve()
+        if entry.parent.name == "levels":
+            if level_name != entry.name:
+                raise CompilationError(
+                    CompilationStage.PREFLIGHT.label,
+                    [
+                        CompilationMessage(
+                            code=ErrorCode.DECLARATION_SCOPE,
+                            message=f"Direct-level input selects '{entry.name}', conflicting with explicit level '{level_name}'.",
+                            location=f"{entry}:1",
+                        )
+                    ],
+                )
+            self.config_dir = entry.parent.parent
+            self.level_name = entry.name
+        else:
+            self.config_dir = entry
+            self.level_name = level_name
+        self.resolved_launch: ResolvedLaunch | None = None
+        self.training_config_origin: str | None = None
+        self.training_config_path = self.config_dir / "levels" / self.level_name / "training.yaml"
+        self._training_config: TrainingV2Config | None = None
+        # Conventional inputs retain the historical lazy helper domain. A DTO
+        # loaded there is not evidence that a complete runtime pack was admitted.
         if not self.training_config_path.exists():
-            raise FileNotFoundError(f"Training config not found: {self.training_config_path}")
+            self._install_resolved_launch(resolve_launch(entry, level_name=level_name))
         self.total_episodes = total_episodes
+        # This is the required constructor request, not evidence of a CLI flag.
+        self.launch_request = MappingProxyType({"total_episodes": total_episodes})
         self.checkpoint_dir = Path(checkpoint_dir) if checkpoint_dir else None
         self.inference_port = inference_port
-        self.level_name = level_name
         self.force_new_vfs = force_new_vfs
-        self._training_config: TrainingV2Config | None = None
 
         # Component handles (initialized in start())
         self.training_thread: threading.Thread | None = None
@@ -86,6 +112,49 @@ class UnifiedServer:
             f"training_config={self.training_config_path}, "
             f"level={self.level_name}, episodes={total_episodes}, port={inference_port}"
         )
+
+    def _install_resolved_launch(self, resolved: ResolvedLaunch) -> None:
+        """Install complete selected training and its actual declaration origin."""
+        origin = resolved.declaration_origins[f"levels/{resolved.level_name}/training"]
+        source_path, separator, source_line = origin.rpartition(":")
+        if not separator or not source_line.isdecimal() or int(source_line) < 1 or not Path(source_path).is_absolute():
+            raise ValueError("Resolved training origin must contain an absolute declaration path and authored line")
+        training = resolved.compiled.get_level(resolved.level_name).training
+        self.config_dir = resolved.root
+        self.level_name = resolved.level_name
+        self.training_config_path = Path(source_path)
+        self.training_config_origin = origin
+        self._training_config = training
+        self.resolved_launch = resolved
+
+    def _admit_launch(self) -> ResolvedLaunch:
+        """Require complete content resolution independently of the helper cache."""
+        resolved = resolve_launch(self.config_dir, level_name=self.level_name)
+        self._install_resolved_launch(resolved)
+        return resolved
+
+    def _is_missing_required_families(self, error: CompilationError) -> bool:
+        """Recognize only discovery's required-family omissions for helper input."""
+        conventional = self.config_dir / "levels" / self.level_name / "training.yaml"
+        if self.training_config_path != conventional or not conventional.exists() or not error.issues:
+            return False
+        pack_messages = {
+            f"Missing required {family} declaration" for family in ("experiment", "stratum", "environment", "actions", "brain", "variables")
+        }
+        level_messages = {f"Missing required {family} declaration" for family in ("curriculum", "bars", "affordances", "drive", "training")}
+        for issue in error.issues:
+            if issue.code != ErrorCode.DECLARATION_MISSING:
+                return False
+            if issue.message in pack_messages:
+                if issue.location != f"{self.config_dir}:1":
+                    return False
+            elif issue.message in level_messages:
+                source_path, separator, source_line = (issue.location or "").rpartition(":")
+                if not separator or source_line != "1" or Path(source_path).parent != self.config_dir / "levels":
+                    return False
+            else:
+                return False
+        return True
 
     def _persist_config_snapshot(self, run_root: Path) -> None:
         """
@@ -113,6 +182,7 @@ class UnifiedServer:
         It starts training, inference, and frontend, then blocks
         until a shutdown signal is received.
         """
+        self._admit_launch()
         logger.info("Starting unified server components...")
 
         try:
@@ -198,12 +268,18 @@ class UnifiedServer:
         logger.info("UnifiedServer.start() exiting")
 
     def _load_training_config(self) -> TrainingV2Config:
-        """Load and cache the v2.1 training config for this level."""
+        """Return compiled training, or the preserved standalone helper DTO."""
         if self._training_config is not None:
             return self._training_config
-
-        self._training_config = load_training_v2_config(self.training_config_path.parent)
-        return self._training_config
+        try:
+            resolved = self._admit_launch()
+        except CompilationError as error:
+            if not self._is_missing_required_families(error):
+                raise
+            training = load_training_v2_config(self.training_config_path.parent)
+            self._training_config = training
+            return training
+        return resolved.compiled.get_level(resolved.level_name).training
 
     def _determine_run_directory(self, timestamp: str) -> Path:
         """

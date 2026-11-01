@@ -33,7 +33,7 @@ from townlet.demo.database import DemoDatabase
 from townlet.demo.live_inference import LiveInferenceServer
 from townlet.demo.runner import DemoRunner
 from townlet.recording.data_structures import EpisodeEndMarker, RecordedStep
-from townlet.recording.recorder import RecordingWriter
+from townlet.recording.recorder import RecordingWriter, _Boundary, _Capture
 from townlet.recording.replay import ReplayManager
 
 REWARD_FIELDS = {
@@ -97,15 +97,32 @@ def persisted_run(tmp_path_factory: pytest.TempPathFactory):
         },
     }
 
+    def recording_entry(item: Any) -> RecordedStep | EpisodeEndMarker | None:
+        if isinstance(item, _Capture):
+            return item.frame
+        if isinstance(item, _Boundary):
+            return item.marker
+        if isinstance(item, (RecordedStep, EpisodeEndMarker)):
+            return item
+        return None
+
+    def describe_entry(item: Any) -> dict[str, Any]:
+        observed = recording_entry(item)
+        if observed is not None:
+            return {"kind": type(item).__name__, "data": asdict(observed)}
+        return {"kind": type(item).__name__, "repr": repr(item)}
+
     def put(real_queue: queue.Queue, item: Any) -> None:
         original_put(real_queue, item)
-        if isinstance(item, (RecordedStep, EpisodeEndMarker)):
-            accepted.append(item)
+        observed = recording_entry(item)
+        if observed is not None:
+            accepted.append(observed)
 
     def get(real_queue: queue.Queue) -> Any:
         item = original_get(real_queue)
-        if isinstance(item, (RecordedStep, EpisodeEndMarker)):
-            dequeued.append(item)
+        observed = recording_entry(item)
+        if observed is not None:
+            dequeued.append(observed)
         return item
 
     try:
@@ -137,7 +154,7 @@ def persisted_run(tmp_path_factory: pytest.TempPathFactory):
         outcome.update(
             accepted=[{"kind": type(item).__name__, "data": asdict(item)} for item in accepted],
             dequeued=[{"kind": type(item).__name__, "data": asdict(item)} for item in dequeued],
-            outstanding=[{"kind": type(item).__name__, "data": asdict(item)} for item in outstanding],
+            outstanding=[describe_entry(item) for item in outstanding],
             buffered=[asdict(item) for item in recorder.writer.episode_buffer],
             writer_alive=recorder.writer_thread.is_alive(),
             files=files,
@@ -351,7 +368,18 @@ def test_copied_real_artifact_corruption_is_refused_or_detected_against_ledger(p
     root = run.root / f"corruption-{corruption}"
     target = root / "checkpoints" / run.recordings[0]["file_path"]
     target.parent.mkdir(parents=True)
-    shutil.copy2(run.runner.db_path, root / "demo.db")
+    with DemoDatabase(run.runner.db_path) as source_owner:
+        pass
+    family_paths = source_owner.checkpoint_owned_families()
+    assert len(family_paths) == 2
+    for family_path in family_paths:
+        shutil.copy2(family_path, root / family_path.name)
+    copied_db_path = root / run.runner.db_path.name
+    target.write_bytes(original.read_bytes())
+    with DemoDatabase(copied_db_path) as database:
+        replay = ReplayManager(database, root / "checkpoints")
+        assert replay.load_episode(0)
+        assert replay.steps == _unpack(original)["steps"]
     data = copy.deepcopy(_unpack(original))
     semantic = corruption in {"consistent_phantom", "raw_intrinsic"}
     if corruption == "schema":
@@ -381,11 +409,12 @@ def test_copied_real_artifact_corruption_is_refused_or_detected_against_ledger(p
         data["metadata"]["intrinsic_reward"] += delta
         data["metadata"]["total_reward"] += delta
     target.write_bytes(lz4.frame.compress(msgpack.packb(data, use_bin_type=True)))
-    with DemoDatabase(root / "demo.db") as database:
+    with DemoDatabase(copied_db_path) as database:
         replay = ReplayManager(database, root / "checkpoints")
         loaded = replay.load_episode(0)
         if semantic:
             assert loaded
+            assert replay.steps == data["steps"]
             with pytest.raises(AssertionError):
                 _assert_payload_ledger(_unpack(target), run.ticks, run.runner.env.action_ids)
         else:

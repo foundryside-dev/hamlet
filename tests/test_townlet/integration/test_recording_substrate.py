@@ -8,6 +8,15 @@ import torch
 from townlet.recording.recorder import EpisodeRecorder
 
 
+def _stop_writer_for_queue_inspection(recorder):
+    """Give the test sole ownership of queue entries before capture begins."""
+    recorder.writer.stop()
+    recorder.writer_thread.join(timeout=1.0)
+    assert not recorder.writer_thread.is_alive()
+    assert recorder.writer.running is False
+    assert recorder.queue.unfinished_tasks == 0
+
+
 def test_recording_handles_2d_positions():
     """Recorder should handle 2D position tuples."""
     from townlet.recording.data_structures import RecordedStep
@@ -21,6 +30,7 @@ def test_recording_handles_2d_positions():
             database=None,
             curriculum=None,
         )
+        _stop_writer_for_queue_inspection(recorder)
 
         # Record step with 2D position
         positions = torch.tensor([3, 4], dtype=torch.long)  # [2] for single agent
@@ -42,9 +52,16 @@ def test_recording_handles_2d_positions():
 
         # Verify position was converted to tuple correctly
         assert recorder.queue.qsize() == 1
-        item = recorder.queue.get_nowait()
+        capture = recorder.queue.get_nowait()
+        recorder.queue.task_done()
+        assert capture.sequence == 0
+        assert capture.ticket is None
+        item = capture.frame
         assert isinstance(item, RecordedStep)
         assert item.position == (3, 4)  # 2D tuple
+        assert item.meters == tuple(meters.tolist())
+        assert recorder.shutdown() == ()
+        assert recorder.queue.unfinished_tasks == 0
 
 
 def test_recording_affordance_layout_variable_dims():
@@ -87,6 +104,7 @@ def test_recording_handles_aspatial_positions():
             database=None,
             curriculum=None,
         )
+        _stop_writer_for_queue_inspection(recorder)
 
         # Record step with aspatial position (empty tuple)
         positions = torch.tensor([], dtype=torch.long)  # Empty position
@@ -108,6 +126,13 @@ def test_recording_handles_aspatial_positions():
 
         # Verify position was converted to empty tuple correctly
         assert recorder.queue.qsize() == 1
-        item = recorder.queue.get_nowait()
+        capture = recorder.queue.get_nowait()
+        recorder.queue.task_done()
+        assert capture.sequence == 0
+        assert capture.ticket is None
+        item = capture.frame
         assert isinstance(item, RecordedStep)
         assert item.position == ()  # Empty tuple for aspatial
+        assert item.meters == tuple(meters.tolist())
+        assert recorder.shutdown() == ()
+        assert recorder.queue.unfinished_tasks == 0

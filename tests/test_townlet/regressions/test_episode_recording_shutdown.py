@@ -21,7 +21,7 @@ import pytest
 from tests.test_townlet.helpers.config_builder import PRIMARY_LEVEL_NAME
 from townlet.demo.runner import DemoRunner
 from townlet.recording.data_structures import EpisodeEndMarker, RecordedStep
-from townlet.recording.recorder import EpisodeRecorder, RecordingWriter
+from townlet.recording.recorder import EpisodeRecorder, RecordingWriter, _Boundary, _Capture
 
 
 @pytest.mark.parametrize("attempt", range(10))
@@ -37,15 +37,32 @@ def test_ordinary_runner_shutdown_persists_accepted_episode(
     original_put = queue.Queue._put
     original_get = queue.Queue._get
 
+    def recording_entry(entry: Any) -> RecordedStep | EpisodeEndMarker | None:
+        if isinstance(entry, _Capture):
+            return entry.frame
+        if isinstance(entry, _Boundary):
+            return entry.marker
+        if isinstance(entry, (RecordedStep, EpisodeEndMarker)):
+            return entry
+        return None
+
+    def describe_entry(entry: Any) -> dict[str, Any]:
+        observed = recording_entry(entry)
+        if observed is not None:
+            return {"kind": type(entry).__name__, "data": asdict(observed)}
+        return {"kind": type(entry).__name__, "repr": repr(entry)}
+
     def observe_put(real_queue: queue.Queue, entry: Any) -> None:
         original_put(real_queue, entry)
-        if isinstance(entry, (RecordedStep, EpisodeEndMarker)):
-            accepted.append(entry)
+        observed = recording_entry(entry)
+        if observed is not None:
+            accepted.append(observed)
 
     def observe_get(real_queue: queue.Queue) -> Any:
         entry = original_get(real_queue)
-        if isinstance(entry, (RecordedStep, EpisodeEndMarker)):
-            dequeued.append(entry)
+        observed = recording_entry(entry)
+        if observed is not None:
+            dequeued.append(observed)
         return entry
 
     # Observe the existing queue under its own mutex; production and consumption
@@ -100,7 +117,7 @@ def test_ordinary_runner_shutdown_persists_accepted_episode(
         outcome.update(
             accepted=[{"kind": type(entry).__name__, "data": asdict(entry)} for entry in accepted],
             dequeued=[{"kind": type(entry).__name__, "data": asdict(entry)} for entry in dequeued],
-            outstanding=[{"kind": type(entry).__name__, "data": asdict(entry)} for entry in outstanding],
+            outstanding=[describe_entry(entry) for entry in outstanding],
             buffered=[asdict(entry) for entry in recorder.writer.episode_buffer],
             writer_alive=recorder.writer_thread.is_alive(),
             index_rows=rows,

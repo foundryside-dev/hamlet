@@ -1,0 +1,20 @@
+{
+  "status": "Technical R1 approved; implementation and every T15/X04 acceptance still owed",
+  "proposal_sha256": "70b155234f553855675a235d980674afdc3588d92e71dd054bba5b69f0e56d0a",
+  "review_sha256": "42c211db2a3326cbf018bb94cd774f522fe2bf56fdcacf2e84d0c23c7791e818",
+  "metadata_reconciliation": {
+    "tasks": 66,
+    "pairs": 603,
+    "mutable_pairs": 315,
+    "interfaces": 55,
+    "T15_files": 5,
+    "T15_projected_lines": 4950,
+    "all_projected_worker_reviewer_bounds": "PASS; actual final source recounted before every later dispatch",
+    "no_mutable_order_conflicts": true,
+    "proposal_sha256": "70b155234f553855675a235d980674afdc3588d92e71dd054bba5b69f0e56d0a",
+    "review_sha256": "42c211db2a3326cbf018bb94cd774f522fe2bf56fdcacf2e84d0c23c7791e818"
+  },
+  "reservation": "Fresh POP3000/RC250/QT100/OP600/test1000 =5/4950; SB and other producer API consumed as named verified prose, no sixth helper",
+  "preservation": "Lazy binding adopts loaded/attached qualified replay even empty; no reset/reseed/reconfigure on first step; offside accepted adaptations preserve captured rows/history/clocks",
+  "finite_programme": "66tasks/54requirements/22lenses unchanged; T15/X04 not qualified"
+}

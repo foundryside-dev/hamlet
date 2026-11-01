@@ -3,7 +3,7 @@
   "baseline_sha": "4aa5363b5de54d9a112977c32c2975f37627197f",
   "design": "BAC-2026-11-01-r2 plus explicit additive plan decisions",
   "approved_plan_sha256": "2dde2d80d3d14c510878c26af1f99c42217be12d3cb3a554647bc68646feedc1",
-  "phase": "23 of 66 finite source packages qualified/released; 43 remaining packages and all final BAC acceptance OPEN",
+  "phase": "24 of 66 finite source packages qualified/released; 42 remaining packages and all final BAC acceptance OPEN",
   "completion_bar": "zero unresolved P1/P2 and zero unapproved in-scope capability gaps; all agreed finite evidence, fresh final spec/design/code review, required gates and source-verified docs",
   "requirements": [
     {
@@ -178,6 +178,15 @@
           "receipt": "package-reviews/T13-implementation.md",
           "qualification": "evidence/wave07-qualification.json",
           "disposition": "Scoped T13 evidence; remaining owners and final common-source acceptance OPEN"
+        },
+        {
+          "task": "T14",
+          "source_commit": "b3003550b7c1dad76a52e596b2af01658fa2b92d",
+          "qualified_release_commit": "b3003550b7c1dad76a52e596b2af01658fa2b92d",
+          "qualified_sum_tree": "aecfaaa84cd58fafd8ac1f6ca67052639d570ed4",
+          "receipt": "package-reviews/T14-implementation.md",
+          "qualification": "evidence/wave08-qualification.json",
+          "disposition": "Scoped backend/transport evidence only; T15 real learner and final current-source acceptance OPEN"
         }
       ],
       "evidence": [
@@ -883,6 +892,15 @@
           "receipt": "package-reviews/T13-implementation.md",
           "qualification": "evidence/wave07-qualification.json",
           "disposition": "Scoped T13 evidence; remaining owners and final common-source acceptance OPEN"
+        },
+        {
+          "task": "T14",
+          "source_commit": "b3003550b7c1dad76a52e596b2af01658fa2b92d",
+          "qualified_release_commit": "b3003550b7c1dad76a52e596b2af01658fa2b92d",
+          "qualified_sum_tree": "aecfaaa84cd58fafd8ac1f6ca67052639d570ed4",
+          "receipt": "package-reviews/T14-implementation.md",
+          "qualification": "evidence/wave08-qualification.json",
+          "disposition": "Scoped backend/transport evidence only; T15 real learner and final current-source acceptance OPEN"
         }
       ]
     },
@@ -945,6 +963,15 @@
           "receipt": "package-reviews/T13-implementation.md",
           "qualification": "evidence/wave07-qualification.json",
           "disposition": "Scoped T13 evidence; remaining owners and final common-source acceptance OPEN"
+        },
+        {
+          "task": "T14",
+          "source_commit": "b3003550b7c1dad76a52e596b2af01658fa2b92d",
+          "qualified_release_commit": "b3003550b7c1dad76a52e596b2af01658fa2b92d",
+          "qualified_sum_tree": "aecfaaa84cd58fafd8ac1f6ca67052639d570ed4",
+          "receipt": "package-reviews/T14-implementation.md",
+          "qualification": "evidence/wave08-qualification.json",
+          "disposition": "Scoped backend/transport evidence only; T15 real learner and final current-source acceptance OPEN"
         }
       ]
     },
@@ -1619,7 +1646,17 @@
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "P2",
       "approval_reference": null,
-      "package_evidence": []
+      "package_evidence": [
+        {
+          "task": "T14",
+          "source_commit": "b3003550b7c1dad76a52e596b2af01658fa2b92d",
+          "qualified_release_commit": "b3003550b7c1dad76a52e596b2af01658fa2b92d",
+          "qualified_sum_tree": "aecfaaa84cd58fafd8ac1f6ca67052639d570ed4",
+          "receipt": "package-reviews/T14-implementation.md",
+          "qualification": "evidence/wave08-qualification.json",
+          "disposition": "Scoped backend/transport evidence only; T15 real learner and final current-source acceptance OPEN"
+        }
+      ]
     },
     {
       "id": "G01",
@@ -1765,6 +1802,15 @@
           "receipt": "package-reviews/T12-implementation.md",
           "qualification": "evidence/wave06-qualification.json",
           "disposition": "Scoped evidence only; remaining owners and final common-source acceptance OPEN"
+        },
+        {
+          "task": "T14",
+          "source_commit": "b3003550b7c1dad76a52e596b2af01658fa2b92d",
+          "qualified_release_commit": "b3003550b7c1dad76a52e596b2af01658fa2b92d",
+          "qualified_sum_tree": "aecfaaa84cd58fafd8ac1f6ca67052639d570ed4",
+          "receipt": "package-reviews/T14-implementation.md",
+          "qualification": "evidence/wave08-qualification.json",
+          "disposition": "Scoped backend/transport evidence only; T15 real learner and final current-source acceptance OPEN"
         }
       ]
     },
@@ -2589,6 +2635,15 @@
             "evidence/T03-qualification.json"
           ],
           "final_acceptance": "Scoped P1 primitive/transport qualified; full final same-source requirement refresh and runtime consumers remain owed"
+        },
+        {
+          "task": "T14",
+          "source_commit": "b3003550b7c1dad76a52e596b2af01658fa2b92d",
+          "qualified_release_commit": "b3003550b7c1dad76a52e596b2af01658fa2b92d",
+          "qualified_sum_tree": "aecfaaa84cd58fafd8ac1f6ca67052639d570ed4",
+          "receipt": "package-reviews/T14-implementation.md",
+          "qualification": "evidence/wave08-qualification.json",
+          "disposition": "Scoped backend/transport evidence only; T15 real learner and final current-source acceptance OPEN"
         }
       ]
     },
@@ -3073,6 +3128,15 @@
           "receipt": "package-reviews/T13-implementation.md",
           "qualification": "evidence/wave07-qualification.json",
           "disposition": "Scoped T13 evidence; remaining owners and final common-source acceptance OPEN"
+        },
+        {
+          "task": "T14",
+          "source_commit": "b3003550b7c1dad76a52e596b2af01658fa2b92d",
+          "qualified_release_commit": "b3003550b7c1dad76a52e596b2af01658fa2b92d",
+          "qualified_sum_tree": "aecfaaa84cd58fafd8ac1f6ca67052639d570ed4",
+          "receipt": "package-reviews/T14-implementation.md",
+          "qualification": "evidence/wave08-qualification.json",
+          "disposition": "Scoped backend/transport evidence only; T15 real learner and final current-source acceptance OPEN"
         }
       ],
       "evidence": [
@@ -3518,6 +3582,15 @@
           "receipt": "package-reviews/T13-implementation.md",
           "qualification": "evidence/wave07-qualification.json",
           "disposition": "Scoped T13 evidence; remaining owners and final common-source acceptance OPEN"
+        },
+        {
+          "task": "T14",
+          "source_commit": "b3003550b7c1dad76a52e596b2af01658fa2b92d",
+          "qualified_release_commit": "b3003550b7c1dad76a52e596b2af01658fa2b92d",
+          "qualified_sum_tree": "aecfaaa84cd58fafd8ac1f6ca67052639d570ed4",
+          "receipt": "package-reviews/T14-implementation.md",
+          "qualification": "evidence/wave08-qualification.json",
+          "disposition": "Scoped backend/transport evidence only; T15 real learner and final current-source acceptance OPEN"
         }
       ],
       "evidence": [
@@ -3722,6 +3795,15 @@
           "receipt": "package-reviews/T13-implementation.md",
           "qualification": "evidence/wave07-qualification.json",
           "disposition": "Scoped T13 evidence; remaining owners and final common-source acceptance OPEN"
+        },
+        {
+          "task": "T14",
+          "source_commit": "b3003550b7c1dad76a52e596b2af01658fa2b92d",
+          "qualified_release_commit": "b3003550b7c1dad76a52e596b2af01658fa2b92d",
+          "qualified_sum_tree": "aecfaaa84cd58fafd8ac1f6ca67052639d570ed4",
+          "receipt": "package-reviews/T14-implementation.md",
+          "qualification": "evidence/wave08-qualification.json",
+          "disposition": "Scoped backend/transport evidence only; T15 real learner and final current-source acceptance OPEN"
         }
       ],
       "evidence": [
@@ -3977,6 +4059,15 @@
           "receipt": "package-reviews/T13-implementation.md",
           "qualification": "evidence/wave07-qualification.json",
           "disposition": "Scoped T13 evidence; remaining owners and final common-source acceptance OPEN"
+        },
+        {
+          "task": "T14",
+          "source_commit": "b3003550b7c1dad76a52e596b2af01658fa2b92d",
+          "qualified_release_commit": "b3003550b7c1dad76a52e596b2af01658fa2b92d",
+          "qualified_sum_tree": "aecfaaa84cd58fafd8ac1f6ca67052639d570ed4",
+          "receipt": "package-reviews/T14-implementation.md",
+          "qualification": "evidence/wave08-qualification.json",
+          "disposition": "Scoped backend/transport evidence only; T15 real learner and final current-source acceptance OPEN"
         }
       ],
       "evidence": [
@@ -5862,6 +5953,22 @@
         "evidence/wave07-qualification.json"
       ],
       "final_acceptance": "T14 recurrent prioritized units, T15/T16 actual qualified learner/legal-action/objective integration, required X04 finite unweighted mean-TD telemetry before T15/G2, T24/T25 complete native admission/resume/atomicity/reproducibility, T37 joint learning and final common-source acceptance remain OPEN. CPU only; CUDA unavailable. No learning-quality, recurrent, replacement-native, strict-world-isolation or complete nativeC07 closure follows from the bounded gamma0 two-update proof."
+    },
+    {
+      "task": "T14",
+      "source_commit": "b3003550b7c1dad76a52e596b2af01658fa2b92d",
+      "qualified_release_commit": "b3003550b7c1dad76a52e596b2af01658fa2b92d",
+      "qualified_sum_tree": "aecfaaa84cd58fafd8ac1f6ca67052639d570ed4",
+      "status": "Scoped backend/transport package qualified/released; production learner and final acceptance remain owed",
+      "full_repository_result": "6696 passed,16 skipped,16 warnings;4workers;1800.21s wall; exact-source postflightPASS",
+      "reports": [
+        "package-reviews/T14-implementation.md",
+        "package-reviews/T14-independent-review.md",
+        "package-reviews/T14-native-review.md",
+        "package-reviews/T14-owner-review.md",
+        "evidence/wave08-qualification.json"
+      ],
+      "final_acceptance": "T15 must wire ordinary production captured collection, historical legal vanilla/Double targets, real retained readiness, per-network recurrent prefixes/hidden states/BPTT/objectives and actual selected recurrent PER. X04 finite truthful unweighted TD mean remains required before T15 release/G2. T16 runner behavior, complete native10/7 admission/atomicity/identity/archive accounting/resume/evolved optimizer under T24/T25, joint learning/E2E and all final common-source review/coverage/slow/applicable hardware/exact-tip CI remain OPEN. CPU only; CUDA unavailable. This backend/transport package does not establish natural recurrent-PER learning quality, complete C07, whole-world stochastic continuation or whole-BAC completion."
     }
   ],
   "evidence_note": "Each package records its actual immutable source/evidence. Wave05 qualified sum-tree postflight verified 53 source hashes, three final Astra reviews, five process identities, preserved configuration/native artifacts and the worktree registry. Storage archive proofs do not close required native historical dispatch, captured learning/readiness or final common-source acceptance.",
@@ -6014,6 +6121,19 @@
     "effective_requirements": 54,
     "new_required_defect": "X04 producerT15/sinkT35 OPEN",
     "C01": "New bounded authored reachability confirmed; historical original evidence retained",
+    "final_acceptance": "OPEN"
+  },
+  "wave08_qualified_scope": {
+    "tasks": [
+      "T14"
+    ],
+    "source_head": "b3003550b7c1dad76a52e596b2af01658fa2b92d",
+    "tree": "aecfaaa84cd58fafd8ac1f6ca67052639d570ed4",
+    "receipt": "evidence/wave08-qualification.json",
+    "qualified_packages": 24,
+    "remaining_packages": 42,
+    "effective_requirements": 54,
+    "new_optional_P3": [],
     "final_acceptance": "OPEN"
   }
 }

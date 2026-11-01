@@ -1,0 +1,1458 @@
+{
+  "schema_version": 1,
+  "tasks": [
+    "T14"
+  ],
+  "release": {
+    "base_commit": "bb7cf5f9a545fab0f5b4ecfcc042571e44c34cdd",
+    "qualified_source_commit": "b3003550b7c1dad76a52e596b2af01658fa2b92d",
+    "qualified_sum_tree": "aecfaaa84cd58fafd8ac1f6ca67052639d570ed4",
+    "logical_commits": [
+      {
+        "task": "T14",
+        "sha": "b3003550b7c1dad76a52e596b2af01658fa2b92d",
+        "paths": [
+          "tests/test_townlet/regressions/bac/test_recurrent_per.py",
+          "tests/test_townlet/regressions/bac/test_recurrent_per_native.py",
+          "tests/test_townlet/fixtures/bac_sequence_current6/sequence6-captured.pt",
+          "tests/test_townlet/fixtures/bac_sequence_current6/sequence6-captured-with-sequence5-archive.pt",
+          "tests/test_townlet/fixtures/bac_sequence_current6/portable-manifest.json",
+          "src/townlet/training/sequential_replay_buffer.py",
+          "src/townlet/training/historical_checkpoint.py",
+          "tests/test_townlet/unit/training/test_sequential_replay_buffer.py",
+          "tests/test_townlet/integration/test_compact_token_acceptance.py",
+          "tests/test_townlet/regressions/bac/test_per_estimator.py"
+        ]
+      }
+    ],
+    "qualification": "All6guards, three original bounded source/spec review scopes unchanged with preserved true identities, fresh2/1913 estimator review plus independent146, actualR2focused/owners and exactfull4worker gate PASS. Final committed tree exactly equals tested candidate.",
+    "documentation": "Source-verified portable documentation checkpoint still owed.",
+    "publication": "Candidate already pushed and exactremoteSHA verified before correctedfull gate; no merge/PR/newlocalbranch/worktree."
+  },
+  "postflight": {
+    "candidate_tree": "aecfaaa84cd58fafd8ac1f6ca67052639d570ed4",
+    "base_commit": "b3003550b7c1dad76a52e596b2af01658fa2b92d",
+    "full_exit_code": 0,
+    "counts": {
+      "passed": 6696,
+      "skipped": 16,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 16
+    },
+    "seconds": 1800.2089784145355,
+    "verified_source_paths": 112,
+    "verified_review_artifacts": 10,
+    "verified_process_identities": 5,
+    "verified_config_digests": 573,
+    "verified_native_manifest_artifacts": 13,
+    "worktree_count": 14,
+    "entire_worktree_registry_unchanged": true,
+    "working_tree_equals_index": true,
+    "harness_sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d",
+    "orchestration_harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+    "release": "Postflight PASS at already committed/pushed exact-source T14 candidate. Source-verified docs/qualification record still owed. T15/X04/T16/G2/fullnativeC07/wholeBAC final remain OPEN."
+  },
+  "source_files": {
+    "src/townlet/universe/compiled.py": "494f9676c236349f12c875c82dde821a85a3bf5077cae15654c78e8ac1630710",
+    "src/townlet/universe/compiler.py": "521a72dd6d0a155c89a216fa038828cc8054520714a58cc0e0420c2da9d09e92",
+    "tests/test_townlet/unit/population/test_vectorized_population.py": "9e0b50095cd29470afc92d42a740a800e34c731aea12abfa96a7d60d89b1015c",
+    "docs/remediation/bac/package-reviews/PW02-key-ownership-finding.md": "64e3a27ba5bee32521702628524bc1670f01d0714ad22adeaca1d121c56222a3",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py": "5e671b5693eb3741424b1fadb098eca6ea3d5f51599dddc1513c1f2292847848",
+    "docs/remediation/bac/package-reviews/T06-preservation-finding.md": "b83c42525b09f70994b3ec13332343413719011599bad42eeb7096b9b64b7022",
+    "src/townlet/population/vectorized.py": "38d8c969a8acfc5f49a3c5c7e532f6f10b34844af12ca37e8696123511e47d3b",
+    "docs/remediation/bac/evidence/wave05-qualification.json": "33b6fb7c10007587ef9e4bbb629238f50833a4d47cc7c15f06cbffb9650ed3d5",
+    "docs/remediation/bac/package-reviews/T12-inspection-design-review.md": "f29b568531ad2493cca472c22936b285619fc0242cbeca641be5ba4b7a6a2721",
+    "src/townlet/training/sequential_replay_buffer.py": "f958b1ed79bab5a37422353a04a9d78c05969950dfbf994436b4e1ce0e73392c",
+    "tests/test_townlet/regressions/bac/test_discovery.py": "eb73ca825614ba593549135253caab0b723cc07b53bf91ac3e2801fd9e73e500",
+    "tests/test_townlet/unit/training/test_prioritized_replay_buffer_components.py": "b6dd85342a68223394786c0c6c4a80c4af45662b77df7972689067e7e50ebaaf",
+    "tests/test_townlet/regressions/bac/test_recording_drain.py": "90b876583bcc6bf047cfd7f424dac889a86103b5109bef29c38bcce838e18912",
+    "tests/test_townlet/unit/population/test_recurrent_training.py": "e288d03c24b98e6bd4aff86c617a933dfba0ac233821967d5db00dc301ff7e01",
+    "src/townlet/training/replay_buffer.py": "d6fd0517488cfde5291c33ce03f67923c407af932794fb8a902b10e1d137f1c8",
+    "docs/remediation/bac/package-reviews/T06-implementation.md": "be1e6a853e9fcfdb75aa77f6ab58a658e782ba49d99aef2de7afd28e659de121",
+    "docs/remediation/bac/package-reviews/T12-native-proof-review.md": "8a6f093b5698626eb15acc5f79c357f9aebf19d0c20ab21bdca4728caebe0178",
+    "src/townlet/training/prioritized_replay_buffer.py": "290eadca0305658abdd4aec361a9b167ac63d7a887438b602c19c2eaf9020de9",
+    "docs/remediation/bac/package-reviews/T12-common-binding.md": "6b097398da6daa9339bd9c83712c378967e48f43f508a58cdf8697d985d86145",
+    "tests/test_townlet/regressions/bac/test_uniform_history.py": "a0ee835fc7a862216bddcddcac647ffff954f59f1842be5f8f4c77656fe899fd",
+    "src/townlet/config/bac_options.py": "10dc3ef7dc288d954147046c95bc8362df2162f3829986be26b2724e86dd4916",
+    "src/townlet/exploration/epsilon_greedy.py": "f9100a2f7f6a053a06d420d850a979d1c1e4a528461727c2a1405da5daeec059",
+    "src/townlet/exploration/world_curiosity_state.py": "8b242ef58af2840c069db3d599606ba4760eea675e6be5bf00d8eb89c23b5b82",
+    "docs/remediation/bac/evidence/wave06-source-binding.md": "aa1803ad05ce03aa41f9f4f79517311dc7638e5505494540a242dac2e7f8bd05",
+    "tests/test_townlet/integration/test_checkpointing.py": "c7044acb8e7f247511c80e8ab792a14040fff7eb646ee99f27bc96ab262cdf34",
+    "docs/remediation/bac/package-reviews/T11-independent-review.md": "cf88d21b87a53dcced008cdc8a4482b410fb28f3b22ad6fd2ce62c8202602b8e",
+    "src/townlet/config/training_v2_config.py": "d103aafbfe4e7fd4e957b71fd0651c6b6d8bebb98de4581d9d53e2356907ca68",
+    "docs/remediation/bac/package-reviews/PW02-independent-review.md": "03299c0fdaeace1a51ef23fdadc7947bf5685d02957db4975b2d159ed08b3c7a",
+    "src/townlet/config/exploration.py": "b5292e6d193ab224e76f727b63d9e078fdac0ca706ae0ee7f58e7f723302951d",
+    "src/townlet/exploration/icm.py": "8004aec68d19c962df0cf6785b00af32c8553a3746fee95be39009555f9d44b8",
+    "docs/remediation/bac/package-reviews/T07-independent-review.md": "79387e41a3b6501c1a87e8f80262cb6d8a30c92be296cf1f8590282ce8594d4b",
+    "docs/remediation/bac/package-reviews/T06-transport-initial-review.md": "554c8008e97d4d9bdf0bd5bac0d97227537655ad445bd1bdf017e2233b62bcbb",
+    "docs/remediation/bac/package-reviews/T07-implementation.md": "d9d63bd8fc406f872be7a4f34650189870d840146fc906b72b30f9c3a22885ac",
+    "tests/test_townlet/regressions/test_episode_recording_shutdown.py": "9874eed75d1b7491a5a8ef5fca1af7430b61aaff52037b8948b84e2636b67fa2",
+    "docs/remediation/bac/acceptance-ledger.json": "24daa42f17bd898072d01bb4346286ed00e743427309ca129a3be766b0ee3921",
+    "docs/remediation/bac/package-reviews/T06-independent-review.md": "25ca43e41e64945f75381aaaa74600986d92e7e3f75f3f8f8346c9d638d344e3",
+    "src/townlet/config/resolved_launch.py": "67b5b38d729ef45a87bdcc1c2a834e8fc9d290708d9b2ee8f78dfe5093f840f4",
+    "src/townlet/recording/recorder.py": "8fca0b033bdc74f9e8146006c029b8bce6228b067f89b72109e1a886f4a32825",
+    "docs/remediation/bac/package-reviews/T11-implementation.md": "9c79533e65adc501fe3714d7cc29d1a56b8ccf7676afd17744f8f2c98ff2483c",
+    "tests/test_townlet/regressions/bac/test_count_provider.py": "0de2db0e0d2de868d803b97e8e8f0e277b365178dfddacaaa5825de65c5fed94",
+    "tests/test_townlet/properties/test_replay_buffer_properties.py": "5678e826ce7fcb0574deb23441cc54b9e355b3c7adc446595269e2d7ae628a17",
+    "tests/test_townlet/regressions/bac/test_icm_provider.py": "3759cd590ca7f6c348294ac6d58341cb7f7101cf25bfca7bfdeaea4ecdd645f8",
+    "src/townlet/exploration/count_based.py": "163cb33f06799a75c887ff7beb58e4897875c94a4780ab722d019f714b33e9c1",
+    "tests/test_townlet/unit/recording/test_recorder.py": "11d2391ec0bd7c7e105f8e8d45ce81d5771c4d87961dfee696e432ac3b15576b",
+    "docs/remediation/bac/package-reviews/T12-inspection-finding.md": "1b54e50fc4ba507e4bdc5f886c27ee787fbaae579f8fc1c3b2f82d69536f2f57",
+    "src/townlet/universe/declarations.py": "a06b1fe8f3d16046935ded0fac95cf3312bb3f76bb937a757fb5f9ee598d84bd",
+    "tests/test_townlet/regressions/test_episode_lane_artifact_pipeline.py": "1bd025f4fd8c1a18f25235ed94718e68826a8c301386906d8a09ccd85710cc1f",
+    "tests/test_townlet/integration/test_compact_token_acceptance.py": "a9a911a37679ffb850583fefaa7b73907a3f350d86959238d718c5ffb85867dc",
+    "src/townlet/recording/data_structures.py": "b8b2a5b2c202e8fc28ee907b645391cfb32f7d1a5530f528fa8ae6e076171158",
+    "docs/remediation/bac/package-reviews/T12-inspection-native-handoff.md": "63c7d057e98ae7d980c85366bd513997eeda5c1a6a51e554d015c45343757c3d",
+    "tests/test_townlet/regressions/bac/test_sequence_inspection_native.py": "017cd03d37065359096123660f9d61af4744d66df0054ae544d57c703bdcf6d3",
+    "tests/test_townlet/integration/test_reward_component_flow.py": "e56dc0e57e5cc9013b88bda67f661937d9d51df872d21b0163edd05f2c2618ce",
+    "src/townlet/demo/runner.py": "94842641bdce645fdd90d188d5bbdf6e09e7f4c071d15756202e173acd47c15d",
+    "tests/test_townlet/regressions/bac/test_public_loaders.py": "74789aa9ec679e3b9db3547600bc7e7e7c76a321f607605b4048a63b282c556d",
+    "src/townlet/training/replay_contract.py": "3eaa725bd6d592b7524dd249125877eb91a1f707d4dfd12fbfb59b5b6cc6356c",
+    "docs/remediation/bac/STATUS.md": "50a292af188d8d63a5a52413fd1fe91864720319ad98988448dc75c2552fca6d",
+    "tests/test_townlet/integration/test_recording_substrate.py": "806f4f11e1a00b8dc058b643531ff78cdcea5b84c9e027fbac5993d655fcea9c",
+    "docs/remediation/bac/package-reviews/T07-common-binding.md": "f38edfc29dd0e02f289a27f48c5cf6206d1846f121270b3e7fd8635087248612",
+    "docs/remediation/bac/evidence/wave06-qualification.json": "0683d4994771bfacc7843a9a77b4eec78a63c2a32195524bac0e28204054fa0f",
+    "src/townlet/training/episode.py": "d9f93e2b0551f04ac882ffc7e4a775d34352626af3e868679c00a962f52c00a7",
+    "tests/test_townlet/regressions/test_episode_lane_sinks.py": "7e4aa29416b3fcfd01470ba143d3eec43172d66cff9aa4120ef6e28b245dcd8a",
+    "tests/test_townlet/regressions/bac/test_sequence_history.py": "5b4626bc9557bbd86a5b25dad5e2cbf2b7ae49d211c2b6d125bdbd1c2386a7dc",
+    "scripts/run_demo.py": "0029a2d758ed45907be30c6e8a21003798ddaef99dad392acc2c8a0ce3abd43a",
+    "tests/test_townlet/regressions/bac/test_per_history.py": "4ea99d20fa18333d249b0ce1408b91c99c12194e6d7ddcd0788c5b4f8c492da1",
+    "src/townlet/recording/receipts.py": "f4f90c3ae1584965cbfc7ad84170fb3b0413ba5599a9eeb3d0d447f48b6fd647",
+    "docs/remediation/bac/package-reviews/T07-clock-finding.md": "3d52b56dc1ebc10dde222dc0dae9e25772d5820153fd7ead7572205f47a4e084",
+    "tests/test_townlet/unit/training/test_replay_buffers.py": "61b688ea5fa7ef31d023b76b9ea3e48cc57e27787a19bee21eacd10071d647d9",
+    "src/townlet/config/curriculum.py": "a65e3a3b4d02182f96e56d0ad3fd93c72b7e9921b64b5f9c272456250d620227",
+    "tests/test_townlet/regressions/fixtures/episode_lanes.py": "b22601ae6cac1c78fe86f3e23b717c831905df9c39850daa24b406ae4e6f5c33",
+    "src/townlet/exploration/rnd.py": "3a774dfb042cdbf20b66555c41f75c2d537b6ff49472395877dfcf5595e26e72",
+    "docs/remediation/bac/package-reviews/T12-implementation.md": "43f27778ac9256782d665f1e5d218c430c3b5ac699ec1e49ceb2ad990d9b7f12",
+    "tests/test_townlet/unit/training/test_sequential_replay_buffer.py": "18cff4fa681e5c08ec759301b3ebbed69568bc8ab80b7ccea3e6c260294f373a",
+    "src/townlet/universe/errors.py": "af30223624658d5d9cad3f56232353433f72a340d1fdb4caec69b581f91c2a53",
+    "src/townlet/config/exploration_policy.py": "af8843ec1a270cfa49ec44b7ac5615d33db0d4d16b2d169d161bb4a1cd402c8c",
+    "docs/remediation/bac/package-reviews/T12-inspection-transport.md": "7c6f11ebc0634832a3aa7c1464c45b1942aff26a135118dc167cf728e9b570f5",
+    "src/townlet/exploration/adaptive_intrinsic.py": "80ecb26fb33626cc9efd271422c69cdae495412f5db94a505eb59628b58b6cd9",
+    "src/townlet/demo/database.py": "7335e9798d15e14721e5278cb4e7402eea7f7da2344187c56f8bc8e42b93902e",
+    ".defaults-ratchet": "d2ca079a77bf4e5064e527d64a99d7897fd505e980c359b839bf6b882ea83ab0",
+    "tests/test_townlet/unit/training/test_replay_buffer_components.py": "639e83cdf9a050a97edb0417aba1a89b507e329b2bfe2e4a438ce71ea8e3b6ce",
+    "tests/test_townlet/unit/demo/test_unified_server_unit.py": "0e4e90f087d69772ba25438871f4b4c19618a1076d73546246f6ae4a63eaaa28",
+    "docs/remediation/bac/package-reviews/T07-scope-finding.md": "9ed00d59b257bb7e1535bf98479a7e518a0bef5574ab4a6b83aa322aa73c620f",
+    "tests/test_townlet/unit/training/test_prioritized_replay_buffer.py": "52db935fa6ede75d87abacbf22de3f13415463e880b65c2d78114464ff15affa",
+    "src/townlet/training/historical_checkpoint.py": "74709ebedc0c84208c3b30debd4101bc3bc67ca73f9df1a4be8a1aafff0894a4",
+    "src/townlet/demo/unified_server.py": "626634171c744ecac9ac825f5db5727e3407031efd6c8fe0dcac5a1058e2a02c",
+    "docs/remediation/bac/package-reviews/T12-independent-review.md": "808dcfc041826b88aa1b13a679aed8b49ee23e3cac55bfa7f18365e31e6cda01",
+    "tests/test_townlet/regressions/bac/test_launch_transport.py": "1bceb21245ebeff9ba6bc93d10603f669d964d2dbbfebdcfed56fbf8f3910d91",
+    "docs/remediation/bac/package-reviews/T12-checkpoint-owner-review.md": "6fe2d4b38477f30fad2b8b99021211d8b0c2cd3c90574a39d8aa39b4f9e2e9f1",
+    "tests/test_townlet/integration/test_recording_recorder.py": "517341fb44d5edb7cdc85dc4bb6b4f8840de7ce741695d594b766038f8d6e962",
+    "docs/remediation/bac/package-reviews/PW02-implementation.md": "d043a9769b81a2d95a3c85155b253c3090a2dc4f75d29c3bdf69e12f537e9216",
+    "tests/test_townlet/regressions/bac/test_per_estimator.py": "2e08f44397d626a95b4b0f5142021e408250b50067fbfc16c01f2c6ae4459866",
+    "tests/test_townlet/regressions/bac/test_per_native_learner.py": "6348f247dc9b5060a650f87fe8bee1d9c18ece46a868c40b6021f0360c19da16",
+    "tests/test_townlet/fixtures/bac_per_current5/per5-captured.pt": "9a85394d9f36cd5660fe7a6c6944d600ce18e44410b63f5beb50203fd379b296",
+    "tests/test_townlet/fixtures/bac_per_current5/per5-captured-with-per4-archive.pt": "029558d19fdae42f14e61432af8353c1c078db554a7e3b39519d39b50dadfe60",
+    "tests/test_townlet/fixtures/bac_per_current5/portable-manifest.json": "b3008db4299682714674b6f5b809c41b58efb9a9452299ad005383e8fe2b8780",
+    "src/townlet/training/per_sampling.py": "0efe801f01a31082aa52c4b9bd40c356d1c97f89690b07c7835b541b7f2c6de6",
+    "docs/remediation/bac/package-reviews/T13-independent-review.md": "ae44aa60413f65c03e1308f72abdbc5fd6d37c105acca0e06e3e051c4a9f082b",
+    "docs/remediation/bac/package-reviews/T13-owner-review.md": "50e1529208a31d3fd4238b46b4a763c0e87a03b0ee870f0b4442a90886081560",
+    "docs/remediation/bac/package-reviews/T13-consumer-review.md": "33fea7a7c3ba4f078905c0c22b9f62908d6c693764979bf61a328250d37b3803",
+    "docs/remediation/bac/package-reviews/T13-native-proof-review.md": "b403982953ea1383dcb9c7b5e0711ff7d45cabc2de30f5d83999960264d001ef",
+    "docs/remediation/bac/package-reviews/T13-initial-findings.md": "d739097c349da2eb7041835ba032c960a2d44e61a5004a6d651330b95a225770",
+    "docs/remediation/bac/package-reviews/T13-max-findings.md": "e50b94cf54a832258abc4698ff78340319c351ed888500b772fefcf0a2bdb96a",
+    "docs/remediation/bac/package-reviews/X04-mean-TD-triage.md": "03604920a82682235ed6a85f73d33a0c9a5e05d55139a2b2bbe27410e9abcc6f",
+    "docs/remediation/bac/package-reviews/T13-authored-reachability.md": "d87871f80fc20c8ee6936dd9a83deb9b95a8793aa698b5feb750e60ef43f83ec",
+    "docs/remediation/bac/evidence/wave07-source-binding.md": "8006ad17951fe056b71f23c487371e0e3c4baa25c7545b88f24203a4c931d21f",
+    "docs/remediation/bac/evidence/X04-acceptance-overlay.json": "bd1e028dd6df9ed2bbaad38cb93a9aa0adeffd28ba227e8441110c2d27b68d8c",
+    "docs/remediation/bac/package-reviews/T13-implementation.md": "07c0b4901b600acf375758a19a9cacb72d019c0648246387e4d38bf7ee61aef7",
+    "docs/remediation/bac/evidence/wave07-qualification.json": "be0c98c492f6360ca35bd1ce05e7d06bf0d6308b8de35b18ea12591ee3ec7f10",
+    "tests/test_townlet/regressions/bac/test_recurrent_per.py": "941747bb722eaa2c7a33dc7fa879dc591481f29cc73cfb4d837334854c8533bb",
+    "tests/test_townlet/regressions/bac/test_recurrent_per_native.py": "a2c6d57a2585f60471f4df8e54867dfa6ac781686d5e4bf2aab21ffd8b66335d",
+    "tests/test_townlet/fixtures/bac_sequence_current6/sequence6-captured.pt": "02e19371fc3131db51a9569fc6d5175de5a11416e2d6cea075d441ebd8bc8434",
+    "tests/test_townlet/fixtures/bac_sequence_current6/sequence6-captured-with-sequence5-archive.pt": "0a40c2dbba0d64f804f91f1a5600994385777a660d4a40c851e7aa3111fa239b",
+    "tests/test_townlet/fixtures/bac_sequence_current6/portable-manifest.json": "426f8b8ec2db1d0e0800300b4a85b825d2d1cb594a8339add27e159d2bd6c875"
+  },
+  "source_inventories": {
+    "T14-core": [
+      {
+        "path": "src/townlet/training/sequential_replay_buffer.py",
+        "lines": 1815,
+        "sha256": "f958b1ed79bab5a37422353a04a9d78c05969950dfbf994436b4e1ce0e73392c"
+      },
+      {
+        "path": "src/townlet/training/per_sampling.py",
+        "lines": 163,
+        "sha256": "0efe801f01a31082aa52c4b9bd40c356d1c97f89690b07c7835b541b7f2c6de6"
+      },
+      {
+        "path": "src/townlet/training/replay_contract.py",
+        "lines": 222,
+        "sha256": "3eaa725bd6d592b7524dd249125877eb91a1f707d4dfd12fbfb59b5b6cc6356c"
+      },
+      {
+        "path": "src/townlet/config/bac_options.py",
+        "lines": 294,
+        "sha256": "10dc3ef7dc288d954147046c95bc8362df2162f3829986be26b2724e86dd4916"
+      },
+      {
+        "path": "tests/test_townlet/regressions/bac/test_recurrent_per.py",
+        "lines": 677,
+        "sha256": "941747bb722eaa2c7a33dc7fa879dc591481f29cc73cfb4d837334854c8533bb"
+      }
+    ],
+    "T14-native": [
+      {
+        "path": "src/townlet/training/historical_checkpoint.py",
+        "lines": 675,
+        "sha256": "74709ebedc0c84208c3b30debd4101bc3bc67ca73f9df1a4be8a1aafff0894a4"
+      },
+      {
+        "path": "src/townlet/population/vectorized.py",
+        "lines": 1854,
+        "sha256": "38d8c969a8acfc5f49a3c5c7e532f6f10b34844af12ca37e8696123511e47d3b"
+      },
+      {
+        "path": "tests/test_townlet/regressions/bac/test_recurrent_per_native.py",
+        "lines": 647,
+        "sha256": "a2c6d57a2585f60471f4df8e54867dfa6ac781686d5e4bf2aab21ffd8b66335d"
+      }
+    ],
+    "T14-existing-owner-maintenance": [
+      {
+        "path": "src/townlet/training/sequential_replay_buffer.py",
+        "lines": 1815,
+        "sha256": "f958b1ed79bab5a37422353a04a9d78c05969950dfbf994436b4e1ce0e73392c"
+      },
+      {
+        "path": "tests/test_townlet/unit/training/test_sequential_replay_buffer.py",
+        "lines": 611,
+        "sha256": "18cff4fa681e5c08ec759301b3ebbed69568bc8ab80b7ccea3e6c260294f373a"
+      },
+      {
+        "path": "tests/test_townlet/integration/test_compact_token_acceptance.py",
+        "lines": 868,
+        "sha256": "a9a911a37679ffb850583fefaa7b73907a3f350d86959238d718c5ffb85867dc"
+      }
+    ]
+  },
+  "additional_estimator_review_inventory": {
+    "files": 2,
+    "lines": 1913,
+    "sources": [
+      "tests/test_townlet/regressions/bac/test_per_estimator.py",
+      "src/townlet/training/historical_checkpoint.py"
+    ]
+  },
+  "reviews": {
+    "T14-astra-core-review-r1.md": {
+      "original_sha256": "828a48d75d209834daa2e498a513aa59c4efdd10af834c18eea9668e52eee579",
+      "published_path": "package-reviews/T14-independent-review.md",
+      "published_sha256": "c7817f6547c13af3989f7dd9b12a5cfc2e564e67614bede2779dc130c130aab3"
+    },
+    "T14-native-independent-review-r1.md": {
+      "original_sha256": "019e596df71db1fb371291981e16c937c3719a9819f47677d4ae6a92f5a0f26b",
+      "published_path": "package-reviews/T14-native-review.md",
+      "published_sha256": "29114502f1ddbf900c76bd198636f6dca6f28fe157e262852223182e89ca5650"
+    },
+    "T14-owner-maintenance-independent-review-r1.md": {
+      "original_sha256": "a1ecbc53f7250b14c473ecace8ae9b9c3a45c1513b131e73bc76dd497193429b",
+      "published_path": "package-reviews/T14-owner-review.md",
+      "published_sha256": "d1177a1af38f47e8b449bd67cdc17b361a39548ea7ca6549ada551b4c330add2"
+    },
+    "T14-astra-core-execution-r1.md": {
+      "original_sha256": "ebef961ffb57703c844a22830529a8cfa94786f4f5f924e3d44e18fb601a50ba",
+      "published_path": "package-reviews/T14-core-execution.md",
+      "published_sha256": "7b24523c89cec70d056cd041bde35a1f8e8eb723cf6a33be0fc9ed84e4ffb272"
+    },
+    "T14-native-independent-execution-r1.md": {
+      "original_sha256": "25fcb814c347d6732a20d8823c44b341da4b93af145d01bad857766010304dc1",
+      "published_path": "package-reviews/T14-native-execution.md",
+      "published_sha256": "8b871adf5d4de844818239f18f5e4c173d6eedcfb72a48e091a19cd14961314c"
+    },
+    "T14-owner-maintenance-independent-execution-r1.md": {
+      "original_sha256": "07756a35bcd559a43249f06ae4501f84dce85124881caf50885e1a7a14472fa8",
+      "published_path": "package-reviews/T14-owner-execution.md",
+      "published_sha256": "349f9cff4ea6f11a8db6ef7798b7541a95f09ddaa15d9b675d23550dcc631bf1"
+    },
+    "T14-interface-proposal-r1.md": {
+      "original_sha256": "d6708084cb8bb63ba3febf8860b24a5f8b7a846da609c18ac2988aca35e77239",
+      "published_path": "package-reviews/T14-interface.md",
+      "published_sha256": "2d7e60bc40956270dbbc39f26b81f74461caf5360e2ac1a00306004940903f05"
+    },
+    "T14-interface-astra-review-r1.md": {
+      "original_sha256": "37d9bda30b9a7b00f2a084f1c70fb754d16cf293082b43e2892823346a50d2a8",
+      "published_path": "package-reviews/T14-interface-review.md",
+      "published_sha256": "c5ef82eb558fae52dc4dd3e5b3502ab8eb247c31514429babe13f59ab5e7fed6"
+    },
+    "T14-interface-admission-clarification.md": {
+      "original_sha256": "6015050b1a95312d019e04646223d6bf7eaef1bf4374d794d5c834fbd4479f43",
+      "published_path": "package-reviews/T14-admission-clarification.md",
+      "published_sha256": "0ae2044a42eed3e9377e3da39a0a3df4dbda4ff8c1c36f4b7f57c3f671303fe6"
+    },
+    "T14-HC-native-preparation.md": {
+      "original_sha256": "b3a5e3e238e25d9ece19dee987bbecd69599539dfbe42c0ecd8cb5b8518868d7",
+      "published_path": "package-reviews/T14-native-handoff.md",
+      "published_sha256": "52121819607642724bf843b763b7b25594a3571ce81de7397e6ef6eea4f67eda"
+    },
+    "T14-estimator-independent-review-r2.md": {
+      "original_sha256": "630f2cafbcc6edf50a279a0f3907d30d7770201930c862e42860cb0faeb27817",
+      "published_path": "package-reviews/T14-estimator-review.md",
+      "published_sha256": "0eb44fe985e3868c74356ebbf44ab111f12126abb942eebe6ff0d6d4dd4c5975"
+    },
+    "T14-estimator-independent-execution-r2.md": {
+      "original_sha256": "0ac11cee217f456d4e6f38eb5418b2b6d23f73014f4e6854d95e2871b8449dd7",
+      "published_path": "package-reviews/T14-estimator-execution.md",
+      "published_sha256": "bb6c1f4d44144804c5eae74969ac15f265b6eec7255f03ee4fe2aba962708484"
+    },
+    "T14-estimator-owner-causal-r2.md": {
+      "original_sha256": "eb0429849ae739488ed4bcc179ea1152f0a157a98fef51790d6a07f0edba01e4",
+      "published_path": "package-reviews/T14-estimator-causal-finding.md",
+      "published_sha256": "0c9774700fd3a8ef0dcb50ccfe287b279211fe52d804e762f5b7b0d3cf782cca"
+    }
+  },
+  "email_only_identity_mapping": "evidence/email-only-identity-mapping.json",
+  "qualified_commands_and_retained_failures": {
+    "wave08-red-r0-collection": {
+      "collection-result.json": {
+        "name": "collection",
+        "exit_code": 0,
+        "seconds": 35.99249529838562,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_recurrent_per.py",
+          "tests/test_townlet/regressions/bac/test_recurrent_per_native.py",
+          "--collect-only",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity"
+        ],
+        "log": "qualification/wave08-red-r0-collection/collection.log",
+        "sha256": "956142c5ca6a3b6c9c40e6c9d2f629309b3f4ec3787ad6be66aa3f06b8bf48c6",
+        "candidate_tree": "1fb72c98683345b2039c18f23597039d4252ff8e",
+        "base_commit": "01f2f64f42c2932177729607b337419355cb2720",
+        "manifest_sha256": "6b24655c1c0cfe66bee1b1afd6961be46c26aecc4d7d633ccf70783fd3b7165f"
+      }
+    },
+    "wave08-red-r0": {
+      "core-red-result.json": {
+        "name": "core-red",
+        "exit_code": 1,
+        "seconds": 20.34068465232849,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_recurrent_per.py",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity"
+        ],
+        "log": "qualification/wave08-red-r0/core-red.log",
+        "sha256": "6e45d92a3d7bfedbe6268696db731ed295bb038061cbc55fa7cab2eed6ffaf79",
+        "candidate_tree": "1fb72c98683345b2039c18f23597039d4252ff8e",
+        "base_commit": "01f2f64f42c2932177729607b337419355cb2720",
+        "manifest_sha256": "6b24655c1c0cfe66bee1b1afd6961be46c26aecc4d7d633ccf70783fd3b7165f"
+      },
+      "preserved-sequence-HC-result.json": {
+        "name": "preserved-sequence-HC",
+        "exit_code": 0,
+        "seconds": 78.93080186843872,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_sequence_history.py",
+          "tests/test_townlet/unit/training/test_sequential_replay_buffer.py",
+          "tests/test_townlet/regressions/bac/test_historical_dispatch.py",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity",
+          "-n",
+          "2",
+          "--dist",
+          "worksteal",
+          "--basetemp=/tmp/bac-wave08-preserved-r0"
+        ],
+        "log": "qualification/wave08-red-r0/preserved-sequence-HC.log",
+        "sha256": "620ee1b6888c8cb4b62fb2fdd2c32058fb41a6cb2752d4d89899e896f76614df",
+        "candidate_tree": "1fb72c98683345b2039c18f23597039d4252ff8e",
+        "base_commit": "01f2f64f42c2932177729607b337419355cb2720",
+        "manifest_sha256": "6b24655c1c0cfe66bee1b1afd6961be46c26aecc4d7d633ccf70783fd3b7165f"
+      },
+      "native-red-result.json": {
+        "name": "native-red",
+        "exit_code": 1,
+        "seconds": 44.74578046798706,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_recurrent_per_native.py",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity"
+        ],
+        "log": "qualification/wave08-red-r0/native-red.log",
+        "sha256": "111ee1b433a4d1a20eb224d24043b3035f5cfcc01ddd9e94094372db90c71a66",
+        "candidate_tree": "1fb72c98683345b2039c18f23597039d4252ff8e",
+        "base_commit": "01f2f64f42c2932177729607b337419355cb2720",
+        "manifest_sha256": "6b24655c1c0cfe66bee1b1afd6961be46c26aecc4d7d633ccf70783fd3b7165f"
+      }
+    },
+    "wave08-red-r1-collection": {
+      "collection-result.json": {
+        "name": "collection",
+        "exit_code": 0,
+        "seconds": 7.734259366989136,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_recurrent_per_native.py",
+          "-k",
+          "captured6_active_adapter or preserves_separate_inspection_transport or incompatible_artifact_geometry",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity",
+          "--collect-only"
+        ],
+        "log": "qualification/wave08-red-r1-collection/collection.log",
+        "sha256": "aee1993a03b4190368475680f78fefac302ec1f9037cf82e9631a1e52534eaca",
+        "candidate_tree": "a563eb138130619353d6ad592f52fe813edd9bf6",
+        "base_commit": "01f2f64f42c2932177729607b337419355cb2720",
+        "manifest_sha256": "238a30bda327b070dfdb5100df95e08f6ad471f4095080c196929e49fab8fa0e"
+      }
+    },
+    "wave08-red-r1-collection-scope6": {
+      "collection-result.json": {
+        "name": "collection",
+        "exit_code": 0,
+        "seconds": 4.545824766159058,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_recurrent_per_native.py",
+          "-k",
+          "captured6_active_adapter or preserves_separate_inspection_transport or incompatible_captured6_geometry",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity",
+          "--collect-only"
+        ],
+        "log": "qualification/wave08-red-r1-collection-scope6/collection.log",
+        "sha256": "40d1e3f842e8ab7e1a2555ce890bdb2ce775130c0fa0730bf0df8eea418aae34",
+        "candidate_tree": "a563eb138130619353d6ad592f52fe813edd9bf6",
+        "base_commit": "01f2f64f42c2932177729607b337419355cb2720",
+        "manifest_sha256": "238a30bda327b070dfdb5100df95e08f6ad471f4095080c196929e49fab8fa0e"
+      }
+    },
+    "wave08-red-r1-narrow": {
+      "native-fixture-red-result.json": {
+        "name": "native-fixture-red",
+        "exit_code": 1,
+        "seconds": 9.932950973510742,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_recurrent_per_native.py",
+          "-k",
+          "captured6_active_adapter or preserves_separate_inspection_transport or incompatible_captured6_geometry",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity"
+        ],
+        "log": "qualification/wave08-red-r1-narrow/native-fixture-red.log",
+        "sha256": "c9e845d599e9c7211175fb49ab48f1a2ad6bbd98e161398d61ab2b4968ebe34a",
+        "candidate_tree": "a563eb138130619353d6ad592f52fe813edd9bf6",
+        "base_commit": "01f2f64f42c2932177729607b337419355cb2720",
+        "manifest_sha256": "238a30bda327b070dfdb5100df95e08f6ad471f4095080c196929e49fab8fa0e"
+      }
+    },
+    "wave08-green-r0": {
+      "mypy-result.json": {
+        "name": "mypy",
+        "exit_code": 1,
+        "seconds": 2.17880916595459,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "mypy",
+          "src/townlet"
+        ],
+        "log": "qualification/wave08-green-r0/mypy.log",
+        "sha256": "aa8ad9c12a9c73fbe5e9d74d839545071c0ba24af795e85f47ecb8e18cc51107",
+        "candidate_tree": "3300f5f61af5e19692e8c9f59718c09164faf0b5",
+        "base_commit": "01f2f64f42c2932177729607b337419355cb2720",
+        "manifest_sha256": "42e1dc6e153e300059602766e997308c61fa5fa67dd42ce02fa6926ac429e007"
+      },
+      "compiler-cli-result.json": {
+        "name": "compiler-cli",
+        "exit_code": 0,
+        "seconds": 164.1882894039154,
+        "command": [
+          ".venv/bin/python",
+          "scripts/validate_compiler_cli.py"
+        ],
+        "log": "qualification/wave08-green-r0/compiler-cli.log",
+        "sha256": "53d05cd9bfdc49d9d3bf243e9f8b10e39560d01082f683b56522cae5db8d6b30",
+        "candidate_tree": "3300f5f61af5e19692e8c9f59718c09164faf0b5",
+        "base_commit": "01f2f64f42c2932177729607b337419355cb2720",
+        "manifest_sha256": "42e1dc6e153e300059602766e997308c61fa5fa67dd42ce02fa6926ac429e007"
+      },
+      "core-green-result.json": {
+        "name": "core-green",
+        "exit_code": 0,
+        "seconds": 7.500874280929565,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_recurrent_per.py",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity"
+        ],
+        "log": "qualification/wave08-green-r0/core-green.log",
+        "sha256": "d62b104ee482d30175b8eb9a821c7915b39e6b5d7c12000058ff61c9f2a6faeb",
+        "candidate_tree": "3300f5f61af5e19692e8c9f59718c09164faf0b5",
+        "base_commit": "01f2f64f42c2932177729607b337419355cb2720",
+        "manifest_sha256": "42e1dc6e153e300059602766e997308c61fa5fa67dd42ce02fa6926ac429e007"
+      },
+      "ruff-result.json": {
+        "name": "ruff",
+        "exit_code": 0,
+        "seconds": 0.08654069900512695,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "ruff",
+          "check",
+          "."
+        ],
+        "log": "qualification/wave08-green-r0/ruff.log",
+        "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+        "candidate_tree": "3300f5f61af5e19692e8c9f59718c09164faf0b5",
+        "base_commit": "01f2f64f42c2932177729607b337419355cb2720",
+        "manifest_sha256": "42e1dc6e153e300059602766e997308c61fa5fa67dd42ce02fa6926ac429e007"
+      },
+      "native-green-result.json": {
+        "name": "native-green",
+        "exit_code": 1,
+        "seconds": 23.214125633239746,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_recurrent_per_native.py",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity"
+        ],
+        "log": "qualification/wave08-green-r0/native-green.log",
+        "sha256": "3e5eb875916b91f43688ca60c0ef443783174b985a6b44a94360018ef4d331ed",
+        "candidate_tree": "3300f5f61af5e19692e8c9f59718c09164faf0b5",
+        "base_commit": "01f2f64f42c2932177729607b337419355cb2720",
+        "manifest_sha256": "42e1dc6e153e300059602766e997308c61fa5fa67dd42ce02fa6926ac429e007"
+      },
+      "native-checkpoint-consumers-result.json": {
+        "name": "native-checkpoint-consumers",
+        "exit_code": 1,
+        "seconds": 90.75451993942261,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/unit/population/test_vectorized_population.py",
+          "tests/test_townlet/integration/test_compact_token_acceptance.py",
+          "tests/test_townlet/integration/test_checkpointing.py",
+          "tests/test_townlet/unit/demo/test_wp16_persistent_resume.py",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity",
+          "-n",
+          "2",
+          "--dist",
+          "worksteal",
+          "--basetemp=/tmp/bac-wave08-consumers-r0"
+        ],
+        "log": "qualification/wave08-green-r0/native-checkpoint-consumers.log",
+        "sha256": "d547783d2dca43beddb3077529fc28808f19ffe65272ed91d2f52c2540a8a200",
+        "candidate_tree": "3300f5f61af5e19692e8c9f59718c09164faf0b5",
+        "base_commit": "01f2f64f42c2932177729607b337419355cb2720",
+        "manifest_sha256": "42e1dc6e153e300059602766e997308c61fa5fa67dd42ce02fa6926ac429e007"
+      },
+      "expression-doc-result.json": {
+        "name": "expression-doc",
+        "exit_code": 0,
+        "seconds": 2.771860361099243,
+        "command": [
+          ".venv/bin/python",
+          "scripts/gen_expression_functions_doc.py",
+          "--check"
+        ],
+        "log": "qualification/wave08-green-r0/expression-doc.log",
+        "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf",
+        "candidate_tree": "3300f5f61af5e19692e8c9f59718c09164faf0b5",
+        "base_commit": "01f2f64f42c2932177729607b337419355cb2720",
+        "manifest_sha256": "42e1dc6e153e300059602766e997308c61fa5fa67dd42ce02fa6926ac429e007"
+      },
+      "sequence-HC-owners-result.json": {
+        "name": "sequence-HC-owners",
+        "exit_code": 1,
+        "seconds": 56.22914433479309,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_sequence_history.py",
+          "tests/test_townlet/unit/training/test_sequential_replay_buffer.py",
+          "tests/test_townlet/regressions/bac/test_historical_dispatch.py",
+          "tests/test_townlet/regressions/bac/test_sequence_inspection_native.py",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity"
+        ],
+        "log": "qualification/wave08-green-r0/sequence-HC-owners.log",
+        "sha256": "6f7c93d06a1afe7f9d08d5b24b16cef1cc5de5dceb00c7c3ccdd43b098cfc27d",
+        "candidate_tree": "3300f5f61af5e19692e8c9f59718c09164faf0b5",
+        "base_commit": "01f2f64f42c2932177729607b337419355cb2720",
+        "manifest_sha256": "42e1dc6e153e300059602766e997308c61fa5fa67dd42ce02fa6926ac429e007"
+      },
+      "black-result.json": {
+        "name": "black",
+        "exit_code": 0,
+        "seconds": 63.892842292785645,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "black",
+          "--check",
+          "src",
+          "tests",
+          "scripts",
+          "--workers",
+          "1"
+        ],
+        "log": "qualification/wave08-green-r0/black.log",
+        "sha256": "4dab0af9656b3333e0e049f60f1521fa8185e0a4d1b32297e0a234166815b52b",
+        "candidate_tree": "3300f5f61af5e19692e8c9f59718c09164faf0b5",
+        "base_commit": "01f2f64f42c2932177729607b337419355cb2720",
+        "manifest_sha256": "42e1dc6e153e300059602766e997308c61fa5fa67dd42ce02fa6926ac429e007"
+      },
+      "no-defaults-result.json": {
+        "name": "no-defaults",
+        "exit_code": 1,
+        "seconds": 1.6673283576965332,
+        "command": [
+          ".venv/bin/python",
+          "scripts/no_defaults_lint.py",
+          "src/townlet/",
+          "--whitelist",
+          ".defaults-whitelist.txt",
+          "--ratchet",
+          ".defaults-ratchet",
+          "--quiet"
+        ],
+        "log": "qualification/wave08-green-r0/no-defaults.log",
+        "sha256": "0b769e848d6d2855a7e84136c81bf0ea3a887894de5c0237bdb3895b0541faf9",
+        "candidate_tree": "3300f5f61af5e19692e8c9f59718c09164faf0b5",
+        "base_commit": "01f2f64f42c2932177729607b337419355cb2720",
+        "manifest_sha256": "42e1dc6e153e300059602766e997308c61fa5fa67dd42ce02fa6926ac429e007"
+      }
+    },
+    "wave08-green-r1": {
+      "mypy-result.json": {
+        "name": "mypy",
+        "exit_code": 0,
+        "seconds": 1.7006747722625732,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "mypy",
+          "src/townlet"
+        ],
+        "log": "qualification/wave08-green-r1/mypy.log",
+        "sha256": "abe631e2bac5b4f028c09d636a1e35be825ccfcf44ec8461e6bea488225d5092",
+        "candidate_tree": "324438ad58d9d5a85bba54e18be1ee225ada5969",
+        "base_commit": "01f2f64f42c2932177729607b337419355cb2720",
+        "manifest_sha256": "2c60cc34fe84cccefb7041aa9ad67928c8a7184a69bb01935b59b4fba6ccb6e5"
+      },
+      "compiler-cli-result.json": {
+        "name": "compiler-cli",
+        "exit_code": 0,
+        "seconds": 177.15595602989197,
+        "command": [
+          ".venv/bin/python",
+          "scripts/validate_compiler_cli.py"
+        ],
+        "log": "qualification/wave08-green-r1/compiler-cli.log",
+        "sha256": "647b11b3bf9214df40aaf1cb45b62abb7799be9b8e74fe1ba8ba878ef54d40ca",
+        "candidate_tree": "324438ad58d9d5a85bba54e18be1ee225ada5969",
+        "base_commit": "01f2f64f42c2932177729607b337419355cb2720",
+        "manifest_sha256": "2c60cc34fe84cccefb7041aa9ad67928c8a7184a69bb01935b59b4fba6ccb6e5"
+      },
+      "core-green-result.json": {
+        "name": "core-green",
+        "exit_code": 0,
+        "seconds": 7.878291368484497,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_recurrent_per.py",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity"
+        ],
+        "log": "qualification/wave08-green-r1/core-green.log",
+        "sha256": "90bcd10ca86094a4ab31277d0c98113933089da04a15c0451f50c8ed283a52a1",
+        "candidate_tree": "324438ad58d9d5a85bba54e18be1ee225ada5969",
+        "base_commit": "01f2f64f42c2932177729607b337419355cb2720",
+        "manifest_sha256": "2c60cc34fe84cccefb7041aa9ad67928c8a7184a69bb01935b59b4fba6ccb6e5"
+      },
+      "ruff-result.json": {
+        "name": "ruff",
+        "exit_code": 0,
+        "seconds": 0.07595443725585938,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "ruff",
+          "check",
+          "."
+        ],
+        "log": "qualification/wave08-green-r1/ruff.log",
+        "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+        "candidate_tree": "324438ad58d9d5a85bba54e18be1ee225ada5969",
+        "base_commit": "01f2f64f42c2932177729607b337419355cb2720",
+        "manifest_sha256": "2c60cc34fe84cccefb7041aa9ad67928c8a7184a69bb01935b59b4fba6ccb6e5"
+      },
+      "native-green-result.json": {
+        "name": "native-green",
+        "exit_code": 0,
+        "seconds": 20.028907775878906,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_recurrent_per_native.py",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity"
+        ],
+        "log": "qualification/wave08-green-r1/native-green.log",
+        "sha256": "d8eee672b34a4b6f89c5c75e6141970a9afb0a97e849c20e112962d0298d89a7",
+        "candidate_tree": "324438ad58d9d5a85bba54e18be1ee225ada5969",
+        "base_commit": "01f2f64f42c2932177729607b337419355cb2720",
+        "manifest_sha256": "2c60cc34fe84cccefb7041aa9ad67928c8a7184a69bb01935b59b4fba6ccb6e5"
+      },
+      "native-checkpoint-consumers-result.json": {
+        "name": "native-checkpoint-consumers",
+        "exit_code": 0,
+        "seconds": 87.68722772598267,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/unit/population/test_vectorized_population.py",
+          "tests/test_townlet/integration/test_compact_token_acceptance.py",
+          "tests/test_townlet/integration/test_checkpointing.py",
+          "tests/test_townlet/unit/demo/test_wp16_persistent_resume.py",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity",
+          "-n",
+          "2",
+          "--dist",
+          "worksteal",
+          "--basetemp=/tmp/bac-wave08-consumers-r1"
+        ],
+        "log": "qualification/wave08-green-r1/native-checkpoint-consumers.log",
+        "sha256": "8920ec76c833db7f0d2ed35c61f6d6bba429841ae73c086cc0b12a0fd58319d3",
+        "candidate_tree": "324438ad58d9d5a85bba54e18be1ee225ada5969",
+        "base_commit": "01f2f64f42c2932177729607b337419355cb2720",
+        "manifest_sha256": "2c60cc34fe84cccefb7041aa9ad67928c8a7184a69bb01935b59b4fba6ccb6e5"
+      },
+      "expression-doc-result.json": {
+        "name": "expression-doc",
+        "exit_code": 0,
+        "seconds": 2.137308359146118,
+        "command": [
+          ".venv/bin/python",
+          "scripts/gen_expression_functions_doc.py",
+          "--check"
+        ],
+        "log": "qualification/wave08-green-r1/expression-doc.log",
+        "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf",
+        "candidate_tree": "324438ad58d9d5a85bba54e18be1ee225ada5969",
+        "base_commit": "01f2f64f42c2932177729607b337419355cb2720",
+        "manifest_sha256": "2c60cc34fe84cccefb7041aa9ad67928c8a7184a69bb01935b59b4fba6ccb6e5"
+      },
+      "sequence-HC-owners-result.json": {
+        "name": "sequence-HC-owners",
+        "exit_code": 0,
+        "seconds": 51.601929903030396,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_sequence_history.py",
+          "tests/test_townlet/unit/training/test_sequential_replay_buffer.py",
+          "tests/test_townlet/regressions/bac/test_historical_dispatch.py",
+          "tests/test_townlet/regressions/bac/test_sequence_inspection_native.py",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity"
+        ],
+        "log": "qualification/wave08-green-r1/sequence-HC-owners.log",
+        "sha256": "f570e08c829f0b1e715b21fc23ce4ffc2a443e36843fa1b1b11bedd58d90bb3a",
+        "candidate_tree": "324438ad58d9d5a85bba54e18be1ee225ada5969",
+        "base_commit": "01f2f64f42c2932177729607b337419355cb2720",
+        "manifest_sha256": "2c60cc34fe84cccefb7041aa9ad67928c8a7184a69bb01935b59b4fba6ccb6e5"
+      },
+      "black-result.json": {
+        "name": "black",
+        "exit_code": 0,
+        "seconds": 65.9983549118042,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "black",
+          "--check",
+          "src",
+          "tests",
+          "scripts",
+          "--workers",
+          "1"
+        ],
+        "log": "qualification/wave08-green-r1/black.log",
+        "sha256": "4dab0af9656b3333e0e049f60f1521fa8185e0a4d1b32297e0a234166815b52b",
+        "candidate_tree": "324438ad58d9d5a85bba54e18be1ee225ada5969",
+        "base_commit": "01f2f64f42c2932177729607b337419355cb2720",
+        "manifest_sha256": "2c60cc34fe84cccefb7041aa9ad67928c8a7184a69bb01935b59b4fba6ccb6e5"
+      },
+      "no-defaults-result.json": {
+        "name": "no-defaults",
+        "exit_code": 0,
+        "seconds": 0.9891707897186279,
+        "command": [
+          ".venv/bin/python",
+          "scripts/no_defaults_lint.py",
+          "src/townlet/",
+          "--whitelist",
+          ".defaults-whitelist.txt",
+          "--ratchet",
+          ".defaults-ratchet",
+          "--quiet"
+        ],
+        "log": "qualification/wave08-green-r1/no-defaults.log",
+        "sha256": "f136366b4fe15ec060788a0fefc2da3eafa5c27f9edf44b01f7c7a4f9037e48d",
+        "candidate_tree": "324438ad58d9d5a85bba54e18be1ee225ada5969",
+        "base_commit": "01f2f64f42c2932177729607b337419355cb2720",
+        "manifest_sha256": "2c60cc34fe84cccefb7041aa9ad67928c8a7184a69bb01935b59b4fba6ccb6e5"
+      }
+    },
+    "wave08-full-collection-r1": {
+      "collection-result.json": {
+        "name": "collection",
+        "exit_code": 0,
+        "seconds": 9.027418375015259,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests",
+          "--collect-only",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity"
+        ],
+        "log": "qualification/wave08-full-collection-r1/collection.log",
+        "sha256": "e99105de0cbc2e0b9efdc230d4c45c2cea1371da8180ab8cb256260261808884",
+        "candidate_tree": "324438ad58d9d5a85bba54e18be1ee225ada5969",
+        "base_commit": "01f2f64f42c2932177729607b337419355cb2720",
+        "manifest_sha256": "2c60cc34fe84cccefb7041aa9ad67928c8a7184a69bb01935b59b4fba6ccb6e5",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+      }
+    },
+    "wave08-astra-core-r1": {
+      "core-result.json": {
+        "name": "core",
+        "exit_code": 0,
+        "seconds": 6.805499076843262,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_recurrent_per.py",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity"
+        ],
+        "log": "qualification/wave08-astra-core-r1/core.log",
+        "sha256": "f349222d5b6084532c4f4e5d913062aa18bc97289b722137f0b6ef5e3bc03303",
+        "candidate_tree": "324438ad58d9d5a85bba54e18be1ee225ada5969",
+        "base_commit": "01f2f64f42c2932177729607b337419355cb2720",
+        "manifest_sha256": "2c60cc34fe84cccefb7041aa9ad67928c8a7184a69bb01935b59b4fba6ccb6e5",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+      }
+    },
+    "wave08-astra-native-r1": {
+      "native-result.json": {
+        "name": "native",
+        "exit_code": 0,
+        "seconds": 18.55561113357544,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_recurrent_per_native.py",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity"
+        ],
+        "log": "qualification/wave08-astra-native-r1/native.log",
+        "sha256": "e86f5ce04042ea26e786d760aaf598adf9a9bed174f7629e9f26213aa28457a3",
+        "candidate_tree": "324438ad58d9d5a85bba54e18be1ee225ada5969",
+        "base_commit": "01f2f64f42c2932177729607b337419355cb2720",
+        "manifest_sha256": "2c60cc34fe84cccefb7041aa9ad67928c8a7184a69bb01935b59b4fba6ccb6e5",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+      }
+    },
+    "wave08-astra-owners-r1": {
+      "owners-result.json": {
+        "name": "owners",
+        "exit_code": 0,
+        "seconds": 39.39579916000366,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/unit/training/test_sequential_replay_buffer.py",
+          "tests/test_townlet/integration/test_compact_token_acceptance.py",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity"
+        ],
+        "log": "qualification/wave08-astra-owners-r1/owners.log",
+        "sha256": "86777ea6cc686b2a8a8a2350003fbe99389e536ceba9548055c827039e55c1cd",
+        "candidate_tree": "324438ad58d9d5a85bba54e18be1ee225ada5969",
+        "base_commit": "01f2f64f42c2932177729607b337419355cb2720",
+        "manifest_sha256": "2c60cc34fe84cccefb7041aa9ad67928c8a7184a69bb01935b59b4fba6ccb6e5",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+      }
+    },
+    "wave08-full-r1": {
+      "full-result.json": {
+        "name": "full",
+        "exit_code": 2,
+        "seconds": 1991.9018378257751,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests",
+          "-q",
+          "--maxfail=1",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity",
+          "-n",
+          "4",
+          "--dist",
+          "worksteal",
+          "--basetemp=/tmp/bac-wave08-full-r1"
+        ],
+        "log": "qualification/wave08-full-r1/full.log",
+        "sha256": "b704b51a2468f7fcdcf3d77ef3c3ef8fe4bcbcd8e391125683b527f5fc4a456d",
+        "candidate_tree": "324438ad58d9d5a85bba54e18be1ee225ada5969",
+        "base_commit": "01f2f64f42c2932177729607b337419355cb2720",
+        "manifest_sha256": "2c60cc34fe84cccefb7041aa9ad67928c8a7184a69bb01935b59b4fba6ccb6e5",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+      }
+    },
+    "wave08-green-r2": {
+      "mypy-result.json": {
+        "name": "mypy",
+        "exit_code": 0,
+        "seconds": 1.2770376205444336,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "mypy",
+          "src/townlet"
+        ],
+        "log": "qualification/wave08-green-r2/mypy.log",
+        "sha256": "abe631e2bac5b4f028c09d636a1e35be825ccfcf44ec8461e6bea488225d5092",
+        "candidate_tree": "aecfaaa84cd58fafd8ac1f6ca67052639d570ed4",
+        "base_commit": "bb7cf5f9a545fab0f5b4ecfcc042571e44c34cdd",
+        "manifest_sha256": "dce3a8771f8af1fc3fdd55cb0c8a1d0043aa670fd998bf3c71bd5ceec07234f5",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+      },
+      "compiler-cli-result.json": {
+        "name": "compiler-cli",
+        "exit_code": 0,
+        "seconds": 147.11416721343994,
+        "command": [
+          ".venv/bin/python",
+          "scripts/validate_compiler_cli.py"
+        ],
+        "log": "qualification/wave08-green-r2/compiler-cli.log",
+        "sha256": "3299e379cdf715ee060e30e3ee9d05ce6a49974b1863d89e8a70ff1f75dda273",
+        "candidate_tree": "aecfaaa84cd58fafd8ac1f6ca67052639d570ed4",
+        "base_commit": "bb7cf5f9a545fab0f5b4ecfcc042571e44c34cdd",
+        "manifest_sha256": "dce3a8771f8af1fc3fdd55cb0c8a1d0043aa670fd998bf3c71bd5ceec07234f5",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+      },
+      "core-green-result.json": {
+        "name": "core-green",
+        "exit_code": 0,
+        "seconds": 8.602153778076172,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_recurrent_per.py",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity"
+        ],
+        "log": "qualification/wave08-green-r2/core-green.log",
+        "sha256": "0bbca563197fb362ed588ff358676aac2a2ae84b596d8c74a6d278683019d81b",
+        "candidate_tree": "aecfaaa84cd58fafd8ac1f6ca67052639d570ed4",
+        "base_commit": "bb7cf5f9a545fab0f5b4ecfcc042571e44c34cdd",
+        "manifest_sha256": "dce3a8771f8af1fc3fdd55cb0c8a1d0043aa670fd998bf3c71bd5ceec07234f5",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+      },
+      "ruff-result.json": {
+        "name": "ruff",
+        "exit_code": 0,
+        "seconds": 0.15422701835632324,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "ruff",
+          "check",
+          "."
+        ],
+        "log": "qualification/wave08-green-r2/ruff.log",
+        "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+        "candidate_tree": "aecfaaa84cd58fafd8ac1f6ca67052639d570ed4",
+        "base_commit": "bb7cf5f9a545fab0f5b4ecfcc042571e44c34cdd",
+        "manifest_sha256": "dce3a8771f8af1fc3fdd55cb0c8a1d0043aa670fd998bf3c71bd5ceec07234f5",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+      },
+      "native-green-result.json": {
+        "name": "native-green",
+        "exit_code": 0,
+        "seconds": 17.186513423919678,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_recurrent_per_native.py",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity"
+        ],
+        "log": "qualification/wave08-green-r2/native-green.log",
+        "sha256": "284f2e98ca27554616e8522b4839097816d57a25289da19afa62453f14e43184",
+        "candidate_tree": "aecfaaa84cd58fafd8ac1f6ca67052639d570ed4",
+        "base_commit": "bb7cf5f9a545fab0f5b4ecfcc042571e44c34cdd",
+        "manifest_sha256": "dce3a8771f8af1fc3fdd55cb0c8a1d0043aa670fd998bf3c71bd5ceec07234f5",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+      },
+      "native-checkpoint-consumers-result.json": {
+        "name": "native-checkpoint-consumers",
+        "exit_code": 0,
+        "seconds": 89.66434240341187,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/unit/population/test_vectorized_population.py",
+          "tests/test_townlet/integration/test_compact_token_acceptance.py",
+          "tests/test_townlet/integration/test_checkpointing.py",
+          "tests/test_townlet/unit/demo/test_wp16_persistent_resume.py",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity",
+          "-n",
+          "2",
+          "--dist",
+          "worksteal",
+          "--basetemp=/tmp/bac-wave08-consumers-r2"
+        ],
+        "log": "qualification/wave08-green-r2/native-checkpoint-consumers.log",
+        "sha256": "4f70a5646a466d05842afd30ef6d2b4d6384e515e6ad961d6fd6b3ff7a046d07",
+        "candidate_tree": "aecfaaa84cd58fafd8ac1f6ca67052639d570ed4",
+        "base_commit": "bb7cf5f9a545fab0f5b4ecfcc042571e44c34cdd",
+        "manifest_sha256": "dce3a8771f8af1fc3fdd55cb0c8a1d0043aa670fd998bf3c71bd5ceec07234f5",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+      },
+      "expression-doc-result.json": {
+        "name": "expression-doc",
+        "exit_code": 0,
+        "seconds": 2.288808584213257,
+        "command": [
+          ".venv/bin/python",
+          "scripts/gen_expression_functions_doc.py",
+          "--check"
+        ],
+        "log": "qualification/wave08-green-r2/expression-doc.log",
+        "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf",
+        "candidate_tree": "aecfaaa84cd58fafd8ac1f6ca67052639d570ed4",
+        "base_commit": "bb7cf5f9a545fab0f5b4ecfcc042571e44c34cdd",
+        "manifest_sha256": "dce3a8771f8af1fc3fdd55cb0c8a1d0043aa670fd998bf3c71bd5ceec07234f5",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+      },
+      "sequence-HC-owners-result.json": {
+        "name": "sequence-HC-owners",
+        "exit_code": 0,
+        "seconds": 43.93297553062439,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_sequence_history.py",
+          "tests/test_townlet/unit/training/test_sequential_replay_buffer.py",
+          "tests/test_townlet/regressions/bac/test_historical_dispatch.py",
+          "tests/test_townlet/regressions/bac/test_sequence_inspection_native.py",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity"
+        ],
+        "log": "qualification/wave08-green-r2/sequence-HC-owners.log",
+        "sha256": "0559c4e30594aefd675be24c7e400e1ee5b78ff1481a699e50c08747b0f566b9",
+        "candidate_tree": "aecfaaa84cd58fafd8ac1f6ca67052639d570ed4",
+        "base_commit": "bb7cf5f9a545fab0f5b4ecfcc042571e44c34cdd",
+        "manifest_sha256": "dce3a8771f8af1fc3fdd55cb0c8a1d0043aa670fd998bf3c71bd5ceec07234f5",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+      },
+      "black-result.json": {
+        "name": "black",
+        "exit_code": 0,
+        "seconds": 36.65596055984497,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "black",
+          "--check",
+          "src",
+          "tests",
+          "scripts",
+          "--workers",
+          "1"
+        ],
+        "log": "qualification/wave08-green-r2/black.log",
+        "sha256": "4dab0af9656b3333e0e049f60f1521fa8185e0a4d1b32297e0a234166815b52b",
+        "candidate_tree": "aecfaaa84cd58fafd8ac1f6ca67052639d570ed4",
+        "base_commit": "bb7cf5f9a545fab0f5b4ecfcc042571e44c34cdd",
+        "manifest_sha256": "dce3a8771f8af1fc3fdd55cb0c8a1d0043aa670fd998bf3c71bd5ceec07234f5",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+      },
+      "estimator-owner-result.json": {
+        "name": "estimator-owner",
+        "exit_code": 0,
+        "seconds": 19.02307438850403,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_per_estimator.py",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity"
+        ],
+        "log": "qualification/wave08-green-r2/estimator-owner.log",
+        "sha256": "0a7f03d9d1b1b561a30a12c4ca603ec67b09f7c5a08a63fcdcdb146f13e9ae4b",
+        "candidate_tree": "aecfaaa84cd58fafd8ac1f6ca67052639d570ed4",
+        "base_commit": "bb7cf5f9a545fab0f5b4ecfcc042571e44c34cdd",
+        "manifest_sha256": "dce3a8771f8af1fc3fdd55cb0c8a1d0043aa670fd998bf3c71bd5ceec07234f5",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+      },
+      "no-defaults-result.json": {
+        "name": "no-defaults",
+        "exit_code": 0,
+        "seconds": 1.5565102100372314,
+        "command": [
+          ".venv/bin/python",
+          "scripts/no_defaults_lint.py",
+          "src/townlet/",
+          "--whitelist",
+          ".defaults-whitelist.txt",
+          "--ratchet",
+          ".defaults-ratchet",
+          "--quiet"
+        ],
+        "log": "qualification/wave08-green-r2/no-defaults.log",
+        "sha256": "f136366b4fe15ec060788a0fefc2da3eafa5c27f9edf44b01f7c7a4f9037e48d",
+        "candidate_tree": "aecfaaa84cd58fafd8ac1f6ca67052639d570ed4",
+        "base_commit": "bb7cf5f9a545fab0f5b4ecfcc042571e44c34cdd",
+        "manifest_sha256": "dce3a8771f8af1fc3fdd55cb0c8a1d0043aa670fd998bf3c71bd5ceec07234f5",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+      }
+    },
+    "wave08-full-collection-r2": {
+      "collection-result.json": {
+        "name": "collection",
+        "exit_code": 0,
+        "seconds": 9.769221067428589,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests",
+          "--collect-only",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity"
+        ],
+        "log": "qualification/wave08-full-collection-r2/collection.log",
+        "sha256": "b96286aeba6e860de597368ccf570e46c0b855cb5776dee31a7dd81888968662",
+        "candidate_tree": "aecfaaa84cd58fafd8ac1f6ca67052639d570ed4",
+        "base_commit": "bb7cf5f9a545fab0f5b4ecfcc042571e44c34cdd",
+        "manifest_sha256": "dce3a8771f8af1fc3fdd55cb0c8a1d0043aa670fd998bf3c71bd5ceec07234f5",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+      }
+    },
+    "wave08-astra-estimator-r2": {
+      "estimator-result.json": {
+        "name": "estimator",
+        "exit_code": 0,
+        "seconds": 12.991772413253784,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_per_estimator.py",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity"
+        ],
+        "log": "qualification/wave08-astra-estimator-r2/estimator.log",
+        "sha256": "d1047dc54a5d32f20069e4d324dc23c4b50fd8cc9364cd33f1d7e637a1426f9c",
+        "candidate_tree": "aecfaaa84cd58fafd8ac1f6ca67052639d570ed4",
+        "base_commit": "bb7cf5f9a545fab0f5b4ecfcc042571e44c34cdd",
+        "manifest_sha256": "dce3a8771f8af1fc3fdd55cb0c8a1d0043aa670fd998bf3c71bd5ceec07234f5",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+      }
+    },
+    "wave08-full-r2": {
+      "full-result.json": {
+        "name": "full",
+        "exit_code": 2,
+        "seconds": 1041.0556609630585,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests",
+          "-q",
+          "--maxfail=1",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity",
+          "-n",
+          "4",
+          "--dist",
+          "worksteal",
+          "--basetemp=/tmp/bac-wave08-full-r2"
+        ],
+        "log": "qualification/wave08-full-r2/full.log",
+        "sha256": "b77558bc20cd90e35927011fac5657d46a90e405bca28148bd305479a927cc08",
+        "candidate_tree": "aecfaaa84cd58fafd8ac1f6ca67052639d570ed4",
+        "base_commit": "b3003550b7c1dad76a52e596b2af01658fa2b92d",
+        "manifest_sha256": "01603b7f81c400c47fa557559cddcee1aa2e7da391a25aded83529cfed02d99d",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+      }
+    },
+    "wave08-enospc-collection-r3": {
+      "collection-result.json": {
+        "name": "collection",
+        "exit_code": 0,
+        "seconds": 5.98681116104126,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/integration/test_double_dqn_training.py::TestDoubleDoubleTraining::test_training_with_double_dqn_enabled",
+          "tests/test_townlet/regressions/bac/test_launch_transport.py::test_real_cli_and_runner_accept_transport_changes[cli-None-renamed_experiment]",
+          "tests/test_townlet/unit/environment/test_wp9_clock_truth.py::test_tick_lifetime_expression_tracks_the_clock",
+          "tests/test_townlet/unit/universe/test_token_emission.py::TestSerialization::test_round_trip_preserves_token_block",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity",
+          "--collect-only"
+        ],
+        "log": "qualification/wave08-enospc-collection-r3/collection.log",
+        "sha256": "ddb11db831f663f84e3cfcf1105ecdaa979ecb8cbcd4765f152dd7bb0af022a9",
+        "candidate_tree": "aecfaaa84cd58fafd8ac1f6ca67052639d570ed4",
+        "base_commit": "b3003550b7c1dad76a52e596b2af01658fa2b92d",
+        "manifest_sha256": "01603b7f81c400c47fa557559cddcee1aa2e7da391a25aded83529cfed02d99d",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+      }
+    },
+    "wave08-enospc-runtime-r3": {
+      "runtime-result.json": {
+        "name": "runtime",
+        "exit_code": 0,
+        "seconds": 53.11994671821594,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/integration/test_double_dqn_training.py::TestDoubleDoubleTraining::test_training_with_double_dqn_enabled",
+          "tests/test_townlet/regressions/bac/test_launch_transport.py::test_real_cli_and_runner_accept_transport_changes[cli-None-renamed_experiment]",
+          "tests/test_townlet/unit/environment/test_wp9_clock_truth.py::test_tick_lifetime_expression_tracks_the_clock",
+          "tests/test_townlet/unit/universe/test_token_emission.py::TestSerialization::test_round_trip_preserves_token_block",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity",
+          "-n",
+          "4",
+          "--dist",
+          "worksteal",
+          "--basetemp=qualification/scratch/enospc-narrow-r3"
+        ],
+        "log": "qualification/wave08-enospc-runtime-r3/runtime.log",
+        "sha256": "cf2bdb11646b24b19e3cfc91de1d6487f38cad01bf1ac3654f1908b4cce671b4",
+        "candidate_tree": "aecfaaa84cd58fafd8ac1f6ca67052639d570ed4",
+        "base_commit": "b3003550b7c1dad76a52e596b2af01658fa2b92d",
+        "manifest_sha256": "01603b7f81c400c47fa557559cddcee1aa2e7da391a25aded83529cfed02d99d",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+      }
+    },
+    "wave08-full-r3": {
+      "full-result.json": {
+        "name": "full",
+        "exit_code": 0,
+        "seconds": 1800.2089784145355,
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "tests",
+          "-q",
+          "--maxfail=1",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity",
+          "-n",
+          "4",
+          "--dist",
+          "worksteal",
+          "--basetemp=qualification/scratch/full-wave08-r3"
+        ],
+        "log": "qualification/wave08-full-r3/full.log",
+        "sha256": "2af7631571f0f63764eda41843cf4a98d7049396a8be14d3c71412ec4aa46190",
+        "candidate_tree": "aecfaaa84cd58fafd8ac1f6ca67052639d570ed4",
+        "base_commit": "b3003550b7c1dad76a52e596b2af01658fa2b92d",
+        "manifest_sha256": "7f82bd056bcdd13215de95ac63d288992a75052285f4d8604394dcfeb2069acd",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+      }
+    }
+  },
+  "normal_reproduction": [
+    "uv run pytest --no-cov -p no:cacheprovider tests/test_townlet/regressions/bac/test_recurrent_per.py tests/test_townlet/regressions/bac/test_recurrent_per_native.py -q",
+    "CUDA_VISIBLE_DEVICES= uv run pytest tests -q --no-cov -p no:cacheprovider -n 4 --dist worksteal"
+  ],
+  "capture_provenance": {
+    "external_manifest_sha256": "fad6db2b72b20bbaeb1804d70e5d09f4e924d99955cf4a7289583b867f03059d",
+    "helper_sha256": "f7356007f5ad9841ba8e63381e32e7a52c4d0bdeb0209b78e10c2c4d0bb8fa67",
+    "portable_manifest": "tests/test_townlet/fixtures/bac_sequence_current6/portable-manifest.json",
+    "producer": "Actual unchanged captured6 producer; caller-owned synthetic new rows and preserved original34-row old5 archive, no historical masks invented."
+  },
+  "required_remaining": "T15 must wire ordinary production captured collection, historical legal vanilla/Double targets, real retained readiness, per-network recurrent prefixes/hidden states/BPTT/objectives and actual selected recurrent PER. X04 finite truthful unweighted TD mean remains required before T15 release/G2. T16 runner behavior, complete native10/7 admission/atomicity/identity/archive accounting/resume/evolved optimizer under T24/T25, joint learning/E2E and all final common-source review/coverage/slow/applicable hardware/exact-tip CI remain OPEN. CPU only; CUDA unavailable. This backend/transport package does not establish natural recurrent-PER learning quality, complete C07, whole-world stochastic continuation or whole-BAC completion.",
+  "whole_BAC_final_acceptance": "OPEN;24/66 scoped packages qualified,42 remaining;54requirements/22final lenses+synthesis/finitelearning/E2E/finalrepo/coverage>=70/slow/applicablehardware/exacttipCI owed.",
+  "publication": "John authorized publication; source candidate pushed and exact remote SHA verified before its corrected full gate. No merge or PR claimed; all14 existing local worktrees preserved."
+}

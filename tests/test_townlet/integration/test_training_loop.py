@@ -32,6 +32,16 @@ def _complete_capped_lanes(population: VectorizedPopulation) -> None:
         population.flush_episode(agent_idx, reason="cap")
 
 
+def _learning_config_pack(config_pack_factory, *, name: str, batch_size: int):
+    """Author short-test replay readiness in a private pack before compilation."""
+
+    def modifier(cfg):
+        cfg["training"]["replay_buffer"]["min_size"] = batch_size
+        cfg["training"]["replay_buffer"]["batch_size"] = batch_size
+
+    return config_pack_factory(modifier=modifier, name=name)
+
+
 class TestMaskedLossIntegration:
     """Test masked loss during training with real components.
 
@@ -59,6 +69,8 @@ class TestMaskedLossIntegration:
             # The modifier mutates training.yaml only; vision and temporal switches
             # live in curriculum.yaml and are set below.
             cfg["training"]["training_loop"]["max_steps_per_episode"] = 1000
+            cfg["training"]["replay_buffer"]["min_size"] = 4
+            cfg["training"]["replay_buffer"]["batch_size"] = 4
 
         config_dir = config_pack_factory(modifier=_modifier, name="masked_loss")
 
@@ -69,6 +81,7 @@ class TestMaskedLossIntegration:
             lambda c: c["curriculum"].update({"active_vision": "partial", "vision_range": 0.5, "active_temporal": False}),
         )
         env = cpu_env_factory(config_dir=config_dir, num_agents=1)
+        assert env.level.training.replay_buffer.min_size == env.level.training.replay_buffer.batch_size == 4
 
         # Brain config loaded from fixture
         brain_cfg = recurrent_brain_config
@@ -121,6 +134,7 @@ class TestMaskedLossIntegration:
 
         # Verify training has occurred (total_steps should be > 0 after episodes)
         assert population.total_steps > 0, "Should have accumulated training steps"
+        assert population.training_step_counter > 0, "Should have performed optimizer updates"
 
         # Verify training metrics are finite (masked loss should prevent NaN/Inf)
         # Only check if training actually occurred (buffer had enough episodes)
@@ -262,7 +276,7 @@ class TestMultiEpisodeTraining:
     target network updates.
     """
 
-    def test_train_10_episodes_with_learning_progression(self, cpu_device, cpu_env_factory, minimal_brain_config):
+    def test_train_10_episodes_with_learning_progression(self, cpu_device, cpu_env_factory, config_pack_factory, minimal_brain_config):
         """Verify agents improve over 10 episodes (survival time or Q-values).
 
         This test validates the critical contract:
@@ -274,7 +288,9 @@ class TestMultiEpisodeTraining:
         Integration point: Multi-episode loop with VectorizedPopulation.step_population()
         called repeatedly across episodes.
         """
-        env = cpu_env_factory(num_agents=1)
+        config_dir = _learning_config_pack(config_pack_factory, name="learning_progression", batch_size=16)
+        env = cpu_env_factory(config_dir=config_dir, num_agents=1)
+        assert env.level.training.replay_buffer.min_size == env.level.training.replay_buffer.batch_size == 16
 
         # Brain config loaded from fixture
         brain_cfg = minimal_brain_config
@@ -327,6 +343,7 @@ class TestMultiEpisodeTraining:
         # Verify training occurred
         assert len(population.replay_buffer) > 0, "Replay buffer should have transitions"
         assert population.total_steps > 0, "Should have accumulated training steps"
+        assert population.training_step_counter > 0, "Should have performed optimizer updates"
 
         # Verify Q-network weights changed (learning occurred)
         final_weights = population.q_network.state_dict()
@@ -473,7 +490,7 @@ class TestMultiEpisodeTraining:
                 buffer_sizes[i] >= buffer_sizes[i - 1] or buffer_sizes[i] == 500
             ), f"Buffer size should increase or stay at capacity: {buffer_sizes}"
 
-    def test_target_network_updates_at_frequency(self, cpu_device, cpu_env_factory, minimal_brain_config):
+    def test_target_network_updates_at_frequency(self, cpu_device, cpu_env_factory, config_pack_factory, minimal_brain_config):
         """Verify target network updated at specified frequency.
 
         This test validates the critical contract:
@@ -484,7 +501,9 @@ class TestMultiEpisodeTraining:
         Integration point: VectorizedPopulation.step_population() updates
         target network every target_update_frequency training steps.
         """
-        env = cpu_env_factory(num_agents=1)
+        config_dir = _learning_config_pack(config_pack_factory, name="target_update_frequency", batch_size=16)
+        env = cpu_env_factory(config_dir=config_dir, num_agents=1)
+        assert env.level.training.replay_buffer.min_size == env.level.training.replay_buffer.batch_size == 16
 
         # Target-network cadence is authored in the brain config, not passed to the
         # constructor — VectorizedPopulation reads
@@ -528,6 +547,7 @@ class TestMultiEpisodeTraining:
 
         # Verify training occurred
         assert population.training_step_counter > 0, "Should have training steps"
+        assert population.training_step_counter >= 10, "Should reach the target update cadence with actual optimizer updates"
 
         # Verify target network updated (weights changed)
         final_target_weights = population.target_network.state_dict()
@@ -541,7 +561,7 @@ class TestMultiEpisodeTraining:
         if population.training_step_counter >= 10:
             assert target_weights_changed, f"Target network should update after {population.training_step_counter} training steps"
 
-    def test_q_values_improve_over_time(self, cpu_device, cpu_env_factory, minimal_brain_config):
+    def test_q_values_improve_over_time(self, cpu_device, cpu_env_factory, config_pack_factory, minimal_brain_config):
         """Verify Q-values become more certain over time (reduced variance).
 
         This test validates the critical contract:
@@ -552,7 +572,9 @@ class TestMultiEpisodeTraining:
         Integration point: VectorizedPopulation.step_population() trains
         Q-network, causing Q-values to become more certain over time.
         """
-        env = cpu_env_factory(num_agents=1)
+        config_dir = _learning_config_pack(config_pack_factory, name="q_values_over_time", batch_size=16)
+        env = cpu_env_factory(config_dir=config_dir, num_agents=1)
+        assert env.level.training.replay_buffer.min_size == env.level.training.replay_buffer.batch_size == 16
 
         # Brain config loaded from fixture
         brain_cfg = minimal_brain_config
@@ -609,6 +631,7 @@ class TestMultiEpisodeTraining:
             final_std = q_values_final.std().item()
 
         # Verify Q-values changed (learning occurred)
+        assert population.training_step_counter > 0, "Should have performed optimizer updates"
         # Note: We can't assert exact improvement due to randomness,
         # but Q-values should be different after training
         assert abs(final_mean - initial_mean) > 0.01 or abs(final_std - initial_std) > 0.01, "Q-values should change after training"

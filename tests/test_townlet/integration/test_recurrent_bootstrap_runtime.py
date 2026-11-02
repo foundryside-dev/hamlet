@@ -134,6 +134,7 @@ def _closed_form_boundary_target(
     `boundary_hidden` selects WHICH hidden state conditions the successor forward:
       - "threaded": the hidden state after unrolling the window - the only choice
         consistent with the interior arm, which evaluates Q(o_{t+1} | h_t).
+      - "crossed": online/target hidden trajectories exchanged (negative control).
       - "zero": a fresh zero hidden state - the plausible-but-wrong implementation.
         Used only as a negative control to prove the "threaded" assertion has teeth.
 
@@ -143,26 +144,38 @@ def _closed_form_boundary_target(
     """
     online = population.q_network
     target_net = population.target_network
-    batch_size = batch["observations"].shape[0]
-    boundary_next_obs = batch["next_observations"][:, -1, :]
-    with torch.no_grad():
-        _, target_hidden = _unroll(target_net, batch["observations"], population.device)
-        if boundary_hidden == "zero":
-            target_hidden = target_net.initial_hidden(batch_size, population.device)
-        q_target_sequence, _ = target_net(boundary_next_obs.unsqueeze(1), target_hidden)
-        q_target_next = q_target_sequence[:, 0, :]
-
-        if population.use_double_dqn:
-            _, online_hidden = _unroll(online, batch["observations"], population.device)
+    expected = []
+    for row, length in enumerate(batch["lengths"].tolist()):
+        observations = batch["observations"][row : row + 1, :length]
+        successor = batch["next_observations"][row : row + 1, length - 1 : length]
+        with torch.no_grad():
+            _, target_hidden = _unroll(target_net, observations, population.device)
+            _, online_hidden = _unroll(online, observations, population.device)
             if boundary_hidden == "zero":
-                online_hidden = online.initial_hidden(batch_size, population.device)
-            q_online_sequence, _ = online(boundary_next_obs.unsqueeze(1), online_hidden)
-            q_online_next = q_online_sequence[:, 0, :]
-            actions = q_online_next.argmax(1)
-            q_next = q_target_next.gather(1, actions.unsqueeze(1)).squeeze(1)
-        else:
-            q_next = q_target_next.max(1)[0]
-    return batch["rewards"][:, -1] + gamma * q_next * (~batch["dones"][:, -1]).float()
+                target_hidden = target_net.initial_hidden(1, population.device)
+                online_hidden = online.initial_hidden(1, population.device)
+            elif boundary_hidden == "crossed":
+                target_hidden, online_hidden = online_hidden, target_hidden
+            target_values, _ = target_net(successor, target_hidden)
+            legal = batch["next_action_masks"][row, length - 1]
+            reward = batch["rewards"][row, length - 1]
+            if bool(batch["dones"][row, length - 1]) or gamma == 0.0:
+                expected.append(reward)
+                continue
+            assert bool(legal.any()), "nonterminal successor has no captured legal action"
+            if population.use_double_dqn:
+                online_values, _ = online(successor, online_hidden)
+                action = online_values[0, 0].masked_fill(~legal, -torch.inf).argmax()
+                value = target_values[0, 0, action]
+            else:
+                value = target_values[0, 0].masked_fill(~legal, -torch.inf).max()
+            expected.append(reward + gamma * value)
+    return torch.stack(expected)
+
+
+def _boundary(batch, values):
+    rows = torch.arange(len(batch["lengths"]), device=values.device)
+    return values[rows, batch["lengths"] - 1]
 
 
 def _run(pack: Path, out: Path, monkeypatch: pytest.MonkeyPatch, *, episodes: int = 12, gammas: tuple[float, ...] = ()):
@@ -181,22 +194,37 @@ def _run(pack: Path, out: Path, monkeypatch: pytest.MonkeyPatch, *, episodes: in
     targets: list[torch.Tensor] = []
     expectations: list[dict[object, torch.Tensor]] = []
 
-    original_init = VectorizedPopulation.__init__
+    original_init = VectorizedPopulation._initialize
 
     def init_spy(self, *args, **kwargs):
         original_init(self, *args, **kwargs)
         captured["population"] = self
+        captured["optimizer_steps"] = 0
+        captured["initial_parameters"] = [parameter.detach().clone() for parameter in self.q_network.parameters()]
+        original_step = self.optimizer.step
 
-    monkeypatch.setattr(VectorizedPopulation, "__init__", init_spy)
+        def optimizer_step(*step_args, **step_kwargs):
+            result = original_step(*step_args, **step_kwargs)
+            captured["optimizer_steps"] += 1
+            return result
 
-    original_sample = SequentialReplayBuffer.sample_sequences
+        monkeypatch.setattr(self.optimizer, "step", optimizer_step)
 
-    def sample_spy(self, batch_size, seq_len):
-        batch = original_sample(self, batch_size, seq_len)
-        batches.append({key: value.detach().clone() for key, value in batch.items()})
+    monkeypatch.setattr(VectorizedPopulation, "_initialize", init_spy)
+
+    original_sample = SequentialReplayBuffer.sample_batch
+
+    def sample_spy(self, request):
+        batch = original_sample(self, request)
+        batches.append(
+            {
+                key: getattr(batch, key).detach().clone()
+                for key in ("observations", "actions", "rewards", "dones", "next_observations", "next_action_masks", "lengths", "loss_mask")
+            }
+        )
         return batch
 
-    monkeypatch.setattr(SequentialReplayBuffer, "sample_sequences", sample_spy)
+    monkeypatch.setattr(SequentialReplayBuffer, "sample_batch", sample_spy)
 
     class LossSpy:
         """Record-only proxy: forwards every call to torch.nn.functional untouched."""
@@ -210,8 +238,10 @@ def _run(pack: Path, out: Path, monkeypatch: pytest.MonkeyPatch, *, episodes: in
                 return func
 
             def wrapped(pred, target, *args, **kwargs):
-                if pred.dim() == 2:
-                    targets.append(target.detach().clone())
+                if batches and len(targets) < len(batches):
+                    full_target = torch.zeros_like(batches[-1]["rewards"])
+                    full_target[batches[-1]["loss_mask"]] = target.detach()
+                    targets.append(full_target)
                     population = captured["population"]
                     batch = batches[-1]
                     if gammas and "next_observations" in batch:
@@ -219,6 +249,7 @@ def _run(pack: Path, out: Path, monkeypatch: pytest.MonkeyPatch, *, episodes: in
                             gamma: _closed_form_boundary_target(population, batch, gamma) for gamma in gammas
                         }
                         exp["zero"] = _closed_form_boundary_target(population, batch, gammas[0], boundary_hidden="zero")
+                        exp["crossed"] = _closed_form_boundary_target(population, batch, gammas[0], boundary_hidden="crossed")
                         expectations.append(exp)
                     else:
                         expectations.append({})
@@ -238,6 +269,12 @@ def _run(pack: Path, out: Path, monkeypatch: pytest.MonkeyPatch, *, episodes: in
     runner.run()
 
     population = captured["population"]
+    if batches:
+        assert captured["optimizer_steps"] == len(batches) == population.training_step_counter
+        assert any(
+            not torch.equal(before, after)
+            for before, after in zip(captured["initial_parameters"], population.q_network.parameters(), strict=True)
+        ), "real optimizer updates did not change online parameters"
     return population, list(zip(batches, targets, expectations, strict=True))
 
 
@@ -283,10 +320,10 @@ def test_subsequence_boundary_bootstraps_with_gamma_from_yaml(tmp_path, monkeypa
     non_terminal = 0
     collapsed = 0
     for batch, q_target, _ in updates:
-        # mask[:, -1] excludes rows whose boundary is post-terminal garbage.
-        alive = (~batch["dones"][:, -1]) & batch["mask"][:, -1]
+        # Only each row's final real objective coordinate is a window boundary.
+        alive = (~_boundary(batch, batch["dones"])) & _boundary(batch, batch["loss_mask"])
         non_terminal += int(alive.sum())
-        collapsed += int((torch.eq(q_target[:, -1], batch["rewards"][:, -1]) & alive).sum())
+        collapsed += int((torch.eq(_boundary(batch, q_target), _boundary(batch, batch["rewards"])) & alive).sum())
 
     assert non_terminal > 0, "every sampled window ended on a real terminal - inconclusive"
     assert collapsed == 0, (
@@ -297,16 +334,19 @@ def test_subsequence_boundary_bootstraps_with_gamma_from_yaml(tmp_path, monkeypa
     max_deviation = 0.0
     min_other_gap = float("inf")
     min_zero_gap = float("inf")
+    max_cross_gap = 0.0
     for batch, q_target, expectations in updates:
         assert "next_observations" in batch, "sampled sequences must carry the successor observation"
-        alive = (~batch["dones"][:, -1]) & batch["mask"][:, -1]
-        boundary = q_target[:, -1]
+        alive = (~_boundary(batch, batch["dones"])) & _boundary(batch, batch["loss_mask"])
+        boundary = _boundary(batch, q_target)
         expected = expectations[gamma]
         wrong_gamma = expectations[other_gamma]
         wrong_hidden = expectations["zero"]
+        wrong_cross = expectations["crossed"]
         max_deviation = max(max_deviation, float((boundary - expected).abs().max()))
         if bool(alive.any()):
             min_other_gap = min(min_other_gap, float((expected[alive] - wrong_gamma[alive]).abs().max()))
+            max_cross_gap = max(max_cross_gap, float((expected[alive] - wrong_cross[alive]).abs().max()))
             min_zero_gap = min(min_zero_gap, float((expected[alive] - wrong_hidden[alive]).abs().max()))
 
     # Pins WHICH successor and WHICH hidden state the bootstrap uses, not merely that
@@ -316,4 +356,5 @@ def test_subsequence_boundary_bootstraps_with_gamma_from_yaml(tmp_path, monkeypa
     assert min_zero_gap > 1e-6, (
         "threaded-hidden and zero-hidden closed forms are indistinguishable - the " "hidden-state half of the assertion is vacuous"
     )
+    assert max_cross_gap > 1e-6, "own-hidden and crossed-hidden targets are indistinguishable"
     print(f"[measured] max_deviation={max_deviation:.3e} min_other_gap={min_other_gap:.3e} min_zero_gap={min_zero_gap:.3e}")

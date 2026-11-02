@@ -27,7 +27,12 @@ def test_authored_pack_compiles() -> None:
     assert population.brain_config.architecture.feedforward.hidden_layers == [256, 128]
     assert env.meters[:, env.meter_name_to_index["energy"]].tolist() == [1.0, 1.0]
     forwards = []
-    hook = population.q_network.register_forward_hook(lambda _module, _args, output: forwards.append(output.detach().clone()))
+
+    def observe_forward(_module, _args, output):
+        entry_eligible = (~env.dones & ~population.episode_completed).clone()
+        forwards.append((output.detach().clone(), entry_eligible))
+
+    hook = population.q_network.register_forward_hook(observe_forward)
     try:
         with controlled_action_schedule(population.exploration, env, UNEQUAL_ENDINGS) as selection, observe_environment_steps(env) as ticks:
             for _ in UNEQUAL_ENDINGS:
@@ -35,7 +40,11 @@ def test_authored_pack_compiles() -> None:
     finally:
         hook.remove()
     assert len(forwards) == len(selection.q_values) == 5
-    assert all(torch.equal(output, q_values) for output, q_values in zip(forwards, selection.q_values, strict=True))
+    for (output, entry_eligible), q_values, tick in zip(forwards, selection.q_values, ticks, strict=True):
+        assert output.shape == (env.num_agents, env.action_dim)
+        assert torch.isfinite(output).all()  # Full forwards retain the inactive lane's Q rows too.
+        assert torch.equal(entry_eligible, tick.active_before)
+        assert torch.equal(output[entry_eligible], q_values)
     assert torch.stack([item.active_before for item in ticks]).sum(dim=0).tolist() == [2, 5]
     assert torch.stack([item.new_done for item in ticks]).sum(dim=0).tolist() == [1, 1]
     assert ticks[1].new_done.tolist() == [True, False]

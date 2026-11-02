@@ -229,7 +229,8 @@ class TestEpisodeBuffering:
 
         population.reset()
 
-        # Manually add some data to episode container
+        # Synthetic unit rows declare restrictive successor legality explicitly;
+        # these random observations/masks are not captured authored ENV evidence.
         agent_idx = 0
         episode = population.current_episodes[agent_idx]
 
@@ -239,6 +240,12 @@ class TestEpisodeBuffering:
             episode["rewards"].append(torch.tensor(1.1, device=cpu_device))  # Combined reward
             episode["dones"].append(torch.tensor(False, device=cpu_device))
             episode["next_observations"].append(torch.randn(env.observation_dim, device=cpu_device))
+            successor_mask = torch.zeros(env.action_dim, dtype=torch.bool, device=cpu_device)
+            successor_mask[(i + 1) % env.action_dim] = True
+            episode["next_action_masks"].append(successor_mask)
+            episode["legality_recorded"].append(torch.tensor(True, dtype=torch.bool, device=cpu_device))
+
+        assert len(episode["next_action_masks"]) == len(episode["legality_recorded"]) == len(episode["observations"]) == 5
 
         # Store episode
         result = population._store_episode_and_reset(agent_idx)
@@ -248,6 +255,8 @@ class TestEpisodeBuffering:
 
         # Verify episode container was reset
         assert len(population.current_episodes[agent_idx]["observations"]) == 0, "Container should be empty after reset"
+        assert len(population.current_episodes[agent_idx]["next_action_masks"]) == 0
+        assert len(population.current_episodes[agent_idx]["legality_recorded"]) == 0
 
         # Verify buffer size increased (use len() for SequentialReplayBuffer)
         assert len(population.replay_buffer) > 0, "Replay buffer should contain stored episode"

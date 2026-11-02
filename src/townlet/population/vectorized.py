@@ -7,9 +7,11 @@ Manages Q-networks, replay buffers, and training loops.
 
 from __future__ import annotations
 
+import copy
 import logging
 import math
 from collections.abc import Mapping
+from dataclasses import dataclass, replace
 from numbers import Real
 from typing import TYPE_CHECKING, Any, cast
 
@@ -22,9 +24,10 @@ from townlet.agent.loss_factory import LossFactory
 from townlet.agent.network_factory import NetworkFactory
 from townlet.agent.networks import RecurrentTokenQNetwork
 from townlet.agent.optimizer_factory import OptimizerFactory
+from townlet.config.bac_options import ReplayOptions, resolve_bac_options
 from townlet.config.brain_config import BrainConfig
 from townlet.curriculum.base import CurriculumManager
-from townlet.exploration.action_selection import epsilon_greedy_action_selection
+from townlet.exploration.action_selection import epsilon_greedy_action_selection_eligible
 from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
 from townlet.exploration.base import ExplorationStrategy
 from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
@@ -34,7 +37,9 @@ from townlet.population.runtime_registry import AgentRuntimeRegistry
 from townlet.training.checkpoint_utils import TokenRosterReport, load_token_network_state_by_type
 from townlet.training.episode import CompletionReason, EpisodeCompletion, RunnerCompletionReason
 from townlet.training.prioritized_replay_buffer import PrioritizedReplayBuffer
+from townlet.training.q_targets import legal_td_target
 from townlet.training.replay_buffer import ReplayBuffer
+from townlet.training.replay_contract import HistoricalLegalityUnavailable, ReplayBatch, ReplayRequest
 from townlet.training.sequential_replay_buffer import SequentialReplayBuffer
 from townlet.training.state import BatchedAgentState, CurriculumDecision, PopulationCheckpoint, RewardTensor
 
@@ -99,6 +104,49 @@ ADAPTIVE_EXPLORATION_STATE_KEYS = frozenset(
 )
 
 EpisodeContainer = dict[str, list[torch.Tensor]]
+ReplayStorage = ReplayBuffer | SequentialReplayBuffer | PrioritizedReplayBuffer
+
+
+@dataclass(frozen=True)
+class _ReplaySetup:
+    options: ReplayOptions
+    min_transitions: int
+    rng: np.random.Generator
+    origin: str
+    horizon: int
+    horizon_origin: str
+    tick: int
+    preserve_global: bool
+
+    @classmethod
+    def create(
+        cls,
+        options: ReplayOptions,
+        minimum: int,
+        rng: np.random.Generator,
+        origin: str,
+        horizon: int,
+        horizon_origin: str,
+        tick: int,
+        preserve_global: bool,
+    ) -> _ReplaySetup:
+        if not isinstance(options, ReplayOptions):
+            raise ValueError("replay_options must be fully resolved ReplayOptions")
+        owned = ReplayOptions.model_validate(options.model_dump())
+        if any(value is None for value in owned.model_dump().values()):
+            raise ValueError("All six replay options must be explicitly resolved")
+        for label, value, lower in (
+            ("min_transitions", minimum, 0),
+            ("beta_vector_tick_horizon", horizon, 1),
+            ("current_vector_tick", tick, 0),
+        ):
+            if type(value) is not int or value < lower:
+                raise ValueError(f"{label} must be an exact integer >= {lower}")
+        if not isinstance(rng, np.random.Generator) or origin not in {"authored", "bac-options-v1"}:
+            raise ValueError("Replay requires an explicit NumPy Generator and authored/bac-options-v1 origin")
+        if not isinstance(horizon_origin, str) or not horizon_origin.strip():
+            raise ValueError("beta_horizon_origin must name the explicit horizon derivation")
+        return cls(owned, minimum, copy.deepcopy(rng), origin, horizon, horizon_origin, tick, preserve_global)
 
 
 class VectorizedPopulation(PopulationManager):
@@ -127,6 +175,103 @@ class VectorizedPopulation(PopulationManager):
         max_episodes: int | None = None,
         max_steps_per_episode: int | None = None,
     ):
+        self._initialize(
+            env,
+            curriculum,
+            exploration,
+            agent_ids,
+            device,
+            brain_config,
+            obs_dim,
+            train_frequency,
+            batch_size,
+            sequence_length,
+            max_grad_norm,
+            action_dim,
+            tb_logger,
+            max_episodes,
+            max_steps_per_episode,
+            None,
+        )
+
+    @classmethod
+    def for_training(
+        cls,
+        *,
+        env: VectorizedHamletEnv,
+        curriculum: CurriculumManager,
+        exploration: ExplorationStrategy,
+        agent_ids: list[str],
+        device: torch.device,
+        brain_config: BrainConfig,
+        obs_dim: int,
+        train_frequency: int,
+        batch_size: int,
+        sequence_length: int,
+        max_grad_norm: float,
+        action_dim: int,
+        tb_logger: Any,
+        max_episodes: int | None,
+        max_steps_per_episode: int | None,
+        replay_options: ReplayOptions,
+        min_transitions: int,
+        replay_rng: np.random.Generator,
+        replay_origin: str,
+        beta_vector_tick_horizon: int,
+        beta_horizon_origin: str,
+        current_vector_tick: int,
+    ) -> VectorizedPopulation:
+        """Construct the selected learner with explicit owned replay policy and clock."""
+        setup = _ReplaySetup.create(
+            replay_options,
+            min_transitions,
+            replay_rng,
+            replay_origin,
+            beta_vector_tick_horizon,
+            beta_horizon_origin,
+            current_vector_tick,
+            False,
+        )
+        population = cls.__new__(cls)
+        population._initialize(
+            env,
+            curriculum,
+            exploration,
+            agent_ids,
+            device,
+            brain_config,
+            obs_dim,
+            train_frequency,
+            batch_size,
+            sequence_length,
+            max_grad_norm,
+            action_dim,
+            tb_logger,
+            max_episodes,
+            max_steps_per_episode,
+            setup,
+        )
+        return population
+
+    def _initialize(
+        self,
+        env: VectorizedHamletEnv,
+        curriculum: CurriculumManager,
+        exploration: ExplorationStrategy,
+        agent_ids: list[str],
+        device: torch.device,
+        brain_config: BrainConfig,
+        obs_dim: int,
+        train_frequency: int,
+        batch_size: int,
+        sequence_length: int,
+        max_grad_norm: float,
+        action_dim: int,
+        tb_logger: Any,
+        max_episodes: int | None,
+        max_steps_per_episode: int | None,
+        replay_setup: _ReplaySetup | None,
+    ) -> None:
         """
         Initialize vectorized population.
 
@@ -252,17 +397,12 @@ class VectorizedPopulation(PopulationManager):
         replay_capacity = brain_config.replay.capacity
 
         if self.is_recurrent:
-            # Recurrent networks use sequential buffer (PER not yet supported for sequences)
-            self.replay_buffer = SequentialReplayBuffer(capacity=replay_capacity, device=device)
-            # Episode tracking for sequential buffer
             self.current_episodes = [self._new_episode_container() for _ in range(self.num_agents)]
-
-            # TASK-005 Phase 3: Raise NotImplementedError for PER + recurrent
-            if self.use_per:
-                raise NotImplementedError(
-                    "Prioritized replay not yet supported for recurrent networks. "
-                    "Use prioritized=false in brain.yaml for recurrent architectures."
-                )
+        if replay_setup is not None:
+            self.replay_buffer = self._new_replay(replay_setup)
+        elif self.is_recurrent:
+            # Construction/inspection has no learner-only seed/horizon requirement.
+            self.replay_buffer = SequentialReplayBuffer(capacity=replay_capacity, device=device)
         else:
             # Feedforward networks select the configured standard or prioritized replay.
             if self.use_per:
@@ -282,7 +422,10 @@ class VectorizedPopulation(PopulationManager):
                 self.replay_buffer = ReplayBuffer(capacity=replay_capacity, device=device)
 
         # Training hyperparameters (configurable)
-        self.total_steps = 0
+        if replay_setup is None:
+            self.total_steps = 0
+        else:
+            self.total_steps = replay_setup.tick
         self.train_frequency = train_frequency
         self.sequence_length = sequence_length
         self.max_grad_norm = max_grad_norm
@@ -306,6 +449,332 @@ class VectorizedPopulation(PopulationManager):
             self.rollout_hidden = recurrent_network.initial_hidden(self.num_agents, self.device)
         # Q-values recorded by the action selectors (read by the live-inference display).
         self.last_selected_q_values: torch.Tensor | None = None
+        self._replay_setup = replay_setup
+        self.replay_option_provenance: tuple[Any, ...] | None = None
+        self._last_readiness: tuple[str, int, int] | None = None
+        self._replay_was_loaded = False
+        self._constructor_replay: ReplayStorage | None
+        self._constructor_replay_state: dict[str, Any] | None
+        self._bound_replay: ReplayStorage | None
+        if replay_setup is None:
+            self._constructor_replay = self.replay_buffer
+            self._constructor_replay_state = copy.deepcopy(self.replay_buffer.serialize())
+            self._bound_replay = None
+        else:
+            self._constructor_replay = None
+            self._constructor_replay_state = None
+            self._bound_replay = self.replay_buffer
+        self._last_beta_tick = self.total_steps
+
+    def _new_replay(self, setup: _ReplaySetup) -> ReplayStorage:
+        """Build offside; callers install only after all required validation succeeds."""
+        replay = self.brain_config.replay
+        if self.use_per:
+            assert replay.priority_alpha is not None
+            assert replay.priority_beta is not None
+            assert replay.priority_beta_annealing is not None
+        if self.is_recurrent:
+            if self.use_per:
+                return SequentialReplayBuffer.for_prioritized_replay(
+                    replay.capacity,
+                    self.device,
+                    options=setup.options,
+                    action_dim=self.action_dim,
+                    legality_mode="captured",
+                    alpha=cast(float, replay.priority_alpha),
+                    beta=cast(float, replay.priority_beta),
+                    beta_annealing=cast(bool, replay.priority_beta_annealing),
+                    beta_vector_tick_horizon=setup.horizon,
+                    current_vector_tick=setup.tick,
+                    rng=setup.rng,
+                    origin=setup.origin,
+                )
+            return SequentialReplayBuffer.for_replay(
+                replay.capacity, self.device, options=setup.options, action_dim=self.action_dim, legality_mode="captured"
+            )
+        if self.use_per:
+            buffer = PrioritizedReplayBuffer(
+                replay.capacity,
+                cast(float, replay.priority_alpha),
+                cast(float, replay.priority_beta),
+                cast(bool, replay.priority_beta_annealing),
+                self.device,
+            )
+            if not setup.preserve_global:
+                buffer.configure_sampling(sampling_mode=cast(str, setup.options.sampling_mode), rng=setup.rng, origin=setup.origin)
+            return buffer
+        return ReplayBuffer(replay.capacity, self.device)
+
+    def _compiled_replay_setup(self, tick: int) -> _ReplaySetup:
+        training = self.env.level.training
+        resolved = resolve_bac_options(training.bac_options, training=training)
+        options = resolved.options.replay
+        assert options is not None
+        if self.max_episodes is not None:
+            episodes = self.max_episodes
+            episode_origin = "population.max_episodes"
+        else:
+            episodes = training.training_loop.max_episodes
+            episode_origin = "training.training_loop.max_episodes"
+        if self.max_steps_per_episode is not None:
+            steps = self.max_steps_per_episode
+            step_origin = "population.max_steps_per_episode"
+        else:
+            steps = training.training_loop.max_steps_per_episode
+            step_origin = "training.training_loop.max_steps_per_episode"
+        return _ReplaySetup.create(
+            options,
+            training.replay_buffer.min_size,
+            np.random.Generator(np.random.PCG64(training.seed)),
+            "authored",
+            episodes * steps,
+            f"{episode_origin}({episodes})*{step_origin}({steps}); upper-bound vector ticks",
+            tick,
+            not self.is_recurrent and options.sampling_mode == "successive_without_replacement",
+        )
+
+    @classmethod
+    def _same_replay_state(cls, left: object, right: object) -> bool:
+        if isinstance(left, torch.Tensor):
+            return isinstance(right, torch.Tensor) and left.dtype == right.dtype and left.shape == right.shape and torch.equal(left, right)
+        if isinstance(left, np.ndarray):
+            return isinstance(right, np.ndarray) and np.array_equal(left, right)
+        if isinstance(left, Mapping):
+            return (
+                isinstance(right, Mapping)
+                and left.keys() == right.keys()
+                and all(cls._same_replay_state(v, right[k]) for k, v in left.items())
+            )
+        if isinstance(left, (tuple, list)):
+            return (
+                isinstance(right, (tuple, list))
+                and type(left) is type(right)
+                and len(left) == len(right)
+                and all(cls._same_replay_state(a, b) for a, b in zip(left, right, strict=True))
+            )
+        return bool(left == right)
+
+    def _validate_replay_binding(self, buffer: ReplayStorage, setup: _ReplaySetup, state: Mapping[str, Any]) -> None:
+        if state["capacity"] != self.brain_config.replay.capacity:
+            raise ValueError("Installed replay capacity disagrees with the passed brain")
+        if self.is_recurrent:
+            if not isinstance(buffer, SequentialReplayBuffer) or state.get("format_version") not in (6, 7):
+                raise ValueError("Learning requires qualified captured sequential replay")
+            if (
+                state["replay_options"] != setup.options.model_dump()
+                or state["action_dim"] != self.action_dim
+                or state["legality_mode"] != "captured"
+            ):
+                raise ValueError("Installed sequential replay policy/action geometry disagrees with the learner")
+            priority = state.get("priority_state")
+            if self.use_per != (priority is not None):
+                raise ValueError("Installed sequential replay prioritization disagrees with the passed brain")
+            if priority is not None:
+                if priority["current_vector_tick"] != self.total_steps or priority["beta_vector_tick_horizon"] != setup.horizon:
+                    raise ValueError("Installed sequential replay clock/horizon disagrees with the restored population")
+                self._validate_per_configuration(priority)
+        else:
+            if self.use_per != isinstance(buffer, PrioritizedReplayBuffer) or isinstance(buffer, SequentialReplayBuffer):
+                raise ValueError("Installed flat replay kind disagrees with the passed brain")
+            if buffer.retained_transitions and state.get("action_dim") is None:
+                raise HistoricalLegalityUnavailable("Unknown successor legality cannot enter compiled-world learning")
+            if self.use_per:
+                if state["sampling_mode"] != setup.options.sampling_mode:
+                    raise ValueError("Installed flat replay sampler mode disagrees with the learner")
+                self._validate_per_configuration(state)
+
+    def _validate_per_configuration(self, state: Mapping[str, Any]) -> None:
+        replay = self.brain_config.replay
+        if (state["alpha"], state["beta_initial"], state["beta_annealing"]) != (
+            replay.priority_alpha,
+            replay.priority_beta,
+            replay.priority_beta_annealing,
+        ):
+            raise ValueError("Installed replay PER configuration disagrees with the passed brain")
+
+    def _bind_training(self) -> None:
+        """Adopt installed state; only a genuinely pristine constructor buffer is fresh."""
+        if self.total_steps < self._last_beta_tick:
+            raise ValueError("Population vector tick cannot rewind during ordinary learning")
+        if self._bound_replay is self.replay_buffer:
+            return
+        compiled = self._replay_setup is None
+        if self._replay_setup is not None:
+            setup = replace(self._replay_setup, tick=self.total_steps)
+        else:
+            setup = self._compiled_replay_setup(self.total_steps)
+        buffer = self.replay_buffer
+        state = buffer.serialize()
+        pristine = (
+            buffer is self._constructor_replay
+            and not self._replay_was_loaded
+            and self.total_steps == 0
+            and self.training_step_counter == 0
+            and self._same_replay_state(state, self._constructor_replay_state)
+        )
+        adapt = self.is_recurrent and (state.get("format_version") not in (6, 7) or (self.use_per and state.get("format_version") == 6))
+        if (pristine and self.is_recurrent) or adapt:
+            candidate = self._new_replay(setup)
+            sequential = cast(SequentialReplayBuffer, candidate)
+            if not pristine:
+                if "inspection_kind" in state:
+                    transport = state["legacy_transport"]
+                    if transport["num_transitions"]:
+                        sequential.load_prepared(sequential.prepare_serialized(transport, expected_obs_dim=self._obs_dim))
+                    sequential.load_prepared(sequential.prepare_archived_import(buffer.historical_archives, expected_obs_dim=self._obs_dim))
+                else:
+                    prepared = sequential.prepare_serialized(state, expected_obs_dim=self._obs_dim)
+                    sequential.load_prepared(prepared)
+            buffer, state = candidate, candidate.serialize()
+        elif pristine and self.use_per and not setup.preserve_global:
+            candidate = self._new_replay(setup)
+            buffer, state = candidate, candidate.serialize()
+        self._validate_replay_binding(buffer, setup, state)
+        self.replay_buffer = buffer
+        self._replay_setup = setup
+        self._bound_replay = buffer
+        self._last_beta_tick = self.total_steps
+        self._constructor_replay = None
+        self._constructor_replay_state = None
+        if compiled:
+            resolved = resolve_bac_options(self.env.level.training.bac_options, training=self.env.level.training)
+            self.replay_option_provenance = tuple(p.model_copy(deep=True) for p in resolved.provenance if p.field.startswith("replay."))
+
+    def _pace_replay(self) -> None:
+        if self.total_steps < self._last_beta_tick:
+            raise ValueError("Population vector tick cannot rewind")
+        assert self._replay_setup is not None
+        if self.use_per:
+            if self.is_recurrent:
+                cast(SequentialReplayBuffer, self.replay_buffer).set_vector_tick(self.total_steps)
+            else:
+                cast(PrioritizedReplayBuffer, self.replay_buffer).anneal_beta(self._replay_setup.horizon, self.total_steps)
+        self._last_beta_tick = self.total_steps
+
+    def _replay_request(self) -> ReplayRequest:
+        assert self._replay_setup is not None
+        setup = self._replay_setup
+        return ReplayRequest(
+            self.batch_size,
+            self.sequence_length if self.is_recurrent else 1,
+            setup.min_transitions,
+            cast(str, setup.options.sampling_mode) if self.is_recurrent or self.use_per else "uniform_without_replacement",
+            cast(str, setup.options.sequence_mode) if self.is_recurrent else "feedforward",
+            cast(str, setup.options.sequence_objective) if self.is_recurrent else "transition",
+        )
+
+    def _loss_values(self, predictions: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
+        if self.loss_type == "huber":
+            return F.huber_loss(predictions, targets, reduction="none", delta=self.loss_delta)
+        if self.loss_type == "smooth_l1":
+            return F.smooth_l1_loss(predictions, targets, reduction="none")
+        if self.loss_type == "mse":
+            return F.mse_loss(predictions, targets, reduction="none")
+        raise ValueError(f"Unsupported loss type: {self.loss_type}")
+
+    def _recurrent_predictions(self, batch: ReplayBatch) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Evaluate only real prefixes; each bootstrap branches to its exact stored successor."""
+        online = cast(RecurrentTokenQNetwork, self.q_network)
+        target = cast(RecurrentTokenQNetwork, self.target_network)
+        predictions = torch.zeros_like(batch.rewards)
+        targets = torch.zeros_like(batch.rewards)
+        real = torch.arange(batch.observations.shape[1], device=self.device)[None, :] < batch.lengths[:, None]
+        for length in batch.lengths.unique().tolist():
+            rows = torch.nonzero(batch.lengths == length, as_tuple=False).flatten()
+            online_hidden = online.initial_hidden(len(rows), self.device)
+            target_hidden = target.initial_hidden(len(rows), self.device)
+            current_predictions, current_targets = [], []
+            for t in range(length):
+                observation = batch.observations[rows, t : t + 1]
+                values, online_hidden = online(observation, online_hidden)
+                current_predictions.append(values[:, 0].gather(1, batch.actions[rows, t, None]).squeeze(-1))
+                with torch.no_grad():
+                    _, target_hidden = target(observation, target_hidden)
+                    successor = batch.next_observations[rows, t : t + 1]
+                    target_next, _ = target(successor, target_hidden)
+                    online_next: torch.Tensor | None = None
+                    if self.use_double_dqn:
+                        branch_hidden = online_hidden[0].detach(), online_hidden[1].detach()
+                        online_branch, _ = online(successor, branch_hidden)
+                        online_next = online_branch[:, 0]
+                    current_targets.append(
+                        legal_td_target(
+                            batch.rewards[rows, t],
+                            batch.dones[rows, t],
+                            online_next,
+                            target_next[:, 0],
+                            batch.next_action_masks[rows, t],
+                            gamma=self.gamma,
+                            double_dqn=self.use_double_dqn,
+                        )
+                    )
+            predictions[rows, :length] = torch.stack(current_predictions, dim=1)
+            targets[rows, :length] = torch.stack(current_targets, dim=1)
+        return predictions, targets, real
+
+    def _learn(self) -> None:
+        request = self._replay_request()
+        readiness = self.replay_buffer.readiness(request)
+        signature = readiness.reason, readiness.retained_transitions, readiness.sampleable_units
+        if not readiness.ready:
+            if signature != self._last_readiness:
+                _logger.info("Replay not ready: %s (retained=%d, sampleable=%d)", *signature)
+            self._last_readiness = signature
+            return
+        self._last_readiness = signature
+        batch = self.replay_buffer.sample_batch(request)
+        self.q_network.train()
+        self.target_network.eval()
+        if self.is_recurrent:
+            predictions, targets, real = self._recurrent_predictions(batch)
+            selected = batch.loss_mask
+            losses = self._loss_values(predictions[selected], targets[selected])
+            unit_losses = torch.zeros(len(batch.lengths), dtype=torch.float64, device=self.device)
+            unit_losses.scatter_add_(0, torch.nonzero(selected, as_tuple=True)[0], losses.double())
+            unit_losses = unit_losses / selected.sum(dim=1)
+        else:
+            predictions = self.q_network(batch.observations).gather(1, batch.actions[:, None]).squeeze(-1)
+            with torch.no_grad():
+                if self.use_double_dqn:
+                    online_next = self.q_network(batch.next_observations)
+                else:
+                    online_next = None
+                target_next = self.target_network(batch.next_observations)
+                targets = legal_td_target(
+                    batch.rewards,
+                    batch.dones,
+                    online_next,
+                    target_next,
+                    batch.next_action_masks,
+                    gamma=self.gamma,
+                    double_dqn=self.use_double_dqn,
+                )
+            real = torch.ones_like(batch.dones, dtype=torch.bool)
+            unit_losses = self._loss_values(predictions, targets)
+        loss = (unit_losses * batch.weights.detach()).mean()
+        # Promote each operand before subtraction, then select/reduce unweighted real rows.
+        errors = torch.zeros_like(batch.rewards, dtype=torch.float64)
+        errors[real] = predictions[real].detach().double() - targets[real].double()
+        td_mean = errors[real].abs().mean().item()
+        q_mean = predictions[real].detach().double().mean().item()
+        self.optimizer.zero_grad()
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(self.q_network.parameters(), max_norm=self.max_grad_norm)
+        self.optimizer.step()
+        self.training_step_counter += 1
+        if self.scheduler is not None:
+            self.scheduler.step()
+        if self.training_step_counter % self.target_update_frequency == 0:
+            self.target_network.load_state_dict(self.q_network.state_dict())
+        self.last_td_error, self.last_loss, self.last_q_values_mean = td_mean, loss.item(), q_mean
+        self.last_training_step = self.total_steps
+        if self.use_per:
+            if self.is_recurrent:
+                cast(SequentialReplayBuffer, self.replay_buffer).update_priorities(batch.unit_ids, errors, loss_mask=batch.loss_mask)
+            else:
+                handles = batch.unit_ids.detach().cpu().numpy().astype(np.int64, copy=True)
+                cast(PrioritizedReplayBuffer, self.replay_buffer).update_unit_priorities(handles, errors)
+        self._log_network_histograms()
 
     def reset(self) -> None:
         """Reset all environments and state."""
@@ -348,6 +817,8 @@ class VectorizedPopulation(PopulationManager):
             "rewards_shaping": [],  # DAC shaping component
             "dones": [],
             "next_observations": [],  # WS-1(c): successor for the window-boundary bootstrap
+            "next_action_masks": [],
+            "legality_recorded": [],
         }
 
     # ------------------------------------------------------------------ #
@@ -462,6 +933,7 @@ class VectorizedPopulation(PopulationManager):
         if len(episode["observations"]) == 0:
             return False
 
+        self._bind_training()
         sequential_buffer = cast(SequentialReplayBuffer, self.replay_buffer)
 
         # CRIT-07: Store episode with components for provenance tracking
@@ -479,7 +951,11 @@ class VectorizedPopulation(PopulationManager):
             episode_data["rewards_intrinsic"] = torch.stack(episode["rewards_intrinsic"])
             episode_data["rewards_shaping"] = torch.stack(episode["rewards_shaping"])
 
-        sequential_buffer.store_episode(episode_data)
+        sequential_buffer.store_captured_episode(
+            episode_data,
+            next_action_masks=torch.stack(episode["next_action_masks"]),
+            legality_recorded=torch.stack(episode["legality_recorded"]),
+        )
 
         self.current_episodes[agent_idx] = self._new_episode_container()
         return True
@@ -517,6 +993,57 @@ class VectorizedPopulation(PopulationManager):
         batch_size = observations.shape[0]
         hidden = network.initial_hidden(batch_size, observations.device)
         return cast(tuple[torch.Tensor, tuple[torch.Tensor, torch.Tensor]], network(observations, hidden))
+
+    @torch.no_grad()
+    def _rollout_q(self, eligible: torch.Tensor) -> torch.Tensor:
+        if self.is_recurrent:
+            recurrent = cast(RecurrentTokenQNetwork, self.q_network)
+            assert self.rollout_hidden is not None
+            h, c = self.rollout_hidden
+            inactive_h, inactive_c = h[:, ~eligible].clone(), c[:, ~eligible].clone()
+            sequence, (next_h, next_c) = recurrent(self.current_obs.unsqueeze(1), (h, c))
+            next_h[:, ~eligible], next_c[:, ~eligible] = inactive_h, inactive_c
+            self.rollout_hidden = next_h, next_c
+            values = sequence[:, 0]
+        else:
+            values = self.q_network(self.current_obs)
+        self.last_selected_q_values = values
+        return cast(torch.Tensor, values)
+
+    @staticmethod
+    def _validate_selection(values: torch.Tensor, masks: torch.Tensor, eligible: torch.Tensor) -> None:
+        if eligible.dtype != torch.bool or eligible.shape != values.shape[:1] or eligible.device != values.device:
+            raise ValueError("Action eligibility must be bool[N] on the Q device")
+        if masks.dtype != torch.bool or masks.shape != values.shape or masks.device != values.device:
+            raise ValueError("Action masks must be bool[N,A] on the Q device")
+        if bool((eligible & ~masks.any(dim=1)).any()):
+            raise ValueError("eligible rows have no legal actions")
+
+    def _select_eligible(
+        self,
+        values: torch.Tensor,
+        state: BatchedAgentState,
+        masks: torch.Tensor,
+        eligible: torch.Tensor,
+    ) -> torch.Tensor:
+        self._validate_selection(values, masks, eligible)
+        actions = values.argmax(dim=1)
+        if bool(eligible.any()):
+            view = BatchedAgentState(
+                observations=state.observations[eligible],
+                actions=state.actions[eligible],
+                rewards=state.rewards[eligible],
+                dones=~eligible[eligible],
+                epsilons=state.epsilons[eligible],
+                intrinsic_rewards=state.intrinsic_rewards[eligible],
+                survival_times=state.survival_times[eligible],
+                device=state.device,
+            )
+            selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+            if selected.shape != actions[eligible].shape or selected.dtype != torch.int64 or selected.device != actions.device:
+                raise ValueError("Provider actions must be int64[eligible rows] on the Q device")
+            actions[eligible] = selected
+        return actions
 
     # ------------------------------------------------------------------ #
     # Telemetry synchronisation helpers
@@ -627,28 +1154,13 @@ class VectorizedPopulation(PopulationManager):
             actions: [num_agents] tensor of selected actions
         """
         with torch.no_grad():
-            # Get Q-values from network (recurrent: advance the rollout memory)
-            if self.is_recurrent:
-                recurrent_network = cast(RecurrentTokenQNetwork, self.q_network)
-                assert self.rollout_hidden is not None
-                q_sequence, self.rollout_hidden = recurrent_network(self.current_obs.unsqueeze(1), self.rollout_hidden)
-                q_values = q_sequence[:, 0, :]
-            else:
-                q_values = self.q_network(self.current_obs)
-            # Record BEFORE any early exit so the live Q-value display never reads stale values (plan §3 H8).
-            self.last_selected_q_values = q_values
-
-            # Get action masks from environment
+            eligible = ~env.dones & ~self.episode_completed
+            q_values = self._rollout_q(eligible)
             action_masks = env.get_action_masks()
-
-            # Mask invalid actions with -inf before argmax
-            masked_q_values = q_values.clone()
-            masked_q_values[~action_masks] = float("-inf")
-
-            # Select best valid action
-            actions: torch.Tensor = masked_q_values.argmax(dim=1)
-
-        return actions
+            self._validate_selection(q_values, action_masks, eligible)
+            actions = q_values.argmax(dim=1)
+            actions[eligible] = q_values[eligible].masked_fill(~action_masks[eligible], -torch.inf).argmax(dim=1)
+            return actions
 
     def select_epsilon_greedy_actions(self, env: VectorizedHamletEnv, epsilon: float) -> torch.Tensor:
         """
@@ -665,28 +1177,15 @@ class VectorizedPopulation(PopulationManager):
             actions: [num_agents] tensor of selected actions
         """
         with torch.no_grad():
-            # Get Q-values from network (recurrent: advance the rollout memory)
-            if self.is_recurrent:
-                recurrent_network = cast(RecurrentTokenQNetwork, self.q_network)
-                assert self.rollout_hidden is not None
-                q_sequence, self.rollout_hidden = recurrent_network(self.current_obs.unsqueeze(1), self.rollout_hidden)
-                q_values = q_sequence[:, 0, :]
-            else:
-                q_values = self.q_network(self.current_obs)
-            # The return below sits inside this no_grad block: record the Q-values
-            # HERE, before the action-mask fetch, or the live display is permanently
-            # None (plan §3 H8 - a silent regression no test upstream catches).
-            self.last_selected_q_values = q_values
-
-            # Get action masks from environment
+            eligible = ~env.dones & ~self.episode_completed
+            q_values = self._rollout_q(eligible)
             action_masks = env.get_action_masks()
-
-            # Use shared epsilon-greedy action selection
             epsilons = torch.full((self.num_agents,), epsilon, device=self.device, dtype=torch.float32)
-            return epsilon_greedy_action_selection(
+            return epsilon_greedy_action_selection_eligible(
                 q_values=q_values,
                 epsilons=epsilons,
                 action_masks=action_masks,
+                eligible=eligible,
             )
 
     def step_population(
@@ -727,22 +1226,8 @@ class VectorizedPopulation(PopulationManager):
         active_on_entry = ~envs.dones.clone()
         if bool((active_on_entry & self.episode_completed).any()):
             raise RuntimeError("A completed population lane cannot enter another transition.")
-
-        # 1. Get Q-values from network
-        with torch.no_grad():
-            if self.is_recurrent:
-                recurrent_network = cast(RecurrentTokenQNetwork, self.q_network)
-                assert self.rollout_hidden is not None
-                h, c = self.rollout_hidden
-                inactive_h = h[:, ~active_on_entry, :].clone()
-                inactive_c = c[:, ~active_on_entry, :].clone()
-                q_sequence, (next_h, next_c) = recurrent_network(self.current_obs.unsqueeze(1), (h, c))
-                next_h[:, ~active_on_entry, :] = inactive_h
-                next_c[:, ~active_on_entry, :] = inactive_c
-                self.rollout_hidden = (next_h, next_c)
-                q_values = q_sequence[:, 0, :]
-            else:
-                q_values = self.q_network(self.current_obs)
+        self._bind_training()
+        q_values = self._rollout_q(active_on_entry)
 
         # 2. Create temporary agent state for curriculum decision
         temp_state = BatchedAgentState(
@@ -778,7 +1263,7 @@ class VectorizedPopulation(PopulationManager):
         action_masks = envs.get_action_masks()
 
         # 5. Select actions via exploration strategy (with action masking)
-        actions = self.exploration.select_actions(q_values, temp_state, action_masks)
+        actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
 
         # 6. Extract curriculum difficulty multiplier
         depletion_multiplier = 1.0
@@ -817,20 +1302,26 @@ class VectorizedPopulation(PopulationManager):
                 episode["rewards_shaping"].append(components["shaping"][agent_idx].detach().cpu().clone())
                 episode["dones"].append(dones[agent_idx].detach().cpu().clone())
                 episode["next_observations"].append(next_obs[agent_idx].detach().cpu().clone())
+                episode["next_action_masks"].append(info["successor_action_masks"][agent_idx].detach().cpu().clone())
+                episode["legality_recorded"].append(torch.tensor(True, dtype=torch.bool))
         else:
-            eligible_rewards = RewardTensor.from_dac(
-                total=rewards[active_on_entry],
-                extrinsic=components["extrinsic"][active_on_entry],
-                intrinsic=components["intrinsic"][active_on_entry],
-                shaping=components["shaping"][active_on_entry],
-            )
-            self.replay_buffer.push(  # type: ignore[union-attr]
-                observations=self.current_obs[active_on_entry],
-                actions=actions[active_on_entry],
-                rewards=eligible_rewards,
-                next_observations=next_obs[active_on_entry],
-                dones=dones[active_on_entry],
-            )
+            rows = torch.nonzero(active_on_entry, as_tuple=False).flatten()
+            flat_buffer = cast(ReplayBuffer | PrioritizedReplayBuffer, self.replay_buffer)
+            for chunk in rows.split(self.brain_config.replay.capacity):
+                eligible_rewards = RewardTensor.from_dac(
+                    total=rewards[chunk],
+                    extrinsic=components["extrinsic"][chunk],
+                    intrinsic=components["intrinsic"][chunk],
+                    shaping=components["shaping"][chunk],
+                )
+                flat_buffer.push_recorded(
+                    observations=self.current_obs[chunk],
+                    actions=actions[chunk],
+                    rewards=eligible_rewards,
+                    next_observations=next_obs[chunk],
+                    dones=dones[chunk],
+                    next_action_masks=info["successor_action_masks"][chunk],
+                )
 
         # Preserve predictor update ordering after eligible replay admission.
         if isinstance(self.exploration, RNDExploration | AdaptiveIntrinsicExploration):
@@ -838,234 +1329,11 @@ class VectorizedPopulation(PopulationManager):
             rnd.obs_buffer.extend(row.detach().cpu().clone() for row in self.current_obs[active_on_entry])
             self.last_rnd_loss = rnd.update_predictor()
 
-        # 9. Train Q-network from replay buffer (every train_frequency steps)
+        # Replay clocks are vector-paced; retained readiness owns optimizer admission.
         self.total_steps += 1
-        # For recurrent: need enough episodes (16+) for sequence sampling
-        # For feedforward: need enough transitions (>= batch_size) for batch sampling
-        min_buffer_size = 16 if self.is_recurrent else self.batch_size
-        # All buffer types implement __len__, but mypy doesn't infer it for unions
-        if self.total_steps % self.train_frequency == 0 and len(self.replay_buffer) >= min_buffer_size:  # type: ignore[arg-type]
-            # MED-13: Removed intrinsic_weight parameter - DAC already composes rewards before storage
-
-            if self.is_recurrent:
-                # Sequential LSTM training with target network for temporal dependencies
-                sequential_buffer = cast(SequentialReplayBuffer, self.replay_buffer)
-                batch = sequential_buffer.sample_sequences(
-                    batch_size=self.batch_size,
-                    seq_len=self.sequence_length,
-                )
-
-                seq_len = batch["observations"].shape[1]
-
-                # PASS 1: Q-predictions from the online network, hidden state threaded
-                # t -> t+1 through the sampled window (gradient flows through the unroll).
-                recurrent_network = cast(RecurrentTokenQNetwork, self.q_network)
-                q_values_online, online_final_hidden = self._unroll_recurrent(recurrent_network, batch["observations"])
-                q_pred_all = q_values_online.gather(2, batch["actions"].unsqueeze(2)).squeeze(2)
-
-                # PASS 2: Q-targets. The last index of a sampled window is a WINDOW
-                # boundary, not a terminal (WS-1(c)): it bootstraps from the stored
-                # successor next_observations[:, -1], evaluated under the hidden
-                # state accumulated over the window. A real terminal at the boundary
-                # is still zeroed by the (~dones) factor in the shared formula.
-                with torch.no_grad():
-                    boundary_next_obs = batch["next_observations"][:, -1, :]
-
-                    if self.use_double_dqn:
-                        # Boundary forward for the ONLINE network, immediately after
-                        # its unroll and under ITS final hidden state. Order is
-                        # load-bearing: moving this after the target unroll, or
-                        # crossing the two hidden states, silently evaluates the
-                        # successor under the wrong network's trajectory (plan H6;
-                        # the networks have different weights).
-                        q_online_boundary_sequence, _ = recurrent_network(boundary_next_obs.unsqueeze(1), online_final_hidden)
-                        q_online_boundary = q_online_boundary_sequence[:, 0, :]
-
-                    target_recurrent = cast(RecurrentTokenQNetwork, self.target_network)
-                    q_values_target, target_final_hidden = self._unroll_recurrent(target_recurrent, batch["observations"])
-                    # Boundary forward for the TARGET network, under its own final hidden state.
-                    q_target_boundary_sequence, _ = target_recurrent(boundary_next_obs.unsqueeze(1), target_final_hidden)
-                    q_target_boundary = q_target_boundary_sequence[:, 0, :]
-
-                    if self.use_double_dqn:
-                        # Double DQN: online network selects, target network evaluates.
-                        # Action selection reuses PASS 1's online unroll - a third
-                        # unroll would recompute the same trajectory.
-                        next_actions_all = q_values_online.argmax(2)
-
-                        q_target_list = []
-                        for t in range(seq_len):
-                            if t < seq_len - 1:
-                                # Use Q-values from t+1, evaluated at actions selected by online network
-                                next_actions = next_actions_all[:, t + 1]
-                                q_next = q_values_target[:, t + 1, :].gather(1, next_actions.unsqueeze(1)).squeeze(1)
-                            else:
-                                # Window boundary: successor evaluated at the online network's argmax
-                                boundary_actions = q_online_boundary.argmax(1)
-                                q_next = q_target_boundary.gather(1, boundary_actions.unsqueeze(1)).squeeze(1)
-                            q_target = batch["rewards"][:, t] + self.gamma * q_next * (~batch["dones"][:, t]).float()
-                            q_target_list.append(q_target)
-                    else:
-                        # Vanilla DQN: target network both selects and evaluates
-                        q_target_list = []
-                        for t in range(seq_len):
-                            if t < seq_len - 1:
-                                # Use Q-values from t+1 (computed with hidden state from t)
-                                q_next = q_values_target[:, t + 1, :].max(1)[0]
-                            else:
-                                # Window boundary: successor evaluated by the target network
-                                q_next = q_target_boundary.max(1)[0]
-                            q_target = batch["rewards"][:, t] + self.gamma * q_next * (~batch["dones"][:, t]).float()
-                            q_target_list.append(q_target)
-
-                # Compute loss across all timesteps with post-terminal masking (P2.2)
-                q_target_all = torch.stack(q_target_list, dim=1)  # [batch, seq_len]
-
-                # P2.2: Apply mask to prevent gradients from post-terminal garbage
-                # TASK-005 Phase 1: Use configured loss type (element-wise for masking)
-                # POP-003: Removed redundant None checks - brain_config is required in __init__
-                if self.brain_config.loss.type == "huber":
-                    losses = F.huber_loss(
-                        q_pred_all,
-                        q_target_all,
-                        reduction="none",
-                        delta=self.loss_delta,  # Already set in __init__ with proper type
-                    )
-                elif self.brain_config.loss.type == "smooth_l1":
-                    losses = F.smooth_l1_loss(q_pred_all, q_target_all, reduction="none")
-                elif self.brain_config.loss.type == "mse":
-                    losses = F.mse_loss(q_pred_all, q_target_all, reduction="none")
-                else:
-                    raise ValueError(f"Unsupported loss type: {self.brain_config.loss.type}. Must be one of {{'huber','smooth_l1','mse'}}.")
-                mask = batch["mask"].float()  # [batch, seq_len] - True for valid timesteps
-                masked_loss = (losses * mask).sum() / mask.sum().clamp_min(1)
-                loss: torch.Tensor = masked_loss
-
-                # Store training metrics
-                with torch.no_grad():
-                    # Compute metrics only on valid (masked) timesteps
-                    valid_errors = ((q_target_all - q_pred_all).abs() * mask).sum() / mask.sum().clamp_min(1)
-                    self.last_td_error = valid_errors.item()
-                    self.last_loss = loss.item()
-                    # Q-values mean across valid timesteps only
-                    valid_q_mean = (q_pred_all * mask).sum() / mask.sum().clamp_min(1)
-                    self.last_q_values_mean = valid_q_mean.item()
-                    self.last_training_step = self.total_steps
-
-                # Backprop and optimize
-                self.optimizer.zero_grad()
-                loss.backward()
-                torch.nn.utils.clip_grad_norm_(self.q_network.parameters(), max_norm=self.max_grad_norm)
-                self.optimizer.step()
-
-                # Step scheduler if present (TASK-005 Phase 2)
-                if self.scheduler is not None:
-                    self.scheduler.step()
-
-                # Log network statistics to TensorBoard (POP-002 DRY helper)
-                self._log_network_histograms()
-
-                # Update target network periodically
-                self.training_step_counter += 1
-                if self.training_step_counter % self.target_update_frequency == 0:
-                    self.target_network.load_state_dict(self.q_network.state_dict())
-
-                # NOTE (WS-1(b)): no rollout-memory reset here. Training uses hidden
-                # state local to _unroll_recurrent; the old post-training reset was
-                # the clobber that zeroed mid-episode rollout memory (measured:
-                # 207/936 mid-episode forwards received an exactly-zero hidden state).
-            else:
-                # Standard feedforward DQN training (with optional PER)
-                # TASK-005 Phase 3: handle the configured standard or prioritized replay.
-                if self.use_per:
-                    from townlet.training.prioritized_replay_buffer import PrioritizedReplayBuffer
-
-                    per_buffer = cast(PrioritizedReplayBuffer, self.replay_buffer)
-                    batch = per_buffer.sample(batch_size=self.batch_size)
-                    weights = batch["weights"]  # Importance sampling weights
-                    indices = cast(np.ndarray, batch["indices"])  # For priority updates
-                else:
-                    standard_buffer = cast(ReplayBuffer, self.replay_buffer)
-                    batch = standard_buffer.sample(batch_size=self.batch_size)  # MED-13: Removed intrinsic_weight
-                    weights = torch.ones(self.batch_size, device=self.device)  # Uniform weights
-
-                # Compute Q-predictions from online network
-                q_pred = self.q_network(batch["observations"]).gather(1, batch["actions"].unsqueeze(1)).squeeze()
-
-                # Compute Q-targets (vanilla DQN vs Double DQN)
-                with torch.no_grad():
-                    if self.use_double_dqn:
-                        # Double DQN: Use online network for action selection, target network for evaluation
-                        next_actions = self.q_network(batch["next_observations"]).argmax(1)
-                        q_next = self.target_network(batch["next_observations"]).gather(1, next_actions.unsqueeze(1)).squeeze()
-                    else:
-                        # Vanilla DQN: Use target network for both selection and evaluation
-                        q_next = self.target_network(batch["next_observations"]).max(1)[0]
-
-                    q_target = batch["rewards"] + self.gamma * q_next * (~batch["dones"]).float()
-
-                # TASK-005 Phase 3: Compute TD errors for PER priority updates
-                td_errors = (q_pred - q_target).abs()
-
-                # TASK-005 Phase 3: Weighted loss for importance sampling correction
-                if self.use_per:
-                    # PER: Apply importance sampling weights to loss
-                    # Use functional API with reduction='none' to get per-sample losses
-                    if self.loss_type == "mse":
-                        per_sample_loss = F.mse_loss(q_pred, q_target, reduction="none")
-                    elif self.loss_type == "huber":
-                        per_sample_loss = F.huber_loss(q_pred, q_target, reduction="none", delta=self.loss_delta)
-                    elif self.loss_type == "smooth_l1":
-                        per_sample_loss = F.smooth_l1_loss(q_pred, q_target, reduction="none")
-                    else:
-                        raise ValueError(f"Unsupported loss type for PER: {self.loss_type}")
-                    loss = (weights * per_sample_loss).mean()
-                else:
-                    # Standard: Use configured loss function
-                    loss = self.loss_fn(q_pred, q_target)
-
-                # Store training metrics
-                with torch.no_grad():
-                    self.last_td_error = (q_target - q_pred).abs().mean().item()
-                    self.last_loss = loss.item()
-                    self.last_q_values_mean = q_pred.mean().item()
-                    self.last_training_step = self.total_steps
-
-                self.optimizer.zero_grad()
-                loss.backward()
-                torch.nn.utils.clip_grad_norm_(self.q_network.parameters(), max_norm=self.max_grad_norm)
-                self.optimizer.step()
-
-                # Step scheduler if present (TASK-005 Phase 2)
-                if self.scheduler is not None:
-                    self.scheduler.step()
-
-                # TASK-005 Phase 3: Update priorities in PER buffer
-                if self.use_per:
-                    per_buffer.update_priorities(indices, td_errors)
-
-                    # Anneal beta toward 1.0 over training
-                    if per_buffer.beta_annealing:
-                        # Estimate total steps from constructor params (if available)
-                        if self.max_episodes is not None and self.max_steps_per_episode is not None:
-                            total_steps = self.max_episodes * self.max_steps_per_episode
-                            per_buffer.anneal_beta(total_steps, self.total_steps)
-                        elif not self._per_beta_warning_logged:
-                            # POP-006: Warn once if beta annealing is enabled but params are missing
-                            _logger.warning(
-                                "PER beta_annealing enabled but max_episodes/max_steps_per_episode not set. "
-                                "Beta will remain at initial value, which may reduce training efficiency. "
-                                "Set max_episodes and max_steps_per_episode in training.yaml to enable annealing."
-                            )
-                            self._per_beta_warning_logged = True
-
-                # Periodically sync target network for stability
-                self.training_step_counter += 1
-                if self.training_step_counter % self.target_update_frequency == 0:
-                    self.target_network.load_state_dict(self.q_network.state_dict())
-
-                # Log network statistics to TensorBoard (POP-002 DRY helper)
-                self._log_network_histograms()
+        self._pace_replay()
+        if self.total_steps % self.train_frequency == 0:
+            self._learn()
 
         # 10. Update current state
         self.current_obs = next_obs
@@ -1741,9 +2009,22 @@ class VectorizedPopulation(PopulationManager):
         if self.scheduler is not None:
             self._validate_scheduler_checkpoint_state("scheduler", scheduler_state, self.scheduler, optimizer_learning_rates)
         replay_state = cast(Mapping[str, Any], checkpoint["replay_buffer"])
-        validated_replay: Any = self.replay_buffer.validate_serialized(replay_state, expected_obs_dim=current_obs_dim)
+        replay_target = self.replay_buffer
+        # Captured6 has no PER clock/state. Prepare its actual selected target at
+        # the restored tick offside; never move a live target merely to validate.
+        if self.is_recurrent and self.use_per and replay_state.get("format_version") in (5, 6):
+            restored_tick = cast(int, checkpoint["total_steps"])
+            if self._replay_setup is not None:
+                setup = replace(self._replay_setup, tick=restored_tick)
+            else:
+                setup = self._compiled_replay_setup(restored_tick)
+            replay_target = self._new_replay(setup)
+        validated_replay: Any = replay_target.validate_serialized(replay_state, expected_obs_dim=current_obs_dim)
+        if self.is_recurrent and replay_state.get("format_version") == 7:
+            if replay_state["priority_state"]["current_vector_tick"] != checkpoint["total_steps"]:
+                raise ValueError("Sequential replay vector tick must equal the restored population total_steps")
         self._validate_exploration_checkpoint_state(checkpoint["exploration_state"])
-        return validated_replay
+        return replay_target, validated_replay
 
     def validate_checkpoint_state(self, checkpoint: Mapping[str, object]) -> None:
         """Validate the complete current population artifact without materializing replay storage."""
@@ -1751,11 +2032,11 @@ class VectorizedPopulation(PopulationManager):
 
     def load_checkpoint_state(self, checkpoint: Mapping[str, object]) -> None:
         """Validate, then restore every field from the exact current payload."""
-        validated_replay = self._validate_checkpoint_state(checkpoint)
+        replay_target, validated_replay = self._validate_checkpoint_state(checkpoint)
 
         q_network_state = cast(Mapping[str, Any], checkpoint["q_network"])
         target_network_state = cast(Mapping[str, Any], checkpoint["target_network"])
-        optimizer_state = dict(cast(Mapping[str, Any], checkpoint["optimizer"]))
+        optimizer_state = copy.deepcopy(dict(cast(Mapping[str, Any], checkpoint["optimizer"])))
         raw_scheduler_state = checkpoint["scheduler"]
         scheduler_state = None if raw_scheduler_state is None else dict(cast(Mapping[str, Any], raw_scheduler_state))
         exploration_state = dict(cast(Mapping[str, Any], checkpoint["exploration_state"]))
@@ -1764,7 +2045,10 @@ class VectorizedPopulation(PopulationManager):
         # Build the only full restore allocation before applying any population field.
         # The validation pass performs structure-only replay validation, so this
         # candidate is neither duplicated nor discarded.
-        prepared_replay: Any = self.replay_buffer.materialize_validated(validated_replay)
+        prepared_replay: Any = replay_target.materialize_validated(validated_replay)
+        adapting = replay_target is not self.replay_buffer
+        if adapting:
+            replay_target.load_prepared(prepared_replay)
 
         # Restore every producer-owned field from the exact current payload.
         self.q_network.load_state_dict(q_network_state)
@@ -1775,8 +2059,16 @@ class VectorizedPopulation(PopulationManager):
         self.total_steps = total_steps
         self.target_network.load_state_dict(target_network_state)
         self.training_step_counter = training_step_counter
-        self.replay_buffer.load_prepared(prepared_replay)
+        if not adapting:
+            replay_target.load_prepared(prepared_replay)
+        self.replay_buffer = replay_target
         self.exploration.load_state(exploration_state)
+        self._replay_was_loaded = True
+        self._constructor_replay = None
+        self._constructor_replay_state = None
+        self._bound_replay = None
+        self._last_beta_tick = total_steps
+        self._last_readiness = None
 
     # ------------------------------------------------------------------ #
     # Cross-universe token-net load (token-obs unit 3 Task 9)

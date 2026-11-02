@@ -87,7 +87,7 @@ def action_ids(env: VectorizedHamletEnv, names: Sequence[str]) -> torch.Tensor:
 
 @dataclass
 class SelectionWitness:
-    """Copies of actual network outputs and selected authored actions."""
+    """Actual eligible provider outputs and full-world authored action schedules."""
 
     q_values: list[torch.Tensor] = field(default_factory=list)
     actions: list[torch.Tensor] = field(default_factory=list)
@@ -102,17 +102,21 @@ def controlled_action_schedule(
     stream = iter(schedule)
 
     def select(q_values: torch.Tensor, agent_states: BatchedAgentState, action_masks: torch.Tensor | None) -> torch.Tensor:
-        assert q_values.shape == (env.num_agents, env.action_dim)
+        eligible = torch.nonzero(~env.dones, as_tuple=False).flatten()
+        count = eligible.numel()
+        assert q_values.shape == (count, env.action_dim)
         assert torch.isfinite(q_values).all()
-        assert agent_states.observations.shape[0] == env.num_agents
+        assert agent_states.observations.shape[0] == count
         actions = action_ids(env, next(stream))
         assert actions.shape == (env.num_agents,)
+        selected = actions[eligible]
+        assert selected.shape == (count,)
         assert action_masks is not None
-        active = ~env.dones
-        assert action_masks[torch.arange(env.num_agents, device=env.device), actions][active].all()
+        assert action_masks.shape == (count, env.action_dim)
+        assert action_masks[torch.arange(count, device=env.device), selected].all()
         witness.q_values.append(q_values.detach().clone())
         witness.actions.append(actions.clone())
-        return actions
+        return selected
 
     with patch.object(exploration, "select_actions", side_effect=select):
         yield witness

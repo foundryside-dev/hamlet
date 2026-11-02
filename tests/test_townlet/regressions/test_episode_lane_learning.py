@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import math
+import random
 from collections import Counter
 from contextlib import ExitStack
 from pathlib import Path
@@ -13,7 +14,6 @@ import numpy as np
 import pytest
 import torch
 import torch.nn as nn
-import torch.nn.functional as functional
 
 from tests.test_townlet.regressions.fixtures.episode_lanes import controlled_action_schedule
 from tests.test_townlet.regressions.test_episode_lane_population import make_lane_population, schedule_for
@@ -240,12 +240,15 @@ def qualify_real_learner(
     tmp_path: Path, *, mode: str, sequence_length: int, double_dqn: bool, ending: str, corrupt_truncation: bool
 ) -> None:
     torch.manual_seed(98)
+    random.seed(98)
+    np.random.seed(98)
     population = make_lane_population(
         tmp_path / "pack",
         mode=mode,
         num_agents=2,
         lifespan=20,
         batch_size=2,
+        replay_min_size=2,
         sequence_length=sequence_length,
         rnd_batch_size=7,
         double_dqn=double_dqn,
@@ -288,59 +291,36 @@ def qualify_real_learner(
     def target_hook(module, args):
         target_inputs.append(args[0].detach().clone())
 
-    def capture_target(target):
+    original_loss = population._loss_values
+
+    def capture_loss(prediction, target):
         assert len(batches) == len(targets) + 1
-        targets.append(target.detach().clone())
-
-    def loss_hook(module, args):
-        capture_target(args[1])
-
-    original_loss = functional.smooth_l1_loss
-
-    def functional_loss(prediction, target, **kwargs):
-        capture_target(target)
-        return original_loss(prediction, target, **kwargs)
+        batch = batches[-1]
+        if mode == "recurrent":
+            full_target = torch.zeros_like(batch["rewards"])
+            full_target[batch["loss_mask"]] = target.detach()
+            targets.append(full_target)
+        else:
+            targets.append(target.detach().clone())
+        return original_loss(prediction, target)
 
     replay = population.replay_buffer
-    sampler_name = "sample_sequences" if mode == "recurrent" else "sample"
-    original_sample = getattr(replay, sampler_name)
+    replay_type = type(replay)
+    original_sample = replay_type.sample_batch
 
-    def sample(**kwargs):
+    def sample(buffer, request):
         nonlocal sampler_calls
         sampler_calls += 1
-        with ExitStack() as sampling:
-            if isinstance(replay, SequentialReplayBuffer):
-
-                def select_episode(episodes, **selection_kwargs):
-                    selected = max(episodes, key=lambda episode: len(episode["actions"]))
-                    return [selected]
-
-                sampling.enter_context(patch("townlet.training.sequential_replay_buffer.random.choices", side_effect=select_episode))
-                starts = iter((0, 1))
-
-                def choose_start(low, high):
-                    return high if next(starts) else low
-
-                sampling.enter_context(patch("townlet.training.sequential_replay_buffer.random.randint", side_effect=choose_start))
-            else:
-                size = len(replay)
-                boundary = []
-                ordinary = []
-                for index in range(size):
-                    if bool(replay.dones[index]) or row_digest(replay.observations[index]) in cut_rows:
-                        boundary.append(index)
-                    else:
-                        ordinary.append(index)
-                indices = ([boundary[-1]] if boundary else []) + ([ordinary[0]] if ordinary else [])
-                indices += [index for index in range(size) if index not in indices]
-                if mode == "per":
-                    sampling.enter_context(
-                        patch("townlet.training.prioritized_replay_buffer.np.random.choice", return_value=np.array(indices[:2]))
-                    )
-                else:
-                    sampling.enter_context(patch("townlet.training.replay_buffer.torch.randperm", return_value=torch.tensor(indices)))
-            batch = original_sample(**kwargs)
-        batches.append({key: value.detach().clone() for key, value in batch.items() if isinstance(value, torch.Tensor)})
+        readiness = buffer.readiness(request)
+        assert readiness.ready
+        assert readiness.retained_transitions >= 2
+        batch = original_sample(buffer, request)
+        batches.append(
+            {
+                key: getattr(batch, key).detach().clone()
+                for key in ("observations", "actions", "rewards", "dones", "next_observations", "next_action_masks", "lengths", "loss_mask")
+            }
+        )
         return batch
 
     hooks = [
@@ -349,11 +329,8 @@ def qualify_real_learner(
     ]
     try:
         with ExitStack() as stack:
-            if mode == "standard":
-                hooks.append(population.loss_fn.register_forward_pre_hook(loss_hook))
-            else:
-                stack.enter_context(patch("townlet.population.vectorized.F.smooth_l1_loss", side_effect=functional_loss))
-            stack.enter_context(patch.object(replay, sampler_name, side_effect=sample))
+            stack.enter_context(patch.object(population, "_loss_values", side_effect=capture_loss))
+            stack.enter_context(patch.object(replay_type, "sample_batch", new=sample))
             stack.enter_context(patch.object(population.exploration, "compute_intrinsic_rewards", side_effect=compute))
             stack.enter_context(patch.object(rnd, "update_predictor", side_effect=admission.update_predictor))
             q_steps = stack.enter_context(patch.object(population.optimizer, "step", wraps=population.optimizer.step))
@@ -380,12 +357,14 @@ def qualify_real_learner(
                                     cut_rows.add(row_digest(predecessor[agent]))
                 if ending == "cap":
                     population.flush_episode(1, reason="cap")
+                    replay = population.replay_buffer
                     if corrupt_truncation:
                         if isinstance(replay, SequentialReplayBuffer):
                             replay.episodes[-1]["dones"][-1] = True
                         else:
                             replay.dones[len(replay) - 1] = True
             assert q_steps.call_count > 0
+            assert q_steps.call_count == sampler_calls == population.training_step_counter
             assert rnd_steps.call_count > 0
     finally:
         for hook in hooks:
@@ -407,23 +386,28 @@ def qualify_real_learner(
     ordinary_rows = 0
     for batch, actual in zip(batches, targets, strict=True):
         expected = batch["rewards"] + population.gamma * 3.0 * (~batch["dones"]).float()
-        assert torch.allclose(actual, expected, atol=1e-6)
-        observations = batch["observations"].reshape(-1, population.env.observation_dim)
+        selected = batch["loss_mask"] if mode == "recurrent" else torch.ones_like(batch["dones"], dtype=torch.bool)
+        assert torch.allclose(actual[selected], expected[selected], atol=1e-6)
+        observations = batch["observations"].reshape(-1, population.env.observation_dim)[selected.flatten()]
         assert all(row_digest(row) in {digest for _, digest in predecessor_ledger} for row in observations)
-        terminal_rows += int(batch["dones"].sum())
+        terminal_rows += int(batch["dones"][selected].sum())
         truncated_mask = torch.tensor([row_digest(row) in cut_rows for row in observations])
         truncated_rows += int(truncated_mask.sum())
         if truncated_mask.any():
             assert torch.allclose(
-                actual.flatten()[truncated_mask], batch["rewards"].flatten()[truncated_mask] + population.gamma * 3.0, atol=1e-6
+                actual[selected][truncated_mask], batch["rewards"][selected][truncated_mask] + population.gamma * 3.0, atol=1e-6
             ), "truncation target lost the final-successor bootstrap"
         ordinary_rows += sum(
-            not bool(done) and row_digest(row) not in cut_rows for row, done in zip(observations, batch["dones"].flatten(), strict=True)
+            not bool(done) and row_digest(row) not in cut_rows for row, done in zip(observations, batch["dones"][selected], strict=True)
         )
-        successor = batch["next_observations"][:, -1:, :] if mode == "recurrent" else batch["next_observations"]
-        assert any(torch.equal(successor, observed) for observed in target_inputs)
+        successors = batch["next_observations"].reshape(-1, population.env.observation_dim)[selected.flatten()]
+        for successor in successors:
+            assert any(
+                torch.equal(successor, row) for observed in target_inputs for row in observed.reshape(-1, population.env.observation_dim)
+            )
         if mode == "recurrent":
-            assert batch["mask"][:, -1].all()
+            real = torch.arange(batch["observations"].shape[1], device=batch["lengths"].device)[None, :] < batch["lengths"][:, None]
+            assert not bool((batch["loss_mask"] & ~real).any()), "padding entered the real optimizer objective"
     assert ordinary_rows > 0
     if ending == "terminal":
         assert terminal_rows > 0
@@ -432,7 +416,11 @@ def qualify_real_learner(
         assert any(
             not bool(done) and row_digest(row) in cut_rows
             for batch in batches
-            for row, done in zip(batch["observations"].reshape(-1, population.env.observation_dim), batch["dones"].flatten(), strict=True)
+            for row, done in zip(
+                batch["observations"].reshape(-1, population.env.observation_dim)[batch["loss_mask"].flatten()],
+                batch["dones"].flatten()[batch["loss_mask"].flatten()],
+                strict=True,
+            )
         )
 
 

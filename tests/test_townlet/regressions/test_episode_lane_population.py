@@ -11,6 +11,7 @@ import torch
 import yaml
 
 from tests.test_townlet.regressions.fixtures.episode_lanes import (
+    LEVEL_NAME,
     compile_authored_environment,
     controlled_action_schedule,
     copy_authored_config,
@@ -32,9 +33,15 @@ def make_lane_population(
     sequence_length: int,
     rnd_batch_size: int,
     double_dqn: bool,
+    replay_min_size: int | None = None,
 ) -> VectorizedPopulation:
     """Compile the authored pack and selected architecture through supported YAML."""
     config = copy_authored_config(directory, lifespan=lifespan, num_agents=num_agents)
+    if replay_min_size is not None:
+        training_path = config / "levels" / LEVEL_NAME / "training.yaml"
+        training = yaml.safe_load(training_path.read_text())
+        training["training"]["replay_buffer"]["min_size"] = replay_min_size
+        training_path.write_text(yaml.safe_dump(training, sort_keys=False))
     brain_path = config / "brain.yaml"
     brain = yaml.safe_load(brain_path.read_text())
     if mode == "recurrent":
@@ -382,7 +389,7 @@ def test_recurrent_dead_hidden_stays_zero_with_full_adversarial_q_rows(tmp_path:
                     next_tensor[:, ~active] = previous_tensor[:, ~active]
                 reference_hidden = next_reference_hidden
             state = population.step_population(population.env)
-            assert torch.equal(selection.q_values[-1], reference_q[:, 0])
+            assert torch.equal(selection.q_values[-1], reference_q[active, 0])
             assert torch.equal(observed_q_inputs[-1], reference_q[:, 0])
             for reference_tensor in reference_hidden:
                 reference_tensor[:, state.dones] = 0.0
@@ -391,7 +398,7 @@ def test_recurrent_dead_hidden_stays_zero_with_full_adversarial_q_rows(tmp_path:
             assert len(population.current_curriculum_decisions) == 2
             assert population.current_curriculum_decisions[0].depletion_multiplier == 0.2
             assert curriculum.tracker.agent_stages.tolist() == [1, 1]
-            probabilities = torch.softmax(selection.q_values[-1], dim=1)
+            probabilities = torch.softmax(observed_q_inputs[-1], dim=1)
             entropy = -(probabilities * torch.log(probabilities + 1e-10)).sum(dim=1)
             assert entropy.shape == (2,) and torch.isfinite(entropy).all()
             assert torch.allclose(observed_entropies[-1], entropy / torch.log(torch.tensor(float(population.env.action_dim))))
@@ -403,4 +410,4 @@ def test_recurrent_dead_hidden_stays_zero_with_full_adversarial_q_rows(tmp_path:
                 assert h[:, 1].any() and c[:, 1].any()
                 hidden_rows.append(h[:, 1].clone())
     assert any(not torch.equal(left, right) for left, right in zip(hidden_rows, hidden_rows[1:]))
-    assert selection.q_values[2][0].abs().sum() > 0  # Dead Q rows still come from the real full forward.
+    assert observed_q_inputs[2][0].abs().sum() > 0  # Dead Q rows still come from the real full forward.

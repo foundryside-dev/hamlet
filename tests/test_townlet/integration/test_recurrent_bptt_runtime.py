@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import shutil
+from contextlib import ExitStack
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 import torch
@@ -54,14 +56,34 @@ def _make_pack(tmp_path: Path, name: str, *, sequence_length: int) -> Path:
 
 
 def _run(pack: Path, output: Path) -> VectorizedPopulation:
-    with DemoRunner(
-        config_dir=pack,
-        db_path=output.with_suffix(".sqlite"),
-        checkpoint_dir=output,
-        level_name=LEVEL_NAME,
-    ) as runner:
+    captured = {}
+    original_initialize = VectorizedPopulation._initialize
+
+    def initialize(self, *args, **kwargs):
+        original_initialize(self, *args, **kwargs)
+        captured["population"] = self
+        captured["before"] = [parameter.detach().clone() for parameter in self.q_network.parameters()]
+        captured["steps"] = stack.enter_context(patch.object(self.optimizer, "step", wraps=self.optimizer.step))
+
+    with ExitStack() as stack:
+        stack.enter_context(patch.object(VectorizedPopulation, "_initialize", new=initialize))
+        runner = stack.enter_context(
+            DemoRunner(
+                config_dir=pack,
+                db_path=output.with_suffix(".sqlite"),
+                checkpoint_dir=output,
+                level_name=LEVEL_NAME,
+            )
+        )
         runner.run()
-        return runner.population
+        population = captured["population"]
+        steps = captured["steps"]
+        assert steps.call_count > 0, "configured run performed no real optimizer update"
+        assert steps.call_count == population.training_step_counter
+        assert any(
+            not torch.equal(old, current) for old, current in zip(captured["before"], population.q_network.parameters(), strict=True)
+        )
+        return population
 
 
 def test_recurrent_brain_yaml_trains_the_recurrent_weight_matrix(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -83,29 +105,77 @@ def test_recurrent_brain_yaml_trains_the_recurrent_weight_matrix(tmp_path: Path,
 
 
 @pytest.mark.parametrize("sequence_length", [2, 8])
-def test_training_passes_the_configured_sequence_in_one_network_call(
+def test_training_keeps_the_configured_sequence_graph_connected(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     sequence_length: int,
 ) -> None:
-    """The authored BPTT length reaches the network as one sequence tensor."""
-    calls: list[tuple[int, int, bool]] = []
-    original_forward = RecurrentTokenQNetwork.forward
+    """Detaching a real prefix must sever the measured final-to-earlier derivative."""
+    requests = []
+    sampled_lengths = []
+    original_request = VectorizedPopulation._replay_request
 
-    def instrumented_forward(self, observations, hidden):
-        calls.append((int(observations.shape[0]), int(observations.shape[1]), torch.is_grad_enabled()))
-        return original_forward(self, observations, hidden)
+    def request(self):
+        result = original_request(self)
+        assert result.sequence_length == sequence_length
+        requests.append(result)
+        return result
 
-    monkeypatch.setattr(RecurrentTokenQNetwork, "forward", instrumented_forward)
+    full_horizon_rows = []
+    original_predictions = VectorizedPopulation._recurrent_predictions
+
+    def predictions(self, batch):
+        assert batch.observations.shape[1] <= sequence_length
+        assert bool((batch.lengths <= sequence_length).all())
+        sampled_lengths.append(batch.lengths.detach().clone())
+        initial_hidden_ids = set()
+        first_prefixes = []
+        original_hidden = self.q_network.initial_hidden
+
+        def initial_hidden(*args, **kwargs):
+            hidden = original_hidden(*args, **kwargs)
+            initial_hidden_ids.add(id(hidden[0]))
+            return hidden
+
+        def forward_hook(_module, inputs, output):
+            # Identify the FIRST real prefix by the actual initial-hidden object,
+            # never by a zero-value heuristic or a later connected timestep.
+            if torch.is_grad_enabled() and id(inputs[1][0]) in initial_hidden_ids:
+                initial_hidden_ids.remove(id(inputs[1][0]))
+                first_prefixes.append((inputs[0].detach().clone(), output[1][0]))
+
+        hook = self.q_network.register_forward_hook(forward_hook)
+        try:
+            with patch.object(self.q_network, "initial_hidden", new=initial_hidden):
+                result = original_predictions(self, batch)
+        finally:
+            hook.remove()
+        values, _, _ = result
+        full_rows = torch.nonzero(batch.lengths == sequence_length, as_tuple=False).flatten()
+        if len(full_rows):
+            first_observations = batch.observations[full_rows, :1]
+            first_hidden = [hidden for observations, hidden in first_prefixes if torch.equal(observations, first_observations)]
+            assert first_hidden, "actual full-length group had no observed first real prefix"
+            for row in full_rows.tolist():
+                assert bool(batch.loss_mask[row, sequence_length - 1]), "final full-length prediction was not selected for the loss"
+                derivatives = torch.autograd.grad(values[row, sequence_length - 1], first_hidden, retain_graph=True, allow_unused=True)
+                connected = [gradient for gradient in derivatives if gradient is not None and bool((gradient != 0).any())]
+                assert len(connected) == 1, "final selected prediction lost its FIRST real prefix across the configured horizon"
+                assert torch.isfinite(connected[0]).all(), "full-horizon derivative is nonfinite"
+                full_horizon_rows.append((self.training_step_counter, row, sequence_length))
+        return result
+
+    monkeypatch.setattr(VectorizedPopulation, "_replay_request", request)
+    monkeypatch.setattr(VectorizedPopulation, "_recurrent_predictions", predictions)
     population = _run(
         _make_pack(tmp_path, f"sequence-{sequence_length}", sequence_length=sequence_length),
         tmp_path / f"sequence-{sequence_length}-output",
     )
 
     assert population.sequence_length == sequence_length
-    gradient_training_calls = [call for call in calls if call[0] == population.batch_size and call[2]]
-    assert gradient_training_calls, "training never called the recurrent network with gradients enabled"
-    assert {call[1] for call in gradient_training_calls} == {sequence_length}
+    assert requests and sampled_lengths, "no real recurrent training batch was observed"
+    assert any(bool((lengths == sequence_length).any()) for lengths in sampled_lengths), "authored BPTT length was never sampled"
+    assert full_horizon_rows, "no actual full-length update proved its first-to-final recurrent gradient"
 
 
 def test_training_does_not_clobber_mid_episode_rollout_memory(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

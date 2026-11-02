@@ -99,13 +99,15 @@ class QLearningConfig(BaseModel):
 
 
 class ReplayBufferConfig(BaseModel):
-    """Replay buffer configuration."""
+    """Replay capacity and warmup; backend readiness governs sample availability."""
 
     model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     capacity: int = Field(gt=0, description="Replay buffer capacity")
     batch_size: int = Field(gt=0, description="Training batch size")
-    min_size: int = Field(gt=0, description="Start training after N transitions")
+    min_size: int = Field(
+        gt=0, description="Warmup threshold in retained eligible transitions; backend sampleability is checked separately"
+    )
 
     @model_validator(mode="after")
     def validate_min_size_le_capacity(self) -> "ReplayBufferConfig":
@@ -114,16 +116,6 @@ class ReplayBufferConfig(BaseModel):
             raise ValueError(
                 f"replay_buffer.min_size ({self.min_size}) must be <= capacity ({self.capacity}). "
                 f"Cannot start training before buffer has enough capacity."
-            )
-        return self
-
-    @model_validator(mode="after")
-    def validate_batch_size_le_min_size(self) -> "ReplayBufferConfig":
-        """Ensure batch_size <= min_size."""
-        if self.batch_size > self.min_size:
-            raise ValueError(
-                f"replay_buffer.batch_size ({self.batch_size}) must be <= min_size ({self.min_size}). "
-                f"Cannot sample more transitions than minimum buffer size."
             )
         return self
 

@@ -65,13 +65,20 @@ def run_lane_runner(
         assert env.meters[:, env.meter_name_to_index["energy"]].tolist() == [1.0, 1.0]
 
         def select(q_values, agent_states, action_masks):
-            assert q_values.shape == (2, env.action_dim) and torch.isfinite(q_values).all()
-            assert agent_states.observations.shape[0] == 2
+            eligible = torch.nonzero(~env.dones & ~population.episode_completed, as_tuple=False).flatten()
+            count = eligible.numel()
+            assert q_values.shape == (count, env.action_dim) and torch.isfinite(q_values).all()
+            assert agent_states.observations.shape[0] == count
             tick = env.global_tick + 1
             names = tuple("END_LANE" if tick >= ending else "WAIT" for ending in end_ticks)
             actions = action_ids(env, names)
-            assert action_masks[torch.arange(2), actions][~env.dones].all()
-            return actions
+            assert actions.shape == (env.num_agents,)
+            selected = actions[eligible]
+            assert selected.shape == (count,)
+            assert action_masks is not None
+            assert action_masks.shape == (count, env.action_dim)
+            assert action_masks[torch.arange(count, device=env.device), selected].all()
+            return selected
 
         population.exploration.select_actions = select
 

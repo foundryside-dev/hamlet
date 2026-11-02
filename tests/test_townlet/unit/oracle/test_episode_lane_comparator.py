@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import copy
 import json
+from argparse import Namespace
 from pathlib import Path
 
 import pytest
 
+from scripts import check_episode_lanes as checker
 from scripts.check_episode_lanes import (
     canonical,
     compare_exact,
@@ -228,3 +230,164 @@ def test_invalid_source_stamp_import_or_coordinate_refuses(mutation: str) -> Non
         value["readings"][0]["key"][1] = "unknown"
     with pytest.raises(ValueError):
         validate_capture(value)
+
+
+@pytest.fixture
+def synthetic_identity_producer(monkeypatch: pytest.MonkeyPatch):
+    """UNIT provenance only: real producer mechanics, synthetic source identity.
+
+    This does not exercise or relax the standalone clean committed-source gate.
+    No oracle bootstrap, reference checkout or subprocess capture is invoked.
+    """
+    root = Path(__file__).resolve().parents[4]
+    monkeypatch.setattr(checker, "source_identity", lambda source: {"revision": "a" * 40, "source_sha256": "b" * 64})
+
+    def produce(recipe: str) -> dict:
+        return checker.run_producer(Namespace(source_root=root, config_root=root / "configs/test/episode_lanes", recipe=recipe))
+
+    return produce
+
+
+@pytest.mark.parametrize("recipe", ["authored-two-five", "two-episodes-reset", "budget-six"])
+def test_producer_projects_eligible_selector_and_captures_actual_full_population_transport(
+    synthetic_identity_producer, monkeypatch: pytest.MonkeyPatch, recipe: str
+) -> None:
+    """Catch full-N scripting at K=1 and fabricated inactive action/Q readings."""
+    import torch
+
+    from townlet.environment.vectorized_env import VectorizedHamletEnv
+    from townlet.population.vectorized import VectorizedPopulation
+
+    original_select = VectorizedPopulation._select_eligible
+    original_step = VectorizedHamletEnv.step
+    selections = []
+    transported = []
+    current = {}
+
+    def select(population, values, state, masks, eligible):
+        current["population"] = population
+        current["q"] = values.detach().cpu().clone()
+        current["eligible"] = eligible.detach().cpu().clone()
+        provider = population.exploration.select_actions
+
+        def selected(q_values, agent_states, action_masks):
+            count = int(eligible.sum().item())
+            assert q_values.shape == (count, population.action_dim)
+            assert torch.equal(q_values, values[eligible])
+            assert torch.equal(action_masks, masks[eligible])
+            for field in ("observations", "actions", "rewards", "epsilons", "intrinsic_rewards", "survival_times"):
+                assert torch.equal(getattr(agent_states, field), getattr(state, field)[eligible])
+            assert not bool(agent_states.dones.any())
+            selections.append(count)
+            try:
+                actions = provider(q_values, agent_states, action_masks)
+            except IndexError as error:
+                raise AssertionError("checker scripted selector must accept the actual eligible K rows") from error
+            assert actions.shape == (count,), "checker must return only eligible scripted actions"
+            return actions
+
+        population.exploration.select_actions = selected
+        try:
+            return original_select(population, values, state, masks, eligible)
+        finally:
+            population.exploration.select_actions = provider
+
+    def step(env, actions, depletion_multiplier=1.0):
+        eligible = ~env.dones.clone()
+        assert actions.shape == (2,)
+        assert torch.equal(eligible.cpu(), current["eligible"])
+        q_values = current["q"]
+        assert torch.equal(actions[~eligible].cpu(), q_values[~eligible.cpu()].argmax(dim=1))
+        wait = env.action_space.get_action_by_name("WAIT").id
+        end = env.action_space.get_action_by_name("END_LANE").id
+        scheduled = torch.tensor([[wait, wait], [end, wait], [wait, wait], [wait, wait], [wait, end]][env.global_tick])
+        assert torch.equal(actions[eligible].cpu(), scheduled[eligible.cpu()])
+        result = original_step(env, actions, depletion_multiplier)
+        observations, rewards, dones, info = result
+        transported.append(
+            (actions.detach().cpu().clone(), q_values, rewards.detach().cpu().clone(), copy.deepcopy(info["reward_components"]))
+        )
+        return observations, rewards, dones, info
+
+    monkeypatch.setattr(VectorizedPopulation, "_select_eligible", select)
+    monkeypatch.setattr(VectorizedHamletEnv, "step", step)
+    value = synthetic_identity_producer(recipe)
+    indexed = validate_capture(value)
+    assert value["contract"] == {"qualified": True, "errors": []}
+    expected_counts = [2, 2, 1, 1] if recipe == "budget-six" else [2, 2, 1, 1, 1]
+    if recipe == "two-episodes-reset":
+        expected_counts *= 2
+    assert selections == expected_counts
+    assert len(transported) == len(expected_counts)
+    for position, (actions, q_values, rewards, components) in enumerate(transported):
+        episode, step_index = divmod(position, 5)
+        tick = episode * 100 + step_index + 1
+        for agent in range(2):
+            assert indexed[(recipe, "actions", tick, agent, "value")] == actions[agent].item()
+            assert indexed[(recipe, "selected_q_values", tick, agent, "value")] == q_values[agent].tolist()
+            assert indexed[(recipe, "rewards", tick, agent, "value")] == rewards[agent].item()
+            for component in ("extrinsic", "intrinsic", "shaping"):
+                assert indexed[(recipe, component, tick, agent, "value")] == components[component][agent].item()
+
+
+def test_producer_observes_real_recorded_admission_on_bound_replay(synthetic_identity_producer, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Catch a stranded constructor-push observer at the first genuine write."""
+    import torch
+
+    from townlet.environment.vectorized_env import VectorizedHamletEnv
+    from townlet.population.vectorized import VectorizedPopulation
+
+    original_bind = VectorizedPopulation._bind_training
+    original_scalar = checker.Collector.scalar
+    original_step = VectorizedHamletEnv.step
+    observed_buffers = []
+    writes = []
+    eligible_rows = {}
+    committed = {}
+
+    def step(env, actions, depletion_multiplier=1.0):
+        eligible = ~env.dones.clone()
+        result = original_step(env, actions, depletion_multiplier)
+        committed["masks"] = result[3]["successor_action_masks"][eligible].clone()
+        return result
+
+    def bind(population):
+        original_bind(population)
+        buffer = population.replay_buffer
+        if any(buffer is installed for installed in observed_buffers):
+            return
+        observed_buffers.append(buffer)
+        push_recorded = buffer.push_recorded
+
+        def recorded(*arguments, **keywords):
+            observations = keywords["observations"] if "observations" in keywords else arguments[0]
+            masks = keywords["next_action_masks"] if "next_action_masks" in keywords else arguments[5]
+            assert masks.dtype == torch.bool
+            assert masks.shape == (len(observations), population.action_dim)
+            assert torch.equal(masks, committed["masks"])
+            before = len(buffer)
+            result = push_recorded(*arguments, **keywords)
+            assert len(buffer) == before + len(observations)
+            writes.extend(checker.digest(row.detach().cpu().contiguous().numpy().tobytes()) for row in observations)
+            return result
+
+        buffer.push_recorded = recorded
+
+    def scalar(collector, field, tick, agent, value, coordinate):
+        if field == "eligible_observation":
+            eligible_rows[(collector.episode, tick, agent)] = value
+        if field == "admitted_observation":
+            expected = eligible_rows[(collector.episode, tick, agent)]
+            if expected is not None:
+                assert expected in writes, "genuine qualified buffer write must precede admission reporting"
+            assert value == expected, "checker must observe actual push_recorded on the bound replay"
+        return original_scalar(collector, field, tick, agent, value, coordinate)
+
+    monkeypatch.setattr(VectorizedPopulation, "_bind_training", bind)
+    monkeypatch.setattr(VectorizedHamletEnv, "step", step)
+    monkeypatch.setattr(checker.Collector, "scalar", scalar)
+    value = synthetic_identity_producer("authored-two-five")
+    indexed = validate_capture(value)
+    assert value["contract"] == {"qualified": True, "errors": []}
+    assert len(writes) == 7
+    assert indexed[("authored-two-five", "replay_size", 5, -1, "value")] == 7

@@ -160,14 +160,35 @@ def test_current_checkpoint_closes_pending_lanes_once_and_resumes_fresh_episode(
         source_checkpoint_bytes = source_checkpoint.read_bytes()
         if mode == "recurrent":
             assert isinstance(population.replay_buffer, SequentialReplayBuffer)
-            assert population.replay_buffer.action_dim is None and population.replay_buffer.replay_options is None
+            assert population.replay_buffer.action_dim == population.env.action_dim
+            assert population.replay_buffer.legality_mode == "captured"
             source_replay = learned_state["replay_buffer"]
-            assert set(source_replay) == {"replay_kind", "format_version", "capacity", "num_transitions", "episodes"}
+            assert set(source_replay) == {
+                "replay_kind",
+                "format_version",
+                "capacity",
+                "num_transitions",
+                "action_dim",
+                "legality_mode",
+                "replay_options",
+                "next_episode_id",
+                "next_transition_id",
+                "episodes",
+                "historical_archives",
+            }
             assert source_replay["replay_kind"] == "sequential"
-            assert type(source_replay["format_version"]) is int and source_replay["format_version"] == 5
-            assert source_replay["num_transitions"] == 2
+            assert type(source_replay["format_version"]) is int and source_replay["format_version"] == 6
+            assert source_replay["num_transitions"] == population.replay_buffer.retained_transitions == 2
+            assert source_replay["action_dim"] == population.env.action_dim
+            assert source_replay["legality_mode"] == "captured"
+            assert source_replay["replay_options"] == population.replay_buffer.replay_options.model_dump()
+            assert len(source_replay["replay_options"]) == 6
+            assert all(value is not None for value in source_replay["replay_options"].values())
+            assert source_replay["next_episode_id"] == source_replay["next_transition_id"] == 2
+            assert source_replay["historical_archives"] == []
             assert [len(episode["actions"]) for episode in source_replay["episodes"]] == [1, 1]
-            for episode in source_replay["episodes"]:
+            successor_masks = population.env.get_action_masks()
+            for agent_idx, episode in enumerate(source_replay["episodes"]):
                 assert set(episode) == {
                     "observations",
                     "actions",
@@ -177,8 +198,23 @@ def test_current_checkpoint_closes_pending_lanes_once_and_resumes_fresh_episode(
                     "rewards_extrinsic",
                     "rewards_intrinsic",
                     "rewards_shaping",
+                    "next_action_masks",
+                    "legality_recorded",
+                    "transition_ids",
+                    "episode_id",
+                    "original_length",
+                    "start_offset",
                 }
                 assert not episode["dones"].any()  # Checkpoint truncation retains its real successor.
+                assert episode["episode_id"] == agent_idx
+                assert episode["original_length"] == 1 and episode["start_offset"] == 0
+                assert episode["transition_ids"].dtype == torch.int64
+                assert episode["transition_ids"].tolist() == [agent_idx]
+                assert episode["legality_recorded"].dtype == torch.bool
+                assert episode["legality_recorded"].tolist() == [True]
+                assert episode["next_action_masks"].dtype == torch.bool
+                assert episode["next_action_masks"].shape == (1, population.env.action_dim)
+                assert torch.equal(episode["next_action_masks"].cpu(), successor_masks[agent_idx : agent_idx + 1].cpu())
 
     env = compile_authored_environment(tmp_path / "pack", num_agents=2)
     exploration = AdaptiveIntrinsicExploration(obs_dim=env.observation_dim, rnd_training_batch_size=128, device=env.device)
@@ -213,15 +249,7 @@ def test_current_checkpoint_closes_pending_lanes_once_and_resumes_fresh_episode(
         assert resumed.load_checkpoint() == 0
         restored.reset()  # This is the runner's existing fresh-episode resume policy.
         restored_state = deepcopy(restored.get_checkpoint_state())
-        if mode == "recurrent":
-            # Approved old5 history stays inspectable while active replay restarts fresh.
-            assert restored_state.keys() == learned_state.keys()
-            _assert_recursive_state_equal(
-                {key: value for key, value in learned_state.items() if key != "replay_buffer"},
-                {key: value for key, value in restored_state.items() if key != "replay_buffer"},
-            )
-        else:
-            _assert_recursive_state_equal(learned_state, restored_state)
+        _assert_recursive_state_equal(learned_state, restored_state)
         assert restored.episode_completions == [None, None]
         assert restored.episode_step_counts.tolist() == [0, 0]
         assert env.step_counts.tolist() == [0, 0]
@@ -229,59 +257,13 @@ def test_current_checkpoint_closes_pending_lanes_once_and_resumes_fresh_episode(
         if isinstance(restored.replay_buffer, SequentialReplayBuffer):
             assert mode == "recurrent"
             replay = restored.replay_buffer
-            assert replay.num_transitions == replay.legacy_transport_transitions == replay.retained_transitions == 0
-            assert len(replay) == 0 and not replay.episodes
-            assert replay.action_dim is None and replay.replay_options is None and replay.legality_mode == "legacy"
-            inspection = restored_state["replay_buffer"]
-            assert set(inspection) == {"inspection_kind", "inspection_version", "legacy_transport", "historical_archives"}
-            assert inspection["inspection_kind"] == "sequential_replay_inspection"
-            assert type(inspection["inspection_version"]) is int and inspection["inspection_version"] == 1
-            _assert_recursive_state_equal(
-                {
-                    "replay_kind": "sequential",
-                    "format_version": 5,
-                    "capacity": source_replay["capacity"],
-                    "num_transitions": 0,
-                    "episodes": [],
-                },
-                inspection["legacy_transport"],
-            )
-            assert len(inspection["historical_archives"]) == len(replay.historical_archives) == 1
-            record = inspection["historical_archives"][0]
-            archive = replay.historical_archives[0]
-            assert set(record) == {
-                "source_formats",
-                "original_state",
-                "source_digest",
-                "archived_row_count",
-                "reward_semantics",
-                "approval_reference",
-            }
-            assert (
-                record["source_formats"]
-                == archive.source_formats
-                == {
-                    "scope": "standalone_replay",
-                    "replay": 5,
-                    "replay_kind": "sequential",
-                }
-            )
-            assert record["archived_row_count"] == archive.archived_row_count == 2
-            assert record["reward_semantics"] == archive.reward_semantics == "historical_recorded_pre_fix"
-            assert record["approval_reference"] == archive.approval_reference == "BAC-HISTORY-A-2026-11-01"
-            assert record["source_digest"] == archive.source_digest
-            assert archive.source_digest.startswith("state-sha256:v1:") and len(archive.source_digest) == 80
-            _assert_recursive_state_equal(source_replay, record["original_state"])
-            _assert_recursive_state_equal(source_replay, archive.original_state)
-            rows = archive.query_rows(offset=0, limit=2)
-            for field in ("observations", "actions", "rewards", "dones", "next_observations"):
-                _assert_recursive_state_equal(torch.cat([episode[field] for episode in source_replay["episodes"]]), rows[field])
-            assert rows["episode_ids"].tolist() == [0, 1]
-            exported = archive.export(tmp_path / "archived-sequential.pt")
-            assert exported.source_digest == archive.source_digest and exported.row_count == 2
-            _assert_recursive_state_equal(source_replay, torch.load(exported.destination, weights_only=False))
-            with pytest.raises(ValueError, match="buffer is empty"):
-                replay.sample_sequences(batch_size=1, seq_len=1)
+            assert replay.num_transitions == replay.retained_transitions == 2
+            assert replay.legacy_transport_transitions == 0
+            assert len(replay) == 2
+            assert replay.action_dim == env.action_dim and replay.legality_mode == "captured"
+            assert replay.replay_options.model_dump() == source_replay["replay_options"]
+            assert not replay.historical_archives
+            _assert_recursive_state_equal(source_replay, restored_state["replay_buffer"])
             assert all(not episode["observations"] for episode in restored.current_episodes)
             assert all(not tensor.any() for tensor in restored.rollout_hidden)
         else:
@@ -1051,7 +1033,7 @@ class TestCheckpointRoundTrip:
     """
 
     def test_checkpoint_roundtrip_training_resumption(self, cpu_device, test_config_pack_path, cpu_env_factory, minimal_brain_config):
-        """Training should produce identical results when resumed from checkpoint."""
+        """Restore an owned trained checkpoint and prove optimizer updates resume."""
         # Create environment and components
         env = cpu_env_factory(config_dir=test_config_pack_path, num_agents=1)
 
@@ -1079,20 +1061,29 @@ class TestCheckpointRoundTrip:
             **TRAIN_KWARGS,
         )
 
-        # Train first population
+        # Meet declared retained warmup and distinct feedforward batch support.
+        checkpoint_ticks = max(env.level.training.replay_buffer.min_size, pop1.batch_size)
+        assert checkpoint_ticks <= minimal_brain_config.replay.capacity == pop1.replay_buffer.capacity
         pop1.reset()
-        _train_vector_ticks(pop1, env, 100)
+        _train_vector_ticks(pop1, env, checkpoint_ticks)
+        assert pop1.replay_buffer.retained_transitions >= checkpoint_ticks
+        assert pop1.training_step_counter > 0, "Checkpoint must contain actual optimizer progress"
 
-        # Save checkpoint at step 100
-        checkpoint = pop1.get_checkpoint_state()
+        # Own tensors before subsequent source updates mutate state_dict views.
+        checkpoint = deepcopy(pop1.get_checkpoint_state())
+        checkpoint_updates = checkpoint["training_step_counter"]
 
         # Continue training for 50 more steps
         _train_vector_ticks(pop1, env, 50)
+        assert pop1.total_steps == checkpoint_ticks + 50
+        assert pop1.training_step_counter > checkpoint_updates
 
-        # Capture state at step 150
-        weights_at_150 = {k: v.clone() for k, v in pop1.q_network.state_dict().items()}
+        continued_weights = {k: v.clone() for k, v in pop1.q_network.state_dict().items()}
+        assert any(
+            not torch.allclose(checkpoint["q_network"][key], value, atol=1e-6) for key, value in continued_weights.items()
+        ), "Source network weights should change after continued training"
 
-        # Now create second population, load checkpoint at step 100
+        # Create a second learner from the saved point, with a fresh episode.
         exploration2 = EpsilonGreedyExploration(
             epsilon=1.0,
             epsilon_min=0.1,
@@ -1112,23 +1103,29 @@ class TestCheckpointRoundTrip:
         )
 
         pop2.load_checkpoint_state(checkpoint)
+        assert pop2.total_steps == checkpoint_ticks
+        assert pop2.training_step_counter == checkpoint_updates
+        assert all(torch.equal(value, pop2.q_network.state_dict()[key]) for key, value in checkpoint["q_network"].items())
+        assert pop2.replay_buffer.retained_transitions == checkpoint_ticks
         pop2.reset()
 
-        # Train for 50 steps (should reach step 150)
+        # Resume real optimizer work from the persisted replay and counters.
         _train_vector_ticks(pop2, env, 50)
+        assert pop2.total_steps == checkpoint_ticks + 50
+        assert pop2.training_step_counter > checkpoint_updates
 
         # Verify weights differ (training progressed)
         # Note: We can't expect exact match due to randomness, but should be trained
-        weights_at_150_v2 = pop2.q_network.state_dict()
+        resumed_weights = pop2.q_network.state_dict()
 
         # Verify networks have same architecture
-        assert set(weights_at_150.keys()) == set(weights_at_150_v2.keys()), "Network architectures should match"
+        assert set(continued_weights.keys()) == set(resumed_weights.keys()), "Network architectures should match"
 
         # Verify weights have changed from initial (training happened)
         initial_weights = checkpoint["q_network"]
         weights_changed = False
         for key in initial_weights.keys():
-            if not torch.allclose(initial_weights[key], weights_at_150_v2[key], atol=1e-6):
+            if not torch.allclose(initial_weights[key], resumed_weights[key], atol=1e-6):
                 weights_changed = True
                 break
 

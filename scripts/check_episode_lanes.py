@@ -603,10 +603,16 @@ def run_producer(args: argparse.Namespace) -> dict[str, Any]:
             )
 
         def select(q_values: Any, agent_states: Any, action_masks: Any) -> Any:
-            collector.tensor("selected_q_values", env.global_tick + 1, q_values, num_agents=2, hashed=True)
-            actions = torch.tensor(schedule[env.global_tick], dtype=torch.long, device=env.device)
             active = ~env.dones
-            if not bool(action_masks[torch.arange(2), actions][active].all()):
+            if population is None or not torch.equal(active, ~population.episode_completed):
+                raise ValueError("Scripted selection requires consistent population entry eligibility")
+            count = int(active.sum().item())
+            if q_values.shape != (count, env.action_dim) or action_masks.shape != q_values.shape:
+                raise ValueError("Scripted selector requires actual eligible Q/mask rows")
+            if agent_states.observations.shape[0] != count or bool(agent_states.dones.any()):
+                raise ValueError("Scripted selector requires aligned active agent states")
+            actions = torch.tensor(schedule[env.global_tick], dtype=torch.long, device=env.device)[active]
+            if not bool(action_masks[torch.arange(count, device=env.device), actions].all()):
                 raise ValueError("Scripted live action violates compiled action mask")
             return actions
 
@@ -632,6 +638,14 @@ def run_producer(args: argparse.Namespace) -> dict[str, Any]:
 
         def measured_step(actions: Any, depletion_multiplier: float = 1.0) -> Any:
             nonlocal live_transitions, last_observation
+            if population is not None:
+                # Production has already bound its selected replay and selected
+                # eligible actions; admission follows this real environment step.
+                observe_replay(population)
+                q_values = population.last_selected_q_values
+                if q_values is None or q_values.shape != (2, env.action_dim):
+                    raise ValueError("Full population Q witness missing before environment transport")
+                collector.tensor("selected_q_values", env.global_tick + 1, q_values, num_agents=2, hashed=True)
             before = env.dones.clone()
             predecessor = population.current_obs.clone() if population is not None else env._get_observations().clone()
             result = original_step(actions, depletion_multiplier)
@@ -706,11 +720,15 @@ def run_producer(args: argparse.Namespace) -> dict[str, Any]:
         env.step = measured_step
 
         replay_rows: dict[int, str] = {}
+        observed_replays: list[Any] = []
 
         def observe_replay(real_population: Any) -> None:
-            original_push = real_population.replay_buffer.push
+            buffer = real_population.replay_buffer
+            if any(buffer is observed for observed in observed_replays):
+                return
+            original_push_recorded = buffer.push_recorded
 
-            def push(*arguments: Any, **keywords: Any) -> Any:
+            def push_recorded(*arguments: Any, **keywords: Any) -> Any:
                 observed = keywords["observations"] if "observations" in keywords else arguments[0]
                 before = real_population.current_obs
                 identities = [digest(row.detach().cpu().contiguous().numpy().tobytes()) for row in before]
@@ -719,20 +737,21 @@ def run_producer(args: argparse.Namespace) -> dict[str, Any]:
                     candidates = [agent for agent, candidate in enumerate(identities) if candidate == identity]
                     if len(candidates) > incoming.count(identity):
                         raise ValueError("Replay row identity ambiguous between independently eligible/phantom lanes")
-                unused = set(range(2))
+                unused = set(range(2)) - replay_rows.keys()
+                admitted = {}
                 for identity in incoming:
                     matched = [agent for agent in sorted(unused) if identities[agent] == identity]
                     if not matched:
                         raise ValueError("Replay admitted an unknown predecessor row")
                     agent = matched[0]
-                    replay_rows[agent] = identity
+                    admitted[agent] = identity
                     unused.remove(agent)
-                return original_push(*arguments, **keywords)
+                result = original_push_recorded(*arguments, **keywords)
+                replay_rows.update(admitted)
+                return result
 
-            real_population.replay_buffer.push = push
-
-        if population is not None:
-            observe_replay(population)
+            buffer.push_recorded = push_recorded
+            observed_replays.append(buffer)
 
         def population_readings(tick: int) -> None:
             if population is None:
@@ -779,7 +798,6 @@ def run_producer(args: argparse.Namespace) -> dict[str, Any]:
                 env = real_population.env
                 population = real_population
                 original_population_reset(real_population)
-                observe_replay(real_population)
                 original_step = env.step
                 env.step = measured_step
                 collector.reset(env, population)

@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 import torch.nn as nn
 
 from townlet.agent.networks import DuelingQNetwork, RecurrentTokenQNetwork, TokenSetQNetwork
+from townlet.config.bac_options import resolve_token_encoder
 from townlet.config.brain_config import DuelingConfig, FeedforwardConfig, RecurrentConfig, TokenSetConfig
 
 if TYPE_CHECKING:
@@ -76,7 +77,8 @@ class NetworkFactory:
         token_spec: TokenSpec,
     ) -> RecurrentTokenQNetwork:
         """Build the token-native recurrent Q-network from compiled token schema."""
-        return RecurrentTokenQNetwork(
+        encoder, _origin = resolve_token_encoder(config.token_encoder)
+        return RecurrentTokenQNetwork.from_resolved_encoder(
             token_spec=token_spec,
             action_dim=action_dim,
             token_embed_dim=config.token_embed_dim,
@@ -86,6 +88,8 @@ class NetworkFactory:
             lstm_hidden_size=config.lstm.hidden_size,
             lstm_num_layers=config.lstm.num_layers,
             lstm_dropout=config.lstm.dropout,
+            token_encoder_mode=encoder.mode,
+            token_encoder_hidden_width=encoder.hidden_width,
         )
 
     @staticmethod
@@ -140,15 +144,19 @@ class NetworkFactory:
 
         The roster is compiled, never authored: capacities, payload widths and the
         serialization layout come from the TokenSpec; ``config`` declares only the
-        embedding width, aggregator (PDR-0112 block verbatim), and Q-head size.
+        row encoder, embedding width, aggregator (PDR-0112 block verbatim), and
+        Q-head size. Omitted row modes are resolved by the versioned config policy.
         """
-        return TokenSetQNetwork(
+        encoder, _origin = resolve_token_encoder(config.token_encoder)
+        return TokenSetQNetwork.from_resolved_encoder(
             token_spec=token_spec,
             action_dim=action_dim,
             token_embed_dim=config.token_embed_dim,
             q_head_hidden_dim=config.q_head_hidden_dim,
             aggregator_type=config.aggregator.type,
             num_heads=config.aggregator.num_heads,
+            token_encoder_mode=encoder.mode,
+            token_encoder_hidden_width=encoder.hidden_width,
         )
 
     @staticmethod

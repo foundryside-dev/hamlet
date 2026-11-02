@@ -89,13 +89,13 @@ def _run(pack: Path, output: Path) -> VectorizedPopulation:
 def test_recurrent_brain_yaml_trains_the_recurrent_weight_matrix(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Real configured training must backpropagate into LSTM recurrence."""
     gradients: list[float] = []
-    original_init = RecurrentTokenQNetwork.__init__
+    original_initialize = RecurrentTokenQNetwork._initialize
 
-    def instrumented_init(self, *args, **kwargs):
-        original_init(self, *args, **kwargs)
+    def instrumented_initialize(self, *args, **kwargs):
+        original_initialize(self, *args, **kwargs)
         self.lstm.weight_hh_l0.register_hook(lambda gradient: gradients.append(float(gradient.abs().max())))
 
-    monkeypatch.setattr(RecurrentTokenQNetwork, "__init__", instrumented_init)
+    monkeypatch.setattr(RecurrentTokenQNetwork, "_initialize", instrumented_initialize)
     population = _run(_make_pack(tmp_path, "gradient", sequence_length=8), tmp_path / "gradient-output")
 
     assert population.is_recurrent
@@ -181,10 +181,10 @@ def test_training_keeps_the_configured_sequence_graph_connected(
 def test_training_does_not_clobber_mid_episode_rollout_memory(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Zero-start replay unrolls must not overwrite population-owned rollout state."""
     lstm_calls: list[tuple[int, int, torch.Tensor]] = []
-    original_init = RecurrentTokenQNetwork.__init__
+    original_initialize = RecurrentTokenQNetwork._initialize
 
-    def instrumented_init(self, *args, **kwargs):
-        original_init(self, *args, **kwargs)
+    def instrumented_initialize(self, *args, **kwargs):
+        original_initialize(self, *args, **kwargs)
 
         def record_hidden(_module, inputs):
             sequence, hidden = inputs
@@ -193,7 +193,7 @@ def test_training_does_not_clobber_mid_episode_rollout_memory(tmp_path: Path, mo
 
         self.lstm.register_forward_pre_hook(record_hidden)
 
-    monkeypatch.setattr(RecurrentTokenQNetwork, "__init__", instrumented_init)
+    monkeypatch.setattr(RecurrentTokenQNetwork, "_initialize", instrumented_initialize)
 
     observed: list[tuple[torch.Tensor, torch.Tensor, torch.Tensor]] = []
     original_step = VectorizedPopulation.step_population

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, NamedTuple, cast
+from typing import TYPE_CHECKING, Literal, NamedTuple, cast
 
 import torch
 import torch.nn as nn
@@ -10,6 +10,7 @@ import torch.nn.functional as F  # noqa: N812
 from torch.nn.attention import SDPBackend, sdpa_kernel
 
 from townlet.agent.token_input import TokenInputAssembler as _TokenInputAssembler
+from townlet.config.bac_options import TokenEncoderOptions
 
 if TYPE_CHECKING:
     from townlet.universe.dto.token_spec import TokenSpec
@@ -193,7 +194,8 @@ class TokenSetEncoder(nn.Module):
     Consumes the flat token observation (`[batch, total_dims]`, rows in canonical
     type-then-slot order, presence leading each row) and reads it as a token set:
 
-    1. per-type projection encoders — ``Linear(W_t → token_embed_dim)`` in an
+    1. per-type row encoders — linear projection or an explicitly selected
+       ``Linear → ReLU → Linear`` interaction MLP before pooling, in an
        ``nn.ModuleDict`` keyed by token type NAME (a list indexed by roster position
        would re-bind weights silently on roster differences — spec §4);
     2. a learned per-type embedding added post-projection (type-keyed, transfers);
@@ -237,7 +239,50 @@ class TokenSetEncoder(nn.Module):
             num_heads: Attention heads; required for ``"attention"``, must be None
                 for ``"mean"`` (the PDR-0112 aggregator contract).
         """
+        self._initialize(
+            token_spec=token_spec,
+            token_embed_dim=token_embed_dim,
+            aggregator_type=aggregator_type,
+            num_heads=num_heads,
+            token_encoder_mode="linear",
+            token_encoder_hidden_width=None,
+        )
+
+    @classmethod
+    def from_resolved_encoder(
+        cls,
+        *,
+        token_spec: TokenSpec,
+        token_embed_dim: int,
+        aggregator_type: str,
+        num_heads: int | None,
+        token_encoder_mode: Literal["linear", "interaction_mlp"],
+        token_encoder_hidden_width: int | None,
+    ) -> TokenSetEncoder:
+        """Construct from an explicit selection resolved at the config boundary."""
+        encoder = cls.__new__(cls)
+        encoder._initialize(
+            token_spec=token_spec,
+            token_embed_dim=token_embed_dim,
+            aggregator_type=aggregator_type,
+            num_heads=num_heads,
+            token_encoder_mode=token_encoder_mode,
+            token_encoder_hidden_width=token_encoder_hidden_width,
+        )
+        return encoder
+
+    def _initialize(
+        self,
+        token_spec: TokenSpec,
+        token_embed_dim: int,
+        aggregator_type: str,
+        num_heads: int | None,
+        *,
+        token_encoder_mode: Literal["linear", "interaction_mlp"],
+        token_encoder_hidden_width: int | None,
+    ) -> None:
         super().__init__()
+        encoder_options = TokenEncoderOptions(mode=token_encoder_mode, hidden_width=token_encoder_hidden_width)
         if token_embed_dim <= 0:
             raise ValueError("token_embed_dim must be positive")
 
@@ -265,9 +310,25 @@ class TokenSetEncoder(nn.Module):
         self.obs_dim = token_spec.total_dims
         self.token_embed_dim = token_embed_dim
         self.input_assembler = _TokenInputAssembler(token_spec)
+        self.token_encoder_mode = encoder_options.mode
+        self.token_encoder_hidden_width = encoder_options.hidden_width
 
-        # Per-type projection encoders, keyed by type NAME (the transfer contract).
-        self.encoders = nn.ModuleDict({layout.type_name: nn.Linear(layout.payload_width, token_embed_dim) for layout in self._layouts})
+        # Keep linear modules and their creation order unchanged for retained state/RNG identity.
+        if self.token_encoder_mode == "linear":
+            self.encoders = nn.ModuleDict({layout.type_name: nn.Linear(layout.payload_width, token_embed_dim) for layout in self._layouts})
+        else:
+            hidden_width = self.token_encoder_hidden_width
+            assert hidden_width is not None  # validated explicit interaction selection
+            self.encoders = nn.ModuleDict(
+                {
+                    layout.type_name: nn.Sequential(
+                        nn.Linear(layout.payload_width, hidden_width),
+                        nn.ReLU(),
+                        nn.Linear(hidden_width, token_embed_dim),
+                    )
+                    for layout in self._layouts
+                }
+            )
         # Learned per-type embedding, added post-projection. Zero-init: deterministic,
         # and the per-type projection weights already break type symmetry at step 0.
         self.type_embeddings = nn.ParameterDict({layout.type_name: nn.Parameter(torch.zeros(token_embed_dim)) for layout in self._layouts})
@@ -373,20 +434,74 @@ class TokenSetQNetwork(nn.Module):
         aggregator_type: str,
         num_heads: int | None,
     ):
+        self._initialize(
+            token_spec=token_spec,
+            action_dim=action_dim,
+            token_embed_dim=token_embed_dim,
+            q_head_hidden_dim=q_head_hidden_dim,
+            aggregator_type=aggregator_type,
+            num_heads=num_heads,
+            token_encoder_mode="linear",
+            token_encoder_hidden_width=None,
+        )
+
+    @classmethod
+    def from_resolved_encoder(
+        cls,
+        *,
+        token_spec: TokenSpec,
+        action_dim: int,
+        token_embed_dim: int,
+        q_head_hidden_dim: int,
+        aggregator_type: str,
+        num_heads: int | None,
+        token_encoder_mode: Literal["linear", "interaction_mlp"],
+        token_encoder_hidden_width: int | None,
+    ) -> TokenSetQNetwork:
+        """Build the declared row encoder without a throwaway linear network."""
+        network = cls.__new__(cls)
+        network._initialize(
+            token_spec=token_spec,
+            action_dim=action_dim,
+            token_embed_dim=token_embed_dim,
+            q_head_hidden_dim=q_head_hidden_dim,
+            aggregator_type=aggregator_type,
+            num_heads=num_heads,
+            token_encoder_mode=token_encoder_mode,
+            token_encoder_hidden_width=token_encoder_hidden_width,
+        )
+        return network
+
+    def _initialize(
+        self,
+        token_spec: TokenSpec,
+        action_dim: int,
+        token_embed_dim: int,
+        q_head_hidden_dim: int,
+        aggregator_type: str,
+        num_heads: int | None,
+        *,
+        token_encoder_mode: Literal["linear", "interaction_mlp"],
+        token_encoder_hidden_width: int | None,
+    ) -> None:
         super().__init__()
         if action_dim <= 0:
             raise ValueError("action_dim must be positive")
         if q_head_hidden_dim <= 0:
             raise ValueError("q_head_hidden_dim must be positive")
         self.action_dim = action_dim
-        self.encoder = TokenSetEncoder(
+        self.encoder = TokenSetEncoder.from_resolved_encoder(
             token_spec=token_spec,
             token_embed_dim=token_embed_dim,
             aggregator_type=aggregator_type,
             num_heads=num_heads,
+            token_encoder_mode=token_encoder_mode,
+            token_encoder_hidden_width=token_encoder_hidden_width,
         )
         self.obs_dim = self.encoder.obs_dim
         self.token_embed_dim = self.encoder.token_embed_dim
+        self.token_encoder_mode = self.encoder.token_encoder_mode
+        self.token_encoder_hidden_width = self.encoder.token_encoder_hidden_width
         self.q_head = nn.Sequential(
             nn.Linear(token_embed_dim, q_head_hidden_dim),
             nn.LayerNorm(q_head_hidden_dim),
@@ -420,6 +535,68 @@ class RecurrentTokenQNetwork(nn.Module):
         lstm_num_layers: int,
         lstm_dropout: float,
     ):
+        self._initialize(
+            token_spec=token_spec,
+            action_dim=action_dim,
+            token_embed_dim=token_embed_dim,
+            q_head_hidden_dim=q_head_hidden_dim,
+            aggregator_type=aggregator_type,
+            num_heads=num_heads,
+            lstm_hidden_size=lstm_hidden_size,
+            lstm_num_layers=lstm_num_layers,
+            lstm_dropout=lstm_dropout,
+            token_encoder_mode="linear",
+            token_encoder_hidden_width=None,
+        )
+
+    @classmethod
+    def from_resolved_encoder(
+        cls,
+        *,
+        token_spec: TokenSpec,
+        action_dim: int,
+        token_embed_dim: int,
+        q_head_hidden_dim: int,
+        aggregator_type: str,
+        num_heads: int | None,
+        lstm_hidden_size: int,
+        lstm_num_layers: int,
+        lstm_dropout: float,
+        token_encoder_mode: Literal["linear", "interaction_mlp"],
+        token_encoder_hidden_width: int | None,
+    ) -> RecurrentTokenQNetwork:
+        """Construct the resolved row encoder before the unchanged sequence memory."""
+        network = cls.__new__(cls)
+        network._initialize(
+            token_spec=token_spec,
+            action_dim=action_dim,
+            token_embed_dim=token_embed_dim,
+            q_head_hidden_dim=q_head_hidden_dim,
+            aggregator_type=aggregator_type,
+            num_heads=num_heads,
+            lstm_hidden_size=lstm_hidden_size,
+            lstm_num_layers=lstm_num_layers,
+            lstm_dropout=lstm_dropout,
+            token_encoder_mode=token_encoder_mode,
+            token_encoder_hidden_width=token_encoder_hidden_width,
+        )
+        return network
+
+    def _initialize(
+        self,
+        token_spec: TokenSpec,
+        action_dim: int,
+        token_embed_dim: int,
+        q_head_hidden_dim: int,
+        aggregator_type: str,
+        num_heads: int | None,
+        lstm_hidden_size: int,
+        lstm_num_layers: int,
+        lstm_dropout: float,
+        *,
+        token_encoder_mode: Literal["linear", "interaction_mlp"],
+        token_encoder_hidden_width: int | None,
+    ) -> None:
         super().__init__()
         if action_dim <= 0:
             raise ValueError("action_dim must be positive")
@@ -427,14 +604,18 @@ class RecurrentTokenQNetwork(nn.Module):
             raise ValueError("q_head_hidden_dim must be positive")
         self.action_dim = action_dim
         self.hidden_dim = lstm_hidden_size
-        self.encoder = TokenSetEncoder(
+        self.encoder = TokenSetEncoder.from_resolved_encoder(
             token_spec=token_spec,
             token_embed_dim=token_embed_dim,
             aggregator_type=aggregator_type,
             num_heads=num_heads,
+            token_encoder_mode=token_encoder_mode,
+            token_encoder_hidden_width=token_encoder_hidden_width,
         )
         self.obs_dim = self.encoder.obs_dim
         self.token_embed_dim = self.encoder.token_embed_dim
+        self.token_encoder_mode = self.encoder.token_encoder_mode
+        self.token_encoder_hidden_width = self.encoder.token_encoder_hidden_width
         self.lstm = nn.LSTM(
             input_size=token_embed_dim,
             hidden_size=lstm_hidden_size,

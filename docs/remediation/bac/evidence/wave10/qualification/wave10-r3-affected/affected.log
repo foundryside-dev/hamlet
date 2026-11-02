@@ -1,0 +1,281 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 4/4 workers
+4 workers [266 items]
+
+...........................FF....F...................................... [ 27%]
+........................................................................ [ 54%]
+...........F..........s................................................. [ 81%]
+..................................................                       [100%]
+=================================== FAILURES ===================================
+____ test_caller_cap_keeps_authored_terminal_and_live_bootstrap[end_ticks0] ____
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave10-r3-affected/popen-gw2/test_caller_cap_keeps_authored0')
+end_ticks = (2, 5)
+
+    @pytest.mark.parametrize("end_ticks", [(2, 5), (5, 2)])
+    def test_caller_cap_keeps_authored_terminal_and_live_bootstrap(tmp_path: Path, end_ticks: tuple[int, int]) -> None:
+        runner, ticks, curricula = run_lane_runner(
+            tmp_path / "run", episodes=1, budget=None, cap=3, end_ticks=end_ticks, real_dac=False, recording=False
+        )
+>       assert len(ticks) == 3
+E       AssertionError: assert 5 == 3
+E        +  where 5 = len([{'actions': tensor([5, 5]), 'active': tensor([True, True]), 'components': {'extrinsic': tensor([1.0025, 1.0025]), 'in...tensor([0., 0.]), 'intrinsic_raw': tensor([0., 0.]), 'shaping': tensor([0., 0.])}, 'dones': tensor([True, True]), ...}])
+
+tests/test_townlet/regressions/test_episode_lane_sinks.py:238: AssertionError
+____ test_caller_cap_keeps_authored_terminal_and_live_bootstrap[end_ticks1] ____
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave10-r3-affected/popen-gw2/test_caller_cap_keeps_authored1')
+end_ticks = (5, 2)
+
+    @pytest.mark.parametrize("end_ticks", [(2, 5), (5, 2)])
+    def test_caller_cap_keeps_authored_terminal_and_live_bootstrap(tmp_path: Path, end_ticks: tuple[int, int]) -> None:
+        runner, ticks, curricula = run_lane_runner(
+            tmp_path / "run", episodes=1, budget=None, cap=3, end_ticks=end_ticks, real_dac=False, recording=False
+        )
+>       assert len(ticks) == 3
+E       AssertionError: assert 5 == 3
+E        +  where 5 = len([{'actions': tensor([5, 5]), 'active': tensor([True, True]), 'components': {'extrinsic': tensor([1.0025, 1.0025]), 'in...tensor([0., 0.]), 'intrinsic_raw': tensor([0., 0.]), 'shaping': tensor([0., 0.])}, 'dones': tensor([True, True]), ...}])
+
+tests/test_townlet/regressions/test_episode_lane_sinks.py:238: AssertionError
+________ test_caller_cap_completes_lanes_before_curriculum_publication _________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave10-r3-affected/popen-gw2/test_caller_cap_completes_lane0')
+
+    def test_caller_cap_completes_lanes_before_curriculum_publication(tmp_path: Path) -> None:
+        original = VectorizedPopulation.update_curriculum_tracker
+    
+        def require_completions(population, survival_times, dones):
+            assert all(item is not None for item in population.episode_completions)
+            assert [item.reason for item in population.episode_completions] == ["authored_terminal", "cap"]
+            return original(population, survival_times, dones)
+    
+        with patch.object(VectorizedPopulation, "update_curriculum_tracker", require_completions):
+>           run_lane_runner(tmp_path / "run", episodes=1, budget=None, cap=3, end_ticks=(2, 5), real_dac=False, recording=False)
+
+tests/test_townlet/regressions/test_episode_lane_sinks.py:304: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/test_episode_lane_sinks.py:134: in run_lane_runner
+    runner.run()
+src/townlet/demo/runner.py:745: in run
+    self.population.update_curriculum_tracker(curriculum_survival_tensor, curriculum_done_tensor)
+tests/test_townlet/regressions/test_episode_lane_sinks.py:108: in curriculum
+    return original_curriculum(population, survival_times, dones)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+population = <townlet.population.vectorized.VectorizedPopulation object at 0x7fb1c9158690>
+survival_times = tensor([2., 5.]), dones = tensor([True, True])
+
+    def require_completions(population, survival_times, dones):
+        assert all(item is not None for item in population.episode_completions)
+>       assert [item.reason for item in population.episode_completions] == ["authored_terminal", "cap"]
+E       AssertionError: assert ['authored_te...red_terminal'] == ['authored_terminal', 'cap']
+E         
+E         At index 1 diff: 'authored_terminal' != 'cap'
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/test_episode_lane_sinks.py:300: AssertionError
+____________ test_demorunner_threads_training_loop_hyperparameters _____________
+[gw3] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave10-r3-affected/popen-gw3/test_demorunner_threads_traini0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fd832f808d0>
+
+    @pytest.mark.integration
+    def test_demorunner_threads_training_loop_hyperparameters(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        """DemoRunner should honor training_loop hyperparameters from training.yaml."""
+    
+        # Prepare v2.1 experiment: copy default_curriculum into a temp directory.
+        project_root = Path(__file__).parent.parent.parent.parent
+        src_experiment = project_root / "configs" / "default_curriculum"
+        experiment_dir = tmp_path / "experiment"
+        shutil.copytree(src_experiment, experiment_dir)
+    
+        # Ensure brain.yaml uses huber loss with explicit delta (no hidden defaults).
+        mutate_brain_yaml(experiment_dir, lambda brain: brain.update({"loss": {"type": "huber", "huber_delta": 1.0}}))
+    
+        level_name = "L0_0_minimal"
+        training_path = experiment_dir / "levels" / level_name / "training.yaml"
+    
+        # Mutate training_loop hyperparameters for this test.
+        training_data = yaml.safe_load(training_path.read_text())
+        training_data["training"]["training_loop"]["train_frequency"] = 7
+        training_data["training"]["training_loop"]["sequence_length"] = 5
+        training_data["training"]["training_loop"]["max_grad_norm"] = 3.5
+        training_path.write_text(yaml.safe_dump(training_data, sort_keys=False))
+    
+        db_path = tmp_path / "test.db"
+        checkpoint_dir = tmp_path / "checkpoints"
+    
+        # Patch VectorizedHamletEnv.from_universe to avoid full runtime wiring.
+        class DummyEnv:
+            def __init__(self) -> None:
+                class _ObsActivity:
+                    active_mask = (True,)
+    
+                class _Substrate:
+                    position_dim = 2
+                    position_dtype = None  # Not used by this test
+    
+                self.observation_activity = _ObsActivity()
+                self.substrate = _Substrate()
+                self.meter_count = 8
+                self.num_affordance_types = 1
+                self.action_dim = 4
+    
+            def attach_runtime_registry(self, registry) -> None:  # pragma: no cover - simple stub
+                pass
+    
+            def set_exploration_module(self, exploration) -> None:  # pragma: no cover - simple stub
+                pass
+    
+        monkeypatch.setattr(
+            VectorizedHamletEnv,
+            "from_universe",
+            classmethod(lambda cls, universe, level_name, num_agents, device: DummyEnv()),
+        )
+    
+        captured: dict[str, float] = {}
+    
+        def fake_population_init(
+            self,
+            env,
+            curriculum,
+            exploration,
+            agent_ids,
+            device,
+            brain_config,
+            obs_dim: int = 70,
+            action_dim: int | None = None,
+            tb_logger=None,
+            train_frequency: int = 4,
+            batch_size: int | None = None,
+            sequence_length: int = 8,
+            max_grad_norm: float = 10.0,
+            max_episodes: int | None = None,
+            max_steps_per_episode: int | None = None,
+            observation_spec=None,
+        ) -> None:
+            captured["train_frequency"] = train_frequency
+            captured["sequence_length"] = sequence_length
+            captured["max_grad_norm"] = max_grad_norm
+            # Stop runner.run() after population construction.
+            raise RuntimeError("stop-after-population-init")
+    
+        monkeypatch.setattr(VectorizedPopulation, "__init__", fake_population_init)
+    
+        runner = DemoRunner(
+            config_dir=experiment_dir,
+            level_name=level_name,
+            db_path=db_path,
+            checkpoint_dir=checkpoint_dir,
+            max_episodes=1,
+        )
+    
+        with pytest.raises(RuntimeError, match="stop-after-population-init"):
+>           runner.run()
+
+tests/test_townlet/integration/test_runner_hyperparams_v21.py:114: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/demo/runner.py:474: in run
+    self.population = VectorizedPopulation.for_training(
+src/townlet/population/vectorized.py:236: in for_training
+    population._initialize(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.population.vectorized.VectorizedPopulation object at 0x7fd848effc50>
+env = <tests.test_townlet.integration.test_runner_hyperparams_v21.test_demorunner_threads_training_loop_hyperparameters.<locals>.DummyEnv object at 0x7fd8497bc980>
+curriculum = <townlet.curriculum.static.StaticCurriculum object at 0x7fd8330f6780>
+exploration = <townlet.exploration.adaptive_intrinsic.AdaptiveIntrinsicExploration object at 0x7fd8330f68b0>
+agent_ids = ['agent_0', 'agent_1', 'agent_2', 'agent_3', 'agent_4', 'agent_5', ...]
+device = device(type='cpu')
+brain_config = BrainConfig(version='1.0', description='Brain config for default_curriculum (migrated from agent.yaml)', architecture=...eplayConfig(capacity=100000, prioritized=False, priority_alpha=None, priority_beta=None, priority_beta_annealing=None))
+obs_dim = 118, train_frequency = 7, batch_size = 32, sequence_length = 5
+max_grad_norm = 3.5, action_dim = 15
+tb_logger = <townlet.training.tensorboard_logger.TensorBoardLogger object at 0x7fd83346a060>
+max_episodes = 1, max_steps_per_episode = 1000
+replay_setup = _ReplaySetup(options=ReplayOptions(sampling_mode='successive_without_replacement', uniform_sequence_adapter='legacy_ep...reads_traini0/experiment/levels/L0_0_minimal/training.yaml:3; upper-bound vector ticks', tick=0, preserve_global=False)
+
+    def _initialize(
+        self,
+        env: VectorizedHamletEnv,
+        curriculum: CurriculumManager,
+        exploration: ExplorationStrategy,
+        agent_ids: list[str],
+        device: torch.device,
+        brain_config: BrainConfig,
+        obs_dim: int,
+        train_frequency: int,
+        batch_size: int,
+        sequence_length: int,
+        max_grad_norm: float,
+        action_dim: int,
+        tb_logger: Any,
+        max_episodes: int | None,
+        max_steps_per_episode: int | None,
+        replay_setup: _ReplaySetup | None,
+    ) -> None:
+        """
+        Initialize vectorized population.
+    
+        Args:
+            env: Vectorized environment (must have a compiled `token_spec`)
+            curriculum: Curriculum manager
+            exploration: Exploration strategy
+            agent_ids: List of agent identifiers
+            device: PyTorch device
+            obs_dim: Observation dimension
+            action_dim: Action dimension (defaults to env.action_dim if not specified)
+            brain_config: Brain configuration (REQUIRED). Specifies network architecture,
+                optimizer, loss function, Q-learning parameters, and replay buffer settings.
+                See docs/config-schemas/brain.md for schema.
+            tb_logger: Optional TensorBoard logger
+            train_frequency: Train Q-network every N steps (required; typically from training.yaml)
+            batch_size: Batch size for experience replay (required; typically from training.yaml replay_buffer.batch_size)
+            sequence_length: Length of sequences for LSTM training (required for recurrent agents)
+            max_grad_norm: Gradient clipping threshold (required; typically from training.yaml)
+            max_episodes: Maximum training episodes (for PER beta annealing)
+            max_steps_per_episode: Maximum steps per episode (for PER beta annealing)
+        """
+        # The compiled brain configuration is mandatory runtime input.
+        if brain_config is None:
+            raise ValueError(
+                "brain_config is required. Provide brain.yaml configuration for all training runs. "
+                "See docs/config-schemas/brain.md for examples."
+            )
+    
+        # The compiled token artifact is the observation ABI (unit-3 cut). It is required
+        # and set by VectorizedHamletEnv from the compiled universe; no alternate source exists.
+        if getattr(env, "token_spec", None) is None:
+>           raise ValueError(
+                "env.token_spec is required. The environment must carry the compiled TokenSpec "
+                "from the compiled universe. This is set automatically by VectorizedHamletEnv."
+            )
+E           ValueError: env.token_spec is required. The environment must carry the compiled TokenSpec from the compiled universe. This is set automatically by VectorizedHamletEnv.
+
+src/townlet/population/vectorized.py:307: ValueError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/test_episode_lane_sinks.py::test_caller_cap_keeps_authored_terminal_and_live_bootstrap[end_ticks0]
+FAILED tests/test_townlet/regressions/test_episode_lane_sinks.py::test_caller_cap_keeps_authored_terminal_and_live_bootstrap[end_ticks1]
+FAILED tests/test_townlet/regressions/test_episode_lane_sinks.py::test_caller_cap_completes_lanes_before_curriculum_publication
+FAILED tests/test_townlet/integration/test_runner_hyperparams_v21.py::test_demorunner_threads_training_loop_hyperparameters
+============= 4 failed, 261 passed, 1 skipped in 581.58s (0:09:41) =============

@@ -1,0 +1,1241 @@
+{
+  "task": "T16",
+  "source_commit": "6b5fdf62f046ec158b8c3378d65add06faebd591",
+  "qualified_tree": "51c6d53eb2a815257b7eab4bffa800fb54d8a2a2",
+  "precommit_base": "f575ecefda7844fbd5b7b6138ad0c6bf7b1bafd8",
+  "full_repository": {
+    "candidate_tree": "51c6d53eb2a815257b7eab4bffa800fb54d8a2a2",
+    "base_commit": "f575ecefda7844fbd5b7b6138ad0c6bf7b1bafd8",
+    "full_exit_code": 0,
+    "counts": {
+      "passed": 6857,
+      "skipped": 16,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 16
+    },
+    "wall_seconds": 2369.7433133125305,
+    "verified_source_paths": 161,
+    "verified_review_artifacts": 10,
+    "verified_process_identities": 5,
+    "verified_config_digests": 573,
+    "verified_native_artifacts": 13,
+    "worktree_count": 14,
+    "entire_registry_unchanged": true,
+    "working_tree_equals_index": true,
+    "harness_sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d",
+    "orchestration_harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+    "scope": "Full repository gate on actual uncommitted candidate. Local exact-tree commit and genuine clean-source native checker qualification remain owed before T16 release/publication. All final BAC acceptance remains open."
+  },
+  "native": {
+    "revision": "6b5fdf62f046ec158b8c3378d65add06faebd591",
+    "recipes": [
+      {
+        "recipe": "authored-two-five",
+        "qualified": true,
+        "readings": 786,
+        "actions": 5
+      },
+      {
+        "recipe": "two-episodes-reset",
+        "qualified": true,
+        "readings": 1524,
+        "actions": 10
+      },
+      {
+        "recipe": "budget-six",
+        "qualified": true,
+        "readings": 673,
+        "actions": 4
+      },
+      {
+        "recipe": "passive-two-five",
+        "qualified": true,
+        "readings": 608,
+        "actions": 5
+      },
+      {
+        "recipe": "death-at-lifespan",
+        "qualified": true,
+        "readings": 608,
+        "actions": 5
+      },
+      {
+        "recipe": "healthy-retirement",
+        "qualified": true,
+        "readings": 608,
+        "actions": 5
+      }
+    ],
+    "postflight": "PASS"
+  },
+  "findings": [
+    "D02",
+    "D09",
+    "D21",
+    "G02",
+    "G06"
+  ],
+  "contracts": [
+    "BAC-C01",
+    "BAC-C02",
+    "BAC-C06",
+    "BAC-C07"
+  ],
+  "scope": "Scoped runner canonical configuration, fresh owned PER, readiness and clocks. Original failed/intermediate/passing sources retain actual identities. Unchanged scopes are explicitly bound; overlapping test counts are never summed.",
+  "preservation": "Existing constructor, uniform and resumed sampler roles, current replay/history/clocks, approved historical A and shared curiosity alternative remain. Consumer fixture repairs preserve original cap-versus-environment and hyperparameter assertions.",
+  "remaining": "40 other packets plus all54requirements/22final lenses+synthesis, strict private curiosity/X02, ICM routing, complete native10/7 T24/T25, T40+12strict learning/E2E,coverage>=70,slow/applicable hardware and exact-tip CI. CPU-only; CUDA unavailable/unqualified.",
+  "capability_reduction": false,
+  "candidate_patches": [
+    {
+      "wave": "wave09",
+      "metadata": "documentation-candidate.json",
+      "base_commit": "ae0914afb3e7e1ca525e91acd49a07b3ae54c327",
+      "candidate_tree": "72f9450da268fdb48d7b18b18bfbf45c1ea00b9e",
+      "patch": "evidence/wave10/candidate-patches/wave09/documentation-candidate.patch",
+      "sha256": "563157db533622ddfe5366b0ffba71c04d7fada5478f39ca183b6d0ab267cb9c",
+      "reconstruction": "Apply this exact binary diff to the named public base using an existing authorized checkout; original candidate IDs and logs remain unchanged."
+    },
+    {
+      "wave": "wave09",
+      "metadata": "documentation-final-candidate.json",
+      "base_commit": "ae0914afb3e7e1ca525e91acd49a07b3ae54c327",
+      "candidate_tree": "000e38800087cd77cbe3f2a2f7a2eb2f353c6328",
+      "reachable_commit": "f575ecefda7844fbd5b7b6138ad0c6bf7b1bafd8",
+      "reconstruction": "The exact tree is already reachable from this published branch history; no duplicate patch is needed."
+    },
+    {
+      "wave": "wave09",
+      "metadata": "green-r0-candidate.json",
+      "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+      "candidate_tree": "f4ae7e65c2f2a1ffc944c19342490b8f48d6c9bf",
+      "patch": "evidence/wave10/candidate-patches/wave09/green-r0-candidate.patch",
+      "sha256": "86ea3c309fb76e3fc00bf12252cc9565145a802dd98d5b16fdec94d1f2ac9ed8",
+      "reconstruction": "Apply this exact binary diff to the named public base using an existing authorized checkout; original candidate IDs and logs remain unchanged."
+    },
+    {
+      "wave": "wave09",
+      "metadata": "r1-candidate.json",
+      "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+      "candidate_tree": "35d10aaf7656b53259eb90b4ff6a9b8199c33842",
+      "patch": "evidence/wave10/candidate-patches/wave09/r1-candidate.patch",
+      "sha256": "e79405b08461185835f539c6fa75fae527deb41bbf595a10d0b44f2275470eb9",
+      "reconstruction": "Apply this exact binary diff to the named public base using an existing authorized checkout; original candidate IDs and logs remain unchanged."
+    },
+    {
+      "wave": "wave09",
+      "metadata": "r1a-candidate.json",
+      "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+      "candidate_tree": "096cdb7d98a9725181658c44b3ed84a6d0d72e82",
+      "patch": "evidence/wave10/candidate-patches/wave09/r1a-candidate.patch",
+      "sha256": "e051ee5577aecb56c464ebad2639e4dd1761aff467dc45e2f14cfd2e4868fc15",
+      "reconstruction": "Apply this exact binary diff to the named public base using an existing authorized checkout; original candidate IDs and logs remain unchanged."
+    },
+    {
+      "wave": "wave09",
+      "metadata": "r2-candidate.json",
+      "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+      "candidate_tree": "929bc8952a2e797871d15376e2ef61a8aec73ca5",
+      "patch": "evidence/wave10/candidate-patches/wave09/r2-candidate.patch",
+      "sha256": "0c51bb283c33d923efcbf13d3e3d5cf99b5a4c26b67f3a301a5f13c916f480e7",
+      "reconstruction": "Apply this exact binary diff to the named public base using an existing authorized checkout; original candidate IDs and logs remain unchanged."
+    },
+    {
+      "wave": "wave09",
+      "metadata": "r3-candidate.json",
+      "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+      "candidate_tree": "c6beac9d65c88a7063c27f4d64750cb49b7ae97a",
+      "patch": "evidence/wave10/candidate-patches/wave09/r3-candidate.patch",
+      "sha256": "744b30e51c8703586db9aa9186b11101c82988a442a73d34dcf5c7247c5cb8e1",
+      "reconstruction": "Apply this exact binary diff to the named public base using an existing authorized checkout; original candidate IDs and logs remain unchanged."
+    },
+    {
+      "wave": "wave09",
+      "metadata": "r3a-candidate.json",
+      "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+      "candidate_tree": "d0bb822eb387153342fb2aa82186d3df9b6bb30b",
+      "patch": "evidence/wave10/candidate-patches/wave09/r3a-candidate.patch",
+      "sha256": "5d32646e56e36acdbc45896d40135ce6fd1846eefbcf65442de58d1f795d3881",
+      "reconstruction": "Apply this exact binary diff to the named public base using an existing authorized checkout; original candidate IDs and logs remain unchanged."
+    },
+    {
+      "wave": "wave09",
+      "metadata": "r4-candidate.json",
+      "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+      "candidate_tree": "f4032499a9800e8a8398b812a8dcc7ebfe9c4974",
+      "patch": "evidence/wave10/candidate-patches/wave09/r4-candidate.patch",
+      "sha256": "edc2728f81006a1f7e0b4e55f4186ea7332518580f57634ad6b1e35abb90ec0e",
+      "reconstruction": "Apply this exact binary diff to the named public base using an existing authorized checkout; original candidate IDs and logs remain unchanged."
+    },
+    {
+      "wave": "wave09",
+      "metadata": "r5-candidate.json",
+      "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+      "candidate_tree": "f71c52fad680a74da1b90cc7470455fc90f4fa3f",
+      "reachable_commit": "ae0914afb3e7e1ca525e91acd49a07b3ae54c327",
+      "reconstruction": "The exact tree is already reachable from this published branch history; no duplicate patch is needed."
+    },
+    {
+      "wave": "wave09",
+      "metadata": "red-r0-candidate.json",
+      "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+      "candidate_tree": "d4f144831a56068f845285297b20bcad4a5f2702",
+      "patch": "evidence/wave10/candidate-patches/wave09/red-r0-candidate.patch",
+      "sha256": "e9c5944c8d6359319d464fdfaffe170c499909e3a0418f7e259ff82977b17478",
+      "reconstruction": "Apply this exact binary diff to the named public base using an existing authorized checkout; original candidate IDs and logs remain unchanged."
+    },
+    {
+      "wave": "wave09",
+      "metadata": "red-r1-candidate.json",
+      "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+      "candidate_tree": "5c0720d698a6bcd788327e115437167d3262ee55",
+      "patch": "evidence/wave10/candidate-patches/wave09/red-r1-candidate.patch",
+      "sha256": "717b1acb4b74a11dd5ee8098a5a81ffa2398d2d1bb3bb70dd2a7f8a7e58a668d",
+      "reconstruction": "Apply this exact binary diff to the named public base using an existing authorized checkout; original candidate IDs and logs remain unchanged."
+    },
+    {
+      "wave": "wave09",
+      "metadata": "red-r2-candidate.json",
+      "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+      "candidate_tree": "f806eee411521cba094c753651f2c93b735c1123",
+      "patch": "evidence/wave10/candidate-patches/wave09/red-r2-candidate.patch",
+      "sha256": "5a573f5d6d95b092dae27ca5df037aac1920ce2adcd898fe3c51b3dbc7fbeec6",
+      "reconstruction": "Apply this exact binary diff to the named public base using an existing authorized checkout; original candidate IDs and logs remain unchanged."
+    },
+    {
+      "wave": "wave10",
+      "metadata": "r0-candidate.json",
+      "base_commit": "f575ecefda7844fbd5b7b6138ad0c6bf7b1bafd8",
+      "candidate_tree": "096824cb1105e649f3df4af22c59ec0651e38b9d",
+      "patch": "evidence/wave10/candidate-patches/wave10/r0-candidate.patch",
+      "sha256": "fecaa943078c91cecea31e90594e05c8c008f47f080b34df27a0d9298de3b1fb",
+      "reconstruction": "Apply this exact binary diff to the named public base using an existing authorized checkout; original candidate IDs and logs remain unchanged."
+    },
+    {
+      "wave": "wave10",
+      "metadata": "r1-candidate.json",
+      "base_commit": "f575ecefda7844fbd5b7b6138ad0c6bf7b1bafd8",
+      "candidate_tree": "8665f26aa779c29513b7ccf1205b193b0534e441",
+      "patch": "evidence/wave10/candidate-patches/wave10/r1-candidate.patch",
+      "sha256": "9f121116ffae5e156c45d8fe9361ef1dda06e46671760f961c2d3710ed4788ef",
+      "reconstruction": "Apply this exact binary diff to the named public base using an existing authorized checkout; original candidate IDs and logs remain unchanged."
+    },
+    {
+      "wave": "wave10",
+      "metadata": "r2-candidate.json",
+      "base_commit": "f575ecefda7844fbd5b7b6138ad0c6bf7b1bafd8",
+      "candidate_tree": "d57c3e3fc5303533fe2b7e3e220f85e3e8ba7d36",
+      "patch": "evidence/wave10/candidate-patches/wave10/r2-candidate.patch",
+      "sha256": "4f6716e57494e699c94ae4d8f4ed5e94724dd87f8a7714de087d8d191b627d00",
+      "reconstruction": "Apply this exact binary diff to the named public base using an existing authorized checkout; original candidate IDs and logs remain unchanged."
+    },
+    {
+      "wave": "wave10",
+      "metadata": "r3-candidate.json",
+      "base_commit": "f575ecefda7844fbd5b7b6138ad0c6bf7b1bafd8",
+      "candidate_tree": "0bdd6133f2224b25bce5668e15021fa1353accba",
+      "patch": "evidence/wave10/candidate-patches/wave10/r3-candidate.patch",
+      "sha256": "3e0e1b9d2809221a677f2cac9bf3aed677bc17e679013dc738769cf4f470c21b",
+      "reconstruction": "Apply this exact binary diff to the named public base using an existing authorized checkout; original candidate IDs and logs remain unchanged."
+    },
+    {
+      "wave": "wave10",
+      "metadata": "r4-candidate.json",
+      "base_commit": "f575ecefda7844fbd5b7b6138ad0c6bf7b1bafd8",
+      "candidate_tree": "51c6d53eb2a815257b7eab4bffa800fb54d8a2a2",
+      "reachable_commit": "6b5fdf62f046ec158b8c3378d65add06faebd591",
+      "reconstruction": "The exact tree is already reachable from this published branch history; no duplicate patch is needed."
+    }
+  ],
+  "artifacts": {
+    "evidence/wave10/qualification/wave10-full-r0-collection/collection/identity-controller.json": {
+      "sha256": "0303e2327a9fcfdacd052085896e217c23a09843bdc205a4d1dc4fa2021ea775",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-full-r0-collection/collection/identity-controller.json"
+    },
+    "evidence/wave10/qualification/wave10-full-r0-collection/collection-result.json": {
+      "sha256": "e2e2306148b5ae36c203289b4ac9d4e70ac83bbfef2d117a74b03b7e26d89930",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-full-r0-collection/collection-result.json"
+    },
+    "evidence/wave10/qualification/wave10-full-r0-collection/collection.log": {
+      "sha256": "8062fe81fb033df342ebe5917153c9bcc7c632d4ec762db656c6206075f4ddf1",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-full-r0-collection/collection.log"
+    },
+    "evidence/wave10/qualification/wave10-full-r1/final-postflight.json": {
+      "sha256": "4b071c627c2e31899d6dc595f3b3e1d5a75925ffb4a509a98177c3802c3362e3",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-full-r1/final-postflight.json"
+    },
+    "evidence/wave10/qualification/wave10-full-r1/fixture-resource-preflight.json": {
+      "sha256": "98800d7dedea841bce4304c3d9e22a971648e00769c41ad27da174545b23a558",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-full-r1/fixture-resource-preflight.json"
+    },
+    "evidence/wave10/qualification/wave10-full-r1/full/identity-controller.json": {
+      "sha256": "652bf0814617fb7911796f95b53a3b37d2968a189aead8b99247eb41044e1700",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-full-r1/full/identity-controller.json"
+    },
+    "evidence/wave10/qualification/wave10-full-r1/full/identity-gw0.json": {
+      "sha256": "fdb47a44173cfe57a6aa842f4cd8ede062f2f496b6aa7e11b691efd635fb69b5",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-full-r1/full/identity-gw0.json"
+    },
+    "evidence/wave10/qualification/wave10-full-r1/full/identity-gw1.json": {
+      "sha256": "b862d92bbba01c7056ed79ff5e50524ed6a98306fd79521db74cb33f0403d42f",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-full-r1/full/identity-gw1.json"
+    },
+    "evidence/wave10/qualification/wave10-full-r1/full/identity-gw2.json": {
+      "sha256": "6f476f47cd345a6c00777fc114aa06180ecb2d845d70ff956cca41863f14d836",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-full-r1/full/identity-gw2.json"
+    },
+    "evidence/wave10/qualification/wave10-full-r1/full/identity-gw3.json": {
+      "sha256": "949f1f0dac59e91890f635d84074eb9e1cc39d66ec3eee14220c4964705a4c15",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-full-r1/full/identity-gw3.json"
+    },
+    "evidence/wave10/qualification/wave10-full-r1/full-result.json": {
+      "sha256": "09ce5f058337705a91d416ab4e422b8433a42d4730b8dc8f3c24b048737898f2",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-full-r1/full-result.json"
+    },
+    "evidence/wave10/qualification/wave10-full-r1/full.log": {
+      "sha256": "1de3aa144b517a0907d1e24651e565d192039f0104688fbb7496fa07223e88cd",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-full-r1/full.log"
+    },
+    "evidence/wave10/qualification/wave10-full-r1-collection/collection/identity-controller.json": {
+      "sha256": "652bf0814617fb7911796f95b53a3b37d2968a189aead8b99247eb41044e1700",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-full-r1-collection/collection/identity-controller.json"
+    },
+    "evidence/wave10/qualification/wave10-full-r1-collection/collection-result.json": {
+      "sha256": "ba0ed10cb29b017dbf8f9317d64e78ab93c4ff39b17e93a783e9350bbd854160",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-full-r1-collection/collection-result.json"
+    },
+    "evidence/wave10/qualification/wave10-full-r1-collection/collection.log": {
+      "sha256": "84edf8ab2eb4638223e20261d77087f48b9fbb0537b1a4727b6e22f856af3881",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-full-r1-collection/collection.log"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/authored-two-five/capture.json": {
+      "sha256": "a06f896e41ecd797a17e869919db2639ba11a73ffcd2295717e47eaffa9e10fd",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/authored-two-five/capture.json"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/authored-two-five/command.json": {
+      "sha256": "52e439cac24511096120b030ce49e1900c714ba273e4876caca24736d259d68a",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/authored-two-five/command.json"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/authored-two-five/stderr.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/authored-two-five/stderr.log"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/authored-two-five/stdout.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/authored-two-five/stdout.log"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/authored-two-five-result.json": {
+      "sha256": "208abbc7132c63c64e24bc050bcc29a03f70607a726bbf3c45b9e51d8dce932b",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/authored-two-five-result.json"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/authored-two-five.stderr.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/authored-two-five.stderr.log"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/authored-two-five.stdout.log": {
+      "sha256": "0cdd1b53e50778a4396fb6f807242d87d07990a0963fdc2e0c76e8e27766420d",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/authored-two-five.stdout.log"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/budget-six/capture.json": {
+      "sha256": "c747f8bff945ae8c8756915f5d27761b1b51df0f17476060207d601b10cc2563",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/budget-six/capture.json"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/budget-six/command.json": {
+      "sha256": "cac008349c51a73ae70cdf7ed46975b0e17d08230367391411753aeeaa931489",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/budget-six/command.json"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/budget-six/stderr.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/budget-six/stderr.log"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/budget-six/stdout.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/budget-six/stdout.log"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/budget-six-result.json": {
+      "sha256": "6fb9583b280cac63f341819373c163b05b1e36e7078be97d7d079ab52f88af98",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/budget-six-result.json"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/budget-six.stderr.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/budget-six.stderr.log"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/budget-six.stdout.log": {
+      "sha256": "3b933eda7f2967dd8eda40db7a645164aea986f10ebeb69c575c6793c6695461",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/budget-six.stdout.log"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/death-at-lifespan/capture.json": {
+      "sha256": "4a9f5b8e7940877ebb5692307da310a422b57f32e14a16041daebfc8d393445a",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/death-at-lifespan/capture.json"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/death-at-lifespan/command.json": {
+      "sha256": "069511054181939a84a947deead8abea1fdb557f3b8b580020d1b93222b0ebd5",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/death-at-lifespan/command.json"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/death-at-lifespan/stderr.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/death-at-lifespan/stderr.log"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/death-at-lifespan/stdout.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/death-at-lifespan/stdout.log"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/death-at-lifespan-result.json": {
+      "sha256": "d62250c6b24a8cd3db4c5ead4c71d3c5c13f726639e08c2eb9aab94f3a446461",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/death-at-lifespan-result.json"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/death-at-lifespan.stderr.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/death-at-lifespan.stderr.log"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/death-at-lifespan.stdout.log": {
+      "sha256": "a2433596f154110670f7cdfdcd9eb6ac4190f41d9e72bd72b29ed297fde8a20d",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/death-at-lifespan.stdout.log"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/environment.json": {
+      "sha256": "092ca8c29cfb15a4d07ae4848b48743dc407ee5632aadbdd2d92e752bd16f51f",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/environment.json"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/healthy-retirement/capture.json": {
+      "sha256": "bcdac048a5bf729815a2ca22db2f7eedcfddde83f8f05e92a906f432f7ac69d8",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/healthy-retirement/capture.json"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/healthy-retirement/command.json": {
+      "sha256": "e693b2e52c3e6f54c37b0699f6344db05d7f70b5b5e455de942c3afcf5a4ed3d",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/healthy-retirement/command.json"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/healthy-retirement/stderr.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/healthy-retirement/stderr.log"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/healthy-retirement/stdout.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/healthy-retirement/stdout.log"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/healthy-retirement-result.json": {
+      "sha256": "513bc9a5edf01276b698f2d6a60535e6fa3eff0c1d4d35079b51e13cb347dc5a",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/healthy-retirement-result.json"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/healthy-retirement.stderr.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/healthy-retirement.stderr.log"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/healthy-retirement.stdout.log": {
+      "sha256": "c5afcc3e8da7cc83b1ababb8f34124adafdda415c6d25f086ea02c1f764b0e44",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/healthy-retirement.stdout.log"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/passive-two-five/capture.json": {
+      "sha256": "0361212cecf7f47c05140310d8fb367b67ff76a904484704473e7a187ac02091",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/passive-two-five/capture.json"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/passive-two-five/command.json": {
+      "sha256": "8417ac9e192e294a6ab9a65e0163b4d21aa5845d86017df6308355982f71dfb6",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/passive-two-five/command.json"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/passive-two-five/stderr.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/passive-two-five/stderr.log"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/passive-two-five/stdout.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/passive-two-five/stdout.log"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/passive-two-five-result.json": {
+      "sha256": "f753b1f882dc2a1e7c35424818ea0a2fd6ed264d71a38e24034938ff37a826f8",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/passive-two-five-result.json"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/passive-two-five.stderr.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/passive-two-five.stderr.log"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/passive-two-five.stdout.log": {
+      "sha256": "c6de8e4ef12104513dd8aba3f304ea12ae48df702e0ea081bfb91473b4aaf13e",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/passive-two-five.stdout.log"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/postflight.json": {
+      "sha256": "544d317ea2641d2fd4fd84dcf6e4606f53f832131e2d7c29d06fb0fb1aa973ce",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/postflight.json"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/preflight.json": {
+      "sha256": "40f9979d2dc51228e3373fb4bc6c3de0cc3723b5bd59411f2bf9ad591e6b8b49",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/preflight.json"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/two-episodes-reset/capture.json": {
+      "sha256": "2a6b479b5a2d914d4355c08955b5c6601cf8a7ea3e2dd904f23f69f89fa7c2ba",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/two-episodes-reset/capture.json"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/two-episodes-reset/command.json": {
+      "sha256": "4bc5f89d1e95362f114f3af5a0b360d274b2ca006d45e443114c8f58b0abc54a",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/two-episodes-reset/command.json"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/two-episodes-reset/stderr.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/two-episodes-reset/stderr.log"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/two-episodes-reset/stdout.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/two-episodes-reset/stdout.log"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/two-episodes-reset-result.json": {
+      "sha256": "ec518ffd8dda5642c9a0173939b5972870e9b74c41075d7ee6ab58e63bdf7e9e",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/two-episodes-reset-result.json"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/two-episodes-reset.stderr.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/two-episodes-reset.stderr.log"
+    },
+    "evidence/wave10/qualification/wave10-native-r0/two-episodes-reset.stdout.log": {
+      "sha256": "67316fd79b84972cd8086a67270d28258f0593b50900d441443263e37103ade8",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/two-episodes-reset.stdout.log"
+    },
+    "evidence/wave10/qualification/wave10-r0-collection/collection/identity-controller.json": {
+      "sha256": "22414e30bb22227670752ffec5fc62e51a207cc7e89343c34f4f9b4b31d122a6",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r0-collection/collection/identity-controller.json"
+    },
+    "evidence/wave10/qualification/wave10-r0-collection/collection-result.json": {
+      "sha256": "20d903ba0eb6874caea6f906bbbc185d1a638f69fec0ac81fd9a1d6338ae16ee",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r0-collection/collection-result.json"
+    },
+    "evidence/wave10/qualification/wave10-r0-collection/collection.log": {
+      "sha256": "15dadc4b270eb66de874b5cbe2bbb7e490a561e9687a7ebd2db14be1f9fb1d48",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r0-collection/collection.log"
+    },
+    "evidence/wave10/qualification/wave10-r0-narrow/narrow/failure-controller-62e29774551d56cf.json": {
+      "sha256": "2c60c30474be87baa95a476ba879c03c9545c2e3678fdef8705cd45e1bf7c12c",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r0-narrow/narrow/failure-controller-62e29774551d56cf.json"
+    },
+    "evidence/wave10/qualification/wave10-r0-narrow/narrow/failure-controller-6aeec7363e3a9025.json": {
+      "sha256": "3ca0cdc5d8a527713fd50f5280f22b8e27aec11a4a36ad1cdd82dca61ee03ad9",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r0-narrow/narrow/failure-controller-6aeec7363e3a9025.json"
+    },
+    "evidence/wave10/qualification/wave10-r0-narrow/narrow/failure-gw0-62e29774551d56cf.json": {
+      "sha256": "1a5ce78ac8bccb5125b004fada9ca496b712611535624e4ed6b621e565a6220a",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r0-narrow/narrow/failure-gw0-62e29774551d56cf.json"
+    },
+    "evidence/wave10/qualification/wave10-r0-narrow/narrow/failure-gw1-6aeec7363e3a9025.json": {
+      "sha256": "e7bff93f02baf528883d3511272cac8ae657d4f02f39c04813a6019212c71178",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r0-narrow/narrow/failure-gw1-6aeec7363e3a9025.json"
+    },
+    "evidence/wave10/qualification/wave10-r0-narrow/narrow/identity-controller.json": {
+      "sha256": "22414e30bb22227670752ffec5fc62e51a207cc7e89343c34f4f9b4b31d122a6",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r0-narrow/narrow/identity-controller.json"
+    },
+    "evidence/wave10/qualification/wave10-r0-narrow/narrow/identity-gw0.json": {
+      "sha256": "e997e1cfd4b914eedce386307ce7dfcd6430ee8063ee1e7308f35286a197234b",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r0-narrow/narrow/identity-gw0.json"
+    },
+    "evidence/wave10/qualification/wave10-r0-narrow/narrow/identity-gw1.json": {
+      "sha256": "cb7c22cd750135fa6a567cf3a5f4eafa89d335298fe3eb416a7351373d0f2cae",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r0-narrow/narrow/identity-gw1.json"
+    },
+    "evidence/wave10/qualification/wave10-r0-narrow/narrow-result.json": {
+      "sha256": "dd4aeb57b0da1eaaeca885b87106f6d7cc231da5e78753306ed2dd3ffbf24748",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r0-narrow/narrow-result.json"
+    },
+    "evidence/wave10/qualification/wave10-r0-narrow/narrow.log": {
+      "sha256": "9aecdf91fb0896e85404eeeab660640b7ea51d478b55e4c1ccdc5314e8b93109",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r0-narrow/narrow.log"
+    },
+    "evidence/wave10/qualification/wave10-r0-test-style/black-test-result.json": {
+      "sha256": "9bb31ca06bdc1986062ede640cf2cb7f2f7740e88b10056860eb6006a5fad84e",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r0-test-style/black-test-result.json"
+    },
+    "evidence/wave10/qualification/wave10-r0-test-style/black-test.log": {
+      "sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r0-test-style/black-test.log"
+    },
+    "evidence/wave10/qualification/wave10-r0-test-style/ruff-test-result.json": {
+      "sha256": "049abadb0f8bf0333fde3ee489594d71bdbda771a6da06743782fe0c7f8f5ad1",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r0-test-style/ruff-test-result.json"
+    },
+    "evidence/wave10/qualification/wave10-r0-test-style/ruff-test.log": {
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r0-test-style/ruff-test.log"
+    },
+    "evidence/wave10/qualification/wave10-r1-collection/collection/identity-controller.json": {
+      "sha256": "3879f2b910265623a891a5ed576cb83921512267aa11d61d49e0a547930fd5fd",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r1-collection/collection/identity-controller.json"
+    },
+    "evidence/wave10/qualification/wave10-r1-collection/collection-result.json": {
+      "sha256": "35aac76feff03b0a1c24e7cedd9540f95ea7461acc3992d3d4b28446b516f182",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r1-collection/collection-result.json"
+    },
+    "evidence/wave10/qualification/wave10-r1-collection/collection.log": {
+      "sha256": "3ff8b47d1d08043b7e7b5e5811d3c2f294900d9cc2228169ea1f8ae77d4e844b",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r1-collection/collection.log"
+    },
+    "evidence/wave10/qualification/wave10-r1-narrow/causal-red-custody.json": {
+      "sha256": "4ffe5a5b52c4f33a2987ab62e1ebb3c82efa51f0d3de57bb7e7ac3baecea90cf",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r1-narrow/causal-red-custody.json"
+    },
+    "evidence/wave10/qualification/wave10-r1-narrow/narrow/failure-controller-62e29774551d56cf.json": {
+      "sha256": "00e537a085b3864e3e317445bd1019fb131f35d849d16ed07fc6fdb473e7b317",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r1-narrow/narrow/failure-controller-62e29774551d56cf.json"
+    },
+    "evidence/wave10/qualification/wave10-r1-narrow/narrow/failure-controller-6aeec7363e3a9025.json": {
+      "sha256": "c32234985eb496bba3ad9f6f65581120349d401e068d8929588229bd08c05fb0",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r1-narrow/narrow/failure-controller-6aeec7363e3a9025.json"
+    },
+    "evidence/wave10/qualification/wave10-r1-narrow/narrow/failure-gw0-62e29774551d56cf.json": {
+      "sha256": "cb66adff4eaa06acca7d8a0742226872fcdf70986344e673edc98790a4d8033f",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r1-narrow/narrow/failure-gw0-62e29774551d56cf.json"
+    },
+    "evidence/wave10/qualification/wave10-r1-narrow/narrow/failure-gw1-6aeec7363e3a9025.json": {
+      "sha256": "5cc61d442de02e1fd8715ed58fdd07192caf41d233a98113769be63cdef39bab",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r1-narrow/narrow/failure-gw1-6aeec7363e3a9025.json"
+    },
+    "evidence/wave10/qualification/wave10-r1-narrow/narrow/identity-controller.json": {
+      "sha256": "3879f2b910265623a891a5ed576cb83921512267aa11d61d49e0a547930fd5fd",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r1-narrow/narrow/identity-controller.json"
+    },
+    "evidence/wave10/qualification/wave10-r1-narrow/narrow/identity-gw0.json": {
+      "sha256": "174fd4693bd2ece37549255f44ffc5a1e4730dfc316f2e522d329aba257d20ac",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r1-narrow/narrow/identity-gw0.json"
+    },
+    "evidence/wave10/qualification/wave10-r1-narrow/narrow/identity-gw1.json": {
+      "sha256": "72c4790e13b0e858c798d5cc8910db654d38f8251d69c3ebb412ac6c04588ae4",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r1-narrow/narrow/identity-gw1.json"
+    },
+    "evidence/wave10/qualification/wave10-r1-narrow/narrow-result.json": {
+      "sha256": "b3368da9bbe5f41ef3b4388c39c8dfde4fee5e65359c4ac192eb8f53cecbfe2c",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r1-narrow/narrow-result.json"
+    },
+    "evidence/wave10/qualification/wave10-r1-narrow/narrow.log": {
+      "sha256": "91fc51653147ce5380c6f278b8ede29647102b0b86bf37d19b974388e6b3dc38",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r1-narrow/narrow.log"
+    },
+    "evidence/wave10/qualification/wave10-r1-test-style/black-test-result.json": {
+      "sha256": "72187cb0244e9ff2704179a9b3ce47326143ca1c2543c355ebcd5b1e13c1c510",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r1-test-style/black-test-result.json"
+    },
+    "evidence/wave10/qualification/wave10-r1-test-style/black-test.log": {
+      "sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r1-test-style/black-test.log"
+    },
+    "evidence/wave10/qualification/wave10-r1-test-style/ruff-test-result.json": {
+      "sha256": "c159c18104f41b327b97cb63fdd8a44d506cd496c6b45031e3b13fbdaec50965",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r1-test-style/ruff-test-result.json"
+    },
+    "evidence/wave10/qualification/wave10-r1-test-style/ruff-test.log": {
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r1-test-style/ruff-test.log"
+    },
+    "evidence/wave10/qualification/wave10-r2-collection/collection/identity-controller.json": {
+      "sha256": "2745798edae25f3a22e7919d24f8092f27a6269b0157e4e33d9d4bdb60ace959",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r2-collection/collection/identity-controller.json"
+    },
+    "evidence/wave10/qualification/wave10-r2-collection/collection-result.json": {
+      "sha256": "82a9afef92933e1b4ca3e6020c4a64fb4c6e82e5c1eb462ec66928c72e80e4bf",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r2-collection/collection-result.json"
+    },
+    "evidence/wave10/qualification/wave10-r2-collection/collection.log": {
+      "sha256": "790b661f7f007a1d27a70e6d092a1ca565e1b7022fc367d321822e3bc62cf7dc",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r2-collection/collection.log"
+    },
+    "evidence/wave10/qualification/wave10-r2-guards/black-result.json": {
+      "sha256": "3177dc244189e8ab3cfab97ade7d6ebc9f86f50f43eceb1a65d8b0bb0d4385d4",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r2-guards/black-result.json"
+    },
+    "evidence/wave10/qualification/wave10-r2-guards/black.log": {
+      "sha256": "25a65dfa270ef66739a20134c959ca4d8efc9b6b52b57a7ad8b5b6220c782b1c",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r2-guards/black.log"
+    },
+    "evidence/wave10/qualification/wave10-r2-guards/compiler-cli-result.json": {
+      "sha256": "beb2be90364763856902ae40e3553e3d457de47c3f03bff5a3cb074816d761f8",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r2-guards/compiler-cli-result.json"
+    },
+    "evidence/wave10/qualification/wave10-r2-guards/compiler-cli.log": {
+      "sha256": "ffba58bb957a51666f4d410c741bb2bec134359a43d38c26982c5a49854ad6bf",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r2-guards/compiler-cli.log"
+    },
+    "evidence/wave10/qualification/wave10-r2-guards/expression-doc-result.json": {
+      "sha256": "5674f04c7a677a1aa5c2c5826312dfef90a949f3fe01ba6f48748a31f465afc9",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r2-guards/expression-doc-result.json"
+    },
+    "evidence/wave10/qualification/wave10-r2-guards/expression-doc.log": {
+      "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r2-guards/expression-doc.log"
+    },
+    "evidence/wave10/qualification/wave10-r2-guards/mypy-result.json": {
+      "sha256": "5d338f1cd3391a2bf12d3a6738fd06e4dd490f9cfab0727ff3e448c285d68893",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r2-guards/mypy-result.json"
+    },
+    "evidence/wave10/qualification/wave10-r2-guards/mypy.log": {
+      "sha256": "ff00ee3af8cb1136d9c90bc40bc8d1a55a5fe37ae62fe6b99844ef88d00b2319",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r2-guards/mypy.log"
+    },
+    "evidence/wave10/qualification/wave10-r2-guards/no-defaults-result.json": {
+      "sha256": "6991634bff56699cbdf00a3fea185864002db9be546f3cbe6f4c586418f95cf0",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r2-guards/no-defaults-result.json"
+    },
+    "evidence/wave10/qualification/wave10-r2-guards/no-defaults.log": {
+      "sha256": "598fbd71dd7a34f46c3f9cb59d583a08280d89786ee55281809c876e60b2f71e",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r2-guards/no-defaults.log"
+    },
+    "evidence/wave10/qualification/wave10-r2-guards/ruff-result.json": {
+      "sha256": "d5c426c4fdcc42806b6992d9f05b658aab16dcf011f5041dcd9f938ce7dc260a",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r2-guards/ruff-result.json"
+    },
+    "evidence/wave10/qualification/wave10-r2-guards/ruff.log": {
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r2-guards/ruff.log"
+    },
+    "evidence/wave10/qualification/wave10-r2-narrow/narrow/identity-controller.json": {
+      "sha256": "2745798edae25f3a22e7919d24f8092f27a6269b0157e4e33d9d4bdb60ace959",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r2-narrow/narrow/identity-controller.json"
+    },
+    "evidence/wave10/qualification/wave10-r2-narrow/narrow/identity-gw0.json": {
+      "sha256": "8f6064664c114d022ef881a870dfd89f20f3674d78c795c69b99026c9fee22ee",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r2-narrow/narrow/identity-gw0.json"
+    },
+    "evidence/wave10/qualification/wave10-r2-narrow/narrow/identity-gw1.json": {
+      "sha256": "827a89ec9f6c0bf750335c2b1bd56390753f9786c5b9916d1cc729730de26b3e",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r2-narrow/narrow/identity-gw1.json"
+    },
+    "evidence/wave10/qualification/wave10-r2-narrow/narrow-custody.json": {
+      "sha256": "8f3bffaf139482ccaf7585d0eb11ef6ea43845c09efe76497d0dfb6c5113e7c6",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r2-narrow/narrow-custody.json"
+    },
+    "evidence/wave10/qualification/wave10-r2-narrow/narrow-result.json": {
+      "sha256": "9376dfc31104cdcf87a5deeefa1c9c6e46eb041e3d5bbf138c3e137771533ff3",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r2-narrow/narrow-result.json"
+    },
+    "evidence/wave10/qualification/wave10-r2-narrow/narrow.log": {
+      "sha256": "db31a7e70844eb01cd8056d371eadda0d023e2ddea5c4ccbc0581cb5ff9e7481",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r2-narrow/narrow.log"
+    },
+    "evidence/wave10/qualification/wave10-r2-owned/owned/failure-controller-1997e883bbd1aae1.json": {
+      "sha256": "4463b278b0432f7236b0670abb1229533ec2efe680b2bf277ac3307945da6c1c",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r2-owned/owned/failure-controller-1997e883bbd1aae1.json"
+    },
+    "evidence/wave10/qualification/wave10-r2-owned/owned/failure-gw0-1997e883bbd1aae1.json": {
+      "sha256": "bf69f1e6eba6d74d6c1d4862a8fed0ab4ae89f6d38967ca9749f0c180138563c",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r2-owned/owned/failure-gw0-1997e883bbd1aae1.json"
+    },
+    "evidence/wave10/qualification/wave10-r2-owned/owned/identity-controller.json": {
+      "sha256": "2745798edae25f3a22e7919d24f8092f27a6269b0157e4e33d9d4bdb60ace959",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r2-owned/owned/identity-controller.json"
+    },
+    "evidence/wave10/qualification/wave10-r2-owned/owned/identity-gw0.json": {
+      "sha256": "8f6064664c114d022ef881a870dfd89f20f3674d78c795c69b99026c9fee22ee",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r2-owned/owned/identity-gw0.json"
+    },
+    "evidence/wave10/qualification/wave10-r2-owned/owned/identity-gw1.json": {
+      "sha256": "827a89ec9f6c0bf750335c2b1bd56390753f9786c5b9916d1cc729730de26b3e",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r2-owned/owned/identity-gw1.json"
+    },
+    "evidence/wave10/qualification/wave10-r2-owned/owned/identity-gw2.json": {
+      "sha256": "29d4e58ea90fda0d05a7a08bd8660f54b118707e4a6cda844da9b8881aa6089c",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r2-owned/owned/identity-gw2.json"
+    },
+    "evidence/wave10/qualification/wave10-r2-owned/owned/identity-gw3.json": {
+      "sha256": "31835cc091ef26294329a9a8387fbeb424789f94c43778039ab9fb4973b75aa8",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r2-owned/owned/identity-gw3.json"
+    },
+    "evidence/wave10/qualification/wave10-r2-owned/owned-result.json": {
+      "sha256": "6dcec79c6ad33ce65a4700f7cfdb58f4936cf1d21860f463fb82d8b6d6e3be27",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r2-owned/owned-result.json"
+    },
+    "evidence/wave10/qualification/wave10-r2-owned/owned.log": {
+      "sha256": "fa0b5358dcd35383c6f75bf392a7a71e6c92e835f663d2bc4252ccae12ed763a",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r2-owned/owned.log"
+    },
+    "evidence/wave10/qualification/wave10-r3-affected/affected/failure-controller-1cb5a2516389ad29.json": {
+      "sha256": "f1886b1e70234cd96c3383266ac60ca490bc7543fa3c0871c30a762f2237c6d9",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r3-affected/affected/failure-controller-1cb5a2516389ad29.json"
+    },
+    "evidence/wave10/qualification/wave10-r3-affected/affected/failure-controller-7627fbdd8a402729.json": {
+      "sha256": "13005c69e448b7a14dff18a43037a2b4edcab2b274fec3a5340b82a6de8f59e3",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r3-affected/affected/failure-controller-7627fbdd8a402729.json"
+    },
+    "evidence/wave10/qualification/wave10-r3-affected/affected/failure-controller-866d89cf2e1d34af.json": {
+      "sha256": "771584f4d2d57b743d94927b5f089c1d9f5e39152e1a5356bdfa42374c19277f",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r3-affected/affected/failure-controller-866d89cf2e1d34af.json"
+    },
+    "evidence/wave10/qualification/wave10-r3-affected/affected/failure-controller-952481598c39a291.json": {
+      "sha256": "827cc4e64f588405a6d0bc2defa5e0ae31d7e59cdb56a048f44d46a1fbfc30e2",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r3-affected/affected/failure-controller-952481598c39a291.json"
+    },
+    "evidence/wave10/qualification/wave10-r3-affected/affected/failure-gw2-1cb5a2516389ad29.json": {
+      "sha256": "23e902f9b5e88ddc6cff136e5b90c6b89e7039283f5a1da55f6ad7790efd8812",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r3-affected/affected/failure-gw2-1cb5a2516389ad29.json"
+    },
+    "evidence/wave10/qualification/wave10-r3-affected/affected/failure-gw2-7627fbdd8a402729.json": {
+      "sha256": "0354e5639542038f0b0fdab9c8ac33801890a0a2c2bbdcf15d4d701f7dc0c860",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r3-affected/affected/failure-gw2-7627fbdd8a402729.json"
+    },
+    "evidence/wave10/qualification/wave10-r3-affected/affected/failure-gw2-866d89cf2e1d34af.json": {
+      "sha256": "226af7257ffe5989a33ad703edcb37898f09194765591cbbc060583b8b29739f",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r3-affected/affected/failure-gw2-866d89cf2e1d34af.json"
+    },
+    "evidence/wave10/qualification/wave10-r3-affected/affected/failure-gw3-952481598c39a291.json": {
+      "sha256": "1238b645d0ab52cb239bc5e62ba2667718e333f9ef81e576da74e2df6f653587",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r3-affected/affected/failure-gw3-952481598c39a291.json"
+    },
+    "evidence/wave10/qualification/wave10-r3-affected/affected/identity-controller.json": {
+      "sha256": "0303e2327a9fcfdacd052085896e217c23a09843bdc205a4d1dc4fa2021ea775",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r3-affected/affected/identity-controller.json"
+    },
+    "evidence/wave10/qualification/wave10-r3-affected/affected/identity-gw0.json": {
+      "sha256": "cacdc8479d91ea8cc551d1fb755a5c552c48d574ef818e2fe9304ea8106a9752",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r3-affected/affected/identity-gw0.json"
+    },
+    "evidence/wave10/qualification/wave10-r3-affected/affected/identity-gw1.json": {
+      "sha256": "bd7bb09c9f9d6f31e2e80d35948f4eb3f959493d956e6b724be64f1ddc68472f",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r3-affected/affected/identity-gw1.json"
+    },
+    "evidence/wave10/qualification/wave10-r3-affected/affected/identity-gw2.json": {
+      "sha256": "f23f911d32febf4b9c3d6cd6f96f29c5cde1840323e14bf1a3e1f3c60189f720",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r3-affected/affected/identity-gw2.json"
+    },
+    "evidence/wave10/qualification/wave10-r3-affected/affected/identity-gw3.json": {
+      "sha256": "921789484e00a0f5a13f493c64754c82a27beb9c4c711f6ddbaa90d978ac1262",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r3-affected/affected/identity-gw3.json"
+    },
+    "evidence/wave10/qualification/wave10-r3-affected/affected-result.json": {
+      "sha256": "a450b038f0c9c1052e81f47045632b0b11f4231b097854ef12696b0b585be8b2",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r3-affected/affected-result.json"
+    },
+    "evidence/wave10/qualification/wave10-r3-affected/affected.log": {
+      "sha256": "e2f632b2e87f97ba215cb7a56439b593478d1de54ffa12cb97e2f614a8212efd",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r3-affected/affected.log"
+    },
+    "evidence/wave10/qualification/wave10-r3-affected/failed-custody.json": {
+      "sha256": "22613fc038f6d1d6110e8f0bb4c98c5e56adeaf4dcfcb7964b2239cf9901e5a2",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r3-affected/failed-custody.json"
+    },
+    "evidence/wave10/qualification/wave10-r3-affected-collection/affected-collection/identity-controller.json": {
+      "sha256": "0303e2327a9fcfdacd052085896e217c23a09843bdc205a4d1dc4fa2021ea775",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r3-affected-collection/affected-collection/identity-controller.json"
+    },
+    "evidence/wave10/qualification/wave10-r3-affected-collection/affected-collection-result.json": {
+      "sha256": "e03163ebfb17d3fa42b359bb74dc6b0674f09affa50261f9085fe79b40ff2fbf",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r3-affected-collection/affected-collection-result.json"
+    },
+    "evidence/wave10/qualification/wave10-r3-affected-collection/affected-collection.log": {
+      "sha256": "ba71766039ff5d7153b81a6051daa50c56a4d2e32a5dcf99d829046b3bc72412",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r3-affected-collection/affected-collection.log"
+    },
+    "evidence/wave10/qualification/wave10-r3-diagnostic/diagnostic/identity-controller.json": {
+      "sha256": "0303e2327a9fcfdacd052085896e217c23a09843bdc205a4d1dc4fa2021ea775",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r3-diagnostic/diagnostic/identity-controller.json"
+    },
+    "evidence/wave10/qualification/wave10-r3-diagnostic/diagnostic-result.json": {
+      "sha256": "aa41a2bdb65911e6945278f04a027022ad21e8b893ef8201328a406a1fcce3ce",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r3-diagnostic/diagnostic-result.json"
+    },
+    "evidence/wave10/qualification/wave10-r3-diagnostic/diagnostic.log": {
+      "sha256": "cc8dfa68206a00ea8f08eb2d1b2634c28f2d59e5d1b12c2a3ca284e5c099b887",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r3-diagnostic/diagnostic.log"
+    },
+    "evidence/wave10/qualification/wave10-r3-independent/independent/identity-controller.json": {
+      "sha256": "0303e2327a9fcfdacd052085896e217c23a09843bdc205a4d1dc4fa2021ea775",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r3-independent/independent/identity-controller.json"
+    },
+    "evidence/wave10/qualification/wave10-r3-independent/independent/identity-gw0.json": {
+      "sha256": "cacdc8479d91ea8cc551d1fb755a5c552c48d574ef818e2fe9304ea8106a9752",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r3-independent/independent/identity-gw0.json"
+    },
+    "evidence/wave10/qualification/wave10-r3-independent/independent/identity-gw1.json": {
+      "sha256": "bd7bb09c9f9d6f31e2e80d35948f4eb3f959493d956e6b724be64f1ddc68472f",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r3-independent/independent/identity-gw1.json"
+    },
+    "evidence/wave10/qualification/wave10-r3-independent/independent-custody.json": {
+      "sha256": "e8384d1fe69c0cb54bd063a96e962d187fd67e15f05af53d0e541e1c86f369ef",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r3-independent/independent-custody.json"
+    },
+    "evidence/wave10/qualification/wave10-r3-independent/independent-result.json": {
+      "sha256": "1605388ad38cdc2296966f02fa2dac0dd8df282bdafc678641fc237027027914",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r3-independent/independent-result.json"
+    },
+    "evidence/wave10/qualification/wave10-r3-independent/independent.log": {
+      "sha256": "2d5f3a18369c65a0912ea639cf627090ff8ae737232abe7a42b4ff4bbcd35ee0",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r3-independent/independent.log"
+    },
+    "evidence/wave10/qualification/wave10-r3-test-style/black-test-result.json": {
+      "sha256": "8c86017253e1f28dff12b2e8f31a36add4be736bdd9639523d14bc37469e9ede",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r3-test-style/black-test-result.json"
+    },
+    "evidence/wave10/qualification/wave10-r3-test-style/black-test.log": {
+      "sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r3-test-style/black-test.log"
+    },
+    "evidence/wave10/qualification/wave10-r3-test-style/ruff-test-result.json": {
+      "sha256": "78774048a063ca04322b3bea119a3b67edb700d634c29697b27d6e7c68f7f5bb",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r3-test-style/ruff-test-result.json"
+    },
+    "evidence/wave10/qualification/wave10-r3-test-style/ruff-test.log": {
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r3-test-style/ruff-test.log"
+    },
+    "evidence/wave10/qualification/wave10-r4-consumer-collection/consumer-collection/identity-controller.json": {
+      "sha256": "652bf0814617fb7911796f95b53a3b37d2968a189aead8b99247eb41044e1700",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-consumer-collection/consumer-collection/identity-controller.json"
+    },
+    "evidence/wave10/qualification/wave10-r4-consumer-collection/consumer-collection-result.json": {
+      "sha256": "add2d37d2cadcb363befdd81c7ffacff8be63eed08bee98de9260187595d7ca4",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-consumer-collection/consumer-collection-result.json"
+    },
+    "evidence/wave10/qualification/wave10-r4-consumer-collection/consumer-collection.log": {
+      "sha256": "cf8885d403f5416895d500073fdcac3126e603f59d76c8047ed8efe4ef94905c",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-consumer-collection/consumer-collection.log"
+    },
+    "evidence/wave10/qualification/wave10-r4-consumer-four/consumer-four/identity-controller.json": {
+      "sha256": "652bf0814617fb7911796f95b53a3b37d2968a189aead8b99247eb41044e1700",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-consumer-four/consumer-four/identity-controller.json"
+    },
+    "evidence/wave10/qualification/wave10-r4-consumer-four/consumer-four/identity-gw0.json": {
+      "sha256": "fdb47a44173cfe57a6aa842f4cd8ede062f2f496b6aa7e11b691efd635fb69b5",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-consumer-four/consumer-four/identity-gw0.json"
+    },
+    "evidence/wave10/qualification/wave10-r4-consumer-four/consumer-four/identity-gw1.json": {
+      "sha256": "b862d92bbba01c7056ed79ff5e50524ed6a98306fd79521db74cb33f0403d42f",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-consumer-four/consumer-four/identity-gw1.json"
+    },
+    "evidence/wave10/qualification/wave10-r4-consumer-four/consumer-four-result.json": {
+      "sha256": "eb1a0673ec13bb6a3d3fcde80c07b787a2a9e8bbc865c7d325a394c0628270b1",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-consumer-four/consumer-four-result.json"
+    },
+    "evidence/wave10/qualification/wave10-r4-consumer-four/consumer-four.log": {
+      "sha256": "1592c38628d4dfbcf72014ed60694b4c4d56f721008103c26b09bec61ff45420",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-consumer-four/consumer-four.log"
+    },
+    "evidence/wave10/qualification/wave10-r4-consumer-owners/consumer-owners/identity-controller.json": {
+      "sha256": "652bf0814617fb7911796f95b53a3b37d2968a189aead8b99247eb41044e1700",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-consumer-owners/consumer-owners/identity-controller.json"
+    },
+    "evidence/wave10/qualification/wave10-r4-consumer-owners/consumer-owners/identity-gw0.json": {
+      "sha256": "fdb47a44173cfe57a6aa842f4cd8ede062f2f496b6aa7e11b691efd635fb69b5",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-consumer-owners/consumer-owners/identity-gw0.json"
+    },
+    "evidence/wave10/qualification/wave10-r4-consumer-owners/consumer-owners/identity-gw1.json": {
+      "sha256": "b862d92bbba01c7056ed79ff5e50524ed6a98306fd79521db74cb33f0403d42f",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-consumer-owners/consumer-owners/identity-gw1.json"
+    },
+    "evidence/wave10/qualification/wave10-r4-consumer-owners/consumer-owners-result.json": {
+      "sha256": "7fb6f4aa2bf822fca59f23423a938bded33115cd5dfa9c147e08b9d4f24d6f54",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-consumer-owners/consumer-owners-result.json"
+    },
+    "evidence/wave10/qualification/wave10-r4-consumer-owners/consumer-owners.log": {
+      "sha256": "b69d222261c4d30f2d5ba8eeda4c05f07ce8a328f4617250c3a5f75cd8d1b36e",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-consumer-owners/consumer-owners.log"
+    },
+    "evidence/wave10/qualification/wave10-r4-consumer-style/black-consumers-result.json": {
+      "sha256": "b8b247117714033e772ee4686e00b637f73f6c87b5bb69ce13d0add0c24e17fa",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-consumer-style/black-consumers-result.json"
+    },
+    "evidence/wave10/qualification/wave10-r4-consumer-style/black-consumers.log": {
+      "sha256": "b9cf511501d306d2bd8355ccb165c8ddc0a6fdd62d7c72c4a7b1795cf8934c8c",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-consumer-style/black-consumers.log"
+    },
+    "evidence/wave10/qualification/wave10-r4-consumer-style/ruff-consumers-result.json": {
+      "sha256": "121299a9764dc4eb62dddec070e2ef10e6fa09e099aa81f8fcd9c21860a7cad3",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-consumer-style/ruff-consumers-result.json"
+    },
+    "evidence/wave10/qualification/wave10-r4-consumer-style/ruff-consumers.log": {
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-consumer-style/ruff-consumers.log"
+    },
+    "evidence/wave10/qualification/wave10-r4-guards/black-result.json": {
+      "sha256": "7674ae17f12e2c0d50d207594515582b1e592d985900e52217fd7006b2fea2c8",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-guards/black-result.json"
+    },
+    "evidence/wave10/qualification/wave10-r4-guards/black.log": {
+      "sha256": "25a65dfa270ef66739a20134c959ca4d8efc9b6b52b57a7ad8b5b6220c782b1c",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-guards/black.log"
+    },
+    "evidence/wave10/qualification/wave10-r4-guards/compiler-cli-result.json": {
+      "sha256": "fbe612f18fc369a5189dbacedd240e12434c09b7f254016f75fcb96dc2a9896c",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-guards/compiler-cli-result.json"
+    },
+    "evidence/wave10/qualification/wave10-r4-guards/compiler-cli.log": {
+      "sha256": "1aab5fa8e2a21afcc987e34dcdfdac859cc6873862f9f5edda470d86f289fb84",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-guards/compiler-cli.log"
+    },
+    "evidence/wave10/qualification/wave10-r4-guards/expression-doc-result.json": {
+      "sha256": "6192582e91aebf03a1632399c96c2032279d8a4da79bf9fb064f15ee577ae846",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-guards/expression-doc-result.json"
+    },
+    "evidence/wave10/qualification/wave10-r4-guards/expression-doc.log": {
+      "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-guards/expression-doc.log"
+    },
+    "evidence/wave10/qualification/wave10-r4-guards/mypy-result.json": {
+      "sha256": "b6f436eaa56cc1893881cfbb067b6d2da62d66f25f7f8dad8c2717fa94038601",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-guards/mypy-result.json"
+    },
+    "evidence/wave10/qualification/wave10-r4-guards/mypy.log": {
+      "sha256": "ff00ee3af8cb1136d9c90bc40bc8d1a55a5fe37ae62fe6b99844ef88d00b2319",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-guards/mypy.log"
+    },
+    "evidence/wave10/qualification/wave10-r4-guards/no-defaults-result.json": {
+      "sha256": "75e7c46f3f182b56017e07d63745e80235dfb37003afc8253934b539a9103023",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-guards/no-defaults-result.json"
+    },
+    "evidence/wave10/qualification/wave10-r4-guards/no-defaults.log": {
+      "sha256": "598fbd71dd7a34f46c3f9cb59d583a08280d89786ee55281809c876e60b2f71e",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-guards/no-defaults.log"
+    },
+    "evidence/wave10/qualification/wave10-r4-guards/ruff-result.json": {
+      "sha256": "42755c594ae915c349f4c6cb16f13d89bfdf33cb28f8f997c78f22de3a15ec06",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-guards/ruff-result.json"
+    },
+    "evidence/wave10/qualification/wave10-r4-guards/ruff.log": {
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-guards/ruff.log"
+    },
+    "evidence/wave10/qualification/wave10-r4-independent-consumers/independent-consumers/identity-controller.json": {
+      "sha256": "652bf0814617fb7911796f95b53a3b37d2968a189aead8b99247eb41044e1700",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-independent-consumers/independent-consumers/identity-controller.json"
+    },
+    "evidence/wave10/qualification/wave10-r4-independent-consumers/independent-consumers/identity-gw0.json": {
+      "sha256": "fdb47a44173cfe57a6aa842f4cd8ede062f2f496b6aa7e11b691efd635fb69b5",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-independent-consumers/independent-consumers/identity-gw0.json"
+    },
+    "evidence/wave10/qualification/wave10-r4-independent-consumers/independent-consumers/identity-gw1.json": {
+      "sha256": "b862d92bbba01c7056ed79ff5e50524ed6a98306fd79521db74cb33f0403d42f",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-independent-consumers/independent-consumers/identity-gw1.json"
+    },
+    "evidence/wave10/qualification/wave10-r4-independent-consumers/independent-consumers-custody.json": {
+      "sha256": "1a42f39b03e0ed7adf16aa30c75ed75fb9418d42bd0ff20f7d7ccb76c312c629",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-independent-consumers/independent-consumers-custody.json"
+    },
+    "evidence/wave10/qualification/wave10-r4-independent-consumers/independent-consumers-result.json": {
+      "sha256": "ae7b635ad88e73775392fe7ff63ee445342a40079ff8f45dc45ba51d81351381",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-independent-consumers/independent-consumers-result.json"
+    },
+    "evidence/wave10/qualification/wave10-r4-independent-consumers/independent-consumers.log": {
+      "sha256": "b201e999002be79a02afdf0407bb32855fbe20cde182dfa10b09bb3cd89685d9",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-independent-consumers/independent-consumers.log"
+    },
+    "evidence/wave10/run_bac_packet_checks_locked.py.txt": {
+      "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py"
+    },
+    "evidence/wave10/bac_source_identity.py.txt": {
+      "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/bac_source_identity.py"
+    },
+    "evidence/wave10/run_wave10_native.py.txt": {
+      "sha256": "bf1c579f4796c78bf2da4d6915aaf73b1c7c87981414caf8bd9a766c70a22b90",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/run_wave10_native.py"
+    },
+    "evidence/wave10/r0-candidate.json": {
+      "sha256": "baa3a269a1cb5ee43441599aeabc4e0294001678be7be09bae97499577510c7f",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10/r0-candidate.json"
+    },
+    "evidence/wave10/r0-fixture-resource-preflight.json": {
+      "sha256": "4c17c5ff5b79266cbd529f23f971df628b26f37718d001819a7c26d9cffc7277",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10/r0-fixture-resource-preflight.json"
+    },
+    "evidence/wave10/r1-candidate.json": {
+      "sha256": "f6868c74e4d419b3d9471b1a2f97b41efdfcf3ef88e1e3b4bddf47ccfd7da0e8",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10/r1-candidate.json"
+    },
+    "evidence/wave10/r1-fixture-resource-preflight.json": {
+      "sha256": "06271aa41f9bcc65ccb8f56346fca3670a25502d167b5c808714af64d7d7d049",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10/r1-fixture-resource-preflight.json"
+    },
+    "evidence/wave10/r2-candidate.json": {
+      "sha256": "edf8b24c2d46b56d65af67f32f57cd8fdb50235071246dab6e0f26fb195a85ce",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10/r2-candidate.json"
+    },
+    "evidence/wave10/r2-fixture-resource-preflight.json": {
+      "sha256": "6f0a9a545fe5bd2d043758d54976560db1a4ef5ce71db6b9f2ec9a3f67d7c949",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10/r2-fixture-resource-preflight.json"
+    },
+    "evidence/wave10/r3-candidate.json": {
+      "sha256": "83c9b20654d85f90f732d9f5e4a7de2aed8bd25fec48f8cc141d03b0b292c5c8",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10/r3-candidate.json"
+    },
+    "evidence/wave10/r3-fixture-resource-preflight.json": {
+      "sha256": "3aa6c1ac5ca38dde4ca0635cfd587534d5ccfd6869cbf7b0080bc1be40b2e112",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10/r3-fixture-resource-preflight.json"
+    },
+    "evidence/wave10/r3-source-binding.json": {
+      "sha256": "6bf29961d1d825008be36c3d98165c72fa6b64c1063667d27ade25b29ec2c9a3",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10/r3-source-binding.json"
+    },
+    "evidence/wave10/r4-candidate.json": {
+      "sha256": "46ad49bad88b619829c560986549dfab203a984186346a4aea1576afdcae7afb",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10/r4-candidate.json"
+    },
+    "evidence/wave10/r4-fixture-resource-preflight.json": {
+      "sha256": "eae9daedf11fb2302df846ad95760573911dead2cce0a43d3a90ab09e60fc304",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10/r4-fixture-resource-preflight.json"
+    },
+    "package-reviews/T16-test-authoring.md": {
+      "sha256": "8a62727fe253417319e459b237fd5cb3a04a265b90ea26f924a445f8902c0f2e",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10-preparation/T16-test-authoring.md"
+    },
+    "package-reviews/T16-observer-fixture-repair-r1.md": {
+      "sha256": "4153ec6fc3bc2ea7a3367cf84cdad9a2d489600c02dc25cca16266e474dcc4b3",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10-preparation/T16-observer-fixture-repair-r1.md"
+    },
+    "package-reviews/T16-implementation.md": {
+      "sha256": "cc2ef77e15e832592aa650ee6ededd4d89402addd0c68bd64eb53f195e64cdcc",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10-preparation/T16-implementation.md"
+    },
+    "package-reviews/T16-independent-review-r2.md": {
+      "sha256": "fd0bb5508906a78d23003d32d0a49deb2eeaa9b77de82a100defca755cc839e0",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10-preparation/T16-independent-review-r2.md"
+    },
+    "package-reviews/T16-diagnostic-fixture-repair-r3.md": {
+      "sha256": "41ba5e0dbf53436f1a845e6e2ab24d01958fdb484871a05a2902b46b52646253",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10-preparation/T16-diagnostic-fixture-repair-r3.md"
+    },
+    "package-reviews/T16-independent-runtime-r3.md": {
+      "sha256": "8cae46c9e91b5c8991e055552fcfdc095edad75a2886c56a70a3cbc947193a20",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10-preparation/T16-independent-runtime-r3.md"
+    },
+    "package-reviews/T16-consumer-failure-audit.md": {
+      "sha256": "b97938842fef5bfb23a8d5e7a3186387e6e2a8e2d8f401b7e76eb72368fe0fca",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10-preparation/T16-consumer-failure-audit.md"
+    },
+    "package-reviews/T16-consumer-fixture-repair-r4.md": {
+      "sha256": "4508bf60301e93341ea5e98323399b1e46c8d3ce55bf6b173c73ab6140b3630e",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10-preparation/T16-consumer-fixture-repair-r4.md"
+    },
+    "package-reviews/T16-consumer-independent-review-r4.md": {
+      "sha256": "74ffa9742f4457799ab55932a518492935cc31265c6b2ea502b4eeed6e67e9a5",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10-preparation/T16-consumer-independent-review-r4.md"
+    },
+    "package-reviews/T16-consumer-independent-runtime-r4.md": {
+      "sha256": "aade954c8929b171397fa8f57701462299bbdbc031649d1507ae53ef73a5d930",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10-preparation/T16-consumer-independent-runtime-r4.md"
+    },
+    "package-reviews/T16-documentation-draft.md": {
+      "sha256": "b79b1ed360d0db4a7b4194cae06123ee37c7c73b06309b512c6861a8e28ff9d4",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10-preparation/T16-documentation-draft.md"
+    },
+    "package-reviews/T16-documentation-independent-review.md": {
+      "sha256": "8eea6cb11fd13a99ea969bc0453445e7ee1c13c720486aa573b548fa4b447b66",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10-preparation/T16-documentation-independent-review.md"
+    },
+    "package-reviews/T16-native-orchestration-review.md": {
+      "sha256": "0b60c5d8df1ce8d6948156624f07249f3c9ffca1138b955f4bf4e93f02013fe2",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10-preparation/T16-native-orchestration-review.md"
+    },
+    "evidence/wave10/preparation/T16-consumer-failure-audit.md": {
+      "sha256": "b97938842fef5bfb23a8d5e7a3186387e6e2a8e2d8f401b7e76eb72368fe0fca",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10-preparation/T16-consumer-failure-audit.md"
+    },
+    "evidence/wave10/preparation/T16-consumer-fixture-repair-r4.md": {
+      "sha256": "4508bf60301e93341ea5e98323399b1e46c8d3ce55bf6b173c73ab6140b3630e",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10-preparation/T16-consumer-fixture-repair-r4.md"
+    },
+    "evidence/wave10/preparation/T16-consumer-independent-review-r4.md": {
+      "sha256": "74ffa9742f4457799ab55932a518492935cc31265c6b2ea502b4eeed6e67e9a5",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10-preparation/T16-consumer-independent-review-r4.md"
+    },
+    "evidence/wave10/preparation/T16-consumer-independent-runtime-r4.md": {
+      "sha256": "aade954c8929b171397fa8f57701462299bbdbc031649d1507ae53ef73a5d930",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10-preparation/T16-consumer-independent-runtime-r4.md"
+    },
+    "evidence/wave10/preparation/T16-diagnostic-fixture-repair-r3.md": {
+      "sha256": "41ba5e0dbf53436f1a845e6e2ab24d01958fdb484871a05a2902b46b52646253",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10-preparation/T16-diagnostic-fixture-repair-r3.md"
+    },
+    "evidence/wave10/preparation/T16-documentation-draft.md": {
+      "sha256": "b79b1ed360d0db4a7b4194cae06123ee37c7c73b06309b512c6861a8e28ff9d4",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10-preparation/T16-documentation-draft.md"
+    },
+    "evidence/wave10/preparation/T16-documentation-independent-review.md": {
+      "sha256": "8eea6cb11fd13a99ea969bc0453445e7ee1c13c720486aa573b548fa4b447b66",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10-preparation/T16-documentation-independent-review.md"
+    },
+    "evidence/wave10/preparation/T16-implementation.md": {
+      "sha256": "cc2ef77e15e832592aa650ee6ededd4d89402addd0c68bd64eb53f195e64cdcc",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10-preparation/T16-implementation.md"
+    },
+    "evidence/wave10/preparation/T16-independent-review-r2.md": {
+      "sha256": "fd0bb5508906a78d23003d32d0a49deb2eeaa9b77de82a100defca755cc839e0",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10-preparation/T16-independent-review-r2.md"
+    },
+    "evidence/wave10/preparation/T16-independent-runtime-r3.md": {
+      "sha256": "8cae46c9e91b5c8991e055552fcfdc095edad75a2886c56a70a3cbc947193a20",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10-preparation/T16-independent-runtime-r3.md"
+    },
+    "evidence/wave10/preparation/T16-interface-readiness.md": {
+      "sha256": "f641f94df3d0e14af3eafe7c5d375dc0d3c06ac65a39ec5940cd139071319056",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10-preparation/T16-interface-readiness.md"
+    },
+    "evidence/wave10/preparation/T16-native-orchestration-review.md": {
+      "sha256": "0b60c5d8df1ce8d6948156624f07249f3c9ffca1138b955f4bf4e93f02013fe2",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10-preparation/T16-native-orchestration-review.md"
+    },
+    "evidence/wave10/preparation/T16-observer-fixture-repair-r1.md": {
+      "sha256": "4153ec6fc3bc2ea7a3367cf84cdad9a2d489600c02dc25cca16266e474dcc4b3",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10-preparation/T16-observer-fixture-repair-r1.md"
+    },
+    "evidence/wave10/preparation/T16-task-brief.md": {
+      "sha256": "13c45c5107498df6d94f9e95e32e773aa3791083415b1943aa984f25500b3b45",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10-preparation/T16-task-brief.md"
+    },
+    "evidence/wave10/preparation/T16-test-authoring.md": {
+      "sha256": "8a62727fe253417319e459b237fd5cb3a04a265b90ea26f924a445f8902c0f2e",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10-preparation/T16-test-authoring.md"
+    },
+    "evidence/wave10/candidate-patches/wave09/documentation-candidate.patch": {
+      "sha256": "563157db533622ddfe5366b0ffba71c04d7fada5478f39ca183b6d0ab267cb9c",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave09/documentation-candidate.json"
+    },
+    "evidence/wave10/candidate-patches/wave09/green-r0-candidate.patch": {
+      "sha256": "86ea3c309fb76e3fc00bf12252cc9565145a802dd98d5b16fdec94d1f2ac9ed8",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave09/green-r0-candidate.json"
+    },
+    "evidence/wave10/candidate-patches/wave09/r1-candidate.patch": {
+      "sha256": "e79405b08461185835f539c6fa75fae527deb41bbf595a10d0b44f2275470eb9",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave09/r1-candidate.json"
+    },
+    "evidence/wave10/candidate-patches/wave09/r1a-candidate.patch": {
+      "sha256": "e051ee5577aecb56c464ebad2639e4dd1761aff467dc45e2f14cfd2e4868fc15",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave09/r1a-candidate.json"
+    },
+    "evidence/wave10/candidate-patches/wave09/r2-candidate.patch": {
+      "sha256": "0c51bb283c33d923efcbf13d3e3d5cf99b5a4c26b67f3a301a5f13c916f480e7",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave09/r2-candidate.json"
+    },
+    "evidence/wave10/candidate-patches/wave09/r3-candidate.patch": {
+      "sha256": "744b30e51c8703586db9aa9186b11101c82988a442a73d34dcf5c7247c5cb8e1",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave09/r3-candidate.json"
+    },
+    "evidence/wave10/candidate-patches/wave09/r3a-candidate.patch": {
+      "sha256": "5d32646e56e36acdbc45896d40135ce6fd1846eefbcf65442de58d1f795d3881",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave09/r3a-candidate.json"
+    },
+    "evidence/wave10/candidate-patches/wave09/r4-candidate.patch": {
+      "sha256": "edc2728f81006a1f7e0b4e55f4186ea7332518580f57634ad6b1e35abb90ec0e",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave09/r4-candidate.json"
+    },
+    "evidence/wave10/candidate-patches/wave09/red-r0-candidate.patch": {
+      "sha256": "e9c5944c8d6359319d464fdfaffe170c499909e3a0418f7e259ff82977b17478",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave09/red-r0-candidate.json"
+    },
+    "evidence/wave10/candidate-patches/wave09/red-r1-candidate.patch": {
+      "sha256": "717b1acb4b74a11dd5ee8098a5a81ffa2398d2d1bb3bb70dd2a7f8a7e58a668d",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave09/red-r1-candidate.json"
+    },
+    "evidence/wave10/candidate-patches/wave09/red-r2-candidate.patch": {
+      "sha256": "5a573f5d6d95b092dae27ca5df037aac1920ce2adcd898fe3c51b3dbc7fbeec6",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave09/red-r2-candidate.json"
+    },
+    "evidence/wave10/candidate-patches/wave10/r0-candidate.patch": {
+      "sha256": "fecaa943078c91cecea31e90594e05c8c008f47f080b34df27a0d9298de3b1fb",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10/r0-candidate.json"
+    },
+    "evidence/wave10/candidate-patches/wave10/r1-candidate.patch": {
+      "sha256": "9f121116ffae5e156c45d8fe9361ef1dda06e46671760f961c2d3710ed4788ef",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10/r1-candidate.json"
+    },
+    "evidence/wave10/candidate-patches/wave10/r2-candidate.patch": {
+      "sha256": "4f6716e57494e699c94ae4d8f4ed5e94724dd87f8a7714de087d8d191b627d00",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10/r2-candidate.json"
+    },
+    "evidence/wave10/candidate-patches/wave10/r3-candidate.patch": {
+      "sha256": "3e0e1b9d2809221a677f2cac9bf3aed677bc17e679013dc738769cf4f470c21b",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave10/r3-candidate.json"
+    }
+  },
+  "publication": "Authorized existing branch push; this script does not push or merge. Remote exact SHA/every CI row are checked separately."
+}

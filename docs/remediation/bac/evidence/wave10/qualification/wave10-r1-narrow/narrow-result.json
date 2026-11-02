@@ -1,0 +1,29 @@
+{
+  "name": "narrow",
+  "exit_code": 1,
+  "seconds": 22.15102982521057,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_owned_sampling_identity[successive_without_replacement]",
+    "tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_recurrent_per[independent_with_replacement]",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave10-r1-narrow"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave10-r1-narrow/narrow.log",
+  "sha256": "91fc51653147ce5380c6f278b8ede29647102b0b86bf37d19b974388e6b3dc38",
+  "candidate_tree": "8665f26aa779c29513b7ccf1205b193b0534e441",
+  "base_commit": "f575ecefda7844fbd5b7b6138ad0c6bf7b1bafd8",
+  "manifest_sha256": "f6868c74e4d419b3d9471b1a2f97b41efdfcf3ef88e1e3b4bddf47ccfd7da0e8",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

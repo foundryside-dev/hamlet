@@ -1,0 +1,21 @@
+{
+  "job": "independent-consumers",
+  "base_commit": "f575ecefda7844fbd5b7b6138ad0c6bf7b1bafd8",
+  "candidate_tree": "51c6d53eb2a815257b7eab4bffa800fb54d8a2a2",
+  "exit_code": 0,
+  "counts": {
+    "passed": 4,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0,
+    "warnings": 0
+  },
+  "wall_seconds": 35.62947058677673,
+  "source_guards": 161,
+  "process_identities": 3,
+  "config_digests": 573,
+  "protected_artifacts": 13,
+  "worktrees": 14,
+  "source_index_import_threads_fixture_custody": "PASS",
+  "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+}

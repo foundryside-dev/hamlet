@@ -1,0 +1,27 @@
+{
+  "name": "consumer-collection",
+  "exit_code": 0,
+  "seconds": 8.771331310272217,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/test_episode_lane_sinks.py::test_caller_cap_keeps_authored_terminal_and_live_bootstrap[end_ticks0]",
+    "tests/test_townlet/regressions/test_episode_lane_sinks.py::test_caller_cap_keeps_authored_terminal_and_live_bootstrap[end_ticks1]",
+    "tests/test_townlet/regressions/test_episode_lane_sinks.py::test_caller_cap_completes_lanes_before_curriculum_publication",
+    "tests/test_townlet/integration/test_runner_hyperparams_v21.py::test_demorunner_threads_training_loop_hyperparameters",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "--collect-only"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-consumer-collection/consumer-collection.log",
+  "sha256": "cf8885d403f5416895d500073fdcac3126e603f59d76c8047ed8efe4ef94905c",
+  "candidate_tree": "51c6d53eb2a815257b7eab4bffa800fb54d8a2a2",
+  "base_commit": "f575ecefda7844fbd5b7b6138ad0c6bf7b1bafd8",
+  "manifest_sha256": "46ad49bad88b619829c560986549dfab203a984186346a4aea1576afdcae7afb",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

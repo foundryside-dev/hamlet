@@ -1,0 +1,183 @@
+{
+  "source_commit": "6b5fdf62f046ec158b8c3378d65add06faebd591",
+  "qualified_source_tree": "51c6d53eb2a815257b7eab4bffa800fb54d8a2a2",
+  "guarded_documentation_tree": "4db164067d52f5edbe74a12c24d5a23d53199ee8",
+  "full_repository": {
+    "passed": 6857,
+    "skipped": 16,
+    "postflight": "wave10/qualification/wave10-full-r1/final-postflight.json"
+  },
+  "native": {
+    "all_six_qualified": true,
+    "postflight": "wave10/qualification/wave10-native-r0/postflight.json"
+  },
+  "guards": [
+    {
+      "name": "black",
+      "exit_code": 0,
+      "seconds": 70.60672450065613,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "black",
+        "--check",
+        "src",
+        "tests",
+        "scripts",
+        "--workers",
+        "1"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave10-documentation-guards/black.log",
+      "sha256": "25a65dfa270ef66739a20134c959ca4d8efc9b6b52b57a7ad8b5b6220c782b1c",
+      "candidate_tree": "4db164067d52f5edbe74a12c24d5a23d53199ee8",
+      "base_commit": "6b5fdf62f046ec158b8c3378d65add06faebd591",
+      "manifest_sha256": "fe784d23706a3dab76bb8e199273dc4f898cba3832d927c4dd296b7320d30ffb",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "name": "compiler-cli",
+      "exit_code": 0,
+      "seconds": 177.4898087978363,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "scripts/validate_compiler_cli.py"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave10-documentation-guards/compiler-cli.log",
+      "sha256": "c0a4e16e4ba67515ede43b507910dba1a24bf5c2381588fcbf57416772fa0713",
+      "candidate_tree": "4db164067d52f5edbe74a12c24d5a23d53199ee8",
+      "base_commit": "6b5fdf62f046ec158b8c3378d65add06faebd591",
+      "manifest_sha256": "fe784d23706a3dab76bb8e199273dc4f898cba3832d927c4dd296b7320d30ffb",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "name": "expression-doc",
+      "exit_code": 0,
+      "seconds": 2.6626245975494385,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "scripts/gen_expression_functions_doc.py",
+        "--check"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave10-documentation-guards/expression-doc.log",
+      "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf",
+      "candidate_tree": "4db164067d52f5edbe74a12c24d5a23d53199ee8",
+      "base_commit": "6b5fdf62f046ec158b8c3378d65add06faebd591",
+      "manifest_sha256": "fe784d23706a3dab76bb8e199273dc4f898cba3832d927c4dd296b7320d30ffb",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "name": "mypy",
+      "exit_code": 0,
+      "seconds": 1.3870069980621338,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "mypy",
+        "src/townlet"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave10-documentation-guards/mypy.log",
+      "sha256": "ff00ee3af8cb1136d9c90bc40bc8d1a55a5fe37ae62fe6b99844ef88d00b2319",
+      "candidate_tree": "4db164067d52f5edbe74a12c24d5a23d53199ee8",
+      "base_commit": "6b5fdf62f046ec158b8c3378d65add06faebd591",
+      "manifest_sha256": "fe784d23706a3dab76bb8e199273dc4f898cba3832d927c4dd296b7320d30ffb",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "name": "no-defaults",
+      "exit_code": 0,
+      "seconds": 1.3638904094696045,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "scripts/no_defaults_lint.py",
+        "src/townlet/",
+        "--whitelist",
+        ".defaults-whitelist.txt",
+        "--ratchet",
+        ".defaults-ratchet",
+        "--quiet"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave10-documentation-guards/no-defaults.log",
+      "sha256": "598fbd71dd7a34f46c3f9cb59d583a08280d89786ee55281809c876e60b2f71e",
+      "candidate_tree": "4db164067d52f5edbe74a12c24d5a23d53199ee8",
+      "base_commit": "6b5fdf62f046ec158b8c3378d65add06faebd591",
+      "manifest_sha256": "fe784d23706a3dab76bb8e199273dc4f898cba3832d927c4dd296b7320d30ffb",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "name": "ruff",
+      "exit_code": 0,
+      "seconds": 0.09955573081970215,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "ruff",
+        "check",
+        "."
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave10-documentation-guards/ruff.log",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "candidate_tree": "4db164067d52f5edbe74a12c24d5a23d53199ee8",
+      "base_commit": "6b5fdf62f046ec158b8c3378d65add06faebd591",
+      "manifest_sha256": "fe784d23706a3dab76bb8e199273dc4f898cba3832d927c4dd296b7320d30ffb",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    }
+  ],
+  "guarded_source_paths_verified": 413,
+  "after_guards": "Only this receipt and byte-exact guard evidence added. No source, tests, configuration or previously guarded prose changed.",
+  "execution_equivalence_paths": [
+    "src",
+    "configs",
+    "scripts",
+    "tests",
+    "pyproject.toml",
+    "uv.lock",
+    ".defaults-ratchet"
+  ],
+  "raw_logs": "Archived logs and candidate patches retain original bytes; whitespace checks exclude original raw logs and patches.",
+  "remote_ci": "Not claimed for this unpublished tip. Previous f575ecefda7844fbd5b7b6138ad0c6bf7b1bafd8 has terminal success for all three workflows and their jobs.",
+  "scope": "T16 scoped qualification;26/66 packages. All54 final requirements,22 final review lenses plus synthesis, learning/E2E and final gates remain open. CUDA unavailable and unqualified.",
+  "guard_artifacts": {
+    "evidence/wave10/documentation-guards/black-result.json": {
+      "sha256": "448711b24fb6f68b125d6125e75ed47ff39fd804327caf8dfcf2fedf7383a698"
+    },
+    "evidence/wave10/documentation-guards/black.log": {
+      "sha256": "25a65dfa270ef66739a20134c959ca4d8efc9b6b52b57a7ad8b5b6220c782b1c"
+    },
+    "evidence/wave10/documentation-guards/candidate.json": {
+      "sha256": "fe784d23706a3dab76bb8e199273dc4f898cba3832d927c4dd296b7320d30ffb"
+    },
+    "evidence/wave10/documentation-guards/compiler-cli-result.json": {
+      "sha256": "e09006edd575491753fe03477e5c1aaec45c0e2066845d88883e1f54178da29b"
+    },
+    "evidence/wave10/documentation-guards/compiler-cli.log": {
+      "sha256": "c0a4e16e4ba67515ede43b507910dba1a24bf5c2381588fcbf57416772fa0713"
+    },
+    "evidence/wave10/documentation-guards/expression-doc-result.json": {
+      "sha256": "f9933e5562e0145236dfb9f4d8fb967d9ea33742220fe713ad06e29d10a149ed"
+    },
+    "evidence/wave10/documentation-guards/expression-doc.log": {
+      "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf"
+    },
+    "evidence/wave10/documentation-guards/mypy-result.json": {
+      "sha256": "b39975c1bced35172ad567303bb9c481cc5efa078f30877db41a6e1595e7bf40"
+    },
+    "evidence/wave10/documentation-guards/mypy.log": {
+      "sha256": "ff00ee3af8cb1136d9c90bc40bc8d1a55a5fe37ae62fe6b99844ef88d00b2319"
+    },
+    "evidence/wave10/documentation-guards/no-defaults-result.json": {
+      "sha256": "25c9c3c1f460b40cda501a067259c06e486907eef39d2903a441f0e7f4c241e6"
+    },
+    "evidence/wave10/documentation-guards/no-defaults.log": {
+      "sha256": "598fbd71dd7a34f46c3f9cb59d583a08280d89786ee55281809c876e60b2f71e"
+    },
+    "evidence/wave10/documentation-guards/ruff-result.json": {
+      "sha256": "0c90e5c79bde0865411e15ccb28c6fc4d061b47b7993afc4915f53cb3c336703"
+    },
+    "evidence/wave10/documentation-guards/ruff.log": {
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    "evidence/wave10/documentation-guards/spec.json": {
+      "sha256": "82e74278e3ac8df725c5e499a7011b404b7dbb2ac5c72caf57b30e7d76b10c6b"
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "name": "independent",
+  "exit_code": 0,
+  "seconds": 36.62794756889343,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_owned_sampling_identity[successive_without_replacement]",
+    "tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_recurrent_per[independent_with_replacement]",
+    "tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_window_diagnostic[fixed_full]",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave10-r3-independent"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave10-r3-independent/independent.log",
+  "sha256": "2d5f3a18369c65a0912ea639cf627090ff8ae737232abe7a42b4ff4bbcd35ee0",
+  "candidate_tree": "0bdd6133f2224b25bce5668e15021fa1353accba",
+  "base_commit": "f575ecefda7844fbd5b7b6138ad0c6bf7b1bafd8",
+  "manifest_sha256": "83c9b20654d85f90f732d9f5e4a7de2aed8bd25fec48f8cc141d03b0b292c5c8",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

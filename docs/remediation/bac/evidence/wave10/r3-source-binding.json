@@ -1,0 +1,9 @@
+{
+  "unchanged_production": true,
+  "only_changed_callable": [
+    "test_real_runner_window_diagnostic"
+  ],
+  "other_helpers_and_tests_AST_equal": true,
+  "prior_owner_result": "11PASS1fixture assertionFAIL, actualr2source retained; no relabeledwholemodulePASS",
+  "final_all12_common_source_gate": "requiredG2 pending"
+}

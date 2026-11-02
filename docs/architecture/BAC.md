@@ -125,6 +125,12 @@ implementation files: `population/vectorized.py`, `config/training_v2_config.py`
 bounded correction does not refresh the document-wide historical review stamp or unrelated
 schema/compiler/network/provenance claims.
 
+T16 bounded runner correction, 2026-11-02: the runner propagation below was checked against
+`demo/runner.py`, `population/vectorized.py`, `config/brain_config.py`,
+`agent/optimizer_factory.py` and the new runner-readiness test. Package qualification and open
+native/runtime requirements remain recorded in [BAC status](../remediation/bac/STATUS.md).
+This correction preserves the broader dated review boundary above.
+
 - Rollout hidden state persists until episode completion/reset. Replay training starts each
   sampled unit at zero hidden state and carries a graph-connected online current-prefix through
   its real observations. Target prefixes are separate and advance under no-grad. Each successor
@@ -170,6 +176,17 @@ schema/compiler/network/provenance claims.
   The standalone lane checker observes full-N Q/actions and successful actual flat
   `push_recorded` admission; its recipes use a scripted selector and do not independently
   qualify genuine-provider selection (`scripts/check_episode_lanes.py:605,641,725`).
+- `DemoRunner.run()` eagerly constructs its learner from the canonical effective brain and
+  training view. It forwards all six resolved replay leaves and declared `min_size`, preserving
+  their effective roles/provenance. Fresh PER receives a separate
+  `numpy.random.Generator(numpy.random.PCG64(training.seed))` with sampling origin `authored`.
+  Beta uses the named upper-bound vector-tick horizon: executed maximum episodes (including a
+  recorded launch override) times the declared per-episode cap, with both sources recorded.
+  Population size and live-transition budget do not replace that horizon. Fresh tick0 is
+  supplied before the existing checkpoint load, with no new post-load reseeding or replay
+  reconfiguration (`demo/runner.py:401,461,474,522`). This fresh PER policy does not change Torch
+  flat-uniform sampling, the selected recurrent-uniform adapter's Python-random role, or saved
+  sampler ownership restored through existing supported loaders.
 - `VectorizedPopulation.for_training` requires resolved replay policy, an explicit owned RNG,
   minimum, horizon/derivation and tick. The unchanged constructor defers learner-only setup
   until actual training and preserves inspection/serving roles. Binding distinguishes pristine
@@ -178,9 +195,9 @@ schema/compiler/network/provenance claims.
   preserves compatible current captured replay/clocks. Approved historical Option A retains
   old maskless artifacts/history for archive/query/export and starts qualified replay fresh;
   archive rows cannot satisfy warmup. This scoped restore does not qualify full native10/7
-  continuation/resource/RNG atomicity (T24/T25), natural runner `for_training` propagation
-  (T16), private-curiosity isolation/X02 or ICM ENV reward/update integration (T18e/T18f)
-  (`population/vectorized.py:204,595,2011,2033`).
+  continuation/resource/RNG atomicity (T24/T25), private-curiosity isolation/X02 or ICM ENV
+  reward/update integration (T18e/T18f)
+  (`population/vectorized.py:198,595,2011,2033`).
 
 ---
 

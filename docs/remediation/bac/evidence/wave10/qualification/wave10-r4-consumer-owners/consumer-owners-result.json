@@ -1,0 +1,30 @@
+{
+  "name": "consumer-owners",
+  "exit_code": 0,
+  "seconds": 46.52491116523743,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/test_episode_lane_sinks.py",
+    "tests/test_townlet/integration/test_runner_hyperparams_v21.py",
+    "tests/test_townlet/regressions/test_episode_lane_artifact_pipeline.py",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave10-r4-consumer-owners"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-consumer-owners/consumer-owners.log",
+  "sha256": "b69d222261c4d30f2d5ba8eeda4c05f07ce8a328f4617250c3a5f75cd8d1b36e",
+  "candidate_tree": "51c6d53eb2a815257b7eab4bffa800fb54d8a2a2",
+  "base_commit": "f575ecefda7844fbd5b7b6138ad0c6bf7b1bafd8",
+  "manifest_sha256": "46ad49bad88b619829c560986549dfab203a984186346a4aea1576afdcae7afb",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

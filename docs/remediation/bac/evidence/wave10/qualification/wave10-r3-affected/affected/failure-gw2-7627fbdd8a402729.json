@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/test_episode_lane_sinks.py::test_caller_cap_keeps_authored_terminal_and_live_bootstrap[end_ticks0]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw2",
+  "longrepr": "tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave10-r3-affected/popen-gw2/test_caller_cap_keeps_authored0')\nend_ticks = (2, 5)\n\n    @pytest.mark.parametrize(\"end_ticks\", [(2, 5), (5, 2)])\n    def test_caller_cap_keeps_authored_terminal_and_live_bootstrap(tmp_path: Path, end_ticks: tuple[int, int]) -> None:\n        runner, ticks, curricula = run_lane_runner(\n            tmp_path / \"run\", episodes=1, budget=None, cap=3, end_ticks=end_ticks, real_dac=False, recording=False\n        )\n>       assert len(ticks) == 3\nE       AssertionError: assert 5 == 3\nE        +  where 5 = len([{'actions': tensor([5, 5]), 'active': tensor([True, True]), 'components': {'extrinsic': tensor([1.0025, 1.0025]), 'in...tensor([0., 0.]), 'intrinsic_raw': tensor([0., 0.]), 'shaping': tensor([0., 0.])}, 'dones': tensor([True, True]), ...}])\n\ntests/test_townlet/regressions/test_episode_lane_sinks.py:238: AssertionError",
+  "candidate_tree": "0bdd6133f2224b25bce5668e15021fa1353accba"
+}

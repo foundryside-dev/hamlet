@@ -3,7 +3,7 @@
   "baseline_sha": "4aa5363b5de54d9a112977c32c2975f37627197f",
   "design": "BAC-2026-11-01-r2 plus explicit additive plan decisions",
   "approved_plan_sha256": "2dde2d80d3d14c510878c26af1f99c42217be12d3cb3a554647bc68646feedc1",
-  "phase": "25 of 66 finite source packages qualified/released; 41 remaining packages and all final BAC acceptance OPEN",
+  "phase": "26 of 66 finite source packages qualified/released; 40 remaining packages and all final BAC acceptance OPEN",
   "completion_bar": "zero unresolved P1/P2 and zero unapproved in-scope capability gaps; all agreed finite evidence, fresh final spec/design/code review, required gates and source-verified docs",
   "requirements": [
     {
@@ -260,7 +260,8 @@
       "expected_assertion": "Real sampleability/no-update; additive short-window support",
       "candidate_sha": null,
       "evidence_paths": [
-        "evidence/wave09-qualification.json"
+        "evidence/wave09-qualification.json",
+        "evidence/wave10-qualification.json"
       ],
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "P1",
@@ -282,6 +283,12 @@
           "source": "ae0914afb3e7e1ca525e91acd49a07b3ae54c327",
           "scope": "Scoped learner/consumer repair qualified; later owners and final common-source refresh remain required",
           "evidence": "evidence/wave09-qualification.json"
+        },
+        {
+          "task": "T16",
+          "source": "6b5fdf62f046ec158b8c3378d65add06faebd591",
+          "scope": "Scoped canonical runner/warmup/selected replay policy and clock integration qualified; complete native and final common-source acceptance remain required",
+          "evidence": "evidence/wave10-qualification.json"
         }
       ]
     },
@@ -868,7 +875,8 @@
       "expected_assertion": "Authored retained-transition warmup plus sampleability and clocks",
       "candidate_sha": null,
       "evidence_paths": [
-        "evidence/wave09-qualification.json"
+        "evidence/wave09-qualification.json",
+        "evidence/wave10-qualification.json"
       ],
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "P2",
@@ -931,6 +939,12 @@
           "source": "ae0914afb3e7e1ca525e91acd49a07b3ae54c327",
           "scope": "Scoped learner/consumer repair qualified; later owners and final common-source refresh remain required",
           "evidence": "evidence/wave09-qualification.json"
+        },
+        {
+          "task": "T16",
+          "source": "6b5fdf62f046ec158b8c3378d65add06faebd591",
+          "scope": "Scoped canonical runner/warmup/selected replay policy and clock integration qualified; complete native and final common-source acceptance remain required",
+          "evidence": "evidence/wave10-qualification.json"
         }
       ]
     },
@@ -1693,7 +1707,8 @@
       "expected_assertion": "Additive operational recurrent PER; no authoring closure",
       "candidate_sha": null,
       "evidence_paths": [
-        "evidence/wave09-qualification.json"
+        "evidence/wave09-qualification.json",
+        "evidence/wave10-qualification.json"
       ],
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "P2",
@@ -1715,6 +1730,12 @@
           "source": "ae0914afb3e7e1ca525e91acd49a07b3ae54c327",
           "scope": "Scoped learner/consumer repair qualified; later owners and final common-source refresh remain required",
           "evidence": "evidence/wave09-qualification.json"
+        },
+        {
+          "task": "T16",
+          "source": "6b5fdf62f046ec158b8c3378d65add06faebd591",
+          "scope": "Scoped canonical runner/warmup/selected replay policy and clock integration qualified; complete native and final common-source acceptance remain required",
+          "evidence": "evidence/wave10-qualification.json"
         }
       ]
     },
@@ -1850,7 +1871,8 @@
       "expected_assertion": "Retained-transition capacity/warmup, real prefixes, honest fixed-window impossibility",
       "candidate_sha": null,
       "evidence_paths": [
-        "evidence/wave09-qualification.json"
+        "evidence/wave09-qualification.json",
+        "evidence/wave10-qualification.json"
       ],
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "P2",
@@ -1881,6 +1903,12 @@
           "source": "ae0914afb3e7e1ca525e91acd49a07b3ae54c327",
           "scope": "Scoped learner/consumer repair qualified; later owners and final common-source refresh remain required",
           "evidence": "evidence/wave09-qualification.json"
+        },
+        {
+          "task": "T16",
+          "source": "6b5fdf62f046ec158b8c3378d65add06faebd591",
+          "scope": "Scoped canonical runner/warmup/selected replay policy and clock integration qualified; complete native and final common-source acceptance remain required",
+          "evidence": "evidence/wave10-qualification.json"
         }
       ]
     },
@@ -2098,7 +2126,9 @@
       ],
       "expected_assertion": "Gamma0 adopted consistently",
       "candidate_sha": null,
-      "evidence_paths": [],
+      "evidence_paths": [
+        "evidence/wave10-qualification.json"
+      ],
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "P2",
       "approval_reference": null,
@@ -2172,6 +2202,14 @@
             "evidence/T03-qualification.json"
           ],
           "final_acceptance": "Scoped P1 primitive/transport qualified; full final same-source requirement refresh and runtime consumers remain owed"
+        }
+      ],
+      "package_dispositions": [
+        {
+          "task": "T16",
+          "source": "6b5fdf62f046ec158b8c3378d65add06faebd591",
+          "scope": "Scoped canonical runner/warmup/selected replay policy and clock integration qualified; complete native and final common-source acceptance remain required",
+          "evidence": "evidence/wave10-qualification.json"
         }
       ]
     },
@@ -2631,7 +2669,9 @@
       ],
       "expected_assertion": "Full adopted contract and joint interfaces; package tests alone do not establish closure",
       "candidate_sha": null,
-      "evidence_paths": [],
+      "evidence_paths": [
+        "evidence/wave10-qualification.json"
+      ],
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "acceptance owed",
       "approval_reference": null,
@@ -2714,6 +2754,14 @@
           "receipt": "package-reviews/T14-implementation.md",
           "qualification": "evidence/wave08-qualification.json",
           "disposition": "Scoped backend/transport evidence only; T15 real learner and final current-source acceptance OPEN"
+        }
+      ],
+      "package_dispositions": [
+        {
+          "task": "T16",
+          "source": "6b5fdf62f046ec158b8c3378d65add06faebd591",
+          "scope": "Scoped canonical runner/warmup/selected replay policy and clock integration qualified; complete native and final common-source acceptance remain required",
+          "evidence": "evidence/wave10-qualification.json"
         }
       ]
     },
@@ -2991,7 +3039,9 @@
       ],
       "expected_assertion": "Full adopted contract and joint interfaces; package tests alone do not establish closure",
       "candidate_sha": null,
-      "evidence_paths": [],
+      "evidence_paths": [
+        "evidence/wave10-qualification.json"
+      ],
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "acceptance owed",
       "approval_reference": null,
@@ -3223,6 +3273,14 @@
           "source_commit": "ac8f0f9c3c38cd77f533accc5c9259fe4abfc252",
           "qualified_release_commit": "ac8f0f9c3c38cd77f533accc5c9259fe4abfc252",
           "receipt": "evidence/wave02-qualification.json"
+        }
+      ],
+      "package_dispositions": [
+        {
+          "task": "T16",
+          "source": "6b5fdf62f046ec158b8c3378d65add06faebd591",
+          "scope": "Scoped canonical runner/warmup/selected replay policy and clock integration qualified; complete native and final common-source acceptance remain required",
+          "evidence": "evidence/wave10-qualification.json"
         }
       ]
     },
@@ -3802,7 +3860,9 @@
       ],
       "expected_assertion": "Full adopted contract and joint interfaces; package tests alone do not establish closure",
       "candidate_sha": null,
-      "evidence_paths": [],
+      "evidence_paths": [
+        "evidence/wave10-qualification.json"
+      ],
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "acceptance owed",
       "approval_reference": null,
@@ -3889,6 +3949,14 @@
           "source_commit": "ac078cb95981534ea686807dee8c6b478b6ccc74",
           "qualified_release_commit": "ac8f0f9c3c38cd77f533accc5c9259fe4abfc252",
           "receipt": "evidence/wave02-qualification.json"
+        }
+      ],
+      "package_dispositions": [
+        {
+          "task": "T16",
+          "source": "6b5fdf62f046ec158b8c3378d65add06faebd591",
+          "scope": "Scoped canonical runner/warmup/selected replay policy and clock integration qualified; complete native and final common-source acceptance remain required",
+          "evidence": "evidence/wave10-qualification.json"
         }
       ]
     },
@@ -4061,7 +4129,9 @@
       ],
       "expected_assertion": "Full adopted contract and joint interfaces; package tests alone do not establish closure",
       "candidate_sha": null,
-      "evidence_paths": [],
+      "evidence_paths": [
+        "evidence/wave10-qualification.json"
+      ],
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "acceptance owed",
       "approval_reference": null,
@@ -4147,6 +4217,14 @@
           "source_commit": "424e57015bac9448dc0fa5780269c649a6cac22f",
           "qualified_release_commit": "ac8f0f9c3c38cd77f533accc5c9259fe4abfc252",
           "receipt": "evidence/wave02-qualification.json"
+        }
+      ],
+      "package_dispositions": [
+        {
+          "task": "T16",
+          "source": "6b5fdf62f046ec158b8c3378d65add06faebd591",
+          "scope": "Scoped canonical runner/warmup/selected replay policy and clock integration qualified; complete native and final common-source acceptance remain required",
+          "evidence": "evidence/wave10-qualification.json"
         }
       ]
     },
@@ -6068,6 +6146,26 @@
         "evidence/wave09-qualification.json"
       ],
       "final_acceptance": "T16 runner explicit owned PCG64/canonical policy, ICM integration/private curiosity/X02, complete native10/7 T24/T25, all remaining41packets,54requirements,22final lenses+synthesis,T40+12strict learning/E2E,coverage>=70,slow/applicablehardware/exacttipCI remain OPEN. CPUonly; CUDAunavailable/unqualified."
+    },
+    {
+      "task": "T16",
+      "source_commit": "6b5fdf62f046ec158b8c3378d65add06faebd591",
+      "qualified_release_commit": "6b5fdf62f046ec158b8c3378d65add06faebd591",
+      "qualified_sum_tree": "51c6d53eb2a815257b7eab4bffa800fb54d8a2a2",
+      "status": "Scoped canonical runner/replay-policy package qualified/released; all final acceptance remains owed",
+      "full_repository_result": "6857 passed,16 skipped,16 warnings;4workers;2369.7433s wall;161source10review5process573configs13artifacts14worktrees postflightPASS",
+      "native_capture_result": "Six genuine cleancommitted source recipes qualified; independent source/config/instrument/import/action/inventory/semantic/worktree postflightPASS",
+      "reports": [
+        "package-reviews/T16-implementation.md",
+        "package-reviews/T16-qualification.md",
+        "package-reviews/T16-independent-review-r2.md",
+        "package-reviews/T16-independent-runtime-r3.md",
+        "package-reviews/T16-consumer-independent-review-r4.md",
+        "package-reviews/T16-consumer-independent-runtime-r4.md",
+        "package-reviews/T16-documentation-independent-review.md",
+        "evidence/wave10-qualification.json"
+      ],
+      "final_acceptance": "Remaining40packets/all54requirements/22fresh final lenses+synthesis, strict private curiosity/X02, ICM routing, complete native10/7 continuation T24/T25, T40+12strict learning/E2E,coverage>=70,slow/applicable hardware/exacttipCI remain OPEN. CPUonly; CUDAunavailable/unqualified. New bounded runner tests useN1/seed42/explicit episode override; do not generalize fresh PER ownership to external-global or resumed sampler roles."
     }
   ],
   "evidence_note": "Each package records its actual immutable source/evidence. Wave05 qualified sum-tree postflight verified 53 source hashes, three final Astra reviews, five process identities, preserved configuration/native artifacts and the worktree registry. Storage archive proofs do not close required native historical dispatch, captured learning/readiness or final common-source acceptance.",
@@ -6247,5 +6345,18 @@
     "effective_requirements": 54,
     "capability_reductions": false,
     "final_acceptance": "OPEN, all finite final obligations retained"
+  },
+  "wave10_qualified_scope": {
+    "tasks": [
+      "T16"
+    ],
+    "source_head": "6b5fdf62f046ec158b8c3378d65add06faebd591",
+    "tree": "51c6d53eb2a815257b7eab4bffa800fb54d8a2a2",
+    "receipt": "evidence/wave10-qualification.json",
+    "qualified_packages": 26,
+    "remaining_packages": 40,
+    "effective_requirements": 54,
+    "capability_reductions": false,
+    "final_acceptance": "OPEN; all finite final obligations retained"
   }
 }

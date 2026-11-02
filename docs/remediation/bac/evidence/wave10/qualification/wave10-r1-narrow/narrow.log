@@ -1,0 +1,93 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [2 items]
+
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+___ test_real_runner_owned_sampling_identity[successive_without_replacement] ___
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave10-r1-narrow/popen-gw1/test_real_runner_owned_samplin0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7faa18635220>
+law = 'successive_without_replacement'
+
+    @pytest.mark.parametrize("law", LAWS)
+    def test_real_runner_owned_sampling_identity(tmp_path, monkeypatch, law):
+        """A global-NumPy replay owner violates the explicit authored runner stream."""
+        runner, audit, options = _run(
+            tmp_path,
+            monkeypatch,
+            family="feedforward",
+            budget=8,
+            minimum=2,
+            batch_size=2,
+            replay_updates={"sampling_mode": law},
+            omit_priority_reduction=True,
+        )
+        _assert_real_learning(runner, audit)
+        _assert_beta_vector_ticks(runner, audit, 8)
+        assert runner.effective_run.options.replay.model_dump() == options
+        assert runner.effective_run.options.replay.priority_reduction == "max_abs"
+        assert runner.effective_run.authored_options.replay.priority_reduction is None
+        initial = audit.construction["replay"]
+>       assert initial["sampling_rng"]["ownership"] == "owned_numpy_generator", "Runner replay must own its authored sampling stream"
+E       AssertionError: Runner replay must own its authored sampling stream
+E       assert 'numpy_global_legacy' == 'owned_numpy_generator'
+E         
+E         - owned_numpy_generator
+E         + numpy_global_legacy
+
+tests/test_townlet/regressions/bac/test_runner_readiness.py:372: AssertionError
+_________ test_real_runner_recurrent_per[independent_with_replacement] _________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave10-r1-narrow/popen-gw0/test_real_runner_recurrent_per0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f21a7041220>
+law = 'independent_with_replacement'
+
+    @pytest.mark.parametrize("law", LAWS)
+    def test_real_runner_recurrent_per(tmp_path, monkeypatch, law):
+        """The authored recurrent PER policy must exist eagerly and actually learn."""
+        runner, audit, options = _run(
+            tmp_path,
+            monkeypatch,
+            family="recurrent",
+            budget=10,
+            minimum=2,
+            batch_size=3,
+            capacity=16,
+            replay_updates={"sampling_mode": law},
+        )
+        _assert_real_learning(runner, audit)
+        _assert_beta_vector_ticks(runner, audit, 10)
+        population = runner.population
+        assert population.is_recurrent and population.use_per
+        assert population.brain_config.architecture.type == "recurrent"
+        assert population.brain_config.replay.prioritized
+        assert all(sample["mode"] == law for sample in audit.samples)
+        assert all(sample["request"].sequence_length == 3 for sample in audit.samples)
+        assert all(bool((sample["lengths"] >= 1).all()) and bool((sample["lengths"] <= 2).all()) for sample in audit.samples)
+        initial = audit.construction["replay"]
+>       assert initial.get("format_version") == 7, "Runner must construct its selected captured recurrent PER, before rollout"
+E       AssertionError: Runner must construct its selected captured recurrent PER, before rollout
+E       assert 5 == 7
+E        +  where 5 = <built-in method get of dict object at 0x7f21a6eaa100>('format_version')
+E        +    where <built-in method get of dict object at 0x7f21a6eaa100> = {'capacity': 16, 'episodes': [], 'format_version': 5, 'num_transitions': 0, ...}.get
+
+tests/test_townlet/regressions/bac/test_runner_readiness.py:438: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_owned_sampling_identity[successive_without_replacement]
+FAILED tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_recurrent_per[independent_with_replacement]
+============================== 2 failed in 18.00s ==============================

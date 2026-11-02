@@ -1,0 +1,21 @@
+{
+  "name": "black-consumers",
+  "exit_code": 0,
+  "seconds": 1.4416859149932861,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "black",
+    "--check",
+    "tests/test_townlet/regressions/test_episode_lane_sinks.py",
+    "tests/test_townlet/integration/test_runner_hyperparams_v21.py",
+    "--workers",
+    "1"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave10-r4-consumer-style/black-consumers.log",
+  "sha256": "b9cf511501d306d2bd8355ccb165c8ddc0a6fdd62d7c72c4a7b1795cf8934c8c",
+  "candidate_tree": "51c6d53eb2a815257b7eab4bffa800fb54d8a2a2",
+  "base_commit": "f575ecefda7844fbd5b7b6138ad0c6bf7b1bafd8",
+  "manifest_sha256": "46ad49bad88b619829c560986549dfab203a984186346a4aea1576afdcae7afb",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

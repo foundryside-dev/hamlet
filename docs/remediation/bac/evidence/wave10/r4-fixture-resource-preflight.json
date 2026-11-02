@@ -1,0 +1,10 @@
+{
+  "cpu": "400000 100000",
+  "affinity": 5,
+  "memory_current": "14183636992",
+  "memory_limit": "17179869184",
+  "workspace_free": 28393451520,
+  "TMPDIR": "/workspace/bac-review-2026-11-01/qualification/scratch/tmp-wave08-r3",
+  "threads": 1,
+  "CUDA": "unavailable/unqualified"
+}

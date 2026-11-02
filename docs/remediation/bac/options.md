@@ -2,10 +2,11 @@
 
 This package declares portable, immutable, finite-only options. Declaration loading and
 resolution do not by themselves establish runtime qualification. T15 consumes resolved replay
-policies through explicit or compiled-adapter population learning; [STATUS.md](STATUS.md)
-records qualification and remaining T16 runner propagation. Consumer ownership remains effective
-configuration/roles T03, encoders T17, replay T08–T16, exploration T18a–d, curriculum T20–T22,
-checkpoints T24–T26 and evaluation T27.
+policies through explicit or compiled-adapter population learning; T16 forwards the canonical
+effective brain, all six resolved replay leaves and declared warmup through the real runner's
+eager learner seam. [STATUS.md](STATUS.md) records qualification and remaining native/runtime
+requirements. Consumer ownership remains effective configuration/roles T03, encoders T17,
+replay T08–T16, exploration T18a–d, curriculum T20–T22, checkpoints T24–T26 and evaluation T27.
 Current compile/cache transport retains the authored training block and encoder
 block. `resolve_bac_options(training.bac_options, training=training)` returns
 `ResolvedBaCOptions(schema_version, options, provenance)`; serialize this receipt
@@ -110,6 +111,16 @@ size may exceed warmup, and replacement laws can draw more units than their posi
 Successive laws require sufficient distinct sampleable units; recurrent transition occupancy
 alone does not establish window cardinality. The population logs changed unready diagnostics
 (`config/training_v2_config.py:102`, `population/vectorized.py:654,715`).
+
+The runner supplies fresh PER with an explicit owned PCG64(training.seed) stream and sampling
+origin `authored`; that sampler label is separate from each option leaf's authored or
+bac-options-v1 provenance. Its beta horizon names the executed episode limit and declared cap
+as an upper bound in vector ticks, before checkpoint loading. For supported current payloads,
+existing validation/adoption preserves the saved sampler descriptor and any recorded owned RNG
+state; it does not force a fresh PCG64 stream on resume. External-global sampler roles do not
+gain an exact RNG-continuation guarantee.
+Uniform replay retains its existing Torch/Python-random roles. Parsing the other options or
+running these N1 fixtures does not qualify private-world curiosity or provider precedence.
 
 Other conditional roles: replay sampling applies to PER; the uniform adapter
 applies to nonprioritized recurrent sampling; sequence/objective/retention and

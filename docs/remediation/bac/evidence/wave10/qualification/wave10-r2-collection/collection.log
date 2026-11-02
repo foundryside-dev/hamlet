@@ -1,0 +1,29 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 12 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_runner_readiness.py>
+            <Function test_real_runner_owned_sampling_identity[successive_without_replacement]>
+            <Function test_real_runner_owned_sampling_identity[independent_with_replacement]>
+            <Function test_real_runner_warmup1000[feedforward]>
+            <Function test_real_runner_warmup1000[recurrent]>
+            <Function test_real_runner_recurrent_per[successive_without_replacement]>
+            <Function test_real_runner_recurrent_per[independent_with_replacement]>
+            <Function test_real_runner_family_cadence_and_zero_gamma[feedforward-False]>
+            <Function test_real_runner_family_cadence_and_zero_gamma[dueling-True]>
+            <Function test_real_runner_family_cadence_and_zero_gamma[token_set-True]>
+            <Function test_real_runner_family_cadence_and_zero_gamma[recurrent-True]>
+            <Function test_real_runner_window_diagnostic[fixed_full]>
+            <Function test_real_runner_window_diagnostic[adaptive_prefix]>
+
+========================= 12 tests collected in 0.30s ==========================

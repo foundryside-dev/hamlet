@@ -1,0 +1,18 @@
+{
+  "result": "2intendedFAIL18.00test22.1510wall",
+  "classification": "MEANINGFUL RED aftergenuine finite sampledQoptimization; savedcheckpointpaths nowsuccessful",
+  "failures": [
+    "freshflat successive sampler numpy_global_legacy vs requiredowned_numpy_generator",
+    "freshrecurrent capturedformat5 vs requiredselected7 before rollout"
+  ],
+  "tree": "8665f26aa779c29513b7ccf1205b193b0534e441",
+  "base": "f575ecefda7844fbd5b7b6138ad0c6bf7b1bafd8",
+  "source_guards": 160,
+  "identities": 3,
+  "configs": 573,
+  "protected_artifacts": 13,
+  "worktrees": 14,
+  "custody": "PASS",
+  "production": "UNCHANGED",
+  "log_sha256": "91fc51653147ce5380c6f278b8ede29647102b0b86bf37d19b974388e6b3dc38"
+}

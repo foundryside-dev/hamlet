@@ -1,0 +1,1566 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [2 items]
+
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+___ test_real_runner_owned_sampling_identity[successive_without_replacement] ___
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+self = <townlet.demo.runner.DemoRunner object at 0x7fc376c16270>
+
+    def run(self):
+        """Run demo training loop."""
+        logger.info(f"Starting demo runner: {self.max_episodes} episodes")
+        logger.info(f"Database: {self.db_path}")
+        logger.info(f"Checkpoints: {self.checkpoint_dir}")
+    
+        # PDR-002: No-defaults validation done automatically by config DTOs
+        # All required parameters validated at load time
+    
+        # Initialize training components
+        # v2.1: device is an infrastructure concern (no-defaults exemption).
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
+        # Per-level metadata
+        level_meta = self.compiled.get_level(self.level_name)
+        # Extract config parameters from DTOs (all required, validated at load time)
+        loop_cfg = self.training_config.training_loop
+        num_agents = self.training_config.population.size
+        grid_cells = self.compiled.metadata.grid_cells
+        partial_observability = level_meta.curriculum.curriculum.active_vision != "global"
+        vision_range = level_meta.curriculum.curriculum.vision_range
+        enable_temporal_mechanics = level_meta.curriculum.curriculum.active_temporal
+    
+        # Create environment from compiled universe
+        self.env = VectorizedHamletEnv.from_universe(
+            self.compiled,
+            level_name=self.level_name,
+            num_agents=num_agents,
+            device=device,
+        )
+    
+        # Dimensions sourced from compiled metadata
+        obs_dim = level_meta.token_spec.total_dims
+        action_dim = level_meta.action_metadata.total_actions
+    
+        # Create curriculum (all params required per PDR-002)
+        self.curriculum = build_curriculum(
+            self.training_config,
+            max_steps_per_episode=loop_cfg.max_steps_per_episode,
+            device=device,
+        )
+    
+        # Create exploration (all params required per PDR-002)
+        intrinsic_cfg = self.training_config.intrinsic
+        self.exploration = AdaptiveIntrinsicExploration(
+            obs_dim=obs_dim,
+            embed_dim=intrinsic_cfg.rnd.feature_dim,
+            rnd_learning_rate=intrinsic_cfg.rnd.learning_rate,
+            rnd_training_batch_size=self.training_config.replay_buffer.batch_size,
+            initial_intrinsic_weight=intrinsic_cfg.initial_weight,
+            min_intrinsic_weight=intrinsic_cfg.annealing.min_weight,
+            variance_threshold=intrinsic_cfg.annealing.threshold,
+            min_survival_fraction=intrinsic_cfg.min_survival_fraction,
+            max_episode_length=loop_cfg.max_steps_per_episode,
+            survival_window=intrinsic_cfg.survival_window,
+            decay_rate=intrinsic_cfg.annealing.decay_rate,
+            epsilon_start=self.training_config.exploration.epsilon_start,
+            epsilon_min=self.training_config.exploration.epsilon_end,
+            epsilon_decay=self.training_config.exploration.epsilon_decay,
+            device=device,
+        )
+    
+        # Get training hyperparameters from config (all required per PDR-002)
+        train_frequency = loop_cfg.train_frequency
+        batch_size = self.training_config.replay_buffer.batch_size
+        sequence_length = loop_cfg.sequence_length
+        max_grad_norm = loop_cfg.max_grad_norm
+    
+        # Create agent IDs
+        agent_ids = [f"agent_{i}" for i in range(num_agents)]
+    
+        # Use the BrainConfig loaded from brain.yaml during compilation.
+        from townlet.config.brain_config import apply_training_overrides
+    
+        base_brain_config = self.brain_config
+        logger.info(f"Brain config from brain.yaml: {base_brain_config.description}")
+    
+        # Apply curriculum-level overrides from training.yaml to derive effective brain config
+        effective_brain_config = apply_training_overrides(base_brain_config, self.training_config)
+    
+        # Create population (effective_brain_config provides network/optimizer/Q-learning parameters)
+        self.population = VectorizedPopulation(
+            env=self.env,
+            curriculum=self.curriculum,
+            exploration=self.exploration,
+            agent_ids=agent_ids,
+            device=device,
+            obs_dim=obs_dim,
+            action_dim=action_dim,
+            tb_logger=self.tb_logger,
+            train_frequency=train_frequency,
+            batch_size=batch_size,
+            sequence_length=sequence_length,
+            max_grad_norm=max_grad_norm,
+            brain_config=effective_brain_config,
+            max_episodes=self.max_episodes,  # For PER beta annealing
+            max_steps_per_episode=loop_cfg.max_steps_per_episode,  # For PER beta annealing
+        )
+    
+        self.curriculum.initialize_population(num_agents)
+    
+        # Initialize episode recorder if enabled
+        recording_cfg = self.training_config.recording
+        if recording_cfg and recording_cfg.enabled:
+            from townlet.recording.recorder import EpisodeRecorder
+    
+            recording_payload = recording_cfg.model_dump(exclude_none=True)
+            # Create recording output directory
+            recording_output_dir = self.checkpoint_dir / (recording_cfg.output_dir or "recordings")
+            recording_output_dir.mkdir(parents=True, exist_ok=True)
+    
+            self.recorder = EpisodeRecorder(
+                config=recording_payload,
+                output_dir=recording_output_dir,
+                database=self.db,
+                curriculum=self.curriculum,
+            )
+            logger.info(f"Episode recording enabled: {recording_output_dir}")
+        else:
+            logger.info("Episode recording disabled")
+    
+        # Try to resume from checkpoint
+        loaded_episode = self.load_checkpoint()
+        if loaded_episode is not None:
+            self.current_episode = loaded_episode + 1
+    
+        # Phase 4 - Log hyperparameters to TensorBoard
+        self.hparams = {
+            "learning_rate": effective_brain_config.optimizer.learning_rate,
+            "gamma": effective_brain_config.q_learning.gamma,
+            "network_architecture": base_brain_config.architecture.type,  # 'feedforward' or 'recurrent'
+            "replay_buffer_capacity": effective_brain_config.replay.capacity,
+            "grid_cells": grid_cells,
+            "partial_observability": partial_observability,
+            "vision_range": vision_range,
+            "enable_temporal": enable_temporal_mechanics,
+            "initial_intrinsic_weight": 1.0,
+            "variance_threshold": self.training_config.intrinsic.annealing.threshold,
+            "max_steps_per_episode": loop_cfg.max_steps_per_episode,
+            "observation_schema_hash": level_meta.observation_schema_hash,
+        }
+        # Note: final metrics will be logged at end of training
+        self.tb_logger.log_hyperparameters(hparams=self.hparams, metrics={})
+    
+        # Check for shutdown before starting training loop
+        if self.should_shutdown:
+            logger.info("[Training] Shutdown requested during initialization, exiting before training starts")
+            return
+    
+        # Mark training started
+        self.db.set_system_state("training_status", "running")
+        self.db.set_system_state("start_time", str(time.time()))
+        if self.max_environment_steps is not None:
+            self.db.set_system_state("environment_step_budget_requested", str(self.max_environment_steps))
+            self.db.set_system_state("environment_step_budget_stop_rule", "stop_before_vector_step")
+    
+        # Training loop
+        failed = False
+        try:
+            while self.current_episode < self.max_episodes and not self.should_shutdown and not self.environment_step_budget_reached:
+                episode_start = time.time()
+    
+                # Generalization test at episode 5000
+                if self.current_episode == 5000:
+                    logger.info("=" * 60)
+                    logger.info("GENERALIZATION TEST: Randomizing affordance positions")
+                    logger.info("=" * 60)
+    
+                    # Store old positions
+                    old_positions = self.env.get_affordance_positions()
+                    logger.info(f"Old positions: {old_positions}")
+    
+                    # Randomize
+                    self.env.randomize_affordance_positions()
+    
+                    # Store new positions
+                    new_positions = self.env.get_affordance_positions()
+                    logger.info(f"New positions: {new_positions}")
+    
+                    # Mark in database
+                    import json
+    
+                    self.db.set_system_state("affordance_randomization_episode", "5000")
+                    self.db.set_system_state("old_affordance_positions", json.dumps(old_positions))
+                    self.db.set_system_state("new_affordance_positions", json.dumps(new_positions))
+    
+                # Reset environment and population
+                # NOTE: Only call population.reset(), which internally calls env.reset()
+                # Calling both causes double reset which breaks affordance randomization
+                self.population.reset()
+    
+                # Run episode
+                num_agents = self.population.num_agents
+                max_steps = loop_cfg.max_steps_per_episode
+                episode_reward = torch.zeros(num_agents, device=self.env.device)
+                episode_extrinsic_reward = torch.zeros(num_agents, device=self.env.device)
+                episode_intrinsic_reward = torch.zeros(num_agents, device=self.env.device)
+                episode_shaping_reward = torch.zeros(num_agents, device=self.env.device)
+                batch_episode_steps = 0
+                episode_live_agent_transitions = 0
+                affordance_visits = [defaultdict(int) for _ in range(num_agents)]
+                custom_action_uses = [defaultdict(int) for _ in range(num_agents)]  # Track REST, MEDITATE, etc.
+                # NEW: Transition tracking
+                affordance_transitions = [defaultdict(lambda: defaultdict(int)) for _ in range(num_agents)]
+                last_affordance = [None for _ in range(num_agents)]
+                last_agent_state: BatchedAgentState | None = None
+                alive_agents = torch.ones(num_agents, dtype=torch.bool, device=self.env.device)
+    
+                for step in range(max_steps):
+                    # Check for shutdown request every step for immediate response
+                    if self.should_shutdown:
+                        logger.info(f"[Training] Shutdown requested during episode {self.current_episode + 1}, step {step}/{max_steps}")
+                        break
+    
+                    live_agent_count = int(alive_agents.sum().item())
+                    if self.max_environment_steps is not None:
+                        may_step, shortfall = decide_live_agent_budget(
+                            completed=self.completed_live_agent_steps,
+                            live_agents=live_agent_count,
+                            budget=self.max_environment_steps,
+                        )
+                        if not may_step:
+                            self.environment_step_budget_shortfall = shortfall
+                            self.environment_step_budget_reached = True
+                            logger.info(
+                                "[Training] Environment-step budget reached at %s/%s live-agent transitions " "(conservative shortfall %s)",
+                                self.completed_live_agent_steps,
+                                self.max_environment_steps,
+                                shortfall,
+                            )
+                            break
+    
+                    agent_state = self.population.step_population(self.env)
+                    last_agent_state = agent_state
+                    self.completed_live_agent_steps += live_agent_count
+                    if self.max_environment_steps is not None and self.completed_live_agent_steps == self.max_environment_steps:
+                        self.environment_step_budget_shortfall = 0
+                        self.environment_step_budget_reached = True
+    
+                    if self.curriculum.transition_events:
+                        self.tb_logger.log_curriculum_transitions(
+                            episode=self.current_episode,
+                            events=list(self.curriculum.transition_events),
+                        )
+                        # Log curriculum transitions to console
+                        for event in self.curriculum.transition_events:
+                            logger.info(
+                                f"🎓 Curriculum {event['type'].upper()}: Stage {event['from_stage']} → {event['to_stage']} "
+                                f"(Survival: {event['survival_rate']:.1%}, Entropy: {event['entropy']:.3f})"
+                            )
+                        self.curriculum.transition_events.clear()
+    
+                    # The same entry-eligible canonical row feeds summaries and recordings.
+                    active_on_entry = agent_state.info["active_on_entry"]
+                    components = agent_state.info["reward_components"]
+                    zero_reward = torch.zeros_like(agent_state.rewards)
+                    episode_reward += torch.where(active_on_entry, agent_state.rewards, zero_reward)
+                    episode_extrinsic_reward += torch.where(active_on_entry, components["extrinsic"], zero_reward)
+                    episode_intrinsic_reward += torch.where(active_on_entry, components["intrinsic"], zero_reward)
+                    episode_shaping_reward += torch.where(active_on_entry, components["shaping"], zero_reward)
+                    batch_episode_steps += 1
+                    episode_live_agent_transitions += int(active_on_entry.sum().item())
+    
+                    if "successful_interactions" in agent_state.info:
+                        for agent_idx, affordance_name in agent_state.info["successful_interactions"].items():
+                            if 0 <= agent_idx < num_agents and bool(active_on_entry[agent_idx].item()):
+                                # Existing: count tracking
+                                affordance_visits[agent_idx][affordance_name] += 1
+    
+                                # NEW: transition tracking
+                                prev = last_affordance[agent_idx]
+                                if prev is not None:
+                                    # Record transition: prev → current
+                                    affordance_transitions[agent_idx][prev][affordance_name] += 1
+    
+                                # Update last affordance for next transition
+                                last_affordance[agent_idx] = affordance_name
+    
+                    # Track custom action uses (REST, MEDITATE, etc.)
+                    for idx in range(num_agents):
+                        if not bool(active_on_entry[idx].item()):
+                            continue
+                        action_id = int(agent_state.actions[idx].item())
+                        # Custom actions start after substrate actions
+                        if action_id >= self.env.action_space.substrate_action_count:
+                            action = self.env.action_space.get_action_by_id(action_id)
+                            custom_action_uses[idx][action.name] += 1
+    
+                    # Record step if recording enabled (only agent 0 for now)
+                    if self.recorder is not None and bool(active_on_entry[0].item()):
+                        # Get temporal mechanics fields if available
+                        time_of_day = agent_state.info.get("time_of_day", [None] * num_agents)[0]
+                        interaction_progress = agent_state.info.get("interaction_progress", [None] * num_agents)[0]
+    
+                        # Get action masks for debugging (which actions were valid)
+                        action_masks = self.env.get_action_masks()[0]  # Agent 0 action masks
+    
+                        self.recorder.record_step(
+                            step=step,
+                            positions=self.env.positions[0],  # Agent 0 position
+                            meters=self.env.meters[0],  # Agent 0 meters
+                            action=(
+                                agent_state.actions[0].item() if hasattr(agent_state.actions[0], "item") else int(agent_state.actions[0])
+                            ),
+                            reward=float(agent_state.rewards[0].item()),
+                            extrinsic_reward=float(components["extrinsic"][0].item()),
+                            intrinsic_reward=float(components["intrinsic"][0].item()),
+                            shaping_reward=float(components["shaping"][0].item()),
+                            done=bool(agent_state.dones[0].item()),
+                            q_values=agent_state.info.get("q_values", [None] * num_agents)[0],
+                            epsilon=float(agent_state.epsilons[0].item()),
+                            action_masks=action_masks,
+                            time_of_day=time_of_day,
+                            interaction_progress=interaction_progress,
+                        )
+    
+                    alive_agents &= ~agent_state.dones
+                    if torch.all(agent_state.dones).item() or self.environment_step_budget_reached:
+                        break
+    
+                if last_agent_state is None:
+                    continue
+    
+                # Close surviving lanes before publishing for the actual external stop.
+                completion_reason: RunnerCompletionReason
+                if self.environment_step_budget_reached:
+                    completion_reason = "budget"
+                elif self.should_shutdown:
+                    completion_reason = "shutdown"
+                else:
+                    completion_reason = "cap"
+                for agent_idx in range(self.population.num_agents):
+                    if not last_agent_state.dones[agent_idx]:
+                        self.population.flush_episode(agent_idx=agent_idx, reason=completion_reason)
+    
+                completions = self.population.episode_completions
+                if any(outcome is None for outcome in completions):
+                    raise RuntimeError("Cannot publish a participated lane without its completion")
+                completed_outcomes = [outcome for outcome in completions if outcome is not None]
+                step_counts = torch.tensor(
+                    [outcome.survival_time for outcome in completed_outcomes], dtype=torch.long, device=self.env.device
+                )
+                final_meters = [outcome.final_meters.detach().cpu().clone() for outcome in completed_outcomes]
+                curriculum_survival_tensor = step_counts.float()
+                curriculum_done_tensor = torch.ones(num_agents, dtype=torch.bool, device=self.env.device)
+                self.population.update_curriculum_tracker(curriculum_survival_tensor, curriculum_done_tensor)
+    
+                epsilon_value = self.population._get_current_epsilon_value()
+                intrinsic_weight_value = self.population._get_current_intrinsic_weight_value()
+    
+                episode_reward_cpu = episode_reward.detach().cpu()
+                episode_extrinsic_cpu = episode_extrinsic_reward.detach().cpu()
+                episode_intrinsic_cpu = episode_intrinsic_reward.detach().cpu()
+                episode_shaping_cpu = episode_shaping_reward.detach().cpu()
+                completion = self.population.episode_completions[0]
+                if completion is None:
+                    raise RuntimeError("Cannot publish an episode without a slot-zero completion")
+                step_counts_cpu = step_counts.detach().cpu().long()
+                stages_cpu = self.curriculum.tracker.agent_stages.detach().cpu()
+    
+                # Log metrics to database
+                episode_timestamp = time.time()
+                self.db.insert_episode(
+                    episode_id=self.current_episode,
+                    timestamp=episode_timestamp,
+                    survival_time=completion.survival_time,
+                    batch_episode_steps=batch_episode_steps,
+                    live_agent_transitions=episode_live_agent_transitions,
+                    completion_reason=completion.reason,
+                    total_reward=float(episode_reward_cpu[0].item()),
+                    extrinsic_reward=float(episode_extrinsic_cpu[0].item()),
+                    intrinsic_reward=float(episode_intrinsic_cpu[0].item()),
+                    shaping_reward=float(episode_shaping_cpu[0].item()),
+                    intrinsic_weight=intrinsic_weight_value,
+                    curriculum_stage=int(stages_cpu[0].item()),
+                    epsilon=epsilon_value,
+                    observation_schema_hash=level_meta.observation_schema_hash,
+                )
+    
+                # NEW: Insert affordance transitions for agent 0
+                if affordance_transitions[0]:
+                    # Convert nested defaultdict to regular dict for database insertion
+                    transitions_dict = {from_aff: dict(to_affs) for from_aff, to_affs in affordance_transitions[0].items()}
+                    self.db.insert_affordance_visits(episode_id=self.current_episode, transitions=transitions_dict)
+    
+                # Finish episode recording if enabled
+                if self.recorder is not None:
+                    from townlet.recording.data_structures import EpisodeMetadata
+    
+                    metadata = EpisodeMetadata(
+                        episode_id=self.current_episode,
+                        survival_steps=completion.survival_time,
+                        completion_reason=completion.reason,
+                        total_reward=float(episode_reward_cpu[0].item()),
+                        extrinsic_reward=float(episode_extrinsic_cpu[0].item()),
+                        intrinsic_reward=float(episode_intrinsic_cpu[0].item()),
+                        shaping_reward=float(episode_shaping_cpu[0].item()),
+                        curriculum_stage=int(stages_cpu[0].item()),
+                        epsilon=epsilon_value,
+                        intrinsic_weight=intrinsic_weight_value,
+                        timestamp=episode_timestamp,
+                        affordance_layout={
+                            name: tuple(position) for name, position in self.env.get_affordance_positions()["positions"].items()
+                        },
+                        affordance_visits={k: v for k, v in affordance_visits[0].items()},  # Agent 0 visits
+                        custom_action_uses={k: v for k, v in custom_action_uses[0].items()},  # Agent 0 custom actions
+                    )
+                    self.recorder.finish_episode(metadata)
+    
+                agent_metrics = []
+                for idx, agent_id in enumerate(self.population.agent_ids):
+                    agent_completion = self.population.episode_completions[idx]
+                    if agent_completion is None:
+                        raise RuntimeError("Cannot publish a participated lane without its completion")
+                    agent_metrics.append(
+                        {
+                            "agent_id": agent_id,
+                            "survival_time": agent_completion.survival_time,
+                            "completion_reason": agent_completion.reason,
+                            "total_reward": float(episode_reward_cpu[idx].item()),
+                            "extrinsic_reward": float(episode_extrinsic_cpu[idx].item()),
+                            "intrinsic_reward": float(episode_intrinsic_cpu[idx].item()),
+                            "shaping_reward": float(episode_shaping_cpu[idx].item()),
+                            "curriculum_stage": int(stages_cpu[idx].item()),
+                            "epsilon": epsilon_value,
+                            "intrinsic_weight": intrinsic_weight_value,
+                        }
+                    )
+    
+                # Log to TensorBoard (Phase 1 - Episode metrics)
+                self.tb_logger.log_multi_agent_episode(
+                    episode=self.current_episode,
+                    agents=agent_metrics,
+                )
+                self.tb_logger.writer.add_scalar("Batch/Vector_Ticks", batch_episode_steps, self.current_episode)
+                self.tb_logger.writer.add_scalar("Batch/Live_Agent_Transitions", episode_live_agent_transitions, self.current_episode)
+    
+                # Phase 2 - Training metrics (if training occurred this episode)
+                training_metrics = self.population.get_training_metrics()
+                if training_metrics["training_step"] > 0:
+                    self.tb_logger.log_training_step(
+                        step=training_metrics["training_step"],
+                        td_error=training_metrics["td_error"],
+                        loss=training_metrics["loss"],
+                    )
+    
+                # Phase 3 - Meter dynamics and affordance usage
+                # Get actual meter names from config (supports variable meter counts)
+                meter_names = self.env.bars_config.meter_names
+                for idx, agent_id in enumerate(self.population.agent_ids):
+                    meters_tensor = final_meters[idx]
+                    if meters_tensor is not None:
+                        meter_dict = {name: meters_tensor[i].item() for i, name in enumerate(meter_names)}
+                        self.tb_logger.log_meters(
+                            episode=self.current_episode,
+                            step=int(step_counts_cpu[idx].item()),
+                            meters=meter_dict,
+                            agent_id=agent_id,
+                        )
+    
+                for idx, visits in enumerate(affordance_visits):
+                    if visits:
+                        self.tb_logger.log_affordance_usage(
+                            episode=self.current_episode,
+                            affordance_counts=dict(visits),
+                            agent_id=self.population.agent_ids[idx],
+                        )
+    
+                for idx, uses in enumerate(custom_action_uses):
+                    if uses:
+                        self.tb_logger.log_custom_action_usage(
+                            episode=self.current_episode,
+                            action_counts=dict(uses),
+                            agent_id=self.population.agent_ids[idx],
+                        )
+    
+                # Heartbeat log every HEARTBEAT_INTERVAL episodes
+                if self.current_episode % self.HEARTBEAT_INTERVAL == 0:
+                    elapsed = time.time() - episode_start
+                    stage_overview = "/".join(str(int(s.item())) for s in stages_cpu)
+    
+                    # Calculate reward breakdown
+                    total_reward = episode_reward_cpu[0].item()
+                    extrinsic_reward = episode_extrinsic_cpu[0].item()
+                    intrinsic_reward = episode_intrinsic_cpu[0].item()
+                    shaping_reward = episode_shaping_cpu[0].item()
+    
+                    logger.info(
+                        f"Episode {self.current_episode}/{self.max_episodes} | "
+                        f"Survival: {int(step_counts_cpu[0].item())} steps | "
+                        f"Reward: {total_reward:.2f} (Extrinsic: {extrinsic_reward:.2f}, "
+                        f"Intrinsic: {intrinsic_reward:.2f}, Shaping: {shaping_reward:.2f}) | "
+                        f"ε: {epsilon_value:.3f} | "
+                        f"Stage: {stage_overview} | "
+                        f"Time: {elapsed:.2f}s"
+                    )
+    
+                # Detailed summary every SUMMARY_INTERVAL episodes
+                if self.current_episode % self.SUMMARY_INTERVAL == 0:
+                    # Get training metrics
+                    training_metrics = self.population.get_training_metrics()
+    
+                    # Get final meters for agent 0
+                    final_meter_values = {}
+                    if final_meters[0] is not None:
+                        # Get actual meter names from config (supports variable meter counts)
+                        meter_names = self.env.bars_config.meter_names
+                        final_meter_values = {name: final_meters[0][i].item() for i, name in enumerate(meter_names)}
+    
+                    # Get affordance usage for agent 0 with tick counts and completed interactions
+                    if affordance_visits[0]:
+                        summary_parts = []
+                        for name, tick_count in affordance_visits[0].items():
+                            # Get duration_ticks to calculate completed interactions
+                            duration = self.env.affordance_engine.get_duration_ticks(name)
+                            completed = tick_count // duration
+                            summary_parts.append(f"{name}: {tick_count} ({completed})")
+                        affordance_summary = ", ".join(summary_parts)
+                    else:
+                        affordance_summary = "None"
+    
+                    logger.info("=" * 80)
+                    logger.info(f"📊 SUMMARY - Episode {self.current_episode}/{self.max_episodes}")
+                    logger.info("-" * 80)
+                    logger.info(f"Performance:    Survival: {int(step_counts_cpu[0].item())} steps | Stage: {stage_overview}")
+                    logger.info(
+                        f"Rewards:        Total: {total_reward:.2f} | "
+                        f"Extrinsic: {extrinsic_reward:.2f} | Intrinsic: {intrinsic_reward:.2f} | Shaping: {shaping_reward:.2f}"
+                    )
+                    # Check if annealing would trigger (for status display)
+                    annealing_active = self.exploration.should_anneal() if hasattr(self.exploration, "should_anneal") else False
+                    annealing_status = "🔻 ANNEALING" if annealing_active else "✓ exploring"
+                    logger.info(
+                        f"Exploration:    ε: {epsilon_value:.3f} | Intrinsic Weight: {intrinsic_weight_value:.3f} | {annealing_status}"
+                    )
+                    if training_metrics["training_step"] > 0:
+                        logger.info(
+                            f"Training:       Steps: {training_metrics['training_step']} | "
+                            f"Loss: {training_metrics['loss']:.4f} | TD Error: {training_metrics['td_error']:.4f}"
+                        )
+                    if final_meter_values:
+                        # Build dynamic meter summary (supports variable meter counts)
+                        meter_parts = [f"{name.capitalize()}: {value:.2f}" for name, value in final_meter_values.items()]
+                        meter_summary = " | ".join(meter_parts)
+                        logger.info(f"Final Meters:   {meter_summary}")
+                    logger.info(f"Affordances:    {affordance_summary}")
+    
+                    # Log custom action usage (REST, MEDITATE, etc.)
+                    if custom_action_uses[0]:
+                        custom_summary_parts = [f"{name}: {count}" for name, count in custom_action_uses[0].items()]
+                        custom_summary = ", ".join(custom_summary_parts)
+                        logger.info(f"Custom Actions: {custom_summary}")
+    
+                    # Log total interaction ticks for debugging
+                    total_interaction_ticks = sum(affordance_visits[0].values()) if affordance_visits[0] else 0
+                    total_custom_actions = sum(custom_action_uses[0].values()) if custom_action_uses[0] else 0
+                    total_interactions = total_interaction_ticks + total_custom_actions
+                    logger.info(
+                        f"Interactions:   {total_interaction_ticks} affordance ticks + {total_custom_actions} custom actions = "
+                        f"{total_interactions}/{int(step_counts_cpu[0].item())} steps "
+                        f"({100 * total_interactions / max(1, int(step_counts_cpu[0].item())):.1f}%)"
+                    )
+                    logger.info("=" * 80)
+    
+                # Checkpoint every CHECKPOINT_INTERVAL episodes
+                if self.current_episode % self.CHECKPOINT_INTERVAL == 0:
+>                   self.save_checkpoint()
+
+src/townlet/demo/runner.py:950: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/demo/runner.py:311: in save_checkpoint
+    torch.save(checkpoint, checkpoint_path)
+.venv/lib/python3.13/site-packages/torch/serialization.py:1004: in save
+    _save(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+obj = {'action_dim': 15, 'actions_hash': 'bef1093ab1575bdd63dbba18492bc9706213f4785e3f8858182748432e56ac98', 'affordance_lay..., 'DOCTOR': [6, 1], ...}}, 'affordances_hash': 'd6abb07e159068b7dfdc9f9b81c5e5de65bed01e8dcf82c6cee889658c3dc0e8', ...}
+zip_file = <torch.PyTorchFileWriter object at 0x7fc3668a41b0>
+pickle_module = <module 'pickle' from '/usr/lib/python3.13/pickle.py'>
+pickle_protocol = 2, _disable_byteorder_record = False
+
+    def _save(
+        obj,
+        zip_file,
+        pickle_module,
+        pickle_protocol,
+        _disable_byteorder_record,
+    ):
+        serialized_storages: dict[str, torch.storage.UntypedStorage] = {}
+        id_map: dict[int, str] = {}
+    
+        # Since loading storages that view the same data with different dtypes is
+        # not supported, we need to keep track of the dtype associated with each
+        # storage data_ptr and throw an error if the dtype is ever different.
+        # TODO: This feature could be added in the future
+        storage_dtypes: dict[int, torch.dtype] = {}
+    
+        def persistent_id(obj):
+            # FIXME: the docs say that persistent_id should only return a string
+            # but torch store returns tuples. This works only in the binary protocol
+            # see
+            # https://docs.python.org/2/library/pickle.html#pickling-and-unpickling-external-objects
+            # https://github.com/python/cpython/blob/master/Lib/pickle.py#L527-L537
+            if isinstance(obj, torch.storage.TypedStorage) or torch.is_storage(obj):
+                if isinstance(obj, torch.storage.TypedStorage):
+                    # TODO: Once we decide to break serialization FC, this case
+                    # can be deleted
+                    storage = obj._untyped_storage
+                    storage_dtype = obj.dtype
+                    storage_type_str = obj._pickle_storage_type()
+                    storage_type = getattr(torch, storage_type_str)
+                    storage_numel = obj._size()
+    
+                else:
+                    storage = obj
+                    storage_dtype = torch.uint8
+                    storage_type = normalize_storage_type(type(obj))
+                    storage_numel = storage.nbytes()
+    
+                # If storage is allocated, ensure that any other saved storages
+                # pointing to the same data all have the same dtype. If storage is
+                # not allocated, don't perform this check
+                if str(storage.device) != "meta" and storage.data_ptr() != 0:
+                    if storage.data_ptr() in storage_dtypes:
+                        if storage_dtype != storage_dtypes[storage.data_ptr()]:
+                            raise RuntimeError(
+                                "Cannot save multiple tensors or storages that "
+                                "view the same data as different types"
+                            )
+                    else:
+                        storage_dtypes[storage.data_ptr()] = storage_dtype
+    
+                storage_key = id_map.setdefault(storage._cdata, str(len(id_map)))
+                if hasattr(obj, "_fake_device") and obj._fake_device is not None:
+                    location = str(obj._fake_device)
+                else:
+                    location = location_tag(storage)
+                serialized_storages[storage_key] = storage
+    
+                return ("storage", storage_type, storage_key, location, storage_numel)
+    
+            return None
+    
+        # Write the pickle data for `obj`
+        data_buf = io.BytesIO()
+    
+        class PyTorchPickler(pickle_module.Pickler):  # type: ignore[name-defined]
+            def persistent_id(self, obj):
+                return persistent_id(obj)  # noqa: F821
+    
+        pickler = PyTorchPickler(data_buf, protocol=pickle_protocol)
+>       pickler.dump(obj)
+E       _pickle.PicklingError: Can't pickle <function LRScheduler.step at 0x7fc3668b3920>: it's not the same object as torch.optim.lr_scheduler.LRScheduler.step
+
+.venv/lib/python3.13/site-packages/torch/serialization.py:1254: PicklingError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave10-r0-narrow/popen-gw1/test_real_runner_owned_samplin0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fc376c49350>
+law = 'successive_without_replacement'
+
+    @pytest.mark.parametrize("law", LAWS)
+    def test_real_runner_owned_sampling_identity(tmp_path, monkeypatch, law):
+        """A global-NumPy replay owner violates the explicit authored runner stream."""
+>       runner, audit, options = _run(
+            tmp_path,
+            monkeypatch,
+            family="feedforward",
+            budget=8,
+            minimum=2,
+            batch_size=2,
+            replay_updates={"sampling_mode": law},
+            omit_priority_reduction=True,
+        )
+
+tests/test_townlet/regressions/bac/test_runner_readiness.py:354: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_runner_readiness.py:305: in _run
+    runner.run()
+src/townlet/demo/runner.py:974: in run
+    self.save_checkpoint()
+src/townlet/demo/runner.py:311: in save_checkpoint
+    torch.save(checkpoint, checkpoint_path)
+.venv/lib/python3.13/site-packages/torch/serialization.py:1004: in save
+    _save(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+obj = {'action_dim': 15, 'actions_hash': 'bef1093ab1575bdd63dbba18492bc9706213f4785e3f8858182748432e56ac98', 'affordance_lay..., 'DOCTOR': [6, 1], ...}}, 'affordances_hash': 'd6abb07e159068b7dfdc9f9b81c5e5de65bed01e8dcf82c6cee889658c3dc0e8', ...}
+zip_file = <torch.PyTorchFileWriter object at 0x7fc3668984f0>
+pickle_module = <module 'pickle' from '/usr/lib/python3.13/pickle.py'>
+pickle_protocol = 2, _disable_byteorder_record = False
+
+    def _save(
+        obj,
+        zip_file,
+        pickle_module,
+        pickle_protocol,
+        _disable_byteorder_record,
+    ):
+        serialized_storages: dict[str, torch.storage.UntypedStorage] = {}
+        id_map: dict[int, str] = {}
+    
+        # Since loading storages that view the same data with different dtypes is
+        # not supported, we need to keep track of the dtype associated with each
+        # storage data_ptr and throw an error if the dtype is ever different.
+        # TODO: This feature could be added in the future
+        storage_dtypes: dict[int, torch.dtype] = {}
+    
+        def persistent_id(obj):
+            # FIXME: the docs say that persistent_id should only return a string
+            # but torch store returns tuples. This works only in the binary protocol
+            # see
+            # https://docs.python.org/2/library/pickle.html#pickling-and-unpickling-external-objects
+            # https://github.com/python/cpython/blob/master/Lib/pickle.py#L527-L537
+            if isinstance(obj, torch.storage.TypedStorage) or torch.is_storage(obj):
+                if isinstance(obj, torch.storage.TypedStorage):
+                    # TODO: Once we decide to break serialization FC, this case
+                    # can be deleted
+                    storage = obj._untyped_storage
+                    storage_dtype = obj.dtype
+                    storage_type_str = obj._pickle_storage_type()
+                    storage_type = getattr(torch, storage_type_str)
+                    storage_numel = obj._size()
+    
+                else:
+                    storage = obj
+                    storage_dtype = torch.uint8
+                    storage_type = normalize_storage_type(type(obj))
+                    storage_numel = storage.nbytes()
+    
+                # If storage is allocated, ensure that any other saved storages
+                # pointing to the same data all have the same dtype. If storage is
+                # not allocated, don't perform this check
+                if str(storage.device) != "meta" and storage.data_ptr() != 0:
+                    if storage.data_ptr() in storage_dtypes:
+                        if storage_dtype != storage_dtypes[storage.data_ptr()]:
+                            raise RuntimeError(
+                                "Cannot save multiple tensors or storages that "
+                                "view the same data as different types"
+                            )
+                    else:
+                        storage_dtypes[storage.data_ptr()] = storage_dtype
+    
+                storage_key = id_map.setdefault(storage._cdata, str(len(id_map)))
+                if hasattr(obj, "_fake_device") and obj._fake_device is not None:
+                    location = str(obj._fake_device)
+                else:
+                    location = location_tag(storage)
+                serialized_storages[storage_key] = storage
+    
+                return ("storage", storage_type, storage_key, location, storage_numel)
+    
+            return None
+    
+        # Write the pickle data for `obj`
+        data_buf = io.BytesIO()
+    
+        class PyTorchPickler(pickle_module.Pickler):  # type: ignore[name-defined]
+            def persistent_id(self, obj):
+                return persistent_id(obj)  # noqa: F821
+    
+        pickler = PyTorchPickler(data_buf, protocol=pickle_protocol)
+>       pickler.dump(obj)
+E       _pickle.PicklingError: Can't pickle <function LRScheduler.step at 0x7fc3668b3920>: it's not the same object as torch.optim.lr_scheduler.LRScheduler.step
+
+.venv/lib/python3.13/site-packages/torch/serialization.py:1254: PicklingError
+_________ test_real_runner_recurrent_per[independent_with_replacement] _________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+self = <townlet.demo.runner.DemoRunner object at 0x7fee48812270>
+
+    def run(self):
+        """Run demo training loop."""
+        logger.info(f"Starting demo runner: {self.max_episodes} episodes")
+        logger.info(f"Database: {self.db_path}")
+        logger.info(f"Checkpoints: {self.checkpoint_dir}")
+    
+        # PDR-002: No-defaults validation done automatically by config DTOs
+        # All required parameters validated at load time
+    
+        # Initialize training components
+        # v2.1: device is an infrastructure concern (no-defaults exemption).
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
+        # Per-level metadata
+        level_meta = self.compiled.get_level(self.level_name)
+        # Extract config parameters from DTOs (all required, validated at load time)
+        loop_cfg = self.training_config.training_loop
+        num_agents = self.training_config.population.size
+        grid_cells = self.compiled.metadata.grid_cells
+        partial_observability = level_meta.curriculum.curriculum.active_vision != "global"
+        vision_range = level_meta.curriculum.curriculum.vision_range
+        enable_temporal_mechanics = level_meta.curriculum.curriculum.active_temporal
+    
+        # Create environment from compiled universe
+        self.env = VectorizedHamletEnv.from_universe(
+            self.compiled,
+            level_name=self.level_name,
+            num_agents=num_agents,
+            device=device,
+        )
+    
+        # Dimensions sourced from compiled metadata
+        obs_dim = level_meta.token_spec.total_dims
+        action_dim = level_meta.action_metadata.total_actions
+    
+        # Create curriculum (all params required per PDR-002)
+        self.curriculum = build_curriculum(
+            self.training_config,
+            max_steps_per_episode=loop_cfg.max_steps_per_episode,
+            device=device,
+        )
+    
+        # Create exploration (all params required per PDR-002)
+        intrinsic_cfg = self.training_config.intrinsic
+        self.exploration = AdaptiveIntrinsicExploration(
+            obs_dim=obs_dim,
+            embed_dim=intrinsic_cfg.rnd.feature_dim,
+            rnd_learning_rate=intrinsic_cfg.rnd.learning_rate,
+            rnd_training_batch_size=self.training_config.replay_buffer.batch_size,
+            initial_intrinsic_weight=intrinsic_cfg.initial_weight,
+            min_intrinsic_weight=intrinsic_cfg.annealing.min_weight,
+            variance_threshold=intrinsic_cfg.annealing.threshold,
+            min_survival_fraction=intrinsic_cfg.min_survival_fraction,
+            max_episode_length=loop_cfg.max_steps_per_episode,
+            survival_window=intrinsic_cfg.survival_window,
+            decay_rate=intrinsic_cfg.annealing.decay_rate,
+            epsilon_start=self.training_config.exploration.epsilon_start,
+            epsilon_min=self.training_config.exploration.epsilon_end,
+            epsilon_decay=self.training_config.exploration.epsilon_decay,
+            device=device,
+        )
+    
+        # Get training hyperparameters from config (all required per PDR-002)
+        train_frequency = loop_cfg.train_frequency
+        batch_size = self.training_config.replay_buffer.batch_size
+        sequence_length = loop_cfg.sequence_length
+        max_grad_norm = loop_cfg.max_grad_norm
+    
+        # Create agent IDs
+        agent_ids = [f"agent_{i}" for i in range(num_agents)]
+    
+        # Use the BrainConfig loaded from brain.yaml during compilation.
+        from townlet.config.brain_config import apply_training_overrides
+    
+        base_brain_config = self.brain_config
+        logger.info(f"Brain config from brain.yaml: {base_brain_config.description}")
+    
+        # Apply curriculum-level overrides from training.yaml to derive effective brain config
+        effective_brain_config = apply_training_overrides(base_brain_config, self.training_config)
+    
+        # Create population (effective_brain_config provides network/optimizer/Q-learning parameters)
+        self.population = VectorizedPopulation(
+            env=self.env,
+            curriculum=self.curriculum,
+            exploration=self.exploration,
+            agent_ids=agent_ids,
+            device=device,
+            obs_dim=obs_dim,
+            action_dim=action_dim,
+            tb_logger=self.tb_logger,
+            train_frequency=train_frequency,
+            batch_size=batch_size,
+            sequence_length=sequence_length,
+            max_grad_norm=max_grad_norm,
+            brain_config=effective_brain_config,
+            max_episodes=self.max_episodes,  # For PER beta annealing
+            max_steps_per_episode=loop_cfg.max_steps_per_episode,  # For PER beta annealing
+        )
+    
+        self.curriculum.initialize_population(num_agents)
+    
+        # Initialize episode recorder if enabled
+        recording_cfg = self.training_config.recording
+        if recording_cfg and recording_cfg.enabled:
+            from townlet.recording.recorder import EpisodeRecorder
+    
+            recording_payload = recording_cfg.model_dump(exclude_none=True)
+            # Create recording output directory
+            recording_output_dir = self.checkpoint_dir / (recording_cfg.output_dir or "recordings")
+            recording_output_dir.mkdir(parents=True, exist_ok=True)
+    
+            self.recorder = EpisodeRecorder(
+                config=recording_payload,
+                output_dir=recording_output_dir,
+                database=self.db,
+                curriculum=self.curriculum,
+            )
+            logger.info(f"Episode recording enabled: {recording_output_dir}")
+        else:
+            logger.info("Episode recording disabled")
+    
+        # Try to resume from checkpoint
+        loaded_episode = self.load_checkpoint()
+        if loaded_episode is not None:
+            self.current_episode = loaded_episode + 1
+    
+        # Phase 4 - Log hyperparameters to TensorBoard
+        self.hparams = {
+            "learning_rate": effective_brain_config.optimizer.learning_rate,
+            "gamma": effective_brain_config.q_learning.gamma,
+            "network_architecture": base_brain_config.architecture.type,  # 'feedforward' or 'recurrent'
+            "replay_buffer_capacity": effective_brain_config.replay.capacity,
+            "grid_cells": grid_cells,
+            "partial_observability": partial_observability,
+            "vision_range": vision_range,
+            "enable_temporal": enable_temporal_mechanics,
+            "initial_intrinsic_weight": 1.0,
+            "variance_threshold": self.training_config.intrinsic.annealing.threshold,
+            "max_steps_per_episode": loop_cfg.max_steps_per_episode,
+            "observation_schema_hash": level_meta.observation_schema_hash,
+        }
+        # Note: final metrics will be logged at end of training
+        self.tb_logger.log_hyperparameters(hparams=self.hparams, metrics={})
+    
+        # Check for shutdown before starting training loop
+        if self.should_shutdown:
+            logger.info("[Training] Shutdown requested during initialization, exiting before training starts")
+            return
+    
+        # Mark training started
+        self.db.set_system_state("training_status", "running")
+        self.db.set_system_state("start_time", str(time.time()))
+        if self.max_environment_steps is not None:
+            self.db.set_system_state("environment_step_budget_requested", str(self.max_environment_steps))
+            self.db.set_system_state("environment_step_budget_stop_rule", "stop_before_vector_step")
+    
+        # Training loop
+        failed = False
+        try:
+            while self.current_episode < self.max_episodes and not self.should_shutdown and not self.environment_step_budget_reached:
+                episode_start = time.time()
+    
+                # Generalization test at episode 5000
+                if self.current_episode == 5000:
+                    logger.info("=" * 60)
+                    logger.info("GENERALIZATION TEST: Randomizing affordance positions")
+                    logger.info("=" * 60)
+    
+                    # Store old positions
+                    old_positions = self.env.get_affordance_positions()
+                    logger.info(f"Old positions: {old_positions}")
+    
+                    # Randomize
+                    self.env.randomize_affordance_positions()
+    
+                    # Store new positions
+                    new_positions = self.env.get_affordance_positions()
+                    logger.info(f"New positions: {new_positions}")
+    
+                    # Mark in database
+                    import json
+    
+                    self.db.set_system_state("affordance_randomization_episode", "5000")
+                    self.db.set_system_state("old_affordance_positions", json.dumps(old_positions))
+                    self.db.set_system_state("new_affordance_positions", json.dumps(new_positions))
+    
+                # Reset environment and population
+                # NOTE: Only call population.reset(), which internally calls env.reset()
+                # Calling both causes double reset which breaks affordance randomization
+                self.population.reset()
+    
+                # Run episode
+                num_agents = self.population.num_agents
+                max_steps = loop_cfg.max_steps_per_episode
+                episode_reward = torch.zeros(num_agents, device=self.env.device)
+                episode_extrinsic_reward = torch.zeros(num_agents, device=self.env.device)
+                episode_intrinsic_reward = torch.zeros(num_agents, device=self.env.device)
+                episode_shaping_reward = torch.zeros(num_agents, device=self.env.device)
+                batch_episode_steps = 0
+                episode_live_agent_transitions = 0
+                affordance_visits = [defaultdict(int) for _ in range(num_agents)]
+                custom_action_uses = [defaultdict(int) for _ in range(num_agents)]  # Track REST, MEDITATE, etc.
+                # NEW: Transition tracking
+                affordance_transitions = [defaultdict(lambda: defaultdict(int)) for _ in range(num_agents)]
+                last_affordance = [None for _ in range(num_agents)]
+                last_agent_state: BatchedAgentState | None = None
+                alive_agents = torch.ones(num_agents, dtype=torch.bool, device=self.env.device)
+    
+                for step in range(max_steps):
+                    # Check for shutdown request every step for immediate response
+                    if self.should_shutdown:
+                        logger.info(f"[Training] Shutdown requested during episode {self.current_episode + 1}, step {step}/{max_steps}")
+                        break
+    
+                    live_agent_count = int(alive_agents.sum().item())
+                    if self.max_environment_steps is not None:
+                        may_step, shortfall = decide_live_agent_budget(
+                            completed=self.completed_live_agent_steps,
+                            live_agents=live_agent_count,
+                            budget=self.max_environment_steps,
+                        )
+                        if not may_step:
+                            self.environment_step_budget_shortfall = shortfall
+                            self.environment_step_budget_reached = True
+                            logger.info(
+                                "[Training] Environment-step budget reached at %s/%s live-agent transitions " "(conservative shortfall %s)",
+                                self.completed_live_agent_steps,
+                                self.max_environment_steps,
+                                shortfall,
+                            )
+                            break
+    
+                    agent_state = self.population.step_population(self.env)
+                    last_agent_state = agent_state
+                    self.completed_live_agent_steps += live_agent_count
+                    if self.max_environment_steps is not None and self.completed_live_agent_steps == self.max_environment_steps:
+                        self.environment_step_budget_shortfall = 0
+                        self.environment_step_budget_reached = True
+    
+                    if self.curriculum.transition_events:
+                        self.tb_logger.log_curriculum_transitions(
+                            episode=self.current_episode,
+                            events=list(self.curriculum.transition_events),
+                        )
+                        # Log curriculum transitions to console
+                        for event in self.curriculum.transition_events:
+                            logger.info(
+                                f"🎓 Curriculum {event['type'].upper()}: Stage {event['from_stage']} → {event['to_stage']} "
+                                f"(Survival: {event['survival_rate']:.1%}, Entropy: {event['entropy']:.3f})"
+                            )
+                        self.curriculum.transition_events.clear()
+    
+                    # The same entry-eligible canonical row feeds summaries and recordings.
+                    active_on_entry = agent_state.info["active_on_entry"]
+                    components = agent_state.info["reward_components"]
+                    zero_reward = torch.zeros_like(agent_state.rewards)
+                    episode_reward += torch.where(active_on_entry, agent_state.rewards, zero_reward)
+                    episode_extrinsic_reward += torch.where(active_on_entry, components["extrinsic"], zero_reward)
+                    episode_intrinsic_reward += torch.where(active_on_entry, components["intrinsic"], zero_reward)
+                    episode_shaping_reward += torch.where(active_on_entry, components["shaping"], zero_reward)
+                    batch_episode_steps += 1
+                    episode_live_agent_transitions += int(active_on_entry.sum().item())
+    
+                    if "successful_interactions" in agent_state.info:
+                        for agent_idx, affordance_name in agent_state.info["successful_interactions"].items():
+                            if 0 <= agent_idx < num_agents and bool(active_on_entry[agent_idx].item()):
+                                # Existing: count tracking
+                                affordance_visits[agent_idx][affordance_name] += 1
+    
+                                # NEW: transition tracking
+                                prev = last_affordance[agent_idx]
+                                if prev is not None:
+                                    # Record transition: prev → current
+                                    affordance_transitions[agent_idx][prev][affordance_name] += 1
+    
+                                # Update last affordance for next transition
+                                last_affordance[agent_idx] = affordance_name
+    
+                    # Track custom action uses (REST, MEDITATE, etc.)
+                    for idx in range(num_agents):
+                        if not bool(active_on_entry[idx].item()):
+                            continue
+                        action_id = int(agent_state.actions[idx].item())
+                        # Custom actions start after substrate actions
+                        if action_id >= self.env.action_space.substrate_action_count:
+                            action = self.env.action_space.get_action_by_id(action_id)
+                            custom_action_uses[idx][action.name] += 1
+    
+                    # Record step if recording enabled (only agent 0 for now)
+                    if self.recorder is not None and bool(active_on_entry[0].item()):
+                        # Get temporal mechanics fields if available
+                        time_of_day = agent_state.info.get("time_of_day", [None] * num_agents)[0]
+                        interaction_progress = agent_state.info.get("interaction_progress", [None] * num_agents)[0]
+    
+                        # Get action masks for debugging (which actions were valid)
+                        action_masks = self.env.get_action_masks()[0]  # Agent 0 action masks
+    
+                        self.recorder.record_step(
+                            step=step,
+                            positions=self.env.positions[0],  # Agent 0 position
+                            meters=self.env.meters[0],  # Agent 0 meters
+                            action=(
+                                agent_state.actions[0].item() if hasattr(agent_state.actions[0], "item") else int(agent_state.actions[0])
+                            ),
+                            reward=float(agent_state.rewards[0].item()),
+                            extrinsic_reward=float(components["extrinsic"][0].item()),
+                            intrinsic_reward=float(components["intrinsic"][0].item()),
+                            shaping_reward=float(components["shaping"][0].item()),
+                            done=bool(agent_state.dones[0].item()),
+                            q_values=agent_state.info.get("q_values", [None] * num_agents)[0],
+                            epsilon=float(agent_state.epsilons[0].item()),
+                            action_masks=action_masks,
+                            time_of_day=time_of_day,
+                            interaction_progress=interaction_progress,
+                        )
+    
+                    alive_agents &= ~agent_state.dones
+                    if torch.all(agent_state.dones).item() or self.environment_step_budget_reached:
+                        break
+    
+                if last_agent_state is None:
+                    continue
+    
+                # Close surviving lanes before publishing for the actual external stop.
+                completion_reason: RunnerCompletionReason
+                if self.environment_step_budget_reached:
+                    completion_reason = "budget"
+                elif self.should_shutdown:
+                    completion_reason = "shutdown"
+                else:
+                    completion_reason = "cap"
+                for agent_idx in range(self.population.num_agents):
+                    if not last_agent_state.dones[agent_idx]:
+                        self.population.flush_episode(agent_idx=agent_idx, reason=completion_reason)
+    
+                completions = self.population.episode_completions
+                if any(outcome is None for outcome in completions):
+                    raise RuntimeError("Cannot publish a participated lane without its completion")
+                completed_outcomes = [outcome for outcome in completions if outcome is not None]
+                step_counts = torch.tensor(
+                    [outcome.survival_time for outcome in completed_outcomes], dtype=torch.long, device=self.env.device
+                )
+                final_meters = [outcome.final_meters.detach().cpu().clone() for outcome in completed_outcomes]
+                curriculum_survival_tensor = step_counts.float()
+                curriculum_done_tensor = torch.ones(num_agents, dtype=torch.bool, device=self.env.device)
+                self.population.update_curriculum_tracker(curriculum_survival_tensor, curriculum_done_tensor)
+    
+                epsilon_value = self.population._get_current_epsilon_value()
+                intrinsic_weight_value = self.population._get_current_intrinsic_weight_value()
+    
+                episode_reward_cpu = episode_reward.detach().cpu()
+                episode_extrinsic_cpu = episode_extrinsic_reward.detach().cpu()
+                episode_intrinsic_cpu = episode_intrinsic_reward.detach().cpu()
+                episode_shaping_cpu = episode_shaping_reward.detach().cpu()
+                completion = self.population.episode_completions[0]
+                if completion is None:
+                    raise RuntimeError("Cannot publish an episode without a slot-zero completion")
+                step_counts_cpu = step_counts.detach().cpu().long()
+                stages_cpu = self.curriculum.tracker.agent_stages.detach().cpu()
+    
+                # Log metrics to database
+                episode_timestamp = time.time()
+                self.db.insert_episode(
+                    episode_id=self.current_episode,
+                    timestamp=episode_timestamp,
+                    survival_time=completion.survival_time,
+                    batch_episode_steps=batch_episode_steps,
+                    live_agent_transitions=episode_live_agent_transitions,
+                    completion_reason=completion.reason,
+                    total_reward=float(episode_reward_cpu[0].item()),
+                    extrinsic_reward=float(episode_extrinsic_cpu[0].item()),
+                    intrinsic_reward=float(episode_intrinsic_cpu[0].item()),
+                    shaping_reward=float(episode_shaping_cpu[0].item()),
+                    intrinsic_weight=intrinsic_weight_value,
+                    curriculum_stage=int(stages_cpu[0].item()),
+                    epsilon=epsilon_value,
+                    observation_schema_hash=level_meta.observation_schema_hash,
+                )
+    
+                # NEW: Insert affordance transitions for agent 0
+                if affordance_transitions[0]:
+                    # Convert nested defaultdict to regular dict for database insertion
+                    transitions_dict = {from_aff: dict(to_affs) for from_aff, to_affs in affordance_transitions[0].items()}
+                    self.db.insert_affordance_visits(episode_id=self.current_episode, transitions=transitions_dict)
+    
+                # Finish episode recording if enabled
+                if self.recorder is not None:
+                    from townlet.recording.data_structures import EpisodeMetadata
+    
+                    metadata = EpisodeMetadata(
+                        episode_id=self.current_episode,
+                        survival_steps=completion.survival_time,
+                        completion_reason=completion.reason,
+                        total_reward=float(episode_reward_cpu[0].item()),
+                        extrinsic_reward=float(episode_extrinsic_cpu[0].item()),
+                        intrinsic_reward=float(episode_intrinsic_cpu[0].item()),
+                        shaping_reward=float(episode_shaping_cpu[0].item()),
+                        curriculum_stage=int(stages_cpu[0].item()),
+                        epsilon=epsilon_value,
+                        intrinsic_weight=intrinsic_weight_value,
+                        timestamp=episode_timestamp,
+                        affordance_layout={
+                            name: tuple(position) for name, position in self.env.get_affordance_positions()["positions"].items()
+                        },
+                        affordance_visits={k: v for k, v in affordance_visits[0].items()},  # Agent 0 visits
+                        custom_action_uses={k: v for k, v in custom_action_uses[0].items()},  # Agent 0 custom actions
+                    )
+                    self.recorder.finish_episode(metadata)
+    
+                agent_metrics = []
+                for idx, agent_id in enumerate(self.population.agent_ids):
+                    agent_completion = self.population.episode_completions[idx]
+                    if agent_completion is None:
+                        raise RuntimeError("Cannot publish a participated lane without its completion")
+                    agent_metrics.append(
+                        {
+                            "agent_id": agent_id,
+                            "survival_time": agent_completion.survival_time,
+                            "completion_reason": agent_completion.reason,
+                            "total_reward": float(episode_reward_cpu[idx].item()),
+                            "extrinsic_reward": float(episode_extrinsic_cpu[idx].item()),
+                            "intrinsic_reward": float(episode_intrinsic_cpu[idx].item()),
+                            "shaping_reward": float(episode_shaping_cpu[idx].item()),
+                            "curriculum_stage": int(stages_cpu[idx].item()),
+                            "epsilon": epsilon_value,
+                            "intrinsic_weight": intrinsic_weight_value,
+                        }
+                    )
+    
+                # Log to TensorBoard (Phase 1 - Episode metrics)
+                self.tb_logger.log_multi_agent_episode(
+                    episode=self.current_episode,
+                    agents=agent_metrics,
+                )
+                self.tb_logger.writer.add_scalar("Batch/Vector_Ticks", batch_episode_steps, self.current_episode)
+                self.tb_logger.writer.add_scalar("Batch/Live_Agent_Transitions", episode_live_agent_transitions, self.current_episode)
+    
+                # Phase 2 - Training metrics (if training occurred this episode)
+                training_metrics = self.population.get_training_metrics()
+                if training_metrics["training_step"] > 0:
+                    self.tb_logger.log_training_step(
+                        step=training_metrics["training_step"],
+                        td_error=training_metrics["td_error"],
+                        loss=training_metrics["loss"],
+                    )
+    
+                # Phase 3 - Meter dynamics and affordance usage
+                # Get actual meter names from config (supports variable meter counts)
+                meter_names = self.env.bars_config.meter_names
+                for idx, agent_id in enumerate(self.population.agent_ids):
+                    meters_tensor = final_meters[idx]
+                    if meters_tensor is not None:
+                        meter_dict = {name: meters_tensor[i].item() for i, name in enumerate(meter_names)}
+                        self.tb_logger.log_meters(
+                            episode=self.current_episode,
+                            step=int(step_counts_cpu[idx].item()),
+                            meters=meter_dict,
+                            agent_id=agent_id,
+                        )
+    
+                for idx, visits in enumerate(affordance_visits):
+                    if visits:
+                        self.tb_logger.log_affordance_usage(
+                            episode=self.current_episode,
+                            affordance_counts=dict(visits),
+                            agent_id=self.population.agent_ids[idx],
+                        )
+    
+                for idx, uses in enumerate(custom_action_uses):
+                    if uses:
+                        self.tb_logger.log_custom_action_usage(
+                            episode=self.current_episode,
+                            action_counts=dict(uses),
+                            agent_id=self.population.agent_ids[idx],
+                        )
+    
+                # Heartbeat log every HEARTBEAT_INTERVAL episodes
+                if self.current_episode % self.HEARTBEAT_INTERVAL == 0:
+                    elapsed = time.time() - episode_start
+                    stage_overview = "/".join(str(int(s.item())) for s in stages_cpu)
+    
+                    # Calculate reward breakdown
+                    total_reward = episode_reward_cpu[0].item()
+                    extrinsic_reward = episode_extrinsic_cpu[0].item()
+                    intrinsic_reward = episode_intrinsic_cpu[0].item()
+                    shaping_reward = episode_shaping_cpu[0].item()
+    
+                    logger.info(
+                        f"Episode {self.current_episode}/{self.max_episodes} | "
+                        f"Survival: {int(step_counts_cpu[0].item())} steps | "
+                        f"Reward: {total_reward:.2f} (Extrinsic: {extrinsic_reward:.2f}, "
+                        f"Intrinsic: {intrinsic_reward:.2f}, Shaping: {shaping_reward:.2f}) | "
+                        f"ε: {epsilon_value:.3f} | "
+                        f"Stage: {stage_overview} | "
+                        f"Time: {elapsed:.2f}s"
+                    )
+    
+                # Detailed summary every SUMMARY_INTERVAL episodes
+                if self.current_episode % self.SUMMARY_INTERVAL == 0:
+                    # Get training metrics
+                    training_metrics = self.population.get_training_metrics()
+    
+                    # Get final meters for agent 0
+                    final_meter_values = {}
+                    if final_meters[0] is not None:
+                        # Get actual meter names from config (supports variable meter counts)
+                        meter_names = self.env.bars_config.meter_names
+                        final_meter_values = {name: final_meters[0][i].item() for i, name in enumerate(meter_names)}
+    
+                    # Get affordance usage for agent 0 with tick counts and completed interactions
+                    if affordance_visits[0]:
+                        summary_parts = []
+                        for name, tick_count in affordance_visits[0].items():
+                            # Get duration_ticks to calculate completed interactions
+                            duration = self.env.affordance_engine.get_duration_ticks(name)
+                            completed = tick_count // duration
+                            summary_parts.append(f"{name}: {tick_count} ({completed})")
+                        affordance_summary = ", ".join(summary_parts)
+                    else:
+                        affordance_summary = "None"
+    
+                    logger.info("=" * 80)
+                    logger.info(f"📊 SUMMARY - Episode {self.current_episode}/{self.max_episodes}")
+                    logger.info("-" * 80)
+                    logger.info(f"Performance:    Survival: {int(step_counts_cpu[0].item())} steps | Stage: {stage_overview}")
+                    logger.info(
+                        f"Rewards:        Total: {total_reward:.2f} | "
+                        f"Extrinsic: {extrinsic_reward:.2f} | Intrinsic: {intrinsic_reward:.2f} | Shaping: {shaping_reward:.2f}"
+                    )
+                    # Check if annealing would trigger (for status display)
+                    annealing_active = self.exploration.should_anneal() if hasattr(self.exploration, "should_anneal") else False
+                    annealing_status = "🔻 ANNEALING" if annealing_active else "✓ exploring"
+                    logger.info(
+                        f"Exploration:    ε: {epsilon_value:.3f} | Intrinsic Weight: {intrinsic_weight_value:.3f} | {annealing_status}"
+                    )
+                    if training_metrics["training_step"] > 0:
+                        logger.info(
+                            f"Training:       Steps: {training_metrics['training_step']} | "
+                            f"Loss: {training_metrics['loss']:.4f} | TD Error: {training_metrics['td_error']:.4f}"
+                        )
+                    if final_meter_values:
+                        # Build dynamic meter summary (supports variable meter counts)
+                        meter_parts = [f"{name.capitalize()}: {value:.2f}" for name, value in final_meter_values.items()]
+                        meter_summary = " | ".join(meter_parts)
+                        logger.info(f"Final Meters:   {meter_summary}")
+                    logger.info(f"Affordances:    {affordance_summary}")
+    
+                    # Log custom action usage (REST, MEDITATE, etc.)
+                    if custom_action_uses[0]:
+                        custom_summary_parts = [f"{name}: {count}" for name, count in custom_action_uses[0].items()]
+                        custom_summary = ", ".join(custom_summary_parts)
+                        logger.info(f"Custom Actions: {custom_summary}")
+    
+                    # Log total interaction ticks for debugging
+                    total_interaction_ticks = sum(affordance_visits[0].values()) if affordance_visits[0] else 0
+                    total_custom_actions = sum(custom_action_uses[0].values()) if custom_action_uses[0] else 0
+                    total_interactions = total_interaction_ticks + total_custom_actions
+                    logger.info(
+                        f"Interactions:   {total_interaction_ticks} affordance ticks + {total_custom_actions} custom actions = "
+                        f"{total_interactions}/{int(step_counts_cpu[0].item())} steps "
+                        f"({100 * total_interactions / max(1, int(step_counts_cpu[0].item())):.1f}%)"
+                    )
+                    logger.info("=" * 80)
+    
+                # Checkpoint every CHECKPOINT_INTERVAL episodes
+                if self.current_episode % self.CHECKPOINT_INTERVAL == 0:
+>                   self.save_checkpoint()
+
+src/townlet/demo/runner.py:950: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/demo/runner.py:311: in save_checkpoint
+    torch.save(checkpoint, checkpoint_path)
+.venv/lib/python3.13/site-packages/torch/serialization.py:1004: in save
+    _save(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+obj = {'action_dim': 15, 'actions_hash': 'bef1093ab1575bdd63dbba18492bc9706213f4785e3f8858182748432e56ac98', 'affordance_lay..., 'DOCTOR': [1, 2], ...}}, 'affordances_hash': 'd6abb07e159068b7dfdc9f9b81c5e5de65bed01e8dcf82c6cee889658c3dc0e8', ...}
+zip_file = <torch.PyTorchFileWriter object at 0x7fee45886a30>
+pickle_module = <module 'pickle' from '/usr/lib/python3.13/pickle.py'>
+pickle_protocol = 2, _disable_byteorder_record = False
+
+    def _save(
+        obj,
+        zip_file,
+        pickle_module,
+        pickle_protocol,
+        _disable_byteorder_record,
+    ):
+        serialized_storages: dict[str, torch.storage.UntypedStorage] = {}
+        id_map: dict[int, str] = {}
+    
+        # Since loading storages that view the same data with different dtypes is
+        # not supported, we need to keep track of the dtype associated with each
+        # storage data_ptr and throw an error if the dtype is ever different.
+        # TODO: This feature could be added in the future
+        storage_dtypes: dict[int, torch.dtype] = {}
+    
+        def persistent_id(obj):
+            # FIXME: the docs say that persistent_id should only return a string
+            # but torch store returns tuples. This works only in the binary protocol
+            # see
+            # https://docs.python.org/2/library/pickle.html#pickling-and-unpickling-external-objects
+            # https://github.com/python/cpython/blob/master/Lib/pickle.py#L527-L537
+            if isinstance(obj, torch.storage.TypedStorage) or torch.is_storage(obj):
+                if isinstance(obj, torch.storage.TypedStorage):
+                    # TODO: Once we decide to break serialization FC, this case
+                    # can be deleted
+                    storage = obj._untyped_storage
+                    storage_dtype = obj.dtype
+                    storage_type_str = obj._pickle_storage_type()
+                    storage_type = getattr(torch, storage_type_str)
+                    storage_numel = obj._size()
+    
+                else:
+                    storage = obj
+                    storage_dtype = torch.uint8
+                    storage_type = normalize_storage_type(type(obj))
+                    storage_numel = storage.nbytes()
+    
+                # If storage is allocated, ensure that any other saved storages
+                # pointing to the same data all have the same dtype. If storage is
+                # not allocated, don't perform this check
+                if str(storage.device) != "meta" and storage.data_ptr() != 0:
+                    if storage.data_ptr() in storage_dtypes:
+                        if storage_dtype != storage_dtypes[storage.data_ptr()]:
+                            raise RuntimeError(
+                                "Cannot save multiple tensors or storages that "
+                                "view the same data as different types"
+                            )
+                    else:
+                        storage_dtypes[storage.data_ptr()] = storage_dtype
+    
+                storage_key = id_map.setdefault(storage._cdata, str(len(id_map)))
+                if hasattr(obj, "_fake_device") and obj._fake_device is not None:
+                    location = str(obj._fake_device)
+                else:
+                    location = location_tag(storage)
+                serialized_storages[storage_key] = storage
+    
+                return ("storage", storage_type, storage_key, location, storage_numel)
+    
+            return None
+    
+        # Write the pickle data for `obj`
+        data_buf = io.BytesIO()
+    
+        class PyTorchPickler(pickle_module.Pickler):  # type: ignore[name-defined]
+            def persistent_id(self, obj):
+                return persistent_id(obj)  # noqa: F821
+    
+        pickler = PyTorchPickler(data_buf, protocol=pickle_protocol)
+>       pickler.dump(obj)
+E       _pickle.PicklingError: Can't pickle <function LRScheduler.step at 0x7fee4508b880>: it's not the same object as torch.optim.lr_scheduler.LRScheduler.step
+
+.venv/lib/python3.13/site-packages/torch/serialization.py:1254: PicklingError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave10-r0-narrow/popen-gw0/test_real_runner_recurrent_per0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fee48845350>
+law = 'independent_with_replacement'
+
+    @pytest.mark.parametrize("law", LAWS)
+    def test_real_runner_recurrent_per(tmp_path, monkeypatch, law):
+        """The authored recurrent PER policy must exist eagerly and actually learn."""
+>       runner, audit, options = _run(
+            tmp_path,
+            monkeypatch,
+            family="recurrent",
+            budget=10,
+            minimum=2,
+            batch_size=3,
+            capacity=16,
+            replay_updates={"sampling_mode": law},
+        )
+
+tests/test_townlet/regressions/bac/test_runner_readiness.py:416: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_runner_readiness.py:305: in _run
+    runner.run()
+src/townlet/demo/runner.py:974: in run
+    self.save_checkpoint()
+src/townlet/demo/runner.py:311: in save_checkpoint
+    torch.save(checkpoint, checkpoint_path)
+.venv/lib/python3.13/site-packages/torch/serialization.py:1004: in save
+    _save(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+obj = {'action_dim': 15, 'actions_hash': 'bef1093ab1575bdd63dbba18492bc9706213f4785e3f8858182748432e56ac98', 'affordance_lay..., 'DOCTOR': [1, 2], ...}}, 'affordances_hash': 'd6abb07e159068b7dfdc9f9b81c5e5de65bed01e8dcf82c6cee889658c3dc0e8', ...}
+zip_file = <torch.PyTorchFileWriter object at 0x7fee462fd530>
+pickle_module = <module 'pickle' from '/usr/lib/python3.13/pickle.py'>
+pickle_protocol = 2, _disable_byteorder_record = False
+
+    def _save(
+        obj,
+        zip_file,
+        pickle_module,
+        pickle_protocol,
+        _disable_byteorder_record,
+    ):
+        serialized_storages: dict[str, torch.storage.UntypedStorage] = {}
+        id_map: dict[int, str] = {}
+    
+        # Since loading storages that view the same data with different dtypes is
+        # not supported, we need to keep track of the dtype associated with each
+        # storage data_ptr and throw an error if the dtype is ever different.
+        # TODO: This feature could be added in the future
+        storage_dtypes: dict[int, torch.dtype] = {}
+    
+        def persistent_id(obj):
+            # FIXME: the docs say that persistent_id should only return a string
+            # but torch store returns tuples. This works only in the binary protocol
+            # see
+            # https://docs.python.org/2/library/pickle.html#pickling-and-unpickling-external-objects
+            # https://github.com/python/cpython/blob/master/Lib/pickle.py#L527-L537
+            if isinstance(obj, torch.storage.TypedStorage) or torch.is_storage(obj):
+                if isinstance(obj, torch.storage.TypedStorage):
+                    # TODO: Once we decide to break serialization FC, this case
+                    # can be deleted
+                    storage = obj._untyped_storage
+                    storage_dtype = obj.dtype
+                    storage_type_str = obj._pickle_storage_type()
+                    storage_type = getattr(torch, storage_type_str)
+                    storage_numel = obj._size()
+    
+                else:
+                    storage = obj
+                    storage_dtype = torch.uint8
+                    storage_type = normalize_storage_type(type(obj))
+                    storage_numel = storage.nbytes()
+    
+                # If storage is allocated, ensure that any other saved storages
+                # pointing to the same data all have the same dtype. If storage is
+                # not allocated, don't perform this check
+                if str(storage.device) != "meta" and storage.data_ptr() != 0:
+                    if storage.data_ptr() in storage_dtypes:
+                        if storage_dtype != storage_dtypes[storage.data_ptr()]:
+                            raise RuntimeError(
+                                "Cannot save multiple tensors or storages that "
+                                "view the same data as different types"
+                            )
+                    else:
+                        storage_dtypes[storage.data_ptr()] = storage_dtype
+    
+                storage_key = id_map.setdefault(storage._cdata, str(len(id_map)))
+                if hasattr(obj, "_fake_device") and obj._fake_device is not None:
+                    location = str(obj._fake_device)
+                else:
+                    location = location_tag(storage)
+                serialized_storages[storage_key] = storage
+    
+                return ("storage", storage_type, storage_key, location, storage_numel)
+    
+            return None
+    
+        # Write the pickle data for `obj`
+        data_buf = io.BytesIO()
+    
+        class PyTorchPickler(pickle_module.Pickler):  # type: ignore[name-defined]
+            def persistent_id(self, obj):
+                return persistent_id(obj)  # noqa: F821
+    
+        pickler = PyTorchPickler(data_buf, protocol=pickle_protocol)
+>       pickler.dump(obj)
+E       _pickle.PicklingError: Can't pickle <function LRScheduler.step at 0x7fee4508b880>: it's not the same object as torch.optim.lr_scheduler.LRScheduler.step
+
+.venv/lib/python3.13/site-packages/torch/serialization.py:1254: PicklingError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_owned_sampling_identity[successive_without_replacement]
+FAILED tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_recurrent_per[independent_with_replacement]
+============================== 2 failed in 27.21s ==============================

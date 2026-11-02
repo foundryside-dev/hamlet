@@ -373,9 +373,11 @@ a split across files moves it while every semantic hash stays put; a comment edi
 | Integration/UX | Training, checkpoints, live server, Vue observer and recording machinery | Experiment controls, terminal lanes, randomness isolation, model handoff and browser journeys need further qualification |
 
 T15 learner changes (2026-11-02) cover recorded historical legality, backend readiness,
-recurrent objectives and finite TD telemetry. [BAC status](docs/remediation/bac/STATUS.md)
-records their qualification and remaining native/runtime/learning requirements; this local note
-does not refresh the broader dated source/CI review above.
+recurrent objectives and finite TD telemetry. T16 runner wiring consumes the canonical effective
+brain, resolved replay policy and declared warmup, with an explicit fresh PER sampling stream
+and vector-tick beta horizon. [BAC status](docs/remediation/bac/STATUS.md) records package
+qualification and remaining native/runtime/learning requirements. These bounded notes do not
+refresh the broader dated source/CI review above.
 
 The token type schema is the transfer contract; the serialization layout is per universe. At
 `6475cc5b` every one of the 33 compilable levels has `token_type_schema_hash`

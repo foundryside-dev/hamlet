@@ -75,32 +75,39 @@ def test_demorunner_threads_training_loop_hyperparameters(tmp_path: Path, monkey
 
     captured: dict[str, float] = {}
 
-    def fake_population_init(
-        self,
+    def fake_population_for_training(
+        cls,
+        *,
         env,
         curriculum,
         exploration,
         agent_ids,
         device,
         brain_config,
-        obs_dim: int = 70,
-        action_dim: int | None = None,
-        tb_logger=None,
-        train_frequency: int = 4,
-        batch_size: int | None = None,
-        sequence_length: int = 8,
-        max_grad_norm: float = 10.0,
-        max_episodes: int | None = None,
-        max_steps_per_episode: int | None = None,
-        observation_spec=None,
+        obs_dim: int,
+        train_frequency: int,
+        batch_size: int,
+        sequence_length: int,
+        max_grad_norm: float,
+        action_dim: int,
+        tb_logger,
+        max_episodes: int | None,
+        max_steps_per_episode: int | None,
+        replay_options,
+        min_transitions: int,
+        replay_rng,
+        replay_origin: str,
+        beta_vector_tick_horizon: int,
+        beta_horizon_origin: str,
+        current_vector_tick: int,
     ) -> None:
         captured["train_frequency"] = train_frequency
         captured["sequence_length"] = sequence_length
         captured["max_grad_norm"] = max_grad_norm
-        # Stop runner.run() after population construction.
+        # Stop before real population initialization; only forwarding is under test.
         raise RuntimeError("stop-after-population-init")
 
-    monkeypatch.setattr(VectorizedPopulation, "__init__", fake_population_init)
+    monkeypatch.setattr(VectorizedPopulation, "for_training", classmethod(fake_population_for_training))
 
     runner = DemoRunner(
         config_dir=experiment_dir,
@@ -113,7 +120,7 @@ def test_demorunner_threads_training_loop_hyperparameters(tmp_path: Path, monkey
     with pytest.raises(RuntimeError, match="stop-after-population-init"):
         runner.run()
 
-    # VectorizedPopulation.__init__ should receive the overridden hyperparameters.
+    # VectorizedPopulation.for_training should receive the overridden hyperparameters.
     assert captured["train_frequency"] == 7
     assert captured["sequence_length"] == 5
     assert captured["max_grad_norm"] == pytest.approx(3.5)

@@ -10,6 +10,7 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Any
 
+import numpy as np
 import torch
 
 from townlet.config.resolved_launch import resolve_launch
@@ -397,8 +398,9 @@ class DemoRunner:
         # Per-level metadata
         level_meta = self.compiled.get_level(self.level_name)
         # Extract config parameters from DTOs (all required, validated at load time)
-        loop_cfg = self.training_config.training_loop
-        num_agents = self.training_config.population.size
+        effective_training = self.effective_run.training
+        loop_cfg = effective_training.training_loop
+        num_agents = effective_training.population.size
         grid_cells = self.compiled.metadata.grid_cells
         partial_observability = level_meta.curriculum.curriculum.active_vision != "global"
         vision_range = level_meta.curriculum.curriculum.vision_range
@@ -418,18 +420,18 @@ class DemoRunner:
 
         # Create curriculum (all params required per PDR-002)
         self.curriculum = build_curriculum(
-            self.training_config,
+            effective_training,
             max_steps_per_episode=loop_cfg.max_steps_per_episode,
             device=device,
         )
 
         # Create exploration (all params required per PDR-002)
-        intrinsic_cfg = self.training_config.intrinsic
+        intrinsic_cfg = effective_training.intrinsic
         self.exploration = AdaptiveIntrinsicExploration(
             obs_dim=obs_dim,
             embed_dim=intrinsic_cfg.rnd.feature_dim,
             rnd_learning_rate=intrinsic_cfg.rnd.learning_rate,
-            rnd_training_batch_size=self.training_config.replay_buffer.batch_size,
+            rnd_training_batch_size=effective_training.replay_buffer.batch_size,
             initial_intrinsic_weight=intrinsic_cfg.initial_weight,
             min_intrinsic_weight=intrinsic_cfg.annealing.min_weight,
             variance_threshold=intrinsic_cfg.annealing.threshold,
@@ -437,32 +439,39 @@ class DemoRunner:
             max_episode_length=loop_cfg.max_steps_per_episode,
             survival_window=intrinsic_cfg.survival_window,
             decay_rate=intrinsic_cfg.annealing.decay_rate,
-            epsilon_start=self.training_config.exploration.epsilon_start,
-            epsilon_min=self.training_config.exploration.epsilon_end,
-            epsilon_decay=self.training_config.exploration.epsilon_decay,
+            epsilon_start=effective_training.exploration.epsilon_start,
+            epsilon_min=effective_training.exploration.epsilon_end,
+            epsilon_decay=effective_training.exploration.epsilon_decay,
             device=device,
         )
 
         # Get training hyperparameters from config (all required per PDR-002)
         train_frequency = loop_cfg.train_frequency
-        batch_size = self.training_config.replay_buffer.batch_size
+        batch_size = effective_training.replay_buffer.batch_size
         sequence_length = loop_cfg.sequence_length
         max_grad_norm = loop_cfg.max_grad_norm
 
         # Create agent IDs
         agent_ids = [f"agent_{i}" for i in range(num_agents)]
 
-        # Use the BrainConfig loaded from brain.yaml during compilation.
-        from townlet.config.brain_config import apply_training_overrides
-
         base_brain_config = self.brain_config
         logger.info(f"Brain config from brain.yaml: {base_brain_config.description}")
 
-        # Apply curriculum-level overrides from training.yaml to derive effective brain config
-        effective_brain_config = apply_training_overrides(base_brain_config, self.training_config)
+        # Consume the canonical resolved policy, including all five brain overrides.
+        effective_brain_config = self.effective_run.effective_brain
+        replay_options = self.effective_run.options.replay
+        assert replay_options is not None
+        if "max_episodes" in self.launch_overrides:
+            episode_limit_origin = f"launch_overrides.max_episodes({self.max_episodes})"
+        else:
+            episode_limit_origin = f"training.training_loop.max_episodes({self.max_episodes}) at {self.training_config_origin}"
+        beta_horizon_origin = (
+            f"{episode_limit_origin} * training.training_loop.max_steps_per_episode({loop_cfg.max_steps_per_episode}) "
+            f"at {self.training_config_origin}; upper-bound vector ticks"
+        )
 
         # Create population (effective_brain_config provides network/optimizer/Q-learning parameters)
-        self.population = VectorizedPopulation(
+        self.population = VectorizedPopulation.for_training(
             env=self.env,
             curriculum=self.curriculum,
             exploration=self.exploration,
@@ -476,8 +485,15 @@ class DemoRunner:
             sequence_length=sequence_length,
             max_grad_norm=max_grad_norm,
             brain_config=effective_brain_config,
-            max_episodes=self.max_episodes,  # For PER beta annealing
-            max_steps_per_episode=loop_cfg.max_steps_per_episode,  # For PER beta annealing
+            max_episodes=self.max_episodes,
+            max_steps_per_episode=loop_cfg.max_steps_per_episode,
+            replay_options=replay_options,
+            min_transitions=effective_training.replay_buffer.min_size,
+            replay_rng=np.random.Generator(np.random.PCG64(effective_training.seed)),
+            replay_origin="authored",
+            beta_vector_tick_horizon=self.max_episodes * loop_cfg.max_steps_per_episode,
+            beta_horizon_origin=beta_horizon_origin,
+            current_vector_tick=0,
         )
 
         self.curriculum.initialize_population(num_agents)

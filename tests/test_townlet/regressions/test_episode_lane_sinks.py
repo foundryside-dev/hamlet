@@ -15,7 +15,7 @@ import yaml
 from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
 
 from tests.test_townlet.regressions.fixtures.episode_lanes import LEVEL_NAME, action_ids, copy_authored_config
-from townlet.demo.runner import DemoRunner
+from townlet.demo.runner import DemoRunner, build_curriculum
 from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
 from townlet.population.vectorized import VectorizedPopulation
@@ -51,6 +51,12 @@ def run_lane_runner(
     original_step = VectorizedHamletEnv.step
     original_curriculum = VectorizedPopulation.update_curriculum_tracker
     episode = -1
+    runtime_loop_cfg = None
+
+    def build_curriculum_with_runtime_training(training_config, *args, **kwargs):
+        nonlocal runtime_loop_cfg
+        runtime_loop_cfg = training_config.training_loop
+        return build_curriculum(training_config, *args, **kwargs)
 
     def reset(population: VectorizedPopulation) -> None:
         nonlocal episode
@@ -61,7 +67,8 @@ def run_lane_runner(
             # Explicit caller truncation fixture: the authored environment retains
             # its lifespan of ten while the caller cuts the batch loop earlier.
             assert env.agent_lifespan == 10
-            runner.training_config.training_loop.max_steps_per_episode = cap
+            assert runtime_loop_cfg is not None
+            runtime_loop_cfg.max_steps_per_episode = cap
         assert env.meters[:, env.meter_name_to_index["energy"]].tolist() == [1.0, 1.0]
 
         def select(q_values, agent_states, action_masks):
@@ -119,6 +126,7 @@ def run_lane_runner(
     )
     with (
         exploration_patch,
+        patch("townlet.demo.runner.build_curriculum", side_effect=build_curriculum_with_runtime_training),
         patch.object(VectorizedPopulation, "reset", reset),
         patch.object(VectorizedHamletEnv, "step", step),
         patch.object(VectorizedPopulation, "update_curriculum_tracker", curriculum),

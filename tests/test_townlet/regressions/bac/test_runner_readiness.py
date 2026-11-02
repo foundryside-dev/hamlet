@@ -1,0 +1,529 @@
+"""Real runner policy propagation and retained-replay readiness contracts.
+
+The ownership/eager-policy cases catch the missing explicit runner policy. The
+warmup, cadence, zero-gamma and window cases protect behavior already supplied by
+the population adapter. Every observer calls the original implementation once.
+"""
+
+from __future__ import annotations
+
+import copy
+import functools
+import logging
+import math
+import shutil
+from collections.abc import Mapping
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+import pytest
+import torch
+import yaml
+
+from townlet.demo.runner import DemoRunner
+from townlet.population.vectorized import VectorizedPopulation
+
+PACKS = Path(__file__).resolve().parents[4] / "configs" / "test" / "bac_remediation"
+LEVEL = "L0_0_minimal"
+LAWS = ("successive_without_replacement", "independent_with_replacement")
+
+
+def _finite(value: Any) -> bool:
+    if isinstance(value, torch.Tensor):
+        return bool(torch.isfinite(value).all())
+    if isinstance(value, Mapping):
+        return all(_finite(item) for item in value.values())
+    if isinstance(value, (tuple, list)):
+        return all(_finite(item) for item in value)
+    return not isinstance(value, float) or math.isfinite(value)
+
+
+def _weights(network: torch.nn.Module) -> dict[str, torch.Tensor]:
+    return {name: value.detach().cpu().clone() for name, value in network.state_dict().items()}
+
+
+def _equal_weights(left: Mapping[str, torch.Tensor], right: Mapping[str, torch.Tensor]) -> bool:
+    return left.keys() == right.keys() and all(torch.equal(value, right[name]) for name, value in left.items())
+
+
+class RunnerAudit:
+    """Observe the actual runner's construction, sampling and successful clocks."""
+
+    def __init__(self, monkeypatch: pytest.MonkeyPatch):
+        self.construction: dict[str, Any] = {}
+        self.steps: list[dict[str, Any]] = []
+        self.opportunities: list[dict[str, Any]] = []
+        self.samples: list[dict[str, Any]] = []
+        self.losses: list[dict[str, Any]] = []
+        self.optimizer_steps: list[dict[str, Any]] = []
+        self.scheduler_steps: list[int] = []
+        self.target_copies: list[tuple[int, int]] = []
+        self.beta_ticks: list[tuple[int | None, int]] = []
+        self.population: VectorizedPopulation | None = None
+        original_load = DemoRunner.load_checkpoint
+        original_step = VectorizedPopulation.step_population
+        original_learn = VectorizedPopulation._learn
+        original_loss = VectorizedPopulation._loss_values
+
+        def observe_load(runner):
+            loaded = original_load(runner)
+            assert loaded is None, "The private fixture must start without a checkpoint"
+            population = runner.population
+            assert population is not None
+            self.population = population
+            self.construction = {
+                "replay": population.replay_buffer.serialize(),
+                "brain": population.brain_config.model_dump(),
+                "q": _weights(population.q_network),
+                "target": _weights(population.target_network),
+                "scheduler": copy.deepcopy(population.scheduler.state_dict()),
+                "lr": population.optimizer.param_groups[0]["lr"],
+                "field_roles": copy.deepcopy(dict(runner.effective_run.field_roles)),
+                "derivations": dict(runner.effective_run.derivations),
+                "origins": dict(runner.effective_run.origins),
+            }
+            self._observe_owned_components(monkeypatch, population)
+            return loaded
+
+        def observe_step(population, environment):
+            retained_before = population.replay_buffer.retained_transitions
+            updates_before = population.training_step_counter
+            state = original_step(population, environment)
+            self.steps.append(
+                {
+                    "tick": population.total_steps,
+                    "retained_before": retained_before,
+                    "retained_after": population.replay_buffer.retained_transitions,
+                    "updates_before": updates_before,
+                    "updates_after": population.training_step_counter,
+                    "eligible": int(state.info["active_on_entry"].sum().item()),
+                }
+            )
+            return state
+
+        def observe_learn(population):
+            request = population._replay_request()
+            readiness = population.replay_buffer.readiness(request)
+            before = population.training_step_counter
+            original_learn(population)
+            self.opportunities.append(
+                {
+                    "tick": population.total_steps,
+                    "request": request,
+                    "retained": readiness.retained_transitions,
+                    "sampleable": readiness.sampleable_units,
+                    "reason": readiness.reason,
+                    "ready": readiness.ready,
+                    "before": before,
+                    "after": population.training_step_counter,
+                    "loss": population.last_loss,
+                    "lr": population.optimizer.param_groups[0]["lr"],
+                }
+            )
+
+        def observe_loss(population, predictions, targets):
+            result = original_loss(population, predictions, targets)
+            sample = self.samples[-1]
+            assert sample["tick"] == population.total_steps
+            self.losses.append(
+                {"tick": population.total_steps, "targets": targets.detach().cpu().clone(), "rewards": sample["loss_rewards"]}
+            )
+            return result
+
+        monkeypatch.setattr(DemoRunner, "load_checkpoint", observe_load)
+        monkeypatch.setattr(VectorizedPopulation, "step_population", observe_step)
+        monkeypatch.setattr(VectorizedPopulation, "_learn", observe_learn)
+        monkeypatch.setattr(VectorizedPopulation, "_loss_values", observe_loss)
+
+    def _observe_owned_components(self, monkeypatch, population):
+        replay_class = type(population.replay_buffer)
+        original_sample = replay_class.sample_batch
+        original_optimizer = population.optimizer.step
+        scheduler_class = type(population.scheduler)
+        original_scheduler = scheduler_class.step
+        original_target = population.target_network.load_state_dict
+
+        def observe_sample(buffer, request):
+            batch = original_sample(buffer, request)
+            assert buffer is population.replay_buffer
+            selected_rewards = batch.rewards[batch.loss_mask] if population.is_recurrent else batch.rewards
+            self.samples.append(
+                {
+                    "tick": population.total_steps,
+                    "request": request,
+                    "mode": batch.sampling.mode,
+                    "weights": batch.weights.detach().cpu().clone(),
+                    "lengths": batch.lengths.detach().cpu().clone(),
+                    "loss_rewards": selected_rewards.detach().cpu().clone(),
+                    "recorded": batch.legality_recorded[batch.loss_mask].detach().cpu().clone(),
+                    "unit_ids": batch.unit_ids.detach().cpu().clone(),
+                }
+            )
+            return batch
+
+        @functools.wraps(original_optimizer)
+        def observe_optimizer(*args, **kwargs):
+            before = _weights(population.q_network)
+            if not self.optimizer_steps:
+                assert _equal_weights(before, self.construction["q"]), "Warmup changed online weights before optimization"
+                assert _equal_weights(_weights(population.target_network), self.construction["target"])
+            result = original_optimizer(*args, **kwargs)
+            after = _weights(population.q_network)
+            self.optimizer_steps.append(
+                {
+                    "tick": population.total_steps,
+                    "changed": not _equal_weights(before, after),
+                    "finite": _finite(after) and _finite(population.optimizer.state_dict()),
+                }
+            )
+            return result
+
+        @functools.wraps(original_scheduler)
+        def observe_scheduler(scheduler, *args, **kwargs):
+            result = original_scheduler(scheduler, *args, **kwargs)
+            if scheduler is population.scheduler:
+                self.scheduler_steps.append(population.total_steps)
+            return result
+
+        def observe_target(*args, **kwargs):
+            result = original_target(*args, **kwargs)
+            self.target_copies.append((population.total_steps, population.training_step_counter))
+            assert _equal_weights(_weights(population.target_network), _weights(population.q_network))
+            return result
+
+        monkeypatch.setattr(replay_class, "sample_batch", observe_sample)
+        monkeypatch.setattr(population.optimizer, "step", observe_optimizer)
+        monkeypatch.setattr(scheduler_class, "step", observe_scheduler)
+        monkeypatch.setattr(population.target_network, "load_state_dict", observe_target)
+        if population.use_per and population.is_recurrent:
+            original_pace = replay_class.set_vector_tick
+
+            def observe_sequence_pace(buffer, tick):
+                result = original_pace(buffer, tick)
+                self.beta_ticks.append((None, tick))
+                return result
+
+            monkeypatch.setattr(replay_class, "set_vector_tick", observe_sequence_pace)
+        elif population.use_per:
+            original_pace = replay_class.anneal_beta
+
+            def observe_flat_pace(buffer, total_steps, current_step):
+                result = original_pace(buffer, total_steps, current_step)
+                self.beta_ticks.append((total_steps, current_step))
+                return result
+
+            monkeypatch.setattr(replay_class, "anneal_beta", observe_flat_pace)
+
+
+def _make_pack(
+    destination: Path,
+    *,
+    family: str,
+    budget: int,
+    minimum: int,
+    batch_size: int,
+    frequency: int,
+    capacity: int,
+    sequence_length: int,
+    prioritized: bool,
+    gamma: float,
+    replay_updates: Mapping[str, str],
+    omit_priority_reduction: bool,
+) -> dict[str, str]:
+    """Copy authored YAML DATA only; the production compiler consumes this pack."""
+    source_root = PACKS / family
+    for source in source_root.rglob("*.yaml"):
+        target = destination / source.relative_to(source_root)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, target)
+    brain_path = destination / "brain.yaml"
+    brain = yaml.safe_load(brain_path.read_text())
+    brain["optimizer"]["schedule"] = {"type": "step_decay", "step_size": 2, "gamma": 0.5}
+    brain["replay"]["prioritized"] = prioritized
+    if prioritized:
+        brain["replay"].update(priority_alpha=0.6, priority_beta=0.4, priority_beta_annealing=True)
+    brain_path.write_text(yaml.safe_dump(brain, sort_keys=False))
+
+    training_path = destination / "levels" / LEVEL / "training.yaml"
+    document = yaml.safe_load(training_path.read_text())
+    training = document["training"]
+    training["population"]["size"] = 1
+    training["q_learning"].update(gamma=gamma, learning_rate=0.001, target_update_frequency=2)
+    training["replay_buffer"].update(capacity=capacity, batch_size=batch_size, min_size=minimum)
+    training["training_loop"].update(
+        max_episodes=budget + 14, max_steps_per_episode=2, train_frequency=frequency, sequence_length=sequence_length
+    )
+    options = training["bac_options"]["replay"]
+    options.update(replay_updates)
+    expected_options = dict(options)
+    if omit_priority_reduction:
+        del options["priority_reduction"]
+        expected_options["priority_reduction"] = "max_abs"
+    training_path.write_text(yaml.safe_dump(document, sort_keys=False))
+    return expected_options
+
+
+def _run(
+    tmp_path,
+    monkeypatch,
+    *,
+    family,
+    budget,
+    minimum,
+    batch_size=1,
+    frequency=1,
+    capacity=1024,
+    sequence_length=3,
+    prioritized=True,
+    gamma=0.5,
+    replay_updates=None,
+    omit_priority_reduction=False,
+):
+    pack = tmp_path / "authored-pack"
+    expected_options = _make_pack(
+        pack,
+        family=family,
+        budget=budget,
+        minimum=minimum,
+        batch_size=batch_size,
+        frequency=frequency,
+        capacity=capacity,
+        sequence_length=sequence_length,
+        prioritized=prioritized,
+        gamma=gamma,
+        replay_updates={} if replay_updates is None else replay_updates,
+        omit_priority_reduction=omit_priority_reduction,
+    )
+    audit = RunnerAudit(monkeypatch)
+    with DemoRunner(
+        config_dir=pack,
+        level_name=LEVEL,
+        db_path=tmp_path / "demo.db",
+        checkpoint_dir=tmp_path / "checkpoints",
+        max_episodes=budget + 3,
+        max_environment_steps=budget,
+    ) as runner:
+        runner.run()
+    assert runner.population is not None
+    assert runner.population.total_steps == budget
+    assert runner.completed_live_agent_steps == budget
+    assert len(audit.steps) == budget
+    assert all(row["eligible"] == 1 for row in audit.steps)
+    return runner, audit, expected_options
+
+
+def _assert_real_learning(runner, audit):
+    population = runner.population
+    assert population is not None
+    assert audit.optimizer_steps, "This witness must reach the real Q optimizer"
+    assert population.training_step_counter == len(audit.optimizer_steps) == len(audit.samples)
+    assert all(row["changed"] and row["finite"] for row in audit.optimizer_steps)
+    assert all(math.isfinite(row["loss"]) for row in audit.opportunities if row["after"] > row["before"])
+    assert [row["tick"] for row in audit.optimizer_steps] == audit.scheduler_steps
+    assert all(bool(sample["recorded"].all()) and bool(torch.isfinite(sample["weights"]).all()) for sample in audit.samples)
+    assert all(bool((sample["weights"] > 0).all()) for sample in audit.samples)
+    assert audit.construction["brain"] == runner.effective_run.effective_brain.model_dump()
+    assert audit.construction["field_roles"] == dict(runner.effective_run.field_roles)
+    assert audit.construction["derivations"] == dict(runner.effective_run.derivations)
+    assert audit.construction["origins"] == dict(runner.effective_run.origins)
+    assert population.brain_config.optimizer.learning_rate == 0.001
+    assert population.target_update_frequency == 2
+    for row in audit.opportunities:
+        assert row["after"] - row["before"] == int(row["ready"])
+    assert [row["tick"] for row in audit.samples] == [row["tick"] for row in audit.optimizer_steps]
+
+
+def _assert_beta_vector_ticks(runner, audit, budget):
+    population = runner.population
+    assert population is not None
+    expected_horizon = 2 * (budget + 3)
+    assert [tick for _, tick in audit.beta_ticks] == list(range(1, budget + 1))
+    state = population.replay_buffer.serialize()
+    if population.is_recurrent:
+        policy = state["priority_state"]
+        assert policy["current_vector_tick"] == budget
+        assert policy["beta_vector_tick_horizon"] == expected_horizon
+    else:
+        policy = state
+        assert {horizon for horizon, _ in audit.beta_ticks} == {expected_horizon}
+    assert policy["beta"] == pytest.approx(0.4 + 0.6 * budget / expected_horizon)
+
+
+@pytest.mark.parametrize("law", LAWS)
+def test_real_runner_owned_sampling_identity(tmp_path, monkeypatch, law):
+    """A global-NumPy replay owner violates the explicit authored runner stream."""
+    runner, audit, options = _run(
+        tmp_path,
+        monkeypatch,
+        family="feedforward",
+        budget=8,
+        minimum=2,
+        batch_size=2,
+        replay_updates={"sampling_mode": law},
+        omit_priority_reduction=True,
+    )
+    _assert_real_learning(runner, audit)
+    _assert_beta_vector_ticks(runner, audit, 8)
+    assert runner.effective_run.options.replay.model_dump() == options
+    assert runner.effective_run.options.replay.priority_reduction == "max_abs"
+    assert runner.effective_run.authored_options.replay.priority_reduction is None
+    initial = audit.construction["replay"]
+    assert initial["sampling_rng"]["ownership"] == "owned_numpy_generator", "Runner replay must own its authored sampling stream"
+    assert initial["sampling_rng"]["bit_generator"] == "PCG64"
+    assert initial["sampling_rng"]["state"] == np.random.Generator(np.random.PCG64(42)).bit_generator.state
+    assert initial["sampling_origin"] == "authored"
+    assert initial["sampling_mode"] == law
+    assert all(sample["mode"] == law for sample in audit.samples)
+    final = runner.population.replay_buffer.serialize()
+    assert final["sampling_rng"]["ownership"] == "owned_numpy_generator"
+    assert final["sampling_rng"]["state"] != initial["sampling_rng"]["state"]
+    setup = runner.population._replay_setup
+    assert setup is not None
+    assert "launch" in setup.horizon_origin and "max_episodes" in setup.horizon_origin
+    assert runner.training_config_origin in setup.horizon_origin
+    assert "max_steps_per_episode" in setup.horizon_origin
+
+
+@pytest.mark.parametrize("family", ("feedforward", "recurrent"))
+def test_real_runner_warmup1000(tmp_path, monkeypatch, family):
+    """A batch-sized or pending-prefix warmup would cause an early Q update."""
+    runner, audit, _ = _run(
+        tmp_path,
+        monkeypatch,
+        family=family,
+        budget=1004,
+        minimum=1000,
+        batch_size=2,
+        replay_updates={"sequence_mode": "adaptive_prefix", "sequence_objective": "anchor_transition"},
+    )
+    _assert_real_learning(runner, audit)
+    _assert_beta_vector_ticks(runner, audit, 1004)
+    assert any(row["retained_before"] == 2 and row["updates_before"] == 0 for row in audit.steps)
+    assert all(row["request"].min_transitions == 1000 for row in audit.opportunities)
+    cold = [row for row in audit.opportunities if row["retained"] < 1000]
+    assert cold and all(row["reason"] == "warmup" and row["before"] == row["after"] == 0 for row in cold)
+    first_ready = next(row for row in audit.opportunities if row["ready"])
+    assert first_ready["retained"] >= 1000 and first_ready["sampleable"] >= 2
+    assert first_ready["before"] == 0 and first_ready["after"] == 1
+    assert audit.optimizer_steps[0]["tick"] == first_ready["tick"]
+    assert all(sample["request"].min_transitions == 1000 for sample in audit.samples)
+    if family == "recurrent":
+        assert first_ready["tick"] > 1000, "Pending current-episode rows must not satisfy retained warmup"
+
+
+@pytest.mark.parametrize("law", LAWS)
+def test_real_runner_recurrent_per(tmp_path, monkeypatch, law):
+    """The authored recurrent PER policy must exist eagerly and actually learn."""
+    runner, audit, options = _run(
+        tmp_path,
+        monkeypatch,
+        family="recurrent",
+        budget=10,
+        minimum=2,
+        batch_size=3,
+        capacity=16,
+        replay_updates={"sampling_mode": law},
+    )
+    _assert_real_learning(runner, audit)
+    _assert_beta_vector_ticks(runner, audit, 10)
+    population = runner.population
+    assert population.is_recurrent and population.use_per
+    assert population.brain_config.architecture.type == "recurrent"
+    assert population.brain_config.replay.prioritized
+    assert all(sample["mode"] == law for sample in audit.samples)
+    assert all(sample["request"].sequence_length == 3 for sample in audit.samples)
+    assert all(bool((sample["lengths"] >= 1).all()) and bool((sample["lengths"] <= 2).all()) for sample in audit.samples)
+    initial = audit.construction["replay"]
+    assert initial.get("format_version") == 7, "Runner must construct its selected captured recurrent PER, before rollout"
+    assert initial["replay_options"] == options
+    assert initial["num_transitions"] == 0
+    priority = initial["priority_state"]
+    assert priority["sampling_mode"] == law
+    assert priority["origin"] == "authored"
+    assert priority["rng"]["bit_generator"] == "PCG64"
+    assert priority["rng"]["state"] == np.random.Generator(np.random.PCG64(42)).bit_generator.state
+    assert priority["current_vector_tick"] == 0
+    assert priority["beta_vector_tick_horizon"] == 26
+    if law == "independent_with_replacement":
+        first = next(row for row in audit.opportunities if row["ready"])
+        assert first["sampleable"] == 2 and first["request"].batch_size == 3
+    else:
+        assert any(row["reason"] == "batch_unavailable" and row["sampleable"] == 2 for row in audit.opportunities)
+
+
+@pytest.mark.parametrize("family,prioritized", (("feedforward", False), ("dueling", True), ("token_set", True), ("recurrent", True)))
+def test_real_runner_family_cadence_and_zero_gamma(tmp_path, monkeypatch, family, prioritized):
+    """Vector ticks schedule attempts; successful updates alone advance LR/target."""
+    runner, audit, options = _run(
+        tmp_path,
+        monkeypatch,
+        family=family,
+        budget=15,
+        minimum=4,
+        frequency=3,
+        capacity=32,
+        prioritized=prioritized,
+        gamma=0.0,
+    )
+    _assert_real_learning(runner, audit)
+    assert [row["tick"] for row in audit.opportunities] == [3, 6, 9, 12, 15]
+    assert [row["tick"] for row in audit.optimizer_steps] == [6, 9, 12, 15]
+    assert audit.scheduler_steps == [6, 9, 12, 15]
+    assert audit.target_copies == [(9, 2), (15, 4)]
+    successes = [row for row in audit.opportunities if row["after"] > row["before"]]
+    assert [row["lr"] for row in successes] == pytest.approx([0.001, 0.0005, 0.0005, 0.00025])
+    assert runner.population.scheduler.last_epoch - audit.construction["scheduler"]["last_epoch"] == 4
+    assert all(row["request"].min_transitions == 4 for row in audit.opportunities)
+    assert runner.population.gamma == runner.effective_run.effective_brain.q_learning.gamma == 0.0
+    assert runner.population.brain_config.architecture.type == family
+    assert runner.population.brain_config.replay.capacity == 32
+    assert runner.effective_run.options.replay.model_dump() == options
+    assert len(audit.losses) == 4
+    for row in audit.losses:
+        torch.testing.assert_close(row["targets"], row["rewards"], rtol=0, atol=0)
+    if prioritized:
+        _assert_beta_vector_ticks(runner, audit, 15)
+    else:
+        assert audit.beta_ticks == []
+
+
+@pytest.mark.parametrize("sequence_mode", ("fixed_full", "adaptive_prefix"))
+def test_real_runner_window_diagnostic(tmp_path, monkeypatch, caplog, sequence_mode):
+    """Capacity1/L8 cannot fabricate a full window; a real prefix remains usable."""
+    caplog.set_level(logging.INFO, logger="townlet.population.vectorized")
+    runner, audit, _ = _run(
+        tmp_path,
+        monkeypatch,
+        family="recurrent",
+        budget=8,
+        minimum=1,
+        capacity=1,
+        sequence_length=8,
+        replay_updates={
+            "sequence_mode": sequence_mode,
+            "retention_mode": "transition_tail",
+            "sequence_objective": "anchor_transition",
+        },
+    )
+    _assert_beta_vector_ticks(runner, audit, 8)
+    assert runner.population.replay_buffer.retained_transitions == 1
+    if sequence_mode == "fixed_full":
+        assert audit.optimizer_steps == audit.samples == audit.scheduler_steps == audit.target_copies == []
+        assert runner.population.training_step_counter == 0
+        assert _equal_weights(_weights(runner.population.q_network), audit.construction["q"])
+        assert _equal_weights(_weights(runner.population.target_network), audit.construction["target"])
+        assert runner.population.optimizer.state_dict()["state"] == {}
+        assert runner.population.scheduler.state_dict() == audit.construction["scheduler"]
+        unavailable = [row for row in audit.opportunities if row["retained"] == 1]
+        assert unavailable and all(row["reason"] == "capacity_window_impossible" and row["sampleable"] == 0 for row in unavailable)
+        messages = [record.getMessage() for record in caplog.records if record.getMessage().startswith("Replay not ready:")]
+        assert len(messages) == len(set(messages)), "An unchanged readiness signature must not repeat its diagnostic"
+        assert messages == [
+            "Replay not ready: capacity_window_impossible (retained=0, sampleable=0)",
+            "Replay not ready: capacity_window_impossible (retained=1, sampleable=0)",
+        ]
+    else:
+        _assert_real_learning(runner, audit)
+        assert all(torch.equal(sample["lengths"], torch.ones(1, dtype=torch.long)) for sample in audit.samples)
+        assert all(row["retained"] == row["sampleable"] == 1 for row in audit.opportunities if row["ready"])

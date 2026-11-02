@@ -1,0 +1,6 @@
+Loaded 106 whitelist pattern(s) from .defaults-whitelist.txt
+  - 97 structural pattern(s)
+  - 9 line-based pattern(s)
+No defaults detected. Clean.
+(612 violation(s) whitelisted)
+Ratchet: 612 whitelisted violation(s), at the ceiling.

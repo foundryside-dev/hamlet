@@ -1,0 +1,20 @@
+{
+  "name": "black-test",
+  "exit_code": 1,
+  "seconds": 1.2087397575378418,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "black",
+    "--check",
+    "tests/test_townlet/regressions/bac/test_token_binding.py",
+    "--workers",
+    "1"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave11-r0-test-style/black-test.log",
+  "sha256": "10059d35020564bb72bcc93add92e94b77b9aec2489ba921e89488c3d217e92c",
+  "candidate_tree": "55e3c6c4fe5f69a171dc59faa32082f959a9ca39",
+  "base_commit": "a0802a442bc7ea529de650b8705629923a0e6c72",
+  "manifest_sha256": "9083353e5722389b39ac51c95a8fdaa69af40ffe4ba1bb42dd623277faea8841",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

@@ -3,7 +3,7 @@
   "baseline_sha": "4aa5363b5de54d9a112977c32c2975f37627197f",
   "design": "BAC-2026-11-01-r2 plus explicit additive plan decisions",
   "approved_plan_sha256": "2dde2d80d3d14c510878c26af1f99c42217be12d3cb3a554647bc68646feedc1",
-  "phase": "26 of 66 finite source packages qualified/released; 40 remaining packages and all final BAC acceptance OPEN",
+  "phase": "27 of 66 finite source packages scoped-qualified/released;39 remaining packages and all final BAC acceptance OPEN",
   "completion_bar": "zero unresolved P1/P2 and zero unapproved in-scope capability gaps; all agreed finite evidence, fresh final spec/design/code review, required gates and source-verified docs",
   "requirements": [
     {
@@ -1816,6 +1816,12 @@
             "package-reviews/T02-independent-review.md"
           ],
           "final_acceptance": "T02 schema/transport only; runtime wiring and final common-source acceptance remain owed"
+        },
+        {
+          "task": "T17",
+          "source_commit": "995ce97b02a7ab57fad8da9c3c0ccd0b94a284f6",
+          "receipt": "evidence/wave11-qualification.json",
+          "disposition": "Scoped constructive representation repair qualified; required final common-source acceptance remains open."
         }
       ]
     },
@@ -5671,6 +5677,14 @@
       "review": "package-reviews/T13-native-proof-review.md",
       "source_tree": "f88f7cb3e3d0203ab199a2d898e3b0f8370d7e48",
       "disposition": "Nonblocking optional P3, explicitly outside material closure; recorded without expanding the remediation programme"
+    },
+    {
+      "id": "P3-T17-01",
+      "classification": "optional independent historical linear golden oracle",
+      "description": "Current direct/explicit/omitted paths share initialization; equality is not a historical runtime golden. Reviewed old/new source preserves linear geometry/order/keys/forward behavior, and actual controls verify current route equivalence. A separate baseline oracle could strengthen future regression detection.",
+      "review": "package-reviews/T17-independent-review-r1.md",
+      "source_tree": "f0410f6b8185cf2c87f4f6d5ddbd0a730e886dc9",
+      "disposition": "Nonblocking optional P3; no confirmed production defect or required behavior is waived; final whole-source review must see this record."
     }
   ],
   "final_candidate_sha": null,
@@ -6166,6 +6180,27 @@
         "evidence/wave10-qualification.json"
       ],
       "final_acceptance": "Remaining40packets/all54requirements/22fresh final lenses+synthesis, strict private curiosity/X02, ICM routing, complete native10/7 continuation T24/T25, T40+12strict learning/E2E,coverage>=70,slow/applicable hardware/exacttipCI remain OPEN. CPUonly; CUDAunavailable/unqualified. New bounded runner tests useN1/seed42/explicit episode override; do not generalize fresh PER ownership to external-global or resumed sampler roles."
+    },
+    {
+      "task": "T17",
+      "source_commit": "995ce97b02a7ab57fad8da9c3c0ccd0b94a284f6",
+      "qualified_release_commit": "995ce97b02a7ab57fad8da9c3c0ccd0b94a284f6",
+      "qualified_sum_tree": "f0410f6b8185cf2c87f4f6d5ddbd0a730e886dc9",
+      "status": "Scoped P4/G01 representation package qualified; full repository pytest deferred to G3 under the explicit approved cadence; final acceptance remains owed",
+      "package_result": "R0 meaningful28FAIL6PASS;R1 owned34PASS/independent12PASS and broad direct consumers2FAIL407PASS; causal test-observer repair;R2 joint38PASS135.0191wall/independent actual-training4PASS99.8678wall;all six guardsPASS. Counts overlap and are not summed.",
+      "full_repository_result": "NOT RUN for T17; reviewed additive-encoder exemption under BAC-CADENCE-A-2026-11-01, exact addendum2b73403f...45d370; next mandatoryG3. Not repository green.",
+      "native_capture_result": "No new native capture qualification claimed for this isolated encoder package; earlier native receipts retain original actual source. Complete native10/7 remains open.",
+      "reports": [
+        "package-reviews/T17-implementation.md",
+        "package-reviews/T17-qualification.md",
+        "package-reviews/T17-independent-review-r1.md",
+        "package-reviews/T17-independent-runtime-r1.md",
+        "package-reviews/T17-consumer-independent-review-r2.md",
+        "package-reviews/T17-consumer-independent-runtime-r2.md",
+        "package-reviews/T17-documentation-independent-review.md",
+        "evidence/wave11-qualification.json"
+      ],
+      "final_acceptance": "Remaining39packages/all54requirements/22fresh final lenses+synthesis, strict private curiosity/X02, provider/runner integration, complete native10/7,T40+12strict learning/E2E,coverage>=70,slow/applicable hardware/exacttipCI remain OPEN. CPU-only;CUDA unavailable/unqualified."
     }
   ],
   "evidence_note": "Each package records its actual immutable source/evidence. Wave05 qualified sum-tree postflight verified 53 source hashes, three final Astra reviews, five process identities, preserved configuration/native artifacts and the worktree registry. Storage archive proofs do not close required native historical dispatch, captured learning/readiness or final common-source acceptance.",
@@ -6256,7 +6291,8 @@
   "scoped_repairs_closed_final_acceptance_owed": [
     "D06",
     "D07",
-    "D08"
+    "D08",
+    "G01"
   ],
   "P2_P8_interface_clarification": {
     "sha256": "548523c1c23c9901cf461ef33bc8ed74a705c43977772acf6817d1f1caed06b1",
@@ -6356,6 +6392,20 @@
     "qualified_packages": 26,
     "remaining_packages": 40,
     "effective_requirements": 54,
+    "capability_reductions": false,
+    "final_acceptance": "OPEN; all finite final obligations retained"
+  },
+  "wave11_qualified_scope": {
+    "tasks": [
+      "T17"
+    ],
+    "source_head": "995ce97b02a7ab57fad8da9c3c0ccd0b94a284f6",
+    "tree": "f0410f6b8185cf2c87f4f6d5ddbd0a730e886dc9",
+    "receipt": "evidence/wave11-qualification.json",
+    "qualified_packages": 27,
+    "remaining_packages": 39,
+    "effective_requirements": 54,
+    "full_repository": "Authorized G3 deferral, not current repository green",
     "capability_reductions": false,
     "final_acceptance": "OPEN; all finite final obligations retained"
   }

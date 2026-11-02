@@ -1,0 +1,639 @@
+diff --git a/tests/test_townlet/regressions/bac/test_token_binding.py b/tests/test_townlet/regressions/bac/test_token_binding.py
+new file mode 100644
+index 00000000..831d2d33
+--- /dev/null
++++ b/tests/test_townlet/regressions/bac/test_token_binding.py
+@@ -0,0 +1,633 @@
++"""P4 binding witnesses and retained linear/attention/recurrent contracts.
++
++Fixture DATA and external APIs are supplied by the bounded T17 handoffs.
++No random Q difference is an expressivity oracle.
++"""
++
++from __future__ import annotations
++
++import math
++import shutil
++from dataclasses import dataclass, replace
++from pathlib import Path
++from typing import Any
++
++import pytest
++import torch
++import torch.nn as nn
++import yaml
++
++from townlet.agent.network_factory import NetworkFactory
++from townlet.agent.networks import RecurrentTokenQNetwork, TokenSetEncoder, TokenSetQNetwork
++from townlet.config.bac_options import TokenEncoderOptions, resolve_token_encoder
++from townlet.config.brain_config import LSTMConfig, RecurrentConfig, SetAggregatorConfig, TokenSetConfig, load_brain_config
++from townlet.environment.vectorized_env import VectorizedHamletEnv
++from townlet.universe.compiler import UniverseCompiler
++from townlet.universe.dto.token_spec import PAYLOAD_SCHEMAS, TOKEN_TRANSPORT_VERSION, SlotBinding, TokenSpec, build_token_type
++
++_VARIABLES = """
++variables:
++  version: '1.0'
++  item_profiles: []
++  declarations:
++  - id: deficit_energy
++    readable_by: [engine, agent]
++    writable_by: [engine]
++    scope: agent
++    type: scalar
++    lifetime: tick
++    semantic_type: custom
++    exposed_to: [agent]
++    initial_value: 0.0
++    normalization: {kind: minmax, min: 0.0, max: 1.0, clip: true}
++    description: How far below target energy (0.0 = at/above target)
++  - id: time_since_last_eat
++    readable_by: [engine, agent]
++    writable_by: [engine]
++    scope: agent
++    type: scalar
++    lifetime: tick
++    semantic_type: custom
++    exposed_to: [agent]
++    initial_value: 0.0
++    normalization: {kind: minmax, min: 0.0, max: 100.0, clip: true}
++    description: Timesteps since last EAT action
++  - id: need_tokens
++    readable_by: [engine, agent]
++    writable_by: [engine]
++    scope: agent
++    type: tensor2d
++    lifetime: episode
++    semantic_type: custom
++    exposed_to: [agent]
++    initial_value_mode: zeros
++    shape: [4, 3]
++    normalization: {kind: minmax, min: 0.0, max: 1.0, clip: true}
++    description: 'Flattened variable-element token rows: 4 tokens x 3 features.'
++  - id: position
++    readable_by: [engine, agent]
++    writable_by: [engine]
++    scope: agent
++    type: vecNf
++    lifetime: tick
++    semantic_type: custom
++    exposed_to: []
++    initial_value: [0.0, 0.0]
++    description: Normalized agent position (2D) in [0, 1]^2 range
++    dims: 2
++  - id: pulse_left
++    scope: global
++    type: scalar
++    lifetime: episode
++    semantic_type: custom
++    readable_by: [engine, agent]
++    writable_by: [engine]
++    exposed_to: [agent]
++    initial_value: 0.125
++    expression: 'where(tick % 2 == 0, 0.25, 0.75)'
++    normalization: {kind: minmax, min: 0.0, max: 1.0, clip: true}
++  - id: pulse_right
++    scope: global
++    type: scalar
++    lifetime: episode
++    semantic_type: custom
++    readable_by: [engine, agent]
++    writable_by: [engine]
++    exposed_to: [agent]
++    initial_value: 0.875
++    expression: 'where(tick % 2 == 0, 0.75, 0.25)'
++    normalization: {kind: minmax, min: 0.0, max: 1.0, clip: true}
++"""
++_BARS = """
++bars:
++  version: '1.0'
++  meters:
++  - name: energy
++    initial: 1.0
++    depletion: {passive: 0.0, move: 0.0, interact: 0.0}
++    recovery: {natural: 0.0}
++    bounds: {min: 0.0, max: 1.0, lethal_min: true, lethal_max: false}
++  - name: health
++    initial: 1.0
++    depletion: {passive: 0.0, move: 0.0, interact: 0.0}
++    recovery: {natural: 0.0}
++    bounds: {min: 0.0, max: 1.0, lethal_min: true, lethal_max: false}
++  - name: satiation
++    initial: 1.0
++    depletion: {passive: 0.0, move: 0.0, interact: 0.0}
++    recovery: {natural: 0.0}
++    bounds: {min: 0.0, max: 1.0, lethal_min: false, lethal_max: false}
++  - name: hygiene
++    initial: 1.0
++    depletion: {passive: 0.0, move: 0.0, interact: 0.0}
++    recovery: {natural: 0.0}
++    bounds: {min: 0.0, max: 1.0, lethal_min: false, lethal_max: false}
++  - name: money
++    initial: 0.0
++    depletion: {passive: 0.0, move: 0.0, interact: 0.0}
++    recovery: {natural: 0.0}
++    bounds: {min: 0.0, max: 999999.0, lethal_min: false, lethal_max: false}
++  - name: fitness
++    initial: 0.5
++    depletion: {passive: 0.0, move: 0.0, interact: 0.0}
++    recovery: {natural: 0.0}
++    bounds: {min: 0.0, max: 1.0, lethal_min: false, lethal_max: false}
++  - name: mood
++    initial: 1.0
++    depletion: {passive: 0.0, move: 0.0, interact: 0.0}
++    recovery: {natural: 0.0}
++    bounds: {min: 0.0, max: 1.0, lethal_min: false, lethal_max: false}
++  - name: social
++    initial: 1.0
++    depletion: {passive: 0.0, move: 0.0, interact: 0.0}
++    recovery: {natural: 0.0}
++    bounds: {min: 0.0, max: 1.0, lethal_min: false, lethal_max: false}
++  cascades:
++  - {source: satiation, target: health, threshold: 0.3, strength: 0.004}
++  - {source: satiation, target: energy, threshold: 0.3, strength: 0.006}
++  - {source: mood, target: energy, threshold: 0.2, strength: 0.001}
++  - {source: hygiene, target: mood, threshold: 0.4, strength: 0.003}
++  - {source: hygiene, target: social, threshold: 0.4, strength: 0.0}
++"""
++
++
++@dataclass(frozen=True)
++class AuthoredPair:
++    spec: TokenSpec
++    config: TokenSetConfig
++    first: torch.Tensor
++    second: torch.Tensor
++    action_dim: int
++    wait_id: int
++    count: int
++    right_value_column: int
++
++
++def _presence(spec: TokenSpec, observation: torch.Tensor) -> torch.Tensor:
++    parts = []
++    for layout in spec.compact_layout().types:
++        if layout.capacity:
++            rows = observation[:, layout.start : layout.end].reshape(
++                observation.shape[0], layout.capacity, layout.compact_row_width
++            )
++            parts.append(rows[:, :, layout.dynamic_features.index("presence")] > 0.5)
++    return torch.cat(parts, dim=1)
++
++
++@pytest.fixture(scope="module")
++def authored_pair(tmp_path_factory: pytest.TempPathFactory) -> AuthoredPair:
++    """Compile real DATA, reset at tick 0, then take one publicly legal WAIT."""
++    base = Path(__file__).resolve().parents[4] / "configs" / "test" / "token_set_smoke"
++    pack = tmp_path_factory.mktemp("token_binding") / "pack"
++    shutil.copytree(base, pack)
++    (pack / "variables.yaml").write_text(_VARIABLES)
++    (pack / "levels" / "L0_test" / "bars.yaml").write_text(_BARS)
++    brain_path = pack / "brain.yaml"
++    document = yaml.safe_load(brain_path.read_text())
++    document["architecture"]["token_set"]["token_encoder"] = {"mode": "interaction_mlp", "hidden_width": 1}
++    brain_path.write_text(yaml.safe_dump(document, sort_keys=False))
++    config = load_brain_config(pack).architecture.token_set
++    assert config is not None
++    assert config.token_encoder == TokenEncoderOptions(mode="interaction_mlp", hidden_width=1)
++    universe = UniverseCompiler().compile(pack, primary_level="L0_test", use_cache=False)
++    env = VectorizedHamletEnv.from_universe(universe, level_name="L0_test", num_agents=2, device="cpu")
++    first = env.reset().clone()
++    assert first.is_floating_point() and first.device.type == "cpu"
++    assert first.shape == (2, env.token_spec.total_dims)
++    waits = [action for action in env.level.runtime_action_space.actions if action.name == "WAIT"]
++    assert len(waits) == 1
++    wait_id = waits[0].id
++    assert 0 <= wait_id < env.action_dim
++    masks = env.get_action_masks()
++    assert masks.dtype == torch.bool and masks.shape == (2, env.action_dim)
++    assert masks[:, wait_id].all()
++    actions = torch.full((env.num_agents,), wait_id, dtype=torch.long, device=env.device)
++    second, rewards, dones, info = env.step(actions)
++    second = second.clone()
++    assert second.is_floating_point() and second.device.type == "cpu"
++    assert second.shape == first.shape and rewards.shape == dones.shape == (2,)
++    assert dones.dtype == torch.bool and not dones.any()
++    successor = info["successor_action_masks"]
++    assert successor.dtype == torch.bool and successor.shape == masks.shape
++    torch.testing.assert_close(successor, env.get_action_masks(), rtol=0, atol=0)
++    spec = env.token_spec
++    schema = spec.get_type("variable_element")
++    layout = spec.compact_layout().get_type("variable_element")
++    assert schema is not None and layout is not None
++    compact_rows = {(name, slot): (start, end) for name, slot, start, end in spec.row_layout()}
++    value_columns = []
++    for name, declared in (("pulse_left", 0.125), ("pulse_right", 0.875)):
++        bindings = [binding for binding in schema.slot_bindings if binding.filler_ref == name]
++        assert len(bindings) == 1, (name, schema.slot_bindings)
++        binding = bindings[0]
++        start, end = compact_rows[("variable_element", binding.slot_index)]
++        assert end - start == layout.compact_row_width
++        assert schema.slot_context_payloads[binding.slot_index][schema.payload_features.index("declared_initial")] == declared
++        assert torch.equal(first[:, start], torch.ones(2))
++        assert torch.equal(second[:, start], torch.ones(2))
++        value_columns.append(start + layout.dynamic_features.index("value_0"))
++    left, right = value_columns
++    torch.testing.assert_close(first[:, left], torch.full((2,), 0.25), rtol=0, atol=0)
++    torch.testing.assert_close(first[:, right], torch.full((2,), 0.75), rtol=0, atol=0)
++    torch.testing.assert_close(second[:, left], torch.full((2,), 0.75), rtol=0, atol=0)
++    torch.testing.assert_close(second[:, right], torch.full((2,), 0.25), rtol=0, atol=0)
++    other_columns = torch.ones(spec.total_dims, dtype=torch.bool)
++    other_columns[value_columns] = False
++    torch.testing.assert_close(first[:, other_columns], second[:, other_columns], rtol=0, atol=0)
++    before, after = _presence(spec, first), _presence(spec, second)
++    assert torch.equal(before, after)
++    counts = before.sum(dim=1)
++    assert (counts > 0).all() and (counts == counts[0]).all()
++    return AuthoredPair(spec, config, first, second, env.action_dim, wait_id, int(counts[0]), right)
++
++
++def _toy_spec() -> TokenSpec:
++    features = PAYLOAD_SCHEMAS["variable_element"]
++    contexts = []
++    for declared in (0.0, 1.0):
++        values = {
++            "value_width_used": 0.5, "scope_global": 1.0, "semantic_custom": 1.0,
++            "norm_kind_minmax": 1.0, "norm_param_max": 0.5, "norm_param_clip": 1.0,
++            "norm_param_absent": 1.0, "dtype_float": 1.0, "lifetime_episode": 1.0,
++            "log_element_count": float(torch.tensor(math.log(2) / (1 + math.log(2)), dtype=torch.float32)),
++            "declared_initial": declared,
++        }
++        contexts.append(tuple(values.get(feature, 0.0) for feature in features))
++    schema = build_token_type(
++        "variable_element",
++        (SlotBinding(0, "static", "witness_low", "global"), SlotBinding(1, "static", "witness_high", "global")),
++        slot_context_payloads=contexts, effect_catalog_contexts=(),
++    )
++    return TokenSpec(types=(schema,), position_rank=0, transport_version=TOKEN_TRANSPORT_VERSION)
++
++
++def _arguments(kind: str, spec: TokenSpec, aggregator: str, action_dim: int) -> dict[str, Any]:
++    arguments: dict[str, Any] = {
++        "token_spec": spec, "token_embed_dim": 16, "aggregator_type": aggregator,
++        "num_heads": 2 if aggregator == "attention" else None,
++    }
++    if kind != "encoder":
++        arguments.update(action_dim=action_dim, q_head_hidden_dim=64)
++    if kind == "recurrent":
++        arguments.update(lstm_hidden_size=12, lstm_num_layers=2, lstm_dropout=0.0)
++    return arguments
++
++
++def _new_model(kind: str, spec: TokenSpec, aggregator: str, mode: str, width: int | None, action_dim: int) -> Any:
++    model_class = {"encoder": TokenSetEncoder, "token_set": TokenSetQNetwork, "recurrent": RecurrentTokenQNetwork}[kind]
++    constructor = getattr(model_class, "from_resolved_encoder", None)
++    assert callable(constructor), f"{model_class.__name__} must expose callable from_resolved_encoder for resolved P4 selection"
++    return constructor(
++        **_arguments(kind, spec, aggregator, action_dim),
++        token_encoder_mode=mode, token_encoder_hidden_width=width,
++    )
++
++
++def _factory(kind: str, spec: TokenSpec, aggregator: str, declaration: TokenEncoderOptions | None, action_dim: int) -> Any:
++    aggregate = SetAggregatorConfig(type=aggregator, num_heads=2 if aggregator == "attention" else None)
++    values = dict(token_encoder=declaration, token_embed_dim=16, q_head_hidden_dim=64, aggregator=aggregate)
++    if kind == "token_set":
++        return NetworkFactory.build_token_set(TokenSetConfig(**values), action_dim, spec)
++    config = RecurrentConfig(**values, lstm=LSTMConfig(hidden_size=12, num_layers=2, dropout=0.0))
++    return NetworkFactory.build_recurrent(config, action_dim, spec)
++
++
++def _encoder(model: Any) -> TokenSetEncoder:
++    return model if isinstance(model, TokenSetEncoder) else model.encoder
++
++
++def _row_layers(encoder: TokenSetEncoder, mode: str, width: int | None) -> None:
++    for name, row in encoder.encoders.items():
++        if mode == "linear":
++            assert isinstance(row, nn.Linear), f"linear state/computation changed for {name}"
++        else:
++            assert isinstance(row, nn.Sequential), f"factory ignored interaction_mlp for {name}: {type(row).__name__}"
++            assert len(row) == 3 and isinstance(row[0], nn.Linear) and isinstance(row[1], nn.ReLU)
++            assert isinstance(row[2], nn.Linear) and row[0].out_features == row[2].in_features == width
++
++
++def _attention_as_mean(encoder: TokenSetEncoder) -> None:
++    if encoder.aggregator_type == "attention":
++        with torch.no_grad():
++            for projection in (encoder.q_proj, encoder.k_proj, encoder.v_proj, encoder.out_proj):
++                assert projection is not None
++                projection.weight.zero_()
++                projection.bias.zero_()
++            encoder.v_proj.weight.copy_(torch.eye(encoder.token_embed_dim))
++            encoder.out_proj.weight.copy_(torch.eye(encoder.token_embed_dim))
++
++
++def _set_feature(encoder: TokenSetEncoder, spec: TokenSpec, mode: str, authored: bool) -> None:
++    """Hand-derived joint feature; all unrelated coefficients are explicitly zero."""
++    _row_layers(encoder, mode, 1 if mode == "interaction_mlp" else None)
++    schema = spec.get_type("variable_element")
++    assert schema is not None
++    value = schema.payload_features.index("value_0")
++    descriptor = schema.payload_features.index("declared_initial")
++    with torch.no_grad():
++        for row in encoder.encoders.values():
++            for parameter in row.parameters():
++                parameter.zero_()
++        for vector in encoder.type_embeddings.values():
++            vector.zero_()
++        row = encoder.encoders["variable_element"]
++        if mode == "linear":
++            row.weight[0, value] = row.weight[0, descriptor] = 1.0
++        else:
++            row[0].weight[0, value] = 3.0 if authored else 1.0
++            row[0].weight[0, descriptor] = 4.0 if authored else 1.0
++            row[0].bias[0] = -3.5 if authored else -1.0
++            row[2].weight[0, 0] = 1 / 3 if authored else 1.0
++    _attention_as_mean(encoder)
++
++
++def _selected_head(model: Any, action: int, scale: int, baseline: float) -> None:
++    with torch.no_grad():
++        for parameter in model.q_head.parameters():
++            parameter.zero_()
++        model.q_head[0].weight[0, 0] = scale
++        model.q_head[0].bias[0] = baseline
++        model.q_head[0].bias[1] = 1.0
++        model.q_head[1].weight.fill_(1.0)
++        model.q_head[3].weight[action, 0] = 1.0
++
++
++def _semantic_permutation(spec: TokenSpec, observation: torch.Tensor) -> tuple[TokenSpec, torch.Tensor]:
++    schema = spec.get_type("variable_element")
++    layout = spec.compact_layout().get_type("variable_element")
++    assert schema is not None and layout is not None
++    order = tuple(reversed(range(schema.capacity)))
++    target_schema = replace(
++        schema,
++        slot_bindings=tuple(replace(schema.slot_bindings[old], slot_index=new) for new, old in enumerate(order)),
++        slot_context_payloads=tuple(schema.slot_context_payloads[old] for old in order),
++    )
++    target_spec = replace(spec, types=tuple(target_schema if item.type_name == "variable_element" else item for item in spec.types))
++    rows = observation[:, layout.start : layout.end].reshape(observation.shape[0], schema.capacity, layout.compact_row_width)
++    target = observation.clone()
++    target[:, layout.start : layout.end] = rows[:, order, :].reshape(observation.shape[0], layout.end - layout.start)
++    return target_spec, target
++
++
++def _absent(observation: torch.Tensor, spec: TokenSpec, type_name: str | None, poison: bool) -> torch.Tensor:
++    result = observation.clone()
++    for layout in spec.compact_layout().types:
++        if layout.capacity and (type_name is None or layout.type_name == type_name):
++            rows = result[:, layout.start : layout.end].reshape(result.shape[0], layout.capacity, layout.compact_row_width)
++            rows.zero_()
++            if poison:
++                rows[:, :, 1:] = float("nan")
++    return result
++
++
++def _assert_zero_gradients(parameters: Any) -> None:
++    for name, parameter in parameters:
++        assert parameter.grad is not None, f"missing gradient path: {name}"
++        assert torch.isfinite(parameter.grad).all(), name
++        assert torch.count_nonzero(parameter.grad) == 0, name
++
++
++def _memory_controls(model: RecurrentTokenQNetwork, pair: AuthoredPair, mode: str) -> None:
++    """Select a real recurrent path; compare same current frame after different history."""
++    hidden_size = model.lstm.hidden_size
++    with torch.no_grad():
++        for parameter in model.lstm.parameters():
++            parameter.zero_()
++        # PyTorch LSTM gates are input/forget/candidate/output; activate one candidate per layer.
++        for layer in range(model.lstm.num_layers):
++            getattr(model.lstm, f"weight_ih_l{layer}")[2 * hidden_size, 0] = 1.0
++            getattr(model.lstm, f"weight_hh_l{layer}")[2 * hidden_size, 0] = 0.5
++    _selected_head(model, pair.wait_id, 1, 1.0)
++    sequence = torch.stack((pair.first, pair.second, pair.first), dim=1)
++    initial = model.initial_hidden(2, sequence.device)
++    assert all(item.shape == (2, 2, 12) and torch.count_nonzero(item) == 0 for item in initial)
++    calls = []
++    handle = model.lstm.register_forward_hook(lambda _module, _arguments, _output: calls.append(1))
++    whole, final = model(sequence, initial)
++    handle.remove()
++    assert calls == [1] and whole.shape == (2, 3, pair.action_dim)
++    threaded = model.initial_hidden(2, sequence.device)
++    frames = []
++    for index in range(sequence.shape[1]):
++        frame, threaded = model(sequence[:, index : index + 1], threaded)
++        frames.append(frame)
++    torch.testing.assert_close(whole, torch.cat(frames, dim=1), rtol=0, atol=1e-6)
++    for left, right in zip(final, threaded, strict=True):
++        torch.testing.assert_close(left, right, rtol=0, atol=1e-6)
++    same_current_a = torch.stack((pair.first, pair.first), dim=1)
++    same_current_b = torch.stack((pair.second, pair.first), dim=1)
++    qa, _ = model(same_current_a, model.initial_hidden(2, sequence.device))
++    qb, _ = model(same_current_b, model.initial_hidden(2, sequence.device))
++    if mode == "linear":
++        torch.testing.assert_close(qa[:, -1], qb[:, -1], rtol=0, atol=1e-6)
++    else:
++        assert (qa[:, -1, pair.wait_id] > qb[:, -1, pair.wait_id]).all()
++    model.zero_grad(set_to_none=True)
++    whole, _ = model(sequence, model.initial_hidden(2, sequence.device))
++    whole[:, -1, pair.wait_id].sum().backward()
++    gradient = model.lstm.weight_hh_l0.grad
++    assert gradient is not None and torch.isfinite(gradient).all() and torch.count_nonzero(gradient) > 0
++
++
++@pytest.mark.parametrize("kind", ["encoder", "token_set", "recurrent"])
++@pytest.mark.parametrize("aggregator", ["mean", "attention"])
++@pytest.mark.parametrize("mode,width", [("linear", None), ("interaction_mlp", 3)])
++def test_from_resolved_encoder_requires_explicit_selection(kind: str, aggregator: str, mode: str, width: int | None) -> None:
++    """Missing selection must not silently choose a local policy or hidden width."""
++    spec = _toy_spec()
++    selected, origin = resolve_token_encoder(TokenEncoderOptions(mode=mode, hidden_width=width))
++    assert origin == "authored"
++    model = _new_model(kind, spec, aggregator, selected.mode, selected.hidden_width, 3)
++    encoder = _encoder(model)
++    assert encoder.aggregator_type == aggregator
++    assert encoder.num_heads == (2 if aggregator == "attention" else None)
++    _row_layers(encoder, mode, width)
++    constructor = getattr(type(model), "from_resolved_encoder", None)
++    assert callable(constructor)
++    arguments = _arguments(kind, spec, aggregator, 3)
++    with pytest.raises(TypeError):
++        constructor(**arguments, token_encoder_mode=selected.mode)
++    with pytest.raises(TypeError):
++        constructor(**arguments, token_encoder_hidden_width=selected.hidden_width)
++    for invalid_mode, invalid_width in (("linear", 1), ("interaction_mlp", None), ("interaction_mlp", 0), ("unknown", None)):
++        with pytest.raises((TypeError, ValueError)):
++            constructor(**arguments, token_encoder_mode=invalid_mode, token_encoder_hidden_width=invalid_width)
++    keys = model.state_dict()
++    prefix = "" if kind == "encoder" else "encoder."
++    suffix = "weight" if mode == "linear" else "0.weight"
++    assert f"{prefix}encoders.variable_element.{suffix}" in keys
++    assert not any(marker in key for key in keys for marker in ("_token_context_", "_dynamic_lanes_", "_fixed_lanes_"))
++
++
++@pytest.mark.parametrize("kind", ["token_set", "recurrent"])
++def test_mean_can_bind_descriptor_value(kind: str) -> None:
++    """An affine factory route or an MLP after pooling cannot meet the .375/.125 witness."""
++    spec = _toy_spec()
++    network = _factory(kind, spec, "mean", TokenEncoderOptions(mode="interaction_mlp", hidden_width=1), 3)
++    _set_feature(network.encoder, spec, "interaction_mlp", authored=False)
++    observations = torch.tensor([[1, 0.25, 0, 1, 0.75, 0], [1, 0.75, 0, 1, 0.25, 0]], dtype=torch.float32)
++    pooled = network.encoder.pooled_embedding(observations)
++    expected = torch.zeros(2, 16)
++    expected[:, 0] = torch.tensor([0.375, 0.125])
++    torch.testing.assert_close(pooled, expected, rtol=0, atol=0)
++    target_spec, target_observations = _semantic_permutation(spec, observations)
++    target = _factory(kind, target_spec, "mean", TokenEncoderOptions(mode="interaction_mlp", hidden_width=1), 3)
++    target.load_state_dict(network.state_dict(), strict=True)
++    torch.testing.assert_close(target.encoder.pooled_embedding(target_observations), expected, rtol=0, atol=1e-6)
++
++
++@pytest.mark.parametrize("kind", ["token_set", "recurrent"])
++@pytest.mark.parametrize("mode", ["linear", "interaction_mlp"])
++def test_attention_retains_nonuniform_row_interactions(kind: str, mode: str) -> None:
++    """Attention must remain actual content-weighted attention in either encoder family."""
++    spec = _toy_spec()
++    declaration = TokenEncoderOptions(mode=mode, hidden_width=1 if mode == "interaction_mlp" else None)
++    model = _factory(kind, spec, "attention", declaration, 3)
++    encoder = model.encoder
++    assert encoder.aggregator_type == "attention" and encoder.num_heads == 2
++    _set_feature(encoder, spec, mode, authored=False)
++    with torch.no_grad():
++        encoder.q_proj.weight.copy_(torch.eye(16))
++        encoder.k_proj.weight.copy_(torch.eye(16))
++    observation = torch.tensor([[1, 0.25, 0, 1, 0.75, 0]], dtype=torch.float32)
++    values = (0.25, 1.75) if mode == "linear" else (0.0, 0.75)
++    attended = []
++    for query in values:
++        weights = [math.exp(query * key / math.sqrt(8)) for key in values]
++        attended.append(sum(weight * value for weight, value in zip(weights, values, strict=True)) / sum(weights))
++    expected = torch.zeros(1, 16)
++    expected[0, 0] = sum(attended) / 2
++    assert abs(float(expected[0, 0]) - sum(values) / 2) > 1e-5
++    torch.testing.assert_close(encoder(observation), expected, rtol=0, atol=1e-6)
++
++
++@pytest.mark.parametrize("kind", ["token_set", "recurrent"])
++def test_authored_mean_can_bind_descriptor_value(authored_pair: AuthoredPair, kind: str) -> None:
++    """Normal compiled reset/WAIT observations expose selected binding, without state injection."""
++    pair = authored_pair
++    if kind == "token_set":
++        model = NetworkFactory.build_token_set(pair.config, pair.action_dim, pair.spec)
++    else:
++        model = _factory(kind, pair.spec, "mean", pair.config.token_encoder, pair.action_dim)
++    _set_feature(model.encoder, pair.spec, "interaction_mlp", authored=True)
++    for observation in (pair.first, pair.second):
++        pooled = model.encoder.pooled_embedding(observation)
++        expected = torch.zeros(2, 16)
++        expected[:, 0] = observation[:, pair.right_value_column] / pair.count
++        torch.testing.assert_close(pooled, expected, rtol=0, atol=1e-7)
++    if kind == "token_set":
++        _selected_head(model, pair.wait_id, pair.count, 0.0)
++        first, second = model(pair.first), model(pair.second)
++        assert (first[:, pair.wait_id] > second[:, pair.wait_id]).all()
++        epsilon = model.q_head[1].eps
++        for q, value in ((first, 0.75), (second, 0.25)):
++            mean = (value + 1) / 64
++            variance = (value * value + 1) / 64 - mean * mean
++            expected_q = (value - mean) / math.sqrt(variance + epsilon)
++            torch.testing.assert_close(q[:, pair.wait_id], torch.full((2,), expected_q), rtol=1e-6, atol=1e-6)
++            other = q.clone()
++            other[:, pair.wait_id] = 0
++            assert torch.count_nonzero(other) == 0
++
++
++@pytest.mark.parametrize("kind", ["encoder", "token_set", "recurrent"])
++@pytest.mark.parametrize("aggregator", ["mean", "attention"])
++def test_linear_mean_is_preserved(kind: str, aggregator: str) -> None:
++    """The additive route must preserve old initialization/state and the truthful mean alias."""
++    spec = _toy_spec()
++    model_class = {"encoder": TokenSetEncoder, "token_set": TokenSetQNetwork, "recurrent": RecurrentTokenQNetwork}[kind]
++    arguments = _arguments(kind, spec, aggregator, 3)
++    with torch.random.fork_rng(devices=[]):
++        torch.manual_seed(1701)
++        old = model_class(**arguments)
++        torch.manual_seed(1701)
++        selected = _new_model(kind, spec, aggregator, "linear", None, 3)
++        if kind != "encoder":
++            torch.manual_seed(1701)
++            omitted = _factory(kind, spec, aggregator, None, 3)
++            torch.manual_seed(1701)
++            explicit = _factory(kind, spec, aggregator, TokenEncoderOptions(mode="linear"), 3)
++            for control in (omitted, explicit):
++                assert control.state_dict().keys() == old.state_dict().keys()
++                for key, tensor in old.state_dict().items():
++                    assert torch.equal(tensor, control.state_dict()[key]), key
++    assert selected.state_dict().keys() == old.state_dict().keys()
++    for key, tensor in old.state_dict().items():
++        assert torch.equal(tensor, selected.state_dict()[key]), key
++    omitted_options, origin = resolve_token_encoder(None)
++    assert omitted_options.mode == "linear" and omitted_options.hidden_width is None
++    assert origin == "bac-options-v1: omitted token_encoder retains linear"
++    observations = torch.tensor([[1, 0.25, 0, 1, 0.75, 0], [1, 0.75, 0, 1, 0.25, 0]], dtype=torch.float32)
++    old_encoder, selected_encoder = _encoder(old), _encoder(selected)
++    torch.testing.assert_close(old_encoder(observations), selected_encoder(observations), rtol=0, atol=0)
++    if kind == "token_set":
++        torch.testing.assert_close(old(observations), selected(observations), rtol=0, atol=0)
++    elif kind == "recurrent":
++        sequence = observations.unsqueeze(0)
++        old_q, old_h = old(sequence, old.initial_hidden(1, sequence.device))
++        new_q, new_h = selected(sequence, selected.initial_hidden(1, sequence.device))
++        torch.testing.assert_close(old_q, new_q, rtol=0, atol=0)
++        for first, second in zip(old_h, new_h, strict=True):
++            torch.testing.assert_close(first, second, rtol=0, atol=0)
++    if aggregator == "mean":
++        _set_feature(old_encoder, spec, "linear", authored=False)
++        expected = torch.zeros(2, 16)
++        expected[:, 0] = 1.0
++        torch.testing.assert_close(old_encoder(observations), expected, rtol=0, atol=0)
++
++
++@pytest.mark.parametrize("kind", ["token_set", "recurrent"])
++@pytest.mark.parametrize("aggregator", ["mean", "attention"])
++@pytest.mark.parametrize("mode", ["linear", "interaction_mlp"])
++def test_semantic_permutation_absence_and_memory(authored_pair: AuthoredPair, kind: str, aggregator: str, mode: str) -> None:
++    """Moving context with rows preserves semantics; absence cuts both MLP layers; memory stays real."""
++    pair = authored_pair
++    declaration = TokenEncoderOptions(mode=mode, hidden_width=1 if mode == "interaction_mlp" else None)
++    model = _factory(kind, pair.spec, aggregator, declaration, pair.action_dim)
++    _set_feature(model.encoder, pair.spec, mode, authored=True)
++    target_spec, permuted = _semantic_permutation(pair.spec, pair.first)
++    target = _factory(kind, target_spec, aggregator, declaration, pair.action_dim)
++    target.load_state_dict(model.state_dict(), strict=True)
++    assert target_spec.get_type("variable_element").slot_context_payloads != pair.spec.get_type("variable_element").slot_context_payloads
++    torch.testing.assert_close(model.encoder(pair.first), target.encoder(permuted), rtol=0, atol=1e-6)
++    if kind == "token_set":
++        torch.testing.assert_close(model(pair.first), target(permuted), rtol=0, atol=1e-6)
++    else:
++        source_q, source_h = model(pair.first[:, None], model.initial_hidden(2, pair.first.device))
++        target_q, target_h = target(permuted[:, None], target.initial_hidden(2, pair.first.device))
++        torch.testing.assert_close(source_q, target_q, rtol=0, atol=1e-6)
++        for source_state, target_state in zip(source_h, target_h, strict=True):
++            torch.testing.assert_close(source_state, target_state, rtol=0, atol=1e-6)
++    keys = model.state_dict()
++    assert not any(marker in key for key in keys for marker in ("_token_context_", "_dynamic_lanes_", "_fixed_lanes_"))
++    if mode == "interaction_mlp":
++        assert not torch.allclose(model.encoder(pair.first), model.encoder(permuted), rtol=0, atol=1e-6)
++    if kind == "recurrent":
++        _memory_controls(model, pair, mode)
++    encoder = model.encoder
++    row = encoder.encoders["variable_element"]
++    with torch.no_grad():
++        for parameter in row.parameters():
++            parameter.fill_(0.25)
++        encoder.type_embeddings["variable_element"].fill_(0.5)
++    _attention_as_mean(encoder)
++    encoder.zero_grad(set_to_none=True)
++    encoder(pair.first).sum().backward()
++    for name, parameter in row.named_parameters():
++        assert parameter.grad is not None and torch.count_nonzero(parameter.grad) > 0, f"vacuous present control: {name}"
++    clean = _absent(pair.first, pair.spec, "variable_element", False)
++    poisoned = _absent(pair.first, pair.spec, "variable_element", True)
++    absent_pool = encoder(poisoned)
++    assert torch.isfinite(absent_pool).all() and torch.count_nonzero(absent_pool) == 0
++    torch.testing.assert_close(encoder(clean), absent_pool, rtol=0, atol=0)
++    encoder.zero_grad(set_to_none=True)
++    encoder(poisoned).sum().backward()
++    _assert_zero_gradients(row.named_parameters())
++    _assert_zero_gradients([("variable type vector", encoder.type_embeddings["variable_element"])])
++    empty = _absent(pair.first, pair.spec, None, True)
++    encoder.zero_grad(set_to_none=True)
++    pooled = encoder(empty)
++    assert torch.isfinite(pooled).all() and torch.count_nonzero(pooled) == 0
++    pooled.sum().backward()
++    _assert_zero_gradients(encoder.named_parameters())
++

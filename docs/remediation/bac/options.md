@@ -75,13 +75,45 @@ overrides; this table does not yet alter serving behavior.
 
 Under `architecture.token_set` or `architecture.recurrent`, `token_encoder`
 accepts `{mode: linear}` (no hidden width) or `{mode: interaction_mlp,
-hidden_width: <positive integer>}`. `config.bac_options.TokenEncoderOptions` is the portable declaration.
-`resolve_token_encoder` returns the immutable
-selection and its origin. Omission resolves to linear with a bac-options-v1
-receipt. The new field is schema-only until T17 consumes it. Mean and attention
-remain selectable; linear mean retains its known descriptor/value association
-limitation. Zero-width flat-network constant policies remain valid. Token
-rosters, capacities, observation widths and action geometry stay compiler-owned.
+hidden_width: <positive integer>}`. `config.bac_options.TokenEncoderOptions` is the immutable
+portable declaration. For example, this nested block selects a one-unit interaction hidden
+layer while preserving the surrounding required architecture fields:
+
+```yaml
+token_encoder:
+  mode: interaction_mlp
+  hidden_width: 1
+```
+
+`resolve_token_encoder` returns the selection and its origin. Omission resolves to linear
+with the recorded `bac-options-v1: omitted token_encoder retains linear` origin. Both
+`NetworkFactory.build_token_set` and `build_recurrent` now consume that selection; constructors
+do not invent omission policy. Both row modes work with either `mean` or `attention`.
+
+Linear retains the direct per-type affine projection, learned type vector and existing
+computation. Interaction applies a per-type `Linear -> ReLU -> Linear` to the assembled
+descriptor and live payload jointly **before pooling**, using the explicit hidden width.
+The type vector, output-side presence masking and declared aggregator remain. Linear mean's
+known descriptor/value reassignment alias remains a truthful control; interaction can represent
+that binding while preserving mean pooling. The recurrent family shares this row encoder,
+then calls one LSTM over the pooled frame sequence with explicit hidden/cell threading.
+
+The existing direct `TokenSetEncoder`, `TokenSetQNetwork` and `RecurrentTokenQNetwork`
+constructors retain fixed linear semantics and their old signatures. Explicit resolved
+construction uses their additive `from_resolved_encoder` classmethods, with required
+`token_encoder_mode` and `token_encoder_hidden_width` keywords; linear passes `None` for width.
+Shared initialization preserves linear module order, initialization, state keys and forward
+behavior. `token_encoder_mode` and `token_encoder_hidden_width` are ordinary attributes.
+
+Learned row keys in both Q-network families are `encoder.encoders.<type>.weight/bias` for
+linear and `encoder.encoders.<type>.0.weight/bias` plus `.2.weight/bias` for interaction.
+The first interaction Linear maps payload width to the declared hidden width; the second maps
+hidden width to `token_embed_dim`. Each target constructs static assembly from its own
+`TokenSpec`; compiled context and scatter buffers are nonpersistent and absent from learned
+state. A semantic row permutation must move its compiled context with it.
+
+Zero-width flat-network constant policies remain valid. Token rosters, capacities, observation
+widths and action geometry stay compiler-owned.
 
 ## Provider precedence and truthful roles
 

@@ -379,6 +379,15 @@ and vector-tick beta horizon. [BAC status](docs/remediation/bac/STATUS.md) recor
 qualification and remaining native/runtime/learning requirements. These bounded notes do not
 refresh the broader dated source/CI review above.
 
+T17 token-set and recurrent factories consume the declared `linear` or `interaction_mlp`
+row encoder before either `mean` or `attention` pooling. Interaction jointly encodes each
+row's descriptor and live payload through Linear → ReLU → Linear with an explicit positive
+hidden width. Omission uses the central versioned linear resolution; the retained direct
+constructors continue to select linear. Linear mean retains its descriptor/value association
+limitation and remains selectable. See [encoder options](docs/remediation/bac/options.md#encoder-declaration-and-preservation)
+and [BAC architecture](docs/architecture/BAC.md#22-architecture-selection) for construction and
+learned-state/context contracts.
+
 The token type schema is the transfer contract; the serialization layout is per universe. At
 `6475cc5b` every one of the 33 compilable levels has `token_type_schema_hash`
 `de093a6e9f59924e` (2-D and 3-D grids, GridND, continuous and aspatial packs alike), while

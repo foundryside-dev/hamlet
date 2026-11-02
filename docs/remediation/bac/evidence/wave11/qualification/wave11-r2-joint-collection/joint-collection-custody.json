@@ -1,0 +1,21 @@
+{
+  "job": "joint-collection",
+  "base_commit": "a0802a442bc7ea529de650b8705629923a0e6c72",
+  "candidate_tree": "f0410f6b8185cf2c87f4f6d5ddbd0a730e886dc9",
+  "exit_code": 0,
+  "counts": {
+    "passed": 0,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0,
+    "warnings": 0
+  },
+  "wall_seconds": 10.714369297027588,
+  "source_guards": 164,
+  "process_identities": 1,
+  "config_digests": 573,
+  "protected_artifacts": 13,
+  "worktrees": 14,
+  "source_index_import_threads_fixture_custody": "PASS",
+  "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+}

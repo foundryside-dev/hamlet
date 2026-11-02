@@ -1,0 +1,32 @@
+{
+  "from_tree": "5d4685b55ccd85879d0627bb55bbc20277c58af4",
+  "to_tree": "f0410f6b8185cf2c87f4f6d5ddbd0a730e886dc9",
+  "main_five_sources_identical": [
+    {
+      "path": "src/townlet/agent/networks.py",
+      "lines": 655,
+      "sha256": "24d4a8627255dab42b3b9b64995c62235f71f25ea04cdbaace6616f1b6e899ed"
+    },
+    {
+      "path": "src/townlet/agent/network_factory.py",
+      "lines": 179,
+      "sha256": "31b1340b6a125754ae15dbcc981223a4a6f4056ebf9db38ffbe63ba0ff9dd75c"
+    },
+    {
+      "path": "src/townlet/config/brain_config.py",
+      "lines": 568,
+      "sha256": "6c041ed40de507dfed81dc4b3a58cbb728d446228f6fd831ee115348aa559079"
+    },
+    {
+      "path": "src/townlet/config/bac_options.py",
+      "lines": 294,
+      "sha256": "10dc3ef7dc288d954147046c95bc8362df2162f3829986be26b2724e86dd4916"
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_token_binding.py",
+      "lines": 640,
+      "sha256": "bdb25f6e33bae64ede392dfb8ed4fbe4b7521a6dc201184e547decaeabefe544"
+    }
+  ],
+  "only_new_change": "Two BPTT test observer interception sites; all23 assertions unchanged. Main implementation,owned34 and every original broad-suite scenario remain unchanged. R1 failures remain archived; R2 actual changed-file checks required."
+}

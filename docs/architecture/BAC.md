@@ -74,12 +74,34 @@ same helper builds both the online and the target network.
 | `dueling` | `NetworkFactory.build_dueling` | `DuelingQNetwork` |
 | `token_set` | `NetworkFactory.build_token_set` | `TokenSetQNetwork` |
 
-For `token_set` and `recurrent`, the factory passes the compiled `TokenSpec` directly. Both use
-`TokenSetEncoder`, whose per-type projections and declared set aggregator produce one pooled
+For `token_set` and `recurrent`, the factory passes the compiled `TokenSpec` directly and
+resolves `token_encoder` through the central `resolve_token_encoder` policy. Both use
+`TokenSetEncoder`, whose per-type row encoders and declared set aggregator produce one pooled
 embedding per frame. `TokenSetQNetwork` sends that embedding directly to a Q-head;
 `RecurrentTokenQNetwork` encodes `[batch * sequence]` frames, makes one LSTM call over the pooled
 sequence, and applies its Q-head to each recurrent output. Flat and dueling networks are sized
 from the compiled flat observation width.
+
+T17 local network correction, 2026-11-02: `architecture.token_set.token_encoder` and
+`architecture.recurrent.token_encoder` select `linear` or `interaction_mlp` independently of
+the `mean` or `attention` aggregator. Linear retains one affine projection per live type.
+Interaction applies a per-type Linear → ReLU → Linear to the assembled descriptor and live
+payload **before pooling**, with an explicit positive `hidden_width`. Linear takes no hidden
+width; omission resolves centrally to recorded linear semantics. Linear mean retains its
+known descriptor/value reassignment alias and remains a selectable historical control.
+
+The direct `TokenSetEncoder`, `TokenSetQNetwork` and `RecurrentTokenQNetwork` constructors
+retain their fixed linear meaning and signatures. Their additive `from_resolved_encoder`
+classmethods require both `token_encoder_mode` and `token_encoder_hidden_width` keywords;
+linear supplies an explicit `None` width. Both factories use that resolved route. Shared
+initialization preserves the linear module creation order, learned keys and computation.
+
+Each network assembles static context from its own target `TokenSpec`; context/scatter buffers
+stay outside learned state. In either Q-network, linear row keys remain
+`encoder.encoders.<type>.weight/bias`; interaction keys use Linear indices `0` and `2`,
+with shapes determined by payload, hidden and embedding widths. Mode/width attributes are
+ordinary Python values. See [encoder options](../remediation/bac/options.md#encoder-declaration-and-preservation).
+This bounded correction preserves the document's broader dated review boundary.
 
 ### 2.3 The network classes, and which are reachable
 
@@ -264,8 +286,9 @@ worth naming rather than a shortcut.
 
 The current observation is a compact fixed-capacity serialization of typed tokens.
 `TokenSetQNetwork` consumes the compiled `TokenSpec`, expands one type at a time with static
-context at the network boundary, projects each type, and pools the mixed set with the declared
-`mean` or `attention` aggregator. `StructuredQNetwork` still has no authoring door (§2.3).
+context at the network boundary, applies the selected linear or interaction row encoder, and
+pools the mixed set with the declared `mean` or `attention` aggregator. The recurrent family
+uses the same encoder before its LSTM. `StructuredQNetwork` still has no authoring door (§2.3).
 
 The **token-observation migration** that established this representation is specified in:
 `docs/superpowers/specs/2026-08-22-token-observation-representation-design.md` — approved

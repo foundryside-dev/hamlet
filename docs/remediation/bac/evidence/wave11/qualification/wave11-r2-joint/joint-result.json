@@ -1,0 +1,29 @@
+{
+  "name": "joint",
+  "exit_code": 0,
+  "seconds": 135.01912760734558,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_token_binding.py",
+    "tests/test_townlet/integration/test_recurrent_bptt_runtime.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave11-r2-joint"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave11-r2-joint/joint.log",
+  "sha256": "049a2ab85e3ec42ca32bc03b4797fbb948a003a5e6c5fc01487495d8c7f5c2b6",
+  "candidate_tree": "f0410f6b8185cf2c87f4f6d5ddbd0a730e886dc9",
+  "base_commit": "a0802a442bc7ea529de650b8705629923a0e6c72",
+  "manifest_sha256": "f0ff070cce442c0c60035c5e6dab7fd3d245900423d61873a9534791cba23bb6",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

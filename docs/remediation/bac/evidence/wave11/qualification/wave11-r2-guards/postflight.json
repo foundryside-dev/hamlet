@@ -1,0 +1,13 @@
+{
+  "candidate_tree": "f0410f6b8185cf2c87f4f6d5ddbd0a730e886dc9",
+  "six_guards": [
+    "black",
+    "compiler-cli",
+    "expression-doc",
+    "mypy",
+    "no-defaults",
+    "ruff"
+  ],
+  "exact_source_bridge": "R1 main-five inventories byte-identical to R2; only two consumer observer sites changed",
+  "joint38_custody": "PASS164source/573configs/13artifacts/14worktrees/3processes"
+}

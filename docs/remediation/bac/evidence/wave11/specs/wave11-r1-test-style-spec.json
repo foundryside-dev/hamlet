@@ -1,0 +1,28 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave11/r1-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave11-r1-test-style",
+  "workers": 2,
+  "jobs": [
+    {
+      "name": "ruff-test",
+      "args": [
+        "-m",
+        "ruff",
+        "check",
+        "tests/test_townlet/regressions/bac/test_token_binding.py"
+      ]
+    },
+    {
+      "name": "black-test",
+      "args": [
+        "-m",
+        "black",
+        "--check",
+        "tests/test_townlet/regressions/bac/test_token_binding.py",
+        "--workers",
+        "1"
+      ]
+    }
+  ]
+}

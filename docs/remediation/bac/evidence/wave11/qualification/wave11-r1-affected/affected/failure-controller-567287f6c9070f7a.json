@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/integration/test_recurrent_bptt_runtime.py::test_recurrent_brain_yaml_trains_the_recurrent_weight_matrix",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave11-r1-affected/popen-gw0/test_recurrent_brain_yaml_trai0')\nmonkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f493f832c40>\n\n    def test_recurrent_brain_yaml_trains_the_recurrent_weight_matrix(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:\n        \"\"\"Real configured training must backpropagate into LSTM recurrence.\"\"\"\n        gradients: list[float] = []\n        original_init = RecurrentTokenQNetwork.__init__\n    \n        def instrumented_init(self, *args, **kwargs):\n            original_init(self, *args, **kwargs)\n            self.lstm.weight_hh_l0.register_hook(lambda gradient: gradients.append(float(gradient.abs().max())))\n    \n        monkeypatch.setattr(RecurrentTokenQNetwork, \"__init__\", instrumented_init)\n        population = _run(_make_pack(tmp_path, \"gradient\", sequence_length=8), tmp_path / \"gradient-output\")\n    \n        assert population.is_recurrent\n        assert isinstance(population.q_network, RecurrentTokenQNetwork)\n>       assert gradients, \"no real training backward pass reached the LSTM\"\nE       AssertionError: no real training backward pass reached the LSTM\nE       assert []\n\ntests/test_townlet/integration/test_recurrent_bptt_runtime.py:103: AssertionError",
+  "candidate_tree": "5d4685b55ccd85879d0627bb55bbc20277c58af4"
+}

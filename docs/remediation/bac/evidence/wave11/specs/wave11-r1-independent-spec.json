@@ -1,0 +1,38 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave11/r1-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave11-r1-independent",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "independent",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_token_binding.py::test_from_resolved_encoder_requires_explicit_selection[interaction_mlp-3-attention-recurrent]",
+        "tests/test_townlet/regressions/bac/test_token_binding.py::test_from_resolved_encoder_requires_explicit_selection[linear-None-mean-encoder]",
+        "tests/test_townlet/regressions/bac/test_token_binding.py::test_mean_can_bind_descriptor_value[token_set]",
+        "tests/test_townlet/regressions/bac/test_token_binding.py::test_mean_can_bind_descriptor_value[recurrent]",
+        "tests/test_townlet/regressions/bac/test_token_binding.py::test_authored_mean_can_bind_descriptor_value[token_set]",
+        "tests/test_townlet/regressions/bac/test_token_binding.py::test_attention_retains_nonuniform_row_interactions[interaction_mlp-recurrent]",
+        "tests/test_townlet/regressions/bac/test_token_binding.py::test_attention_retains_nonuniform_row_interactions[linear-token_set]",
+        "tests/test_townlet/regressions/bac/test_token_binding.py::test_linear_mean_is_preserved[mean-recurrent]",
+        "tests/test_townlet/regressions/bac/test_token_binding.py::test_linear_mean_is_preserved[attention-token_set]",
+        "tests/test_townlet/regressions/bac/test_token_binding.py::test_semantic_permutation_absence_and_memory[interaction_mlp-mean-recurrent]",
+        "tests/test_townlet/regressions/bac/test_token_binding.py::test_semantic_permutation_absence_and_memory[interaction_mlp-attention-recurrent]",
+        "tests/test_townlet/regressions/bac/test_token_binding.py::test_semantic_permutation_absence_and_memory[linear-attention-token_set]",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave11-r1-independent"
+      ]
+    }
+  ]
+}

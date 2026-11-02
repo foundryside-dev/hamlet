@@ -1,0 +1,98 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [409 items]
+
+........................................................................ [ 17%]
+........................................................................ [ 35%]
+........F............................................................... [ 52%]
+........................................................................ [ 70%]
+..................F..................................................... [ 88%]
+.................................................                        [100%]
+=================================== FAILURES ===================================
+_________ test_recurrent_brain_yaml_trains_the_recurrent_weight_matrix _________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave11-r1-affected/popen-gw0/test_recurrent_brain_yaml_trai0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f493f832c40>
+
+    def test_recurrent_brain_yaml_trains_the_recurrent_weight_matrix(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Real configured training must backpropagate into LSTM recurrence."""
+        gradients: list[float] = []
+        original_init = RecurrentTokenQNetwork.__init__
+    
+        def instrumented_init(self, *args, **kwargs):
+            original_init(self, *args, **kwargs)
+            self.lstm.weight_hh_l0.register_hook(lambda gradient: gradients.append(float(gradient.abs().max())))
+    
+        monkeypatch.setattr(RecurrentTokenQNetwork, "__init__", instrumented_init)
+        population = _run(_make_pack(tmp_path, "gradient", sequence_length=8), tmp_path / "gradient-output")
+    
+        assert population.is_recurrent
+        assert isinstance(population.q_network, RecurrentTokenQNetwork)
+>       assert gradients, "no real training backward pass reached the LSTM"
+E       AssertionError: no real training backward pass reached the LSTM
+E       assert []
+
+tests/test_townlet/integration/test_recurrent_bptt_runtime.py:103: AssertionError
+__________ test_training_does_not_clobber_mid_episode_rollout_memory ___________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave11-r1-affected/popen-gw0/test_training_does_not_clobber0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4933eb6030>
+
+    def test_training_does_not_clobber_mid_episode_rollout_memory(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Zero-start replay unrolls must not overwrite population-owned rollout state."""
+        lstm_calls: list[tuple[int, int, torch.Tensor]] = []
+        original_init = RecurrentTokenQNetwork.__init__
+    
+        def instrumented_init(self, *args, **kwargs):
+            original_init(self, *args, **kwargs)
+    
+            def record_hidden(_module, inputs):
+                sequence, hidden = inputs
+                zero_mask = hidden[0].abs().sum(dim=(0, 2)) == 0
+                lstm_calls.append((int(sequence.shape[0]), int(sequence.shape[1]), zero_mask.clone()))
+    
+            self.lstm.register_forward_pre_hook(record_hidden)
+    
+        monkeypatch.setattr(RecurrentTokenQNetwork, "__init__", instrumented_init)
+    
+        observed: list[tuple[torch.Tensor, torch.Tensor, torch.Tensor]] = []
+        original_step = VectorizedPopulation.step_population
+    
+        def instrumented_step(self, env):
+            start = len(lstm_calls)
+            counts_before = self.episode_step_counts.clone()
+            active_before = (~env.dones).clone()
+            result = original_step(self, env)
+            for batch_size, sequence_length, zero_mask in lstm_calls[start:]:
+                if batch_size == self.num_agents and sequence_length == 1:
+                    observed.append((counts_before, active_before, zero_mask))
+            return result
+    
+        monkeypatch.setattr(VectorizedPopulation, "step_population", instrumented_step)
+        population = _run(_make_pack(tmp_path, "rollout-memory", sequence_length=8), tmp_path / "rollout-memory-output")
+    
+        assert population.last_training_step > 0, "training never ran"
+        mid_episode = [(counts, active, zeros) for counts, active, zeros in observed if bool(((counts > 0) & active).any())]
+>       assert mid_episode, "no mid-episode rollout forward was observed"
+E       AssertionError: no mid-episode rollout forward was observed
+E       assert []
+
+tests/test_townlet/integration/test_recurrent_bptt_runtime.py:216: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/integration/test_recurrent_bptt_runtime.py::test_recurrent_brain_yaml_trains_the_recurrent_weight_matrix
+FAILED tests/test_townlet/integration/test_recurrent_bptt_runtime.py::test_training_does_not_clobber_mid_episode_rollout_memory
+================== 2 failed, 407 passed in 351.50s (0:05:51) ===================

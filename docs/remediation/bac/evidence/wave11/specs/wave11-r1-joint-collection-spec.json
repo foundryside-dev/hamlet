@@ -1,0 +1,45 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave11/r1-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave11-r1-joint-collection",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "joint-collection",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_token_binding.py",
+        "tests/test_townlet/unit/agent/test_networks.py",
+        "tests/test_townlet/unit/agent/test_network_factory.py",
+        "tests/test_townlet/unit/agent/test_network_selection.py",
+        "tests/test_townlet/unit/agent/test_token_set_qnetwork.py",
+        "tests/test_townlet/unit/agent/test_recurrent_token_qnetwork.py",
+        "tests/test_townlet/unit/agent/test_token_diagnostics.py",
+        "tests/test_townlet/unit/universe/test_compact_token_layout.py",
+        "tests/test_townlet/unit/universe/test_token_set_pack.py",
+        "tests/test_townlet/unit/universe/test_no_full_token_observation_abi.py",
+        "tests/test_townlet/unit/universe/test_f12_s3_wp5_token_identity.py",
+        "tests/test_townlet/unit/universe/test_compiled_token_coherence.py",
+        "tests/test_townlet/integration/test_token_set_runtime.py",
+        "tests/test_townlet/integration/test_compact_token_runtime.py",
+        "tests/test_townlet/integration/test_compact_token_acceptance.py",
+        "tests/test_townlet/integration/test_token_transfer_contract.py",
+        "tests/test_townlet/integration/test_recurrent_bptt_runtime.py",
+        "tests/test_townlet/integration/test_recurrent_bootstrap_runtime.py",
+        "tests/test_townlet/unit/population/test_recurrent_training.py",
+        "tests/test_townlet/regressions/test_affordance_token_identity.py",
+        "tests/test_townlet/regressions/bac/test_recurrent_per.py",
+        "tests/test_townlet/regressions/bac/test_recurrent_per_native.py",
+        "tests/test_townlet/regressions/bac/test_runner_readiness.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "--collect-only",
+        "-q"
+      ]
+    }
+  ]
+}

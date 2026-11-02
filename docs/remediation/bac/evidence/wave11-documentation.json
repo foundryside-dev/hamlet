@@ -1,0 +1,176 @@
+{
+  "source_commit": "995ce97b02a7ab57fad8da9c3c0ccd0b94a284f6",
+  "qualified_source_tree": "f0410f6b8185cf2c87f4f6d5ddbd0a730e886dc9",
+  "guarded_documentation_tree": "acf61be6345a79e3aabe165af4faa6e6bb67dc4a",
+  "guards": [
+    {
+      "name": "black",
+      "exit_code": 0,
+      "seconds": 43.54077625274658,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "black",
+        "--check",
+        "src",
+        "tests",
+        "scripts",
+        "--workers",
+        "1"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave11-documentation-guards/black.log",
+      "sha256": "3f852efca7d246d6b47629efec56a5b240e527d943fc855bea0a32e0d4bdf379",
+      "candidate_tree": "acf61be6345a79e3aabe165af4faa6e6bb67dc4a",
+      "base_commit": "995ce97b02a7ab57fad8da9c3c0ccd0b94a284f6",
+      "manifest_sha256": "593f460a842cda0ecdbafb195767544513009f59b06aa18ab4667ef2f16e27a9",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "name": "compiler-cli",
+      "exit_code": 0,
+      "seconds": 168.99801516532898,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "scripts/validate_compiler_cli.py"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave11-documentation-guards/compiler-cli.log",
+      "sha256": "1694e9ecb7fcc9c72b39978ab17311205cd19ec064b55dd2d547f8f439986294",
+      "candidate_tree": "acf61be6345a79e3aabe165af4faa6e6bb67dc4a",
+      "base_commit": "995ce97b02a7ab57fad8da9c3c0ccd0b94a284f6",
+      "manifest_sha256": "593f460a842cda0ecdbafb195767544513009f59b06aa18ab4667ef2f16e27a9",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "name": "expression-doc",
+      "exit_code": 0,
+      "seconds": 5.7704176902771,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "scripts/gen_expression_functions_doc.py",
+        "--check"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave11-documentation-guards/expression-doc.log",
+      "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf",
+      "candidate_tree": "acf61be6345a79e3aabe165af4faa6e6bb67dc4a",
+      "base_commit": "995ce97b02a7ab57fad8da9c3c0ccd0b94a284f6",
+      "manifest_sha256": "593f460a842cda0ecdbafb195767544513009f59b06aa18ab4667ef2f16e27a9",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "name": "mypy",
+      "exit_code": 0,
+      "seconds": 1.702024221420288,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "mypy",
+        "src/townlet"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave11-documentation-guards/mypy.log",
+      "sha256": "ff00ee3af8cb1136d9c90bc40bc8d1a55a5fe37ae62fe6b99844ef88d00b2319",
+      "candidate_tree": "acf61be6345a79e3aabe165af4faa6e6bb67dc4a",
+      "base_commit": "995ce97b02a7ab57fad8da9c3c0ccd0b94a284f6",
+      "manifest_sha256": "593f460a842cda0ecdbafb195767544513009f59b06aa18ab4667ef2f16e27a9",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "name": "no-defaults",
+      "exit_code": 0,
+      "seconds": 3.354910135269165,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "scripts/no_defaults_lint.py",
+        "src/townlet/",
+        "--whitelist",
+        ".defaults-whitelist.txt",
+        "--ratchet",
+        ".defaults-ratchet",
+        "--quiet"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave11-documentation-guards/no-defaults.log",
+      "sha256": "598fbd71dd7a34f46c3f9cb59d583a08280d89786ee55281809c876e60b2f71e",
+      "candidate_tree": "acf61be6345a79e3aabe165af4faa6e6bb67dc4a",
+      "base_commit": "995ce97b02a7ab57fad8da9c3c0ccd0b94a284f6",
+      "manifest_sha256": "593f460a842cda0ecdbafb195767544513009f59b06aa18ab4667ef2f16e27a9",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "name": "ruff",
+      "exit_code": 0,
+      "seconds": 0.11384749412536621,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "ruff",
+        "check",
+        "."
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave11-documentation-guards/ruff.log",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "candidate_tree": "acf61be6345a79e3aabe165af4faa6e6bb67dc4a",
+      "base_commit": "995ce97b02a7ab57fad8da9c3c0ccd0b94a284f6",
+      "manifest_sha256": "593f460a842cda0ecdbafb195767544513009f59b06aa18ab4667ef2f16e27a9",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    }
+  ],
+  "guarded_paths_verified": 367,
+  "after_guards": "Only this receipt and byte-exact guard evidence added. Execution-bearing files and all previously guarded prose unchanged.",
+  "source_qualification": "Scoped joint38PASS/independent configured-training4PASS; original main independent12PASS and R1 broad2FAIL407PASS identities retained; see wave11-qualification.json.",
+  "full_repository": "Explicit authorized G3 deferral; not current repository green.",
+  "remote_ci": "Previousa0802a442bc7ea529de650b8705629923a0e6c72 all three workflows and jobs terminal success, exact SHA verified. New publication tip pending push/check.",
+  "raw_logs": "Original logs and binary candidate patches retained byte-identical; whitespace checks exclude original raw log/patch bytes.",
+  "execution_equivalence_paths": [
+    "src",
+    "configs",
+    "scripts",
+    "tests",
+    "pyproject.toml",
+    "uv.lock",
+    ".defaults-ratchet"
+  ],
+  "artifacts": {
+    "evidence/wave11/documentation-guards/black-result.json": {
+      "sha256": "549b5299afbd5d47cd41c94f46a30791aa00165c9d838400710c7a050a1b80ca"
+    },
+    "evidence/wave11/documentation-guards/black.log": {
+      "sha256": "3f852efca7d246d6b47629efec56a5b240e527d943fc855bea0a32e0d4bdf379"
+    },
+    "evidence/wave11/documentation-guards/candidate.json": {
+      "sha256": "593f460a842cda0ecdbafb195767544513009f59b06aa18ab4667ef2f16e27a9"
+    },
+    "evidence/wave11/documentation-guards/compiler-cli-result.json": {
+      "sha256": "78d6538b0b604b4eb167a826ce009a49536fb3140d869ecc4f24b5718caa5021"
+    },
+    "evidence/wave11/documentation-guards/compiler-cli.log": {
+      "sha256": "1694e9ecb7fcc9c72b39978ab17311205cd19ec064b55dd2d547f8f439986294"
+    },
+    "evidence/wave11/documentation-guards/expression-doc-result.json": {
+      "sha256": "0c0af652b4334e6489d91a171d1dca13ecf93a6dea7947039db313610d0d77cd"
+    },
+    "evidence/wave11/documentation-guards/expression-doc.log": {
+      "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf"
+    },
+    "evidence/wave11/documentation-guards/mypy-result.json": {
+      "sha256": "700dce6173a76660c891222e27bf3a6d7ed6e402804610f71ca1ef001d5f6397"
+    },
+    "evidence/wave11/documentation-guards/mypy.log": {
+      "sha256": "ff00ee3af8cb1136d9c90bc40bc8d1a55a5fe37ae62fe6b99844ef88d00b2319"
+    },
+    "evidence/wave11/documentation-guards/no-defaults-result.json": {
+      "sha256": "39de401c6a1661bd73e50a6692124e86f463ee30ea89bae6fec5ca31d30a869f"
+    },
+    "evidence/wave11/documentation-guards/no-defaults.log": {
+      "sha256": "598fbd71dd7a34f46c3f9cb59d583a08280d89786ee55281809c876e60b2f71e"
+    },
+    "evidence/wave11/documentation-guards/ruff-result.json": {
+      "sha256": "65c923ddb32da94055a9b86c948001095a946d67ea5028437399cc789f267af0"
+    },
+    "evidence/wave11/documentation-guards/ruff.log": {
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    "evidence/wave11/documentation-guards/spec.json": {
+      "sha256": "ef445f45c5ffb1ce2e23c1d702ce72b40a96ba8713c3229f27fb34773c44674a"
+    }
+  },
+  "scope": "27/66 scoped packages; all54 final requirements/22fresh lenses+synthesis, finite learning/E2E/final gates remain open;CUDA unavailable and unqualified."
+}

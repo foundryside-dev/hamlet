@@ -1,0 +1,29 @@
+{
+  "base_commit": "a0802a442bc7ea529de650b8705629923a0e6c72",
+  "candidate_tree": "5d4685b55ccd85879d0627bb55bbc20277c58af4",
+  "counts": {
+    "failed": 2,
+    "passed": 407
+  },
+  "wall_seconds": 358.7036814689636,
+  "log_sha256": "f579cf5da8b98fb4652890ac8ed603a465da730536c066c76596c245d2fd41f5",
+  "failed_nodes": [
+    "tests/test_townlet/integration/test_recurrent_bptt_runtime.py::test_recurrent_brain_yaml_trains_the_recurrent_weight_matrix",
+    "tests/test_townlet/integration/test_recurrent_bptt_runtime.py::test_training_does_not_clobber_mid_episode_rollout_memory"
+  ],
+  "source_guards": 164,
+  "process_identities": 3,
+  "configs": 573,
+  "artifacts": 13,
+  "worktrees": 14,
+  "six_guards": [
+    "black",
+    "compiler-cli",
+    "expression-doc",
+    "mypy",
+    "no-defaults",
+    "ruff"
+  ],
+  "custody": "PASS",
+  "classification": "Two direct-construction observers do not attach under resolved construction; actual recurrence/memory must be remeasured after causal observer correction. Original broad failure retained, not relabeled green."
+}

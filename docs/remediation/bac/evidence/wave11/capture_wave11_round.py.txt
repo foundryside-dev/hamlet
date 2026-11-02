@@ -1,0 +1,40 @@
+"""Root-only T17 stationary snapshot. No project imports or checkout creation."""
+from pathlib import Path
+import hashlib,json,os,re,shutil,subprocess,sys
+R=Path('/workspace/hamlet'); Q=Path('/workspace/bac-review-2026-11-01/qualification'); W=R/'.superpowers/sdd/2026-11-01-bac-remediation-upgrades'
+tag=sys.argv[1]; assert re.fullmatch(r'r[0-9]+',tag)
+hash_file=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+git=lambda *args:subprocess.check_output(['git',*args],cwd=R,text=True)
+head=git('rev-parse','HEAD').strip(); assert head=='a0802a442bc7ea529de650b8705629923a0e6c72'
+assert git('branch','--show-current').strip()=='project-recovery-bac-2026-11-01'
+test='tests/test_townlet/regressions/bac/test_token_binding.py'
+allowed={'src/townlet/agent/networks.py','src/townlet/agent/network_factory.py',test,'.defaults-ratchet','tests/test_townlet/integration/test_recurrent_bptt_runtime.py'}
+changed=set(git('diff','--name-only').splitlines())|set(git('diff','--cached','--name-only').splitlines()); assert changed<=allowed,changed
+assert (R/test).is_file()
+subprocess.run(['git','add','-f','--',test,*sorted(changed)],cwd=R,check=True)
+assert subprocess.run(['git','diff','--quiet'],cwd=R).returncode==0
+task=next(t for t in json.loads((W/'tasks.json').read_text())['tasks'] if t['id']=='T17')
+inventory=[]
+for item in task['reviewer_read_inventory']:
+ p=R/item['path']; lines=len(p.read_bytes().splitlines()); assert lines<=item['projected_lines'],(p,lines,item['projected_lines']);inventory.append({'path':item['path'],'lines':lines,'sha256':hash_file(p)})
+assert len(inventory)==5 and sum(x['lines'] for x in inventory)<=5000
+consumer_paths=['src/townlet/agent/networks.py','src/townlet/agent/network_factory.py','tests/test_townlet/integration/test_recurrent_bptt_runtime.py']
+consumer_inventory=[{'path':p,'lines':len((R/p).read_bytes().splitlines()),'sha256':hash_file(R/p)} for p in consumer_paths]
+assert len(consumer_inventory)<=5 and sum(x['lines'] for x in consumer_inventory)<=5000
+old=json.loads((W/'wave10/r4-candidate.json').read_text())
+paths=set(old['source_files'])|{x['path'] for x in inventory}|set(consumer_paths);source={name:hash_file(R/name) for name in sorted(paths)}
+for group in ('configs','artifacts'):
+ for name,digest in old[group].items():assert hash_file(R/name)==digest,(group,name)
+registry=git('worktree','list','--porcelain'); native=json.loads((Q/'wave10-native-r0/preflight.json').read_text())['worktree_registry'];assert registry==native.replace('HEAD 6b5fdf62f046ec158b8c3378d65add06faebd591\n','HEAD '+head+'\n',1)
+out=W/'wave11';out.mkdir(exist_ok=True);mp=out/(tag+'-candidate.json');assert not mp.exists(),'Preserve historical candidates'
+manifest={'base_commit':head,'candidate_tree':git('write-tree').strip(),'source_files':source,'changed_paths':git('diff','--cached','--name-only').splitlines(),'task_ids':['T17'],'inventories':{'T17':inventory,'T17-consumers':consumer_inventory},'worktree_registry':registry,'configs':old['configs'],'artifacts':old['artifacts'],'runtime_barrier':'All writers stationary; source/test/index/tracked-docs frozen during runtime.'}
+mp.write_text(json.dumps(manifest,indent=2)+'\n')
+base=['-m','pytest',test,'--no-cov','-p','no:cacheprovider','-p','bac_source_identity']
+for kind,args in [('collection',base+['--collect-only','-q']),('owned',base+['-q','-n','4','--dist','worksteal','--basetemp='+str(Q/'scratch'/('wave11-'+tag+'-owned'))])]:
+ spec={'root':str(R),'manifest':str(mp),'output':str(Q/('wave11-'+tag+'-'+kind)),'workers':1,'jobs':[{'name':kind,'args':args}]};(Q/('wave11-'+tag+'-'+kind+'-spec.json')).write_text(json.dumps(spec,indent=2)+'\n')
+guards=json.loads((Q/'wave10-r4-guards-spec.json').read_text());guards.update(manifest=str(mp),output=str(Q/('wave11-'+tag+'-guards')),workers=4);(Q/('wave11-'+tag+'-guards-spec.json')).write_text(json.dumps(guards,indent=2)+'\n')
+style={'root':str(R),'manifest':str(mp),'output':str(Q/('wave11-'+tag+'-test-style')),'workers':2,'jobs':[{'name':'ruff-test','args':['-m','ruff','check',test]},{'name':'black-test','args':['-m','black','--check',test,'--workers','1']}]};(Q/('wave11-'+tag+'-test-style-spec.json')).write_text(json.dumps(style,indent=2)+'\n')
+resources={'cpu':Path('/sys/fs/cgroup/cpu.max').read_text().strip(),'affinity':len(os.sched_getaffinity(0)),'memory_current':Path('/sys/fs/cgroup/memory.current').read_text().strip(),'memory_limit':Path('/sys/fs/cgroup/memory.max').read_text().strip(),'memory_events':Path('/sys/fs/cgroup/memory.events').read_text().strip(),'load':os.getloadavg(),'workspace_free':shutil.disk_usage('/workspace').free,'TMPDIR':str(Q/'scratch/tmp-wave08-r3'),'threads':1,'CUDA':'unavailable/unqualified'}
+assert resources['cpu']=='400000 100000' and resources['affinity']>=4
+(out/(tag+'-fixture-resource-preflight.json')).write_text(json.dumps(resources,indent=2)+'\n')
+print(json.dumps({'manifest':str(mp),'candidate_tree':manifest['candidate_tree'],'source_files':len(inventory),'lines':sum(x['lines'] for x in inventory),'guarded_paths':len(source),'resources':resources},indent=2))

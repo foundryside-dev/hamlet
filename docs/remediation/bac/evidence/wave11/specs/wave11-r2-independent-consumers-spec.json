@@ -1,0 +1,30 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave11/r2-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave11-r2-independent-consumers",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "independent-consumers",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/integration/test_recurrent_bptt_runtime.py::test_recurrent_brain_yaml_trains_the_recurrent_weight_matrix",
+        "tests/test_townlet/integration/test_recurrent_bptt_runtime.py::test_training_keeps_the_configured_sequence_graph_connected[2]",
+        "tests/test_townlet/integration/test_recurrent_bptt_runtime.py::test_training_keeps_the_configured_sequence_graph_connected[8]",
+        "tests/test_townlet/integration/test_recurrent_bptt_runtime.py::test_training_does_not_clobber_mid_episode_rollout_memory",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-n",
+        "4",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave11-r2-independent-consumers"
+      ]
+    }
+  ]
+}

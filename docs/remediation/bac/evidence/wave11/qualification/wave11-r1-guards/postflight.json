@@ -1,0 +1,12 @@
+{
+  "candidate_tree": "5d4685b55ccd85879d0627bb55bbc20277c58af4",
+  "six_guards": [
+    "black",
+    "compiler-cli",
+    "expression-doc",
+    "mypy",
+    "no-defaults",
+    "ruff"
+  ],
+  "custody": "PASS164source/573configs/13artifacts/14worktrees"
+}

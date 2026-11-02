@@ -1,0 +1,31 @@
+{
+  "name": "independent-consumers",
+  "exit_code": 0,
+  "seconds": 99.86783361434937,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/integration/test_recurrent_bptt_runtime.py::test_recurrent_brain_yaml_trains_the_recurrent_weight_matrix",
+    "tests/test_townlet/integration/test_recurrent_bptt_runtime.py::test_training_keeps_the_configured_sequence_graph_connected[2]",
+    "tests/test_townlet/integration/test_recurrent_bptt_runtime.py::test_training_keeps_the_configured_sequence_graph_connected[8]",
+    "tests/test_townlet/integration/test_recurrent_bptt_runtime.py::test_training_does_not_clobber_mid_episode_rollout_memory",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-n",
+    "4",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave11-r2-independent-consumers"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave11-r2-independent-consumers/independent-consumers.log",
+  "sha256": "0a891aff727253c0bb56f4ef9701a15b655a78d21eac75509c6c588e9603ab87",
+  "candidate_tree": "f0410f6b8185cf2c87f4f6d5ddbd0a730e886dc9",
+  "base_commit": "a0802a442bc7ea529de650b8705629923a0e6c72",
+  "manifest_sha256": "f0ff070cce442c0c60035c5e6dab7fd3d245900423d61873a9534791cba23bb6",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

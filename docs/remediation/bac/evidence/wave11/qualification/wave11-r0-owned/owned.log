@@ -1,0 +1,1072 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 4/4 workers
+4 workers [34 items]
+
+FFFFFFFFFFFF.F.FFFFFFFFFFF..FFF.F.                                       [100%]
+=================================== FAILURES ===================================
+_ test_from_resolved_encoder_requires_explicit_selection[interaction_mlp-3-mean-recurrent] _
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'recurrent', aggregator = 'mean', mode = 'interaction_mlp', width = 3
+
+    @pytest.mark.parametrize("kind", ["encoder", "token_set", "recurrent"])
+    @pytest.mark.parametrize("aggregator", ["mean", "attention"])
+    @pytest.mark.parametrize("mode,width", [("linear", None), ("interaction_mlp", 3)])
+    def test_from_resolved_encoder_requires_explicit_selection(kind: str, aggregator: str, mode: str, width: int | None) -> None:
+        """Missing selection must not silently choose a local policy or hidden width."""
+        spec = _toy_spec()
+        selected, origin = resolve_token_encoder(TokenEncoderOptions(mode=mode, hidden_width=width))
+        assert origin == "authored"
+>       model = _new_model(kind, spec, aggregator, selected.mode, selected.hidden_width, 3)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_token_binding.py:440: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+kind = 'recurrent'
+spec = TokenSpec(types=(TokenTypeSchema(type_name='variable_element', payload_features=('position_0', 'position_1', 'position....0, 0.0)), effect_catalog_contexts=()),), position_rank=0, transport_version='compact-1', encoding_version='token-1.1')
+aggregator = 'mean', mode = 'interaction_mlp', width = 3, action_dim = 3
+
+    def _new_model(kind: str, spec: TokenSpec, aggregator: str, mode: str, width: int | None, action_dim: int) -> Any:
+        model_class = {"encoder": TokenSetEncoder, "token_set": TokenSetQNetwork, "recurrent": RecurrentTokenQNetwork}[kind]
+        constructor = getattr(model_class, "from_resolved_encoder", None)
+>       assert callable(constructor), f"{model_class.__name__} must expose callable from_resolved_encoder for resolved P4 selection"
+E       AssertionError: RecurrentTokenQNetwork must expose callable from_resolved_encoder for resolved P4 selection
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_token_binding.py:279: AssertionError
+_ test_from_resolved_encoder_requires_explicit_selection[interaction_mlp-3-attention-encoder] _
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'encoder', aggregator = 'attention', mode = 'interaction_mlp', width = 3
+
+    @pytest.mark.parametrize("kind", ["encoder", "token_set", "recurrent"])
+    @pytest.mark.parametrize("aggregator", ["mean", "attention"])
+    @pytest.mark.parametrize("mode,width", [("linear", None), ("interaction_mlp", 3)])
+    def test_from_resolved_encoder_requires_explicit_selection(kind: str, aggregator: str, mode: str, width: int | None) -> None:
+        """Missing selection must not silently choose a local policy or hidden width."""
+        spec = _toy_spec()
+        selected, origin = resolve_token_encoder(TokenEncoderOptions(mode=mode, hidden_width=width))
+        assert origin == "authored"
+>       model = _new_model(kind, spec, aggregator, selected.mode, selected.hidden_width, 3)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_token_binding.py:440: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+kind = 'encoder'
+spec = TokenSpec(types=(TokenTypeSchema(type_name='variable_element', payload_features=('position_0', 'position_1', 'position....0, 0.0)), effect_catalog_contexts=()),), position_rank=0, transport_version='compact-1', encoding_version='token-1.1')
+aggregator = 'attention', mode = 'interaction_mlp', width = 3, action_dim = 3
+
+    def _new_model(kind: str, spec: TokenSpec, aggregator: str, mode: str, width: int | None, action_dim: int) -> Any:
+        model_class = {"encoder": TokenSetEncoder, "token_set": TokenSetQNetwork, "recurrent": RecurrentTokenQNetwork}[kind]
+        constructor = getattr(model_class, "from_resolved_encoder", None)
+>       assert callable(constructor), f"{model_class.__name__} must expose callable from_resolved_encoder for resolved P4 selection"
+E       AssertionError: TokenSetEncoder must expose callable from_resolved_encoder for resolved P4 selection
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_token_binding.py:279: AssertionError
+_ test_attention_retains_nonuniform_row_interactions[interaction_mlp-token_set] _
+[gw3] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'token_set', mode = 'interaction_mlp'
+
+    @pytest.mark.parametrize("kind", ["token_set", "recurrent"])
+    @pytest.mark.parametrize("mode", ["linear", "interaction_mlp"])
+    def test_attention_retains_nonuniform_row_interactions(kind: str, mode: str) -> None:
+        """Attention must remain actual content-weighted attention in either encoder family."""
+        spec = _toy_spec()
+        declaration = TokenEncoderOptions(mode=mode, hidden_width=1 if mode == "interaction_mlp" else None)
+        model = _factory(kind, spec, "attention", declaration, 3)
+        encoder = model.encoder
+        assert encoder.aggregator_type == "attention" and encoder.num_heads == 2
+>       _set_feature(encoder, spec, mode, authored=False)
+
+tests/test_townlet/regressions/bac/test_token_binding.py:488: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_token_binding.py:322: in _set_feature
+    _row_layers(encoder, mode, 1 if mode == "interaction_mlp" else None)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+encoder = TokenSetEncoder(
+  (input_assembler): TokenInputAssembler()
+  (encoders): ModuleDict(
+    (variable_element): Linear(i...: Linear(in_features=16, out_features=16, bias=True)
+  (out_proj): Linear(in_features=16, out_features=16, bias=True)
+)
+mode = 'interaction_mlp', width = 1
+
+    def _row_layers(encoder: TokenSetEncoder, mode: str, width: int | None) -> None:
+        for name, row in encoder.encoders.items():
+            if mode == "linear":
+                assert isinstance(row, nn.Linear), f"linear state/computation changed for {name}"
+            else:
+>               assert isinstance(row, nn.Sequential), f"factory ignored interaction_mlp for {name}: {type(row).__name__}"
+E               AssertionError: factory ignored interaction_mlp for variable_element: Linear
+E               assert False
+E                +  where False = isinstance(Linear(in_features=42, out_features=16, bias=True), <class 'torch.nn.modules.container.Sequential'>)
+E                +    where <class 'torch.nn.modules.container.Sequential'> = nn.Sequential
+
+tests/test_townlet/regressions/bac/test_token_binding.py:304: AssertionError
+_ test_from_resolved_encoder_requires_explicit_selection[linear-None-mean-encoder] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'encoder', aggregator = 'mean', mode = 'linear', width = None
+
+    @pytest.mark.parametrize("kind", ["encoder", "token_set", "recurrent"])
+    @pytest.mark.parametrize("aggregator", ["mean", "attention"])
+    @pytest.mark.parametrize("mode,width", [("linear", None), ("interaction_mlp", 3)])
+    def test_from_resolved_encoder_requires_explicit_selection(kind: str, aggregator: str, mode: str, width: int | None) -> None:
+        """Missing selection must not silently choose a local policy or hidden width."""
+        spec = _toy_spec()
+        selected, origin = resolve_token_encoder(TokenEncoderOptions(mode=mode, hidden_width=width))
+        assert origin == "authored"
+>       model = _new_model(kind, spec, aggregator, selected.mode, selected.hidden_width, 3)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_token_binding.py:440: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+kind = 'encoder'
+spec = TokenSpec(types=(TokenTypeSchema(type_name='variable_element', payload_features=('position_0', 'position_1', 'position....0, 0.0)), effect_catalog_contexts=()),), position_rank=0, transport_version='compact-1', encoding_version='token-1.1')
+aggregator = 'mean', mode = 'linear', width = None, action_dim = 3
+
+    def _new_model(kind: str, spec: TokenSpec, aggregator: str, mode: str, width: int | None, action_dim: int) -> Any:
+        model_class = {"encoder": TokenSetEncoder, "token_set": TokenSetQNetwork, "recurrent": RecurrentTokenQNetwork}[kind]
+        constructor = getattr(model_class, "from_resolved_encoder", None)
+>       assert callable(constructor), f"{model_class.__name__} must expose callable from_resolved_encoder for resolved P4 selection"
+E       AssertionError: TokenSetEncoder must expose callable from_resolved_encoder for resolved P4 selection
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_token_binding.py:279: AssertionError
+_ test_from_resolved_encoder_requires_explicit_selection[interaction_mlp-3-attention-token_set] _
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'token_set', aggregator = 'attention', mode = 'interaction_mlp'
+width = 3
+
+    @pytest.mark.parametrize("kind", ["encoder", "token_set", "recurrent"])
+    @pytest.mark.parametrize("aggregator", ["mean", "attention"])
+    @pytest.mark.parametrize("mode,width", [("linear", None), ("interaction_mlp", 3)])
+    def test_from_resolved_encoder_requires_explicit_selection(kind: str, aggregator: str, mode: str, width: int | None) -> None:
+        """Missing selection must not silently choose a local policy or hidden width."""
+        spec = _toy_spec()
+        selected, origin = resolve_token_encoder(TokenEncoderOptions(mode=mode, hidden_width=width))
+        assert origin == "authored"
+>       model = _new_model(kind, spec, aggregator, selected.mode, selected.hidden_width, 3)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_token_binding.py:440: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+kind = 'token_set'
+spec = TokenSpec(types=(TokenTypeSchema(type_name='variable_element', payload_features=('position_0', 'position_1', 'position....0, 0.0)), effect_catalog_contexts=()),), position_rank=0, transport_version='compact-1', encoding_version='token-1.1')
+aggregator = 'attention', mode = 'interaction_mlp', width = 3, action_dim = 3
+
+    def _new_model(kind: str, spec: TokenSpec, aggregator: str, mode: str, width: int | None, action_dim: int) -> Any:
+        model_class = {"encoder": TokenSetEncoder, "token_set": TokenSetQNetwork, "recurrent": RecurrentTokenQNetwork}[kind]
+        constructor = getattr(model_class, "from_resolved_encoder", None)
+>       assert callable(constructor), f"{model_class.__name__} must expose callable from_resolved_encoder for resolved P4 selection"
+E       AssertionError: TokenSetQNetwork must expose callable from_resolved_encoder for resolved P4 selection
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_token_binding.py:279: AssertionError
+______________ test_linear_mean_is_preserved[attention-recurrent] ______________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'recurrent', aggregator = 'attention'
+
+    @pytest.mark.parametrize("kind", ["encoder", "token_set", "recurrent"])
+    @pytest.mark.parametrize("aggregator", ["mean", "attention"])
+    def test_linear_mean_is_preserved(kind: str, aggregator: str) -> None:
+        """The additive route must preserve old initialization/state and the truthful mean alias."""
+        spec = _toy_spec()
+        model_class = {"encoder": TokenSetEncoder, "token_set": TokenSetQNetwork, "recurrent": RecurrentTokenQNetwork}[kind]
+        arguments = _arguments(kind, spec, aggregator, 3)
+        with torch.random.fork_rng(devices=[]):
+            torch.manual_seed(1701)
+            old = model_class(**arguments)
+            torch.manual_seed(1701)
+>           selected = _new_model(kind, spec, aggregator, "linear", None, 3)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_token_binding.py:544: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+kind = 'recurrent'
+spec = TokenSpec(types=(TokenTypeSchema(type_name='variable_element', payload_features=('position_0', 'position_1', 'position....0, 0.0)), effect_catalog_contexts=()),), position_rank=0, transport_version='compact-1', encoding_version='token-1.1')
+aggregator = 'attention', mode = 'linear', width = None, action_dim = 3
+
+    def _new_model(kind: str, spec: TokenSpec, aggregator: str, mode: str, width: int | None, action_dim: int) -> Any:
+        model_class = {"encoder": TokenSetEncoder, "token_set": TokenSetQNetwork, "recurrent": RecurrentTokenQNetwork}[kind]
+        constructor = getattr(model_class, "from_resolved_encoder", None)
+>       assert callable(constructor), f"{model_class.__name__} must expose callable from_resolved_encoder for resolved P4 selection"
+E       AssertionError: RecurrentTokenQNetwork must expose callable from_resolved_encoder for resolved P4 selection
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_token_binding.py:279: AssertionError
+_ test_from_resolved_encoder_requires_explicit_selection[interaction_mlp-3-attention-recurrent] _
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'recurrent', aggregator = 'attention', mode = 'interaction_mlp'
+width = 3
+
+    @pytest.mark.parametrize("kind", ["encoder", "token_set", "recurrent"])
+    @pytest.mark.parametrize("aggregator", ["mean", "attention"])
+    @pytest.mark.parametrize("mode,width", [("linear", None), ("interaction_mlp", 3)])
+    def test_from_resolved_encoder_requires_explicit_selection(kind: str, aggregator: str, mode: str, width: int | None) -> None:
+        """Missing selection must not silently choose a local policy or hidden width."""
+        spec = _toy_spec()
+        selected, origin = resolve_token_encoder(TokenEncoderOptions(mode=mode, hidden_width=width))
+        assert origin == "authored"
+>       model = _new_model(kind, spec, aggregator, selected.mode, selected.hidden_width, 3)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_token_binding.py:440: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+kind = 'recurrent'
+spec = TokenSpec(types=(TokenTypeSchema(type_name='variable_element', payload_features=('position_0', 'position_1', 'position....0, 0.0)), effect_catalog_contexts=()),), position_rank=0, transport_version='compact-1', encoding_version='token-1.1')
+aggregator = 'attention', mode = 'interaction_mlp', width = 3, action_dim = 3
+
+    def _new_model(kind: str, spec: TokenSpec, aggregator: str, mode: str, width: int | None, action_dim: int) -> Any:
+        model_class = {"encoder": TokenSetEncoder, "token_set": TokenSetQNetwork, "recurrent": RecurrentTokenQNetwork}[kind]
+        constructor = getattr(model_class, "from_resolved_encoder", None)
+>       assert callable(constructor), f"{model_class.__name__} must expose callable from_resolved_encoder for resolved P4 selection"
+E       AssertionError: RecurrentTokenQNetwork must expose callable from_resolved_encoder for resolved P4 selection
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_token_binding.py:279: AssertionError
+_ test_from_resolved_encoder_requires_explicit_selection[linear-None-mean-token_set] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'token_set', aggregator = 'mean', mode = 'linear', width = None
+
+    @pytest.mark.parametrize("kind", ["encoder", "token_set", "recurrent"])
+    @pytest.mark.parametrize("aggregator", ["mean", "attention"])
+    @pytest.mark.parametrize("mode,width", [("linear", None), ("interaction_mlp", 3)])
+    def test_from_resolved_encoder_requires_explicit_selection(kind: str, aggregator: str, mode: str, width: int | None) -> None:
+        """Missing selection must not silently choose a local policy or hidden width."""
+        spec = _toy_spec()
+        selected, origin = resolve_token_encoder(TokenEncoderOptions(mode=mode, hidden_width=width))
+        assert origin == "authored"
+>       model = _new_model(kind, spec, aggregator, selected.mode, selected.hidden_width, 3)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_token_binding.py:440: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+kind = 'token_set'
+spec = TokenSpec(types=(TokenTypeSchema(type_name='variable_element', payload_features=('position_0', 'position_1', 'position....0, 0.0)), effect_catalog_contexts=()),), position_rank=0, transport_version='compact-1', encoding_version='token-1.1')
+aggregator = 'mean', mode = 'linear', width = None, action_dim = 3
+
+    def _new_model(kind: str, spec: TokenSpec, aggregator: str, mode: str, width: int | None, action_dim: int) -> Any:
+        model_class = {"encoder": TokenSetEncoder, "token_set": TokenSetQNetwork, "recurrent": RecurrentTokenQNetwork}[kind]
+        constructor = getattr(model_class, "from_resolved_encoder", None)
+>       assert callable(constructor), f"{model_class.__name__} must expose callable from_resolved_encoder for resolved P4 selection"
+E       AssertionError: TokenSetQNetwork must expose callable from_resolved_encoder for resolved P4 selection
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_token_binding.py:279: AssertionError
+_ test_attention_retains_nonuniform_row_interactions[interaction_mlp-recurrent] _
+[gw3] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'recurrent', mode = 'interaction_mlp'
+
+    @pytest.mark.parametrize("kind", ["token_set", "recurrent"])
+    @pytest.mark.parametrize("mode", ["linear", "interaction_mlp"])
+    def test_attention_retains_nonuniform_row_interactions(kind: str, mode: str) -> None:
+        """Attention must remain actual content-weighted attention in either encoder family."""
+        spec = _toy_spec()
+        declaration = TokenEncoderOptions(mode=mode, hidden_width=1 if mode == "interaction_mlp" else None)
+        model = _factory(kind, spec, "attention", declaration, 3)
+        encoder = model.encoder
+        assert encoder.aggregator_type == "attention" and encoder.num_heads == 2
+>       _set_feature(encoder, spec, mode, authored=False)
+
+tests/test_townlet/regressions/bac/test_token_binding.py:488: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_token_binding.py:322: in _set_feature
+    _row_layers(encoder, mode, 1 if mode == "interaction_mlp" else None)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+encoder = TokenSetEncoder(
+  (input_assembler): TokenInputAssembler()
+  (encoders): ModuleDict(
+    (variable_element): Linear(i...: Linear(in_features=16, out_features=16, bias=True)
+  (out_proj): Linear(in_features=16, out_features=16, bias=True)
+)
+mode = 'interaction_mlp', width = 1
+
+    def _row_layers(encoder: TokenSetEncoder, mode: str, width: int | None) -> None:
+        for name, row in encoder.encoders.items():
+            if mode == "linear":
+                assert isinstance(row, nn.Linear), f"linear state/computation changed for {name}"
+            else:
+>               assert isinstance(row, nn.Sequential), f"factory ignored interaction_mlp for {name}: {type(row).__name__}"
+E               AssertionError: factory ignored interaction_mlp for variable_element: Linear
+E               assert False
+E                +  where False = isinstance(Linear(in_features=42, out_features=16, bias=True), <class 'torch.nn.modules.container.Sequential'>)
+E                +    where <class 'torch.nn.modules.container.Sequential'> = nn.Sequential
+
+tests/test_townlet/regressions/bac/test_token_binding.py:304: AssertionError
+________________ test_mean_can_bind_descriptor_value[token_set] ________________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'token_set'
+
+    @pytest.mark.parametrize("kind", ["token_set", "recurrent"])
+    def test_mean_can_bind_descriptor_value(kind: str) -> None:
+        """An affine factory route or an MLP after pooling cannot meet the .375/.125 witness."""
+        spec = _toy_spec()
+        network = _factory(kind, spec, "mean", TokenEncoderOptions(mode="interaction_mlp", hidden_width=1), 3)
+>       _set_feature(network.encoder, spec, "interaction_mlp", authored=False)
+
+tests/test_townlet/regressions/bac/test_token_binding.py:467: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_token_binding.py:322: in _set_feature
+    _row_layers(encoder, mode, 1 if mode == "interaction_mlp" else None)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+encoder = TokenSetEncoder(
+  (input_assembler): TokenInputAssembler()
+  (encoders): ModuleDict(
+    (variable_element): Linear(i...e)
+  )
+  (type_embeddings): ParameterDict(  (variable_element): Parameter containing: [torch.FloatTensor of size 16])
+)
+mode = 'interaction_mlp', width = 1
+
+    def _row_layers(encoder: TokenSetEncoder, mode: str, width: int | None) -> None:
+        for name, row in encoder.encoders.items():
+            if mode == "linear":
+                assert isinstance(row, nn.Linear), f"linear state/computation changed for {name}"
+            else:
+>               assert isinstance(row, nn.Sequential), f"factory ignored interaction_mlp for {name}: {type(row).__name__}"
+E               AssertionError: factory ignored interaction_mlp for variable_element: Linear
+E               assert False
+E                +  where False = isinstance(Linear(in_features=42, out_features=16, bias=True), <class 'torch.nn.modules.container.Sequential'>)
+E                +    where <class 'torch.nn.modules.container.Sequential'> = nn.Sequential
+
+tests/test_townlet/regressions/bac/test_token_binding.py:304: AssertionError
+_ test_from_resolved_encoder_requires_explicit_selection[linear-None-mean-recurrent] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'recurrent', aggregator = 'mean', mode = 'linear', width = None
+
+    @pytest.mark.parametrize("kind", ["encoder", "token_set", "recurrent"])
+    @pytest.mark.parametrize("aggregator", ["mean", "attention"])
+    @pytest.mark.parametrize("mode,width", [("linear", None), ("interaction_mlp", 3)])
+    def test_from_resolved_encoder_requires_explicit_selection(kind: str, aggregator: str, mode: str, width: int | None) -> None:
+        """Missing selection must not silently choose a local policy or hidden width."""
+        spec = _toy_spec()
+        selected, origin = resolve_token_encoder(TokenEncoderOptions(mode=mode, hidden_width=width))
+        assert origin == "authored"
+>       model = _new_model(kind, spec, aggregator, selected.mode, selected.hidden_width, 3)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_token_binding.py:440: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+kind = 'recurrent'
+spec = TokenSpec(types=(TokenTypeSchema(type_name='variable_element', payload_features=('position_0', 'position_1', 'position....0, 0.0)), effect_catalog_contexts=()),), position_rank=0, transport_version='compact-1', encoding_version='token-1.1')
+aggregator = 'mean', mode = 'linear', width = None, action_dim = 3
+
+    def _new_model(kind: str, spec: TokenSpec, aggregator: str, mode: str, width: int | None, action_dim: int) -> Any:
+        model_class = {"encoder": TokenSetEncoder, "token_set": TokenSetQNetwork, "recurrent": RecurrentTokenQNetwork}[kind]
+        constructor = getattr(model_class, "from_resolved_encoder", None)
+>       assert callable(constructor), f"{model_class.__name__} must expose callable from_resolved_encoder for resolved P4 selection"
+E       AssertionError: RecurrentTokenQNetwork must expose callable from_resolved_encoder for resolved P4 selection
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_token_binding.py:279: AssertionError
+________________ test_mean_can_bind_descriptor_value[recurrent] ________________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'recurrent'
+
+    @pytest.mark.parametrize("kind", ["token_set", "recurrent"])
+    def test_mean_can_bind_descriptor_value(kind: str) -> None:
+        """An affine factory route or an MLP after pooling cannot meet the .375/.125 witness."""
+        spec = _toy_spec()
+        network = _factory(kind, spec, "mean", TokenEncoderOptions(mode="interaction_mlp", hidden_width=1), 3)
+>       _set_feature(network.encoder, spec, "interaction_mlp", authored=False)
+
+tests/test_townlet/regressions/bac/test_token_binding.py:467: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_token_binding.py:322: in _set_feature
+    _row_layers(encoder, mode, 1 if mode == "interaction_mlp" else None)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+encoder = TokenSetEncoder(
+  (input_assembler): TokenInputAssembler()
+  (encoders): ModuleDict(
+    (variable_element): Linear(i...e)
+  )
+  (type_embeddings): ParameterDict(  (variable_element): Parameter containing: [torch.FloatTensor of size 16])
+)
+mode = 'interaction_mlp', width = 1
+
+    def _row_layers(encoder: TokenSetEncoder, mode: str, width: int | None) -> None:
+        for name, row in encoder.encoders.items():
+            if mode == "linear":
+                assert isinstance(row, nn.Linear), f"linear state/computation changed for {name}"
+            else:
+>               assert isinstance(row, nn.Sequential), f"factory ignored interaction_mlp for {name}: {type(row).__name__}"
+E               AssertionError: factory ignored interaction_mlp for variable_element: Linear
+E               assert False
+E                +  where False = isinstance(Linear(in_features=42, out_features=16, bias=True), <class 'torch.nn.modules.container.Sequential'>)
+E                +    where <class 'torch.nn.modules.container.Sequential'> = nn.Sequential
+
+tests/test_townlet/regressions/bac/test_token_binding.py:304: AssertionError
+_ test_from_resolved_encoder_requires_explicit_selection[linear-None-attention-encoder] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'encoder', aggregator = 'attention', mode = 'linear', width = None
+
+    @pytest.mark.parametrize("kind", ["encoder", "token_set", "recurrent"])
+    @pytest.mark.parametrize("aggregator", ["mean", "attention"])
+    @pytest.mark.parametrize("mode,width", [("linear", None), ("interaction_mlp", 3)])
+    def test_from_resolved_encoder_requires_explicit_selection(kind: str, aggregator: str, mode: str, width: int | None) -> None:
+        """Missing selection must not silently choose a local policy or hidden width."""
+        spec = _toy_spec()
+        selected, origin = resolve_token_encoder(TokenEncoderOptions(mode=mode, hidden_width=width))
+        assert origin == "authored"
+>       model = _new_model(kind, spec, aggregator, selected.mode, selected.hidden_width, 3)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_token_binding.py:440: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+kind = 'encoder'
+spec = TokenSpec(types=(TokenTypeSchema(type_name='variable_element', payload_features=('position_0', 'position_1', 'position....0, 0.0)), effect_catalog_contexts=()),), position_rank=0, transport_version='compact-1', encoding_version='token-1.1')
+aggregator = 'attention', mode = 'linear', width = None, action_dim = 3
+
+    def _new_model(kind: str, spec: TokenSpec, aggregator: str, mode: str, width: int | None, action_dim: int) -> Any:
+        model_class = {"encoder": TokenSetEncoder, "token_set": TokenSetQNetwork, "recurrent": RecurrentTokenQNetwork}[kind]
+        constructor = getattr(model_class, "from_resolved_encoder", None)
+>       assert callable(constructor), f"{model_class.__name__} must expose callable from_resolved_encoder for resolved P4 selection"
+E       AssertionError: TokenSetEncoder must expose callable from_resolved_encoder for resolved P4 selection
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_token_binding.py:279: AssertionError
+_ test_from_resolved_encoder_requires_explicit_selection[linear-None-attention-token_set] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'token_set', aggregator = 'attention', mode = 'linear', width = None
+
+    @pytest.mark.parametrize("kind", ["encoder", "token_set", "recurrent"])
+    @pytest.mark.parametrize("aggregator", ["mean", "attention"])
+    @pytest.mark.parametrize("mode,width", [("linear", None), ("interaction_mlp", 3)])
+    def test_from_resolved_encoder_requires_explicit_selection(kind: str, aggregator: str, mode: str, width: int | None) -> None:
+        """Missing selection must not silently choose a local policy or hidden width."""
+        spec = _toy_spec()
+        selected, origin = resolve_token_encoder(TokenEncoderOptions(mode=mode, hidden_width=width))
+        assert origin == "authored"
+>       model = _new_model(kind, spec, aggregator, selected.mode, selected.hidden_width, 3)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_token_binding.py:440: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+kind = 'token_set'
+spec = TokenSpec(types=(TokenTypeSchema(type_name='variable_element', payload_features=('position_0', 'position_1', 'position....0, 0.0)), effect_catalog_contexts=()),), position_rank=0, transport_version='compact-1', encoding_version='token-1.1')
+aggregator = 'attention', mode = 'linear', width = None, action_dim = 3
+
+    def _new_model(kind: str, spec: TokenSpec, aggregator: str, mode: str, width: int | None, action_dim: int) -> Any:
+        model_class = {"encoder": TokenSetEncoder, "token_set": TokenSetQNetwork, "recurrent": RecurrentTokenQNetwork}[kind]
+        constructor = getattr(model_class, "from_resolved_encoder", None)
+>       assert callable(constructor), f"{model_class.__name__} must expose callable from_resolved_encoder for resolved P4 selection"
+E       AssertionError: TokenSetQNetwork must expose callable from_resolved_encoder for resolved P4 selection
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_token_binding.py:279: AssertionError
+_ test_from_resolved_encoder_requires_explicit_selection[linear-None-attention-recurrent] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'recurrent', aggregator = 'attention', mode = 'linear', width = None
+
+    @pytest.mark.parametrize("kind", ["encoder", "token_set", "recurrent"])
+    @pytest.mark.parametrize("aggregator", ["mean", "attention"])
+    @pytest.mark.parametrize("mode,width", [("linear", None), ("interaction_mlp", 3)])
+    def test_from_resolved_encoder_requires_explicit_selection(kind: str, aggregator: str, mode: str, width: int | None) -> None:
+        """Missing selection must not silently choose a local policy or hidden width."""
+        spec = _toy_spec()
+        selected, origin = resolve_token_encoder(TokenEncoderOptions(mode=mode, hidden_width=width))
+        assert origin == "authored"
+>       model = _new_model(kind, spec, aggregator, selected.mode, selected.hidden_width, 3)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_token_binding.py:440: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+kind = 'recurrent'
+spec = TokenSpec(types=(TokenTypeSchema(type_name='variable_element', payload_features=('position_0', 'position_1', 'position....0, 0.0)), effect_catalog_contexts=()),), position_rank=0, transport_version='compact-1', encoding_version='token-1.1')
+aggregator = 'attention', mode = 'linear', width = None, action_dim = 3
+
+    def _new_model(kind: str, spec: TokenSpec, aggregator: str, mode: str, width: int | None, action_dim: int) -> Any:
+        model_class = {"encoder": TokenSetEncoder, "token_set": TokenSetQNetwork, "recurrent": RecurrentTokenQNetwork}[kind]
+        constructor = getattr(model_class, "from_resolved_encoder", None)
+>       assert callable(constructor), f"{model_class.__name__} must expose callable from_resolved_encoder for resolved P4 selection"
+E       AssertionError: RecurrentTokenQNetwork must expose callable from_resolved_encoder for resolved P4 selection
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_token_binding.py:279: AssertionError
+_ test_from_resolved_encoder_requires_explicit_selection[interaction_mlp-3-mean-encoder] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'encoder', aggregator = 'mean', mode = 'interaction_mlp', width = 3
+
+    @pytest.mark.parametrize("kind", ["encoder", "token_set", "recurrent"])
+    @pytest.mark.parametrize("aggregator", ["mean", "attention"])
+    @pytest.mark.parametrize("mode,width", [("linear", None), ("interaction_mlp", 3)])
+    def test_from_resolved_encoder_requires_explicit_selection(kind: str, aggregator: str, mode: str, width: int | None) -> None:
+        """Missing selection must not silently choose a local policy or hidden width."""
+        spec = _toy_spec()
+        selected, origin = resolve_token_encoder(TokenEncoderOptions(mode=mode, hidden_width=width))
+        assert origin == "authored"
+>       model = _new_model(kind, spec, aggregator, selected.mode, selected.hidden_width, 3)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_token_binding.py:440: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+kind = 'encoder'
+spec = TokenSpec(types=(TokenTypeSchema(type_name='variable_element', payload_features=('position_0', 'position_1', 'position....0, 0.0)), effect_catalog_contexts=()),), position_rank=0, transport_version='compact-1', encoding_version='token-1.1')
+aggregator = 'mean', mode = 'interaction_mlp', width = 3, action_dim = 3
+
+    def _new_model(kind: str, spec: TokenSpec, aggregator: str, mode: str, width: int | None, action_dim: int) -> Any:
+        model_class = {"encoder": TokenSetEncoder, "token_set": TokenSetQNetwork, "recurrent": RecurrentTokenQNetwork}[kind]
+        constructor = getattr(model_class, "from_resolved_encoder", None)
+>       assert callable(constructor), f"{model_class.__name__} must expose callable from_resolved_encoder for resolved P4 selection"
+E       AssertionError: TokenSetEncoder must expose callable from_resolved_encoder for resolved P4 selection
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_token_binding.py:279: AssertionError
+_ test_from_resolved_encoder_requires_explicit_selection[interaction_mlp-3-mean-token_set] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'token_set', aggregator = 'mean', mode = 'interaction_mlp', width = 3
+
+    @pytest.mark.parametrize("kind", ["encoder", "token_set", "recurrent"])
+    @pytest.mark.parametrize("aggregator", ["mean", "attention"])
+    @pytest.mark.parametrize("mode,width", [("linear", None), ("interaction_mlp", 3)])
+    def test_from_resolved_encoder_requires_explicit_selection(kind: str, aggregator: str, mode: str, width: int | None) -> None:
+        """Missing selection must not silently choose a local policy or hidden width."""
+        spec = _toy_spec()
+        selected, origin = resolve_token_encoder(TokenEncoderOptions(mode=mode, hidden_width=width))
+        assert origin == "authored"
+>       model = _new_model(kind, spec, aggregator, selected.mode, selected.hidden_width, 3)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_token_binding.py:440: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+kind = 'token_set'
+spec = TokenSpec(types=(TokenTypeSchema(type_name='variable_element', payload_features=('position_0', 'position_1', 'position....0, 0.0)), effect_catalog_contexts=()),), position_rank=0, transport_version='compact-1', encoding_version='token-1.1')
+aggregator = 'mean', mode = 'interaction_mlp', width = 3, action_dim = 3
+
+    def _new_model(kind: str, spec: TokenSpec, aggregator: str, mode: str, width: int | None, action_dim: int) -> Any:
+        model_class = {"encoder": TokenSetEncoder, "token_set": TokenSetQNetwork, "recurrent": RecurrentTokenQNetwork}[kind]
+        constructor = getattr(model_class, "from_resolved_encoder", None)
+>       assert callable(constructor), f"{model_class.__name__} must expose callable from_resolved_encoder for resolved P4 selection"
+E       AssertionError: TokenSetQNetwork must expose callable from_resolved_encoder for resolved P4 selection
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_token_binding.py:279: AssertionError
+________________ test_linear_mean_is_preserved[mean-recurrent] _________________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'recurrent', aggregator = 'mean'
+
+    @pytest.mark.parametrize("kind", ["encoder", "token_set", "recurrent"])
+    @pytest.mark.parametrize("aggregator", ["mean", "attention"])
+    def test_linear_mean_is_preserved(kind: str, aggregator: str) -> None:
+        """The additive route must preserve old initialization/state and the truthful mean alias."""
+        spec = _toy_spec()
+        model_class = {"encoder": TokenSetEncoder, "token_set": TokenSetQNetwork, "recurrent": RecurrentTokenQNetwork}[kind]
+        arguments = _arguments(kind, spec, aggregator, 3)
+        with torch.random.fork_rng(devices=[]):
+            torch.manual_seed(1701)
+            old = model_class(**arguments)
+            torch.manual_seed(1701)
+>           selected = _new_model(kind, spec, aggregator, "linear", None, 3)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_token_binding.py:544: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+kind = 'recurrent'
+spec = TokenSpec(types=(TokenTypeSchema(type_name='variable_element', payload_features=('position_0', 'position_1', 'position....0, 0.0)), effect_catalog_contexts=()),), position_rank=0, transport_version='compact-1', encoding_version='token-1.1')
+aggregator = 'mean', mode = 'linear', width = None, action_dim = 3
+
+    def _new_model(kind: str, spec: TokenSpec, aggregator: str, mode: str, width: int | None, action_dim: int) -> Any:
+        model_class = {"encoder": TokenSetEncoder, "token_set": TokenSetQNetwork, "recurrent": RecurrentTokenQNetwork}[kind]
+        constructor = getattr(model_class, "from_resolved_encoder", None)
+>       assert callable(constructor), f"{model_class.__name__} must expose callable from_resolved_encoder for resolved P4 selection"
+E       AssertionError: RecurrentTokenQNetwork must expose callable from_resolved_encoder for resolved P4 selection
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_token_binding.py:279: AssertionError
+_______________ test_linear_mean_is_preserved[attention-encoder] _______________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'encoder', aggregator = 'attention'
+
+    @pytest.mark.parametrize("kind", ["encoder", "token_set", "recurrent"])
+    @pytest.mark.parametrize("aggregator", ["mean", "attention"])
+    def test_linear_mean_is_preserved(kind: str, aggregator: str) -> None:
+        """The additive route must preserve old initialization/state and the truthful mean alias."""
+        spec = _toy_spec()
+        model_class = {"encoder": TokenSetEncoder, "token_set": TokenSetQNetwork, "recurrent": RecurrentTokenQNetwork}[kind]
+        arguments = _arguments(kind, spec, aggregator, 3)
+        with torch.random.fork_rng(devices=[]):
+            torch.manual_seed(1701)
+            old = model_class(**arguments)
+            torch.manual_seed(1701)
+>           selected = _new_model(kind, spec, aggregator, "linear", None, 3)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_token_binding.py:544: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+kind = 'encoder'
+spec = TokenSpec(types=(TokenTypeSchema(type_name='variable_element', payload_features=('position_0', 'position_1', 'position....0, 0.0)), effect_catalog_contexts=()),), position_rank=0, transport_version='compact-1', encoding_version='token-1.1')
+aggregator = 'attention', mode = 'linear', width = None, action_dim = 3
+
+    def _new_model(kind: str, spec: TokenSpec, aggregator: str, mode: str, width: int | None, action_dim: int) -> Any:
+        model_class = {"encoder": TokenSetEncoder, "token_set": TokenSetQNetwork, "recurrent": RecurrentTokenQNetwork}[kind]
+        constructor = getattr(model_class, "from_resolved_encoder", None)
+>       assert callable(constructor), f"{model_class.__name__} must expose callable from_resolved_encoder for resolved P4 selection"
+E       AssertionError: TokenSetEncoder must expose callable from_resolved_encoder for resolved P4 selection
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_token_binding.py:279: AssertionError
+______________ test_linear_mean_is_preserved[attention-token_set] ______________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'token_set', aggregator = 'attention'
+
+    @pytest.mark.parametrize("kind", ["encoder", "token_set", "recurrent"])
+    @pytest.mark.parametrize("aggregator", ["mean", "attention"])
+    def test_linear_mean_is_preserved(kind: str, aggregator: str) -> None:
+        """The additive route must preserve old initialization/state and the truthful mean alias."""
+        spec = _toy_spec()
+        model_class = {"encoder": TokenSetEncoder, "token_set": TokenSetQNetwork, "recurrent": RecurrentTokenQNetwork}[kind]
+        arguments = _arguments(kind, spec, aggregator, 3)
+        with torch.random.fork_rng(devices=[]):
+            torch.manual_seed(1701)
+            old = model_class(**arguments)
+            torch.manual_seed(1701)
+>           selected = _new_model(kind, spec, aggregator, "linear", None, 3)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_token_binding.py:544: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+kind = 'token_set'
+spec = TokenSpec(types=(TokenTypeSchema(type_name='variable_element', payload_features=('position_0', 'position_1', 'position....0, 0.0)), effect_catalog_contexts=()),), position_rank=0, transport_version='compact-1', encoding_version='token-1.1')
+aggregator = 'attention', mode = 'linear', width = None, action_dim = 3
+
+    def _new_model(kind: str, spec: TokenSpec, aggregator: str, mode: str, width: int | None, action_dim: int) -> Any:
+        model_class = {"encoder": TokenSetEncoder, "token_set": TokenSetQNetwork, "recurrent": RecurrentTokenQNetwork}[kind]
+        constructor = getattr(model_class, "from_resolved_encoder", None)
+>       assert callable(constructor), f"{model_class.__name__} must expose callable from_resolved_encoder for resolved P4 selection"
+E       AssertionError: TokenSetQNetwork must expose callable from_resolved_encoder for resolved P4 selection
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_token_binding.py:279: AssertionError
+_ test_semantic_permutation_absence_and_memory[interaction_mlp-mean-token_set] _
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+authored_pair = AuthoredPair(spec=TokenSpec(types=(TokenTypeSchema(type_name='self', payload_features=('position_0', 'position_1', 'po...00,  0.7500,  0.0000,
+          1.0000,  0.2500,  0.0000]]), action_dim=7, wait_id=5, count=39, right_value_column=145)
+kind = 'token_set', aggregator = 'mean', mode = 'interaction_mlp'
+
+    @pytest.mark.parametrize("kind", ["token_set", "recurrent"])
+    @pytest.mark.parametrize("aggregator", ["mean", "attention"])
+    @pytest.mark.parametrize("mode", ["linear", "interaction_mlp"])
+    def test_semantic_permutation_absence_and_memory(authored_pair: AuthoredPair, kind: str, aggregator: str, mode: str) -> None:
+        """Moving context with rows preserves semantics; absence cuts both MLP layers; memory stays real."""
+        pair = authored_pair
+        declaration = TokenEncoderOptions(mode=mode, hidden_width=1 if mode == "interaction_mlp" else None)
+        model = _factory(kind, pair.spec, aggregator, declaration, pair.action_dim)
+>       _set_feature(model.encoder, pair.spec, mode, authored=True)
+
+tests/test_townlet/regressions/bac/test_token_binding.py:587: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_token_binding.py:322: in _set_feature
+    _row_layers(encoder, mode, 1 if mode == "interaction_mlp" else None)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+encoder = TokenSetEncoder(
+  (input_assembler): TokenInputAssembler()
+  (encoders): ModuleDict(
+    (self): Linear(in_features=1...ng: [torch.FloatTensor of size 16]
+      (variable_element): Parameter containing: [torch.FloatTensor of size 16]
+  )
+)
+mode = 'interaction_mlp', width = 1
+
+    def _row_layers(encoder: TokenSetEncoder, mode: str, width: int | None) -> None:
+        for name, row in encoder.encoders.items():
+            if mode == "linear":
+                assert isinstance(row, nn.Linear), f"linear state/computation changed for {name}"
+            else:
+>               assert isinstance(row, nn.Sequential), f"factory ignored interaction_mlp for {name}: {type(row).__name__}"
+E               AssertionError: factory ignored interaction_mlp for self: Linear
+E               assert False
+E                +  where False = isinstance(Linear(in_features=17, out_features=16, bias=True), <class 'torch.nn.modules.container.Sequential'>)
+E                +    where <class 'torch.nn.modules.container.Sequential'> = nn.Sequential
+
+tests/test_townlet/regressions/bac/test_token_binding.py:304: AssertionError
+_ test_semantic_permutation_absence_and_memory[interaction_mlp-mean-recurrent] _
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+authored_pair = AuthoredPair(spec=TokenSpec(types=(TokenTypeSchema(type_name='self', payload_features=('position_0', 'position_1', 'po...00,  0.7500,  0.0000,
+          1.0000,  0.2500,  0.0000]]), action_dim=7, wait_id=5, count=39, right_value_column=145)
+kind = 'recurrent', aggregator = 'mean', mode = 'interaction_mlp'
+
+    @pytest.mark.parametrize("kind", ["token_set", "recurrent"])
+    @pytest.mark.parametrize("aggregator", ["mean", "attention"])
+    @pytest.mark.parametrize("mode", ["linear", "interaction_mlp"])
+    def test_semantic_permutation_absence_and_memory(authored_pair: AuthoredPair, kind: str, aggregator: str, mode: str) -> None:
+        """Moving context with rows preserves semantics; absence cuts both MLP layers; memory stays real."""
+        pair = authored_pair
+        declaration = TokenEncoderOptions(mode=mode, hidden_width=1 if mode == "interaction_mlp" else None)
+        model = _factory(kind, pair.spec, aggregator, declaration, pair.action_dim)
+>       _set_feature(model.encoder, pair.spec, mode, authored=True)
+
+tests/test_townlet/regressions/bac/test_token_binding.py:587: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_token_binding.py:322: in _set_feature
+    _row_layers(encoder, mode, 1 if mode == "interaction_mlp" else None)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+encoder = TokenSetEncoder(
+  (input_assembler): TokenInputAssembler()
+  (encoders): ModuleDict(
+    (self): Linear(in_features=1...ng: [torch.FloatTensor of size 16]
+      (variable_element): Parameter containing: [torch.FloatTensor of size 16]
+  )
+)
+mode = 'interaction_mlp', width = 1
+
+    def _row_layers(encoder: TokenSetEncoder, mode: str, width: int | None) -> None:
+        for name, row in encoder.encoders.items():
+            if mode == "linear":
+                assert isinstance(row, nn.Linear), f"linear state/computation changed for {name}"
+            else:
+>               assert isinstance(row, nn.Sequential), f"factory ignored interaction_mlp for {name}: {type(row).__name__}"
+E               AssertionError: factory ignored interaction_mlp for self: Linear
+E               assert False
+E                +  where False = isinstance(Linear(in_features=17, out_features=16, bias=True), <class 'torch.nn.modules.container.Sequential'>)
+E                +    where <class 'torch.nn.modules.container.Sequential'> = nn.Sequential
+
+tests/test_townlet/regressions/bac/test_token_binding.py:304: AssertionError
+_________________ test_linear_mean_is_preserved[mean-encoder] __________________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'encoder', aggregator = 'mean'
+
+    @pytest.mark.parametrize("kind", ["encoder", "token_set", "recurrent"])
+    @pytest.mark.parametrize("aggregator", ["mean", "attention"])
+    def test_linear_mean_is_preserved(kind: str, aggregator: str) -> None:
+        """The additive route must preserve old initialization/state and the truthful mean alias."""
+        spec = _toy_spec()
+        model_class = {"encoder": TokenSetEncoder, "token_set": TokenSetQNetwork, "recurrent": RecurrentTokenQNetwork}[kind]
+        arguments = _arguments(kind, spec, aggregator, 3)
+        with torch.random.fork_rng(devices=[]):
+            torch.manual_seed(1701)
+            old = model_class(**arguments)
+            torch.manual_seed(1701)
+>           selected = _new_model(kind, spec, aggregator, "linear", None, 3)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_token_binding.py:544: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+kind = 'encoder'
+spec = TokenSpec(types=(TokenTypeSchema(type_name='variable_element', payload_features=('position_0', 'position_1', 'position....0, 0.0)), effect_catalog_contexts=()),), position_rank=0, transport_version='compact-1', encoding_version='token-1.1')
+aggregator = 'mean', mode = 'linear', width = None, action_dim = 3
+
+    def _new_model(kind: str, spec: TokenSpec, aggregator: str, mode: str, width: int | None, action_dim: int) -> Any:
+        model_class = {"encoder": TokenSetEncoder, "token_set": TokenSetQNetwork, "recurrent": RecurrentTokenQNetwork}[kind]
+        constructor = getattr(model_class, "from_resolved_encoder", None)
+>       assert callable(constructor), f"{model_class.__name__} must expose callable from_resolved_encoder for resolved P4 selection"
+E       AssertionError: TokenSetEncoder must expose callable from_resolved_encoder for resolved P4 selection
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_token_binding.py:279: AssertionError
+________________ test_linear_mean_is_preserved[mean-token_set] _________________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'token_set', aggregator = 'mean'
+
+    @pytest.mark.parametrize("kind", ["encoder", "token_set", "recurrent"])
+    @pytest.mark.parametrize("aggregator", ["mean", "attention"])
+    def test_linear_mean_is_preserved(kind: str, aggregator: str) -> None:
+        """The additive route must preserve old initialization/state and the truthful mean alias."""
+        spec = _toy_spec()
+        model_class = {"encoder": TokenSetEncoder, "token_set": TokenSetQNetwork, "recurrent": RecurrentTokenQNetwork}[kind]
+        arguments = _arguments(kind, spec, aggregator, 3)
+        with torch.random.fork_rng(devices=[]):
+            torch.manual_seed(1701)
+            old = model_class(**arguments)
+            torch.manual_seed(1701)
+>           selected = _new_model(kind, spec, aggregator, "linear", None, 3)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_token_binding.py:544: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+kind = 'token_set'
+spec = TokenSpec(types=(TokenTypeSchema(type_name='variable_element', payload_features=('position_0', 'position_1', 'position....0, 0.0)), effect_catalog_contexts=()),), position_rank=0, transport_version='compact-1', encoding_version='token-1.1')
+aggregator = 'mean', mode = 'linear', width = None, action_dim = 3
+
+    def _new_model(kind: str, spec: TokenSpec, aggregator: str, mode: str, width: int | None, action_dim: int) -> Any:
+        model_class = {"encoder": TokenSetEncoder, "token_set": TokenSetQNetwork, "recurrent": RecurrentTokenQNetwork}[kind]
+        constructor = getattr(model_class, "from_resolved_encoder", None)
+>       assert callable(constructor), f"{model_class.__name__} must expose callable from_resolved_encoder for resolved P4 selection"
+E       AssertionError: TokenSetQNetwork must expose callable from_resolved_encoder for resolved P4 selection
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_token_binding.py:279: AssertionError
+_ test_semantic_permutation_absence_and_memory[interaction_mlp-attention-token_set] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+authored_pair = AuthoredPair(spec=TokenSpec(types=(TokenTypeSchema(type_name='self', payload_features=('position_0', 'position_1', 'po...00,  0.7500,  0.0000,
+          1.0000,  0.2500,  0.0000]]), action_dim=7, wait_id=5, count=39, right_value_column=145)
+kind = 'token_set', aggregator = 'attention', mode = 'interaction_mlp'
+
+    @pytest.mark.parametrize("kind", ["token_set", "recurrent"])
+    @pytest.mark.parametrize("aggregator", ["mean", "attention"])
+    @pytest.mark.parametrize("mode", ["linear", "interaction_mlp"])
+    def test_semantic_permutation_absence_and_memory(authored_pair: AuthoredPair, kind: str, aggregator: str, mode: str) -> None:
+        """Moving context with rows preserves semantics; absence cuts both MLP layers; memory stays real."""
+        pair = authored_pair
+        declaration = TokenEncoderOptions(mode=mode, hidden_width=1 if mode == "interaction_mlp" else None)
+        model = _factory(kind, pair.spec, aggregator, declaration, pair.action_dim)
+>       _set_feature(model.encoder, pair.spec, mode, authored=True)
+
+tests/test_townlet/regressions/bac/test_token_binding.py:587: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_token_binding.py:322: in _set_feature
+    _row_layers(encoder, mode, 1 if mode == "interaction_mlp" else None)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+encoder = TokenSetEncoder(
+  (input_assembler): TokenInputAssembler()
+  (encoders): ModuleDict(
+    (self): Linear(in_features=1...: Linear(in_features=16, out_features=16, bias=True)
+  (out_proj): Linear(in_features=16, out_features=16, bias=True)
+)
+mode = 'interaction_mlp', width = 1
+
+    def _row_layers(encoder: TokenSetEncoder, mode: str, width: int | None) -> None:
+        for name, row in encoder.encoders.items():
+            if mode == "linear":
+                assert isinstance(row, nn.Linear), f"linear state/computation changed for {name}"
+            else:
+>               assert isinstance(row, nn.Sequential), f"factory ignored interaction_mlp for {name}: {type(row).__name__}"
+E               AssertionError: factory ignored interaction_mlp for self: Linear
+E               assert False
+E                +  where False = isinstance(Linear(in_features=17, out_features=16, bias=True), <class 'torch.nn.modules.container.Sequential'>)
+E                +    where <class 'torch.nn.modules.container.Sequential'> = nn.Sequential
+
+tests/test_townlet/regressions/bac/test_token_binding.py:304: AssertionError
+_ test_semantic_permutation_absence_and_memory[interaction_mlp-attention-recurrent] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+authored_pair = AuthoredPair(spec=TokenSpec(types=(TokenTypeSchema(type_name='self', payload_features=('position_0', 'position_1', 'po...00,  0.7500,  0.0000,
+          1.0000,  0.2500,  0.0000]]), action_dim=7, wait_id=5, count=39, right_value_column=145)
+kind = 'recurrent', aggregator = 'attention', mode = 'interaction_mlp'
+
+    @pytest.mark.parametrize("kind", ["token_set", "recurrent"])
+    @pytest.mark.parametrize("aggregator", ["mean", "attention"])
+    @pytest.mark.parametrize("mode", ["linear", "interaction_mlp"])
+    def test_semantic_permutation_absence_and_memory(authored_pair: AuthoredPair, kind: str, aggregator: str, mode: str) -> None:
+        """Moving context with rows preserves semantics; absence cuts both MLP layers; memory stays real."""
+        pair = authored_pair
+        declaration = TokenEncoderOptions(mode=mode, hidden_width=1 if mode == "interaction_mlp" else None)
+        model = _factory(kind, pair.spec, aggregator, declaration, pair.action_dim)
+>       _set_feature(model.encoder, pair.spec, mode, authored=True)
+
+tests/test_townlet/regressions/bac/test_token_binding.py:587: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_token_binding.py:322: in _set_feature
+    _row_layers(encoder, mode, 1 if mode == "interaction_mlp" else None)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+encoder = TokenSetEncoder(
+  (input_assembler): TokenInputAssembler()
+  (encoders): ModuleDict(
+    (self): Linear(in_features=1...: Linear(in_features=16, out_features=16, bias=True)
+  (out_proj): Linear(in_features=16, out_features=16, bias=True)
+)
+mode = 'interaction_mlp', width = 1
+
+    def _row_layers(encoder: TokenSetEncoder, mode: str, width: int | None) -> None:
+        for name, row in encoder.encoders.items():
+            if mode == "linear":
+                assert isinstance(row, nn.Linear), f"linear state/computation changed for {name}"
+            else:
+>               assert isinstance(row, nn.Sequential), f"factory ignored interaction_mlp for {name}: {type(row).__name__}"
+E               AssertionError: factory ignored interaction_mlp for self: Linear
+E               assert False
+E                +  where False = isinstance(Linear(in_features=17, out_features=16, bias=True), <class 'torch.nn.modules.container.Sequential'>)
+E                +    where <class 'torch.nn.modules.container.Sequential'> = nn.Sequential
+
+tests/test_townlet/regressions/bac/test_token_binding.py:304: AssertionError
+___________ test_authored_mean_can_bind_descriptor_value[token_set] ____________
+[gw3] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+authored_pair = AuthoredPair(spec=TokenSpec(types=(TokenTypeSchema(type_name='self', payload_features=('position_0', 'position_1', 'po...00,  0.7500,  0.0000,
+          1.0000,  0.2500,  0.0000]]), action_dim=7, wait_id=5, count=39, right_value_column=145)
+kind = 'token_set'
+
+    @pytest.mark.parametrize("kind", ["token_set", "recurrent"])
+    def test_authored_mean_can_bind_descriptor_value(authored_pair: AuthoredPair, kind: str) -> None:
+        """Normal compiled reset/WAIT observations expose selected binding, without state injection."""
+        pair = authored_pair
+        if kind == "token_set":
+            model = NetworkFactory.build_token_set(pair.config, pair.action_dim, pair.spec)
+        else:
+            model = _factory(kind, pair.spec, "mean", pair.config.token_encoder, pair.action_dim)
+>       _set_feature(model.encoder, pair.spec, "interaction_mlp", authored=True)
+
+tests/test_townlet/regressions/bac/test_token_binding.py:512: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_token_binding.py:322: in _set_feature
+    _row_layers(encoder, mode, 1 if mode == "interaction_mlp" else None)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+encoder = TokenSetEncoder(
+  (input_assembler): TokenInputAssembler()
+  (encoders): ModuleDict(
+    (self): Linear(in_features=1...ng: [torch.FloatTensor of size 16]
+      (variable_element): Parameter containing: [torch.FloatTensor of size 16]
+  )
+)
+mode = 'interaction_mlp', width = 1
+
+    def _row_layers(encoder: TokenSetEncoder, mode: str, width: int | None) -> None:
+        for name, row in encoder.encoders.items():
+            if mode == "linear":
+                assert isinstance(row, nn.Linear), f"linear state/computation changed for {name}"
+            else:
+>               assert isinstance(row, nn.Sequential), f"factory ignored interaction_mlp for {name}: {type(row).__name__}"
+E               AssertionError: factory ignored interaction_mlp for self: Linear
+E               assert False
+E                +  where False = isinstance(Linear(in_features=17, out_features=16, bias=True), <class 'torch.nn.modules.container.Sequential'>)
+E                +    where <class 'torch.nn.modules.container.Sequential'> = nn.Sequential
+
+tests/test_townlet/regressions/bac/test_token_binding.py:304: AssertionError
+___________ test_authored_mean_can_bind_descriptor_value[recurrent] ____________
+[gw3] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+authored_pair = AuthoredPair(spec=TokenSpec(types=(TokenTypeSchema(type_name='self', payload_features=('position_0', 'position_1', 'po...00,  0.7500,  0.0000,
+          1.0000,  0.2500,  0.0000]]), action_dim=7, wait_id=5, count=39, right_value_column=145)
+kind = 'recurrent'
+
+    @pytest.mark.parametrize("kind", ["token_set", "recurrent"])
+    def test_authored_mean_can_bind_descriptor_value(authored_pair: AuthoredPair, kind: str) -> None:
+        """Normal compiled reset/WAIT observations expose selected binding, without state injection."""
+        pair = authored_pair
+        if kind == "token_set":
+            model = NetworkFactory.build_token_set(pair.config, pair.action_dim, pair.spec)
+        else:
+            model = _factory(kind, pair.spec, "mean", pair.config.token_encoder, pair.action_dim)
+>       _set_feature(model.encoder, pair.spec, "interaction_mlp", authored=True)
+
+tests/test_townlet/regressions/bac/test_token_binding.py:512: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_token_binding.py:322: in _set_feature
+    _row_layers(encoder, mode, 1 if mode == "interaction_mlp" else None)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+encoder = TokenSetEncoder(
+  (input_assembler): TokenInputAssembler()
+  (encoders): ModuleDict(
+    (self): Linear(in_features=1...ng: [torch.FloatTensor of size 16]
+      (variable_element): Parameter containing: [torch.FloatTensor of size 16]
+  )
+)
+mode = 'interaction_mlp', width = 1
+
+    def _row_layers(encoder: TokenSetEncoder, mode: str, width: int | None) -> None:
+        for name, row in encoder.encoders.items():
+            if mode == "linear":
+                assert isinstance(row, nn.Linear), f"linear state/computation changed for {name}"
+            else:
+>               assert isinstance(row, nn.Sequential), f"factory ignored interaction_mlp for {name}: {type(row).__name__}"
+E               AssertionError: factory ignored interaction_mlp for self: Linear
+E               assert False
+E                +  where False = isinstance(Linear(in_features=17, out_features=16, bias=True), <class 'torch.nn.modules.container.Sequential'>)
+E                +    where <class 'torch.nn.modules.container.Sequential'> = nn.Sequential
+
+tests/test_townlet/regressions/bac/test_token_binding.py:304: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_token_binding.py::test_from_resolved_encoder_requires_explicit_selection[interaction_mlp-3-mean-recurrent]
+FAILED tests/test_townlet/regressions/bac/test_token_binding.py::test_from_resolved_encoder_requires_explicit_selection[interaction_mlp-3-attention-encoder]
+FAILED tests/test_townlet/regressions/bac/test_token_binding.py::test_attention_retains_nonuniform_row_interactions[interaction_mlp-token_set]
+FAILED tests/test_townlet/regressions/bac/test_token_binding.py::test_from_resolved_encoder_requires_explicit_selection[linear-None-mean-encoder]
+FAILED tests/test_townlet/regressions/bac/test_token_binding.py::test_from_resolved_encoder_requires_explicit_selection[interaction_mlp-3-attention-token_set]
+FAILED tests/test_townlet/regressions/bac/test_token_binding.py::test_linear_mean_is_preserved[attention-recurrent]
+FAILED tests/test_townlet/regressions/bac/test_token_binding.py::test_from_resolved_encoder_requires_explicit_selection[interaction_mlp-3-attention-recurrent]
+FAILED tests/test_townlet/regressions/bac/test_token_binding.py::test_from_resolved_encoder_requires_explicit_selection[linear-None-mean-token_set]
+FAILED tests/test_townlet/regressions/bac/test_token_binding.py::test_attention_retains_nonuniform_row_interactions[interaction_mlp-recurrent]
+FAILED tests/test_townlet/regressions/bac/test_token_binding.py::test_mean_can_bind_descriptor_value[token_set]
+FAILED tests/test_townlet/regressions/bac/test_token_binding.py::test_from_resolved_encoder_requires_explicit_selection[linear-None-mean-recurrent]
+FAILED tests/test_townlet/regressions/bac/test_token_binding.py::test_mean_can_bind_descriptor_value[recurrent]
+FAILED tests/test_townlet/regressions/bac/test_token_binding.py::test_from_resolved_encoder_requires_explicit_selection[linear-None-attention-encoder]
+FAILED tests/test_townlet/regressions/bac/test_token_binding.py::test_from_resolved_encoder_requires_explicit_selection[linear-None-attention-token_set]
+FAILED tests/test_townlet/regressions/bac/test_token_binding.py::test_from_resolved_encoder_requires_explicit_selection[linear-None-attention-recurrent]
+FAILED tests/test_townlet/regressions/bac/test_token_binding.py::test_from_resolved_encoder_requires_explicit_selection[interaction_mlp-3-mean-encoder]
+FAILED tests/test_townlet/regressions/bac/test_token_binding.py::test_from_resolved_encoder_requires_explicit_selection[interaction_mlp-3-mean-token_set]
+FAILED tests/test_townlet/regressions/bac/test_token_binding.py::test_linear_mean_is_preserved[mean-recurrent]
+FAILED tests/test_townlet/regressions/bac/test_token_binding.py::test_linear_mean_is_preserved[attention-encoder]
+FAILED tests/test_townlet/regressions/bac/test_token_binding.py::test_linear_mean_is_preserved[attention-token_set]
+FAILED tests/test_townlet/regressions/bac/test_token_binding.py::test_semantic_permutation_absence_and_memory[interaction_mlp-mean-token_set]
+FAILED tests/test_townlet/regressions/bac/test_token_binding.py::test_semantic_permutation_absence_and_memory[interaction_mlp-mean-recurrent]
+FAILED tests/test_townlet/regressions/bac/test_token_binding.py::test_linear_mean_is_preserved[mean-encoder]
+FAILED tests/test_townlet/regressions/bac/test_token_binding.py::test_linear_mean_is_preserved[mean-token_set]
+FAILED tests/test_townlet/regressions/bac/test_token_binding.py::test_semantic_permutation_absence_and_memory[interaction_mlp-attention-token_set]
+FAILED tests/test_townlet/regressions/bac/test_token_binding.py::test_semantic_permutation_absence_and_memory[interaction_mlp-attention-recurrent]
+FAILED tests/test_townlet/regressions/bac/test_token_binding.py::test_authored_mean_can_bind_descriptor_value[token_set]
+FAILED tests/test_townlet/regressions/bac/test_token_binding.py::test_authored_mean_can_bind_descriptor_value[recurrent]
+======================== 28 failed, 6 passed in 14.94s =========================

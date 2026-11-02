@@ -1,0 +1,21 @@
+{
+  "base_commit": "a0802a442bc7ea529de650b8705629923a0e6c72",
+  "candidate_tree": "55e3c6c4fe5f69a171dc59faa32082f959a9ca39",
+  "exit_code": 1,
+  "counts": {
+    "failed": 28,
+    "passed": 6,
+    "errors": 0
+  },
+  "log_sha256": "b8bd609fcd051f94ac48b345e18bb579cf9ef75f13840c4ee413f14262560757",
+  "wall_seconds": 20.850724935531616,
+  "source_guards": 164,
+  "process_identities": 5,
+  "configs": 573,
+  "protected_artifacts": 13,
+  "worktrees": 14,
+  "source_index_import_threads_fixture_custody": "PASS",
+  "interpretation": "Meaningful RED: new resolved construction missing and factory ignores interaction_mlp. Real authored fixture completed; no fixture or collection error. Six retained controls passed. Formatting check alone fails and remains owed.",
+  "audit_correction": "First custody attempt used an incorrect expected assertion-message literal; corrected to actual must expose callable from_resolved_encoder. No tests or candidate changed or rerun.",
+  "clearance": "Root production authoring handoff permitted; no package qualification."
+}

@@ -19,6 +19,17 @@ from townlet.training.state import BatchedAgentState
 
 
 @dataclass(frozen=True)
+class PredictorServiceCounters:
+    """Owned primitive snapshot of recorded cumulative work and current occupancy."""
+
+    admitted_rows: int
+    consumed_rows: int
+    dropped_rows: int
+    pending_rows: int
+    optimizer_updates: int
+
+
+@dataclass(frozen=True)
 class PredictorServiceReceipt:
     """Per-call row accounting; overflow updates are separate from tick pacing.
 
@@ -294,6 +305,23 @@ class RNDExploration(ExplorationStrategy):
         if self.obs_buffer or self._admitted_rows:
             raise ValueError("configure RND service before admission; live policy changes require explicit transfer")
         self.service_options = checked
+
+    def predictor_service_counters(self) -> PredictorServiceCounters:
+        """Observe native recorded counters and occupancy without servicing work.
+
+        External obs_buffer appends affect occupancy immediately; their admissions
+        are recorded by the next update_predictor call, even for a partial batch.
+        Callers measuring legacy work must start their interval before appending
+        and end it after that update. Reading this view never reconciles counters
+        or copies pending observations, networks, or optimizer state.
+        """
+        return PredictorServiceCounters(
+            admitted_rows=self._admitted_rows,
+            consumed_rows=self._consumed_rows,
+            dropped_rows=self._dropped_rows,
+            pending_rows=len(self.obs_buffer),
+            optimizer_updates=self._optimizer_updates,
+        )
 
     def admit_and_service(self, observations: torch.Tensor, *, vector_tick: int) -> PredictorServiceReceipt:
         """Admit only caller-selected eligible predecessor rows in bounded chunks.

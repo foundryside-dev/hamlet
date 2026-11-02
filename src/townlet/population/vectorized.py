@@ -8,9 +8,10 @@ Manages Q-networks, replay buffers, and training loops.
 from __future__ import annotations
 
 import copy
+import hashlib
 import logging
 import math
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
 from numbers import Real
 from typing import TYPE_CHECKING, Any, cast
@@ -35,7 +36,8 @@ from townlet.exploration.rnd import RNDExploration
 from townlet.population.base import PopulationManager
 from townlet.population.runtime_registry import AgentRuntimeRegistry
 from townlet.training.checkpoint_utils import TokenRosterReport, load_token_network_state_by_type
-from townlet.training.episode import CompletionReason, EpisodeCompletion, RunnerCompletionReason
+from townlet.training.clock_ledger import ClockLedger
+from townlet.training.episode import CompletionReason, EpisodeCompletion, LaneOutcome, RunnerCompletionReason
 from townlet.training.prioritized_replay_buffer import PrioritizedReplayBuffer
 from townlet.training.q_targets import legal_td_target
 from townlet.training.replay_buffer import ReplayBuffer
@@ -435,6 +437,19 @@ class VectorizedPopulation(PopulationManager):
         self.episode_step_counts = torch.zeros(self.num_agents, dtype=torch.long, device=device)
         self.episode_completed = torch.zeros(self.num_agents, dtype=torch.bool, device=self.device)
         self.episode_completions: list[EpisodeCompletion | None] = [None for _ in range(self.num_agents)]
+        self._clock_ledger = ClockLedger(vector_ticks=self.total_steps)
+        self._clock_ledger_restore_unavailable = self.total_steps != 0
+        self._next_world_binding: tuple[tuple[str, ...], tuple[int, ...]] | None = None
+        self._owned_episode: tuple[int, int, tuple[str, ...], tuple[int, ...]] | None = None
+        self._owned_reset_pending = False
+        self._begun_batch_ids: set[int] = set()
+        self._completed_outcomes: tuple[LaneOutcome, ...] = ()
+        self._published_outcome_fingerprints: dict[tuple[int, int], str] = {}
+        self._committed_outcomes: dict[tuple[int, int], str] = {}
+        self._committed_batches: set[int] = set()
+        self._episode_reward_totals = torch.zeros((self.num_agents, 4), dtype=torch.float64)
+        self._episode_entropies = torch.zeros(self.num_agents, dtype=torch.float64)
+        self._episode_entropy_present = torch.zeros(self.num_agents, dtype=torch.bool)
 
         # Current state
         self.current_obs = torch.zeros((self.num_agents, obs_dim), dtype=torch.float32, device=device)
@@ -762,6 +777,7 @@ class VectorizedPopulation(PopulationManager):
         torch.nn.utils.clip_grad_norm_(self.q_network.parameters(), max_norm=self.max_grad_norm)
         self.optimizer.step()
         self.training_step_counter += 1
+        self._clock_ledger = self._clock_ledger.advance(optimizer_updates=1)
         if self.scheduler is not None:
             self.scheduler.step()
         if self.training_step_counter % self.target_update_frequency == 0:
@@ -785,6 +801,14 @@ class VectorizedPopulation(PopulationManager):
         self.episode_step_counts.zero_()
         self.episode_completed.zero_()
         self.episode_completions = [None for _ in range(self.num_agents)]
+        if not self._owned_reset_pending:
+            self._owned_episode = None
+            self._next_world_binding = None
+        self._owned_reset_pending = False
+        self._completed_outcomes = ()
+        self._episode_reward_totals.zero_()
+        self._episode_entropies.zero_()
+        self._episode_entropy_present.zero_()
 
         # Re-seed population-owned rollout memory and empty episode containers.
         if self.is_recurrent:
@@ -802,6 +826,93 @@ class VectorizedPopulation(PopulationManager):
     # ------------------------------------------------------------------ #
     # Episode lifecycle helpers
     # ------------------------------------------------------------------ #
+    @property
+    def clock_ledger(self) -> ClockLedger:
+        """Owned runtime clocks; historical checkpoints do not invent missing units."""
+        if self._clock_ledger_restore_unavailable:
+            raise RuntimeError("The loaded historical checkpoint has no complete clock ledger; native ledger restore is not available")
+        return self._clock_ledger
+
+    @property
+    def completed_outcomes(self) -> tuple[LaneOutcome, ...]:
+        """Independent owned readings of this explicitly begun episode's events."""
+        # LaneOutcome construction clones its embedded DTO tensors. Each sink
+        # receives its own readings and cannot mutate POP's canonical authority.
+        return tuple(replace(event) for event in self._completed_outcomes)
+
+    def bind_episode_worlds(self, *, world_ids: Sequence[str], world_episode_seqs: Sequence[int]) -> None:
+        """Own actual caller identities, never infer them from row, batch or tick."""
+        ids, sequences = tuple(world_ids), tuple(world_episode_seqs)
+        if len(ids) != self.num_agents or len(sequences) != self.num_agents:
+            raise ValueError("World identity binding must contain exactly one entry per lane")
+        if any(not isinstance(world, str) or not world.strip() for world in ids) or len(set(ids)) != len(ids):
+            raise ValueError("World IDs must be unique concrete nonempty strings")
+        if any(type(sequence) is not int or sequence < 0 for sequence in sequences):
+            raise ValueError("World episode sequences must be explicit nonnegative integers")
+        if self._owned_reset_pending or bool(((self.episode_step_counts > 0) & ~self.episode_completed).any()):
+            raise RuntimeError("Complete the current episode before binding another episode")
+        self._next_world_binding = ids, sequences
+
+    def begin_batch_episode(self, index: int, planned_horizon: int) -> None:
+        """Pin fresh caller binding before the next population reset and rollout."""
+        if type(index) is not int or index < 0 or type(planned_horizon) is not int or planned_horizon < 1:
+            raise ValueError("Batch index/horizon must be nonnegative/positive integers")
+        if self._next_world_binding is None:
+            raise RuntimeError("Bind concrete world IDs and episode sequences before beginning each owned episode")
+        if self._owned_reset_pending or bool(((self.episode_step_counts > 0) & ~self.episode_completed).any()):
+            raise RuntimeError("Complete the current episode before beginning another episode")
+        if index in self._begun_batch_ids:
+            raise ValueError("A batch episode identity cannot be reused")
+        ids, sequences = self._next_world_binding
+        self._owned_episode = index, planned_horizon, ids, sequences
+        self._next_world_binding = None
+        self._owned_reset_pending = True
+        self._begun_batch_ids.add(index)
+
+    @staticmethod
+    def _outcome_fingerprint(event: LaneOutcome) -> str:
+        completion = event.outcome
+        scalars = (
+            event.batch_episode,
+            event.planned_horizon,
+            event.world_id,
+            event.world_episode_seq,
+            event.reward_total,
+            event.reward_extrinsic,
+            event.reward_intrinsic,
+            event.reward_shaping,
+            event.policy_entropy,
+            completion.agent_idx,
+            completion.reason,
+            completion.survival_time,
+        )
+        digest = hashlib.sha256(repr(scalars).encode("utf-8"))
+        for reading in (completion.final_observation, completion.final_meters):
+            digest.update(str((reading.dtype, tuple(reading.shape))).encode("utf-8"))
+            digest.update(reading.detach().cpu().contiguous().numpy().tobytes())
+        return digest.hexdigest()
+
+    def commit_episode_outcomes(self, outcomes: Sequence[LaneOutcome]) -> None:
+        """Commit owned events idempotently; a batch advances only after every lane."""
+        incoming = tuple(outcomes)
+        prepared: dict[tuple[int, int], str] = {}
+        for event in incoming:
+            if not isinstance(event, LaneOutcome):
+                raise ValueError("Only owned LaneOutcome events may be committed")
+            identity = event.batch_episode, event.outcome.agent_idx
+            fingerprint = self._outcome_fingerprint(event)
+            expected = self._published_outcome_fingerprints.get(identity)
+            if expected is None:
+                raise ValueError("Outcome was not published by this population episode")
+            if fingerprint != expected or (identity in prepared and prepared[identity] != fingerprint):
+                raise ValueError("An outcome identity cannot be committed with changed content")
+            prepared[identity] = fingerprint
+        self._committed_outcomes.update(prepared)
+        for batch in {identity[0] for identity in prepared}:
+            if batch not in self._committed_batches and all((batch, lane) in self._committed_outcomes for lane in range(self.num_agents)):
+                self._committed_batches.add(batch)
+                self._clock_ledger = self._clock_ledger.advance(completed_batch_episodes=1)
+
     def _new_episode_container(self) -> EpisodeContainer:
         """Create a fresh container for accumulating episode data.
 
@@ -1127,8 +1238,33 @@ class VectorizedPopulation(PopulationManager):
             final_observation=self.current_obs[agent_idx].detach().cpu().clone(),
             final_meters=self.env.meters[agent_idx].detach().cpu().clone(),
         )
+        envelope = None
+        if self._owned_episode is not None:
+            if not bool(self._episode_entropy_present[agent_idx]):
+                raise RuntimeError("A nonempty owned episode has no eligible policy entropy snapshot")
+            batch, horizon, worlds, sequences = self._owned_episode
+            totals = self._episode_reward_totals[agent_idx].tolist()
+            envelope = LaneOutcome(
+                outcome=completion,
+                batch_episode=batch,
+                planned_horizon=horizon,
+                reward_total=totals[0],
+                reward_extrinsic=totals[1],
+                reward_intrinsic=totals[2],
+                reward_shaping=totals[3],
+                policy_entropy=float(self._episode_entropies[agent_idx].item()),
+                world_id=worlds[agent_idx],
+                world_episode_seq=sequences[agent_idx],
+            )
         self.episode_completed[agent_idx] = True
         self.episode_completions[agent_idx] = completion
+        if envelope is not None:
+            # Pin authoritative content at publication, before any public read.
+            # Fingerprints survive accepted resets so delayed/partial commits
+            # retain authority without retaining every episode's tensor payloads.
+            identity = envelope.batch_episode, envelope.outcome.agent_idx
+            self._published_outcome_fingerprints[identity] = self._outcome_fingerprint(envelope)
+            self._completed_outcomes = (*self._completed_outcomes, envelope)
         self.runtime_registry.record_survival_time(agent_idx=agent_idx, steps=survival_time)
         if isinstance(self.exploration, AdaptiveIntrinsicExploration):
             self.exploration.update_on_episode_end(survival_time=survival_time)
@@ -1223,11 +1359,30 @@ class VectorizedPopulation(PopulationManager):
 
         if bool(self.episode_completed.all()):
             raise RuntimeError("Population episode is complete; call reset before stepping.")
+        if self._owned_reset_pending:
+            raise RuntimeError("Reset the explicitly begun batch before stepping")
         active_on_entry = ~envs.dones.clone()
         if bool((active_on_entry & self.episode_completed).any()):
             raise RuntimeError("A completed population lane cannot enter another transition.")
         self._bind_training()
         q_values = self._rollout_q(active_on_entry)
+        if self._owned_episode is not None:
+            if not bool(torch.isfinite(q_values[active_on_entry]).all()):
+                raise ValueError("Owned policy Q-values must be finite at the eligible predecessor")
+            if q_values.shape[-1] == 1:
+                # A finite deterministic vocabulary has zero entropy. Validate
+                # Q first: this is not a fallback for NaN or infinite inputs.
+                entropy = torch.zeros_like(q_values[:, 0])
+            else:
+                probabilities = torch.softmax(q_values, dim=-1)
+                entropy = -(probabilities * torch.log(probabilities + 1e-10)).sum(dim=-1) / torch.log(
+                    torch.tensor(q_values.shape[-1], dtype=torch.float32, device=q_values.device)
+                )
+            if not bool(torch.isfinite(entropy[active_on_entry]).all()):
+                raise ValueError("Owned policy entropy must be finite at the eligible predecessor")
+            active_cpu = active_on_entry.detach().cpu()
+            self._episode_entropies[active_cpu] = entropy[active_on_entry].detach().cpu().double()
+            self._episode_entropy_present[active_cpu] = True
 
         # 2. Create temporary agent state for curriculum decision
         temp_state = BatchedAgentState(
@@ -1280,6 +1435,10 @@ class VectorizedPopulation(PopulationManager):
         newly_retired = info["newly_retired"]
         components = info["reward_components"]
         intrinsic_weight = info["intrinsic_weight"]
+        if self._owned_episode is not None:
+            active_cpu = active_on_entry.detach().cpu()
+            readings = torch.stack((rewards, components["extrinsic"], components["intrinsic"], components["shaping"]), dim=1)
+            self._episode_reward_totals[active_cpu] += readings[active_on_entry].detach().cpu().double()
 
         # Logging novelty and predictor admission use real predecessor transitions.
         intrinsic_rewards = torch.zeros_like(rewards)
@@ -1326,11 +1485,34 @@ class VectorizedPopulation(PopulationManager):
         # Preserve predictor update ordering after eligible replay admission.
         if isinstance(self.exploration, RNDExploration | AdaptiveIntrinsicExploration):
             rnd = self.exploration.rnd if isinstance(self.exploration, AdaptiveIntrinsicExploration) else self.exploration
-            rnd.obs_buffer.extend(row.detach().cpu().clone() for row in self.current_obs[active_on_entry])
-            self.last_rnd_loss = rnd.update_predictor()
+            if rnd.service_options is not None:
+                receipt = rnd.admit_and_service(self.current_obs[active_on_entry], vector_tick=self.total_steps + 1)
+                self._clock_ledger = self._clock_ledger.advance(
+                    predictor_admitted_rows=receipt.admitted_rows,
+                    predictor_consumed_minibatches=receipt.optimizer_updates,
+                    predictor_dropped_rows=receipt.dropped_rows,
+                )
+                if receipt.last_loss is None:
+                    self.last_rnd_loss = 0.0
+                else:
+                    self.last_rnd_loss = receipt.last_loss
+            else:
+                # Preserve the explicitly supported unconfigured one-minibatch adapter.
+                # Pure producer counters include the caller append and real service;
+                # float loss cannot distinguish a zero-loss update from a short tail.
+                before = rnd.predictor_service_counters()
+                rnd.obs_buffer.extend(row.detach().cpu().clone() for row in self.current_obs[active_on_entry])
+                self.last_rnd_loss = rnd.update_predictor()
+                after = rnd.predictor_service_counters()
+                self._clock_ledger = self._clock_ledger.advance(
+                    predictor_admitted_rows=after.admitted_rows - before.admitted_rows,
+                    predictor_consumed_minibatches=after.optimizer_updates - before.optimizer_updates,
+                    predictor_dropped_rows=after.dropped_rows - before.dropped_rows,
+                )
 
         # Replay clocks are vector-paced; retained readiness owns optimizer admission.
         self.total_steps += 1
+        self._clock_ledger = self._clock_ledger.advance(vector_ticks=1, eligible_transitions=int(active_on_entry.sum().item()))
         self._pace_replay()
         if self.total_steps % self.train_frequency == 0:
             self._learn()
@@ -2069,6 +2251,7 @@ class VectorizedPopulation(PopulationManager):
         self._bound_replay = None
         self._last_beta_tick = total_steps
         self._last_readiness = None
+        self._clock_ledger_restore_unavailable = True
 
     # ------------------------------------------------------------------ #
     # Cross-universe token-net load (token-obs unit 3 Task 9)

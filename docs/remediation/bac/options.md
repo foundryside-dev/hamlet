@@ -1,9 +1,11 @@
 # Additive BaC options (schema version bac-options-v1)
 
-This package declares portable, immutable, finite-only options. It does **not**
-claim these new runtime modes are wired. Later packages consume the resolved
-policies: effective configuration/roles T03, encoders T17, replay T08–T16,
-exploration T18a–d, curriculum T20–T22, checkpoints T24–T26 and evaluation T27.
+This package declares portable, immutable, finite-only options. Declaration loading and
+resolution do not by themselves establish runtime qualification. T15 consumes resolved replay
+policies through explicit or compiled-adapter population learning; [STATUS.md](STATUS.md)
+records qualification and remaining T16 runner propagation. Consumer ownership remains effective
+configuration/roles T03, encoders T17, replay T08–T16, exploration T18a–d, curriculum T20–T22,
+checkpoints T24–T26 and evaluation T27.
 Current compile/cache transport retains the authored training block and encoder
 block. `resolve_bac_options(training.bac_options, training=training)` returns
 `ResolvedBaCOptions(schema_version, options, provenance)`; serialize this receipt
@@ -26,8 +28,11 @@ T03a. New fields can affect ordinary DTO serialization and authored hashes.
 Each leaf has an immutable provenance entry with field, origin and reason.
 Explicit values record `authored`; omissions record `bac-options-v1` and the
 literal resolution or dependency. N is training population size; B is training
-replay batch size. This table is the sole behavioral resolution policy; consumers
-must use a resolved object rather than invent constructor defaults.
+replay batch size. For resolved `curiosity_scope.scope: per_world`, omission-derived pending
+capacities use local cardinality1 instead of N; explicit overrides remain authored and shared
+values remain unchanged (`config/bac_options.py:172–190,255–257`). This resolver behavior does
+not qualify private runtime isolation or X02. This table is the sole behavioral resolution
+policy; consumers must use a resolved object rather than invent constructor defaults.
 
 | Option | Omitted value | Unit / selected role |
 |---|---|---|
@@ -97,6 +102,14 @@ only for adaptive_rnd; other providers retain them as inactive presets. None has
 zero raw novelty. Zero intrinsic scale remains accepted. Actual provider dispatch,
 reward scaling and service implementation are later work, not established by
 these schema tests.
+
+Replay warmup counts retained eligible transitions; backend readiness separately checks actual
+row/window support for the selected law. Authored `min_size` is positive and no greater than
+capacity; explicit `VectorizedPopulation.for_training` accepts a nonnegative threshold. Batch
+size may exceed warmup, and replacement laws can draw more units than their positive support.
+Successive laws require sufficient distinct sampleable units; recurrent transition occupancy
+alone does not establish window cardinality. The population logs changed unready diagnostics
+(`config/training_v2_config.py:102`, `population/vectorized.py:654,715`).
 
 Other conditional roles: replay sampling applies to PER; the uniform adapter
 applies to nonprioritized recurrent sampling; sequence/objective/retention and

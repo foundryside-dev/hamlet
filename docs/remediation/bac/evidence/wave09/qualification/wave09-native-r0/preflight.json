@@ -1,0 +1,29 @@
+{
+  "revision": "ae0914afb3e7e1ca525e91acd49a07b3ae54c327",
+  "tree": "f71c52fad680a74da1b90cc7470455fc90f4fa3f",
+  "source_sha256": "c7b35b292cbc2bac4f7656c79123057f10e1e203a75e670a3c49e4b959013212",
+  "instrument_sha256": "19e0b83130f2467a2bfd890dc79e95de6d7694e79f7fa996fa16c66b43e62eb7",
+  "authored": {
+    "actions.yaml": "cecb2673d71738c76486f849d4a93f8747cbb958c96b9f07dc0eccd190a4a484",
+    "brain.yaml": "45fd26add306fc29a9ea0b913172e0ed636cf14ad5117bf44b03226011ff22a5",
+    "effects.yaml": "dba0d3dec16ffe31f7e4ecbef0de7f0297d06aa5f4afd05fe4e2f9d1c555c688",
+    "environment.yaml": "dbeab4158d34406cb59da7aeb2b68cd53bce8dea0691cc4c22989bd6947447a4",
+    "experiment.yaml": "5ac85a4c4b82b3c70e0302e34dcbf64baa3e861127aa5425c8f98468cd848105",
+    "items.yaml": "b7e8de3f8a153e7293b713ba81be3a318724d3688ac67df29bd622a302aadd26",
+    "levels/L0_test/affordances.yaml": "d937ef40e4fa92ec89539386b9249944203ca82ba883892ef05695afc8f4e07c",
+    "levels/L0_test/bars.yaml": "c55c7736c0c6ae948cdb8d597a1ea13c8087f19a04b91e341ff8c4a5d10cdc57",
+    "levels/L0_test/curriculum.yaml": "e24d6f042e667615359ff43b8c6e2c84982695bfcd6c8ed5795f48a2eb3201e8",
+    "levels/L0_test/drive.yaml": "1dfaca1e050a33fc1776b065481ce77f77789ea9b450a35ee3cf86171bb048e8",
+    "levels/L0_test/training.yaml": "65e26fec1cb0697806c2767274becbb9cc7af54f3bea0e67ccb0e91934e47674",
+    "stratum.yaml": "9848f77098f4faa2d934dc8284ae37e47b33d34e6fc909187b2fb87b5c7022a8",
+    "variables.yaml": "753a2b8a27eb7a9dc582f1f6c97617302d6c4c20e695f3cfd299f819ddd1cb31"
+  },
+  "worktree_registry": "worktree /workspace/hamlet\nHEAD ae0914afb3e7e1ca525e91acd49a07b3ae54c327\nbranch refs/heads/project-recovery-bac-2026-11-01\n\nworktree /tmp/bac-verify-T01-1139ddfa42\nHEAD 4aa5363b5de54d9a112977c32c2975f37627197f\ndetached\n\nworktree /tmp/bac-verify-T02-25cdec4e82\nHEAD 5c91dfb9d09b8ba2d422c6fef5c3e468eadfebaf\ndetached\n\nworktree /tmp/bac-verify-T02-r1-94de8d44e8\nHEAD 5c91dfb9d09b8ba2d422c6fef5c3e468eadfebaf\ndetached\n\nworktree /tmp/bac-verify-T03-4175e78397\nHEAD 049e305df42392373a52c9eb76552abbd74a5b2b\ndetached\n\nworktree /tmp/bac-verify-T08-00d385ce62\nHEAD 7aa6a8cedfa95f88344a7deaa9c8f80994b0aeb0\ndetached\n\nworktree /tmp/bac-verify-T08a-4474a07ae5\nHEAD 050a1a70e979aa03724219b81e848093820f044f\ndetached\n\nworktree /tmp/bac-verify-T09a-63beed0c8d\nHEAD 050a1a70e979aa03724219b81e848093820f044f\ndetached\n\nworktree /tmp/bac-verify-T18-7901753a30\nHEAD 050a1a70e979aa03724219b81e848093820f044f\ndetached\n\nworktree /tmp/bac-verify-T18a-212b3d6d1a\nHEAD 050a1a70e979aa03724219b81e848093820f044f\ndetached\n\nworktree /tmp/bac-verify-wave01-6881a7488a\nHEAD 050a1a70e979aa03724219b81e848093820f044f\ndetached\n\nworktree /tmp/bac-verify-wave02-3d1d21cff5\nHEAD 050a1a70e979aa03724219b81e848093820f044f\ndetached\n\nworktree /tmp/bac-verify-wave02-receipts-ea9bad791f\nHEAD ac8f0f9c3c38cd77f533accc5c9259fe4abfc252\ndetached\n\nworktree /tmp/hamlet-bac-4aa5363b\nHEAD 4aa5363b5de54d9a112977c32c2975f37627197f\ndetached\n\n",
+  "resources": {
+    "cpu_max": "400000 100000",
+    "memory_max": "17179869184",
+    "memory_current": "14103134208",
+    "affinity": 5,
+    "workers": 4
+  }
+}

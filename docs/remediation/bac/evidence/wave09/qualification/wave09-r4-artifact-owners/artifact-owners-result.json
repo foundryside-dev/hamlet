@@ -1,0 +1,29 @@
+{
+  "name": "artifact-owners",
+  "exit_code": 0,
+  "seconds": 33.666714668273926,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/test_episode_lane_sinks.py",
+    "tests/test_townlet/regressions/test_episode_lane_artifact_pipeline.py",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave09-r4-artifact-owners"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave09-r4-artifact-owners/artifact-owners.log",
+  "sha256": "068e75a5e05e618e9f52ae3407cf8f58ca0a8966115b8cf746e1424cd4a86f3e",
+  "candidate_tree": "f4032499a9800e8a8398b812a8dcc7ebfe9c4974",
+  "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+  "manifest_sha256": "7127f3f1855212118fd688a5d7b1024714bac43dab0d0267aa25bc45f4a7df3c",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

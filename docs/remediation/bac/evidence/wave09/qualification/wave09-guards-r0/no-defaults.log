@@ -1,0 +1,6 @@
+Loaded 106 whitelist pattern(s) from .defaults-whitelist.txt
+  - 97 structural pattern(s)
+  - 9 line-based pattern(s)
+No defaults detected. Clean.
+(623 violation(s) whitelisted)
+Ratchet: 623 whitelisted violation(s) exceed the ceiling of 613 in .defaults-ratchet. A new default landed in a waived file; remove it (run with --show-whitelisted to list them).

@@ -1,0 +1,291 @@
+"""Root-owned, current-checkout native qualification; never creates checkouts."""
+
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+import hashlib
+import json
+import math
+import os
+import struct
+import subprocess
+import sys
+import time
+
+ROOT = Path('/workspace/hamlet')
+QA = Path('/workspace/bac-review-2026-11-01/qualification')
+WORK = ROOT / '.superpowers/sdd/2026-11-01-bac-remediation-upgrades'
+CONFIG = ROOT / 'configs/test/episode_lanes'
+SCRIPT = ROOT / 'scripts/check_episode_lanes.py'
+RECIPES = ('authored-two-five', 'two-episodes-reset', 'budget-six',
+           'passive-two-five', 'death-at-lifespan', 'healthy-retirement')
+POPULATION = set(RECIPES[:3])
+sha = lambda data: hashlib.sha256(data).hexdigest()
+canonical = lambda value: json.dumps(value, sort_keys=True, separators=(',', ':'), allow_nan=False).encode()
+f32 = lambda value: struct.unpack('f', struct.pack('f', value))[0]
+
+
+def strict_json(value):
+    def unique(pairs):
+        result = {}
+        for key, item in pairs:
+            assert key not in result, 'Duplicate JSON property: ' + key
+            result[key] = item
+        return result
+    return json.loads(value, object_pairs_hook=unique, parse_constant=lambda x: (_ for _ in ()).throw(ValueError(x)))
+
+
+def git(*args):
+    return subprocess.check_output(['git', *args], cwd=ROOT, text=True).strip()
+
+
+def source_inventory():
+    return {p: sha((ROOT / p).read_bytes()) for p in git('ls-files', '--', 'src', 'pyproject.toml', 'uv.lock').splitlines()}
+
+
+def authored_inventory():
+    return {p.relative_to(CONFIG).as_posix(): sha(p.read_bytes()) for p in sorted(CONFIG.rglob('*.yaml'))}
+
+
+def expected_keys(recipe):
+    keys = set()
+
+    def scalar(field, tick, agents=(-1,)):
+        keys.update((recipe, field, tick, agent, 'value') for agent in agents)
+
+    def tensor(field, tick, hashed):
+        keys.update((recipe, field, tick, -1, coord) for coord in ('present', 'dtype', 'shape'))
+        for agent in (0, 1):
+            scalar(field, tick, (agent,))
+            if hashed:
+                keys.add((recipe, field, tick, agent, 'sha256'))
+
+    reset_ticks = (0, 100, 200) if recipe == 'two-episodes-reset' else (0, 100)
+    real_ticks = list(range(1, 5 if recipe == 'budget-six' else 6))
+    if recipe == 'two-episodes-reset':
+        real_ticks += list(range(101, 106))
+    for tick in reset_ticks:
+        for field in ('reset_observations', 'reset_meters', 'reset_dones', 'reset_counts'):
+            tensor(field, tick, True)
+        tensor('initial_energy', tick, False)
+        scalar('reset_global_tick', tick)
+        if recipe in POPULATION:
+            for field in ('reset_population_counts', 'reset_population_completed'):
+                tensor(field, tick, False)
+            for field in ('reset_completion_reason', 'reset_completion_survival'):
+                scalar(field, tick, (0, 1))
+    for tick in real_ticks:
+        for field in ('actions', 'observations', 'meters', 'dones', 'rewards', 'intrinsic_weight', 'extrinsic', 'intrinsic', 'shaping'):
+            tensor(field, tick, True)
+        for field in ('step_counts', 'ledger_active', 'ledger_terminal', 'ledger_counts', 'ledger_terminal_counts', 'active_on_entry', 'newly_terminal', 'newly_retired'):
+            tensor(field, tick, False)
+        for field in ('global_tick', 'time_of_day', 'ledger_live_transitions'):
+            scalar(field, tick)
+        scalar('eligible_observation', tick, (0, 1))
+        if recipe in POPULATION:
+            tensor('selected_q_values', tick, True)
+            scalar('admitted_observation', tick, (0, 1))
+    if recipe in POPULATION:
+        for tick in real_ticks + ([99] if recipe == 'budget-six' else []):
+            for field in ('population_counts', 'population_completed'):
+                tensor(field, tick, False)
+            for field in ('population_total_steps', 'population_training_steps', 'replay_size'):
+                scalar(field, tick)
+            for field in ('completion_reason', 'completion_survival', 'completion_observation', 'completion_meters'):
+                scalar(field, tick, (0, 1))
+    if recipe == 'budget-six':
+        for field in ('runner_live_transitions', 'runner_budget_reached', 'runner_budget_shortfall', 'runner_episode_count'):
+            scalar(field, 99)
+    return keys, real_ticks, reset_ticks
+
+
+def native_value(value):
+    if value is None or type(value) in (str, bool, int):
+        return True
+    if type(value) is float:
+        return math.isfinite(value)
+    return type(value) is list and all(native_value(x) for x in value)
+
+
+def validate(recipe, directory, before):
+    assert {p.name for p in directory.iterdir()} == {'capture.json', 'command.json', 'stdout.log', 'stderr.log'}
+    artifact = strict_json((directory / 'capture.json').read_text())
+    command = strict_json((directory / 'command.json').read_text())
+    assert set(command) == {'command', 'exit_status', 'pythonpath'}
+    assert type(command['exit_status']) is int and command['exit_status'] == 0 and command['pythonpath'] == str(ROOT / 'src')
+    assert command['command'] == [str(ROOT / '.venv/bin/python'), '-P', str(SCRIPT), '_produce', '--source-root', str(ROOT), '--config-root', str(CONFIG), '--recipe', recipe, '--output', str(directory)]
+    assert set(artifact) == {'schema', 'manifest', 'readings', 'contract'}
+    assert artifact['schema'] == 'episode-lanes.capture.v1'
+    assert set(artifact['contract']) == {'qualified', 'errors'}
+    assert artifact['contract']['qualified'] is True and artifact['contract']['errors'] == []
+    manifest = artifact['manifest']
+    assert set(manifest) == {'source_root', 'revision', 'source_sha256', 'source_stamp', 'imported_modules', 'config_sha256', 'config_inventory', 'instrument_sha256', 'recipe', 'recipe_version', 'seed', 'device', 'actions', 'action_sha256', 'measured_fields'}
+    assert manifest['source_root'] == str(ROOT) and manifest['revision'] == before['revision']
+    assert manifest['source_sha256'] == before['source_sha256']
+    assert manifest['source_stamp'] == {'revision': before['revision'], 'source_sha256': before['source_sha256']}
+    assert manifest['instrument_sha256'] == before['instrument_sha256']
+    assert manifest['recipe'] == recipe and type(manifest['recipe_version']) is int and manifest['recipe_version'] == 1
+    assert type(manifest['seed']) is int and manifest['seed'] == 42 and manifest['device'] == 'cpu'
+    modules = manifest['imported_modules']
+    assert 'townlet' in modules and modules
+    for name, path in modules.items():
+        assert name == 'townlet' or name.startswith('townlet.')
+        assert Path(path).is_absolute() and Path(path).resolve().is_relative_to(ROOT / 'src/townlet'), (name, path)
+    inventory = manifest['config_inventory']
+    assert set(inventory) == {'authored', 'effective'} and inventory['authored'] == before['authored']
+    assert set(inventory['effective']) == set(before['authored'])
+    for path, digest in inventory['effective'].items():
+        assert len(digest) == 64 and all(x in '0123456789abcdef' for x in digest)
+        if path != 'levels/L0_test/training.yaml':
+            assert digest == before['authored'][path], path
+    assert manifest['config_sha256'] == sha(canonical(inventory))
+    assert manifest['action_sha256'] == sha(canonical(manifest['actions']))
+    expected, ticks, resets = expected_keys(recipe)
+    records = {}
+    for record in artifact['readings']:
+        assert set(record) == {'key', 'value'} and native_value(record['value'])
+        key = record['key']
+        assert type(key) is list and len(key) == 5 and type(key[2]) is int and type(key[3]) is int
+        key = tuple(key)
+        assert key not in records, key
+        records[key] = record['value']
+    assert set(records) == expected, (recipe, sorted(set(records) - expected), sorted(expected - set(records)))
+    assert manifest['measured_fields'] == sorted({key[1] for key in expected})
+    assert len(manifest['actions']) == len(ticks)
+
+    def get(field, tick, agent=-1, coord='value'):
+        return records[(recipe, field, tick, agent, coord)]
+
+    for tick in resets:
+        assert get('reset_global_tick', tick) == 0
+        for agent in (0, 1):
+            assert get('reset_counts', tick, agent) == 0 and get('reset_dones', tick, agent) is False
+            if recipe in POPULATION:
+                assert get('reset_population_counts', tick, agent) == 0
+                assert get('reset_population_completed', tick, agent) is False
+                assert get('reset_completion_reason', tick, agent) is None
+                assert get('reset_completion_survival', tick, agent) is None
+    total_live = 0
+    for index, tick in enumerate(ticks):
+        episode, step = divmod(tick, 100)
+        ends = (5, 5) if recipe == 'healthy-retirement' else (2, 5)
+        active = [step <= end for end in ends]
+        counts = [min(step, end) for end in ends]
+        total_live += sum(active)
+        actions = manifest['actions'][index]
+        assert type(actions) is list and len(actions) == 2 and all(type(x) is int for x in actions)
+        assert [get('actions', tick, a) for a in (0, 1)] == actions
+        assert get('global_tick', tick) == step and get('ledger_live_transitions', tick) == sum(counts)
+        for field in ('active_on_entry', 'newly_terminal', 'newly_retired'):
+            assert get(field, tick, coord='present') is True
+            assert get(field, tick, coord='dtype') == 'torch.bool'
+            assert get(field, tick, coord='shape') == [2]
+        for agent in (0, 1):
+            done = step >= ends[agent]
+            newly = step == ends[agent]
+            retired = recipe == 'healthy-retirement' and step == 5
+            assert get('dones', tick, agent) is done
+            assert get('active_on_entry', tick, agent) is active[agent]
+            assert get('newly_terminal', tick, agent) is newly
+            assert get('newly_retired', tick, agent) is retired
+            assert get('ledger_active', tick, agent) is active[agent]
+            assert get('ledger_terminal', tick, agent) is newly
+            for field, count in (('step_counts', counts[agent]), ('ledger_counts', counts[agent]), ('ledger_terminal_counts', int(done))):
+                assert type(get(field, tick, agent)) is int and get(field, tick, agent) == count
+            eligible = get('eligible_observation', tick, agent)
+            assert (eligible is not None) is active[agent]
+            if not active[agent]:
+                for field in ('rewards', 'intrinsic_weight', 'extrinsic', 'intrinsic', 'shaping'):
+                    assert get(field, tick, agent) == 0.0
+            total = get('rewards', tick, agent)
+            components = f32(f32(get('extrinsic', tick, agent) + get('intrinsic', tick, agent)) + get('shaping', tick, agent))
+            assert math.isclose(total, components, rel_tol=1e-5, abs_tol=1e-6)
+            if recipe in POPULATION:
+                assert get('admitted_observation', tick, agent) == eligible
+                assert get('population_counts', tick, agent) == counts[agent]
+                completed = step >= ends[agent]
+                assert get('population_completed', tick, agent) is completed
+                if completed:
+                    reason = 'retirement' if recipe == 'healthy-retirement' else 'authored_terminal'
+                    assert get('completion_reason', tick, agent) == reason
+                    assert get('completion_survival', tick, agent) == counts[agent]
+                    terminal_tick = episode * 100 + ends[agent]
+                    for suffix, field in (('observation', 'observations'), ('meters', 'meters')):
+                        assert get('completion_' + suffix, tick, agent) == get(field, terminal_tick, agent, 'sha256')
+                else:
+                    for field in ('completion_reason', 'completion_survival', 'completion_observation', 'completion_meters'):
+                        assert get(field, tick, agent) is None
+        if recipe in POPULATION:
+            assert get('replay_size', tick) == total_live
+            assert get('population_total_steps', tick) == index + 1
+            assert get('selected_q_values', tick, coord='shape')[0] == 2
+    if recipe == 'budget-six':
+        assert [get(f, 99) for f in ('runner_live_transitions', 'runner_budget_reached', 'runner_budget_shortfall', 'runner_episode_count')] == [6, True, 0, 1]
+        assert get('replay_size', 99) == 6
+        assert [get('population_counts', 99, a) for a in (0, 1)] == [2, 4]
+        assert all(get('population_completed', 99, a) is True for a in (0, 1))
+        assert [get('completion_reason', 99, a) for a in (0, 1)] == ['authored_terminal', 'budget']
+        assert [get('completion_survival', 99, a) for a in (0, 1)] == [2, 4]
+        for agent, terminal_tick in ((0, 2), (1, 4)):
+            for suffix, field in (('observation', 'observations'), ('meters', 'meters')):
+                assert get('completion_' + suffix, 99, agent) == get(field, terminal_tick, agent, 'sha256')
+    parent = strict_json((directory.parent / (recipe + '.stdout.log')).read_text())
+    assert set(parent) == {'recipe', 'revision', 'readings', 'contract', 'output'}
+    assert parent == {'recipe': recipe, 'revision': before['revision'], 'readings': len(records), 'contract': artifact['contract'], 'output': str(directory)}
+    return {'recipe': recipe, 'qualified': True, 'readings': len(records), 'actions': len(ticks), 'manifest': manifest, 'file_sha256': {p.name: sha(p.read_bytes()) for p in directory.iterdir() if p.is_file()}, 'parent_log_sha256': {suffix: sha((directory.parent / (recipe + '.' + suffix + '.log')).read_bytes()) for suffix in ('stdout', 'stderr')}}
+
+
+def main():
+    assert len(sys.argv) == 2, 'Supply a fresh external output-directory name'
+    out = QA / sys.argv[1]
+    assert out.parent == QA and not out.exists()
+    post = json.loads((QA / 'wave09-full-r2/final-postflight.json').read_text())
+    assert post['full_exit_code'] == 0 and git('rev-parse', 'HEAD^{tree}') == post['candidate_tree']
+    assert not git('status', '--porcelain', '--untracked-files=all', '--', 'src', 'configs', 'scripts', 'tests', 'pyproject.toml', 'uv.lock')
+    m = json.loads((WORK / 'wave09/r5-candidate.json').read_text())
+    for path, digest in m['source_files'].items():
+        assert sha((ROOT / path).read_bytes()) == digest, path
+    revision = git('rev-parse', 'HEAD')
+    old_main = 'worktree ' + str(ROOT) + '\nHEAD ' + m['base_commit'] + '\n'
+    assert m['worktree_registry'].count(old_main) == 1
+    registry = subprocess.check_output(['git', 'worktree', 'list', '--porcelain'], cwd=ROOT, text=True)
+    assert registry == m['worktree_registry'].replace(old_main, 'worktree ' + str(ROOT) + '\nHEAD ' + revision + '\n', 1)
+    before = {'revision': git('rev-parse', 'HEAD'), 'tree': git('rev-parse', 'HEAD^{tree}'), 'source_sha256': sha(canonical(source_inventory())), 'instrument_sha256': sha(SCRIPT.read_bytes()), 'authored': authored_inventory()}
+    before['worktree_registry'] = registry
+    before['resources'] = {'cpu_max': Path('/sys/fs/cgroup/cpu.max').read_text().strip(), 'memory_max': Path('/sys/fs/cgroup/memory.max').read_text().strip(), 'memory_current': Path('/sys/fs/cgroup/memory.current').read_text().strip(), 'affinity': len(os.sched_getaffinity(0)), 'workers': 4}
+    assert before['resources']['cpu_max'] == '400000 100000' and before['resources']['affinity'] >= 4
+    assert before['instrument_sha256'] == '19e0b83130f2467a2bfd890dc79e95de6d7694e79f7fa996fa16c66b43e62eb7'
+    out.mkdir()
+    (out / 'preflight.json').write_text(json.dumps(before, indent=2) + '\n')
+    env = dict(os.environ, TMPDIR=str(QA / 'scratch/tmp-wave08-r3'), PYTHONDONTWRITEBYTECODE='1', OMP_NUM_THREADS='1', MKL_NUM_THREADS='1', OPENBLAS_NUM_THREADS='1', CUDA_VISIBLE_DEVICES='')
+    (out / 'environment.json').write_text(json.dumps({key: env[key] for key in ('TMPDIR', 'PYTHONDONTWRITEBYTECODE', 'OMP_NUM_THREADS', 'MKL_NUM_THREADS', 'OPENBLAS_NUM_THREADS', 'CUDA_VISIBLE_DEVICES')}, indent=2) + '\n')
+
+    def run(recipe):
+        directory = out / recipe
+        command = [str(ROOT / '.venv/bin/python'), '-P', str(SCRIPT), 'capture', '--source-root', str(ROOT), '--config-root', str(CONFIG), '--recipe', recipe, '--output', str(directory)]
+        start = time.monotonic()
+        with (out / (recipe + '.stdout.log')).open('w') as stdout, (out / (recipe + '.stderr.log')).open('w') as stderr:
+            process = subprocess.run(command, cwd=ROOT, env=env, stdout=stdout, stderr=stderr)
+        result = {'recipe': recipe, 'parent_command': command, 'exit_code': process.returncode, 'seconds': time.monotonic() - start}
+        try:
+            assert process.returncode == 0, 'parent capture failed'
+            result['validation'] = validate(recipe, directory, before)
+        except Exception as error:
+            result['validation_error'] = repr(error)
+        (out / (recipe + '-result.json')).write_text(json.dumps(result, indent=2) + '\n')
+        print(json.dumps({k: result[k] for k in ('recipe', 'exit_code', 'seconds')} | {'independent_validation': 'PASS' if 'validation' in result else result['validation_error']}), flush=True)
+        return result
+
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        results = list(pool.map(run, RECIPES))
+    assert git('rev-parse', 'HEAD') == before['revision'] and git('rev-parse', 'HEAD^{tree}') == before['tree']
+    assert sha(canonical(source_inventory())) == before['source_sha256'] and sha(SCRIPT.read_bytes()) == before['instrument_sha256']
+    assert authored_inventory() == before['authored']
+    assert not git('status', '--porcelain', '--untracked-files=all', '--', 'src', 'configs', 'scripts', 'tests', 'pyproject.toml', 'uv.lock')
+    assert subprocess.check_output(['git', 'worktree', 'list', '--porcelain'], cwd=ROOT, text=True) == registry
+    report = {'source': before, 'results': results, 'source_config_instrument_worktree_postflight': 'PASS', 'all_six_qualified': all('validation' in x for x in results), 'scope': 'Current-source lifecycle/native captures only; no learning-quality, complete native10/7 resume, CUDA or whole-BAC qualification.'}
+    (out / 'postflight.json').write_text(json.dumps(report, indent=2) + '\n')
+    assert report['all_six_qualified'], 'Inspect original captures and independent validation errors; no qualification claim'
+
+
+if __name__ == '__main__':
+    main()

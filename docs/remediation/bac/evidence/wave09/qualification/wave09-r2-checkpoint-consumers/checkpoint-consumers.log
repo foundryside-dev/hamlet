@@ -1,0 +1,174 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [49 items]
+
+....................F.......F....................                        [100%]
+=================================== FAILURES ===================================
+____ TestCheckpointRoundTrip.test_checkpoint_roundtrip_training_resumption _____
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+self = <tests.test_townlet.integration.test_checkpointing.TestCheckpointRoundTrip object at 0x7f2ef3b6e710>
+cpu_device = device(type='cpu')
+test_config_pack_path = PosixPath('/workspace/hamlet/configs/test/model_config')
+cpu_env_factory = <function cpu_env_factory.<locals>._build_env at 0x7f2ee817a840>
+minimal_brain_config = BrainConfig(version='1.0', description='Minimal brain config for testing', architecture=ArchitectureConfig(type='feedf...ReplayConfig(capacity=10000, prioritized=False, priority_alpha=None, priority_beta=None, priority_beta_annealing=None))
+
+    def test_checkpoint_roundtrip_training_resumption(self, cpu_device, test_config_pack_path, cpu_env_factory, minimal_brain_config):
+        """Training should produce identical results when resumed from checkpoint."""
+        # Create environment and components
+        env = cpu_env_factory(config_dir=test_config_pack_path, num_agents=1)
+    
+        curriculum = StaticCurriculum(
+            difficulty_level=0.5,
+            active_meters=_select_active_meters(env),
+        )
+        _init_curriculum(curriculum, 1)
+    
+        exploration = EpsilonGreedyExploration(
+            epsilon=0.5,
+            epsilon_min=0.1,
+            epsilon_decay=0.99,
+        )
+    
+        pop1 = VectorizedPopulation(
+            env=env,
+            curriculum=curriculum,
+            exploration=exploration,
+            agent_ids=["agent_0"],
+            device=cpu_device,
+            obs_dim=env.observation_dim,
+            brain_config=minimal_brain_config,
+            action_dim=env.action_dim,
+            **TRAIN_KWARGS,
+        )
+    
+        # Train first population
+        pop1.reset()
+        _train_vector_ticks(pop1, env, 100)
+    
+        # Save checkpoint at step 100
+        checkpoint = pop1.get_checkpoint_state()
+    
+        # Continue training for 50 more steps
+        _train_vector_ticks(pop1, env, 50)
+    
+        # Capture state at step 150
+        weights_at_150 = {k: v.clone() for k, v in pop1.q_network.state_dict().items()}
+    
+        # Now create second population, load checkpoint at step 100
+        exploration2 = EpsilonGreedyExploration(
+            epsilon=1.0,
+            epsilon_min=0.1,
+            epsilon_decay=0.99,
+        )
+    
+        pop2 = VectorizedPopulation(
+            env=env,
+            curriculum=curriculum,
+            exploration=exploration2,
+            agent_ids=["agent_0"],
+            device=cpu_device,
+            obs_dim=env.observation_dim,
+            brain_config=minimal_brain_config,
+            action_dim=env.action_dim,
+            **TRAIN_KWARGS,
+        )
+    
+        pop2.load_checkpoint_state(checkpoint)
+        pop2.reset()
+    
+        # Train for 50 steps (should reach step 150)
+        _train_vector_ticks(pop2, env, 50)
+    
+        # Verify weights differ (training progressed)
+        # Note: We can't expect exact match due to randomness, but should be trained
+        weights_at_150_v2 = pop2.q_network.state_dict()
+    
+        # Verify networks have same architecture
+        assert set(weights_at_150.keys()) == set(weights_at_150_v2.keys()), "Network architectures should match"
+    
+        # Verify weights have changed from initial (training happened)
+        initial_weights = checkpoint["q_network"]
+        weights_changed = False
+        for key in initial_weights.keys():
+            if not torch.allclose(initial_weights[key], weights_at_150_v2[key], atol=1e-6):
+                weights_changed = True
+                break
+    
+>       assert weights_changed, "Network weights should have changed after resumed training"
+E       AssertionError: Network weights should have changed after resumed training
+E       assert False
+
+tests/test_townlet/integration/test_checkpointing.py:1135: AssertionError
+_ test_current_checkpoint_closes_pending_lanes_once_and_resumes_fresh_episode[recurrent] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-r2-checkpoint-consumers/popen-gw0/test_current_checkpoint_closes1')
+mode = 'recurrent'
+
+    @pytest.mark.parametrize("mode", ["standard", "recurrent"])
+    def test_current_checkpoint_closes_pending_lanes_once_and_resumes_fresh_episode(tmp_path: Path, mode: str) -> None:
+        from tests.test_townlet.regressions.fixtures.episode_lanes import compile_authored_environment, controlled_action_schedule
+        from tests.test_townlet.regressions.test_episode_lane_population import make_lane_population
+        from tests.test_townlet.unit.population.test_vectorized_population import _assert_recursive_state_equal
+        from townlet.training.sequential_replay_buffer import SequentialReplayBuffer
+    
+        population = make_lane_population(
+            tmp_path / "pack",
+            mode=mode,
+            num_agents=2,
+            lifespan=20,
+            batch_size=128,
+            sequence_length=1,
+            rnd_batch_size=128,
+            double_dqn=False,
+        )
+        with controlled_action_schedule(population.exploration, population.env, [("WAIT", "WAIT")]):
+            population.step_population(population.env)
+        with DemoRunner(
+            config_dir=tmp_path / "pack",
+            db_path=tmp_path / "first.db",
+            checkpoint_dir=tmp_path / "checkpoints",
+            max_episodes=1,
+            level_name=LEVEL_NAME,
+        ) as runner:
+            runner.population = population
+            runner.env = population.env
+            runner.curriculum = population.curriculum
+            runner.exploration = population.exploration
+            runner.save_checkpoint()
+            assert [item.reason for item in population.episode_completions] == ["checkpoint", "checkpoint"]
+            assert population.exploration.survival_history == [1, 1]
+            runner.save_checkpoint()
+            assert population.exploration.survival_history == [1, 1]
+            learned_state = deepcopy(population.get_checkpoint_state())
+            assert learned_state["version"] == 6
+            assert not {"episode_completed", "episode_completions", "current_obs", "rollout_hidden", "current_episodes"}.intersection(
+                learned_state
+            )
+            source_checkpoint = next(runner.checkpoint_dir.glob("checkpoint_ep*.pt"))
+            source_checkpoint_bytes = source_checkpoint.read_bytes()
+            if mode == "recurrent":
+                assert isinstance(population.replay_buffer, SequentialReplayBuffer)
+>               assert population.replay_buffer.action_dim is None and population.replay_buffer.replay_options is None
+E               assert (8 is None)
+E                +  where 8 = <townlet.training.sequential_replay_buffer.SequentialReplayBuffer object at 0x7f8fc21cdd30>.action_dim
+E                +    where <townlet.training.sequential_replay_buffer.SequentialReplayBuffer object at 0x7f8fc21cdd30> = <townlet.population.vectorized.VectorizedPopulation object at 0x7f8fc1736490>.replay_buffer
+
+tests/test_townlet/integration/test_checkpointing.py:163: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/integration/test_checkpointing.py::TestCheckpointRoundTrip::test_checkpoint_roundtrip_training_resumption
+FAILED tests/test_townlet/integration/test_checkpointing.py::test_current_checkpoint_closes_pending_lanes_once_and_resumes_fresh_episode[recurrent]
+=================== 2 failed, 47 passed in 83.63s (0:01:23) ====================

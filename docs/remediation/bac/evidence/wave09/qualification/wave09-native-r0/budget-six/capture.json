@@ -1,0 +1,8683 @@
+{
+  "schema": "episode-lanes.capture.v1",
+  "manifest": {
+    "source_root": "/workspace/hamlet",
+    "revision": "ae0914afb3e7e1ca525e91acd49a07b3ae54c327",
+    "source_sha256": "c7b35b292cbc2bac4f7656c79123057f10e1e203a75e670a3c49e4b959013212",
+    "source_stamp": {
+      "revision": "ae0914afb3e7e1ca525e91acd49a07b3ae54c327",
+      "source_sha256": "c7b35b292cbc2bac4f7656c79123057f10e1e203a75e670a3c49e4b959013212"
+    },
+    "imported_modules": {
+      "townlet": "/workspace/hamlet/src/townlet/__init__.py",
+      "townlet.curriculum": "/workspace/hamlet/src/townlet/curriculum/__init__.py",
+      "townlet.training": "/workspace/hamlet/src/townlet/training/__init__.py",
+      "townlet.training.state": "/workspace/hamlet/src/townlet/training/state.py",
+      "townlet.curriculum.base": "/workspace/hamlet/src/townlet/curriculum/base.py",
+      "townlet.curriculum.static": "/workspace/hamlet/src/townlet/curriculum/static.py",
+      "townlet.determinism": "/workspace/hamlet/src/townlet/determinism.py",
+      "townlet.environment": "/workspace/hamlet/src/townlet/environment/__init__.py",
+      "townlet.universe.dto.action_metadata": "/workspace/hamlet/src/townlet/universe/dto/action_metadata.py",
+      "townlet.universe.dto.affordance_metadata": "/workspace/hamlet/src/townlet/universe/dto/affordance_metadata.py",
+      "townlet.universe.dto.meter_metadata": "/workspace/hamlet/src/townlet/universe/dto/meter_metadata.py",
+      "townlet.universe.dto.universe_metadata": "/workspace/hamlet/src/townlet/universe/dto/universe_metadata.py",
+      "townlet.universe.dto": "/workspace/hamlet/src/townlet/universe/dto/__init__.py",
+      "townlet.universe": "/workspace/hamlet/src/townlet/universe/__init__.py",
+      "townlet.environment.env_factory": "/workspace/hamlet/src/townlet/environment/env_factory.py",
+      "townlet.vfs.vtc_kernels": "/workspace/hamlet/src/townlet/vfs/vtc_kernels.py",
+      "townlet.vfs.access_policy": "/workspace/hamlet/src/townlet/vfs/access_policy.py",
+      "townlet.vfs.semantic_type": "/workspace/hamlet/src/townlet/vfs/semantic_type.py",
+      "townlet.vfs.schema": "/workspace/hamlet/src/townlet/vfs/schema.py",
+      "townlet.config.actions_config": "/workspace/hamlet/src/townlet/config/actions_config.py",
+      "townlet.config.base": "/workspace/hamlet/src/townlet/config/base.py",
+      "townlet.numeric": "/workspace/hamlet/src/townlet/numeric.py",
+      "townlet.config.effects_config": "/workspace/hamlet/src/townlet/config/effects_config.py",
+      "townlet.config.interaction_type": "/workspace/hamlet/src/townlet/config/interaction_type.py",
+      "townlet.config.affordances_v2_config": "/workspace/hamlet/src/townlet/config/affordances_v2_config.py",
+      "townlet.config.bars_v2_config": "/workspace/hamlet/src/townlet/config/bars_v2_config.py",
+      "townlet.config.curriculum_config": "/workspace/hamlet/src/townlet/config/curriculum_config.py",
+      "townlet.config.curriculum": "/workspace/hamlet/src/townlet/config/curriculum.py",
+      "townlet.config.environment_config": "/workspace/hamlet/src/townlet/config/environment_config.py",
+      "townlet.config.experiment_config": "/workspace/hamlet/src/townlet/config/experiment_config.py",
+      "townlet.config.stratum_config": "/workspace/hamlet/src/townlet/config/stratum_config.py",
+      "townlet.config.bac_options": "/workspace/hamlet/src/townlet/config/bac_options.py",
+      "townlet.config.training_v2_config": "/workspace/hamlet/src/townlet/config/training_v2_config.py",
+      "townlet.config": "/workspace/hamlet/src/townlet/config/__init__.py",
+      "townlet.config.items_config": "/workspace/hamlet/src/townlet/config/items_config.py",
+      "townlet.vfs.storage_dtype": "/workspace/hamlet/src/townlet/vfs/storage_dtype.py",
+      "townlet.world.expression.ast_nodes": "/workspace/hamlet/src/townlet/world/expression/ast_nodes.py",
+      "townlet.world.expression.history": "/workspace/hamlet/src/townlet/world/expression/history.py",
+      "townlet.world.expression.references": "/workspace/hamlet/src/townlet/world/expression/references.py",
+      "townlet.world.expression.context": "/workspace/hamlet/src/townlet/world/expression/context.py",
+      "townlet.world.expression.evaluator": "/workspace/hamlet/src/townlet/world/expression/evaluator.py",
+      "townlet.world.expression.parser": "/workspace/hamlet/src/townlet/world/expression/parser.py",
+      "townlet.world.expression.functions": "/workspace/hamlet/src/townlet/world/expression/functions.py",
+      "townlet.world.expression.type_checker": "/workspace/hamlet/src/townlet/world/expression/type_checker.py",
+      "townlet.world.expression": "/workspace/hamlet/src/townlet/world/expression/__init__.py",
+      "townlet.world.types.primitive": "/workspace/hamlet/src/townlet/world/types/primitive.py",
+      "townlet.world.types": "/workspace/hamlet/src/townlet/world/types/__init__.py",
+      "townlet.world": "/workspace/hamlet/src/townlet/world/__init__.py",
+      "townlet.config.variables_config": "/workspace/hamlet/src/townlet/config/variables_config.py",
+      "townlet.vfs.history": "/workspace/hamlet/src/townlet/vfs/history.py",
+      "townlet.vfs.namespace": "/workspace/hamlet/src/townlet/vfs/namespace.py",
+      "townlet.vfs.profiles": "/workspace/hamlet/src/townlet/vfs/profiles.py",
+      "townlet.vfs.transition_graph": "/workspace/hamlet/src/townlet/vfs/transition_graph.py",
+      "townlet.vfs.schema_hashes": "/workspace/hamlet/src/townlet/vfs/schema_hashes.py",
+      "townlet.vfs.registry": "/workspace/hamlet/src/townlet/vfs/registry.py",
+      "townlet.vfs.random_draws": "/workspace/hamlet/src/townlet/vfs/random_draws.py",
+      "townlet.vfs.vtc": "/workspace/hamlet/src/townlet/vfs/vtc.py",
+      "townlet.vfs": "/workspace/hamlet/src/townlet/vfs/__init__.py",
+      "townlet.environment.action_config": "/workspace/hamlet/src/townlet/environment/action_config.py",
+      "townlet.environment.action_builder": "/workspace/hamlet/src/townlet/environment/action_builder.py",
+      "townlet.environment.action_executor": "/workspace/hamlet/src/townlet/environment/action_executor.py",
+      "townlet.environment.action_labels": "/workspace/hamlet/src/townlet/environment/action_labels.py",
+      "townlet.environment.action_mask_builder": "/workspace/hamlet/src/townlet/environment/action_mask_builder.py",
+      "townlet.effects.schema": "/workspace/hamlet/src/townlet/effects/schema.py",
+      "townlet.effects.compiler": "/workspace/hamlet/src/townlet/effects/compiler.py",
+      "townlet.effects.collections": "/workspace/hamlet/src/townlet/effects/collections.py",
+      "townlet.effects.parser": "/workspace/hamlet/src/townlet/effects/parser.py",
+      "townlet.effects.catalog": "/workspace/hamlet/src/townlet/effects/catalog.py",
+      "townlet.effects.context": "/workspace/hamlet/src/townlet/effects/context.py",
+      "townlet.effects.executor": "/workspace/hamlet/src/townlet/effects/executor.py",
+      "townlet.effects.admission": "/workspace/hamlet/src/townlet/effects/admission.py",
+      "townlet.effects.manager": "/workspace/hamlet/src/townlet/effects/manager.py",
+      "townlet.effects": "/workspace/hamlet/src/townlet/effects/__init__.py",
+      "townlet.environment.null_managers": "/workspace/hamlet/src/townlet/environment/null_managers.py",
+      "townlet.environment.affordance_engine": "/workspace/hamlet/src/townlet/environment/affordance_engine.py",
+      "townlet.config.drive_as_code": "/workspace/hamlet/src/townlet/config/drive_as_code.py",
+      "townlet.environment.dac_engine": "/workspace/hamlet/src/townlet/environment/dac_engine.py",
+      "townlet.substrate.base": "/workspace/hamlet/src/townlet/substrate/base.py",
+      "townlet.substrate.aspatial": "/workspace/hamlet/src/townlet/substrate/aspatial.py",
+      "townlet.substrate.continuous": "/workspace/hamlet/src/townlet/substrate/continuous.py",
+      "townlet.substrate.continuousnd": "/workspace/hamlet/src/townlet/substrate/continuousnd.py",
+      "townlet.substrate.grid2d": "/workspace/hamlet/src/townlet/substrate/grid2d.py",
+      "townlet.substrate.grid3d": "/workspace/hamlet/src/townlet/substrate/grid3d.py",
+      "townlet.substrate.gridnd": "/workspace/hamlet/src/townlet/substrate/gridnd.py",
+      "townlet.substrate.factory": "/workspace/hamlet/src/townlet/substrate/factory.py",
+      "townlet.substrate": "/workspace/hamlet/src/townlet/substrate/__init__.py",
+      "townlet.effects.affordance_identity": "/workspace/hamlet/src/townlet/effects/affordance_identity.py",
+      "townlet.universe.error_codes": "/workspace/hamlet/src/townlet/universe/error_codes.py",
+      "townlet.universe.dto.token_spec": "/workspace/hamlet/src/townlet/universe/dto/token_spec.py",
+      "townlet.environment.token_publishers": "/workspace/hamlet/src/townlet/environment/token_publishers.py",
+      "townlet.environment.observation_encoder": "/workspace/hamlet/src/townlet/environment/observation_encoder.py",
+      "townlet.environment.reward_calculator": "/workspace/hamlet/src/townlet/environment/reward_calculator.py",
+      "townlet.items.action_handlers": "/workspace/hamlet/src/townlet/items/action_handlers.py",
+      "townlet.items.instance": "/workspace/hamlet/src/townlet/items/instance.py",
+      "townlet.items.inventory": "/workspace/hamlet/src/townlet/items/inventory.py",
+      "townlet.items.manager": "/workspace/hamlet/src/townlet/items/manager.py",
+      "townlet.items": "/workspace/hamlet/src/townlet/items/__init__.py",
+      "townlet.vfs.evaluator": "/workspace/hamlet/src/townlet/vfs/evaluator.py",
+      "townlet.vfs.transition_schedule": "/workspace/hamlet/src/townlet/vfs/transition_schedule.py",
+      "townlet.environment.vectorized_env": "/workspace/hamlet/src/townlet/environment/vectorized_env.py",
+      "townlet.exploration": "/workspace/hamlet/src/townlet/exploration/__init__.py",
+      "townlet.exploration.action_selection": "/workspace/hamlet/src/townlet/exploration/action_selection.py",
+      "townlet.exploration.base": "/workspace/hamlet/src/townlet/exploration/base.py",
+      "townlet.exploration.epsilon_greedy": "/workspace/hamlet/src/townlet/exploration/epsilon_greedy.py",
+      "townlet.population": "/workspace/hamlet/src/townlet/population/__init__.py",
+      "townlet.agent": "/workspace/hamlet/src/townlet/agent/__init__.py",
+      "townlet.config.brain_config": "/workspace/hamlet/src/townlet/config/brain_config.py",
+      "townlet.agent.loss_factory": "/workspace/hamlet/src/townlet/agent/loss_factory.py",
+      "townlet.agent.token_input": "/workspace/hamlet/src/townlet/agent/token_input.py",
+      "townlet.agent.networks": "/workspace/hamlet/src/townlet/agent/networks.py",
+      "townlet.agent.network_factory": "/workspace/hamlet/src/townlet/agent/network_factory.py",
+      "townlet.agent.optimizer_factory": "/workspace/hamlet/src/townlet/agent/optimizer_factory.py",
+      "townlet.exploration.rnd": "/workspace/hamlet/src/townlet/exploration/rnd.py",
+      "townlet.exploration.adaptive_intrinsic": "/workspace/hamlet/src/townlet/exploration/adaptive_intrinsic.py",
+      "townlet.population.base": "/workspace/hamlet/src/townlet/population/base.py",
+      "townlet.population.runtime_registry": "/workspace/hamlet/src/townlet/population/runtime_registry.py",
+      "townlet.config.exploration_policy": "/workspace/hamlet/src/townlet/config/exploration_policy.py",
+      "townlet.config.effective_run": "/workspace/hamlet/src/townlet/config/effective_run.py",
+      "townlet.config.presentation_config": "/workspace/hamlet/src/townlet/config/presentation_config.py",
+      "townlet.universe.optimization": "/workspace/hamlet/src/townlet/universe/optimization.py",
+      "townlet.universe.token_hashes": "/workspace/hamlet/src/townlet/universe/token_hashes.py",
+      "townlet.universe.compiled": "/workspace/hamlet/src/townlet/universe/compiled.py",
+      "townlet.training.checkpoint_utils": "/workspace/hamlet/src/townlet/training/checkpoint_utils.py",
+      "townlet.training.episode": "/workspace/hamlet/src/townlet/training/episode.py",
+      "townlet.training.replay_contract": "/workspace/hamlet/src/townlet/training/replay_contract.py",
+      "townlet.training.historical_checkpoint": "/workspace/hamlet/src/townlet/training/historical_checkpoint.py",
+      "townlet.training.per_sampling": "/workspace/hamlet/src/townlet/training/per_sampling.py",
+      "townlet.training.prioritized_replay_buffer": "/workspace/hamlet/src/townlet/training/prioritized_replay_buffer.py",
+      "townlet.training.q_targets": "/workspace/hamlet/src/townlet/training/q_targets.py",
+      "townlet.training.replay_buffer": "/workspace/hamlet/src/townlet/training/replay_buffer.py",
+      "townlet.training.sequential_replay_buffer": "/workspace/hamlet/src/townlet/training/sequential_replay_buffer.py",
+      "townlet.population.vectorized": "/workspace/hamlet/src/townlet/population/vectorized.py",
+      "townlet.universe.errors": "/workspace/hamlet/src/townlet/universe/errors.py",
+      "townlet.universe.source_map": "/workspace/hamlet/src/townlet/universe/source_map.py",
+      "townlet.universe.stages": "/workspace/hamlet/src/townlet/universe/stages.py",
+      "townlet.universe.declarations": "/workspace/hamlet/src/townlet/universe/declarations.py",
+      "townlet.config.transition_rules_config": "/workspace/hamlet/src/townlet/config/transition_rules_config.py",
+      "townlet.universe.raw_configs_v21": "/workspace/hamlet/src/townlet/universe/raw_configs_v21.py",
+      "townlet.universe.compilers": "/workspace/hamlet/src/townlet/universe/compilers/__init__.py",
+      "townlet.universe.compilers.actions": "/workspace/hamlet/src/townlet/universe/compilers/actions.py",
+      "townlet.universe.compilers.effects": "/workspace/hamlet/src/townlet/universe/compilers/effects.py",
+      "townlet.universe.compilers.metadata": "/workspace/hamlet/src/townlet/universe/compilers/metadata.py",
+      "townlet.universe.compilers.observation": "/workspace/hamlet/src/townlet/universe/compilers/observation.py",
+      "townlet.universe.compilers.optimization": "/workspace/hamlet/src/townlet/universe/compilers/optimization.py",
+      "townlet.universe.compilers.vfs": "/workspace/hamlet/src/townlet/universe/compilers/vfs.py",
+      "townlet.universe.loaders": "/workspace/hamlet/src/townlet/universe/loaders/__init__.py",
+      "townlet.universe.loaders.preflight": "/workspace/hamlet/src/townlet/universe/loaders/preflight.py",
+      "townlet.universe.pipeline": "/workspace/hamlet/src/townlet/universe/pipeline.py",
+      "townlet.universe.validation": "/workspace/hamlet/src/townlet/universe/validation/__init__.py",
+      "townlet.universe.validation.feasibility": "/workspace/hamlet/src/townlet/universe/validation/feasibility.py",
+      "townlet.universe.validation.limits": "/workspace/hamlet/src/townlet/universe/validation/limits.py",
+      "townlet.universe.symbol_table": "/workspace/hamlet/src/townlet/universe/symbol_table.py",
+      "townlet.universe.validation.references": "/workspace/hamlet/src/townlet/universe/validation/references.py",
+      "townlet.environment.substrate_action_validator": "/workspace/hamlet/src/townlet/environment/substrate_action_validator.py",
+      "townlet.universe.validation.semantics": "/workspace/hamlet/src/townlet/universe/validation/semantics.py",
+      "townlet.universe.compiler": "/workspace/hamlet/src/townlet/universe/compiler.py",
+      "townlet.universe.validation.static_access": "/workspace/hamlet/src/townlet/universe/validation/static_access.py",
+      "townlet.effects.scheduler": "/workspace/hamlet/src/townlet/effects/scheduler.py",
+      "townlet.demo": "/workspace/hamlet/src/townlet/demo/__init__.py",
+      "townlet.config.resolved_launch": "/workspace/hamlet/src/townlet/config/resolved_launch.py",
+      "townlet.curriculum.adversarial": "/workspace/hamlet/src/townlet/curriculum/adversarial.py",
+      "townlet.curriculum.factory": "/workspace/hamlet/src/townlet/curriculum/factory.py",
+      "townlet.recording": "/workspace/hamlet/src/townlet/recording/__init__.py",
+      "townlet.recording.data_structures": "/workspace/hamlet/src/townlet/recording/data_structures.py",
+      "townlet.recording.receipts": "/workspace/hamlet/src/townlet/recording/receipts.py",
+      "townlet.demo.database": "/workspace/hamlet/src/townlet/demo/database.py",
+      "townlet.training.tensorboard_logger": "/workspace/hamlet/src/townlet/training/tensorboard_logger.py",
+      "townlet.demo.runner": "/workspace/hamlet/src/townlet/demo/runner.py"
+    },
+    "config_inventory": {
+      "authored": {
+        "actions.yaml": "cecb2673d71738c76486f849d4a93f8747cbb958c96b9f07dc0eccd190a4a484",
+        "brain.yaml": "45fd26add306fc29a9ea0b913172e0ed636cf14ad5117bf44b03226011ff22a5",
+        "effects.yaml": "dba0d3dec16ffe31f7e4ecbef0de7f0297d06aa5f4afd05fe4e2f9d1c555c688",
+        "environment.yaml": "dbeab4158d34406cb59da7aeb2b68cd53bce8dea0691cc4c22989bd6947447a4",
+        "experiment.yaml": "5ac85a4c4b82b3c70e0302e34dcbf64baa3e861127aa5425c8f98468cd848105",
+        "items.yaml": "b7e8de3f8a153e7293b713ba81be3a318724d3688ac67df29bd622a302aadd26",
+        "levels/L0_test/affordances.yaml": "d937ef40e4fa92ec89539386b9249944203ca82ba883892ef05695afc8f4e07c",
+        "levels/L0_test/bars.yaml": "c55c7736c0c6ae948cdb8d597a1ea13c8087f19a04b91e341ff8c4a5d10cdc57",
+        "levels/L0_test/curriculum.yaml": "e24d6f042e667615359ff43b8c6e2c84982695bfcd6c8ed5795f48a2eb3201e8",
+        "levels/L0_test/drive.yaml": "1dfaca1e050a33fc1776b065481ce77f77789ea9b450a35ee3cf86171bb048e8",
+        "levels/L0_test/training.yaml": "65e26fec1cb0697806c2767274becbb9cc7af54f3bea0e67ccb0e91934e47674",
+        "stratum.yaml": "9848f77098f4faa2d934dc8284ae37e47b33d34e6fc909187b2fb87b5c7022a8",
+        "variables.yaml": "753a2b8a27eb7a9dc582f1f6c97617302d6c4c20e695f3cfd299f819ddd1cb31"
+      },
+      "effective": {
+        "actions.yaml": "cecb2673d71738c76486f849d4a93f8747cbb958c96b9f07dc0eccd190a4a484",
+        "brain.yaml": "45fd26add306fc29a9ea0b913172e0ed636cf14ad5117bf44b03226011ff22a5",
+        "effects.yaml": "dba0d3dec16ffe31f7e4ecbef0de7f0297d06aa5f4afd05fe4e2f9d1c555c688",
+        "environment.yaml": "dbeab4158d34406cb59da7aeb2b68cd53bce8dea0691cc4c22989bd6947447a4",
+        "experiment.yaml": "5ac85a4c4b82b3c70e0302e34dcbf64baa3e861127aa5425c8f98468cd848105",
+        "items.yaml": "b7e8de3f8a153e7293b713ba81be3a318724d3688ac67df29bd622a302aadd26",
+        "levels/L0_test/affordances.yaml": "d937ef40e4fa92ec89539386b9249944203ca82ba883892ef05695afc8f4e07c",
+        "levels/L0_test/bars.yaml": "c55c7736c0c6ae948cdb8d597a1ea13c8087f19a04b91e341ff8c4a5d10cdc57",
+        "levels/L0_test/curriculum.yaml": "e24d6f042e667615359ff43b8c6e2c84982695bfcd6c8ed5795f48a2eb3201e8",
+        "levels/L0_test/drive.yaml": "1dfaca1e050a33fc1776b065481ce77f77789ea9b450a35ee3cf86171bb048e8",
+        "levels/L0_test/training.yaml": "2f8ac1b26441d55640763e9bc6e8b876c7c5279227ae277d213212f3416fdde2",
+        "stratum.yaml": "9848f77098f4faa2d934dc8284ae37e47b33d34e6fc909187b2fb87b5c7022a8",
+        "variables.yaml": "753a2b8a27eb7a9dc582f1f6c97617302d6c4c20e695f3cfd299f819ddd1cb31"
+      }
+    },
+    "config_sha256": "eaacab25601a593845c0abd3ddf930db4ee6d2f2a0e49f4afe9fb6ba7a9d67cc",
+    "instrument_sha256": "19e0b83130f2467a2bfd890dc79e95de6d7694e79f7fa996fa16c66b43e62eb7",
+    "recipe": "budget-six",
+    "recipe_version": 1,
+    "seed": 42,
+    "device": "cpu",
+    "actions": [
+      [
+        5,
+        5
+      ],
+      [
+        7,
+        5
+      ],
+      [
+        7,
+        5
+      ],
+      [
+        7,
+        5
+      ]
+    ],
+    "action_sha256": "f103b608fe76f7c8724056389b6c8f94cbc2924a64c455a6b25b793ece2c72c3",
+    "measured_fields": [
+      "actions",
+      "active_on_entry",
+      "admitted_observation",
+      "completion_meters",
+      "completion_observation",
+      "completion_reason",
+      "completion_survival",
+      "dones",
+      "eligible_observation",
+      "extrinsic",
+      "global_tick",
+      "initial_energy",
+      "intrinsic",
+      "intrinsic_weight",
+      "ledger_active",
+      "ledger_counts",
+      "ledger_live_transitions",
+      "ledger_terminal",
+      "ledger_terminal_counts",
+      "meters",
+      "newly_retired",
+      "newly_terminal",
+      "observations",
+      "population_completed",
+      "population_counts",
+      "population_total_steps",
+      "population_training_steps",
+      "replay_size",
+      "reset_completion_reason",
+      "reset_completion_survival",
+      "reset_counts",
+      "reset_dones",
+      "reset_global_tick",
+      "reset_meters",
+      "reset_observations",
+      "reset_population_completed",
+      "reset_population_counts",
+      "rewards",
+      "runner_budget_reached",
+      "runner_budget_shortfall",
+      "runner_episode_count",
+      "runner_live_transitions",
+      "selected_q_values",
+      "shaping",
+      "step_counts",
+      "time_of_day"
+    ]
+  },
+  "readings": [
+    {
+      "key": [
+        "budget-six",
+        "reset_observations",
+        0,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_observations",
+        0,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_observations",
+        0,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2,
+        105
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_observations",
+        0,
+        0,
+        "value"
+      ],
+      "value": [
+        1.0,
+        0.1428571492433548,
+        0.7142857313156128,
+        0.0,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        0.5,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        1.0,
+        0.4285714328289032,
+        0.1428571492433548,
+        0.2857142984867096,
+        -0.5714285969734192,
+        1.0,
+        0.2857142984867096,
+        0.0,
+        0.1428571492433548,
+        -0.7142857313156128,
+        1.0,
+        0.4285714328289032,
+        0.7142857313156128,
+        0.2857142984867096,
+        0.0,
+        1.0,
+        0.2857142984867096,
+        0.4285714328289032,
+        0.1428571492433548,
+        -0.2857142984867096,
+        1.0,
+        0.7142857313156128,
+        0.1428571492433548,
+        0.5714285969734192,
+        -0.5714285969734192,
+        1.0,
+        0.2857142984867096,
+        0.1428571492433548,
+        0.1428571492433548,
+        -0.5714285969734192,
+        1.0,
+        0.1428571492433548,
+        0.0,
+        0.0,
+        -0.7142857313156128,
+        1.0,
+        1.0,
+        1.0,
+        0.8571428656578064,
+        0.2857142984867096,
+        1.0,
+        0.5714285969734192,
+        0.0,
+        0.4285714328289032,
+        -0.7142857313156128,
+        1.0,
+        0.7142857313156128,
+        0.5714285969734192,
+        0.5714285969734192,
+        -0.1428571492433548,
+        1.0,
+        0.8571428656578064,
+        1.0,
+        0.7142857313156128,
+        0.2857142984867096,
+        1.0,
+        0.7142857313156128,
+        1.0,
+        0.5714285969734192,
+        0.2857142984867096,
+        1.0,
+        0.1428571492433548,
+        0.1428571492433548,
+        0.0,
+        -0.5714285969734192,
+        1.0,
+        0.1428571492433548,
+        0.4285714328289032,
+        0.0,
+        -0.2857142984867096,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_observations",
+        0,
+        0,
+        "sha256"
+      ],
+      "value": "24faaea3a5b9bd81fa1d082879643dd84bedf99a03d1ec2a41c37b34bb78a97b"
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_observations",
+        0,
+        1,
+        "value"
+      ],
+      "value": [
+        1.0,
+        0.5714285969734192,
+        0.1428571492433548,
+        0.0,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        0.5,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        1.0,
+        0.4285714328289032,
+        0.1428571492433548,
+        -0.1428571492433548,
+        0.0,
+        1.0,
+        0.2857142984867096,
+        0.0,
+        -0.2857142984867096,
+        -0.1428571492433548,
+        1.0,
+        0.4285714328289032,
+        0.7142857313156128,
+        -0.1428571492433548,
+        0.5714285969734192,
+        1.0,
+        0.2857142984867096,
+        0.4285714328289032,
+        -0.2857142984867096,
+        0.2857142984867096,
+        1.0,
+        0.7142857313156128,
+        0.1428571492433548,
+        0.1428571492433548,
+        0.0,
+        1.0,
+        0.2857142984867096,
+        0.1428571492433548,
+        -0.2857142984867096,
+        0.0,
+        1.0,
+        0.1428571492433548,
+        0.0,
+        -0.4285714328289032,
+        -0.1428571492433548,
+        1.0,
+        1.0,
+        1.0,
+        0.4285714328289032,
+        0.8571428656578064,
+        1.0,
+        0.5714285969734192,
+        0.0,
+        0.0,
+        -0.1428571492433548,
+        1.0,
+        0.7142857313156128,
+        0.5714285969734192,
+        0.1428571492433548,
+        0.4285714328289032,
+        1.0,
+        0.8571428656578064,
+        1.0,
+        0.2857142984867096,
+        0.8571428656578064,
+        1.0,
+        0.7142857313156128,
+        1.0,
+        0.1428571492433548,
+        0.8571428656578064,
+        1.0,
+        0.1428571492433548,
+        0.1428571492433548,
+        -0.4285714328289032,
+        0.0,
+        1.0,
+        0.1428571492433548,
+        0.4285714328289032,
+        -0.4285714328289032,
+        0.2857142984867096,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_observations",
+        0,
+        1,
+        "sha256"
+      ],
+      "value": "205f63468a844f0c5e8838cbee91270b5dde67494718920c34ed4f755d6d725b"
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_meters",
+        0,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_meters",
+        0,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_meters",
+        0,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2,
+        8
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_meters",
+        0,
+        0,
+        "value"
+      ],
+      "value": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        0.0,
+        0.5,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_meters",
+        0,
+        0,
+        "sha256"
+      ],
+      "value": "5c6550d00599bed01ed45a59458ad2158888833d500891c350bf36631795a89c"
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_meters",
+        0,
+        1,
+        "value"
+      ],
+      "value": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        0.0,
+        0.5,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_meters",
+        0,
+        1,
+        "sha256"
+      ],
+      "value": "5c6550d00599bed01ed45a59458ad2158888833d500891c350bf36631795a89c"
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_dones",
+        0,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_dones",
+        0,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.bool"
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_dones",
+        0,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_dones",
+        0,
+        0,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_dones",
+        0,
+        0,
+        "sha256"
+      ],
+      "value": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_dones",
+        0,
+        1,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_dones",
+        0,
+        1,
+        "sha256"
+      ],
+      "value": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_counts",
+        0,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_counts",
+        0,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.int64"
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_counts",
+        0,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_counts",
+        0,
+        0,
+        "value"
+      ],
+      "value": 0
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_counts",
+        0,
+        0,
+        "sha256"
+      ],
+      "value": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc"
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_counts",
+        0,
+        1,
+        "value"
+      ],
+      "value": 0
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_counts",
+        0,
+        1,
+        "sha256"
+      ],
+      "value": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc"
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_global_tick",
+        0,
+        -1,
+        "value"
+      ],
+      "value": 0
+    },
+    {
+      "key": [
+        "budget-six",
+        "initial_energy",
+        0,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "initial_energy",
+        0,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "initial_energy",
+        0,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "initial_energy",
+        0,
+        0,
+        "value"
+      ],
+      "value": 1.0
+    },
+    {
+      "key": [
+        "budget-six",
+        "initial_energy",
+        0,
+        1,
+        "value"
+      ],
+      "value": 1.0
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_population_counts",
+        0,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_population_counts",
+        0,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.int64"
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_population_counts",
+        0,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_population_counts",
+        0,
+        0,
+        "value"
+      ],
+      "value": 0
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_population_counts",
+        0,
+        1,
+        "value"
+      ],
+      "value": 0
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_population_completed",
+        0,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_population_completed",
+        0,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.bool"
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_population_completed",
+        0,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_population_completed",
+        0,
+        0,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_population_completed",
+        0,
+        1,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_completion_reason",
+        0,
+        0,
+        "value"
+      ],
+      "value": null
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_completion_survival",
+        0,
+        0,
+        "value"
+      ],
+      "value": null
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_completion_reason",
+        0,
+        1,
+        "value"
+      ],
+      "value": null
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_completion_survival",
+        0,
+        1,
+        "value"
+      ],
+      "value": null
+    },
+    {
+      "key": [
+        "budget-six",
+        "selected_q_values",
+        1,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "selected_q_values",
+        1,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "selected_q_values",
+        1,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2,
+        8
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "selected_q_values",
+        1,
+        0,
+        "value"
+      ],
+      "value": [
+        0.004454135894775391,
+        0.02745896764099598,
+        0.023995142430067062,
+        -0.012219328433275223,
+        0.06700840592384338,
+        0.0010713860392570496,
+        0.02803424745798111,
+        0.176605224609375
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "selected_q_values",
+        1,
+        0,
+        "sha256"
+      ],
+      "value": "beece676c7d3d1b10476e8f7120ee5fd056bbbdf67a62b3791d4f0bf52c50bd3"
+    },
+    {
+      "key": [
+        "budget-six",
+        "selected_q_values",
+        1,
+        1,
+        "value"
+      ],
+      "value": [
+        0.0528247244656086,
+        0.05708404630422592,
+        0.0018869377672672272,
+        0.024822205305099487,
+        0.010009895078837872,
+        0.033356405794620514,
+        0.06922359764575958,
+        0.17346367239952087
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "selected_q_values",
+        1,
+        1,
+        "sha256"
+      ],
+      "value": "dbc927521c7513b6302126a3a8296b46c26fe35fb28dcdba7a97c77ba94df4dc"
+    },
+    {
+      "key": [
+        "budget-six",
+        "actions",
+        1,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "actions",
+        1,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.int64"
+    },
+    {
+      "key": [
+        "budget-six",
+        "actions",
+        1,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "actions",
+        1,
+        0,
+        "value"
+      ],
+      "value": 5
+    },
+    {
+      "key": [
+        "budget-six",
+        "actions",
+        1,
+        0,
+        "sha256"
+      ],
+      "value": "f13ee6ed54ea2aae9fc49a9faeb5da6e8ddef0e12ed5d30d35a624ae813e0485"
+    },
+    {
+      "key": [
+        "budget-six",
+        "actions",
+        1,
+        1,
+        "value"
+      ],
+      "value": 5
+    },
+    {
+      "key": [
+        "budget-six",
+        "actions",
+        1,
+        1,
+        "sha256"
+      ],
+      "value": "f13ee6ed54ea2aae9fc49a9faeb5da6e8ddef0e12ed5d30d35a624ae813e0485"
+    },
+    {
+      "key": [
+        "budget-six",
+        "observations",
+        1,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "observations",
+        1,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "observations",
+        1,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2,
+        105
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "observations",
+        1,
+        0,
+        "value"
+      ],
+      "value": [
+        1.0,
+        0.1428571492433548,
+        0.7142857313156128,
+        0.0,
+        0.0,
+        1.0,
+        0.9900000095367432,
+        0.0,
+        1.0,
+        0.9950000047683716,
+        0.0,
+        1.0,
+        0.9919999837875366,
+        0.0,
+        1.0,
+        0.996999979019165,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        0.49799999594688416,
+        0.0,
+        1.0,
+        0.9959999918937683,
+        0.0,
+        1.0,
+        0.9940000176429749,
+        0.0,
+        1.0,
+        0.4285714328289032,
+        0.1428571492433548,
+        0.2857142984867096,
+        -0.5714285969734192,
+        1.0,
+        0.2857142984867096,
+        0.0,
+        0.1428571492433548,
+        -0.7142857313156128,
+        1.0,
+        0.4285714328289032,
+        0.7142857313156128,
+        0.2857142984867096,
+        0.0,
+        1.0,
+        0.2857142984867096,
+        0.4285714328289032,
+        0.1428571492433548,
+        -0.2857142984867096,
+        1.0,
+        0.7142857313156128,
+        0.1428571492433548,
+        0.5714285969734192,
+        -0.5714285969734192,
+        1.0,
+        0.2857142984867096,
+        0.1428571492433548,
+        0.1428571492433548,
+        -0.5714285969734192,
+        1.0,
+        0.1428571492433548,
+        0.0,
+        0.0,
+        -0.7142857313156128,
+        1.0,
+        1.0,
+        1.0,
+        0.8571428656578064,
+        0.2857142984867096,
+        1.0,
+        0.5714285969734192,
+        0.0,
+        0.4285714328289032,
+        -0.7142857313156128,
+        1.0,
+        0.7142857313156128,
+        0.5714285969734192,
+        0.5714285969734192,
+        -0.1428571492433548,
+        1.0,
+        0.8571428656578064,
+        1.0,
+        0.7142857313156128,
+        0.2857142984867096,
+        1.0,
+        0.7142857313156128,
+        1.0,
+        0.5714285969734192,
+        0.2857142984867096,
+        1.0,
+        0.1428571492433548,
+        0.1428571492433548,
+        0.0,
+        -0.5714285969734192,
+        1.0,
+        0.1428571492433548,
+        0.4285714328289032,
+        0.0,
+        -0.2857142984867096,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "observations",
+        1,
+        0,
+        "sha256"
+      ],
+      "value": "f7d4657dd8fdd59f24acbc577c80ad908d13f114084b07db5b91f15cd69e412e"
+    },
+    {
+      "key": [
+        "budget-six",
+        "observations",
+        1,
+        1,
+        "value"
+      ],
+      "value": [
+        1.0,
+        0.5714285969734192,
+        0.1428571492433548,
+        0.0,
+        0.0,
+        1.0,
+        0.9900000095367432,
+        0.0,
+        1.0,
+        0.9950000047683716,
+        0.0,
+        1.0,
+        0.9919999837875366,
+        0.0,
+        1.0,
+        0.996999979019165,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        0.49799999594688416,
+        0.0,
+        1.0,
+        0.9959999918937683,
+        0.0,
+        1.0,
+        0.9940000176429749,
+        0.0,
+        1.0,
+        0.4285714328289032,
+        0.1428571492433548,
+        -0.1428571492433548,
+        0.0,
+        1.0,
+        0.2857142984867096,
+        0.0,
+        -0.2857142984867096,
+        -0.1428571492433548,
+        1.0,
+        0.4285714328289032,
+        0.7142857313156128,
+        -0.1428571492433548,
+        0.5714285969734192,
+        1.0,
+        0.2857142984867096,
+        0.4285714328289032,
+        -0.2857142984867096,
+        0.2857142984867096,
+        1.0,
+        0.7142857313156128,
+        0.1428571492433548,
+        0.1428571492433548,
+        0.0,
+        1.0,
+        0.2857142984867096,
+        0.1428571492433548,
+        -0.2857142984867096,
+        0.0,
+        1.0,
+        0.1428571492433548,
+        0.0,
+        -0.4285714328289032,
+        -0.1428571492433548,
+        1.0,
+        1.0,
+        1.0,
+        0.4285714328289032,
+        0.8571428656578064,
+        1.0,
+        0.5714285969734192,
+        0.0,
+        0.0,
+        -0.1428571492433548,
+        1.0,
+        0.7142857313156128,
+        0.5714285969734192,
+        0.1428571492433548,
+        0.4285714328289032,
+        1.0,
+        0.8571428656578064,
+        1.0,
+        0.2857142984867096,
+        0.8571428656578064,
+        1.0,
+        0.7142857313156128,
+        1.0,
+        0.1428571492433548,
+        0.8571428656578064,
+        1.0,
+        0.1428571492433548,
+        0.1428571492433548,
+        -0.4285714328289032,
+        0.0,
+        1.0,
+        0.1428571492433548,
+        0.4285714328289032,
+        -0.4285714328289032,
+        0.2857142984867096,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "observations",
+        1,
+        1,
+        "sha256"
+      ],
+      "value": "0c5a3d7efb3495ce6993aa303631f40fb0e993611d0a15d83c75fb7e3a34bf0d"
+    },
+    {
+      "key": [
+        "budget-six",
+        "meters",
+        1,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "meters",
+        1,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "meters",
+        1,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2,
+        8
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "meters",
+        1,
+        0,
+        "value"
+      ],
+      "value": [
+        0.9900000095367432,
+        0.9950000047683716,
+        0.9919999837875366,
+        0.996999979019165,
+        0.0,
+        0.49799999594688416,
+        0.9959999918937683,
+        0.9940000176429749
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "meters",
+        1,
+        0,
+        "sha256"
+      ],
+      "value": "46207ccb4cdf458e45005a8adf6c2a882ec6280595f70d809392c3a3ece8a3ff"
+    },
+    {
+      "key": [
+        "budget-six",
+        "meters",
+        1,
+        1,
+        "value"
+      ],
+      "value": [
+        0.9900000095367432,
+        0.9950000047683716,
+        0.9919999837875366,
+        0.996999979019165,
+        0.0,
+        0.49799999594688416,
+        0.9959999918937683,
+        0.9940000176429749
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "meters",
+        1,
+        1,
+        "sha256"
+      ],
+      "value": "46207ccb4cdf458e45005a8adf6c2a882ec6280595f70d809392c3a3ece8a3ff"
+    },
+    {
+      "key": [
+        "budget-six",
+        "dones",
+        1,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "dones",
+        1,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.bool"
+    },
+    {
+      "key": [
+        "budget-six",
+        "dones",
+        1,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "dones",
+        1,
+        0,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "dones",
+        1,
+        0,
+        "sha256"
+      ],
+      "value": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+    },
+    {
+      "key": [
+        "budget-six",
+        "dones",
+        1,
+        1,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "dones",
+        1,
+        1,
+        "sha256"
+      ],
+      "value": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+    },
+    {
+      "key": [
+        "budget-six",
+        "rewards",
+        1,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "rewards",
+        1,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "rewards",
+        1,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "rewards",
+        1,
+        0,
+        "value"
+      ],
+      "value": 1.0035557746887207
+    },
+    {
+      "key": [
+        "budget-six",
+        "rewards",
+        1,
+        0,
+        "sha256"
+      ],
+      "value": "07e4996f38f0c6f187ac03cae7e2a99e0362dec7ce816917be902022d6e92a72"
+    },
+    {
+      "key": [
+        "budget-six",
+        "rewards",
+        1,
+        1,
+        "value"
+      ],
+      "value": 1.0105000734329224
+    },
+    {
+      "key": [
+        "budget-six",
+        "rewards",
+        1,
+        1,
+        "sha256"
+      ],
+      "value": "cb9f02868c9d837cce474a34c6d5fd78ff379f2f58cdc431d749bdf0d4d0a159"
+    },
+    {
+      "key": [
+        "budget-six",
+        "step_counts",
+        1,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "step_counts",
+        1,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.int64"
+    },
+    {
+      "key": [
+        "budget-six",
+        "step_counts",
+        1,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "step_counts",
+        1,
+        0,
+        "value"
+      ],
+      "value": 1
+    },
+    {
+      "key": [
+        "budget-six",
+        "step_counts",
+        1,
+        1,
+        "value"
+      ],
+      "value": 1
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_active",
+        1,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_active",
+        1,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.bool"
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_active",
+        1,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_active",
+        1,
+        0,
+        "value"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_active",
+        1,
+        1,
+        "value"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal",
+        1,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal",
+        1,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.bool"
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal",
+        1,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal",
+        1,
+        0,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal",
+        1,
+        1,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_counts",
+        1,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_counts",
+        1,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.int64"
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_counts",
+        1,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_counts",
+        1,
+        0,
+        "value"
+      ],
+      "value": 1
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_counts",
+        1,
+        1,
+        "value"
+      ],
+      "value": 1
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal_counts",
+        1,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal_counts",
+        1,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.int64"
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal_counts",
+        1,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal_counts",
+        1,
+        0,
+        "value"
+      ],
+      "value": 0
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal_counts",
+        1,
+        1,
+        "value"
+      ],
+      "value": 0
+    },
+    {
+      "key": [
+        "budget-six",
+        "active_on_entry",
+        1,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "active_on_entry",
+        1,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.bool"
+    },
+    {
+      "key": [
+        "budget-six",
+        "active_on_entry",
+        1,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "active_on_entry",
+        1,
+        0,
+        "value"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "active_on_entry",
+        1,
+        1,
+        "value"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_terminal",
+        1,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_terminal",
+        1,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.bool"
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_terminal",
+        1,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_terminal",
+        1,
+        0,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_terminal",
+        1,
+        1,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_retired",
+        1,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_retired",
+        1,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.bool"
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_retired",
+        1,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_retired",
+        1,
+        0,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_retired",
+        1,
+        1,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic_weight",
+        1,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic_weight",
+        1,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic_weight",
+        1,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic_weight",
+        1,
+        0,
+        "value"
+      ],
+      "value": 1.0
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic_weight",
+        1,
+        0,
+        "sha256"
+      ],
+      "value": "e00e5eb9444182f352323374ef4e08ebcb784725fdd4fd612d7730540b3e0c8c"
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic_weight",
+        1,
+        1,
+        "value"
+      ],
+      "value": 1.0
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic_weight",
+        1,
+        1,
+        "sha256"
+      ],
+      "value": "e00e5eb9444182f352323374ef4e08ebcb784725fdd4fd612d7730540b3e0c8c"
+    },
+    {
+      "key": [
+        "budget-six",
+        "extrinsic",
+        1,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "extrinsic",
+        1,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "extrinsic",
+        1,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "extrinsic",
+        1,
+        0,
+        "value"
+      ],
+      "value": 1.002500057220459
+    },
+    {
+      "key": [
+        "budget-six",
+        "extrinsic",
+        1,
+        0,
+        "sha256"
+      ],
+      "value": "2ed2038c6a6950d1c4c8d68e99438dd1cf37802a8ff434a080adfb0d251408cb"
+    },
+    {
+      "key": [
+        "budget-six",
+        "extrinsic",
+        1,
+        1,
+        "value"
+      ],
+      "value": 1.002500057220459
+    },
+    {
+      "key": [
+        "budget-six",
+        "extrinsic",
+        1,
+        1,
+        "sha256"
+      ],
+      "value": "2ed2038c6a6950d1c4c8d68e99438dd1cf37802a8ff434a080adfb0d251408cb"
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic",
+        1,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic",
+        1,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic",
+        1,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic",
+        1,
+        0,
+        "value"
+      ],
+      "value": 0.0
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic",
+        1,
+        0,
+        "sha256"
+      ],
+      "value": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic",
+        1,
+        1,
+        "value"
+      ],
+      "value": 0.0
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic",
+        1,
+        1,
+        "sha256"
+      ],
+      "value": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+    },
+    {
+      "key": [
+        "budget-six",
+        "shaping",
+        1,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "shaping",
+        1,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "shaping",
+        1,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "shaping",
+        1,
+        0,
+        "value"
+      ],
+      "value": 0.0010557281784713268
+    },
+    {
+      "key": [
+        "budget-six",
+        "shaping",
+        1,
+        0,
+        "sha256"
+      ],
+      "value": "a542d8c2fee221035de5ebb18b71fcc5c1b67e0aa57d198d9127f37118b271de"
+    },
+    {
+      "key": [
+        "budget-six",
+        "shaping",
+        1,
+        1,
+        "value"
+      ],
+      "value": 0.00800000037997961
+    },
+    {
+      "key": [
+        "budget-six",
+        "shaping",
+        1,
+        1,
+        "sha256"
+      ],
+      "value": "41a6e3eadfed887c86aeb4d9dbb14b193416ddbaab5b1766edf43a64f0667383"
+    },
+    {
+      "key": [
+        "budget-six",
+        "eligible_observation",
+        1,
+        0,
+        "value"
+      ],
+      "value": "24faaea3a5b9bd81fa1d082879643dd84bedf99a03d1ec2a41c37b34bb78a97b"
+    },
+    {
+      "key": [
+        "budget-six",
+        "eligible_observation",
+        1,
+        1,
+        "value"
+      ],
+      "value": "205f63468a844f0c5e8838cbee91270b5dde67494718920c34ed4f755d6d725b"
+    },
+    {
+      "key": [
+        "budget-six",
+        "global_tick",
+        1,
+        -1,
+        "value"
+      ],
+      "value": 1
+    },
+    {
+      "key": [
+        "budget-six",
+        "time_of_day",
+        1,
+        -1,
+        "value"
+      ],
+      "value": 0
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_live_transitions",
+        1,
+        -1,
+        "value"
+      ],
+      "value": 2
+    },
+    {
+      "key": [
+        "budget-six",
+        "admitted_observation",
+        1,
+        0,
+        "value"
+      ],
+      "value": "24faaea3a5b9bd81fa1d082879643dd84bedf99a03d1ec2a41c37b34bb78a97b"
+    },
+    {
+      "key": [
+        "budget-six",
+        "admitted_observation",
+        1,
+        1,
+        "value"
+      ],
+      "value": "205f63468a844f0c5e8838cbee91270b5dde67494718920c34ed4f755d6d725b"
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_counts",
+        1,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_counts",
+        1,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.int64"
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_counts",
+        1,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_counts",
+        1,
+        0,
+        "value"
+      ],
+      "value": 1
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_counts",
+        1,
+        1,
+        "value"
+      ],
+      "value": 1
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_completed",
+        1,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_completed",
+        1,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.bool"
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_completed",
+        1,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_completed",
+        1,
+        0,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_completed",
+        1,
+        1,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_total_steps",
+        1,
+        -1,
+        "value"
+      ],
+      "value": 1
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_training_steps",
+        1,
+        -1,
+        "value"
+      ],
+      "value": 0
+    },
+    {
+      "key": [
+        "budget-six",
+        "replay_size",
+        1,
+        -1,
+        "value"
+      ],
+      "value": 2
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_reason",
+        1,
+        0,
+        "value"
+      ],
+      "value": null
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_survival",
+        1,
+        0,
+        "value"
+      ],
+      "value": null
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_observation",
+        1,
+        0,
+        "value"
+      ],
+      "value": null
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_meters",
+        1,
+        0,
+        "value"
+      ],
+      "value": null
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_reason",
+        1,
+        1,
+        "value"
+      ],
+      "value": null
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_survival",
+        1,
+        1,
+        "value"
+      ],
+      "value": null
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_observation",
+        1,
+        1,
+        "value"
+      ],
+      "value": null
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_meters",
+        1,
+        1,
+        "value"
+      ],
+      "value": null
+    },
+    {
+      "key": [
+        "budget-six",
+        "selected_q_values",
+        2,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "selected_q_values",
+        2,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "selected_q_values",
+        2,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2,
+        8
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "selected_q_values",
+        2,
+        0,
+        "value"
+      ],
+      "value": [
+        0.004195231944322586,
+        0.02738526649773121,
+        0.024224190041422844,
+        -0.01234498992562294,
+        0.06688164174556732,
+        0.0011678114533424377,
+        0.02819294109940529,
+        0.17640534043312073
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "selected_q_values",
+        2,
+        0,
+        "sha256"
+      ],
+      "value": "23122b2511ebad3cd4bbd2894334340914f5f06adef55e5d50b8c89bc2ad91d9"
+    },
+    {
+      "key": [
+        "budget-six",
+        "selected_q_values",
+        2,
+        1,
+        "value"
+      ],
+      "value": [
+        0.05258507654070854,
+        0.05699945241212845,
+        0.0019601136445999146,
+        0.02473602443933487,
+        0.009981585666537285,
+        0.03336004912853241,
+        0.0693870484828949,
+        0.1733134239912033
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "selected_q_values",
+        2,
+        1,
+        "sha256"
+      ],
+      "value": "f5becceb293df77e5b7734de9270f60882bb2310441b490283d19fb4aa5b740f"
+    },
+    {
+      "key": [
+        "budget-six",
+        "actions",
+        2,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "actions",
+        2,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.int64"
+    },
+    {
+      "key": [
+        "budget-six",
+        "actions",
+        2,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "actions",
+        2,
+        0,
+        "value"
+      ],
+      "value": 7
+    },
+    {
+      "key": [
+        "budget-six",
+        "actions",
+        2,
+        0,
+        "sha256"
+      ],
+      "value": "aae89fc0f03e2959ae4d701a80cc3915918c950b159f6abb6c92c1433b1a8534"
+    },
+    {
+      "key": [
+        "budget-six",
+        "actions",
+        2,
+        1,
+        "value"
+      ],
+      "value": 5
+    },
+    {
+      "key": [
+        "budget-six",
+        "actions",
+        2,
+        1,
+        "sha256"
+      ],
+      "value": "f13ee6ed54ea2aae9fc49a9faeb5da6e8ddef0e12ed5d30d35a624ae813e0485"
+    },
+    {
+      "key": [
+        "budget-six",
+        "observations",
+        2,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "observations",
+        2,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "observations",
+        2,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2,
+        105
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "observations",
+        2,
+        0,
+        "value"
+      ],
+      "value": [
+        1.0,
+        0.1428571492433548,
+        0.7142857313156128,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        0.9900000095367432,
+        0.0,
+        1.0,
+        0.9839999675750732,
+        0.0,
+        1.0,
+        0.9939999580383301,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        0.4959999918937683,
+        0.0,
+        1.0,
+        0.9919999837875366,
+        0.0,
+        1.0,
+        0.9880000352859497,
+        0.0,
+        1.0,
+        0.4285714328289032,
+        0.1428571492433548,
+        0.2857142984867096,
+        -0.5714285969734192,
+        1.0,
+        0.2857142984867096,
+        0.0,
+        0.1428571492433548,
+        -0.7142857313156128,
+        1.0,
+        0.4285714328289032,
+        0.7142857313156128,
+        0.2857142984867096,
+        0.0,
+        1.0,
+        0.2857142984867096,
+        0.4285714328289032,
+        0.1428571492433548,
+        -0.2857142984867096,
+        1.0,
+        0.7142857313156128,
+        0.1428571492433548,
+        0.5714285969734192,
+        -0.5714285969734192,
+        1.0,
+        0.2857142984867096,
+        0.1428571492433548,
+        0.1428571492433548,
+        -0.5714285969734192,
+        1.0,
+        0.1428571492433548,
+        0.0,
+        0.0,
+        -0.7142857313156128,
+        1.0,
+        1.0,
+        1.0,
+        0.8571428656578064,
+        0.2857142984867096,
+        1.0,
+        0.5714285969734192,
+        0.0,
+        0.4285714328289032,
+        -0.7142857313156128,
+        1.0,
+        0.7142857313156128,
+        0.5714285969734192,
+        0.5714285969734192,
+        -0.1428571492433548,
+        1.0,
+        0.8571428656578064,
+        1.0,
+        0.7142857313156128,
+        0.2857142984867096,
+        1.0,
+        0.7142857313156128,
+        1.0,
+        0.5714285969734192,
+        0.2857142984867096,
+        1.0,
+        0.1428571492433548,
+        0.1428571492433548,
+        0.0,
+        -0.5714285969734192,
+        1.0,
+        0.1428571492433548,
+        0.4285714328289032,
+        0.0,
+        -0.2857142984867096,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "observations",
+        2,
+        0,
+        "sha256"
+      ],
+      "value": "3614555e545a57dbb3fd7bf480d0a19cf2af4397aa83843ce4a0abcfed5d6ea9"
+    },
+    {
+      "key": [
+        "budget-six",
+        "observations",
+        2,
+        1,
+        "value"
+      ],
+      "value": [
+        1.0,
+        0.5714285969734192,
+        0.1428571492433548,
+        0.0,
+        0.0,
+        1.0,
+        0.9800000190734863,
+        0.0,
+        1.0,
+        0.9900000095367432,
+        0.0,
+        1.0,
+        0.9839999675750732,
+        0.0,
+        1.0,
+        0.9939999580383301,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        0.4959999918937683,
+        0.0,
+        1.0,
+        0.9919999837875366,
+        0.0,
+        1.0,
+        0.9880000352859497,
+        0.0,
+        1.0,
+        0.4285714328289032,
+        0.1428571492433548,
+        -0.1428571492433548,
+        0.0,
+        1.0,
+        0.2857142984867096,
+        0.0,
+        -0.2857142984867096,
+        -0.1428571492433548,
+        1.0,
+        0.4285714328289032,
+        0.7142857313156128,
+        -0.1428571492433548,
+        0.5714285969734192,
+        1.0,
+        0.2857142984867096,
+        0.4285714328289032,
+        -0.2857142984867096,
+        0.2857142984867096,
+        1.0,
+        0.7142857313156128,
+        0.1428571492433548,
+        0.1428571492433548,
+        0.0,
+        1.0,
+        0.2857142984867096,
+        0.1428571492433548,
+        -0.2857142984867096,
+        0.0,
+        1.0,
+        0.1428571492433548,
+        0.0,
+        -0.4285714328289032,
+        -0.1428571492433548,
+        1.0,
+        1.0,
+        1.0,
+        0.4285714328289032,
+        0.8571428656578064,
+        1.0,
+        0.5714285969734192,
+        0.0,
+        0.0,
+        -0.1428571492433548,
+        1.0,
+        0.7142857313156128,
+        0.5714285969734192,
+        0.1428571492433548,
+        0.4285714328289032,
+        1.0,
+        0.8571428656578064,
+        1.0,
+        0.2857142984867096,
+        0.8571428656578064,
+        1.0,
+        0.7142857313156128,
+        1.0,
+        0.1428571492433548,
+        0.8571428656578064,
+        1.0,
+        0.1428571492433548,
+        0.1428571492433548,
+        -0.4285714328289032,
+        0.0,
+        1.0,
+        0.1428571492433548,
+        0.4285714328289032,
+        -0.4285714328289032,
+        0.2857142984867096,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "observations",
+        2,
+        1,
+        "sha256"
+      ],
+      "value": "7b3b9112c06a7d13ad6e7b213eaf33812349343cb863d946e796e1082ec9715c"
+    },
+    {
+      "key": [
+        "budget-six",
+        "meters",
+        2,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "meters",
+        2,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "meters",
+        2,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2,
+        8
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "meters",
+        2,
+        0,
+        "value"
+      ],
+      "value": [
+        0.0,
+        0.9900000095367432,
+        0.9839999675750732,
+        0.9939999580383301,
+        0.0,
+        0.4959999918937683,
+        0.9919999837875366,
+        0.9880000352859497
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "meters",
+        2,
+        0,
+        "sha256"
+      ],
+      "value": "e7d1c398bf854fba3da507be696f8a01bbd54b49a2d797e85ee1b0f8d6bd3942"
+    },
+    {
+      "key": [
+        "budget-six",
+        "meters",
+        2,
+        1,
+        "value"
+      ],
+      "value": [
+        0.9800000190734863,
+        0.9900000095367432,
+        0.9839999675750732,
+        0.9939999580383301,
+        0.0,
+        0.4959999918937683,
+        0.9919999837875366,
+        0.9880000352859497
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "meters",
+        2,
+        1,
+        "sha256"
+      ],
+      "value": "01ffd0b2fd3a555ceed8dbfa9a90d547949678dd5e7b3288a412155230d37984"
+    },
+    {
+      "key": [
+        "budget-six",
+        "dones",
+        2,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "dones",
+        2,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.bool"
+    },
+    {
+      "key": [
+        "budget-six",
+        "dones",
+        2,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "dones",
+        2,
+        0,
+        "value"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "dones",
+        2,
+        0,
+        "sha256"
+      ],
+      "value": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+    },
+    {
+      "key": [
+        "budget-six",
+        "dones",
+        2,
+        1,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "dones",
+        2,
+        1,
+        "sha256"
+      ],
+      "value": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+    },
+    {
+      "key": [
+        "budget-six",
+        "rewards",
+        2,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "rewards",
+        2,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "rewards",
+        2,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "rewards",
+        2,
+        0,
+        "value"
+      ],
+      "value": 0.0
+    },
+    {
+      "key": [
+        "budget-six",
+        "rewards",
+        2,
+        0,
+        "sha256"
+      ],
+      "value": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+    },
+    {
+      "key": [
+        "budget-six",
+        "rewards",
+        2,
+        1,
+        "value"
+      ],
+      "value": 1.003000020980835
+    },
+    {
+      "key": [
+        "budget-six",
+        "rewards",
+        2,
+        1,
+        "sha256"
+      ],
+      "value": "2a29b99243d360b7d983c0d95904773c99b65135c488d9ef139be1aa35ae98e2"
+    },
+    {
+      "key": [
+        "budget-six",
+        "step_counts",
+        2,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "step_counts",
+        2,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.int64"
+    },
+    {
+      "key": [
+        "budget-six",
+        "step_counts",
+        2,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "step_counts",
+        2,
+        0,
+        "value"
+      ],
+      "value": 2
+    },
+    {
+      "key": [
+        "budget-six",
+        "step_counts",
+        2,
+        1,
+        "value"
+      ],
+      "value": 2
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_active",
+        2,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_active",
+        2,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.bool"
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_active",
+        2,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_active",
+        2,
+        0,
+        "value"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_active",
+        2,
+        1,
+        "value"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal",
+        2,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal",
+        2,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.bool"
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal",
+        2,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal",
+        2,
+        0,
+        "value"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal",
+        2,
+        1,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_counts",
+        2,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_counts",
+        2,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.int64"
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_counts",
+        2,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_counts",
+        2,
+        0,
+        "value"
+      ],
+      "value": 2
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_counts",
+        2,
+        1,
+        "value"
+      ],
+      "value": 2
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal_counts",
+        2,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal_counts",
+        2,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.int64"
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal_counts",
+        2,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal_counts",
+        2,
+        0,
+        "value"
+      ],
+      "value": 1
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal_counts",
+        2,
+        1,
+        "value"
+      ],
+      "value": 0
+    },
+    {
+      "key": [
+        "budget-six",
+        "active_on_entry",
+        2,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "active_on_entry",
+        2,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.bool"
+    },
+    {
+      "key": [
+        "budget-six",
+        "active_on_entry",
+        2,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "active_on_entry",
+        2,
+        0,
+        "value"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "active_on_entry",
+        2,
+        1,
+        "value"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_terminal",
+        2,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_terminal",
+        2,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.bool"
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_terminal",
+        2,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_terminal",
+        2,
+        0,
+        "value"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_terminal",
+        2,
+        1,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_retired",
+        2,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_retired",
+        2,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.bool"
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_retired",
+        2,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_retired",
+        2,
+        0,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_retired",
+        2,
+        1,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic_weight",
+        2,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic_weight",
+        2,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic_weight",
+        2,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic_weight",
+        2,
+        0,
+        "value"
+      ],
+      "value": 0.0
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic_weight",
+        2,
+        0,
+        "sha256"
+      ],
+      "value": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic_weight",
+        2,
+        1,
+        "value"
+      ],
+      "value": 1.0
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic_weight",
+        2,
+        1,
+        "sha256"
+      ],
+      "value": "e00e5eb9444182f352323374ef4e08ebcb784725fdd4fd612d7730540b3e0c8c"
+    },
+    {
+      "key": [
+        "budget-six",
+        "extrinsic",
+        2,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "extrinsic",
+        2,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "extrinsic",
+        2,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "extrinsic",
+        2,
+        0,
+        "value"
+      ],
+      "value": 0.0
+    },
+    {
+      "key": [
+        "budget-six",
+        "extrinsic",
+        2,
+        0,
+        "sha256"
+      ],
+      "value": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+    },
+    {
+      "key": [
+        "budget-six",
+        "extrinsic",
+        2,
+        1,
+        "value"
+      ],
+      "value": 0.9950000047683716
+    },
+    {
+      "key": [
+        "budget-six",
+        "extrinsic",
+        2,
+        1,
+        "sha256"
+      ],
+      "value": "87e2f7bf058af2e1864bb8d20622940396484f1d8fab1da5e3c63ae693a4914a"
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic",
+        2,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic",
+        2,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic",
+        2,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic",
+        2,
+        0,
+        "value"
+      ],
+      "value": 0.0
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic",
+        2,
+        0,
+        "sha256"
+      ],
+      "value": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic",
+        2,
+        1,
+        "value"
+      ],
+      "value": 0.0
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic",
+        2,
+        1,
+        "sha256"
+      ],
+      "value": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+    },
+    {
+      "key": [
+        "budget-six",
+        "shaping",
+        2,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "shaping",
+        2,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "shaping",
+        2,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "shaping",
+        2,
+        0,
+        "value"
+      ],
+      "value": 0.0
+    },
+    {
+      "key": [
+        "budget-six",
+        "shaping",
+        2,
+        0,
+        "sha256"
+      ],
+      "value": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+    },
+    {
+      "key": [
+        "budget-six",
+        "shaping",
+        2,
+        1,
+        "value"
+      ],
+      "value": 0.00800000037997961
+    },
+    {
+      "key": [
+        "budget-six",
+        "shaping",
+        2,
+        1,
+        "sha256"
+      ],
+      "value": "41a6e3eadfed887c86aeb4d9dbb14b193416ddbaab5b1766edf43a64f0667383"
+    },
+    {
+      "key": [
+        "budget-six",
+        "eligible_observation",
+        2,
+        0,
+        "value"
+      ],
+      "value": "f7d4657dd8fdd59f24acbc577c80ad908d13f114084b07db5b91f15cd69e412e"
+    },
+    {
+      "key": [
+        "budget-six",
+        "eligible_observation",
+        2,
+        1,
+        "value"
+      ],
+      "value": "0c5a3d7efb3495ce6993aa303631f40fb0e993611d0a15d83c75fb7e3a34bf0d"
+    },
+    {
+      "key": [
+        "budget-six",
+        "global_tick",
+        2,
+        -1,
+        "value"
+      ],
+      "value": 2
+    },
+    {
+      "key": [
+        "budget-six",
+        "time_of_day",
+        2,
+        -1,
+        "value"
+      ],
+      "value": 0
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_live_transitions",
+        2,
+        -1,
+        "value"
+      ],
+      "value": 4
+    },
+    {
+      "key": [
+        "budget-six",
+        "admitted_observation",
+        2,
+        0,
+        "value"
+      ],
+      "value": "f7d4657dd8fdd59f24acbc577c80ad908d13f114084b07db5b91f15cd69e412e"
+    },
+    {
+      "key": [
+        "budget-six",
+        "admitted_observation",
+        2,
+        1,
+        "value"
+      ],
+      "value": "0c5a3d7efb3495ce6993aa303631f40fb0e993611d0a15d83c75fb7e3a34bf0d"
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_counts",
+        2,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_counts",
+        2,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.int64"
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_counts",
+        2,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_counts",
+        2,
+        0,
+        "value"
+      ],
+      "value": 2
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_counts",
+        2,
+        1,
+        "value"
+      ],
+      "value": 2
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_completed",
+        2,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_completed",
+        2,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.bool"
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_completed",
+        2,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_completed",
+        2,
+        0,
+        "value"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_completed",
+        2,
+        1,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_total_steps",
+        2,
+        -1,
+        "value"
+      ],
+      "value": 2
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_training_steps",
+        2,
+        -1,
+        "value"
+      ],
+      "value": 0
+    },
+    {
+      "key": [
+        "budget-six",
+        "replay_size",
+        2,
+        -1,
+        "value"
+      ],
+      "value": 4
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_reason",
+        2,
+        0,
+        "value"
+      ],
+      "value": "authored_terminal"
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_survival",
+        2,
+        0,
+        "value"
+      ],
+      "value": 2
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_observation",
+        2,
+        0,
+        "value"
+      ],
+      "value": "3614555e545a57dbb3fd7bf480d0a19cf2af4397aa83843ce4a0abcfed5d6ea9"
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_meters",
+        2,
+        0,
+        "value"
+      ],
+      "value": "e7d1c398bf854fba3da507be696f8a01bbd54b49a2d797e85ee1b0f8d6bd3942"
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_reason",
+        2,
+        1,
+        "value"
+      ],
+      "value": null
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_survival",
+        2,
+        1,
+        "value"
+      ],
+      "value": null
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_observation",
+        2,
+        1,
+        "value"
+      ],
+      "value": null
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_meters",
+        2,
+        1,
+        "value"
+      ],
+      "value": null
+    },
+    {
+      "key": [
+        "budget-six",
+        "selected_q_values",
+        3,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "selected_q_values",
+        3,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "selected_q_values",
+        3,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2,
+        8
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "selected_q_values",
+        3,
+        0,
+        "value"
+      ],
+      "value": [
+        0.005749966949224472,
+        0.022779317572712898,
+        0.04349207133054733,
+        -0.012282446026802063,
+        0.067097008228302,
+        -0.006918683648109436,
+        0.019943904131650925,
+        0.16696816682815552
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "selected_q_values",
+        3,
+        0,
+        "sha256"
+      ],
+      "value": "51da68a19d211909266104660856d72658af4580880ebd3ab039dfba31137b67"
+    },
+    {
+      "key": [
+        "budget-six",
+        "selected_q_values",
+        3,
+        1,
+        "value"
+      ],
+      "value": [
+        0.05234542861580849,
+        0.056914858520030975,
+        0.0020332708954811096,
+        0.024649865925312042,
+        0.009953279979526997,
+        0.03336372971534729,
+        0.069550521671772,
+        0.17316317558288574
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "selected_q_values",
+        3,
+        1,
+        "sha256"
+      ],
+      "value": "f45eb780d24015275875527c05c15c23dd3892ee07eed2f8454da6c7411af6be"
+    },
+    {
+      "key": [
+        "budget-six",
+        "actions",
+        3,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "actions",
+        3,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.int64"
+    },
+    {
+      "key": [
+        "budget-six",
+        "actions",
+        3,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "actions",
+        3,
+        0,
+        "value"
+      ],
+      "value": 7
+    },
+    {
+      "key": [
+        "budget-six",
+        "actions",
+        3,
+        0,
+        "sha256"
+      ],
+      "value": "aae89fc0f03e2959ae4d701a80cc3915918c950b159f6abb6c92c1433b1a8534"
+    },
+    {
+      "key": [
+        "budget-six",
+        "actions",
+        3,
+        1,
+        "value"
+      ],
+      "value": 5
+    },
+    {
+      "key": [
+        "budget-six",
+        "actions",
+        3,
+        1,
+        "sha256"
+      ],
+      "value": "f13ee6ed54ea2aae9fc49a9faeb5da6e8ddef0e12ed5d30d35a624ae813e0485"
+    },
+    {
+      "key": [
+        "budget-six",
+        "observations",
+        3,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "observations",
+        3,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "observations",
+        3,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2,
+        105
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "observations",
+        3,
+        0,
+        "value"
+      ],
+      "value": [
+        1.0,
+        0.1428571492433548,
+        0.7142857313156128,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        0.9900000095367432,
+        0.0,
+        1.0,
+        0.9839999675750732,
+        0.0,
+        1.0,
+        0.9939999580383301,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        0.4959999918937683,
+        0.0,
+        1.0,
+        0.9919999837875366,
+        0.0,
+        1.0,
+        0.9880000352859497,
+        0.0,
+        1.0,
+        0.4285714328289032,
+        0.1428571492433548,
+        0.2857142984867096,
+        -0.5714285969734192,
+        1.0,
+        0.2857142984867096,
+        0.0,
+        0.1428571492433548,
+        -0.7142857313156128,
+        1.0,
+        0.4285714328289032,
+        0.7142857313156128,
+        0.2857142984867096,
+        0.0,
+        1.0,
+        0.2857142984867096,
+        0.4285714328289032,
+        0.1428571492433548,
+        -0.2857142984867096,
+        1.0,
+        0.7142857313156128,
+        0.1428571492433548,
+        0.5714285969734192,
+        -0.5714285969734192,
+        1.0,
+        0.2857142984867096,
+        0.1428571492433548,
+        0.1428571492433548,
+        -0.5714285969734192,
+        1.0,
+        0.1428571492433548,
+        0.0,
+        0.0,
+        -0.7142857313156128,
+        1.0,
+        1.0,
+        1.0,
+        0.8571428656578064,
+        0.2857142984867096,
+        1.0,
+        0.5714285969734192,
+        0.0,
+        0.4285714328289032,
+        -0.7142857313156128,
+        1.0,
+        0.7142857313156128,
+        0.5714285969734192,
+        0.5714285969734192,
+        -0.1428571492433548,
+        1.0,
+        0.8571428656578064,
+        1.0,
+        0.7142857313156128,
+        0.2857142984867096,
+        1.0,
+        0.7142857313156128,
+        1.0,
+        0.5714285969734192,
+        0.2857142984867096,
+        1.0,
+        0.1428571492433548,
+        0.1428571492433548,
+        0.0,
+        -0.5714285969734192,
+        1.0,
+        0.1428571492433548,
+        0.4285714328289032,
+        0.0,
+        -0.2857142984867096,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "observations",
+        3,
+        0,
+        "sha256"
+      ],
+      "value": "3614555e545a57dbb3fd7bf480d0a19cf2af4397aa83843ce4a0abcfed5d6ea9"
+    },
+    {
+      "key": [
+        "budget-six",
+        "observations",
+        3,
+        1,
+        "value"
+      ],
+      "value": [
+        1.0,
+        0.5714285969734192,
+        0.1428571492433548,
+        0.0,
+        0.0,
+        1.0,
+        0.9700000286102295,
+        0.0,
+        1.0,
+        0.9850000143051147,
+        0.0,
+        1.0,
+        0.9759999513626099,
+        0.0,
+        1.0,
+        0.9909999370574951,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        0.49399998784065247,
+        0.0,
+        1.0,
+        0.9879999756813049,
+        0.0,
+        1.0,
+        0.9820000529289246,
+        0.0,
+        1.0,
+        0.4285714328289032,
+        0.1428571492433548,
+        -0.1428571492433548,
+        0.0,
+        1.0,
+        0.2857142984867096,
+        0.0,
+        -0.2857142984867096,
+        -0.1428571492433548,
+        1.0,
+        0.4285714328289032,
+        0.7142857313156128,
+        -0.1428571492433548,
+        0.5714285969734192,
+        1.0,
+        0.2857142984867096,
+        0.4285714328289032,
+        -0.2857142984867096,
+        0.2857142984867096,
+        1.0,
+        0.7142857313156128,
+        0.1428571492433548,
+        0.1428571492433548,
+        0.0,
+        1.0,
+        0.2857142984867096,
+        0.1428571492433548,
+        -0.2857142984867096,
+        0.0,
+        1.0,
+        0.1428571492433548,
+        0.0,
+        -0.4285714328289032,
+        -0.1428571492433548,
+        1.0,
+        1.0,
+        1.0,
+        0.4285714328289032,
+        0.8571428656578064,
+        1.0,
+        0.5714285969734192,
+        0.0,
+        0.0,
+        -0.1428571492433548,
+        1.0,
+        0.7142857313156128,
+        0.5714285969734192,
+        0.1428571492433548,
+        0.4285714328289032,
+        1.0,
+        0.8571428656578064,
+        1.0,
+        0.2857142984867096,
+        0.8571428656578064,
+        1.0,
+        0.7142857313156128,
+        1.0,
+        0.1428571492433548,
+        0.8571428656578064,
+        1.0,
+        0.1428571492433548,
+        0.1428571492433548,
+        -0.4285714328289032,
+        0.0,
+        1.0,
+        0.1428571492433548,
+        0.4285714328289032,
+        -0.4285714328289032,
+        0.2857142984867096,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "observations",
+        3,
+        1,
+        "sha256"
+      ],
+      "value": "0b97b3a67e12868cf34fc8d9ffa4da453f94400630bb87575063640c7a93330c"
+    },
+    {
+      "key": [
+        "budget-six",
+        "meters",
+        3,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "meters",
+        3,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "meters",
+        3,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2,
+        8
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "meters",
+        3,
+        0,
+        "value"
+      ],
+      "value": [
+        0.0,
+        0.9900000095367432,
+        0.9839999675750732,
+        0.9939999580383301,
+        0.0,
+        0.4959999918937683,
+        0.9919999837875366,
+        0.9880000352859497
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "meters",
+        3,
+        0,
+        "sha256"
+      ],
+      "value": "e7d1c398bf854fba3da507be696f8a01bbd54b49a2d797e85ee1b0f8d6bd3942"
+    },
+    {
+      "key": [
+        "budget-six",
+        "meters",
+        3,
+        1,
+        "value"
+      ],
+      "value": [
+        0.9700000286102295,
+        0.9850000143051147,
+        0.9759999513626099,
+        0.9909999370574951,
+        0.0,
+        0.49399998784065247,
+        0.9879999756813049,
+        0.9820000529289246
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "meters",
+        3,
+        1,
+        "sha256"
+      ],
+      "value": "7c0b016817b09102dc999b25ff6a4210de958700e4eb3f60dc3efb7028b82181"
+    },
+    {
+      "key": [
+        "budget-six",
+        "dones",
+        3,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "dones",
+        3,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.bool"
+    },
+    {
+      "key": [
+        "budget-six",
+        "dones",
+        3,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "dones",
+        3,
+        0,
+        "value"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "dones",
+        3,
+        0,
+        "sha256"
+      ],
+      "value": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+    },
+    {
+      "key": [
+        "budget-six",
+        "dones",
+        3,
+        1,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "dones",
+        3,
+        1,
+        "sha256"
+      ],
+      "value": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+    },
+    {
+      "key": [
+        "budget-six",
+        "rewards",
+        3,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "rewards",
+        3,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "rewards",
+        3,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "rewards",
+        3,
+        0,
+        "value"
+      ],
+      "value": 0.0
+    },
+    {
+      "key": [
+        "budget-six",
+        "rewards",
+        3,
+        0,
+        "sha256"
+      ],
+      "value": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+    },
+    {
+      "key": [
+        "budget-six",
+        "rewards",
+        3,
+        1,
+        "value"
+      ],
+      "value": 0.9955000281333923
+    },
+    {
+      "key": [
+        "budget-six",
+        "rewards",
+        3,
+        1,
+        "sha256"
+      ],
+      "value": "b007ff950d4a90cd741d561cbfd3d3066852472e3eea88b62a9d4ee6253564eb"
+    },
+    {
+      "key": [
+        "budget-six",
+        "step_counts",
+        3,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "step_counts",
+        3,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.int64"
+    },
+    {
+      "key": [
+        "budget-six",
+        "step_counts",
+        3,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "step_counts",
+        3,
+        0,
+        "value"
+      ],
+      "value": 2
+    },
+    {
+      "key": [
+        "budget-six",
+        "step_counts",
+        3,
+        1,
+        "value"
+      ],
+      "value": 3
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_active",
+        3,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_active",
+        3,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.bool"
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_active",
+        3,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_active",
+        3,
+        0,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_active",
+        3,
+        1,
+        "value"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal",
+        3,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal",
+        3,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.bool"
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal",
+        3,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal",
+        3,
+        0,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal",
+        3,
+        1,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_counts",
+        3,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_counts",
+        3,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.int64"
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_counts",
+        3,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_counts",
+        3,
+        0,
+        "value"
+      ],
+      "value": 2
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_counts",
+        3,
+        1,
+        "value"
+      ],
+      "value": 3
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal_counts",
+        3,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal_counts",
+        3,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.int64"
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal_counts",
+        3,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal_counts",
+        3,
+        0,
+        "value"
+      ],
+      "value": 1
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal_counts",
+        3,
+        1,
+        "value"
+      ],
+      "value": 0
+    },
+    {
+      "key": [
+        "budget-six",
+        "active_on_entry",
+        3,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "active_on_entry",
+        3,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.bool"
+    },
+    {
+      "key": [
+        "budget-six",
+        "active_on_entry",
+        3,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "active_on_entry",
+        3,
+        0,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "active_on_entry",
+        3,
+        1,
+        "value"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_terminal",
+        3,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_terminal",
+        3,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.bool"
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_terminal",
+        3,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_terminal",
+        3,
+        0,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_terminal",
+        3,
+        1,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_retired",
+        3,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_retired",
+        3,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.bool"
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_retired",
+        3,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_retired",
+        3,
+        0,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_retired",
+        3,
+        1,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic_weight",
+        3,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic_weight",
+        3,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic_weight",
+        3,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic_weight",
+        3,
+        0,
+        "value"
+      ],
+      "value": 0.0
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic_weight",
+        3,
+        0,
+        "sha256"
+      ],
+      "value": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic_weight",
+        3,
+        1,
+        "value"
+      ],
+      "value": 1.0
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic_weight",
+        3,
+        1,
+        "sha256"
+      ],
+      "value": "e00e5eb9444182f352323374ef4e08ebcb784725fdd4fd612d7730540b3e0c8c"
+    },
+    {
+      "key": [
+        "budget-six",
+        "extrinsic",
+        3,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "extrinsic",
+        3,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "extrinsic",
+        3,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "extrinsic",
+        3,
+        0,
+        "value"
+      ],
+      "value": 0.0
+    },
+    {
+      "key": [
+        "budget-six",
+        "extrinsic",
+        3,
+        0,
+        "sha256"
+      ],
+      "value": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+    },
+    {
+      "key": [
+        "budget-six",
+        "extrinsic",
+        3,
+        1,
+        "value"
+      ],
+      "value": 0.987500011920929
+    },
+    {
+      "key": [
+        "budget-six",
+        "extrinsic",
+        3,
+        1,
+        "sha256"
+      ],
+      "value": "1d107d7eaa2bea65ca78c4057d803a355abffe8f50c21c215abad6e7ef941c7f"
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic",
+        3,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic",
+        3,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic",
+        3,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic",
+        3,
+        0,
+        "value"
+      ],
+      "value": 0.0
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic",
+        3,
+        0,
+        "sha256"
+      ],
+      "value": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic",
+        3,
+        1,
+        "value"
+      ],
+      "value": 0.0
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic",
+        3,
+        1,
+        "sha256"
+      ],
+      "value": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+    },
+    {
+      "key": [
+        "budget-six",
+        "shaping",
+        3,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "shaping",
+        3,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "shaping",
+        3,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "shaping",
+        3,
+        0,
+        "value"
+      ],
+      "value": 0.0
+    },
+    {
+      "key": [
+        "budget-six",
+        "shaping",
+        3,
+        0,
+        "sha256"
+      ],
+      "value": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+    },
+    {
+      "key": [
+        "budget-six",
+        "shaping",
+        3,
+        1,
+        "value"
+      ],
+      "value": 0.00800000037997961
+    },
+    {
+      "key": [
+        "budget-six",
+        "shaping",
+        3,
+        1,
+        "sha256"
+      ],
+      "value": "41a6e3eadfed887c86aeb4d9dbb14b193416ddbaab5b1766edf43a64f0667383"
+    },
+    {
+      "key": [
+        "budget-six",
+        "eligible_observation",
+        3,
+        0,
+        "value"
+      ],
+      "value": null
+    },
+    {
+      "key": [
+        "budget-six",
+        "eligible_observation",
+        3,
+        1,
+        "value"
+      ],
+      "value": "7b3b9112c06a7d13ad6e7b213eaf33812349343cb863d946e796e1082ec9715c"
+    },
+    {
+      "key": [
+        "budget-six",
+        "global_tick",
+        3,
+        -1,
+        "value"
+      ],
+      "value": 3
+    },
+    {
+      "key": [
+        "budget-six",
+        "time_of_day",
+        3,
+        -1,
+        "value"
+      ],
+      "value": 0
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_live_transitions",
+        3,
+        -1,
+        "value"
+      ],
+      "value": 5
+    },
+    {
+      "key": [
+        "budget-six",
+        "admitted_observation",
+        3,
+        0,
+        "value"
+      ],
+      "value": null
+    },
+    {
+      "key": [
+        "budget-six",
+        "admitted_observation",
+        3,
+        1,
+        "value"
+      ],
+      "value": "7b3b9112c06a7d13ad6e7b213eaf33812349343cb863d946e796e1082ec9715c"
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_counts",
+        3,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_counts",
+        3,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.int64"
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_counts",
+        3,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_counts",
+        3,
+        0,
+        "value"
+      ],
+      "value": 2
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_counts",
+        3,
+        1,
+        "value"
+      ],
+      "value": 3
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_completed",
+        3,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_completed",
+        3,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.bool"
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_completed",
+        3,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_completed",
+        3,
+        0,
+        "value"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_completed",
+        3,
+        1,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_total_steps",
+        3,
+        -1,
+        "value"
+      ],
+      "value": 3
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_training_steps",
+        3,
+        -1,
+        "value"
+      ],
+      "value": 0
+    },
+    {
+      "key": [
+        "budget-six",
+        "replay_size",
+        3,
+        -1,
+        "value"
+      ],
+      "value": 5
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_reason",
+        3,
+        0,
+        "value"
+      ],
+      "value": "authored_terminal"
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_survival",
+        3,
+        0,
+        "value"
+      ],
+      "value": 2
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_observation",
+        3,
+        0,
+        "value"
+      ],
+      "value": "3614555e545a57dbb3fd7bf480d0a19cf2af4397aa83843ce4a0abcfed5d6ea9"
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_meters",
+        3,
+        0,
+        "value"
+      ],
+      "value": "e7d1c398bf854fba3da507be696f8a01bbd54b49a2d797e85ee1b0f8d6bd3942"
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_reason",
+        3,
+        1,
+        "value"
+      ],
+      "value": null
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_survival",
+        3,
+        1,
+        "value"
+      ],
+      "value": null
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_observation",
+        3,
+        1,
+        "value"
+      ],
+      "value": null
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_meters",
+        3,
+        1,
+        "value"
+      ],
+      "value": null
+    },
+    {
+      "key": [
+        "budget-six",
+        "selected_q_values",
+        4,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "selected_q_values",
+        4,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "selected_q_values",
+        4,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2,
+        8
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "selected_q_values",
+        4,
+        0,
+        "value"
+      ],
+      "value": [
+        0.005749966949224472,
+        0.022779317572712898,
+        0.04349207133054733,
+        -0.012282446026802063,
+        0.067097008228302,
+        -0.006918683648109436,
+        0.019943904131650925,
+        0.16696816682815552
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "selected_q_values",
+        4,
+        0,
+        "sha256"
+      ],
+      "value": "51da68a19d211909266104660856d72658af4580880ebd3ab039dfba31137b67"
+    },
+    {
+      "key": [
+        "budget-six",
+        "selected_q_values",
+        4,
+        1,
+        "value"
+      ],
+      "value": [
+        0.05210580304265022,
+        0.05683024972677231,
+        0.0021064504981040955,
+        0.024563677608966827,
+        0.009924959391355515,
+        0.03336736559867859,
+        0.06971399486064911,
+        0.17301292717456818
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "selected_q_values",
+        4,
+        1,
+        "sha256"
+      ],
+      "value": "bf06a85c42bad07e927c41eae262871ba1f2ef7ca5b737bb7f50bd7e7b23d044"
+    },
+    {
+      "key": [
+        "budget-six",
+        "actions",
+        4,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "actions",
+        4,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.int64"
+    },
+    {
+      "key": [
+        "budget-six",
+        "actions",
+        4,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "actions",
+        4,
+        0,
+        "value"
+      ],
+      "value": 7
+    },
+    {
+      "key": [
+        "budget-six",
+        "actions",
+        4,
+        0,
+        "sha256"
+      ],
+      "value": "aae89fc0f03e2959ae4d701a80cc3915918c950b159f6abb6c92c1433b1a8534"
+    },
+    {
+      "key": [
+        "budget-six",
+        "actions",
+        4,
+        1,
+        "value"
+      ],
+      "value": 5
+    },
+    {
+      "key": [
+        "budget-six",
+        "actions",
+        4,
+        1,
+        "sha256"
+      ],
+      "value": "f13ee6ed54ea2aae9fc49a9faeb5da6e8ddef0e12ed5d30d35a624ae813e0485"
+    },
+    {
+      "key": [
+        "budget-six",
+        "observations",
+        4,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "observations",
+        4,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "observations",
+        4,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2,
+        105
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "observations",
+        4,
+        0,
+        "value"
+      ],
+      "value": [
+        1.0,
+        0.1428571492433548,
+        0.7142857313156128,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        0.9900000095367432,
+        0.0,
+        1.0,
+        0.9839999675750732,
+        0.0,
+        1.0,
+        0.9939999580383301,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        0.4959999918937683,
+        0.0,
+        1.0,
+        0.9919999837875366,
+        0.0,
+        1.0,
+        0.9880000352859497,
+        0.0,
+        1.0,
+        0.4285714328289032,
+        0.1428571492433548,
+        0.2857142984867096,
+        -0.5714285969734192,
+        1.0,
+        0.2857142984867096,
+        0.0,
+        0.1428571492433548,
+        -0.7142857313156128,
+        1.0,
+        0.4285714328289032,
+        0.7142857313156128,
+        0.2857142984867096,
+        0.0,
+        1.0,
+        0.2857142984867096,
+        0.4285714328289032,
+        0.1428571492433548,
+        -0.2857142984867096,
+        1.0,
+        0.7142857313156128,
+        0.1428571492433548,
+        0.5714285969734192,
+        -0.5714285969734192,
+        1.0,
+        0.2857142984867096,
+        0.1428571492433548,
+        0.1428571492433548,
+        -0.5714285969734192,
+        1.0,
+        0.1428571492433548,
+        0.0,
+        0.0,
+        -0.7142857313156128,
+        1.0,
+        1.0,
+        1.0,
+        0.8571428656578064,
+        0.2857142984867096,
+        1.0,
+        0.5714285969734192,
+        0.0,
+        0.4285714328289032,
+        -0.7142857313156128,
+        1.0,
+        0.7142857313156128,
+        0.5714285969734192,
+        0.5714285969734192,
+        -0.1428571492433548,
+        1.0,
+        0.8571428656578064,
+        1.0,
+        0.7142857313156128,
+        0.2857142984867096,
+        1.0,
+        0.7142857313156128,
+        1.0,
+        0.5714285969734192,
+        0.2857142984867096,
+        1.0,
+        0.1428571492433548,
+        0.1428571492433548,
+        0.0,
+        -0.5714285969734192,
+        1.0,
+        0.1428571492433548,
+        0.4285714328289032,
+        0.0,
+        -0.2857142984867096,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "observations",
+        4,
+        0,
+        "sha256"
+      ],
+      "value": "3614555e545a57dbb3fd7bf480d0a19cf2af4397aa83843ce4a0abcfed5d6ea9"
+    },
+    {
+      "key": [
+        "budget-six",
+        "observations",
+        4,
+        1,
+        "value"
+      ],
+      "value": [
+        1.0,
+        0.5714285969734192,
+        0.1428571492433548,
+        0.0,
+        0.0,
+        1.0,
+        0.9600000381469727,
+        0.0,
+        1.0,
+        0.9800000190734863,
+        0.0,
+        1.0,
+        0.9679999351501465,
+        0.0,
+        1.0,
+        0.9879999160766602,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        0.4919999837875366,
+        0.0,
+        1.0,
+        0.9839999675750732,
+        0.0,
+        1.0,
+        0.9760000705718994,
+        0.0,
+        1.0,
+        0.4285714328289032,
+        0.1428571492433548,
+        -0.1428571492433548,
+        0.0,
+        1.0,
+        0.2857142984867096,
+        0.0,
+        -0.2857142984867096,
+        -0.1428571492433548,
+        1.0,
+        0.4285714328289032,
+        0.7142857313156128,
+        -0.1428571492433548,
+        0.5714285969734192,
+        1.0,
+        0.2857142984867096,
+        0.4285714328289032,
+        -0.2857142984867096,
+        0.2857142984867096,
+        1.0,
+        0.7142857313156128,
+        0.1428571492433548,
+        0.1428571492433548,
+        0.0,
+        1.0,
+        0.2857142984867096,
+        0.1428571492433548,
+        -0.2857142984867096,
+        0.0,
+        1.0,
+        0.1428571492433548,
+        0.0,
+        -0.4285714328289032,
+        -0.1428571492433548,
+        1.0,
+        1.0,
+        1.0,
+        0.4285714328289032,
+        0.8571428656578064,
+        1.0,
+        0.5714285969734192,
+        0.0,
+        0.0,
+        -0.1428571492433548,
+        1.0,
+        0.7142857313156128,
+        0.5714285969734192,
+        0.1428571492433548,
+        0.4285714328289032,
+        1.0,
+        0.8571428656578064,
+        1.0,
+        0.2857142984867096,
+        0.8571428656578064,
+        1.0,
+        0.7142857313156128,
+        1.0,
+        0.1428571492433548,
+        0.8571428656578064,
+        1.0,
+        0.1428571492433548,
+        0.1428571492433548,
+        -0.4285714328289032,
+        0.0,
+        1.0,
+        0.1428571492433548,
+        0.4285714328289032,
+        -0.4285714328289032,
+        0.2857142984867096,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "observations",
+        4,
+        1,
+        "sha256"
+      ],
+      "value": "32f9eccb233791b3e37686a206f45f37c904e8cfea97a8929ca8437ed24dcc59"
+    },
+    {
+      "key": [
+        "budget-six",
+        "meters",
+        4,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "meters",
+        4,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "meters",
+        4,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2,
+        8
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "meters",
+        4,
+        0,
+        "value"
+      ],
+      "value": [
+        0.0,
+        0.9900000095367432,
+        0.9839999675750732,
+        0.9939999580383301,
+        0.0,
+        0.4959999918937683,
+        0.9919999837875366,
+        0.9880000352859497
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "meters",
+        4,
+        0,
+        "sha256"
+      ],
+      "value": "e7d1c398bf854fba3da507be696f8a01bbd54b49a2d797e85ee1b0f8d6bd3942"
+    },
+    {
+      "key": [
+        "budget-six",
+        "meters",
+        4,
+        1,
+        "value"
+      ],
+      "value": [
+        0.9600000381469727,
+        0.9800000190734863,
+        0.9679999351501465,
+        0.9879999160766602,
+        0.0,
+        0.4919999837875366,
+        0.9839999675750732,
+        0.9760000705718994
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "meters",
+        4,
+        1,
+        "sha256"
+      ],
+      "value": "6d790ee7059f1987e42294004f4ef3db53ebce5f8951bc3535eae9263f6e3879"
+    },
+    {
+      "key": [
+        "budget-six",
+        "dones",
+        4,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "dones",
+        4,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.bool"
+    },
+    {
+      "key": [
+        "budget-six",
+        "dones",
+        4,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "dones",
+        4,
+        0,
+        "value"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "dones",
+        4,
+        0,
+        "sha256"
+      ],
+      "value": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+    },
+    {
+      "key": [
+        "budget-six",
+        "dones",
+        4,
+        1,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "dones",
+        4,
+        1,
+        "sha256"
+      ],
+      "value": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+    },
+    {
+      "key": [
+        "budget-six",
+        "rewards",
+        4,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "rewards",
+        4,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "rewards",
+        4,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "rewards",
+        4,
+        0,
+        "value"
+      ],
+      "value": 0.0
+    },
+    {
+      "key": [
+        "budget-six",
+        "rewards",
+        4,
+        0,
+        "sha256"
+      ],
+      "value": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+    },
+    {
+      "key": [
+        "budget-six",
+        "rewards",
+        4,
+        1,
+        "value"
+      ],
+      "value": 0.9880000352859497
+    },
+    {
+      "key": [
+        "budget-six",
+        "rewards",
+        4,
+        1,
+        "sha256"
+      ],
+      "value": "be0df28d6ced6e1e9e1751be6ade66a2ce15072db23e2291847126a49eb897a1"
+    },
+    {
+      "key": [
+        "budget-six",
+        "step_counts",
+        4,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "step_counts",
+        4,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.int64"
+    },
+    {
+      "key": [
+        "budget-six",
+        "step_counts",
+        4,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "step_counts",
+        4,
+        0,
+        "value"
+      ],
+      "value": 2
+    },
+    {
+      "key": [
+        "budget-six",
+        "step_counts",
+        4,
+        1,
+        "value"
+      ],
+      "value": 4
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_active",
+        4,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_active",
+        4,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.bool"
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_active",
+        4,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_active",
+        4,
+        0,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_active",
+        4,
+        1,
+        "value"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal",
+        4,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal",
+        4,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.bool"
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal",
+        4,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal",
+        4,
+        0,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal",
+        4,
+        1,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_counts",
+        4,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_counts",
+        4,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.int64"
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_counts",
+        4,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_counts",
+        4,
+        0,
+        "value"
+      ],
+      "value": 2
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_counts",
+        4,
+        1,
+        "value"
+      ],
+      "value": 4
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal_counts",
+        4,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal_counts",
+        4,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.int64"
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal_counts",
+        4,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal_counts",
+        4,
+        0,
+        "value"
+      ],
+      "value": 1
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_terminal_counts",
+        4,
+        1,
+        "value"
+      ],
+      "value": 0
+    },
+    {
+      "key": [
+        "budget-six",
+        "active_on_entry",
+        4,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "active_on_entry",
+        4,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.bool"
+    },
+    {
+      "key": [
+        "budget-six",
+        "active_on_entry",
+        4,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "active_on_entry",
+        4,
+        0,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "active_on_entry",
+        4,
+        1,
+        "value"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_terminal",
+        4,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_terminal",
+        4,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.bool"
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_terminal",
+        4,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_terminal",
+        4,
+        0,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_terminal",
+        4,
+        1,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_retired",
+        4,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_retired",
+        4,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.bool"
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_retired",
+        4,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_retired",
+        4,
+        0,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "newly_retired",
+        4,
+        1,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic_weight",
+        4,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic_weight",
+        4,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic_weight",
+        4,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic_weight",
+        4,
+        0,
+        "value"
+      ],
+      "value": 0.0
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic_weight",
+        4,
+        0,
+        "sha256"
+      ],
+      "value": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic_weight",
+        4,
+        1,
+        "value"
+      ],
+      "value": 1.0
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic_weight",
+        4,
+        1,
+        "sha256"
+      ],
+      "value": "e00e5eb9444182f352323374ef4e08ebcb784725fdd4fd612d7730540b3e0c8c"
+    },
+    {
+      "key": [
+        "budget-six",
+        "extrinsic",
+        4,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "extrinsic",
+        4,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "extrinsic",
+        4,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "extrinsic",
+        4,
+        0,
+        "value"
+      ],
+      "value": 0.0
+    },
+    {
+      "key": [
+        "budget-six",
+        "extrinsic",
+        4,
+        0,
+        "sha256"
+      ],
+      "value": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+    },
+    {
+      "key": [
+        "budget-six",
+        "extrinsic",
+        4,
+        1,
+        "value"
+      ],
+      "value": 0.9800000190734863
+    },
+    {
+      "key": [
+        "budget-six",
+        "extrinsic",
+        4,
+        1,
+        "sha256"
+      ],
+      "value": "6cd00ccbb89fc4145ef09d9250e8fcb9c61e06567d5cd499cb136cc0d35a4441"
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic",
+        4,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic",
+        4,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic",
+        4,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic",
+        4,
+        0,
+        "value"
+      ],
+      "value": 0.0
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic",
+        4,
+        0,
+        "sha256"
+      ],
+      "value": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic",
+        4,
+        1,
+        "value"
+      ],
+      "value": 0.0
+    },
+    {
+      "key": [
+        "budget-six",
+        "intrinsic",
+        4,
+        1,
+        "sha256"
+      ],
+      "value": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+    },
+    {
+      "key": [
+        "budget-six",
+        "shaping",
+        4,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "shaping",
+        4,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "shaping",
+        4,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "shaping",
+        4,
+        0,
+        "value"
+      ],
+      "value": 0.0
+    },
+    {
+      "key": [
+        "budget-six",
+        "shaping",
+        4,
+        0,
+        "sha256"
+      ],
+      "value": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+    },
+    {
+      "key": [
+        "budget-six",
+        "shaping",
+        4,
+        1,
+        "value"
+      ],
+      "value": 0.00800000037997961
+    },
+    {
+      "key": [
+        "budget-six",
+        "shaping",
+        4,
+        1,
+        "sha256"
+      ],
+      "value": "41a6e3eadfed887c86aeb4d9dbb14b193416ddbaab5b1766edf43a64f0667383"
+    },
+    {
+      "key": [
+        "budget-six",
+        "eligible_observation",
+        4,
+        0,
+        "value"
+      ],
+      "value": null
+    },
+    {
+      "key": [
+        "budget-six",
+        "eligible_observation",
+        4,
+        1,
+        "value"
+      ],
+      "value": "0b97b3a67e12868cf34fc8d9ffa4da453f94400630bb87575063640c7a93330c"
+    },
+    {
+      "key": [
+        "budget-six",
+        "global_tick",
+        4,
+        -1,
+        "value"
+      ],
+      "value": 4
+    },
+    {
+      "key": [
+        "budget-six",
+        "time_of_day",
+        4,
+        -1,
+        "value"
+      ],
+      "value": 0
+    },
+    {
+      "key": [
+        "budget-six",
+        "ledger_live_transitions",
+        4,
+        -1,
+        "value"
+      ],
+      "value": 6
+    },
+    {
+      "key": [
+        "budget-six",
+        "admitted_observation",
+        4,
+        0,
+        "value"
+      ],
+      "value": null
+    },
+    {
+      "key": [
+        "budget-six",
+        "admitted_observation",
+        4,
+        1,
+        "value"
+      ],
+      "value": "0b97b3a67e12868cf34fc8d9ffa4da453f94400630bb87575063640c7a93330c"
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_counts",
+        4,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_counts",
+        4,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.int64"
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_counts",
+        4,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_counts",
+        4,
+        0,
+        "value"
+      ],
+      "value": 2
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_counts",
+        4,
+        1,
+        "value"
+      ],
+      "value": 4
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_completed",
+        4,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_completed",
+        4,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.bool"
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_completed",
+        4,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_completed",
+        4,
+        0,
+        "value"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_completed",
+        4,
+        1,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_total_steps",
+        4,
+        -1,
+        "value"
+      ],
+      "value": 4
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_training_steps",
+        4,
+        -1,
+        "value"
+      ],
+      "value": 0
+    },
+    {
+      "key": [
+        "budget-six",
+        "replay_size",
+        4,
+        -1,
+        "value"
+      ],
+      "value": 6
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_reason",
+        4,
+        0,
+        "value"
+      ],
+      "value": "authored_terminal"
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_survival",
+        4,
+        0,
+        "value"
+      ],
+      "value": 2
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_observation",
+        4,
+        0,
+        "value"
+      ],
+      "value": "3614555e545a57dbb3fd7bf480d0a19cf2af4397aa83843ce4a0abcfed5d6ea9"
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_meters",
+        4,
+        0,
+        "value"
+      ],
+      "value": "e7d1c398bf854fba3da507be696f8a01bbd54b49a2d797e85ee1b0f8d6bd3942"
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_reason",
+        4,
+        1,
+        "value"
+      ],
+      "value": null
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_survival",
+        4,
+        1,
+        "value"
+      ],
+      "value": null
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_observation",
+        4,
+        1,
+        "value"
+      ],
+      "value": null
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_meters",
+        4,
+        1,
+        "value"
+      ],
+      "value": null
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_counts",
+        99,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_counts",
+        99,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.int64"
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_counts",
+        99,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_counts",
+        99,
+        0,
+        "value"
+      ],
+      "value": 2
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_counts",
+        99,
+        1,
+        "value"
+      ],
+      "value": 4
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_completed",
+        99,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_completed",
+        99,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.bool"
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_completed",
+        99,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_completed",
+        99,
+        0,
+        "value"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_completed",
+        99,
+        1,
+        "value"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_total_steps",
+        99,
+        -1,
+        "value"
+      ],
+      "value": 4
+    },
+    {
+      "key": [
+        "budget-six",
+        "population_training_steps",
+        99,
+        -1,
+        "value"
+      ],
+      "value": 0
+    },
+    {
+      "key": [
+        "budget-six",
+        "replay_size",
+        99,
+        -1,
+        "value"
+      ],
+      "value": 6
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_reason",
+        99,
+        0,
+        "value"
+      ],
+      "value": "authored_terminal"
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_survival",
+        99,
+        0,
+        "value"
+      ],
+      "value": 2
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_observation",
+        99,
+        0,
+        "value"
+      ],
+      "value": "3614555e545a57dbb3fd7bf480d0a19cf2af4397aa83843ce4a0abcfed5d6ea9"
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_meters",
+        99,
+        0,
+        "value"
+      ],
+      "value": "e7d1c398bf854fba3da507be696f8a01bbd54b49a2d797e85ee1b0f8d6bd3942"
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_reason",
+        99,
+        1,
+        "value"
+      ],
+      "value": "budget"
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_survival",
+        99,
+        1,
+        "value"
+      ],
+      "value": 4
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_observation",
+        99,
+        1,
+        "value"
+      ],
+      "value": "32f9eccb233791b3e37686a206f45f37c904e8cfea97a8929ca8437ed24dcc59"
+    },
+    {
+      "key": [
+        "budget-six",
+        "completion_meters",
+        99,
+        1,
+        "value"
+      ],
+      "value": "6d790ee7059f1987e42294004f4ef3db53ebce5f8951bc3535eae9263f6e3879"
+    },
+    {
+      "key": [
+        "budget-six",
+        "runner_live_transitions",
+        99,
+        -1,
+        "value"
+      ],
+      "value": 6
+    },
+    {
+      "key": [
+        "budget-six",
+        "runner_budget_reached",
+        99,
+        -1,
+        "value"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "runner_budget_shortfall",
+        99,
+        -1,
+        "value"
+      ],
+      "value": 0
+    },
+    {
+      "key": [
+        "budget-six",
+        "runner_episode_count",
+        99,
+        -1,
+        "value"
+      ],
+      "value": 1
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_observations",
+        100,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_observations",
+        100,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_observations",
+        100,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2,
+        105
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_observations",
+        100,
+        0,
+        "value"
+      ],
+      "value": [
+        1.0,
+        0.4285714328289032,
+        0.2857142984867096,
+        0.0,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        0.5,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        1.0,
+        0.1428571492433548,
+        0.0,
+        -0.2857142984867096,
+        -0.2857142984867096,
+        1.0,
+        1.0,
+        0.5714285969734192,
+        0.5714285969734192,
+        0.2857142984867096,
+        1.0,
+        0.2857142984867096,
+        0.7142857313156128,
+        -0.1428571492433548,
+        0.4285714328289032,
+        1.0,
+        0.2857142984867096,
+        0.5714285969734192,
+        -0.1428571492433548,
+        0.2857142984867096,
+        1.0,
+        0.8571428656578064,
+        1.0,
+        0.4285714328289032,
+        0.7142857313156128,
+        1.0,
+        0.2857142984867096,
+        0.2857142984867096,
+        -0.1428571492433548,
+        0.0,
+        1.0,
+        0.4285714328289032,
+        1.0,
+        0.0,
+        0.7142857313156128,
+        1.0,
+        0.5714285969734192,
+        1.0,
+        0.1428571492433548,
+        0.7142857313156128,
+        1.0,
+        0.4285714328289032,
+        0.0,
+        0.0,
+        -0.2857142984867096,
+        1.0,
+        1.0,
+        0.2857142984867096,
+        0.5714285969734192,
+        0.0,
+        1.0,
+        0.8571428656578064,
+        0.5714285969734192,
+        0.4285714328289032,
+        0.2857142984867096,
+        1.0,
+        0.8571428656578064,
+        0.0,
+        0.4285714328289032,
+        -0.2857142984867096,
+        1.0,
+        0.7142857313156128,
+        0.2857142984867096,
+        0.2857142984867096,
+        0.0,
+        1.0,
+        0.0,
+        0.1428571492433548,
+        -0.4285714328289032,
+        -0.1428571492433548,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_observations",
+        100,
+        0,
+        "sha256"
+      ],
+      "value": "dd377ffc292069bff950f53541d4b81fe31f4f5bce18ed30002758ef2ff63059"
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_observations",
+        100,
+        1,
+        "value"
+      ],
+      "value": [
+        1.0,
+        0.1428571492433548,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        0.5,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        1.0,
+        0.1428571492433548,
+        0.0,
+        0.0,
+        -1.0,
+        1.0,
+        1.0,
+        0.5714285969734192,
+        0.8571428656578064,
+        -0.4285714328289032,
+        1.0,
+        0.2857142984867096,
+        0.7142857313156128,
+        0.1428571492433548,
+        -0.2857142984867096,
+        1.0,
+        0.2857142984867096,
+        0.5714285969734192,
+        0.1428571492433548,
+        -0.4285714328289032,
+        1.0,
+        0.8571428656578064,
+        1.0,
+        0.7142857313156128,
+        0.0,
+        1.0,
+        0.2857142984867096,
+        0.2857142984867096,
+        0.1428571492433548,
+        -0.7142857313156128,
+        1.0,
+        0.4285714328289032,
+        1.0,
+        0.2857142984867096,
+        0.0,
+        1.0,
+        0.5714285969734192,
+        1.0,
+        0.4285714328289032,
+        0.0,
+        1.0,
+        0.4285714328289032,
+        0.0,
+        0.2857142984867096,
+        -1.0,
+        1.0,
+        1.0,
+        0.2857142984867096,
+        0.8571428656578064,
+        -0.7142857313156128,
+        1.0,
+        0.8571428656578064,
+        0.5714285969734192,
+        0.7142857313156128,
+        -0.4285714328289032,
+        1.0,
+        0.8571428656578064,
+        0.0,
+        0.7142857313156128,
+        -1.0,
+        1.0,
+        0.7142857313156128,
+        0.2857142984867096,
+        0.5714285969734192,
+        -0.7142857313156128,
+        1.0,
+        0.0,
+        0.1428571492433548,
+        -0.1428571492433548,
+        -0.8571428656578064,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_observations",
+        100,
+        1,
+        "sha256"
+      ],
+      "value": "674a8af78537a43b0df7cf6454bbb75d3a158b5b3ccc949a1dac8c390de7e52d"
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_meters",
+        100,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_meters",
+        100,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_meters",
+        100,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2,
+        8
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_meters",
+        100,
+        0,
+        "value"
+      ],
+      "value": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        0.0,
+        0.5,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_meters",
+        100,
+        0,
+        "sha256"
+      ],
+      "value": "5c6550d00599bed01ed45a59458ad2158888833d500891c350bf36631795a89c"
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_meters",
+        100,
+        1,
+        "value"
+      ],
+      "value": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        0.0,
+        0.5,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_meters",
+        100,
+        1,
+        "sha256"
+      ],
+      "value": "5c6550d00599bed01ed45a59458ad2158888833d500891c350bf36631795a89c"
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_dones",
+        100,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_dones",
+        100,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.bool"
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_dones",
+        100,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_dones",
+        100,
+        0,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_dones",
+        100,
+        0,
+        "sha256"
+      ],
+      "value": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_dones",
+        100,
+        1,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_dones",
+        100,
+        1,
+        "sha256"
+      ],
+      "value": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_counts",
+        100,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_counts",
+        100,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.int64"
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_counts",
+        100,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_counts",
+        100,
+        0,
+        "value"
+      ],
+      "value": 0
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_counts",
+        100,
+        0,
+        "sha256"
+      ],
+      "value": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc"
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_counts",
+        100,
+        1,
+        "value"
+      ],
+      "value": 0
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_counts",
+        100,
+        1,
+        "sha256"
+      ],
+      "value": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc"
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_global_tick",
+        100,
+        -1,
+        "value"
+      ],
+      "value": 0
+    },
+    {
+      "key": [
+        "budget-six",
+        "initial_energy",
+        100,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "initial_energy",
+        100,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.float32"
+    },
+    {
+      "key": [
+        "budget-six",
+        "initial_energy",
+        100,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "initial_energy",
+        100,
+        0,
+        "value"
+      ],
+      "value": 1.0
+    },
+    {
+      "key": [
+        "budget-six",
+        "initial_energy",
+        100,
+        1,
+        "value"
+      ],
+      "value": 1.0
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_population_counts",
+        100,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_population_counts",
+        100,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.int64"
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_population_counts",
+        100,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_population_counts",
+        100,
+        0,
+        "value"
+      ],
+      "value": 0
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_population_counts",
+        100,
+        1,
+        "value"
+      ],
+      "value": 0
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_population_completed",
+        100,
+        -1,
+        "present"
+      ],
+      "value": true
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_population_completed",
+        100,
+        -1,
+        "dtype"
+      ],
+      "value": "torch.bool"
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_population_completed",
+        100,
+        -1,
+        "shape"
+      ],
+      "value": [
+        2
+      ]
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_population_completed",
+        100,
+        0,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_population_completed",
+        100,
+        1,
+        "value"
+      ],
+      "value": false
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_completion_reason",
+        100,
+        0,
+        "value"
+      ],
+      "value": null
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_completion_survival",
+        100,
+        0,
+        "value"
+      ],
+      "value": null
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_completion_reason",
+        100,
+        1,
+        "value"
+      ],
+      "value": null
+    },
+    {
+      "key": [
+        "budget-six",
+        "reset_completion_survival",
+        100,
+        1,
+        "value"
+      ],
+      "value": null
+    }
+  ],
+  "contract": {
+    "qualified": true,
+    "errors": []
+  }
+}

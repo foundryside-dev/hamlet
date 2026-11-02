@@ -1,0 +1,30 @@
+{
+  "name": "causal",
+  "exit_code": 0,
+  "seconds": 66.15634655952454,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_learner_legality.py",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-k",
+    "load_before_first_step and active-current and feedforward and load",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave09-r1-causal"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave09-r1-causal/causal.log",
+  "sha256": "a196a07486ee0e4b8e7a403e6c0609f911396da08b94829ca485df30b4a719b0",
+  "candidate_tree": "35d10aaf7656b53259eb90b4ff6a9b8199c33842",
+  "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+  "manifest_sha256": "5fb5441c6dd09464b5f540c932cba4b23cc5b864cfdf3e04a28aff76398b996e",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

@@ -1,0 +1,20 @@
+from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor,as_completed
+import os,subprocess,json,time,hashlib,sys,fcntl
+spec=json.loads(Path(sys.argv[1]).read_text());root=Path(spec['root']);q=Path(spec['output']);q.mkdir(exist_ok=True);mp=Path(spec['manifest']);m=json.loads(mp.read_text());py=str(root/'.venv/bin/python');env=dict(os.environ,OMP_NUM_THREADS='1',MKL_NUM_THREADS='1',OPENBLAS_NUM_THREADS='1',CUDA_VISIBLE_DEVICES='',PYTHONPATH=str(q.parent)+':'+str(root/'src'),BAC_QUAL_ROOT=str(root),BAC_QUAL_SHA=m['base_commit'],BAC_QUAL_TREE=m['candidate_tree'],BAC_QUAL_MANIFEST=str(mp))
+def check():
+ assert subprocess.check_output(['git','rev-parse','HEAD'],cwd=root,text=True).strip()==m['base_commit']
+ with (root/'.superpowers/bac-qualification-index.lock').open('a') as metadata_lock:
+  fcntl.flock(metadata_lock.fileno(),fcntl.LOCK_EX)
+  assert subprocess.check_output(['git','write-tree'],cwd=root,text=True).strip()==m['candidate_tree']
+  fcntl.flock(metadata_lock.fileno(),fcntl.LOCK_UN)
+ assert subprocess.run(['git','diff','--quiet'],cwd=root).returncode==0
+ for p,h in m['source_files'].items():assert hashlib.sha256((root/p).read_bytes()).hexdigest()==h,p
+check()
+def run(job):
+ name=job['name'];cmd=[py,*job['args']];log=q/(name+'.log');start=time.time();e=dict(env,BAC_QUAL_OUTPUT=str(q/name))
+ with log.open('w') as f:code=subprocess.run(cmd,cwd=root,env=e,stdout=f,stderr=subprocess.STDOUT).returncode
+ x={'name':name,'exit_code':code,'seconds':time.time()-start,'command':cmd,'log':str(log),'sha256':hashlib.sha256(log.read_bytes()).hexdigest(),'candidate_tree':m['candidate_tree'],'base_commit':m['base_commit'],'manifest_sha256':hashlib.sha256(mp.read_bytes()).hexdigest(),'harness_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest()};(q/(name+'-result.json')).write_text(json.dumps(x,indent=2)+'\n');return x
+with ThreadPoolExecutor(max_workers=spec['workers']) as pool:
+ for f in as_completed([pool.submit(run,j) for j in spec['jobs']]):print(json.dumps(f.result()),flush=True)
+check()

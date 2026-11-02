@@ -1,0 +1,131 @@
+{
+  "source_commit": "ae0914afb3e7e1ca525e91acd49a07b3ae54c327",
+  "qualified_source_tree": "f71c52fad680a74da1b90cc7470455fc90f4fa3f",
+  "full": "6845passed16skipped; originalae0914afsourcebinding retained",
+  "native": "All6genuinecleancommitted sourcecaptures qualified; identities and postflightPASS",
+  "guarded_documentation_tree": "72f9450da268fdb48d7b18b18bfbf45c1ea00b9e",
+  "guards": [
+    {
+      "name": "ruff",
+      "exit_code": 0,
+      "seconds": 0.12851452827453613,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "ruff",
+        "check",
+        "."
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave09-documentation-guards/ruff.log",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "candidate_tree": "72f9450da268fdb48d7b18b18bfbf45c1ea00b9e",
+      "base_commit": "ae0914afb3e7e1ca525e91acd49a07b3ae54c327",
+      "manifest_sha256": "218b09f770e584693428f696e20effeca30e257f1a26efd782ec480982182117",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "name": "mypy",
+      "exit_code": 0,
+      "seconds": 0.7119195461273193,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "mypy",
+        "src/townlet"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave09-documentation-guards/mypy.log",
+      "sha256": "abe631e2bac5b4f028c09d636a1e35be825ccfcf44ec8461e6bea488225d5092",
+      "candidate_tree": "72f9450da268fdb48d7b18b18bfbf45c1ea00b9e",
+      "base_commit": "ae0914afb3e7e1ca525e91acd49a07b3ae54c327",
+      "manifest_sha256": "218b09f770e584693428f696e20effeca30e257f1a26efd782ec480982182117",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "name": "black",
+      "exit_code": 0,
+      "seconds": 46.75905799865723,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "black",
+        "--check",
+        "src",
+        "tests",
+        "scripts",
+        "--workers",
+        "1"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave09-documentation-guards/black.log",
+      "sha256": "090f2e71a2607528ef3483e11acee8c96fdc611712cfa27c1e19a5e38db36749",
+      "candidate_tree": "72f9450da268fdb48d7b18b18bfbf45c1ea00b9e",
+      "base_commit": "ae0914afb3e7e1ca525e91acd49a07b3ae54c327",
+      "manifest_sha256": "218b09f770e584693428f696e20effeca30e257f1a26efd782ec480982182117",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "name": "no-defaults",
+      "exit_code": 0,
+      "seconds": 1.623121976852417,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "scripts/no_defaults_lint.py",
+        "src/townlet/",
+        "--whitelist",
+        ".defaults-whitelist.txt",
+        "--ratchet",
+        ".defaults-ratchet",
+        "--quiet"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave09-documentation-guards/no-defaults.log",
+      "sha256": "598fbd71dd7a34f46c3f9cb59d583a08280d89786ee55281809c876e60b2f71e",
+      "candidate_tree": "72f9450da268fdb48d7b18b18bfbf45c1ea00b9e",
+      "base_commit": "ae0914afb3e7e1ca525e91acd49a07b3ae54c327",
+      "manifest_sha256": "218b09f770e584693428f696e20effeca30e257f1a26efd782ec480982182117",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "name": "expression-doc",
+      "exit_code": 0,
+      "seconds": 2.4452459812164307,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "scripts/gen_expression_functions_doc.py",
+        "--check"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave09-documentation-guards/expression-doc.log",
+      "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf",
+      "candidate_tree": "72f9450da268fdb48d7b18b18bfbf45c1ea00b9e",
+      "base_commit": "ae0914afb3e7e1ca525e91acd49a07b3ae54c327",
+      "manifest_sha256": "218b09f770e584693428f696e20effeca30e257f1a26efd782ec480982182117",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "name": "compiler-cli",
+      "exit_code": 0,
+      "seconds": 177.66164088249207,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "scripts/validate_compiler_cli.py"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave09-documentation-guards/compiler-cli.log",
+      "sha256": "c52708a78bbdd42b7b5dfca77fc3596dbb483aade747c1f748a29dc216cfd24a",
+      "candidate_tree": "72f9450da268fdb48d7b18b18bfbf45c1ea00b9e",
+      "base_commit": "ae0914afb3e7e1ca525e91acd49a07b3ae54c327",
+      "manifest_sha256": "218b09f770e584693428f696e20effeca30e257f1a26efd782ec480982182117",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    }
+  ],
+  "after_guards": "Only generated implementation-receipt trailingblank normalized and this evidence/guard-log publication added; execution-bearing file diff against sourcecommit empty",
+  "raw_logs": "Original archived logs remain byte-identical. Optional whitespace check excludes their original captured whitespace; production/prose whitespace checked separately.",
+  "execution_equivalence_paths": [
+    "src",
+    "configs",
+    "scripts",
+    "tests",
+    "pyproject.toml",
+    "uv.lock",
+    ".defaults-ratchet"
+  ],
+  "remote_ci": "Not claimed here; exact pushed-tip SHA and every job checked separately.",
+  "scope": "Scoped T15 release;25/66packages,all54requirements/22final lenses+learning/E2E/finalgates remainopen. CPUonly,CUDAunavailable."
+}

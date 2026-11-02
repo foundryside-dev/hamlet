@@ -19,9 +19,10 @@ The survival world in `configs/default_curriculum` — eight meters, fourteen af
 
 ## Status and verification
 
-Townlet is pre-release: version 0.1.0, classified Alpha, with no backwards-compatibility contract.
-Removed declarations and artifact versions fail loudly; there are no compatibility readers or
-migration paths.
+Townlet is pre-release: version 0.1.0, classified Alpha, with no general backwards-compatibility
+promise. Unsupported declarations and artifact versions fail loudly. Explicitly approved
+historical replay adapters retain old artifacts/history for inspection and export and restore
+compatible available learned state/clocks; old maskless rows do not enter qualified learning.
 
 **Source review:** `fix/vfs-compiler-remediation-2` at
 `6475cc5b377a6f876afad92de48fe221710e96e7`, 2026-11-01 Australia/Canberra, by the
@@ -370,6 +371,11 @@ a split across files moves it while every semantic hash stays put; a comment edi
 | Brain as Code | `feedforward`, `dueling`, `token_set`, token-native `recurrent`; optimizer/loss/network factories and declared replay configuration | Cognitive topology, personality, goals, panic/compliance and think-loop graph are not implemented |
 | Observation | Seven typed token families, compact serialization, masked publishers, policy-authorized registry/item plans | Agent-token capacity is zero by construction: the batch is independent single-agent worlds and agents-per-world cannot be declared; held-item/locality relationships are incomplete |
 | Integration/UX | Training, checkpoints, live server, Vue observer and recording machinery | Experiment controls, terminal lanes, randomness isolation, model handoff and browser journeys need further qualification |
+
+T15 learner changes (2026-11-02) cover recorded historical legality, backend readiness,
+recurrent objectives and finite TD telemetry. [BAC status](docs/remediation/bac/STATUS.md)
+records their qualification and remaining native/runtime/learning requirements; this local note
+does not refresh the broader dated source/CI review above.
 
 The token type schema is the transfer contract; the serialization layout is per universe. At
 `6475cc5b` every one of the 33 compilable levels has `token_type_schema_hash`

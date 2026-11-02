@@ -1,0 +1,270 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 4/4 workers
+4 workers [6 items]
+
+FFFFFF                                                                   [100%]
+=================================== FAILURES ===================================
+_ test_authored_target_matrix_and_direction[uniform-global-mask-False-feedforward] _
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-narrow-r0/popen-gw2/test_authored_target_matrix_an0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7faa8bca6d70>
+family = 'feedforward', double = False, global_illegal = True, per = False
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("double", (False, True))
+    @pytest.mark.parametrize("global_illegal", (False, True), ids=("state-mask", "global-mask"))
+    @pytest.mark.parametrize("per", (False, True), ids=("uniform", "per"))
+    def test_authored_target_matrix_and_direction(tmp_path, monkeypatch, family, double, global_illegal, per):
+        # A real flat constructor reaches today's wrong target, independently of the new factory.
+>       pop = _make(tmp_path, family, per=per, explicit=family == "recurrent", double=double, length=1, global_illegal=global_illegal)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:295: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_learner_legality.py:130: in _make
+    universe = UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/universe/compiler.py:147: in compile
+    raw = RawConfigsV21.from_declarations(declarations)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/universe/raw_configs_v21.py:167: in from_declarations
+    store.errors.check_and_raise()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = CompilationErrorCollector(stage='Stage 1: Parse v2.1 configs', _issues=[CompilationMessage(code=<ErrorCode.LEVEL_LOAD_...popen-gw2/test_authored_target_matrix_an0/pack/levels/L1_full_observability/training.yaml:39')], hints=[], warnings=[])
+stage_label = None
+
+    def check_and_raise(self, stage_label: str | None = None) -> None:
+        if self._issues:
+>           raise CompilationError(
+                stage_label or self.stage or "Compiler",
+                self._issues,
+                self.hints,
+                self.warnings,
+            )
+E           townlet.universe.errors.CompilationError: Stage 1: Parse v2.1 configs failed:
+E             - [LEVEL_LOAD_ERROR] /workspace/bac-review-2026-11-01/qualification/scratch/wave09-narrow-r0/popen-gw2/test_authored_target_matrix_an0/pack/levels/L1_full_observability/training.yaml:39 - Invalid training declaration (exploration.epsilon_decay): Input should be less than 1
+
+src/townlet/universe/errors.py:92: CompilationError
+_______________ test_declared_warmup_blocks_existing_constructor _______________
+[gw3] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-narrow-r0/popen-gw3/test_declared_warmup_blocks_ex0')
+
+    def test_declared_warmup_blocks_existing_constructor(tmp_path):
+>       pop = _make(tmp_path, minimum=12)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:377: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_learner_legality.py:130: in _make
+    universe = UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/universe/compiler.py:147: in compile
+    raw = RawConfigsV21.from_declarations(declarations)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/universe/raw_configs_v21.py:167: in from_declarations
+    store.errors.check_and_raise()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = CompilationErrorCollector(stage='Stage 1: Parse v2.1 configs', _issues=[CompilationMessage(code=<ErrorCode.LEVEL_LOAD_...popen-gw3/test_declared_warmup_blocks_ex0/pack/levels/L1_full_observability/training.yaml:39')], hints=[], warnings=[])
+stage_label = None
+
+    def check_and_raise(self, stage_label: str | None = None) -> None:
+        if self._issues:
+>           raise CompilationError(
+                stage_label or self.stage or "Compiler",
+                self._issues,
+                self.hints,
+                self.warnings,
+            )
+E           townlet.universe.errors.CompilationError: Stage 1: Parse v2.1 configs failed:
+E             - [LEVEL_LOAD_ERROR] /workspace/bac-review-2026-11-01/qualification/scratch/wave09-narrow-r0/popen-gw3/test_declared_warmup_blocks_ex0/pack/levels/L1_full_observability/training.yaml:39 - Invalid training declaration (exploration.epsilon_decay): Input should be less than 1
+
+src/townlet/universe/errors.py:92: CompilationError
+_ test_authored_target_matrix_and_direction[uniform-state-mask-False-feedforward] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-narrow-r0/popen-gw0/test_authored_target_matrix_an0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f6eea4a2d70>
+family = 'feedforward', double = False, global_illegal = False, per = False
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("double", (False, True))
+    @pytest.mark.parametrize("global_illegal", (False, True), ids=("state-mask", "global-mask"))
+    @pytest.mark.parametrize("per", (False, True), ids=("uniform", "per"))
+    def test_authored_target_matrix_and_direction(tmp_path, monkeypatch, family, double, global_illegal, per):
+        # A real flat constructor reaches today's wrong target, independently of the new factory.
+>       pop = _make(tmp_path, family, per=per, explicit=family == "recurrent", double=double, length=1, global_illegal=global_illegal)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:295: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_learner_legality.py:130: in _make
+    universe = UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/universe/compiler.py:147: in compile
+    raw = RawConfigsV21.from_declarations(declarations)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/universe/raw_configs_v21.py:167: in from_declarations
+    store.errors.check_and_raise()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = CompilationErrorCollector(stage='Stage 1: Parse v2.1 configs', _issues=[CompilationMessage(code=<ErrorCode.LEVEL_LOAD_...popen-gw0/test_authored_target_matrix_an0/pack/levels/L1_full_observability/training.yaml:41')], hints=[], warnings=[])
+stage_label = None
+
+    def check_and_raise(self, stage_label: str | None = None) -> None:
+        if self._issues:
+>           raise CompilationError(
+                stage_label or self.stage or "Compiler",
+                self._issues,
+                self.hints,
+                self.warnings,
+            )
+E           townlet.universe.errors.CompilationError: Stage 1: Parse v2.1 configs failed:
+E             - [LEVEL_LOAD_ERROR] /workspace/bac-review-2026-11-01/qualification/scratch/wave09-narrow-r0/popen-gw0/test_authored_target_matrix_an0/pack/levels/L1_full_observability/training.yaml:41 - Invalid training declaration (exploration.epsilon_decay): Input should be less than 1
+
+src/townlet/universe/errors.py:92: CompilationError
+___________ test_large_finite_td_mean_is_truthful[modest-False-0.0] ____________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-narrow-r0/popen-gw1/test_large_finite_td_mean_is_t0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f07e5fa2d70>
+per = False, alpha = 0.0, reward = 1.0
+
+    @pytest.mark.parametrize("per,alpha", ((False, 0.0), (True, 0.0), (True, 1.0)))
+    @pytest.mark.parametrize("reward", (1.0, 2e38), ids=("modest", "large-finite"))
+    def test_large_finite_td_mean_is_truthful(tmp_path, monkeypatch, per, alpha, reward):
+        # No network injection or buffer/priority writes: the admitted authored X04 witness.
+>       pop = _make(tmp_path, per=per, alpha=alpha, reward=reward, gamma=0.0, capacity=2, length=1)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:358: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_learner_legality.py:130: in _make
+    universe = UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/universe/compiler.py:147: in compile
+    raw = RawConfigsV21.from_declarations(declarations)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/universe/raw_configs_v21.py:167: in from_declarations
+    store.errors.check_and_raise()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = CompilationErrorCollector(stage='Stage 1: Parse v2.1 configs', _issues=[CompilationMessage(code=<ErrorCode.LEVEL_LOAD_...popen-gw1/test_large_finite_td_mean_is_t0/pack/levels/L1_full_observability/training.yaml:39')], hints=[], warnings=[])
+stage_label = None
+
+    def check_and_raise(self, stage_label: str | None = None) -> None:
+        if self._issues:
+>           raise CompilationError(
+                stage_label or self.stage or "Compiler",
+                self._issues,
+                self.hints,
+                self.warnings,
+            )
+E           townlet.universe.errors.CompilationError: Stage 1: Parse v2.1 configs failed:
+E             - [LEVEL_LOAD_ERROR] /workspace/bac-review-2026-11-01/qualification/scratch/wave09-narrow-r0/popen-gw1/test_large_finite_td_mean_is_t0/pack/levels/L1_full_observability/training.yaml:39 - Invalid training declaration (exploration.epsilon_decay): Input should be less than 1
+
+src/townlet/universe/errors.py:92: CompilationError
+__ test_constructor_inspection_preserves_nullable_limits_and_global_per_role ___
+[gw3] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-narrow-r0/popen-gw3/test_constructor_inspection_pr0')
+
+    def test_constructor_inspection_preserves_nullable_limits_and_global_per_role(tmp_path):
+>       pop = _make(tmp_path, per=True, limits=(None, None))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:1048: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_learner_legality.py:130: in _make
+    universe = UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/universe/compiler.py:147: in compile
+    raw = RawConfigsV21.from_declarations(declarations)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/universe/raw_configs_v21.py:167: in from_declarations
+    store.errors.check_and_raise()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = CompilationErrorCollector(stage='Stage 1: Parse v2.1 configs', _issues=[CompilationMessage(code=<ErrorCode.LEVEL_LOAD_...popen-gw3/test_constructor_inspection_pr0/pack/levels/L1_full_observability/training.yaml:39')], hints=[], warnings=[])
+stage_label = None
+
+    def check_and_raise(self, stage_label: str | None = None) -> None:
+        if self._issues:
+>           raise CompilationError(
+                stage_label or self.stage or "Compiler",
+                self._issues,
+                self.hints,
+                self.warnings,
+            )
+E           townlet.universe.errors.CompilationError: Stage 1: Parse v2.1 configs failed:
+E             - [LEVEL_LOAD_ERROR] /workspace/bac-review-2026-11-01/qualification/scratch/wave09-narrow-r0/popen-gw3/test_constructor_inspection_pr0/pack/levels/L1_full_observability/training.yaml:39 - Invalid training declaration (exploration.epsilon_decay): Input should be less than 1
+
+src/townlet/universe/errors.py:92: CompilationError
+________ test_large_finite_td_mean_is_truthful[large-finite-False-0.0] _________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-narrow-r0/popen-gw1/test_large_finite_td_mean_is_t1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f07e5fa3230>
+per = False, alpha = 0.0, reward = 2e+38
+
+    @pytest.mark.parametrize("per,alpha", ((False, 0.0), (True, 0.0), (True, 1.0)))
+    @pytest.mark.parametrize("reward", (1.0, 2e38), ids=("modest", "large-finite"))
+    def test_large_finite_td_mean_is_truthful(tmp_path, monkeypatch, per, alpha, reward):
+        # No network injection or buffer/priority writes: the admitted authored X04 witness.
+>       pop = _make(tmp_path, per=per, alpha=alpha, reward=reward, gamma=0.0, capacity=2, length=1)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:358: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_learner_legality.py:130: in _make
+    universe = UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/universe/compiler.py:147: in compile
+    raw = RawConfigsV21.from_declarations(declarations)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/universe/raw_configs_v21.py:167: in from_declarations
+    store.errors.check_and_raise()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = CompilationErrorCollector(stage='Stage 1: Parse v2.1 configs', _issues=[CompilationMessage(code=<ErrorCode.LEVEL_LOAD_...popen-gw1/test_large_finite_td_mean_is_t1/pack/levels/L1_full_observability/training.yaml:39')], hints=[], warnings=[])
+stage_label = None
+
+    def check_and_raise(self, stage_label: str | None = None) -> None:
+        if self._issues:
+>           raise CompilationError(
+                stage_label or self.stage or "Compiler",
+                self._issues,
+                self.hints,
+                self.warnings,
+            )
+E           townlet.universe.errors.CompilationError: Stage 1: Parse v2.1 configs failed:
+E             - [LEVEL_LOAD_ERROR] /workspace/bac-review-2026-11-01/qualification/scratch/wave09-narrow-r0/popen-gw1/test_large_finite_td_mean_is_t1/pack/levels/L1_full_observability/training.yaml:39 - Invalid training declaration (exploration.epsilon_decay): Input should be less than 1
+
+src/townlet/universe/errors.py:92: CompilationError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_authored_target_matrix_and_direction[uniform-global-mask-False-feedforward]
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_declared_warmup_blocks_existing_constructor
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_authored_target_matrix_and_direction[uniform-state-mask-False-feedforward]
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_large_finite_td_mean_is_truthful[modest-False-0.0]
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_constructor_inspection_preserves_nullable_limits_and_global_per_role
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_large_finite_td_mean_is_truthful[large-finite-False-0.0]
+============================== 6 failed in 13.06s ==============================

@@ -1,0 +1,478 @@
+{
+  "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+  "candidate_tree": "c6beac9d65c88a7063c27f4d64750cb49b7ae97a",
+  "snapshot": "/workspace/hamlet",
+  "phase": "T15 r3 frozen after all writers stationary; actual repaired candidate awaiting qualified executable evidence",
+  "source_files": {
+    ".defaults-ratchet": "b1fd0bf659abf177e912b8bab5330c9efda2b4d0851aa7937ed7f16f8d0dca9e",
+    "docs/remediation/bac/STATUS.md": "955fce0933f186c5a32c045c6439d5aabc019864d1fcede360913d72014ed06a",
+    "docs/remediation/bac/acceptance-ledger.json": "97763d4f06667b628d92db307c2f65e0369bf7072e1f9707e2d94f86435b0a46",
+    "docs/remediation/bac/evidence/T15-interface-preparation.json": "72b073837abe3c88d5caee0d40643f7e81e4931fc0d9c701c7b3dd68c0ff761e",
+    "docs/remediation/bac/evidence/X04-acceptance-overlay.json": "bd1e028dd6df9ed2bbaad38cb93a9aa0adeffd28ba227e8441110c2d27b68d8c",
+    "docs/remediation/bac/evidence/email-only-identity-mapping.json": "c9a60f082540f5d5e222aa515607680d551778ed83a4aca3b8fcc5430c481543",
+    "docs/remediation/bac/evidence/wave05-qualification.json": "33b6fb7c10007587ef9e4bbb629238f50833a4d47cc7c15f06cbffb9650ed3d5",
+    "docs/remediation/bac/evidence/wave06-qualification.json": "0683d4994771bfacc7843a9a77b4eec78a63c2a32195524bac0e28204054fa0f",
+    "docs/remediation/bac/evidence/wave06-source-binding.md": "aa1803ad05ce03aa41f9f4f79517311dc7638e5505494540a242dac2e7f8bd05",
+    "docs/remediation/bac/evidence/wave07-qualification.json": "be0c98c492f6360ca35bd1ce05e7d06bf0d6308b8de35b18ea12591ee3ec7f10",
+    "docs/remediation/bac/evidence/wave07-source-binding.md": "8006ad17951fe056b71f23c487371e0e3c4baa25c7545b88f24203a4c931d21f",
+    "docs/remediation/bac/evidence/wave08-qualification.json": "e2b9c1cc0ceefa79382fb20011cdd264c94341d9829bb1c780c0376e0a612283",
+    "docs/remediation/bac/evidence/wave08-source-binding.md": "089e048452aee6f6bf9c5c681a82ffc1b027c635a335abf9681ee670ca99109e",
+    "docs/remediation/bac/package-reviews/PW02-implementation.md": "d043a9769b81a2d95a3c85155b253c3090a2dc4f75d29c3bdf69e12f537e9216",
+    "docs/remediation/bac/package-reviews/PW02-independent-review.md": "03299c0fdaeace1a51ef23fdadc7947bf5685d02957db4975b2d159ed08b3c7a",
+    "docs/remediation/bac/package-reviews/PW02-key-ownership-finding.md": "64e3a27ba5bee32521702628524bc1670f01d0714ad22adeaca1d121c56222a3",
+    "docs/remediation/bac/package-reviews/T06-implementation.md": "be1e6a853e9fcfdb75aa77f6ab58a658e782ba49d99aef2de7afd28e659de121",
+    "docs/remediation/bac/package-reviews/T06-independent-review.md": "25ca43e41e64945f75381aaaa74600986d92e7e3f75f3f8f8346c9d638d344e3",
+    "docs/remediation/bac/package-reviews/T06-preservation-finding.md": "b83c42525b09f70994b3ec13332343413719011599bad42eeb7096b9b64b7022",
+    "docs/remediation/bac/package-reviews/T06-transport-initial-review.md": "554c8008e97d4d9bdf0bd5bac0d97227537655ad445bd1bdf017e2233b62bcbb",
+    "docs/remediation/bac/package-reviews/T07-clock-finding.md": "3d52b56dc1ebc10dde222dc0dae9e25772d5820153fd7ead7572205f47a4e084",
+    "docs/remediation/bac/package-reviews/T07-common-binding.md": "f38edfc29dd0e02f289a27f48c5cf6206d1846f121270b3e7fd8635087248612",
+    "docs/remediation/bac/package-reviews/T07-implementation.md": "d9d63bd8fc406f872be7a4f34650189870d840146fc906b72b30f9c3a22885ac",
+    "docs/remediation/bac/package-reviews/T07-independent-review.md": "79387e41a3b6501c1a87e8f80262cb6d8a30c92be296cf1f8590282ce8594d4b",
+    "docs/remediation/bac/package-reviews/T07-scope-finding.md": "9ed00d59b257bb7e1535bf98479a7e518a0bef5574ab4a6b83aa322aa73c620f",
+    "docs/remediation/bac/package-reviews/T11-implementation.md": "9c79533e65adc501fe3714d7cc29d1a56b8ccf7676afd17744f8f2c98ff2483c",
+    "docs/remediation/bac/package-reviews/T11-independent-review.md": "cf88d21b87a53dcced008cdc8a4482b410fb28f3b22ad6fd2ce62c8202602b8e",
+    "docs/remediation/bac/package-reviews/T12-checkpoint-owner-review.md": "6fe2d4b38477f30fad2b8b99021211d8b0c2cd3c90574a39d8aa39b4f9e2e9f1",
+    "docs/remediation/bac/package-reviews/T12-common-binding.md": "6b097398da6daa9339bd9c83712c378967e48f43f508a58cdf8697d985d86145",
+    "docs/remediation/bac/package-reviews/T12-implementation.md": "43f27778ac9256782d665f1e5d218c430c3b5ac699ec1e49ceb2ad990d9b7f12",
+    "docs/remediation/bac/package-reviews/T12-independent-review.md": "808dcfc041826b88aa1b13a679aed8b49ee23e3cac55bfa7f18365e31e6cda01",
+    "docs/remediation/bac/package-reviews/T12-inspection-design-review.md": "f29b568531ad2493cca472c22936b285619fc0242cbeca641be5ba4b7a6a2721",
+    "docs/remediation/bac/package-reviews/T12-inspection-finding.md": "1b54e50fc4ba507e4bdc5f886c27ee787fbaae579f8fc1c3b2f82d69536f2f57",
+    "docs/remediation/bac/package-reviews/T12-inspection-native-handoff.md": "63c7d057e98ae7d980c85366bd513997eeda5c1a6a51e554d015c45343757c3d",
+    "docs/remediation/bac/package-reviews/T12-inspection-transport.md": "7c6f11ebc0634832a3aa7c1464c45b1942aff26a135118dc167cf728e9b570f5",
+    "docs/remediation/bac/package-reviews/T12-native-proof-review.md": "8a6f093b5698626eb15acc5f79c357f9aebf19d0c20ab21bdca4728caebe0178",
+    "docs/remediation/bac/package-reviews/T13-authored-reachability.md": "d87871f80fc20c8ee6936dd9a83deb9b95a8793aa698b5feb750e60ef43f83ec",
+    "docs/remediation/bac/package-reviews/T13-consumer-review.md": "33fea7a7c3ba4f078905c0c22b9f62908d6c693764979bf61a328250d37b3803",
+    "docs/remediation/bac/package-reviews/T13-implementation.md": "07c0b4901b600acf375758a19a9cacb72d019c0648246387e4d38bf7ee61aef7",
+    "docs/remediation/bac/package-reviews/T13-independent-review.md": "ae44aa60413f65c03e1308f72abdbc5fd6d37c105acca0e06e3e051c4a9f082b",
+    "docs/remediation/bac/package-reviews/T13-initial-findings.md": "d739097c349da2eb7041835ba032c960a2d44e61a5004a6d651330b95a225770",
+    "docs/remediation/bac/package-reviews/T13-max-findings.md": "e50b94cf54a832258abc4698ff78340319c351ed888500b772fefcf0a2bdb96a",
+    "docs/remediation/bac/package-reviews/T13-native-proof-review.md": "b403982953ea1383dcb9c7b5e0711ff7d45cabc2de30f5d83999960264d001ef",
+    "docs/remediation/bac/package-reviews/T13-owner-review.md": "50e1529208a31d3fd4238b46b4a763c0e87a03b0ee870f0b4442a90886081560",
+    "docs/remediation/bac/package-reviews/T14-admission-clarification.md": "0ae2044a42eed3e9377e3da39a0a3df4dbda4ff8c1c36f4b7f57c3f671303fe6",
+    "docs/remediation/bac/package-reviews/T14-core-execution.md": "7b24523c89cec70d056cd041bde35a1f8e8eb723cf6a33be0fc9ed84e4ffb272",
+    "docs/remediation/bac/package-reviews/T14-estimator-causal-finding.md": "0c9774700fd3a8ef0dcb50ccfe287b279211fe52d804e762f5b7b0d3cf782cca",
+    "docs/remediation/bac/package-reviews/T14-estimator-execution.md": "bb6c1f4d44144804c5eae74969ac15f265b6eec7255f03ee4fe2aba962708484",
+    "docs/remediation/bac/package-reviews/T14-estimator-review.md": "0eb44fe985e3868c74356ebbf44ab111f12126abb942eebe6ff0d6d4dd4c5975",
+    "docs/remediation/bac/package-reviews/T14-implementation.md": "5c0b4920939846046ef812c94200c6d7843fa6ee901d8b0bc09c2095a20f23c5",
+    "docs/remediation/bac/package-reviews/T14-independent-review.md": "c7817f6547c13af3989f7dd9b12a5cfc2e564e67614bede2779dc130c130aab3",
+    "docs/remediation/bac/package-reviews/T14-interface-review.md": "c5ef82eb558fae52dc4dd3e5b3502ab8eb247c31514429babe13f59ab5e7fed6",
+    "docs/remediation/bac/package-reviews/T14-interface.md": "2d7e60bc40956270dbbc39f26b81f74461caf5360e2ac1a00306004940903f05",
+    "docs/remediation/bac/package-reviews/T14-native-execution.md": "8b871adf5d4de844818239f18f5e4c173d6eedcfb72a48e091a19cd14961314c",
+    "docs/remediation/bac/package-reviews/T14-native-handoff.md": "52121819607642724bf843b763b7b25594a3571ce81de7397e6ef6eea4f67eda",
+    "docs/remediation/bac/package-reviews/T14-native-review.md": "29114502f1ddbf900c76bd198636f6dca6f28fe157e262852223182e89ca5650",
+    "docs/remediation/bac/package-reviews/T14-owner-execution.md": "349f9cff4ea6f11a8db6ef7798b7541a95f09ddaa15d9b675d23550dcc631bf1",
+    "docs/remediation/bac/package-reviews/T14-owner-review.md": "d1177a1af38f47e8b449bd67cdc17b361a39548ea7ca6549ada551b4c330add2",
+    "docs/remediation/bac/package-reviews/T15-config-contracts.md": "e591daa76c71d669a86e46cc997c2a8ee2ab14ae536f19e19492eeddb9aea4b4",
+    "docs/remediation/bac/package-reviews/T15-constructor-factory.md": "9044eba1c1ccc7f586bb8011f8f6b1b4325026817f1b1608e92f3c3ce4232755",
+    "docs/remediation/bac/package-reviews/T15-constructor-runtime.md": "5c919b1a992610afb29d5cd2fd6b3a56593f3a4585975c69029949b5f4d7d36f",
+    "docs/remediation/bac/package-reviews/T15-constructor-suppliers.md": "3dd5ed3c07be30245673c722bae42ec7dba90db214b97492e5db51c9dcdbfdf6",
+    "docs/remediation/bac/package-reviews/T15-constructor-units.md": "0119730e7e6aeb2150c9e9bd1907918809146f4dfea85a17a6440c2bb7cd747a",
+    "docs/remediation/bac/package-reviews/T15-flat-contracts.md": "16871a3d981de3f7c3a0ad6140fa19675c3f975d54fa214ba2342866f0f17fc4",
+    "docs/remediation/bac/package-reviews/T15-implementation-readiness.md": "22e8102a0c291a561d757a2152049744c1d335a2547fb2cc515701a307e1dcea",
+    "docs/remediation/bac/package-reviews/T15-interface-review.md": "7cfddfcf4d46253b3c70ee7788a385379702134a037b0933fafced02d0c07f42",
+    "docs/remediation/bac/package-reviews/T15-interface.md": "359e21ccccc79d0c5b082257c68176dab565248caf2c1cef8435afd1994a845b",
+    "docs/remediation/bac/package-reviews/T15-preparation.md": "4d8bc45d8744fcc2623244f5e01641df9170539a7b1ee2b33770c65ccaffd70f",
+    "docs/remediation/bac/package-reviews/T15-provider-contracts.md": "69e08cdada3dbf2070fabdf2ccb882ecec22e50f7887ef5aca011e82e6675cf2",
+    "docs/remediation/bac/package-reviews/X04-mean-TD-triage.md": "03604920a82682235ed6a85f73d33a0c9a5e05d55139a2b2bbe27410e9abcc6f",
+    "scripts/check_episode_lanes.py": "19e0b83130f2467a2bfd890dc79e95de6d7694e79f7fa996fa16c66b43e62eb7",
+    "scripts/run_demo.py": "0029a2d758ed45907be30c6e8a21003798ddaef99dad392acc2c8a0ce3abd43a",
+    "src/townlet/config/bac_options.py": "10dc3ef7dc288d954147046c95bc8362df2162f3829986be26b2724e86dd4916",
+    "src/townlet/config/curriculum.py": "a65e3a3b4d02182f96e56d0ad3fd93c72b7e9921b64b5f9c272456250d620227",
+    "src/townlet/config/exploration.py": "b5292e6d193ab224e76f727b63d9e078fdac0ca706ae0ee7f58e7f723302951d",
+    "src/townlet/config/exploration_policy.py": "af8843ec1a270cfa49ec44b7ac5615d33db0d4d16b2d169d161bb4a1cd402c8c",
+    "src/townlet/config/resolved_launch.py": "67b5b38d729ef45a87bdcc1c2a834e8fc9d290708d9b2ee8f78dfe5093f840f4",
+    "src/townlet/config/training_v2_config.py": "ad097576f88e1e2a09ae816ccff823e9623e7d5584b0d0411b07efb2f6ba1dfc",
+    "src/townlet/demo/database.py": "7335e9798d15e14721e5278cb4e7402eea7f7da2344187c56f8bc8e42b93902e",
+    "src/townlet/demo/runner.py": "94842641bdce645fdd90d188d5bbdf6e09e7f4c071d15756202e173acd47c15d",
+    "src/townlet/demo/unified_server.py": "626634171c744ecac9ac825f5db5727e3407031efd6c8fe0dcac5a1058e2a02c",
+    "src/townlet/exploration/adaptive_intrinsic.py": "80ecb26fb33626cc9efd271422c69cdae495412f5db94a505eb59628b58b6cd9",
+    "src/townlet/exploration/count_based.py": "163cb33f06799a75c887ff7beb58e4897875c94a4780ab722d019f714b33e9c1",
+    "src/townlet/exploration/epsilon_greedy.py": "f9100a2f7f6a053a06d420d850a979d1c1e4a528461727c2a1405da5daeec059",
+    "src/townlet/exploration/icm.py": "8004aec68d19c962df0cf6785b00af32c8553a3746fee95be39009555f9d44b8",
+    "src/townlet/exploration/rnd.py": "3a774dfb042cdbf20b66555c41f75c2d537b6ff49472395877dfcf5595e26e72",
+    "src/townlet/exploration/world_curiosity_state.py": "8b242ef58af2840c069db3d599606ba4760eea675e6be5bf00d8eb89c23b5b82",
+    "src/townlet/population/vectorized.py": "9569eab3d766ed5467ecf78736cd170c7aa0d0b77d90efe28239f3bab64ff12a",
+    "src/townlet/recording/data_structures.py": "b8b2a5b2c202e8fc28ee907b645391cfb32f7d1a5530f528fa8ae6e076171158",
+    "src/townlet/recording/receipts.py": "f4f90c3ae1584965cbfc7ad84170fb3b0413ba5599a9eeb3d0d447f48b6fd647",
+    "src/townlet/recording/recorder.py": "8fca0b033bdc74f9e8146006c029b8bce6228b067f89b72109e1a886f4a32825",
+    "src/townlet/training/episode.py": "d9f93e2b0551f04ac882ffc7e4a775d34352626af3e868679c00a962f52c00a7",
+    "src/townlet/training/historical_checkpoint.py": "74709ebedc0c84208c3b30debd4101bc3bc67ca73f9df1a4be8a1aafff0894a4",
+    "src/townlet/training/per_sampling.py": "0efe801f01a31082aa52c4b9bd40c356d1c97f89690b07c7835b541b7f2c6de6",
+    "src/townlet/training/prioritized_replay_buffer.py": "290eadca0305658abdd4aec361a9b167ac63d7a887438b602c19c2eaf9020de9",
+    "src/townlet/training/q_targets.py": "39485fe2447dc4065bd7b806775c93c0e66b51827b088605fba98505b100491f",
+    "src/townlet/training/replay_buffer.py": "d6fd0517488cfde5291c33ce03f67923c407af932794fb8a902b10e1d137f1c8",
+    "src/townlet/training/replay_contract.py": "3eaa725bd6d592b7524dd249125877eb91a1f707d4dfd12fbfb59b5b6cc6356c",
+    "src/townlet/training/sequential_replay_buffer.py": "f958b1ed79bab5a37422353a04a9d78c05969950dfbf994436b4e1ce0e73392c",
+    "src/townlet/universe/compiled.py": "494f9676c236349f12c875c82dde821a85a3bf5077cae15654c78e8ac1630710",
+    "src/townlet/universe/compiler.py": "521a72dd6d0a155c89a216fa038828cc8054520714a58cc0e0420c2da9d09e92",
+    "src/townlet/universe/declarations.py": "a06b1fe8f3d16046935ded0fac95cf3312bb3f76bb937a757fb5f9ee598d84bd",
+    "src/townlet/universe/errors.py": "af30223624658d5d9cad3f56232353433f72a340d1fdb4caec69b581f91c2a53",
+    "tests/test_townlet/_fixtures/brain_configs.py": "aac8397902f8f038bee0c3da913c1a6b3930478d70c8a82156898231605cc9f4",
+    "tests/test_townlet/_fixtures/config.py": "f25801c31ddb8354cc8b63a25fa145b518a65c05b275d19f558cf6f4e3f04fb8",
+    "tests/test_townlet/_fixtures/environment.py": "21bd79b1736efd53fdacb76ca6a6f4abaf3917340204aef74994ba20b6af745c",
+    "tests/test_townlet/fixtures/bac_per_current5/per5-captured-with-per4-archive.pt": "029558d19fdae42f14e61432af8353c1c078db554a7e3b39519d39b50dadfe60",
+    "tests/test_townlet/fixtures/bac_per_current5/per5-captured.pt": "9a85394d9f36cd5660fe7a6c6944d600ce18e44410b63f5beb50203fd379b296",
+    "tests/test_townlet/fixtures/bac_per_current5/portable-manifest.json": "b3008db4299682714674b6f5b809c41b58efb9a9452299ad005383e8fe2b8780",
+    "tests/test_townlet/fixtures/bac_sequence_current6/portable-manifest.json": "426f8b8ec2db1d0e0800300b4a85b825d2d1cb594a8339add27e159d2bd6c875",
+    "tests/test_townlet/fixtures/bac_sequence_current6/sequence6-captured-with-sequence5-archive.pt": "0a40c2dbba0d64f804f91f1a5600994385777a660d4a40c851e7aa3111fa239b",
+    "tests/test_townlet/fixtures/bac_sequence_current6/sequence6-captured.pt": "02e19371fc3131db51a9569fc6d5175de5a11416e2d6cea075d441ebd8bc8434",
+    "tests/test_townlet/integration/test_authored_episode_lanes.py": "1aa95fc7764c9e85dfdc16d8f1d43f4014d86fedc18c7bcfdc627bf8779c56ac",
+    "tests/test_townlet/integration/test_checkpointing.py": "70d13c5df324111b1e9f53aba91360edfe31a0abb1cf2e5a3c7cf46b6e08968d",
+    "tests/test_townlet/integration/test_compact_token_acceptance.py": "a9a911a37679ffb850583fefaa7b73907a3f350d86959238d718c5ffb85867dc",
+    "tests/test_townlet/integration/test_recording_recorder.py": "517341fb44d5edb7cdc85dc4bb6b4f8840de7ce741695d594b766038f8d6e962",
+    "tests/test_townlet/integration/test_recording_substrate.py": "806f4f11e1a00b8dc058b643531ff78cdcea5b84c9e027fbac5993d655fcea9c",
+    "tests/test_townlet/integration/test_recurrent_bootstrap_runtime.py": "06ee4ca2e9dff88539ed8cb3120048fc058772d009fa5962ee28f127db7d8f77",
+    "tests/test_townlet/integration/test_recurrent_bptt_runtime.py": "2701678bcb442360eb2a860ea4e74bc7d5b8d4b9b2f639b78c21cd7db9f2494a",
+    "tests/test_townlet/integration/test_reward_component_flow.py": "e56dc0e57e5cc9013b88bda67f661937d9d51df872d21b0163edd05f2c2618ce",
+    "tests/test_townlet/properties/test_replay_buffer_properties.py": "5678e826ce7fcb0574deb23441cc54b9e355b3c7adc446595269e2d7ae628a17",
+    "tests/test_townlet/regressions/bac/test_count_provider.py": "0de2db0e0d2de868d803b97e8e8f0e277b365178dfddacaaa5825de65c5fed94",
+    "tests/test_townlet/regressions/bac/test_discovery.py": "eb73ca825614ba593549135253caab0b723cc07b53bf91ac3e2801fd9e73e500",
+    "tests/test_townlet/regressions/bac/test_icm_provider.py": "3759cd590ca7f6c348294ac6d58341cb7f7101cf25bfca7bfdeaea4ecdd645f8",
+    "tests/test_townlet/regressions/bac/test_launch_transport.py": "1bceb21245ebeff9ba6bc93d10603f669d964d2dbbfebdcfed56fbf8f3910d91",
+    "tests/test_townlet/regressions/bac/test_learner_legality.py": "5f6273a8054bde34f89ab77eb98c8b4c0bb9428b586511b976cecae19c33e71e",
+    "tests/test_townlet/regressions/bac/test_per_estimator.py": "2e08f44397d626a95b4b0f5142021e408250b50067fbfc16c01f2c6ae4459866",
+    "tests/test_townlet/regressions/bac/test_per_history.py": "4ea99d20fa18333d249b0ce1408b91c99c12194e6d7ddcd0788c5b4f8c492da1",
+    "tests/test_townlet/regressions/bac/test_per_native_learner.py": "6348f247dc9b5060a650f87fe8bee1d9c18ece46a868c40b6021f0360c19da16",
+    "tests/test_townlet/regressions/bac/test_public_loaders.py": "74789aa9ec679e3b9db3547600bc7e7e7c76a321f607605b4048a63b282c556d",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py": "5e671b5693eb3741424b1fadb098eca6ea3d5f51599dddc1513c1f2292847848",
+    "tests/test_townlet/regressions/bac/test_recording_drain.py": "90b876583bcc6bf047cfd7f424dac889a86103b5109bef29c38bcce838e18912",
+    "tests/test_townlet/regressions/bac/test_recurrent_per.py": "941747bb722eaa2c7a33dc7fa879dc591481f29cc73cfb4d837334854c8533bb",
+    "tests/test_townlet/regressions/bac/test_recurrent_per_native.py": "a2c6d57a2585f60471f4df8e54867dfa6ac781686d5e4bf2aab21ffd8b66335d",
+    "tests/test_townlet/regressions/bac/test_sequence_history.py": "5b4626bc9557bbd86a5b25dad5e2cbf2b7ae49d211c2b6d125bdbd1c2386a7dc",
+    "tests/test_townlet/regressions/bac/test_sequence_inspection_native.py": "017cd03d37065359096123660f9d61af4744d66df0054ae544d57c703bdcf6d3",
+    "tests/test_townlet/regressions/bac/test_uniform_history.py": "a0ee835fc7a862216bddcddcac647ffff954f59f1842be5f8f4c77656fe899fd",
+    "tests/test_townlet/regressions/fixtures/episode_lanes.py": "9de34aa9764fe2cef766aace4e6ebd391543621fa90def16b5614292e476ec7f",
+    "tests/test_townlet/regressions/test_episode_lane_artifact_pipeline.py": "1bd025f4fd8c1a18f25235ed94718e68826a8c301386906d8a09ccd85710cc1f",
+    "tests/test_townlet/regressions/test_episode_lane_learning.py": "e328726c20e82dfc6754fb4623211aae24f8a7bd70530864ef49e913b804ad2c",
+    "tests/test_townlet/regressions/test_episode_lane_population.py": "5c306090ecdf7ec50c699ffb48913376a40fd12e58feb682bfc1ceb514ecd4f8",
+    "tests/test_townlet/regressions/test_episode_lane_sinks.py": "7e4aa29416b3fcfd01470ba143d3eec43172d66cff9aa4120ef6e28b245dcd8a",
+    "tests/test_townlet/regressions/test_episode_recording_shutdown.py": "9874eed75d1b7491a5a8ef5fca1af7430b61aaff52037b8948b84e2636b67fa2",
+    "tests/test_townlet/unit/config/test_training_v2_config_dto.py": "eaeed185ee43e72b7c7179705b52fb53dd8085e7ca366c2f5c9b0bd52e0c61be",
+    "tests/test_townlet/unit/demo/test_unified_server_unit.py": "0e4e90f087d69772ba25438871f4b4c19618a1076d73546246f6ae4a63eaaa28",
+    "tests/test_townlet/unit/oracle/test_episode_lane_comparator.py": "5a259e6ab4236caf3d1b20323ee089522c101b4e91d8a294e2deb84595536d30",
+    "tests/test_townlet/unit/population/test_action_selection.py": "81ffc9ef6390f2a64471f3e9daf3ea77c751d1bc0e97ff6cbd5b03eede65b2b1",
+    "tests/test_townlet/unit/population/test_double_dqn_algorithm.py": "b9b12150109541ed53f75fc692661c305f075b616827bac4c37a83afbe859e5a",
+    "tests/test_townlet/unit/population/test_recurrent_training.py": "32f3a4e7996a5798c17b10a1ae69ad6d22631a2421549c33501f3764560325f9",
+    "tests/test_townlet/unit/population/test_vectorized_population.py": "9e0b50095cd29470afc92d42a740a800e34c731aea12abfa96a7d60d89b1015c",
+    "tests/test_townlet/unit/recording/test_recorder.py": "11d2391ec0bd7c7e105f8e8d45ce81d5771c4d87961dfee696e432ac3b15576b",
+    "tests/test_townlet/unit/training/test_prioritized_replay_buffer.py": "52db935fa6ede75d87abacbf22de3f13415463e880b65c2d78114464ff15affa",
+    "tests/test_townlet/unit/training/test_prioritized_replay_buffer_components.py": "b6dd85342a68223394786c0c6c4a80c4af45662b77df7972689067e7e50ebaaf",
+    "tests/test_townlet/unit/training/test_replay_buffer_components.py": "639e83cdf9a050a97edb0417aba1a89b507e329b2bfe2e4a438ce71ea8e3b6ce",
+    "tests/test_townlet/unit/training/test_replay_buffers.py": "61b688ea5fa7ef31d023b76b9ea3e48cc57e27787a19bee21eacd10071d647d9",
+    "tests/test_townlet/unit/training/test_sequential_replay_buffer.py": "18cff4fa681e5c08ec759301b3ebbed69568bc8ab80b7ccea3e6c260294f373a"
+  },
+  "changed_paths": [
+    ".defaults-ratchet",
+    "scripts/check_episode_lanes.py",
+    "src/townlet/config/training_v2_config.py",
+    "src/townlet/population/vectorized.py",
+    "tests/test_townlet/integration/test_authored_episode_lanes.py",
+    "tests/test_townlet/integration/test_checkpointing.py",
+    "tests/test_townlet/integration/test_recurrent_bootstrap_runtime.py",
+    "tests/test_townlet/integration/test_recurrent_bptt_runtime.py",
+    "tests/test_townlet/regressions/bac/test_learner_legality.py",
+    "tests/test_townlet/regressions/fixtures/episode_lanes.py",
+    "tests/test_townlet/regressions/test_episode_lane_learning.py",
+    "tests/test_townlet/regressions/test_episode_lane_population.py",
+    "tests/test_townlet/unit/config/test_training_v2_config_dto.py",
+    "tests/test_townlet/unit/oracle/test_episode_lane_comparator.py",
+    "tests/test_townlet/unit/population/test_recurrent_training.py"
+  ],
+  "task_ids": [
+    "T15"
+  ],
+  "inventories": {
+    "T15-main": [
+      {
+        "path": "src/townlet/population/vectorized.py",
+        "lines": 2146,
+        "sha256": "9569eab3d766ed5467ecf78736cd170c7aa0d0b77d90efe28239f3bab64ff12a"
+      },
+      {
+        "path": "src/townlet/training/replay_contract.py",
+        "lines": 222,
+        "sha256": "3eaa725bd6d592b7524dd249125877eb91a1f707d4dfd12fbfb59b5b6cc6356c"
+      },
+      {
+        "path": "src/townlet/training/q_targets.py",
+        "lines": 80,
+        "sha256": "39485fe2447dc4065bd7b806775c93c0e66b51827b088605fba98505b100491f"
+      },
+      {
+        "path": "src/townlet/config/bac_options.py",
+        "lines": 294,
+        "sha256": "10dc3ef7dc288d954147046c95bc8362df2162f3829986be26b2724e86dd4916"
+      },
+      {
+        "path": "tests/test_townlet/regressions/bac/test_learner_legality.py",
+        "lines": 1198,
+        "sha256": "5f6273a8054bde34f89ab77eb98c8b4c0bb9428b586511b976cecae19c33e71e"
+      }
+    ],
+    "T15-schema": [
+      {
+        "path": "src/townlet/config/training_v2_config.py",
+        "lines": 435,
+        "sha256": "ad097576f88e1e2a09ae816ccff823e9623e7d5584b0d0411b07efb2f6ba1dfc"
+      },
+      {
+        "path": "src/townlet/training/replay_contract.py",
+        "lines": 222,
+        "sha256": "3eaa725bd6d592b7524dd249125877eb91a1f707d4dfd12fbfb59b5b6cc6356c"
+      },
+      {
+        "path": "src/townlet/training/replay_buffer.py",
+        "lines": 677,
+        "sha256": "d6fd0517488cfde5291c33ce03f67923c407af932794fb8a902b10e1d137f1c8"
+      },
+      {
+        "path": "src/townlet/training/prioritized_replay_buffer.py",
+        "lines": 1092,
+        "sha256": "290eadca0305658abdd4aec361a9b167ac63d7a887438b602c19c2eaf9020de9"
+      },
+      {
+        "path": "tests/test_townlet/unit/config/test_training_v2_config_dto.py",
+        "lines": 179,
+        "sha256": "eaeed185ee43e72b7c7179705b52fb53dd8085e7ca366c2f5c9b0bd52e0c61be"
+      }
+    ],
+    "T15-fixtures": [
+      {
+        "path": "tests/test_townlet/unit/population/test_vectorized_population.py",
+        "lines": 1884,
+        "sha256": "9e0b50095cd29470afc92d42a740a800e34c731aea12abfa96a7d60d89b1015c"
+      },
+      {
+        "path": "tests/test_townlet/unit/population/test_recurrent_training.py",
+        "lines": 573,
+        "sha256": "32f3a4e7996a5798c17b10a1ae69ad6d22631a2421549c33501f3764560325f9"
+      },
+      {
+        "path": "tests/test_townlet/unit/population/test_double_dqn_algorithm.py",
+        "lines": 324,
+        "sha256": "b9b12150109541ed53f75fc692661c305f075b616827bac4c37a83afbe859e5a"
+      },
+      {
+        "path": "tests/test_townlet/unit/population/test_action_selection.py",
+        "lines": 375,
+        "sha256": "81ffc9ef6390f2a64471f3e9daf3ea77c751d1bc0e97ff6cbd5b03eede65b2b1"
+      },
+      {
+        "path": "tests/test_townlet/regressions/fixtures/episode_lanes.py",
+        "lines": 157,
+        "sha256": "9de34aa9764fe2cef766aace4e6ebd391543621fa90def16b5614292e476ec7f"
+      }
+    ],
+    "T15-integration-author": [
+      {
+        "path": "src/townlet/population/vectorized.py",
+        "lines": 2146,
+        "sha256": "9569eab3d766ed5467ecf78736cd170c7aa0d0b77d90efe28239f3bab64ff12a"
+      },
+      {
+        "path": "tests/test_townlet/integration/test_recurrent_bootstrap_runtime.py",
+        "lines": 360,
+        "sha256": "06ee4ca2e9dff88539ed8cb3120048fc058772d009fa5962ee28f127db7d8f77"
+      },
+      {
+        "path": "tests/test_townlet/integration/test_recurrent_bptt_runtime.py",
+        "lines": 222,
+        "sha256": "2701678bcb442360eb2a860ea4e74bc7d5b8d4b9b2f639b78c21cd7db9f2494a"
+      },
+      {
+        "path": "tests/test_townlet/regressions/test_episode_lane_learning.py",
+        "lines": 476,
+        "sha256": "e328726c20e82dfc6754fb4623211aae24f8a7bd70530864ef49e913b804ad2c"
+      },
+      {
+        "path": "tests/test_townlet/regressions/fixtures/episode_lanes.py",
+        "lines": 157,
+        "sha256": "9de34aa9764fe2cef766aace4e6ebd391543621fa90def16b5614292e476ec7f"
+      }
+    ],
+    "T15-integration-review": [
+      {
+        "path": "tests/test_townlet/integration/test_authored_episode_lanes.py",
+        "lines": 66,
+        "sha256": "1aa95fc7764c9e85dfdc16d8f1d43f4014d86fedc18c7bcfdc627bf8779c56ac"
+      },
+      {
+        "path": "tests/test_townlet/integration/test_recurrent_bootstrap_runtime.py",
+        "lines": 360,
+        "sha256": "06ee4ca2e9dff88539ed8cb3120048fc058772d009fa5962ee28f127db7d8f77"
+      },
+      {
+        "path": "tests/test_townlet/integration/test_recurrent_bptt_runtime.py",
+        "lines": 222,
+        "sha256": "2701678bcb442360eb2a860ea4e74bc7d5b8d4b9b2f639b78c21cd7db9f2494a"
+      },
+      {
+        "path": "tests/test_townlet/regressions/test_episode_lane_learning.py",
+        "lines": 476,
+        "sha256": "e328726c20e82dfc6754fb4623211aae24f8a7bd70530864ef49e913b804ad2c"
+      },
+      {
+        "path": "tests/test_townlet/regressions/test_episode_lane_population.py",
+        "lines": 413,
+        "sha256": "5c306090ecdf7ec50c699ffb48913376a40fd12e58feb682bfc1ceb514ecd4f8"
+      }
+    ],
+    "T15-lane-supplier": [
+      {
+        "path": "src/townlet/population/vectorized.py",
+        "lines": 2146,
+        "sha256": "9569eab3d766ed5467ecf78736cd170c7aa0d0b77d90efe28239f3bab64ff12a"
+      },
+      {
+        "path": "tests/test_townlet/regressions/test_episode_lane_population.py",
+        "lines": 413,
+        "sha256": "5c306090ecdf7ec50c699ffb48913376a40fd12e58feb682bfc1ceb514ecd4f8"
+      },
+      {
+        "path": "tests/test_townlet/regressions/fixtures/episode_lanes.py",
+        "lines": 157,
+        "sha256": "9de34aa9764fe2cef766aace4e6ebd391543621fa90def16b5614292e476ec7f"
+      },
+      {
+        "path": "tests/test_townlet/integration/test_authored_episode_lanes.py",
+        "lines": 66,
+        "sha256": "1aa95fc7764c9e85dfdc16d8f1d43f4014d86fedc18c7bcfdc627bf8779c56ac"
+      }
+    ],
+    "T15-checker-author": [
+      {
+        "path": "scripts/check_episode_lanes.py",
+        "lines": 1036,
+        "sha256": "19e0b83130f2467a2bfd890dc79e95de6d7694e79f7fa996fa16c66b43e62eb7"
+      },
+      {
+        "path": "src/townlet/population/vectorized.py",
+        "lines": 2146,
+        "sha256": "9569eab3d766ed5467ecf78736cd170c7aa0d0b77d90efe28239f3bab64ff12a"
+      },
+      {
+        "path": "tests/test_townlet/unit/oracle/test_episode_lane_comparator.py",
+        "lines": 393,
+        "sha256": "5a259e6ab4236caf3d1b20323ee089522c101b4e91d8a294e2deb84595536d30"
+      }
+    ],
+    "T15-checkpoint-author": [
+      {
+        "path": "src/townlet/population/vectorized.py",
+        "lines": 2146,
+        "sha256": "9569eab3d766ed5467ecf78736cd170c7aa0d0b77d90efe28239f3bab64ff12a"
+      },
+      {
+        "path": "tests/test_townlet/integration/test_checkpointing.py",
+        "lines": 1662,
+        "sha256": "70d13c5df324111b1e9f53aba91360edfe31a0abb1cf2e5a3c7cf46b6e08968d"
+      },
+      {
+        "path": "tests/test_townlet/_fixtures/environment.py",
+        "lines": 460,
+        "sha256": "21bd79b1736efd53fdacb76ca6a6f4abaf3917340204aef74994ba20b6af745c"
+      },
+      {
+        "path": "tests/test_townlet/_fixtures/config.py",
+        "lines": 145,
+        "sha256": "f25801c31ddb8354cc8b63a25fa145b518a65c05b275d19f558cf6f4e3f04fb8"
+      },
+      {
+        "path": "tests/test_townlet/_fixtures/brain_configs.py",
+        "lines": 109,
+        "sha256": "aac8397902f8f038bee0c3da913c1a6b3930478d70c8a82156898231605cc9f4"
+      }
+    ],
+    "T15-consumer-review": [
+      {
+        "path": "scripts/check_episode_lanes.py",
+        "lines": 1036,
+        "sha256": "19e0b83130f2467a2bfd890dc79e95de6d7694e79f7fa996fa16c66b43e62eb7"
+      },
+      {
+        "path": "tests/test_townlet/unit/oracle/test_episode_lane_comparator.py",
+        "lines": 393,
+        "sha256": "5a259e6ab4236caf3d1b20323ee089522c101b4e91d8a294e2deb84595536d30"
+      },
+      {
+        "path": "tests/test_townlet/integration/test_checkpointing.py",
+        "lines": 1662,
+        "sha256": "70d13c5df324111b1e9f53aba91360edfe31a0abb1cf2e5a3c7cf46b6e08968d"
+      }
+    ]
+  },
+  "worktree_count": 14,
+  "source_qualified_tree": "aecfaaa84cd58fafd8ac1f6ca67052639d570ed4",
+  "absent_source_files": [],
+  "worktree_registry": "worktree /workspace/hamlet\nHEAD 75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7\nbranch refs/heads/project-recovery-bac-2026-11-01\n\nworktree /tmp/bac-verify-T01-1139ddfa42\nHEAD 4aa5363b5de54d9a112977c32c2975f37627197f\ndetached\n\nworktree /tmp/bac-verify-T02-25cdec4e82\nHEAD 5c91dfb9d09b8ba2d422c6fef5c3e468eadfebaf\ndetached\n\nworktree /tmp/bac-verify-T02-r1-94de8d44e8\nHEAD 5c91dfb9d09b8ba2d422c6fef5c3e468eadfebaf\ndetached\n\nworktree /tmp/bac-verify-T03-4175e78397\nHEAD 049e305df42392373a52c9eb76552abbd74a5b2b\ndetached\n\nworktree /tmp/bac-verify-T08-00d385ce62\nHEAD 7aa6a8cedfa95f88344a7deaa9c8f80994b0aeb0\ndetached\n\nworktree /tmp/bac-verify-T08a-4474a07ae5\nHEAD 050a1a70e979aa03724219b81e848093820f044f\ndetached\n\nworktree /tmp/bac-verify-T09a-63beed0c8d\nHEAD 050a1a70e979aa03724219b81e848093820f044f\ndetached\n\nworktree /tmp/bac-verify-T18-7901753a30\nHEAD 050a1a70e979aa03724219b81e848093820f044f\ndetached\n\nworktree /tmp/bac-verify-T18a-212b3d6d1a\nHEAD 050a1a70e979aa03724219b81e848093820f044f\ndetached\n\nworktree /tmp/bac-verify-wave01-6881a7488a\nHEAD 050a1a70e979aa03724219b81e848093820f044f\ndetached\n\nworktree /tmp/bac-verify-wave02-3d1d21cff5\nHEAD 050a1a70e979aa03724219b81e848093820f044f\ndetached\n\nworktree /tmp/bac-verify-wave02-receipts-ea9bad791f\nHEAD ac8f0f9c3c38cd77f533accc5c9259fe4abfc252\ndetached\n\nworktree /tmp/hamlet-bac-4aa5363b\nHEAD 4aa5363b5de54d9a112977c32c2975f37627197f\ndetached\n\n",
+  "tasks": [
+    "T15"
+  ],
+  "unchanged_R2_scope_bindings": {
+    "T15-main": {
+      "actual_prior_tree": "929bc8952a2e797871d15376e2ef61a8aec73ca5",
+      "source_hashes_equal": true,
+      "source_files": {
+        "src/townlet/population/vectorized.py": "9569eab3d766ed5467ecf78736cd170c7aa0d0b77d90efe28239f3bab64ff12a",
+        "src/townlet/training/replay_contract.py": "3eaa725bd6d592b7524dd249125877eb91a1f707d4dfd12fbfb59b5b6cc6356c",
+        "src/townlet/training/q_targets.py": "39485fe2447dc4065bd7b806775c93c0e66b51827b088605fba98505b100491f",
+        "src/townlet/config/bac_options.py": "10dc3ef7dc288d954147046c95bc8362df2162f3829986be26b2724e86dd4916",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py": "5f6273a8054bde34f89ab77eb98c8b4c0bb9428b586511b976cecae19c33e71e"
+      }
+    },
+    "T15-schema": {
+      "actual_prior_tree": "929bc8952a2e797871d15376e2ef61a8aec73ca5",
+      "source_hashes_equal": true,
+      "source_files": {
+        "src/townlet/config/training_v2_config.py": "ad097576f88e1e2a09ae816ccff823e9623e7d5584b0d0411b07efb2f6ba1dfc",
+        "src/townlet/training/replay_contract.py": "3eaa725bd6d592b7524dd249125877eb91a1f707d4dfd12fbfb59b5b6cc6356c",
+        "src/townlet/training/replay_buffer.py": "d6fd0517488cfde5291c33ce03f67923c407af932794fb8a902b10e1d137f1c8",
+        "src/townlet/training/prioritized_replay_buffer.py": "290eadca0305658abdd4aec361a9b167ac63d7a887438b602c19c2eaf9020de9",
+        "tests/test_townlet/unit/config/test_training_v2_config_dto.py": "eaeed185ee43e72b7c7179705b52fb53dd8085e7ca366c2f5c9b0bd52e0c61be"
+      }
+    },
+    "T15-fixtures": {
+      "actual_prior_tree": "929bc8952a2e797871d15376e2ef61a8aec73ca5",
+      "source_hashes_equal": true,
+      "source_files": {
+        "tests/test_townlet/unit/population/test_vectorized_population.py": "9e0b50095cd29470afc92d42a740a800e34c731aea12abfa96a7d60d89b1015c",
+        "tests/test_townlet/unit/population/test_recurrent_training.py": "32f3a4e7996a5798c17b10a1ae69ad6d22631a2421549c33501f3764560325f9",
+        "tests/test_townlet/unit/population/test_double_dqn_algorithm.py": "b9b12150109541ed53f75fc692661c305f075b616827bac4c37a83afbe859e5a",
+        "tests/test_townlet/unit/population/test_action_selection.py": "81ffc9ef6390f2a64471f3e9daf3ea77c751d1bc0e97ff6cbd5b03eede65b2b1",
+        "tests/test_townlet/regressions/fixtures/episode_lanes.py": "9de34aa9764fe2cef766aace4e6ebd391543621fa90def16b5614292e476ec7f"
+      }
+    },
+    "T15-integration-author": {
+      "actual_prior_tree": "929bc8952a2e797871d15376e2ef61a8aec73ca5",
+      "source_hashes_equal": true,
+      "source_files": {
+        "src/townlet/population/vectorized.py": "9569eab3d766ed5467ecf78736cd170c7aa0d0b77d90efe28239f3bab64ff12a",
+        "tests/test_townlet/integration/test_recurrent_bootstrap_runtime.py": "06ee4ca2e9dff88539ed8cb3120048fc058772d009fa5962ee28f127db7d8f77",
+        "tests/test_townlet/integration/test_recurrent_bptt_runtime.py": "2701678bcb442360eb2a860ea4e74bc7d5b8d4b9b2f639b78c21cd7db9f2494a",
+        "tests/test_townlet/regressions/test_episode_lane_learning.py": "e328726c20e82dfc6754fb4623211aae24f8a7bd70530864ef49e913b804ad2c",
+        "tests/test_townlet/regressions/fixtures/episode_lanes.py": "9de34aa9764fe2cef766aace4e6ebd391543621fa90def16b5614292e476ec7f"
+      }
+    },
+    "T15-integration-review": {
+      "actual_prior_tree": "929bc8952a2e797871d15376e2ef61a8aec73ca5",
+      "source_hashes_equal": true,
+      "source_files": {
+        "tests/test_townlet/integration/test_authored_episode_lanes.py": "1aa95fc7764c9e85dfdc16d8f1d43f4014d86fedc18c7bcfdc627bf8779c56ac",
+        "tests/test_townlet/integration/test_recurrent_bootstrap_runtime.py": "06ee4ca2e9dff88539ed8cb3120048fc058772d009fa5962ee28f127db7d8f77",
+        "tests/test_townlet/integration/test_recurrent_bptt_runtime.py": "2701678bcb442360eb2a860ea4e74bc7d5b8d4b9b2f639b78c21cd7db9f2494a",
+        "tests/test_townlet/regressions/test_episode_lane_learning.py": "e328726c20e82dfc6754fb4623211aae24f8a7bd70530864ef49e913b804ad2c",
+        "tests/test_townlet/regressions/test_episode_lane_population.py": "5c306090ecdf7ec50c699ffb48913376a40fd12e58feb682bfc1ceb514ecd4f8"
+      }
+    },
+    "T15-lane-supplier": {
+      "actual_prior_tree": "929bc8952a2e797871d15376e2ef61a8aec73ca5",
+      "source_hashes_equal": true,
+      "source_files": {
+        "src/townlet/population/vectorized.py": "9569eab3d766ed5467ecf78736cd170c7aa0d0b77d90efe28239f3bab64ff12a",
+        "tests/test_townlet/regressions/test_episode_lane_population.py": "5c306090ecdf7ec50c699ffb48913376a40fd12e58feb682bfc1ceb514ecd4f8",
+        "tests/test_townlet/regressions/fixtures/episode_lanes.py": "9de34aa9764fe2cef766aace4e6ebd391543621fa90def16b5614292e476ec7f",
+        "tests/test_townlet/integration/test_authored_episode_lanes.py": "1aa95fc7764c9e85dfdc16d8f1d43f4014d86fedc18c7bcfdc627bf8779c56ac"
+      }
+    }
+  }
+}

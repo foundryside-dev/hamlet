@@ -1,0 +1,15 @@
+{
+  "status": "FAILED/INTERRUPTED, never qualification PASS",
+  "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+  "candidate_tree": "f4032499a9800e8a8398b812a8dcc7ebfe9c4974",
+  "exit_code": 2,
+  "failed": 1,
+  "passed": 6222,
+  "skipped": 14,
+  "warnings": 15,
+  "wall_seconds": 1395.926141500473,
+  "source156_review12_process5_configs573_artifact13_worktree14_custody": "PASS",
+  "cause": "Ten-episode learning fixture collects<=500 one-agent transitions but authors warmup1000; direct related learning fixtures audited before another full",
+  "owner_action": "OnegracefulSIGINT only to alreadyfailedrootcontroller, allotherdata/worktrees/processes preserved",
+  "release": false
+}

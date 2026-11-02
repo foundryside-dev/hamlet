@@ -1,0 +1,2602 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 1/1 worker
+1 worker [167 items]
+
+....................F................................................... [ 43%]
+.................................FF.FFF.FF.FFFFFFFFF..................FF [ 86%]
+FFFFFFFFFFFFFFFFFFFFFFF                                                  [100%]
+=================================== FAILURES ===================================
+_______ TestEpisodeBuffering.test_store_episode_and_reset_adds_to_buffer _______
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+self = <test_recurrent_training.TestEpisodeBuffering object at 0x7f54707b4410>
+cpu_device = device(type='cpu')
+recurrent_env_builder = <function recurrent_env_builder.<locals>._build at 0x7f54612dee80>
+recurrent_brain_config = BrainConfig(version='1.0', description='Recurrent brain config for POMDP tests', architecture=ArchitectureConfig(type=...=ReplayConfig(capacity=5000, prioritized=False, priority_alpha=None, priority_beta=None, priority_beta_annealing=None))
+
+    def test_store_episode_and_reset_adds_to_buffer(self, cpu_device, recurrent_env_builder, recurrent_brain_config):
+        """_store_episode_and_reset() should store episode sequence and reset container.
+    
+        Coverage target: lines 212-232 (_store_episode_and_reset)
+        """
+        env = recurrent_env_builder(num_agents=1)
+    
+        curriculum = StaticCurriculum(difficulty_level=0.5)
+        exploration = EpsilonGreedyExploration(epsilon=1.0, epsilon_min=0.1, epsilon_decay=0.999)
+    
+        population = _make_population(
+            env=env,
+            curriculum=curriculum,
+            exploration=exploration,
+            agent_ids=["agent_0"],
+            brain_config=recurrent_brain_config,
+            batch_size=4,
+            sequence_length=5,
+        )
+    
+        population.reset()
+    
+        # Manually add some data to episode container
+        agent_idx = 0
+        episode = population.current_episodes[agent_idx]
+    
+        for i in range(5):
+            episode["observations"].append(torch.randn(env.observation_dim, device=cpu_device))
+            episode["actions"].append(torch.tensor(i % env.action_dim, device=cpu_device))
+            episode["rewards"].append(torch.tensor(1.1, device=cpu_device))  # Combined reward
+            episode["dones"].append(torch.tensor(False, device=cpu_device))
+            episode["next_observations"].append(torch.randn(env.observation_dim, device=cpu_device))
+    
+        # Store episode
+>       result = population._store_episode_and_reset(agent_idx)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/unit/population/test_recurrent_training.py:244: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.population.vectorized.VectorizedPopulation object at 0x7f5463876210>
+agent_idx = 0
+
+    def _store_episode_and_reset(self, agent_idx: int) -> bool:
+        """Store accumulated episode for agent and reset buffers."""
+        if not self.is_recurrent or not self.current_episodes:
+            return False
+    
+        episode = self.current_episodes[agent_idx]
+        if len(episode["observations"]) == 0:
+            return False
+    
+        self._bind_training()
+        sequential_buffer = cast(SequentialReplayBuffer, self.replay_buffer)
+    
+        # CRIT-07: Store episode with components for provenance tracking
+        episode_data = {
+            "observations": torch.stack(episode["observations"]),
+            "actions": torch.stack(episode["actions"]),
+            "rewards": torch.stack(episode["rewards"]),
+            "dones": torch.stack(episode["dones"]),
+            "next_observations": torch.stack(episode["next_observations"]),
+        }
+    
+        # Add components if present
+        if len(episode["rewards_extrinsic"]) > 0:
+            episode_data["rewards_extrinsic"] = torch.stack(episode["rewards_extrinsic"])
+            episode_data["rewards_intrinsic"] = torch.stack(episode["rewards_intrinsic"])
+            episode_data["rewards_shaping"] = torch.stack(episode["rewards_shaping"])
+    
+        sequential_buffer.store_captured_episode(
+            episode_data,
+>           next_action_masks=torch.stack(episode["next_action_masks"]),
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            legality_recorded=torch.stack(episode["legality_recorded"]),
+        )
+E       RuntimeError: stack expects a non-empty TensorList
+
+src/townlet/population/vectorized.py:937: RuntimeError
+_________________________ test_authored_pack_compiles __________________________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_authored_pack_compiles() -> None:
+        population = _population()
+        env = population.env
+        assert env.universe.brain.architecture.type == "feedforward"
+        assert population.brain_config.architecture.feedforward.hidden_layers == [256, 128]
+        assert env.meters[:, env.meter_name_to_index["energy"]].tolist() == [1.0, 1.0]
+        forwards = []
+        hook = population.q_network.register_forward_hook(lambda _module, _args, output: forwards.append(output.detach().clone()))
+        try:
+            with controlled_action_schedule(population.exploration, env, UNEQUAL_ENDINGS) as selection, observe_environment_steps(env) as ticks:
+                for _ in UNEQUAL_ENDINGS:
+>                   population.step_population(env)
+
+tests/test_townlet/integration/test_authored_episode_lanes.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/population/vectorized.py:1247: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1023: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1169: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1173: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1234: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[ 0.0798,  0.0332, -0.0172,  0.0232,  0.0121,  0.0483, -0.0805,  0.0409]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7f546473f920>
+action_masks = tensor([[ True, False,  True,  True, False,  True,  True,  True]])
+
+    def select(q_values: torch.Tensor, agent_states: BatchedAgentState, action_masks: torch.Tensor | None) -> torch.Tensor:
+>       assert q_values.shape == (env.num_agents, env.action_dim)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+tests/test_townlet/regressions/fixtures/episode_lanes.py:105: AssertionError
+____ test_authored_population_survival_reports_the_seven_actual_transitions ____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_authored_population_survival_reports_the_seven_actual_transitions() -> None:
+        population = _population()
+        env = population.env
+        with controlled_action_schedule(population.exploration, env, UNEQUAL_ENDINGS), observe_environment_steps(env) as ticks:
+            for _ in UNEQUAL_ENDINGS:
+>               state = population.step_population(env)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/integration/test_authored_episode_lanes.py:51: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/population/vectorized.py:1247: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1023: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1169: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1173: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1234: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[ 0.0057, -0.0689, -0.0877,  0.1901, -0.0861,  0.0458,  0.0645,  0.0179]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7f5463a418c0>
+action_masks = tensor([[ True, False,  True,  True, False,  True,  True,  True]])
+
+    def select(q_values: torch.Tensor, agent_states: BatchedAgentState, action_masks: torch.Tensor | None) -> torch.Tensor:
+>       assert q_values.shape == (env.num_agents, env.action_dim)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+tests/test_townlet/regressions/fixtures/episode_lanes.py:105: AssertionError
+___ test_subsequence_boundary_bootstraps_with_gamma_from_yaml[0.99-0.5-True] ___
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_subsequence_boundary_boot0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f5464ae6a80>
+gamma = 0.99, other_gamma = 0.5, double = True
+
+    @pytest.mark.parametrize(
+        "gamma, other_gamma, double",
+        [(0.99, 0.5, True), (0.5, 0.99, True), (0.99, 0.5, False)],
+    )
+    def test_subsequence_boundary_bootstraps_with_gamma_from_yaml(tmp_path, monkeypatch, gamma, other_gamma, double):
+        """Mid-episode window boundaries must bootstrap with the gamma written in YAML.
+    
+        Four things are pinned at once:
+          1. the boundary transition of a sampled subsequence is NOT treated as terminal;
+          2. the successor used is next_observations[:, -1] and the discount is the
+             configured one - the same run checked against the other gamma must not match;
+          3. the successor is evaluated under the hidden state accumulated over the window,
+             not a fresh zero hidden state (the "zero" negative control must NOT match);
+          4. both use_double_dqn branches are covered.
+        """
+        name = f"bootstrap-{gamma}-{double}"
+        pack = _make_pack(tmp_path, name, recurrent=True, gamma=gamma, double=double)
+        population, updates = _run(pack, tmp_path / "out", monkeypatch, gammas=(gamma, other_gamma))
+    
+>       assert updates, "no recurrent training update happened - test would pass vacuously"
+E       AssertionError: no recurrent training update happened - test would pass vacuously
+E       assert []
+
+tests/test_townlet/integration/test_recurrent_bootstrap_runtime.py:279: AssertionError
+___ test_subsequence_boundary_bootstraps_with_gamma_from_yaml[0.5-0.99-True] ___
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_subsequence_boundary_boot1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f54611b74d0>
+gamma = 0.5, other_gamma = 0.99, double = True
+
+    @pytest.mark.parametrize(
+        "gamma, other_gamma, double",
+        [(0.99, 0.5, True), (0.5, 0.99, True), (0.99, 0.5, False)],
+    )
+    def test_subsequence_boundary_bootstraps_with_gamma_from_yaml(tmp_path, monkeypatch, gamma, other_gamma, double):
+        """Mid-episode window boundaries must bootstrap with the gamma written in YAML.
+    
+        Four things are pinned at once:
+          1. the boundary transition of a sampled subsequence is NOT treated as terminal;
+          2. the successor used is next_observations[:, -1] and the discount is the
+             configured one - the same run checked against the other gamma must not match;
+          3. the successor is evaluated under the hidden state accumulated over the window,
+             not a fresh zero hidden state (the "zero" negative control must NOT match);
+          4. both use_double_dqn branches are covered.
+        """
+        name = f"bootstrap-{gamma}-{double}"
+        pack = _make_pack(tmp_path, name, recurrent=True, gamma=gamma, double=double)
+        population, updates = _run(pack, tmp_path / "out", monkeypatch, gammas=(gamma, other_gamma))
+    
+>       assert updates, "no recurrent training update happened - test would pass vacuously"
+E       AssertionError: no recurrent training update happened - test would pass vacuously
+E       assert []
+
+tests/test_townlet/integration/test_recurrent_bootstrap_runtime.py:279: AssertionError
+__ test_subsequence_boundary_bootstraps_with_gamma_from_yaml[0.99-0.5-False] ___
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_subsequence_boundary_boot2')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f5464478130>
+gamma = 0.99, other_gamma = 0.5, double = False
+
+    @pytest.mark.parametrize(
+        "gamma, other_gamma, double",
+        [(0.99, 0.5, True), (0.5, 0.99, True), (0.99, 0.5, False)],
+    )
+    def test_subsequence_boundary_bootstraps_with_gamma_from_yaml(tmp_path, monkeypatch, gamma, other_gamma, double):
+        """Mid-episode window boundaries must bootstrap with the gamma written in YAML.
+    
+        Four things are pinned at once:
+          1. the boundary transition of a sampled subsequence is NOT treated as terminal;
+          2. the successor used is next_observations[:, -1] and the discount is the
+             configured one - the same run checked against the other gamma must not match;
+          3. the successor is evaluated under the hidden state accumulated over the window,
+             not a fresh zero hidden state (the "zero" negative control must NOT match);
+          4. both use_double_dqn branches are covered.
+        """
+        name = f"bootstrap-{gamma}-{double}"
+        pack = _make_pack(tmp_path, name, recurrent=True, gamma=gamma, double=double)
+        population, updates = _run(pack, tmp_path / "out", monkeypatch, gammas=(gamma, other_gamma))
+    
+>       assert updates, "no recurrent training update happened - test would pass vacuously"
+E       AssertionError: no recurrent training update happened - test would pass vacuously
+E       assert []
+
+tests/test_townlet/integration/test_recurrent_bootstrap_runtime.py:279: AssertionError
+_____ test_training_passes_the_configured_sequence_in_one_network_call[2] ______
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_training_passes_the_confi0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f54613b8bb0>
+sequence_length = 2
+
+    @pytest.mark.parametrize("sequence_length", [2, 8])
+    def test_training_passes_the_configured_sequence_in_one_network_call(
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        sequence_length: int,
+    ) -> None:
+        """The authored BPTT length reaches the network as one sequence tensor."""
+        calls: list[tuple[int, int, bool]] = []
+        original_forward = RecurrentTokenQNetwork.forward
+    
+        def instrumented_forward(self, observations, hidden):
+            calls.append((int(observations.shape[0]), int(observations.shape[1]), torch.is_grad_enabled()))
+            return original_forward(self, observations, hidden)
+    
+        monkeypatch.setattr(RecurrentTokenQNetwork, "forward", instrumented_forward)
+        population = _run(
+            _make_pack(tmp_path, f"sequence-{sequence_length}", sequence_length=sequence_length),
+            tmp_path / f"sequence-{sequence_length}-output",
+        )
+    
+        assert population.sequence_length == sequence_length
+        gradient_training_calls = [call for call in calls if call[0] == population.batch_size and call[2]]
+        assert gradient_training_calls, "training never called the recurrent network with gradients enabled"
+>       assert {call[1] for call in gradient_training_calls} == {sequence_length}
+E       assert {1} == {2}
+E         
+E         Extra items in the left set:
+E         1
+E         Extra items in the right set:
+E         2
+E         Use -v to get more diff
+
+tests/test_townlet/integration/test_recurrent_bptt_runtime.py:108: AssertionError
+_____ test_training_passes_the_configured_sequence_in_one_network_call[8] ______
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_training_passes_the_confi1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f54647d3ad0>
+sequence_length = 8
+
+    @pytest.mark.parametrize("sequence_length", [2, 8])
+    def test_training_passes_the_configured_sequence_in_one_network_call(
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        sequence_length: int,
+    ) -> None:
+        """The authored BPTT length reaches the network as one sequence tensor."""
+        calls: list[tuple[int, int, bool]] = []
+        original_forward = RecurrentTokenQNetwork.forward
+    
+        def instrumented_forward(self, observations, hidden):
+            calls.append((int(observations.shape[0]), int(observations.shape[1]), torch.is_grad_enabled()))
+            return original_forward(self, observations, hidden)
+    
+        monkeypatch.setattr(RecurrentTokenQNetwork, "forward", instrumented_forward)
+        population = _run(
+            _make_pack(tmp_path, f"sequence-{sequence_length}", sequence_length=sequence_length),
+            tmp_path / f"sequence-{sequence_length}-output",
+        )
+    
+        assert population.sequence_length == sequence_length
+        gradient_training_calls = [call for call in calls if call[0] == population.batch_size and call[2]]
+        assert gradient_training_calls, "training never called the recurrent network with gradients enabled"
+>       assert {call[1] for call in gradient_training_calls} == {sequence_length}
+E       assert {1} == {8}
+E         
+E         Extra items in the left set:
+E         1
+E         Extra items in the right set:
+E         8
+E         Use -v to get more diff
+
+tests/test_townlet/integration/test_recurrent_bptt_runtime.py:108: AssertionError
+_ test_two_five_replay_contains_seven_transitions_and_two_terminal_rows[standard] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_two_five_replay_contains_0')
+mode = 'standard'
+
+    @pytest.mark.parametrize("mode", ["standard", "per", "recurrent"])
+    def test_two_five_replay_contains_seven_transitions_and_two_terminal_rows(tmp_path: Path, mode: str) -> None:
+        population = make_lane_population(
+            tmp_path / "pack",
+            mode=mode,
+            num_agents=2,
+            lifespan=20,
+            batch_size=128,
+            sequence_length=1,
+            rnd_batch_size=128,
+            double_dqn=False,
+        )
+        with controlled_action_schedule(population.exploration, population.env, schedule_for((2, 5))):
+            for _ in range(5):
+>               population.step_population(population.env)
+
+tests/test_townlet/regressions/test_episode_lane_population.py:116: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/population/vectorized.py:1247: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1023: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1169: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1173: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1234: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[ 0.0144, -0.0761,  0.2469, -0.0876, -0.3756,  0.1195,  0.2869,  0.1399]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7f546444ac00>
+action_masks = tensor([[ True,  True,  True, False, False,  True,  True,  True]])
+
+    def select(q_values: torch.Tensor, agent_states: BatchedAgentState, action_masks: torch.Tensor | None) -> torch.Tensor:
+>       assert q_values.shape == (env.num_agents, env.action_dim)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+tests/test_townlet/regressions/fixtures/episode_lanes.py:105: AssertionError
+__ test_two_five_replay_contains_seven_transitions_and_two_terminal_rows[per] __
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_two_five_replay_contains_1')
+mode = 'per'
+
+    @pytest.mark.parametrize("mode", ["standard", "per", "recurrent"])
+    def test_two_five_replay_contains_seven_transitions_and_two_terminal_rows(tmp_path: Path, mode: str) -> None:
+        population = make_lane_population(
+            tmp_path / "pack",
+            mode=mode,
+            num_agents=2,
+            lifespan=20,
+            batch_size=128,
+            sequence_length=1,
+            rnd_batch_size=128,
+            double_dqn=False,
+        )
+        with controlled_action_schedule(population.exploration, population.env, schedule_for((2, 5))):
+            for _ in range(5):
+>               population.step_population(population.env)
+
+tests/test_townlet/regressions/test_episode_lane_population.py:116: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/population/vectorized.py:1247: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1023: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1169: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1173: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1234: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[-0.0389,  0.2222,  0.0004, -0.1968, -0.1425,  0.0823, -0.1792, -0.0287]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7f54611e3ca0>
+action_masks = tensor([[ True,  True,  True,  True, False,  True,  True,  True]])
+
+    def select(q_values: torch.Tensor, agent_states: BatchedAgentState, action_masks: torch.Tensor | None) -> torch.Tensor:
+>       assert q_values.shape == (env.num_agents, env.action_dim)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+tests/test_townlet/regressions/fixtures/episode_lanes.py:105: AssertionError
+_ test_two_five_replay_contains_seven_transitions_and_two_terminal_rows[recurrent] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_two_five_replay_contains_2')
+mode = 'recurrent'
+
+    @pytest.mark.parametrize("mode", ["standard", "per", "recurrent"])
+    def test_two_five_replay_contains_seven_transitions_and_two_terminal_rows(tmp_path: Path, mode: str) -> None:
+        population = make_lane_population(
+            tmp_path / "pack",
+            mode=mode,
+            num_agents=2,
+            lifespan=20,
+            batch_size=128,
+            sequence_length=1,
+            rnd_batch_size=128,
+            double_dqn=False,
+        )
+        with controlled_action_schedule(population.exploration, population.env, schedule_for((2, 5))):
+            for _ in range(5):
+>               population.step_population(population.env)
+
+tests/test_townlet/regressions/test_episode_lane_population.py:116: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/population/vectorized.py:1247: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1023: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1169: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1173: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1234: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[-0.0695, -0.5244, -0.8132, -0.0595,  0.3167,  0.4537, -0.4780,  0.2130]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7f5460c1aa40>
+action_masks = tensor([[ True, False,  True, False, False,  True,  True,  True]])
+
+    def select(q_values: torch.Tensor, agent_states: BatchedAgentState, action_masks: torch.Tensor | None) -> torch.Tensor:
+>       assert q_values.shape == (env.num_agents, env.action_dim)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+tests/test_townlet/regressions/fixtures/episode_lanes.py:105: AssertionError
+_ test_replay_matches_independent_eligible_ledger_and_completes_once[end_ticks0-standard] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_replay_matches_independen0')
+mode = 'standard', end_ticks = (2, 5)
+
+    @pytest.mark.parametrize("mode", ["standard", "per", "recurrent"])
+    @pytest.mark.parametrize("end_ticks", [(2, 5), (5, 2), (2, 2), (2,)])
+    def test_replay_matches_independent_eligible_ledger_and_completes_once(tmp_path: Path, mode: str, end_ticks: tuple[int, ...]) -> None:
+        population = make_lane_population(
+            tmp_path / "pack",
+            mode=mode,
+            num_agents=len(end_ticks),
+            lifespan=20,
+            batch_size=128,
+            sequence_length=1,
+            rnd_batch_size=128,
+            double_dqn=False,
+        )
+        env = population.env
+        ledger_counts = torch.zeros(len(end_ticks), dtype=torch.long)
+        ledger_terminals = torch.zeros_like(ledger_counts)
+        expected = {
+            key: []
+            for key in (
+                "observations",
+                "actions",
+                "rewards",
+                "rewards_extrinsic",
+                "rewards_intrinsic",
+                "rewards_shaping",
+                "next_observations",
+                "dones",
+            )
+        }
+        lane_rows = {}
+        stored_lanes = []
+        completed = []
+        original_store = population._store_episode_and_reset
+    
+        def store(agent_idx):
+            result = original_store(agent_idx)
+            if result:
+                stored_lanes.append((episode, agent_idx))
+            return result
+    
+        original_finalize = population._finalize_episode
+    
+        def finalize(*args, **kwargs):
+            result = original_finalize(*args, **kwargs)
+            completed.append(result)
+            return result
+    
+        for episode in range(2):
+            if episode:
+                population.reset()
+                assert population.episode_step_counts.tolist() == [0] * len(end_ticks)
+                assert population.runtime_registry.get_survival_time_tensor().tolist() == [0] * len(end_ticks)
+            episode_counts = torch.zeros_like(ledger_counts)
+            for agent in range(len(end_ticks)):
+                lane_rows[episode, agent] = {name: [] for name in expected}
+            with (
+                patch.object(population, "_finalize_episode", side_effect=finalize),
+                patch.object(population, "_store_episode_and_reset", side_effect=store),
+            ):
+                with controlled_action_schedule(population.exploration, env, schedule_for(end_ticks)):
+                    for _ in range(max(end_ticks)):
+                        before_done = env.dones.clone()
+                        predecessor = population.current_obs.clone()
+>                       state = population.step_population(env)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/test_episode_lane_population.py:190: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/population/vectorized.py:1247: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1023: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1169: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1173: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1234: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[-0.1767, -0.2006, -0.0198,  0.1550, -0.1633,  0.2021, -0.0612, -0.0699]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7f5460c1a180>
+action_masks = tensor([[ True,  True,  True,  True, False,  True,  True,  True]])
+
+    def select(q_values: torch.Tensor, agent_states: BatchedAgentState, action_masks: torch.Tensor | None) -> torch.Tensor:
+>       assert q_values.shape == (env.num_agents, env.action_dim)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+tests/test_townlet/regressions/fixtures/episode_lanes.py:105: AssertionError
+_ test_replay_matches_independent_eligible_ledger_and_completes_once[end_ticks0-per] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_replay_matches_independen1')
+mode = 'per', end_ticks = (2, 5)
+
+    @pytest.mark.parametrize("mode", ["standard", "per", "recurrent"])
+    @pytest.mark.parametrize("end_ticks", [(2, 5), (5, 2), (2, 2), (2,)])
+    def test_replay_matches_independent_eligible_ledger_and_completes_once(tmp_path: Path, mode: str, end_ticks: tuple[int, ...]) -> None:
+        population = make_lane_population(
+            tmp_path / "pack",
+            mode=mode,
+            num_agents=len(end_ticks),
+            lifespan=20,
+            batch_size=128,
+            sequence_length=1,
+            rnd_batch_size=128,
+            double_dqn=False,
+        )
+        env = population.env
+        ledger_counts = torch.zeros(len(end_ticks), dtype=torch.long)
+        ledger_terminals = torch.zeros_like(ledger_counts)
+        expected = {
+            key: []
+            for key in (
+                "observations",
+                "actions",
+                "rewards",
+                "rewards_extrinsic",
+                "rewards_intrinsic",
+                "rewards_shaping",
+                "next_observations",
+                "dones",
+            )
+        }
+        lane_rows = {}
+        stored_lanes = []
+        completed = []
+        original_store = population._store_episode_and_reset
+    
+        def store(agent_idx):
+            result = original_store(agent_idx)
+            if result:
+                stored_lanes.append((episode, agent_idx))
+            return result
+    
+        original_finalize = population._finalize_episode
+    
+        def finalize(*args, **kwargs):
+            result = original_finalize(*args, **kwargs)
+            completed.append(result)
+            return result
+    
+        for episode in range(2):
+            if episode:
+                population.reset()
+                assert population.episode_step_counts.tolist() == [0] * len(end_ticks)
+                assert population.runtime_registry.get_survival_time_tensor().tolist() == [0] * len(end_ticks)
+            episode_counts = torch.zeros_like(ledger_counts)
+            for agent in range(len(end_ticks)):
+                lane_rows[episode, agent] = {name: [] for name in expected}
+            with (
+                patch.object(population, "_finalize_episode", side_effect=finalize),
+                patch.object(population, "_store_episode_and_reset", side_effect=store),
+            ):
+                with controlled_action_schedule(population.exploration, env, schedule_for(end_ticks)):
+                    for _ in range(max(end_ticks)):
+                        before_done = env.dones.clone()
+                        predecessor = population.current_obs.clone()
+>                       state = population.step_population(env)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/test_episode_lane_population.py:190: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/population/vectorized.py:1247: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1023: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1169: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1173: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1234: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[-0.1588, -0.0238,  0.0024,  0.1443,  0.1174, -0.1243, -0.1221,  0.1107]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7f546362ccf0>
+action_masks = tensor([[False,  True,  True,  True, False,  True,  True,  True]])
+
+    def select(q_values: torch.Tensor, agent_states: BatchedAgentState, action_masks: torch.Tensor | None) -> torch.Tensor:
+>       assert q_values.shape == (env.num_agents, env.action_dim)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+tests/test_townlet/regressions/fixtures/episode_lanes.py:105: AssertionError
+_ test_replay_matches_independent_eligible_ledger_and_completes_once[end_ticks0-recurrent] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_replay_matches_independen2')
+mode = 'recurrent', end_ticks = (2, 5)
+
+    @pytest.mark.parametrize("mode", ["standard", "per", "recurrent"])
+    @pytest.mark.parametrize("end_ticks", [(2, 5), (5, 2), (2, 2), (2,)])
+    def test_replay_matches_independent_eligible_ledger_and_completes_once(tmp_path: Path, mode: str, end_ticks: tuple[int, ...]) -> None:
+        population = make_lane_population(
+            tmp_path / "pack",
+            mode=mode,
+            num_agents=len(end_ticks),
+            lifespan=20,
+            batch_size=128,
+            sequence_length=1,
+            rnd_batch_size=128,
+            double_dqn=False,
+        )
+        env = population.env
+        ledger_counts = torch.zeros(len(end_ticks), dtype=torch.long)
+        ledger_terminals = torch.zeros_like(ledger_counts)
+        expected = {
+            key: []
+            for key in (
+                "observations",
+                "actions",
+                "rewards",
+                "rewards_extrinsic",
+                "rewards_intrinsic",
+                "rewards_shaping",
+                "next_observations",
+                "dones",
+            )
+        }
+        lane_rows = {}
+        stored_lanes = []
+        completed = []
+        original_store = population._store_episode_and_reset
+    
+        def store(agent_idx):
+            result = original_store(agent_idx)
+            if result:
+                stored_lanes.append((episode, agent_idx))
+            return result
+    
+        original_finalize = population._finalize_episode
+    
+        def finalize(*args, **kwargs):
+            result = original_finalize(*args, **kwargs)
+            completed.append(result)
+            return result
+    
+        for episode in range(2):
+            if episode:
+                population.reset()
+                assert population.episode_step_counts.tolist() == [0] * len(end_ticks)
+                assert population.runtime_registry.get_survival_time_tensor().tolist() == [0] * len(end_ticks)
+            episode_counts = torch.zeros_like(ledger_counts)
+            for agent in range(len(end_ticks)):
+                lane_rows[episode, agent] = {name: [] for name in expected}
+            with (
+                patch.object(population, "_finalize_episode", side_effect=finalize),
+                patch.object(population, "_store_episode_and_reset", side_effect=store),
+            ):
+                with controlled_action_schedule(population.exploration, env, schedule_for(end_ticks)):
+                    for _ in range(max(end_ticks)):
+                        before_done = env.dones.clone()
+                        predecessor = population.current_obs.clone()
+>                       state = population.step_population(env)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/test_episode_lane_population.py:190: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/population/vectorized.py:1247: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1023: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1169: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1173: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1234: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[ 0.6130, -0.4006, -0.2936, -0.0555, -0.1286,  0.0025,  0.2357,  0.9137]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7f54612a4890>
+action_masks = tensor([[ True,  True,  True,  True, False,  True,  True,  True]])
+
+    def select(q_values: torch.Tensor, agent_states: BatchedAgentState, action_masks: torch.Tensor | None) -> torch.Tensor:
+>       assert q_values.shape == (env.num_agents, env.action_dim)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+tests/test_townlet/regressions/fixtures/episode_lanes.py:105: AssertionError
+_ test_replay_matches_independent_eligible_ledger_and_completes_once[end_ticks1-standard] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_replay_matches_independen3')
+mode = 'standard', end_ticks = (5, 2)
+
+    @pytest.mark.parametrize("mode", ["standard", "per", "recurrent"])
+    @pytest.mark.parametrize("end_ticks", [(2, 5), (5, 2), (2, 2), (2,)])
+    def test_replay_matches_independent_eligible_ledger_and_completes_once(tmp_path: Path, mode: str, end_ticks: tuple[int, ...]) -> None:
+        population = make_lane_population(
+            tmp_path / "pack",
+            mode=mode,
+            num_agents=len(end_ticks),
+            lifespan=20,
+            batch_size=128,
+            sequence_length=1,
+            rnd_batch_size=128,
+            double_dqn=False,
+        )
+        env = population.env
+        ledger_counts = torch.zeros(len(end_ticks), dtype=torch.long)
+        ledger_terminals = torch.zeros_like(ledger_counts)
+        expected = {
+            key: []
+            for key in (
+                "observations",
+                "actions",
+                "rewards",
+                "rewards_extrinsic",
+                "rewards_intrinsic",
+                "rewards_shaping",
+                "next_observations",
+                "dones",
+            )
+        }
+        lane_rows = {}
+        stored_lanes = []
+        completed = []
+        original_store = population._store_episode_and_reset
+    
+        def store(agent_idx):
+            result = original_store(agent_idx)
+            if result:
+                stored_lanes.append((episode, agent_idx))
+            return result
+    
+        original_finalize = population._finalize_episode
+    
+        def finalize(*args, **kwargs):
+            result = original_finalize(*args, **kwargs)
+            completed.append(result)
+            return result
+    
+        for episode in range(2):
+            if episode:
+                population.reset()
+                assert population.episode_step_counts.tolist() == [0] * len(end_ticks)
+                assert population.runtime_registry.get_survival_time_tensor().tolist() == [0] * len(end_ticks)
+            episode_counts = torch.zeros_like(ledger_counts)
+            for agent in range(len(end_ticks)):
+                lane_rows[episode, agent] = {name: [] for name in expected}
+            with (
+                patch.object(population, "_finalize_episode", side_effect=finalize),
+                patch.object(population, "_store_episode_and_reset", side_effect=store),
+            ):
+                with controlled_action_schedule(population.exploration, env, schedule_for(end_ticks)):
+                    for _ in range(max(end_ticks)):
+                        before_done = env.dones.clone()
+                        predecessor = population.current_obs.clone()
+>                       state = population.step_population(env)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/test_episode_lane_population.py:190: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/population/vectorized.py:1247: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1023: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1169: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1173: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1234: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[ 0.0516,  0.0006, -0.1881,  0.1639, -0.0915, -0.0877,  0.0331, -0.4114]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7f54638f1d90>
+action_masks = tensor([[ True,  True,  True,  True, False,  True,  True,  True]])
+
+    def select(q_values: torch.Tensor, agent_states: BatchedAgentState, action_masks: torch.Tensor | None) -> torch.Tensor:
+>       assert q_values.shape == (env.num_agents, env.action_dim)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+tests/test_townlet/regressions/fixtures/episode_lanes.py:105: AssertionError
+_ test_replay_matches_independent_eligible_ledger_and_completes_once[end_ticks1-per] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_replay_matches_independen4')
+mode = 'per', end_ticks = (5, 2)
+
+    @pytest.mark.parametrize("mode", ["standard", "per", "recurrent"])
+    @pytest.mark.parametrize("end_ticks", [(2, 5), (5, 2), (2, 2), (2,)])
+    def test_replay_matches_independent_eligible_ledger_and_completes_once(tmp_path: Path, mode: str, end_ticks: tuple[int, ...]) -> None:
+        population = make_lane_population(
+            tmp_path / "pack",
+            mode=mode,
+            num_agents=len(end_ticks),
+            lifespan=20,
+            batch_size=128,
+            sequence_length=1,
+            rnd_batch_size=128,
+            double_dqn=False,
+        )
+        env = population.env
+        ledger_counts = torch.zeros(len(end_ticks), dtype=torch.long)
+        ledger_terminals = torch.zeros_like(ledger_counts)
+        expected = {
+            key: []
+            for key in (
+                "observations",
+                "actions",
+                "rewards",
+                "rewards_extrinsic",
+                "rewards_intrinsic",
+                "rewards_shaping",
+                "next_observations",
+                "dones",
+            )
+        }
+        lane_rows = {}
+        stored_lanes = []
+        completed = []
+        original_store = population._store_episode_and_reset
+    
+        def store(agent_idx):
+            result = original_store(agent_idx)
+            if result:
+                stored_lanes.append((episode, agent_idx))
+            return result
+    
+        original_finalize = population._finalize_episode
+    
+        def finalize(*args, **kwargs):
+            result = original_finalize(*args, **kwargs)
+            completed.append(result)
+            return result
+    
+        for episode in range(2):
+            if episode:
+                population.reset()
+                assert population.episode_step_counts.tolist() == [0] * len(end_ticks)
+                assert population.runtime_registry.get_survival_time_tensor().tolist() == [0] * len(end_ticks)
+            episode_counts = torch.zeros_like(ledger_counts)
+            for agent in range(len(end_ticks)):
+                lane_rows[episode, agent] = {name: [] for name in expected}
+            with (
+                patch.object(population, "_finalize_episode", side_effect=finalize),
+                patch.object(population, "_store_episode_and_reset", side_effect=store),
+            ):
+                with controlled_action_schedule(population.exploration, env, schedule_for(end_ticks)):
+                    for _ in range(max(end_ticks)):
+                        before_done = env.dones.clone()
+                        predecessor = population.current_obs.clone()
+>                       state = population.step_population(env)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/test_episode_lane_population.py:190: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/population/vectorized.py:1247: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1023: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1169: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1173: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1234: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[ 0.0524,  0.0852,  0.0919, -0.0776, -0.1166,  0.3036,  0.2643, -0.3024]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7f54649a4d60>
+action_masks = tensor([[False,  True,  True,  True, False,  True,  True,  True]])
+
+    def select(q_values: torch.Tensor, agent_states: BatchedAgentState, action_masks: torch.Tensor | None) -> torch.Tensor:
+>       assert q_values.shape == (env.num_agents, env.action_dim)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+tests/test_townlet/regressions/fixtures/episode_lanes.py:105: AssertionError
+_ test_replay_matches_independent_eligible_ledger_and_completes_once[end_ticks1-recurrent] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_replay_matches_independen5')
+mode = 'recurrent', end_ticks = (5, 2)
+
+    @pytest.mark.parametrize("mode", ["standard", "per", "recurrent"])
+    @pytest.mark.parametrize("end_ticks", [(2, 5), (5, 2), (2, 2), (2,)])
+    def test_replay_matches_independent_eligible_ledger_and_completes_once(tmp_path: Path, mode: str, end_ticks: tuple[int, ...]) -> None:
+        population = make_lane_population(
+            tmp_path / "pack",
+            mode=mode,
+            num_agents=len(end_ticks),
+            lifespan=20,
+            batch_size=128,
+            sequence_length=1,
+            rnd_batch_size=128,
+            double_dqn=False,
+        )
+        env = population.env
+        ledger_counts = torch.zeros(len(end_ticks), dtype=torch.long)
+        ledger_terminals = torch.zeros_like(ledger_counts)
+        expected = {
+            key: []
+            for key in (
+                "observations",
+                "actions",
+                "rewards",
+                "rewards_extrinsic",
+                "rewards_intrinsic",
+                "rewards_shaping",
+                "next_observations",
+                "dones",
+            )
+        }
+        lane_rows = {}
+        stored_lanes = []
+        completed = []
+        original_store = population._store_episode_and_reset
+    
+        def store(agent_idx):
+            result = original_store(agent_idx)
+            if result:
+                stored_lanes.append((episode, agent_idx))
+            return result
+    
+        original_finalize = population._finalize_episode
+    
+        def finalize(*args, **kwargs):
+            result = original_finalize(*args, **kwargs)
+            completed.append(result)
+            return result
+    
+        for episode in range(2):
+            if episode:
+                population.reset()
+                assert population.episode_step_counts.tolist() == [0] * len(end_ticks)
+                assert population.runtime_registry.get_survival_time_tensor().tolist() == [0] * len(end_ticks)
+            episode_counts = torch.zeros_like(ledger_counts)
+            for agent in range(len(end_ticks)):
+                lane_rows[episode, agent] = {name: [] for name in expected}
+            with (
+                patch.object(population, "_finalize_episode", side_effect=finalize),
+                patch.object(population, "_store_episode_and_reset", side_effect=store),
+            ):
+                with controlled_action_schedule(population.exploration, env, schedule_for(end_ticks)):
+                    for _ in range(max(end_ticks)):
+                        before_done = env.dones.clone()
+                        predecessor = population.current_obs.clone()
+>                       state = population.step_population(env)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/test_episode_lane_population.py:190: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/population/vectorized.py:1247: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1023: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1169: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1173: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1234: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[ 0.3612, -0.3393,  0.0289, -0.2050,  0.3394,  0.3798,  0.0935, -0.2222]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7f546368cdd0>
+action_masks = tensor([[ True,  True,  True, False, False,  True,  True,  True]])
+
+    def select(q_values: torch.Tensor, agent_states: BatchedAgentState, action_masks: torch.Tensor | None) -> torch.Tensor:
+>       assert q_values.shape == (env.num_agents, env.action_dim)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+tests/test_townlet/regressions/fixtures/episode_lanes.py:105: AssertionError
+____ test_authored_death_and_healthy_retirement_have_distinct_owned_reasons ____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_authored_death_and_health0')
+
+    def test_authored_death_and_healthy_retirement_have_distinct_owned_reasons(tmp_path: Path) -> None:
+        population = make_lane_population(
+            tmp_path / "pack",
+            mode="standard",
+            num_agents=2,
+            lifespan=5,
+            batch_size=128,
+            sequence_length=1,
+            rnd_batch_size=128,
+            double_dqn=False,
+        )
+        schedule = schedule_for((2, 5))
+        schedule[-1] = ("WAIT", "WAIT")
+        events = []
+        with controlled_action_schedule(population.exploration, population.env, schedule):
+            for _ in range(5):
+>               state = population.step_population(population.env)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/test_episode_lane_population.py:331: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/population/vectorized.py:1247: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1023: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1169: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1173: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1234: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[ 0.0290,  0.4287,  0.1518,  0.1487, -0.0887, -0.0594, -0.0831, -0.1762]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7f54634a7ae0>
+action_masks = tensor([[ True,  True,  True, False, False,  True,  True,  True]])
+
+    def select(q_values: torch.Tensor, agent_states: BatchedAgentState, action_masks: torch.Tensor | None) -> torch.Tensor:
+>       assert q_values.shape == (env.num_agents, env.action_dim)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+tests/test_townlet/regressions/fixtures/episode_lanes.py:105: AssertionError
+______ test_recurrent_dead_hidden_stays_zero_with_full_adversarial_q_rows ______
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_recurrent_dead_hidden_sta0')
+
+    def test_recurrent_dead_hidden_stays_zero_with_full_adversarial_q_rows(tmp_path: Path) -> None:
+        torch.manual_seed(71)
+        population = make_lane_population(
+            tmp_path / "pack",
+            mode="recurrent",
+            num_agents=2,
+            lifespan=20,
+            batch_size=128,
+            sequence_length=1,
+            rnd_batch_size=128,
+            double_dqn=False,
+        )
+        curriculum = AdversarialCurriculum(max_steps_per_episode=20, min_steps_at_stage=1000, device=population.device)
+        curriculum.initialize_population(2)
+        population.curriculum = curriculum
+        hidden_rows = []
+        reference_hidden = population.q_network.initial_hidden(2, population.device)
+        original_entropy = curriculum._calculate_action_entropy
+        original_decisions = curriculum.get_batch_decisions_with_qvalues
+        observed_entropies = []
+        observed_q_inputs = []
+    
+        def entropy(q_values):
+            result = original_entropy(q_values)
+            observed_entropies.append(result.detach().clone())
+            return result
+    
+        def decisions(agent_states, agent_ids, q_values):
+            observed_q_inputs.append(q_values.detach().clone())
+            assert agent_ids == population.agent_ids
+            return original_decisions(agent_states, agent_ids, q_values)
+    
+        with (
+            patch.object(curriculum, "_calculate_action_entropy", side_effect=entropy),
+            patch.object(curriculum, "get_batch_decisions_with_qvalues", side_effect=decisions),
+            controlled_action_schedule(population.exploration, population.env, schedule_for((2, 5))) as selection,
+        ):
+            for tick in range(1, 6):
+                with torch.no_grad():
+                    reference_q, next_reference_hidden = population.q_network(population.current_obs.unsqueeze(1), reference_hidden)
+                    active = ~population.env.dones.clone()
+                    for next_tensor, previous_tensor in zip(next_reference_hidden, reference_hidden, strict=True):
+                        next_tensor[:, ~active] = previous_tensor[:, ~active]
+                    reference_hidden = next_reference_hidden
+>               state = population.step_population(population.env)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/test_episode_lane_population.py:384: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/population/vectorized.py:1247: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1023: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1169: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1173: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1234: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[-0.4100,  0.0624, -0.0905, -0.2728, -0.2347, -0.0117,  0.2425, -0.5805]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7f5460c18c10>
+action_masks = tensor([[False,  True,  True,  True, False,  True,  True,  True]])
+
+    def select(q_values: torch.Tensor, agent_states: BatchedAgentState, action_masks: torch.Tensor | None) -> torch.Tensor:
+>       assert q_values.shape == (env.num_agents, env.action_dim)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+tests/test_townlet/regressions/fixtures/episode_lanes.py:105: AssertionError
+_ test_one_episode_ingests_seven_owned_predecessors_and_normalizes_seven_successors[standard] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_one_episode_ingests_seven0')
+mode = 'standard'
+
+    @pytest.mark.parametrize("mode", ["standard", "per", "recurrent"])
+    def test_one_episode_ingests_seven_owned_predecessors_and_normalizes_seven_successors(tmp_path: Path, mode: str) -> None:
+        population = make_lane_population(
+            tmp_path / "pack",
+            mode=mode,
+            num_agents=2,
+            lifespan=20,
+            batch_size=128,
+            sequence_length=1,
+            rnd_batch_size=7,
+            double_dqn=False,
+        )
+        rnd = population.exploration.rnd
+        admission = AdmissionWitness(population)
+        predictor_inputs = []
+        normalized_inputs = []
+        expected_predecessors = []
+        expected_successors = []
+        phantom_successors = []
+        predictor_before = [parameter.detach().clone() for parameter in rnd.predictor_network.parameters()]
+        rms_before = rnd.reward_rms.count
+        original_compute = population.exploration.compute_intrinsic_rewards
+    
+        def compute(observations, update_stats=False):
+            if update_stats:
+                admission.normalize(observations)
+                normalized_inputs.extend(row.detach().clone() for row in observations)
+            result = original_compute(observations, update_stats=update_stats)
+            if update_stats:
+                admission.reconcile_normalization(observations, result)
+            return result
+    
+        def predictor_hook(module, args):
+            if torch.is_grad_enabled():
+                admission.predictor(args[0])
+                predictor_inputs.extend(row.detach().clone() for row in args[0])
+    
+        hook = rnd.predictor_network.register_forward_pre_hook(predictor_hook)
+        try:
+            with (
+                patch.object(population.exploration, "compute_intrinsic_rewards", side_effect=compute),
+                patch.object(rnd, "update_predictor", side_effect=admission.update_predictor),
+            ):
+                with patch.object(rnd.optimizer, "step", wraps=rnd.optimizer.step) as predictor_steps:
+                    with controlled_action_schedule(population.exploration, population.env, schedule_for((2, 5))):
+                        for tick in range(1, 6):
+                            active = ~population.env.dones.clone()
+                            predecessor = population.current_obs.clone()
+                            admission.enter_step(0, tick, active, predecessor)
+>                           state = population.step_population(population.env)
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/test_episode_lane_learning.py:188: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/population/vectorized.py:1247: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1023: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1169: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1173: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1234: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[-0.0317, -0.1955,  0.0824, -0.1240,  0.0526,  0.0334, -0.0449, -0.0082]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7f546466fae0>
+action_masks = tensor([[ True,  True,  True,  True, False,  True,  True,  True]])
+
+    def select(q_values: torch.Tensor, agent_states: BatchedAgentState, action_masks: torch.Tensor | None) -> torch.Tensor:
+>       assert q_values.shape == (env.num_agents, env.action_dim)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+tests/test_townlet/regressions/fixtures/episode_lanes.py:105: AssertionError
+_ test_one_episode_ingests_seven_owned_predecessors_and_normalizes_seven_successors[per] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_one_episode_ingests_seven1')
+mode = 'per'
+
+    @pytest.mark.parametrize("mode", ["standard", "per", "recurrent"])
+    def test_one_episode_ingests_seven_owned_predecessors_and_normalizes_seven_successors(tmp_path: Path, mode: str) -> None:
+        population = make_lane_population(
+            tmp_path / "pack",
+            mode=mode,
+            num_agents=2,
+            lifespan=20,
+            batch_size=128,
+            sequence_length=1,
+            rnd_batch_size=7,
+            double_dqn=False,
+        )
+        rnd = population.exploration.rnd
+        admission = AdmissionWitness(population)
+        predictor_inputs = []
+        normalized_inputs = []
+        expected_predecessors = []
+        expected_successors = []
+        phantom_successors = []
+        predictor_before = [parameter.detach().clone() for parameter in rnd.predictor_network.parameters()]
+        rms_before = rnd.reward_rms.count
+        original_compute = population.exploration.compute_intrinsic_rewards
+    
+        def compute(observations, update_stats=False):
+            if update_stats:
+                admission.normalize(observations)
+                normalized_inputs.extend(row.detach().clone() for row in observations)
+            result = original_compute(observations, update_stats=update_stats)
+            if update_stats:
+                admission.reconcile_normalization(observations, result)
+            return result
+    
+        def predictor_hook(module, args):
+            if torch.is_grad_enabled():
+                admission.predictor(args[0])
+                predictor_inputs.extend(row.detach().clone() for row in args[0])
+    
+        hook = rnd.predictor_network.register_forward_pre_hook(predictor_hook)
+        try:
+            with (
+                patch.object(population.exploration, "compute_intrinsic_rewards", side_effect=compute),
+                patch.object(rnd, "update_predictor", side_effect=admission.update_predictor),
+            ):
+                with patch.object(rnd.optimizer, "step", wraps=rnd.optimizer.step) as predictor_steps:
+                    with controlled_action_schedule(population.exploration, population.env, schedule_for((2, 5))):
+                        for tick in range(1, 6):
+                            active = ~population.env.dones.clone()
+                            predecessor = population.current_obs.clone()
+                            admission.enter_step(0, tick, active, predecessor)
+>                           state = population.step_population(population.env)
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/test_episode_lane_learning.py:188: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/population/vectorized.py:1247: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1023: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1169: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1173: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1234: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[ 0.1541, -0.0531,  0.1562, -0.0053, -0.1884, -0.1379,  0.0686,  0.1098]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7f546473e180>
+action_masks = tensor([[False,  True, False,  True, False,  True,  True,  True]])
+
+    def select(q_values: torch.Tensor, agent_states: BatchedAgentState, action_masks: torch.Tensor | None) -> torch.Tensor:
+>       assert q_values.shape == (env.num_agents, env.action_dim)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+tests/test_townlet/regressions/fixtures/episode_lanes.py:105: AssertionError
+_ test_one_episode_ingests_seven_owned_predecessors_and_normalizes_seven_successors[recurrent] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_one_episode_ingests_seven2')
+mode = 'recurrent'
+
+    @pytest.mark.parametrize("mode", ["standard", "per", "recurrent"])
+    def test_one_episode_ingests_seven_owned_predecessors_and_normalizes_seven_successors(tmp_path: Path, mode: str) -> None:
+        population = make_lane_population(
+            tmp_path / "pack",
+            mode=mode,
+            num_agents=2,
+            lifespan=20,
+            batch_size=128,
+            sequence_length=1,
+            rnd_batch_size=7,
+            double_dqn=False,
+        )
+        rnd = population.exploration.rnd
+        admission = AdmissionWitness(population)
+        predictor_inputs = []
+        normalized_inputs = []
+        expected_predecessors = []
+        expected_successors = []
+        phantom_successors = []
+        predictor_before = [parameter.detach().clone() for parameter in rnd.predictor_network.parameters()]
+        rms_before = rnd.reward_rms.count
+        original_compute = population.exploration.compute_intrinsic_rewards
+    
+        def compute(observations, update_stats=False):
+            if update_stats:
+                admission.normalize(observations)
+                normalized_inputs.extend(row.detach().clone() for row in observations)
+            result = original_compute(observations, update_stats=update_stats)
+            if update_stats:
+                admission.reconcile_normalization(observations, result)
+            return result
+    
+        def predictor_hook(module, args):
+            if torch.is_grad_enabled():
+                admission.predictor(args[0])
+                predictor_inputs.extend(row.detach().clone() for row in args[0])
+    
+        hook = rnd.predictor_network.register_forward_pre_hook(predictor_hook)
+        try:
+            with (
+                patch.object(population.exploration, "compute_intrinsic_rewards", side_effect=compute),
+                patch.object(rnd, "update_predictor", side_effect=admission.update_predictor),
+            ):
+                with patch.object(rnd.optimizer, "step", wraps=rnd.optimizer.step) as predictor_steps:
+                    with controlled_action_schedule(population.exploration, population.env, schedule_for((2, 5))):
+                        for tick in range(1, 6):
+                            active = ~population.env.dones.clone()
+                            predecessor = population.current_obs.clone()
+                            admission.enter_step(0, tick, active, predecessor)
+>                           state = population.step_population(population.env)
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/test_episode_lane_learning.py:188: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/population/vectorized.py:1247: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1023: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1169: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1173: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1234: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[-0.4971,  0.3711,  0.0411,  0.4268,  0.2738, -0.3831,  0.3428,  0.1690]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7f54638f1690>
+action_masks = tensor([[ True,  True,  True,  True, False,  True,  True,  True]])
+
+    def select(q_values: torch.Tensor, agent_states: BatchedAgentState, action_masks: torch.Tensor | None) -> torch.Tensor:
+>       assert q_values.shape == (env.num_agents, env.action_dim)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+tests/test_townlet/regressions/fixtures/episode_lanes.py:105: AssertionError
+_ test_real_learners_keep_terminal_and_truncation_targets[terminal-False-standard-1] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_real_learners_keep_termin0')
+mode = 'standard', sequence_length = 1, double_dqn = False, ending = 'terminal'
+
+    @pytest.mark.parametrize("mode,sequence_length", [("standard", 1), ("per", 1), ("recurrent", 1), ("recurrent", 2)])
+    @pytest.mark.parametrize("double_dqn", [False, True])
+    @pytest.mark.parametrize("ending", ["terminal", "cap"])
+    def test_real_learners_keep_terminal_and_truncation_targets(
+        tmp_path: Path, mode: str, sequence_length: int, double_dqn: bool, ending: str
+    ) -> None:
+>       qualify_real_learner(
+            tmp_path, mode=mode, sequence_length=sequence_length, double_dqn=double_dqn, ending=ending, corrupt_truncation=False
+        )
+
+tests/test_townlet/regressions/test_episode_lane_learning.py:234: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/test_episode_lane_learning.py:372: in qualify_real_learner
+    state = population.step_population(population.env)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1247: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1023: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1169: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1173: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1234: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[ 0.0461, -0.0091,  0.2658, -0.0674,  0.2416, -0.1604,  0.0829, -0.1585]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7f54635f8350>
+action_masks = tensor([[ True, False, False,  True, False,  True,  True,  True]])
+
+    def select(q_values: torch.Tensor, agent_states: BatchedAgentState, action_masks: torch.Tensor | None) -> torch.Tensor:
+>       assert q_values.shape == (env.num_agents, env.action_dim)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+tests/test_townlet/regressions/fixtures/episode_lanes.py:105: AssertionError
+_ test_real_learners_keep_terminal_and_truncation_targets[terminal-False-per-1] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_real_learners_keep_termin1')
+mode = 'per', sequence_length = 1, double_dqn = False, ending = 'terminal'
+
+    @pytest.mark.parametrize("mode,sequence_length", [("standard", 1), ("per", 1), ("recurrent", 1), ("recurrent", 2)])
+    @pytest.mark.parametrize("double_dqn", [False, True])
+    @pytest.mark.parametrize("ending", ["terminal", "cap"])
+    def test_real_learners_keep_terminal_and_truncation_targets(
+        tmp_path: Path, mode: str, sequence_length: int, double_dqn: bool, ending: str
+    ) -> None:
+>       qualify_real_learner(
+            tmp_path, mode=mode, sequence_length=sequence_length, double_dqn=double_dqn, ending=ending, corrupt_truncation=False
+        )
+
+tests/test_townlet/regressions/test_episode_lane_learning.py:234: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/test_episode_lane_learning.py:372: in qualify_real_learner
+    state = population.step_population(population.env)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1247: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1023: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1169: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1173: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1234: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[ 0.0461, -0.0091,  0.2658, -0.0674,  0.2416, -0.1604,  0.0829, -0.1585]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7f5460b72b90>
+action_masks = tensor([[ True, False, False,  True, False,  True,  True,  True]])
+
+    def select(q_values: torch.Tensor, agent_states: BatchedAgentState, action_masks: torch.Tensor | None) -> torch.Tensor:
+>       assert q_values.shape == (env.num_agents, env.action_dim)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+tests/test_townlet/regressions/fixtures/episode_lanes.py:105: AssertionError
+_ test_real_learners_keep_terminal_and_truncation_targets[terminal-False-recurrent-1] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_real_learners_keep_termin2')
+mode = 'recurrent', sequence_length = 1, double_dqn = False, ending = 'terminal'
+
+    @pytest.mark.parametrize("mode,sequence_length", [("standard", 1), ("per", 1), ("recurrent", 1), ("recurrent", 2)])
+    @pytest.mark.parametrize("double_dqn", [False, True])
+    @pytest.mark.parametrize("ending", ["terminal", "cap"])
+    def test_real_learners_keep_terminal_and_truncation_targets(
+        tmp_path: Path, mode: str, sequence_length: int, double_dqn: bool, ending: str
+    ) -> None:
+>       qualify_real_learner(
+            tmp_path, mode=mode, sequence_length=sequence_length, double_dqn=double_dqn, ending=ending, corrupt_truncation=False
+        )
+
+tests/test_townlet/regressions/test_episode_lane_learning.py:234: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/test_episode_lane_learning.py:372: in qualify_real_learner
+    state = population.step_population(population.env)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1247: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1023: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1169: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1173: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1234: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[-0.4200, -0.0878,  0.0821,  0.2357, -0.2072, -0.0150,  0.0753,  0.0464]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7f54644359a0>
+action_masks = tensor([[ True,  True,  True,  True, False,  True,  True,  True]])
+
+    def select(q_values: torch.Tensor, agent_states: BatchedAgentState, action_masks: torch.Tensor | None) -> torch.Tensor:
+>       assert q_values.shape == (env.num_agents, env.action_dim)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+tests/test_townlet/regressions/fixtures/episode_lanes.py:105: AssertionError
+_ test_real_learners_keep_terminal_and_truncation_targets[terminal-False-recurrent-2] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_real_learners_keep_termin3')
+mode = 'recurrent', sequence_length = 2, double_dqn = False, ending = 'terminal'
+
+    @pytest.mark.parametrize("mode,sequence_length", [("standard", 1), ("per", 1), ("recurrent", 1), ("recurrent", 2)])
+    @pytest.mark.parametrize("double_dqn", [False, True])
+    @pytest.mark.parametrize("ending", ["terminal", "cap"])
+    def test_real_learners_keep_terminal_and_truncation_targets(
+        tmp_path: Path, mode: str, sequence_length: int, double_dqn: bool, ending: str
+    ) -> None:
+>       qualify_real_learner(
+            tmp_path, mode=mode, sequence_length=sequence_length, double_dqn=double_dqn, ending=ending, corrupt_truncation=False
+        )
+
+tests/test_townlet/regressions/test_episode_lane_learning.py:234: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/test_episode_lane_learning.py:372: in qualify_real_learner
+    state = population.step_population(population.env)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1247: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1023: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1169: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1173: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1234: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[-0.4200, -0.0878,  0.0821,  0.2357, -0.2072, -0.0150,  0.0753,  0.0464]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7f54625bd1c0>
+action_masks = tensor([[ True,  True,  True,  True, False,  True,  True,  True]])
+
+    def select(q_values: torch.Tensor, agent_states: BatchedAgentState, action_masks: torch.Tensor | None) -> torch.Tensor:
+>       assert q_values.shape == (env.num_agents, env.action_dim)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+tests/test_townlet/regressions/fixtures/episode_lanes.py:105: AssertionError
+_ test_real_learners_keep_terminal_and_truncation_targets[terminal-True-standard-1] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_real_learners_keep_termin4')
+mode = 'standard', sequence_length = 1, double_dqn = True, ending = 'terminal'
+
+    @pytest.mark.parametrize("mode,sequence_length", [("standard", 1), ("per", 1), ("recurrent", 1), ("recurrent", 2)])
+    @pytest.mark.parametrize("double_dqn", [False, True])
+    @pytest.mark.parametrize("ending", ["terminal", "cap"])
+    def test_real_learners_keep_terminal_and_truncation_targets(
+        tmp_path: Path, mode: str, sequence_length: int, double_dqn: bool, ending: str
+    ) -> None:
+>       qualify_real_learner(
+            tmp_path, mode=mode, sequence_length=sequence_length, double_dqn=double_dqn, ending=ending, corrupt_truncation=False
+        )
+
+tests/test_townlet/regressions/test_episode_lane_learning.py:234: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/test_episode_lane_learning.py:372: in qualify_real_learner
+    state = population.step_population(population.env)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1247: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1023: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1169: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1173: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1234: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[ 0.0461, -0.0091,  0.2658, -0.0674,  0.2416, -0.1604,  0.0829, -0.1585]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7f5460d2c6d0>
+action_masks = tensor([[ True, False, False,  True, False,  True,  True,  True]])
+
+    def select(q_values: torch.Tensor, agent_states: BatchedAgentState, action_masks: torch.Tensor | None) -> torch.Tensor:
+>       assert q_values.shape == (env.num_agents, env.action_dim)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+tests/test_townlet/regressions/fixtures/episode_lanes.py:105: AssertionError
+_ test_real_learners_keep_terminal_and_truncation_targets[terminal-True-per-1] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_real_learners_keep_termin5')
+mode = 'per', sequence_length = 1, double_dqn = True, ending = 'terminal'
+
+    @pytest.mark.parametrize("mode,sequence_length", [("standard", 1), ("per", 1), ("recurrent", 1), ("recurrent", 2)])
+    @pytest.mark.parametrize("double_dqn", [False, True])
+    @pytest.mark.parametrize("ending", ["terminal", "cap"])
+    def test_real_learners_keep_terminal_and_truncation_targets(
+        tmp_path: Path, mode: str, sequence_length: int, double_dqn: bool, ending: str
+    ) -> None:
+>       qualify_real_learner(
+            tmp_path, mode=mode, sequence_length=sequence_length, double_dqn=double_dqn, ending=ending, corrupt_truncation=False
+        )
+
+tests/test_townlet/regressions/test_episode_lane_learning.py:234: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/test_episode_lane_learning.py:372: in qualify_real_learner
+    state = population.step_population(population.env)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1247: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1023: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1169: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1173: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1234: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[ 0.0461, -0.0091,  0.2658, -0.0674,  0.2416, -0.1604,  0.0829, -0.1585]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7f5460b72b20>
+action_masks = tensor([[ True, False, False,  True, False,  True,  True,  True]])
+
+    def select(q_values: torch.Tensor, agent_states: BatchedAgentState, action_masks: torch.Tensor | None) -> torch.Tensor:
+>       assert q_values.shape == (env.num_agents, env.action_dim)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+tests/test_townlet/regressions/fixtures/episode_lanes.py:105: AssertionError
+_ test_real_learners_keep_terminal_and_truncation_targets[terminal-True-recurrent-1] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_real_learners_keep_termin6')
+mode = 'recurrent', sequence_length = 1, double_dqn = True, ending = 'terminal'
+
+    @pytest.mark.parametrize("mode,sequence_length", [("standard", 1), ("per", 1), ("recurrent", 1), ("recurrent", 2)])
+    @pytest.mark.parametrize("double_dqn", [False, True])
+    @pytest.mark.parametrize("ending", ["terminal", "cap"])
+    def test_real_learners_keep_terminal_and_truncation_targets(
+        tmp_path: Path, mode: str, sequence_length: int, double_dqn: bool, ending: str
+    ) -> None:
+>       qualify_real_learner(
+            tmp_path, mode=mode, sequence_length=sequence_length, double_dqn=double_dqn, ending=ending, corrupt_truncation=False
+        )
+
+tests/test_townlet/regressions/test_episode_lane_learning.py:234: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/test_episode_lane_learning.py:372: in qualify_real_learner
+    state = population.step_population(population.env)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1247: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1023: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1169: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1173: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1234: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[-0.4200, -0.0878,  0.0821,  0.2357, -0.2072, -0.0150,  0.0753,  0.0464]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7f5460d1e180>
+action_masks = tensor([[ True,  True,  True,  True, False,  True,  True,  True]])
+
+    def select(q_values: torch.Tensor, agent_states: BatchedAgentState, action_masks: torch.Tensor | None) -> torch.Tensor:
+>       assert q_values.shape == (env.num_agents, env.action_dim)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+tests/test_townlet/regressions/fixtures/episode_lanes.py:105: AssertionError
+_ test_real_learners_keep_terminal_and_truncation_targets[terminal-True-recurrent-2] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_real_learners_keep_termin7')
+mode = 'recurrent', sequence_length = 2, double_dqn = True, ending = 'terminal'
+
+    @pytest.mark.parametrize("mode,sequence_length", [("standard", 1), ("per", 1), ("recurrent", 1), ("recurrent", 2)])
+    @pytest.mark.parametrize("double_dqn", [False, True])
+    @pytest.mark.parametrize("ending", ["terminal", "cap"])
+    def test_real_learners_keep_terminal_and_truncation_targets(
+        tmp_path: Path, mode: str, sequence_length: int, double_dqn: bool, ending: str
+    ) -> None:
+>       qualify_real_learner(
+            tmp_path, mode=mode, sequence_length=sequence_length, double_dqn=double_dqn, ending=ending, corrupt_truncation=False
+        )
+
+tests/test_townlet/regressions/test_episode_lane_learning.py:234: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/test_episode_lane_learning.py:372: in qualify_real_learner
+    state = population.step_population(population.env)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1247: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1023: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1169: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1173: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1234: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[-0.4200, -0.0878,  0.0821,  0.2357, -0.2072, -0.0150,  0.0753,  0.0464]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7f5463324350>
+action_masks = tensor([[ True,  True,  True,  True, False,  True,  True,  True]])
+
+    def select(q_values: torch.Tensor, agent_states: BatchedAgentState, action_masks: torch.Tensor | None) -> torch.Tensor:
+>       assert q_values.shape == (env.num_agents, env.action_dim)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+tests/test_townlet/regressions/fixtures/episode_lanes.py:105: AssertionError
+_ test_real_learners_keep_terminal_and_truncation_targets[cap-False-standard-1] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_real_learners_keep_termin8')
+mode = 'standard', sequence_length = 1, double_dqn = False, ending = 'cap'
+
+    @pytest.mark.parametrize("mode,sequence_length", [("standard", 1), ("per", 1), ("recurrent", 1), ("recurrent", 2)])
+    @pytest.mark.parametrize("double_dqn", [False, True])
+    @pytest.mark.parametrize("ending", ["terminal", "cap"])
+    def test_real_learners_keep_terminal_and_truncation_targets(
+        tmp_path: Path, mode: str, sequence_length: int, double_dqn: bool, ending: str
+    ) -> None:
+>       qualify_real_learner(
+            tmp_path, mode=mode, sequence_length=sequence_length, double_dqn=double_dqn, ending=ending, corrupt_truncation=False
+        )
+
+tests/test_townlet/regressions/test_episode_lane_learning.py:234: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/test_episode_lane_learning.py:372: in qualify_real_learner
+    state = population.step_population(population.env)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1247: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1023: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1169: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1173: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1234: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[ 0.0461, -0.0091,  0.2658, -0.0674,  0.2416, -0.1604,  0.0829, -0.1585]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7f5462500120>
+action_masks = tensor([[ True, False, False,  True, False,  True,  True,  True]])
+
+    def select(q_values: torch.Tensor, agent_states: BatchedAgentState, action_masks: torch.Tensor | None) -> torch.Tensor:
+>       assert q_values.shape == (env.num_agents, env.action_dim)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+tests/test_townlet/regressions/fixtures/episode_lanes.py:105: AssertionError
+___ test_real_learners_keep_terminal_and_truncation_targets[cap-False-per-1] ___
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_real_learners_keep_termin9')
+mode = 'per', sequence_length = 1, double_dqn = False, ending = 'cap'
+
+    @pytest.mark.parametrize("mode,sequence_length", [("standard", 1), ("per", 1), ("recurrent", 1), ("recurrent", 2)])
+    @pytest.mark.parametrize("double_dqn", [False, True])
+    @pytest.mark.parametrize("ending", ["terminal", "cap"])
+    def test_real_learners_keep_terminal_and_truncation_targets(
+        tmp_path: Path, mode: str, sequence_length: int, double_dqn: bool, ending: str
+    ) -> None:
+>       qualify_real_learner(
+            tmp_path, mode=mode, sequence_length=sequence_length, double_dqn=double_dqn, ending=ending, corrupt_truncation=False
+        )
+
+tests/test_townlet/regressions/test_episode_lane_learning.py:234: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/test_episode_lane_learning.py:372: in qualify_real_learner
+    state = population.step_population(population.env)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1247: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1023: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1169: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1173: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1234: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[ 0.0461, -0.0091,  0.2658, -0.0674,  0.2416, -0.1604,  0.0829, -0.1585]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7f546362dfc0>
+action_masks = tensor([[ True, False, False,  True, False,  True,  True,  True]])
+
+    def select(q_values: torch.Tensor, agent_states: BatchedAgentState, action_masks: torch.Tensor | None) -> torch.Tensor:
+>       assert q_values.shape == (env.num_agents, env.action_dim)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+tests/test_townlet/regressions/fixtures/episode_lanes.py:105: AssertionError
+_ test_real_learners_keep_terminal_and_truncation_targets[cap-False-recurrent-1] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_real_learners_keep_termin10')
+mode = 'recurrent', sequence_length = 1, double_dqn = False, ending = 'cap'
+
+    @pytest.mark.parametrize("mode,sequence_length", [("standard", 1), ("per", 1), ("recurrent", 1), ("recurrent", 2)])
+    @pytest.mark.parametrize("double_dqn", [False, True])
+    @pytest.mark.parametrize("ending", ["terminal", "cap"])
+    def test_real_learners_keep_terminal_and_truncation_targets(
+        tmp_path: Path, mode: str, sequence_length: int, double_dqn: bool, ending: str
+    ) -> None:
+>       qualify_real_learner(
+            tmp_path, mode=mode, sequence_length=sequence_length, double_dqn=double_dqn, ending=ending, corrupt_truncation=False
+        )
+
+tests/test_townlet/regressions/test_episode_lane_learning.py:234: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/test_episode_lane_learning.py:372: in qualify_real_learner
+    state = population.step_population(population.env)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1247: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1023: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1169: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1173: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1234: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[-0.4200, -0.0878,  0.0821,  0.2357, -0.2072, -0.0150,  0.0753,  0.0464]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7f54644652a0>
+action_masks = tensor([[ True,  True,  True,  True, False,  True,  True,  True]])
+
+    def select(q_values: torch.Tensor, agent_states: BatchedAgentState, action_masks: torch.Tensor | None) -> torch.Tensor:
+>       assert q_values.shape == (env.num_agents, env.action_dim)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+tests/test_townlet/regressions/fixtures/episode_lanes.py:105: AssertionError
+_ test_real_learners_keep_terminal_and_truncation_targets[cap-False-recurrent-2] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_real_learners_keep_termin11')
+mode = 'recurrent', sequence_length = 2, double_dqn = False, ending = 'cap'
+
+    @pytest.mark.parametrize("mode,sequence_length", [("standard", 1), ("per", 1), ("recurrent", 1), ("recurrent", 2)])
+    @pytest.mark.parametrize("double_dqn", [False, True])
+    @pytest.mark.parametrize("ending", ["terminal", "cap"])
+    def test_real_learners_keep_terminal_and_truncation_targets(
+        tmp_path: Path, mode: str, sequence_length: int, double_dqn: bool, ending: str
+    ) -> None:
+>       qualify_real_learner(
+            tmp_path, mode=mode, sequence_length=sequence_length, double_dqn=double_dqn, ending=ending, corrupt_truncation=False
+        )
+
+tests/test_townlet/regressions/test_episode_lane_learning.py:234: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/test_episode_lane_learning.py:372: in qualify_real_learner
+    state = population.step_population(population.env)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1247: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1023: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1169: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1173: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1234: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[-0.4200, -0.0878,  0.0821,  0.2357, -0.2072, -0.0150,  0.0753,  0.0464]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7f5460b70820>
+action_masks = tensor([[ True,  True,  True,  True, False,  True,  True,  True]])
+
+    def select(q_values: torch.Tensor, agent_states: BatchedAgentState, action_masks: torch.Tensor | None) -> torch.Tensor:
+>       assert q_values.shape == (env.num_agents, env.action_dim)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+tests/test_townlet/regressions/fixtures/episode_lanes.py:105: AssertionError
+_ test_real_learners_keep_terminal_and_truncation_targets[cap-True-standard-1] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_real_learners_keep_termin12')
+mode = 'standard', sequence_length = 1, double_dqn = True, ending = 'cap'
+
+    @pytest.mark.parametrize("mode,sequence_length", [("standard", 1), ("per", 1), ("recurrent", 1), ("recurrent", 2)])
+    @pytest.mark.parametrize("double_dqn", [False, True])
+    @pytest.mark.parametrize("ending", ["terminal", "cap"])
+    def test_real_learners_keep_terminal_and_truncation_targets(
+        tmp_path: Path, mode: str, sequence_length: int, double_dqn: bool, ending: str
+    ) -> None:
+>       qualify_real_learner(
+            tmp_path, mode=mode, sequence_length=sequence_length, double_dqn=double_dqn, ending=ending, corrupt_truncation=False
+        )
+
+tests/test_townlet/regressions/test_episode_lane_learning.py:234: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/test_episode_lane_learning.py:372: in qualify_real_learner
+    state = population.step_population(population.env)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1247: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1023: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1169: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1173: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1234: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[ 0.0461, -0.0091,  0.2658, -0.0674,  0.2416, -0.1604,  0.0829, -0.1585]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7f5460cc03c0>
+action_masks = tensor([[ True, False, False,  True, False,  True,  True,  True]])
+
+    def select(q_values: torch.Tensor, agent_states: BatchedAgentState, action_masks: torch.Tensor | None) -> torch.Tensor:
+>       assert q_values.shape == (env.num_agents, env.action_dim)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+tests/test_townlet/regressions/fixtures/episode_lanes.py:105: AssertionError
+___ test_real_learners_keep_terminal_and_truncation_targets[cap-True-per-1] ____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_real_learners_keep_termin13')
+mode = 'per', sequence_length = 1, double_dqn = True, ending = 'cap'
+
+    @pytest.mark.parametrize("mode,sequence_length", [("standard", 1), ("per", 1), ("recurrent", 1), ("recurrent", 2)])
+    @pytest.mark.parametrize("double_dqn", [False, True])
+    @pytest.mark.parametrize("ending", ["terminal", "cap"])
+    def test_real_learners_keep_terminal_and_truncation_targets(
+        tmp_path: Path, mode: str, sequence_length: int, double_dqn: bool, ending: str
+    ) -> None:
+>       qualify_real_learner(
+            tmp_path, mode=mode, sequence_length=sequence_length, double_dqn=double_dqn, ending=ending, corrupt_truncation=False
+        )
+
+tests/test_townlet/regressions/test_episode_lane_learning.py:234: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/test_episode_lane_learning.py:372: in qualify_real_learner
+    state = population.step_population(population.env)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1247: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1023: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1169: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1173: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1234: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[ 0.0461, -0.0091,  0.2658, -0.0674,  0.2416, -0.1604,  0.0829, -0.1585]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7f54634a7530>
+action_masks = tensor([[ True, False, False,  True, False,  True,  True,  True]])
+
+    def select(q_values: torch.Tensor, agent_states: BatchedAgentState, action_masks: torch.Tensor | None) -> torch.Tensor:
+>       assert q_values.shape == (env.num_agents, env.action_dim)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+tests/test_townlet/regressions/fixtures/episode_lanes.py:105: AssertionError
+_ test_real_learners_keep_terminal_and_truncation_targets[cap-True-recurrent-1] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_real_learners_keep_termin14')
+mode = 'recurrent', sequence_length = 1, double_dqn = True, ending = 'cap'
+
+    @pytest.mark.parametrize("mode,sequence_length", [("standard", 1), ("per", 1), ("recurrent", 1), ("recurrent", 2)])
+    @pytest.mark.parametrize("double_dqn", [False, True])
+    @pytest.mark.parametrize("ending", ["terminal", "cap"])
+    def test_real_learners_keep_terminal_and_truncation_targets(
+        tmp_path: Path, mode: str, sequence_length: int, double_dqn: bool, ending: str
+    ) -> None:
+>       qualify_real_learner(
+            tmp_path, mode=mode, sequence_length=sequence_length, double_dqn=double_dqn, ending=ending, corrupt_truncation=False
+        )
+
+tests/test_townlet/regressions/test_episode_lane_learning.py:234: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/test_episode_lane_learning.py:372: in qualify_real_learner
+    state = population.step_population(population.env)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1247: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1023: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1169: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1173: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1234: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[-0.4200, -0.0878,  0.0821,  0.2357, -0.2072, -0.0150,  0.0753,  0.0464]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7f5460d1f840>
+action_masks = tensor([[ True,  True,  True,  True, False,  True,  True,  True]])
+
+    def select(q_values: torch.Tensor, agent_states: BatchedAgentState, action_masks: torch.Tensor | None) -> torch.Tensor:
+>       assert q_values.shape == (env.num_agents, env.action_dim)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+tests/test_townlet/regressions/fixtures/episode_lanes.py:105: AssertionError
+_ test_real_learners_keep_terminal_and_truncation_targets[cap-True-recurrent-2] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_real_learners_keep_termin15')
+mode = 'recurrent', sequence_length = 2, double_dqn = True, ending = 'cap'
+
+    @pytest.mark.parametrize("mode,sequence_length", [("standard", 1), ("per", 1), ("recurrent", 1), ("recurrent", 2)])
+    @pytest.mark.parametrize("double_dqn", [False, True])
+    @pytest.mark.parametrize("ending", ["terminal", "cap"])
+    def test_real_learners_keep_terminal_and_truncation_targets(
+        tmp_path: Path, mode: str, sequence_length: int, double_dqn: bool, ending: str
+    ) -> None:
+>       qualify_real_learner(
+            tmp_path, mode=mode, sequence_length=sequence_length, double_dqn=double_dqn, ending=ending, corrupt_truncation=False
+        )
+
+tests/test_townlet/regressions/test_episode_lane_learning.py:234: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/test_episode_lane_learning.py:372: in qualify_real_learner
+    state = population.step_population(population.env)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1247: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1023: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1169: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1173: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1234: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[-0.4200, -0.0878,  0.0821,  0.2357, -0.2072, -0.0150,  0.0753,  0.0464]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7f5463433a70>
+action_masks = tensor([[ True,  True,  True,  True, False,  True,  True,  True]])
+
+    def select(q_values: torch.Tensor, agent_states: BatchedAgentState, action_masks: torch.Tensor | None) -> torch.Tensor:
+>       assert q_values.shape == (env.num_agents, env.action_dim)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+tests/test_townlet/regressions/fixtures/episode_lanes.py:105: AssertionError
+_ test_real_population_negative_controls_fail_independent_conformance[post_step_eligibility] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_real_population_negative_0')
+corruption = 'post_step_eligibility'
+
+    @pytest.mark.parametrize("corruption", ["post_step_eligibility", "ghost_admission", "repeated_completion"])
+    def test_real_population_negative_controls_fail_independent_conformance(tmp_path: Path, corruption: str) -> None:
+        population = make_lane_population(
+            tmp_path / "pack",
+            mode="standard",
+            num_agents=2,
+            lifespan=20,
+            batch_size=128,
+            sequence_length=1,
+            rnd_batch_size=128,
+            double_dqn=False,
+        )
+        env = population.env
+        original_step = env.step
+        original_finalize = population._finalize_episode
+    
+        def step(actions, depletion_multiplier=1.0):
+            observation, rewards, dones, info = original_step(actions, depletion_multiplier)
+            if corruption == "post_step_eligibility":
+                info["active_on_entry"] = ~dones.clone()
+            elif corruption == "ghost_admission":
+                info["active_on_entry"] = torch.ones_like(dones)
+            elif corruption == "repeated_completion":
+                info["newly_terminal"] = dones.clone()
+            return observation, rewards, dones, info
+    
+        def finalize(agent_idx, reason):
+            if corruption == "repeated_completion":
+                population.episode_completed[agent_idx] = False
+            return original_finalize(agent_idx, reason)
+    
+        ledger = torch.zeros(2, dtype=torch.long)
+        with patch.object(env, "step", side_effect=step), patch.object(population, "_finalize_episode", side_effect=finalize):
+            with controlled_action_schedule(population.exploration, env, schedule_for((2, 5))):
+                for _ in range(5):
+                    active = ~env.dones.clone()
+>                   population.step_population(env)
+
+tests/test_townlet/regressions/test_episode_lane_learning.py:475: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/population/vectorized.py:1247: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1023: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1169: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1173: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1234: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[-0.0878,  0.0952, -0.0562,  0.1621, -0.0469, -0.1860,  0.2057, -0.0178]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7f54635fa650>
+action_masks = tensor([[ True,  True,  True,  True, False,  True,  True,  True]])
+
+    def select(q_values: torch.Tensor, agent_states: BatchedAgentState, action_masks: torch.Tensor | None) -> torch.Tensor:
+>       assert q_values.shape == (env.num_agents, env.action_dim)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+tests/test_townlet/regressions/fixtures/episode_lanes.py:105: AssertionError
+_ test_real_population_negative_controls_fail_independent_conformance[ghost_admission] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_real_population_negative_1')
+corruption = 'ghost_admission'
+
+    @pytest.mark.parametrize("corruption", ["post_step_eligibility", "ghost_admission", "repeated_completion"])
+    def test_real_population_negative_controls_fail_independent_conformance(tmp_path: Path, corruption: str) -> None:
+        population = make_lane_population(
+            tmp_path / "pack",
+            mode="standard",
+            num_agents=2,
+            lifespan=20,
+            batch_size=128,
+            sequence_length=1,
+            rnd_batch_size=128,
+            double_dqn=False,
+        )
+        env = population.env
+        original_step = env.step
+        original_finalize = population._finalize_episode
+    
+        def step(actions, depletion_multiplier=1.0):
+            observation, rewards, dones, info = original_step(actions, depletion_multiplier)
+            if corruption == "post_step_eligibility":
+                info["active_on_entry"] = ~dones.clone()
+            elif corruption == "ghost_admission":
+                info["active_on_entry"] = torch.ones_like(dones)
+            elif corruption == "repeated_completion":
+                info["newly_terminal"] = dones.clone()
+            return observation, rewards, dones, info
+    
+        def finalize(agent_idx, reason):
+            if corruption == "repeated_completion":
+                population.episode_completed[agent_idx] = False
+            return original_finalize(agent_idx, reason)
+    
+        ledger = torch.zeros(2, dtype=torch.long)
+        with patch.object(env, "step", side_effect=step), patch.object(population, "_finalize_episode", side_effect=finalize):
+            with controlled_action_schedule(population.exploration, env, schedule_for((2, 5))):
+                for _ in range(5):
+                    active = ~env.dones.clone()
+>                   population.step_population(env)
+
+tests/test_townlet/regressions/test_episode_lane_learning.py:475: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/population/vectorized.py:1247: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1023: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1169: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1173: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1234: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[-0.1189, -0.2962,  0.0718,  0.1201,  0.0709,  0.0874,  0.0312,  0.0479]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7f546466d150>
+action_masks = tensor([[ True,  True,  True,  True, False,  True,  True,  True]])
+
+    def select(q_values: torch.Tensor, agent_states: BatchedAgentState, action_masks: torch.Tensor | None) -> torch.Tensor:
+>       assert q_values.shape == (env.num_agents, env.action_dim)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+tests/test_townlet/regressions/fixtures/episode_lanes.py:105: AssertionError
+_ test_real_population_negative_controls_fail_independent_conformance[repeated_completion] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_real_population_negative_2')
+corruption = 'repeated_completion'
+
+    @pytest.mark.parametrize("corruption", ["post_step_eligibility", "ghost_admission", "repeated_completion"])
+    def test_real_population_negative_controls_fail_independent_conformance(tmp_path: Path, corruption: str) -> None:
+        population = make_lane_population(
+            tmp_path / "pack",
+            mode="standard",
+            num_agents=2,
+            lifespan=20,
+            batch_size=128,
+            sequence_length=1,
+            rnd_batch_size=128,
+            double_dqn=False,
+        )
+        env = population.env
+        original_step = env.step
+        original_finalize = population._finalize_episode
+    
+        def step(actions, depletion_multiplier=1.0):
+            observation, rewards, dones, info = original_step(actions, depletion_multiplier)
+            if corruption == "post_step_eligibility":
+                info["active_on_entry"] = ~dones.clone()
+            elif corruption == "ghost_admission":
+                info["active_on_entry"] = torch.ones_like(dones)
+            elif corruption == "repeated_completion":
+                info["newly_terminal"] = dones.clone()
+            return observation, rewards, dones, info
+    
+        def finalize(agent_idx, reason):
+            if corruption == "repeated_completion":
+                population.episode_completed[agent_idx] = False
+            return original_finalize(agent_idx, reason)
+    
+        ledger = torch.zeros(2, dtype=torch.long)
+        with patch.object(env, "step", side_effect=step), patch.object(population, "_finalize_episode", side_effect=finalize):
+            with controlled_action_schedule(population.exploration, env, schedule_for((2, 5))):
+                for _ in range(5):
+                    active = ~env.dones.clone()
+>                   population.step_population(env)
+
+tests/test_townlet/regressions/test_episode_lane_learning.py:475: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/population/vectorized.py:1247: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1023: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1169: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1173: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1234: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[ 0.0116, -0.1991,  0.2005,  0.3570,  0.0796,  0.0921, -0.1468, -0.2993]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7f54625034c0>
+action_masks = tensor([[ True,  True,  True,  True, False,  True,  True,  True]])
+
+    def select(q_values: torch.Tensor, agent_states: BatchedAgentState, action_masks: torch.Tensor | None) -> torch.Tensor:
+>       assert q_values.shape == (env.num_agents, env.action_dim)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+tests/test_townlet/regressions/fixtures/episode_lanes.py:105: AssertionError
+________ test_real_truncation_done_corruption_fails_actual_loss_target _________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_real_truncation_done_corr0')
+
+    def test_real_truncation_done_corruption_fails_actual_loss_target(tmp_path: Path) -> None:
+        with pytest.raises(AssertionError, match="truncation target"):
+>           qualify_real_learner(tmp_path, mode="standard", sequence_length=1, double_dqn=True, ending="cap", corrupt_truncation=True)
+
+tests/test_townlet/regressions/test_episode_lane_learning.py:488: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/test_episode_lane_learning.py:372: in qualify_real_learner
+    state = population.step_population(population.env)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1247: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1023: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1169: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1173: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/unittest/mock.py:1234: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[ 0.0461, -0.0091,  0.2658, -0.0674,  0.2416, -0.1604,  0.0829, -0.1585]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7f5462510820>
+action_masks = tensor([[ True, False, False,  True, False,  True,  True,  True]])
+
+    def select(q_values: torch.Tensor, agent_states: BatchedAgentState, action_masks: torch.Tensor | None) -> torch.Tensor:
+>       assert q_values.shape == (env.num_agents, env.action_dim)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+tests/test_townlet/regressions/fixtures/episode_lanes.py:105: AssertionError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-b03-r0/popen-gw0/test_real_truncation_done_corr0')
+
+    def test_real_truncation_done_corruption_fails_actual_loss_target(tmp_path: Path) -> None:
+>       with pytest.raises(AssertionError, match="truncation target"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'truncation target'
+E        Input: ''
+
+tests/test_townlet/regressions/test_episode_lane_learning.py:487: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/unit/population/test_recurrent_training.py::TestEpisodeBuffering::test_store_episode_and_reset_adds_to_buffer
+FAILED tests/test_townlet/integration/test_authored_episode_lanes.py::test_authored_pack_compiles
+FAILED tests/test_townlet/integration/test_authored_episode_lanes.py::test_authored_population_survival_reports_the_seven_actual_transitions
+FAILED tests/test_townlet/integration/test_recurrent_bootstrap_runtime.py::test_subsequence_boundary_bootstraps_with_gamma_from_yaml[0.99-0.5-True]
+FAILED tests/test_townlet/integration/test_recurrent_bootstrap_runtime.py::test_subsequence_boundary_bootstraps_with_gamma_from_yaml[0.5-0.99-True]
+FAILED tests/test_townlet/integration/test_recurrent_bootstrap_runtime.py::test_subsequence_boundary_bootstraps_with_gamma_from_yaml[0.99-0.5-False]
+FAILED tests/test_townlet/integration/test_recurrent_bptt_runtime.py::test_training_passes_the_configured_sequence_in_one_network_call[2]
+FAILED tests/test_townlet/integration/test_recurrent_bptt_runtime.py::test_training_passes_the_configured_sequence_in_one_network_call[8]
+FAILED tests/test_townlet/regressions/test_episode_lane_population.py::test_two_five_replay_contains_seven_transitions_and_two_terminal_rows[standard]
+FAILED tests/test_townlet/regressions/test_episode_lane_population.py::test_two_five_replay_contains_seven_transitions_and_two_terminal_rows[per]
+FAILED tests/test_townlet/regressions/test_episode_lane_population.py::test_two_five_replay_contains_seven_transitions_and_two_terminal_rows[recurrent]
+FAILED tests/test_townlet/regressions/test_episode_lane_population.py::test_replay_matches_independent_eligible_ledger_and_completes_once[end_ticks0-standard]
+FAILED tests/test_townlet/regressions/test_episode_lane_population.py::test_replay_matches_independent_eligible_ledger_and_completes_once[end_ticks0-per]
+FAILED tests/test_townlet/regressions/test_episode_lane_population.py::test_replay_matches_independent_eligible_ledger_and_completes_once[end_ticks0-recurrent]
+FAILED tests/test_townlet/regressions/test_episode_lane_population.py::test_replay_matches_independent_eligible_ledger_and_completes_once[end_ticks1-standard]
+FAILED tests/test_townlet/regressions/test_episode_lane_population.py::test_replay_matches_independent_eligible_ledger_and_completes_once[end_ticks1-per]
+FAILED tests/test_townlet/regressions/test_episode_lane_population.py::test_replay_matches_independent_eligible_ledger_and_completes_once[end_ticks1-recurrent]
+FAILED tests/test_townlet/regressions/test_episode_lane_population.py::test_authored_death_and_healthy_retirement_have_distinct_owned_reasons
+FAILED tests/test_townlet/regressions/test_episode_lane_population.py::test_recurrent_dead_hidden_stays_zero_with_full_adversarial_q_rows
+FAILED tests/test_townlet/regressions/test_episode_lane_learning.py::test_one_episode_ingests_seven_owned_predecessors_and_normalizes_seven_successors[standard]
+FAILED tests/test_townlet/regressions/test_episode_lane_learning.py::test_one_episode_ingests_seven_owned_predecessors_and_normalizes_seven_successors[per]
+FAILED tests/test_townlet/regressions/test_episode_lane_learning.py::test_one_episode_ingests_seven_owned_predecessors_and_normalizes_seven_successors[recurrent]
+FAILED tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_learners_keep_terminal_and_truncation_targets[terminal-False-standard-1]
+FAILED tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_learners_keep_terminal_and_truncation_targets[terminal-False-per-1]
+FAILED tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_learners_keep_terminal_and_truncation_targets[terminal-False-recurrent-1]
+FAILED tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_learners_keep_terminal_and_truncation_targets[terminal-False-recurrent-2]
+FAILED tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_learners_keep_terminal_and_truncation_targets[terminal-True-standard-1]
+FAILED tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_learners_keep_terminal_and_truncation_targets[terminal-True-per-1]
+FAILED tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_learners_keep_terminal_and_truncation_targets[terminal-True-recurrent-1]
+FAILED tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_learners_keep_terminal_and_truncation_targets[terminal-True-recurrent-2]
+FAILED tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_learners_keep_terminal_and_truncation_targets[cap-False-standard-1]
+FAILED tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_learners_keep_terminal_and_truncation_targets[cap-False-per-1]
+FAILED tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_learners_keep_terminal_and_truncation_targets[cap-False-recurrent-1]
+FAILED tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_learners_keep_terminal_and_truncation_targets[cap-False-recurrent-2]
+FAILED tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_learners_keep_terminal_and_truncation_targets[cap-True-standard-1]
+FAILED tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_learners_keep_terminal_and_truncation_targets[cap-True-per-1]
+FAILED tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_learners_keep_terminal_and_truncation_targets[cap-True-recurrent-1]
+FAILED tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_learners_keep_terminal_and_truncation_targets[cap-True-recurrent-2]
+FAILED tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_population_negative_controls_fail_independent_conformance[post_step_eligibility]
+FAILED tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_population_negative_controls_fail_independent_conformance[ghost_admission]
+FAILED tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_population_negative_controls_fail_independent_conformance[repeated_completion]
+FAILED tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_truncation_done_corruption_fails_actual_loss_target
+================== 42 failed, 125 passed in 536.51s (0:08:56) ==================

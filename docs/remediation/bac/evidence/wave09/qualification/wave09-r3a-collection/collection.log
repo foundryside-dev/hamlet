@@ -1,0 +1,94 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 67 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Package unit>
+        <Package oracle>
+          <Module test_episode_lane_comparator.py>
+            <Function test_complete_exact_changes_qualify>
+            <Function test_unauthorized_live_action_reward_clock_reset_refuses[actions-2-0-8]>
+            <Function test_unauthorized_live_action_reward_clock_reset_refuses[rewards-5-1-1.0]>
+            <Function test_unauthorized_live_action_reward_clock_reset_refuses[global_tick-5--1-4]>
+            <Function test_unauthorized_live_action_reward_clock_reset_refuses[reset_counts-0-0-1]>
+            <Function test_terminal_transition_dropped_refuses>
+            <Function test_correct_aggregate_wrong_lanes_refuses>
+            <Function test_unused_allowance_refuses>
+            <Function test_duplicate_allowance_refuses>
+            <Function test_exact_old_and_new_values_required>
+            <Function test_type_preserved_even_when_python_values_compare_equal>
+            <Function test_nonfinite_readings_refuse[nan]>
+            <Function test_nonfinite_readings_refuse[inf]>
+            <Function test_nonfinite_readings_refuse[-inf]>
+            <Function test_duplicate_readings_refuse>
+            <Function test_manifest_missing_extra_or_unknown_json_refuses[]>
+            <Function test_manifest_missing_extra_or_unknown_json_refuses[```json\n{}\n```\n```json\n{}\n```]>
+            <Function test_manifest_missing_extra_or_unknown_json_refuses[```json\n{"schema":"unknown"}\n```]>
+            <Function test_preregistered_unknown_after_revision_does_not_relax_values>
+            <Function test_complete_parent_defects_are_retained_without_fabricating_candidate_qualification>
+            <Function test_modified_config_or_recorded_actions_cannot_keep_old_digest[config_inventory]>
+            <Function test_modified_config_or_recorded_actions_cannot_keep_old_digest[actions]>
+            <Function test_coordinate_dropped_on_both_sides_cannot_narrow_recipe_inventory>
+            <Function test_forged_qualified_flag_cannot_override_independently_enumerated_contract>
+            <Function test_stale_verdict_after_reading_mutation_refuses>
+            <Function test_duplicate_json_properties_cannot_hide_allowance>
+            <Function test_invalid_source_stamp_import_or_coordinate_refuses[wrong_import]>
+            <Function test_invalid_source_stamp_import_or_coordinate_refuses[stale_revision]>
+            <Function test_invalid_source_stamp_import_or_coordinate_refuses[stale_source_hash]>
+            <Function test_invalid_source_stamp_import_or_coordinate_refuses[unknown_field]>
+            <Function test_invalid_source_stamp_import_or_coordinate_refuses[unknown_recipe]>
+            <Function test_producer_projects_eligible_selector_and_captures_actual_full_population_transport[authored-two-five]>
+            <Function test_producer_projects_eligible_selector_and_captures_actual_full_population_transport[two-episodes-reset]>
+            <Function test_producer_projects_eligible_selector_and_captures_actual_full_population_transport[budget-six]>
+            <Function test_producer_observes_real_recorded_admission_on_bound_replay>
+      <Package integration>
+        <Module test_checkpointing.py>
+          <Function test_runner_refuses_population_version_five_before_all_consumer_mutation>
+          <Function test_current_checkpoint_closes_pending_lanes_once_and_resumes_fresh_episode[standard]>
+          <Function test_current_checkpoint_closes_pending_lanes_once_and_resumes_fresh_episode[recurrent]>
+          <Class TestEnvironmentCheckpointing>
+            <Function test_environment_checkpoint_preserves_affordance_layout>
+            <Function test_environment_checkpoint_preserves_agent_state>
+            <Function test_environment_checkpoint_roundtrip_consistency>
+          <Class TestPopulationCheckpointing>
+            <Function test_population_checkpoint_contains_required_keys>
+            <Function test_population_checkpoint_preserves_network_weights>
+            <Function test_population_checkpoint_preserves_replay_buffer>
+          <Class TestCurriculumCheckpointing>
+            <Function test_curriculum_checkpoint_preserves_agent_stages>
+            <Function test_curriculum_checkpoint_preserves_performance_history>
+          <Class TestExplorationCheckpointing>
+            <Function test_adaptive_intrinsic_exploration_checkpoint_completeness>
+            <Function test_exploration_checkpoint_preserves_epsilon_decay>
+          <Class TestRunnerCheckpointing>
+            <Function test_runner_checkpoint_includes_all_components>
+            <Function test_runner_checkpoint_preserves_episode_number>
+            <Function test_runner_checkpoint_round_trip_preserves_training_state>
+          <Class TestCheckpointRoundTrip>
+            <Function test_checkpoint_roundtrip_training_resumption>
+            <Function test_checkpoint_roundtrip_multi_component_consistency>
+          <Class TestVariableMeterCheckpoints>
+            <Function test_checkpoint_includes_meter_metadata>
+            <Function test_loading_checkpoint_validates_meter_count>
+            <Function test_loading_checkpoint_with_matching_meters_succeeds>
+            <Function test_population_checkpoint_refuses_foreign_or_incomplete_observation_identity[wrong-version]>
+            <Function test_population_checkpoint_refuses_foreign_or_incomplete_observation_identity[missing-observation-schema-hash]>
+            <Function test_population_checkpoint_refuses_foreign_or_incomplete_observation_identity[mismatched-observation-schema-hash]>
+            <Function test_population_checkpoint_refuses_foreign_or_incomplete_observation_identity[missing-action-dim]>
+            <Function test_population_checkpoint_refuses_foreign_or_incomplete_observation_identity[mismatched-action-dim]>
+            <Function test_population_checkpoint_uses_selected_level_identity_before_loading_state>
+            <Function test_checkpoint_rejects_missing_universe_metadata>
+          <Class TestDemoRunnerResourceManagement>
+            <Function test_runner_closes_database_on_context_exit>
+            <Function test_runner_cleanup_is_idempotent>
+            <Function test_runner_context_manager_propagates_exceptions>
+            <Function test_database_close_is_idempotent>
+
+========================= 67 tests collected in 0.34s ==========================

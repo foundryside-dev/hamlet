@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_learner_legality.py::test_declared_warmup_blocks_existing_constructor",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-red-r2/popen-gw0/test_declared_warmup_blocks_ex0')\n\n    def test_declared_warmup_blocks_existing_constructor(tmp_path):\n        pop = _make(tmp_path, minimum=12)\n        before = _owned(pop)\n        pop.step_population(pop.env)\n>       assert pop.training_step_counter == 0, \"batch occupancy cannot replace the authored retained-transition minimum\"\nE       AssertionError: batch occupancy cannot replace the authored retained-transition minimum\nE       assert 1 == 0\nE        +  where 1 = <townlet.population.vectorized.VectorizedPopulation object at 0x7fe72766f390>.training_step_counter\n\ntests/test_townlet/regressions/bac/test_learner_legality.py:380: AssertionError",
+  "candidate_tree": "f806eee411521cba094c753651f2c93b735c1123"
+}

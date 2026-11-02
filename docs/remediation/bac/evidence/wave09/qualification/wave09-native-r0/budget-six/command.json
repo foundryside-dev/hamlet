@@ -1,0 +1,18 @@
+{
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-P",
+    "/workspace/hamlet/scripts/check_episode_lanes.py",
+    "_produce",
+    "--source-root",
+    "/workspace/hamlet",
+    "--config-root",
+    "/workspace/hamlet/configs/test/episode_lanes",
+    "--recipe",
+    "budget-six",
+    "--output",
+    "/workspace/bac-review-2026-11-01/qualification/wave09-native-r0/budget-six"
+  ],
+  "exit_status": 0,
+  "pythonpath": "/workspace/hamlet/src"
+}

@@ -1,0 +1,575 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [4 items]
+
+FFFF                                                                     [100%]
+=================================== FAILURES ===================================
+_ test_producer_projects_eligible_selector_and_captures_actual_full_population_transport[authored-two-five] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+q_values = tensor([[0.0523, 0.0569, 0.0020, 0.0246, 0.0100, 0.0334, 0.0696, 0.1732]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7fdb93c1c890>
+action_masks = tensor([[ True,  True,  True,  True, False,  True,  True,  True]])
+
+    def selected(q_values, agent_states, action_masks):
+        count = int(eligible.sum().item())
+        assert q_values.shape == (count, population.action_dim)
+        assert torch.equal(q_values, values[eligible])
+        assert torch.equal(action_masks, masks[eligible])
+        for field in ("observations", "actions", "rewards", "epsilons", "intrinsic_rewards", "survival_times"):
+            assert torch.equal(getattr(agent_states, field), getattr(state, field)[eligible])
+        assert not bool(agent_states.dones.any())
+        selections.append(count)
+        try:
+>           actions = provider(q_values, agent_states, action_masks)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/unit/oracle/test_episode_lane_comparator.py:283: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+scripts/check_episode_lanes.py:606: in select
+    collector.tensor("selected_q_values", env.global_tick + 1, q_values, num_agents=2, hashed=True)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <scripts.check_episode_lanes.Collector object at 0x7fdb9f309fd0>
+field = 'selected_q_values', tick = 3
+value = tensor([[0.0523, 0.0569, 0.0020, 0.0246, 0.0100, 0.0334, 0.0696, 0.1732]])
+
+    def tensor(self, field: str, tick: int, value: Any, *, num_agents: int, hashed: bool) -> None:
+        self.scalar(field, tick, -1, value is not None, "present")
+        self.scalar(field, tick, -1, str(value.dtype) if value is not None else None, "dtype")
+        self.scalar(field, tick, -1, list(value.shape) if value is not None else None, "shape")
+        for agent in range(num_agents):
+>           row = value[agent].detach().cpu().contiguous() if value is not None else None
+                  ^^^^^^^^^^^^
+E           IndexError: index 1 is out of bounds for dimension 0 with size 1
+
+scripts/check_episode_lanes.py:515: IndexError
+
+The above exception was the direct cause of the following exception:
+
+synthetic_identity_producer = <function synthetic_identity_producer.<locals>.produce at 0x7fdb9f3536a0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fdb9f4a6d70>
+recipe = 'authored-two-five'
+
+    @pytest.mark.parametrize("recipe", ["authored-two-five", "two-episodes-reset", "budget-six"])
+    def test_producer_projects_eligible_selector_and_captures_actual_full_population_transport(
+        synthetic_identity_producer, monkeypatch: pytest.MonkeyPatch, recipe: str
+    ) -> None:
+        """Catch full-N scripting at K=1 and fabricated inactive action/Q readings."""
+        import torch
+    
+        from townlet.environment.vectorized_env import VectorizedHamletEnv
+        from townlet.population.vectorized import VectorizedPopulation
+    
+        original_select = VectorizedPopulation._select_eligible
+        original_step = VectorizedHamletEnv.step
+        selections = []
+        transported = []
+        current = {}
+    
+        def select(population, values, state, masks, eligible):
+            current["population"] = population
+            current["q"] = values.detach().cpu().clone()
+            current["eligible"] = eligible.detach().cpu().clone()
+            provider = population.exploration.select_actions
+    
+            def selected(q_values, agent_states, action_masks):
+                count = int(eligible.sum().item())
+                assert q_values.shape == (count, population.action_dim)
+                assert torch.equal(q_values, values[eligible])
+                assert torch.equal(action_masks, masks[eligible])
+                for field in ("observations", "actions", "rewards", "epsilons", "intrinsic_rewards", "survival_times"):
+                    assert torch.equal(getattr(agent_states, field), getattr(state, field)[eligible])
+                assert not bool(agent_states.dones.any())
+                selections.append(count)
+                try:
+                    actions = provider(q_values, agent_states, action_masks)
+                except IndexError as error:
+                    raise AssertionError("checker scripted selector must accept the actual eligible K rows") from error
+                assert actions.shape == (count,), "checker must return only eligible scripted actions"
+                return actions
+    
+            population.exploration.select_actions = selected
+            try:
+                return original_select(population, values, state, masks, eligible)
+            finally:
+                population.exploration.select_actions = provider
+    
+        def step(env, actions, depletion_multiplier=1.0):
+            eligible = ~env.dones.clone()
+            assert actions.shape == (2,)
+            assert torch.equal(eligible.cpu(), current["eligible"])
+            q_values = current["q"]
+            assert torch.equal(actions[~eligible].cpu(), q_values[~eligible.cpu()].argmax(dim=1))
+            wait = env.action_space.get_action_by_name("WAIT").id
+            end = env.action_space.get_action_by_name("END_LANE").id
+            scheduled = torch.tensor([[wait, wait], [end, wait], [wait, wait], [wait, wait], [wait, end]][env.global_tick])
+            assert torch.equal(actions[eligible].cpu(), scheduled[eligible.cpu()])
+            result = original_step(env, actions, depletion_multiplier)
+            observations, rewards, dones, info = result
+            transported.append(
+                (actions.detach().cpu().clone(), q_values, rewards.detach().cpu().clone(), copy.deepcopy(info["reward_components"]))
+            )
+            return observations, rewards, dones, info
+    
+        monkeypatch.setattr(VectorizedPopulation, "_select_eligible", select)
+        monkeypatch.setattr(VectorizedHamletEnv, "step", step)
+>       value = synthetic_identity_producer(recipe)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/unit/oracle/test_episode_lane_comparator.py:314: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/unit/oracle/test_episode_lane_comparator.py:246: in produce
+    return checker.run_producer(Namespace(source_root=root, config_root=root / "configs/test/episode_lanes", recipe=recipe))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts/check_episode_lanes.py:830: in run_producer
+    population.step_population(env)
+src/townlet/population/vectorized.py:1266: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/unit/oracle/test_episode_lane_comparator.py:291: in select
+    return original_select(population, values, state, masks, eligible)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1042: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[0.0523, 0.0569, 0.0020, 0.0246, 0.0100, 0.0334, 0.0696, 0.1732]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7fdb93c1c890>
+action_masks = tensor([[ True,  True,  True,  True, False,  True,  True,  True]])
+
+    def selected(q_values, agent_states, action_masks):
+        count = int(eligible.sum().item())
+        assert q_values.shape == (count, population.action_dim)
+        assert torch.equal(q_values, values[eligible])
+        assert torch.equal(action_masks, masks[eligible])
+        for field in ("observations", "actions", "rewards", "epsilons", "intrinsic_rewards", "survival_times"):
+            assert torch.equal(getattr(agent_states, field), getattr(state, field)[eligible])
+        assert not bool(agent_states.dones.any())
+        selections.append(count)
+        try:
+            actions = provider(q_values, agent_states, action_masks)
+        except IndexError as error:
+>           raise AssertionError("checker scripted selector must accept the actual eligible K rows") from error
+E           AssertionError: checker scripted selector must accept the actual eligible K rows
+
+tests/test_townlet/unit/oracle/test_episode_lane_comparator.py:285: AssertionError
+_ test_producer_projects_eligible_selector_and_captures_actual_full_population_transport[two-episodes-reset] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+q_values = tensor([[0.0523, 0.0569, 0.0020, 0.0246, 0.0100, 0.0334, 0.0696, 0.1732]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7fdb9f4eb8b0>
+action_masks = tensor([[ True,  True,  True,  True, False,  True,  True,  True]])
+
+    def selected(q_values, agent_states, action_masks):
+        count = int(eligible.sum().item())
+        assert q_values.shape == (count, population.action_dim)
+        assert torch.equal(q_values, values[eligible])
+        assert torch.equal(action_masks, masks[eligible])
+        for field in ("observations", "actions", "rewards", "epsilons", "intrinsic_rewards", "survival_times"):
+            assert torch.equal(getattr(agent_states, field), getattr(state, field)[eligible])
+        assert not bool(agent_states.dones.any())
+        selections.append(count)
+        try:
+>           actions = provider(q_values, agent_states, action_masks)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/unit/oracle/test_episode_lane_comparator.py:283: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+scripts/check_episode_lanes.py:606: in select
+    collector.tensor("selected_q_values", env.global_tick + 1, q_values, num_agents=2, hashed=True)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <scripts.check_episode_lanes.Collector object at 0x7fdb8e6e4550>
+field = 'selected_q_values', tick = 3
+value = tensor([[0.0523, 0.0569, 0.0020, 0.0246, 0.0100, 0.0334, 0.0696, 0.1732]])
+
+    def tensor(self, field: str, tick: int, value: Any, *, num_agents: int, hashed: bool) -> None:
+        self.scalar(field, tick, -1, value is not None, "present")
+        self.scalar(field, tick, -1, str(value.dtype) if value is not None else None, "dtype")
+        self.scalar(field, tick, -1, list(value.shape) if value is not None else None, "shape")
+        for agent in range(num_agents):
+>           row = value[agent].detach().cpu().contiguous() if value is not None else None
+                  ^^^^^^^^^^^^
+E           IndexError: index 1 is out of bounds for dimension 0 with size 1
+
+scripts/check_episode_lanes.py:515: IndexError
+
+The above exception was the direct cause of the following exception:
+
+synthetic_identity_producer = <function synthetic_identity_producer.<locals>.produce at 0x7fdb93bf60c0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fdb93cc2780>
+recipe = 'two-episodes-reset'
+
+    @pytest.mark.parametrize("recipe", ["authored-two-five", "two-episodes-reset", "budget-six"])
+    def test_producer_projects_eligible_selector_and_captures_actual_full_population_transport(
+        synthetic_identity_producer, monkeypatch: pytest.MonkeyPatch, recipe: str
+    ) -> None:
+        """Catch full-N scripting at K=1 and fabricated inactive action/Q readings."""
+        import torch
+    
+        from townlet.environment.vectorized_env import VectorizedHamletEnv
+        from townlet.population.vectorized import VectorizedPopulation
+    
+        original_select = VectorizedPopulation._select_eligible
+        original_step = VectorizedHamletEnv.step
+        selections = []
+        transported = []
+        current = {}
+    
+        def select(population, values, state, masks, eligible):
+            current["population"] = population
+            current["q"] = values.detach().cpu().clone()
+            current["eligible"] = eligible.detach().cpu().clone()
+            provider = population.exploration.select_actions
+    
+            def selected(q_values, agent_states, action_masks):
+                count = int(eligible.sum().item())
+                assert q_values.shape == (count, population.action_dim)
+                assert torch.equal(q_values, values[eligible])
+                assert torch.equal(action_masks, masks[eligible])
+                for field in ("observations", "actions", "rewards", "epsilons", "intrinsic_rewards", "survival_times"):
+                    assert torch.equal(getattr(agent_states, field), getattr(state, field)[eligible])
+                assert not bool(agent_states.dones.any())
+                selections.append(count)
+                try:
+                    actions = provider(q_values, agent_states, action_masks)
+                except IndexError as error:
+                    raise AssertionError("checker scripted selector must accept the actual eligible K rows") from error
+                assert actions.shape == (count,), "checker must return only eligible scripted actions"
+                return actions
+    
+            population.exploration.select_actions = selected
+            try:
+                return original_select(population, values, state, masks, eligible)
+            finally:
+                population.exploration.select_actions = provider
+    
+        def step(env, actions, depletion_multiplier=1.0):
+            eligible = ~env.dones.clone()
+            assert actions.shape == (2,)
+            assert torch.equal(eligible.cpu(), current["eligible"])
+            q_values = current["q"]
+            assert torch.equal(actions[~eligible].cpu(), q_values[~eligible.cpu()].argmax(dim=1))
+            wait = env.action_space.get_action_by_name("WAIT").id
+            end = env.action_space.get_action_by_name("END_LANE").id
+            scheduled = torch.tensor([[wait, wait], [end, wait], [wait, wait], [wait, wait], [wait, end]][env.global_tick])
+            assert torch.equal(actions[eligible].cpu(), scheduled[eligible.cpu()])
+            result = original_step(env, actions, depletion_multiplier)
+            observations, rewards, dones, info = result
+            transported.append(
+                (actions.detach().cpu().clone(), q_values, rewards.detach().cpu().clone(), copy.deepcopy(info["reward_components"]))
+            )
+            return observations, rewards, dones, info
+    
+        monkeypatch.setattr(VectorizedPopulation, "_select_eligible", select)
+        monkeypatch.setattr(VectorizedHamletEnv, "step", step)
+>       value = synthetic_identity_producer(recipe)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/unit/oracle/test_episode_lane_comparator.py:314: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/unit/oracle/test_episode_lane_comparator.py:246: in produce
+    return checker.run_producer(Namespace(source_root=root, config_root=root / "configs/test/episode_lanes", recipe=recipe))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts/check_episode_lanes.py:830: in run_producer
+    population.step_population(env)
+src/townlet/population/vectorized.py:1266: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/unit/oracle/test_episode_lane_comparator.py:291: in select
+    return original_select(population, values, state, masks, eligible)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1042: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[0.0523, 0.0569, 0.0020, 0.0246, 0.0100, 0.0334, 0.0696, 0.1732]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7fdb9f4eb8b0>
+action_masks = tensor([[ True,  True,  True,  True, False,  True,  True,  True]])
+
+    def selected(q_values, agent_states, action_masks):
+        count = int(eligible.sum().item())
+        assert q_values.shape == (count, population.action_dim)
+        assert torch.equal(q_values, values[eligible])
+        assert torch.equal(action_masks, masks[eligible])
+        for field in ("observations", "actions", "rewards", "epsilons", "intrinsic_rewards", "survival_times"):
+            assert torch.equal(getattr(agent_states, field), getattr(state, field)[eligible])
+        assert not bool(agent_states.dones.any())
+        selections.append(count)
+        try:
+            actions = provider(q_values, agent_states, action_masks)
+        except IndexError as error:
+>           raise AssertionError("checker scripted selector must accept the actual eligible K rows") from error
+E           AssertionError: checker scripted selector must accept the actual eligible K rows
+
+tests/test_townlet/unit/oracle/test_episode_lane_comparator.py:285: AssertionError
+_ test_producer_projects_eligible_selector_and_captures_actual_full_population_transport[budget-six] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+q_values = tensor([[0.0523, 0.0569, 0.0020, 0.0246, 0.0100, 0.0334, 0.0696, 0.1732]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7fe488eb9a10>
+action_masks = tensor([[ True,  True,  True,  True, False,  True,  True,  True]])
+
+    def selected(q_values, agent_states, action_masks):
+        count = int(eligible.sum().item())
+        assert q_values.shape == (count, population.action_dim)
+        assert torch.equal(q_values, values[eligible])
+        assert torch.equal(action_masks, masks[eligible])
+        for field in ("observations", "actions", "rewards", "epsilons", "intrinsic_rewards", "survival_times"):
+            assert torch.equal(getattr(agent_states, field), getattr(state, field)[eligible])
+        assert not bool(agent_states.dones.any())
+        selections.append(count)
+        try:
+>           actions = provider(q_values, agent_states, action_masks)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/unit/oracle/test_episode_lane_comparator.py:283: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+scripts/check_episode_lanes.py:606: in select
+    collector.tensor("selected_q_values", env.global_tick + 1, q_values, num_agents=2, hashed=True)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <scripts.check_episode_lanes.Collector object at 0x7fe495009fd0>
+field = 'selected_q_values', tick = 3
+value = tensor([[0.0523, 0.0569, 0.0020, 0.0246, 0.0100, 0.0334, 0.0696, 0.1732]])
+
+    def tensor(self, field: str, tick: int, value: Any, *, num_agents: int, hashed: bool) -> None:
+        self.scalar(field, tick, -1, value is not None, "present")
+        self.scalar(field, tick, -1, str(value.dtype) if value is not None else None, "dtype")
+        self.scalar(field, tick, -1, list(value.shape) if value is not None else None, "shape")
+        for agent in range(num_agents):
+>           row = value[agent].detach().cpu().contiguous() if value is not None else None
+                  ^^^^^^^^^^^^
+E           IndexError: index 1 is out of bounds for dimension 0 with size 1
+
+scripts/check_episode_lanes.py:515: IndexError
+
+The above exception was the direct cause of the following exception:
+
+synthetic_identity_producer = <function synthetic_identity_producer.<locals>.produce at 0x7fe49504f6a0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fe4951a2d70>
+recipe = 'budget-six'
+
+    @pytest.mark.parametrize("recipe", ["authored-two-five", "two-episodes-reset", "budget-six"])
+    def test_producer_projects_eligible_selector_and_captures_actual_full_population_transport(
+        synthetic_identity_producer, monkeypatch: pytest.MonkeyPatch, recipe: str
+    ) -> None:
+        """Catch full-N scripting at K=1 and fabricated inactive action/Q readings."""
+        import torch
+    
+        from townlet.environment.vectorized_env import VectorizedHamletEnv
+        from townlet.population.vectorized import VectorizedPopulation
+    
+        original_select = VectorizedPopulation._select_eligible
+        original_step = VectorizedHamletEnv.step
+        selections = []
+        transported = []
+        current = {}
+    
+        def select(population, values, state, masks, eligible):
+            current["population"] = population
+            current["q"] = values.detach().cpu().clone()
+            current["eligible"] = eligible.detach().cpu().clone()
+            provider = population.exploration.select_actions
+    
+            def selected(q_values, agent_states, action_masks):
+                count = int(eligible.sum().item())
+                assert q_values.shape == (count, population.action_dim)
+                assert torch.equal(q_values, values[eligible])
+                assert torch.equal(action_masks, masks[eligible])
+                for field in ("observations", "actions", "rewards", "epsilons", "intrinsic_rewards", "survival_times"):
+                    assert torch.equal(getattr(agent_states, field), getattr(state, field)[eligible])
+                assert not bool(agent_states.dones.any())
+                selections.append(count)
+                try:
+                    actions = provider(q_values, agent_states, action_masks)
+                except IndexError as error:
+                    raise AssertionError("checker scripted selector must accept the actual eligible K rows") from error
+                assert actions.shape == (count,), "checker must return only eligible scripted actions"
+                return actions
+    
+            population.exploration.select_actions = selected
+            try:
+                return original_select(population, values, state, masks, eligible)
+            finally:
+                population.exploration.select_actions = provider
+    
+        def step(env, actions, depletion_multiplier=1.0):
+            eligible = ~env.dones.clone()
+            assert actions.shape == (2,)
+            assert torch.equal(eligible.cpu(), current["eligible"])
+            q_values = current["q"]
+            assert torch.equal(actions[~eligible].cpu(), q_values[~eligible.cpu()].argmax(dim=1))
+            wait = env.action_space.get_action_by_name("WAIT").id
+            end = env.action_space.get_action_by_name("END_LANE").id
+            scheduled = torch.tensor([[wait, wait], [end, wait], [wait, wait], [wait, wait], [wait, end]][env.global_tick])
+            assert torch.equal(actions[eligible].cpu(), scheduled[eligible.cpu()])
+            result = original_step(env, actions, depletion_multiplier)
+            observations, rewards, dones, info = result
+            transported.append(
+                (actions.detach().cpu().clone(), q_values, rewards.detach().cpu().clone(), copy.deepcopy(info["reward_components"]))
+            )
+            return observations, rewards, dones, info
+    
+        monkeypatch.setattr(VectorizedPopulation, "_select_eligible", select)
+        monkeypatch.setattr(VectorizedHamletEnv, "step", step)
+>       value = synthetic_identity_producer(recipe)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/unit/oracle/test_episode_lane_comparator.py:314: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/unit/oracle/test_episode_lane_comparator.py:246: in produce
+    return checker.run_producer(Namespace(source_root=root, config_root=root / "configs/test/episode_lanes", recipe=recipe))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts/check_episode_lanes.py:805: in run_producer
+    runner.run()
+src/townlet/demo/runner.py:616: in run
+    agent_state = self.population.step_population(self.env)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts/check_episode_lanes.py:788: in runner_step
+    result = original_population_step(real_population, real_env)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1266: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/unit/oracle/test_episode_lane_comparator.py:291: in select
+    return original_select(population, values, state, masks, eligible)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1042: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[0.0523, 0.0569, 0.0020, 0.0246, 0.0100, 0.0334, 0.0696, 0.1732]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7fe488eb9a10>
+action_masks = tensor([[ True,  True,  True,  True, False,  True,  True,  True]])
+
+    def selected(q_values, agent_states, action_masks):
+        count = int(eligible.sum().item())
+        assert q_values.shape == (count, population.action_dim)
+        assert torch.equal(q_values, values[eligible])
+        assert torch.equal(action_masks, masks[eligible])
+        for field in ("observations", "actions", "rewards", "epsilons", "intrinsic_rewards", "survival_times"):
+            assert torch.equal(getattr(agent_states, field), getattr(state, field)[eligible])
+        assert not bool(agent_states.dones.any())
+        selections.append(count)
+        try:
+            actions = provider(q_values, agent_states, action_masks)
+        except IndexError as error:
+>           raise AssertionError("checker scripted selector must accept the actual eligible K rows") from error
+E           AssertionError: checker scripted selector must accept the actual eligible K rows
+
+tests/test_townlet/unit/oracle/test_episode_lane_comparator.py:285: AssertionError
+________ test_producer_observes_real_recorded_admission_on_bound_replay ________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+synthetic_identity_producer = <function synthetic_identity_producer.<locals>.produce at 0x7fe48803fce0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fe488ea7490>
+
+    def test_producer_observes_real_recorded_admission_on_bound_replay(synthetic_identity_producer, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Catch a stranded constructor-push observer at the first genuine write."""
+        import torch
+    
+        from townlet.environment.vectorized_env import VectorizedHamletEnv
+        from townlet.population.vectorized import VectorizedPopulation
+    
+        original_bind = VectorizedPopulation._bind_training
+        original_scalar = checker.Collector.scalar
+        original_step = VectorizedHamletEnv.step
+        observed_buffers = []
+        writes = []
+        eligible_rows = {}
+        committed = {}
+    
+        def step(env, actions, depletion_multiplier=1.0):
+            eligible = ~env.dones.clone()
+            result = original_step(env, actions, depletion_multiplier)
+            committed["masks"] = result[3]["successor_action_masks"][eligible].clone()
+            return result
+    
+        def bind(population):
+            original_bind(population)
+            buffer = population.replay_buffer
+            if any(buffer is installed for installed in observed_buffers):
+                return
+            observed_buffers.append(buffer)
+            push_recorded = buffer.push_recorded
+    
+            def recorded(*arguments, **keywords):
+                observations = keywords["observations"] if "observations" in keywords else arguments[0]
+                masks = keywords["next_action_masks"] if "next_action_masks" in keywords else arguments[5]
+                assert masks.dtype == torch.bool
+                assert masks.shape == (len(observations), population.action_dim)
+                assert torch.equal(masks, committed["masks"])
+                before = len(buffer)
+                result = push_recorded(*arguments, **keywords)
+                assert len(buffer) == before + len(observations)
+                writes.extend(checker.digest(row.detach().cpu().contiguous().numpy().tobytes()) for row in observations)
+                return result
+    
+            buffer.push_recorded = recorded
+    
+        def scalar(collector, field, tick, agent, value, coordinate):
+            if field == "eligible_observation":
+                eligible_rows[(collector.episode, tick, agent)] = value
+            if field == "admitted_observation":
+                expected = eligible_rows[(collector.episode, tick, agent)]
+                if expected is not None:
+                    assert expected in writes, "genuine qualified buffer write must precede admission reporting"
+                assert value == expected, "checker must observe actual push_recorded on the bound replay"
+            return original_scalar(collector, field, tick, agent, value, coordinate)
+    
+        monkeypatch.setattr(VectorizedPopulation, "_bind_training", bind)
+        monkeypatch.setattr(VectorizedHamletEnv, "step", step)
+        monkeypatch.setattr(checker.Collector, "scalar", scalar)
+>       value = synthetic_identity_producer("authored-two-five")
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/unit/oracle/test_episode_lane_comparator.py:389: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/unit/oracle/test_episode_lane_comparator.py:246: in produce
+    return checker.run_producer(Namespace(source_root=root, config_root=root / "configs/test/episode_lanes", recipe=recipe))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts/check_episode_lanes.py:831: in run_producer
+    population_readings(tick)
+scripts/check_episode_lanes.py:742: in population_readings
+    collector.scalar("admitted_observation", tick, agent, replay_rows.get(agent), "value")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+collector = <scripts.check_episode_lanes.Collector object at 0x7fe48902e210>
+field = 'admitted_observation', tick = 1, agent = 0, value = None
+coordinate = 'value'
+
+    def scalar(collector, field, tick, agent, value, coordinate):
+        if field == "eligible_observation":
+            eligible_rows[(collector.episode, tick, agent)] = value
+        if field == "admitted_observation":
+            expected = eligible_rows[(collector.episode, tick, agent)]
+            if expected is not None:
+                assert expected in writes, "genuine qualified buffer write must precede admission reporting"
+>           assert value == expected, "checker must observe actual push_recorded on the bound replay"
+E           AssertionError: checker must observe actual push_recorded on the bound replay
+E           assert None == '24faaea3a5b9bd81fa1d082879643dd84bedf99a03d1ec2a41c37b34bb78a97b'
+
+tests/test_townlet/unit/oracle/test_episode_lane_comparator.py:383: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/unit/oracle/test_episode_lane_comparator.py::test_producer_projects_eligible_selector_and_captures_actual_full_population_transport[authored-two-five]
+FAILED tests/test_townlet/unit/oracle/test_episode_lane_comparator.py::test_producer_projects_eligible_selector_and_captures_actual_full_population_transport[two-episodes-reset]
+FAILED tests/test_townlet/unit/oracle/test_episode_lane_comparator.py::test_producer_projects_eligible_selector_and_captures_actual_full_population_transport[budget-six]
+FAILED tests/test_townlet/unit/oracle/test_episode_lane_comparator.py::test_producer_observes_real_recorded_admission_on_bound_replay
+============================== 4 failed in 22.34s ==============================

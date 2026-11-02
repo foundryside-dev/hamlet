@@ -1,0 +1,11 @@
+# T15 existing integration audit — read-only findings
+
+Read five complete sources, 3240 lines: POP2128 e1accf8f6b0d9b884d37931facadcb030505552bdbe2d29d1733ee19fb021b02; bootstrap319 107d9a46227ac3cd8b445373f024ac673f0f456720d26dd6efd4b353a8971b28; BPTT152 b856104eb1e99395da4010e008e10aabe1b4317ff82f14bf4cb15785ea7f5132; lane-learning488 4ff3908a5af51e43a873ac2d9bc4998843746fbcc54eb1c8dada7265e48b594d; episode-lanes153 b22601ae6cac1c78fe86f3e23b717c831905df9c39850daa24b406ae4e6f5c33. No sixth implementation source read.
+
+Actual B03 bootstrap failures return updates=[] because the observer watches legacy sample_sequences and only rank2 losses. POP uses sample_batch and flattened selected losses. This is not evidence of absent optimizer work. Its independent oracle must use captured legal masks and last real indices; preserve gamma/zero-hidden and add crossed-hidden control.
+
+BPTT actual length2 failure sees one-step calls. The approved learner intentionally threads graph-connected one-step prefixes. Replace the topology assumption with actual ReplayRequest length/real-window evidence and an autograd derivative from final prediction to earlier returned hidden. Retain real recurrent-weight backward and optimizer evidence.
+
+Lane-learning observer watches legacy sampling and loss_fn/smooth_l1; POP dispatches sample_batch and functional configured losses. Lazy binding can replace the constructor sequential buffer, so class-level qualified sampling observation is necessary. Root separately verified the unopened make_lane_population supplier does not override authored min1000:63 admitted rows cannot meet warmup. Root will supply an optional replay_min_size keyword, applied before compilation; update-intending tests should explicitly author minimum2 while retaining all63-row, RND, terminal/truncation, actual target, optimizer and environment controls. Other callers retain authored minimum.
+
+Common eligibleK/fullN schedule fixture and manually populated collector-mask repair belong to the separate owner. No production warmup reduction, unknown-legality learning, stub, xfail, assertion removal or unsupported production defect claim is proposed. Full ICM reward remains REQUIRED OPEN T18e/f. Root owns execution; no runtime/import/pytest was performed here.

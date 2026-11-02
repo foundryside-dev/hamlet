@@ -1,0 +1,60 @@
+"""Qualification-only source guard; not part of the production package."""
+import fcntl
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+
+
+def pytest_configure(config):
+    import pytest
+    import townlet
+    import torch
+    root = Path(os.environ['BAC_QUAL_ROOT']).resolve()
+    expected = os.environ['BAC_QUAL_SHA']
+    actual = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip()
+    candidate_tree = os.environ.get('BAC_QUAL_TREE')
+    # write-tree updates Git's cache-tree and needs its index lock. Serialize
+    # only this metadata operation; pytest execution remains fully parallel.
+    lock_path = root / '.superpowers' / 'bac-qualification-index.lock'
+    with lock_path.open('a') as lock:
+        fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+        try:
+            observed_tree = subprocess.check_output(['git', 'write-tree'], cwd=root, text=True).strip()
+        finally:
+            fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
+    if candidate_tree:
+        if observed_tree != candidate_tree or subprocess.run(['git', 'diff', '--quiet'], cwd=root).returncode:
+            raise pytest.UsageError('qualification candidate tree/worktree changed')
+        manifest = json.loads(Path(os.environ['BAC_QUAL_MANIFEST']).read_text())
+        for name, expected_hash in manifest['source_files'].items():
+            if hashlib.sha256((root / name).read_bytes()).hexdigest() != expected_hash:
+                raise pytest.UsageError(f'qualification source bytes changed: {name}')
+    module = Path(townlet.__file__).resolve()
+    if actual != expected or not module.is_relative_to(root / 'src'):
+        raise pytest.UsageError(f'wrong qualification source: {actual}, {module}')
+    torch.set_num_threads(1)
+    worker = getattr(config, 'workerinput', {}).get('workerid', 'controller')
+    out = Path(os.environ['BAC_QUAL_OUTPUT'])
+    out.mkdir(parents=True, exist_ok=True)
+    (out / f'identity-{worker}.json').write_text(json.dumps({'sha': actual, 'candidate_tree': observed_tree, 'module': str(module), 'worker': worker, 'torch': torch.__version__, 'threads': torch.get_num_threads()}, indent=2) + '\n')
+
+
+def pytest_runtest_logreport(report):
+    """Persist the causal assertion immediately, even for an interrupted run."""
+    if not report.failed:
+        return
+    worker = os.environ.get('PYTEST_XDIST_WORKER', 'controller')
+    key = hashlib.sha256((report.nodeid + ':' + report.when).encode()).hexdigest()[:16]
+    out = Path(os.environ['BAC_QUAL_OUTPUT'])
+    out.mkdir(parents=True, exist_ok=True)
+    payload = {
+        'nodeid': report.nodeid,
+        'phase': report.when,
+        'outcome': report.outcome,
+        'worker': worker,
+        'longrepr': str(report.longrepr),
+        'candidate_tree': os.environ.get('BAC_QUAL_TREE'),
+    }
+    (out / f'failure-{worker}-{key}.json').write_text(json.dumps(payload, indent=2) + '\n')

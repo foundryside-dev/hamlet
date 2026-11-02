@@ -3,7 +3,7 @@
   "baseline_sha": "4aa5363b5de54d9a112977c32c2975f37627197f",
   "design": "BAC-2026-11-01-r2 plus explicit additive plan decisions",
   "approved_plan_sha256": "2dde2d80d3d14c510878c26af1f99c42217be12d3cb3a554647bc68646feedc1",
-  "phase": "24 of 66 finite source packages qualified/released; 42 remaining packages and all final BAC acceptance OPEN",
+  "phase": "25 of 66 finite source packages qualified/released; 41 remaining packages and all final BAC acceptance OPEN",
   "completion_bar": "zero unresolved P1/P2 and zero unapproved in-scope capability gaps; all agreed finite evidence, fresh final spec/design/code review, required gates and source-verified docs",
   "requirements": [
     {
@@ -115,7 +115,9 @@
       ],
       "expected_assertion": "Legal target/gradient for every optimizer row; approved A archives old maskless history, starts fresh qualified replay and preserves query/export, with no historical P1 exception",
       "candidate_sha": null,
-      "evidence_paths": [],
+      "evidence_paths": [
+        "evidence/wave09-qualification.json"
+      ],
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "P1",
       "approval_reference": "BAC-HISTORY-A-2026-11-01",
@@ -203,6 +205,14 @@
           "qualified_release_commit": "ac8f0f9c3c38cd77f533accc5c9259fe4abfc252",
           "receipt": "evidence/wave02-qualification.json"
         }
+      ],
+      "package_dispositions": [
+        {
+          "task": "T15",
+          "source": "ae0914afb3e7e1ca525e91acd49a07b3ae54c327",
+          "scope": "Scoped learner/consumer repair qualified; later owners and final common-source refresh remain required",
+          "evidence": "evidence/wave09-qualification.json"
+        }
       ]
     },
     {
@@ -249,7 +259,9 @@
       ],
       "expected_assertion": "Real sampleability/no-update; additive short-window support",
       "candidate_sha": null,
-      "evidence_paths": [],
+      "evidence_paths": [
+        "evidence/wave09-qualification.json"
+      ],
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "P1",
       "approval_reference": null,
@@ -262,6 +274,14 @@
           "receipt": "package-reviews/T12-implementation.md",
           "qualification": "evidence/wave06-qualification.json",
           "disposition": "Scoped evidence only; remaining owners and final common-source acceptance OPEN"
+        }
+      ],
+      "package_dispositions": [
+        {
+          "task": "T15",
+          "source": "ae0914afb3e7e1ca525e91acd49a07b3ae54c327",
+          "scope": "Scoped learner/consumer repair qualified; later owners and final common-source refresh remain required",
+          "evidence": "evidence/wave09-qualification.json"
         }
       ]
     },
@@ -847,7 +867,9 @@
       ],
       "expected_assertion": "Authored retained-transition warmup plus sampleability and clocks",
       "candidate_sha": null,
-      "evidence_paths": [],
+      "evidence_paths": [
+        "evidence/wave09-qualification.json"
+      ],
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "P2",
       "approval_reference": null,
@@ -902,6 +924,14 @@
           "qualification": "evidence/wave08-qualification.json",
           "disposition": "Scoped backend/transport evidence only; T15 real learner and final current-source acceptance OPEN"
         }
+      ],
+      "package_dispositions": [
+        {
+          "task": "T15",
+          "source": "ae0914afb3e7e1ca525e91acd49a07b3ae54c327",
+          "scope": "Scoped learner/consumer repair qualified; later owners and final common-source refresh remain required",
+          "evidence": "evidence/wave09-qualification.json"
+        }
       ]
     },
     {
@@ -950,7 +980,9 @@
       ],
       "expected_assertion": "Retained successive sampler with correct conditional estimator; independent option",
       "candidate_sha": null,
-      "evidence_paths": [],
+      "evidence_paths": [
+        "evidence/wave09-qualification.json"
+      ],
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "P2",
       "approval_reference": null,
@@ -972,6 +1004,14 @@
           "receipt": "package-reviews/T14-implementation.md",
           "qualification": "evidence/wave08-qualification.json",
           "disposition": "Scoped backend/transport evidence only; T15 real learner and final current-source acceptance OPEN"
+        }
+      ],
+      "package_dispositions": [
+        {
+          "task": "T15",
+          "source": "ae0914afb3e7e1ca525e91acd49a07b3ae54c327",
+          "scope": "Scoped learner/consumer repair qualified; later owners and final common-source refresh remain required",
+          "evidence": "evidence/wave09-qualification.json"
         }
       ]
     },
@@ -1417,11 +1457,21 @@
       ],
       "expected_assertion": "Explicit train/eval/MC modes with isolated serving",
       "candidate_sha": null,
-      "evidence_paths": [],
+      "evidence_paths": [
+        "evidence/wave09-qualification.json"
+      ],
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "P2",
       "approval_reference": null,
-      "package_evidence": []
+      "package_evidence": [],
+      "package_dispositions": [
+        {
+          "task": "T15",
+          "source": "ae0914afb3e7e1ca525e91acd49a07b3ae54c327",
+          "scope": "Scoped learner/consumer repair qualified; later owners and final common-source refresh remain required",
+          "evidence": "evidence/wave09-qualification.json"
+        }
+      ]
     },
     {
       "id": "D19",
@@ -1642,7 +1692,9 @@
       ],
       "expected_assertion": "Additive operational recurrent PER; no authoring closure",
       "candidate_sha": null,
-      "evidence_paths": [],
+      "evidence_paths": [
+        "evidence/wave09-qualification.json"
+      ],
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "P2",
       "approval_reference": null,
@@ -1655,6 +1707,14 @@
           "receipt": "package-reviews/T14-implementation.md",
           "qualification": "evidence/wave08-qualification.json",
           "disposition": "Scoped backend/transport evidence only; T15 real learner and final current-source acceptance OPEN"
+        }
+      ],
+      "package_dispositions": [
+        {
+          "task": "T15",
+          "source": "ae0914afb3e7e1ca525e91acd49a07b3ae54c327",
+          "scope": "Scoped learner/consumer repair qualified; later owners and final common-source refresh remain required",
+          "evidence": "evidence/wave09-qualification.json"
         }
       ]
     },
@@ -1789,7 +1849,9 @@
       ],
       "expected_assertion": "Retained-transition capacity/warmup, real prefixes, honest fixed-window impossibility",
       "candidate_sha": null,
-      "evidence_paths": [],
+      "evidence_paths": [
+        "evidence/wave09-qualification.json"
+      ],
       "disposition": "PLANNED; executable current-candidate acceptance owed",
       "remaining_severity": "P2",
       "approval_reference": null,
@@ -1811,6 +1873,14 @@
           "receipt": "package-reviews/T14-implementation.md",
           "qualification": "evidence/wave08-qualification.json",
           "disposition": "Scoped backend/transport evidence only; T15 real learner and final current-source acceptance OPEN"
+        }
+      ],
+      "package_dispositions": [
+        {
+          "task": "T15",
+          "source": "ae0914afb3e7e1ca525e91acd49a07b3ae54c327",
+          "scope": "Scoped learner/consumer repair qualified; later owners and final common-source refresh remain required",
+          "evidence": "evidence/wave09-qualification.json"
         }
       ]
     },
@@ -5370,13 +5440,22 @@
           "scope": "5wholefiles/3247lines; actualsource/logs independently read, no reviewer runtime"
         }
       ],
-      "status": "OPEN, required producer fix before T15 release/G2, final common-source refresh owed",
-      "disposition": "Additive finite acceptance on existing T15 and T35; not optional P3, not sampler failure, not optimizer divergence, not introduced by T13",
+      "status": "Producer repair scoped-qualified at T15; required T35 sink consumption and final common-source refresh OPEN",
+      "disposition": "Both detached operands promoted to float64 before subtraction and unweighted sampled-real-row reduction; no clipping, weighting, sink masking or loss/priority objective change.",
       "decision_needed": false,
       "limits": "No downstream crash or recurrent authored incident established. Same recurrent expression risk is covered by bounded producer regression.",
       "evidence_paths": [
         "package-reviews/X04-mean-TD-triage.md",
-        "evidence/X04-acceptance-overlay.json"
+        "evidence/X04-acceptance-overlay.json",
+        "evidence/wave09-qualification.json"
+      ],
+      "package_dispositions": [
+        {
+          "task": "T15",
+          "source": "ae0914afb3e7e1ca525e91acd49a07b3ae54c327",
+          "scope": "Scoped learner/consumer repair qualified; later owners and final common-source refresh remain required",
+          "evidence": "evidence/wave09-qualification.json"
+        }
       ]
     }
   ],
@@ -5969,6 +6048,26 @@
         "evidence/wave08-qualification.json"
       ],
       "final_acceptance": "T15 must wire ordinary production captured collection, historical legal vanilla/Double targets, real retained readiness, per-network recurrent prefixes/hidden states/BPTT/objectives and actual selected recurrent PER. X04 finite truthful unweighted TD mean remains required before T15 release/G2. T16 runner behavior, complete native10/7 admission/atomicity/identity/archive accounting/resume/evolved optimizer under T24/T25, joint learning/E2E and all final common-source review/coverage/slow/applicable hardware/exact-tip CI remain OPEN. CPU only; CUDA unavailable. This backend/transport package does not establish natural recurrent-PER learning quality, complete C07, whole-world stochastic continuation or whole-BAC completion."
+    },
+    {
+      "task": "T15",
+      "source_commit": "ae0914afb3e7e1ca525e91acd49a07b3ae54c327",
+      "qualified_release_commit": "ae0914afb3e7e1ca525e91acd49a07b3ae54c327",
+      "qualified_sum_tree": "f71c52fad680a74da1b90cc7470455fc90f4fa3f",
+      "status": "Scoped population learner and affected consumers qualified/released; all final acceptance remains owed",
+      "full_repository_result": "6845 passed,16 skipped,16 warnings;4workers;2267.9633s wall;157source14review5process573configs13artifacts14worktrees postflightPASS",
+      "native_capture_result": "All6 genuine cleancommitted current-source recipes qualified, exact inventories/semantic/source/config/instrument/import/worktree postflightPASS",
+      "reports": [
+        "package-reviews/T15-implementation.md",
+        "package-reviews/T15-actual-independent-review-r1.md",
+        "package-reviews/T15-actual-independent-runtime-r2.md",
+        "package-reviews/T15-consumer-independent-runtime-r3.md",
+        "package-reviews/T15-artifact-independent-runtime-r4.md",
+        "package-reviews/T15-training-independent-runtime-r5.md",
+        "package-reviews/T15-documentation-independent-review.md",
+        "evidence/wave09-qualification.json"
+      ],
+      "final_acceptance": "T16 runner explicit owned PCG64/canonical policy, ICM integration/private curiosity/X02, complete native10/7 T24/T25, all remaining41packets,54requirements,22final lenses+synthesis,T40+12strict learning/E2E,coverage>=70,slow/applicablehardware/exacttipCI remain OPEN. CPUonly; CUDAunavailable/unqualified."
     }
   ],
   "evidence_note": "Each package records its actual immutable source/evidence. Wave05 qualified sum-tree postflight verified 53 source hashes, three final Astra reviews, five process identities, preserved configuration/native artifacts and the worktree registry. Storage archive proofs do not close required native historical dispatch, captured learning/readiness or final common-source acceptance.",
@@ -6135,5 +6234,18 @@
     "effective_requirements": 54,
     "new_optional_P3": [],
     "final_acceptance": "OPEN"
+  },
+  "wave09_qualified_scope": {
+    "tasks": [
+      "T15"
+    ],
+    "source_head": "ae0914afb3e7e1ca525e91acd49a07b3ae54c327",
+    "tree": "f71c52fad680a74da1b90cc7470455fc90f4fa3f",
+    "receipt": "evidence/wave09-qualification.json",
+    "qualified_packages": 25,
+    "remaining_packages": 41,
+    "effective_requirements": 54,
+    "capability_reductions": false,
+    "final_acceptance": "OPEN, all finite final obligations retained"
   }
 }

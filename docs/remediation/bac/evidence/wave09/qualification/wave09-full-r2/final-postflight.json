@@ -1,0 +1,24 @@
+{
+  "candidate_tree": "f71c52fad680a74da1b90cc7470455fc90f4fa3f",
+  "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+  "full_exit_code": 0,
+  "counts": {
+    "passed": 6845,
+    "skipped": 16,
+    "xfailed": 0,
+    "xpassed": 0,
+    "warnings": 16
+  },
+  "wall_seconds": 2267.963274717331,
+  "verified_source_paths": 157,
+  "verified_review_artifacts": 14,
+  "verified_process_identities": 5,
+  "verified_config_digests": 573,
+  "verified_native_artifacts": 13,
+  "worktree_count": 14,
+  "entire_registry_unchanged": true,
+  "working_tree_equals_index": true,
+  "harness_sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d",
+  "orchestration_harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+  "scope": "Full repository gate on actual uncommitted candidate. Local exact-tree commit and genuine clean-source native checker qualification remain owed before T15 release/publication. All final BAC acceptance remains open."
+}

@@ -1,0 +1,31 @@
+{
+  "name": "independent-main",
+  "exit_code": 0,
+  "seconds": 58.44433879852295,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_learner_legality.py::test_load_before_first_step_adopts_current_replay_and_clocks[load-active-current-feedforward-True]",
+    "tests/test_townlet/regressions/bac/test_learner_legality.py::test_load_before_first_step_adopts_current_replay_and_clocks[load-active-current-recurrent-True]",
+    "tests/test_townlet/regressions/bac/test_learner_legality.py::test_recurrent_one_window_readiness_distinguishes_laws[successive_without_replacement-0]",
+    "tests/test_townlet/regressions/bac/test_learner_legality.py::test_recurrent_one_window_readiness_distinguishes_laws[independent_with_replacement-1]",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave09-astra-main-r2"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave09-astra-main-r2/independent-main.log",
+  "sha256": "ebc14d0457c43c8450e9166336199a2d60b34fe238814d10ec2da648bb8fd1c2",
+  "candidate_tree": "929bc8952a2e797871d15376e2ef61a8aec73ca5",
+  "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+  "manifest_sha256": "dc2881963a1b4871bb45d6459d618db56bfde636af11a3a28c8ee8b0f524b5e3",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

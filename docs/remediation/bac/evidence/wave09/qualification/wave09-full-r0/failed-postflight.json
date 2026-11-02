@@ -1,0 +1,15 @@
+{
+  "status": "FAILED/INTERRUPTED, never passing qualification",
+  "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+  "candidate_tree": "c6beac9d65c88a7063c27f4d64750cb49b7ae97a",
+  "exit_code": 2,
+  "passed": 3536,
+  "skipped": 11,
+  "warnings": 13,
+  "errors": 1,
+  "wall_seconds": 870.2758910655975,
+  "source156_review10_process5_config573_artifact13_worktree14_custody": "PASS",
+  "cause": "Artifact runner fixture fullN selector rejects correct eligibleK before artifact assertions",
+  "owner_action": "One graceful SIGINT to only this already-failed controller; partial evidence retained, no unrelated process cancelled",
+  "release": false
+}

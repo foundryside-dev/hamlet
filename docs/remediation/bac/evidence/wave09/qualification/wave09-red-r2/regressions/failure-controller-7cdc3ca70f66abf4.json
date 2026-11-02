@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_learner_legality.py::test_ready_skip_preserves_update_clocks[1-True]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-red-r2/popen-gw0/test_ready_skip_preserves_upda1')\nper = True, frequency = 1\n\n    @pytest.mark.parametrize(\"per\", (False, True))\n    @pytest.mark.parametrize(\"frequency\", (1, 2))\n    def test_ready_skip_preserves_update_clocks(tmp_path, per, frequency):\n        pop = _make(tmp_path, per=per, minimum=6, frequency=frequency, beta=0.4, annealing=True)\n        pop.scheduler = torch.optim.lr_scheduler.StepLR(pop.optimizer, step_size=1, gamma=0.5)\n        initial = _owned(pop)\n        for tick in (1, 2):\n            rng_before = copy.deepcopy(np.random.get_state())\n            pop.step_population(pop.env)\n>           assert pop.total_steps == tick and pop.training_step_counter == 0\nE           assert (1 == 1 and 1 == 0)\nE            +  where 1 = <townlet.population.vectorized.VectorizedPopulation object at 0x7fe7270ef610>.total_steps\nE            +  and   1 = <townlet.population.vectorized.VectorizedPopulation object at 0x7fe7270ef610>.training_step_counter\n\ntests/test_townlet/regressions/bac/test_learner_legality.py:394: AssertionError",
+  "candidate_tree": "f806eee411521cba094c753651f2c93b735c1123"
+}

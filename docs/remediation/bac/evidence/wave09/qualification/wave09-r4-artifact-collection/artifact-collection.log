@@ -1,0 +1,37 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 20 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Module test_episode_lane_sinks.py>
+          <Function test_ordinary_runner_db_tb_curriculum_and_snapshots_match_two_episode_ledger[end_ticks0]>
+          <Function test_ordinary_runner_db_tb_curriculum_and_snapshots_match_two_episode_ledger[end_ticks1]>
+          <Function test_real_dac_db_and_tb_publish_effective_components_and_zero_terminal_frame>
+          <Function test_budget_six_retains_terminal_and_once_only_survivor_truncation>
+          <Function test_caller_cap_keeps_authored_terminal_and_live_bootstrap[end_ticks0]>
+          <Function test_caller_cap_keeps_authored_terminal_and_live_bootstrap[end_ticks1]>
+          <Function test_indivisible_zero_work_budget_publishes_no_episode>
+          <Function test_runner_publishes_owned_completion_meters_after_live_storage_changes>
+          <Function test_caller_cap_completes_lanes_before_curriculum_publication>
+        <Module test_episode_lane_artifact_pipeline.py>
+          <Function test_ordinary_two_episode_files_index_sql_and_tb_match_actual_eligible_ledger>
+          <Coroutine test_actual_replay_manager_and_observer_seek_back_reset_and_episode_reload>
+          <Function test_both_real_exporters_use_same_run_and_actual_fourteen_transition_metadata>
+          <Function test_copied_real_artifact_corruption_is_refused_or_detected_against_ledger[schema]>
+          <Function test_copied_real_artifact_corruption_is_refused_or_detected_against_ledger[reason]>
+          <Function test_copied_real_artifact_corruption_is_refused_or_detected_against_ledger[missing_component]>
+          <Function test_copied_real_artifact_corruption_is_refused_or_detected_against_ledger[nan]>
+          <Function test_copied_real_artifact_corruption_is_refused_or_detected_against_ledger[sum]>
+          <Function test_copied_real_artifact_corruption_is_refused_or_detected_against_ledger[phantom]>
+          <Function test_copied_real_artifact_corruption_is_refused_or_detected_against_ledger[consistent_phantom]>
+          <Function test_copied_real_artifact_corruption_is_refused_or_detected_against_ledger[raw_intrinsic]>
+
+========================= 20 tests collected in 0.55s ==========================

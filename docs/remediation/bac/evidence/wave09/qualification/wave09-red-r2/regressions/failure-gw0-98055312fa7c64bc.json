@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_learner_legality.py::test_ready_skip_preserves_update_clocks[2-True]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw0",
+  "longrepr": "tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-red-r2/popen-gw0/test_ready_skip_preserves_upda3')\nper = True, frequency = 2\n\n    @pytest.mark.parametrize(\"per\", (False, True))\n    @pytest.mark.parametrize(\"frequency\", (1, 2))\n    def test_ready_skip_preserves_update_clocks(tmp_path, per, frequency):\n        pop = _make(tmp_path, per=per, minimum=6, frequency=frequency, beta=0.4, annealing=True)\n        pop.scheduler = torch.optim.lr_scheduler.StepLR(pop.optimizer, step_size=1, gamma=0.5)\n        initial = _owned(pop)\n        for tick in (1, 2):\n            rng_before = copy.deepcopy(np.random.get_state())\n            pop.step_population(pop.env)\n            assert pop.total_steps == tick and pop.training_step_counter == 0\n            _same(initial[\"optimizer\"], pop.optimizer.state_dict())\n            _same(initial[\"scheduler\"], pop.scheduler.state_dict())\n            _same(initial[\"target_network\"], pop.target_network.state_dict())\n            _same(rng_before, np.random.get_state())\n            if per:\n>               assert pop.replay_buffer.beta == pytest.approx(0.4 + 0.6 * tick / 2000)\nE               assert 0.4 == 0.40030000000000004 \u00b1 4.0e-07\nE                 \nE                 comparison failed\nE                 Obtained: 0.4\nE                 Expected: 0.40030000000000004 \u00b1 4.0e-07\n\ntests/test_townlet/regressions/bac/test_learner_legality.py:400: AssertionError",
+  "candidate_tree": "f806eee411521cba094c753651f2c93b735c1123"
+}

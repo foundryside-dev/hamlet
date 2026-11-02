@@ -1,0 +1,21 @@
+{
+  "job": "independent-main",
+  "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+  "candidate_tree": "929bc8952a2e797871d15376e2ef61a8aec73ca5",
+  "exit_code": 0,
+  "counts": {
+    "passed": 4,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0,
+    "warnings": 0
+  },
+  "wall_seconds": 58.44433879852295,
+  "source_guards": 151,
+  "process_identities": 3,
+  "config_digests": 573,
+  "protected_artifacts": 13,
+  "worktrees": 14,
+  "source_index_import_threads_fixture_custody": "PASS",
+  "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+}

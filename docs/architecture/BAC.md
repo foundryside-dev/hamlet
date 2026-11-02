@@ -63,7 +63,7 @@ matching sub-config is present, so `type: recurrent` with no `recurrent:` block 
 error rather than a runtime surprise.
 
 Selection is **not** in the DTO. It happens at
-`src/townlet/population/vectorized.py:405` — `VectorizedPopulation._build_network` — which
+`src/townlet/population/vectorized.py:876` — `VectorizedPopulation._build_network` — which
 dispatches on `arch.type` into `NetworkFactory` (`src/townlet/agent/network_factory.py`). The
 same helper builds both the online and the target network.
 
@@ -118,22 +118,69 @@ brain_hash".
 
 ### 2.5 Runtime notes
 
-- LSTM hidden state resets at episode start, persists during rollout, and resets per transition
-  in batch training.
-- Gradient clipping is applied via `torch.nn.utils.clip_grad_norm_` at
-  `max_norm=self.max_grad_norm` (`population/vectorized.py:979,1057`). That threshold is a
-  **declared training hyperparameter**, `max_grad_norm` in `training.yaml`
-  (`config/training_v2_config.py:229`) — not a hardcoded engine constant. CLAUDE.md's "10.0"
-  is a pack value, not a framework fact.
-- On a recurrent architecture, `use_double_dqn: true` costs **one extra single-step forward
-  pass** per update, not a third unroll. Verified 2026-08-24 against
-  `population/vectorized.py:879-939`: both variants run two full sequence unrolls (online for
-  Q-predictions, target for Q-targets) plus a target boundary forward; Double DQN adds one
-  online boundary forward under the online net's final hidden state (`:896-904`), and action
-  selection deliberately **reuses PASS 1's online unroll** — the code comments "a third unroll
-  would recompute the same trajectory" (`:910-914`). `docs/config-schemas/training.md`
-  (archived 2026-08-24)'s "~50% overhead (3 forward passes vs 2)" and CLAUDE.md's "3 vs 2"
-  restatement do not match the current update path and overstate today's cost.
+T15 local source correction, 2026-11-02: these learner notes were checked against five complete
+implementation files: `population/vectorized.py`, `config/training_v2_config.py`,
+`config/bac_options.py`, `training/q_targets.py` and `scripts/check_episode_lanes.py`.
+[BAC status](../remediation/bac/STATUS.md) records qualification and outstanding gates. This
+bounded correction does not refresh the document-wide historical review stamp or unrelated
+schema/compiler/network/provenance claims.
+
+- Rollout hidden state persists until episode completion/reset. Replay training starts each
+  sampled unit at zero hidden state and carries a graph-connected online current-prefix through
+  its real observations. Target prefixes are separate and advance under no-grad. Each successor
+  branch uses that row's exact stored successor and its own network's after-current-prefix
+  state; all bootstrap evaluations run under no-grad, online branch hidden tensors are detached,
+  and returned branch states never advance the current prefixes. Padding is excluded. Double
+  DQN adds an online successor forward per real timestep in each length group
+  (`VectorizedPopulation._recurrent_predictions`, `population/vectorized.py:675`).
+- Vanilla and Double DQN targets use recorded successor legality, rather than the current
+  environment's masks. Vanilla takes the legal target maximum; Double selects with legal online
+  Q and evaluates with target Q. Non-bootstrap successor values are exactly zero. With gamma
+  zero the target helper returns finite canonical rewards without reading Q entries for
+  successor selection; metadata validation and population network forwards still run. On
+  bootstrapped rows every legal selector entry and the selected target entry must be finite;
+  illegal or unused terminal nonfinite outputs do not enter target arithmetic
+  (`training/q_targets.py:19`, `population/vectorized.py:675,715`).
+- Scheduled learning requires retained eligible-transition warmup AND backend sampleability.
+  Authored `min_size` is positive and no greater than capacity; the explicit construction seam
+  accepts a nonnegative threshold. Batch size may exceed warmup. Recurrent warmup counts
+  retained transitions while sampling counts actual windows/contexts. Successive PER needs B
+  distinct units; replacement laws and accepted uniform sequence adapters can draw B from fewer
+  positive-support units. Fixed-full windows must exist; pending episode collectors do not count
+  as retained replay. The population logs changed unready diagnostics. Backend cardinality and
+  archive semantics retain their separately verified replay-owner contracts
+  (`config/training_v2_config.py:102`, `population/vectorized.py:654,715`).
+- Recurrent loss averages selected real rows within each unit, applies its detached returned
+  weight once, then averages units. Anchor prefixes remain context. Priority feedback uses
+  stable unit IDs and the loss mask. TD telemetry instead reports the unweighted mean absolute
+  residual over all sampled real rows: both detached operands are promoted to float64 before
+  subtraction; padding is excluded. Beta advances per actual vector tick before sampling,
+  including warmup/unscheduled ticks. Scheduler and target-copy cadence advance with successful
+  optimizer updates (`population/vectorized.py:643,729`). Gradient clipping uses the declared
+  `training_loop.max_grad_norm` (`config/training_v2_config.py:212`) via
+  `torch.nn.utils.clip_grad_norm_(..., max_norm=self.max_grad_norm)`
+  (`population/vectorized.py:762`).
+- Full-N Q/mask/state transport remains the population invariant. Production rollout supplies
+  full-population Q; selection checks bool eligibility/mask geometry and device relative to that
+  Q tensor and refuses eligible rows without legal actions. For K>0 it calls the configured
+  provider once with aligned eligible Q/mask/state rows and epsilons, checks the returned
+  int64[K] shape/device, then scatters into full-N transport. K=0 skips the provider. Inactive
+  entries retain unmasked argmax and inactive recurrent hidden state is preserved
+  (`population/vectorized.py:998,1015`).
+  The standalone lane checker observes full-N Q/actions and successful actual flat
+  `push_recorded` admission; its recipes use a scripted selector and do not independently
+  qualify genuine-provider selection (`scripts/check_episode_lanes.py:605,641,725`).
+- `VectorizedPopulation.for_training` requires resolved replay policy, an explicit owned RNG,
+  minimum, horizon/derivation and tick. The unchanged constructor defers learner-only setup
+  until actual training and preserves inspection/serving roles. Binding distinguishes pristine
+  constructor state from loaded/owned replay; empty occupancy alone cannot authorize reseeding
+  or discarding history. Raw POP6 restore deep-copies optimizer state before installation and
+  preserves compatible current captured replay/clocks. Approved historical Option A retains
+  old maskless artifacts/history for archive/query/export and starts qualified replay fresh;
+  archive rows cannot satisfy warmup. This scoped restore does not qualify full native10/7
+  continuation/resource/RNG atomicity (T24/T25), natural runner `for_training` propagation
+  (T16), private-curiosity isolation/X02 or ICM ENV reward/update integration (T18e/T18f)
+  (`population/vectorized.py:204,595,2011,2033`).
 
 ---
 
@@ -233,7 +280,7 @@ merged by declared id rather than found at a mandated filename. See `UAC.md` §4
   stale) — the field-level reference for `brain.yaml`
 - **Source**: `src/townlet/config/brain_config.py` (DTOs), `src/townlet/agent/networks.py`
   (network classes), `src/townlet/agent/network_factory.py` (construction),
-  `src/townlet/population/vectorized.py:405` (selection)
+  `src/townlet/population/vectorized.py:876` (selection)
 - **Provenance**: `src/townlet/universe/compiled.py` (`brain_hash`, `pack_brain_hash`),
   `src/townlet/training/checkpoint_utils.py` (`assert_checkpoint_identity`)
 - **Token migration**: `docs/superpowers/specs/2026-08-22-token-observation-representation-design.md`

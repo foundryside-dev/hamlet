@@ -1,0 +1,21 @@
+{
+  "job": "training-owners",
+  "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+  "candidate_tree": "f71c52fad680a74da1b90cc7470455fc90f4fa3f",
+  "exit_code": 0,
+  "counts": {
+    "passed": 8,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0,
+    "warnings": 0
+  },
+  "wall_seconds": 36.407273292541504,
+  "source_guards": 157,
+  "process_identities": 3,
+  "config_digests": 573,
+  "protected_artifacts": 13,
+  "worktrees": 14,
+  "source_index_import_threads_fixture_custody": "PASS",
+  "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+}

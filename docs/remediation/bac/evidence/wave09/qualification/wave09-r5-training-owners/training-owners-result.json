@@ -1,0 +1,28 @@
+{
+  "name": "training-owners",
+  "exit_code": 0,
+  "seconds": 36.407273292541504,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/integration/test_training_loop.py",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave09-r5-training-owners"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave09-r5-training-owners/training-owners.log",
+  "sha256": "58fa9ebd5aa510e0fe5cd208650bc7c61d52b058e140082c7abd33192383bedd",
+  "candidate_tree": "f71c52fad680a74da1b90cc7470455fc90f4fa3f",
+  "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+  "manifest_sha256": "781a9338ab724924fcfbb744699bf477877a112b0ed632c332ca58004eeabe79",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

@@ -1,0 +1,30 @@
+{
+  "name": "window-law",
+  "exit_code": 0,
+  "seconds": 69.77887392044067,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_learner_legality.py",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-k",
+    "recurrent_one_window_readiness_distinguishes_laws",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave09-r1a-window-law"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave09-r1a-window-law/window-law.log",
+  "sha256": "9c6c278906f09253d8edfb2eaa5b4ff37f76a527f2f981d662c6f54b26db68ec",
+  "candidate_tree": "096cdb7d98a9725181658c44b3ed84a6d0d72e82",
+  "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+  "manifest_sha256": "80cf3619bc446d7733b907a9700e09c1b3b34866e3c05e62646b0f4f646f98d3",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

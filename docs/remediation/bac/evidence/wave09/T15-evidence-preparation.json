@@ -1,0 +1,739 @@
+{
+  "status": "PREPARATION ONLY; full and genuine clean native qualification pending",
+  "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+  "candidate_tree": "f71c52fad680a74da1b90cc7470455fc90f4fa3f",
+  "manifest_sha256": "781a9338ab724924fcfbb744699bf477877a112b0ed632c332ca58004eeabe79",
+  "source_scope_inventory": {
+    "T15-main": [
+      {
+        "path": "src/townlet/population/vectorized.py",
+        "lines": 2146,
+        "sha256": "9569eab3d766ed5467ecf78736cd170c7aa0d0b77d90efe28239f3bab64ff12a"
+      },
+      {
+        "path": "src/townlet/training/replay_contract.py",
+        "lines": 222,
+        "sha256": "3eaa725bd6d592b7524dd249125877eb91a1f707d4dfd12fbfb59b5b6cc6356c"
+      },
+      {
+        "path": "src/townlet/training/q_targets.py",
+        "lines": 80,
+        "sha256": "39485fe2447dc4065bd7b806775c93c0e66b51827b088605fba98505b100491f"
+      },
+      {
+        "path": "src/townlet/config/bac_options.py",
+        "lines": 294,
+        "sha256": "10dc3ef7dc288d954147046c95bc8362df2162f3829986be26b2724e86dd4916"
+      },
+      {
+        "path": "tests/test_townlet/regressions/bac/test_learner_legality.py",
+        "lines": 1198,
+        "sha256": "5f6273a8054bde34f89ab77eb98c8b4c0bb9428b586511b976cecae19c33e71e"
+      }
+    ],
+    "T15-schema": [
+      {
+        "path": "src/townlet/config/training_v2_config.py",
+        "lines": 435,
+        "sha256": "ad097576f88e1e2a09ae816ccff823e9623e7d5584b0d0411b07efb2f6ba1dfc"
+      },
+      {
+        "path": "src/townlet/training/replay_contract.py",
+        "lines": 222,
+        "sha256": "3eaa725bd6d592b7524dd249125877eb91a1f707d4dfd12fbfb59b5b6cc6356c"
+      },
+      {
+        "path": "src/townlet/training/replay_buffer.py",
+        "lines": 677,
+        "sha256": "d6fd0517488cfde5291c33ce03f67923c407af932794fb8a902b10e1d137f1c8"
+      },
+      {
+        "path": "src/townlet/training/prioritized_replay_buffer.py",
+        "lines": 1092,
+        "sha256": "290eadca0305658abdd4aec361a9b167ac63d7a887438b602c19c2eaf9020de9"
+      },
+      {
+        "path": "tests/test_townlet/unit/config/test_training_v2_config_dto.py",
+        "lines": 179,
+        "sha256": "eaeed185ee43e72b7c7179705b52fb53dd8085e7ca366c2f5c9b0bd52e0c61be"
+      }
+    ],
+    "T15-fixtures": [
+      {
+        "path": "tests/test_townlet/unit/population/test_vectorized_population.py",
+        "lines": 1884,
+        "sha256": "9e0b50095cd29470afc92d42a740a800e34c731aea12abfa96a7d60d89b1015c"
+      },
+      {
+        "path": "tests/test_townlet/unit/population/test_recurrent_training.py",
+        "lines": 573,
+        "sha256": "32f3a4e7996a5798c17b10a1ae69ad6d22631a2421549c33501f3764560325f9"
+      },
+      {
+        "path": "tests/test_townlet/unit/population/test_double_dqn_algorithm.py",
+        "lines": 324,
+        "sha256": "b9b12150109541ed53f75fc692661c305f075b616827bac4c37a83afbe859e5a"
+      },
+      {
+        "path": "tests/test_townlet/unit/population/test_action_selection.py",
+        "lines": 375,
+        "sha256": "81ffc9ef6390f2a64471f3e9daf3ea77c751d1bc0e97ff6cbd5b03eede65b2b1"
+      },
+      {
+        "path": "tests/test_townlet/regressions/fixtures/episode_lanes.py",
+        "lines": 157,
+        "sha256": "9de34aa9764fe2cef766aace4e6ebd391543621fa90def16b5614292e476ec7f"
+      }
+    ],
+    "T15-integration-author": [
+      {
+        "path": "src/townlet/population/vectorized.py",
+        "lines": 2146,
+        "sha256": "9569eab3d766ed5467ecf78736cd170c7aa0d0b77d90efe28239f3bab64ff12a"
+      },
+      {
+        "path": "tests/test_townlet/integration/test_recurrent_bootstrap_runtime.py",
+        "lines": 360,
+        "sha256": "06ee4ca2e9dff88539ed8cb3120048fc058772d009fa5962ee28f127db7d8f77"
+      },
+      {
+        "path": "tests/test_townlet/integration/test_recurrent_bptt_runtime.py",
+        "lines": 222,
+        "sha256": "2701678bcb442360eb2a860ea4e74bc7d5b8d4b9b2f639b78c21cd7db9f2494a"
+      },
+      {
+        "path": "tests/test_townlet/regressions/test_episode_lane_learning.py",
+        "lines": 476,
+        "sha256": "e328726c20e82dfc6754fb4623211aae24f8a7bd70530864ef49e913b804ad2c"
+      },
+      {
+        "path": "tests/test_townlet/regressions/fixtures/episode_lanes.py",
+        "lines": 157,
+        "sha256": "9de34aa9764fe2cef766aace4e6ebd391543621fa90def16b5614292e476ec7f"
+      }
+    ],
+    "T15-integration-review": [
+      {
+        "path": "tests/test_townlet/integration/test_authored_episode_lanes.py",
+        "lines": 66,
+        "sha256": "1aa95fc7764c9e85dfdc16d8f1d43f4014d86fedc18c7bcfdc627bf8779c56ac"
+      },
+      {
+        "path": "tests/test_townlet/integration/test_recurrent_bootstrap_runtime.py",
+        "lines": 360,
+        "sha256": "06ee4ca2e9dff88539ed8cb3120048fc058772d009fa5962ee28f127db7d8f77"
+      },
+      {
+        "path": "tests/test_townlet/integration/test_recurrent_bptt_runtime.py",
+        "lines": 222,
+        "sha256": "2701678bcb442360eb2a860ea4e74bc7d5b8d4b9b2f639b78c21cd7db9f2494a"
+      },
+      {
+        "path": "tests/test_townlet/regressions/test_episode_lane_learning.py",
+        "lines": 476,
+        "sha256": "e328726c20e82dfc6754fb4623211aae24f8a7bd70530864ef49e913b804ad2c"
+      },
+      {
+        "path": "tests/test_townlet/regressions/test_episode_lane_population.py",
+        "lines": 413,
+        "sha256": "5c306090ecdf7ec50c699ffb48913376a40fd12e58feb682bfc1ceb514ecd4f8"
+      }
+    ],
+    "T15-lane-supplier": [
+      {
+        "path": "src/townlet/population/vectorized.py",
+        "lines": 2146,
+        "sha256": "9569eab3d766ed5467ecf78736cd170c7aa0d0b77d90efe28239f3bab64ff12a"
+      },
+      {
+        "path": "tests/test_townlet/regressions/test_episode_lane_population.py",
+        "lines": 413,
+        "sha256": "5c306090ecdf7ec50c699ffb48913376a40fd12e58feb682bfc1ceb514ecd4f8"
+      },
+      {
+        "path": "tests/test_townlet/regressions/fixtures/episode_lanes.py",
+        "lines": 157,
+        "sha256": "9de34aa9764fe2cef766aace4e6ebd391543621fa90def16b5614292e476ec7f"
+      },
+      {
+        "path": "tests/test_townlet/integration/test_authored_episode_lanes.py",
+        "lines": 66,
+        "sha256": "1aa95fc7764c9e85dfdc16d8f1d43f4014d86fedc18c7bcfdc627bf8779c56ac"
+      }
+    ],
+    "T15-checker-author": [
+      {
+        "path": "scripts/check_episode_lanes.py",
+        "lines": 1036,
+        "sha256": "19e0b83130f2467a2bfd890dc79e95de6d7694e79f7fa996fa16c66b43e62eb7"
+      },
+      {
+        "path": "src/townlet/population/vectorized.py",
+        "lines": 2146,
+        "sha256": "9569eab3d766ed5467ecf78736cd170c7aa0d0b77d90efe28239f3bab64ff12a"
+      },
+      {
+        "path": "tests/test_townlet/unit/oracle/test_episode_lane_comparator.py",
+        "lines": 393,
+        "sha256": "5a259e6ab4236caf3d1b20323ee089522c101b4e91d8a294e2deb84595536d30"
+      }
+    ],
+    "T15-checkpoint-author": [
+      {
+        "path": "src/townlet/population/vectorized.py",
+        "lines": 2146,
+        "sha256": "9569eab3d766ed5467ecf78736cd170c7aa0d0b77d90efe28239f3bab64ff12a"
+      },
+      {
+        "path": "tests/test_townlet/integration/test_checkpointing.py",
+        "lines": 1662,
+        "sha256": "70d13c5df324111b1e9f53aba91360edfe31a0abb1cf2e5a3c7cf46b6e08968d"
+      },
+      {
+        "path": "tests/test_townlet/_fixtures/environment.py",
+        "lines": 460,
+        "sha256": "21bd79b1736efd53fdacb76ca6a6f4abaf3917340204aef74994ba20b6af745c"
+      },
+      {
+        "path": "tests/test_townlet/_fixtures/config.py",
+        "lines": 145,
+        "sha256": "f25801c31ddb8354cc8b63a25fa145b518a65c05b275d19f558cf6f4e3f04fb8"
+      },
+      {
+        "path": "tests/test_townlet/_fixtures/brain_configs.py",
+        "lines": 109,
+        "sha256": "aac8397902f8f038bee0c3da913c1a6b3930478d70c8a82156898231605cc9f4"
+      }
+    ],
+    "T15-consumer-review": [
+      {
+        "path": "scripts/check_episode_lanes.py",
+        "lines": 1036,
+        "sha256": "19e0b83130f2467a2bfd890dc79e95de6d7694e79f7fa996fa16c66b43e62eb7"
+      },
+      {
+        "path": "tests/test_townlet/unit/oracle/test_episode_lane_comparator.py",
+        "lines": 393,
+        "sha256": "5a259e6ab4236caf3d1b20323ee089522c101b4e91d8a294e2deb84595536d30"
+      },
+      {
+        "path": "tests/test_townlet/integration/test_checkpointing.py",
+        "lines": 1662,
+        "sha256": "70d13c5df324111b1e9f53aba91360edfe31a0abb1cf2e5a3c7cf46b6e08968d"
+      }
+    ],
+    "T15-artifact-fixture": [
+      {
+        "path": "src/townlet/population/vectorized.py",
+        "lines": 2146,
+        "sha256": "9569eab3d766ed5467ecf78736cd170c7aa0d0b77d90efe28239f3bab64ff12a"
+      },
+      {
+        "path": "tests/test_townlet/regressions/test_episode_lane_sinks.py",
+        "lines": 304,
+        "sha256": "29b8fd697fd11e55c6d0a28de2ecba119f933d3cb8276d36f6502e35bbf0e79b"
+      },
+      {
+        "path": "tests/test_townlet/regressions/test_episode_lane_artifact_pipeline.py",
+        "lines": 424,
+        "sha256": "1bd025f4fd8c1a18f25235ed94718e68826a8c301386906d8a09ccd85710cc1f"
+      },
+      {
+        "path": "tests/test_townlet/regressions/fixtures/episode_lanes.py",
+        "lines": 157,
+        "sha256": "9de34aa9764fe2cef766aace4e6ebd391543621fa90def16b5614292e476ec7f"
+      }
+    ],
+    "T15-training-fixture": [
+      {
+        "path": "src/townlet/population/vectorized.py",
+        "lines": 2146,
+        "sha256": "9569eab3d766ed5467ecf78736cd170c7aa0d0b77d90efe28239f3bab64ff12a"
+      },
+      {
+        "path": "tests/test_townlet/regressions/test_episode_lane_sinks.py",
+        "lines": 304,
+        "sha256": "29b8fd697fd11e55c6d0a28de2ecba119f933d3cb8276d36f6502e35bbf0e79b"
+      },
+      {
+        "path": "tests/test_townlet/regressions/test_episode_lane_artifact_pipeline.py",
+        "lines": 424,
+        "sha256": "1bd025f4fd8c1a18f25235ed94718e68826a8c301386906d8a09ccd85710cc1f"
+      },
+      {
+        "path": "tests/test_townlet/regressions/fixtures/episode_lanes.py",
+        "lines": 157,
+        "sha256": "9de34aa9764fe2cef766aace4e6ebd391543621fa90def16b5614292e476ec7f"
+      },
+      {
+        "path": "tests/test_townlet/integration/test_training_loop.py",
+        "lines": 641,
+        "sha256": "207500289444d904f33d1961164fec493433a3f1514562ff541ce5fced11c722"
+      }
+    ]
+  },
+  "review_artifacts": {
+    "wave09-preparation/T15-interface-proposal-r1.md": "70b155234f553855675a235d980674afdc3588d92e71dd054bba5b69f0e56d0a",
+    "wave09-preparation/T15-interface-astra-review-r1.md": "42c211db2a3326cbf018bb94cd774f522fe2bf56fdcacf2e84d0c23c7791e818",
+    "wave09-preparation/T15-schema-and-selector-extension-review-r1.md": "3daa2e2184fdc28d50d74ee5bf05a7aff208e32558504796c0771244f3749c79",
+    "wave09-preparation/T15-schema-independent-review-r1.md": "79dfc73618e108638bd24fb34c7f3cf377fff4eed028feaa4351b8ff8165068d",
+    "wave09-preparation/T15-actual-independent-review-r1.md": "9f2e7353a9504b69390458b54aab540c68165d2c3979192eb579dc206b5e099f",
+    "wave09-preparation/T15-actual-independent-runtime-r2.md": "b83ff74429e6ab3dc293ac9e65c2789c28aa51d4cf812325d3c83f1c877949a9",
+    "wave09-preparation/T15-fixture-independent-review-r1.md": "79782a54c486669b84f39013c9d8c5fbb98023451d6b6a5fa24779eac7366cfe",
+    "wave09-preparation/T15-integration-independent-review-r2.md": "526f8bceac2e93928f0db8dbaa2c9e5afec37a7b2e7257bc326f2ae6bcce2867",
+    "wave09-preparation/T15-consumer-independent-review-r3.md": "636d0264c31dd97bd4b7d41ace23a30a99ddbe27fb6ed0dd1bd0f82b04e0ace9",
+    "wave09-preparation/T15-consumer-independent-runtime-r3.md": "d257c9f4b4fbae3bba331f329eb9d3fa59a68c96eeef27d05abb4feb3e6c0a27",
+    "wave09-preparation/T15-artifact-independent-review-r4.md": "e03f5ff41e722668b10fdd716af060aeccd04160d74d35ab698d218d059e3b2d",
+    "wave09-preparation/T15-artifact-independent-runtime-r4.md": "86c069e68c969e4ce494fc8ada89789ffd9955dc46c940ea7ff7ffa11733857d",
+    "wave09-preparation/T15-training-independent-review-r5.md": "76455d540ef1b3cc608223bb6c79591f1387bf18e750fde6b5e27f464e0720fd",
+    "wave09-preparation/T15-training-independent-runtime-r5.md": "c5bc06d661f774f298da7724ce8868884aae8127e806d10fb3382aba4199a079"
+  },
+  "source_bindings": {
+    "T15-main": {
+      "actual_prior_tree": "929bc8952a2e797871d15376e2ef61a8aec73ca5",
+      "source_hashes_equal": true,
+      "source_files": {
+        "src/townlet/population/vectorized.py": "9569eab3d766ed5467ecf78736cd170c7aa0d0b77d90efe28239f3bab64ff12a",
+        "src/townlet/training/replay_contract.py": "3eaa725bd6d592b7524dd249125877eb91a1f707d4dfd12fbfb59b5b6cc6356c",
+        "src/townlet/training/q_targets.py": "39485fe2447dc4065bd7b806775c93c0e66b51827b088605fba98505b100491f",
+        "src/townlet/config/bac_options.py": "10dc3ef7dc288d954147046c95bc8362df2162f3829986be26b2724e86dd4916",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py": "5f6273a8054bde34f89ab77eb98c8b4c0bb9428b586511b976cecae19c33e71e"
+      }
+    },
+    "T15-schema": {
+      "actual_prior_tree": "929bc8952a2e797871d15376e2ef61a8aec73ca5",
+      "source_hashes_equal": true,
+      "source_files": {
+        "src/townlet/config/training_v2_config.py": "ad097576f88e1e2a09ae816ccff823e9623e7d5584b0d0411b07efb2f6ba1dfc",
+        "src/townlet/training/replay_contract.py": "3eaa725bd6d592b7524dd249125877eb91a1f707d4dfd12fbfb59b5b6cc6356c",
+        "src/townlet/training/replay_buffer.py": "d6fd0517488cfde5291c33ce03f67923c407af932794fb8a902b10e1d137f1c8",
+        "src/townlet/training/prioritized_replay_buffer.py": "290eadca0305658abdd4aec361a9b167ac63d7a887438b602c19c2eaf9020de9",
+        "tests/test_townlet/unit/config/test_training_v2_config_dto.py": "eaeed185ee43e72b7c7179705b52fb53dd8085e7ca366c2f5c9b0bd52e0c61be"
+      }
+    },
+    "T15-fixtures": {
+      "actual_prior_tree": "929bc8952a2e797871d15376e2ef61a8aec73ca5",
+      "source_hashes_equal": true,
+      "source_files": {
+        "tests/test_townlet/unit/population/test_vectorized_population.py": "9e0b50095cd29470afc92d42a740a800e34c731aea12abfa96a7d60d89b1015c",
+        "tests/test_townlet/unit/population/test_recurrent_training.py": "32f3a4e7996a5798c17b10a1ae69ad6d22631a2421549c33501f3764560325f9",
+        "tests/test_townlet/unit/population/test_double_dqn_algorithm.py": "b9b12150109541ed53f75fc692661c305f075b616827bac4c37a83afbe859e5a",
+        "tests/test_townlet/unit/population/test_action_selection.py": "81ffc9ef6390f2a64471f3e9daf3ea77c751d1bc0e97ff6cbd5b03eede65b2b1",
+        "tests/test_townlet/regressions/fixtures/episode_lanes.py": "9de34aa9764fe2cef766aace4e6ebd391543621fa90def16b5614292e476ec7f"
+      }
+    },
+    "T15-integration-author": {
+      "actual_prior_tree": "929bc8952a2e797871d15376e2ef61a8aec73ca5",
+      "source_hashes_equal": true,
+      "source_files": {
+        "src/townlet/population/vectorized.py": "9569eab3d766ed5467ecf78736cd170c7aa0d0b77d90efe28239f3bab64ff12a",
+        "tests/test_townlet/integration/test_recurrent_bootstrap_runtime.py": "06ee4ca2e9dff88539ed8cb3120048fc058772d009fa5962ee28f127db7d8f77",
+        "tests/test_townlet/integration/test_recurrent_bptt_runtime.py": "2701678bcb442360eb2a860ea4e74bc7d5b8d4b9b2f639b78c21cd7db9f2494a",
+        "tests/test_townlet/regressions/test_episode_lane_learning.py": "e328726c20e82dfc6754fb4623211aae24f8a7bd70530864ef49e913b804ad2c",
+        "tests/test_townlet/regressions/fixtures/episode_lanes.py": "9de34aa9764fe2cef766aace4e6ebd391543621fa90def16b5614292e476ec7f"
+      }
+    },
+    "T15-integration-review": {
+      "actual_prior_tree": "929bc8952a2e797871d15376e2ef61a8aec73ca5",
+      "source_hashes_equal": true,
+      "source_files": {
+        "tests/test_townlet/integration/test_authored_episode_lanes.py": "1aa95fc7764c9e85dfdc16d8f1d43f4014d86fedc18c7bcfdc627bf8779c56ac",
+        "tests/test_townlet/integration/test_recurrent_bootstrap_runtime.py": "06ee4ca2e9dff88539ed8cb3120048fc058772d009fa5962ee28f127db7d8f77",
+        "tests/test_townlet/integration/test_recurrent_bptt_runtime.py": "2701678bcb442360eb2a860ea4e74bc7d5b8d4b9b2f639b78c21cd7db9f2494a",
+        "tests/test_townlet/regressions/test_episode_lane_learning.py": "e328726c20e82dfc6754fb4623211aae24f8a7bd70530864ef49e913b804ad2c",
+        "tests/test_townlet/regressions/test_episode_lane_population.py": "5c306090ecdf7ec50c699ffb48913376a40fd12e58feb682bfc1ceb514ecd4f8"
+      }
+    },
+    "T15-lane-supplier": {
+      "actual_prior_tree": "929bc8952a2e797871d15376e2ef61a8aec73ca5",
+      "source_hashes_equal": true,
+      "source_files": {
+        "src/townlet/population/vectorized.py": "9569eab3d766ed5467ecf78736cd170c7aa0d0b77d90efe28239f3bab64ff12a",
+        "tests/test_townlet/regressions/test_episode_lane_population.py": "5c306090ecdf7ec50c699ffb48913376a40fd12e58feb682bfc1ceb514ecd4f8",
+        "tests/test_townlet/regressions/fixtures/episode_lanes.py": "9de34aa9764fe2cef766aace4e6ebd391543621fa90def16b5614292e476ec7f",
+        "tests/test_townlet/integration/test_authored_episode_lanes.py": "1aa95fc7764c9e85dfdc16d8f1d43f4014d86fedc18c7bcfdc627bf8779c56ac"
+      }
+    }
+  },
+  "checks": [
+    {
+      "original_result_path": "/workspace/bac-review-2026-11-01/qualification/wave09-r2-owned/owned-result.json",
+      "name": "owned",
+      "exit_code": 0,
+      "seconds": 850.725887298584,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py",
+        "tests/test_townlet/unit/config/test_training_v2_config_dto.py",
+        "-q",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave09-r2-owned"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave09-r2-owned/owned.log",
+      "sha256": "e4e8979f3a6e2ac1e1db35010b4f8d2858282ec5c6e115acf7f80e87439b0608",
+      "candidate_tree": "929bc8952a2e797871d15376e2ef61a8aec73ca5",
+      "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+      "manifest_sha256": "dc2881963a1b4871bb45d6459d618db56bfde636af11a3a28c8ee8b0f524b5e3",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+      "attribution": "Original actual source identity preserved; unchanged scopes bound separately. Selections overlap and are not summed."
+    },
+    {
+      "original_result_path": "/workspace/bac-review-2026-11-01/qualification/wave09-r2-B03/B03-remaining-result.json",
+      "name": "B03-remaining",
+      "exit_code": 0,
+      "seconds": 176.0868844985962,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_townlet/unit/population",
+        "tests/test_townlet/integration/test_authored_episode_lanes.py",
+        "tests/test_townlet/integration/test_recurrent_bootstrap_runtime.py",
+        "tests/test_townlet/regressions/test_episode_lane_population.py",
+        "tests/test_townlet/regressions/test_episode_lane_learning.py",
+        "-q",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave09-r2-B03"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave09-r2-B03/B03-remaining.log",
+      "sha256": "5b08a7de5ca3e47ed664b88aa5980bf70dca19c0ff1998a661d270e8ed68e786",
+      "candidate_tree": "929bc8952a2e797871d15376e2ef61a8aec73ca5",
+      "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+      "manifest_sha256": "dc2881963a1b4871bb45d6459d618db56bfde636af11a3a28c8ee8b0f524b5e3",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+      "attribution": "Original actual source identity preserved; unchanged scopes bound separately. Selections overlap and are not summed."
+    },
+    {
+      "original_result_path": "/workspace/bac-review-2026-11-01/qualification/wave09-r2-BPTT/BPTT-result.json",
+      "name": "BPTT",
+      "exit_code": 0,
+      "seconds": 134.1159553527832,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_townlet/integration/test_recurrent_bptt_runtime.py",
+        "-q",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave09-r2-BPTT"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave09-r2-BPTT/BPTT.log",
+      "sha256": "45b68e65e2793645177b7e8eba6c8013a3b216518b9d44382d32d350d7b26225",
+      "candidate_tree": "929bc8952a2e797871d15376e2ef61a8aec73ca5",
+      "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+      "manifest_sha256": "dc2881963a1b4871bb45d6459d618db56bfde636af11a3a28c8ee8b0f524b5e3",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+      "attribution": "Original actual source identity preserved; unchanged scopes bound separately. Selections overlap and are not summed."
+    },
+    {
+      "original_result_path": "/workspace/bac-review-2026-11-01/qualification/wave09-r2-native-owner/native-owner-result.json",
+      "name": "native-owner",
+      "exit_code": 0,
+      "seconds": 25.41048002243042,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_recurrent_per_native.py",
+        "-q",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave09-r2-native-owner"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave09-r2-native-owner/native-owner.log",
+      "sha256": "77891bccee364817773631a1fa405aa9b696d073b092cb5fe43b45ae9a531876",
+      "candidate_tree": "929bc8952a2e797871d15376e2ef61a8aec73ca5",
+      "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+      "manifest_sha256": "dc2881963a1b4871bb45d6459d618db56bfde636af11a3a28c8ee8b0f524b5e3",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+      "attribution": "Original actual source identity preserved; unchanged scopes bound separately. Selections overlap and are not summed."
+    },
+    {
+      "original_result_path": "/workspace/bac-review-2026-11-01/qualification/wave09-astra-main-r2/independent-main-result.json",
+      "name": "independent-main",
+      "exit_code": 0,
+      "seconds": 58.44433879852295,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_load_before_first_step_adopts_current_replay_and_clocks[load-active-current-feedforward-True]",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_load_before_first_step_adopts_current_replay_and_clocks[load-active-current-recurrent-True]",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_recurrent_one_window_readiness_distinguishes_laws[successive_without_replacement-0]",
+        "tests/test_townlet/regressions/bac/test_learner_legality.py::test_recurrent_one_window_readiness_distinguishes_laws[independent_with_replacement-1]",
+        "-q",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave09-astra-main-r2"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave09-astra-main-r2/independent-main.log",
+      "sha256": "ebc14d0457c43c8450e9166336199a2d60b34fe238814d10ec2da648bb8fd1c2",
+      "candidate_tree": "929bc8952a2e797871d15376e2ef61a8aec73ca5",
+      "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+      "manifest_sha256": "dc2881963a1b4871bb45d6459d618db56bfde636af11a3a28c8ee8b0f524b5e3",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+      "attribution": "Original actual source identity preserved; unchanged scopes bound separately. Selections overlap and are not summed."
+    },
+    {
+      "original_result_path": "/workspace/bac-review-2026-11-01/qualification/wave09-r3-consumer-owners/consumer-owners-result.json",
+      "name": "consumer-owners",
+      "exit_code": 0,
+      "seconds": 70.96679401397705,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_townlet/unit/oracle/test_episode_lane_comparator.py",
+        "tests/test_townlet/integration/test_checkpointing.py",
+        "-q",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave09-r3-consumer-owners"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave09-r3-consumer-owners/consumer-owners.log",
+      "sha256": "f4fa66122cd5d516abd0dd5cf1839e2ef6ae3fa6f5840852dfda68e1fed18f60",
+      "candidate_tree": "c6beac9d65c88a7063c27f4d64750cb49b7ae97a",
+      "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+      "manifest_sha256": "5eb4007c4b8cf777718b02cd7d0bec5da8dc5fb1ff8db6df882050cdaea15bdb",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+      "attribution": "Original actual source identity preserved; unchanged scopes bound separately. Selections overlap and are not summed."
+    },
+    {
+      "original_result_path": "/workspace/bac-review-2026-11-01/qualification/wave09-r3-independent-consumers/independent-consumers-result.json",
+      "name": "independent-consumers",
+      "exit_code": 0,
+      "seconds": 21.354610204696655,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_townlet/unit/oracle/test_episode_lane_comparator.py",
+        "-q",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-k",
+        "producer_projects_eligible_selector or producer_observes_real_recorded_admission",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave09-astra-consumers-r3"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave09-r3-independent-consumers/independent-consumers.log",
+      "sha256": "66d16536822ce7d022945009df2159359e2c5b5f49babb4eebf3e0c80efb6006",
+      "candidate_tree": "c6beac9d65c88a7063c27f4d64750cb49b7ae97a",
+      "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+      "manifest_sha256": "5eb4007c4b8cf777718b02cd7d0bec5da8dc5fb1ff8db6df882050cdaea15bdb",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+      "attribution": "Original actual source identity preserved; unchanged scopes bound separately. Selections overlap and are not summed."
+    },
+    {
+      "original_result_path": "/workspace/bac-review-2026-11-01/qualification/wave09-r4-artifact-owners/artifact-owners-result.json",
+      "name": "artifact-owners",
+      "exit_code": 0,
+      "seconds": 33.666714668273926,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/test_episode_lane_sinks.py",
+        "tests/test_townlet/regressions/test_episode_lane_artifact_pipeline.py",
+        "-q",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave09-r4-artifact-owners"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave09-r4-artifact-owners/artifact-owners.log",
+      "sha256": "068e75a5e05e618e9f52ae3407cf8f58ca0a8966115b8cf746e1424cd4a86f3e",
+      "candidate_tree": "f4032499a9800e8a8398b812a8dcc7ebfe9c4974",
+      "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+      "manifest_sha256": "7127f3f1855212118fd688a5d7b1024714bac43dab0d0267aa25bc45f4a7df3c",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+      "attribution": "Original actual source identity preserved; unchanged scopes bound separately. Selections overlap and are not summed."
+    },
+    {
+      "original_result_path": "/workspace/bac-review-2026-11-01/qualification/wave09-r4-independent-artifact/independent-artifact-result.json",
+      "name": "independent-artifact",
+      "exit_code": 0,
+      "seconds": 14.335936784744263,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/test_episode_lane_artifact_pipeline.py::test_ordinary_two_episode_files_index_sql_and_tb_match_actual_eligible_ledger",
+        "-q",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave09-astra-artifact-r4"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave09-r4-independent-artifact/independent-artifact.log",
+      "sha256": "4544ace84e425bf91d65b7f200d5148420a8d83ea888a1e47b713b8dc89fa999",
+      "candidate_tree": "f4032499a9800e8a8398b812a8dcc7ebfe9c4974",
+      "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+      "manifest_sha256": "7127f3f1855212118fd688a5d7b1024714bac43dab0d0267aa25bc45f4a7df3c",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+      "attribution": "Original actual source identity preserved; unchanged scopes bound separately. Selections overlap and are not summed."
+    },
+    {
+      "original_result_path": "/workspace/bac-review-2026-11-01/qualification/wave09-r5-training-owners/training-owners-result.json",
+      "name": "training-owners",
+      "exit_code": 0,
+      "seconds": 36.407273292541504,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_townlet/integration/test_training_loop.py",
+        "-q",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave09-r5-training-owners"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave09-r5-training-owners/training-owners.log",
+      "sha256": "58fa9ebd5aa510e0fe5cd208650bc7c61d52b058e140082c7abd33192383bedd",
+      "candidate_tree": "f71c52fad680a74da1b90cc7470455fc90f4fa3f",
+      "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+      "manifest_sha256": "781a9338ab724924fcfbb744699bf477877a112b0ed632c332ca58004eeabe79",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+      "attribution": "Original actual source identity preserved; unchanged scopes bound separately. Selections overlap and are not summed."
+    },
+    {
+      "original_result_path": "/workspace/bac-review-2026-11-01/qualification/wave09-r5-independent-training/independent-training-result.json",
+      "name": "independent-training",
+      "exit_code": 0,
+      "seconds": 46.406864643096924,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_townlet/integration/test_training_loop.py::TestMultiEpisodeTraining::test_train_10_episodes_with_learning_progression",
+        "tests/test_townlet/integration/test_training_loop.py::TestMaskedLossIntegration::test_masked_loss_during_training",
+        "tests/test_townlet/integration/test_training_loop.py::TestMultiEpisodeTraining::test_target_network_updates_at_frequency",
+        "tests/test_townlet/integration/test_training_loop.py::TestMultiEpisodeTraining::test_q_values_improve_over_time",
+        "-q",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave09-astra-training-r5"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave09-r5-independent-training/independent-training.log",
+      "sha256": "4e6bae3ac94fd7fbe8ce3c4f4035bac1c17f840bd8e03e6010febc91c82c7a60",
+      "candidate_tree": "f71c52fad680a74da1b90cc7470455fc90f4fa3f",
+      "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+      "manifest_sha256": "781a9338ab724924fcfbb744699bf477877a112b0ed632c332ca58004eeabe79",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+      "attribution": "Original actual source identity preserved; unchanged scopes bound separately. Selections overlap and are not summed."
+    }
+  ],
+  "failed_full_attempts": [
+    {
+      "original_result_path": "/workspace/bac-review-2026-11-01/qualification/wave09-full-r0/failed-postflight.json",
+      "data": {
+        "status": "FAILED/INTERRUPTED, never passing qualification",
+        "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+        "candidate_tree": "c6beac9d65c88a7063c27f4d64750cb49b7ae97a",
+        "exit_code": 2,
+        "passed": 3536,
+        "skipped": 11,
+        "warnings": 13,
+        "errors": 1,
+        "wall_seconds": 870.2758910655975,
+        "source156_review10_process5_config573_artifact13_worktree14_custody": "PASS",
+        "cause": "Artifact runner fixture fullN selector rejects correct eligibleK before artifact assertions",
+        "owner_action": "One graceful SIGINT to only this already-failed controller; partial evidence retained, no unrelated process cancelled",
+        "release": false
+      }
+    },
+    {
+      "original_result_path": "/workspace/bac-review-2026-11-01/qualification/wave09-full-r1/failed-postflight.json",
+      "data": {
+        "status": "FAILED/INTERRUPTED, never qualification PASS",
+        "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+        "candidate_tree": "f4032499a9800e8a8398b812a8dcc7ebfe9c4974",
+        "exit_code": 2,
+        "failed": 1,
+        "passed": 6222,
+        "skipped": 14,
+        "warnings": 15,
+        "wall_seconds": 1395.926141500473,
+        "source156_review12_process5_configs573_artifact13_worktree14_custody": "PASS",
+        "cause": "Ten-episode learning fixture collects<=500 one-agent transitions but authors warmup1000; direct related learning fixtures audited before another full",
+        "owner_action": "OnegracefulSIGINT only to alreadyfailedrootcontroller, allotherdata/worktrees/processes preserved",
+        "release": false
+      }
+    }
+  ]
+}

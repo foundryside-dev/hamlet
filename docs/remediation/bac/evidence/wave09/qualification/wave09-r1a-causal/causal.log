@@ -1,0 +1,332 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [4 items]
+
+FFFF                                                                     [100%]
+=================================== FAILURES ===================================
+_ test_load_before_first_step_adopts_current_replay_and_clocks[attach-active-current-feedforward-False] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-r1a-causal/popen-gw0/test_load_before_first_step_ad0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fbba7f55810>
+family = 'feedforward', per = False, empty = False, install = 'attach'
+
+    @pytest.mark.parametrize("family,per", (("feedforward", False), ("feedforward", True), ("recurrent", False), ("recurrent", True)))
+    @pytest.mark.parametrize("empty", (False, True), ids=("active-current", "owned-empty-current"))
+    @pytest.mark.parametrize("install", ("load", "attach"))
+    def test_load_before_first_step_adopts_current_replay_and_clocks(tmp_path, monkeypatch, family, per, empty, install):
+        settings = dict(per=per, minimum=6, beta=0.4, annealing=True, length=1)
+        archive_kind = "sequence-trained" if family == "recurrent" else ("per" if per else "uniform")
+        settings["template"] = ROOT / "tests/test_townlet/fixtures/bac_historical" / f"{archive_kind}-pack"
+        source = _make(tmp_path / "source", family, explicit=True, **settings)
+        archive = _archive("recurrent" if family == "recurrent" else ("per" if per else "uniform"))
+        if family == "recurrent":
+            source.replay_buffer.load_prepared(
+                source.replay_buffer.prepare_archived_import((archive,), expected_obs_dim=source.env.observation_dim)
+            )
+        else:
+            source.replay_buffer.install_historical_archive(archive)
+        _until_update(source, count=2)
+        _finish(source)
+        if empty:
+            source.replay_buffer.clear()
+        saved = _owned(source)
+        saved_before = copy.deepcopy(saved)
+        assert bool(source.replay_buffer.retained_transitions) != empty
+        targets = [_make(tmp_path / label, family, explicit=explicit, **settings) for label, explicit in (("lazy", False), ("eager", True))]
+        for target in targets:
+            before = _owned(target)
+            target.validate_checkpoint_state(saved)
+            _same(before, _owned(target))
+            if install == "attach" and target is targets[0]:
+                # Explicit externally owned attachment control, separate from natural construction.
+                if family == "recurrent":
+                    buffer = SequentialReplayBuffer(32, CPU)
+                elif per:
+                    buffer = PrioritizedReplayBuffer(32, 1.0, 0.4, True, CPU)
+                else:
+                    buffer = ReplayBuffer(32, CPU)
+                buffer.load_from_serialized(saved["replay_buffer"])
+                target.replay_buffer = buffer
+                target.q_network.load_state_dict(saved["q_network"])
+                target.target_network.load_state_dict(saved["target_network"])
+                target.optimizer.load_state_dict(copy.deepcopy(saved["optimizer"]))
+                target.total_steps = saved["total_steps"]
+                target.training_step_counter = saved["training_step_counter"]
+            else:
+                target.load_checkpoint_state(saved)
+            _same(saved, _owned(target))
+            _same(saved_before, saved)
+>           _assert_disjoint_optimizer_storage(target.optimizer.state_dict(), saved["optimizer"])
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:935: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+first = {'param_groups': [{'amsgrad': False, 'betas': (0.9, 0.999), 'capturable': False, 'decoupled_weight_decay': False, ...}...0.0000, 0.0000, 0.0000, 0.0001, 0.0000,
+        0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000]), 'step': tensor(2.)}}}
+second = {'param_groups': [{'amsgrad': False, 'betas': (0.9, 0.999), 'capturable': False, 'decoupled_weight_decay': False, ...}...0.0000, 0.0000, 0.0000, 0.0001, 0.0000,
+        0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000]), 'step': tensor(2.)}}}
+
+    def _assert_disjoint_optimizer_storage(first, second):
+        def addresses(state):
+            return {(str(t.device), t.untyped_storage().data_ptr()) for t in _tensor_leaves(state) if t.numel()}
+    
+        own, other = addresses(first), addresses(second)
+>       assert own and other and own.isdisjoint(other), "raw population load must own optimizer tensor storage"
+E       AssertionError: raw population load must own optimizer tensor storage
+E       assert ({('cpu', 347647744), ('cpu', 349879680), ('cpu', 352635328), ('cpu', 354495168), ('cpu', 365764736), ('cpu', 366917376), ...} and {('cpu', 347647744), ('cpu', 349879680), ('cpu', 352635328), ('cpu', 354495168), ('cpu', 365764736), ('cpu', 366917376), ...} and False)
+E        +  where False = <built-in method isdisjoint of set object at 0x7fbb9c35eb20>({('cpu', 347647744), ('cpu', 349879680), ('cpu', 352635328), ('cpu', 354495168), ('cpu', 365764736), ('cpu', 366917376), ...})
+E        +    where <built-in method isdisjoint of set object at 0x7fbb9c35eb20> = {('cpu', 347647744), ('cpu', 349879680), ('cpu', 352635328), ('cpu', 354495168), ('cpu', 365764736), ('cpu', 366917376), ...}.isdisjoint
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:269: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  townlet.training.checkpoint_utils:checkpoint_utils.py:729 Loading /workspace/hamlet/tests/test_townlet/fixtures/bac_historical/uniform.pt with allow_unsafe_pickle=True (weights_only=False). This deserialises arbitrary Python objects from the checkpoint and is ONLY safe for trusted, locally-produced files.
+_ test_load_before_first_step_adopts_current_replay_and_clocks[load-active-current-feedforward-False] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-r1a-causal/popen-gw1/test_load_before_first_step_ad0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fdfaa85d810>
+family = 'feedforward', per = False, empty = False, install = 'load'
+
+    @pytest.mark.parametrize("family,per", (("feedforward", False), ("feedforward", True), ("recurrent", False), ("recurrent", True)))
+    @pytest.mark.parametrize("empty", (False, True), ids=("active-current", "owned-empty-current"))
+    @pytest.mark.parametrize("install", ("load", "attach"))
+    def test_load_before_first_step_adopts_current_replay_and_clocks(tmp_path, monkeypatch, family, per, empty, install):
+        settings = dict(per=per, minimum=6, beta=0.4, annealing=True, length=1)
+        archive_kind = "sequence-trained" if family == "recurrent" else ("per" if per else "uniform")
+        settings["template"] = ROOT / "tests/test_townlet/fixtures/bac_historical" / f"{archive_kind}-pack"
+        source = _make(tmp_path / "source", family, explicit=True, **settings)
+        archive = _archive("recurrent" if family == "recurrent" else ("per" if per else "uniform"))
+        if family == "recurrent":
+            source.replay_buffer.load_prepared(
+                source.replay_buffer.prepare_archived_import((archive,), expected_obs_dim=source.env.observation_dim)
+            )
+        else:
+            source.replay_buffer.install_historical_archive(archive)
+        _until_update(source, count=2)
+        _finish(source)
+        if empty:
+            source.replay_buffer.clear()
+        saved = _owned(source)
+        saved_before = copy.deepcopy(saved)
+        assert bool(source.replay_buffer.retained_transitions) != empty
+        targets = [_make(tmp_path / label, family, explicit=explicit, **settings) for label, explicit in (("lazy", False), ("eager", True))]
+        for target in targets:
+            before = _owned(target)
+            target.validate_checkpoint_state(saved)
+            _same(before, _owned(target))
+            if install == "attach" and target is targets[0]:
+                # Explicit externally owned attachment control, separate from natural construction.
+                if family == "recurrent":
+                    buffer = SequentialReplayBuffer(32, CPU)
+                elif per:
+                    buffer = PrioritizedReplayBuffer(32, 1.0, 0.4, True, CPU)
+                else:
+                    buffer = ReplayBuffer(32, CPU)
+                buffer.load_from_serialized(saved["replay_buffer"])
+                target.replay_buffer = buffer
+                target.q_network.load_state_dict(saved["q_network"])
+                target.target_network.load_state_dict(saved["target_network"])
+                target.optimizer.load_state_dict(copy.deepcopy(saved["optimizer"]))
+                target.total_steps = saved["total_steps"]
+                target.training_step_counter = saved["training_step_counter"]
+            else:
+                target.load_checkpoint_state(saved)
+            _same(saved, _owned(target))
+            _same(saved_before, saved)
+>           _assert_disjoint_optimizer_storage(target.optimizer.state_dict(), saved["optimizer"])
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:935: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+first = {'param_groups': [{'amsgrad': False, 'betas': (0.9, 0.999), 'capturable': False, 'decoupled_weight_decay': False, ...}...0.0000, 0.0000, 0.0000, 0.0000, 0.0000,
+        0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000]), 'step': tensor(2.)}}}
+second = {'param_groups': [{'amsgrad': False, 'betas': (0.9, 0.999), 'capturable': False, 'decoupled_weight_decay': False, ...}...0.0000, 0.0000, 0.0000, 0.0000, 0.0000,
+        0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000]), 'step': tensor(2.)}}}
+
+    def _assert_disjoint_optimizer_storage(first, second):
+        def addresses(state):
+            return {(str(t.device), t.untyped_storage().data_ptr()) for t in _tensor_leaves(state) if t.numel()}
+    
+        own, other = addresses(first), addresses(second)
+>       assert own and other and own.isdisjoint(other), "raw population load must own optimizer tensor storage"
+E       AssertionError: raw population load must own optimizer tensor storage
+E       assert ({('cpu', 848825216), ('cpu', 850199936), ('cpu', 861086848), ('cpu', 861395776), ('cpu', 861395904), ('cpu', 865115712), ...} and {('cpu', 848825216), ('cpu', 850199936), ('cpu', 861086848), ('cpu', 861395776), ('cpu', 861395904), ('cpu', 865115712), ...} and False)
+E        +  where False = <built-in method isdisjoint of set object at 0x7fdf9e2ffbc0>({('cpu', 848825216), ('cpu', 850199936), ('cpu', 861086848), ('cpu', 861395776), ('cpu', 861395904), ('cpu', 865115712), ...})
+E        +    where <built-in method isdisjoint of set object at 0x7fdf9e2ffbc0> = {('cpu', 848825216), ('cpu', 850199936), ('cpu', 861086848), ('cpu', 861395776), ('cpu', 861395904), ('cpu', 865115712), ...}.isdisjoint
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:269: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  townlet.training.checkpoint_utils:checkpoint_utils.py:729 Loading /workspace/hamlet/tests/test_townlet/fixtures/bac_historical/uniform.pt with allow_unsafe_pickle=True (weights_only=False). This deserialises arbitrary Python objects from the checkpoint and is ONLY safe for trusted, locally-produced files.
+_ test_load_before_first_step_adopts_current_replay_and_clocks[attach-active-current-feedforward-True] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-r1a-causal/popen-gw0/test_load_before_first_step_ad1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fbba819ed70>
+family = 'feedforward', per = True, empty = False, install = 'attach'
+
+    @pytest.mark.parametrize("family,per", (("feedforward", False), ("feedforward", True), ("recurrent", False), ("recurrent", True)))
+    @pytest.mark.parametrize("empty", (False, True), ids=("active-current", "owned-empty-current"))
+    @pytest.mark.parametrize("install", ("load", "attach"))
+    def test_load_before_first_step_adopts_current_replay_and_clocks(tmp_path, monkeypatch, family, per, empty, install):
+        settings = dict(per=per, minimum=6, beta=0.4, annealing=True, length=1)
+        archive_kind = "sequence-trained" if family == "recurrent" else ("per" if per else "uniform")
+        settings["template"] = ROOT / "tests/test_townlet/fixtures/bac_historical" / f"{archive_kind}-pack"
+        source = _make(tmp_path / "source", family, explicit=True, **settings)
+        archive = _archive("recurrent" if family == "recurrent" else ("per" if per else "uniform"))
+        if family == "recurrent":
+            source.replay_buffer.load_prepared(
+                source.replay_buffer.prepare_archived_import((archive,), expected_obs_dim=source.env.observation_dim)
+            )
+        else:
+            source.replay_buffer.install_historical_archive(archive)
+        _until_update(source, count=2)
+        _finish(source)
+        if empty:
+            source.replay_buffer.clear()
+        saved = _owned(source)
+        saved_before = copy.deepcopy(saved)
+        assert bool(source.replay_buffer.retained_transitions) != empty
+        targets = [_make(tmp_path / label, family, explicit=explicit, **settings) for label, explicit in (("lazy", False), ("eager", True))]
+        for target in targets:
+            before = _owned(target)
+            target.validate_checkpoint_state(saved)
+            _same(before, _owned(target))
+            if install == "attach" and target is targets[0]:
+                # Explicit externally owned attachment control, separate from natural construction.
+                if family == "recurrent":
+                    buffer = SequentialReplayBuffer(32, CPU)
+                elif per:
+                    buffer = PrioritizedReplayBuffer(32, 1.0, 0.4, True, CPU)
+                else:
+                    buffer = ReplayBuffer(32, CPU)
+                buffer.load_from_serialized(saved["replay_buffer"])
+                target.replay_buffer = buffer
+                target.q_network.load_state_dict(saved["q_network"])
+                target.target_network.load_state_dict(saved["target_network"])
+                target.optimizer.load_state_dict(copy.deepcopy(saved["optimizer"]))
+                target.total_steps = saved["total_steps"]
+                target.training_step_counter = saved["training_step_counter"]
+            else:
+                target.load_checkpoint_state(saved)
+            _same(saved, _owned(target))
+            _same(saved_before, saved)
+>           _assert_disjoint_optimizer_storage(target.optimizer.state_dict(), saved["optimizer"])
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:935: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+first = {'param_groups': [{'amsgrad': False, 'betas': (0.9, 0.999), 'capturable': False, 'decoupled_weight_decay': False, ...}...0.0000, 0.0000, 0.0000, 0.0000, 0.0001,
+        0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000]), 'step': tensor(2.)}}}
+second = {'param_groups': [{'amsgrad': False, 'betas': (0.9, 0.999), 'capturable': False, 'decoupled_weight_decay': False, ...}...0.0000, 0.0000, 0.0000, 0.0000, 0.0001,
+        0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000]), 'step': tensor(2.)}}}
+
+    def _assert_disjoint_optimizer_storage(first, second):
+        def addresses(state):
+            return {(str(t.device), t.untyped_storage().data_ptr()) for t in _tensor_leaves(state) if t.numel()}
+    
+        own, other = addresses(first), addresses(second)
+>       assert own and other and own.isdisjoint(other), "raw population load must own optimizer tensor storage"
+E       AssertionError: raw population load must own optimizer tensor storage
+E       assert ({('cpu', 347423424), ('cpu', 349451264), ('cpu', 349492416), ('cpu', 349718976), ('cpu', 349790400), ('cpu', 354383296), ...} and {('cpu', 347423424), ('cpu', 349451264), ('cpu', 349492416), ('cpu', 349718976), ('cpu', 349790400), ('cpu', 354383296), ...} and False)
+E        +  where False = <built-in method isdisjoint of set object at 0x7fbb9b6d49e0>({('cpu', 347423424), ('cpu', 349451264), ('cpu', 349492416), ('cpu', 349718976), ('cpu', 349790400), ('cpu', 354383296), ...})
+E        +    where <built-in method isdisjoint of set object at 0x7fbb9b6d49e0> = {('cpu', 347423424), ('cpu', 349451264), ('cpu', 349492416), ('cpu', 349718976), ('cpu', 349790400), ('cpu', 354383296), ...}.isdisjoint
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:269: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  townlet.training.checkpoint_utils:checkpoint_utils.py:729 Loading /workspace/hamlet/tests/test_townlet/fixtures/bac_historical/per.pt with allow_unsafe_pickle=True (weights_only=False). This deserialises arbitrary Python objects from the checkpoint and is ONLY safe for trusted, locally-produced files.
+_ test_load_before_first_step_adopts_current_replay_and_clocks[load-active-current-feedforward-True] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-r1a-causal/popen-gw1/test_load_before_first_step_ad1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fdfaaaaad70>
+family = 'feedforward', per = True, empty = False, install = 'load'
+
+    @pytest.mark.parametrize("family,per", (("feedforward", False), ("feedforward", True), ("recurrent", False), ("recurrent", True)))
+    @pytest.mark.parametrize("empty", (False, True), ids=("active-current", "owned-empty-current"))
+    @pytest.mark.parametrize("install", ("load", "attach"))
+    def test_load_before_first_step_adopts_current_replay_and_clocks(tmp_path, monkeypatch, family, per, empty, install):
+        settings = dict(per=per, minimum=6, beta=0.4, annealing=True, length=1)
+        archive_kind = "sequence-trained" if family == "recurrent" else ("per" if per else "uniform")
+        settings["template"] = ROOT / "tests/test_townlet/fixtures/bac_historical" / f"{archive_kind}-pack"
+        source = _make(tmp_path / "source", family, explicit=True, **settings)
+        archive = _archive("recurrent" if family == "recurrent" else ("per" if per else "uniform"))
+        if family == "recurrent":
+            source.replay_buffer.load_prepared(
+                source.replay_buffer.prepare_archived_import((archive,), expected_obs_dim=source.env.observation_dim)
+            )
+        else:
+            source.replay_buffer.install_historical_archive(archive)
+        _until_update(source, count=2)
+        _finish(source)
+        if empty:
+            source.replay_buffer.clear()
+        saved = _owned(source)
+        saved_before = copy.deepcopy(saved)
+        assert bool(source.replay_buffer.retained_transitions) != empty
+        targets = [_make(tmp_path / label, family, explicit=explicit, **settings) for label, explicit in (("lazy", False), ("eager", True))]
+        for target in targets:
+            before = _owned(target)
+            target.validate_checkpoint_state(saved)
+            _same(before, _owned(target))
+            if install == "attach" and target is targets[0]:
+                # Explicit externally owned attachment control, separate from natural construction.
+                if family == "recurrent":
+                    buffer = SequentialReplayBuffer(32, CPU)
+                elif per:
+                    buffer = PrioritizedReplayBuffer(32, 1.0, 0.4, True, CPU)
+                else:
+                    buffer = ReplayBuffer(32, CPU)
+                buffer.load_from_serialized(saved["replay_buffer"])
+                target.replay_buffer = buffer
+                target.q_network.load_state_dict(saved["q_network"])
+                target.target_network.load_state_dict(saved["target_network"])
+                target.optimizer.load_state_dict(copy.deepcopy(saved["optimizer"]))
+                target.total_steps = saved["total_steps"]
+                target.training_step_counter = saved["training_step_counter"]
+            else:
+                target.load_checkpoint_state(saved)
+            _same(saved, _owned(target))
+            _same(saved_before, saved)
+>           _assert_disjoint_optimizer_storage(target.optimizer.state_dict(), saved["optimizer"])
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:935: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+first = {'param_groups': [{'amsgrad': False, 'betas': (0.9, 0.999), 'capturable': False, 'decoupled_weight_decay': False, ...}...0.0000, 0.0000, 0.0000, 0.0001, 0.0000,
+        0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000]), 'step': tensor(2.)}}}
+second = {'param_groups': [{'amsgrad': False, 'betas': (0.9, 0.999), 'capturable': False, 'decoupled_weight_decay': False, ...}...0.0000, 0.0000, 0.0000, 0.0001, 0.0000,
+        0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000]), 'step': tensor(2.)}}}
+
+    def _assert_disjoint_optimizer_storage(first, second):
+        def addresses(state):
+            return {(str(t.device), t.untyped_storage().data_ptr()) for t in _tensor_leaves(state) if t.numel()}
+    
+        own, other = addresses(first), addresses(second)
+>       assert own and other and own.isdisjoint(other), "raw population load must own optimizer tensor storage"
+E       AssertionError: raw population load must own optimizer tensor storage
+E       assert ({('cpu', 848742912), ('cpu', 860845760), ('cpu', 860845888), ('cpu', 862332608), ('cpu', 865115712), ('cpu', 868248256), ...} and {('cpu', 848742912), ('cpu', 860845760), ('cpu', 860845888), ('cpu', 862332608), ('cpu', 865115712), ('cpu', 868248256), ...} and False)
+E        +  where False = <built-in method isdisjoint of set object at 0x7fdf9ef9f760>({('cpu', 848742912), ('cpu', 860845760), ('cpu', 860845888), ('cpu', 862332608), ('cpu', 865115712), ('cpu', 868248256), ...})
+E        +    where <built-in method isdisjoint of set object at 0x7fdf9ef9f760> = {('cpu', 848742912), ('cpu', 860845760), ('cpu', 860845888), ('cpu', 862332608), ('cpu', 865115712), ('cpu', 868248256), ...}.isdisjoint
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:269: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  townlet.training.checkpoint_utils:checkpoint_utils.py:729 Loading /workspace/hamlet/tests/test_townlet/fixtures/bac_historical/per.pt with allow_unsafe_pickle=True (weights_only=False). This deserialises arbitrary Python objects from the checkpoint and is ONLY safe for trusted, locally-produced files.
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_load_before_first_step_adopts_current_replay_and_clocks[attach-active-current-feedforward-False]
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_load_before_first_step_adopts_current_replay_and_clocks[load-active-current-feedforward-False]
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_load_before_first_step_adopts_current_replay_and_clocks[attach-active-current-feedforward-True]
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_load_before_first_step_adopts_current_replay_and_clocks[load-active-current-feedforward-True]
+======================== 4 failed in 105.76s (0:01:45) =========================

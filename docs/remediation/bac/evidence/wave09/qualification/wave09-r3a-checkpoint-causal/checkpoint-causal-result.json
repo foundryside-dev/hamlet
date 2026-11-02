@@ -1,0 +1,29 @@
+{
+  "name": "checkpoint-causal",
+  "exit_code": 0,
+  "seconds": 42.47486400604248,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/integration/test_checkpointing.py::TestCheckpointRoundTrip::test_checkpoint_roundtrip_training_resumption",
+    "tests/test_townlet/integration/test_checkpointing.py::test_current_checkpoint_closes_pending_lanes_once_and_resumes_fresh_episode[recurrent]",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave09-r3a-checkpoint-causal"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave09-r3a-checkpoint-causal/checkpoint-causal.log",
+  "sha256": "bb5a7ac25f614f62e4c56b6a340560e75eadff0c297e957ebc1c39dd181713be",
+  "candidate_tree": "d0bb822eb387153342fb2aa82186d3df9b6bb30b",
+  "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+  "manifest_sha256": "cc9987c331913544f23f0916faa33233c8b948740590e35194feaa6e4fc56f95",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

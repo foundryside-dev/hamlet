@@ -1,0 +1,31 @@
+{
+  "name": "independent-training",
+  "exit_code": 0,
+  "seconds": 46.406864643096924,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/integration/test_training_loop.py::TestMultiEpisodeTraining::test_train_10_episodes_with_learning_progression",
+    "tests/test_townlet/integration/test_training_loop.py::TestMaskedLossIntegration::test_masked_loss_during_training",
+    "tests/test_townlet/integration/test_training_loop.py::TestMultiEpisodeTraining::test_target_network_updates_at_frequency",
+    "tests/test_townlet/integration/test_training_loop.py::TestMultiEpisodeTraining::test_q_values_improve_over_time",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave09-astra-training-r5"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave09-r5-independent-training/independent-training.log",
+  "sha256": "4e6bae3ac94fd7fbe8ce3c4f4035bac1c17f840bd8e03e6010febc91c82c7a60",
+  "candidate_tree": "f71c52fad680a74da1b90cc7470455fc90f4fa3f",
+  "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+  "manifest_sha256": "781a9338ab724924fcfbb744699bf477877a112b0ed632c332ca58004eeabe79",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

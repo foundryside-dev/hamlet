@@ -1,0 +1,159 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 4/4 workers
+4 workers [6861 items]
+
+........................................................................ [  1%]
+........................................................................ [  2%]
+........................................................................ [  3%]
+........................................................................ [  4%]
+........................................................................ [  5%]
+........................................................................ [  6%]
+........................................................................ [  7%]
+........................................................................ [  8%]
+........................................................................ [  9%]
+........................................................................ [ 10%]
+........................................................................ [ 11%]
+........................................................................ [ 12%]
+........................................................................ [ 13%]
+........................................................................ [ 14%]
+........................................................................ [ 15%]
+........................................................................ [ 16%]
+........................................................................ [ 17%]
+........................................................................ [ 18%]
+........................................................................ [ 19%]
+........................................................................ [ 20%]
+...................................s..................ss................ [ 22%]
+........................................................................ [ 23%]
+........................................................................ [ 24%]
+........................................................................ [ 25%]
+........................................................................ [ 26%]
+........................................................................ [ 27%]
+........................................................................ [ 28%]
+s.................................................ss........s........... [ 29%]
+..............................s......................................... [ 30%]
+........................................................................ [ 31%]
+........................................................................ [ 32%]
+........................................................................ [ 33%]
+........................................................................ [ 34%]
+........................................................................ [ 35%]
+........................................................................ [ 36%]
+........................................................................ [ 37%]
+........................................................................ [ 38%]
+........................................................................ [ 39%]
+........................................................................ [ 40%]
+........................................................................ [ 41%]
+........................................................................ [ 43%]
+........................................................................ [ 44%]
+........................................................................ [ 45%]
+........................................................................ [ 46%]
+........................................................................ [ 47%]
+........................................................................ [ 48%]
+.................................................ss..................... [ 49%]
+........................................................................ [ 50%]
+........................................................................ [ 51%]
+........................................................................ [ 52%]
+........................................................................ [ 53%]
+........................................................................ [ 54%]
+........................................................................ [ 55%]
+........................................................................ [ 56%]
+........................................................................ [ 57%]
+........................................................................ [ 58%]
+.....................................................................s.. [ 59%]
+........................................................................ [ 60%]
+........................................................................ [ 61%]
+........................................................................ [ 62%]
+........................................................................ [ 64%]
+........................................................................ [ 65%]
+........................................................................ [ 66%]
+........................s............................................... [ 67%]
+........................................................................ [ 68%]
+........................................................................ [ 69%]
+........................................................................ [ 70%]
+........................................................................ [ 71%]
+........................................................................ [ 72%]
+........................................................................ [ 73%]
+........................................................................ [ 74%]
+........................................................................ [ 75%]
+........................................................................ [ 76%]
+........................................................................ [ 77%]
+........................................................................ [ 78%]
+........................................................................ [ 79%]
+........................................................................ [ 80%]
+........................................................................ [ 81%]
+.........s.............................................................. [ 82%]
+........................................................................ [ 83%]
+........................................................................ [ 85%]
+........................................................................ [ 86%]
+........................................................................ [ 87%]
+........................................................................ [ 88%]
+.......s................................................................ [ 89%]
+........................................................................ [ 90%]
+........................................................................ [ 91%]
+........................................................................ [ 92%]
+........................................................................ [ 93%]
+........................................................................ [ 94%]
+........................................................................ [ 95%]
+...............................s........................................ [ 96%]
+........................................s............................... [ 97%]
+........................................................................ [ 98%]
+........................................................................ [ 99%]
+.....................                                                    [100%]
+=============================== warnings summary ===============================
+tests/test_townlet/unit/substrate/test_continuous_comprehensive.py::TestContinuousBounceEdgeCases::test_bounce_boundary_multiple_reflections_positive
+tests/test_townlet/unit/substrate/test_continuous_comprehensive.py::TestContinuousBounceEdgeCases::test_bounce_boundary_exceed_half_reflection
+  /workspace/hamlet/src/townlet/substrate/continuous.py:100: UserWarning: interaction_radius (0.5) < movement_delta (1.0). Agent may step over affordances without interaction. This may be intentional for challenge, but verify configuration.
+    warnings.warn(
+
+tests/test_townlet/unit/substrate/test_continuousnd_comprehensive.py::TestContinuousNDActionGeneration::test_get_default_actions_10d_count
+  /workspace/hamlet/src/townlet/substrate/continuousnd.py:84: UserWarning: ContinuousND with 10 dimensions has 22 actions. Large action spaces may be challenging to train. Verify this is intentional for your research.
+    warnings.warn(
+
+tests/test_townlet/unit/substrate/test_continuousnd_comprehensive.py::TestContinuousNDActionGeneration::test_get_default_actions_description_includes_movement_delta
+  /workspace/hamlet/src/townlet/substrate/continuousnd.py:119: UserWarning: interaction_radius (1.0) < movement_delta (2.5). Agent may step over affordances without interaction. This may be intentional for challenge, but verify configuration.
+    warnings.warn(
+
+tests/test_townlet/unit/substrate/test_continuousnd_comprehensive.py::TestContinuousNDBounceEdgeCases::test_bounce_boundary_multiple_reflections_4d
+tests/test_townlet/unit/substrate/test_continuousnd_comprehensive.py::TestContinuousNDBounceEdgeCases::test_bounce_boundary_negative_direction_4d
+tests/test_townlet/unit/substrate/test_continuousnd_edge_cases.py::test_continuousnd_bounce_boundary_single_reflection
+tests/test_townlet/unit/substrate/test_continuousnd_edge_cases.py::test_continuousnd_bounce_boundary_negative
+tests/test_townlet/unit/substrate/test_continuousnd_edge_cases.py::test_continuousnd_sticky_boundary
+tests/test_townlet/unit/substrate/test_continuousnd_edge_cases.py::test_continuousnd_negative_bounds
+tests/test_townlet/unit/substrate/test_continuousnd_edge_cases.py::test_continuousnd_mixed_positive_negative_bounds
+  /workspace/hamlet/src/townlet/substrate/continuousnd.py:119: UserWarning: interaction_radius (0.5) < movement_delta (1.0). Agent may step over affordances without interaction. This may be intentional for challenge, but verify configuration.
+    warnings.warn(
+
+tests/test_townlet/unit/substrate/test_continuousnd_edge_cases.py::test_continuousnd_large_movement_delta
+  /workspace/hamlet/src/townlet/substrate/continuousnd.py:119: UserWarning: interaction_radius (1.0) < movement_delta (100.0). Agent may step over affordances without interaction. This may be intentional for challenge, but verify configuration.
+    warnings.warn(
+
+tests/test_townlet/unit/substrate/test_gridnd.py::test_gridnd_topology_is_hypercube_for_all_dimensions
+  /workspace/hamlet/src/townlet/substrate/gridnd.py:71: UserWarning: GridND with 10 dimensions has 22 actions. Large action spaces may be challenging to train. Verify this is intentional for your research.
+    warnings.warn(
+
+tests/test_townlet/regressions/bac/test_numerics.py::test_zero_gamma_and_constant_policy_work[feedforward]
+tests/test_townlet/regressions/bac/test_numerics.py::test_zero_gamma_and_constant_policy_work[dueling]
+  /workspace/hamlet/.venv/lib/python3.13/site-packages/torch/nn/modules/linear.py:124: UserWarning: Initializing zero-element tensors is a no-op
+    init.kaiming_uniform_(self.weight, a=math.sqrt(5))
+
+tests/test_townlet/regressions/bac/test_per_estimator.py::test_qualified_replacement_readiness_mode_and_stable_mapping
+  /workspace/hamlet/tests/test_townlet/regressions/bac/test_per_estimator.py:509: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at /pytorch/torch/csrc/utils/tensor_numpy.cpp:213.)
+    torch.testing.assert_close(batch.observations, buffer.observations[batch.sampling.indices])
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+========== 6845 passed, 16 skipped, 16 warnings in 2262.22s (0:37:42) ==========

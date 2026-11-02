@@ -1,0 +1,25 @@
+{
+  "name": "collection",
+  "exit_code": 0,
+  "seconds": 5.93157958984375,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/unit/oracle/test_episode_lane_comparator.py",
+    "tests/test_townlet/integration/test_checkpointing.py",
+    "--collect-only",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave09-r3a-collection/collection.log",
+  "sha256": "e100ff418ad7a29c5f9f66e5dde29850d0d1b65c54ff0c7f6b3cb2c63ab00082",
+  "candidate_tree": "d0bb822eb387153342fb2aa82186d3df9b6bb30b",
+  "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+  "manifest_sha256": "cc9987c331913544f23f0916faa33233c8b948740590e35194feaa6e4fc56f95",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

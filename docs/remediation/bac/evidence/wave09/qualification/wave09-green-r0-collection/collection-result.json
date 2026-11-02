@@ -1,0 +1,25 @@
+{
+  "name": "collection",
+  "exit_code": 0,
+  "seconds": 4.521949052810669,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_learner_legality.py",
+    "tests/test_townlet/unit/config/test_training_v2_config_dto.py",
+    "--collect-only",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave09-green-r0-collection/collection.log",
+  "sha256": "f8a5fb199e6d8ce6a0281eea939b54a1c847b4701ea468a000f1ae540b33cadc",
+  "candidate_tree": "f4ae7e65c2f2a1ffc944c19342490b8f48d6c9bf",
+  "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+  "manifest_sha256": "b957a8daf0d83747773aea4e413bb70bcc21b893166abb6d5824a8c1ee8ee0e4",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

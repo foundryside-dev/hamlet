@@ -1,0 +1,28 @@
+{
+  "name": "regressions",
+  "exit_code": 1,
+  "seconds": 332.30685019493103,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_learner_legality.py",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-n",
+    "4",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave09-red-r2"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave09-red-r2/regressions.log",
+  "sha256": "96d39a8ff367f9b6a16b156b4e28a94db9ef2d8293bbadb7a6ef74eabd5c79ea",
+  "candidate_tree": "f806eee411521cba094c753651f2c93b735c1123",
+  "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+  "manifest_sha256": "3778e21332f79468b993e6879ff63f5642df41b37feeee735f9ba1465a9e41f1",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/integration/test_authored_episode_lanes.py::test_authored_pack_compiles",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "def test_authored_pack_compiles() -> None:\n        population = _population()\n        env = population.env\n        assert env.universe.brain.architecture.type == \"feedforward\"\n        assert population.brain_config.architecture.feedforward.hidden_layers == [256, 128]\n        assert env.meters[:, env.meter_name_to_index[\"energy\"]].tolist() == [1.0, 1.0]\n        forwards = []\n        hook = population.q_network.register_forward_hook(lambda _module, _args, output: forwards.append(output.detach().clone()))\n        try:\n            with controlled_action_schedule(population.exploration, env, UNEQUAL_ENDINGS) as selection, observe_environment_steps(env) as ticks:\n                for _ in UNEQUAL_ENDINGS:\n                    population.step_population(env)\n        finally:\n            hook.remove()\n        assert len(forwards) == len(selection.q_values) == 5\n>       assert all(torch.equal(output, q_values) for output, q_values in zip(forwards, selection.q_values, strict=True))\nE       assert False\nE        +  where False = all(<generator object test_authored_pack_compiles.<locals>.<genexpr> at 0x7f6be40e8c80>)\n\ntests/test_townlet/integration/test_authored_episode_lanes.py:38: AssertionError",
+  "candidate_tree": "096cdb7d98a9725181658c44b3ed84a6d0d72e82"
+}

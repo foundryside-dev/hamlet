@@ -1,0 +1,33 @@
+{
+  "name": "narrow",
+  "exit_code": 1,
+  "seconds": 17.520673990249634,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_learner_legality.py::test_authored_target_matrix_and_direction[uniform-global-mask-False-feedforward]",
+    "tests/test_townlet/regressions/bac/test_learner_legality.py::test_authored_target_matrix_and_direction[uniform-state-mask-False-feedforward]",
+    "tests/test_townlet/regressions/bac/test_learner_legality.py::test_declared_warmup_blocks_existing_constructor",
+    "tests/test_townlet/regressions/bac/test_learner_legality.py::test_constructor_inspection_preserves_nullable_limits_and_global_per_role",
+    "tests/test_townlet/regressions/bac/test_learner_legality.py::test_large_finite_td_mean_is_truthful[modest-False-0.0]",
+    "tests/test_townlet/regressions/bac/test_learner_legality.py::test_large_finite_td_mean_is_truthful[large-finite-False-0.0]",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-n",
+    "4",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave09-narrow-r0"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave09-red-r0-narrow/narrow.log",
+  "sha256": "5e85cdd55eb4c17d59881d0831f4a9f4dfb2ccd07a08961643b02e6a46b91df3",
+  "candidate_tree": "d4f144831a56068f845285297b20bcad4a5f2702",
+  "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+  "manifest_sha256": "c3650437281f95f0ecd16611f67350eb2faaca0a5bd8baa2ad30a8dfa7ca5b65",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

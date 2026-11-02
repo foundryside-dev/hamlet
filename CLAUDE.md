@@ -435,9 +435,10 @@ migrated.
 ### Q-Learning Algorithm Variants
 
 `training.yaml: q_learning.use_double_dqn` selects vanilla vs Double DQN (it overrides
-`brain.yaml`'s value and is covered by `brain_hash`). Non-obvious cost on a recurrent
-architecture: one extra single-step boundary forward per update; action selection reuses the
-online unroll (the recurrent branch of `VectorizedPopulation.step_population`). Details:
+`brain.yaml`'s value and is covered by `brain_hash`). Recurrent learning keeps the online
+current-prefix graph connected and branches each exact stored successor under no-grad.
+Double DQN adds an online successor forward per real timestep in each length group
+(`VectorizedPopulation._recurrent_predictions`, `population/vectorized.py:675`). Details:
 `docs/architecture/BAC.md` §2.5 and `docs/config-schemas/training.md`.
 
 ## Configuration System

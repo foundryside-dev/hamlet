@@ -1,0 +1,31 @@
+{
+  "name": "collection",
+  "exit_code": 0,
+  "seconds": 6.33765983581543,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_learner_legality.py",
+    "tests/test_townlet/unit/config/test_training_v2_config_dto.py",
+    "tests/test_townlet/unit/population",
+    "tests/test_townlet/integration/test_authored_episode_lanes.py",
+    "tests/test_townlet/integration/test_recurrent_bootstrap_runtime.py",
+    "tests/test_townlet/integration/test_recurrent_bptt_runtime.py",
+    "tests/test_townlet/regressions/test_episode_lane_population.py",
+    "tests/test_townlet/regressions/test_episode_lane_learning.py",
+    "--collect-only",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave09-r1a-collection/collection.log",
+  "sha256": "01a7430f69eb1a740d1d90a42b2df425965f232412f1d3c7d92007de1e5dd667",
+  "candidate_tree": "096cdb7d98a9725181658c44b3ed84a6d0d72e82",
+  "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+  "manifest_sha256": "80cf3619bc446d7733b907a9700e09c1b3b34866e3c05e62646b0f4f646f98d3",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

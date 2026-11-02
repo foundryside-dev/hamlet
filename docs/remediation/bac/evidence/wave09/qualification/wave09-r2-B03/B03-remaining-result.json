@@ -1,0 +1,32 @@
+{
+  "name": "B03-remaining",
+  "exit_code": 0,
+  "seconds": 176.0868844985962,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/unit/population",
+    "tests/test_townlet/integration/test_authored_episode_lanes.py",
+    "tests/test_townlet/integration/test_recurrent_bootstrap_runtime.py",
+    "tests/test_townlet/regressions/test_episode_lane_population.py",
+    "tests/test_townlet/regressions/test_episode_lane_learning.py",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave09-r2-B03"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave09-r2-B03/B03-remaining.log",
+  "sha256": "5b08a7de5ca3e47ed664b88aa5980bf70dca19c0ff1998a661d270e8ed68e786",
+  "candidate_tree": "929bc8952a2e797871d15376e2ef61a8aec73ca5",
+  "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+  "manifest_sha256": "dc2881963a1b4871bb45d6459d618db56bfde636af11a3a28c8ee8b0f524b5e3",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

@@ -1,0 +1,30 @@
+{
+  "name": "independent-consumers",
+  "exit_code": 0,
+  "seconds": 21.354610204696655,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/unit/oracle/test_episode_lane_comparator.py",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-k",
+    "producer_projects_eligible_selector or producer_observes_real_recorded_admission",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave09-astra-consumers-r3"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave09-r3-independent-consumers/independent-consumers.log",
+  "sha256": "66d16536822ce7d022945009df2159359e2c5b5f49babb4eebf3e0c80efb6006",
+  "candidate_tree": "c6beac9d65c88a7063c27f4d64750cb49b7ae97a",
+  "base_commit": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+  "manifest_sha256": "5eb4007c4b8cf777718b02cd7d0bec5da8dc5fb1ff8db6df882050cdaea15bdb",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

@@ -1,0 +1,1494 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 3/3 workers
+3 workers [150 items]
+
+.F..F................F.FF.F.....FF.F....FF.FF.F.....F..F......FF..FF.... [ 48%]
+....F..F.......F.....F............F...F........................F........ [ 96%]
+..F..F                                                                   [100%]
+=================================== FAILURES ===================================
+_ test_load_before_first_step_adopts_current_replay_and_clocks[load-active-current-recurrent-False] _
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-owned-r0/popen-gw2/test_load_before_first_step_ad0')
+family = 'recurrent', per = False, empty = False, install = 'load'
+
+    @pytest.mark.parametrize("family,per", (("feedforward", False), ("feedforward", True), ("recurrent", False), ("recurrent", True)))
+    @pytest.mark.parametrize("empty", (False, True), ids=("active-current", "owned-empty-current"))
+    @pytest.mark.parametrize("install", ("load", "attach"))
+    def test_load_before_first_step_adopts_current_replay_and_clocks(tmp_path, family, per, empty, install):
+        settings = dict(per=per, minimum=6, beta=0.4, annealing=True, length=1)
+        archive_kind = "sequence-trained" if family == "recurrent" else ("per" if per else "uniform")
+        settings["template"] = ROOT / "tests/test_townlet/fixtures/bac_historical" / f"{archive_kind}-pack"
+        source = _make(tmp_path / "source", family, explicit=True, **settings)
+>       source.replay_buffer.install_historical_archive(_archive("recurrent" if family == "recurrent" else ("per" if per else "uniform")))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'SequentialReplayBuffer' object has no attribute 'install_historical_archive'
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:825: AttributeError
+_ test_load_before_first_step_adopts_current_replay_and_clocks[load-active-current-recurrent-True] _
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-owned-r0/popen-gw2/test_load_before_first_step_ad1')
+family = 'recurrent', per = True, empty = False, install = 'load'
+
+    @pytest.mark.parametrize("family,per", (("feedforward", False), ("feedforward", True), ("recurrent", False), ("recurrent", True)))
+    @pytest.mark.parametrize("empty", (False, True), ids=("active-current", "owned-empty-current"))
+    @pytest.mark.parametrize("install", ("load", "attach"))
+    def test_load_before_first_step_adopts_current_replay_and_clocks(tmp_path, family, per, empty, install):
+        settings = dict(per=per, minimum=6, beta=0.4, annealing=True, length=1)
+        archive_kind = "sequence-trained" if family == "recurrent" else ("per" if per else "uniform")
+        settings["template"] = ROOT / "tests/test_townlet/fixtures/bac_historical" / f"{archive_kind}-pack"
+        source = _make(tmp_path / "source", family, explicit=True, **settings)
+>       source.replay_buffer.install_historical_archive(_archive("recurrent" if family == "recurrent" else ("per" if per else "uniform")))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'SequentialReplayBuffer' object has no attribute 'install_historical_archive'
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:825: AttributeError
+_ test_load_before_first_step_adopts_current_replay_and_clocks[load-owned-empty-current-recurrent-False] _
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-owned-r0/popen-gw2/test_load_before_first_step_ad4')
+family = 'recurrent', per = False, empty = True, install = 'load'
+
+    @pytest.mark.parametrize("family,per", (("feedforward", False), ("feedforward", True), ("recurrent", False), ("recurrent", True)))
+    @pytest.mark.parametrize("empty", (False, True), ids=("active-current", "owned-empty-current"))
+    @pytest.mark.parametrize("install", ("load", "attach"))
+    def test_load_before_first_step_adopts_current_replay_and_clocks(tmp_path, family, per, empty, install):
+        settings = dict(per=per, minimum=6, beta=0.4, annealing=True, length=1)
+        archive_kind = "sequence-trained" if family == "recurrent" else ("per" if per else "uniform")
+        settings["template"] = ROOT / "tests/test_townlet/fixtures/bac_historical" / f"{archive_kind}-pack"
+        source = _make(tmp_path / "source", family, explicit=True, **settings)
+>       source.replay_buffer.install_historical_archive(_archive("recurrent" if family == "recurrent" else ("per" if per else "uniform")))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'SequentialReplayBuffer' object has no attribute 'install_historical_archive'
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:825: AttributeError
+_ test_load_before_first_step_adopts_current_replay_and_clocks[load-owned-empty-current-recurrent-True] _
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-owned-r0/popen-gw2/test_load_before_first_step_ad5')
+family = 'recurrent', per = True, empty = True, install = 'load'
+
+    @pytest.mark.parametrize("family,per", (("feedforward", False), ("feedforward", True), ("recurrent", False), ("recurrent", True)))
+    @pytest.mark.parametrize("empty", (False, True), ids=("active-current", "owned-empty-current"))
+    @pytest.mark.parametrize("install", ("load", "attach"))
+    def test_load_before_first_step_adopts_current_replay_and_clocks(tmp_path, family, per, empty, install):
+        settings = dict(per=per, minimum=6, beta=0.4, annealing=True, length=1)
+        archive_kind = "sequence-trained" if family == "recurrent" else ("per" if per else "uniform")
+        settings["template"] = ROOT / "tests/test_townlet/fixtures/bac_historical" / f"{archive_kind}-pack"
+        source = _make(tmp_path / "source", family, explicit=True, **settings)
+>       source.replay_buffer.install_historical_archive(_archive("recurrent" if family == "recurrent" else ("per" if per else "uniform")))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'SequentialReplayBuffer' object has no attribute 'install_historical_archive'
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:825: AttributeError
+_ test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td[False-max_abs-window_mean-True-successive_without_replacement] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-owned-r0/popen-gw1/test_exact_prefix_bptt_objecti2')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f02ef06ba50>
+mode = 'successive_without_replacement', per = True, objective = 'window_mean'
+reducer = 'max_abs', poison = False
+
+    @pytest.mark.parametrize("mode", LAWS)
+    @pytest.mark.parametrize("per", (False, True))
+    @pytest.mark.parametrize("objective", ("window_mean", "anchor_transition"))
+    @pytest.mark.parametrize("reducer", ("max_abs", "mean_abs"))
+    @pytest.mark.parametrize("poison", (False, True))
+    def test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td(tmp_path, monkeypatch, mode, per, objective, reducer, poison):
+        options = _options(mode, objective=objective, reducer=reducer)
+        if not per:
+            options = ReplayOptions.model_validate(
+                {**options.model_dump(), "uniform_sequence_adapter": "legacy_episode_length_with_replacement"}
+            )
+        pop = _make(tmp_path, "recurrent", per=per, explicit=True, global_illegal=False, double=True, options=options)
+        batch = _numerical_batch(pop, objective, poison)
+        online = PrefixNetwork(pop.action_dim, _id(pop, "WAIT"), _id(pop, "REST"), 1)
+        target = PrefixNetwork(pop.action_dim, _id(pop, "WAIT"), _id(pop, "REST"), 2)
+        pop.q_network, pop.target_network = online, target
+        pop.optimizer = torch.optim.Adam(online.parameters(), lr=0.001)
+        pop.scheduler = None
+        pop.rollout_hidden = online.initial_hidden(pop.num_agents, CPU)
+        online.eval()
+        target.train()
+        calls = _loss_spy(monkeypatch)
+        feedback = []
+        update = pop.replay_buffer.update_priorities
+    
+        def update_observed(ids, errors, *, loss_mask):
+            feedback.append((ids.detach().clone(), errors.detach().clone(), loss_mask.detach().clone()))
+            return update(ids, errors, loss_mask=loss_mask)
+    
+        monkeypatch.setattr(pop.replay_buffer, "sample_batch", lambda request: batch)
+        monkeypatch.setattr(pop.replay_buffer, "update_priorities", update_observed)
+        pop.step_population(pop.env)
+        targets = torch.cat([t.reshape(-1) for _, t in calls])
+        # Independent arithmetic: prefix sums1,3,6/5; own target coefficient2;
+        # Double selects REST at online successor sums8,5,7, WAIT at14.
+        assert set(targets.tolist()) <= {3.0, 4.0, 6.0, 15.0} and {4.0, 15.0} <= set(targets.tolist())
+        if objective == "window_mean":
+            assert sorted(targets.tolist()) == [3.0, 4.0, 6.0, 15.0]
+        per_unit = (0.25 * (2 + 3 + 2) / 3 - 0.25**2 / 2) if objective == "window_mean" else (0.25 * 2 - 0.25**2 / 2)
+        expected = (2 * per_unit + 0.5 * (0.25 * 10 - 0.25**2 / 2)) / 2
+        assert pop.last_loss == pytest.approx(expected)
+        assert pop.last_td_error == pytest.approx(4.25), "all real rows, without IS or anchor weighting"
+        assert pop.training_step_counter == 1 and online.coefficient.item() != 1.0
+        if per:
+            ids, errors, mask = feedback[0]
+            torch.testing.assert_close(ids, batch.unit_ids)
+            torch.testing.assert_close(mask, batch.loss_mask)
+>           torch.testing.assert_close(errors[0, mask[0]].abs(), torch.tensor([2.0, 3.0, 2.0])[mask[0]])
+E           AssertionError: The values for attribute 'dtype' do not match: torch.float64 != torch.float32.
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:624: AssertionError
+_ test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td[False-max_abs-window_mean-True-independent_with_replacement] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-owned-r0/popen-gw1/test_exact_prefix_bptt_objecti3')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f02e2745400>
+mode = 'independent_with_replacement', per = True, objective = 'window_mean'
+reducer = 'max_abs', poison = False
+
+    @pytest.mark.parametrize("mode", LAWS)
+    @pytest.mark.parametrize("per", (False, True))
+    @pytest.mark.parametrize("objective", ("window_mean", "anchor_transition"))
+    @pytest.mark.parametrize("reducer", ("max_abs", "mean_abs"))
+    @pytest.mark.parametrize("poison", (False, True))
+    def test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td(tmp_path, monkeypatch, mode, per, objective, reducer, poison):
+        options = _options(mode, objective=objective, reducer=reducer)
+        if not per:
+            options = ReplayOptions.model_validate(
+                {**options.model_dump(), "uniform_sequence_adapter": "legacy_episode_length_with_replacement"}
+            )
+        pop = _make(tmp_path, "recurrent", per=per, explicit=True, global_illegal=False, double=True, options=options)
+        batch = _numerical_batch(pop, objective, poison)
+        online = PrefixNetwork(pop.action_dim, _id(pop, "WAIT"), _id(pop, "REST"), 1)
+        target = PrefixNetwork(pop.action_dim, _id(pop, "WAIT"), _id(pop, "REST"), 2)
+        pop.q_network, pop.target_network = online, target
+        pop.optimizer = torch.optim.Adam(online.parameters(), lr=0.001)
+        pop.scheduler = None
+        pop.rollout_hidden = online.initial_hidden(pop.num_agents, CPU)
+        online.eval()
+        target.train()
+        calls = _loss_spy(monkeypatch)
+        feedback = []
+        update = pop.replay_buffer.update_priorities
+    
+        def update_observed(ids, errors, *, loss_mask):
+            feedback.append((ids.detach().clone(), errors.detach().clone(), loss_mask.detach().clone()))
+            return update(ids, errors, loss_mask=loss_mask)
+    
+        monkeypatch.setattr(pop.replay_buffer, "sample_batch", lambda request: batch)
+        monkeypatch.setattr(pop.replay_buffer, "update_priorities", update_observed)
+        pop.step_population(pop.env)
+        targets = torch.cat([t.reshape(-1) for _, t in calls])
+        # Independent arithmetic: prefix sums1,3,6/5; own target coefficient2;
+        # Double selects REST at online successor sums8,5,7, WAIT at14.
+        assert set(targets.tolist()) <= {3.0, 4.0, 6.0, 15.0} and {4.0, 15.0} <= set(targets.tolist())
+        if objective == "window_mean":
+            assert sorted(targets.tolist()) == [3.0, 4.0, 6.0, 15.0]
+        per_unit = (0.25 * (2 + 3 + 2) / 3 - 0.25**2 / 2) if objective == "window_mean" else (0.25 * 2 - 0.25**2 / 2)
+        expected = (2 * per_unit + 0.5 * (0.25 * 10 - 0.25**2 / 2)) / 2
+        assert pop.last_loss == pytest.approx(expected)
+        assert pop.last_td_error == pytest.approx(4.25), "all real rows, without IS or anchor weighting"
+        assert pop.training_step_counter == 1 and online.coefficient.item() != 1.0
+        if per:
+            ids, errors, mask = feedback[0]
+            torch.testing.assert_close(ids, batch.unit_ids)
+            torch.testing.assert_close(mask, batch.loss_mask)
+>           torch.testing.assert_close(errors[0, mask[0]].abs(), torch.tensor([2.0, 3.0, 2.0])[mask[0]])
+E           AssertionError: The values for attribute 'dtype' do not match: torch.float64 != torch.float32.
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:624: AssertionError
+_ test_load_before_first_step_adopts_current_replay_and_clocks[attach-active-current-feedforward-False] _
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-owned-r0/popen-gw2/test_load_before_first_step_ad6')
+family = 'feedforward', per = False, empty = False, install = 'attach'
+
+    @pytest.mark.parametrize("family,per", (("feedforward", False), ("feedforward", True), ("recurrent", False), ("recurrent", True)))
+    @pytest.mark.parametrize("empty", (False, True), ids=("active-current", "owned-empty-current"))
+    @pytest.mark.parametrize("install", ("load", "attach"))
+    def test_load_before_first_step_adopts_current_replay_and_clocks(tmp_path, family, per, empty, install):
+        settings = dict(per=per, minimum=6, beta=0.4, annealing=True, length=1)
+        archive_kind = "sequence-trained" if family == "recurrent" else ("per" if per else "uniform")
+        settings["template"] = ROOT / "tests/test_townlet/fixtures/bac_historical" / f"{archive_kind}-pack"
+        source = _make(tmp_path / "source", family, explicit=True, **settings)
+        source.replay_buffer.install_historical_archive(_archive("recurrent" if family == "recurrent" else ("per" if per else "uniform")))
+        _until_update(source, count=2)
+        _finish(source)
+        if empty:
+            source.replay_buffer.clear()
+        saved = _owned(source)
+        assert bool(source.replay_buffer.retained_transitions) != empty
+        targets = [_make(tmp_path / label, family, explicit=explicit, **settings) for label, explicit in (("lazy", False), ("eager", True))]
+        for target in targets:
+            before = _owned(target)
+            target.validate_checkpoint_state(saved)
+            _same(before, _owned(target))
+            if install == "attach" and target is targets[0]:
+                # Explicit externally owned attachment control, separate from natural construction.
+                if family == "recurrent":
+                    buffer = SequentialReplayBuffer(32, CPU)
+                elif per:
+                    buffer = PrioritizedReplayBuffer(32, 1.0, 0.4, True, CPU)
+                else:
+                    buffer = ReplayBuffer(32, CPU)
+                buffer.load_from_serialized(saved["replay_buffer"])
+                target.replay_buffer = buffer
+                target.q_network.load_state_dict(saved["q_network"])
+                target.target_network.load_state_dict(saved["target_network"])
+                target.optimizer.load_state_dict(saved["optimizer"])
+                target.total_steps = saved["total_steps"]
+                target.training_step_counter = saved["training_step_counter"]
+            else:
+                target.load_checkpoint_state(saved)
+            _same(saved, _owned(target))
+        rng = torch.get_rng_state().clone()
+        targets[0].step_population(targets[0].env)
+        torch.set_rng_state(rng)
+        targets[1].step_population(targets[1].env)
+>       _same(_owned(targets[0]), _owned(targets[1]))
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:859: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_learner_legality.py:243: in _same
+    _same(left[key], right[key])
+tests/test_townlet/regressions/bac/test_learner_legality.py:243: in _same
+    _same(left[key], right[key])
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+left = tensor([[ 0.0161, -0.0159, -0.0154,  ...,  0.0664,  0.0307,  0.0135],
+        [-0.0194,  0.0100, -0.0389,  ...,  0.067...0281, -0.0334,  ...,  0.0541,  0.0387,  0.0490],
+        [-0.0102, -0.0037,  0.0221,  ...,  0.0475, -0.0301, -0.0829]])
+right = tensor([[ 0.0161, -0.0159, -0.0154,  ...,  0.0664,  0.0307,  0.0135],
+        [-0.0194,  0.0100, -0.0389,  ...,  0.067...0281, -0.0334,  ...,  0.0541,  0.0387,  0.0490],
+        [-0.0102, -0.0037,  0.0221,  ...,  0.0475, -0.0301, -0.0829]])
+
+    def _same(left, right):
+        if isinstance(left, torch.Tensor):
+>           assert left.dtype == right.dtype and left.shape == right.shape and torch.equal(left, right)
+E           assert (torch.float32 == torch.float32 and torch.Size([16, 118]) == torch.Size([16, 118])
+E            +  where torch.float32 = tensor([[ 0.0161, -0.0159, -0.0154,  ...,  0.0664,  0.0307,  0.0135],\n        [-0.0194,  0.0100, -0.0389,  ...,  0.067...0281, -0.0334,  ...,  0.0541,  0.0387,  0.0490],\n        [-0.0102, -0.0037,  0.0221,  ...,  0.0475, -0.0301, -0.0829]]).dtype
+E            +  and   torch.float32 = tensor([[ 0.0161, -0.0159, -0.0154,  ...,  0.0664,  0.0307,  0.0135],\n        [-0.0194,  0.0100, -0.0389,  ...,  0.067...0281, -0.0334,  ...,  0.0541,  0.0387,  0.0490],\n        [-0.0102, -0.0037,  0.0221,  ...,  0.0475, -0.0301, -0.0829]]).dtype)
+E             
+E             Use -v to get more diff and False
+E            +  and   False = <built-in method equal of type object at 0x7fe58d0e4000>(tensor([[ 0.0161, -0.0159, -0.0154,  ...,  0.0664,  0.0307,  0.0135],\n        [-0.0194,  0.0100, -0.0389,  ...,  0.067...0281, -0.0334,  ...,  0.0541,  0.0387,  0.0490],\n        [-0.0102, -0.0037,  0.0221,  ...,  0.0475, -0.0301, -0.0829]]), tensor([[ 0.0161, -0.0159, -0.0154,  ...,  0.0664,  0.0307,  0.0135],\n        [-0.0194,  0.0100, -0.0389,  ...,  0.067...0281, -0.0334,  ...,  0.0541,  0.0387,  0.0490],\n        [-0.0102, -0.0037,  0.0221,  ...,  0.0475, -0.0301, -0.0829]]))
+E            +    where <built-in method equal of type object at 0x7fe58d0e4000> = torch.equal
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:237: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  townlet.training.checkpoint_utils:checkpoint_utils.py:729 Loading /workspace/hamlet/tests/test_townlet/fixtures/bac_historical/uniform.pt with allow_unsafe_pickle=True (weights_only=False). This deserialises arbitrary Python objects from the checkpoint and is ONLY safe for trusted, locally-produced files.
+_ test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td[False-max_abs-anchor_transition-True-successive_without_replacement] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-owned-r0/popen-gw1/test_exact_prefix_bptt_objecti6')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f02e2633bd0>
+mode = 'successive_without_replacement', per = True
+objective = 'anchor_transition', reducer = 'max_abs', poison = False
+
+    @pytest.mark.parametrize("mode", LAWS)
+    @pytest.mark.parametrize("per", (False, True))
+    @pytest.mark.parametrize("objective", ("window_mean", "anchor_transition"))
+    @pytest.mark.parametrize("reducer", ("max_abs", "mean_abs"))
+    @pytest.mark.parametrize("poison", (False, True))
+    def test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td(tmp_path, monkeypatch, mode, per, objective, reducer, poison):
+        options = _options(mode, objective=objective, reducer=reducer)
+        if not per:
+            options = ReplayOptions.model_validate(
+                {**options.model_dump(), "uniform_sequence_adapter": "legacy_episode_length_with_replacement"}
+            )
+        pop = _make(tmp_path, "recurrent", per=per, explicit=True, global_illegal=False, double=True, options=options)
+        batch = _numerical_batch(pop, objective, poison)
+        online = PrefixNetwork(pop.action_dim, _id(pop, "WAIT"), _id(pop, "REST"), 1)
+        target = PrefixNetwork(pop.action_dim, _id(pop, "WAIT"), _id(pop, "REST"), 2)
+        pop.q_network, pop.target_network = online, target
+        pop.optimizer = torch.optim.Adam(online.parameters(), lr=0.001)
+        pop.scheduler = None
+        pop.rollout_hidden = online.initial_hidden(pop.num_agents, CPU)
+        online.eval()
+        target.train()
+        calls = _loss_spy(monkeypatch)
+        feedback = []
+        update = pop.replay_buffer.update_priorities
+    
+        def update_observed(ids, errors, *, loss_mask):
+            feedback.append((ids.detach().clone(), errors.detach().clone(), loss_mask.detach().clone()))
+            return update(ids, errors, loss_mask=loss_mask)
+    
+        monkeypatch.setattr(pop.replay_buffer, "sample_batch", lambda request: batch)
+        monkeypatch.setattr(pop.replay_buffer, "update_priorities", update_observed)
+        pop.step_population(pop.env)
+        targets = torch.cat([t.reshape(-1) for _, t in calls])
+        # Independent arithmetic: prefix sums1,3,6/5; own target coefficient2;
+        # Double selects REST at online successor sums8,5,7, WAIT at14.
+        assert set(targets.tolist()) <= {3.0, 4.0, 6.0, 15.0} and {4.0, 15.0} <= set(targets.tolist())
+        if objective == "window_mean":
+            assert sorted(targets.tolist()) == [3.0, 4.0, 6.0, 15.0]
+        per_unit = (0.25 * (2 + 3 + 2) / 3 - 0.25**2 / 2) if objective == "window_mean" else (0.25 * 2 - 0.25**2 / 2)
+        expected = (2 * per_unit + 0.5 * (0.25 * 10 - 0.25**2 / 2)) / 2
+        assert pop.last_loss == pytest.approx(expected)
+        assert pop.last_td_error == pytest.approx(4.25), "all real rows, without IS or anchor weighting"
+        assert pop.training_step_counter == 1 and online.coefficient.item() != 1.0
+        if per:
+            ids, errors, mask = feedback[0]
+            torch.testing.assert_close(ids, batch.unit_ids)
+            torch.testing.assert_close(mask, batch.loss_mask)
+>           torch.testing.assert_close(errors[0, mask[0]].abs(), torch.tensor([2.0, 3.0, 2.0])[mask[0]])
+E           AssertionError: The values for attribute 'dtype' do not match: torch.float64 != torch.float32.
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:624: AssertionError
+_ test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td[False-max_abs-anchor_transition-True-independent_with_replacement] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-owned-r0/popen-gw1/test_exact_prefix_bptt_objecti7')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f02e2423ba0>
+mode = 'independent_with_replacement', per = True
+objective = 'anchor_transition', reducer = 'max_abs', poison = False
+
+    @pytest.mark.parametrize("mode", LAWS)
+    @pytest.mark.parametrize("per", (False, True))
+    @pytest.mark.parametrize("objective", ("window_mean", "anchor_transition"))
+    @pytest.mark.parametrize("reducer", ("max_abs", "mean_abs"))
+    @pytest.mark.parametrize("poison", (False, True))
+    def test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td(tmp_path, monkeypatch, mode, per, objective, reducer, poison):
+        options = _options(mode, objective=objective, reducer=reducer)
+        if not per:
+            options = ReplayOptions.model_validate(
+                {**options.model_dump(), "uniform_sequence_adapter": "legacy_episode_length_with_replacement"}
+            )
+        pop = _make(tmp_path, "recurrent", per=per, explicit=True, global_illegal=False, double=True, options=options)
+        batch = _numerical_batch(pop, objective, poison)
+        online = PrefixNetwork(pop.action_dim, _id(pop, "WAIT"), _id(pop, "REST"), 1)
+        target = PrefixNetwork(pop.action_dim, _id(pop, "WAIT"), _id(pop, "REST"), 2)
+        pop.q_network, pop.target_network = online, target
+        pop.optimizer = torch.optim.Adam(online.parameters(), lr=0.001)
+        pop.scheduler = None
+        pop.rollout_hidden = online.initial_hidden(pop.num_agents, CPU)
+        online.eval()
+        target.train()
+        calls = _loss_spy(monkeypatch)
+        feedback = []
+        update = pop.replay_buffer.update_priorities
+    
+        def update_observed(ids, errors, *, loss_mask):
+            feedback.append((ids.detach().clone(), errors.detach().clone(), loss_mask.detach().clone()))
+            return update(ids, errors, loss_mask=loss_mask)
+    
+        monkeypatch.setattr(pop.replay_buffer, "sample_batch", lambda request: batch)
+        monkeypatch.setattr(pop.replay_buffer, "update_priorities", update_observed)
+        pop.step_population(pop.env)
+        targets = torch.cat([t.reshape(-1) for _, t in calls])
+        # Independent arithmetic: prefix sums1,3,6/5; own target coefficient2;
+        # Double selects REST at online successor sums8,5,7, WAIT at14.
+        assert set(targets.tolist()) <= {3.0, 4.0, 6.0, 15.0} and {4.0, 15.0} <= set(targets.tolist())
+        if objective == "window_mean":
+            assert sorted(targets.tolist()) == [3.0, 4.0, 6.0, 15.0]
+        per_unit = (0.25 * (2 + 3 + 2) / 3 - 0.25**2 / 2) if objective == "window_mean" else (0.25 * 2 - 0.25**2 / 2)
+        expected = (2 * per_unit + 0.5 * (0.25 * 10 - 0.25**2 / 2)) / 2
+        assert pop.last_loss == pytest.approx(expected)
+        assert pop.last_td_error == pytest.approx(4.25), "all real rows, without IS or anchor weighting"
+        assert pop.training_step_counter == 1 and online.coefficient.item() != 1.0
+        if per:
+            ids, errors, mask = feedback[0]
+            torch.testing.assert_close(ids, batch.unit_ids)
+            torch.testing.assert_close(mask, batch.loss_mask)
+>           torch.testing.assert_close(errors[0, mask[0]].abs(), torch.tensor([2.0, 3.0, 2.0])[mask[0]])
+E           AssertionError: The values for attribute 'dtype' do not match: torch.float64 != torch.float32.
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:624: AssertionError
+_ test_load_before_first_step_adopts_current_replay_and_clocks[attach-active-current-feedforward-True] _
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-owned-r0/popen-gw2/test_load_before_first_step_ad7')
+family = 'feedforward', per = True, empty = False, install = 'attach'
+
+    @pytest.mark.parametrize("family,per", (("feedforward", False), ("feedforward", True), ("recurrent", False), ("recurrent", True)))
+    @pytest.mark.parametrize("empty", (False, True), ids=("active-current", "owned-empty-current"))
+    @pytest.mark.parametrize("install", ("load", "attach"))
+    def test_load_before_first_step_adopts_current_replay_and_clocks(tmp_path, family, per, empty, install):
+        settings = dict(per=per, minimum=6, beta=0.4, annealing=True, length=1)
+        archive_kind = "sequence-trained" if family == "recurrent" else ("per" if per else "uniform")
+        settings["template"] = ROOT / "tests/test_townlet/fixtures/bac_historical" / f"{archive_kind}-pack"
+        source = _make(tmp_path / "source", family, explicit=True, **settings)
+        source.replay_buffer.install_historical_archive(_archive("recurrent" if family == "recurrent" else ("per" if per else "uniform")))
+        _until_update(source, count=2)
+        _finish(source)
+        if empty:
+            source.replay_buffer.clear()
+        saved = _owned(source)
+        assert bool(source.replay_buffer.retained_transitions) != empty
+        targets = [_make(tmp_path / label, family, explicit=explicit, **settings) for label, explicit in (("lazy", False), ("eager", True))]
+        for target in targets:
+            before = _owned(target)
+            target.validate_checkpoint_state(saved)
+            _same(before, _owned(target))
+            if install == "attach" and target is targets[0]:
+                # Explicit externally owned attachment control, separate from natural construction.
+                if family == "recurrent":
+                    buffer = SequentialReplayBuffer(32, CPU)
+                elif per:
+                    buffer = PrioritizedReplayBuffer(32, 1.0, 0.4, True, CPU)
+                else:
+                    buffer = ReplayBuffer(32, CPU)
+                buffer.load_from_serialized(saved["replay_buffer"])
+                target.replay_buffer = buffer
+                target.q_network.load_state_dict(saved["q_network"])
+                target.target_network.load_state_dict(saved["target_network"])
+                target.optimizer.load_state_dict(saved["optimizer"])
+                target.total_steps = saved["total_steps"]
+                target.training_step_counter = saved["training_step_counter"]
+            else:
+                target.load_checkpoint_state(saved)
+            _same(saved, _owned(target))
+        rng = torch.get_rng_state().clone()
+        targets[0].step_population(targets[0].env)
+        torch.set_rng_state(rng)
+        targets[1].step_population(targets[1].env)
+>       _same(_owned(targets[0]), _owned(targets[1]))
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:859: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_learner_legality.py:243: in _same
+    _same(left[key], right[key])
+tests/test_townlet/regressions/bac/test_learner_legality.py:243: in _same
+    _same(left[key], right[key])
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+left = tensor([[-0.0359,  0.0131, -0.0631,  ..., -0.0018,  0.0036, -0.0739],
+        [ 0.0764, -0.0073,  0.0192,  ...,  0.061...0091,  0.0066,  ..., -0.0235, -0.0650, -0.0408],
+        [-0.0838,  0.0918, -0.0275,  ..., -0.0847, -0.0620, -0.0638]])
+right = tensor([[-0.0359,  0.0131, -0.0631,  ..., -0.0018,  0.0036, -0.0739],
+        [ 0.0764, -0.0073,  0.0192,  ...,  0.061...0091,  0.0066,  ..., -0.0235, -0.0650, -0.0408],
+        [-0.0838,  0.0918, -0.0275,  ..., -0.0847, -0.0620, -0.0638]])
+
+    def _same(left, right):
+        if isinstance(left, torch.Tensor):
+>           assert left.dtype == right.dtype and left.shape == right.shape and torch.equal(left, right)
+E           assert (torch.float32 == torch.float32 and torch.Size([16, 118]) == torch.Size([16, 118])
+E            +  where torch.float32 = tensor([[-0.0359,  0.0131, -0.0631,  ..., -0.0018,  0.0036, -0.0739],\n        [ 0.0764, -0.0073,  0.0192,  ...,  0.061...0091,  0.0066,  ..., -0.0235, -0.0650, -0.0408],\n        [-0.0838,  0.0918, -0.0275,  ..., -0.0847, -0.0620, -0.0638]]).dtype
+E            +  and   torch.float32 = tensor([[-0.0359,  0.0131, -0.0631,  ..., -0.0018,  0.0036, -0.0739],\n        [ 0.0764, -0.0073,  0.0192,  ...,  0.061...0091,  0.0066,  ..., -0.0235, -0.0650, -0.0408],\n        [-0.0838,  0.0918, -0.0275,  ..., -0.0847, -0.0620, -0.0638]]).dtype)
+E             
+E             Use -v to get more diff and False
+E            +  and   False = <built-in method equal of type object at 0x7fe58d0e4000>(tensor([[-0.0359,  0.0131, -0.0631,  ..., -0.0018,  0.0036, -0.0739],\n        [ 0.0764, -0.0073,  0.0192,  ...,  0.061...0091,  0.0066,  ..., -0.0235, -0.0650, -0.0408],\n        [-0.0838,  0.0918, -0.0275,  ..., -0.0847, -0.0620, -0.0638]]), tensor([[-0.0359,  0.0131, -0.0631,  ..., -0.0018,  0.0036, -0.0739],\n        [ 0.0764, -0.0073,  0.0192,  ...,  0.061...0091,  0.0066,  ..., -0.0235, -0.0650, -0.0408],\n        [-0.0838,  0.0918, -0.0275,  ..., -0.0847, -0.0620, -0.0638]]))
+E            +    where <built-in method equal of type object at 0x7fe58d0e4000> = torch.equal
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:237: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  townlet.training.checkpoint_utils:checkpoint_utils.py:729 Loading /workspace/hamlet/tests/test_townlet/fixtures/bac_historical/per.pt with allow_unsafe_pickle=True (weights_only=False). This deserialises arbitrary Python objects from the checkpoint and is ONLY safe for trusted, locally-produced files.
+_ test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td[False-mean_abs-window_mean-True-successive_without_replacement] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-owned-r0/popen-gw1/test_exact_prefix_bptt_objecti10')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f02e21ce150>
+mode = 'successive_without_replacement', per = True, objective = 'window_mean'
+reducer = 'mean_abs', poison = False
+
+    @pytest.mark.parametrize("mode", LAWS)
+    @pytest.mark.parametrize("per", (False, True))
+    @pytest.mark.parametrize("objective", ("window_mean", "anchor_transition"))
+    @pytest.mark.parametrize("reducer", ("max_abs", "mean_abs"))
+    @pytest.mark.parametrize("poison", (False, True))
+    def test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td(tmp_path, monkeypatch, mode, per, objective, reducer, poison):
+        options = _options(mode, objective=objective, reducer=reducer)
+        if not per:
+            options = ReplayOptions.model_validate(
+                {**options.model_dump(), "uniform_sequence_adapter": "legacy_episode_length_with_replacement"}
+            )
+        pop = _make(tmp_path, "recurrent", per=per, explicit=True, global_illegal=False, double=True, options=options)
+        batch = _numerical_batch(pop, objective, poison)
+        online = PrefixNetwork(pop.action_dim, _id(pop, "WAIT"), _id(pop, "REST"), 1)
+        target = PrefixNetwork(pop.action_dim, _id(pop, "WAIT"), _id(pop, "REST"), 2)
+        pop.q_network, pop.target_network = online, target
+        pop.optimizer = torch.optim.Adam(online.parameters(), lr=0.001)
+        pop.scheduler = None
+        pop.rollout_hidden = online.initial_hidden(pop.num_agents, CPU)
+        online.eval()
+        target.train()
+        calls = _loss_spy(monkeypatch)
+        feedback = []
+        update = pop.replay_buffer.update_priorities
+    
+        def update_observed(ids, errors, *, loss_mask):
+            feedback.append((ids.detach().clone(), errors.detach().clone(), loss_mask.detach().clone()))
+            return update(ids, errors, loss_mask=loss_mask)
+    
+        monkeypatch.setattr(pop.replay_buffer, "sample_batch", lambda request: batch)
+        monkeypatch.setattr(pop.replay_buffer, "update_priorities", update_observed)
+        pop.step_population(pop.env)
+        targets = torch.cat([t.reshape(-1) for _, t in calls])
+        # Independent arithmetic: prefix sums1,3,6/5; own target coefficient2;
+        # Double selects REST at online successor sums8,5,7, WAIT at14.
+        assert set(targets.tolist()) <= {3.0, 4.0, 6.0, 15.0} and {4.0, 15.0} <= set(targets.tolist())
+        if objective == "window_mean":
+            assert sorted(targets.tolist()) == [3.0, 4.0, 6.0, 15.0]
+        per_unit = (0.25 * (2 + 3 + 2) / 3 - 0.25**2 / 2) if objective == "window_mean" else (0.25 * 2 - 0.25**2 / 2)
+        expected = (2 * per_unit + 0.5 * (0.25 * 10 - 0.25**2 / 2)) / 2
+        assert pop.last_loss == pytest.approx(expected)
+        assert pop.last_td_error == pytest.approx(4.25), "all real rows, without IS or anchor weighting"
+        assert pop.training_step_counter == 1 and online.coefficient.item() != 1.0
+        if per:
+            ids, errors, mask = feedback[0]
+            torch.testing.assert_close(ids, batch.unit_ids)
+            torch.testing.assert_close(mask, batch.loss_mask)
+>           torch.testing.assert_close(errors[0, mask[0]].abs(), torch.tensor([2.0, 3.0, 2.0])[mask[0]])
+E           AssertionError: The values for attribute 'dtype' do not match: torch.float64 != torch.float32.
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:624: AssertionError
+_ test_load_before_first_step_adopts_current_replay_and_clocks[attach-active-current-recurrent-False] _
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-owned-r0/popen-gw2/test_load_before_first_step_ad8')
+family = 'recurrent', per = False, empty = False, install = 'attach'
+
+    @pytest.mark.parametrize("family,per", (("feedforward", False), ("feedforward", True), ("recurrent", False), ("recurrent", True)))
+    @pytest.mark.parametrize("empty", (False, True), ids=("active-current", "owned-empty-current"))
+    @pytest.mark.parametrize("install", ("load", "attach"))
+    def test_load_before_first_step_adopts_current_replay_and_clocks(tmp_path, family, per, empty, install):
+        settings = dict(per=per, minimum=6, beta=0.4, annealing=True, length=1)
+        archive_kind = "sequence-trained" if family == "recurrent" else ("per" if per else "uniform")
+        settings["template"] = ROOT / "tests/test_townlet/fixtures/bac_historical" / f"{archive_kind}-pack"
+        source = _make(tmp_path / "source", family, explicit=True, **settings)
+>       source.replay_buffer.install_historical_archive(_archive("recurrent" if family == "recurrent" else ("per" if per else "uniform")))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'SequentialReplayBuffer' object has no attribute 'install_historical_archive'
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:825: AttributeError
+_ test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td[False-mean_abs-window_mean-True-independent_with_replacement] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-owned-r0/popen-gw1/test_exact_prefix_bptt_objecti11')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f02e21ceaf0>
+mode = 'independent_with_replacement', per = True, objective = 'window_mean'
+reducer = 'mean_abs', poison = False
+
+    @pytest.mark.parametrize("mode", LAWS)
+    @pytest.mark.parametrize("per", (False, True))
+    @pytest.mark.parametrize("objective", ("window_mean", "anchor_transition"))
+    @pytest.mark.parametrize("reducer", ("max_abs", "mean_abs"))
+    @pytest.mark.parametrize("poison", (False, True))
+    def test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td(tmp_path, monkeypatch, mode, per, objective, reducer, poison):
+        options = _options(mode, objective=objective, reducer=reducer)
+        if not per:
+            options = ReplayOptions.model_validate(
+                {**options.model_dump(), "uniform_sequence_adapter": "legacy_episode_length_with_replacement"}
+            )
+        pop = _make(tmp_path, "recurrent", per=per, explicit=True, global_illegal=False, double=True, options=options)
+        batch = _numerical_batch(pop, objective, poison)
+        online = PrefixNetwork(pop.action_dim, _id(pop, "WAIT"), _id(pop, "REST"), 1)
+        target = PrefixNetwork(pop.action_dim, _id(pop, "WAIT"), _id(pop, "REST"), 2)
+        pop.q_network, pop.target_network = online, target
+        pop.optimizer = torch.optim.Adam(online.parameters(), lr=0.001)
+        pop.scheduler = None
+        pop.rollout_hidden = online.initial_hidden(pop.num_agents, CPU)
+        online.eval()
+        target.train()
+        calls = _loss_spy(monkeypatch)
+        feedback = []
+        update = pop.replay_buffer.update_priorities
+    
+        def update_observed(ids, errors, *, loss_mask):
+            feedback.append((ids.detach().clone(), errors.detach().clone(), loss_mask.detach().clone()))
+            return update(ids, errors, loss_mask=loss_mask)
+    
+        monkeypatch.setattr(pop.replay_buffer, "sample_batch", lambda request: batch)
+        monkeypatch.setattr(pop.replay_buffer, "update_priorities", update_observed)
+        pop.step_population(pop.env)
+        targets = torch.cat([t.reshape(-1) for _, t in calls])
+        # Independent arithmetic: prefix sums1,3,6/5; own target coefficient2;
+        # Double selects REST at online successor sums8,5,7, WAIT at14.
+        assert set(targets.tolist()) <= {3.0, 4.0, 6.0, 15.0} and {4.0, 15.0} <= set(targets.tolist())
+        if objective == "window_mean":
+            assert sorted(targets.tolist()) == [3.0, 4.0, 6.0, 15.0]
+        per_unit = (0.25 * (2 + 3 + 2) / 3 - 0.25**2 / 2) if objective == "window_mean" else (0.25 * 2 - 0.25**2 / 2)
+        expected = (2 * per_unit + 0.5 * (0.25 * 10 - 0.25**2 / 2)) / 2
+        assert pop.last_loss == pytest.approx(expected)
+        assert pop.last_td_error == pytest.approx(4.25), "all real rows, without IS or anchor weighting"
+        assert pop.training_step_counter == 1 and online.coefficient.item() != 1.0
+        if per:
+            ids, errors, mask = feedback[0]
+            torch.testing.assert_close(ids, batch.unit_ids)
+            torch.testing.assert_close(mask, batch.loss_mask)
+>           torch.testing.assert_close(errors[0, mask[0]].abs(), torch.tensor([2.0, 3.0, 2.0])[mask[0]])
+E           AssertionError: The values for attribute 'dtype' do not match: torch.float64 != torch.float32.
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:624: AssertionError
+_ test_load_before_first_step_adopts_current_replay_and_clocks[attach-active-current-recurrent-True] _
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-owned-r0/popen-gw2/test_load_before_first_step_ad9')
+family = 'recurrent', per = True, empty = False, install = 'attach'
+
+    @pytest.mark.parametrize("family,per", (("feedforward", False), ("feedforward", True), ("recurrent", False), ("recurrent", True)))
+    @pytest.mark.parametrize("empty", (False, True), ids=("active-current", "owned-empty-current"))
+    @pytest.mark.parametrize("install", ("load", "attach"))
+    def test_load_before_first_step_adopts_current_replay_and_clocks(tmp_path, family, per, empty, install):
+        settings = dict(per=per, minimum=6, beta=0.4, annealing=True, length=1)
+        archive_kind = "sequence-trained" if family == "recurrent" else ("per" if per else "uniform")
+        settings["template"] = ROOT / "tests/test_townlet/fixtures/bac_historical" / f"{archive_kind}-pack"
+        source = _make(tmp_path / "source", family, explicit=True, **settings)
+>       source.replay_buffer.install_historical_archive(_archive("recurrent" if family == "recurrent" else ("per" if per else "uniform")))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'SequentialReplayBuffer' object has no attribute 'install_historical_archive'
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:825: AttributeError
+_ test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td[False-mean_abs-anchor_transition-True-successive_without_replacement] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-owned-r0/popen-gw1/test_exact_prefix_bptt_objecti14')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f02e295a2a0>
+mode = 'successive_without_replacement', per = True
+objective = 'anchor_transition', reducer = 'mean_abs', poison = False
+
+    @pytest.mark.parametrize("mode", LAWS)
+    @pytest.mark.parametrize("per", (False, True))
+    @pytest.mark.parametrize("objective", ("window_mean", "anchor_transition"))
+    @pytest.mark.parametrize("reducer", ("max_abs", "mean_abs"))
+    @pytest.mark.parametrize("poison", (False, True))
+    def test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td(tmp_path, monkeypatch, mode, per, objective, reducer, poison):
+        options = _options(mode, objective=objective, reducer=reducer)
+        if not per:
+            options = ReplayOptions.model_validate(
+                {**options.model_dump(), "uniform_sequence_adapter": "legacy_episode_length_with_replacement"}
+            )
+        pop = _make(tmp_path, "recurrent", per=per, explicit=True, global_illegal=False, double=True, options=options)
+        batch = _numerical_batch(pop, objective, poison)
+        online = PrefixNetwork(pop.action_dim, _id(pop, "WAIT"), _id(pop, "REST"), 1)
+        target = PrefixNetwork(pop.action_dim, _id(pop, "WAIT"), _id(pop, "REST"), 2)
+        pop.q_network, pop.target_network = online, target
+        pop.optimizer = torch.optim.Adam(online.parameters(), lr=0.001)
+        pop.scheduler = None
+        pop.rollout_hidden = online.initial_hidden(pop.num_agents, CPU)
+        online.eval()
+        target.train()
+        calls = _loss_spy(monkeypatch)
+        feedback = []
+        update = pop.replay_buffer.update_priorities
+    
+        def update_observed(ids, errors, *, loss_mask):
+            feedback.append((ids.detach().clone(), errors.detach().clone(), loss_mask.detach().clone()))
+            return update(ids, errors, loss_mask=loss_mask)
+    
+        monkeypatch.setattr(pop.replay_buffer, "sample_batch", lambda request: batch)
+        monkeypatch.setattr(pop.replay_buffer, "update_priorities", update_observed)
+        pop.step_population(pop.env)
+        targets = torch.cat([t.reshape(-1) for _, t in calls])
+        # Independent arithmetic: prefix sums1,3,6/5; own target coefficient2;
+        # Double selects REST at online successor sums8,5,7, WAIT at14.
+        assert set(targets.tolist()) <= {3.0, 4.0, 6.0, 15.0} and {4.0, 15.0} <= set(targets.tolist())
+        if objective == "window_mean":
+            assert sorted(targets.tolist()) == [3.0, 4.0, 6.0, 15.0]
+        per_unit = (0.25 * (2 + 3 + 2) / 3 - 0.25**2 / 2) if objective == "window_mean" else (0.25 * 2 - 0.25**2 / 2)
+        expected = (2 * per_unit + 0.5 * (0.25 * 10 - 0.25**2 / 2)) / 2
+        assert pop.last_loss == pytest.approx(expected)
+        assert pop.last_td_error == pytest.approx(4.25), "all real rows, without IS or anchor weighting"
+        assert pop.training_step_counter == 1 and online.coefficient.item() != 1.0
+        if per:
+            ids, errors, mask = feedback[0]
+            torch.testing.assert_close(ids, batch.unit_ids)
+            torch.testing.assert_close(mask, batch.loss_mask)
+>           torch.testing.assert_close(errors[0, mask[0]].abs(), torch.tensor([2.0, 3.0, 2.0])[mask[0]])
+E           AssertionError: The values for attribute 'dtype' do not match: torch.float64 != torch.float32.
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:624: AssertionError
+_ test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td[False-mean_abs-anchor_transition-True-independent_with_replacement] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-owned-r0/popen-gw1/test_exact_prefix_bptt_objecti15')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f02e2ae0650>
+mode = 'independent_with_replacement', per = True
+objective = 'anchor_transition', reducer = 'mean_abs', poison = False
+
+    @pytest.mark.parametrize("mode", LAWS)
+    @pytest.mark.parametrize("per", (False, True))
+    @pytest.mark.parametrize("objective", ("window_mean", "anchor_transition"))
+    @pytest.mark.parametrize("reducer", ("max_abs", "mean_abs"))
+    @pytest.mark.parametrize("poison", (False, True))
+    def test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td(tmp_path, monkeypatch, mode, per, objective, reducer, poison):
+        options = _options(mode, objective=objective, reducer=reducer)
+        if not per:
+            options = ReplayOptions.model_validate(
+                {**options.model_dump(), "uniform_sequence_adapter": "legacy_episode_length_with_replacement"}
+            )
+        pop = _make(tmp_path, "recurrent", per=per, explicit=True, global_illegal=False, double=True, options=options)
+        batch = _numerical_batch(pop, objective, poison)
+        online = PrefixNetwork(pop.action_dim, _id(pop, "WAIT"), _id(pop, "REST"), 1)
+        target = PrefixNetwork(pop.action_dim, _id(pop, "WAIT"), _id(pop, "REST"), 2)
+        pop.q_network, pop.target_network = online, target
+        pop.optimizer = torch.optim.Adam(online.parameters(), lr=0.001)
+        pop.scheduler = None
+        pop.rollout_hidden = online.initial_hidden(pop.num_agents, CPU)
+        online.eval()
+        target.train()
+        calls = _loss_spy(monkeypatch)
+        feedback = []
+        update = pop.replay_buffer.update_priorities
+    
+        def update_observed(ids, errors, *, loss_mask):
+            feedback.append((ids.detach().clone(), errors.detach().clone(), loss_mask.detach().clone()))
+            return update(ids, errors, loss_mask=loss_mask)
+    
+        monkeypatch.setattr(pop.replay_buffer, "sample_batch", lambda request: batch)
+        monkeypatch.setattr(pop.replay_buffer, "update_priorities", update_observed)
+        pop.step_population(pop.env)
+        targets = torch.cat([t.reshape(-1) for _, t in calls])
+        # Independent arithmetic: prefix sums1,3,6/5; own target coefficient2;
+        # Double selects REST at online successor sums8,5,7, WAIT at14.
+        assert set(targets.tolist()) <= {3.0, 4.0, 6.0, 15.0} and {4.0, 15.0} <= set(targets.tolist())
+        if objective == "window_mean":
+            assert sorted(targets.tolist()) == [3.0, 4.0, 6.0, 15.0]
+        per_unit = (0.25 * (2 + 3 + 2) / 3 - 0.25**2 / 2) if objective == "window_mean" else (0.25 * 2 - 0.25**2 / 2)
+        expected = (2 * per_unit + 0.5 * (0.25 * 10 - 0.25**2 / 2)) / 2
+        assert pop.last_loss == pytest.approx(expected)
+        assert pop.last_td_error == pytest.approx(4.25), "all real rows, without IS or anchor weighting"
+        assert pop.training_step_counter == 1 and online.coefficient.item() != 1.0
+        if per:
+            ids, errors, mask = feedback[0]
+            torch.testing.assert_close(ids, batch.unit_ids)
+            torch.testing.assert_close(mask, batch.loss_mask)
+>           torch.testing.assert_close(errors[0, mask[0]].abs(), torch.tensor([2.0, 3.0, 2.0])[mask[0]])
+E           AssertionError: The values for attribute 'dtype' do not match: torch.float64 != torch.float32.
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:624: AssertionError
+_ test_load_before_first_step_adopts_current_replay_and_clocks[attach-owned-empty-current-recurrent-False] _
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-owned-r0/popen-gw2/test_load_before_first_step_ad12')
+family = 'recurrent', per = False, empty = True, install = 'attach'
+
+    @pytest.mark.parametrize("family,per", (("feedforward", False), ("feedforward", True), ("recurrent", False), ("recurrent", True)))
+    @pytest.mark.parametrize("empty", (False, True), ids=("active-current", "owned-empty-current"))
+    @pytest.mark.parametrize("install", ("load", "attach"))
+    def test_load_before_first_step_adopts_current_replay_and_clocks(tmp_path, family, per, empty, install):
+        settings = dict(per=per, minimum=6, beta=0.4, annealing=True, length=1)
+        archive_kind = "sequence-trained" if family == "recurrent" else ("per" if per else "uniform")
+        settings["template"] = ROOT / "tests/test_townlet/fixtures/bac_historical" / f"{archive_kind}-pack"
+        source = _make(tmp_path / "source", family, explicit=True, **settings)
+>       source.replay_buffer.install_historical_archive(_archive("recurrent" if family == "recurrent" else ("per" if per else "uniform")))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'SequentialReplayBuffer' object has no attribute 'install_historical_archive'
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:825: AttributeError
+_ test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td[True-max_abs-window_mean-True-successive_without_replacement] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-owned-r0/popen-gw1/test_exact_prefix_bptt_objecti18')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f02e27383d0>
+mode = 'successive_without_replacement', per = True, objective = 'window_mean'
+reducer = 'max_abs', poison = True
+
+    @pytest.mark.parametrize("mode", LAWS)
+    @pytest.mark.parametrize("per", (False, True))
+    @pytest.mark.parametrize("objective", ("window_mean", "anchor_transition"))
+    @pytest.mark.parametrize("reducer", ("max_abs", "mean_abs"))
+    @pytest.mark.parametrize("poison", (False, True))
+    def test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td(tmp_path, monkeypatch, mode, per, objective, reducer, poison):
+        options = _options(mode, objective=objective, reducer=reducer)
+        if not per:
+            options = ReplayOptions.model_validate(
+                {**options.model_dump(), "uniform_sequence_adapter": "legacy_episode_length_with_replacement"}
+            )
+        pop = _make(tmp_path, "recurrent", per=per, explicit=True, global_illegal=False, double=True, options=options)
+        batch = _numerical_batch(pop, objective, poison)
+        online = PrefixNetwork(pop.action_dim, _id(pop, "WAIT"), _id(pop, "REST"), 1)
+        target = PrefixNetwork(pop.action_dim, _id(pop, "WAIT"), _id(pop, "REST"), 2)
+        pop.q_network, pop.target_network = online, target
+        pop.optimizer = torch.optim.Adam(online.parameters(), lr=0.001)
+        pop.scheduler = None
+        pop.rollout_hidden = online.initial_hidden(pop.num_agents, CPU)
+        online.eval()
+        target.train()
+        calls = _loss_spy(monkeypatch)
+        feedback = []
+        update = pop.replay_buffer.update_priorities
+    
+        def update_observed(ids, errors, *, loss_mask):
+            feedback.append((ids.detach().clone(), errors.detach().clone(), loss_mask.detach().clone()))
+            return update(ids, errors, loss_mask=loss_mask)
+    
+        monkeypatch.setattr(pop.replay_buffer, "sample_batch", lambda request: batch)
+        monkeypatch.setattr(pop.replay_buffer, "update_priorities", update_observed)
+        pop.step_population(pop.env)
+        targets = torch.cat([t.reshape(-1) for _, t in calls])
+        # Independent arithmetic: prefix sums1,3,6/5; own target coefficient2;
+        # Double selects REST at online successor sums8,5,7, WAIT at14.
+        assert set(targets.tolist()) <= {3.0, 4.0, 6.0, 15.0} and {4.0, 15.0} <= set(targets.tolist())
+        if objective == "window_mean":
+            assert sorted(targets.tolist()) == [3.0, 4.0, 6.0, 15.0]
+        per_unit = (0.25 * (2 + 3 + 2) / 3 - 0.25**2 / 2) if objective == "window_mean" else (0.25 * 2 - 0.25**2 / 2)
+        expected = (2 * per_unit + 0.5 * (0.25 * 10 - 0.25**2 / 2)) / 2
+        assert pop.last_loss == pytest.approx(expected)
+        assert pop.last_td_error == pytest.approx(4.25), "all real rows, without IS or anchor weighting"
+        assert pop.training_step_counter == 1 and online.coefficient.item() != 1.0
+        if per:
+            ids, errors, mask = feedback[0]
+            torch.testing.assert_close(ids, batch.unit_ids)
+            torch.testing.assert_close(mask, batch.loss_mask)
+>           torch.testing.assert_close(errors[0, mask[0]].abs(), torch.tensor([2.0, 3.0, 2.0])[mask[0]])
+E           AssertionError: The values for attribute 'dtype' do not match: torch.float64 != torch.float32.
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:624: AssertionError
+_ test_load_before_first_step_adopts_current_replay_and_clocks[attach-owned-empty-current-recurrent-True] _
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-owned-r0/popen-gw2/test_load_before_first_step_ad13')
+family = 'recurrent', per = True, empty = True, install = 'attach'
+
+    @pytest.mark.parametrize("family,per", (("feedforward", False), ("feedforward", True), ("recurrent", False), ("recurrent", True)))
+    @pytest.mark.parametrize("empty", (False, True), ids=("active-current", "owned-empty-current"))
+    @pytest.mark.parametrize("install", ("load", "attach"))
+    def test_load_before_first_step_adopts_current_replay_and_clocks(tmp_path, family, per, empty, install):
+        settings = dict(per=per, minimum=6, beta=0.4, annealing=True, length=1)
+        archive_kind = "sequence-trained" if family == "recurrent" else ("per" if per else "uniform")
+        settings["template"] = ROOT / "tests/test_townlet/fixtures/bac_historical" / f"{archive_kind}-pack"
+        source = _make(tmp_path / "source", family, explicit=True, **settings)
+>       source.replay_buffer.install_historical_archive(_archive("recurrent" if family == "recurrent" else ("per" if per else "uniform")))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'SequentialReplayBuffer' object has no attribute 'install_historical_archive'
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:825: AttributeError
+_ test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td[True-max_abs-window_mean-True-independent_with_replacement] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-owned-r0/popen-gw1/test_exact_prefix_bptt_objecti19')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f02e2b6a6d0>
+mode = 'independent_with_replacement', per = True, objective = 'window_mean'
+reducer = 'max_abs', poison = True
+
+    @pytest.mark.parametrize("mode", LAWS)
+    @pytest.mark.parametrize("per", (False, True))
+    @pytest.mark.parametrize("objective", ("window_mean", "anchor_transition"))
+    @pytest.mark.parametrize("reducer", ("max_abs", "mean_abs"))
+    @pytest.mark.parametrize("poison", (False, True))
+    def test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td(tmp_path, monkeypatch, mode, per, objective, reducer, poison):
+        options = _options(mode, objective=objective, reducer=reducer)
+        if not per:
+            options = ReplayOptions.model_validate(
+                {**options.model_dump(), "uniform_sequence_adapter": "legacy_episode_length_with_replacement"}
+            )
+        pop = _make(tmp_path, "recurrent", per=per, explicit=True, global_illegal=False, double=True, options=options)
+        batch = _numerical_batch(pop, objective, poison)
+        online = PrefixNetwork(pop.action_dim, _id(pop, "WAIT"), _id(pop, "REST"), 1)
+        target = PrefixNetwork(pop.action_dim, _id(pop, "WAIT"), _id(pop, "REST"), 2)
+        pop.q_network, pop.target_network = online, target
+        pop.optimizer = torch.optim.Adam(online.parameters(), lr=0.001)
+        pop.scheduler = None
+        pop.rollout_hidden = online.initial_hidden(pop.num_agents, CPU)
+        online.eval()
+        target.train()
+        calls = _loss_spy(monkeypatch)
+        feedback = []
+        update = pop.replay_buffer.update_priorities
+    
+        def update_observed(ids, errors, *, loss_mask):
+            feedback.append((ids.detach().clone(), errors.detach().clone(), loss_mask.detach().clone()))
+            return update(ids, errors, loss_mask=loss_mask)
+    
+        monkeypatch.setattr(pop.replay_buffer, "sample_batch", lambda request: batch)
+        monkeypatch.setattr(pop.replay_buffer, "update_priorities", update_observed)
+        pop.step_population(pop.env)
+        targets = torch.cat([t.reshape(-1) for _, t in calls])
+        # Independent arithmetic: prefix sums1,3,6/5; own target coefficient2;
+        # Double selects REST at online successor sums8,5,7, WAIT at14.
+        assert set(targets.tolist()) <= {3.0, 4.0, 6.0, 15.0} and {4.0, 15.0} <= set(targets.tolist())
+        if objective == "window_mean":
+            assert sorted(targets.tolist()) == [3.0, 4.0, 6.0, 15.0]
+        per_unit = (0.25 * (2 + 3 + 2) / 3 - 0.25**2 / 2) if objective == "window_mean" else (0.25 * 2 - 0.25**2 / 2)
+        expected = (2 * per_unit + 0.5 * (0.25 * 10 - 0.25**2 / 2)) / 2
+        assert pop.last_loss == pytest.approx(expected)
+        assert pop.last_td_error == pytest.approx(4.25), "all real rows, without IS or anchor weighting"
+        assert pop.training_step_counter == 1 and online.coefficient.item() != 1.0
+        if per:
+            ids, errors, mask = feedback[0]
+            torch.testing.assert_close(ids, batch.unit_ids)
+            torch.testing.assert_close(mask, batch.loss_mask)
+>           torch.testing.assert_close(errors[0, mask[0]].abs(), torch.tensor([2.0, 3.0, 2.0])[mask[0]])
+E           AssertionError: The values for attribute 'dtype' do not match: torch.float64 != torch.float32.
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:624: AssertionError
+_ test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td[True-max_abs-anchor_transition-True-successive_without_replacement] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-owned-r0/popen-gw1/test_exact_prefix_bptt_objecti22')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f02e20e1160>
+mode = 'successive_without_replacement', per = True
+objective = 'anchor_transition', reducer = 'max_abs', poison = True
+
+    @pytest.mark.parametrize("mode", LAWS)
+    @pytest.mark.parametrize("per", (False, True))
+    @pytest.mark.parametrize("objective", ("window_mean", "anchor_transition"))
+    @pytest.mark.parametrize("reducer", ("max_abs", "mean_abs"))
+    @pytest.mark.parametrize("poison", (False, True))
+    def test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td(tmp_path, monkeypatch, mode, per, objective, reducer, poison):
+        options = _options(mode, objective=objective, reducer=reducer)
+        if not per:
+            options = ReplayOptions.model_validate(
+                {**options.model_dump(), "uniform_sequence_adapter": "legacy_episode_length_with_replacement"}
+            )
+        pop = _make(tmp_path, "recurrent", per=per, explicit=True, global_illegal=False, double=True, options=options)
+        batch = _numerical_batch(pop, objective, poison)
+        online = PrefixNetwork(pop.action_dim, _id(pop, "WAIT"), _id(pop, "REST"), 1)
+        target = PrefixNetwork(pop.action_dim, _id(pop, "WAIT"), _id(pop, "REST"), 2)
+        pop.q_network, pop.target_network = online, target
+        pop.optimizer = torch.optim.Adam(online.parameters(), lr=0.001)
+        pop.scheduler = None
+        pop.rollout_hidden = online.initial_hidden(pop.num_agents, CPU)
+        online.eval()
+        target.train()
+        calls = _loss_spy(monkeypatch)
+        feedback = []
+        update = pop.replay_buffer.update_priorities
+    
+        def update_observed(ids, errors, *, loss_mask):
+            feedback.append((ids.detach().clone(), errors.detach().clone(), loss_mask.detach().clone()))
+            return update(ids, errors, loss_mask=loss_mask)
+    
+        monkeypatch.setattr(pop.replay_buffer, "sample_batch", lambda request: batch)
+        monkeypatch.setattr(pop.replay_buffer, "update_priorities", update_observed)
+        pop.step_population(pop.env)
+        targets = torch.cat([t.reshape(-1) for _, t in calls])
+        # Independent arithmetic: prefix sums1,3,6/5; own target coefficient2;
+        # Double selects REST at online successor sums8,5,7, WAIT at14.
+        assert set(targets.tolist()) <= {3.0, 4.0, 6.0, 15.0} and {4.0, 15.0} <= set(targets.tolist())
+        if objective == "window_mean":
+            assert sorted(targets.tolist()) == [3.0, 4.0, 6.0, 15.0]
+        per_unit = (0.25 * (2 + 3 + 2) / 3 - 0.25**2 / 2) if objective == "window_mean" else (0.25 * 2 - 0.25**2 / 2)
+        expected = (2 * per_unit + 0.5 * (0.25 * 10 - 0.25**2 / 2)) / 2
+        assert pop.last_loss == pytest.approx(expected)
+        assert pop.last_td_error == pytest.approx(4.25), "all real rows, without IS or anchor weighting"
+        assert pop.training_step_counter == 1 and online.coefficient.item() != 1.0
+        if per:
+            ids, errors, mask = feedback[0]
+            torch.testing.assert_close(ids, batch.unit_ids)
+            torch.testing.assert_close(mask, batch.loss_mask)
+>           torch.testing.assert_close(errors[0, mask[0]].abs(), torch.tensor([2.0, 3.0, 2.0])[mask[0]])
+E           AssertionError: The values for attribute 'dtype' do not match: torch.float64 != torch.float32.
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:624: AssertionError
+_ test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td[True-max_abs-anchor_transition-True-independent_with_replacement] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-owned-r0/popen-gw1/test_exact_prefix_bptt_objecti23')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f02ef7e73f0>
+mode = 'independent_with_replacement', per = True
+objective = 'anchor_transition', reducer = 'max_abs', poison = True
+
+    @pytest.mark.parametrize("mode", LAWS)
+    @pytest.mark.parametrize("per", (False, True))
+    @pytest.mark.parametrize("objective", ("window_mean", "anchor_transition"))
+    @pytest.mark.parametrize("reducer", ("max_abs", "mean_abs"))
+    @pytest.mark.parametrize("poison", (False, True))
+    def test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td(tmp_path, monkeypatch, mode, per, objective, reducer, poison):
+        options = _options(mode, objective=objective, reducer=reducer)
+        if not per:
+            options = ReplayOptions.model_validate(
+                {**options.model_dump(), "uniform_sequence_adapter": "legacy_episode_length_with_replacement"}
+            )
+        pop = _make(tmp_path, "recurrent", per=per, explicit=True, global_illegal=False, double=True, options=options)
+        batch = _numerical_batch(pop, objective, poison)
+        online = PrefixNetwork(pop.action_dim, _id(pop, "WAIT"), _id(pop, "REST"), 1)
+        target = PrefixNetwork(pop.action_dim, _id(pop, "WAIT"), _id(pop, "REST"), 2)
+        pop.q_network, pop.target_network = online, target
+        pop.optimizer = torch.optim.Adam(online.parameters(), lr=0.001)
+        pop.scheduler = None
+        pop.rollout_hidden = online.initial_hidden(pop.num_agents, CPU)
+        online.eval()
+        target.train()
+        calls = _loss_spy(monkeypatch)
+        feedback = []
+        update = pop.replay_buffer.update_priorities
+    
+        def update_observed(ids, errors, *, loss_mask):
+            feedback.append((ids.detach().clone(), errors.detach().clone(), loss_mask.detach().clone()))
+            return update(ids, errors, loss_mask=loss_mask)
+    
+        monkeypatch.setattr(pop.replay_buffer, "sample_batch", lambda request: batch)
+        monkeypatch.setattr(pop.replay_buffer, "update_priorities", update_observed)
+        pop.step_population(pop.env)
+        targets = torch.cat([t.reshape(-1) for _, t in calls])
+        # Independent arithmetic: prefix sums1,3,6/5; own target coefficient2;
+        # Double selects REST at online successor sums8,5,7, WAIT at14.
+        assert set(targets.tolist()) <= {3.0, 4.0, 6.0, 15.0} and {4.0, 15.0} <= set(targets.tolist())
+        if objective == "window_mean":
+            assert sorted(targets.tolist()) == [3.0, 4.0, 6.0, 15.0]
+        per_unit = (0.25 * (2 + 3 + 2) / 3 - 0.25**2 / 2) if objective == "window_mean" else (0.25 * 2 - 0.25**2 / 2)
+        expected = (2 * per_unit + 0.5 * (0.25 * 10 - 0.25**2 / 2)) / 2
+        assert pop.last_loss == pytest.approx(expected)
+        assert pop.last_td_error == pytest.approx(4.25), "all real rows, without IS or anchor weighting"
+        assert pop.training_step_counter == 1 and online.coefficient.item() != 1.0
+        if per:
+            ids, errors, mask = feedback[0]
+            torch.testing.assert_close(ids, batch.unit_ids)
+            torch.testing.assert_close(mask, batch.loss_mask)
+>           torch.testing.assert_close(errors[0, mask[0]].abs(), torch.tensor([2.0, 3.0, 2.0])[mask[0]])
+E           AssertionError: The values for attribute 'dtype' do not match: torch.float64 != torch.float32.
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:624: AssertionError
+_ test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td[True-mean_abs-window_mean-True-successive_without_replacement] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-owned-r0/popen-gw1/test_exact_prefix_bptt_objecti26')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f02e2776e40>
+mode = 'successive_without_replacement', per = True, objective = 'window_mean'
+reducer = 'mean_abs', poison = True
+
+    @pytest.mark.parametrize("mode", LAWS)
+    @pytest.mark.parametrize("per", (False, True))
+    @pytest.mark.parametrize("objective", ("window_mean", "anchor_transition"))
+    @pytest.mark.parametrize("reducer", ("max_abs", "mean_abs"))
+    @pytest.mark.parametrize("poison", (False, True))
+    def test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td(tmp_path, monkeypatch, mode, per, objective, reducer, poison):
+        options = _options(mode, objective=objective, reducer=reducer)
+        if not per:
+            options = ReplayOptions.model_validate(
+                {**options.model_dump(), "uniform_sequence_adapter": "legacy_episode_length_with_replacement"}
+            )
+        pop = _make(tmp_path, "recurrent", per=per, explicit=True, global_illegal=False, double=True, options=options)
+        batch = _numerical_batch(pop, objective, poison)
+        online = PrefixNetwork(pop.action_dim, _id(pop, "WAIT"), _id(pop, "REST"), 1)
+        target = PrefixNetwork(pop.action_dim, _id(pop, "WAIT"), _id(pop, "REST"), 2)
+        pop.q_network, pop.target_network = online, target
+        pop.optimizer = torch.optim.Adam(online.parameters(), lr=0.001)
+        pop.scheduler = None
+        pop.rollout_hidden = online.initial_hidden(pop.num_agents, CPU)
+        online.eval()
+        target.train()
+        calls = _loss_spy(monkeypatch)
+        feedback = []
+        update = pop.replay_buffer.update_priorities
+    
+        def update_observed(ids, errors, *, loss_mask):
+            feedback.append((ids.detach().clone(), errors.detach().clone(), loss_mask.detach().clone()))
+            return update(ids, errors, loss_mask=loss_mask)
+    
+        monkeypatch.setattr(pop.replay_buffer, "sample_batch", lambda request: batch)
+        monkeypatch.setattr(pop.replay_buffer, "update_priorities", update_observed)
+        pop.step_population(pop.env)
+        targets = torch.cat([t.reshape(-1) for _, t in calls])
+        # Independent arithmetic: prefix sums1,3,6/5; own target coefficient2;
+        # Double selects REST at online successor sums8,5,7, WAIT at14.
+        assert set(targets.tolist()) <= {3.0, 4.0, 6.0, 15.0} and {4.0, 15.0} <= set(targets.tolist())
+        if objective == "window_mean":
+            assert sorted(targets.tolist()) == [3.0, 4.0, 6.0, 15.0]
+        per_unit = (0.25 * (2 + 3 + 2) / 3 - 0.25**2 / 2) if objective == "window_mean" else (0.25 * 2 - 0.25**2 / 2)
+        expected = (2 * per_unit + 0.5 * (0.25 * 10 - 0.25**2 / 2)) / 2
+        assert pop.last_loss == pytest.approx(expected)
+        assert pop.last_td_error == pytest.approx(4.25), "all real rows, without IS or anchor weighting"
+        assert pop.training_step_counter == 1 and online.coefficient.item() != 1.0
+        if per:
+            ids, errors, mask = feedback[0]
+            torch.testing.assert_close(ids, batch.unit_ids)
+            torch.testing.assert_close(mask, batch.loss_mask)
+>           torch.testing.assert_close(errors[0, mask[0]].abs(), torch.tensor([2.0, 3.0, 2.0])[mask[0]])
+E           AssertionError: The values for attribute 'dtype' do not match: torch.float64 != torch.float32.
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:624: AssertionError
+_ test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td[True-mean_abs-window_mean-True-independent_with_replacement] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-owned-r0/popen-gw1/test_exact_prefix_bptt_objecti27')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f02e2d7a820>
+mode = 'independent_with_replacement', per = True, objective = 'window_mean'
+reducer = 'mean_abs', poison = True
+
+    @pytest.mark.parametrize("mode", LAWS)
+    @pytest.mark.parametrize("per", (False, True))
+    @pytest.mark.parametrize("objective", ("window_mean", "anchor_transition"))
+    @pytest.mark.parametrize("reducer", ("max_abs", "mean_abs"))
+    @pytest.mark.parametrize("poison", (False, True))
+    def test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td(tmp_path, monkeypatch, mode, per, objective, reducer, poison):
+        options = _options(mode, objective=objective, reducer=reducer)
+        if not per:
+            options = ReplayOptions.model_validate(
+                {**options.model_dump(), "uniform_sequence_adapter": "legacy_episode_length_with_replacement"}
+            )
+        pop = _make(tmp_path, "recurrent", per=per, explicit=True, global_illegal=False, double=True, options=options)
+        batch = _numerical_batch(pop, objective, poison)
+        online = PrefixNetwork(pop.action_dim, _id(pop, "WAIT"), _id(pop, "REST"), 1)
+        target = PrefixNetwork(pop.action_dim, _id(pop, "WAIT"), _id(pop, "REST"), 2)
+        pop.q_network, pop.target_network = online, target
+        pop.optimizer = torch.optim.Adam(online.parameters(), lr=0.001)
+        pop.scheduler = None
+        pop.rollout_hidden = online.initial_hidden(pop.num_agents, CPU)
+        online.eval()
+        target.train()
+        calls = _loss_spy(monkeypatch)
+        feedback = []
+        update = pop.replay_buffer.update_priorities
+    
+        def update_observed(ids, errors, *, loss_mask):
+            feedback.append((ids.detach().clone(), errors.detach().clone(), loss_mask.detach().clone()))
+            return update(ids, errors, loss_mask=loss_mask)
+    
+        monkeypatch.setattr(pop.replay_buffer, "sample_batch", lambda request: batch)
+        monkeypatch.setattr(pop.replay_buffer, "update_priorities", update_observed)
+        pop.step_population(pop.env)
+        targets = torch.cat([t.reshape(-1) for _, t in calls])
+        # Independent arithmetic: prefix sums1,3,6/5; own target coefficient2;
+        # Double selects REST at online successor sums8,5,7, WAIT at14.
+        assert set(targets.tolist()) <= {3.0, 4.0, 6.0, 15.0} and {4.0, 15.0} <= set(targets.tolist())
+        if objective == "window_mean":
+            assert sorted(targets.tolist()) == [3.0, 4.0, 6.0, 15.0]
+        per_unit = (0.25 * (2 + 3 + 2) / 3 - 0.25**2 / 2) if objective == "window_mean" else (0.25 * 2 - 0.25**2 / 2)
+        expected = (2 * per_unit + 0.5 * (0.25 * 10 - 0.25**2 / 2)) / 2
+        assert pop.last_loss == pytest.approx(expected)
+        assert pop.last_td_error == pytest.approx(4.25), "all real rows, without IS or anchor weighting"
+        assert pop.training_step_counter == 1 and online.coefficient.item() != 1.0
+        if per:
+            ids, errors, mask = feedback[0]
+            torch.testing.assert_close(ids, batch.unit_ids)
+            torch.testing.assert_close(mask, batch.loss_mask)
+>           torch.testing.assert_close(errors[0, mask[0]].abs(), torch.tensor([2.0, 3.0, 2.0])[mask[0]])
+E           AssertionError: The values for attribute 'dtype' do not match: torch.float64 != torch.float32.
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:624: AssertionError
+_ test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td[True-mean_abs-anchor_transition-True-successive_without_replacement] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-owned-r0/popen-gw1/test_exact_prefix_bptt_objecti30')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f02e2b044b0>
+mode = 'successive_without_replacement', per = True
+objective = 'anchor_transition', reducer = 'mean_abs', poison = True
+
+    @pytest.mark.parametrize("mode", LAWS)
+    @pytest.mark.parametrize("per", (False, True))
+    @pytest.mark.parametrize("objective", ("window_mean", "anchor_transition"))
+    @pytest.mark.parametrize("reducer", ("max_abs", "mean_abs"))
+    @pytest.mark.parametrize("poison", (False, True))
+    def test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td(tmp_path, monkeypatch, mode, per, objective, reducer, poison):
+        options = _options(mode, objective=objective, reducer=reducer)
+        if not per:
+            options = ReplayOptions.model_validate(
+                {**options.model_dump(), "uniform_sequence_adapter": "legacy_episode_length_with_replacement"}
+            )
+        pop = _make(tmp_path, "recurrent", per=per, explicit=True, global_illegal=False, double=True, options=options)
+        batch = _numerical_batch(pop, objective, poison)
+        online = PrefixNetwork(pop.action_dim, _id(pop, "WAIT"), _id(pop, "REST"), 1)
+        target = PrefixNetwork(pop.action_dim, _id(pop, "WAIT"), _id(pop, "REST"), 2)
+        pop.q_network, pop.target_network = online, target
+        pop.optimizer = torch.optim.Adam(online.parameters(), lr=0.001)
+        pop.scheduler = None
+        pop.rollout_hidden = online.initial_hidden(pop.num_agents, CPU)
+        online.eval()
+        target.train()
+        calls = _loss_spy(monkeypatch)
+        feedback = []
+        update = pop.replay_buffer.update_priorities
+    
+        def update_observed(ids, errors, *, loss_mask):
+            feedback.append((ids.detach().clone(), errors.detach().clone(), loss_mask.detach().clone()))
+            return update(ids, errors, loss_mask=loss_mask)
+    
+        monkeypatch.setattr(pop.replay_buffer, "sample_batch", lambda request: batch)
+        monkeypatch.setattr(pop.replay_buffer, "update_priorities", update_observed)
+        pop.step_population(pop.env)
+        targets = torch.cat([t.reshape(-1) for _, t in calls])
+        # Independent arithmetic: prefix sums1,3,6/5; own target coefficient2;
+        # Double selects REST at online successor sums8,5,7, WAIT at14.
+        assert set(targets.tolist()) <= {3.0, 4.0, 6.0, 15.0} and {4.0, 15.0} <= set(targets.tolist())
+        if objective == "window_mean":
+            assert sorted(targets.tolist()) == [3.0, 4.0, 6.0, 15.0]
+        per_unit = (0.25 * (2 + 3 + 2) / 3 - 0.25**2 / 2) if objective == "window_mean" else (0.25 * 2 - 0.25**2 / 2)
+        expected = (2 * per_unit + 0.5 * (0.25 * 10 - 0.25**2 / 2)) / 2
+        assert pop.last_loss == pytest.approx(expected)
+        assert pop.last_td_error == pytest.approx(4.25), "all real rows, without IS or anchor weighting"
+        assert pop.training_step_counter == 1 and online.coefficient.item() != 1.0
+        if per:
+            ids, errors, mask = feedback[0]
+            torch.testing.assert_close(ids, batch.unit_ids)
+            torch.testing.assert_close(mask, batch.loss_mask)
+>           torch.testing.assert_close(errors[0, mask[0]].abs(), torch.tensor([2.0, 3.0, 2.0])[mask[0]])
+E           AssertionError: The values for attribute 'dtype' do not match: torch.float64 != torch.float32.
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:624: AssertionError
+_ test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td[True-mean_abs-anchor_transition-True-independent_with_replacement] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-owned-r0/popen-gw1/test_exact_prefix_bptt_objecti31')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f02e2ad0d00>
+mode = 'independent_with_replacement', per = True
+objective = 'anchor_transition', reducer = 'mean_abs', poison = True
+
+    @pytest.mark.parametrize("mode", LAWS)
+    @pytest.mark.parametrize("per", (False, True))
+    @pytest.mark.parametrize("objective", ("window_mean", "anchor_transition"))
+    @pytest.mark.parametrize("reducer", ("max_abs", "mean_abs"))
+    @pytest.mark.parametrize("poison", (False, True))
+    def test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td(tmp_path, monkeypatch, mode, per, objective, reducer, poison):
+        options = _options(mode, objective=objective, reducer=reducer)
+        if not per:
+            options = ReplayOptions.model_validate(
+                {**options.model_dump(), "uniform_sequence_adapter": "legacy_episode_length_with_replacement"}
+            )
+        pop = _make(tmp_path, "recurrent", per=per, explicit=True, global_illegal=False, double=True, options=options)
+        batch = _numerical_batch(pop, objective, poison)
+        online = PrefixNetwork(pop.action_dim, _id(pop, "WAIT"), _id(pop, "REST"), 1)
+        target = PrefixNetwork(pop.action_dim, _id(pop, "WAIT"), _id(pop, "REST"), 2)
+        pop.q_network, pop.target_network = online, target
+        pop.optimizer = torch.optim.Adam(online.parameters(), lr=0.001)
+        pop.scheduler = None
+        pop.rollout_hidden = online.initial_hidden(pop.num_agents, CPU)
+        online.eval()
+        target.train()
+        calls = _loss_spy(monkeypatch)
+        feedback = []
+        update = pop.replay_buffer.update_priorities
+    
+        def update_observed(ids, errors, *, loss_mask):
+            feedback.append((ids.detach().clone(), errors.detach().clone(), loss_mask.detach().clone()))
+            return update(ids, errors, loss_mask=loss_mask)
+    
+        monkeypatch.setattr(pop.replay_buffer, "sample_batch", lambda request: batch)
+        monkeypatch.setattr(pop.replay_buffer, "update_priorities", update_observed)
+        pop.step_population(pop.env)
+        targets = torch.cat([t.reshape(-1) for _, t in calls])
+        # Independent arithmetic: prefix sums1,3,6/5; own target coefficient2;
+        # Double selects REST at online successor sums8,5,7, WAIT at14.
+        assert set(targets.tolist()) <= {3.0, 4.0, 6.0, 15.0} and {4.0, 15.0} <= set(targets.tolist())
+        if objective == "window_mean":
+            assert sorted(targets.tolist()) == [3.0, 4.0, 6.0, 15.0]
+        per_unit = (0.25 * (2 + 3 + 2) / 3 - 0.25**2 / 2) if objective == "window_mean" else (0.25 * 2 - 0.25**2 / 2)
+        expected = (2 * per_unit + 0.5 * (0.25 * 10 - 0.25**2 / 2)) / 2
+        assert pop.last_loss == pytest.approx(expected)
+        assert pop.last_td_error == pytest.approx(4.25), "all real rows, without IS or anchor weighting"
+        assert pop.training_step_counter == 1 and online.coefficient.item() != 1.0
+        if per:
+            ids, errors, mask = feedback[0]
+            torch.testing.assert_close(ids, batch.unit_ids)
+            torch.testing.assert_close(mask, batch.loss_mask)
+>           torch.testing.assert_close(errors[0, mask[0]].abs(), torch.tensor([2.0, 3.0, 2.0])[mask[0]])
+E           AssertionError: The values for attribute 'dtype' do not match: torch.float64 != torch.float32.
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:624: AssertionError
+_ test_captured_six_adapts_offside_at_restored_tick_for_selected_recurrent_per _
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-owned-r0/popen-gw2/test_captured_six_adapts_offsi0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fe549e8b310>
+
+    def test_captured_six_adapts_offside_at_restored_tick_for_selected_recurrent_per(tmp_path, monkeypatch):
+        source = _make(tmp_path / "uniform", "recurrent", explicit=True, length=1)
+        _until_update(source, count=2)
+        _finish(source)
+        saved = _owned(source)
+        assert saved["replay_buffer"]["format_version"] == 6 and source.total_steps > 0
+        target = _make(
+            tmp_path / "per", "recurrent", per=True, explicit=True, length=1, beta=0.4, annealing=True, initial_tick=source.total_steps
+        )
+        target.load_checkpoint_state(saved)
+        assert target.replay_buffer.retained_transitions == source.replay_buffer.retained_transitions > 0
+        assert not target.replay_buffer.historical_archives
+        assert target.total_steps == source.total_steps and target.training_step_counter == source.training_step_counter
+        _same(saved, _owned(source))
+        _constant(target, _id(target, "REST"))
+        calls = _loss_spy(monkeypatch)
+        _until_update(target)
+        assert calls and all(torch.allclose(q_target, torch.full_like(q_target, 3.0)) for _, q_target in calls)
+>       assert target.replay_buffer.beta == pytest.approx(0.4 + 0.6 * target.total_steps / 2000)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'SequentialReplayBuffer' object has no attribute 'beta'
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:1065: AttributeError
+_ test_load_before_first_step_adopts_current_replay_and_clocks[load-active-current-feedforward-False] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-owned-r0/popen-gw0/test_load_before_first_step_ad0')
+family = 'feedforward', per = False, empty = False, install = 'load'
+
+    @pytest.mark.parametrize("family,per", (("feedforward", False), ("feedforward", True), ("recurrent", False), ("recurrent", True)))
+    @pytest.mark.parametrize("empty", (False, True), ids=("active-current", "owned-empty-current"))
+    @pytest.mark.parametrize("install", ("load", "attach"))
+    def test_load_before_first_step_adopts_current_replay_and_clocks(tmp_path, family, per, empty, install):
+        settings = dict(per=per, minimum=6, beta=0.4, annealing=True, length=1)
+        archive_kind = "sequence-trained" if family == "recurrent" else ("per" if per else "uniform")
+        settings["template"] = ROOT / "tests/test_townlet/fixtures/bac_historical" / f"{archive_kind}-pack"
+        source = _make(tmp_path / "source", family, explicit=True, **settings)
+        source.replay_buffer.install_historical_archive(_archive("recurrent" if family == "recurrent" else ("per" if per else "uniform")))
+        _until_update(source, count=2)
+        _finish(source)
+        if empty:
+            source.replay_buffer.clear()
+        saved = _owned(source)
+        assert bool(source.replay_buffer.retained_transitions) != empty
+        targets = [_make(tmp_path / label, family, explicit=explicit, **settings) for label, explicit in (("lazy", False), ("eager", True))]
+        for target in targets:
+            before = _owned(target)
+            target.validate_checkpoint_state(saved)
+            _same(before, _owned(target))
+            if install == "attach" and target is targets[0]:
+                # Explicit externally owned attachment control, separate from natural construction.
+                if family == "recurrent":
+                    buffer = SequentialReplayBuffer(32, CPU)
+                elif per:
+                    buffer = PrioritizedReplayBuffer(32, 1.0, 0.4, True, CPU)
+                else:
+                    buffer = ReplayBuffer(32, CPU)
+                buffer.load_from_serialized(saved["replay_buffer"])
+                target.replay_buffer = buffer
+                target.q_network.load_state_dict(saved["q_network"])
+                target.target_network.load_state_dict(saved["target_network"])
+                target.optimizer.load_state_dict(saved["optimizer"])
+                target.total_steps = saved["total_steps"]
+                target.training_step_counter = saved["training_step_counter"]
+            else:
+                target.load_checkpoint_state(saved)
+            _same(saved, _owned(target))
+        rng = torch.get_rng_state().clone()
+        targets[0].step_population(targets[0].env)
+        torch.set_rng_state(rng)
+        targets[1].step_population(targets[1].env)
+>       _same(_owned(targets[0]), _owned(targets[1]))
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:859: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_learner_legality.py:243: in _same
+    _same(left[key], right[key])
+tests/test_townlet/regressions/bac/test_learner_legality.py:243: in _same
+    _same(left[key], right[key])
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+left = tensor([[ 0.0185, -0.0450,  0.0569,  ..., -0.0215, -0.0897, -0.0813],
+        [-0.0100,  0.0465, -0.0751,  ..., -0.080...0277,  0.0810,  ..., -0.0104,  0.0470, -0.0489],
+        [-0.0074,  0.0702, -0.0464,  ...,  0.0098,  0.0222,  0.0318]])
+right = tensor([[ 0.0185, -0.0450,  0.0569,  ..., -0.0215, -0.0897, -0.0813],
+        [-0.0100,  0.0465, -0.0751,  ..., -0.080...0277,  0.0810,  ..., -0.0104,  0.0470, -0.0489],
+        [-0.0074,  0.0702, -0.0464,  ...,  0.0098,  0.0222,  0.0318]])
+
+    def _same(left, right):
+        if isinstance(left, torch.Tensor):
+>           assert left.dtype == right.dtype and left.shape == right.shape and torch.equal(left, right)
+E           assert (torch.float32 == torch.float32 and torch.Size([16, 118]) == torch.Size([16, 118])
+E            +  where torch.float32 = tensor([[ 0.0185, -0.0450,  0.0569,  ..., -0.0215, -0.0897, -0.0813],\n        [-0.0100,  0.0465, -0.0751,  ..., -0.080...0277,  0.0810,  ..., -0.0104,  0.0470, -0.0489],\n        [-0.0074,  0.0702, -0.0464,  ...,  0.0098,  0.0222,  0.0318]]).dtype
+E            +  and   torch.float32 = tensor([[ 0.0185, -0.0450,  0.0569,  ..., -0.0215, -0.0897, -0.0813],\n        [-0.0100,  0.0465, -0.0751,  ..., -0.080...0277,  0.0810,  ..., -0.0104,  0.0470, -0.0489],\n        [-0.0074,  0.0702, -0.0464,  ...,  0.0098,  0.0222,  0.0318]]).dtype)
+E             
+E             Use -v to get more diff and False
+E            +  and   False = <built-in method equal of type object at 0x7f0d590e4000>(tensor([[ 0.0185, -0.0450,  0.0569,  ..., -0.0215, -0.0897, -0.0813],\n        [-0.0100,  0.0465, -0.0751,  ..., -0.080...0277,  0.0810,  ..., -0.0104,  0.0470, -0.0489],\n        [-0.0074,  0.0702, -0.0464,  ...,  0.0098,  0.0222,  0.0318]]), tensor([[ 0.0185, -0.0450,  0.0569,  ..., -0.0215, -0.0897, -0.0813],\n        [-0.0100,  0.0465, -0.0751,  ..., -0.080...0277,  0.0810,  ..., -0.0104,  0.0470, -0.0489],\n        [-0.0074,  0.0702, -0.0464,  ...,  0.0098,  0.0222,  0.0318]]))
+E            +    where <built-in method equal of type object at 0x7f0d590e4000> = torch.equal
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:237: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  townlet.training.checkpoint_utils:checkpoint_utils.py:729 Loading /workspace/hamlet/tests/test_townlet/fixtures/bac_historical/uniform.pt with allow_unsafe_pickle=True (weights_only=False). This deserialises arbitrary Python objects from the checkpoint and is ONLY safe for trusted, locally-produced files.
+_ test_load_before_first_step_adopts_current_replay_and_clocks[load-active-current-feedforward-True] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-owned-r0/popen-gw0/test_load_before_first_step_ad1')
+family = 'feedforward', per = True, empty = False, install = 'load'
+
+    @pytest.mark.parametrize("family,per", (("feedforward", False), ("feedforward", True), ("recurrent", False), ("recurrent", True)))
+    @pytest.mark.parametrize("empty", (False, True), ids=("active-current", "owned-empty-current"))
+    @pytest.mark.parametrize("install", ("load", "attach"))
+    def test_load_before_first_step_adopts_current_replay_and_clocks(tmp_path, family, per, empty, install):
+        settings = dict(per=per, minimum=6, beta=0.4, annealing=True, length=1)
+        archive_kind = "sequence-trained" if family == "recurrent" else ("per" if per else "uniform")
+        settings["template"] = ROOT / "tests/test_townlet/fixtures/bac_historical" / f"{archive_kind}-pack"
+        source = _make(tmp_path / "source", family, explicit=True, **settings)
+        source.replay_buffer.install_historical_archive(_archive("recurrent" if family == "recurrent" else ("per" if per else "uniform")))
+        _until_update(source, count=2)
+        _finish(source)
+        if empty:
+            source.replay_buffer.clear()
+        saved = _owned(source)
+        assert bool(source.replay_buffer.retained_transitions) != empty
+        targets = [_make(tmp_path / label, family, explicit=explicit, **settings) for label, explicit in (("lazy", False), ("eager", True))]
+        for target in targets:
+            before = _owned(target)
+            target.validate_checkpoint_state(saved)
+            _same(before, _owned(target))
+            if install == "attach" and target is targets[0]:
+                # Explicit externally owned attachment control, separate from natural construction.
+                if family == "recurrent":
+                    buffer = SequentialReplayBuffer(32, CPU)
+                elif per:
+                    buffer = PrioritizedReplayBuffer(32, 1.0, 0.4, True, CPU)
+                else:
+                    buffer = ReplayBuffer(32, CPU)
+                buffer.load_from_serialized(saved["replay_buffer"])
+                target.replay_buffer = buffer
+                target.q_network.load_state_dict(saved["q_network"])
+                target.target_network.load_state_dict(saved["target_network"])
+                target.optimizer.load_state_dict(saved["optimizer"])
+                target.total_steps = saved["total_steps"]
+                target.training_step_counter = saved["training_step_counter"]
+            else:
+                target.load_checkpoint_state(saved)
+            _same(saved, _owned(target))
+        rng = torch.get_rng_state().clone()
+        targets[0].step_population(targets[0].env)
+        torch.set_rng_state(rng)
+        targets[1].step_population(targets[1].env)
+>       _same(_owned(targets[0]), _owned(targets[1]))
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:859: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_learner_legality.py:243: in _same
+    _same(left[key], right[key])
+tests/test_townlet/regressions/bac/test_learner_legality.py:243: in _same
+    _same(left[key], right[key])
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+left = tensor([[-0.0078, -0.0677, -0.0875,  ..., -0.0488,  0.0129, -0.0076],
+        [-0.0329, -0.0379, -0.0249,  ...,  0.052...0580, -0.0835,  ..., -0.0216,  0.0179,  0.0904],
+        [ 0.0169,  0.0896, -0.0045,  ..., -0.0193, -0.0456, -0.0028]])
+right = tensor([[-0.0078, -0.0677, -0.0875,  ..., -0.0488,  0.0129, -0.0076],
+        [-0.0329, -0.0379, -0.0249,  ...,  0.052...0580, -0.0835,  ..., -0.0216,  0.0179,  0.0904],
+        [ 0.0169,  0.0896, -0.0045,  ..., -0.0193, -0.0456, -0.0028]])
+
+    def _same(left, right):
+        if isinstance(left, torch.Tensor):
+>           assert left.dtype == right.dtype and left.shape == right.shape and torch.equal(left, right)
+E           assert (torch.float32 == torch.float32 and torch.Size([16, 118]) == torch.Size([16, 118])
+E            +  where torch.float32 = tensor([[-0.0078, -0.0677, -0.0875,  ..., -0.0488,  0.0129, -0.0076],\n        [-0.0329, -0.0379, -0.0249,  ...,  0.052...0580, -0.0835,  ..., -0.0216,  0.0179,  0.0904],\n        [ 0.0169,  0.0896, -0.0045,  ..., -0.0193, -0.0456, -0.0028]]).dtype
+E            +  and   torch.float32 = tensor([[-0.0078, -0.0677, -0.0875,  ..., -0.0488,  0.0129, -0.0076],\n        [-0.0329, -0.0379, -0.0249,  ...,  0.052...0580, -0.0835,  ..., -0.0216,  0.0179,  0.0904],\n        [ 0.0169,  0.0896, -0.0045,  ..., -0.0193, -0.0456, -0.0028]]).dtype)
+E             
+E             Use -v to get more diff and False
+E            +  and   False = <built-in method equal of type object at 0x7f0d590e4000>(tensor([[-0.0078, -0.0677, -0.0875,  ..., -0.0488,  0.0129, -0.0076],\n        [-0.0329, -0.0379, -0.0249,  ...,  0.052...0580, -0.0835,  ..., -0.0216,  0.0179,  0.0904],\n        [ 0.0169,  0.0896, -0.0045,  ..., -0.0193, -0.0456, -0.0028]]), tensor([[-0.0078, -0.0677, -0.0875,  ..., -0.0488,  0.0129, -0.0076],\n        [-0.0329, -0.0379, -0.0249,  ...,  0.052...0580, -0.0835,  ..., -0.0216,  0.0179,  0.0904],\n        [ 0.0169,  0.0896, -0.0045,  ..., -0.0193, -0.0456, -0.0028]]))
+E            +    where <built-in method equal of type object at 0x7f0d590e4000> = torch.equal
+
+tests/test_townlet/regressions/bac/test_learner_legality.py:237: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  townlet.training.checkpoint_utils:checkpoint_utils.py:729 Loading /workspace/hamlet/tests/test_townlet/fixtures/bac_historical/per.pt with allow_unsafe_pickle=True (weights_only=False). This deserialises arbitrary Python objects from the checkpoint and is ONLY safe for trusted, locally-produced files.
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_load_before_first_step_adopts_current_replay_and_clocks[load-active-current-recurrent-False]
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_load_before_first_step_adopts_current_replay_and_clocks[load-active-current-recurrent-True]
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_load_before_first_step_adopts_current_replay_and_clocks[load-owned-empty-current-recurrent-False]
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_load_before_first_step_adopts_current_replay_and_clocks[load-owned-empty-current-recurrent-True]
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td[False-max_abs-window_mean-True-successive_without_replacement]
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td[False-max_abs-window_mean-True-independent_with_replacement]
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_load_before_first_step_adopts_current_replay_and_clocks[attach-active-current-feedforward-False]
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td[False-max_abs-anchor_transition-True-successive_without_replacement]
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td[False-max_abs-anchor_transition-True-independent_with_replacement]
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_load_before_first_step_adopts_current_replay_and_clocks[attach-active-current-feedforward-True]
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td[False-mean_abs-window_mean-True-successive_without_replacement]
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_load_before_first_step_adopts_current_replay_and_clocks[attach-active-current-recurrent-False]
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td[False-mean_abs-window_mean-True-independent_with_replacement]
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_load_before_first_step_adopts_current_replay_and_clocks[attach-active-current-recurrent-True]
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td[False-mean_abs-anchor_transition-True-successive_without_replacement]
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td[False-mean_abs-anchor_transition-True-independent_with_replacement]
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_load_before_first_step_adopts_current_replay_and_clocks[attach-owned-empty-current-recurrent-False]
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td[True-max_abs-window_mean-True-successive_without_replacement]
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_load_before_first_step_adopts_current_replay_and_clocks[attach-owned-empty-current-recurrent-True]
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td[True-max_abs-window_mean-True-independent_with_replacement]
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td[True-max_abs-anchor_transition-True-successive_without_replacement]
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td[True-max_abs-anchor_transition-True-independent_with_replacement]
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td[True-mean_abs-window_mean-True-successive_without_replacement]
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td[True-mean_abs-window_mean-True-independent_with_replacement]
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td[True-mean_abs-anchor_transition-True-successive_without_replacement]
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_exact_prefix_bptt_objective_stable_feedback_and_unweighted_td[True-mean_abs-anchor_transition-True-independent_with_replacement]
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_captured_six_adapts_offside_at_restored_tick_for_selected_recurrent_per
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_load_before_first_step_adopts_current_replay_and_clocks[load-active-current-feedforward-False]
+FAILED tests/test_townlet/regressions/bac/test_learner_legality.py::test_load_before_first_step_adopts_current_replay_and_clocks[load-active-current-feedforward-True]
+================== 29 failed, 121 passed in 585.21s (0:09:45) ==================

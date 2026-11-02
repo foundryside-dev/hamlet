@@ -1,0 +1,205 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 4/4 workers
+4 workers [6861 items]
+
+........................................................................ [  1%]
+........................................................................ [  2%]
+........................................................................ [  3%]
+........................................................................ [  4%]
+........................................................................ [  5%]
+........................................................................ [  6%]
+........................................................................ [  7%]
+........................................................................ [  8%]
+........................................................................ [  9%]
+........................................................................ [ 10%]
+........................................................................ [ 11%]
+........................................................................ [ 12%]
+........................................................................ [ 13%]
+..................................................E..................... [ 14%]
+........................................................................ [ 15%]
+........................................................................ [ 16%]
+........................................................................ [ 17%]
+........................................................................ [ 18%]
+........................................................................ [ 19%]
+........................................................................ [ 20%]
+........................................................................ [ 22%]
+.....................s..................ss.............................. [ 23%]
+........................................................................ [ 24%]
+........................................................................ [ 25%]
+........................................................................ [ 26%]
+........................................................................ [ 27%]
+........................................................................ [ 28%]
+.....................................................s.................. [ 29%]
+..............................ss........s............................... [ 30%]
+..........s............................................................. [ 31%]
+........................................................................ [ 32%]
+........................................................................ [ 33%]
+........................................................................ [ 34%]
+........................................................................ [ 35%]
+........................................................................ [ 36%]
+........................................................................ [ 37%]
+........................................................................ [ 38%]
+........................................................................ [ 39%]
+........................................................................ [ 40%]
+........................................................................ [ 41%]
+........................................................................ [ 43%]
+............................ss.......................................... [ 44%]
+........................................................................ [ 45%]
+........................................................................ [ 46%]
+.................................................................s...... [ 47%]
+........................................................................ [ 48%]
+........................................................................ [ 49%]
+........................................................................ [ 50%]
+........................................................................ [ 51%]
+....................
+==================================== ERRORS ====================================
+_ ERROR at setup of test_ordinary_two_episode_files_index_sql_and_tb_match_actual_eligible_ledger _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path_factory = TempPathFactory(_given_basetemp=PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave09-full-r0/popen...ce/bac-review-2026-11-01/qualification/scratch/wave09-full-r0/popen-gw0'), _retention_count=3, _retention_policy='all')
+
+    @pytest.fixture(scope="module")
+    def persisted_run(tmp_path_factory: pytest.TempPathFactory):
+        """Use ordinary public cleanup, then inspect once before any replay/export opens."""
+        root = tmp_path_factory.mktemp("episode-lane-artifacts")
+        run_dir = root / "run"
+        accepted: list[RecordedStep | EpisodeEndMarker] = []
+        dequeued: list[RecordedStep | EpisodeEndMarker] = []
+        original_put, original_get = queue.Queue._put, queue.Queue._get
+        source_root = Path(__file__).resolve().parents[3]
+        source_paths = {
+            model.__name__: Path(inspect.getfile(model)).resolve()
+            for model in (DemoRunner, DemoDatabase, RecordedStep, RecordingWriter, ReplayManager, LiveInferenceServer)
+        }
+        outcome: dict = {
+            "status": "started",
+            "revision": subprocess.run(
+                ["git", "rev-parse", "HEAD"], cwd=source_root, check=True, capture_output=True, text=True
+            ).stdout.strip(),
+            "source_identity": {
+                name: {"path": str(path), "sha256": hashlib.sha256(path.read_bytes()).hexdigest()} for name, path in source_paths.items()
+            },
+        }
+    
+        def recording_entry(item: Any) -> RecordedStep | EpisodeEndMarker | None:
+            if isinstance(item, _Capture):
+                return item.frame
+            if isinstance(item, _Boundary):
+                return item.marker
+            if isinstance(item, (RecordedStep, EpisodeEndMarker)):
+                return item
+            return None
+    
+        def describe_entry(item: Any) -> dict[str, Any]:
+            observed = recording_entry(item)
+            if observed is not None:
+                return {"kind": type(item).__name__, "data": asdict(observed)}
+            return {"kind": type(item).__name__, "repr": repr(item)}
+    
+        def put(real_queue: queue.Queue, item: Any) -> None:
+            original_put(real_queue, item)
+            observed = recording_entry(item)
+            if observed is not None:
+                accepted.append(observed)
+    
+        def get(real_queue: queue.Queue) -> Any:
+            item = original_get(real_queue)
+            observed = recording_entry(item)
+            if observed is not None:
+                dequeued.append(observed)
+            return item
+    
+        try:
+            with pytest.MonkeyPatch.context() as monkeypatch:
+                monkeypatch.chdir(root)
+                monkeypatch.setattr(queue.Queue, "_put", put)
+                monkeypatch.setattr(queue.Queue, "_get", get)
+>               runner, ticks, _ = run_lane_runner(run_dir, episodes=2, budget=None, cap=None, end_ticks=(2, 5), real_dac=True, recording=True)
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/test_episode_lane_artifact_pipeline.py:133: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/test_episode_lane_sinks.py:127: in run_lane_runner
+    runner.run()
+src/townlet/demo/runner.py:616: in run
+    agent_state = self.population.step_population(self.env)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1266: in step_population
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1042: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q_values = tensor([[ 0.1010, -0.0181,  0.0414,  0.0972, -0.0122,  0.0519, -0.0608, -0.0642]])
+agent_states = <townlet.training.state.BatchedAgentState object at 0x7f17b095a7a0>
+action_masks = tensor([[False,  True,  True,  True, False,  True,  True,  True]])
+
+    def select(q_values, agent_states, action_masks):
+>       assert q_values.shape == (2, env.action_dim) and torch.isfinite(q_values).all()
+E       assert (torch.Size([1, 8]) == (2, 8)
+E         
+E         At index 0 diff: 1 != 2
+E         Use -v to get more diff)
+
+tests/test_townlet/regressions/test_episode_lane_sinks.py:68: AssertionError
+------------------------------ Captured log setup ------------------------------
+WARNING  townlet.demo.runner:runner.py:216 Error shutting down recorder: Recording drain failed for run 'townlet:legacy-recording:v1'; ; unbound sequences=(0, 1); (ValueError('Missing episode-end marker for accepted sequences (0, 1)'),)
+WARNING  townlet.demo.runner:runner.py:216 Error shutting down recorder: Recording drain failed for run 'townlet:legacy-recording:v1'; ; unbound sequences=(0, 1); (ValueError('Missing episode-end marker for accepted sequences (0, 1)'),)
+=============================== warnings summary ===============================
+tests/test_townlet/unit/substrate/test_continuous_comprehensive.py::TestContinuousBounceEdgeCases::test_bounce_boundary_multiple_reflections_positive
+tests/test_townlet/unit/substrate/test_continuous_comprehensive.py::TestContinuousBounceEdgeCases::test_bounce_boundary_exceed_half_reflection
+  /workspace/hamlet/src/townlet/substrate/continuous.py:100: UserWarning: interaction_radius (0.5) < movement_delta (1.0). Agent may step over affordances without interaction. This may be intentional for challenge, but verify configuration.
+    warnings.warn(
+
+tests/test_townlet/unit/substrate/test_continuousnd_comprehensive.py::TestContinuousNDActionGeneration::test_get_default_actions_10d_count
+  /workspace/hamlet/src/townlet/substrate/continuousnd.py:84: UserWarning: ContinuousND with 10 dimensions has 22 actions. Large action spaces may be challenging to train. Verify this is intentional for your research.
+    warnings.warn(
+
+tests/test_townlet/unit/substrate/test_continuousnd_comprehensive.py::TestContinuousNDActionGeneration::test_get_default_actions_description_includes_movement_delta
+  /workspace/hamlet/src/townlet/substrate/continuousnd.py:119: UserWarning: interaction_radius (1.0) < movement_delta (2.5). Agent may step over affordances without interaction. This may be intentional for challenge, but verify configuration.
+    warnings.warn(
+
+tests/test_townlet/unit/substrate/test_continuousnd_comprehensive.py::TestContinuousNDBounceEdgeCases::test_bounce_boundary_multiple_reflections_4d
+tests/test_townlet/unit/substrate/test_continuousnd_comprehensive.py::TestContinuousNDBounceEdgeCases::test_bounce_boundary_negative_direction_4d
+tests/test_townlet/unit/substrate/test_continuousnd_edge_cases.py::test_continuousnd_bounce_boundary_single_reflection
+tests/test_townlet/unit/substrate/test_continuousnd_edge_cases.py::test_continuousnd_bounce_boundary_negative
+tests/test_townlet/unit/substrate/test_continuousnd_edge_cases.py::test_continuousnd_sticky_boundary
+tests/test_townlet/unit/substrate/test_continuousnd_edge_cases.py::test_continuousnd_negative_bounds
+tests/test_townlet/unit/substrate/test_continuousnd_edge_cases.py::test_continuousnd_mixed_positive_negative_bounds
+  /workspace/hamlet/src/townlet/substrate/continuousnd.py:119: UserWarning: interaction_radius (0.5) < movement_delta (1.0). Agent may step over affordances without interaction. This may be intentional for challenge, but verify configuration.
+    warnings.warn(
+
+tests/test_townlet/unit/substrate/test_continuousnd_edge_cases.py::test_continuousnd_large_movement_delta
+  /workspace/hamlet/src/townlet/substrate/continuousnd.py:119: UserWarning: interaction_radius (1.0) < movement_delta (100.0). Agent may step over affordances without interaction. This may be intentional for challenge, but verify configuration.
+    warnings.warn(
+
+tests/test_townlet/unit/substrate/test_gridnd.py::test_gridnd_topology_is_hypercube_for_all_dimensions
+  /workspace/hamlet/src/townlet/substrate/gridnd.py:71: UserWarning: GridND with 10 dimensions has 22 actions. Large action spaces may be challenging to train. Verify this is intentional for your research.
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+ERROR tests/test_townlet/regressions/test_episode_lane_artifact_pipeline.py::test_ordinary_two_episode_files_index_sql_and_tb_match_actual_eligible_ledger
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! KeyboardInterrupt !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+/usr/lib/python3.13/threading.py:363: KeyboardInterrupt
+(to show a full traceback on KeyboardInterrupt use --full-trace)
+====== 3536 passed, 11 skipped, 13 warnings, 1 error in 865.28s (0:14:25) ======
